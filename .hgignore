@@ -1,1 +1,4 @@
-.hgcfg
+.hgrc
+.DS_Store
+.pyc
+MANIFEST

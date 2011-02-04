@@ -1,97 +1,11 @@
 # -*- coding: utf-8 -*-
-"""
-A simple Python module for parsing human names into their individual components.
-
-Components::
-
-    * Title
-    * First name
-    * Middle names
-    * Last names
-    * Suffixes
-
-Works for a variety of common name formats for latin-based languages. Over 
-100 unit tests with example names. Should be unicode safe but it's fairly untested.
-
-HumanName instances will pass an equals (==) test if their lower case unicode
-representations are the same.
-
---------
-
-Copyright Derek Gulbranson, May 2009 <derek73 at gmail>.
-http://code.google.com/p/python-nameparser
-
-Parser logic based on PHP nameParser.php by G. Miernicki
-http://code.google.com/p/nameparser/
-
-LGPL
-http://www.opensource.org/licenses/lgpl-license.html
-
-This library is free software; you can redistribute it and/or modify it under the
-terms of the GNU Lesser General Public License as published by the Free Software
-Foundation; either version 2.1 of the License, or (at your option) any later
-version.
-
-This library is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-"""
-
-__author__ = "Derek Gulbranson"
-__revision__ = "$Id: nameparser.py 25 2010-08-18 19:57:57Z derek73 $"
-__version__ = "0.1.2"
-__license__ = "LGPL"
-__url__ = "http://code.google.com/p/python-nameparser"
-
-TITLES = [
-    'dr','doctor','miss','misses','mr','mister','mrs','ms','sir',
-    'rev','madam','madame','AB','2ndLt','Amn','1stLt','A1C','Capt','SrA','Maj',
-    'SSgt','LtCol','TSgt','Col','BrigGen','1stSgt','MajGen','SMSgt','LtGen',
-    '1stSgt','Gen','CMSgt','1stSgt','CCMSgt','CMSAF','PVT','2LT','PV2','1LT',
-    'PFC','CPT','SPC','MAJ','CPL','LTC','SGT','COL','SSG','BG','SFC','MG',
-    'MSG','LTG','1SGT','GEN','SGM','CSM','SMA','WO1','WO2','WO3','WO4','WO5',
-    'ENS','SA','LTJG','SN','LT','PO3','LCDR','PO2','CDR','PO1','CAPT','CPO',
-    'RADM(LH)','SCPO','RADM(UH)','MCPO','VADM','MCPOC','ADM','MPCO-CG','CWO-2',
-    'CWO-3','CWO-4','Pvt','2ndLt','PFC','1stLt','LCpl','Capt','Cpl','Maj','Sgt',
-    'LtCol','SSgt','Col','GySgt','BGen','MSgt','MajGen','1stSgt','LtGen','MGySgt',
-    'Gen','SgtMaj','SgtMajMC','WO-1','CWO-2','CWO-3','CWO-4','CWO-5','ENS','SA',
-    'LTJG','SN','LT','PO3','LCDR','PO2','CDR','PO1','CAPT','CPO','RDML','SCPO',
-    'RADM','MCPO','VADM','MCPON','ADM','FADM','WO1','CWO2','CWO3','CWO4','CWO5'
-]
-
-# QUESTIONABLE_TITLES could be last names or they could be titles
-# TODO: need to find best way to deal with these.. http://code.google.com/p/python-nameparser/issues/detail?id=3
-QUESTIONABLE_TITLES = ['judge',]
-
-# PUNC_TITLES could be names or titles, but if they have period at the end they're a title
-PUNC_TITLES = ['hon.']
-PREFICES = [
-    'abu','bon','ben','bin','da','dal','de','del','der','de','di','e','ibn',
-    'la','le','san','st','ste','van','vel','von'
-]
-SUFFICES = [
-    'esq','esquire','jr','sr','2','i','ii','iii','iv','v','clu','chfc',
-    'cfp','md','phd'
-]
-CAPITALIZATION_EXCEPTIONS = {
-    'ii': 'II',
-    'iii': 'III',
-    'iv': 'IV',
-    'md': 'M.D.',
-    'phd': 'Ph.D.'
-}
-CONJUNCTIONS = ['&', 'and', 'et', 'e', 'und', 'y']
-
-ENCODING = 'utf-8'
-import re
-re_spaces = re.compile(r"\s+")
-re_word = re.compile(r"\w+")
-re_mac = re.compile(r'^(ma?c)(\w)', re.I)
-re_initial = re.compile(r'^(\w\.|[A-Z])?$')
-
 import logging
+from constants import *
+
 # logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger('HumanName')
+
+ENCODING = 'utf-8'
 
 def lc(value):
     '''Lower case and remove any periods to normalize for comparison.'''
@@ -105,22 +19,46 @@ def is_not_initial(value):
 class HumanName(object):
     
     """
-    Parse a person's name into individual components
+    Parse a person's name into individual components.
     
     Usage::
     
+        >>> from nameparser import HumanName
         >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
         >>> name.title
-        'Dr.'
+        u'Dr.'
         >>> name.first
-        'Juan'
+        u'Juan'
         >>> name.middle
-        'Q. Xavier'
+        u'Q. Xavier'
         >>> name.last
-        'de la Vega'
+        u'de la Vega'
         >>> name.suffix
-        'III'
-        >>> name2 = HumanName("de la Vega, Dr. Juan Q. Xavier III")
+        u'III'
+        >>> name = HumanName("Doe-Ray, Col. John A. Jérôme III")
+        >>> name.title
+        u'Col.'
+        >>> name.first
+        u'John'
+        >>> name.middle
+        u'A. Jérôme'
+        >>> name.last
+        u'Doe-Ray'
+        >>> name.suffix
+        u'III'
+        >>> name = HumanName("Juan Q. Xavier Velasquez y Garcia, Jr.")
+        >>> name.title
+        u''
+        >>> name.first
+        u'Juan'
+        >>> name.middle
+        u'Q. Xavier'
+        >>> name.last
+        u'Velasquez y Garcia'
+        >>> name.suffix
+        u'Jr.'
+        >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
+        >>> name2 = HumanName("de la vega, dr. juan Q. xavier III")
         >>> name == name2
         True
         >>> len(name)
@@ -401,6 +339,27 @@ class HumanName(object):
         return re.sub(re_word, replacement, piece)
 
     def capitalize(self):
+        """
+        Capitalization Support
+        ----------------------
+
+        The HumanName class can try to guess the correct capitalization 
+        of name entered in all upper or lower case. It will not adjust 
+        the case of names entered in mixed case.
+        
+        Usage::
+        
+            >>> name = HumanName('bob v. de la macdole-eisenhower phd')
+            >>> name.capitalize()
+            >>> unicode(name)
+            u'Bob V. de la MacDole-Eisenhower Ph.D.'
+            >>> # Don't touch good names
+            >>> name = HumanName('Shirley Maclaine')
+            >>> name.capitalize()
+            >>> unicode(name) 
+            u'Shirley Maclaine'
+        
+        """
         name = unicode(self)
         if not (name == name.upper() or name == name.lower()):
             return
