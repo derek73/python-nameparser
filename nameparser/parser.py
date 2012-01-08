@@ -72,7 +72,7 @@ class HumanName(object):
     
     def __init__(self, full_name=u"", titles=TITLES, prefices=PREFICES, 
         suffices=SUFFICES, punc_titles=PUNC_TITLES, conjunctions=CONJUNCTIONS,
-        capitalization_exceptions=CAPITALIZATION_EXCEPTIONS):
+        capitalization_exceptions=dict(CAPITALIZATION_EXCEPTIONS)):
         
         super(HumanName, self).__init__()
         self.titles = titles
