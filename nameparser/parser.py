@@ -113,7 +113,7 @@ class HumanName(object):
         return not unicode(self).lower() == unicode(other).lower()
     
     def __getitem__(self, key):
-        return [getattr(self, x) for x in self.members[key]]
+        return getattr(self, self.members[key])
     
     def next(self):
         if self.count >= len(self.members):
