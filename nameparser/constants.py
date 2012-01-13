@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import re
 
 re_spaces = re.compile(r"\s+")
@@ -7,18 +8,18 @@ re_initial = re.compile(r'^(\w\.|[A-Z])?$')
 
 TITLES = set([
     'dr','doctor','miss','misses','mr','mister','mrs','ms','sir',
-    'rev','madam','madame','AB','2ndLt','Amn','1stLt','A1C','Capt','SrA','Maj',
-    'SSgt','LtCol','TSgt','Col','BrigGen','1stSgt','MajGen','SMSgt','LtGen',
-    '1stSgt','Gen','CMSgt','1stSgt','CCMSgt','CMSAF','PVT','2LT','PV2','1LT',
-    'PFC','CPT','SPC','MAJ','CPL','LTC','SGT','COL','SSG','BG','SFC','MG',
-    'MSG','LTG','1SGT','GEN','SGM','CSM','SMA','WO1','WO2','WO3','WO4','WO5',
-    'ENS','SA','LTJG','SN','LT','PO3','LCDR','PO2','CDR','PO1','CAPT','CPO',
-    'RADM(LH)','SCPO','RADM(UH)','MCPO','VADM','MCPOC','ADM','MPCO-CG','CWO-2',
-    'CWO-3','CWO-4','Pvt','2ndLt','PFC','1stLt','LCpl','Capt','Cpl','Maj','Sgt',
-    'LtCol','SSgt','Col','GySgt','BGen','MSgt','MajGen','1stSgt','LtGen','MGySgt',
-    'Gen','SgtMaj','SgtMajMC','WO-1','CWO-2','CWO-3','CWO-4','CWO-5','ENS','SA',
-    'LTJG','SN','LT','PO3','LCDR','PO2','CDR','PO1','CAPT','CPO','RDML','SCPO',
-    'RADM','MCPO','VADM','MCPON','ADM','FADM','WO1','CWO2','CWO3','CWO4','CWO5'
+    'rev','madam','madame','ab','2ndlt','amn','1stlt','a1c','capt','sra','maj',
+    'ssgt','ltcol','tsgt','col','briggen','1stsgt','majgen','smsgt','ltgen',
+    '1stsgt','gen','cmsgt','1stsgt','ccmsgt','cmsaf','pvt','2lt','pv2','1lt',
+    'pfc','cpt','spc','maj','cpl','ltc','sgt','col','ssg','bg','sfc','mg',
+    'msg','ltg','1sgt','gen','sgm','csm','sma','wo1','wo2','wo3','wo4','wo5',
+    'ens','sa','ltjg','sn','lt','po3','lcdr','po2','cdr','po1','capt','cpo',
+    'radm(lh)','scpo','radm(uh)','mcpo','vadm','mcpoc','adm','mpco-cg','cwo-2',
+    'cwo-3','cwo-4','pvt','2ndlt','pfc','1stlt','lcpl','capt','cpl','maj','sgt',
+    'ltcol','ssgt','col','gysgt','bgen','msgt','majgen','1stsgt','ltgen','mgysgt',
+    'gen','sgtmaj','sgtmajmc','wo-1','cwo-2','cwo-3','cwo-4','cwo-5','ens','sa',
+    'ltjg','sn','lt','po3','lcdr','po2','cdr','po1','capt','cpo','rdml','scpo',
+    'radm','mcpo','vadm','mcpon','adm','fadm','wo1','cwo2','cwo3','cwo4','cwo5'
 ])
 
 # QUESTIONABLE_TITLES could be last names or they could be titles.
@@ -29,7 +30,7 @@ QUESTIONABLE_TITLES = ('judge',)
 # PUNC_TITLES could be names or titles, but if they have period at the end they're a title
 PUNC_TITLES = ('hon.',)
 PREFICES = set([
-    'abu','bon','ben','bin','da','dal','de','del','der','de','di','e','ibn',
+    'abu','bon','ben','bin','da','dal','de','del','der','de','di',u'dí','e','ibn',
     'la','le','san','st','ste','van','vel','von'
 ])
 SUFFICES = set([

@@ -7,6 +7,8 @@ http://code.google.com/p/python-nameparser/issues/entry
 """
 
 from nameparser import HumanName
+from nameparser.parser import log
+
 import unittest
 class HumanNameTests(unittest.TestCase):
     
@@ -879,11 +881,16 @@ class HumanNameTests(unittest.TestCase):
         self.assertMatches(parsed.first,"John", parsed)
         self.assertMatches(parsed.last,"e Smith", parsed)
     
-    # Couple's name
-    def test120(self):
+    def test_couples_names(self):
         parsed = HumanName('John and Jane Smith')
         self.assertMatches(parsed.first,"John and Jane", parsed)
         self.assertMatches(parsed.last,"Smith", parsed)
+    
+    # def test_couple_titles(self):
+    #     parsed = HumanName('Mr. and Mrs. John and Jane Smith')
+    #     self.assertMatches(parsed.title,"Mr. and Mrs.", parsed)
+    #     self.assertMatches(parsed.first,"John and Jane", parsed)
+    #     self.assertMatches(parsed.last,"Smith", parsed)
     
     # Capitalization, including conjunction and exception for 'III'
     def test121(self):
@@ -930,6 +937,39 @@ class HumanNameTests(unittest.TestCase):
         parsed = HumanName("Buca di Beppo")
         self.assertMatches(parsed.first,"Buca", parsed)
         self.assertMatches(parsed.last,"di Beppo", parsed)
+    
+    def test_lc_comparison_of_military_prefix(self):
+        parsed = HumanName("Lt.Gen. John A. Kenneth Doe IV")
+        self.assertMatches(parsed.title,"Lt.Gen.", parsed)
+        self.assertMatches(parsed.first,"John", parsed)
+        self.assertMatches(parsed.last,"Doe", parsed)
+        self.assertMatches(parsed.middle,"A. Kenneth", parsed)
+        self.assertMatches(parsed.suffix,"IV", parsed)
+    
+    def test_two_part_prefix(self):
+        parsed = HumanName("Lt. Gen. John A. Kenneth Doe IV")
+        self.assertMatches(parsed.title,"Lt. Gen.", parsed)
+        self.assertMatches(parsed.first,"John", parsed)
+        self.assertMatches(parsed.last,"Doe", parsed)
+        self.assertMatches(parsed.middle,"A. Kenneth", parsed)
+        self.assertMatches(parsed.suffix,"IV", parsed)
+    
+    def test_two_part_prefix_with_lastname_comma(self):
+        parsed = HumanName("Doe, Lt. Gen. John A. Kenneth IV")
+        self.assertMatches(parsed.title,"Lt. Gen.", parsed)
+        self.assertMatches(parsed.first,"John", parsed)
+        self.assertMatches(parsed.last,"Doe", parsed)
+        self.assertMatches(parsed.middle,"A. Kenneth", parsed)
+        self.assertMatches(parsed.suffix,"IV", parsed)
+    
+    def test_two_part_prefix_with_suffix_comma(self):
+        parsed = HumanName("Lt. Gen. John A. Kenneth Doe, Jr.")
+        self.assertMatches(parsed.title,"Lt. Gen.", parsed)
+        self.assertMatches(parsed.first,"John", parsed)
+        self.assertMatches(parsed.last,"Doe", parsed)
+        self.assertMatches(parsed.middle,"A. Kenneth", parsed)
+        self.assertMatches(parsed.suffix,"Jr.", parsed)
+    
     
 
 TEST_NAMES = (
@@ -1057,13 +1097,18 @@ TEST_NAMES = (
     "Rev John A. Kenneth Doe",
     "Doe, Rev. John A. Jr.",
     "Buca di Beppo",
+    "Lt. Gen. John A. Kenneth Doe, Jr.",
+    "Doe, Lt. Gen. John A. Kenneth IV",
+    "Lt. Gen. John A. Kenneth Doe IV",
+    # 'Mr. and Mrs. John Smith',
 )
 
 if __name__ == '__main__':
-    for name in TEST_NAMES:
-        parsed = HumanName(name)
-        print unicode(name)
-        print unicode(parsed)
-        print repr(parsed)
-        print "\n-------------------------------------------\n"
+    if log.level > 0:
+        for name in TEST_NAMES:
+            parsed = HumanName(name)
+            print unicode(name)
+            print unicode(parsed)
+            print repr(parsed)
+            print "\n-------------------------------------------\n"
     unittest.main()

@@ -4,7 +4,6 @@ from constants import *
 
 # logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger('HumanName')
-
 ENCODING = 'utf-8'
 
 def lc(value):
@@ -15,6 +14,9 @@ def lc(value):
 
 def is_not_initial(value):
     return not re_initial.match(value)
+
+class BlankHumanName(AttributeError):
+    pass
 
 class HumanName(object):
     
@@ -29,23 +31,18 @@ class HumanName(object):
      
     """
     
-    def __init__(self, full_name=u"", titles=TITLES, prefices=PREFICES, 
+    def __init__(self, full_name=u"", titles_c=TITLES, prefices=PREFICES, 
         suffices=SUFFICES, punc_titles=PUNC_TITLES, conjunctions=CONJUNCTIONS,
         capitalization_exceptions=dict(CAPITALIZATION_EXCEPTIONS)):
         
         super(HumanName, self).__init__()
-        self.titles = titles
+        self.titles_c = titles_c
         self.punc_titles = punc_titles
         self.conjunctions = conjunctions
         self.prefices = prefices
         self.suffices = suffices
         self.capitalization_exceptions = capitalization_exceptions
         self.full_name = full_name
-        self.title = u""
-        self.first = u""
-        self.suffixes = []
-        self.middle_names = []
-        self.last_names = []
         self.unparsable = False
         self.count = 0
         self.members = ['title','first','middle','last','suffix']
@@ -116,6 +113,17 @@ class HumanName(object):
     def suffix(self):
         return u", ".join(self.suffixes)
     
+    @property
+    def title(self):
+        return u" ".join(self.titles)
+    
+    @title.setter
+    def title(self, value):
+        self.titles.append(value)
+    
+    def is_title(self, value):
+        return lc(value) in self.titles_c or value.lower() in self.punc_titles
+    
     def is_conjunction(self, piece):
         return lc(piece) in self.conjunctions and is_not_initial(piece)
     
@@ -132,8 +140,8 @@ class HumanName(object):
         self.full_name = re.sub(re_spaces, u" ", self.full_name.strip() )
         
         # reset values
-        self.title = u""
         self.first = u""
+        self.titles = []
         self.suffixes = []
         self.middle_names = []
         self.last_names = []
@@ -169,10 +177,7 @@ class HumanName(object):
                 except IndexError:
                     prev = None
                 
-                if lc(piece) in self.titles:
-                    self.title = piece
-                    continue
-                if piece.lower() in self.punc_titles:
+                if self.is_title(piece):
                     self.title = piece
                     continue
                 if not self.first:
@@ -201,7 +206,7 @@ class HumanName(object):
         else:
             if lc(parts[1]) in self.suffices:
                 
-                # title first middle last, suffix [, suffix]
+                # suffix comma: title first middle last, suffix [, suffix]
                 
                 names = parts[0].split(' ')
                 for name in names:
@@ -218,10 +223,7 @@ class HumanName(object):
                     except IndexError:
                         next = None
 
-                    if lc(piece) in self.titles:
-                        self.title = piece
-                        continue
-                    if piece.lower() in self.punc_titles:
+                    if self.is_title(piece):
                         self.title = piece
                         continue
                     if not self.first:
@@ -242,7 +244,7 @@ class HumanName(object):
                     self.middle_names.append(piece)
             else:
                 
-                # last, title first middles[,] suffix [,suffix]
+                # lastname comma: last, title first middles[,] suffix [,suffix]
                 
                 names = parts[1].split(' ')
                 for name in names:
@@ -258,10 +260,7 @@ class HumanName(object):
                     except IndexError:
                         next = None
                     
-                    if lc(piece) in self.titles:
-                        self.title = piece
-                        continue
-                    if piece.lower() in self.punc_titles:
+                    if self.is_title(piece):
                         self.title = piece
                         continue
                     if not self.first:

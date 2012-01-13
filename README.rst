@@ -1,4 +1,3 @@
-===========
 Name Parser
 ===========
 
@@ -11,13 +10,26 @@ A simple Python module for parsing human names into their individual components.
     * HumanName.middle
     * HumanName.last
     * HumanName.suffix
-    
 
-Works for a variety of common name formats for latin-based languages. 
+Supports 3 comma placement variations for names of people in latin-based languages. 
+
+    * Lastname, Title Firstname M Suffix
+    * Title Firstname M Lastname Suffix
+    * Title Firstname M Lastname, Suffix
+
+Examples:
 
     * Doe-Ray, Col. John A. Jérôme III
     * Dr. Juan Q. Xavier de la Vega II
     * Juan Q. Xavier Velasquez y Garcia, Jr.
+
+
+Capitalization Support
+----------------------
+
+The HumanName class can try to guess the correct capitalization of name entered in all upper or lower case. It will not adjust the case of names entered in mixed case.
+
+    * bob v. de la macdole-eisenhower phd -> Bob V. de la MacDole-Eisenhower Ph.D.
 
 Over 100 unit tests with example names. Should be unicode safe but it's fairly untested.
 
@@ -25,7 +37,7 @@ HumanName instances will pass an equals (==) test if their lower case unicode
 representations are the same.
 
 Usage
-=====
+-----
 ::
 
     >>> from nameparser import HumanName
@@ -76,9 +88,10 @@ Usage
 
 
 Release Log
-===========
+-----------
 
-    * 0.1.5 - Move documentation to README.rst, add release log
+    * 0.1.5 - Support multiple titles. Lowercase titles constants to fix bug with comparison. 
+      Move documentation to README.rst, add release log.
     * 0.1.4 - Use set() in constants for improved speed. setuptools compatibility - sketerpot
     * 0.1.3 - Add capitalization feature - twotwo
     * 0.1.2 - Add slice support
