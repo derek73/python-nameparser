@@ -13,9 +13,9 @@ A simple Python module for parsing human names into their individual components.
 
 Supports 3 comma placement variations for names of people in latin-based languages. 
 
-    * Lastname, Title Firstname M Suffix
-    * Title Firstname M Lastname Suffix
-    * Title Firstname M Lastname, Suffix
+    * Title Firstname Middle Middle Lastname Suffix
+    * Lastname, Title Firstname Middle Middle[,] Suffix [, Suffix]
+    * Title Firstname M Lastname, Suffix [, Suffix]
 
 Examples:
 
@@ -31,7 +31,7 @@ The HumanName class can try to guess the correct capitalization of name entered 
 
     * bob v. de la macdole-eisenhower phd -> Bob V. de la MacDole-Eisenhower Ph.D.
 
-Over 100 unit tests with example names. Should be unicode safe but it's fairly untested.
+Over 100 unit tests with example names. Should be unicode safe but it's fairly untested. Post a ticket and/or for names that fail and I will try to fix it. http://code.google.com/p/python-nameparser/issues/entry
 
 HumanName instances will pass an equals (==) test if their lower case unicode
 representations are the same.
@@ -95,3 +95,4 @@ Release Log
     * 0.1.4 - Use set() in constants for improved speed. setuptools compatibility - sketerpot
     * 0.1.3 - Add capitalization feature - twotwo
     * 0.1.2 - Add slice support
+

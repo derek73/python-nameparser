@@ -15,7 +15,7 @@ def lc(value):
 def is_not_initial(value):
     return not re_initial.match(value)
 
-class BlankHumanName(AttributeError):
+class BlankHumanNameError(AttributeError):
     pass
 
 class HumanName(object):
@@ -102,6 +102,13 @@ class HumanName(object):
         }
     
     @property
+    def _dict(self):
+        d = {}
+        for m in self.members:
+            d[m] = getattr(self, m)
+        return d
+    
+    @property
     def middle(self):
         return u" ".join(self.middle_names)
     
@@ -132,7 +139,7 @@ class HumanName(object):
     
     def parse_full_name(self):
         if not self.full_name:
-            raise AttributeError("Missing full_name")
+            raise BlankHumanNameError("Missing full_name")
         
         if not isinstance(self.full_name, unicode):
             self.full_name = unicode(self.full_name, ENCODING)

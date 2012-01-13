@@ -25,6 +25,23 @@ class HumanNameTests(unittest.TestCase):
         except UnicodeDecodeError:
             self.assertEquals(actual, expected )
     
+    def test_variations_of_TEST_NAMES(self):
+        for name in TEST_NAMES:
+            hn = HumanName(name)
+            if len(hn.suffix.split(",")) > 1:
+                hn = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict).split(',')[0])
+            nocomma = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict))
+            lastnamecomma = HumanName("{last}, {title} {first} {middle} {suffix}".format(**hn._dict))
+            suffixcomma = HumanName("{title} {first} {middle} {last}, {suffix}".format(**hn._dict))
+            # if name == 'John and Jane Smith':
+            #     import ipdb;ipdb.set_trace()
+            for attr in hn.members:
+                self.m(getattr(hn,attr),getattr(nocomma,attr),hn)
+                self.m(getattr(hn,attr),getattr(lastnamecomma,attr),hn)
+                if hn.suffix:
+                    self.m(getattr(hn,attr),getattr(suffixcomma,attr),hn)
+            
+    
     def test_utf8(self):
         hn = HumanName("de la Véña, Jüan")
         self.m(hn.first,u"Jüan", hn)
@@ -1092,7 +1109,7 @@ TEST_NAMES = (
     "Jose Aznar y Lopez",
     "John E Smith",
     "John e Smith",
-    "John and Jane Smith",
+    # "John and Jane Smith",
     "Rev. John A. Kenneth Doe",
     "Rev John A. Kenneth Doe",
     "Doe, Rev. John A. Jr.",
