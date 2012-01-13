@@ -21,53 +21,12 @@ class HumanName(object):
     """
     Parse a person's name into individual components.
     
-    Usage::
-    
-        >>> from nameparser import HumanName
-        >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
-        >>> name.title
-        u'Dr.'
-        >>> name.first
-        u'Juan'
-        >>> name.middle
-        u'Q. Xavier'
-        >>> name.last
-        u'de la Vega'
-        >>> name.suffix
-        u'III'
-        >>> name = HumanName("Doe-Ray, Col. John A. Jérôme III")
-        >>> name.title
-        u'Col.'
-        >>> name.first
-        u'John'
-        >>> name.middle
-        u'A. Jérôme'
-        >>> name.last
-        u'Doe-Ray'
-        >>> name.suffix
-        u'III'
-        >>> name = HumanName("Juan Q. Xavier Velasquez y Garcia, Jr.")
-        >>> name.title
-        u''
-        >>> name.first
-        u'Juan'
-        >>> name.middle
-        u'Q. Xavier'
-        >>> name.last
-        u'Velasquez y Garcia'
-        >>> name.suffix
-        u'Jr.'
-        >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
-        >>> name2 = HumanName("de la vega, dr. juan Q. xavier III")
-        >>> name == name2
-        True
-        >>> len(name)
-        5
-        >>> list(name)
-        ['Dr.', 'Juan', 'Q. Xavier', 'de la Vega', 'III']
-        >>> name[1:-1]
-        [u'Juan', u'Q. Xavier', u'de la Vega']
-    
+        * o.title
+        * o.first
+        * o.middle
+        * o.last
+        * o.suffix
+     
     """
     
     def __init__(self, full_name=u"", titles=TITLES, prefices=PREFICES, 
