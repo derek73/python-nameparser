@@ -1033,6 +1033,11 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn = HumanName('Shirley Maclaine')
         hn.capitalize()
         self.m(str(hn), 'Shirley Maclaine', hn)
+
+    def test_capitalize_diacritics(self):
+        hn = HumanName(u'matth\xe4us schmidt')
+        hn.capitalize()
+        self.m(unicode(hn), u'Matth\xe4us Schmidt', hn)
     
 
 class HumanNameOutputFormatTests(HumanNameTestBase):

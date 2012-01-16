@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import re
 
-re_spaces = re.compile(r"\s+")
-re_word = re.compile(r"\w+")
-re_mac = re.compile(r'^(ma?c)(\w)', re.I)
-re_initial = re.compile(r'^(\w\.|[A-Z])?$')
+re_spaces = re.compile(r"\s+", re.U)
+re_word = re.compile(r"\w+", re.U)
+re_mac = re.compile(r'^(ma?c)(\w)', re.I | re.U)
+re_initial = re.compile(r'^(\w\.|[A-Z])?$', re.U)
 
 TITLES = set([
     'dr','doctor','miss','misses','mr','mister','mrs','ms','sir',
