@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 from constants import *
-from itertools import dropwhile
 
 # logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger('HumanName')

@@ -11,7 +11,7 @@ from nameparser.parser import log
 
 import unittest
 
-class HumanNameTestCaseBase(unittest.TestCase):
+class HumanNameTestBase(unittest.TestCase):
     
     def m(self, actual, expected, hn):
         """assertEquals with a better message"""
@@ -27,42 +27,8 @@ class HumanNameTestCaseBase(unittest.TestCase):
             self.assertEquals(actual, expected )
     
 
-# class HumanNameTestBase(HumanNameTestCaseBase):
-#     full_name = ""
-#     title = ""
-#     first = ""
-#     middle = ""
-#     last = ""
-#     suffix = ""
-#     
-#     def test_given(self):
-#         hn = HumanName(self.full_name)
-#         for m in hn._members:
-#             self.m(getattr(hn,m),getattr(self,m),hn)
 
-# class JohnADoe(HumanNameTestBase):
-#     full_name = "John A. Doe"
-#     first = "John"
-#     last = "Doe"
-#     middle = "A."
-# 
-
-class HumanNameTests(HumanNameTestCaseBase):
-    
-    def test_variations_of_TEST_NAMES(self):
-        for name in TEST_NAMES:
-            hn = HumanName(name)
-            if len(hn.suffix_list) > 1:
-                hn = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict).split(',')[0])
-            nocomma = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict))
-            lastnamecomma = HumanName("{last}, {title} {first} {middle} {suffix}".format(**hn._dict))
-            suffixcomma = HumanName("{title} {first} {middle} {last}, {suffix}".format(**hn._dict))
-            for attr in hn._members:
-                self.m(getattr(hn,attr),getattr(nocomma,attr),hn)
-                self.m(getattr(hn,attr),getattr(lastnamecomma,attr),hn)
-                if hn.suffix:
-                    self.m(getattr(hn,attr),getattr(suffixcomma,attr),hn)
-            
+class HumanNameBruteForceTests(HumanNameTestBase):
     
     def test_utf8(self):
         hn = HumanName("de la Véña, Jüan")
@@ -901,6 +867,8 @@ class HumanNameTests(HumanNameTestCaseBase):
         self.m(hn.last,"Doe-Ray", hn)
         self.m(hn.suffix,"Jr., CFP, LUTC", hn)
     
+class HumanNameConjunctionTestCase(HumanNameTestBase):
+    
     # Last name with conjunction
     def test117(self):
         hn = HumanName('Jose Aznar y Lopez')
@@ -936,28 +904,6 @@ class HumanNameTests(HumanNameTestCaseBase):
         self.m(hn.first,"John and Jane", hn)
         self.m(hn.last,"Smith", hn)
     
-    def test_capitalization_exception_for_III(self):
-        hn = HumanName('juan q. xavier velasquez y garcia iii')
-        hn.capitalize()
-        self.m(str(hn), 'Juan Q. Xavier Velasquez y Garcia III', hn)
-    
-    def test_capitalize_title(self):
-        hn = HumanName('lt. gen. john a. kenneth doe iv')
-        hn.capitalize()
-        self.m(str(hn), 'Lt. Gen. John A. Kenneth Doe IV', hn)
-    
-    # Capitalization with M(a)c and hyphenated names
-    def test_capitalization_with_Mac_as_hyphenated_names(self):
-        hn = HumanName('donovan mcnabb-smith')
-        hn.capitalize()
-        self.m(str(hn), 'Donovan McNabb-Smith', hn)
-    
-    # Leaving already-capitalized names alone
-    def test123(self):
-        hn = HumanName('Shirley Maclaine')
-        hn.capitalize()
-        self.m(str(hn), 'Shirley Maclaine', hn)
-    
     # tests for Rev. title (Reverend)
     def test124(self):
         hn = HumanName("Rev. John A. Kenneth Doe")
@@ -986,7 +932,9 @@ class HumanNameTests(HumanNameTestCaseBase):
         self.m(hn.first,"Buca", hn)
         self.m(hn.last,"di Beppo", hn)
     
-    def test_lc_comparison_of_prefix(self):
+class HumanNameTitleTestCase(HumanNameTestBase):
+    
+    def test_lc_comparison_of_title(self):
         hn = HumanName("Lt.Gen. John A. Kenneth Doe IV")
         self.m(hn.title,"Lt.Gen.", hn)
         self.m(hn.first,"John", hn)
@@ -994,7 +942,7 @@ class HumanNameTests(HumanNameTestCaseBase):
         self.m(hn.middle,"A. Kenneth", hn)
         self.m(hn.suffix,"IV", hn)
     
-    def test_two_part_prefix(self):
+    def test_two_part_title(self):
         hn = HumanName("Lt. Gen. John A. Kenneth Doe IV")
         self.m(hn.title,"Lt. Gen.", hn)
         self.m(hn.first,"John", hn)
@@ -1002,7 +950,7 @@ class HumanNameTests(HumanNameTestCaseBase):
         self.m(hn.middle,"A. Kenneth", hn)
         self.m(hn.suffix,"IV", hn)
     
-    def test_two_part_prefix_with_lastname_comma(self):
+    def test_two_part_title_with_lastname_comma(self):
         hn = HumanName("Doe, Lt. Gen. John A. Kenneth IV")
         self.m(hn.title,"Lt. Gen.", hn)
         self.m(hn.first,"John", hn)
@@ -1010,7 +958,7 @@ class HumanNameTests(HumanNameTestCaseBase):
         self.m(hn.middle,"A. Kenneth", hn)
         self.m(hn.suffix,"IV", hn)
     
-    def test_two_part_prefix_with_suffix_comma(self):
+    def test_two_part_title_with_suffix_comma(self):
         hn = HumanName("Lt. Gen. John A. Kenneth Doe, Jr.")
         self.m(hn.title,"Lt. Gen.", hn)
         self.m(hn.first,"John", hn)
@@ -1034,6 +982,64 @@ class HumanNameTests(HumanNameTestCaseBase):
         self.m(hn.middle,"A.", hn)
         self.m(hn.suffix,"V, Jr.", hn)
     
+
+class HumanNameCapitalizationTestCase(HumanNameTestBase):
+    
+    def test_capitalization_exception_for_III(self):
+        hn = HumanName('juan q. xavier velasquez y garcia iii')
+        hn.capitalize()
+        self.m(str(hn), 'Juan Q. Xavier Velasquez y Garcia III', hn)
+    
+    def test_capitalize_title(self):
+        hn = HumanName('lt. gen. john a. kenneth doe iv')
+        hn.capitalize()
+        self.m(str(hn), 'Lt. Gen. John A. Kenneth Doe IV', hn)
+    
+    # Capitalization with M(a)c and hyphenated names
+    def test_capitalization_with_Mac_as_hyphenated_names(self):
+        hn = HumanName('donovan mcnabb-smith')
+        hn.capitalize()
+        self.m(str(hn), 'Donovan McNabb-Smith', hn)
+    
+    # Leaving already-capitalized names alone
+    def test123(self):
+        hn = HumanName('Shirley Maclaine')
+        hn.capitalize()
+        self.m(str(hn), 'Shirley Maclaine', hn)
+    
+
+class HumanNameIterativeTestCase(HumanNameTestBase):
+    
+    # Add the test values to the TEST_NAMES iterable. Seems better approach 
+    # but I'm not interested in rewritting all the tests right now. Consider
+    # adding new tests here.
+    
+    TEST_NAMES = (
+        ("John Doe", {'first':'John','last':'Doe'}),
+        ("John Doe, Jr.", {'first':'John','last':'Doe','suffix':'Jr.'}),
+    )
+    
+    def test_given(self):
+        for name in self.TEST_NAMES:
+            hn = HumanName(name[0])
+            for attr in name[1].keys():
+                self.m(getattr(hn,attr), name[1][attr], hn)
+    
+    def test_variations_of_TEST_NAMES(self):
+        for name in self.TEST_NAMES:
+            hn = HumanName(name[0])
+            if len(hn.suffix_list) > 1:
+                hn = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict).split(',')[0])
+            nocomma = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict))
+            lastnamecomma = HumanName("{last}, {title} {first} {middle} {suffix}".format(**hn._dict))
+            suffixcomma = HumanName("{title} {first} {middle} {last}, {suffix}".format(**hn._dict))
+            for attr in name[1].keys():
+                self.m(getattr(hn,attr),getattr(nocomma,attr),hn)
+                self.m(getattr(hn,attr),getattr(lastnamecomma,attr),hn)
+                if hn.suffix:
+                    self.m(getattr(hn,attr),getattr(suffixcomma,attr),hn)
+
+
 
 TEST_NAMES = (
     "John Doe",
@@ -1166,6 +1172,28 @@ TEST_NAMES = (
     "Lt. Gen. John A. Kenneth Doe IV",
     'Mr. and Mrs. John Smith',
 )
+
+class HumanNameVariationTests(HumanNameTestBase):
+    
+    # test automated variations of names in TEST_NAMES. 
+    # Helps test that the 3 code trees work the same
+    
+    TEST_NAMES = TEST_NAMES
+    
+    def test_variations_of_TEST_NAMES(self):
+        for name in self.TEST_NAMES:
+            hn = HumanName(name)
+            if len(hn.suffix_list) > 1:
+                hn = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict).split(',')[0])
+            nocomma = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict))
+            lastnamecomma = HumanName("{last}, {title} {first} {middle} {suffix}".format(**hn._dict))
+            suffixcomma = HumanName("{title} {first} {middle} {last}, {suffix}".format(**hn._dict))
+            for attr in hn._members:
+                self.m(getattr(hn,attr),getattr(nocomma,attr),hn)
+                self.m(getattr(hn,attr),getattr(lastnamecomma,attr),hn)
+                if hn.suffix:
+                    self.m(getattr(hn,attr),getattr(suffixcomma,attr),hn)
+            
 
 if __name__ == '__main__':
     if log.level > 0:
