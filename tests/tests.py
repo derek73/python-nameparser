@@ -907,7 +907,10 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.last,"Smith", hn)
     
     # The prefix "e"
-    def test119(self):
+    def test_middle_initial_e_conflict_with_conjunction(self):
+        # It's not clear what to do here since 'e' is a conjunction. 
+        # "E" or "e." would be counted as an intial, but we can't tell that
+        # it's an initial w/o capitalization or a period, afaik.
         hn = HumanName('John e Smith')
         self.m(hn.first,"John e Smith", hn)
         self.m(hn.last,"", hn)
@@ -1052,7 +1055,7 @@ class HumanNameIterativeTestCase(HumanNameTestBase):
     def test_variations_of_TEST_NAMES(self):
         for name in self.TEST_NAMES:
             hn = HumanName(name[0])
-            if len(hn._suffix_list) > 1:
+            if len(hn.suffix_list) > 1:
                 hn = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict).split(',')[0])
             nocomma = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict))
             lastnamecomma = HumanName("{last}, {title} {first} {middle} {suffix}".format(**hn._dict))
@@ -1207,7 +1210,7 @@ class HumanNameVariationTests(HumanNameTestBase):
     def test_variations_of_TEST_NAMES(self):
         for name in self.TEST_NAMES:
             hn = HumanName(name)
-            if len(hn._suffix_list) > 1:
+            if len(hn.suffix_list) > 1:
                 hn = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict).split(',')[0])
             nocomma = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict))
             lastnamecomma = HumanName("{last}, {title} {first} {middle} {suffix}".format(**hn._dict))

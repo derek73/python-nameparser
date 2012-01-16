@@ -108,27 +108,27 @@ class HumanName(object):
         return d
     
     def _set_list(self, attr, value):
-        setattr(self, "_"+attr+"_list", self._parse_pieces([value]))
+        setattr(self, attr+"_list", self._parse_pieces([value]))
     
     @property
     def title(self):
-        return u" ".join(self._title_list)
+        return u" ".join(self.title_list)
     
     @property
     def first(self):
-        return u" ".join(self._first_list)
+        return u" ".join(self.first_list)
     
     @property
     def middle(self):
-        return u" ".join(self._middle_list)
+        return u" ".join(self.middle_list)
     
     @property
     def last(self):
-        return u" ".join(self._last_list)
+        return u" ".join(self.last_list)
     
     @property
     def suffix(self):
-        return u", ".join(self._suffix_list)
+        return u", ".join(self.suffix_list)
     
     @title.setter
     def title(self, value):
@@ -169,11 +169,11 @@ class HumanName(object):
     @full_name.setter
     def full_name(self, value):
         self._full_name = value
-        self._title_list = []
-        self._first_list = []
-        self._middle_list = []
-        self._last_list = []
-        self._suffix_list = []
+        self.title_list = []
+        self.first_list = []
+        self.middle_list = []
+        self.last_list = []
+        self.suffix_list = []
         self.unparsable = True
         
         self._parse_full_name()
@@ -186,7 +186,7 @@ class HumanName(object):
         for part in parts:
             pieces += map(lambda x: x.strip(' ,'), part.split(' '))
         
-        # join conjunctions to surrounding parts: ['Mr. and Mrs.'], ['Jack and Jill'], ['Velasquez y Garcia']
+        # join conjunctions to surrounding pieces: ['Mr. and Mrs.'], ['Jack and Jill'], ['Velasquez y Garcia']
         conjunctions = filter(self.is_conjunction, pieces)
         for conj in conjunctions:
             i = pieces.index(conj)
@@ -249,26 +249,26 @@ class HumanName(object):
                     next = None
                 
                 if self.is_title(piece):
-                    self._title_list.append(piece)
+                    self.title_list.append(piece)
                     continue
                 if not self.first:
-                    self._first_list.append(piece.replace(".",""))
+                    self.first_list.append(piece.replace(".",""))
                     continue
                 if (i == len(pieces) - 2) and self.is_suffix(next):
-                    self._last_list.append(piece)
-                    self._suffix_list.append(next)
+                    self.last_list.append(piece)
+                    self.suffix_list.append(next)
                     break
                 if not next:
-                    self._last_list.append(piece)
+                    self.last_list.append(piece)
                     continue
                 
-                self._middle_list.append(piece)
+                self.middle_list.append(piece)
         else:
             if lc(parts[1]) in self.SUFFIXES_C:
                 
                 # suffix comma: title first middle last, suffix [, suffix]
                 
-                self._suffix_list += parts[1:]
+                self.suffix_list += parts[1:]
                 
                 pieces = self._parse_pieces(parts[0].split(' '))
                 log.debug(u"pieces: " + unicode(pieces))
@@ -280,15 +280,15 @@ class HumanName(object):
                         next = None
 
                     if self.is_title(piece):
-                        self._title_list.append(piece)
+                        self.title_list.append(piece)
                         continue
                     if not self.first:
-                        self._first_list.append(piece.replace(".",""))
+                        self.first_list.append(piece.replace(".",""))
                         continue
                     if not next:
-                        self._last_list.append(piece)
+                        self.last_list.append(piece)
                         continue
-                    self._middle_list.append(piece)
+                    self.middle_list.append(piece)
             else:
                 
                 # lastname comma: last, title first middles[,] suffix [,suffix]
@@ -296,26 +296,26 @@ class HumanName(object):
                 
                 log.debug(u"pieces: " + unicode(pieces))
                 
-                self._last_list.append(parts[0])
+                self.last_list.append(parts[0])
                 for i, piece in enumerate(pieces):
                     
                     if self.is_title(piece):
-                        self._title_list.append(piece)
+                        self.title_list.append(piece)
                         continue
                     if not self.first:
-                        self._first_list.append(piece.replace(".",""))
+                        self.first_list.append(piece.replace(".",""))
                         continue
                     if self.is_suffix(piece):
-                        self._suffix_list.append(piece)
+                        self.suffix_list.append(piece)
                         continue
-                    self._middle_list.append(piece)
+                    self.middle_list.append(piece)
                 try:
                     if parts[2]:
-                        self._suffix_list += parts[2:]
+                        self.suffix_list += parts[2:]
                 except IndexError:
                     pass
                 
-        if not self.first and len(self._middle_list) < 1 and len(self._last_list) < 1:
+        if not self.first and len(self.middle_list) < 1 and len(self.last_list) < 1:
             log.error(u"Unparsable full_name: " + self._full_name)
         else:
             self.unparsable = False
@@ -364,8 +364,8 @@ class HumanName(object):
         name = unicode(self)
         if not (name == name.upper() or name == name.lower()):
             return
-        self._title_list = self.cap_piece(self.title).split(' ')
-        self._first_list = self.cap_piece(self.first).split(' ')
-        self._middle_list = self.cap_piece(self.middle).split(' ')
-        self._last_list = self.cap_piece(self.last).split(' ')
-        self._suffix_list = self.cap_piece(self.suffix).split(' ')
+        self.title_list = self.cap_piece(self.title).split(' ')
+        self.first_list = self.cap_piece(self.first).split(' ')
+        self.middle_list = self.cap_piece(self.middle).split(' ')
+        self.last_list = self.cap_piece(self.last).split(' ')
+        self.suffix_list = self.cap_piece(self.suffix).split(' ')
