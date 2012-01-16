@@ -36,6 +36,19 @@ Over 100 unit tests with example names. Should be unicode safe but it's fairly u
 HumanName instances will pass an equals (==) test if their lower case unicode
 representations are the same.
 
+Output Format
+-------------
+
+The format of the strings returned with ``unicode()`` can be adjusted using standard python string formatting. The string's ``format(1)`` method will be passed a dictionary of names.
+
+::
+    >>> name = HumanName("Rev John A. Kenneth Doe III")
+    >>> unicode(name)
+    "Rev John A. Kenneth Doe III"
+    >>> name.string_format = "{last}, {title} {first} {middle}, {suffix}"
+    >>> unicode(name)
+    "Doe, Rev John A. Kenneth, III"
+
 Usage
 -----
 ::

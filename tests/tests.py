@@ -1035,6 +1035,16 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         self.m(str(hn), 'Shirley Maclaine', hn)
     
 
+class HumanNameOutputFormatTests(HumanNameTestBase):
+    
+    def test_formating(self):
+        hn = HumanName("Rev John A. Kenneth Doe III")
+        hn.string_format = "{title} {first} {middle} {last} {suffix}"
+        self.assertEqual(unicode(hn), "Rev John A. Kenneth Doe III")
+        hn.string_format = "{last}, {title} {first} {middle}, {suffix}"
+        self.assertEqual(unicode(hn), "Doe, Rev John A. Kenneth, III")
+
+
 class HumanNameIterativeTestCase(HumanNameTestBase):
     
     # Add the test values to the TEST_NAMES iterable. Seems better approach 

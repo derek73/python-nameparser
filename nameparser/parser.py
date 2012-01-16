@@ -33,7 +33,8 @@ class HumanName(object):
     
     def __init__(self, full_name=u"", titles_c=TITLES, prefixes_c=PREFICES, 
         suffixes_c=SUFFICES, punc_titles_c=PUNC_TITLES, conjunctions_c=CONJUNCTIONS,
-        capitalization_exceptions_c=dict(CAPITALIZATION_EXCEPTIONS), encoding=ENCODING):
+        capitalization_exceptions_c=dict(CAPITALIZATION_EXCEPTIONS), encoding=ENCODING,
+        string_format=None):
         
         self.ENCODING = encoding
         self.TITLES_C = titles_c
@@ -42,6 +43,7 @@ class HumanName(object):
         self.PREFIXES_C = prefixes_c
         self.SUFFIXES_C = suffixes_c
         self.CAPITALIZATION_EXCEPTIONS_C = capitalization_exceptions_c
+        self.string_format = string_format
         self.count = 0
         self._members = ['title','first','middle','last','suffix']
         self.unparsable = True
@@ -83,6 +85,9 @@ class HumanName(object):
             return getattr(self, self._members[c]) or self.next()
 
     def __unicode__(self):
+        if self.string_format:
+            # string_format = "{title} {first} {middle} {last} {suffix}"
+            return self.string_format.format(**self._dict)
         return u" ".join(self)
     
     def __str__(self):
@@ -107,8 +112,7 @@ class HumanName(object):
             d[m] = getattr(self, m)
         return d
     
-    def _set_list(self, attr, value):
-        setattr(self, attr+"_list", self._parse_pieces([value]))
+    ### attributes
     
     @property
     def title(self):
@@ -130,6 +134,11 @@ class HumanName(object):
     def suffix(self):
         return u", ".join(self.suffix_list)
     
+    ### setter methods
+    
+    def _set_list(self, attr, value):
+        setattr(self, attr+"_list", self._parse_pieces([value]))
+    
     @title.setter
     def title(self, value):
         self._set_list('title', value)
@@ -150,6 +159,8 @@ class HumanName(object):
     def suffix(self, value):
         self._set_list('suffix', value)
     
+    ### parse helpers
+    
     def is_title(self, value):
         return lc(value) in self.TITLES_C or value.lower() in self.PUNC_TITLES_C
     
@@ -161,6 +172,8 @@ class HumanName(object):
     
     def is_suffix(self, piece):
         return lc(piece) in self.SUFFIXES_C and not is_an_initial(piece)
+    
+    ### full_name parser
     
     @property
     def full_name(self):
@@ -319,6 +332,8 @@ class HumanName(object):
             log.error(u"Unparsable full_name: " + self._full_name)
         else:
             self.unparsable = False
+    
+    ### Capitalization Support
     
     def cap_word(self, word):
         if self.is_prefix(word) or self.is_conjunction(word):
