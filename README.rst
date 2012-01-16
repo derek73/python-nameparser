@@ -100,8 +100,13 @@ Usage
 Release Log
 -----------
 
-    * 0.1.5 - Support multiple titles. Lowercase titles constants to fix bug with comparison. 
-      Move documentation to README.rst, add release log.
+    * 0.2.0 
+        - Significant refactor of parsing logic. Handle conjunctions and prefixes before
+          parsing into attribute buckets.
+        - Support attribute overriding by assignment.
+        - Support multiple titles. 
+        - Lowercase titles constants to fix bug with comparison. 
+        - Move documentation to README.rst, add release log.
     * 0.1.4 - Use set() in constants for improved speed. setuptools compatibility - sketerpot
     * 0.1.3 - Add capitalization feature - twotwo
     * 0.1.2 - Add slice support
