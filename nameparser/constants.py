@@ -29,6 +29,8 @@ QUESTIONABLE_TITLES = ('judge',)
 
 # PUNC_TITLES could be names or titles, but if they have period at the end they're a title
 PUNC_TITLES = ('hon.',)
+
+# words that prefix last names. Can be chained like "de la Vega"
 PREFICES = set([
     'abu','bon','ben','bin','da','dal','de','del','der','de','di',u'dí','e','ibn',
     'la','le','san','st','ste','van','vel','von'
