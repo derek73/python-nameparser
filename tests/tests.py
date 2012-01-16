@@ -60,6 +60,30 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.assert_(not hn1 == ["test"])
         self.assert_(not hn1 == {"test":hn2})
     
+    def test_assignment_to_full_name(self):
+        hn = HumanName("John A. Kenneth Doe, Jr.")
+        self.m(hn.first,"John", hn)
+        self.m(hn.last,"Doe", hn)
+        self.m(hn.middle,"A. Kenneth", hn)
+        self.m(hn.suffix,"Jr.", hn)
+        hn.full_name = "Juan Velasquez y Garcia III"
+        self.m(hn.first,"Juan", hn)
+        self.m(hn.last,"Velasquez y Garcia", hn)
+        self.m(hn.suffix,"III", hn)
+    
+    def test_assignment_to_attribute(self):
+        hn = HumanName("John A. Kenneth Doe, Jr.")
+        hn.last = "de la Vega"
+        self.m(hn.last,"de la Vega", hn)
+        hn.title = "test"
+        self.m(hn.title,"test", hn)
+        hn.first = "test"
+        self.m(hn.first,"test", hn)
+        hn.middle = "test"
+        self.m(hn.middle,"test", hn)
+        hn.suffix = "test"
+        self.m(hn.suffix,"test", hn)
+    
     def test_comparison_case_insensitive(self):
         hn1 = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         hn2 = HumanName("dr. john p. doe-Ray, CLU, CFP, LUTC")
@@ -1028,7 +1052,7 @@ class HumanNameIterativeTestCase(HumanNameTestBase):
     def test_variations_of_TEST_NAMES(self):
         for name in self.TEST_NAMES:
             hn = HumanName(name[0])
-            if len(hn.suffix_list) > 1:
+            if len(hn._suffix_list) > 1:
                 hn = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict).split(',')[0])
             nocomma = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict))
             lastnamecomma = HumanName("{last}, {title} {first} {middle} {suffix}".format(**hn._dict))
@@ -1183,7 +1207,7 @@ class HumanNameVariationTests(HumanNameTestBase):
     def test_variations_of_TEST_NAMES(self):
         for name in self.TEST_NAMES:
             hn = HumanName(name)
-            if len(hn.suffix_list) > 1:
+            if len(hn._suffix_list) > 1:
                 hn = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict).split(',')[0])
             nocomma = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict))
             lastnamecomma = HumanName("{last}, {title} {first} {middle} {suffix}".format(**hn._dict))

@@ -53,7 +53,6 @@ Usage
     >>> name.suffix
     u'III'
     >>> name.full_name = "Doe-Ray, Col. John A. Jérôme III"
-    >>> name.parse_full_name()
     >>> name.title
     u'Col.'
     >>> name.first
@@ -64,7 +63,7 @@ Usage
     u'Doe-Ray'
     >>> name.suffix
     u'III'
-    >>> name = HumanName("Juan Q. Xavier Velasquez y Garcia, Jr.")
+    >>> name.full_name = "Juan Q. Xavier Velasquez y Garcia, Jr."
     >>> name.title
     u''
     >>> name.first
@@ -75,6 +74,17 @@ Usage
     u'Velasquez y Garcia'
     >>> name.suffix
     u'Jr.'
+    >>> name.middle = "Jason Alexander"
+    >>> name.middle
+    u'Jason Alexander'
+    >>> name
+    <HumanName : [
+        Title: '' 
+        First: 'Juan' 
+        Middle: 'Jason Alexander' 
+        Last: 'Velasquez y Garcia' 
+        Suffix: 'Jr.'
+    ]>
     >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
     >>> name2 = HumanName("de la vega, dr. juan Q. xavier III")
     >>> name == name2
