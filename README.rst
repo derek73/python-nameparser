@@ -95,6 +95,15 @@ Usage
     ['Dr.', 'Juan', 'Q. Xavier', 'de la Vega', 'III']
     >>> name[1:-1]
     [u'Juan', u'Q. Xavier', u'de la Vega']
+    >>> name = HumanName('bob v. de la macdole-eisenhower phd')
+    >>> name.capitalize()
+    >>> unicode(name)
+    u'Bob V. de la MacDole-Eisenhower Ph.D.'
+    >>> # Don't touch good names
+    >>> name = HumanName('Shirley Maclaine')
+    >>> name.capitalize()
+    >>> unicode(name) 
+    u'Shirley Maclaine'
 
 
 Release Log
