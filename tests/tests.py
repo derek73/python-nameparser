@@ -96,6 +96,16 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(list(hn), [u'Dr.', u'John', u'P.', u'Doe-Ray', u'CLU, CFP, LUTC'], hn)
         self.m(hn[1:], [u'John', u'P.', u'Doe-Ray', u'CLU, CFP, LUTC'], hn)
         self.m(hn[1:-1], [u'John', u'P.', u'Doe-Ray'], hn)
+
+    def test_conjunction_names(self):
+        hn = HumanName("johnny y")
+        self.m(hn.first,"johnny", hn)
+        self.m(hn.last,"y", hn)
+
+    def test_prefix_names(self):
+        hn = HumanName("vai la")
+        self.m(hn.first,"vai", hn)
+        self.m(hn.last,"la", hn)
     
     def test1(self):
         hn = HumanName("John Doe")

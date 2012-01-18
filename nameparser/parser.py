@@ -203,29 +203,33 @@ class HumanName(object):
         conjunctions = filter(self.is_conjunction, pieces)
         for conj in conjunctions:
             i = pieces.index(conj)
-            pieces[i-1] = u' '.join(pieces[i-1:i+2])
-            if self.is_title(pieces[i+1]):
-                # if the second name is a title, assume the first one is too and add the 
-                # two titles with the conjunction between them to the titles constant 
-                # so the combo we just created gets parsed as a title. e.g. "Mr. and Mrs."
-                self.TITLES_C.add(lc(pieces[i-1]))
-            pieces.pop(i)
-            pieces.pop(i)
+            if i < len(pieces) - 1:
+                pieces[i-1] = u' '.join(pieces[i-1:i+2])
+                if self.is_title(pieces[i+1]):
+                    # if the second name is a title, assume the first one is too and add the 
+                    # two titles with the conjunction between them to the titles constant 
+                    # so the combo we just created gets parsed as a title. e.g. "Mr. and Mrs."
+                    self.TITLES_C.add(lc(pieces[i-1]))
+                pieces.pop(i)
+                pieces.pop(i)
         
         # join prefices to following lastnames: ['de la Vega'], ['van Buren']
         prefixes = filter(self.is_prefix, pieces)
-        for prefix in prefixes:
-            try:
-                i = pieces.index(prefix)
-            except ValueError:
-                # if two prefixes in a row ("de la Vega"), have to do extra work to find the index the second time around
-                def find_p(p):
-                    return p.endswith(prefix) # closure on prefix
-                m = filter(find_p, pieces)
-                # I wonder if some input will throw an IndexError here. Means it can't find prefix anyore.
-                i = pieces.index(m[0])
-            pieces[i] = u' '.join(pieces[i:i+2])
-            pieces.pop(i+1)
+        try:
+            for prefix in prefixes:
+                try:
+                    i = pieces.index(prefix)
+                except ValueError:
+                    # if two prefixes in a row ("de la Vega"), have to do extra work to find the index the second time around
+                    def find_p(p):
+                        return p.endswith(prefix) # closure on prefix
+                    m = filter(find_p, pieces)
+                    # I wonder if some input will throw an IndexError here. Means it can't find prefix anyore.
+                    i = pieces.index(m[0])
+                pieces[i] = u' '.join(pieces[i:i+2])
+                pieces.pop(i+1)
+        except IndexError:
+            pass
             
         log.debug(u"pieces: " + unicode(pieces))
         return pieces
