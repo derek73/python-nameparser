@@ -1069,6 +1069,9 @@ class HumanNameIterativeTestCase(HumanNameTestBase):
     TEST_NAMES = (
         ("John Doe", {'first':'John','last':'Doe'}),
         ("John Doe, Jr.", {'first':'John','last':'Doe','suffix':'Jr.'}),
+        ("John Jones (Google Docs)", {'first':'John','last':'Jones'}),
+        ("John Jones (Google Docs), Jr.", {'first':'John','last':'Jones','suffix':'Jr.'}),
+        ("John Jones (Google Docs), Jr. (Unknown)", {'first':'John','last':'Jones','suffix':'Jr.'}),
     )
     
     def test_given(self):

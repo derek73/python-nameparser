@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import re
 from constants import *
 
 # logging.basicConfig(level=logging.DEBUG)
@@ -246,6 +247,9 @@ class HumanName(object):
         
         # collapse multiple spaces
         self._full_name = re.sub(re_spaces, u" ", self._full_name.strip() )
+        
+        # remove anything inside parenthesis
+        self._full_name = re.sub(r'\(.*?\)', u"", self._full_name)
         
         # break up full_name by commas
         parts = [x.strip() for x in self._full_name.split(",")]
