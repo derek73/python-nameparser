@@ -3,7 +3,7 @@ import logging
 import re
 from constants import *
 
-# logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.ERROR)
 log = logging.getLogger('HumanName')
 ENCODING = 'utf-8'
 
