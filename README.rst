@@ -119,9 +119,19 @@ Usage
     u'Shirley Maclaine'
 
 
+Contributing
+------------
+
+Feel free to post new issues to the Google Code project. The easiest way to submit changes is to create a clone of the Google project and commit changes to your clone with mercurial. I'll happily pull changes that include tests from any clone. 
+
+http://code.google.com/p/python-nameparser/source/clones
+
+
 Release Log
 -----------
 
+    * 0.2.3 - Fix overzealous Mac regex
+    * 0.2.2 - Fix parsing error
     * 0.2.0 
         - Significant refactor of parsing logic. Handle conjunctions and prefixes before
           parsing into attribute buckets.
