@@ -1049,6 +1049,12 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.m(unicode(hn), u'Matth\xe4us Schmidt', hn)
     
+    # http://code.google.com/p/python-nameparser/issues/detail?id=15
+    def test_downcasing_mac(self):
+        hn = HumanName('RONALD MACDONALD')
+        hn.capitalize()
+        self.m(str(hn), 'Ronald MacDonald', hn)
+    
 
 class HumanNameOutputFormatTests(HumanNameTestBase):
     
