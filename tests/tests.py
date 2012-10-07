@@ -39,6 +39,11 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         hn = HumanName(u"de la Véña, Jüan")
         self.m(hn.first,u"Jüan", hn)
         self.m(hn.last, u"de la Véña", hn)
+        
+    def test_escaped_unicode(self):
+        hn = HumanName(u'B\xe4ck, Gerald')
+        self.m(hn.first, u"Gerald", hn)
+        self.m(hn.last,u"B\xe4ck", hn)
     
     def test_len(self):
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
@@ -1019,6 +1024,18 @@ class HumanNameTitleTestCase(HumanNameTestBase):
         self.m(hn.middle,"A.", hn)
         self.m(hn.suffix,"V, Jr.", hn)
     
+    
+    # FIXME: These tests do not pass due to a known issue
+    # http://code.google.com/p/python-nameparser/issues/detail?id=13
+    def test_first_name_also_prefix(self):
+        hn = HumanName("Ben Johnson")
+        self.m(hn.first,"Ben", hn)
+        self.m(hn.last,"Johnson", hn)
+    def test_last_name_also_prefix(self):
+        hn = HumanName("Jane Doctor")
+        self.m(hn.first,"Jane", hn)
+        self.m(hn.last,"Doctor", hn)
+
 
 class HumanNameCapitalizationTestCase(HumanNameTestBase):
     
@@ -1026,6 +1043,13 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn = HumanName('juan q. xavier velasquez y garcia iii')
         hn.capitalize()
         self.m(str(hn), 'Juan Q. Xavier Velasquez y Garcia III', hn)
+    
+    # FIXME: this test does not pass due to a known issue
+    # http://code.google.com/p/python-nameparser/issues/detail?id=22
+    def test_capitalization_exception_for_already_capitalized_III(self):
+        hn = HumanName('juan garcia III')
+        hn.capitalize()
+        self.m(str(hn), 'Juan Garcia III', hn)
     
     def test_capitalize_title(self):
         hn = HumanName('lt. gen. john a. kenneth doe iv')
@@ -1054,6 +1078,12 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn = HumanName('RONALD MACDONALD')
         hn.capitalize()
         self.m(str(hn), 'Ronald MacDonald', hn)
+    
+    # http://code.google.com/p/python-nameparser/issues/detail?id=23
+    def test_downcasing_mc(self):
+        hn = HumanName('RONALD MCDONALD')
+        hn.capitalize()
+        self.m(str(hn), 'Ronald McDonald', hn)
     
 
 class HumanNameOutputFormatTests(HumanNameTestBase):
