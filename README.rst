@@ -130,7 +130,10 @@ http://code.google.com/p/python-nameparser/source/clones
 Release Log
 -----------
 
-    * 0.2.3 - Fix overzealous Mac regex
+    * 0.2.4 
+        - Adjust logging, don't set basicConfig. Fix #10 and #26.
+        - Remove 'ben' from PREFICES because it's more common as a name than a prefix.
+    * 0.2.3 - Fix overzealous "Mac" regex
     * 0.2.2 - Fix parsing error
     * 0.2.0 
         - Significant refactor of parsing logic. Handle conjunctions and prefixes before

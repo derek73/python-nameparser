@@ -8,6 +8,8 @@ http://code.google.com/p/python-nameparser/issues/entry
 
 from nameparser import HumanName
 from nameparser.parser import log
+# import logging
+# log.setLevel(logging.DEBUG)
 
 import unittest
 
@@ -1024,14 +1026,17 @@ class HumanNameTitleTestCase(HumanNameTestBase):
         self.m(hn.middle,"A.", hn)
         self.m(hn.suffix,"V, Jr.", hn)
     
+    # 'ben' is removed from PREFICES in v0.2.4
+    # this test could re-enable this test if we decide to support 'ben' as a prefix
+    # def test_ben_as_conjunction(self):
+    #     hn = HumanName("Ahmad ben Husain")
+    #     self.m(hn.first,"Ahmad", hn)
+    #     self.m(hn.last,"ben Husain", hn)
     
-    # FIXME: These tests do not pass due to a known issue
+    # FIXME: This test does not pass due to a known issue
     # http://code.google.com/p/python-nameparser/issues/detail?id=13
-    def test_first_name_also_prefix(self):
-        hn = HumanName("Ben Johnson")
-        self.m(hn.first,"Ben", hn)
-        self.m(hn.last,"Johnson", hn)
-    def test_last_name_also_prefix(self):
+    # "Doctor" seems more common as a title/suffix than a name
+    def test_last_name_also_prefix_KNOWN_FAILURE(self):
         hn = HumanName("Jane Doctor")
         self.m(hn.first,"Jane", hn)
         self.m(hn.last,"Doctor", hn)
@@ -1046,7 +1051,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     
     # FIXME: this test does not pass due to a known issue
     # http://code.google.com/p/python-nameparser/issues/detail?id=22
-    def test_capitalization_exception_for_already_capitalized_III(self):
+    def test_capitalization_exception_for_already_capitalized_III_KNOWN_FAILURE(self):
         hn = HumanName('juan garcia III')
         hn.capitalize()
         self.m(str(hn), 'Juan Garcia III', hn)

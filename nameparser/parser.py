@@ -3,8 +3,12 @@ import logging
 import re
 from constants import *
 
-logging.basicConfig(level=logging.ERROR)
 log = logging.getLogger('HumanName')
+log.addHandler(logging.StreamHandler())
+# there are no log.error() calls, so this should essentially be 'off'.
+# have a better solution? please comment on http://code.google.com/p/python-nameparser/issues/detail?id=10
+log.setLevel(logging.ERROR)
+
 ENCODING = 'utf-8'
 
 def lc(value):
@@ -337,7 +341,7 @@ class HumanName(object):
                     pass
                 
         if not self.first and len(self.middle_list) < 1 and len(self.last_list) < 1:
-            log.error(u"Unparsable full_name: " + self._full_name)
+            log.info(u"Unparsable full_name: " + self._full_name)
         else:
             self.unparsable = False
     
