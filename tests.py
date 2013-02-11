@@ -170,20 +170,20 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.suffix,"III", hn)
     
     def test10(self):
-        hn = HumanName("Doe, John. A.")
+        hn = HumanName("Doe, John A.")
         self.m(hn.first,"John", hn)
         self.m(hn.last,"Doe", hn)
         self.m(hn.middle,"A.", hn)
     
     def test11(self):
-        hn = HumanName("Doe, John. A., Jr.")
+        hn = HumanName("Doe, John A., Jr.")
         self.m(hn.first,"John", hn)
         self.m(hn.last,"Doe", hn)
         self.m(hn.middle,"A.", hn)
         self.m(hn.suffix,"Jr.", hn)
     
     def test12(self):
-        hn = HumanName("Doe, John. A., III")
+        hn = HumanName("Doe, John A., III")
         self.m(hn.first,"John", hn)
         self.m(hn.last,"Doe", hn)
         self.m(hn.middle,"A.", hn)
@@ -211,20 +211,20 @@ class HumanNameBruteForceTests(HumanNameTestBase):
     
     def test16(self):
         hn = HumanName("Doe, John. A. Kenneth")
-        self.m(hn.first,"John", hn)
+        self.m(hn.first,"John.", hn)
         self.m(hn.last,"Doe", hn)
         self.m(hn.middle,"A. Kenneth", hn)
     
     def test17(self):
         hn = HumanName("Doe, John. A. Kenneth, Jr.")
-        self.m(hn.first,"John", hn)
+        self.m(hn.first,"John.", hn)
         self.m(hn.last,"Doe", hn)
         self.m(hn.middle,"A. Kenneth", hn)
         self.m(hn.suffix,"Jr.", hn)
     
     def test18(self):
         hn = HumanName("Doe, John. A. Kenneth III")
-        self.m(hn.first,"John", hn)
+        self.m(hn.first,"John.", hn)
         self.m(hn.last,"Doe", hn)
         self.m(hn.middle,"A. Kenneth", hn)
         self.m(hn.suffix,"III", hn)
@@ -964,6 +964,12 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.last,"Smith", hn)
         self.m(hn.suffix,"III, Jr", hn)
     
+    def test_two_initials_conflict_with_conjunction(self):
+        hn = HumanName('E.T. Smith')
+        self.m(hn.first,"E.", hn)
+        self.m(hn.middle,"T.", hn)
+        self.m(hn.last,"Smith", hn)
+    
     def test_couples_names(self):
         hn = HumanName('John and Jane Smith')
         self.m(hn.first,"John and Jane", hn)
@@ -1023,7 +1029,7 @@ class HumanNameTitleTestCase(HumanNameTestBase):
     
     def test_lc_comparison_of_title(self):
         hn = HumanName("Lt.Gen. John A. Kenneth Doe IV")
-        self.m(hn.title,"Lt.Gen.", hn)
+        self.m(hn.title,"Lt. Gen.", hn)
         self.m(hn.first,"John", hn)
         self.m(hn.last,"Doe", hn)
         self.m(hn.middle,"A. Kenneth", hn)
@@ -1171,15 +1177,15 @@ TEST_NAMES = (
     "John A. Doe",
     "John A. Doe, Jr.",
     "John A. Doe III",
-    "Doe, John. A.",
-    "Doe, John. A., Jr.",
-    "Doe, John. A. III",
+    "Doe, John A.",
+    "Doe, John A., Jr.",
+    "Doe, John A. III",
     "John A. Kenneth Doe",
     "John A. Kenneth Doe, Jr.",
     "John A. Kenneth Doe III",
-    "Doe, John. A. Kenneth",
-    "Doe, John. A. Kenneth, Jr.",
-    "Doe, John. A. Kenneth III",
+    "Doe, John A. Kenneth",
+    "Doe, John A. Kenneth, Jr.",
+    "Doe, John A. Kenneth III",
     "Dr. John Doe",
     "Dr. John Doe, Jr.",
     "Dr. John Doe III",
@@ -1295,6 +1301,9 @@ TEST_NAMES = (
     'john e jones',
     'john e jones, III',
     'jones, john e',
+    'E.T. Smith',
+    'E.T. Smith, II',
+    'Smith, E.T., Jr.',
 )
 
 class HumanNameVariationTests(HumanNameTestBase):

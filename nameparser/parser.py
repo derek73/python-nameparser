@@ -205,9 +205,18 @@ class HumanName(object):
         """
         Split parts on spaces and remove commas, join on conjunctions and lastname prefixes
         """
-        pieces = []
+        ps = []
         for part in parts:
-            pieces += map(lambda x: x.strip(' ,'), part.split(' '))
+            ps += map(lambda x: x.strip(' ,'), part.split(' '))
+        
+        # if there is a period that is not at the end of a piece, split it on periods
+        pieces = []
+        for piece in ps:
+            if piece[:-1].find('.') >= 0:
+                p = filter(None, piece.split('.'))
+                pieces += [x+'.' for x in p]
+            else:
+                pieces += [piece]
         
         # join conjunctions to surrounding pieces: ['Mr. and Mrs.'], ['Jack and Jill'], ['Velasquez y Garcia']
         for conj in filter(self.is_conjunction, pieces):
@@ -286,7 +295,7 @@ class HumanName(object):
                     self.title_list.append(piece)
                     continue
                 if not self.first:
-                    self.first_list.append(piece.replace(".",""))
+                    self.first_list.append(piece)
                     continue
                 if (i == len(pieces) - 2) and self.is_suffix(next):
                     self.last_list.append(piece)
@@ -317,7 +326,7 @@ class HumanName(object):
                         self.title_list.append(piece)
                         continue
                     if not self.first:
-                        self.first_list.append(piece.replace(".",""))
+                        self.first_list.append(piece)
                         continue
                     if not next:
                         self.last_list.append(piece)
@@ -337,7 +346,7 @@ class HumanName(object):
                         self.title_list.append(piece)
                         continue
                     if not self.first:
-                        self.first_list.append(piece.replace(".",""))
+                        self.first_list.append(piece)
                         continue
                     if self.is_suffix(piece):
                         self.suffix_list.append(piece)
