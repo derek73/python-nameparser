@@ -909,6 +909,60 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.last,"Doe-Ray", hn)
         self.m(hn.suffix,"Jr., CFP, LUTC", hn)
     
+    def test117(self):
+        hn = HumanName("Rt. Hon. Paul E. Mary")
+        self.m(hn.title,"Rt. Hon.", hn)
+        self.m(hn.first,"Paul", hn)
+        self.m(hn.middle,"E.", hn)
+        self.m(hn.last,"Mary", hn)
+    
+    def test118(self):
+        hn = HumanName("Maid Marian")
+        self.m(hn.title,"Maid", hn)
+        self.m(hn.first,"Marian", hn)
+    
+    def test119(self):
+        hn = HumanName("Lord God Almighty")
+        self.m(hn.title,"Lord", hn)
+        self.m(hn.first,"God", hn)
+        self.m(hn.last,"Almighty", hn)
+    
+    def test_last_name_is_also_title(self):
+        hn = HumanName("Amy E Maid")
+        self.m(hn.first,"Amy", hn)
+        self.m(hn.middle,"E", hn)
+        self.m(hn.last,"Maid", hn)
+    
+    def test_last_name_is_also_title2(self):
+        hn = HumanName("Duke Martin Luther King, Jr.")
+        self.m(hn.title,"Duke", hn)
+        self.m(hn.first,"Martin", hn)
+        self.m(hn.middle,"Luther", hn)
+        self.m(hn.last,"King", hn)
+        self.m(hn.suffix,"Jr.", hn)
+    
+    def test_last_name_is_also_title3(self):
+        hn = HumanName("John King")
+        self.m(hn.first,"John", hn)
+        self.m(hn.last,"King", hn)
+    
+    def test_title_with_conjunction(self):
+        hn = HumanName("Secretary of State Hillary Clinton")
+        self.m(hn.title,"Secretary of State", hn)
+        self.m(hn.first,"Hillary", hn)
+        self.m(hn.last,"Clinton", hn)
+    
+    def test_compound_title_with_conjunction(self):
+        hn = HumanName("Cardinal Secretary of State Hillary Clinton")
+        self.m(hn.title,"Cardinal Secretary of State", hn)
+        self.m(hn.first,"Hillary", hn)
+        self.m(hn.last,"Clinton", hn)
+
+    def test_title_is_title(self):
+        hn = HumanName("Coach")
+        self.m(hn.title,"Coach", hn)
+        
+
 class HumanNameConjunctionTestCase(HumanNameTestBase):
     
     # Last name with conjunction
@@ -1025,6 +1079,23 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.middle,"a", hn)
         self.m(hn.last,"Le", hn)
     
+    # def test_te_as_prefix(self):
+    #     hn = HumanName("Te Awanui-a-Rangi Black")
+    #     self.m(hn.first,"Te Awanui-a-Rangi", hn)
+    #     self.m(hn.last,"Black", hn)
+    #
+    # 'te' would be part of last name if we added 'te' to PREFICES 
+    # def test_te_as_middle_name(self):
+    #     hn = HumanName("ye te le")
+    #     self.m(hn.first,"ye", hn)
+    #     self.m(hn.middle,"te", hn)
+    #     self.m(hn.last,"le", hn)
+    # 
+    # def test_te_as_last_name(self):
+    #     hn = HumanName("Yin Te")
+    #     self.m(hn.first,"Yin", hn)
+    #     self.m(hn.last,"Te", hn)
+    
 class HumanNameTitleTestCase(HumanNameTestBase):
     
     def test_lc_comparison_of_title(self):
@@ -1082,11 +1153,8 @@ class HumanNameTitleTestCase(HumanNameTestBase):
     #     self.m(hn.first,"Ahmad", hn)
     #     self.m(hn.last,"ben Husain", hn)
     
-    # FIXME: This test does not pass due to a known issue
     # http://code.google.com/p/python-nameparser/issues/detail?id=13
-    # "Doctor" seems more common as a title/suffix than a name
-    @unittest.expectedFailure
-    def test_last_name_also_prefix_KNOWN_FAILURE(self):
+    def test_last_name_also_prefix(self):
         hn = HumanName("Jane Doctor")
         self.m(hn.first,"Jane", hn)
         self.m(hn.last,"Doctor", hn)
@@ -1304,6 +1372,12 @@ TEST_NAMES = (
     'E.T. Smith',
     'E.T. Smith, II',
     'Smith, E.T., Jr.',
+    'A.B. Vajpayee',
+    'Rt. Hon. Paul E. Mary',
+    'Maid Marion',
+    'Amy E. Maid',
+    'Jane Doctor',
+    'Doctor, Jane E.'
 )
 
 class HumanNameVariationTests(HumanNameTestBase):

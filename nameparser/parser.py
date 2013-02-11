@@ -291,7 +291,7 @@ class HumanName(object):
                 except IndexError:
                     next = None
                 
-                if self.is_title(piece):
+                if self.is_title(piece) and (next or len(pieces) == 1):
                     self.title_list.append(piece)
                     continue
                 if not self.first:
@@ -322,7 +322,7 @@ class HumanName(object):
                     except IndexError:
                         next = None
 
-                    if self.is_title(piece):
+                    if self.is_title(piece) and (next or len(pieces) == 1):
                         self.title_list.append(piece)
                         continue
                     if not self.first:
@@ -341,8 +341,12 @@ class HumanName(object):
                 
                 self.last_list.append(parts[0])
                 for i, piece in enumerate(pieces):
+                    try:
+                        next = pieces[i + 1]
+                    except IndexError:
+                        next = None
                     
-                    if self.is_title(piece):
+                    if self.is_title(piece) and (next or len(pieces) == 1):
                         self.title_list.append(piece)
                         continue
                     if not self.first:
@@ -358,7 +362,7 @@ class HumanName(object):
                 except IndexError:
                     pass
                 
-        if not self.first and len(self.middle_list) < 1 and len(self.last_list) < 1:
+        if len(self) < 0:
             log.info(u"Unparsable full_name: " + self._full_name)
         else:
             self.unparsable = False
