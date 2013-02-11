@@ -32,7 +32,7 @@ PUNC_TITLES = ('hon.',)
 
 # words that prefix last names. Can be chained like "de la Vega"
 PREFICES = set([
-    'abu','bon','ben','bin','da','dal','de','del','der','de','di',u'dí','e','ibn',
+    'abu','bon','ben','bin','da','dal','de','del','der','de','di',u'dí','ibn',
     'la','le','san','st','ste','van','vel','von'
 ])
 SUFFICES = set([

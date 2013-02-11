@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 Run this file to run the tests, e.g "python tests.py" or "./tests.py".
-Post a ticket and/or patch/diff of this file for names that fail and I will try to fix it.
+Post a ticket and/or clone and fix it. Pull requests with tests gladly accepted.
 http://code.google.com/p/python-nameparser/issues/entry
+http://code.google.com/p/python-nameparser/source/createClone
 """
 
 from nameparser import HumanName
@@ -917,20 +918,51 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.last,"Aznar y Lopez", hn)
     
     # Potential conjunction/prefix treated as initial (because uppercase)
-    def test118(self):
+    def test_uppercase_middle_initial_conflict_with_conjunction(self):
         hn = HumanName('John E Smith')
         self.m(hn.first,"John", hn)
         self.m(hn.middle,"E", hn)
         self.m(hn.last,"Smith", hn)
     
-    # The prefix "e"
-    def test_middle_initial_e_conflict_with_conjunction(self):
-        # It's not clear what to do here since 'e' is a conjunction. 
-        # "E" or "e." would be counted as an intial, but we can't tell that
-        # it's an initial w/o capitalization or a period, afaik.
+    def test_lowercase_middle_initial_with_period_conflict_with_conjunction(self):
+        hn = HumanName('john e. smith')
+        self.m(hn.first,"john", hn)
+        self.m(hn.middle,"e.", hn)
+        self.m(hn.last,"smith", hn)
+    
+    # The conjunction "e" can also be an initial
+    def test_lowercase_first_initial_conflict_with_conjunction(self):
+        hn = HumanName('e j smith')
+        self.m(hn.first,"e", hn)
+        self.m(hn.middle,"j", hn)
+        self.m(hn.last,"smith", hn)
+    
+    def test_lowercase_middle_initial_conflict_with_conjunction(self):
         hn = HumanName('John e Smith')
-        self.m(hn.first,"John e Smith", hn)
-        self.m(hn.last,"", hn)
+        self.m(hn.first,"John", hn)
+        self.m(hn.middle,"e", hn)
+        self.m(hn.last,"Smith", hn)
+    
+    def test_lowercase_middle_initial_and_suffix_conflict_with_conjunction(self):
+        hn = HumanName('John e Smith, III')
+        self.m(hn.first,"John", hn)
+        self.m(hn.middle,"e", hn)
+        self.m(hn.last,"Smith", hn)
+        self.m(hn.suffix,"III", hn)
+    
+    def test_lowercase_middle_initial_and_nocomma_suffix_conflict_with_conjunction(self):
+        hn = HumanName('John e Smith III')
+        self.m(hn.first,"John", hn)
+        self.m(hn.middle,"e", hn)
+        self.m(hn.last,"Smith", hn)
+        self.m(hn.suffix,"III", hn)
+    
+    def test_lowercase_middle_initial_comma_lastname_and_suffix_conflict_with_conjunction(self):
+        hn = HumanName('Smith, John e, III, Jr')
+        self.m(hn.first,"John", hn)
+        self.m(hn.middle,"e", hn)
+        self.m(hn.last,"Smith", hn)
+        self.m(hn.suffix,"III, Jr", hn)
     
     def test_couples_names(self):
         hn = HumanName('John and Jane Smith')
@@ -975,6 +1007,17 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         hn = HumanName("Buca di Beppo")
         self.m(hn.first,"Buca", hn)
         self.m(hn.last,"di Beppo", hn)
+    
+    def test_le_as_last_name(self):
+        hn = HumanName("Yin Le")
+        self.m(hn.first,"Yin", hn)
+        self.m(hn.last,"Le", hn)
+    
+    def test_le_as_last_name_with_middle_initial(self):
+        hn = HumanName("Yin a Le")
+        self.m(hn.first,"Yin", hn)
+        self.m(hn.middle,"a", hn)
+        self.m(hn.last,"Le", hn)
     
 class HumanNameTitleTestCase(HumanNameTestBase):
     
@@ -1036,10 +1079,24 @@ class HumanNameTitleTestCase(HumanNameTestBase):
     # FIXME: This test does not pass due to a known issue
     # http://code.google.com/p/python-nameparser/issues/detail?id=13
     # "Doctor" seems more common as a title/suffix than a name
+    @unittest.expectedFailure
     def test_last_name_also_prefix_KNOWN_FAILURE(self):
         hn = HumanName("Jane Doctor")
         self.m(hn.first,"Jane", hn)
         self.m(hn.last,"Doctor", hn)
+    
+    #http://code.google.com/p/python-nameparser/issues/detail?id=17
+    def test_parenthesis_are_removed(self):
+        hn = HumanName("John Jones (Google Docs)")
+        self.m(hn.first,"John", hn)
+        self.m(hn.last,"Jones", hn)
+    
+    def test_parenthesis_are_removed2(self):
+        hn = HumanName("John Jones (Google Docs), Jr. (Unknown)")
+        self.m(hn.first,"John", hn)
+        self.m(hn.last,"Jones", hn)
+        self.m(hn.suffix,"Jr.", hn)
+    
 
 
 class HumanNameCapitalizationTestCase(HumanNameTestBase):
@@ -1051,6 +1108,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     
     # FIXME: this test does not pass due to a known issue
     # http://code.google.com/p/python-nameparser/issues/detail?id=22
+    @unittest.expectedFailure
     def test_capitalization_exception_for_already_capitalized_III_KNOWN_FAILURE(self):
         hn = HumanName('juan garcia III')
         hn.capitalize()
@@ -1100,40 +1158,6 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         hn.string_format = "{last}, {title} {first} {middle}, {suffix}"
         self.assertEqual(unicode(hn), "Doe, Rev John A. Kenneth, III")
 
-
-class HumanNameIterativeTestCase(HumanNameTestBase):
-    
-    # Add the test values to the TEST_NAMES iterable. Seems better approach 
-    # but I'm not interested in rewritting all the tests right now. Consider
-    # adding new tests here.
-    
-    TEST_NAMES = (
-        ("John Doe", {'first':'John','last':'Doe'}),
-        ("John Doe, Jr.", {'first':'John','last':'Doe','suffix':'Jr.'}),
-        ("John Jones (Google Docs)", {'first':'John','last':'Jones'}),
-        ("John Jones (Google Docs), Jr.", {'first':'John','last':'Jones','suffix':'Jr.'}),
-        ("John Jones (Google Docs), Jr. (Unknown)", {'first':'John','last':'Jones','suffix':'Jr.'}),
-    )
-    
-    def test_given(self):
-        for name in self.TEST_NAMES:
-            hn = HumanName(name[0])
-            for attr in name[1].keys():
-                self.m(getattr(hn,attr), name[1][attr], hn)
-    
-    def test_variations_of_TEST_NAMES(self):
-        for name in self.TEST_NAMES:
-            hn = HumanName(name[0])
-            if len(hn.suffix_list) > 1:
-                hn = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict).split(',')[0])
-            nocomma = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict))
-            lastnamecomma = HumanName("{last}, {title} {first} {middle} {suffix}".format(**hn._dict))
-            suffixcomma = HumanName("{title} {first} {middle} {last}, {suffix}".format(**hn._dict))
-            for attr in name[1].keys():
-                self.m(getattr(hn,attr),getattr(nocomma,attr),hn)
-                self.m(getattr(hn,attr),getattr(lastnamecomma,attr),hn)
-                if hn.suffix:
-                    self.m(getattr(hn,attr),getattr(suffixcomma,attr),hn)
 
 
 
@@ -1267,6 +1291,10 @@ TEST_NAMES = (
     "Doe, Lt. Gen. John A. Kenneth IV",
     "Lt. Gen. John A. Kenneth Doe IV",
     'Mr. and Mrs. John Smith',
+    'John Jones (Google Docs)',
+    'john e jones',
+    'john e jones, III',
+    'jones, john e',
 )
 
 class HumanNameVariationTests(HumanNameTestBase):
@@ -1292,11 +1320,19 @@ class HumanNameVariationTests(HumanNameTestBase):
             
 
 if __name__ == '__main__':
-    if log.level > 0:
-        for name in TEST_NAMES:
-            hn = HumanName(name)
-            print unicode(name)
-            print unicode(hn)
-            print repr(hn)
-            print "\n-------------------------------------------\n"
-    unittest.main()
+    import sys
+    if len(sys.argv) >1:
+        name = sys.argv[1]
+        print "Testing: {}".format(name)
+        hn = HumanName(name)
+        print unicode(hn)
+        print repr(hn)
+    else:
+        if log.level > 0:
+            for name in TEST_NAMES:
+                hn = HumanName(name)
+                print unicode(name)
+                print unicode(hn)
+                print repr(hn)
+                print "\n-------------------------------------------\n"
+        unittest.main()

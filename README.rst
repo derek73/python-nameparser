@@ -31,7 +31,7 @@ The HumanName class can try to guess the correct capitalization of name entered 
 
     * bob v. de la macdole-eisenhower phd -> Bob V. de la MacDole-Eisenhower Ph.D.
 
-Over 100 unit tests with example names. Should be unicode safe but it's fairly untested. Post a ticket and/or for names that fail and I will try to fix it. http://code.google.com/p/python-nameparser/issues/entry
+Over 100 unit tests with example names. Should be unicode safe but it's fairly untested. `Post a ticket <http://code.google.com/p/python-nameparser/issues/entry>`_ and/or for names that fail and I will try to fix it. 
 
 HumanName instances will pass an equals (==) test if their lower case unicode
 representations are the same.
@@ -119,12 +119,37 @@ Usage
     u'Shirley Maclaine'
 
 
-Contributing
-------------
+Contributing via Google Code
+----------------------------
 
-Feel free to post new issues to the Google Code project. The easiest way to submit changes is to create a clone of the Google project and commit changes to your clone with mercurial. I'll happily pull changes that include tests from any clone. 
+Feel free to post new issues to the Google Code project. The easiest way to submit changes is to create a clone of the Google project and commit changes to your clone with mercurial. I'll happily pull changes that include tests from any clone. Create your clone here:
 
-http://code.google.com/p/python-nameparser/source/clones
+    http://code.google.com/p/python-nameparser/source/clones
+
+Then checkout your clone:
+
+    hg clone https://code.google.com/r/your-clone-name
+
+Make your changes, add your tests, then push them to your clone. 
+
+    hp push -b default
+
+Then file a pull request in Google Code. To pull new changes from the canonical repository and apply them to your working directory:
+
+    hg pull -u https://code.google.com/r/python-nameparser
+
+Naming Practices and Resources
+------------------------------
+
+    * US_Census_Surname_Data_2000_
+    * Naming_practice_guide_UK_2006_
+    * Wikipedia_Naming_conventions_
+    * Wikipedia_List_Of_Titles_
+
+.. _US_Census_Surname_Data_2000: http://www.census.gov/genealogy/www/data/2000surnames/index.html
+.. _Naming_practice_guide_UK_2006: https://www.fbiic.gov/public/2008/nov/Naming_practice_guide_UK_2006.pdf
+.. _Wikipedia_Naming_conventions: http://en.wikipedia.org/wiki/Wikipedia:Naming_conventions_(people)
+.. _Wikipedia_List_Of_Titles: https://en.wikipedia.org/wiki/Title
 
 
 Release Log
@@ -132,7 +157,11 @@ Release Log
 
     * 0.2.4 
         - Adjust logging, don't set basicConfig. Fix #10 and #26.
+        - Fix handling of single lower case initials that are also conjunctions, e.g. "john e smith". Re #11.
         - Remove 'ben' from PREFICES because it's more common as a name than a prefix.
+        - Remove 'e' from PREFICES because it is handled as a conjunction.
+        - Python 2.7 required to run the tests. Mark known failures.
+        - tests/test.py can now take an optional name argument that will return repr() for that name.
     * 0.2.3 - Fix overzealous "Mac" regex
     * 0.2.2 - Fix parsing error
     * 0.2.0 

@@ -48,6 +48,7 @@ class HumanName(object):
         self.PREFIXES_C = prefixes_c
         self.SUFFIXES_C = suffixes_c
         self.CAPITALIZATION_EXCEPTIONS_C = capitalization_exceptions_c
+        self.SUFFIXES_PREFIXES_TITLES_C = self.SUFFIXES_C | self.PREFIXES_C | self.TITLES_C
         self.string_format = string_format
         self.count = 0
         self._members = ['title','first','middle','last','suffix']
@@ -178,6 +179,10 @@ class HumanName(object):
     def is_suffix(self, piece):
         return lc(piece) in self.SUFFIXES_C and not is_an_initial(piece)
     
+    def is_rootname(self, piece):
+        '''is not a title, suffix or prefix. Just first, middle, last names.'''
+        return lc(piece) not in self.SUFFIXES_PREFIXES_TITLES_C and not is_an_initial(piece)
+    
     ### full_name parser
     
     @property
@@ -196,7 +201,7 @@ class HumanName(object):
         
         self._parse_full_name()
 
-    def _parse_pieces(self, parts):
+    def _parse_pieces(self, parts, additional_parts_count=0):
         """
         Split parts on spaces and remove commas, join on conjunctions and lastname prefixes
         """
@@ -205,8 +210,12 @@ class HumanName(object):
             pieces += map(lambda x: x.strip(' ,'), part.split(' '))
         
         # join conjunctions to surrounding pieces: ['Mr. and Mrs.'], ['Jack and Jill'], ['Velasquez y Garcia']
-        conjunctions = filter(self.is_conjunction, pieces)
-        for conj in conjunctions:
+        for conj in filter(self.is_conjunction, pieces):
+            # if there are only 3 total parts and this conjunction is a single letter,
+            # prefer treating it as an initial rather than a conjunction.
+            # http://code.google.com/p/python-nameparser/issues/detail?id=11
+            if len(conj) == 1 and len(filter(self.is_rootname, pieces)) + additional_parts_count < 4:
+                continue
             i = pieces.index(conj)
             if i < len(pieces) - 1:
                 pieces[i-1] = u' '.join(pieces[i-1:i+2])
@@ -317,7 +326,7 @@ class HumanName(object):
             else:
                 
                 # lastname comma: last, title first middles[,] suffix [,suffix]
-                pieces = self._parse_pieces(parts[1].split(' '))
+                pieces = self._parse_pieces(parts[1].split(' '), 1)
                 
                 log.debug(u"pieces: " + unicode(pieces))
                 
