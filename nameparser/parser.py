@@ -20,6 +20,7 @@ def is_an_initial(value):
     return re_initial.match(value) or False
 
 class BlankHumanNameError(AttributeError):
+    # deprecated in v0.2.5, no longer used
     pass
 
 class HumanName(object):
@@ -36,7 +37,7 @@ class HumanName(object):
     """
     
     def __init__(self, full_name=u"", titles_c=TITLES, prefixes_c=PREFIXES, 
-        suffixes_c=SUFFICES, punc_titles_c=PUNC_TITLES, conjunctions_c=CONJUNCTIONS,
+        suffixes_c=SUFFIXES, punc_titles_c=PUNC_TITLES, conjunctions_c=CONJUNCTIONS,
         capitalization_exceptions_c=dict(CAPITALIZATION_EXCEPTIONS), encoding=ENCODING,
         string_format=None):
         
@@ -260,8 +261,6 @@ class HumanName(object):
         """
         Parse full name into the buckets
         """
-        if not self._full_name:
-            raise BlankHumanNameError("Missing full_name")
         
         if not isinstance(self._full_name, unicode):
             self._full_name = unicode(self._full_name, self.ENCODING)

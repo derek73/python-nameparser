@@ -116,6 +116,11 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.first,"vai", hn)
         self.m(hn.last,"la", hn)
     
+    def test_blank_name(self):
+        hn = HumanName()
+        self.m(hn.first,"", hn)
+        self.m(hn.last,"", hn)
+    
     def test1(self):
         hn = HumanName("John Doe")
         self.m(hn.first,"John", hn)
@@ -1163,6 +1168,12 @@ class HumanNameTitleTestCase(HumanNameTestBase):
         hn = HumanName("Ben Alex Johnson")
         self.m(hn.first,"Ben", hn)
         self.m(hn.middle,"Alex", hn)
+        self.m(hn.last,"Johnson", hn)
+    
+    def test_ben_as_middle_name(self):
+        hn = HumanName("Alex Ben Johnson")
+        self.m(hn.first,"Alex", hn)
+        self.m(hn.middle,"Ben", hn)
         self.m(hn.last,"Johnson", hn)
     
     # http://code.google.com/p/python-nameparser/issues/detail?id=13

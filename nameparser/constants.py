@@ -29,7 +29,7 @@ TITLES = set([
     'foreign','minister','speaker','president','deputy','executive','vice',
     'councillor','alderman','delegate','mayor','lieutenant','governor','prefect',
     'prelate','premier','burgess','ambassador','envoy','secretary',u"attaché",
-    "chargé d'affaires",'provost',"marquis","marquess","marquise","marchioness",
+    u"chargé d'affaires",'provost',"marquis","marquess","marquise","marchioness",
     'archduke','archduchess','viscount','baron','emperor','empress','tsar',
     'tsarina','leader','abbess','abbot','brother','sister','friar','mother',
     'superior','reverend','bishop','archbishop','metropolitan','presbyter',
@@ -75,8 +75,7 @@ PREFIXES = set([
     'abu','bon','bin','da','dal','de','del','der','de','di',u'dí','ibn',
     'la','le','san','st','ste','van','vel','von'
 ])
-PREFICES = PREFIXES # pre v0.2.5 support
-SUFFICES = set([
+SUFFIXES = set([
     'esq','esquire','jr','sr','2','i','ii','iii','iv','v','clu','chfc',
     'cfp','md','phd'
 ])
@@ -89,3 +88,6 @@ CAPITALIZATION_EXCEPTIONS = (
 )
 CONJUNCTIONS = set(['&','and','et','e','of','the','und','y',])
 
+# pre v0.2.5 support
+PREFICES = PREFIXES 
+SUFFICES = SUFFIXES

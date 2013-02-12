@@ -1,7 +1,8 @@
 Name Parser
 ===========
 
-A simple Python module for parsing human names into their individual components.
+A simple Python module for parsing human names into their individual
+components.
 
 **Attributes**
 
@@ -11,7 +12,8 @@ A simple Python module for parsing human names into their individual components.
     * HumanName.last
     * HumanName.suffix
 
-Supports 3 comma placement variations for names of people in latin-based languages. 
+Supports 3 comma placement variations for names of people in latin-based
+languages.
 
     * Title Firstname Middle Middle Lastname Suffix
     * Lastname, Title Firstname Middle Middle[,] Suffix [, Suffix]
@@ -27,21 +29,28 @@ Examples:
 Capitalization Support
 ----------------------
 
-The HumanName class can try to guess the correct capitalization of name entered in all upper or lower case. It will not adjust the case of names entered in mixed case.
+The HumanName class can try to guess the correct capitalization of name
+entered in all upper or lower case. It will not adjust the case of names
+entered in mixed case.
 
     * bob v. de la macdole-eisenhower phd -> Bob V. de la MacDole-Eisenhower Ph.D.
 
-Over 100 unit tests with example names. Should be unicode safe but it's fairly untested. `Post a ticket <http://code.google.com/p/python-nameparser/issues/entry>`_ and/or for names that fail and I will try to fix it. 
+Over 100 unit tests with example names. Should be unicode safe but it's
+fairly untested. `Post a ticket <http://code.google.com/p/python-nameparser/issues/entry>`_ 
+and/or for names that fail and I will try to fix it.
 
-HumanName instances will pass an equals (==) test if their lower case unicode
-representations are the same.
+HumanName instances will pass an equals (==) test if their lower case
+unicode representations are the same.
 
 Output Format
 -------------
 
-The format of the strings returned with ``unicode()`` can be adjusted using standard python string formatting. The string's ``format(1)`` method will be passed a dictionary of names.
+The format of the strings returned with ``unicode()`` can be adjusted
+using standard python string formatting. The string's ``format()``
+method will be passed a dictionary of names.
 
 ::
+
     >>> name = HumanName("Rev John A. Kenneth Doe III")
     >>> unicode(name)
     "Rev John A. Kenneth Doe III"
@@ -119,24 +128,91 @@ Usage
     u'Shirley Maclaine'
 
 
+Customizing the Parser with Your Own Constants
+----------------------------------------------
+
+Recognition of titles, prefixes, suffixes and conjunctions is provided
+by matching the lower case characters of a name piece with pre-defined
+sets located in ``nameparser.constants``. You can adjust them to suite
+your needs by passing your own set of constants when instantiating a new
+``HumanName`` object.
+
+    * prefixes_c = PREFIXES
+    * titles_c = TITLES
+    * suffixes_c = SUFFIXES
+    * conjunctions_c = CONJUNCTIONS
+    * capitalization_exceptions_c = CAPITALIZATION_EXCEPTIONS
+
+
+Example
++++++++
+
+::
+
+    >>> from nameparser import HumanName
+    >>> from nameparser.constants import PREFIXES
+    >>> 
+    >>> prefixes_c = PREFIXES | set(['te'])
+    >>> hn = HumanName(prefixes_c=prefixes_c )
+    >>> hn.full_name = "Te Awanui-a-Rangi Black"
+    >>> hn
+    <HumanName : [
+    	Title: '' 
+    	First: 'Te Awanui-a-Rangi' 
+    	Middle: '' 
+    	Last: 'Black' 
+    	Suffix: ''
+    ]>
+
+
 Contributing via Google Code
 ----------------------------
 
-Feel free to post new issues to the Google Code project. The easiest way to submit changes is to create a clone of the Google project and commit changes to your clone with mercurial. I'll happily pull changes that include tests from any clone. Create your clone here:
+Feel free to post new issues to the Google Code project. The easiest way
+to submit changes is to create a clone of the Google project and commit
+changes to your clone with mercurial. I'll happily pull changes that
+include tests from any clone. Create your clone here:
 
     http://code.google.com/p/python-nameparser/source/clones
 
 Then checkout your clone:
 
-    hg clone https://code.google.com/r/your-clone-name
+    ``hg clone https://code.google.com/r/your-clone-name``
 
 Make your changes, add your tests, then push them to your clone. 
 
-    hp push -b default
+    ``hp push -b default``
 
-Then file a pull request in Google Code. To pull new changes from the canonical repository and apply them to your working directory:
+Then file a pull request in Google Code. To pull new changes from the
+canonical repository and apply them to your working directory:
 
-    hg pull -u https://code.google.com/r/python-nameparser
+    ``hg pull -u https://code.google.com/r/python-nameparser``
+    
+
+Testing
++++++++
+
+Run ``tests.py`` to see if your changes broke anything.
+
+    ``./tests.py``
+
+You can also pass a string as the first argument to see how a specific
+name will be parsed.
+
+::
+
+    $ ./tests.py "Secretary of State Hillary Rodham-Clinton"
+    Testing: Secretary of State Hillary Rodham-Clinton
+    Secretary of State Hillary Rodham-Clinton
+    <HumanName : [
+    	Title: 'Secretary of State' 
+    	First: 'Hillary' 
+    	Middle: '' 
+    	Last: 'Rodham-Clinton' 
+    	Suffix: ''
+    ]>
+    
+
 
 Naming Practices and Resources
 ------------------------------
@@ -157,12 +233,13 @@ Release Log
 
     * 0.2.5 - Feb 11, 2013
         - Set logging handler to NullHandler
+        - Remove 'ben' from PREFIXES because it's more common as a name than a prefix.
+        - Deprecate BlankHumanNameError. Do not raise exceptions if full_name is empty string. 
     * 0.2.4 - Feb 10, 2013
         - Adjust logging, don't set basicConfig. Fix #10 and #26.
         - Fix handling of single lower case initials that are also conjunctions, e.g. "john e smith". Re #11.
         - Fix handling of initials with no space separation, e.g. "E.T. Jones". Fix #11.
         - Do not remove period from first name, when present.
-        - Remove 'ben' from PREFIXES because it's more common as a name than a prefix.
         - Remove 'e' from PREFIXES because it is handled as a conjunction.
         - Python 2.7+ required to run the tests. Mark known failures.
         - tests/test.py can now take an optional name argument that will return repr() for that name.
