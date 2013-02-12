@@ -35,7 +35,7 @@ class HumanName(object):
      
     """
     
-    def __init__(self, full_name=u"", titles_c=TITLES, prefixes_c=PREFICES, 
+    def __init__(self, full_name=u"", titles_c=TITLES, prefixes_c=PREFIXES, 
         suffixes_c=SUFFICES, punc_titles_c=PUNC_TITLES, conjunctions_c=CONJUNCTIONS,
         capitalization_exceptions_c=dict(CAPITALIZATION_EXCEPTIONS), encoding=ENCODING,
         string_format=None):

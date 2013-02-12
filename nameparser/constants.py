@@ -8,6 +8,8 @@ re_initial = re.compile(r'^(\w\.|[A-Z])?$', re.U)
 
 # do not include things that could also be first names, e.g. "dean"
 # many of these from wikipedia: https://en.wikipedia.org/wiki/Title
+# The parser recognizes chains of these including conjunctions allowing 
+# recognition titles like "Deputy Secretary of State"
 TITLES = set([
     'dr','doctor','miss','misses','mr','mister','mrs','ms','sir','dame',
     'rev','madam','madame','ab','2ndlt','amn','1stlt','a1c','capt','sra','maj',
@@ -49,7 +51,7 @@ TITLES = set([
     'bodhisattva','mullah','mahdi','saoshyant','tirthankar','vardapet',
     'pharaoh','emir','emira','sultan','sultana','maharajah','maharani','elder',
     'vizier','chieftain','comptroller','courtier','curator','doyen','edohen',
-    'ekegbian','elerunwon','forester ','gentiluomo','headman','intendant',
+    'ekegbian','elerunwon','forester','gentiluomo','headman','intendant',
     'lamido','marcher','matriarch','patriarch','prior','pursuivant','rangatira',
     'ranger','registrar','seigneur','sharif','shehu','sheikh','sheriff','subaltern',
     'subedar','sysselmann','timi','treasurer','verderer','warden','hereditary',
@@ -68,10 +70,12 @@ QUESTIONABLE_TITLES = ('judge',)
 PUNC_TITLES = ('hon.',)
 
 # words that prefix last names. Can be chained like "de la Vega"
-PREFICES = set([
-    'abu','bon','ben','bin','da','dal','de','del','der','de','di',u'dí','ibn',
+# these should not be more common as first or middle names than prefixes
+PREFIXES = set([
+    'abu','bon','bin','da','dal','de','del','der','de','di',u'dí','ibn',
     'la','le','san','st','ste','van','vel','von'
 ])
+PREFICES = PREFIXES # pre v0.2.5 support
 SUFFICES = set([
     'esq','esquire','jr','sr','2','i','ii','iii','iv','v','clu','chfc',
     'cfp','md','phd'

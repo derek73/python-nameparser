@@ -1085,7 +1085,7 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
     #     self.m(hn.first,"Te Awanui-a-Rangi", hn)
     #     self.m(hn.last,"Black", hn)
     #
-    # 'te' would be part of last name if we added 'te' to PREFICES 
+    # 'te' would be part of last name if we added 'te' to PREFIXES 
     # def test_te_as_middle_name(self):
     #     hn = HumanName("ye te le")
     #     self.m(hn.first,"ye", hn)
@@ -1147,12 +1147,23 @@ class HumanNameTitleTestCase(HumanNameTestBase):
         self.m(hn.middle,"A.", hn)
         self.m(hn.suffix,"V, Jr.", hn)
     
-    # 'ben' is removed from PREFICES in v0.2.4
+    # 'ben' is removed from PREFIXES in v0.2.5
     # this test could re-enable this test if we decide to support 'ben' as a prefix
     # def test_ben_as_conjunction(self):
     #     hn = HumanName("Ahmad ben Husain")
     #     self.m(hn.first,"Ahmad", hn)
     #     self.m(hn.last,"ben Husain", hn)
+    
+    def test_ben_as_first_name(self):
+        hn = HumanName("Ben Johnson")
+        self.m(hn.first,"Ben", hn)
+        self.m(hn.last,"Johnson", hn)
+    
+    def test_ben_as_first_name_with_middle_name(self):
+        hn = HumanName("Ben Alex Johnson")
+        self.m(hn.first,"Ben", hn)
+        self.m(hn.middle,"Alex", hn)
+        self.m(hn.last,"Johnson", hn)
     
     # http://code.google.com/p/python-nameparser/issues/detail?id=13
     def test_last_name_also_prefix(self):
@@ -1378,7 +1389,8 @@ TEST_NAMES = (
     'Maid Marion',
     'Amy E. Maid',
     'Jane Doctor',
-    'Doctor, Jane E.'
+    'Doctor, Jane E.',
+    'dr. ben alex johnson III',
 )
 
 class HumanNameVariationTests(HumanNameTestBase):

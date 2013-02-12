@@ -162,8 +162,8 @@ Release Log
         - Fix handling of single lower case initials that are also conjunctions, e.g. "john e smith". Re #11.
         - Fix handling of initials with no space separation, e.g. "E.T. Jones". Fix #11.
         - Do not remove period from first name, when present.
-        - Remove 'ben' from PREFICES because it's more common as a name than a prefix.
-        - Remove 'e' from PREFICES because it is handled as a conjunction.
+        - Remove 'ben' from PREFIXES because it's more common as a name than a prefix.
+        - Remove 'e' from PREFIXES because it is handled as a conjunction.
         - Python 2.7+ required to run the tests. Mark known failures.
         - tests/test.py can now take an optional name argument that will return repr() for that name.
     * 0.2.3 - Fix overzealous "Mac" regex
