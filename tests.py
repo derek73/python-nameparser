@@ -1194,6 +1194,17 @@ class HumanNameTitleTestCase(HumanNameTestBase):
         self.m(hn.last,"Jones", hn)
         self.m(hn.suffix,"Jr.", hn)
     
+    @unittest.expectedFailure
+    def test_title_as_suffix(self):
+        """
+        Semantically, PhD is a title, not a suffix. 
+        http://code.google.com/p/python-nameparser/issues/detail?id=7
+        """
+        hn = HumanName("J. Smith, PhD")
+        self.m(hn.title,"PhD", hn)
+        self.m(hn.first,"J.", hn)
+        self.m(hn.last,"Smith", hn)
+    
 
 
 class HumanNameCapitalizationTestCase(HumanNameTestBase):
@@ -1430,9 +1441,7 @@ if __name__ == '__main__':
     import sys
     if len(sys.argv) >1:
         name = sys.argv[1]
-        print "Testing: {}".format(name)
         hn = HumanName(name)
-        print unicode(hn)
         print repr(hn)
     else:
         if log.level > 0:

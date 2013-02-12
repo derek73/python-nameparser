@@ -135,7 +135,8 @@ Recognition of titles, prefixes, suffixes and conjunctions is provided
 by matching the lower case characters of a name piece with pre-defined
 sets located in ``nameparser.constants``. You can adjust them to suite
 your needs by passing your own set of constants when instantiating a new
-``HumanName`` object.
+``HumanName`` object. Be sure to use the lower case representation with
+no punctuation.
 
     * prefixes_c = PREFIXES
     * titles_c = TITLES
@@ -153,7 +154,7 @@ Example
     >>> from nameparser.constants import PREFIXES
     >>> 
     >>> prefixes_c = PREFIXES | set(['te'])
-    >>> hn = HumanName(prefixes_c=prefixes_c )
+    >>> hn = HumanName(prefixes_c=prefixes_c)
     >>> hn.full_name = "Te Awanui-a-Rangi Black"
     >>> hn
     <HumanName : [
@@ -202,8 +203,6 @@ name will be parsed.
 ::
 
     $ ./tests.py "Secretary of State Hillary Rodham-Clinton"
-    Testing: Secretary of State Hillary Rodham-Clinton
-    Secretary of State Hillary Rodham-Clinton
     <HumanName : [
     	Title: 'Secretary of State' 
     	First: 'Hillary' 

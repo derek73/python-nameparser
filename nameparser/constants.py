@@ -39,7 +39,7 @@ TITLES = set([
     'mufti','grand','chancellor','barrister','bailiff','attorney','advocate',
     'deacon','archdeacon','acolyte','elder','minister','monsignor','almoner',
     'prof','colonel','general','commodore','air','corporal','staff','mate',
-    'chief','first','sergeant','sergeant','admiral','high ','rear','brigadier',
+    'chief','first','sergeant','sergeant','admiral','high','rear','brigadier',
     'captain','group','commander','commander-in-chief','wing','general',
     'adjutant','director','generalissimo','resident','surgeon','officer',
     'academic','analytics','business','credit','financial','information',
@@ -55,16 +55,11 @@ TITLES = set([
     'lamido','marcher','matriarch','patriarch','prior','pursuivant','rangatira',
     'ranger','registrar','seigneur','sharif','shehu','sheikh','sheriff','subaltern',
     'subedar','sysselmann','timi','treasurer','verderer','warden','hereditary',
-    'woodman','bearer','banner','swordbearer','sayyid','apprentice','journeyman',
+    'woodman','bearer','banner','swordbearer','apprentice','journeyman',
     'adept','akhoond','arhat','bwana','goodman','goodwife','bard','hajji','mullah',
-    'sri','baba','effendi','giani','gyani','guru','siddha','pir','murshid',
-    'attache'
+    'baba','effendi','giani','gyani','guru','siddha','pir','murshid',
+    'attache','prime','united','states','national','associate','assistant',
 ])
-
-# QUESTIONABLE_TITLES could be last names or they could be titles.
-# TODO: need to find best way to deal with these, not doing anything special yet.
-# http://code.google.com/p/python-nameparser/issues/detail?id=3
-QUESTIONABLE_TITLES = ('judge',)
 
 # PUNC_TITLES could be names or titles, but if they have period at the end they're a title
 PUNC_TITLES = ('hon.',)

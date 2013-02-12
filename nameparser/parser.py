@@ -289,6 +289,7 @@ class HumanName(object):
                 except IndexError:
                     next = None
                 
+                # title must have a next piece, unless it's just a title
                 if self.is_title(piece) and (next or len(pieces) == 1):
                     self.title_list.append(piece)
                     continue
