@@ -3,10 +3,9 @@ import logging
 import re
 from constants import *
 
+# http://code.google.com/p/python-nameparser/issues/detail?id=10
 log = logging.getLogger('HumanName')
-log.addHandler(logging.StreamHandler())
-# there are no log.error() calls, so this should essentially be 'off'.
-# have a better solution? please comment on http://code.google.com/p/python-nameparser/issues/detail?id=10
+log.addHandler(logging.NullHandler())
 log.setLevel(logging.ERROR)
 
 ENCODING = 'utf-8'

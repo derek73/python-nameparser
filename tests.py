@@ -11,6 +11,7 @@ from nameparser import HumanName
 from nameparser.parser import log
 # import logging
 # log.setLevel(logging.DEBUG)
+# log.addHandler(logging.StreamHandler())
 
 import unittest
 

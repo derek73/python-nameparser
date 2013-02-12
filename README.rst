@@ -155,6 +155,8 @@ Naming Practices and Resources
 Release Log
 -----------
 
+    * 0.2.5 - Feb 11, 2013
+        - Set logging handler to NullHandler
     * 0.2.4 - Feb 10, 2013
         - Adjust logging, don't set basicConfig. Fix #10 and #26.
         - Fix handling of single lower case initials that are also conjunctions, e.g. "john e smith". Re #11.
