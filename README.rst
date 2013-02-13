@@ -230,6 +230,8 @@ Naming Practices and Resources
 Release Log
 -----------
 
+    * 0.2.6 - Feb 12, 2013
+        - Fix python 2.6 import error on logging.NullHandler
     * 0.2.5 - Feb 11, 2013
         - Set logging handler to NullHandler
         - Remove 'ben' from PREFIXES because it's more common as a name than a prefix.
