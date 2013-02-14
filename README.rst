@@ -230,6 +230,9 @@ Naming Practices and Resources
 Release Log
 -----------
 
+    * 0.2.7 - Feb 13, 2013
+        - Fix bug with multiple conjunctions in title
+        - add legal and crown titles
     * 0.2.6 - Feb 12, 2013
         - Fix python 2.6 import error on logging.NullHandler
     * 0.2.5 - Feb 11, 2013
