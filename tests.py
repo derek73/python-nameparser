@@ -8,10 +8,8 @@ http://code.google.com/p/python-nameparser/source/createClone
 """
 
 from nameparser import HumanName
-from nameparser.parser import log
-# import logging
-# log.setLevel(logging.DEBUG)
-# log.addHandler(logging.StreamHandler())
+import logging
+log = logging.getLogger('HumanName')
 
 import unittest
 
@@ -1046,6 +1044,32 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.first,"John and Jane", hn)
         self.m(hn.last,"Smith", hn)
     
+    def test_title_with_three_part_name_last_initial_is_suffix_uppercase_no_period(self):
+        hn = HumanName("King John Alexander V")
+        self.m(hn.title,"King", hn)
+        self.m(hn.first,"John", hn)
+        self.m(hn.last,"V", hn)
+    
+    def test_four_name_parts_with_suffix_that_could_be_initial_lowercase_no_period(self):
+        hn = HumanName("larry james edward johnson v")
+        self.m(hn.first,"larry", hn)
+        self.m(hn.middle,"james edward", hn)
+        self.m(hn.last,"johnson", hn)
+        self.m(hn.suffix,"v", hn)
+    
+    @unittest.expectedFailure
+    def test_four_name_parts_with_suffix_that_could_be_initial_uppercase_no_period(self):
+        hn = HumanName("Larry James Johnson I")
+        self.m(hn.first,"Larry", hn)
+        self.m(hn.middle,"James", hn)
+        self.m(hn.last,"Johnson", hn)
+        # if it's in upper case, we currently assume it's an initial
+        # it's not really clear if we can assume it's one or the other.
+        # If they really are the "first", they are probably used to using a 
+        # comma to avoid confusion. Humans know that "Johnson" is a last name,
+        # but that wouldn't really be a "simple" nameparser. 
+        self.m(hn.suffix,"I", hn)
+    
     # tests for Rev. title (Reverend)
     def test124(self):
         hn = HumanName("Rev. John A. Kenneth Doe")
@@ -1103,6 +1127,39 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
     #     self.m(hn.last,"Te", hn)
     
 class HumanNameTitleTestCase(HumanNameTestBase):
+    
+    @unittest.expectedFailure
+    def test_title_multiple_titles_with_conjunctions(self):
+        # I think it finds the index of the wrong 'the'. I get confused because it
+        # loops in reverse order.
+        hn = HumanName("The Right Hon. the President of the Queen's Bench Division")
+        self.m(hn.title,"The Right Hon. the President of the Queen's Bench Division", hn)
+    
+    @unittest.expectedFailure
+    def test_conjunction_before_title(self):
+        # TODO: seems fixable
+        hn = HumanName('The Lord of the Universe')
+        self.m(hn.title,"The Lord of the Universe", hn)
+    
+    def test_double_conjunction_on_title(self):
+        hn = HumanName('Lord of the Universe')
+        self.m(hn.title,"Lord of the Universe", hn)
+    
+    def test_triple_conjunction_on_title(self):
+        hn = HumanName('Lord and of the Universe')
+        self.m(hn.title,"Lord and of the Universe", hn)
+    
+    def test_multiple_conjunctions_on_multiple_titles(self):
+        hn = HumanName('Lord of the Universe and Associate Supreme Queen of the World Lisa Simpson')
+        self.m(hn.title,"Lord of the Universe and Associate Supreme Queen of the World", hn)
+        self.m(hn.first,"Lisa", hn)
+        self.m(hn.last,"Simpson", hn)
+    
+    def test_title_with_last_initial_is_suffix(self):
+        hn = HumanName("King John V.")
+        self.m(hn.title,"King", hn)
+        self.m(hn.first,"John", hn)
+        self.m(hn.last,"V.", hn)
     
     def test_lc_comparison_of_title(self):
         hn = HumanName("Lt.Gen. John A. Kenneth Doe IV")
@@ -1413,6 +1470,7 @@ TEST_NAMES = (
     'Jane Doctor',
     'Doctor, Jane E.',
     'dr. ben alex johnson III',
+    'Lord of the Universe and Supreme King of the World Lisa Simpson',
 )
 
 class HumanNameVariationTests(HumanNameTestBase):
@@ -1440,6 +1498,8 @@ class HumanNameVariationTests(HumanNameTestBase):
 if __name__ == '__main__':
     import sys
     if len(sys.argv) >1:
+        log.setLevel(logging.ERROR)
+        log.addHandler(logging.StreamHandler())
         name = sys.argv[1]
         hn = HumanName(name)
         print repr(hn)

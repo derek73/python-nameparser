@@ -209,7 +209,10 @@ class HumanName(object):
 
     def _parse_pieces(self, parts, additional_parts_count=0):
         """
-        Split parts on spaces and remove commas, join on conjunctions and lastname prefixes
+        Split parts on spaces and remove commas, join on conjunctions and lastname prefixes.
+        
+        additional_parts_count: if the comma format contains other parts, we need to know 
+        how many there are to decide if things should be considered a conjunction.
         """
         ps = []
         for part in parts:
@@ -224,21 +227,55 @@ class HumanName(object):
             else:
                 pieces += [piece]
         
-        # join conjunctions to surrounding pieces: ['Mr. and Mrs.'], ['Jack and Jill'], ['Velasquez y Garcia']
-        for conj in filter(self.is_conjunction, pieces):
-            # if there are only 3 total parts and this conjunction is a single letter,
-            # prefer treating it as an initial rather than a conjunction.
-            # http://code.google.com/p/python-nameparser/issues/detail?id=11
+        # join conjunctions to surrounding pieces, e.g.:
+        # ['Mr. and Mrs.'], ['King of the Hill'], ['Jack and Jill'], ['Velasquez y Garcia']
+        
+        for conj in filter(self.is_conjunction, pieces[::-1]): # reverse sorted list
+            
+            # loop through the pieces backwards, starting at the end of the list.
+            # Join conjunctions to the pieces on either side of them.
+            
             if len(conj) == 1 and len(filter(self.is_rootname, pieces)) + additional_parts_count < 4:
+                # if there are only 3 total parts (minus known titles, suffixes and prefixes) 
+                # and this conjunction is a single letter, prefer treating it as an initial
+                # rather than a conjunction.
+                # http://code.google.com/p/python-nameparser/issues/detail?id=11
                 continue
-            i = pieces.index(conj)
-            if i < len(pieces) - 1:
-                pieces[i-1] = u' '.join(pieces[i-1:i+2])
-                if self.is_title(pieces[i+1]):
+            
+            try:
+                i = pieces.index((conj))
+            except ValueError, e:
+                log.error("Couldn't find '{conj}' in pieces. i={i}, pieces={pieces}".format(**locals()))
+                continue
+            
+            if i < len(pieces) - 1: 
+                # if this is not the last piece
+                
+                if self.is_conjunction(pieces[i-1]):
+                    
+                    # if the piece in front of this one is a conjunction too,
+                    # add new_piece (this conjuction and the following piece) 
+                    # to the conjuctions constant so that it is recognized
+                    # as a conjunction in the next loop. 
+                    # e.g. for ["Lord","of","the Universe"], put "the Universe"
+                    # into the conjunctions constant.
+                    
+                    new_piece = u' '.join(pieces[i:i+2])
+                    self.CONJUNCTIONS_C.add(lc(new_piece))
+                    pieces[i] = new_piece
+                    pieces.pop(i+1)
+                    continue
+                
+                new_piece = u' '.join(pieces[i-1:i+2])
+                if self.is_title(pieces[i-1]):
                     # if the second name is a title, assume the first one is too and add the 
                     # two titles with the conjunction between them to the titles constant 
-                    # so the combo we just created gets parsed as a title. e.g. "Mr. and Mrs."
-                    self.TITLES_C.add(lc(pieces[i-1]))
+                    # so the combo we just created gets parsed as a title. 
+                    # e.g. "Mr. and Mrs." becomes a title.
+                    
+                    self.TITLES_C.add(lc(new_piece))
+                
+                pieces[i-1] = new_piece
                 pieces.pop(i)
                 pieces.pop(i)
         
@@ -249,11 +286,13 @@ class HumanName(object):
                 try:
                     i = pieces.index(prefix)
                 except ValueError:
-                    # if two prefixes in a row ("de la Vega"), have to do extra work to find the index the second time around
+                    # if two prefixes in a row ("de la Vega"), have to do 
+                    # extra work to find the index the second time around
                     def find_p(p):
                         return p.endswith(prefix) # closure on prefix
                     m = filter(find_p, pieces)
-                    # I wonder if some input will throw an IndexError here. Means it can't find prefix anyore.
+                    # I wonder if some input will throw an IndexError here. 
+                    # Means it can't find prefix anyore.
                     i = pieces.index(m[0])
                 pieces[i] = u' '.join(pieces[i:i+2])
                 pieces.pop(i+1)
@@ -291,22 +330,22 @@ class HumanName(object):
             
             for i, piece in enumerate(pieces):
                 try:
-                    next = pieces[i + 1]
+                    nxt = pieces[i + 1]
                 except IndexError:
-                    next = None
+                    nxt = None
                 
                 # title must have a next piece, unless it's just a title
-                if self.is_title(piece) and (next or len(pieces) == 1):
+                if self.is_title(piece) and (nxt or len(pieces) == 1):
                     self.title_list.append(piece)
                     continue
                 if not self.first:
                     self.first_list.append(piece)
                     continue
-                if (i == len(pieces) - 2) and self.is_suffix(next):
+                if (i == len(pieces) - 2) and self.is_suffix(nxt):
                     self.last_list.append(piece)
-                    self.suffix_list.append(next)
+                    self.suffix_list.append(nxt)
                     break
-                if not next:
+                if not nxt:
                     self.last_list.append(piece)
                     continue
                 
@@ -323,17 +362,17 @@ class HumanName(object):
                 
                 for i, piece in enumerate(pieces):
                     try:
-                        next = pieces[i + 1]
+                        nxt = pieces[i + 1]
                     except IndexError:
-                        next = None
+                        nxt = None
 
-                    if self.is_title(piece) and (next or len(pieces) == 1):
+                    if self.is_title(piece) and (nxt or len(pieces) == 1):
                         self.title_list.append(piece)
                         continue
                     if not self.first:
                         self.first_list.append(piece)
                         continue
-                    if not next:
+                    if not nxt:
                         self.last_list.append(piece)
                         continue
                     self.middle_list.append(piece)
@@ -347,11 +386,11 @@ class HumanName(object):
                 self.last_list.append(parts[0])
                 for i, piece in enumerate(pieces):
                     try:
-                        next = pieces[i + 1]
+                        nxt = pieces[i + 1]
                     except IndexError:
-                        next = None
+                        nxt = None
                     
-                    if self.is_title(piece) and (next or len(pieces) == 1):
+                    if self.is_title(piece) and (nxt or len(pieces) == 1):
                         self.title_list.append(piece)
                         continue
                     if not self.first:
