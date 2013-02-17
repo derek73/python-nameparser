@@ -2,3 +2,5 @@
 .DS_Store
 .pyc
 MANIFEST
+nameparser.egg-info/*
+dummycert.pem
