@@ -230,6 +230,8 @@ Naming Practices and Resources
 Release Log
 -----------
 
+    * 0.2.8 - Oct 25, 2013
+        - Add support for Python 3.3+. Thanks to @corbinbs.
     * 0.2.7 - Feb 13, 2013
         - Fix bug with multiple conjunctions in title
         - add legal and crown titles
