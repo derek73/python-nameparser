@@ -6,34 +6,35 @@ components.
 
 **Attributes**
 
-    * HumanName.title
-    * HumanName.first
-    * HumanName.middle
-    * HumanName.last
-    * HumanName.suffix
-    * HumanName.nickname
+* HumanName.title
+* HumanName.first
+* HumanName.middle
+* HumanName.last
+* HumanName.suffix
+* HumanName.nickname
 
 Supports 3 comma placement variations for names of people in latin-based
 languages.
 
-    * Title Firstname "Nickname" Middle Middle Lastname Suffix
-    * Lastname, Title Firstname (Nickname) Middle Middle[,] Suffix [, Suffix]
-    * Title Firstname M Lastname, Suffix [, Suffix]
+* Title Firstname "Nickname" Middle Middle Lastname Suffix
+* Lastname, Title Firstname (Nickname) Middle Middle[,] Suffix [, Suffix]
+* Title Firstname M Lastname, Suffix [, Suffix]
 
-Examples:
+**Examples of supported formats**
 
-    * Doe-Ray, Col. Jonathan "John" A. Jérôme III
-    * Dr. Juan Q. Xavier de la Vega II
-    * Juan Q. Xavier Velasquez y Garcia, Jr.
+* Doe-Ray, Col. Jonathan "John" A. Jérôme III
+* Dr. Juan Q. Xavier de la Vega II
+* Juan Q. Xavier Velasquez y Garcia, Jr.
 
 
-
-Over 100 unit tests with example names. Should be unicode safe but it's
-fairly untested. `Start a New Issue <https://github.com/derek73/python-nameparser/issues>`_ 
+Over 100 unit tests with example names. 
+`Start a New Issue <https://github.com/derek73/python-nameparser/issues>`_ 
 for names that fail and I will try to fix it.
 
 HumanName instances will pass an equals (==) test if their lower case
-unicode representations are the same.
+unicode representations are the same. Nicknames and titles are not 
+included in the equals test since they do not signify a different 
+person.
 
 
 Installation
@@ -41,8 +42,8 @@ Installation
 
 	pip install nameparser
 
-I usually push changes to `Pypi <https://pypi.python.org/pypi/nameparser>`_
-pretty quickly. But if you want to try out the latest code from GitHub you can
+I usually push changes to `PyPi <https://pypi.python.org/pypi/nameparser>`_
+pretty quickly. If you want to try out the latest code from GitHub you can
 install install with pip using the command below.
 
 	pip install -e git+git://github.com/derek73/python-nameparser.git#egg=nameparser
@@ -64,7 +65,7 @@ Usage
     u'de la Vega'
     >>> name.suffix
     u'III'
-    >>> name.full_name = "Doe-Ray, Col. Jonathan "John" A. Jérôme III"
+    >>> name.full_name = 'Doe-Ray, Col. Jonathan "John" A. Jérôme III'
     >>> name.title
     u'Col.'
     >>> name.first
