@@ -38,7 +38,7 @@ TITLES = set([
     'cardinal','servant','venerable','blessed','saint','member','solicitor',
     'mufti','grand','chancellor','barrister','bailiff','attorney','advocate',
     'deacon','archdeacon','acolyte','elder','minister','monsignor','almoner',
-    'prof','colonel','general','commodore','air','corporal','staff','mate',
+    'prof','colonel','general','commodore','air','corporal','staff',
     'chief','first','sergeant','sergeant','admiral','high','rear','brigadier',
     'captain','group','commander','commander-in-chief','wing','general',
     'adjutant','director','generalissimo','resident','surgeon','officer',
