@@ -40,13 +40,13 @@ person.
 Installation
 ------------
 
-	pip install nameparser
+``pip install nameparser``
 
 I usually push changes to `PyPi <https://pypi.python.org/pypi/nameparser>`_
 pretty quickly. If you want to try out the latest code from GitHub you can
 install install with pip using the command below.
 
-	pip install -e git+git://github.com/derek73/python-nameparser.git#egg=nameparser
+``pip install -e git+git://github.com/derek73/python-nameparser.git#egg=nameparser``
 
 
 Usage
@@ -215,7 +215,7 @@ Testing
 
 Run ``tests.py`` to see if your changes broke anything.
 
-    ``./tests.py``
+``./tests.py``
 
 You can also pass a string as the first argument to see how a specific
 name will be parsed.
