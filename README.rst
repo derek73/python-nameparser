@@ -164,11 +164,11 @@ your needs by passing your own set of constants when instantiating a new
 ``HumanName`` object. Be sure to use the lower case representation with
 no punctuation.
 
-    * prefixes_c = PREFIXES
-    * titles_c = TITLES
-    * suffixes_c = SUFFIXES
-    * conjunctions_c = CONJUNCTIONS
-    * capitalization_exceptions_c = CAPITALIZATION_EXCEPTIONS
+* prefixes_c = PREFIXES
+* titles_c = TITLES
+* suffixes_c = SUFFIXES
+* conjunctions_c = CONJUNCTIONS
+* capitalization_exceptions_c = CAPITALIZATION_EXCEPTIONS
 
 
 Parser Customization Example
