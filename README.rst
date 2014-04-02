@@ -11,20 +11,29 @@ components.
     * HumanName.middle
     * HumanName.last
     * HumanName.suffix
+    * HumanName.nickname
 
 Supports 3 comma placement variations for names of people in latin-based
 languages.
 
-    * Title Firstname Middle Middle Lastname Suffix
-    * Lastname, Title Firstname Middle Middle[,] Suffix [, Suffix]
+    * Title Firstname "Nickname" Middle Middle Lastname Suffix
+    * Lastname, Title Firstname (Nickname) Middle Middle[,] Suffix [, Suffix]
     * Title Firstname M Lastname, Suffix [, Suffix]
 
 Examples:
 
-    * Doe-Ray, Col. John A. Jérôme III
+    * Doe-Ray, Col. Jonathan "John" A. Jérôme III
     * Dr. Juan Q. Xavier de la Vega II
     * Juan Q. Xavier Velasquez y Garcia, Jr.
 
+
+
+Over 100 unit tests with example names. Should be unicode safe but it's
+fairly untested. `Post a ticket <http://code.google.com/p/python-nameparser/issues/entry>`_ 
+and/or for names that fail and I will try to fix it.
+
+HumanName instances will pass an equals (==) test if their lower case
+unicode representations are the same.
 
 Capitalization Support
 ----------------------
@@ -35,12 +44,11 @@ entered in mixed case.
 
     * bob v. de la macdole-eisenhower phd -> Bob V. de la MacDole-Eisenhower Ph.D.
 
-Over 100 unit tests with example names. Should be unicode safe but it's
-fairly untested. `Post a ticket <http://code.google.com/p/python-nameparser/issues/entry>`_ 
-and/or for names that fail and I will try to fix it.
+Handling Nicknames
+------------------
 
-HumanName instances will pass an equals (==) test if their lower case
-unicode representations are the same.
+The content of parenthesis or double quotes in the name will be
+treated as the nicknames.
 
 Output Format
 -------------
@@ -62,7 +70,7 @@ Usage
 -----
 ::
 
-    >>> from nameparser import HumanName
+    >>> from nameparser.parser import HumanName
     >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
     >>> name.title
     u'Dr.'
@@ -106,6 +114,7 @@ Usage
         Middle: 'Jason Alexander' 
         Last: 'Velasquez y Garcia' 
         Suffix: 'Jr.'
+        Nickname: ''
     ]>
     >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
     >>> name2 = HumanName("de la vega, dr. juan Q. xavier III")
@@ -145,8 +154,13 @@ no punctuation.
     * capitalization_exceptions_c = CAPITALIZATION_EXCEPTIONS
 
 
-Example
-+++++++
+Parser Customization Example
+++++++++++++++++++++++++++++
+
+"Te" is a prefix in some languages, but a proper name in others. If you
+want your parser to parse it as title, add "te" to the ``prefixes_c``
+when instantiating the HumanName class. Keep in mind that the constants
+should always be lower case.
 
 ::
 
@@ -163,6 +177,7 @@ Example
     	Middle: '' 
     	Last: 'Black' 
     	Suffix: ''
+    	Nickname: ''
     ]>
 
 
@@ -230,6 +245,8 @@ Naming Practices and Resources
 Release Log
 -----------
 
+    * 0.2.9 - Apr 1, 2014
+        - Add a new nickname attribute containing anything in parenthesis or double quotes (Issue 33).
     * 0.2.8 - Oct 25, 2013
         - Add support for Python 3.3+. Thanks to @corbinbs.
     * 0.2.7 - Feb 13, 2013

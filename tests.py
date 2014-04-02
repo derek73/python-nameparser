@@ -1126,6 +1126,83 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         #     self.m(hn.last,"Te", hn)
 
 
+class HumanNameNicknameTestCase(HumanNameTestBase):
+    # https://code.google.com/p/python-nameparser/issues/detail?id=33
+    def test_nickname_in_parenthesis(self):
+        hn = HumanName("Benjamin (Ben) Franklin")
+        self.m(hn.first, "Benjamin", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "Franklin", hn)
+        self.m(hn.nickname, "Ben", hn)
+    
+    def test_nickname_in_parenthesis_with_comma(self):
+        hn = HumanName("Franklin, Benjamin (Ben)")
+        self.m(hn.first, "Benjamin", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "Franklin", hn)
+        self.m(hn.nickname, "Ben", hn)
+    
+    def test_nickname_in_parenthesis_with_comma_and_suffix(self):
+        hn = HumanName("Franklin, Benjamin (Ben), Jr.")
+        self.m(hn.first, "Benjamin", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "Franklin", hn)
+        self.m(hn.suffix, "Jr.", hn)
+        self.m(hn.nickname, "Ben", hn)
+    
+    # it would be hard to support this without breaking some of the
+    # other examples with single quotes in the names.
+    @unittest.expectedFailure
+    def test_nickname_in_single_quotes(self):
+        hn = HumanName("Benjamin 'Ben' Franklin")
+        self.m(hn.first, "Benjamin", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "Franklin", hn)
+        self.m(hn.nickname, "Ben", hn)
+
+    def test_nickname_in_double_quotes(self):
+        hn = HumanName("Benjamin \"Ben\" Franklin")
+        self.m(hn.first, "Benjamin", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "Franklin", hn)
+        self.m(hn.nickname, "Ben", hn)
+    
+    def test_single_quotes_on_first_name_not_treated_as_nickname(self):
+        hn = HumanName("Brian O'connor")
+        self.m(hn.first, "Brian", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "O'connor", hn)
+        self.m(hn.nickname, "", hn)
+    
+    def test_single_quotes_on_both_name_not_treated_as_nickname(self):
+        hn = HumanName("La'tanya O'connor")
+        self.m(hn.first, "La'tanya", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "O'connor", hn)
+        self.m(hn.nickname, "", hn)
+    
+    def test_single_quotes_on_end_of_last_name_not_treated_as_nickname(self):
+        hn = HumanName("Mari' Aube'")
+        self.m(hn.first, "Mari'", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "Aube'", hn)
+        self.m(hn.nickname, "", hn)
+    
+    #http://code.google.com/p/python-nameparser/issues/detail?id=17
+    def test_parenthesis_are_removed(self):
+        hn = HumanName("John Jones (Google Docs)")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Jones", hn)
+        # not testing the nicknames because we don't actually care
+        # about Google Docs.
+        
+    def test_parenthesis_are_removed2(self):
+        hn = HumanName("John Jones (Google Docs), Jr. (Unknown)")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Jones", hn)
+        self.m(hn.suffix, "Jr.", hn)
+
+
 class HumanNameTitleTestCase(HumanNameTestBase):
     @unittest.expectedFailure
     def test_title_multiple_titles_with_conjunctions(self):
@@ -1237,18 +1314,6 @@ class HumanNameTitleTestCase(HumanNameTestBase):
         hn = HumanName("Jane Doctor")
         self.m(hn.first, "Jane", hn)
         self.m(hn.last, "Doctor", hn)
-
-    #http://code.google.com/p/python-nameparser/issues/detail?id=17
-    def test_parenthesis_are_removed(self):
-        hn = HumanName("John Jones (Google Docs)")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Jones", hn)
-
-    def test_parenthesis_are_removed2(self):
-        hn = HumanName("John Jones (Google Docs), Jr. (Unknown)")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Jones", hn)
-        self.m(hn.suffix, "Jr.", hn)
 
     @unittest.expectedFailure
     def test_title_as_suffix(self):
@@ -1465,6 +1530,9 @@ TEST_NAMES = (
     'Doctor, Jane E.',
     'dr. ben alex johnson III',
     'Lord of the Universe and Supreme King of the World Lisa Simpson',
+    'Benjamin (Ben) Franklin',
+    'Benjamin "Ben" Franklin',
+    "Brian O'connor",
 )
 
 

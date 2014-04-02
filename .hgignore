@@ -1,6 +1,8 @@
 .hgrc
 .DS_Store
 .pyc
+__pycache__
+.python2
 MANIFEST
 nameparser.egg-info/*
 dummycert.pem

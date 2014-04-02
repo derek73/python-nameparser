@@ -43,6 +43,7 @@ class HumanName(object):
         * o.middle
         * o.last
         * o.suffix
+        * o.nickname
      
     """
     
@@ -115,13 +116,14 @@ class HumanName(object):
     def __repr__(self):
         if self.unparsable:
             return u"<%(class)s : [ Unparsable ] >" % {'class': self.__class__.__name__,}
-        return u"<%(class)s : [\n\tTitle: '%(title)s' \n\tFirst: '%(first)s' \n\tMiddle: '%(middle)s' \n\tLast: '%(last)s' \n\tSuffix: '%(suffix)s'\n]>" % {
+        return u"<%(class)s : [\n\tTitle: '%(title)s' \n\tFirst: '%(first)s' \n\tMiddle: '%(middle)s' \n\tLast: '%(last)s' \n\tSuffix: '%(suffix)s'\n\tNickname: '%(nickname)s'\n]>" % {
             'class': self.__class__.__name__,
             'title': self.title,
             'first': self.first,
             'middle': self.middle,
             'last': self.last,
             'suffix': self.suffix,
+            'nickname': self.nickname,
         }
     
     @property
@@ -153,6 +155,10 @@ class HumanName(object):
     def suffix(self):
         return u", ".join(self.suffix_list)
     
+    @property
+    def nickname(self):
+        return u" ".join(self.nickname_list)
+    
     ### setter methods
     
     def _set_list(self, attr, value):
@@ -177,6 +183,10 @@ class HumanName(object):
     @suffix.setter
     def suffix(self, value):
         self._set_list('suffix', value)
+    
+    @nickname.setter
+    def nickname(self, value):
+        self._set_list('nickname', value)
     
     ### parse helpers
     
@@ -210,6 +220,7 @@ class HumanName(object):
         self.middle_list = []
         self.last_list = []
         self.suffix_list = []
+        self.nickname_list = []
         self.unparsable = True
         
         self._parse_full_name()
@@ -275,6 +286,7 @@ class HumanName(object):
                 
                 new_piece = u' '.join(pieces[i-1:i+2])
                 if self.is_title(pieces[i-1]):
+                    
                     # if the second name is a title, assume the first one is too and add the 
                     # two titles with the conjunction between them to the titles constant 
                     # so the combo we just created gets parsed as a title. 
@@ -286,7 +298,7 @@ class HumanName(object):
                 pieces.pop(i)
                 pieces.pop(i)
         
-        # join prefices to following lastnames: ['de la Vega'], ['van Buren']
+        # join prefixes to following lastnames: ['de la Vega'], ['van Buren']
         prefixes = list(filter(self.is_prefix, pieces))
         try:
             for prefix in prefixes:
@@ -309,6 +321,21 @@ class HumanName(object):
         log.debug(u"pieces: {0}".format(pieces))
         return pieces
     
+    def parse_nicknames(self):
+        """
+        Handling Nicknames
+        ------------------
+
+        The content of parenthesis or double quotes in the name will
+        be treated as nicknames. This happens before any other
+        processing of the name.
+        
+        https://code.google.com/p/python-nameparser/issues/detail?id=33
+        """
+        if re_nickname.search(self._full_name):
+            self.nickname_list = re_nickname.findall(self._full_name)
+            self._full_name = re_nickname.sub('', self._full_name)
+    
     def _parse_full_name(self):
         """
         Parse full name into the buckets
@@ -317,11 +344,10 @@ class HumanName(object):
         if not isinstance(self._full_name, text_type):
             self._full_name = u(self._full_name, self.ENCODING)
         
+        self.parse_nicknames()
+        
         # collapse multiple spaces
         self._full_name = re.sub(re_spaces, u" ", self._full_name.strip() )
-        
-        # remove anything inside parenthesis
-        self._full_name = re.sub(r'\(.*?\)', u"", self._full_name)
         
         # break up full_name by commas
         parts = [x.strip() for x in self._full_name.split(",")]
