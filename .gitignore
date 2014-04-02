@@ -1,0 +1,8 @@
+*.hgrc
+*.DS_Store
+__pycache__/
+*.py[cod]
+.python2/
+MANIFEST
+nameparser.egg-info/
+dummycert.pem
