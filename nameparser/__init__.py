@@ -3,7 +3,7 @@ __version__ = '.'.join(map(str, VERSION))
 __author__ = "Derek Gulbranson"
 __author_email__ = 'derek73@gmail.com'
 __license__ = "LGPL"
-__url__ = "http://code.google.com/p/python-nameparser"
+__url__ = "https://github.com/derek73/python-nameparser"
 
 import sys
 if sys.version < '3':

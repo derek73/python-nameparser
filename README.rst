@@ -29,42 +29,24 @@ Examples:
 
 
 Over 100 unit tests with example names. Should be unicode safe but it's
-fairly untested. `Post a ticket <http://code.google.com/p/python-nameparser/issues/entry>`_ 
-and/or for names that fail and I will try to fix it.
+fairly untested. `Start a New Issue <https://github.com/derek73/python-nameparser/issues>`_ 
+for names that fail and I will try to fix it.
 
 HumanName instances will pass an equals (==) test if their lower case
 unicode representations are the same.
 
-Capitalization Support
-----------------------
 
-The HumanName class can try to guess the correct capitalization of name
-entered in all upper or lower case. It will not adjust the case of names
-entered in mixed case.
+Installation
+------------
 
-    * bob v. de la macdole-eisenhower phd -> Bob V. de la MacDole-Eisenhower Ph.D.
+	pip install nameparser
 
-Handling Nicknames
-------------------
+I usually push changes to `Pypi <https://pypi.python.org/pypi/nameparser>`_
+pretty quickly. But if you want to try out the latest code from GitHub you can
+install install with pip using the command below.
 
-The content of parenthesis or double quotes in the name will be
-treated as the nicknames.
+	pip install -e git+git://github.com/derek73/python-nameparser.git#egg=nameparser
 
-Output Format
--------------
-
-The format of the strings returned with ``unicode()`` can be adjusted
-using standard python string formatting. The string's ``format()``
-method will be passed a dictionary of names.
-
-::
-
-    >>> name = HumanName("Rev John A. Kenneth Doe III")
-    >>> unicode(name)
-    "Rev John A. Kenneth Doe III"
-    >>> name.string_format = "{last}, {title} {first} {middle}, {suffix}"
-    >>> unicode(name)
-    "Doe, Rev John A. Kenneth, III"
 
 Usage
 -----
@@ -82,7 +64,7 @@ Usage
     u'de la Vega'
     >>> name.suffix
     u'III'
-    >>> name.full_name = "Doe-Ray, Col. John A. Jérôme III"
+    >>> name.full_name = "Doe-Ray, Col. Jonathan "John" A. Jérôme III"
     >>> name.title
     u'Col.'
     >>> name.first
@@ -93,6 +75,8 @@ Usage
     u'Doe-Ray'
     >>> name.suffix
     u'III'
+    >>> name.nickname
+    u'John'
     >>> name.full_name = "Juan Q. Xavier Velasquez y Garcia, Jr."
     >>> name.title
     u''
@@ -135,6 +119,38 @@ Usage
     >>> name.capitalize()
     >>> unicode(name) 
     u'Shirley Maclaine'
+
+
+Capitalization Support
+----------------------
+
+The HumanName class can try to guess the correct capitalization of name
+entered in all upper or lower case. It will not adjust the case of names
+entered in mixed case.
+
+    * bob v. de la macdole-eisenhower phd -> Bob V. de la MacDole-Eisenhower Ph.D.
+
+Handling Nicknames
+------------------
+
+The content of parenthesis or double quotes in the name will be
+available from the nickname attribute. (Added in v0.2.9)
+
+Output Format
+-------------
+
+The format of the strings returned with ``unicode()`` can be adjusted
+using standard python string formatting. The string's ``format()``
+method will be passed a dictionary of names.
+
+::
+
+    >>> name = HumanName("Rev John A. Kenneth Doe III")
+    >>> unicode(name)
+    "Rev John A. Kenneth Doe III"
+    >>> name.string_format = "{last}, {title} {first} {middle}, {suffix}"
+    >>> unicode(name)
+    "Doe, Rev John A. Kenneth, III"
 
 
 Customizing the Parser with Your Own Constants
@@ -181,29 +197,17 @@ should always be lower case.
     ]>
 
 
-Contributing via Google Code
+Contributing via GitHub
 ----------------------------
 
-Feel free to post new issues to the Google Code project. The easiest way
-to submit changes is to create a clone of the Google project and commit
-changes to your clone with mercurial. I'll happily pull changes that
-include tests from any clone. Create your clone here:
+Feel free to post new issues to the GitHub project. The easiest way to submit
+changes is to fork the project on GitHub and commit your changes there. I'll happily pull changes that include tests. 
 
-    http://code.google.com/p/python-nameparser/source/clones
+Please let me know if there are ways this library could be restructured to make
+it easier for you to use in your projects. 
 
-Then checkout your clone:
+    https://github.com/derek73/python-nameparser
 
-    ``hg clone https://code.google.com/r/your-clone-name``
-
-Make your changes, add your tests, then push them to your clone. 
-
-    ``hp push -b default``
-
-Then file a pull request in Google Code. To pull new changes from the
-canonical repository and apply them to your working directory:
-
-    ``hg pull -u https://code.google.com/r/python-nameparser``
-    
 
 Testing
 +++++++
@@ -246,7 +250,7 @@ Release Log
 -----------
 
     * 0.2.9 - Apr 1, 2014
-        - Add a new nickname attribute containing anything in parenthesis or double quotes (Issue 33).
+        - Add a new nickname attribute containing anything in parenthesis or double quotes (`Issue 33 <https://code.google.com/p/python-nameparser/issues/detail?id=33>`_).
     * 0.2.8 - Oct 25, 2013
         - Add support for Python 3.3+. Thanks to @corbinbs.
     * 0.2.7 - Feb 13, 2013
@@ -259,8 +263,8 @@ Release Log
         - Remove 'ben' from PREFIXES because it's more common as a name than a prefix.
         - Deprecate BlankHumanNameError. Do not raise exceptions if full_name is empty string. 
     * 0.2.4 - Feb 10, 2013
-        - Adjust logging, don't set basicConfig. Fix #10 and #26.
-        - Fix handling of single lower case initials that are also conjunctions, e.g. "john e smith". Re #11.
+        - Adjust logging, don't set basicConfig. Fix `Issue 10 <https://code.google.com/p/python-nameparser/issues/detail?id=10>`_ and `Issue 26 <https://code.google.com/p/python-nameparser/issues/detail?id=26>`_.
+        - Fix handling of single lower case initials that are also conjunctions, e.g. "john e smith". Re `Issue 11 <https://code.google.com/p/python-nameparser/issues/detail?id=11>`_.
         - Fix handling of initials with no space separation, e.g. "E.T. Jones". Fix #11.
         - Do not remove period from first name, when present.
         - Remove 'e' from PREFIXES because it is handled as a conjunction.
