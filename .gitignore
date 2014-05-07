@@ -6,3 +6,5 @@ __pycache__/
 MANIFEST
 nameparser.egg-info/
 dummycert.pem
+build
+*.egg
