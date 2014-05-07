@@ -53,7 +53,7 @@ TITLES = set([
     'vizier','chieftain','comptroller','courtier','curator','doyen','edohen',
     'ekegbian','elerunwon','forester','gentiluomo','headman','intendant',
     'lamido','marcher','matriarch','patriarch','prior','pursuivant','rangatira',
-    'ranger','registrar','seigneur','sharif','shehu','sheikh','sheriff','subaltern',
+    'ranger','registrar','seigneur','shehu','sheikh','sheriff','subaltern',
     'subedar','sysselmann','timi','treasurer','verderer','warden','hereditary',
     'woodman','bearer','banner','swordbearer','apprentice','journeyman',
     'adept','akhoond','arhat','bwana','goodman','goodwife','bard','hajji','mullah',
