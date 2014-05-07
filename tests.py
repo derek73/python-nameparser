@@ -3,8 +3,8 @@
 """
 Run this file to run the tests, e.g "python tests.py" or "./tests.py".
 Post a ticket and/or clone and fix it. Pull requests with tests gladly accepted.
-http://code.google.com/p/python-nameparser/issues/entry
-http://code.google.com/p/python-nameparser/source/createClone
+https://github.com/derek73/python-nameparser/issues
+https://github.com/derek73/python-nameparser/pulls
 """
 
 import logging
@@ -31,7 +31,9 @@ class HumanNameTestBase(unittest.TestCase):
             self.assertEquals(actual, expected)
 
 
-class HumanNameBruteForceTests(HumanNameTestBase):
+
+class HumanNamePythonTests(HumanNameTestBase):
+
     def test_utf8(self):
         hn = HumanName("de la Véña, Jüan")
         self.m(hn.first, u"Jüan", hn)
@@ -118,6 +120,21 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         hn = HumanName()
         self.m(hn.first, "", hn)
         self.m(hn.last, "", hn)
+
+    def test_first_name(self):
+        hn = HumanName("Andrew")
+        self.m(hn.first, "Andrews", hn)
+
+    def test_assume_title_and_one_other_name_is_last_name(self):
+        hn = HumanName("Rev Andrews")
+        self.m(hn.title, "Rev", hn)
+        self.m(hn.last, "Andrews", hn)
+        
+        hn = HumanName("Andrews, M.D.")
+        self.m(hn.title, "M.D.", hn)
+        self.m(hn.last, "Andrews", hn)
+
+class HumanNameBruteForceTests(HumanNameTestBase):
 
     def test1(self):
         hn = HumanName("John Doe")
@@ -919,11 +936,6 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.first, "Paul", hn)
         self.m(hn.middle, "E.", hn)
         self.m(hn.last, "Mary", hn)
-
-    def test118(self):
-        hn = HumanName("Maid Marian")
-        self.m(hn.title, "Maid", hn)
-        self.m(hn.first, "Marian", hn)
 
     def test119(self):
         hn = HumanName("Lord God Almighty")

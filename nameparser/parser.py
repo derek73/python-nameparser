@@ -443,6 +443,16 @@ class HumanName(object):
             log.info(u"Unparsable full_name: " + self._full_name)
         else:
             self.unparsable = False
+            self.post_process()
+    
+    def post_process(self):
+        # if there are only two parts and one is a title, assume
+        # it's a last name instead of a first name.
+        # e.g. Mr. Johnson
+        if self.title and self.first and not self.last:
+            self.last = self.first
+            self.first = u''
+    
     
     ### Capitalization Support
     

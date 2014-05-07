@@ -2,7 +2,10 @@ Name Parser
 ===========
 
 A simple Python module for parsing human names into their individual
-components.
+components. It uses a extensive list of common name titles, suffixes
+and other name parts to attempt the best guess that can be made with a 
+simple, rule-based approach. It's not perfect, but it gets you pretty
+far.
 
 **Attributes**
 
@@ -29,12 +32,8 @@ languages.
 
 Over 100 unit tests with example names. 
 `Start a New Issue <https://github.com/derek73/python-nameparser/issues>`_ 
-for names that fail and I will try to fix it.
-
-HumanName instances will pass an equals (==) test if their lower case
-unicode representations are the same. Nicknames and titles are not 
-included in the equals test since they do not signify a different 
-person.
+for names that fail and I will try to fix it. Let me know if you have
+any suggestions for ways the library could be easier to use or modify.
 
 
 Installation
@@ -44,7 +43,7 @@ Installation
 
 I usually push changes to `PyPi <https://pypi.python.org/pypi/nameparser>`_
 pretty quickly. If you want to try out the latest code from GitHub you can
-install install with pip using the command below.
+install with pip using the command below.
 
 ``pip install -e git+git://github.com/derek73/python-nameparser.git#egg=nameparser``
 
@@ -157,6 +156,12 @@ method will be passed a dictionary of names.
     "Doe, Rev John A. Kenneth, III"
 
 
+HumanName instances will pass an equals (==) test if their lower case
+unicode representations are the same. Nicknames and titles are not 
+included in the equals test since they do not signify a different 
+person.
+
+
 Customizing the Parser with Your Own Constants
 ----------------------------------------------
 
@@ -253,6 +258,8 @@ Naming Practices and Resources
 Release Log
 -----------
 
+    * 0.2.10 - May 6, 2014
+        - If name is only a title and one part, assume it's a last name instead of a first name. (`#7 <https://github.com/derek73/python-nameparser/issues/7>`_).
     * 0.2.9 - Apr 1, 2014
         - Add a new nickname attribute containing anything in parenthesis or double quotes (`Issue 33 <https://code.google.com/p/python-nameparser/issues/detail?id=33>`_).
     * 0.2.8 - Oct 25, 2013
