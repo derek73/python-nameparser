@@ -446,10 +446,10 @@ class HumanName(object):
             self.post_process()
     
     def post_process(self):
-        # if there are only two parts and one is a title, assume
-        # it's a last name instead of a first name.
+        # if there are only two parts and one is a title or a suffix,
+        # assume it's a last name instead of a first name.
         # e.g. Mr. Johnson
-        if self.title and self.first and not self.last:
+        if not self.last and (self.title or self.suffix) and self.first:
             self.last = self.first
             self.first = u''
     

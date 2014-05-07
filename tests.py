@@ -123,7 +123,7 @@ class HumanNamePythonTests(HumanNameTestBase):
 
     def test_first_name(self):
         hn = HumanName("Andrew")
-        self.m(hn.first, "Andrews", hn)
+        self.m(hn.first, "Andrew", hn)
 
     def test_assume_title_and_one_other_name_is_last_name(self):
         hn = HumanName("Rev Andrews")
@@ -131,7 +131,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(hn.last, "Andrews", hn)
         
         hn = HumanName("Andrews, M.D.")
-        self.m(hn.title, "M.D.", hn)
+        self.m(hn.suffix, "M.D.", hn)
         self.m(hn.last, "Andrews", hn)
 
 class HumanNameBruteForceTests(HumanNameTestBase):
