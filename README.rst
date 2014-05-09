@@ -32,7 +32,8 @@ languages.
 Build Status
 ------------
 
-.. image:: https://travis-ci.org/derek73/python-nameparser.svg   :target: https://travis-ci.org/derek73/python-nameparser
+.. image:: https://travis-ci.org/derek73/python-nameparser.svg
+   :target: https://travis-ci.org/derek73/python-nameparser
 
 Over 100 unit tests with example names. 
 `Start a New Issue <https://github.com/derek73/python-nameparser/issues>`_ 
