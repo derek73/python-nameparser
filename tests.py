@@ -15,6 +15,11 @@ from nameparser import HumanName, u
 log = logging.getLogger('HumanName')
 
 import unittest
+try:
+    unittest.expectedFailure
+except AttributeError:
+    # Python 2.6 backport
+    import unittest2 as unittest
 
 
 class HumanNameTestBase(unittest.TestCase):
