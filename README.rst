@@ -2,10 +2,13 @@ Name Parser
 ===========
 
 A simple Python module for parsing human names into their individual
-components. It uses a extensive list of common name titles, suffixes
-and other name parts to attempt the best guess that can be made with a 
-simple, rule-based approach. It's not perfect, but it gets you pretty
-far.
+components. The HumanName class splits a name string up into name parts
+based on placement in the string and matches against known name pieces
+like titles. It joins name pieces on conjunctions and special prefixes to
+last names like "del". It can also try to correct capitalization.
+
+It attempts the best guess that can be made with a simple, rule-based
+approach. It's not perfect, but it gets you pretty far.
 
 **Attributes**
 
@@ -16,8 +19,8 @@ far.
 * HumanName.suffix
 * HumanName.nickname
 
-Supports 3 comma placement variations for names of people in latin-based
-languages.
+Supports 3 different comma placement variations in the input that are
+common for names of people in latin-based languages.
 
 * Title Firstname "Nickname" Middle Middle Lastname Suffix
 * Lastname, Title Firstname (Nickname) Middle Middle[,] Suffix [, Suffix]
@@ -29,7 +32,11 @@ languages.
 * Dr. Juan Q. Xavier de la Vega II
 * Juan Q. Xavier Velasquez y Garcia, Jr.
 
-Build Status
+When there is ambiguity that cannot be resolved by a rule-based approach,
+HumanName prefers to handle the most common cases correctly. For example,
+"Dean" is not parsed as title because it is more common as a first name.
+
+Unit Tests
 ------------
 
 .. image:: https://travis-ci.org/derek73/python-nameparser.svg
@@ -38,7 +45,7 @@ Build Status
 Over 100 unit tests with example names. 
 `Start a New Issue <https://github.com/derek73/python-nameparser/issues>`_ 
 for names that fail and I will try to fix it. Let me know if you have
-any suggestions for ways the library could be easier to use or modify.
+any suggestions for ways the library could be easier to use or modify. 
 
 
 Installation
@@ -60,7 +67,7 @@ Usage
 -----
 ::
 
-    >>> from nameparser.parser import HumanName
+    >>> from nameparser import HumanName
     >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
     >>> name.title
     u'Dr.'
