@@ -19,8 +19,7 @@ approach. It's not perfect, but it gets you pretty far.
 * HumanName.suffix
 * HumanName.nickname
 
-Supports 3 different comma placement variations in the input that are
-common for names of people in latin-based languages.
+Supports 3 different comma placement variations in the input string.
 
 * Title Firstname "Nickname" Middle Middle Lastname Suffix
 * Lastname, Title Firstname (Nickname) Middle Middle[,] Suffix [, Suffix]

@@ -29,11 +29,35 @@ CAPITALIZATION_EXCEPTIONS = (
 )
 CONJUNCTIONS = set(['&','and','et','e','of','the','und','y',])
 
-# do not include things that could also be first names, e.g. "dean"
+
+# ## Titles ##
+# 
+# TITLES: Cannot include things that could also be first names, e.g. "dean"
 # many of these from wikipedia: https://en.wikipedia.org/wiki/Title
 # The parser recognizes chains of these including conjunctions allowing 
 # recognition titles like "Deputy Secretary of State"
-TITLES = set([
+
+
+# FIRST_NAME_TITLES: When these titles are used with a single name, 
+# that name is a first name rather than a last name.
+FIRST_NAME_TITLES = set([
+    'sir',
+    'dame',
+    'king',
+    'queen',
+    'master',
+    'maid',
+    'uncle',
+    'auntie',
+    'aunt',
+    'brother',
+    'sister',
+    'mother',
+    'father',
+    'pope',
+])
+
+TITLES = FIRST_NAME_TITLES | set([
     'dr',
     'doctor',
     'miss',
@@ -42,8 +66,6 @@ TITLES = set([
     'mister',
     'mrs',
     'ms',
-    'sir',
-    'dame',
     'rev',
     'madam',
     'madame',
@@ -151,15 +173,8 @@ TITLES = set([
     'lady',
     'duke',
     'dutchess',
-    'master',
-    'maid',
-    'uncle',
-    'auntie',
-    'aunt',
     'representative',
     'senator',
-    'king',
-    'queen',
     'cardinal',
     'secretary',
     'state',
@@ -201,10 +216,7 @@ TITLES = set([
     'leader',
     'abbess',
     'abbot',
-    'brother',
-    'sister',
     'friar',
-    'mother',
     'superior',
     'reverend',
     'bishop',
@@ -214,9 +226,7 @@ TITLES = set([
     'priest',
     'high',
     'priestess',
-    'father',
     'patriarch',
-    'pope',
     'catholicos',
     'vicar',
     'chaplain',

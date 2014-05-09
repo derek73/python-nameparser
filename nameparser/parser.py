@@ -49,11 +49,13 @@ class HumanName(object):
     
     def __init__(self, full_name=u"", titles_c=TITLES, prefixes_c=PREFIXES, 
         suffixes_c=SUFFIXES, punc_titles_c=PUNC_TITLES, conjunctions_c=CONJUNCTIONS,
+        first_name_titles_c=FIRST_NAME_TITLES,
         capitalization_exceptions_c=dict(CAPITALIZATION_EXCEPTIONS), encoding=ENCODING,
         string_format=None):
         
         self.ENCODING = encoding
         self.TITLES_C = titles_c
+        self.FIRST_NAME_TITLES_C = first_name_titles_c
         self.PUNC_TITLES_C = punc_titles_c
         self.CONJUNCTIONS_C = conjunctions_c
         self.PREFIXES_C = prefixes_c
@@ -446,12 +448,13 @@ class HumanName(object):
             self.post_process()
     
     def post_process(self):
-        # if there are only two parts and one is a title or a suffix,
+        # if there are only two parts and one is a title,
         # assume it's a last name instead of a first name.
-        # e.g. Mr. Johnson
-        if not self.last and (self.title or self.suffix) and self.first:
-            self.last = self.first
-            self.first = u''
+        # e.g. Mr. Johnson. 
+        if self.title \
+            and len(self) == 2 and \
+            not lc(self.title) in self.FIRST_NAME_TITLES_C:
+            self.last, self.first = self.first, self.last
     
     
     ### Capitalization Support
