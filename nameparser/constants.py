@@ -7,18 +7,52 @@ re_mac = re.compile(r'^(ma?c)(\w+)', re.I | re.U)
 re_initial = re.compile(r'^(\w\.|[A-Z])?$', re.U)
 re_nickname = re.compile(r'\s*?[\("](.+?)[\)"]', re.U)
 
-# PUNC_TITLES could be names or titles, but if they have a period at the end they're a title
+# PUNC_TITLES could be names or titles, but if they
+# have a period at the end they're a title
 PUNC_TITLES = ('hon.',)
 
-# words that prefix last names. Can be chained like "de la Vega"
+# PREFIXES are words that prefix last names. Can be chained like "de la Vega"
 # these should not be more common as first or middle names than prefixes
 PREFIXES = set([
-    'abu','bon','bin','da','dal','de','del','der','de','di',u'dí','ibn',
-    'la','le','san','st','ste','van','vel','von'
+    'abu',
+    'bon',
+    'bin',
+    'da',
+    'dal',
+    'de',
+    'del',
+    'der',
+    'de',
+    'di',
+    u'dí',
+    'ibn',
+    'la',
+    'le',
+    'san',
+    'st',
+    'ste',
+    'van',
+    'vel',
+    'von',
 ])
 SUFFIXES = set([
-    'esq','esquire','jr','sr','2','i','ii','iii','iv','v','clu','chfc',
-    'cfp','md','phd'
+    'esq',
+    'esquire',
+    'jr',
+    'sr',
+    '2',
+    'i',
+    'ii',
+    'iii',
+    'iv',
+    'v',
+    'clu',
+    'chfc',
+    'cfp',
+    'md',
+    'phd',
+    'mp',
+    'qc',
 ])
 CAPITALIZATION_EXCEPTIONS = (
     ('ii' ,'II'),
@@ -128,9 +162,7 @@ TITLES = FIRST_NAME_TITLES | set([
     'po2',
     'cdr',
     'cpo',
-    'radm(lh)',
     'scpo',
-    'radm(uh)',
     'mcpo',
     'vadm',
     'mcpoc',
@@ -265,7 +297,6 @@ TITLES = FIRST_NAME_TITLES | set([
     'staff',
     'chief',
     'first',
-    'sergeant',
     'sergeant',
     'admiral',
     'high',
@@ -413,6 +444,9 @@ TITLES = FIRST_NAME_TITLES | set([
     'her',
     'kingdom',
     'royal',
+    'right',
+    'honorable',
+    'honourable',
     
 ])
 
