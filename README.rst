@@ -271,6 +271,7 @@ Release Log
 
     * 0.2.10 - May 6, 2014
         - If name is only a title and one part, assume it's a last name instead of a first name. (`#7 <https://github.com/derek73/python-nameparser/issues/7>`_).
+        - Add some judicial and other common titles. 
     * 0.2.9 - Apr 1, 2014
         - Add a new nickname attribute containing anything in parenthesis or double quotes (`Issue 33 <https://code.google.com/p/python-nameparser/issues/detail?id=33>`_).
     * 0.2.8 - Oct 25, 2013

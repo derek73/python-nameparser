@@ -341,6 +341,9 @@ TITLES = FIRST_NAME_TITLES | set([
     'political',
     'revenue',
     'senior',
+    'sr',
+    'junior',
+    'jr',
     'staff',
     'private',
     'principal',
@@ -447,6 +450,22 @@ TITLES = FIRST_NAME_TITLES | set([
     'right',
     'honorable',
     'honourable',
+    'magistrate',
+    'mag',
+    'judge',
+    'designated',
+    'us',
+    'federal',
+    'district',
+    'arbitrator',
+    'pro',
+    'se',
+    'edmi', #is this also a first name?
+    'discovery',
+    'magistrate-judge',
+    'mag-judge',
+    'senior-judge',
+    'mag/judge',
     
 ])
 

@@ -1100,7 +1100,6 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.last, "johnson", hn)
         self.m(hn.suffix, "v", hn)
 
-    @unittest.expectedFailure
     def test_four_name_parts_with_suffix_that_could_be_initial_uppercase_no_period(self):
         hn = HumanName("Larry James Johnson I")
         self.m(hn.first, "Larry", hn)
@@ -1248,6 +1247,38 @@ class HumanNameNicknameTestCase(HumanNameTestBase):
 
 
 class HumanNameTitleTestCase(HumanNameTestBase):
+    
+    # TODO: fix handling of U.S.
+    @unittest.expectedFailure
+    def test_chained_title_first_name_initial(self):
+        hn = HumanName("U.S. District Judge Marc Thomas Treadwell")
+        self.m(hn.title, "U.S. District Judge", hn)
+        self.m(hn.first, "Marc", hn)
+        self.m(hn.middle, "Thomas", hn)
+        self.m(hn.last, "Treadwell", hn)
+    
+    def test_chained_title_first_name_initial(self):
+        hn = HumanName("US Magistrate Judge T Michael Putnam")
+        self.m(hn.title, "US Magistrate Judge", hn)
+        self.m(hn.first, "T", hn)
+        self.m(hn.middle, "Michael", hn)
+        self.m(hn.last, "Putnam", hn)
+    
+    def test_chained_hyphenated_title(self):
+        hn = HumanName("US Magistrate-Judge Elizabeth E Campbell")
+        self.m(hn.title, "US Magistrate-Judge", hn)
+        self.m(hn.first, "Elizabeth", hn)
+        self.m(hn.middle, "E", hn)
+        self.m(hn.last, "Campbell", hn)
+    
+    def test_chained_hyphenated_title_with_comma_suffix(self):
+        hn = HumanName("Mag-Judge Harwell G Davis, III")
+        self.m(hn.title, "Mag-Judge", hn)
+        self.m(hn.first, "Harwell", hn)
+        self.m(hn.middle, "G", hn)
+        self.m(hn.last, "Davis", hn)
+        self.m(hn.suffix, "III", hn)
+    
     @unittest.expectedFailure
     def test_title_multiple_titles_with_conjunctions(self):
         # I think it finds the index of the wrong 'the'. I get confused because it
@@ -1578,6 +1609,32 @@ TEST_NAMES = (
     'Benjamin "Ben" Franklin',
     "Brian O'connor",
     "Sir Gerald",
+    "Magistrate Judge John F. Forster, Jr",
+    # "Magistrate Judge Joaquin V.E. Manibusan, Jr", Intials seem to mess this up
+    "Magistrate-Judge Elizabeth Todd Campbell",
+    "Mag-Judge Harwell G Davis, III",
+    "Mag. Judge Byron G. Cudmore",
+    "Chief Judge J. Leon Holmes",
+    "Chief Judge Sharon Lovelace Blackburn",
+    "Judge James M. Moody",
+    "Judge G. Thomas Eisele",
+    # "Judge Callie V. S. Granade",
+    "Judge C Lynwood Smith, Jr",
+    "Senior Judge Charles R. Butler, Jr",
+    "Senior Judge Harold D. Vietor",
+    "Senior Judge Virgil Pittman",
+    "Honorable Terry F. Moorer",
+    "Honorable W. Harold Albritton, III",
+    "Honorable Judge W. Harold Albritton, III",
+    "Honorable Judge Terry F. Moorer",
+    "Honorable Judge Susan Russ Walker",
+    "Hon. Marian W. Payson",
+    "Hon. Charles J. Siragusa",
+    "US Magistrate Judge T Michael Putnam",
+    "Designated Judge David A. Ezra",
+    "Sr US District Judge Richard G Kopf",
+    "U.S. District Judge Marc Thomas Treadwell",
+    
 )
 
 
