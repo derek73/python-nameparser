@@ -1100,6 +1100,7 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.last, "johnson", hn)
         self.m(hn.suffix, "v", hn)
 
+    @unittest.expectedFailure
     def test_four_name_parts_with_suffix_that_could_be_initial_uppercase_no_period(self):
         hn = HumanName("Larry James Johnson I")
         self.m(hn.first, "Larry", hn)
