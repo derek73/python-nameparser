@@ -178,32 +178,32 @@ Customizing the Parser with Your Own Constants
 
 Recognition of titles, prefixes, suffixes and conjunctions is provided
 by matching the lower case characters of a name piece with pre-defined
-sets located in nameparser.constants_. Since everyone's data are a
+sets located in nameparser.config_. Since everyone's data are a
 little bit different, you can easily adjust these predefined sets to
 help fine tune the parser for your dataset.
 
-These constants are set at the module level using nameparser.constants_.
+These constants are set at the module level using nameparser.config_.
 
-.. _nameparser.constants: https://github.com/derek73/python-nameparser/tree/master/nameparser/constants
+.. _nameparser.config: https://github.com/derek73/python-nameparser/tree/master/nameparser/config
 
 Predefined Variable Names
 +++++++++++++++++++++++++
 
-  * **prefixes**:
-    Parts that come before last names, e.g. 'del' or 'van'
-  * **titles**:
-    Parts that come before the first names. Any words included in
-    here will never be considered a first name, so use with care.
-  * **suffixes**:
-    Parts that appear after the last name, e.g. "Jr." or "MD"
-  * **conjunctions**:
-    Parts that are used to join names together, e.g. "and", "y" and "&".
-    "of" and "the" are also include to facilitate joining multiple titles,
-    e.g. "President of the United States".
-  * **capitalization_exceptions**:
-    Most parts should be capitalized by capitalizing the first letter.
-    There are some exceptions, such as roman numbers used for suffixes.
-    You can update this with a dictionary or a tuple. 
+* **prefixes**:
+  Parts that come before last names, e.g. 'del' or 'van'
+* **titles**:
+  Parts that come before the first names. Any words included in
+  here will never be considered a first name, so use with care.
+* **suffixes**:
+  Parts that appear after the last name, e.g. "Jr." or "MD"
+* **conjunctions**:
+  Parts that are used to join names together, e.g. "and", "y" and "&".
+  "of" and "the" are also include to facilitate joining multiple titles,
+  e.g. "President of the United States".
+* **capitalization_exceptions**:
+  Most parts should be capitalized by capitalizing the first letter.
+  There are some exceptions, such as roman numbers used for suffixes.
+  You can update this with a dictionary or a tuple. 
 
 Each of these predefined sets of variables includes `add()` and `remove()`
 methods for easy modification. They also inherit from `set()` so you can 
@@ -234,7 +234,7 @@ that "Hon" can be recognized as a first name.
     	Suffix: ''
     	Nickname: ''
     ]>
-    >>> from nameparser.constants import constants
+    >>> from nameparser.config import constants
     >>> constants.titles.remove('hon')
     >>> hn = HumanName("Hon Solo")
     >>> hn
@@ -250,12 +250,15 @@ that "Hon" can be recognized as a first name.
 
 "Dean" is a common first name, but sometimes it is more common as a title.
 If you would like "Dean" to be parsed as a title, simply add it to the
-titles constant.
+titles constant. 
+
+You can pass multiple strings to both the `add()` and `remove()`
+methods and each string will be added or removed.
 
 ::
 
     >>> from nameparser import HumanName
-    >>> from nameparser.constants import constants
+    >>> from nameparser.config import constants
     >>> constants.titles.add('dean', 'Chemistry')
     >>> hn = HumanName("Assoc Dean of Chemistry Robert Johns")
     >>> hn
@@ -268,10 +271,76 @@ titles constant.
     	Nickname: ''
     ]>
 
-You can also pass multiple strings to both the `add()` and `remove()`
-methods.
 
-    >>> constants.titles.add('Dean', 'Sharif')
+Parser Customizations Are At Module-Level 
++++++++++++++++++++++++++++++
+
+When you modify the configuration, by default this will modify the behavior all HumanName
+instances. This could be a handy way to set it up for your entire project, but could also 
+lead to some unexpected behavior because changing one instance could modify the behavior 
+of another instance. 
+
+::
+
+    >>> from nameparser import HumanName
+    >>> from nameparser.config import constants
+    >>> constants.titles.add('dean')
+    >>> hn = HumanName("Dean Robert Johns")
+    >>> hn
+    <HumanName : [
+    	Title: 'Dean' 
+    	First: 'Robert' 
+    	Middle: '' 
+    	Last: 'Johns' 
+    	Suffix: ''
+    	Nickname: ''
+    ]>
+    >>> hn2 = HumanName("Dean Robert Johns")
+    >>> hn2
+    <HumanName : [
+    	Title: 'Dean' 
+    	First: 'Robert' 
+    	Middle: '' 
+    	Last: 'Johns' 
+    	Suffix: ''
+    	Nickname: ''
+    ]>
+
+
+If you'd prefer new instances to have their own config values, you can pass `None`
+as the second argument when instantiating `HumanName`. The instance's constants can
+be accessed via its `C` attribute. Similarly the regexes can be overridden by
+setting the `regexes` argument to `None`, and the instance's regexes are availabe
+via its `RE` attribute.
+
+Note that each instance always has a `C` attribute, but if you didn't pass `None`
+or `False` to the `constants` argument then you'd still be modifying the module-level
+config values with the behavior described above.
+
+::
+
+    >>> hn = HumanName("Dean Robert Johns", None)
+    >>> hn.C.titles.add('dean')
+    >>> hn
+    <HumanName : [
+    	Title: 'Dean' 
+    	First: 'Robert' 
+    	Middle: '' 
+    	Last: 'Johns' 
+    	Suffix: ''
+    	Nickname: ''
+    ]>
+    >>> hn2 = HumanName("Dean Robert Johns")
+    >>> hn2
+    <HumanName : [
+    	Title: '' 
+    	First: 'Dean' 
+    	Middle: 'Robert' 
+    	Last: 'Johns' 
+    	Suffix: ''
+    	Nickname: ''
+    ]>
+
 
 Contributing
 ------------

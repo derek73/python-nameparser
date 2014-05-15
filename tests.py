@@ -12,6 +12,10 @@ import logging
 
 from nameparser import HumanName
 from nameparser.util import u
+from nameparser.config import Constants
+from nameparser.config import constants
+from nameparser.config import Regexes
+
 
 
 log = logging.getLogger('HumanName')
@@ -1149,22 +1153,58 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.middle, "a", hn)
         self.m(hn.last, "Le", hn)
 
-        # def test_te_as_prefix(self):
-        #     hn = HumanName("Te Awanui-a-Rangi Black")
-        #     self.m(hn.first,"Te Awanui-a-Rangi", hn)
-        #     self.m(hn.last,"Black", hn)
-        #
-        # 'te' would be part of last name if we added 'te' to PREFIXES
-        # def test_te_as_middle_name(self):
-        #     hn = HumanName("ye te le")
-        #     self.m(hn.first,"ye", hn)
-        #     self.m(hn.middle,"te", hn)
-        #     self.m(hn.last,"le", hn)
-        #
-        # def test_te_as_last_name(self):
-        #     hn = HumanName("Yin Te")
-        #     self.m(hn.first,"Yin", hn)
-        #     self.m(hn.last,"Te", hn)
+class ConstantsCustomization(HumanNameTestBase):
+
+    def test_add_prefix(self):
+        hn = HumanName("Te Awanui-a-Rangi Black", constants=None)
+        hn.C.prefixes.add('te')
+        hn.parse_full_name()
+        self.m(hn.first,"Te Awanui-a-Rangi", hn)
+        self.m(hn.last,"Black", hn)
+    
+    def test_remove_title(self):
+        hn = HumanName("Hon Solo", constants=None)
+        hn.C.titles.remove('hon')
+        hn.parse_full_name()
+        self.m(hn.first,"Hon", hn)
+        self.m(hn.last,"Solo", hn)
+    
+    def test_add_multiple_arguments(self):
+        hn = HumanName("Assoc Dean of Chemistry Robert Johns", constants=None)
+        hn.C.titles.add('dean', 'Chemistry')
+        hn.parse_full_name()
+        self.m(hn.title,"Assoc Dean of Chemistry", hn)
+        self.m(hn.first,"Robert", hn)
+        self.m(hn.last,"Johns", hn)
+
+    def test_instances_can_have_own_constants(self):
+        hn = HumanName("", None)
+        hn2 = HumanName("")
+        hn.C.titles.remove('hon')
+        self.assertEqual('hon' in hn.C.titles, False)
+        self.assertEqual(hn.has_own_config, True)
+        self.assertEqual('hon' in hn2.C.titles, True)
+        self.assertEqual(hn2.has_own_config, False)
+    
+    
+    def test_can_change_global_constants(self):
+        hn = HumanName("")
+        hn2 = HumanName("")
+        hn.C.titles.remove('hon')
+        self.assertEqual('hon' in hn.C.titles, False)
+        self.assertEqual('hon' in hn2.C.titles, False)
+        self.assertEqual(hn.has_own_config, False)
+        self.assertEqual(hn2.has_own_config, False)
+        # clean up so we don't mess up other tests
+        hn.C.titles.add('hon')
+    
+    def test_remove_multiple_arguments(self):
+        hn = HumanName("Ms Hon Solo", constants=None)
+        hn.C.titles.remove('hon', 'ms')
+        hn.parse_full_name()
+        self.m(hn.first,"Ms", hn)
+        self.m(hn.middle,"Hon", hn)
+        self.m(hn.last,"Solo", hn)
 
 
 class HumanNameNicknameTestCase(HumanNameTestBase):

@@ -3,23 +3,23 @@ from __future__ import unicode_literals
 import collections
 
 from nameparser.util import lc
-from nameparser.constants.prefixes import PREFIXES
-from nameparser.constants.capitalization import CAPITALIZATION_EXCEPTIONS
-from nameparser.constants.conjunctions import CONJUNCTIONS
-from nameparser.constants.suffixes import SUFFIXES
-from nameparser.constants.titles import TITLES
-from nameparser.constants.titles import FIRST_NAME_TITLES
-from nameparser.constants.regexes import REGEXES
+from nameparser.config.prefixes import PREFIXES
+from nameparser.config.capitalization import CAPITALIZATION_EXCEPTIONS
+from nameparser.config.conjunctions import CONJUNCTIONS
+from nameparser.config.suffixes import SUFFIXES
+from nameparser.config.titles import TITLES
+from nameparser.config.titles import FIRST_NAME_TITLES
+from nameparser.config.regexes import REGEXES
 
 class Manager(collections.Set):
     def __init__(self, elements):
-        self.elements = elements
+        self.elements = set(elements)
     
     def __call__(self):
         return self.elements
     
     def __iter__(self):
-        return self.elements
+        return iter(self.elements)
     
     def __contains__(self, value):
         return value in self.elements
@@ -49,17 +49,21 @@ class Manager(collections.Set):
 
 class Constants(object):
     
-    prefixes                    = Manager(PREFIXES)
-    suffixes                    = Manager(SUFFIXES)
-    titles                      = Manager(TITLES)
-    first_name_titles           = Manager(FIRST_NAME_TITLES)
-    conjunctions                = Manager(CONJUNCTIONS)
-    regexes                     = Manager(REGEXES)
-    suffixes_prefixes_titles    = Manager(PREFIXES | SUFFIXES | TITLES)
+    def __init__(self):
+        self.prefixes          = Manager(PREFIXES)
+        self.suffixes          = Manager(SUFFIXES)
+        self.titles            = Manager(TITLES)
+        self.first_name_titles = Manager(FIRST_NAME_TITLES)
+        self.conjunctions      = Manager(CONJUNCTIONS)
+        self.regexes           = Manager(REGEXES)
+    
+    @property
+    def suffixes_prefixes_titles(self):
+        return self.prefixes | self.suffixes | self.titles
     
     # these arent strings so Manager isn't helpful
-    capitalization_exceptions   = CAPITALIZATION_EXCEPTIONS
-
+    capitalization_exceptions = CAPITALIZATION_EXCEPTIONS
+    
 
 class Regexes(object):
     def __init__(self):

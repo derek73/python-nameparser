@@ -5,8 +5,10 @@ import logging
 from nameparser.util import u
 from nameparser.util import text_type
 from nameparser.util import lc
-from nameparser.constants import constants
-from nameparser.constants import regexes
+from nameparser.config import constants
+from nameparser.config import Constants
+from nameparser.config import regexes
+from nameparser.config import Regexes
 
 # http://code.google.com/p/python-nameparser/issues/detail?id=10
 log = logging.getLogger('HumanName')
@@ -36,11 +38,17 @@ class HumanName(object):
      
     """
     
-    def __init__(self, full_name="", encoding=ENCODING, constants=constants, 
-        regexes=regexes, string_format=None):
+    def __init__(self, full_name="", constants=constants, regexes=regexes,
+                                    encoding=ENCODING, string_format=None):
+        if constants:
+            self.C = constants
+            self.RE = regexes or Regexes()
+            self.has_own_config = False
+        else:
+            self.C = Constants()
+            self.RE = Regexes()
+            self.has_own_config = True
         self.ENCODING = encoding
-        self.C = constants
-        self.RE = regexes
         self.string_format = string_format
         self.count = 0
         self._members = ['title','first','middle','last','suffix']
@@ -204,112 +212,8 @@ class HumanName(object):
     @full_name.setter
     def full_name(self, value):
         self._full_name = value
-        self.title_list = []
-        self.first_list = []
-        self.middle_list = []
-        self.last_list = []
-        self.suffix_list = []
-        self.nickname_list = []
-        self.unparsable = True
-        
-        self._parse_full_name()
+        self.parse_full_name()
 
-    def _parse_pieces(self, parts, additional_parts_count=0):
-        """
-        Split parts on spaces and remove commas, join on conjunctions and lastname prefixes.
-        
-        additional_parts_count: if the comma format contains other parts, we need to know 
-        how many there are to decide if things should be considered a conjunction.
-        """
-        ps = []
-        for part in parts:
-            ps += [x.strip(' ,') for x in part.split(' ')]
-        
-        # if there is a period that is not at the end of a piece, split it on periods
-        pieces = []
-        for piece in ps:
-            if piece[:-1].find('.') >= 0:
-                p = [_f for _f in piece.split('.') if _f]
-                pieces += [x+'.' for x in p]
-            else:
-                pieces += [piece]
-        
-        # join conjunctions to surrounding pieces, e.g.:
-        # ['Mr. and Mrs.'], ['King of the Hill'], ['Jack and Jill'], ['Velasquez y Garcia']
-        
-        for conj in filter(self.is_conjunction, pieces[::-1]): # reverse sorted list
-            
-            # loop through the pieces backwards, starting at the end of the list.
-            # Join conjunctions to the pieces on either side of them.
-            
-            if len(conj) == 1 and \
-                len(list(filter(self.is_rootname, pieces))) + additional_parts_count < 4:
-                # if there are only 3 total parts (minus known titles, suffixes and prefixes) 
-                # and this conjunction is a single letter, prefer treating it as an initial
-                # rather than a conjunction.
-                # http://code.google.com/p/python-nameparser/issues/detail?id=11
-                continue
-            
-            try:
-                i = pieces.index((conj))
-            except ValueError:
-                log.error("Couldn't find '{conj}' in pieces. i={i}, pieces={pieces}".format(**locals()))
-                continue
-            
-            if i < len(pieces) - 1: 
-                # if this is not the last piece
-                
-                if self.is_conjunction(pieces[i-1]):
-                    
-                    # if the piece in front of this one is a conjunction too,
-                    # add new_piece (this conjuction and the following piece) 
-                    # to the conjuctions constant so that it is recognized
-                    # as a conjunction in the next loop. 
-                    # e.g. for ["Lord","of","the Universe"], put "the Universe"
-                    # into the conjunctions constant.
-                    
-                    new_piece = ' '.join(pieces[i:i+2])
-                    self.C.conjunctions.add(new_piece)
-                    pieces[i] = new_piece
-                    pieces.pop(i+1)
-                    continue
-                
-                new_piece = ' '.join(pieces[i-1:i+2])
-                if self.is_title(pieces[i-1]):
-                    
-                    # if the second name is a title, assume the first one is too and add the 
-                    # two titles with the conjunction between them to the titles constant 
-                    # so the combo we just created gets parsed as a title. 
-                    # e.g. "Mr. and Mrs." becomes a title.
-                    
-                    self.C.titles.add(new_piece)
-                
-                pieces[i-1] = new_piece
-                pieces.pop(i)
-                pieces.pop(i)
-        
-        # join prefixes to following lastnames: ['de la Vega'], ['van Buren']
-        prefixes = list(filter(self.is_prefix, pieces))
-        try:
-            for prefix in prefixes:
-                try:
-                    i = pieces.index(prefix)
-                except ValueError:
-                    # if two prefixes in a row ("de la Vega"), have to do 
-                    # extra work to find the index the second time around
-                    def find_p(p):
-                        return p.endswith(prefix) # closure on prefix
-                    m = list(filter(find_p, pieces))
-                    # I wonder if some input will throw an IndexError here. 
-                    # Means it can't find prefix anyore.
-                    i = pieces.index(m[0])
-                pieces[i] = ' '.join(pieces[i:i+2])
-                pieces.pop(i+1)
-        except IndexError:
-            pass
-            
-        log.debug("pieces: {0}".format(pieces))
-        return pieces
     
     def parse_nicknames(self):
         """
@@ -326,11 +230,19 @@ class HumanName(object):
         if re_nickname.search(self._full_name):
             self.nickname_list = re_nickname.findall(self._full_name)
             self._full_name = re_nickname.sub('', self._full_name)
-    
-    def _parse_full_name(self):
+
+    def parse_full_name(self):
         """
         Parse full name into the buckets
         """
+        
+        self.title_list = []
+        self.first_list = []
+        self.middle_list = []
+        self.last_list = []
+        self.suffix_list = []
+        self.nickname_list = []
+        self.unparsable = True
         
         if not isinstance(self._full_name, text_type):
             self._full_name = u(self._full_name, self.ENCODING)
@@ -435,14 +347,117 @@ class HumanName(object):
         else:
             self.unparsable = False
             self.post_process()
+
+    def _parse_pieces(self, parts, additional_parts_count=0):
+        """
+        Split parts on spaces and remove commas, join on conjunctions and lastname prefixes.
+        
+        additional_parts_count: if the comma format contains other parts, we need to know 
+        how many there are to decide if things should be considered a conjunction.
+        """
+        ps = []
+        for part in parts:
+            ps += [x.strip(' ,') for x in part.split(' ')]
+        
+        # if there is a period that is not at the end of a piece, split it on periods
+        pieces = []
+        for piece in ps:
+            if piece[:-1].find('.') >= 0:
+                p = [_f for _f in piece.split('.') if _f]
+                pieces += [x+'.' for x in p]
+            else:
+                pieces += [piece]
+        
+        
+        return self._join_on_conjunctions(pieces, additional_parts_count)
+        
+    def _join_on_conjunctions(self, pieces, additional_parts_count=0):
+        """
+        Join conjunctions to surrounding pieces, e.g.:
+        ['Mr. and Mrs.'], ['King of the Hill'], ['Jack and Jill'], ['Velasquez y Garcia']
+        """
+        
+        for conj in filter(self.is_conjunction, pieces[::-1]): # reverse sorted list
+            
+            # loop through the pieces backwards, starting at the end of the list.
+            # Join conjunctions to the pieces on either side of them.
+            
+            if len(conj) == 1 and \
+                len(list(filter(self.is_rootname, pieces))) + additional_parts_count < 4:
+                # if there are only 3 total parts (minus known titles, suffixes and prefixes) 
+                # and this conjunction is a single letter, prefer treating it as an initial
+                # rather than a conjunction.
+                # http://code.google.com/p/python-nameparser/issues/detail?id=11
+                continue
+            
+            try:
+                i = pieces.index((conj))
+            except ValueError:
+                log.error("Couldn't find '{conj}' in pieces. i={i}, pieces={pieces}".format(**locals()))
+                continue
+            
+            if i < len(pieces) - 1: 
+                # if this is not the last piece
+                
+                if self.is_conjunction(pieces[i-1]):
+                    
+                    # if the piece in front of this one is a conjunction too,
+                    # add new_piece (this conjuction and the following piece) 
+                    # to the conjuctions constant so that it is recognized
+                    # as a conjunction in the next loop. 
+                    # e.g. for ["Lord","of","the Universe"], put "the Universe"
+                    # into the conjunctions constant.
+                    
+                    new_piece = ' '.join(pieces[i:i+2])
+                    self.C.conjunctions.add(new_piece)
+                    pieces[i] = new_piece
+                    pieces.pop(i+1)
+                    continue
+                
+                new_piece = ' '.join(pieces[i-1:i+2])
+                if self.is_title(pieces[i-1]):
+                    
+                    # if the second name is a title, assume the first one is too and add the 
+                    # two titles with the conjunction between them to the titles constant 
+                    # so the combo we just created gets parsed as a title. 
+                    # e.g. "Mr. and Mrs." becomes a title.
+                    
+                    self.C.titles.add(new_piece)
+                
+                pieces[i-1] = new_piece
+                pieces.pop(i)
+                pieces.pop(i)
+        
+        # join prefixes to following lastnames: ['de la Vega'], ['van Buren']
+        prefixes = list(filter(self.is_prefix, pieces))
+        try:
+            for prefix in prefixes:
+                try:
+                    i = pieces.index(prefix)
+                except ValueError:
+                    # if two prefixes in a row ("de la Vega"), have to do 
+                    # extra work to find the index the second time around
+                    def find_p(p):
+                        return p.endswith(prefix) # closure on prefix
+                    m = list(filter(find_p, pieces))
+                    # I wonder if some input will throw an IndexError here. 
+                    # Means it can't find prefix anyore.
+                    i = pieces.index(m[0])
+                pieces[i] = ' '.join(pieces[i:i+2])
+                pieces.pop(i+1)
+        except IndexError:
+            pass
+            
+        log.debug("pieces: {0}".format(pieces))
+        return pieces
     
     def post_process(self):
         # if there are only two parts and one is a title,
         # assume it's a last name instead of a first name.
         # e.g. Mr. Johnson. 
         if self.title \
-            and len(self) == 2 and \
-            not lc(self.title) in self.C.first_name_titles:
+            and len(self) == 2 \
+            and not lc(self.title) in self.C.first_name_titles:
             self.last, self.first = self.first, self.last
     
     
