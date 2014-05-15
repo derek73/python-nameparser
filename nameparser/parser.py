@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import logging
-from nameparser import u, text_type
-from nameparser.constants import *
+from nameparser.util import u
+from nameparser.util import text_type
+from nameparser.util import lc
+from nameparser.constants import constants
+from nameparser.constants import regexes
 
 # http://code.google.com/p/python-nameparser/issues/detail?id=10
 log = logging.getLogger('HumanName')
@@ -15,22 +20,6 @@ except AttributeError:
 log.setLevel(logging.ERROR)
 
 ENCODING = 'utf-8'
-
-
-def lc(value):
-    """Lower case and remove any periods to normalize for comparison."""
-    if not value:
-        return u''
-    return value.lower().replace('.','')
-
-
-def is_an_initial(value):
-    return re_initial.match(value) or False
-
-
-class BlankHumanNameError(AttributeError):
-    # deprecated in v0.2.5, no longer used
-    pass
 
 
 class HumanName(object):
@@ -47,26 +36,16 @@ class HumanName(object):
      
     """
     
-    def __init__(self, full_name=u"", titles_c=TITLES, prefixes_c=PREFIXES, 
-        suffixes_c=SUFFIXES, punc_titles_c=PUNC_TITLES, conjunctions_c=CONJUNCTIONS,
-        first_name_titles_c=FIRST_NAME_TITLES,
-        capitalization_exceptions_c=dict(CAPITALIZATION_EXCEPTIONS), encoding=ENCODING,
-        string_format=None):
-        
+    def __init__(self, full_name="", encoding=ENCODING, constants=constants, 
+        regexes=regexes, string_format=None):
         self.ENCODING = encoding
-        self.TITLES_C = titles_c
-        self.FIRST_NAME_TITLES_C = first_name_titles_c
-        self.PUNC_TITLES_C = punc_titles_c
-        self.CONJUNCTIONS_C = conjunctions_c
-        self.PREFIXES_C = prefixes_c
-        self.SUFFIXES_C = suffixes_c
-        self.CAPITALIZATION_EXCEPTIONS_C = capitalization_exceptions_c
-        self.SUFFIXES_PREFIXES_TITLES_C = self.SUFFIXES_C | self.PREFIXES_C | self.TITLES_C
+        self.C = constants
+        self.RE = regexes
         self.string_format = string_format
         self.count = 0
         self._members = ['title','first','middle','last','suffix']
         self.unparsable = True
-        self._full_name = u''
+        self._full_name = ''
         self.full_name = full_name
     
     def __iter__(self):
@@ -110,15 +89,15 @@ class HumanName(object):
         if self.string_format:
             # string_format = "{title} {first} {middle} {last} {suffix}"
             return self.string_format.format(**self._dict)
-        return u" ".join(self)
+        return " ".join(self)
     
     def __str__(self):
         return self.__unicode__()
     
     def __repr__(self):
         if self.unparsable:
-            return u"<%(class)s : [ Unparsable ] >" % {'class': self.__class__.__name__,}
-        return u"<%(class)s : [\n\tTitle: '%(title)s' \n\tFirst: '%(first)s' \n\tMiddle: '%(middle)s' \n\tLast: '%(last)s' \n\tSuffix: '%(suffix)s'\n\tNickname: '%(nickname)s'\n]>" % {
+            return "<%(class)s : [ Unparsable ] >" % {'class': self.__class__.__name__,}
+        return "<%(class)s : [\n\tTitle: '%(title)s' \n\tFirst: '%(first)s' \n\tMiddle: '%(middle)s' \n\tLast: '%(last)s' \n\tSuffix: '%(suffix)s'\n\tNickname: '%(nickname)s'\n]>" % {
             'class': self.__class__.__name__,
             'title': self.title,
             'first': self.first,
@@ -139,27 +118,27 @@ class HumanName(object):
     
     @property
     def title(self):
-        return u" ".join(self.title_list)
+        return " ".join(self.title_list)
     
     @property
     def first(self):
-        return u" ".join(self.first_list)
+        return " ".join(self.first_list)
     
     @property
     def middle(self):
-        return u" ".join(self.middle_list)
+        return " ".join(self.middle_list)
     
     @property
     def last(self):
-        return u" ".join(self.last_list)
+        return " ".join(self.last_list)
     
     @property
     def suffix(self):
-        return u", ".join(self.suffix_list)
+        return ", ".join(self.suffix_list)
     
     @property
     def nickname(self):
-        return u" ".join(self.nickname_list)
+        return " ".join(self.nickname_list)
     
     ### setter methods
     
@@ -193,20 +172,28 @@ class HumanName(object):
     ### parse helpers
     
     def is_title(self, value):
-        return lc(value) in self.TITLES_C or value.lower() in self.PUNC_TITLES_C
+        return lc(value) in self.C.titles
     
     def is_conjunction(self, piece):
-        return lc(piece) in self.CONJUNCTIONS_C and not is_an_initial(piece)
+        return lc(piece) in self.C.conjunctions and not self.is_an_initial(piece)
     
     def is_prefix(self, piece):
-        return lc(piece) in self.PREFIXES_C and not is_an_initial(piece)
+        return lc(piece) in self.C.prefixes and not self.is_an_initial(piece)
     
     def is_suffix(self, piece):
-        return lc(piece) in self.SUFFIXES_C and not is_an_initial(piece)
+        return lc(piece) in self.C.suffixes and not self.is_an_initial(piece)
     
     def is_rootname(self, piece):
-        '''is not a title, suffix or prefix. Just first, middle, last names.'''
-        return lc(piece) not in self.SUFFIXES_PREFIXES_TITLES_C and not is_an_initial(piece)
+        '''is not a known title, suffix or prefix. Just first, middle, last names.'''
+        return lc(piece) not in self.C.suffixes_prefixes_titles \
+            and not self.is_an_initial(piece) 
+    
+    def is_an_initial(self, value):
+        return self.RE.initial.match(value) or False
+
+    # def is_a_roman_numeral(value):
+    #     return re_roman_numeral.match(value) or False
+
     
     ### full_name parser
     
@@ -255,7 +242,8 @@ class HumanName(object):
             # loop through the pieces backwards, starting at the end of the list.
             # Join conjunctions to the pieces on either side of them.
             
-            if len(conj) == 1 and len(list(filter(self.is_rootname, pieces))) + additional_parts_count < 4:
+            if len(conj) == 1 and \
+                len(list(filter(self.is_rootname, pieces))) + additional_parts_count < 4:
                 # if there are only 3 total parts (minus known titles, suffixes and prefixes) 
                 # and this conjunction is a single letter, prefer treating it as an initial
                 # rather than a conjunction.
@@ -280,13 +268,13 @@ class HumanName(object):
                     # e.g. for ["Lord","of","the Universe"], put "the Universe"
                     # into the conjunctions constant.
                     
-                    new_piece = u' '.join(pieces[i:i+2])
-                    self.CONJUNCTIONS_C.add(lc(new_piece))
+                    new_piece = ' '.join(pieces[i:i+2])
+                    self.C.conjunctions.add(new_piece)
                     pieces[i] = new_piece
                     pieces.pop(i+1)
                     continue
                 
-                new_piece = u' '.join(pieces[i-1:i+2])
+                new_piece = ' '.join(pieces[i-1:i+2])
                 if self.is_title(pieces[i-1]):
                     
                     # if the second name is a title, assume the first one is too and add the 
@@ -294,7 +282,7 @@ class HumanName(object):
                     # so the combo we just created gets parsed as a title. 
                     # e.g. "Mr. and Mrs." becomes a title.
                     
-                    self.TITLES_C.add(lc(new_piece))
+                    self.C.titles.add(new_piece)
                 
                 pieces[i-1] = new_piece
                 pieces.pop(i)
@@ -315,12 +303,12 @@ class HumanName(object):
                     # I wonder if some input will throw an IndexError here. 
                     # Means it can't find prefix anyore.
                     i = pieces.index(m[0])
-                pieces[i] = u' '.join(pieces[i:i+2])
+                pieces[i] = ' '.join(pieces[i:i+2])
                 pieces.pop(i+1)
         except IndexError:
             pass
             
-        log.debug(u"pieces: {0}".format(pieces))
+        log.debug("pieces: {0}".format(pieces))
         return pieces
     
     def parse_nicknames(self):
@@ -334,6 +322,7 @@ class HumanName(object):
         
         https://code.google.com/p/python-nameparser/issues/detail?id=33
         """
+        re_nickname = self.RE.nickname
         if re_nickname.search(self._full_name):
             self.nickname_list = re_nickname.findall(self._full_name)
             self._full_name = re_nickname.sub('', self._full_name)
@@ -349,13 +338,13 @@ class HumanName(object):
         self.parse_nicknames()
         
         # collapse multiple spaces
-        self._full_name = re.sub(re_spaces, u" ", self._full_name.strip() )
+        self._full_name = self.RE.spaces.sub(" ", self._full_name.strip())
         
         # break up full_name by commas
         parts = [x.strip() for x in self._full_name.split(",")]
         
-        log.debug(u"full_name: {0}".format(self._full_name))
-        log.debug(u"parts: {0}".format(parts))
+        log.debug("full_name: {0}".format(self._full_name))
+        log.debug("parts: {0}".format(parts))
         
         if len(parts) == 1:
             
@@ -386,14 +375,14 @@ class HumanName(object):
                 
                 self.middle_list.append(piece)
         else:
-            if lc(parts[1]) in self.SUFFIXES_C:
+            if self.is_suffix(parts[1]):
                 
                 # suffix comma: title first middle last, suffix [, suffix]
                 
                 self.suffix_list += parts[1:]
                 
                 pieces = self._parse_pieces(parts[0].split(' '))
-                log.debug(u"pieces: {0}".format(u(pieces)))
+                log.debug("pieces: {0}".format(u(pieces)))
                 
                 for i, piece in enumerate(pieces):
                     try:
@@ -416,7 +405,7 @@ class HumanName(object):
                 # lastname comma: last, title first middles[,] suffix [,suffix]
                 pieces = self._parse_pieces(parts[1].split(' '), 1)
                 
-                log.debug(u"pieces: {0}".format(u(pieces)))
+                log.debug("pieces: {0}".format(u(pieces)))
                 
                 self.last_list.append(parts[0])
                 for i, piece in enumerate(pieces):
@@ -442,7 +431,7 @@ class HumanName(object):
                     pass
                 
         if len(self) < 0:
-            log.info(u"Unparsable full_name: " + self._full_name)
+            log.info("Unparsable full_name: " + self._full_name)
         else:
             self.unparsable = False
             self.post_process()
@@ -453,7 +442,7 @@ class HumanName(object):
         # e.g. Mr. Johnson. 
         if self.title \
             and len(self) == 2 and \
-            not lc(self.title) in self.FIRST_NAME_TITLES_C:
+            not lc(self.title) in self.C.first_name_titles:
             self.last, self.first = self.first, self.last
     
     
@@ -462,13 +451,14 @@ class HumanName(object):
     def cap_word(self, word):
         if self.is_prefix(word) or self.is_conjunction(word):
             return lc(word)
-        if word in self.CAPITALIZATION_EXCEPTIONS_C:
-            return self.CAPITALIZATION_EXCEPTIONS_C[word]
-        mac_match = re_mac.match(word)
+        exceptions = dict(self.C.capitalization_exceptions)
+        if word in exceptions:
+            return exceptions[word]
+        mac_match = self.RE.mac.match(word)
         if mac_match:
             def cap_after_mac(m):
                 return m.group(1).capitalize() + m.group(2).capitalize()
-            return re_mac.sub(cap_after_mac, word)
+            return self.RE.mac.sub(cap_after_mac, word)
         else:
             return word.capitalize()
 
@@ -476,7 +466,7 @@ class HumanName(object):
         if not piece:
             return ""
         replacement = lambda m: self.cap_word(m.group(0))
-        return re.sub(re_word, replacement, piece)
+        return self.RE.word.sub(replacement, piece)
 
     def capitalize(self):
         """

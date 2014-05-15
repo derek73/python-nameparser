@@ -8,3 +8,4 @@ nameparser.egg-info/
 dummycert.pem
 build
 *.egg
+.env

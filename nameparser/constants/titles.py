@@ -1,67 +1,5 @@
 # -*- coding: utf-8 -*-
-import re
-
-re_spaces = re.compile(r"\s+", re.U)
-re_word = re.compile(r"\w+", re.U)
-re_mac = re.compile(r'^(ma?c)(\w+)', re.I | re.U)
-re_initial = re.compile(r'^(\w\.|[A-Z])?$', re.U)
-re_nickname = re.compile(r'\s*?[\("](.+?)[\)"]', re.U)
-
-# PUNC_TITLES could be names or titles, but if they
-# have a period at the end they're a title
-PUNC_TITLES = ('hon.',)
-
-# PREFIXES are words that prefix last names. Can be chained like "de la Vega"
-# these should not be more common as first or middle names than prefixes
-PREFIXES = set([
-    'abu',
-    'bon',
-    'bin',
-    'da',
-    'dal',
-    'de',
-    'del',
-    'der',
-    'de',
-    'di',
-    u'dí',
-    'ibn',
-    'la',
-    'le',
-    'san',
-    'st',
-    'ste',
-    'van',
-    'vel',
-    'von',
-])
-SUFFIXES = set([
-    'esq',
-    'esquire',
-    'jr',
-    'sr',
-    '2',
-    'i',
-    'ii',
-    'iii',
-    'iv',
-    'v',
-    'clu',
-    'chfc',
-    'cfp',
-    'md',
-    'phd',
-    'mp',
-    'qc',
-])
-CAPITALIZATION_EXCEPTIONS = (
-    ('ii' ,'II'),
-    ('iii','III'),
-    ('iv' ,'IV'),
-    ('md' ,'M.D.'),
-    ('phd','Ph.D.'),
-)
-CONJUNCTIONS = set(['&','and','et','e','of','the','und','y',])
+from __future__ import unicode_literals
 
 
 # ## Titles ##
@@ -237,8 +175,8 @@ TITLES = FIRST_NAME_TITLES | set([
     'ambassador',
     'envoy',
     'secretary',
-    u"attaché",
-    u"chargé d'affaires",
+    "attaché",
+    "chargé d'affaires",
     'provost',
     "marquis",
     "marquess",
@@ -464,6 +402,7 @@ TITLES = FIRST_NAME_TITLES | set([
     'right',
     'honorable',
     'honourable',
+    'hon', # sorry Hon Solo, but judges seem more common.
     'magistrate',
     'mag',
     'judge',
@@ -486,7 +425,7 @@ TITLES = FIRST_NAME_TITLES | set([
     'family',
     'presiding',
     'division',
-    'edmi', #is this also a first name?
+    'edmi',
     'discovery',
     'magistrate-judge',
     'mag-judge',
@@ -494,8 +433,3 @@ TITLES = FIRST_NAME_TITLES | set([
     'mag/judge',
     
 ])
-
-
-# pre v0.2.5 support
-PREFICES = PREFIXES 
-SUFFICES = SUFFIXES

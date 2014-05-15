@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 """
 Run this file to run the tests, e.g "python tests.py" or "./tests.py".
 Post a ticket and/or clone and fix it. Pull requests with tests gladly accepted.
@@ -9,7 +10,8 @@ https://github.com/derek73/python-nameparser/pulls
 
 import logging
 
-from nameparser import HumanName, u
+from nameparser import HumanName
+from nameparser.util import u
 
 
 log = logging.getLogger('HumanName')
@@ -26,7 +28,7 @@ class HumanNameTestBase(unittest.TestCase):
     def m(self, actual, expected, hn):
         """assertEquals with a better message"""
         try:
-            self.assertEqual(actual, expected, u"'%s' != '%s' for '%s'\n%s" % (
+            self.assertEqual(actual, expected, "'%s' != '%s' for '%s'\n%s" % (
                 actual,
                 expected,
                 hn.full_name,
@@ -41,18 +43,18 @@ class HumanNamePythonTests(HumanNameTestBase):
 
     def test_utf8(self):
         hn = HumanName("de la Véña, Jüan")
-        self.m(hn.first, u"Jüan", hn)
-        self.m(hn.last, u"de la Véña", hn)
+        self.m(hn.first, "Jüan", hn)
+        self.m(hn.last, "de la Véña", hn)
 
     def test_u(self):
-        hn = HumanName(u"de la Véña, Jüan")
-        self.m(hn.first, u"Jüan", hn)
-        self.m(hn.last, u"de la Véña", hn)
+        hn = HumanName("de la Véña, Jüan")
+        self.m(hn.first, "Jüan", hn)
+        self.m(hn.last, "de la Véña", hn)
 
     def test_escaped_u(self):
-        hn = HumanName(u'B\xe4ck, Gerald')
-        self.m(hn.first, u"Gerald", hn)
-        self.m(hn.last, u"B\xe4ck", hn)
+        hn = HumanName('B\xe4ck, Gerald')
+        self.m(hn.first, "Gerald", hn)
+        self.m(hn.last, "B\xe4ck", hn)
 
     def test_len(self):
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
@@ -107,9 +109,9 @@ class HumanNamePythonTests(HumanNameTestBase):
 
     def test_slice(self):
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
-        self.m(list(hn), [u'Dr.', u'John', u'P.', u'Doe-Ray', u'CLU, CFP, LUTC'], hn)
-        self.m(hn[1:], [u'John', u'P.', u'Doe-Ray', u'CLU, CFP, LUTC'], hn)
-        self.m(hn[1:-1], [u'John', u'P.', u'Doe-Ray'], hn)
+        self.m(list(hn), ['Dr.', 'John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC'], hn)
+        self.m(hn[1:], ['John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC'], hn)
+        self.m(hn[1:-1], ['John', 'P.', 'Doe-Ray'], hn)
 
     def test_conjunction_names(self):
         hn = HumanName("johnny y")
@@ -690,7 +692,7 @@ class HumanNameBruteForceTests(HumanNameTestBase):
     def test79(self):
         hn = HumanName("de la Vega, Dr. Juan Q. III")
         self.m(hn.first, "Juan", hn)
-        self.m(hn.last, u"de la Vega", hn)
+        self.m(hn.last, "de la Vega", hn)
         self.m(hn.middle, "Q.", hn)
         self.m(hn.suffix, "III", hn)
         self.m(hn.title, "Dr.", hn)
@@ -941,11 +943,6 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe-Ray", hn)
         self.m(hn.suffix, "CLU, CFP, LUTC", hn)
-
-    def test114(self):
-        hn = HumanName("Hon Oladapo")
-        self.m(hn.first, "Hon", hn)
-        self.m(hn.last, "Oladapo", hn)
 
     def test115(self):
         hn = HumanName("Hon. Barrington P. Doe-Ray, Jr.")
@@ -1258,6 +1255,12 @@ class HumanNameTitleTestCase(HumanNameTestBase):
         self.m(hn.middle, "Thomas", hn)
         self.m(hn.last, "Treadwell", hn)
     
+    def test_conflict_with_chained_title_first_name_initial(self):
+        hn = HumanName("U. S. Grant")
+        self.m(hn.first, "U.", hn)
+        self.m(hn.middle, "S.", hn)
+        self.m(hn.last, "Grant", hn)
+    
     def test_chained_title_first_name_initial(self):
         hn = HumanName("US Magistrate Judge T Michael Putnam")
         self.m(hn.title, "US Magistrate Judge", hn)
@@ -1435,9 +1438,9 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         self.m(str(hn), 'Shirley Maclaine', hn)
 
     def test_capitalize_diacritics(self):
-        hn = HumanName(u'matth\xe4us schmidt')
+        hn = HumanName('matth\xe4us schmidt')
         hn.capitalize()
-        self.m(u(hn), u'Matth\xe4us Schmidt', hn)
+        self.m(u(hn), 'Matth\xe4us Schmidt', hn)
 
     # http://code.google.com/p/python-nameparser/issues/detail?id=15
     def test_downcasing_mac(self):
@@ -1577,7 +1580,6 @@ TEST_NAMES = (
     "Hon. Barrington P. Doe-Ray, Jr.",
     "Doe-Ray, Hon. Barrington P. Jr.",
     "Doe-Ray, Hon. Barrington P. Jr., CFP, LUTC",
-    "Hon Oladapo",
     "Jose Aznar y Lopez",
     "John E Smith",
     "John e Smith",
@@ -1669,6 +1671,7 @@ if __name__ == '__main__':
         name = sys.argv[1]
         hn = HumanName(name)
         print((repr(hn)))
+        print((hn.capitalize()))
     else:
         # if log.level > 0:
         #     for name in TEST_NAMES:
