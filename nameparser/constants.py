@@ -452,6 +452,8 @@ TITLES = FIRST_NAME_TITLES | set([
     'judicial',
     "queen's",
     "king's",
+    'prince',
+    'princess',
     'bench',
     'right',
     'majesty',
