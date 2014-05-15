@@ -36,6 +36,8 @@ Supports 3 different comma placement variations in the input string.
 When there is ambiguity that cannot be resolved by a rule-based approach,
 HumanName prefers to handle the most common cases correctly. For example,
 "Dean" is not parsed as title because it is more common as a first name.
+(You can customize this behavior though, see `Customizing the Parser with
+Your Own Constants`_)
 
 Unit Tests
 ------------
@@ -191,8 +193,8 @@ These constants are set at the module level using nameparser.config_.
 Predefined Variables
 ++++++++++++++++++++
 
-These are available via ``from nameparser.config import constants`` or on the ``C`` 
-attribute of a ``HumanName`` instance, e.g. ``hn.C``.
+These are available via ``from nameparser.config import constants`` or on the
+``C`` attribute of a ``HumanName`` instance, e.g. ``hn.C``.
 
 * **prefixes**:
   Parts that come before last names, e.g. 'del' or 'van'
@@ -285,15 +287,13 @@ Parser Customizations Are Module-Wide
 
 When you modify the configuration, by default this will modify the behavior all
 HumanName instances. This could be a handy way to set it up for your entire
-project, but it could also lead to some unexpected behavior because changing one
-instance could modify the behavior of another instance.
+project, but it could also lead to some unexpected behavior because changing
+the config on one instance could modify the behavior of another instance.
 
 ::
 
-    >>> from nameparser import HumanName
-    >>> from nameparser.config import constants
-    >>> constants.titles.add('dean')
     >>> hn = HumanName("Dean Robert Johns")
+    >>> hn.C.titles.add('dean')
     >>> hn
     <HumanName : [
     	Title: 'Dean' 
@@ -317,12 +317,9 @@ instance could modify the behavior of another instance.
 
 If you'd prefer new instances to have their own config values, you can pass
 ``None`` as the second argument (or ``constant`` keyword argument) when
-instantiating ``HumanName``. The instance's constants can be accessed via its
-``C`` attribute. 
-
-Note that each instance always has a ``C`` attribute, but if you didn't pass
-something falsey to the ``constants`` argument then you'd still be
-modifying the module-level config values with the behavior described above.
+instantiating ``HumanName``. Each instance always has a ``C`` attribute, but if
+you didn't pass something falsey to the ``constants`` argument then it's a
+reference to the module-level config values with the behavior described above.
 
 ::
 
