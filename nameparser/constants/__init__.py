@@ -2,13 +2,13 @@
 from __future__ import unicode_literals
 import collections
 
-from prefixes import PREFIXES
-from capitalization import CAPITALIZATION_EXCEPTIONS
-from conjunctions import CONJUNCTIONS
-from suffixes import SUFFIXES
-from titles import TITLES
-from titles import FIRST_NAME_TITLES
-from regexes import REGEXES
+from nameparser.constants.prefixes import PREFIXES
+from nameparser.constants.capitalization import CAPITALIZATION_EXCEPTIONS
+from nameparser.constants.conjunctions import CONJUNCTIONS
+from nameparser.constants.suffixes import SUFFIXES
+from nameparser.constants.titles import TITLES
+from nameparser.constants.titles import FIRST_NAME_TITLES
+from nameparser.constants.regexes import REGEXES
 
 class Manager(collections.Set):
     def __init__(self, elements):

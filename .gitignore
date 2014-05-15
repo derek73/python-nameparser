@@ -9,3 +9,4 @@ dummycert.pem
 build
 *.egg
 .env
+.env3
