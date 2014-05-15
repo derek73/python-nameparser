@@ -205,12 +205,12 @@ Predefined Variable Names
   There are some exceptions, such as roman numbers used for suffixes.
   You can update this with a dictionary or a tuple. 
 
-Each of these predefined sets of variables includes `add()` and `remove()`
-methods for easy modification. They also inherit from `set()` so you can 
+Each of these predefined sets of variables includes ``add()`` and ``remove()``
+methods for easy modification. They also inherit from ``set()`` so you can 
 modify them with any methods that work on sets. 
 
 Any strings you add to the constants should be lower case and not include
-periods. The `add()` and `remove()` method handles that for you
+periods. The ``add()`` and ``remove()`` method handles that for you
 automatically, but other set methods will not.
 
 Parser Customization Examples
@@ -252,7 +252,7 @@ that "Hon" can be recognized as a first name.
 If you would like "Dean" to be parsed as a title, simply add it to the
 titles constant. 
 
-You can pass multiple strings to both the `add()` and `remove()`
+You can pass multiple strings to both the ``add()`` and ``remove()``
 methods and each string will be added or removed.
 
 ::
@@ -307,14 +307,14 @@ of another instance.
     ]>
 
 
-If you'd prefer new instances to have their own config values, you can pass `None`
-as the second argument when instantiating `HumanName`. The instance's constants can
-be accessed via its `C` attribute. Similarly the regexes can be overridden by
-setting the `regexes` argument to `None`, and the instance's regexes are availabe
-via its `RE` attribute.
+If you'd prefer new instances to have their own config values, you can pass ``None``
+as the second argument when instantiating ``HumanName``. The instance's constants can
+be accessed via its ``C`` attribute. Similarly the regexes can be overridden by
+setting the ``regexes`` argument to ``None``, and the instance's regexes are availabe
+via its ``RE`` attribute.
 
-Note that each instance always has a `C` attribute, but if you didn't pass `None`
-or `False` to the `constants` argument then you'd still be modifying the module-level
+Note that each instance always has a ``C`` attribute, but if you didn't pass ``None``
+or ``False`` to the ``constants`` argument then you'd still be modifying the module-level
 config values with the behavior described above.
 
 ::
