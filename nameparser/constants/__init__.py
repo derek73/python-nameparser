@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 import collections
 
+from nameparser.util import lc
 from nameparser.constants.prefixes import PREFIXES
 from nameparser.constants.capitalization import CAPITALIZATION_EXCEPTIONS
 from nameparser.constants.conjunctions import CONJUNCTIONS
@@ -39,11 +40,11 @@ class Manager(collections.Set):
             return getattr(self, self.elements[c]) or next(self)
     
     def add(self, *strings):
-        [self.elements.add(s.lower().replace('.','')) for s in strings]
+        [self.elements.add(lc(s)) for s in strings]
         return self.elements
     
     def remove(self, *strings):
-        [self.elements.remove(s) for s in strings if s in self.elements]
+        [self.elements.remove(lc(s)) for s in strings if lc(s) in self.elements]
         return self.elements
 
 class Constants(object):

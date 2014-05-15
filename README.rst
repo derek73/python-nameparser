@@ -12,12 +12,12 @@ approach. It's not perfect, but it gets you pretty far.
 
 **Attributes**
 
-* HumanName.title
-* HumanName.first
-* HumanName.middle
-* HumanName.last
-* HumanName.suffix
-* HumanName.nickname
+* o.title
+* o.first
+* o.middle
+* o.last
+* o.suffix
+* o.nickname
 
 Supports 3 different comma placement variations in the input string.
 
@@ -178,50 +178,103 @@ Customizing the Parser with Your Own Constants
 
 Recognition of titles, prefixes, suffixes and conjunctions is provided
 by matching the lower case characters of a name piece with pre-defined
-sets located in ``nameparser.constants``. You can adjust them to suite
-your needs by passing your own set of constants when instantiating a new
-``HumanName`` object. Be sure to use the lower case representation with
-no punctuation.
+sets located in nameparser.constants_. Since everyone's data are a
+little bit different, you can easily adjust these predefined sets to
+help fine tune the parser for your dataset.
 
-* prefixes_c = PREFIXES
-* titles_c = TITLES
-* suffixes_c = SUFFIXES
-* conjunctions_c = CONJUNCTIONS
-* capitalization_exceptions_c = CAPITALIZATION_EXCEPTIONS
+These constants are set at the module level using nameparser.constants_.
 
+.. _nameparser.constants: https://github.com/derek73/python-nameparser/tree/master/nameparser/constants
 
-Parser Customization Example
-++++++++++++++++++++++++++++
+Predefined Variable Names
++++++++++++++++++++++++++
 
-"Te" is a prefix in some languages, but a proper name in others. If you
-want your parser to parse it as title, add "te" to the ``prefixes_c``
-when instantiating the HumanName class. Keep in mind that the constants
-should always be lower case.
+  * **prefixes**:
+    Parts that come before last names, e.g. 'del' or 'van'
+  * **titles**:
+    Parts that come before the first names. Any words included in
+    here will never be considered a first name, so use with care.
+  * **suffixes**:
+    Parts that appear after the last name, e.g. "Jr." or "MD"
+  * **conjunctions**:
+    Parts that are used to join names together, e.g. "and", "y" and "&".
+    "of" and "the" are also include to facilitate joining multiple titles,
+    e.g. "President of the United States".
+  * **capitalization_exceptions**:
+    Most parts should be capitalized by capitalizing the first letter.
+    There are some exceptions, such as roman numbers used for suffixes.
+    You can update this with a dictionary or a tuple. 
+
+Each of these predefined sets of variables includes `add()` and `remove()`
+methods for easy modification. They also inherit from `set()` so you can 
+modify them with any methods that work on sets. 
+
+Any strings you add to the constants should be lower case and not include
+periods. The `add()` and `remove()` method handles that for you
+automatically, but other set methods will not.
+
+Parser Customization Examples
++++++++++++++++++++++++++++++
+
+"Hon" is a common abbreviation for "Honorable", a title used when addressing
+judges. It is also sometimes a first name. If your dataset contains more
+"Hon"s than judges, you may wish to remove it from the titles constant so
+that "Hon" can be recognized as a first name.
 
 ::
 
     >>> from nameparser import HumanName
-    >>> from nameparser.constants import PREFIXES
-    >>> 
-    >>> prefixes_c = PREFIXES | set(['te'])
-    >>> hn = HumanName(prefixes_c=prefixes_c)
-    >>> hn.full_name = "Te Awanui-a-Rangi Black"
+    >>> hn = HumanName("Hon Solo")
+    >>> hn
+    <HumanName : [
+    	Title: 'Hon' 
+    	First: '' 
+    	Middle: '' 
+    	Last: 'Solo' 
+    	Suffix: ''
+    	Nickname: ''
+    ]>
+    >>> from nameparser.constants import constants
+    >>> constants.titles.remove('hon')
+    >>> hn = HumanName("Hon Solo")
     >>> hn
     <HumanName : [
     	Title: '' 
-    	First: 'Te Awanui-a-Rangi' 
+    	First: 'Hon' 
     	Middle: '' 
-    	Last: 'Black' 
+    	Last: 'Solo' 
     	Suffix: ''
     	Nickname: ''
     ]>
 
 
-Contributing via GitHub
-----------------------------
+"Dean" is a common first name, but sometimes it is more common as a title.
+If you would like "Dean" to be parsed as a title, simply add it to the
+titles constant.
 
-Feel free to post new issues to the GitHub project. The easiest way to submit
-changes is to fork the project on GitHub and commit your changes there. I'll happily pull changes that include tests. 
+::
+
+    >>> from nameparser import HumanName
+    >>> from nameparser.constants import constants
+    >>> constants.titles.add('dean', 'Chemistry')
+    >>> hn = HumanName("Assoc Dean of Chemistry Robert Johns")
+    >>> hn
+    <HumanName : [
+    	Title: 'Assoc Dean of Chemistry' 
+    	First: 'Robert' 
+    	Middle: '' 
+    	Last: 'Johns' 
+    	Suffix: ''
+    	Nickname: ''
+    ]>
+
+You can also pass multiple strings to both the `add()` and `remove()`
+methods.
+
+    >>> constants.titles.add('Dean', 'Sharif')
+
+Contributing
+------------
 
 Please let me know if there are ways this library could be restructured to make
 it easier for you to use in your projects. 
