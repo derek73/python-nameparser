@@ -47,6 +47,13 @@ class Manager(collections.Set):
         [self.elements.remove(lc(s)) for s in strings if lc(s) in self.elements]
         return self.elements
 
+
+class Regexes(object):
+    def __init__(self):
+        for name, re in REGEXES:
+            setattr(self, name, re)
+
+
 class Constants(object):
     
     def __init__(self):
@@ -55,7 +62,7 @@ class Constants(object):
         self.titles            = Manager(TITLES)
         self.first_name_titles = Manager(FIRST_NAME_TITLES)
         self.conjunctions      = Manager(CONJUNCTIONS)
-        self.regexes           = Manager(REGEXES)
+        self.RE                = Regexes()
     
     @property
     def suffixes_prefixes_titles(self):
@@ -65,10 +72,4 @@ class Constants(object):
     capitalization_exceptions = CAPITALIZATION_EXCEPTIONS
     
 
-class Regexes(object):
-    def __init__(self):
-        for name, re in REGEXES:
-            setattr(self, name, re)
-
 constants = Constants()
-regexes = Regexes()

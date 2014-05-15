@@ -186,13 +186,16 @@ These constants are set at the module level using nameparser.config_.
 
 .. _nameparser.config: https://github.com/derek73/python-nameparser/tree/master/nameparser/config
 
-Predefined Variable Names
-+++++++++++++++++++++++++
+Predefined Variables
+++++++++++++++++++++
+
+These are available via ``from nameparser.config import constants`` or on the ``C`` 
+attribute of a ``HumanName`` instance, e.g. ``hn.C``.
 
 * **prefixes**:
   Parts that come before last names, e.g. 'del' or 'van'
 * **titles**:
-  Parts that come before the first names. Any words included in
+  Parts that come before the first names. Any strings included in
   here will never be considered a first name, so use with care.
 * **suffixes**:
   Parts that appear after the last name, e.g. "Jr." or "MD"
@@ -204,14 +207,17 @@ Predefined Variable Names
   Most parts should be capitalized by capitalizing the first letter.
   There are some exceptions, such as roman numbers used for suffixes.
   You can update this with a dictionary or a tuple. 
+* **RE**: 
+  Contains all the various regular expressions used in the parser.
 
-Each of these predefined sets of variables includes ``add()`` and ``remove()``
-methods for easy modification. They also inherit from ``set()`` so you can 
-modify them with any methods that work on sets. 
+Each of these predefined sets of variables (except ``RE``) includes ``add()``
+and ``remove()`` methods for easy modification. They also inherit from ``set()``
+so you can modify them with any methods that work on sets. ``RE`` is a tuple
+but can be replaced with a dictionary if you need to modify it.
 
 Any strings you add to the constants should be lower case and not include
 periods. The ``add()`` and ``remove()`` method handles that for you
-automatically, but other set methods will not.
+automatically, but other ``set()`` methods will not.
 
 Parser Customization Examples
 +++++++++++++++++++++++++++++
@@ -219,7 +225,7 @@ Parser Customization Examples
 "Hon" is a common abbreviation for "Honorable", a title used when addressing
 judges. It is also sometimes a first name. If your dataset contains more
 "Hon"s than judges, you may wish to remove it from the titles constant so
-that "Hon" can be recognized as a first name.
+that "Hon" can be parsed as a first name.
 
 ::
 
@@ -272,13 +278,13 @@ methods and each string will be added or removed.
     ]>
 
 
-Parser Customizations Are At Module-Level 
+Parser Customizations Are Module-Wide 
 +++++++++++++++++++++++++++++
 
-When you modify the configuration, by default this will modify the behavior all HumanName
-instances. This could be a handy way to set it up for your entire project, but could also 
-lead to some unexpected behavior because changing one instance could modify the behavior 
-of another instance. 
+When you modify the configuration, by default this will modify the behavior all
+HumanName instances. This could be a handy way to set it up for your entire
+project, but it could also lead to some unexpected behavior because changing one
+instance could modify the behavior of another instance.
 
 ::
 
@@ -307,15 +313,14 @@ of another instance.
     ]>
 
 
-If you'd prefer new instances to have their own config values, you can pass ``None``
-as the second argument when instantiating ``HumanName``. The instance's constants can
-be accessed via its ``C`` attribute. Similarly the regexes can be overridden by
-setting the ``regexes`` argument to ``None``, and the instance's regexes are availabe
-via its ``RE`` attribute.
+If you'd prefer new instances to have their own config values, you can pass
+``None`` as the second argument (or ``constant`` keyword argument) when
+instantiating ``HumanName``. The instance's constants can be accessed via its
+``C`` attribute. 
 
-Note that each instance always has a ``C`` attribute, but if you didn't pass ``None``
-or ``False`` to the ``constants`` argument then you'd still be modifying the module-level
-config values with the behavior described above.
+Note that each instance always has a ``C`` attribute, but if you didn't pass
+something falsey to the ``constants`` argument then you'd still be
+modifying the module-level config values with the behavior described above.
 
 ::
 
@@ -346,10 +351,11 @@ Contributing
 ------------
 
 Please let me know if there are ways this library could be restructured to make
-it easier for you to use in your projects. 
+it easier for you to use in your projects. Read CONTRIBUTING.md_ for more info.
 
     https://github.com/derek73/python-nameparser
 
+.. _CONTRIBUTING.md: https://github.com/derek73/python-nameparser/tree/master/CONTRIBUTING.md
 
 Testing
 +++++++
@@ -391,6 +397,9 @@ Naming Practices and Resources
 Release Log
 -----------
 
+    * 0.3 - May ?, 2014
+        - Refactor configuration to simplify modifications to constants
+        - use unicode_literals to simplify Python 2 & 3 support.
     * 0.2.10 - May 6, 2014
         - If name is only a title and one part, assume it's a last name instead of a first name. (`#7 <https://github.com/derek73/python-nameparser/issues/7>`_).
         - Add some judicial and other common titles. 

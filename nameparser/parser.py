@@ -38,15 +38,13 @@ class HumanName(object):
      
     """
     
-    def __init__(self, full_name="", constants=constants, regexes=regexes,
-                                    encoding=ENCODING, string_format=None):
+    def __init__(self, full_name="", constants=constants, encoding=ENCODING, 
+                string_format=None):
         if constants:
             self.C = constants
-            self.RE = regexes or Regexes()
             self.has_own_config = False
         else:
             self.C = Constants()
-            self.RE = Regexes()
             self.has_own_config = True
         self.ENCODING = encoding
         self.string_format = string_format
@@ -197,7 +195,7 @@ class HumanName(object):
             and not self.is_an_initial(piece) 
     
     def is_an_initial(self, value):
-        return self.RE.initial.match(value) or False
+        return self.C.RE.initial.match(value) or False
 
     # def is_a_roman_numeral(value):
     #     return re_roman_numeral.match(value) or False
@@ -215,6 +213,21 @@ class HumanName(object):
         self.parse_full_name()
 
     
+    def pre_process(self):
+        """
+        This happens at the beginning of the parse_full_name() before
+        any other processing of the string aside from unicode normalization.
+        """
+        self.parse_nicknames()
+        
+
+    def post_process(self):
+        """
+        This happens at the end of the parse_full_name() after
+        all other processing has taken place.
+        """
+        self.handle_firstnames()
+
     def parse_nicknames(self):
         """
         Handling Nicknames
@@ -226,10 +239,22 @@ class HumanName(object):
         
         https://code.google.com/p/python-nameparser/issues/detail?id=33
         """
-        re_nickname = self.RE.nickname
+        re_nickname = self.C.RE.nickname
         if re_nickname.search(self._full_name):
             self.nickname_list = re_nickname.findall(self._full_name)
             self._full_name = re_nickname.sub('', self._full_name)
+
+    def handle_firstnames(self):
+        """
+        If there are only two parts and one is a title, assume it's a last name
+        instead of a first name. e.g. Mr. Johnson. Unless it's a special title
+        like "Sir", then when it's followed by a single name that name is always
+        a first name.
+        """
+        if self.title \
+            and len(self) == 2 \
+            and not lc(self.title) in self.C.first_name_titles:
+            self.last, self.first = self.first, self.last
 
     def parse_full_name(self):
         """
@@ -247,10 +272,10 @@ class HumanName(object):
         if not isinstance(self._full_name, text_type):
             self._full_name = u(self._full_name, self.ENCODING)
         
-        self.parse_nicknames()
+        self.pre_process()
         
         # collapse multiple spaces
-        self._full_name = self.RE.spaces.sub(" ", self._full_name.strip())
+        self._full_name = self.C.RE.spaces.sub(" ", self._full_name.strip())
         
         # break up full_name by commas
         parts = [x.strip() for x in self._full_name.split(",")]
@@ -350,11 +375,13 @@ class HumanName(object):
 
     def _parse_pieces(self, parts, additional_parts_count=0):
         """
-        Split parts on spaces and remove commas, join on conjunctions and lastname prefixes.
+        Split parts on spaces and remove commas, join on conjunctions and
+        lastname prefixes.
         
         additional_parts_count: if the comma format contains other parts, we need to know 
         how many there are to decide if things should be considered a conjunction.
         """
+        
         ps = []
         for part in parts:
             ps += [x.strip(' ,') for x in part.split(' ')]
@@ -451,15 +478,6 @@ class HumanName(object):
         log.debug("pieces: {0}".format(pieces))
         return pieces
     
-    def post_process(self):
-        # if there are only two parts and one is a title,
-        # assume it's a last name instead of a first name.
-        # e.g. Mr. Johnson. 
-        if self.title \
-            and len(self) == 2 \
-            and not lc(self.title) in self.C.first_name_titles:
-            self.last, self.first = self.first, self.last
-    
     
     ### Capitalization Support
     
@@ -469,11 +487,11 @@ class HumanName(object):
         exceptions = dict(self.C.capitalization_exceptions)
         if word in exceptions:
             return exceptions[word]
-        mac_match = self.RE.mac.match(word)
+        mac_match = self.C.RE.mac.match(word)
         if mac_match:
             def cap_after_mac(m):
                 return m.group(1).capitalize() + m.group(2).capitalize()
-            return self.RE.mac.sub(cap_after_mac, word)
+            return self.C.RE.mac.sub(cap_after_mac, word)
         else:
             return word.capitalize()
 
@@ -481,7 +499,7 @@ class HumanName(object):
         if not piece:
             return ""
         replacement = lambda m: self.cap_word(m.group(0))
-        return self.RE.word.sub(replacement, piece)
+        return self.C.RE.word.sub(replacement, piece)
 
     def capitalize(self):
         """
