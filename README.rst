@@ -5,7 +5,9 @@ A simple Python module for parsing human names into their individual
 components. The HumanName class splits a name string up into name parts
 based on placement in the string and matches against known name pieces
 like titles. It joins name pieces on conjunctions and special prefixes to
-last names like "del". It can also try to correct capitalization.
+last names like "del". Titles can be chained together and include conjunctions
+to handle titles like "Asst Secretary of State". It can also try to 
+correct capitalization.
 
 It attempts the best guess that can be made with a simple, rule-based
 approach. It's not perfect, but it gets you pretty far.
@@ -269,9 +271,9 @@ Naming Practices and Resources
 Release Log
 -----------
 
-    * 0.2.10 - May 6, 2014
-        - If name is only a title and one part, assume it's a last name instead of a first name. (`#7 <https://github.com/derek73/python-nameparser/issues/7>`_).
-        - Add some judicial and other common titles. 
+    * 0.2.10 - May, 2014
+        - If name is only a title and one part, assume it's a last name instead of a first name, with exceptions for some titles like 'Sir'. (`#7 <https://github.com/derek73/python-nameparser/issues/7>`_).
+        - Add some judicial and other common titles. (#9) 
     * 0.2.9 - Apr 1, 2014
         - Add a new nickname attribute containing anything in parenthesis or double quotes (`Issue 33 <https://code.google.com/p/python-nameparser/issues/detail?id=33>`_).
     * 0.2.8 - Oct 25, 2013
