@@ -11,7 +11,15 @@ from nameparser.config.titles import TITLES
 from nameparser.config.titles import FIRST_NAME_TITLES
 from nameparser.config.regexes import REGEXES
 
-class Manager(collections.Set):
+class SetManager(collections.Set):
+    '''
+    Easily add and remove config variables per module or instance.
+    
+    Only special functionality beyond that provided by set() is
+    to normalize constants for comparison (lower case, no periods)
+    when they are add()ed and remove()d and allow passing multiple 
+    string arguments to the add() and remove() methods.
+    '''
     def __init__(self, elements):
         self.elements = set(elements)
     
@@ -48,28 +56,33 @@ class Manager(collections.Set):
         return self.elements
 
 
-class Regexes(object):
-    def __init__(self):
-        for name, re in REGEXES:
-            setattr(self, name, re)
+class TupleManager(dict):
+    '''
+    aka, dotdict. Change the tuple into a slightly more friendly dictionary with 
+    dot.notation access.
+    '''
+    def __getattr__(self, attr):
+        return self.get(attr)
+    __setattr__= dict.__setitem__
+    __delattr__= dict.__delitem__
 
 
 class Constants(object):
     
     def __init__(self):
-        self.prefixes          = Manager(PREFIXES)
-        self.suffixes          = Manager(SUFFIXES)
-        self.titles            = Manager(TITLES)
-        self.first_name_titles = Manager(FIRST_NAME_TITLES)
-        self.conjunctions      = Manager(CONJUNCTIONS)
-        self.RE                = Regexes()
+        self.prefixes          = SetManager(PREFIXES)
+        self.suffixes          = SetManager(SUFFIXES)
+        self.titles            = SetManager(TITLES)
+        self.first_name_titles = SetManager(FIRST_NAME_TITLES)
+        self.conjunctions      = SetManager(CONJUNCTIONS)
+        self.capitalization_exceptions = TupleManager(CAPITALIZATION_EXCEPTIONS)
+        self.RE                = TupleManager(REGEXES)
     
     @property
     def suffixes_prefixes_titles(self):
         return self.prefixes | self.suffixes | self.titles
     
-    # these arent strings so Manager isn't helpful
-    capitalization_exceptions = CAPITALIZATION_EXCEPTIONS
-    
 
+# provide a common instance for the module to share
+# so its adjust configuration for the entire module.
 constants = Constants()

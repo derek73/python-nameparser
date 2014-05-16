@@ -14,7 +14,6 @@ from nameparser import HumanName
 from nameparser.util import u
 from nameparser.config import Constants
 from nameparser.config import constants
-from nameparser.config import Regexes
 
 
 

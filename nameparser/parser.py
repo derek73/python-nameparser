@@ -7,8 +7,6 @@ from nameparser.util import text_type
 from nameparser.util import lc
 from nameparser.config import constants
 from nameparser.config import Constants
-from nameparser.config import regexes
-from nameparser.config import Regexes
 
 # http://code.google.com/p/python-nameparser/issues/detail?id=10
 log = logging.getLogger('HumanName')
@@ -103,7 +101,7 @@ class HumanName(object):
     def __repr__(self):
         if self.unparsable:
             return "<%(class)s : [ Unparsable ] >" % {'class': self.__class__.__name__,}
-        return "<%(class)s : [\n\tTitle: '%(title)s' \n\tFirst: '%(first)s' \n\tMiddle: '%(middle)s' \n\tLast: '%(last)s' \n\tSuffix: '%(suffix)s'\n\tNickname: '%(nickname)s'\n]>" % {
+        return "<%(class)s : [\n\ttitle: '%(title)s' \n\tfirst: '%(first)s' \n\tmiddle: '%(middle)s' \n\tlast: '%(last)s' \n\tsuffix: '%(suffix)s'\n\tnickname: '%(nickname)s'\n]>" % {
             'class': self.__class__.__name__,
             'title': self.title,
             'first': self.first,
@@ -484,7 +482,7 @@ class HumanName(object):
     def cap_word(self, word):
         if self.is_prefix(word) or self.is_conjunction(word):
             return lc(word)
-        exceptions = dict(self.C.capitalization_exceptions)
+        exceptions = self.C.capitalization_exceptions
         if word in exceptions:
             return exceptions[word]
         mac_match = self.C.RE.mac.match(word)

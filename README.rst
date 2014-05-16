@@ -111,12 +111,12 @@ Usage
     u'Jason Alexander'
     >>> name
     <HumanName : [
-        Title: '' 
-        First: 'Juan' 
-        Middle: 'Jason Alexander' 
-        Last: 'Velasquez y Garcia' 
-        Suffix: 'Jr.'
-        Nickname: ''
+        title: '' 
+        first: 'Juan' 
+        middle: 'Jason Alexander' 
+        last: 'Velasquez y Garcia' 
+        suffix: 'Jr.'
+        nickname: ''
     ]>
     >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
     >>> name2 = HumanName("de la vega, dr. juan Q. xavier III")
@@ -177,8 +177,8 @@ included in the equals test since they do not signify a different
 person.
 
 
-Customizing the Parser with Your Own Constants
-----------------------------------------------
+Customizing the Parser with Your Own Configuration
+--------------------------------------------------
 
 Recognition of titles, prefixes, suffixes and conjunctions is provided
 by matching the lower case characters of a name piece with pre-defined
@@ -186,7 +186,7 @@ sets located in nameparser.config_. Since everyone's data are a
 little bit different, you can easily adjust these predefined sets to
 help fine tune the parser for your dataset.
 
-These constants are set at the module level using nameparser.config_.
+These constants are defined in the nameparser.config_ module.
 
 .. _nameparser.config: https://github.com/derek73/python-nameparser/tree/master/nameparser/config
 
@@ -237,24 +237,24 @@ that "Hon" can be parsed as a first name.
     >>> hn = HumanName("Hon Solo")
     >>> hn
     <HumanName : [
-    	Title: 'Hon' 
-    	First: '' 
-    	Middle: '' 
-    	Last: 'Solo' 
-    	Suffix: ''
-    	Nickname: ''
+    	title: 'Hon' 
+    	first: '' 
+    	middle: '' 
+    	last: 'Solo' 
+    	suffix: ''
+    	nickname: ''
     ]>
     >>> from nameparser.config import constants
     >>> constants.titles.remove('hon')
     >>> hn = HumanName("Hon Solo")
     >>> hn
     <HumanName : [
-    	Title: '' 
-    	First: 'Hon' 
-    	Middle: '' 
-    	Last: 'Solo' 
-    	Suffix: ''
-    	Nickname: ''
+    	title: '' 
+    	first: 'Hon' 
+    	middle: '' 
+    	last: 'Solo' 
+    	suffix: ''
+    	nickname: ''
     ]>
 
 
@@ -273,12 +273,12 @@ methods and each string will be added or removed.
     >>> hn = HumanName("Assoc Dean of Chemistry Robert Johns")
     >>> hn
     <HumanName : [
-    	Title: 'Assoc Dean of Chemistry' 
-    	First: 'Robert' 
-    	Middle: '' 
-    	Last: 'Johns' 
-    	Suffix: ''
-    	Nickname: ''
+    	title: 'Assoc Dean of Chemistry' 
+    	first: 'Robert' 
+    	middle: '' 
+    	last: 'Johns' 
+    	suffix: ''
+    	nickname: ''
     ]>
 
 
@@ -292,26 +292,27 @@ the config on one instance could modify the behavior of another instance.
 
 ::
 
+    >>> from nameparser import HumanName
     >>> hn = HumanName("Dean Robert Johns")
     >>> hn.C.titles.add('dean')
     >>> hn
     <HumanName : [
-    	Title: 'Dean' 
-    	First: 'Robert' 
-    	Middle: '' 
-    	Last: 'Johns' 
-    	Suffix: ''
-    	Nickname: ''
+    	title: 'Dean' 
+    	first: 'Robert' 
+    	middle: '' 
+    	last: 'Johns' 
+    	suffix: ''
+    	nickname: ''
     ]>
     >>> hn2 = HumanName("Dean Robert Johns")
     >>> hn2
     <HumanName : [
-    	Title: 'Dean' 
-    	First: 'Robert' 
-    	Middle: '' 
-    	Last: 'Johns' 
-    	Suffix: ''
-    	Nickname: ''
+    	title: 'Dean' 
+    	first: 'Robert' 
+    	middle: '' 
+    	last: 'Johns' 
+    	suffix: ''
+    	nickname: ''
     ]>
 
 
@@ -323,26 +324,73 @@ reference to the module-level config values with the behavior described above.
 
 ::
 
+    >>> from nameparser import HumanName
     >>> hn = HumanName("Dean Robert Johns", None)
     >>> hn.C.titles.add('dean')
     >>> hn
     <HumanName : [
-    	Title: 'Dean' 
-    	First: 'Robert' 
-    	Middle: '' 
-    	Last: 'Johns' 
-    	Suffix: ''
-    	Nickname: ''
+    	title: 'Dean' 
+    	first: 'Robert' 
+    	middle: '' 
+    	last: 'Johns' 
+    	suffix: ''
+    	nickname: ''
     ]>
+    >>> hn.has_own_config
+    True
     >>> hn2 = HumanName("Dean Robert Johns")
     >>> hn2
     <HumanName : [
-    	Title: '' 
-    	First: 'Dean' 
-    	Middle: 'Robert' 
-    	Last: 'Johns' 
-    	Suffix: ''
-    	Nickname: ''
+    	title: '' 
+    	first: 'Dean' 
+    	middle: 'Robert' 
+    	last: 'Johns' 
+    	suffix: ''
+    	nickname: ''
+    ]>
+    >>> hn2.has_own_config
+    False
+
+
+Refreshing the Parse
+++++++++++++++++++++
+
+The full name is parsed upon assignment to the ``full_name`` attribute or
+instantiation. Sometimes after making changes to configuration or other inner
+data after assigning the full name, the name will need to be re-parsed with
+the ``parse_full_name()`` method before you see those changes with ``repr()``.
+
+
+    >>> from nameparser import HumanName
+    >>> hn = HumanName("Dean Robert Johns")
+    >>> hn
+    <HumanName : [
+    	title: 'Dean' 
+    	first: 'Robert' 
+    	middle: '' 
+    	last: 'Johns' 
+    	suffix: ''
+    	nickname: ''
+    ]>
+    >>> hn.C.titles.add('dean')
+    >>> hn
+    <HumanName : [
+    	title: 'Dean' 
+    	first: 'Robert' 
+    	middle: '' 
+    	last: 'Johns' 
+    	suffix: ''
+    	nickname: ''
+    ]>
+    >>> hn.parse_full_name()
+    >>> hn
+    <HumanName : [
+    	title: '' 
+    	first: 'Dean' 
+    	middle: 'Robert' 
+    	last: 'Johns' 
+    	suffix: ''
+    	nickname: ''
     ]>
 
 
@@ -370,11 +418,12 @@ name will be parsed.
 
     $ ./tests.py "Secretary of State Hillary Rodham-Clinton"
     <HumanName : [
-    	Title: 'Secretary of State' 
-    	First: 'Hillary' 
-    	Middle: '' 
-    	Last: 'Rodham-Clinton' 
-    	Suffix: ''
+    	title: 'Secretary of State' 
+    	first: 'Hillary' 
+    	middle: '' 
+    	last: 'Rodham-Clinton' 
+    	suffix: ''
+    	nickname: ''
     ]>
     
 
