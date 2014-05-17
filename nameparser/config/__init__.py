@@ -9,7 +9,7 @@ configuration by importing this instance and changing it.
 
 ::
 
-    >>> from nameparser.config import constants
+    >>> from nameparser.config import CONSTANTS
     >>> constants.titles.remove('hon').add('chemistry','dean')
 
 You can also adjust the configuration of individual instances by passing
@@ -110,7 +110,7 @@ class Constants(object):
     """
     This class is used to hold all of the configuration for the parser.
     An instance of this class is available via 
-    ``from nameparser.config import constants`` or on the
+    ``from nameparser.config import CONSTANTS`` or on the
     ``C`` attribute of a :py:class:`~nameparser.parser.HumanName` instance, e.g. ``hn.C``.
 
     :param set prefixes: 

@@ -12,7 +12,7 @@ Changing the Predefined Variables
 +++++++++++++++++++++++++++++++++
 
 There are a few ways to adjust the parser configuration depending on your needs. 
-The config is available via ``from nameparser.config import constants`` or on the
+The config is available via ``from nameparser.config import CONSTANTS`` or on the
 ``C`` attribute of a ``HumanName`` instance, e.g. ``hn.C``. Take a look 
 at the :py:mod:`nameparser.config` documentation to get a better idea what they are
 and how they are used, but here's a quick walk through.
@@ -39,8 +39,8 @@ that "Hon" can be parsed as a first name.
     	suffix: ''
     	nickname: ''
     ]>
-    >>> from nameparser.config import constants
-    >>> constants.titles.remove('hon')
+    >>> from nameparser.config import CONSTANTS
+    >>> CONSTANTS.titles.remove('hon')
     >>> hn = HumanName("Hon Solo")
     >>> hn
     <HumanName : [
@@ -63,8 +63,8 @@ methods and each string will be added or removed.
 ::
 
     >>> from nameparser import HumanName
-    >>> from nameparser.config import constants
-    >>> constants.titles.add('dean', 'Chemistry')
+    >>> from nameparser.config import CONSTANTS
+    >>> CONSTANTS.titles.add('dean', 'Chemistry')
     >>> hn = HumanName("Assoc Dean of Chemistry Robert Johns")
     >>> hn
     <HumanName : [
