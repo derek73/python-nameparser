@@ -134,11 +134,30 @@ class HumanName(object):
             'nickname': self.nickname,
         }
     
-    def as_dict(self):
-        """Return the parsed name as a dictionary of its attributes."""
+    def as_dict(self, include_empty=True):
+        """
+        Return the parsed name as a dictionary of its attributes.
+        
+        :param bool include_empty: Include keys in the dictionary for empty name attributes.
+        :rtype: dict
+        
+        .. doctest::
+        
+            >>> name = HumanName("Bob Dole")
+            >>> name.as_dict()
+            {u'last': u'Dole', u'suffix': u'', u'title': u'', u'middle': u'', u'nickname': u'', u'first': u'Bob'}
+            >>> name.as_dict(False)
+            {u'last': u'Dole', u'first': u'Bob'}
+            
+        """
         d = {}
         for m in self._members:
-            d[m] = getattr(self, m)
+            if include_empty:
+                d[m] = getattr(self, m)
+            else:
+                val = getattr(self, m)
+                if val:
+                    d[m] = val
         return d
         
     ### attributes
