@@ -10,3 +10,6 @@ REGEXES = set([
     ("nickname", re.compile(r'\s*?[\("](.+?)[\)"]', re.U)),
     ("roman_numeral", re.compile(r'^(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$', re.I | re.U)),
 ])
+"""
+All regular expressions used by the parser are precompiled and stored in the config.
+"""

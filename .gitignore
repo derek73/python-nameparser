@@ -10,3 +10,7 @@ build
 *.egg
 .env
 .env3
+.coverage
+
+# docs
+docs/_*

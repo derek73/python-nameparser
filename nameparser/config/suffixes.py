@@ -20,3 +20,12 @@ SUFFIXES = set([
     'mp',
     'qc',
 ])
+"""
+
+Pieces that come at the end of the name but are not last names. These potentially
+conflict with initials that might be at the end of the name.
+
+These may be updated in the future because some of them are actually titles that just
+come at the end of the name, so semantically this is wrong. Positionally, it's correct.
+
+"""

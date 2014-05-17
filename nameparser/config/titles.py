@@ -1,17 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-
 # ## Titles ##
 # 
-# TITLES: Cannot include things that could also be first names, e.g. "dean"
-# many of these from wikipedia: https://en.wikipedia.org/wiki/Title
-# The parser recognizes chains of these including conjunctions allowing 
-# recognition titles like "Deputy Secretary of State"
-
-
-# FIRST_NAME_TITLES: When these titles are used with a single name, 
-# that name is a first name rather than a last name.
+#: When these titles are used with a single name, 
+#: that name is a first name rather than a last name.
 FIRST_NAME_TITLES = set([
     'sir',
     'dame',
@@ -29,6 +22,10 @@ FIRST_NAME_TITLES = set([
     'pope',
 ])
 
+#: **Cannot include things that could also be first names**, e.g. "dean".
+#: Many of these from wikipedia: https://en.wikipedia.org/wiki/Title.
+#: The parser recognizes chains of these including conjunctions allowing 
+#: recognition titles like "Deputy Secretary of State".
 TITLES = FIRST_NAME_TITLES | set([
     'dr',
     'doctor',

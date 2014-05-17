@@ -8,3 +8,6 @@ CAPITALIZATION_EXCEPTIONS = (
     ('md' ,'M.D.'),
     ('phd','Ph.D.'),
 )
+"""
+Pieces that are not capitalized by capitalizing the first letter.
+"""

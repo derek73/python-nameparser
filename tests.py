@@ -1,8 +1,18 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 """
-Run this file to run the tests, e.g "python tests.py" or "./tests.py".
+Run this file to run the tests.
+
+``python tests.py``
+
+Or install nose and run nosetests.
+
+``pip install nose``
+
+then:
+
+``nosetests``
+
 Post a ticket and/or clone and fix it. Pull requests with tests gladly accepted.
 https://github.com/derek73/python-nameparser/issues
 https://github.com/derek73/python-nameparser/pulls
@@ -13,9 +23,6 @@ import logging
 from nameparser import HumanName
 from nameparser.util import u
 from nameparser.config import Constants
-from nameparser.config import constants
-
-
 
 log = logging.getLogger('HumanName')
 
@@ -1205,6 +1212,14 @@ class ConstantsCustomization(HumanNameTestBase):
         self.m(hn.middle,"Hon", hn)
         self.m(hn.last,"Solo", hn)
 
+    def test_chain_multiple_arguments(self):
+        hn = HumanName("Dean Ms Hon Solo", constants=None)
+        hn.C.titles.remove('hon', 'ms').add('dean')
+        hn.parse_full_name()
+        self.m(hn.title,"Dean", hn)
+        self.m(hn.first,"Ms", hn)
+        self.m(hn.middle,"Hon", hn)
+        self.m(hn.last,"Solo", hn)
 
 class HumanNameNicknameTestCase(HumanNameTestBase):
     # https://code.google.com/p/python-nameparser/issues/detail?id=33
