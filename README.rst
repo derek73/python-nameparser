@@ -50,7 +50,7 @@ Installation
 
 If you're starting a new project, I recommend installing master from GitHub to give v0.3
 a try. Customizing it is not backwards compatible with v0.2.10 (the current version on
-pypi) because the configuration layout chagned, but passes all the same tests, and is
+pypi) because the configuration layout changed, but passes all the same tests, and is
 easier to configure.
 
 ``pip install -e git+git://github.com/derek73/python-nameparser.git#egg=nameparser``

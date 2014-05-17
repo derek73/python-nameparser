@@ -25,7 +25,7 @@ To run the tests locally, just run `python tests.py`.
 
 You can also pass a name string to `tests.py` to see how it will be parsed.
 
-    $ ./tests.py "Secretary of State Hillary Rodham-Clinton"
+    $ python tests.py "Secretary of State Hillary Rodham-Clinton"
     <HumanName : [
     	Title: 'Secretary of State' 
     	First: 'Hillary' 

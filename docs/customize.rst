@@ -1,30 +1,53 @@
 Customizing the Parser with Your Own Configuration
 ==================================================
 
-Recognition of titles, prefixes, suffixes and conjunctions is provided
-by matching the lower case characters of a name piece with pre-defined
-sets located in :py:mod:`nameparser.config`. Since everyone's data are a
-little bit different, you can easily adjust these predefined sets to
-help fine tune the parser for your dataset.
+Recognition of titles, prefixes, suffixes and conjunctions is provided by
+matching the lower case characters of a name piece with pre-defined sets
+of strings located in :py:mod:`nameparser.config`. You can easily adjust
+these predefined sets to help fine tune the parser for your dataset.
 
 
 Changing the Predefined Variables
 +++++++++++++++++++++++++++++++++
 
-There are a few ways to adjust the parser configuration depending on your needs. 
-The config is available via ``from nameparser.config import CONSTANTS`` or on the
-``C`` attribute of a ``HumanName`` instance, e.g. ``hn.C``. Take a look 
-at the :py:mod:`nameparser.config` documentation to get a better idea what they are
-and how they are used, but here's a quick walk through.
+There are a few ways to adjust the parser configuration depending on your
+needs. The config is available in two places that may or may not represent
+the same :py:class:`~nameparser.config.Constants` instance depending on
+how you instantiate the :py:class:`~nameparser.parser.HumanName` class.
+
+The first is via ``from nameparser.config import CONSTANTS``.
+
+::
+
+    >>> from nameparser.config import CONSTANTS
+    >>> CONSTANTS
+    <Constants() instance>
+
+The other is the ``C`` attribute of a ``HumanName`` instance, e.g.
+``hn.C``.
+
+::
+
+    >>> from nameparser import HumanName
+    >>> hn = HumanName("Dean Robert Johns")
+    >>> hn.C
+    <Constants() instance>
+
+Take a look at the :py:mod:`nameparser.config` documentation to see what's
+in the constants. Here's a quick walk through of some examples where you
+might want to adjust them.
 
 
 Parser Customization Examples
 +++++++++++++++++++++++++++++
 
-"Hon" is a common abbreviation for "Honorable", a title used when addressing
-judges. It is also sometimes a first name. If your dataset contains more
-"Hon"s than judges, you may wish to remove it from the titles constant so
-that "Hon" can be parsed as a first name.
+"Hon" is a common abbreviation for "Honorable", a title used when
+addressing judges, and is included in the default tiles constants which
+means it will never be considered a first name. 
+
+But "Hon is also sometimes a first name. If your dataset contains more
+"Hon"s than "Honorable"s, you may wish to remove it from the titles
+constant so that "Hon" can be parsed as a first name.
 
 ::
 
@@ -54,12 +77,14 @@ that "Hon" can be parsed as a first name.
     ]>
 
 
-"Dean" is a common first name, but sometimes it is more common as a title.
-If you would like "Dean" to be parsed as a title, simply add it to the
-titles constant. 
+"Dean" is a common first name so it is not included in the default titles
+constant. But in some contexts it is more common as a title. If you would
+like "Dean" to be parsed as a title, simply add it to the titles constant.
 
 You can pass multiple strings to both the ``add()`` and ``remove()``
-methods and each string will be added or removed.
+methods and each string will be added or removed. Both functions
+automatically normalize the strings for the parser's comparison method by
+making them lower case and removing periods.
 
 ::
 
