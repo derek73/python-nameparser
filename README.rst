@@ -35,10 +35,8 @@ Unit Tests
 .. image:: https://travis-ci.org/derek73/python-nameparser.svg
    :target: https://travis-ci.org/derek73/python-nameparser
 
-Over 100 unit tests with example names. 
-`Start a New Issue <https://github.com/derek73/python-nameparser/issues>`_ 
-for names that fail and I will try to fix it. Let me know if you have
-any suggestions for ways the library could be easier to use or modify. 
+Over 100 unit tests with example names. `Start a New Issue`_ 
+for names that fail and I will try to fix it. 
 
 
 Installation
@@ -51,7 +49,8 @@ Installation
 .. install with pip using the command below.
 
 If you're starting a new project, I recommend installing master from GitHub to give v0.3
-a try. It is not backwards compatible with v0.2, but passes all the same tests, and is
+a try. Customizing it is not backwards compatible with v0.2.10 (the current version on
+pypi) because the configuration layout chagned, but passes all the same tests, and is
 easier to configure.
 
 ``pip install -e git+git://github.com/derek73/python-nameparser.git#egg=nameparser``
@@ -75,10 +74,22 @@ http://nameparser.readthedocs.org/en/latest/
 Contributing
 ------------
 
-Please let me know if there are ways this library could be restructured to make
-it easier for you to use in your projects. Read CONTRIBUTING.md_ for more info.
+If you come across name piece that you think should be in the default config, you're
+probably right. `Start a New Issue`_ and we can get them added. 
 
-    https://github.com/derek73/python-nameparser
+Or, use GitHub's nifty
+web interface to add your new pieces directly to the config files and create a pull
+request all in one go, no fork needed. As an example, `click here to propose changes to
+the titles`_ config.
+
+Please let me know if there are ways this library could be restructured to make
+it easier for you to use in your projects. Read CONTRIBUTING.md_ for more info
+on running the tests and contributing to the project.
+
+**GitHub Project**
+
+https://github.com/derek73/python-nameparser
 
 .. _CONTRIBUTING.md: https://github.com/derek73/python-nameparser/tree/master/CONTRIBUTING.md
-
+.. _Start a New Issue: https://github.com/derek73/python-nameparser/issues
+.. _click here to propose changes to the titles: https://github.com/derek73/python-nameparser/edit/master/nameparser/config/titles.py
