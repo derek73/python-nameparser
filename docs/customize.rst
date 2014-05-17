@@ -40,7 +40,8 @@ that "Hon" can be parsed as a first name.
     	nickname: ''
     ]>
     >>> from nameparser.config import CONSTANTS
-    >>> CONSTANTS.titles.remove('hon')
+    >>> CONSTANTS.titles.remove('hon') # doctest: +ELLIPSIS
+    SetManager(set([u'msgt', ..., u'adjutant']))
     >>> hn = HumanName("Hon Solo")
     >>> hn
     <HumanName : [
@@ -64,7 +65,8 @@ methods and each string will be added or removed.
 
     >>> from nameparser import HumanName
     >>> from nameparser.config import CONSTANTS
-    >>> CONSTANTS.titles.add('dean', 'Chemistry')
+    >>> CONSTANTS.titles.add('dean', 'Chemistry') # doctest: +ELLIPSIS
+    SetManager(set([u'msgt', ..., u'adjutant']))
     >>> hn = HumanName("Assoc Dean of Chemistry Robert Johns")
     >>> hn
     <HumanName : [
@@ -89,7 +91,8 @@ the config on one instance could modify the behavior of another instance.
 
     >>> from nameparser import HumanName
     >>> hn = HumanName("Dean Robert Johns")
-    >>> hn.C.titles.add('dean')
+    >>> hn.C.titles.add('dean') # doctest: +ELLIPSIS
+    SetManager(set([u'msgt', ..., u'adjutant']))
     >>> hn
     <HumanName : [
     	title: 'Dean' 
@@ -121,7 +124,8 @@ reference to the module-level config values with the behavior described above.
 
     >>> from nameparser import HumanName
     >>> hn = HumanName("Dean Robert Johns", None)
-    >>> hn.C.titles.add('dean')
+    >>> hn.C.titles.add('dean') # doctest: +ELLIPSIS
+    SetManager(set([u'msgt', ..., u'adjutant']))
     >>> hn
     <HumanName : [
     	title: 'Dean' 
@@ -168,7 +172,8 @@ those changes with ``repr()``.
     	suffix: ''
     	nickname: ''
     ]>
-    >>> hn.C.titles.add('dean')
+    >>> hn.C.titles.add('dean') # doctest: +ELLIPSIS
+    SetManager(set([u'msgt', ..., u'adjutant']))
     >>> hn
     <HumanName : [
     	title: 'Dean' 

@@ -19,6 +19,7 @@ import os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('..'))
+import nameparser
 
 # -- General configuration ------------------------------------------------
 
@@ -55,7 +56,7 @@ copyright = u'2014, Derek Gulbranson'
 # built documents.
 #
 # The short X.Y version.
-version = '0.3'
+version = nameparser.__version__
 # The full version, including alpha/beta/rc tags.
 release = '0.3a1'
 
