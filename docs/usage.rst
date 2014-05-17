@@ -5,7 +5,7 @@ Example
 -------
 
 .. doctest::
-    :options: -ELLIPSIS, +NORMALIZE_WHITESPACE
+    :options: +NORMALIZE_WHITESPACE
 
     >>> from nameparser import HumanName
     >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
@@ -19,30 +19,16 @@ Example
     u'de la Vega'
     >>> name.suffix
     u'III'
-    >>> name.full_name = 'Doe-Ray, Col. Jonathan "John" A. Harris III'
-    >>> name.title
-    u'Col.'
-    >>> name.first
-    u'Jonathan'
-    >>> name.middle
-    u'A. Harris'
-    >>> name.last
-    u'Doe-Ray'
-    >>> name.suffix
-    u'III'
-    >>> name.nickname
-    u'John'
     >>> name.full_name = "Juan Q. Xavier Velasquez y Garcia, Jr."
-    >>> name.title
-    u''
-    >>> name.first
-    u'Juan'
-    >>> name.middle
-    u'Q. Xavier'
-    >>> name.last
-    u'Velasquez y Garcia'
-    >>> name.suffix
-    u'Jr.'
+    >>> name
+    <HumanName : [
+    	title: '' 
+    	first: 'Juan' 
+    	middle: 'Q. Xavier' 
+    	last: 'Velasquez y Garcia' 
+    	suffix: 'Jr.'
+    	nickname: ''
+    ]>
     >>> name.middle = "Jason Alexander"
     >>> name.middle
     u'Jason Alexander'
@@ -55,6 +41,9 @@ Example
         suffix: 'Jr.'
         nickname: ''
     ]>
+    >>> name.full_name = 'Doe-Ray, Col. Jonathan "John" A. Harris III'
+    >>> name.as_dict()
+    {u'last': u'Doe-Ray', u'suffix': u'III', u'title': u'Col.', u'middle': u'A. Harris', u'nickname': u'John', u'first': u'Jonathan'}
     >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
     >>> name2 = HumanName("de la vega, dr. juan Q. xavier III")
     >>> name == name2

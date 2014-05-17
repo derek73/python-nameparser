@@ -1705,8 +1705,8 @@ class HumanNameVariationTests(HumanNameTestBase):
         for name in self.TEST_NAMES:
             hn = HumanName(name)
             if len(hn.suffix_list) > 1:
-                hn = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict).split(',')[0])
-            hn_dict = hn._dict.copy()
+                hn = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn.as_dict()).split(',')[0])
+            hn_dict = hn.as_dict()
             attrs = [
                 'title',
                 'first',

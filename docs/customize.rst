@@ -42,8 +42,9 @@ Parser Customization Examples
 +++++++++++++++++++++++++++++
 
 "Hon" is a common abbreviation for "Honorable", a title used when
-addressing judges, and is included in the default tiles constants which
-means it will never be considered a first name. 
+addressing judges, and is included in the default tiles constants. This
+means it will never be considered a first name, because titles are the
+pieces before first names. 
 
 But "Hon" is also sometimes a first name. If your dataset contains more
 "Hon"s than "Honorable"s, you may wish to remove it from the titles

@@ -115,7 +115,7 @@ class HumanName(object):
     def __unicode__(self):
         if self.string_format:
             # string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
-            return self.string_format.format(**self._dict)
+            return self.string_format.format(**self.as_dict())
         return " ".join(self)
     
     def __str__(self):
@@ -134,13 +134,13 @@ class HumanName(object):
             'nickname': self.nickname,
         }
     
-    @property
-    def _dict(self):
+    def as_dict(self):
+        """Return the parsed name as a dictionary of its attributes."""
         d = {}
         for m in self._members:
             d[m] = getattr(self, m)
         return d
-    
+        
     ### attributes
     
     @property
@@ -310,7 +310,7 @@ class HumanName(object):
                 and len(self) == 2 \
                 and not lc(self.title) in self.C.first_name_titles:
             self.last, self.first = self.first, self.last
-
+    
     def parse_full_name(self):
         """
         The main parse method for the parser. This method is run upon assignment to the
