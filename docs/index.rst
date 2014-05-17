@@ -39,13 +39,19 @@ HumanName prefers to handle the most common cases correctly. For example,
 
 .. _Parser Customization Examples: customize.html#parser-customization-examples
 
-**Contents**:
+**Parsing Names**
 
 .. toctree::
    :maxdepth: 2
    
    usage
    customize
+
+**Developer Documentation**
+
+.. toctree::
+   :maxdepth: 2
+   
    modules
    resources
    release_log

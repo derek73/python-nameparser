@@ -18,7 +18,7 @@ https://travis-ci.org/derek73/python-nameparser
 Running Tests
 ---------------
 
-To run the tests locally, just run `tests.py`.
+To run the tests locally, just run `python tests.py`.
 
 
     ./tests.py

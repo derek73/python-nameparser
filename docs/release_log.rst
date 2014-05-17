@@ -2,8 +2,9 @@ Release Log
 ===========
 
 * 0.3 - May ?, 2014
-    - Refactor configuration to simplify modifications to constants
+    - Refactor configuration to simplify modifications to constants (backwards incompatible)
     - use unicode_literals to simplify Python 2 & 3 support.
+    - Generate documentation using sphinx and host on readthedocs.
 * 0.2.10 - May 6, 2014
     - If name is only a title and one part, assume it's a last name instead of a first name, with exceptions for some titles like 'Sir'. (`#7 <https://github.com/derek73/python-nameparser/issues/7>`_).
     - Add some judicial and other common titles. (#9) 
