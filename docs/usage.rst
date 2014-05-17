@@ -41,9 +41,11 @@ Example
         suffix: 'Jr.'
         nickname: ''
     ]>
-    >>> name.full_name = 'Doe-Ray, Col. Jonathan "John" A. Harris III'
+    >>> name.full_name = 'Doe-Ray, Jonathan "John" A. Harris'
     >>> name.as_dict()
-    {u'last': u'Doe-Ray', u'suffix': u'III', u'title': u'Col.', u'middle': u'A. Harris', u'nickname': u'John', u'first': u'Jonathan'}
+    {u'last': u'Doe-Ray', u'suffix': u'', u'title': u'', u'middle': u'A. Harris', u'nickname': u'John', u'first': u'Jonathan'}
+    >>> name.as_dict(False) # add False to hide keys with empty values
+    {u'middle': u'A. Harris', u'nickname': u'John', u'last': u'Doe-Ray', u'first': u'Jonathan'}
     >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
     >>> name2 = HumanName("de la vega, dr. juan Q. xavier III")
     >>> name == name2
