@@ -12,15 +12,6 @@ correct capitalization.
 It attempts the best guess that can be made with a simple, rule-based
 approach. It's not perfect, but it gets you pretty far.
 
-**Attributes**
-
-* o.title
-* o.first
-* o.middle
-* o.last
-* o.suffix
-* o.nickname
-
 **Usage Example**
 
 ::
