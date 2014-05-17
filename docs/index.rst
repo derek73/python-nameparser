@@ -55,6 +55,7 @@ HumanName prefers to handle the most common cases correctly. For example,
    modules
    resources
    release_log
+   contributing
 
 
 
