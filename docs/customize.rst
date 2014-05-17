@@ -17,7 +17,7 @@ how you instantiate the :py:class:`~nameparser.parser.HumanName` class.
 
 The first is via ``from nameparser.config import CONSTANTS``.
 
-::
+.. doctest::
 
     >>> from nameparser.config import CONSTANTS
     >>> CONSTANTS
@@ -26,7 +26,7 @@ The first is via ``from nameparser.config import CONSTANTS``.
 The other is the ``C`` attribute of a ``HumanName`` instance, e.g.
 ``hn.C``.
 
-::
+.. doctest::
 
     >>> from nameparser import HumanName
     >>> hn = HumanName("Dean Robert Johns")
@@ -119,20 +119,11 @@ the config on one instance could modify the behavior of another instance.
     :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
     >>> from nameparser import HumanName
-    >>> hn = HumanName("Dean Robert Johns")
-    >>> hn.C.titles.add('dean')
+    >>> instance = HumanName("")
+    >>> instance.C.titles.add('dean')
     SetManager(set([u'msgt', ..., u'adjutant']))
-    >>> hn
-    <HumanName : [
-    	title: 'Dean' 
-    	first: 'Robert' 
-    	middle: '' 
-    	last: 'Johns' 
-    	suffix: ''
-    	nickname: ''
-    ]>
-    >>> hn2 = HumanName("Dean Robert Johns")
-    >>> hn2
+    >>> other_instance = HumanName("Dean Robert Johns")
+    >>> other_instance # Dean parses as title
     <HumanName : [
     	title: 'Dean' 
     	first: 'Robert' 
@@ -149,26 +140,17 @@ instantiating ``HumanName``. Each instance always has a ``C`` attribute, but if
 you didn't pass something falsey to the ``constants`` argument then it's a
 reference to the module-level config values with the behavior described above.
 
-::
+.. doctest:: module config
+    :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
     >>> from nameparser import HumanName
-    >>> hn = HumanName("Dean Robert Johns", None)
-    >>> hn.C.titles.add('dean')
+    >>> instance = HumanName("Dean Robert Johns")
+    >>> instance.has_own_config
+    False
+    >>> instance.C.titles.add('dean')
     SetManager(set([u'msgt', ..., u'adjutant']))
-    >>> hn.parse_full_name() # need to refresh parse after changing config
-    >>> hn
-    <HumanName : [
-    	title: 'Dean' 
-    	first: 'Robert' 
-    	middle: '' 
-    	last: 'Johns' 
-    	suffix: ''
-    	nickname: ''
-    ]>
-    >>> hn.has_own_config
-    True
-    >>> hn2 = HumanName("Dean Robert Johns")
-    >>> hn2
+    >>> other_instance = HumanName("Dean Robert Johns", None)
+    >>> other_instance
     <HumanName : [
     	title: '' 
     	first: 'Dean' 
@@ -177,8 +159,8 @@ reference to the module-level config values with the behavior described above.
     	suffix: ''
     	nickname: ''
     ]>
-    >>> hn2.has_own_config
-    False
+    >>> other_instance.has_own_config
+    True
 
 
 Refreshing the Parse
@@ -193,6 +175,7 @@ those changes with ``repr()``.
 ::
 
     >>> from nameparser import HumanName
+    >>> from nameparser.config import CONSTANTS
     >>> hn = HumanName("Dean Robert Johns")
     >>> hn
     <HumanName : [
@@ -203,7 +186,7 @@ those changes with ``repr()``.
     	suffix: ''
     	nickname: ''
     ]>
-    >>> hn.C.titles.add('dean')
+    >>> CONSTANTS.titles.add('dean')
     SetManager(set([u'msgt', ..., u'adjutant']))
     >>> hn
     <HumanName : [
