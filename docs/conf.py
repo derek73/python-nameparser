@@ -261,3 +261,8 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+doctest_global_setup = """from nameparser import HumanName
+from nameparser.config import CONSTANTS, Constants
+CONSTANTS = Constants()
+"""

@@ -120,8 +120,8 @@ class HumanNamePythonTests(HumanNameTestBase):
     def test_slice(self):
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         self.m(list(hn), ['Dr.', 'John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC'], hn)
-        self.m(hn[1:], ['John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC'], hn)
-        self.m(hn[1:-1], ['John', 'P.', 'Doe-Ray'], hn)
+        self.m(hn[1:], ['John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC',''], hn)
+        self.m(hn[1:-2], ['John', 'P.', 'Doe-Ray'], hn)
 
     def test_conjunction_names(self):
         hn = HumanName("johnny y")
@@ -1511,11 +1511,11 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
 
 class HumanNameOutputFormatTests(HumanNameTestBase):
     def test_formating(self):
-        hn = HumanName("Rev John A. Kenneth Doe III")
-        hn.string_format = "{title} {first} {middle} {last} {suffix}"
-        self.assertEqual(u(hn), "Rev John A. Kenneth Doe III")
-        hn.string_format = "{last}, {title} {first} {middle}, {suffix}"
-        self.assertEqual(u(hn), "Doe, Rev John A. Kenneth, III")
+        hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
+        hn.string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
+        self.assertEqual(u(hn), "Rev John A. Kenneth Doe III (Kenny)")
+        hn.string_format = "{last}, {title} {first} {middle}, {suffix} ({nickname})"
+        self.assertEqual(u(hn), "Doe, Rev John A. Kenneth, III (Kenny)")
 
 
 TEST_NAMES = (
@@ -1706,9 +1706,27 @@ class HumanNameVariationTests(HumanNameTestBase):
             hn = HumanName(name)
             if len(hn.suffix_list) > 1:
                 hn = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict).split(',')[0])
-            nocomma = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn._dict))
-            lastnamecomma = HumanName("{last}, {title} {first} {middle} {suffix}".format(**hn._dict))
-            suffixcomma = HumanName("{title} {first} {middle} {last}, {suffix}".format(**hn._dict))
+            hn_dict = hn._dict.copy()
+            attrs = [
+                'title',
+                'first',
+                'middle',
+                'last',
+                'suffix',
+                'nickname',
+            ]
+            for attr in attrs:
+                if not getattr(hn, attr):
+                    setattr(hn,attr,'')
+            nocomma = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn_dict))
+            lastnamecomma = HumanName("{last}, {title} {first} {middle} {suffix}".format(**hn_dict))
+            if hn.suffix:
+                suffixcomma = HumanName("{title} {first} {middle} {last}, {suffix}".format(**hn_dict))
+            if hn.nickname:
+                nocomma = HumanName("{title} {first} {middle} {last} {suffix} ({nickname})".format(**hn_dict))
+                lastnamecomma = HumanName("{last}, {title} {first} {middle} {suffix} ({nickname})".format(**hn_dict))
+                if hn.suffix:
+                    suffixcomma = HumanName("{title} {first} {middle} {last}, {suffix} ({nickname})".format(**hn_dict))
             for attr in hn._members:
                 self.m(getattr(hn, attr), getattr(nocomma, attr), hn)
                 self.m(getattr(hn, attr), getattr(lastnamecomma, attr), hn)

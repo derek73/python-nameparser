@@ -47,32 +47,32 @@ class HumanName(object):
     :param str string_format: python string formatting 
     """
     
-    CONSTANTS = CONSTANTS
+    has_own_config = False
+    """True if this instance is not using the shared module-level configuration."""
+    
+    C = CONSTANTS
+    """
+    A reference to the configuration for this instance, which may or may not be a
+    reference to the module-wide instance at :py:mod:`~nameparser.config.CONSTANTS`.
+    See `Customizing the Parser <customize.html>`_.
+    """
+    
+    count = 0
+    _members = ['title','first','middle','last','suffix','nickname']
+    unparsable = True
+    _full_name = ''
     
     def __init__(self, full_name="", constants=CONSTANTS, encoding=ENCODING, 
                 string_format=None):
-        
+        global CONSTANTS
         self.C = constants
-        """
-        A reference to the configuration for this instance, which may be a
-        reference to the module-wide instance at :py:mod:`~nameparser.config.CONSTANTS`.
-        See `Customizing the Parser <customize.html>`_.
-        """
-        
-        self.has_own_config = False
-        
         if not self.C:
             self.C = Constants()
-        if self.C is not self.CONSTANTS:
-            #: True if this instance is not using the module-level configuration.
+        if self.C is not CONSTANTS:
             self.has_own_config = True
         
         self.ENCODING = encoding
         self.string_format = string_format
-        self.count = 0
-        self._members = ['title','first','middle','last','suffix']
-        self.unparsable = True
-        self._full_name = ''
         self.full_name = full_name
     
     def __iter__(self):
@@ -114,7 +114,7 @@ class HumanName(object):
 
     def __unicode__(self):
         if self.string_format:
-            # string_format = "{title} {first} {middle} {last} {suffix}"
+            # string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
             return self.string_format.format(**self._dict)
         return " ".join(self)
     
@@ -580,7 +580,7 @@ class HumanName(object):
         
         **Usage**
         
-        ::
+        .. doctest:: capitalize
         
             >>> name = HumanName('bob v. de la macdole-eisenhower phd')
             >>> name.capitalize()
@@ -596,8 +596,8 @@ class HumanName(object):
         name = u(self)
         if not (name == name.upper() or name == name.lower()):
             return
-        self.title_list = self.cap_piece(self.title).split(' ')
-        self.first_list = self.cap_piece(self.first).split(' ')
+        self.title_list  = self.cap_piece(self.title ).split(' ')
+        self.first_list  = self.cap_piece(self.first ).split(' ')
         self.middle_list = self.cap_piece(self.middle).split(' ')
-        self.last_list = self.cap_piece(self.last).split(' ')
+        self.last_list   = self.cap_piece(self.last  ).split(' ')
         self.suffix_list = self.cap_piece(self.suffix).split(' ')

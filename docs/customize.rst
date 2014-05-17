@@ -49,7 +49,8 @@ But "Hon" is also sometimes a first name. If your dataset contains more
 "Hon"s than "Honorable"s, you may wish to remove it from the titles
 constant so that "Hon" can be parsed as a first name.
 
-::
+.. doctest::
+    :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
     >>> from nameparser import HumanName
     >>> hn = HumanName("Hon Solo")
@@ -63,7 +64,7 @@ constant so that "Hon" can be parsed as a first name.
     	nickname: ''
     ]>
     >>> from nameparser.config import CONSTANTS
-    >>> CONSTANTS.titles.remove('hon') # doctest: +ELLIPSIS
+    >>> CONSTANTS.titles.remove('hon')
     SetManager(set([u'msgt', ..., u'adjutant']))
     >>> hn = HumanName("Hon Solo")
     >>> hn
@@ -86,11 +87,12 @@ methods and each string will be added or removed. Both functions
 automatically normalize the strings for the parser's comparison method by
 making them lower case and removing periods.
 
-::
+.. doctest::
+    :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
     >>> from nameparser import HumanName
     >>> from nameparser.config import CONSTANTS
-    >>> CONSTANTS.titles.add('dean', 'Chemistry') # doctest: +ELLIPSIS
+    >>> CONSTANTS.titles.add('dean', 'Chemistry')
     SetManager(set([u'msgt', ..., u'adjutant']))
     >>> hn = HumanName("Assoc Dean of Chemistry Robert Johns")
     >>> hn
@@ -112,11 +114,12 @@ HumanName instances. This could be a handy way to set it up for your entire
 project, but it could also lead to some unexpected behavior because changing
 the config on one instance could modify the behavior of another instance.
 
-::
+.. doctest:: module config
+    :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
     >>> from nameparser import HumanName
     >>> hn = HumanName("Dean Robert Johns")
-    >>> hn.C.titles.add('dean') # doctest: +ELLIPSIS
+    >>> hn.C.titles.add('dean')
     SetManager(set([u'msgt', ..., u'adjutant']))
     >>> hn
     <HumanName : [
@@ -149,8 +152,9 @@ reference to the module-level config values with the behavior described above.
 
     >>> from nameparser import HumanName
     >>> hn = HumanName("Dean Robert Johns", None)
-    >>> hn.C.titles.add('dean') # doctest: +ELLIPSIS
+    >>> hn.C.titles.add('dean')
     SetManager(set([u'msgt', ..., u'adjutant']))
+    >>> hn.parse_full_name() # need to refresh parse after changing config
     >>> hn
     <HumanName : [
     	title: 'Dean' 
@@ -185,25 +189,26 @@ data after assigning the full name, the name will need to be re-parsed with the
 :py:func:`~nameparser.parser.HumanName.parse_full_name()` method before you see 
 those changes with ``repr()``.
 
+::
 
     >>> from nameparser import HumanName
     >>> hn = HumanName("Dean Robert Johns")
     >>> hn
     <HumanName : [
-    	title: 'Dean' 
-    	first: 'Robert' 
-    	middle: '' 
+    	title: '' 
+    	first: 'Dean' 
+    	middle: 'Robert' 
     	last: 'Johns' 
     	suffix: ''
     	nickname: ''
     ]>
-    >>> hn.C.titles.add('dean') # doctest: +ELLIPSIS
+    >>> hn.C.titles.add('dean')
     SetManager(set([u'msgt', ..., u'adjutant']))
     >>> hn
     <HumanName : [
-    	title: 'Dean' 
-    	first: 'Robert' 
-    	middle: '' 
+    	title: '' 
+    	first: 'Dean' 
+    	middle: 'Robert' 
     	last: 'Johns' 
     	suffix: ''
     	nickname: ''
@@ -211,9 +216,9 @@ those changes with ``repr()``.
     >>> hn.parse_full_name()
     >>> hn
     <HumanName : [
-    	title: '' 
-    	first: 'Dean' 
-    	middle: 'Robert' 
+    	title: 'Dean' 
+    	first: 'Robert' 
+    	middle: '' 
     	last: 'Johns' 
     	suffix: ''
     	nickname: ''

@@ -42,7 +42,8 @@ from nameparser.config.regexes import REGEXES
 
 class SetManager(collections.Set):
     '''
-    Easily add and remove config variables per module or instance.
+    Easily add and remove config variables per module or instance. Subclass of
+    ``collections.Set``.
     
     Only special functionality beyond that provided by set() is
     to normalize constants for comparison (lower case, no periods)

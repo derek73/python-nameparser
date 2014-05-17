@@ -4,7 +4,8 @@ Using the HumanName Parser
 Example
 -------
 
-::
+.. doctest::
+    :options: -ELLIPSIS, +NORMALIZE_WHITESPACE
 
     >>> from nameparser import HumanName
     >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
@@ -18,13 +19,13 @@ Example
     u'de la Vega'
     >>> name.suffix
     u'III'
-    >>> name.full_name = 'Doe-Ray, Col. Jonathan "John" A. Jérôme III'
+    >>> name.full_name = 'Doe-Ray, Col. Jonathan "John" A. Harris III'
     >>> name.title
     u'Col.'
     >>> name.first
-    u'John'
+    u'Jonathan'
     >>> name.middle
-    u'A. Jérôme'
+    u'A. Harris'
     >>> name.last
     u'Doe-Ray'
     >>> name.suffix
@@ -61,8 +62,8 @@ Example
     >>> len(name)
     5
     >>> list(name)
-    ['Dr.', 'Juan', 'Q. Xavier', 'de la Vega', 'III']
-    >>> name[1:-1]
+    [u'Dr.', u'Juan', u'Q. Xavier', u'de la Vega', u'III']
+    >>> name[1:-2]
     [u'Juan', u'Q. Xavier', u'de la Vega']
     >>> name = HumanName('bob v. de la macdole-eisenhower phd')
     >>> name.capitalize()
@@ -86,12 +87,12 @@ entered in all upper or lower case.
 
     * bob v. de la macdole-eisenhower phd -> Bob V. de la MacDole-Eisenhower Ph.D.
 
-::
+.. doctest:: capitalize
 
     >>> name = HumanName("bob v. de la macdole-eisenhower phd")
     >>> name.capitalize()
     >>> unicode(name)
-    "Bob V. de la MacDole-Eisenhower Ph.D."
+    u'Bob V. de la MacDole-Eisenhower Ph.D.'
 
 It will not adjust the case of mixed case names.
 
@@ -102,7 +103,8 @@ Handling Nicknames
 The content of parenthesis or double quotes in the name will be
 available from the nickname attribute. (Added in v0.2.9)
 
-::
+.. doctest:: nicknames
+    :options: +NORMALIZE_WHITESPACE
 
     >>> name = HumanName('Jonathan "John" A. Smith')
     >>> name
@@ -123,12 +125,12 @@ The format of the strings returned with ``unicode()`` can be adjusted
 using standard python string formatting. The string's ``format()``
 method will be passed a dictionary of names.
 
-::
+.. doctest:: string format
 
     >>> name = HumanName("Rev John A. Kenneth Doe III")
     >>> unicode(name)
-    "Rev John A. Kenneth Doe III"
+    u'Rev John A. Kenneth Doe III'
     >>> name.string_format = "{last}, {title} {first} {middle}, {suffix}"
     >>> unicode(name)
-    "Doe, Rev John A. Kenneth, III"
+    u'Doe, Rev John A. Kenneth, III'
 
