@@ -44,11 +44,15 @@ any suggestions for ways the library could be easier to use or modify.
 Installation
 ------------
 
-``pip install nameparser``
+.. ``pip install nameparser``
+.. 
+.. I usually push changes to `PyPi <https://pypi.python.org/pypi/nameparser>`_
+.. pretty quickly. If you want to try out the latest code from GitHub you can
+.. install with pip using the command below.
 
-I usually push changes to `PyPi <https://pypi.python.org/pypi/nameparser>`_
-pretty quickly. If you want to try out the latest code from GitHub you can
-install with pip using the command below.
+If you're starting a new project, I recommend installing master from GitHub to give v0.3
+a try. It is not backwards compatible with v0.2, but passes all the same tests, and is
+easier to configure.
 
 ``pip install -e git+git://github.com/derek73/python-nameparser.git#egg=nameparser``
 
@@ -59,6 +63,12 @@ simple Heroku-friendly Flask wrapper for this module.
 
 Documentation
 -------------
+
+**NOTE:** This documentation covers the new **version 0.3** that has yet to be released
+to PyPi. For the v0.2.10 documentation, see the `v0.2.10 tag`_ on GitHub.
+
+.. _v0.2.10 tag: https://github.com/derek73/python-nameparser/tree/v0.2.10
+
 
 http://nameparser.readthedocs.org/en/latest/
 

@@ -21,7 +21,7 @@ Running Tests
 To run the tests locally, just run `python tests.py`.
 
 
-    ./tests.py
+    python tests.py
 
 You can also pass a name string to `tests.py` to see how it will be parsed.
 
