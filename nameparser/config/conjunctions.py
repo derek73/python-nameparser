@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-#: Pieces that should join to their neighboring pieces.
 CONJUNCTIONS = set([
     '&',
     'and',
@@ -12,3 +11,8 @@ CONJUNCTIONS = set([
     'und',
     'y',
 ])
+"""
+Pieces that should join to their neighboring pieces, e.g. "and", "y" and "&".
+"of" and "the" are also include to facilitate joining multiple titles,
+e.g. "President of the United States".
+"""

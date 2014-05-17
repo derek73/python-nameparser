@@ -26,18 +26,19 @@ class HumanName(object):
     """
     Parse a person's name into individual components.
     
+    Instantiation assigns to ``full_name``, and assignment to :py:attr:`full_name`
+    triggers :py:func:`parse_full_name`. After parsing the name, these instance 
+    attributes are available.
+    
     **HumanName Instance Attributes**
     
-    * o.title
-    * o.first
-    * o.middle
-    * o.last
-    * o.suffix
-    * o.nickname
+    * :py:attr:`title`
+    * :py:attr:`first`
+    * :py:attr:`middle`
+    * :py:attr:`last`
+    * :py:attr:`suffix`
+    * :py:attr:`nickname`
     
-    Instantiation assigns to ``full_name``, and assignment to :py:attr:`full_name`
-    triggers :py:func:`parse_full_name`, where most of the action happens.
-     
     :param str full_name: The name string to be parsed.
     :param constants constants: 
         a :py:class:`~nameparser.config.Constants` instance. Pass ``None`` for 
@@ -144,26 +145,53 @@ class HumanName(object):
     
     @property
     def title(self):
+        """
+        The person's titles. Any string of consecutive pieces in 
+        :py:mod:`~nameparser.config.titles` or :py:mod:`~nameparser.config.conjunctions`
+        at the beginning of :py:attr:`full_name`.
+        """
         return " ".join(self.title_list)
     
     @property
     def first(self):
+        """
+        The person's first name. The first name piece after any known 
+        :py:attr:`title` pieces parsed from :py:attr:`full_name`.
+        """
         return " ".join(self.first_list)
     
     @property
     def middle(self):
+        """
+        The person's middle names. All name pieces after the first name and before 
+        the last name parsed from :py:attr:`full_name`.
+        """
         return " ".join(self.middle_list)
     
     @property
     def last(self):
+        """
+        The person's last name. The last name piece parsed from 
+        :py:attr:`full_name`.
+        """
         return " ".join(self.last_list)
     
     @property
     def suffix(self):
+        """
+        The persons's suffixes. Pieces at the end of the name that are found in
+        :py:mod:`~nameparser.config.suffixes`, or pieces that are at the end
+        of comma separated formats, e.g. "Lastname, Title Firstname Middle[,] Suffix 
+        [, Suffix]" parsed from :py:attr:`full_name`.
+        """
         return ", ".join(self.suffix_list)
     
     @property
     def nickname(self):
+        """
+        The person's nicknames. Any text found inside of quotes (``""``) or 
+        parenthesis (``()``)
+        """
         return " ".join(self.nickname_list)
     
     ### setter methods
@@ -198,19 +226,19 @@ class HumanName(object):
     ### Parse helpers
     
     def is_title(self, value):
-        """Is in the titles set"""
+        """Is in the :py:data:`~nameparser.config.titles.TITLES` set."""
         return lc(value) in self.C.titles
     
     def is_conjunction(self, piece):
-        """Is in the conjuctions set or :py:func:`is_an_initial()`"""
+        """Is in the conjuctions set or :py:func:`is_an_initial()`."""
         return lc(piece) in self.C.conjunctions and not self.is_an_initial(piece)
     
     def is_prefix(self, piece):
-        """Is in the prefixes set or :py:func:`is_an_initial()`"""
+        """Is in the prefixes set or :py:func:`is_an_initial()`."""
         return lc(piece) in self.C.prefixes and not self.is_an_initial(piece)
     
     def is_suffix(self, piece):
-        """Is in the suffixes set or :py:func:`is_an_initial()`"""
+        """Is in the suffixes set or :py:func:`is_an_initial()`."""
         return lc(piece) in self.C.suffixes and not self.is_an_initial(piece)
     
     def is_rootname(self, piece):
@@ -219,7 +247,10 @@ class HumanName(object):
             and not self.is_an_initial(piece) 
     
     def is_an_initial(self, value):
-        """Matches the regular expression for initials."""
+        """
+        Matches the ``initial`` regular expression in 
+        :py:data:`~nameparser.config.regexes.REGEXES`.
+        """
         return self.C.regexes.initial.match(value) or False
 
     # def is_a_roman_numeral(value):
@@ -230,6 +261,7 @@ class HumanName(object):
     
     @property
     def full_name(self):
+        """The name string to be parsed."""
         return self._full_name
     
     @full_name.setter
@@ -242,7 +274,8 @@ class HumanName(object):
         """
         This method happens at the beginning of the :py:func:`parse_full_name` before
         any other processing of the string aside from unicode normalization, so
-        it's a good place to do any custom handling in a subclass.
+        it's a good place to do any custom handling in a subclass. 
+        Runs :py:func:`parse_nicknames`.
         """
         self.parse_nicknames()
         
@@ -250,7 +283,7 @@ class HumanName(object):
     def post_process(self):
         """
         This happens at the end of the :py:func:`parse_full_name` after
-        all other processing has taken place.
+        all other processing has taken place. Runs :py:func:`handle_firstnames`.
         """
         self.handle_firstnames()
 
@@ -274,8 +307,8 @@ class HumanName(object):
         a first name. 
         """
         if self.title \
-            and len(self) == 2 \
-            and not lc(self.title) in self.C.first_name_titles:
+                and len(self) == 2 \
+                and not lc(self.title) in self.C.first_name_titles:
             self.last, self.first = self.first, self.last
 
     def parse_full_name(self):
@@ -283,11 +316,10 @@ class HumanName(object):
         The main parse method for the parser. This method is run upon assignment to the
         :py:attr:`full_name` attribute or instantiation.
 
-        Basic flow is the hand off to :py:func:`pre_process` to handle nicknames, split
-        on commas to figure out which comma format to work with. :py:func:`parse_pieces`
-        splits on spaces and :py:func:`join_on_conjunctions` joins any pieces next to
-        conjunctions.
-        """
+        Basic flow is the hand off to :py:func:`pre_process` to handle nicknames. It
+        then splits on commas and chooses a code path depending on the number of commas.
+        :py:func:`parse_pieces` then splits those parts on spaces and
+        :py:func:`join_on_conjunctions` joins any pieces next to conjunctions. """
         
         self.title_list = []
         self.first_list = []
@@ -406,6 +438,7 @@ class HumanName(object):
         Split parts on spaces and remove commas, join on conjunctions and
         lastname prefixes.
         
+        :param list parts: name part strings from the comma split
         :param int additional_parts_count: 
         
             if the comma format contains other parts, we need to know 
@@ -435,6 +468,8 @@ class HumanName(object):
         Join conjunctions to surrounding pieces, e.g.:
         ['Mr. and Mrs.'], ['King of the Hill'], ['Jack and Jill'], ['Velasquez y Garcia']
         
+        :param list pieces: name pieces strings after split on spaces
+        :param int additional_parts_count: 
         :return: new list with piece next to conjunctions merged into one piece with spaces in it.
         :rtype: list
         

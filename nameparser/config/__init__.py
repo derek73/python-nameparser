@@ -83,7 +83,7 @@ class SetManager(collections.Set):
     def add(self, *strings):
         """
         Add the lower case and no-period version of the string arguments to the set.
-        Return's ``self`` for chaining.
+        Returns ``self`` for chaining.
         """
         [self.elements.add(lc(s)) for s in strings]
         return self
@@ -91,7 +91,7 @@ class SetManager(collections.Set):
     def remove(self, *strings):
         """
         Remove the lower case and no-period version of the string arguments from the set.
-        Return's ``self`` for chaining.
+        Returns ``self`` for chaining.
         """
         [self.elements.remove(lc(s)) for s in strings if lc(s) in self.elements]
         return self
@@ -110,53 +110,24 @@ class TupleManager(dict):
 
 class Constants(object):
     """
-    This class is used to hold all of the configuration for the parser.
-    An instance of this class is available via 
-    ``from nameparser.config import CONSTANTS`` or on the
-    ``C`` attribute of a :py:class:`~nameparser.parser.HumanName` instance, e.g. ``hn.C``.
+    An instance of this class hold all of the configuration constants for the parser.
 
     :param set prefixes: 
         :py:attr:`prefixes` wrapped with :py:class:`SetManager`.
-        
-        Parts that come before last names, e.g. 'del' or 'van'. 
-      
     :param set titles: 
         :py:attr:`titles` wrapped with :py:class:`SetManager`.
-        
-        Parts that come before the first names. Any strings included in
-        here will never be considered a first name, so use with care.
-      
     :param set first_name_titles: 
         :py:attr:`first_name_titles` wrapped with :py:class:`SetManager`.
-        
-        When these titles appear with a single other name, that name is a first name, e.g.
-        "Sir John", "Sister Mary", "Queen Elizabeth".
-      
     :param set suffixes: 
         :py:attr:`suffixes`  wrapped with :py:class:`SetManager`.
-        
-        Parts that appear after the last name, e.g. "Jr." or "MD".
-      
     :param set conjunctions: 
         :py:attr:`conjunctions`  wrapped with :py:class:`SetManager`.
-        
-        Parts that are used to join names together, e.g. "and", "y" and "&".
-        "of" and "the" are also include to facilitate joining multiple titles,
-        e.g. "President of the United States".
-      
+    :type capitalization_exceptions: tuple or dict
     :param capitalization_exceptions: 
         :py:attr:`capitalization_exceptions` wrapped with :py:class:`TupleManager`.
-        
-        Most parts should be capitalized by capitalizing the first letter.
-        There are some exceptions, such as roman numbers used for suffixes.
-        You can update this with a dictionary or a tuple. 
-    :type capitalization_exceptions: tuple or dict
-        
+    :type regexes: tuple or dict
     :param regexes: 
         :py:attr:`regexes`  wrapped with :py:class:`TupleManager`.
-        
-        Contains all the various regular expressions used in the parser.
-    :type regexes: tuple or dict
     """
     def __init__(self, 
                     prefixes=PREFIXES, 

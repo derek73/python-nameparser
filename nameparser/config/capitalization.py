@@ -9,5 +9,5 @@ CAPITALIZATION_EXCEPTIONS = (
     ('phd','Ph.D.'),
 )
 """
-Pieces that are not capitalized by capitalizing the first letter.
+Any pieces that are not capitalized by capitalizing the first letter.
 """

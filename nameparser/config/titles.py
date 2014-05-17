@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-# ## Titles ##
-# 
-#: When these titles are used with a single name, 
-#: that name is a first name rather than a last name.
 FIRST_NAME_TITLES = set([
     'sir',
     'dame',
@@ -21,6 +17,10 @@ FIRST_NAME_TITLES = set([
     'father',
     'pope',
 ])
+"""
+When these titles appear with a single other name, that name is a first name, e.g.
+"Sir John", "Sister Mary", "Queen Elizabeth".
+"""
 
 #: **Cannot include things that could also be first names**, e.g. "dean".
 #: Many of these from wikipedia: https://en.wikipedia.org/wiki/Title.

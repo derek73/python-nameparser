@@ -45,7 +45,7 @@ Parser Customization Examples
 addressing judges, and is included in the default tiles constants which
 means it will never be considered a first name. 
 
-But "Hon is also sometimes a first name. If your dataset contains more
+But "Hon" is also sometimes a first name. If your dataset contains more
 "Hon"s than "Honorable"s, you may wish to remove it from the titles
 constant so that "Hon" can be parsed as a first name.
 
