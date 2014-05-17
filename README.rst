@@ -21,23 +21,22 @@ approach. It's not perfect, but it gets you pretty far.
 * o.suffix
 * o.nickname
 
-Supports 3 different comma placement variations in the input string.
+**Usage Example**
 
-* Title Firstname "Nickname" Middle Middle Lastname Suffix
-* Lastname, Title Firstname (Nickname) Middle Middle[,] Suffix [, Suffix]
-* Title Firstname M Lastname, Suffix [, Suffix]
+::
 
-**Examples of supported formats**
+    >>> from nameparser import HumanName
+    >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III (Doc Vega)")
+    >>> name 
+    <HumanName : [
+    	title: 'Dr.' 
+    	first: 'Juan' 
+    	middle: 'Q. Xavier' 
+    	last: 'de la Vega' 
+    	suffix: 'III'
+    	nickname: 'Doc Vega'
+    ]>
 
-* Doe-Ray, Col. Jonathan "John" A. Jérôme III
-* Dr. Juan Q. Xavier de la Vega II
-* Juan Q. Xavier Velasquez y Garcia, Jr.
-
-When there is ambiguity that cannot be resolved by a rule-based approach,
-HumanName prefers to handle the most common cases correctly. For example,
-"Dean" is not parsed as title because it is more common as a first name.
-(You can customize this behavior though, see `Customizing the Parser with
-Your Own Constants`_)
 
 Unit Tests
 ------------
