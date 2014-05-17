@@ -31,9 +31,9 @@ The other is the ``C`` attribute of a ``HumanName`` instance, e.g.
     >>> hn.C
     <Constants() instance>
 
-This is usually a reference to the module's shared 
+Both places are usually a reference to the same shared module-level 
 :py:class:`~nameparser.config.Constants` instance, depending on how you 
-instantiate the :py:class:`~nameparser.parser.HumanName` class.
+instantiate the :py:class:`~nameparser.parser.HumanName` class (see below).
 
 Take a look at the :py:mod:`nameparser.config` documentation to see what's
 in the constants. Here's a quick walk through of some examples where you

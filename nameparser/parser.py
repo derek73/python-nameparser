@@ -335,10 +335,11 @@ class HumanName(object):
         The main parse method for the parser. This method is run upon assignment to the
         :py:attr:`full_name` attribute or instantiation.
 
-        Basic flow is the hand off to :py:func:`pre_process` to handle nicknames. It
+        Basic flow is to hand off to :py:func:`pre_process` to handle nicknames. It
         then splits on commas and chooses a code path depending on the number of commas.
         :py:func:`parse_pieces` then splits those parts on spaces and
-        :py:func:`join_on_conjunctions` joins any pieces next to conjunctions. """
+        :py:func:`join_on_conjunctions` joins any pieces next to conjunctions. 
+        """
         
         self.title_list = []
         self.first_list = []
