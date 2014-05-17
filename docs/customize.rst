@@ -11,9 +11,7 @@ Changing the Predefined Variables
 +++++++++++++++++++++++++++++++++
 
 There are a few ways to adjust the parser configuration depending on your
-needs. The config is available in two places that may or may not represent
-the same :py:class:`~nameparser.config.Constants` instance depending on
-how you instantiate the :py:class:`~nameparser.parser.HumanName` class.
+needs. The config is available in two places.
 
 The first is via ``from nameparser.config import CONSTANTS``.
 
@@ -32,6 +30,10 @@ The other is the ``C`` attribute of a ``HumanName`` instance, e.g.
     >>> hn = HumanName("Dean Robert Johns")
     >>> hn.C
     <Constants() instance>
+
+This is usually a reference to the module's shared 
+:py:class:`~nameparser.config.Constants` instance, depending on how you 
+instantiate the :py:class:`~nameparser.parser.HumanName` class.
 
 Take a look at the :py:mod:`nameparser.config` documentation to see what's
 in the constants. Here's a quick walk through of some examples where you
@@ -149,7 +151,7 @@ reference to the module-level config values with the behavior described above.
     False
     >>> instance.C.titles.add('dean')
     SetManager(set([u'msgt', ..., u'adjutant']))
-    >>> other_instance = HumanName("Dean Robert Johns", None)
+    >>> other_instance = HumanName("Dean Robert Johns", None) # <-- pass None for per-instance config
     >>> other_instance
     <HumanName : [
     	title: '' 
@@ -163,8 +165,8 @@ reference to the module-level config values with the behavior described above.
     True
 
 
-Refreshing the Parse
-++++++++++++++++++++
+Config Changes May Need Parse Refresh
++++++++++++++++++++++++++++++++++++++
 
 The full name is parsed upon assignment to the ``full_name`` attribute or
 instantiation. Sometimes after making changes to configuration or other inner 
