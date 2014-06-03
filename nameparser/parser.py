@@ -620,4 +620,4 @@ class HumanName(object):
         self.first_list  = self.cap_piece(self.first ).split(' ')
         self.middle_list = self.cap_piece(self.middle).split(' ')
         self.last_list   = self.cap_piece(self.last  ).split(' ')
-        self.suffix_list = self.cap_piece(self.suffix).split(' ')
+        self.suffix_list = self.cap_piece(self.suffix).split(', ')
