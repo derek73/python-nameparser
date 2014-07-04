@@ -1,7 +1,7 @@
 Release Log
 ===========
 
-* 0.3 - May ?, 2014
+* 0.3 - July 4, 2014
     - Refactor configuration to simplify modifications to constants (backwards incompatible)
     - use unicode_literals to simplify Python 2 & 3 support.
     - Generate documentation using sphinx and host on readthedocs.
