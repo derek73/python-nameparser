@@ -27,6 +27,8 @@ approach. It's not perfect, but it gets you pretty far.
     	suffix: 'III'
     	nickname: 'Doc Vega'
     ]>
+    >>> name.as_dict()
+    {u'last': u'de la Vega', u'suffix': u'III', u'title': u'Dr.', u'middle': u'Q. Xavier', u'nickname': u'Doc Vega', u'first': u'Juan'}
 
 
 Unit Tests
@@ -42,16 +44,11 @@ for names that fail and I will try to fix it.
 Installation
 ------------
 
-.. ``pip install nameparser``
-.. 
-.. I usually push changes to `PyPi <https://pypi.python.org/pypi/nameparser>`_
-.. pretty quickly. If you want to try out the latest code from GitHub you can
-.. install with pip using the command below.
+``pip install nameparser``
 
-If you're starting a new project, I recommend installing master from GitHub to give v0.3
-a try. Customizing it is not backwards compatible with v0.2.10 (the current version on
-pypi) because the configuration layout changed, but passes all the same tests, and is
-easier to configure.
+I usually push changes to `PyPi <https://pypi.python.org/pypi/nameparser>`_
+pretty quickly. If you want to try out the latest code from GitHub you can
+install with pip using the command below.
 
 ``pip install -e git+git://github.com/derek73/python-nameparser.git#egg=nameparser``
 
@@ -63,13 +60,14 @@ simple Heroku-friendly Flask wrapper for this module.
 Documentation
 -------------
 
-**NOTE:** This documentation covers the new **version 0.3** that has yet to be released
-to PyPi. For the v0.2.10 documentation, see the `v0.2.10 tag`_ on GitHub.
+http://nameparser.readthedocs.org/en/latest/
+
+**NOTE:** This documentation covers the new **version 0.3**. For the v0.2.10 documentation,
+see the `v0.2.10 tag`_ on GitHub.
 
 .. _v0.2.10 tag: https://github.com/derek73/python-nameparser/tree/v0.2.10
 
 
-http://nameparser.readthedocs.org/en/latest/
 
 Contributing
 ------------
