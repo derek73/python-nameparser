@@ -27,6 +27,8 @@ approach. It's not perfect, but it gets you pretty far.
     	suffix: 'III'
     	nickname: 'Doc Vega'
     ]>
+    >>> name.last
+    u'de la Vega'
     >>> name.as_dict()
     {u'last': u'de la Vega', u'suffix': u'III', u'title': u'Dr.', u'middle': u'Q. Xavier', u'nickname': u'Doc Vega', u'first': u'Juan'}
 
