@@ -12,7 +12,7 @@ def read(fname):
 README = read('README.rst')
 
 setup(name='nameparser',
-      packages      = ['nameparser'],
+      packages      = ['nameparser','nameparser.config'],
       description   = 'A simple Python module for parsing human names into their individual components.',
       long_description = README,
       version       = nameparser.__version__,
