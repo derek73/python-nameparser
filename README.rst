@@ -1,7 +1,7 @@
 Name Parser
 ===========
 
-.. image:: https://travis-ci.org/derek73/python-nameparser.svg
+.. image:: https://travis-ci.org/derek73/python-nameparser.svg?branch=master
    :target: https://travis-ci.org/derek73/python-nameparser
 .. image:: https://pypip.in/version/nameparser/badge.png
     :target: https://pypi.python.org/pypi/python-nameparser
