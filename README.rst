@@ -4,11 +4,11 @@ Name Parser
 .. image:: https://travis-ci.org/derek73/python-nameparser.svg?branch=master
    :target: https://travis-ci.org/derek73/python-nameparser
 .. image:: https://pypip.in/version/nameparser/badge.png
-    :target: https://pypi.python.org/pypi/python-nameparser
+    :target: https://pypi.python.org/pypi/nameparser
 .. image:: https://pypip.in/download/nameparser/badge.png
-    :target: https://pypi.python.org/pypi/python-nameparser
+    :target: https://pypi.python.org/pypi/nameparser
 .. image:: https://pypip.in/license/nameparser/badge.png
-    :target: https://pypi.python.org/pypi/python-nameparser
+    :target: https://pypi.python.org/pypi/nameparser
 
 
 A simple Python module for parsing human names into their individual
