@@ -982,40 +982,6 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.first, "God", hn)
         self.m(hn.last, "Almighty", hn)
 
-    def test_last_name_is_also_title(self):
-        hn = HumanName("Amy E Maid")
-        self.m(hn.first, "Amy", hn)
-        self.m(hn.middle, "E", hn)
-        self.m(hn.last, "Maid", hn)
-
-    def test_last_name_is_also_title2(self):
-        hn = HumanName("Duke Martin Luther King, Jr.")
-        self.m(hn.title, "Duke", hn)
-        self.m(hn.first, "Martin", hn)
-        self.m(hn.middle, "Luther", hn)
-        self.m(hn.last, "King", hn)
-        self.m(hn.suffix, "Jr.", hn)
-
-    def test_last_name_is_also_title3(self):
-        hn = HumanName("John King")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "King", hn)
-
-    def test_title_with_conjunction(self):
-        hn = HumanName("Secretary of State Hillary Clinton")
-        self.m(hn.title, "Secretary of State", hn)
-        self.m(hn.first, "Hillary", hn)
-        self.m(hn.last, "Clinton", hn)
-
-    def test_compound_title_with_conjunction(self):
-        hn = HumanName("Cardinal Secretary of State Hillary Clinton")
-        self.m(hn.title, "Cardinal Secretary of State", hn)
-        self.m(hn.first, "Hillary", hn)
-        self.m(hn.last, "Clinton", hn)
-
-    def test_title_is_title(self):
-        hn = HumanName("Coach")
-        self.m(hn.title, "Coach", hn)
 
 
 class HumanNameConjunctionTestCase(HumanNameTestBase):
@@ -1299,7 +1265,53 @@ class HumanNameNicknameTestCase(HumanNameTestBase):
 
 
 class HumanNameTitleTestCase(HumanNameTestBase):
-    
+    def test_last_name_is_also_title(self):
+        hn = HumanName("Amy E Maid")
+        self.m(hn.first, "Amy", hn)
+        self.m(hn.middle, "E", hn)
+        self.m(hn.last, "Maid", hn)
+
+    def test_last_name_is_also_title2(self):
+        hn = HumanName("Duke Martin Luther King, Jr.")
+        self.m(hn.title, "Duke", hn)
+        self.m(hn.first, "Martin", hn)
+        self.m(hn.middle, "Luther", hn)
+        self.m(hn.last, "King", hn)
+        self.m(hn.suffix, "Jr.", hn)
+
+    def test_last_name_is_also_title3(self):
+        hn = HumanName("John King")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "King", hn)
+
+    def test_title_with_conjunction(self):
+        hn = HumanName("Secretary of State Hillary Clinton")
+        self.m(hn.title, "Secretary of State", hn)
+        self.m(hn.first, "Hillary", hn)
+        self.m(hn.last, "Clinton", hn)
+
+    def test_compound_title_with_conjunction(self):
+        hn = HumanName("Cardinal Secretary of State Hillary Clinton")
+        self.m(hn.title, "Cardinal Secretary of State", hn)
+        self.m(hn.first, "Hillary", hn)
+        self.m(hn.last, "Clinton", hn)
+
+    def test_title_is_title(self):
+        hn = HumanName("Coach")
+        self.m(hn.title, "Coach", hn)
+
+    def test_suffix_with_single_comma_format(self):
+        hn = HumanName("John Doe jr., MD")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)
+        self.m(hn.suffix, "jr., MD", hn)
+   
+    def test_suffix_with_double_comma_format(self):
+        hn = HumanName("Doe, John jr., MD")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)
+        self.m(hn.suffix, "jr., MD", hn)
+   
     # TODO: fix handling of U.S.
     @unittest.expectedFailure
     def test_chained_title_first_name_initial(self):

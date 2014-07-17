@@ -413,6 +413,10 @@ class HumanName(object):
                     if not self.first:
                         self.first_list.append(piece)
                         continue
+                    if (i == len(pieces) - 2) and self.is_suffix(nxt):
+                        self.last_list.append(piece)
+                        self.suffix_list.insert(0,nxt)
+                        break
                     if not nxt:
                         self.last_list.append(piece)
                         continue
