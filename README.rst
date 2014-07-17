@@ -1,6 +1,16 @@
 Name Parser
 ===========
 
+.. image:: https://travis-ci.org/derek73/python-nameparser.svg
+   :target: https://travis-ci.org/derek73/python-nameparser
+.. image:: https://pypip.in/version/nameparser/badge.png
+    :target: https://pypi.python.org/pypi/python-nameparser
+.. image:: https://pypip.in/download/nameparser/badge.png
+    :target: https://pypi.python.org/pypi/python-nameparser
+.. image:: https://pypip.in/license/nameparser/badge.png
+    :target: https://pypi.python.org/pypi/python-nameparser
+
+
 A simple Python module for parsing human names into their individual
 components. The HumanName class splits a name string up into name parts
 based on placement in the string and matches against known name pieces
@@ -12,7 +22,7 @@ correct capitalization.
 It attempts the best guess that can be made with a simple, rule-based
 approach. It's not perfect, but it gets you pretty far.
 
-**Usage Example**
+**Quick Start Example**
 
 ::
 
@@ -35,9 +45,6 @@ approach. It's not perfect, but it gets you pretty far.
 
 Unit Tests
 ------------
-
-.. image:: https://travis-ci.org/derek73/python-nameparser.svg
-   :target: https://travis-ci.org/derek73/python-nameparser
 
 Over 100 unit tests with example names. `Start a New Issue`_ 
 for names that fail and I will try to fix it. 

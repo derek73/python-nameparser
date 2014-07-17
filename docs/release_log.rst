@@ -1,7 +1,13 @@
 Release Log
 ===========
 
-* 0.3 - July 4, 2014
+* 0.3.2 - July 16, 2014
+    - Retain original string in "original" attribute.
+    - Collapse white space when using custom string format.
+    - Fix #19, single comma name format may have trailing suffix
+* 0.3.1 - July 5, 2014
+    - Fix Pypi package, include new config module.
+* 0.3.0 - July 4, 2014
     - Refactor configuration to simplify modifications to constants (backwards incompatible)
     - use unicode_literals to simplify Python 2 & 3 support.
     - Generate documentation using sphinx and host on readthedocs.
