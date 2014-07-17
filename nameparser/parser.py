@@ -402,7 +402,7 @@ class HumanName(object):
         else:
             if self.is_suffix(parts[1]):
                 
-                # suffix comma: title first middle last, suffix [, suffix]
+                # suffix comma: title first middle last [suffix], suffix [, suffix]
                 
                 self.suffix_list += parts[1:]
                 
