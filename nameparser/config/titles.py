@@ -404,5 +404,16 @@ TITLES = FIRST_NAME_TITLES | set([
     'mag-judge',
     'senior-judge',
     'mag/judge',
+    'wp', # German Public Accountant (Wirtschaftsprüfer, WP)
+    'dipl-ing', # German academic degree (Diplom-Ingenieur, Dipl.-Ing.)
+    'herr', # "Herr" means "Mr." in German
+    'me', # Meister, German
+    'frau', # "Frau" means "Mrs."/"Ms." in German
+    'graf', # "Graf"/"Gräfin" means "count"/"earl" in German, see http://en.wikipedia.org/wiki/Graf
+    'gräfin',
+    'priv-doz', # Some Germans use "Priv.-Doz." (Privat-Dozent) if they're teaching at a private university
+    'pd', # Abbreviation for "Priv.-Doz."
+    'fh-prof', # Professor at a German University of Applied Sciences (Fachhochschule)
+    'univprof', # Some people write "Univ.Prof." for "University Professor"/"Universitäts Professor"
     
 ])

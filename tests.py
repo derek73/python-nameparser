@@ -1521,6 +1521,453 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         self.m(str(hn), 'Ronald McDonald', hn)
 
 
+class InternationalNameTests(HumanNameTestBase):
+    def test_german_von_der(self):
+        hn = HumanName("Ursula von der Leyen")
+        self.m(hn.first, "Ursula", hn)
+        self.m(hn.last, "von der Leyen", hn)
+
+    def test_german_auf_dem(self):
+        hn = HumanName("Monika auf dem Keller")
+        self.m(hn.first, "Monika", hn)
+        self.m(hn.last, "auf dem Keller", hn)
+
+    # Some people abbreviate "von" with "v." these days but it looks the same as initial
+    @unittest.expectedFailure
+    def test_german_abbrev_von(self):
+        hn = HumanName("Ernst v. Kloppenheim")
+        self.m(hn.first, "Ernst", hn)
+        self.m(hn.last, "v. Kloppenheim", hn)
+
+    # See http://en.wikipedia.org/wiki/German_nobility
+    def test_german_von_und_zu(self):
+        hn = HumanName("Alois von und zu Liechtenstein")
+        self.m(hn.first, "Alois", hn)
+        self.m(hn.last, "von und zu Liechtenstein", hn)
+
+    def test_first_name_conflict_with_german_von_und_zu(self):
+        hn = HumanName("Zu Moshi")
+        self.m(hn.first, "Zu", hn)
+        self.m(hn.last, "Moshi", hn)
+
+    # See http://en.wikipedia.org/wiki/Ludwig_Freiherr_von_und_zu_der_Tann-Rathsamhausen
+    def test_german_freiherrin_von_und_zu_der(self):
+        hn = HumanName("Annette Charlotte Freiherrin von und zu der Tann-Rathsamhausen")
+        self.m(hn.first, "Annette", hn)
+        self.m(hn.middle, "Charlotte", hn)
+        self.m(hn.last, "Freiherrin von und zu der Tann-Rathsamhausen", hn)
+
+    # See http://en.wikipedia.org/wiki/German_nobility
+    def test_german_freiherr_von_und_zu(self):
+        hn = HumanName("Karl-Theodor Maria Nikolaus Johann Jacob Philipp Franz Joseph Sylvester Freiherr von und zu Guttenberg")
+        self.m(hn.first, "Karl-Theodor", hn)
+        self.m(hn.middle, "Maria Nikolaus Johann Jacob Philipp Franz Joseph Sylvester", hn)
+        self.m(hn.last, "Freiherr von und zu Guttenberg", hn)
+
+    # can't currently support if Della could also be a first name
+    @unittest.expectedFailure
+    def test_della_as_prefix(self):
+        hn = HumanName("Thomas G. Della Fave")
+        self.m(hn.first, "Thomas", hn)
+        self.m(hn.middle, "G.", hn)
+        self.m(hn.last, "Della Fave", hn)
+
+    def test_della_as_first_name(self):
+        hn = HumanName("Della Mae")
+        self.m(hn.first, "Della", hn)
+        self.m(hn.last, "Mae", hn)
+
+    @unittest.expectedFailure
+    def test_dello_as_prefix(self):
+        hn = HumanName("Thomas G. Dello Fave")
+        self.m(hn.first, "Thomas", hn)
+        self.m(hn.middle, "G.", hn)
+        self.m(hn.last, "Dello Fave", hn)
+
+    def test_dello_as_first_name(self):
+        hn = HumanName("Dello Mae")
+        self.m(hn.first, "Dello", hn)
+        self.m(hn.last, "Mae", hn)
+
+    @unittest.expectedFailure
+    def test_delle_as_prefix(self):
+        hn = HumanName("Thomas G. Delle Fave")
+        self.m(hn.first, "Thomas", hn)
+        self.m(hn.middle, "G.", hn)
+        self.m(hn.last, "Delle Fave", hn)
+
+    def test_delle_as_first_name(self):
+        hn = HumanName("Delle Mae")
+        self.m(hn.first, "Delle", hn)
+        self.m(hn.last, "Mae", hn)
+
+    # See http://en.wikipedia.org/wiki/Federico_Degli_Esposti
+    def test_degli(self):
+        hn = HumanName("Federico Degli Esposti")
+        self.m(hn.first, "Federico", hn)
+        self.m(hn.last, "Degli Esposti", hn)
+
+    @unittest.expectedFailure
+    def test_de_la(self):
+        hn = HumanName("Juan Martín de la Cruz Gómez")
+        self.m(hn.first, "Juan Martín", hn)
+        self.m(hn.last, "de la Cruz Gómez", hn)
+
+    def test_du(self):
+        hn = HumanName("Anne du Bourg")
+        self.m(hn.first, "Anne", hn)
+        self.m(hn.last, "du Bourg", hn)
+
+    def test_dutch_de_heer(self):
+        hn = HumanName("Johan de heer Van Kampen")
+        self.m(hn.first, "Johan", hn)
+        self.m(hn.last, "de heer Van Kampen", hn)
+
+    @unittest.expectedFailure
+    def test_dutch_van_as_firstname(self):
+        hn = HumanName("Van Wilder")
+        self.m(hn.first, "Van", hn)
+        self.m(hn.last, "Wilder", hn)
+
+    def test_dutch_van_de(self):
+        hn = HumanName("Han Van De Casteele")
+        self.m(hn.first, "Han", hn)
+        self.m(hn.last, "Van De Casteele", hn)
+
+    def test_dutch_vande(self):
+        hn = HumanName("Han Vande Casteele")
+        self.m(hn.first, "Han", hn)
+        self.m(hn.last, "Vande Casteele", hn)
+
+    # See http://en.wikipedia.org/wiki/Dutch_surname
+    @unittest.expectedFailure
+    def test_dutch_aan_den(self):
+        hn = HumanName("Bart aan den Toorn")
+        self.m(hn.first, "Bart", hn)
+        self.m(hn.last, "aan den Toorn", hn)
+
+    # See http://en.wikipedia.org/wiki/Dutch_surname
+    @unittest.expectedFailure
+    def test_dutch_aan_t(self):
+        hn = HumanName("Marie aan 't Wijnveentje")
+        self.m(hn.first, "Marie", hn)
+        self.m(hn.last, "aan 't Wijnveentje", hn)
+
+    def test_dutch_aan_as_firstname(self):
+        hn = HumanName("Aan Chauhan")
+        self.m(hn.first, "Aan", hn)
+        self.m(hn.last, "Chauhan", hn)
+
+    # See http://www.dutchgenealogy.nl/tng/surnames-all.php
+    def test_dutch_aen_de(self):
+        hn = HumanName("Alexander aen de Landerwer")
+        self.m(hn.first, "Alexander", hn)
+        self.m(hn.last, "aen de Landerwer", hn)
+
+    # See http://www.dutchgenealogy.nl/tng/surnames-all.php
+    def test_dutch_an_de(self):
+        hn = HumanName("Vincent an de Broekmeule")
+        self.m(hn.first, "Vincent", hn)
+        self.m(hn.last, "an de Broekmeule", hn)
+
+    # See http://www.dutchgenealogy.nl/tng/surnames-all.php
+    def test_dutch_in_t(self):
+        hn = HumanName("Anthonij in 't Walvoort")
+        self.m(hn.first, "Anthonij", hn)
+        self.m(hn.last, "in 't Walvoort", hn)
+
+    # See http://en.wikipedia.org/wiki/Dutch_surname
+    def test_dutch_in_het(self):
+        hn = HumanName("Thomas In het Panhuis")
+        self.m(hn.first, "Thomas", hn)
+        self.m(hn.last, "In het Panhuis", hn)
+
+    # See http://en.wikipedia.org/wiki/Dutch_surname
+    def test_dutch_op_het(self):
+        hn = HumanName("Rik op het Veld")
+        self.m(hn.first, "Rik", hn)
+        self.m(hn.last, "op het Veld", hn)
+
+    # See http://en.wikipedia.org/wiki/Dutch_surname
+    def test_dutch_van_t(self):
+        hn = HumanName("Annemarie Van 't Veen")
+        self.m(hn.first, "Annemarie", hn)
+        self.m(hn.last, "Van 't Veen", hn)
+
+    @unittest.expectedFailure
+    def test_dutch_van_t_without_apostrophe(self):
+        hn = HumanName("Annemarie Van t Veen")
+        self.m(hn.first, "Annemarie", hn)
+        self.m(hn.last, "Van t Veen", hn)
+
+    # "vd" can be used to abbreviate "van de"/"van den"/"van der"
+    # see http://en.wikipedia.org/wiki/List_of_most_common_surnames_in_Europe#Netherlands
+    def test_dutch_abbrev_van_de(self):
+        hn = HumanName("Peter vd Bergen")
+        self.m(hn.first, "Peter", hn)
+        self.m(hn.last, "vd Bergen", hn)
+
+    # See http://www.dutchgenealogy.nl/tng/surnames-all.php
+    # "Te" is also a title in some south pacific languages
+    @unittest.expectedFailure
+    def test_dutch_te(self):
+        hn = HumanName("Anna te Hengevelt")
+        self.m(hn.first, "Anna", hn)
+        self.m(hn.last, "te Hengevelt", hn)
+
+    # See http://www.dutchgenealogy.nl/tng/surnames-all.php
+    def test_dutch_ten(self):
+        hn = HumanName("Ben ten Bosse")
+        self.m(hn.first, "Ben", hn)
+        self.m(hn.last, "ten Bosse", hn)
+
+    # See http://www.dutchgenealogy.nl/tng/surnames-all.php
+    def test_dutch_then(self):
+        hn = HumanName("Emma then Swartenkatte")
+        self.m(hn.first, "Emma", hn)
+        self.m(hn.last, "then Swartenkatte", hn)
+
+    # See http://www.dutchgenealogy.nl/tng/surnames-all.php
+    def test_dutch_tho(self):
+        hn = HumanName("Sara tho Wopenreijss")
+        self.m(hn.first, "Sara", hn)
+        self.m(hn.last, "tho Wopenreijss", hn)
+
+    # See http://www.dutchgenealogy.nl/tng/surnames-all.php
+    def test_dutch_thoe(self):
+        hn = HumanName("Lisa thoe Holthues")
+        self.m(hn.first, "Lisa", hn)
+        self.m(hn.last, "thoe Holthues", hn)
+
+    # See http://www.dutchgenealogy.nl/tng/surnames-all.php
+    def test_dutch_ter(self):
+        hn = HumanName("Lotte ter Beeste")
+        self.m(hn.first, "Lotte", hn)
+        self.m(hn.last, "ter Beeste", hn)
+
+    # See http://www.dutchgenealogy.nl/tng/surnames-all.php
+    def test_dutch_to(self):
+        hn = HumanName("Eva to Aelhorst")
+        self.m(hn.first, "Eva", hn)
+        self.m(hn.last, "to Aelhorst", hn)
+
+    # German Member of the Federal Parliament (Mitglied des Bundestags, MdB)
+    def test_german_mdb(self):
+        hn = HumanName("Lars Klingbeil, MdB")
+        self.m(hn.first, "Lars", hn)
+        self.m(hn.last, "Klingbeil", hn)
+        self.m(hn.suffix, "MdB", hn)
+
+    # German Member of the State Parliament (Mitglied des Landtags, MdL)
+    def test_german_mdl(self):
+        hn = HumanName("Gisela Gebauer MdL")
+        self.m(hn.first, "Gisela", hn)
+        self.m(hn.last, "Gebauer", hn)
+        self.m(hn.suffix, "MdL", hn)
+
+    # German Member of the European Parliament (Mitglied des Europäischen Parlaments, MdEP)
+    def test_german_mdep(self):
+        hn = HumanName("Martin Schulz MdEP")
+        self.m(hn.first, "Martin", hn)
+        self.m(hn.last, "Schulz", hn)
+        self.m(hn.suffix, "MdEP", hn)
+
+    # German Member of the State Parliament of Berlin (Mitglied des Abgeordnetenhaus, MdA)
+    def test_german_mda(self):
+        hn = HumanName("Mirco Drachenfels MdA")
+        self.m(hn.first, "Mirco", hn)
+        self.m(hn.last, "Drachenfels", hn)
+        self.m(hn.suffix, "MdA", hn)
+
+    # German Member of the State Parliament of Hamburg (Mitglied der Hamburger Bürgerschaft, MdHB)
+    def test_german_mdhb(self):
+        hn = HumanName("Heiko Hanse MdHB")
+        self.m(hn.first, "Heiko", hn)
+        self.m(hn.last, "Hanse", hn)
+        self.m(hn.suffix, "MdHB", hn)
+
+    # German Member of the State Parliament of Hamburg (Mitglied der Bremer Bürgerschaft, MdBB)
+    def test_german_mdbb(self):
+        hn = HumanName("Mareike Musikant MdBB")
+        self.m(hn.first, "Mareike", hn)
+        self.m(hn.last, "Musikant", hn)
+        self.m(hn.suffix, "MdBB", hn)
+
+    # German Tax Consultant (Steuerberater, StB)
+    def test_german_stb(self):
+        hn = HumanName("Helga Müller StB")
+        self.m(hn.first, "Helga", hn)
+        self.m(hn.last, "Müller", hn)
+        self.m(hn.suffix, "StB", hn)
+
+    # German Lawyer (Rechtsanwalt, RA)
+    def test_german_ra(self):
+        hn = HumanName("RA Renate Meier")
+        self.m(hn.first, "Renate", hn)
+        self.m(hn.last, "Meier", hn)
+        self.m(hn.suffix, "RA", hn)
+
+    # German Public Accountant (Wirtschaftsprüfer, WP)
+    def test_german_wp(self):
+        hn = HumanName("WP Hellmuth Bauer")
+        self.m(hn.first, "Hellmuth", hn)
+        self.m(hn.last, "Bauer", hn)
+        self.m(hn.suffix, "WP", hn)
+
+    # German "Meister" (Me.)
+    def test_german_wp(self):
+        hn = HumanName("Me. Thorsten Kling")
+        self.m(hn.first, "Thorsten", hn)
+        self.m(hn.last, "Kling", hn)
+        self.m(hn.suffix, "Me.", hn)
+
+    # German academic degree (Diplom-Ingenieur, Dipl.-Ing.)
+    def test_german_dipl_ing(self):
+        hn = HumanName("Dipl.-Ing. Manfred Hausmann")
+        self.m(hn.first, "Manfred", hn)
+        self.m(hn.last, "Hausmann", hn)
+        self.m(hn.suffix, "Dipl.-Ing.", hn)
+    
+    # "Herr" means "Mr." in German
+    def test_german_herr(self):
+        hn = HumanName("Herr Thomas Mann")
+        self.m(hn.title, "Herr", hn)
+        self.m(hn.first, "Thomas", hn)
+        self.m(hn.last, "Mann", hn)
+    
+    # "Frau" means "Mrs."/"Ms." in German
+    def test_german_frau(self):
+        hn = HumanName("Frau Wilma Kraut")
+        self.m(hn.title, "Frau", hn)
+        self.m(hn.first, "Wilma", hn)
+        self.m(hn.last, "Kraut", hn)
+
+    # "Graf"/"Gräfin" means "count"/"earl" in German, see http://en.wikipedia.org/wiki/Graf
+    def test_german_graf(self):
+        hn = HumanName("Graf Thomas von Wunschheim")
+        self.m(hn.title, "Graf", hn)
+        self.m(hn.first, "Thomas", hn)
+        self.m(hn.last, "von Wunschheim", hn)
+
+    # "Graf"/"Gräfin" means "count"/"earl" in German, see http://en.wikipedia.org/wiki/Graf
+    def test_german_graefin(self):
+        hn = HumanName("Gräfin Annette von Wunschheim")
+        self.m(hn.title, "Gräfin", hn)
+        self.m(hn.first, "Annette", hn)
+        self.m(hn.last, "von Wunschheim", hn)
+
+    def test_german_graf_as_lastname(self):
+        hn = HumanName("Steffi Graf")
+        self.m(hn.first, "Steffi", hn)
+        self.m(hn.last, "Graf", hn)
+
+    # Some Germans use "Priv.-Doz." (Privat-Dozent) if they're teaching at a private university
+    def test_german_priv_doz(self):
+        hn = HumanName("Priv.-Doz. Bernhard Klose")
+        self.m(hn.first, "Bernhard", hn)
+        self.m(hn.last, "Klose", hn)
+        self.m(hn.suffix, "Priv.-Doz.", hn)
+
+    # Abbreviation for "Priv.-Doz."
+    def test_german_pd(self):
+        hn = HumanName("PD Bernhard Klose")
+        self.m(hn.first, "Bernhard", hn)
+        self.m(hn.last, "Klose", hn)
+        self.m(hn.suffix, "PD", hn)
+
+    # Professor at a German University of Applied Sciences (Fachhochschule)
+    def test_german_fh_prof(self):
+        hn = HumanName("FH-Prof. John Meyer")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Meyer", hn)
+        self.m(hn.suffix, "FH-Prof.", hn)
+
+    # Some people write "Univ.Prof." for "University Professor"/"Universitäts Professor"
+    def test_univ_prof(self):
+        hn = HumanName("Univ.Prof. Udo Brehm")
+        self.m(hn.first, "Udo", hn)
+        self.m(hn.last, "Brehm", hn)
+        self.m(hn.suffix, "Univ.Prof.", hn)
+
+    def test_ma_degree(self):
+        hn = HumanName("John Meyer M.A.")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Meyer", hn)
+        self.m(hn.suffix, "M.A.", hn)
+
+    @unittest.expectedFailure
+    def test_msc_degree(self):
+        hn = HumanName("John Meyer M. Sc.")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Meyer", hn)
+        self.m(hn.suffix, "M. Sc.", hn)
+
+    def test_meng_degree(self):
+        hn = HumanName("John Meyer M.Eng.")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Meyer", hn)
+        self.m(hn.suffix, "M.Eng.", hn)
+
+    def test_mba_degree(self):
+        hn = HumanName("John Meyer MBA")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Meyer", hn)
+        self.m(hn.suffix, "MBA", hn)
+
+    def test_ba_degree(self):
+        hn = HumanName("John Meyer BA")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Meyer", hn)
+        self.m(hn.suffix, "BA", hn)
+
+    def test_bsc_degree(self):
+        hn = HumanName("John Meyer BSc.")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Meyer", hn)
+        self.m(hn.suffix, "BSc.", hn)
+
+    def test_beng_degree(self):
+        hn = HumanName("John Meyer B. Eng.")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Meyer", hn)
+        self.m(hn.suffix, "B Eng.", hn)
+
+    def test_llm_degree(self):
+        hn = HumanName("LL. M. John Meyer")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Meyer", hn)
+        self.m(hn.suffix, "LL. M.", hn)
+
+    def test_mag_degree(self):
+        hn = HumanName("Mag. John Meyer")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Meyer", hn)
+        self.m(hn.suffix, "Mag.", hn)
+
+    # Specifies in which fields the Dr. title was awarded
+    @unittest.expectedFailure
+    def test_dr_rer_nat(self):
+        hn = HumanName("Dr. rer. nat. John Meyer")
+        self.m(hn.title, "Dr. rer. nat.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Meyer", hn)
+
+    # Specifies in which fields the Dr. title was awarded
+    @unittest.expectedFailure
+    def test_dr_med(self):
+        hn = HumanName("Dr. med. John Meyer")
+        self.m(hn.title, "Dr. med.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Meyer", hn)
+
+    # Specifies in which fields the Dr. title was awarded
+    @unittest.expectedFailure
+    def test_dr_phil(self):
+        hn = HumanName("Dr. phil. John Meyer")
+        self.m(hn.title, "Dr. phil.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Meyer", hn)
+
 class HumanNameOutputFormatTests(HumanNameTestBase):
     def test_formating(self):
         hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")

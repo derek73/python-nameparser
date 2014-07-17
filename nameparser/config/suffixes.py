@@ -25,6 +25,18 @@ SUFFIXES = set([
     'dds',
     'dpm',
     'dmd',
+    'bsc',
+    'ba',
+    'mba',
+    'mdb',
+    'mdl',
+    'mdep',
+    'mda',
+    'mdhb',
+    'mdbb',
+    'stb',
+    'msc',
+    'eng',
 ])
 """
 
