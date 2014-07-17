@@ -121,7 +121,7 @@ class HumanName(object):
     def __unicode__(self):
         if self.string_format:
             # string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
-            return self.string_format.format(**self.as_dict())
+            return self.collapse_whitespace(self.string_format.format(**self.as_dict())).strip(', ')
         return " ".join(self)
     
     def __str__(self):
@@ -293,7 +293,10 @@ class HumanName(object):
     def full_name(self, value):
         self._full_name = value
         self.parse_full_name()
-
+    
+    def collapse_whitespace(self, string):
+        # collapse multiple spaces into single space
+        return self.C.regexes.spaces.sub(" ", string.strip())
     
     def pre_process(self):
         """
@@ -360,8 +363,7 @@ class HumanName(object):
         
         self.pre_process()
         
-        # collapse multiple spaces
-        self._full_name = self.C.regexes.spaces.sub(" ", self._full_name.strip())
+        self._full_name = self.collapse_whitespace(self._full_name)
         
         # break up full_name by commas
         parts = [x.strip() for x in self._full_name.split(",")]
