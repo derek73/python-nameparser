@@ -48,13 +48,18 @@ class HumanName(object):
     """
     
     has_own_config = False
-    """True if this instance is not using the shared module-level configuration."""
+    """True if this instance is not using the shared module-level configuration. Read only."""
     
     C = CONSTANTS
     """
     A reference to the configuration for this instance, which may or may not be a
-    reference to the module-wide instance at :py:mod:`~nameparser.config.CONSTANTS`.
+    reference to the shared, module-wide instance at :py:mod:`~nameparser.config.CONSTANTS`.
     See `Customizing the Parser <customize.html>`_.
+    """
+    
+    original = ''
+    """
+    The original string, untouched by the parser.
     """
     
     count = 0
@@ -73,6 +78,7 @@ class HumanName(object):
         
         self.ENCODING = encoding
         self.string_format = string_format
+        self.original = full_name
         self.full_name = full_name
     
     def __iter__(self):
