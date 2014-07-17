@@ -21,6 +21,10 @@ SUFFIXES = set([
     'phd',
     'mp',
     'qc',
+    'do',
+    'dds',
+    'dpm',
+    'dmd',
 ])
 """
 
