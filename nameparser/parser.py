@@ -2,11 +2,11 @@
 from __future__ import unicode_literals
 
 import logging
-from nameparser.util import u
-from nameparser.util import text_type
-from nameparser.util import lc
-from nameparser.config import CONSTANTS
-from nameparser.config import Constants
+from .util import u
+from .util import text_type
+from .util import lc
+from .config import CONSTANTS
+from .config import Constants
 
 # http://code.google.com/p/python-nameparser/issues/detail?id=10
 log = logging.getLogger('HumanName')
@@ -374,6 +374,7 @@ class HumanName(object):
         if len(parts) == 1:
             
             # no commas, title first middle middle middle last suffix
+            #            part[0]
             
             pieces = self.parse_pieces(parts)
             
@@ -403,6 +404,7 @@ class HumanName(object):
             if self.is_suffix(parts[1]):
                 
                 # suffix comma: title first middle last [suffix], suffix [, suffix]
+                #               parts[0],                         parts[1:...]
                 
                 self.suffix_list += parts[1:]
                 
@@ -431,12 +433,20 @@ class HumanName(object):
                     self.middle_list.append(piece)
             else:
                 
-                # lastname comma: last, title first middles[,] suffix [,suffix]
+                # lastname comma: last [suffix], title first middles[,] suffix [,suffix]
+                #                 parts[0],      parts[1],              parts[2:...]
                 pieces = self.parse_pieces(parts[1].split(' '), 1)
                 
                 log.debug("pieces: {0}".format(u(pieces)))
                 
-                self.last_list.append(parts[0])
+                # lastname part may have suffixes in it
+                lastname_pieces = self.parse_pieces(parts[0].split(' '), 1)
+                for piece in lastname_pieces:
+                    if self.is_suffix(piece):
+                        self.suffix_list.append(piece)
+                    else:
+                        self.last_list.append(piece)
+                
                 for i, piece in enumerate(pieces):
                     try:
                         nxt = pieces[i + 1]

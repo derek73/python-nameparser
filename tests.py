@@ -156,7 +156,13 @@ class FirstNameHandlingTests(HumanNameTestBase):
         hn = HumanName("Andrews, M.D.")
         self.m(hn.suffix, "M.D.", hn)
         self.m(hn.last, "Andrews", hn)
-        
+    
+    def test_suffix_in_lastname_part_of_lastname_comma_format(self):
+        hn = HumanName("Smith Jr., John")
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.suffix, "Jr.", hn)
+
     def test_sir_exception_to_first_name_rule(self):
         hn = HumanName("Sir Gerald")
         self.m(hn.title, "Sir", hn)
