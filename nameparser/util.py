@@ -22,4 +22,4 @@ def lc(value):
     """Lower case and remove any periods to normalize for comparison."""
     if not value:
         return ''
-    return value.lower().replace('.','')
+    return value.lower().strip('.')

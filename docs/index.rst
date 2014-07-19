@@ -30,7 +30,7 @@ Supports 3 different comma placement variations in the input string.
 
 * Title Firstname "Nickname" Middle Middle Lastname Suffix
 * Lastname [Suffix], Title Firstname (Nickname) Middle Middle[,] Suffix [, Suffix]
-* Title Firstname M Lastname [Suffix], Suffix [, Suffix]
+* Title Firstname M Lastname [Suffix], Suffix [Suffix] [, Suffix]
 
 When there is ambiguity that cannot be resolved by a rule-based approach,
 HumanName prefers to handle the most common cases correctly. For example,
