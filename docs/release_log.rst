@@ -1,6 +1,10 @@
 Release Log
 ===========
 
+* 0.3.3 - Aug 4, 2014
+    - Allow suffixes to be chained (#8)
+    - Handle trailing suffix in last name comma format (#3). Removes support for titles
+    with periods but no spaces in them, e.g. "Lt.Gen.". (#21)
 * 0.3.2 - July 16, 2014
     - Retain original string in "original" attribute.
     - Collapse white space when using custom string format.
