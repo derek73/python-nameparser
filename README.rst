@@ -1,14 +1,14 @@
 Name Parser
 ===========
 
-.. image:: https://travis-ci.org/derek73/python-nameparser.svg
+.. image:: https://travis-ci.org/derek73/python-nameparser.svg?branch=master
    :target: https://travis-ci.org/derek73/python-nameparser
 .. image:: https://pypip.in/version/nameparser/badge.png
-    :target: https://pypi.python.org/pypi/python-nameparser
+    :target: https://pypi.python.org/pypi/nameparser
 .. image:: https://pypip.in/download/nameparser/badge.png
-    :target: https://pypi.python.org/pypi/python-nameparser
+    :target: https://pypi.python.org/pypi/nameparser
 .. image:: https://pypip.in/license/nameparser/badge.png
-    :target: https://pypi.python.org/pypi/python-nameparser
+    :target: https://pypi.python.org/pypi/nameparser
 
 
 A simple Python module for parsing human names into their individual
@@ -17,7 +17,7 @@ based on placement in the string and matches against known name pieces
 like titles. It joins name pieces on conjunctions and special prefixes to
 last names like "del". Titles can be chained together and include conjunctions
 to handle titles like "Asst Secretary of State". It can also try to 
-correct capitalization.
+correct capitalization of all upper or lowercase names.
 
 It attempts the best guess that can be made with a simple, rule-based
 approach. It's not perfect, but it gets you pretty far.
@@ -43,10 +43,16 @@ approach. It's not perfect, but it gets you pretty far.
     {u'last': u'de la Vega', u'suffix': u'III', u'title': u'Dr.', u'middle': u'Q. Xavier', u'nickname': u'Doc Vega', u'first': u'Juan'}
 
 
+Supports 3 different comma placement variations typically used for names of people.
+
+* Title Firstname "Nickname" Middle Middle Lastname Suffix
+* Lastname [Suffix], Title Firstname (Nickname) Middle Middle[,] Suffix [, Suffix]
+* Title Firstname M Lastname [Suffix], Suffix [Suffix] [, Suffix]
+
 Unit Tests
 ------------
 
-Over 100 unit tests with example names. `Start a New Issue`_ 
+Over 200 unit tests with example names. `Start a New Issue`_ 
 for names that fail and I will try to fix it. 
 
 

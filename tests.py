@@ -156,7 +156,13 @@ class FirstNameHandlingTests(HumanNameTestBase):
         hn = HumanName("Andrews, M.D.")
         self.m(hn.suffix, "M.D.", hn)
         self.m(hn.last, "Andrews", hn)
-        
+    
+    def test_suffix_in_lastname_part_of_lastname_comma_format(self):
+        hn = HumanName("Smith Jr., John")
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.suffix, "Jr.", hn)
+
     def test_sir_exception_to_first_name_rule(self):
         hn = HumanName("Sir Gerald")
         self.m(hn.title, "Sir", hn)
@@ -1038,7 +1044,9 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.last, "Smith", hn)
         self.m(hn.suffix, "III, Jr", hn)
 
+    @unittest.expectedFailure
     def test_two_initials_conflict_with_conjunction(self):
+        # Supporting this seems to screw up titles with periods in them like M.B.A.
         hn = HumanName('E.T. Smith')
         self.m(hn.first, "E.", hn)
         self.m(hn.middle, "T.", hn)
@@ -1264,7 +1272,85 @@ class HumanNameNicknameTestCase(HumanNameTestBase):
         self.m(hn.suffix, "Jr.", hn)
 
 
+class SuffixesTestCase(HumanNameTestBase):
+    
+    def test_suffix(self):
+        hn = HumanName("Joe Franklin Jr")
+        self.m(hn.first, "Joe", hn)
+        self.m(hn.last, "Franklin", hn)
+        self.m(hn.suffix, "Jr", hn)
+
+    def test_suffix_with_periods(self):
+        hn = HumanName("Joe Dentist D.D.S.")
+        self.m(hn.first, "Joe", hn)
+        self.m(hn.last, "Dentist", hn)
+        self.m(hn.suffix, "D.D.S.", hn)
+
+    def test_two_suffixes(self):
+        hn = HumanName("Kenneth Clarke QC MP")
+        self.m(hn.first, "Kenneth", hn)
+        self.m(hn.last, "Clarke", hn)
+        # NOTE: this adds a comma when the orginal format did not have one. 
+        # not ideal but at least its in the right bucket
+        self.m(hn.suffix, "QC, MP", hn)
+
+    def test_two_suffixes_lastname_comma_format(self):
+        hn = HumanName("Washington Jr. MD, Franklin")
+        self.m(hn.first, "Franklin", hn)
+        self.m(hn.last, "Washington", hn)
+        # NOTE: this adds a comma when the orginal format did not have one. 
+        self.m(hn.suffix, "Jr., MD", hn)
+
+    def test_two_suffixes_suffix_comma_format(self):
+        hn = HumanName("Franklin Washington, Jr. MD")
+        self.m(hn.first, "Franklin", hn)
+        self.m(hn.last, "Washington", hn)
+        self.m(hn.suffix, "Jr. MD", hn)
+
+    def test_suffix_containing_periods(self):
+        hn = HumanName("Kenneth Clarke Q.C.")
+        self.m(hn.first, "Kenneth", hn)
+        self.m(hn.last, "Clarke", hn)
+        self.m(hn.suffix, "Q.C.", hn)
+
+    def test_suffix_containing_periods_lastname_comma_format(self):
+        hn = HumanName("Clarke, Kenneth, Q.C. M.P.")
+        self.m(hn.first, "Kenneth", hn)
+        self.m(hn.last, "Clarke", hn)
+        self.m(hn.suffix, "Q.C. M.P.", hn)
+
+    def test_suffix_containing_periods_suffix_comma_format(self):
+        hn = HumanName("Kenneth Clarke Q.C., M.P.")
+        self.m(hn.first, "Kenneth", hn)
+        self.m(hn.last, "Clarke", hn)
+        self.m(hn.suffix, "Q.C., M.P.", hn)
+
+    def test_suffix_with_single_comma_format(self):
+        hn = HumanName("John Doe jr., MD")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)
+        self.m(hn.suffix, "jr., MD", hn)
+
+    def test_suffix_with_double_comma_format(self):
+        hn = HumanName("Doe, John jr., MD")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)
+        self.m(hn.suffix, "jr., MD", hn)
+
+    #http://en.wikipedia.org/wiki/Ma_(surname)
+    def test_potential_suffix_that_is_also_last_name(self):
+        hn = HumanName("Jack Ma")
+        self.m(hn.first, "Jack", hn)
+        self.m(hn.last, "Ma", hn)
+    
+    def test_potential_suffix_that_is_also_last_name_with_suffix(self):
+        hn = HumanName("Jack Ma Jr")
+        self.m(hn.first, "Jack", hn)
+        self.m(hn.last, "Ma", hn)
+        self.m(hn.suffix, "Jr", hn)
+
 class HumanNameTitleTestCase(HumanNameTestBase):
+
     def test_last_name_is_also_title(self):
         hn = HumanName("Amy E Maid")
         self.m(hn.first, "Amy", hn)
@@ -1300,18 +1386,6 @@ class HumanNameTitleTestCase(HumanNameTestBase):
         hn = HumanName("Coach")
         self.m(hn.title, "Coach", hn)
 
-    def test_suffix_with_single_comma_format(self):
-        hn = HumanName("John Doe jr., MD")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Doe", hn)
-        self.m(hn.suffix, "jr., MD", hn)
-   
-    def test_suffix_with_double_comma_format(self):
-        hn = HumanName("Doe, John jr., MD")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Doe", hn)
-        self.m(hn.suffix, "jr., MD", hn)
-   
     # TODO: fix handling of U.S.
     @unittest.expectedFailure
     def test_chained_title_first_name_initial(self):
@@ -1348,17 +1422,17 @@ class HumanNameTitleTestCase(HumanNameTestBase):
         self.m(hn.middle, "G", hn)
         self.m(hn.last, "Davis", hn)
         self.m(hn.suffix, "III", hn)
-    
+
     @unittest.expectedFailure
     def test_title_multiple_titles_with_conjunctions(self):
-        # I think it finds the index of the wrong 'the'. I get confused because it
+        # FIXME: I think it finds the index of the wrong 'the'. I get confused because it
         # loops in reverse order.
         hn = HumanName("The Right Hon. the President of the Queen's Bench Division")
         self.m(hn.title, "The Right Hon. the President of the Queen's Bench Division", hn)
 
     @unittest.expectedFailure
     def test_conjunction_before_title(self):
-        # TODO: seems fixable
+        # FIXME: seems fixable
         hn = HumanName('The Lord of the Universe')
         self.m(hn.title, "The Lord of the Universe", hn)
 
@@ -1382,7 +1456,9 @@ class HumanNameTitleTestCase(HumanNameTestBase):
         self.m(hn.first, "John", hn)
         self.m(hn.last, "V.", hn)
 
-    def test_lc_comparison_of_title(self):
+    @unittest.expectedFailure
+    def test_two_title_parts_separated_by_commas(self):
+        # supporting this currently messes up supporting suffixes like M.B.A.
         hn = HumanName("Lt.Gen. John A. Kenneth Doe IV")
         self.m(hn.title, "Lt. Gen.", hn)
         self.m(hn.first, "John", hn)
@@ -1432,10 +1508,11 @@ class HumanNameTitleTestCase(HumanNameTestBase):
 
     # 'ben' is removed from PREFIXES in v0.2.5
     # this test could re-enable this test if we decide to support 'ben' as a prefix
-    # def test_ben_as_conjunction(self):
-    #     hn = HumanName("Ahmad ben Husain")
-    #     self.m(hn.first,"Ahmad", hn)
-    #     self.m(hn.last,"ben Husain", hn)
+    @unittest.expectedFailure
+    def test_ben_as_conjunction(self):
+        hn = HumanName("Ahmad ben Husain")
+        self.m(hn.first,"Ahmad", hn)
+        self.m(hn.last,"ben Husain", hn)
 
     def test_ben_as_first_name(self):
         hn = HumanName("Ben Johnson")

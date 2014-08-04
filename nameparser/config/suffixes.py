@@ -18,6 +18,8 @@ SUFFIXES = set([
     'chfc',
     'cfp',
     'md',
+    'mba',
+    'ma',
     'phd',
     'mp',
     'qc',

@@ -264,7 +264,15 @@ class HumanName(object):
     
     def is_suffix(self, piece):
         """Is in the suffixes set or :py:func:`is_an_initial()`."""
-        return lc(piece) in self.C.suffixes and not self.is_an_initial(piece)
+        # suffixes may have periods inside them like "M.D."
+        return lc(piece).replace('.','') in self.C.suffixes and not self.is_an_initial(piece)
+    
+    def are_suffixes(self, pieces):
+        """Return True if all pieces are suffixes."""
+        for piece in pieces:
+            if not self.is_suffix(piece):
+                return False
+        return True
     
     def is_rootname(self, piece):
         '''Is not a known title, suffix or prefix. Just first, middle, last names.'''
@@ -374,6 +382,7 @@ class HumanName(object):
         if len(parts) == 1:
             
             # no commas, title first middle middle middle last suffix
+            #            part[0]
             
             pieces = self.parse_pieces(parts)
             
@@ -390,9 +399,9 @@ class HumanName(object):
                 if not self.first:
                     self.first_list.append(piece)
                     continue
-                if (i == len(pieces) - 2) and self.is_suffix(nxt):
+                if self.are_suffixes(pieces[i+1:]):
                     self.last_list.append(piece)
-                    self.suffix_list.append(nxt)
+                    self.suffix_list += pieces[i+1:]
                     break
                 if not nxt:
                     self.last_list.append(piece)
@@ -400,15 +409,14 @@ class HumanName(object):
                 
                 self.middle_list.append(piece)
         else:
-            if self.is_suffix(parts[1]):
+            if self.are_suffixes(parts[1].split(' ')):
                 
-                # suffix comma: title first middle last, suffix [, suffix]
+                # suffix comma: title first middle last [suffix], suffix [suffix] [, suffix]
+                #               parts[0],                         parts[1:...]
                 
                 self.suffix_list += parts[1:]
-                
                 pieces = self.parse_pieces(parts[0].split(' '))
                 log.debug("pieces: {0}".format(u(pieces)))
-                
                 for i, piece in enumerate(pieces):
                     try:
                         nxt = pieces[i + 1]
@@ -421,9 +429,9 @@ class HumanName(object):
                     if not self.first:
                         self.first_list.append(piece)
                         continue
-                    if (i == len(pieces) - 2) and self.is_suffix(nxt):
+                    if self.are_suffixes(pieces[i+1:]):
                         self.last_list.append(piece)
-                        self.suffix_list.insert(0,nxt)
+                        self.suffix_list = pieces[i+1:] + self.suffix_list
                         break
                     if not nxt:
                         self.last_list.append(piece)
@@ -431,12 +439,20 @@ class HumanName(object):
                     self.middle_list.append(piece)
             else:
                 
-                # lastname comma: last, title first middles[,] suffix [,suffix]
+                # lastname comma: last [suffix], title first middles[,] suffix [,suffix]
+                #                 parts[0],      parts[1],              parts[2:...]
                 pieces = self.parse_pieces(parts[1].split(' '), 1)
                 
                 log.debug("pieces: {0}".format(u(pieces)))
                 
-                self.last_list.append(parts[0])
+                # lastname part may have suffixes in it
+                lastname_pieces = self.parse_pieces(parts[0].split(' '), 1)
+                for piece in lastname_pieces:
+                    if self.is_suffix(piece):
+                        self.suffix_list.append(piece)
+                    else:
+                        self.last_list.append(piece)
+                
                 for i, piece in enumerate(pieces):
                     try:
                         nxt = pieces[i + 1]
@@ -465,6 +481,20 @@ class HumanName(object):
             self.unparsable = False
             self.post_process()
 
+
+    # def split_periods(self, pieces):
+    #     """
+    #     If there is a period that is not at the end of a piece, split it on periods.
+    #     """
+    #     tmp = []
+    #     for piece in pieces:
+    #         if piece[:-1].find('.') >= 0:
+    #             p = [_f for _f in piece.split('.') if _f]
+    #             tmp += [x+'.' for x in p]
+    #         else:
+    #             tmp += [piece]
+    #     return tmp
+
     def parse_pieces(self, parts, additional_parts_count=0):
         """
         Split parts on spaces and remove commas, join on conjunctions and
@@ -479,21 +509,11 @@ class HumanName(object):
         :rtype: list
         """
         
-        ps = []
+        tmp = []
         for part in parts:
-            ps += [x.strip(' ,') for x in part.split(' ')]
+            tmp += [x.strip(' ,') for x in part.split(' ')]
         
-        # if there is a period that is not at the end of a piece, split it on periods
-        pieces = []
-        for piece in ps:
-            if piece[:-1].find('.') >= 0:
-                p = [_f for _f in piece.split('.') if _f]
-                pieces += [x+'.' for x in p]
-            else:
-                pieces += [piece]
-        
-        
-        return self.join_on_conjunctions(pieces, additional_parts_count)
+        return self.join_on_conjunctions(tmp, additional_parts_count)
         
     def join_on_conjunctions(self, pieces, additional_parts_count=0):
         """
