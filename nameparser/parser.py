@@ -512,8 +512,10 @@ class HumanName(object):
         tmp = []
         for part in parts:
             tmp += [x.strip(' ,') for x in part.split(' ')]
-        
-        return self.join_on_conjunctions(tmp, additional_parts_count)
+        # if len(filter(self.is_rootname, tmp)) > 2:
+        if len(tmp) > 2:
+            return self.join_on_conjunctions(tmp, additional_parts_count)
+        return tmp
         
     def join_on_conjunctions(self, pieces, additional_parts_count=0):
         """

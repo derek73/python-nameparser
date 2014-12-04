@@ -183,6 +183,19 @@ class FirstNameHandlingTests(HumanNameTestBase):
         self.m(hn.title, "Dame", hn)
         self.m(hn.first, "Mary", hn)
         
+    def test_first_name_is_not_prefix_if_only_two_parts(self):
+        """When there are only two parts, don't join prefixes or conjunctions"""
+        hn = HumanName("Van Nguyen")
+        self.m(hn.first, "Van", hn)
+        self.m(hn.last, "Nguyen", hn)
+
+    @unittest.expectedFailure
+    def test_first_name_is_prefix_if_three_parts(self):
+        """When there are only two parts, don't join prefixes or conjunctions"""
+        hn = HumanName("Mr. Van Nguyen")
+        self.m(hn.first, "Van", hn)
+        self.m(hn.last, "Nguyen", hn)
+        
 
 class HumanNameBruteForceTests(HumanNameTestBase):
 
