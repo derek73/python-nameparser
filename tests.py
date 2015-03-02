@@ -1378,6 +1378,14 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.last, "Ma", hn)
         self.m(hn.suffix, "III, Jr", hn)
 
+    # https://github.com/derek73/python-nameparser/issues/27
+    @unittest.expectedFailure
+    def test_king(self):
+        hn = HumanName("Dr King Jr")
+        self.m(hn.title, "Dr", hn)
+        self.m(hn.last, "King", hn)
+        self.m(hn.suffix, "Jr, Jr", hn)
+
 class HumanNameTitleTestCase(HumanNameTestBase):
 
     def test_last_name_is_also_title(self):
