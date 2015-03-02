@@ -512,10 +512,7 @@ class HumanName(object):
         tmp = []
         for part in parts:
             tmp += [x.strip(' ,') for x in part.split(' ')]
-        # if len(filter(self.is_rootname, tmp)) > 2:
-        if len(tmp) > 2:
-            return self.join_on_conjunctions(tmp, additional_parts_count)
-        return tmp
+        return self.join_on_conjunctions(tmp, additional_parts_count)
         
     def join_on_conjunctions(self, pieces, additional_parts_count=0):
         """
@@ -528,6 +525,10 @@ class HumanName(object):
         :rtype: list
         
         """
+        length = len(pieces) + additional_parts_count
+        # don't join on conjuctions if there's only 2 parts
+        if length < 3:
+            return pieces
         
         for conj in filter(self.is_conjunction, pieces[::-1]): # reverse sorted list
             
