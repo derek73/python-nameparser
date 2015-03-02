@@ -1361,11 +1361,22 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.first, "Jack", hn)
         self.m(hn.last, "Ma", hn)
     
+    def test_potential_suffix_that_is_also_last_name_comma(self):
+        hn = HumanName("Ma, Jack")
+        self.m(hn.first, "Jack", hn)
+        self.m(hn.last, "Ma", hn)
+    
     def test_potential_suffix_that_is_also_last_name_with_suffix(self):
         hn = HumanName("Jack Ma Jr")
         self.m(hn.first, "Jack", hn)
         self.m(hn.last, "Ma", hn)
         self.m(hn.suffix, "Jr", hn)
+
+    def test_potential_suffix_that_is_also_last_name_with_suffix_comma(self):
+        hn = HumanName("Ma III, Jack Jr")
+        self.m(hn.first, "Jack", hn)
+        self.m(hn.last, "Ma", hn)
+        self.m(hn.suffix, "III, Jr", hn)
 
 class HumanNameTitleTestCase(HumanNameTestBase):
 

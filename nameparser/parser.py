@@ -448,7 +448,8 @@ class HumanName(object):
                 # lastname part may have suffixes in it
                 lastname_pieces = self.parse_pieces(parts[0].split(' '), 1)
                 for piece in lastname_pieces:
-                    if self.is_suffix(piece):
+                    # the first one is always a last name, even if it look like a suffix
+                    if self.is_suffix(piece) and len(self.last_list) > 0:
                         self.suffix_list.append(piece)
                     else:
                         self.last_list.append(piece)
