@@ -1,6 +1,9 @@
 Release Log
 ===========
 
+* 0.3.4 - March 1, 2015
+    - Fix #24, handle first name also a prefix
+    - Fix #26, last name comma format when lastname is also a title
 * 0.3.3 - Aug 4, 2014
     - Allow suffixes to be chained (#8)
     - Handle trailing suffix in last name comma format (#3). Removes support for titles
