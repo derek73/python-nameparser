@@ -1634,6 +1634,35 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.m(str(hn), 'Ronald McDonald', hn)
 
+class PostProcessingTestCase(HumanNameTestBase):
+    def test_clear_nickname(self):
+        hn = HumanName("Franklin, Benjamin (@Ben), Jr.", postprocessing=True)
+        self.m(hn.nickname, "Ben", hn)
+
+    def test_clear_title(self):
+        hn = HumanName(".Mag-Judge Harwell G Davis, III")
+        hn.apply_postprocessing(delete_symbols='.')
+        self.m(hn.title, "Mag-Judge", hn)
+
+    def test_clear_last_name(self):
+        hn = HumanName("US Magistrate Judge T Michael Putnam*", postprocessing=True)
+        self.m(hn.last, "Putnam", hn)
+
+    def test_clear_first_name(self):
+         hn = HumanName("&Duke& Martin Luther King, Jr.", postprocessing=True)
+         self.m(hn.first, "Duke", hn)
+
+    def test_apply_postprocessing(self):
+        hn = HumanName("Franklin, Benjamin (@Ben), Jr.")
+        hn.apply_postprocessing()
+        self.m(hn.nickname, "Ben", hn)
+
+    def test_apply_postprocessing2(self):
+        hn = HumanName(".Cardinal Secretary of State Hillary Clinton")
+        self.m(hn.title, ".Cardinal Secretary of State", hn)
+        hn.apply_postprocessing(delete_symbols='.')
+        self.m(hn.title, "Cardinal Secretary of State", hn)
+
 
 class HumanNameOutputFormatTests(HumanNameTestBase):
     def test_formating(self):
