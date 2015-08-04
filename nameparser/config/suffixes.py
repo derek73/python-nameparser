@@ -17,16 +17,20 @@ SUFFIXES = set([
     'clu',
     'chfc',
     'cfp',
-    'md',
-    'mba',
-    'ma',
-    'phd',
-    'mp',
-    'qc',
+    'cpa',
+    'csm',
     'do',
     'dds',
     'dpm',
     'dmd',
+    'md',
+    'mba',
+    'ma',
+    'phd',
+    'phr',
+    'pmp'
+    'mp',
+    'qc',
 ])
 """
 

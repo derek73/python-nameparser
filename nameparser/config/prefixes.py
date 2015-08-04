@@ -18,6 +18,7 @@ PREFIXES = set([
     'la',
     'le',
     'san',
+    'santa',
     'st',
     'ste',
     'van',
