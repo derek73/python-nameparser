@@ -17,13 +17,14 @@ if you are willing to `customize it`_. Unicode is supported, but the
 parser is not likely to be useful for languages that to not share the same structure 
 as English names.
 
+.. _customize it: customize.html#parser-customization-examples
+
 The HumanName class splits a name string up into name parts based 
 on placement in the string and matches against known name pieces like titles. 
 It joins name pieces on conjunctions and special prefixes to last names like 
 "del". Titles can be chained together and include conjunctions to handle 
 titles like "Asst Secretary of State". It can also try to correct 
 capitalization.
-.. _customize it: customize.html#parser-customization-examples
 
 
 
