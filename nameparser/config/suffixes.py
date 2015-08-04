@@ -28,7 +28,7 @@ SUFFIXES = set([
     'ma',
     'phd',
     'phr',
-    'pmp'
+    'pmp',
     'mp',
     'qc',
 ])
