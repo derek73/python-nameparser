@@ -14,8 +14,10 @@ last names like "del". Titles can be chained together and include conjunctions
 to handle titles like "Asst Secretary of State". It can also try to 
 correct capitalization of all upper or lowercase names.
 
-It attempts the best guess that can be made with a simple, rule-based
-approach. It's not perfect, but it gets you pretty far.
+It attempts the best guess that can be made with a simple, rule-based approach. 
+Unicode is supported, but the parser is not likely to be useful for languages 
+that to not share the same structure as English names. It's not perfect, but it 
+gets you pretty far.
 
 **Quick Start Example**
 
