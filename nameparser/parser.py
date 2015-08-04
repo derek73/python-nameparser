@@ -621,8 +621,8 @@ class HumanName(object):
         if self.is_prefix(word) or self.is_conjunction(word):
             return lc(word)
         exceptions = self.C.capitalization_exceptions
-        if word in exceptions:
-            return exceptions[word]
+        if lc(word) in exceptions:
+            return exceptions[lc(word)]
         mac_match = self.C.regexes.mac.match(word)
         if mac_match:
             def cap_after_mac(m):

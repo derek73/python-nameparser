@@ -1613,6 +1613,11 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.m(str(hn), 'Lt. Gen. John A. Kenneth Doe IV', hn)
 
+    def test_capitalize_title_to_lower(self):
+        hn = HumanName('LT. GEN. JOHN A. KENNETH DOE IV')
+        hn.capitalize()
+        self.m(str(hn), 'Lt. Gen. John A. Kenneth Doe IV', hn)
+
     # Capitalization with M(a)c and hyphenated names
     def test_capitalization_with_Mac_as_hyphenated_names(self):
         hn = HumanName('donovan mcnabb-smith')
