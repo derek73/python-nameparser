@@ -596,7 +596,7 @@ class HumanName(object):
         if prefixes:
             i = pieces.index(prefixes[0])
             # join everything after the prefix until the next suffix
-            next_suffix = filter(self.is_suffix, pieces[i:])
+            next_suffix = list(filter(self.is_suffix, pieces[i:]))
             if next_suffix:
                 j = pieces.index(next_suffix[0])
                 new_piece = ' '.join(pieces[i:j])
