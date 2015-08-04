@@ -593,23 +593,17 @@ class HumanName(object):
         
         # join prefixes to following lastnames: ['de la Vega'], ['van Buren']
         prefixes = list(filter(self.is_prefix, pieces))
-        try:
-            for prefix in prefixes:
-                try:
-                    i = pieces.index(prefix)
-                except ValueError:
-                    # if two prefixes in a row ("de la Vega"), have to do 
-                    # extra work to find the index the second time around
-                    def find_p(p):
-                        return p.endswith(prefix) # closure on prefix
-                    m = list(filter(find_p, pieces))
-                    # I wonder if some input will throw an IndexError here. 
-                    # Means it can't find prefix anyore.
-                    i = pieces.index(m[0])
-                pieces[i] = ' '.join(pieces[i:i+2])
-                pieces.pop(i+1)
-        except IndexError:
-            pass
+        if prefixes:
+            i = pieces.index(prefixes[0])
+            # join everything after the prefix until the next suffix
+            next_suffix = filter(self.is_suffix, pieces[i:])
+            if next_suffix:
+                j = pieces.index(next_suffix[0])
+                new_piece = ' '.join(pieces[i:j])
+                pieces = pieces[:i] + [new_piece] + pieces[j:]
+            else:
+                new_piece = ' '.join(pieces[i:])
+                pieces = pieces[:i] + [new_piece]
             
         log.debug("pieces: {0}".format(pieces))
         return pieces

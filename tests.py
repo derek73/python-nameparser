@@ -1161,11 +1161,12 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
 
 class ConstantsCustomization(HumanNameTestBase):
 
-    def test_add_prefix(self):
+    def test_add_title(self):
         hn = HumanName("Te Awanui-a-Rangi Black", constants=None)
-        hn.C.prefixes.add('te')
+        hn.C.titles.add('te')
         hn.parse_full_name()
-        self.m(hn.first,"Te Awanui-a-Rangi", hn)
+        self.m(hn.title,"Te", hn)
+        self.m(hn.first,"Awanui-a-Rangi", hn)
         self.m(hn.last,"Black", hn)
     
     def test_remove_title(self):
@@ -1296,6 +1297,36 @@ class HumanNameNicknameTestCase(HumanNameTestBase):
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Jones", hn)
         self.m(hn.suffix, "Jr.", hn)
+
+class PrefixesTestCase(HumanNameTestBase):
+
+    def test_prefix(self):
+        hn = HumanName("Juan del Sur")
+        self.m(hn.first, "Juan", hn)
+        self.m(hn.last, "del Sur", hn)
+    
+    def test_prefix_before_two_part_last_name(self):
+        hn = HumanName("pennie von bergen wessels")
+        self.m(hn.first, "pennie", hn)
+        self.m(hn.last, "von bergen wessels", hn)
+
+    def test_prefix_before_two_part_last_name_with_suffix(self):
+        hn = HumanName("pennie von bergen wessels III")
+        self.m(hn.first, "pennie", hn)
+        self.m(hn.last, "von bergen wessels", hn)
+        self.m(hn.suffix, "III", hn)
+
+    def test_two_part_last_name_with_suffix_comma(self):
+        hn = HumanName("pennie von bergen wessels, III")
+        self.m(hn.first, "pennie", hn)
+        self.m(hn.last, "von bergen wessels", hn)
+        self.m(hn.suffix, "III", hn)
+
+    def test_two_part_last_name_with_suffix(self):
+        hn = HumanName("von bergen wessels, pennie III")
+        self.m(hn.first, "pennie", hn)
+        self.m(hn.last, "von bergen wessels", hn)
+        self.m(hn.suffix, "III", hn)
 
 
 class SuffixesTestCase(HumanNameTestBase):
