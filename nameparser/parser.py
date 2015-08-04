@@ -45,7 +45,8 @@ class HumanName(object):
         a :py:class:`~nameparser.config.Constants` instance. Pass ``None`` for 
         `per-instance config <customize.html>`_. 
     :param str encoding: string representing the encoding of your input
-    :param str string_format: python string formatting 
+    :param str string_format: python string formatting
+    :param bool postprocessing: apply postprocessing after finish of parsing 
     """
     
     has_own_config = False
@@ -69,9 +70,11 @@ class HumanName(object):
     _full_name = ''
     
     def __init__(self, full_name="", constants=CONSTANTS, encoding=ENCODING, 
-                string_format=None):
+                string_format=None, postprocessing=False):
         global CONSTANTS
         self.C = constants
+        self.postprocessing = postprocessing
+        self.symbols ='@!&+*'
         if not self.C:
             self.C = Constants()
         if self.C is not CONSTANTS:
@@ -184,7 +187,7 @@ class HumanName(object):
         :py:mod:`~nameparser.config.titles` or :py:mod:`~nameparser.config.conjunctions`
         at the beginning of :py:attr:`full_name`.
         """
-        return " ".join(self.title_list)
+        return self._postprocessing(" ".join(self.title_list))
     
     @property
     def first(self):
@@ -192,7 +195,7 @@ class HumanName(object):
         The person's first name. The first name piece after any known 
         :py:attr:`title` pieces parsed from :py:attr:`full_name`.
         """
-        return " ".join(self.first_list)
+        return self._postprocessing(" ".join(self.first_list))
     
     @property
     def middle(self):
@@ -200,7 +203,7 @@ class HumanName(object):
         The person's middle names. All name pieces after the first name and before 
         the last name parsed from :py:attr:`full_name`.
         """
-        return " ".join(self.middle_list)
+        return self._postprocessing(" ".join(self.middle_list))
     
     @property
     def last(self):
@@ -208,7 +211,7 @@ class HumanName(object):
         The person's last name. The last name piece parsed from 
         :py:attr:`full_name`.
         """
-        return " ".join(self.last_list)
+        return self._postprocessing(" ".join(self.last_list))
     
     @property
     def suffix(self):
@@ -218,7 +221,7 @@ class HumanName(object):
         of comma separated formats, e.g. "Lastname, Title Firstname Middle[,] Suffix 
         [, Suffix]" parsed from :py:attr:`full_name`.
         """
-        return ", ".join(self.suffix_list)
+        return self._postprocessing(", ".join(self.suffix_list))
     
     @property
     def nickname(self):
@@ -226,7 +229,7 @@ class HumanName(object):
         The person's nicknames. Any text found inside of quotes (``""``) or 
         parenthesis (``()``)
         """
-        return " ".join(self.nickname_list)
+        return self._postprocessing(" ".join(self.nickname_list))
     
     ### setter methods
     
@@ -660,3 +663,16 @@ class HumanName(object):
         self.middle_list = self.cap_piece(self.middle).split(' ')
         self.last_list   = self.cap_piece(self.last  ).split(' ')
         self.suffix_list = self.cap_piece(self.suffix).split(', ')
+
+    ### Postprocessing
+
+    def apply_postprocessing(self, delete_symbols='@!&+*'):
+        self.postprocessing = True
+        self.symbols = delete_symbols
+
+    def _remove_symbols(self, data):
+        return ''.join([symbol for symbol in data if symbol not in self.symbols])
+
+    def _postprocessing(self, data):
+        if self.postprocessing: return self._remove_symbols(data)
+        else: return data
