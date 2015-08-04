@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import sys
 import logging
 from nameparser.util import u
 from nameparser.util import text_type
@@ -125,20 +126,26 @@ class HumanName(object):
         return " ".join(self)
     
     def __str__(self):
-        return self.__unicode__()
+        if sys.version >= '3':
+            return self.__unicode__()
+        return self.__unicode__().encode(self.ENCODING)
     
     def __repr__(self):
         if self.unparsable:
-            return "<%(class)s : [ Unparsable ] >" % {'class': self.__class__.__name__,}
-        return "<%(class)s : [\n\ttitle: '%(title)s' \n\tfirst: '%(first)s' \n\tmiddle: '%(middle)s' \n\tlast: '%(last)s' \n\tsuffix: '%(suffix)s'\n\tnickname: '%(nickname)s'\n]>" % {
-            'class': self.__class__.__name__,
-            'title': self.title,
-            'first': self.first,
-            'middle': self.middle,
-            'last': self.last,
-            'suffix': self.suffix,
-            'nickname': self.nickname,
-        }
+            _string = "<%(class)s : [ Unparsable ] >" % {'class': self.__class__.__name__,}
+        else:
+            _string = "<%(class)s : [\n\ttitle: '%(title)s' \n\tfirst: '%(first)s' \n\tmiddle: '%(middle)s' \n\tlast: '%(last)s' \n\tsuffix: '%(suffix)s'\n\tnickname: '%(nickname)s'\n]>" % {
+                'class': self.__class__.__name__,
+                'title': self.title,
+                'first': self.first,
+                'middle': self.middle,
+                'last': self.last,
+                'suffix': self.suffix,
+                'nickname': self.nickname,
+            }
+        if sys.version >= '3':
+            return _string
+        return _string.encode(self.ENCODING)
     
     def as_dict(self, include_empty=True):
         """

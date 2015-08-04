@@ -56,10 +56,10 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(hn.first, "Jüan", hn)
         self.m(hn.last, "de la Véña", hn)
 
-    def test_u(self):
+    def test_string_output(self):
         hn = HumanName("de la Véña, Jüan")
-        self.m(hn.first, "Jüan", hn)
-        self.m(hn.last, "de la Véña", hn)
+        print(hn)
+        print(repr(hn))
 
     def test_escaped_u(self):
         hn = HumanName('B\xe4ck, Gerald')
@@ -1867,7 +1867,7 @@ if __name__ == '__main__':
         log.setLevel(logging.ERROR)
         log.addHandler(logging.StreamHandler())
         name = sys.argv[1]
-        hn = HumanName(name)
+        hn = HumanName(name, encoding=sys.stdout.encoding)
         print((repr(hn)))
         print((hn.capitalize()))
     else:
