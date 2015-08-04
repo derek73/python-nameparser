@@ -6,12 +6,14 @@
 Python Human Name Parser
 ========================
 
+Version |release| 
+
 A simple Python module for parsing human names into their individual 
 components. It attempts the best guess that can be made with a simple, rule-based 
 approach. It's not perfect, but it gets you pretty far. 
 
 Its main use case is English, but it may be useful for other latin-based languages, especially 
-if you are willing to `customize it`__. Unicode is supported, but the 
+if you are willing to `customize it`_. Unicode is supported, but the 
 parser is not likely to be useful for languages that to not share the same structure 
 as English names.
 
@@ -21,10 +23,12 @@ It joins name pieces on conjunctions and special prefixes to last names like
 "del". Titles can be chained together and include conjunctions to handle 
 titles like "Asst Secretary of State". It can also try to correct 
 capitalization.
+.. _customize it: customize.html#parser-customization-examples
 
 
 
-**HumanName Instance Attributes**
+HumanName Instance Attributes
+-----------------------------
 
 * o.title
 * o.first
@@ -45,9 +49,10 @@ HumanName prefers to handle the most common cases correctly. For example,
 (You can customize this behavior though, see `Parser Customization Examples`_).
 
 .. _Parser Customization Examples: customize.html#parser-customization-examples
-__ Parser Customization Examples_
 
-**Parsing Names**
+
+Parsing Names
+-------------
 
 .. toctree::
    :maxdepth: 2
@@ -65,7 +70,6 @@ __ Parser Customization Examples_
    release_log
    contributing
 
-|release| 
 
 
 Indices and tables
