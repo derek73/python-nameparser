@@ -6,16 +6,23 @@
 Python Human Name Parser
 ========================
 
-A simple Python module for parsing human names into their individual
-components. The HumanName class splits a name string up into name parts based
-on placement in the string and matches against known name pieces like titles.
-It joins name pieces on conjunctions and special prefixes to last names like
-"del". Titles can be chained together and include conjunctions to handle
-titles like "Asst Secretary of State". It can also try to correct
+A simple Python module for parsing human names into their individual 
+components. It attempts the best guess that can be made with a simple, rule-based 
+approach. It's not perfect, but it gets you pretty far. 
+
+Its main use case is English, but it may be useful for other latin-based languages, especially 
+if you are willing to `customize it`__. Unicode is supported, but the 
+parser is not likely to be useful for languages that to not share the same structure 
+as English names.
+
+The HumanName class splits a name string up into name parts based 
+on placement in the string and matches against known name pieces like titles. 
+It joins name pieces on conjunctions and special prefixes to last names like 
+"del". Titles can be chained together and include conjunctions to handle 
+titles like "Asst Secretary of State". It can also try to correct 
 capitalization.
 
-It attempts the best guess that can be made with a simple, rule-based
-approach. It's not perfect, but it gets you pretty far.
+
 
 **HumanName Instance Attributes**
 
@@ -32,12 +39,13 @@ Supports 3 different comma placement variations in the input string.
 * Lastname [Suffix], Title Firstname (Nickname) Middle Middle[,] Suffix [, Suffix]
 * Title Firstname M Lastname [Suffix], Suffix [Suffix] [, Suffix]
 
-When there is ambiguity that cannot be resolved by a rule-based approach,
-HumanName prefers to handle the most common cases correctly. For example,
-"Dean" is not parsed as title because it is more common as a first name
+When there is ambiguity that cannot be resolved by a rule-based approach, 
+HumanName prefers to handle the most common cases correctly. For example, 
+"Dean" is not parsed as title because it is more common as a first name 
 (You can customize this behavior though, see `Parser Customization Examples`_).
 
 .. _Parser Customization Examples: customize.html#parser-customization-examples
+__ Parser Customization Examples_
 
 **Parsing Names**
 
@@ -57,6 +65,7 @@ HumanName prefers to handle the most common cases correctly. For example,
    release_log
    contributing
 
+|release| 
 
 
 Indices and tables
