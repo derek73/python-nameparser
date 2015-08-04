@@ -11,6 +11,8 @@ Example
     >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
     >>> name.title
     u'Dr.'
+    >>> name["title"]
+    u'Dr.'
     >>> name.first
     u'Juan'
     >>> name.middle

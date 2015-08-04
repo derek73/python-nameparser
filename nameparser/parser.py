@@ -63,7 +63,7 @@ class HumanName(object):
     The original string, untouched by the parser.
     """
     
-    count = 0
+    _count = 0
     _members = ['title','first','middle','last','suffix','nickname']
     unparsable = True
     _full_name = ''
@@ -102,6 +102,8 @@ class HumanName(object):
         return not (u(self)).lower() == (u(other)).lower()
     
     def __getitem__(self, key):
+        if isinstance(key, text_type):
+            return getattr(self, key)
         if isinstance(key, slice):
             return [getattr(self, x) for x in self._members[key]]
         else:
@@ -111,12 +113,12 @@ class HumanName(object):
         return self.__next__()
 
     def __next__(self):
-        if self.count >= len(self._members):
-            self.count = 0
+        if self._count >= len(self._members):
+            self._count = 0
             raise StopIteration
         else:
-            c = self.count
-            self.count = c + 1
+            c = self._count
+            self._count = c + 1
             return getattr(self, self._members[c]) or next(self)
 
     def __unicode__(self):
@@ -484,10 +486,10 @@ class HumanName(object):
                     pass
                 
         if len(self) < 0:
-            log.info("Unparsable full_name: " + self._full_name)
+            log.info("Unparsable: \"{}\" ".format(self.original))
         else:
             self.unparsable = False
-            self.post_process()
+        self.post_process()
 
 
     # def split_periods(self, pieces):

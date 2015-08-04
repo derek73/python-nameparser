@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-#: Name pieces that appear before a last name. They join with the following piece.
+#: Name pieces that appear before a last name. They join to the piece that follows them to make one new piece.
 PREFIXES = set([
     'abu',
     'bon',

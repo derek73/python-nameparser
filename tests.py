@@ -123,6 +123,14 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(hn[1:], ['John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC',''], hn)
         self.m(hn[1:-2], ['John', 'P.', 'Doe-Ray'], hn)
 
+    def test_dictionary_like(self):
+        hn = HumanName("Dr. John A. Kenneth Doe, Jr.")
+        self.m(hn['title'], "Dr.", hn)
+        self.m(hn['first'], "John", hn)
+        self.m(hn['last'], "Doe", hn)
+        self.m(hn['middle'], "A. Kenneth", hn)
+        self.m(hn['suffix'], "Jr.", hn)
+
     def test_conjunction_names(self):
         hn = HumanName("johnny y")
         self.m(hn.first, "johnny", hn)
