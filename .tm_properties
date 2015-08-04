@@ -1,0 +1,1 @@
+excludeDirectories = "{$excludeDirectories,dist,*.egg-info,build,docs/_*}"

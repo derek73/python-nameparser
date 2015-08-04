@@ -4,7 +4,9 @@ Release Log
 * 0.3.5 - August, 2015
     - Fix handling of string encoding in python 2.x (#34)
     - Add support for dictionary key access, e.g. name['first']
-    - add 'santa' to prefixes, add 'cpa', 'csm', 'phr', 'pmp' to suffixes
+    - add 'santa' to prefixes, add 'cpa', 'csm', 'phr', 'pmp' to suffixes (#35)
+    - Fix prefixes before multi-part last names (#23)
+    - Fix capitalization bug (#30)
 * 0.3.4 - March 1, 2015
     - Fix #24, handle first name also a prefix
     - Fix #26, last name comma format when lastname is also a title
