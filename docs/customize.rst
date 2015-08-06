@@ -1,3 +1,50 @@
+Pre-processing
+=================
+
+
+Name buckets
+++++++++++++++
+
+Each attribute has a corresponding ordered list of name pieces. 
+
+* o.title_list
+* o.first_list
+* o.middle_list
+* o.last_list
+* o.suffix_list
+* o.nickname_list
+
+If you're doing pre- or post-processing you may wish to manipulate these lists directly. 
+The strings returned by the attribute names just join these lists with spaces.
+
+::
+
+  >>> hn = HumanName("Juan Q. Xavier Velasquez y Garcia, Jr.")
+  >>> hn.middle_list
+  [u'Q.', u'Xavier']
+  >>> hn.middle_list += ["Ricardo"]
+  >>> hn.middle_list
+  [u'Q.', u'Xavier', 'Ricardo']
+
+
+You can also replace any name bucket's contents by assigning a string or a list
+directly to the attribute.
+
+::
+
+  >>> hn = HumanName("Dr. John A. Kenneth Doe")
+  >>> hn.title = ["Associate","Professor"]
+  >>> hn.suffix = "Md."
+  <HumanName : [
+  	title: 'Associate Processor' 
+  	first: 'John' 
+  	middle: 'A. Kenneth' 
+  	last: 'Doe' 
+  	suffix: 'Md.'
+  	nickname: ''
+  ]>
+
+
 Customizing the Parser with Your Own Configuration
 ==================================================
 

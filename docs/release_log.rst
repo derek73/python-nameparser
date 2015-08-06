@@ -1,7 +1,10 @@
 Release Log
 ===========
 
-* 0.3.5 - August, 2015
+* 0.3.6 - August 6, 2015
+    - Fix strings that start with conjunctions (#20)
+    - handle assigning lists of names to a name attribute
+* 0.3.5 - August 4, 2015
     - Fix handling of string encoding in python 2.x (#34)
     - Add support for dictionary key access, e.g. name['first']
     - add 'santa' to prefixes, add 'cpa', 'csm', 'phr', 'pmp' to suffixes (#35)

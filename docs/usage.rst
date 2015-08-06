@@ -43,6 +43,9 @@ Example
         suffix: 'Jr.'
         nickname: ''
     ]>
+    >>> name.suffix = ["custom","values"]
+    >>> name.suffix
+    u'custom values'
     >>> name.full_name = 'Doe-Ray, Jonathan "John" A. Harris'
     >>> name.as_dict()
     {u'last': u'Doe-Ray', u'suffix': u'', u'title': u'', u'middle': u'A. Harris', u'nickname': u'John', u'first': u'Jonathan'}
