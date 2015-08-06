@@ -69,7 +69,6 @@ class HumanName(object):
         
         self.ENCODING = encoding
         self.string_format = string_format
-        self.original = full_name
         self.full_name = full_name
     
     def __iter__(self):
@@ -307,6 +306,7 @@ class HumanName(object):
     
     @full_name.setter
     def full_name(self, value):
+        self.original = value
         self._full_name = value
         self.parse_full_name()
     
