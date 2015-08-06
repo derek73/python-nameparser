@@ -109,6 +109,10 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(hn.middle, "test", hn)
         hn.suffix = "test"
         self.m(hn.suffix, "test", hn)
+        with self.assertRaises(TypeError):
+            hn.suffix = [['test']]
+        with self.assertRaises(TypeError):
+            hn.suffix = {"test":"test"}
 
     def test_assign_list_to_attribute(self):
         hn = HumanName("John A. Kenneth Doe, Jr.")
@@ -122,8 +126,6 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(hn.last, "test8 test9 test10", hn)
         hn.suffix = ['test']
         self.m(hn.suffix, "test", hn)
-        with self.assertRaises(TypeError):
-            hn.suffix = [['test']]
 
     def test_comparison_case_insensitive(self):
         hn1 = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")

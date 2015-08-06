@@ -227,7 +227,7 @@ class HumanName(object):
             val = [value]
         else:
             raise TypeError("Can only assign strings and lists to name attributes. "
-                    "Got {}".format(type(value)))
+                    "Got {0}".format(type(value)))
         setattr(self, attr+"_list", self.parse_pieces(val))
     
     @title.setter
@@ -521,7 +521,7 @@ class HumanName(object):
         tmp = []
         for part in parts:
             if not isinstance(part, text_type):
-                raise TypeError("Name parts must be strings. Got {}".format(type(part)))
+                raise TypeError("Name parts must be strings. Got {0}".format(type(part)))
             tmp += [x.strip(' ,') for x in part.split(' ')]
         return self.join_on_conjunctions(tmp, additional_parts_count)
         
