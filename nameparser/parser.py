@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 import sys
 from nameparser.util import u
-from nameparser.util import text_type
+from nameparser.util import text_types
 from nameparser.util import lc
 from nameparser.util import log
 from nameparser.config import CONSTANTS
@@ -226,7 +226,7 @@ class HumanName(object):
     def _set_list(self, attr, value):
         if isinstance(value, list):
             val = value
-        elif isinstance(value, text_type):
+        elif isinstance(value, text_types):
             val = [value]
         else:
             raise TypeError("Can only assign strings and lists to name attributes. "
@@ -378,7 +378,7 @@ class HumanName(object):
         self.nickname_list = []
         self.unparsable = True
         
-        if not isinstance(self._full_name, text_type):
+        if not isinstance(self._full_name, text_types):
             self._full_name = u(self._full_name, self.ENCODING)
         
         self.pre_process()
@@ -524,7 +524,7 @@ class HumanName(object):
         
         tmp = []
         for part in parts:
-            if not isinstance(part, text_type):
+            if not isinstance(part, text_types):
                 raise TypeError("Name parts must be strings. Got {0}".format(type(part)))
             tmp += [x.strip(' ,') for x in part.split(' ')]
         return self.join_on_conjunctions(tmp, additional_parts_count)

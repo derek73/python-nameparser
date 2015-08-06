@@ -31,6 +31,7 @@ else:
     def u(x, encoding=None):
         return text_type(x)
 
+text_types = (text_type, binary_type)
 def lc(value):
     """Lower case and remove any periods to normalize for comparison."""
     if not value:
