@@ -91,12 +91,16 @@ class HumanName(object):
         return not (u(self)).lower() == (u(other)).lower()
     
     def __getitem__(self, key):
-        if isinstance(key, text_type):
-            return getattr(self, key)
         if isinstance(key, slice):
             return [getattr(self, x) for x in self._members[key]]
         else:
-            return getattr(self, self._members[key])
+            return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        if key in self._members:
+            self._set_list(key, value)
+        else:
+            raise KeyError("Not a valid HumanName attribute", key)
 
     def next(self):
         return self.__next__()
