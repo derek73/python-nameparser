@@ -1440,7 +1440,7 @@ class SuffixesTestCase(HumanNameTestBase):
         hn = HumanName("Dr King Jr")
         self.m(hn.title, "Dr", hn)
         self.m(hn.last, "King", hn)
-        self.m(hn.suffix, "Jr, Jr", hn)
+        self.m(hn.suffix, "Jr", hn)
 
 class HumanNameTitleTestCase(HumanNameTestBase):
 
@@ -1517,15 +1517,17 @@ class HumanNameTitleTestCase(HumanNameTestBase):
         self.m(hn.suffix, "III", hn)
 
     @unittest.expectedFailure
-    def test_title_multiple_titles_with_conjunctions(self):
-        # FIXME: I think it finds the index of the wrong 'the'. I get confused because it
-        # loops in reverse order.
+    def test_title_multiple_titles_with_apostrophe_s(self):
         hn = HumanName("The Right Hon. the President of the Queen's Bench Division")
         self.m(hn.title, "The Right Hon. the President of the Queen's Bench Division", hn)
 
-    @unittest.expectedFailure
+    def test_title_starts_with_conjunction(self):
+        hn = HumanName("The Rt Hon John Jones")
+        self.m(hn.title, "The Rt Hon", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Jones", hn)
+
     def test_conjunction_before_title(self):
-        # FIXME: seems fixable
         hn = HumanName('The Lord of the Universe')
         self.m(hn.title, "The Lord of the Universe", hn)
 

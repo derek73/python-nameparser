@@ -563,6 +563,18 @@ class HumanName(object):
             if i < len(pieces) - 1: 
                 # if this is not the last piece
                 
+                if i is 0:
+                    # if this is the first piece and it's a conjunction
+                    nxt = pieces[i+1]
+                    const = self.C.conjunctions
+                    if self.is_title(nxt):
+                        const = self.C.titles
+                    new_piece = ' '.join(pieces[0:2])
+                    const.add(new_piece)
+                    pieces[i] = new_piece
+                    pieces.pop(i+1)
+                    continue
+                
                 if self.is_conjunction(pieces[i-1]):
                     
                     # if the piece in front of this one is a conjunction too,
