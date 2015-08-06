@@ -17,7 +17,7 @@ if you are willing to `customize it`_. Unicode is supported, but the
 parser is not likely to be useful for languages that to not share the same structure 
 as English names.
 
-.. _customize it: customize.html#parser-customization-examples
+.. _customize it: customize.html
 
 The HumanName class splits a name string up into name parts based 
 on placement in the string and matches against known name pieces like titles. 

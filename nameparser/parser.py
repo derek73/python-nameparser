@@ -261,15 +261,15 @@ class HumanName(object):
         return lc(value) in self.C.titles
     
     def is_conjunction(self, piece):
-        """Is in the conjuctions set or :py:func:`is_an_initial()`."""
+        """Is in the conjuctions set and not :py:func:`is_an_initial()`."""
         return lc(piece) in self.C.conjunctions and not self.is_an_initial(piece)
     
     def is_prefix(self, piece):
-        """Is in the prefixes set or :py:func:`is_an_initial()`."""
+        """Is in the prefixes set and not :py:func:`is_an_initial()`."""
         return lc(piece) in self.C.prefixes and not self.is_an_initial(piece)
     
     def is_suffix(self, piece):
-        """Is in the suffixes set or :py:func:`is_an_initial()`."""
+        """Is in the suffixes set and not :py:func:`is_an_initial()`."""
         # suffixes may have periods inside them like "M.D."
         return lc(piece).replace('.','') in self.C.suffixes and not self.is_an_initial(piece)
     
@@ -287,6 +287,8 @@ class HumanName(object):
     
     def is_an_initial(self, value):
         """
+        Words with a single period at the end, or a single uppercase letter.
+        
         Matches the ``initial`` regular expression in 
         :py:data:`~nameparser.config.regexes.REGEXES`.
         """
@@ -352,7 +354,7 @@ class HumanName(object):
                 and len(self) == 2 \
                 and not lc(self.title) in self.C.first_name_titles:
             self.last, self.first = self.first, self.last
-    
+
     def parse_full_name(self):
         """
         The main parse method for the parser. This method is run upon assignment to the

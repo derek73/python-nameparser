@@ -40,16 +40,42 @@ gets you pretty far.
     {u'last': u'de la Vega', u'suffix': u'III', u'title': u'Dr.', u'middle': u'Q. Xavier', u'nickname': u'Doc Vega', u'first': u'Juan'}
 
 
-Supports 3 different comma placement variations typically used for names of people.
+3 different comma placement variations are supported for the string that you pass.
 
 * Title Firstname "Nickname" Middle Middle Lastname Suffix
 * Lastname [Suffix], Title Firstname (Nickname) Middle Middle[,] Suffix [, Suffix]
 * Title Firstname M Lastname [Suffix], Suffix [Suffix] [, Suffix]
 
+The parser does not make any attempt to clean the data that you provide. It mostly just puts 
+things in buckets based on their position between the white spaces in the string. This also means 
+the difference between 'title' and 'suffix' is positional, not semantic.
+
+::
+
+    >>> name = HumanName("1 & 2, 3 4 5, Mr.")
+    >>> name 
+    <HumanName : [
+    	title: '' 
+    	first: '3' 
+    	middle: '4 5' 
+    	last: '1 & 2' 
+    	suffix: 'Mr.'
+    	nickname: ''
+    ]>
+
+Most projects will probably need a bit of adjustments for your dataset. You can
+do this in your own pre- or post-processing, by `customizing the configured pre-defined 
+sets`_ of titles, prefixes, etc., or by subclassing the `HumanName` class. See the 
+`full documentation`_ for more information.
+
+.. _customizing the configured pre-defined sets: http://nameparser.readthedocs.org/en/latest/customize.html
+.. _full documentation: http://nameparser.readthedocs.org/en/latest/
+
+
 Unit Tests
 ------------
 
-Over 200 unit tests with example names. `Start a New Issue`_ 
+Hundreds of unit tests with example names. `Start a New Issue`_ 
 for names that fail and I will try to fix it. 
 
 
