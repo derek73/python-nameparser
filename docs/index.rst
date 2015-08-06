@@ -80,3 +80,6 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
+
+**GitHub Project**: https://github.com/derek73/python-nameparser
+
