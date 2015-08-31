@@ -19,6 +19,7 @@ https://github.com/derek73/python-nameparser/pulls
 """
 
 import logging
+import dill
 
 from nameparser import HumanName
 from nameparser.util import u
@@ -71,6 +72,14 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(len(hn), 5, hn)
         hn = HumanName("John Doe")
         self.m(len(hn), 2, hn)
+
+    def test_config_pickle(self):
+        C = Constants()
+        self.assertTrue(dill.pickles(C))
+
+    def test_name_instance_pickle(self):
+        hn = HumanName("First Last")
+        self.assertTrue(dill.pickles(hn))
 
     def test_comparison(self):
         hn1 = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")

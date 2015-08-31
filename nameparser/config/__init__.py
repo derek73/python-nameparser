@@ -108,6 +108,12 @@ class TupleManager(dict):
     __setattr__= dict.__setitem__
     __delattr__= dict.__delitem__
 
+    def __getstate__(self):
+        return self
+
+    def __setstate__(self, state):
+        self = dict(state)
+
 
 class Constants(object):
     """
@@ -153,6 +159,13 @@ class Constants(object):
     
     def __repr__(self):
         return "<Constants() instance>"
+    
+    def __setstate__(self, state):
+        self.__init__(state)
+    
+    def __getstate__(self):
+        attrs = [x for x in dir(self) if not x.startswith('_')]
+        return dict([(a,getattr(self, a)) for a in attrs])
 
 #: A module-level instance of the :py:class:`Constants()` class. 
 #: Provides a common instance for the module to share
