@@ -1,9 +1,11 @@
 Release Log
 ===========
-
+* 0.3.7 - August 30, 2015
+    - Make HumanName instances pickleable
 * 0.3.6 - August 6, 2015
     - Fix strings that start with conjunctions (#20)
     - handle assigning lists of names to a name attribute
+    - support dictionary-like assignment of name attributes
 * 0.3.5 - August 4, 2015
     - Fix handling of string encoding in python 2.x (#34)
     - Add support for dictionary key access, e.g. name['first']
