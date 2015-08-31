@@ -152,10 +152,13 @@ class Constants(object):
         self.conjunctions      = SetManager(conjunctions)
         self.capitalization_exceptions = TupleManager(capitalization_exceptions)
         self.regexes                = TupleManager(regexes)
+        self._pst = None
     
     @property
     def suffixes_prefixes_titles(self):
-        return self.prefixes | self.suffixes | self.titles
+        if not self._pst:
+            self._pst = self.prefixes | self.suffixes | self.titles
+        return self._pst
     
     def __repr__(self):
         return "<Constants() instance>"

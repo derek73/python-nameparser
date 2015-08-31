@@ -550,8 +550,9 @@ class HumanName(object):
             # loop through the pieces backwards, starting at the end of the list.
             # Join conjunctions to the pieces on either side of them.
             
-            if len(conj) == 1 and \
-                len(list(filter(self.is_rootname, pieces))) + additional_parts_count < 4:
+            rootname_pieces = [p for p in pieces if self.is_rootname(p)]
+            total_length= len(rootname_pieces) + additional_parts_count
+            if len(conj) == 1 and total_length < 4:
                 # if there are only 3 total parts (minus known titles, suffixes and prefixes) 
                 # and this conjunction is a single letter, prefer treating it as an initial
                 # rather than a conjunction.
