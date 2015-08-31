@@ -2,6 +2,7 @@ Release Log
 ===========
 * 0.3.7 - August 30, 2015
     - Make HumanName instances pickleable
+    - Speed improvement, 3x faster
 * 0.3.6 - August 6, 2015
     - Fix strings that start with conjunctions (#20)
     - handle assigning lists of names to a name attribute

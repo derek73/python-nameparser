@@ -35,6 +35,7 @@ directly to the attribute.
   >>> hn = HumanName("Dr. John A. Kenneth Doe")
   >>> hn.title = ["Associate","Professor"]
   >>> hn.suffix = "Md."
+  >>> hn.suffix
   <HumanName : [
   	title: 'Associate Processor' 
   	first: 'John' 
