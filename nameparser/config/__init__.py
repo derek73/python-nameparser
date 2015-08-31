@@ -109,11 +109,13 @@ class TupleManager(dict):
     __delattr__= dict.__delitem__
 
     def __getstate__(self):
-        return self
+        return dict(self)
 
     def __setstate__(self, state):
-        self = dict(state)
+        self.__init__(state)
 
+    def __reduce__(self):
+        return (TupleManager, (), self.__getstate__())
 
 class Constants(object):
     """
