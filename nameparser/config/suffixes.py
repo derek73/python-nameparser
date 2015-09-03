@@ -31,6 +31,7 @@ SUFFIXES = set([
     'pmp',
     'mp',
     'qc',
+    'dvm',
 ])
 """
 
