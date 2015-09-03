@@ -1,5 +1,8 @@
 Release Log
 ===========
+* 0.3.9 - September 2, 2015
+    - Separate suffixes that are acronyms to handle periods differently, fixes #29, #21
+    - Don't find titles after first name is filled, fixes (#27)
 * 0.3.8 - September 2, 2015
     - Use regex to check for roman numerals at end of name (#36)
     - Add DVM to suffixes

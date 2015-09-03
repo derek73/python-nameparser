@@ -63,7 +63,7 @@ the difference between 'title' and 'suffix' is positional, not semantic.
     	nickname: ''
     ]>
 
-Most projects will probably need a bit of adjustments for your dataset. You can
+Your project may need a bit of adjustments for your dataset. You can
 do this in your own pre- or post-processing, by `customizing the configured pre-defined 
 sets`_ of titles, prefixes, etc., or by subclassing the `HumanName` class. See the 
 `full documentation`_ for more information.
@@ -98,13 +98,9 @@ simple Heroku-friendly Flask wrapper for this module.
 Documentation
 -------------
 
+Full documentation
+
 http://nameparser.readthedocs.org/en/latest/
-
-**NOTE:** This documentation covers the new **version 0.3**. For the v0.2.10 documentation,
-see the `v0.2.10 tag`_ on GitHub.
-
-.. _v0.2.10 tag: https://github.com/derek73/python-nameparser/tree/v0.2.10
-
 
 
 Contributing

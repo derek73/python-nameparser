@@ -39,7 +39,7 @@ class HumanNameTestBase(unittest.TestCase):
     def m(self, actual, expected, hn):
         """assertEquals with a better message"""
         try:
-            self.assertEqual(actual, expected, "'%s' != '%s' for '%s'\n%s" % (
+            self.assertEqual(actual, expected, "'%s' != '%s' for '%s'\n%r" % (
                 actual,
                 expected,
                 hn.full_name,
@@ -1464,7 +1464,7 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.last, "King", hn)
         self.m(hn.suffix, "Jr", hn)
 
-class HumanNameTitleTestCase(HumanNameTestBase):
+class TitleTestCase(HumanNameTestBase):
 
     def test_last_name_is_also_title(self):
         hn = HumanName("Amy E Maid")
@@ -1572,12 +1572,24 @@ class HumanNameTitleTestCase(HumanNameTestBase):
         self.m(hn.title, "King", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "V.", hn)
+        
+    def test_last_name_is_also_title(self):
+        hn = HumanName("Dr. Martin Luther King Jr.")
+        self.m(hn.title, "Dr.", hn)
+        self.m(hn.first, "Martin", hn)
+        self.m(hn.middle, "Luther", hn)
+        self.m(hn.last, "King", hn)
+        self.m(hn.suffix, "Jr.", hn)
 
-    @unittest.expectedFailure
+    def test_initials_also_suffix(self):
+        hn = HumanName("Smith, J.R.")
+        self.m(hn.first, "J.R.", hn)
+        # self.m(hn.middle, "R.", hn)
+        self.m(hn.last, "Smith", hn)
+
     def test_two_title_parts_separated_by_commas(self):
-        # supporting this currently messes up supporting suffixes like M.B.A.
         hn = HumanName("Lt.Gen. John A. Kenneth Doe IV")
-        self.m(hn.title, "Lt. Gen.", hn)
+        self.m(hn.title, "Lt.Gen.", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.middle, "A. Kenneth", hn)

@@ -281,7 +281,9 @@ class HumanName(object):
     def is_suffix(self, piece):
         """Is in the suffixes set and not :py:func:`is_an_initial()`."""
         # suffixes may have periods inside them like "M.D."
-        return lc(piece).replace('.','') in self.C.suffixes and not self.is_an_initial(piece)
+        return ((lc(piece).replace('.','') in self.C.suffix_acronyms) \
+            or (lc(piece) in self.C.suffixes)) \
+            and not self.is_an_initial(piece)
     
     def are_suffixes(self, pieces):
         """Return True if all pieces are suffixes."""
@@ -303,9 +305,6 @@ class HumanName(object):
         :py:data:`~nameparser.config.regexes.REGEXES`.
         """
         return bool(self.C.regexes.initial.match(value))
-
-    # def is_a_roman_numeral(value):
-    #     return re_roman_numeral.match(value) or False
 
     
     ### full_name parser
@@ -412,7 +411,7 @@ class HumanName(object):
                     nxt = None
                 
                 # title must have a next piece, unless it's just a title
-                if self.is_title(piece) and (nxt or p_len == 1):
+                if self.is_title(piece) and (nxt or p_len == 1) and not self.first:
                     self.title_list.append(piece)
                     continue
                 if not self.first:
@@ -446,7 +445,7 @@ class HumanName(object):
                     except IndexError:
                         nxt = None
 
-                    if self.is_title(piece) and (nxt or len(pieces) == 1):
+                    if self.is_title(piece) and (nxt or len(pieces) == 1) and not self.first:
                         self.title_list.append(piece)
                         continue
                     if not self.first:
@@ -483,7 +482,7 @@ class HumanName(object):
                     except IndexError:
                         nxt = None
                     
-                    if self.is_title(piece) and (nxt or len(pieces) == 1):
+                    if self.is_title(piece) and (nxt or len(pieces) == 1) and not self.first:
                         self.title_list.append(piece)
                         continue
                     if not self.first:
@@ -522,7 +521,9 @@ class HumanName(object):
     def parse_pieces(self, parts, additional_parts_count=0):
         """
         Split parts on spaces and remove commas, join on conjunctions and
-        lastname prefixes.
+        lastname prefixes. If parts have periods in the middle, try splitting
+        on periods and check if the parts are titles or suffixes. If they are
+        add to the constant so they will be found.
         
         :param list parts: name part strings from the comma split
         :param int additional_parts_count: 
@@ -533,12 +534,31 @@ class HumanName(object):
         :rtype: list
         """
         
-        tmp = []
+        output = []
         for part in parts:
             if not isinstance(part, text_types):
                 raise TypeError("Name parts must be strings. Got {0}".format(type(part)))
-            tmp += [x.strip(' ,') for x in part.split(' ')]
-        return self.join_on_conjunctions(tmp, additional_parts_count)
+            output += [x.strip(' ,') for x in part.split(' ')]
+        
+        # If there's periods, check if it's titles without spaces and add spaces
+        # so they get picked up later as titles.
+        for part in output:
+            # if this part has a period not at the beginning or end
+            if self.C.regexes.period_not_at_end.match(part):
+                # split on periods, any of the split pieces titles or suffixes? ("Lt.Gov.")
+                period_chunks = part.split(".")
+                titles   = filter(self.is_title,  period_chunks)
+                suffixes = filter(self.is_suffix, period_chunks)
+                
+                # add the part to the constant so it will be found
+                if len(list(titles)):
+                    self.C.titles.add(part)
+                    continue
+                if len(list(suffixes)):
+                    self.C.suffixes.add(part)
+                    continue
+        
+        return self.join_on_conjunctions(output, additional_parts_count)
         
     def join_on_conjunctions(self, pieces, additional_parts_count=0):
         """

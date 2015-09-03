@@ -1,19 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-SUFFIXES = set([
-    'esq',
-    'esquire',
-    'jr',
-    'jnr',
-    'sr',
-    'snr',
-    '2',
-    'i',
-    'ii',
-    'iii',
-    'iv',
-    'v',
+SUFFIX_ACRONYMS = set([
     'clu',
     'chfc',
     'cfp',
@@ -32,6 +20,21 @@ SUFFIXES = set([
     'mp',
     'qc',
     'dvm',
+])
+
+SUFFIXES = SUFFIX_ACRONYMS | set([
+    'esq',
+    'esquire',
+    'jr',
+    'jnr',
+    'sr',
+    'snr',
+    '2',
+    'i',
+    'ii',
+    'iii',
+    'iv',
+    'v',
 ])
 """
 
