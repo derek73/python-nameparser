@@ -8,7 +8,7 @@ REGEXES = set([
     ("mac", re.compile(r'^(ma?c)(\w+)', re.I | re.U)),
     ("initial", re.compile(r'^(\w\.|[A-Z])?$', re.U)),
     ("nickname", re.compile(r'\s*?[\("](.+?)[\)"]', re.U)),
-    ("roman_numeral", re.compile(r'^(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$', re.I | re.U)),
+    ("roman_numeral", re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I | re.U)),
     ("no_vowels",re.compile(r'^[^aeyiuo]+$', re.I | re.U))
 ])
 """

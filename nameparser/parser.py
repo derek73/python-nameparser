@@ -270,6 +270,13 @@ class HumanName(object):
     def is_prefix(self, piece):
         """Is in the prefixes set and not :py:func:`is_an_initial()`."""
         return lc(piece) in self.C.prefixes and not self.is_an_initial(piece)
+
+    def is_roman_numeral(self, value):
+        """
+        Matches the ``roman_numeral`` regular expression in 
+        :py:data:`~nameparser.config.regexes.REGEXES`.
+        """
+        return bool(self.C.regexes.roman_numeral.match(value))
     
     def is_suffix(self, piece):
         """Is in the suffixes set and not :py:func:`is_an_initial()`."""
@@ -295,7 +302,7 @@ class HumanName(object):
         Matches the ``initial`` regular expression in 
         :py:data:`~nameparser.config.regexes.REGEXES`.
         """
-        return self.C.regexes.initial.match(value) or False
+        return bool(self.C.regexes.initial.match(value))
 
     # def is_a_roman_numeral(value):
     #     return re_roman_numeral.match(value) or False
@@ -397,7 +404,7 @@ class HumanName(object):
             #            part[0]
             
             pieces = self.parse_pieces(parts)
-            
+            p_len = len(pieces)
             for i, piece in enumerate(pieces):
                 try:
                     nxt = pieces[i + 1]
@@ -405,13 +412,17 @@ class HumanName(object):
                     nxt = None
                 
                 # title must have a next piece, unless it's just a title
-                if self.is_title(piece) and (nxt or len(pieces) == 1):
+                if self.is_title(piece) and (nxt or p_len == 1):
                     self.title_list.append(piece)
                     continue
                 if not self.first:
                     self.first_list.append(piece)
                     continue
-                if self.are_suffixes(pieces[i+1:]):
+                if self.are_suffixes(pieces[i+1:]) or \
+                        (self.is_roman_numeral(nxt) and i == p_len - 2 \
+                         and not self.is_an_initial(piece)):
+                        # if the next piece is the last piece and a roman numeral 
+                        # but this piece is not an initial
                     self.last_list.append(piece)
                     self.suffix_list += pieces[i+1:]
                     break

@@ -1135,7 +1135,8 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         hn = HumanName("King John Alexander V")
         self.m(hn.title, "King", hn)
         self.m(hn.first, "John", hn)
-        self.m(hn.last, "V", hn)
+        self.m(hn.last, "Alexander", hn)
+        self.m(hn.suffix, "V", hn)
 
     def test_four_name_parts_with_suffix_that_could_be_initial_lowercase_no_period(self):
         hn = HumanName("larry james edward johnson v")
@@ -1144,18 +1145,19 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.last, "johnson", hn)
         self.m(hn.suffix, "v", hn)
 
-    @unittest.expectedFailure
     def test_four_name_parts_with_suffix_that_could_be_initial_uppercase_no_period(self):
         hn = HumanName("Larry James Johnson I")
         self.m(hn.first, "Larry", hn)
         self.m(hn.middle, "James", hn)
         self.m(hn.last, "Johnson", hn)
-        # if it's in upper case, we currently assume it's an initial
-        # it's not really clear if we can assume it's one or the other.
-        # If they really are the "first", they are probably used to using a 
-        # comma to avoid confusion. Humans know that "Johnson" is a last name,
-        # but that wouldn't really be a "simple" nameparser. 
         self.m(hn.suffix, "I", hn)
+
+    def test_roman_numeral_initials(self):
+        hn = HumanName("Larry V I")
+        self.m(hn.first, "Larry", hn)
+        self.m(hn.middle, "V", hn)
+        self.m(hn.last, "I", hn)
+        self.m(hn.suffix, "", hn)
 
     # tests for Rev. title (Reverend)
     def test124(self):

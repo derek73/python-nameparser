@@ -1,8 +1,11 @@
 Release Log
 ===========
+* 0.3.8 - September 2, 2015
+    - Use regex to check for roman numerals at end of name (#36)
+    - Add DVM to suffixes
 * 0.3.7 - August 30, 2015
-    - Make HumanName instances pickleable
     - Speed improvement, 3x faster
+    - Make HumanName instances pickleable
 * 0.3.6 - August 6, 2015
     - Fix strings that start with conjunctions (#20)
     - handle assigning lists of names to a name attribute
