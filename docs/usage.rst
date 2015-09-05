@@ -117,16 +117,19 @@ available from the nickname attribute. (Added in v0.2.9)
 String Format
 -------------
 
-The format of the strings returned with ``unicode()`` can be adjusted
+The format of the strings returned with ``str()`` or ``unicode()`` can be adjusted
 using standard python string formatting. The string's ``format()``
 method will be passed a dictionary of names.
 
 .. doctest:: string format
 
     >>> name = HumanName("Rev John A. Kenneth Doe III")
-    >>> unicode(name)
-    u'Rev John A. Kenneth Doe III'
+    >>> str(name)
+    'Rev John A. Kenneth Doe III'
     >>> name.string_format = "{last}, {title} {first} {middle}, {suffix}"
-    >>> unicode(name)
-    u'Doe, Rev John A. Kenneth, III'
+    >>> str(name)
+    'Doe, Rev John A. Kenneth, III'
+    >>> name.string_format = "{first} {last}"
+    >>> str(name)
+    'John Doe'
 

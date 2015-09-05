@@ -6,7 +6,7 @@ Name Parser
 .. image:: https://badge.fury.io/py/nameparser.svg
     :target: http://badge.fury.io/py/nameparser
 
-A simple Python module for parsing human names into their individual
+A simple Python (3.2+ & 2.6+) module for parsing human names into their individual
 components. The HumanName class splits a name string up into name parts
 based on placement in the string and matches against known name pieces
 like titles. It joins name pieces on conjunctions and special prefixes to
@@ -19,7 +19,8 @@ Unicode is supported, but the parser is not likely to be useful for languages
 that to not share the same structure as English names. It's not perfect, but it 
 gets you pretty far.
 
-**Quick Start Example**
+Quick Start Example
+-------------------
 
 ::
 
@@ -35,9 +36,12 @@ gets you pretty far.
     	nickname: 'Doc Vega'
     ]>
     >>> name.last
-    u'de la Vega'
+    'de la Vega'
     >>> name.as_dict()
-    {u'last': u'de la Vega', u'suffix': u'III', u'title': u'Dr.', u'middle': u'Q. Xavier', u'nickname': u'Doc Vega', u'first': u'Juan'}
+    {'last': 'de la Vega', 'suffix': 'III', 'title': 'Dr.', 'middle': 'Q. Xavier', 'nickname': 'Doc Vega', 'first': 'Juan'}
+    >>> name.string_format = "{first} {last}"
+    >>> str(name)
+    'Juan de la Vega'
 
 
 3 different comma placement variations are supported for the string that you pass.
@@ -46,9 +50,10 @@ gets you pretty far.
 * Lastname [Suffix], Title Firstname (Nickname) Middle Middle[,] Suffix [, Suffix]
 * Title Firstname M Lastname [Suffix], Suffix [Suffix] [, Suffix]
 
-The parser does not make any attempt to clean the data that you provide. It mostly just puts 
-things in buckets based on their position between the white spaces in the string. This also means 
-the difference between 'title' and 'suffix' is positional, not semantic.
+The parser does not make any attempt to clean the data. It mostly just splits on white
+space and puts things in buckets based on their position in the string. This also means
+the difference between 'title' and 'suffix' is positional, not semantic. ("Pre-nominal"
+and "post-nominal" would probably be better names.)
 
 ::
 
@@ -63,19 +68,19 @@ the difference between 'title' and 'suffix' is positional, not semantic.
     	nickname: ''
     ]>
 
+Customization
+-------------
+
 Your project may need a bit of adjustments for your dataset. You can
 do this in your own pre- or post-processing, by `customizing the configured pre-defined 
 sets`_ of titles, prefixes, etc., or by subclassing the `HumanName` class. See the 
 `full documentation`_ for more information.
 
-.. _customizing the configured pre-defined sets: http://nameparser.readthedocs.org/en/latest/customize.html
-.. _full documentation: http://nameparser.readthedocs.org/en/latest/
-
-Documentation
--------------
 
 `Full documentation`_
+~~~~~~~~~~~~~~~~~~~~~
 
+.. _customizing the configured pre-defined sets: http://nameparser.readthedocs.org/en/latest/customize.html
 .. _Full documentation: http://nameparser.readthedocs.org/en/latest/
 
 
