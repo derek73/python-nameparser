@@ -404,5 +404,7 @@ TITLES = FIRST_NAME_TITLES | set([
     'mag-judge',
     'senior-judge',
     'mag/judge',
-    
+    'co-chair',
+    'co-chairs',
+    'chair',
 ])
