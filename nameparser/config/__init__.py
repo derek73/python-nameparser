@@ -37,6 +37,7 @@ from nameparser.config.capitalization import CAPITALIZATION_EXCEPTIONS
 from nameparser.config.conjunctions import CONJUNCTIONS
 from nameparser.config.suffixes import SUFFIXES 
 from nameparser.config.suffixes import SUFFIX_ACRONYMS
+from nameparser.config.suffixes import SUFFIX_NOT_ACRONYMS
 from nameparser.config.titles import TITLES
 from nameparser.config.titles import FIRST_NAME_TITLES
 from nameparser.config.regexes import REGEXES
@@ -143,20 +144,22 @@ class Constants(object):
                     prefixes=PREFIXES, 
                     suffixes=SUFFIXES,
                     suffix_acronyms=SUFFIX_ACRONYMS,
+                    suffix_not_acronyms=SUFFIX_NOT_ACRONYMS,
                     titles=TITLES,
                     first_name_titles=FIRST_NAME_TITLES,
                     conjunctions=CONJUNCTIONS,
                     capitalization_exceptions=CAPITALIZATION_EXCEPTIONS,
                     regexes=REGEXES
                 ):
-        self.prefixes          = SetManager(prefixes)
-        self.suffixes          = SetManager(suffixes)
-        self.suffix_acronyms   = SetManager(suffix_acronyms)
-        self.titles            = SetManager(titles)
-        self.first_name_titles = SetManager(first_name_titles)
-        self.conjunctions      = SetManager(conjunctions)
+        self.prefixes            = SetManager(prefixes)
+        self.suffixes            = SetManager(suffixes)
+        self.suffix_acronyms     = SetManager(suffix_acronyms)
+        self.suffix_not_acronyms = SetManager(suffix_not_acronyms)
+        self.titles              = SetManager(titles)
+        self.first_name_titles   = SetManager(first_name_titles)
+        self.conjunctions        = SetManager(conjunctions)
         self.capitalization_exceptions = TupleManager(capitalization_exceptions)
-        self.regexes                = TupleManager(regexes)
+        self.regexes             = TupleManager(regexes)
         self._pst = None
     
     @property

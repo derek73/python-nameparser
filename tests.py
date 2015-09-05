@@ -290,11 +290,11 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.middle, "A.", hn)
 
     def test8(self):
-        hn = HumanName("John A. Doe, Jr.")
+        hn = HumanName("John A. Doe, Jr")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.middle, "A.", hn)
-        self.m(hn.suffix, "Jr.", hn)
+        self.m(hn.suffix, "Jr", hn)
 
     def test9(self):
         hn = HumanName("John A. Doe III")
@@ -1587,7 +1587,7 @@ class TitleTestCase(HumanNameTestBase):
         # self.m(hn.middle, "R.", hn)
         self.m(hn.last, "Smith", hn)
 
-    def test_two_title_parts_separated_by_commas(self):
+    def test_two_title_parts_separated_by_periods(self):
         hn = HumanName("Lt.Gen. John A. Kenneth Doe IV")
         self.m(hn.title, "Lt.Gen.", hn)
         self.m(hn.first, "John", hn)

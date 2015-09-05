@@ -1,6 +1,20 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+SUFFIX_NOT_ACRONYMS = set([
+    'esq',
+    'esquire',
+    'jr',
+    'jnr',
+    'sr',
+    'snr',
+    '2',
+    'i',
+    'ii',
+    'iii',
+    'iv',
+    'v',
+])
 SUFFIX_ACRONYMS = set([
     'ae',
     'afc',
@@ -94,21 +108,7 @@ SUFFIX_ACRONYMS = set([
     'vd',
     'vrd',
 ])
-
-SUFFIXES = SUFFIX_ACRONYMS | set([
-    'esq',
-    'esquire',
-    'jr',
-    'jnr',
-    'sr',
-    'snr',
-    '2',
-    'i',
-    'ii',
-    'iii',
-    'iv',
-    'v',
-])
+SUFFIXES = SUFFIX_ACRONYMS | SUFFIX_NOT_ACRONYMS
 """
 
 Pieces that come at the end of the name but are not last names. These potentially

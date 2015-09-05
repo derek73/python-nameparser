@@ -279,10 +279,16 @@ class HumanName(object):
         return bool(self.C.regexes.roman_numeral.match(value))
     
     def is_suffix(self, piece):
-        """Is in the suffixes set and not :py:func:`is_an_initial()`."""
+        """
+        Is in the suffixes set and not :py:func:`is_an_initial()`. 
+        
+        Some suffixes may be acronyms (M.B.A) while some are not (Jr.), 
+        so we remove the periods from `piece` when testing against
+        `C.suffix_acronyms`.
+        """
         # suffixes may have periods inside them like "M.D."
         return ((lc(piece).replace('.','') in self.C.suffix_acronyms) \
-            or (lc(piece) in self.C.suffixes)) \
+            or (lc(piece) in self.C.suffix_not_acronyms)) \
             and not self.is_an_initial(piece)
     
     def are_suffixes(self, pieces):
