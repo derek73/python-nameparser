@@ -424,10 +424,12 @@ class HumanName(object):
                     self.first_list.append(piece)
                     continue
                 if self.are_suffixes(pieces[i+1:]) or \
-                        (self.is_roman_numeral(nxt) and i == p_len - 2 \
-                         and not self.is_an_initial(piece)):
-                        # if the next piece is the last piece and a roman numeral 
-                        # but this piece is not an initial
+                        ( 
+                            # if the next piece is the last piece and a roman numeral 
+                            # but this piece is not an initial
+                            self.is_roman_numeral(nxt) and i == p_len - 2 
+                            and not self.is_an_initial(piece)
+                        ):
                     self.last_list.append(piece)
                     self.suffix_list += pieces[i+1:]
                     break
@@ -510,19 +512,6 @@ class HumanName(object):
             self.unparsable = False
         self.post_process()
 
-
-    # def split_periods(self, pieces):
-    #     """
-    #     If there is a period that is not at the end of a piece, split it on periods.
-    #     """
-    #     tmp = []
-    #     for piece in pieces:
-    #         if piece[:-1].find('.') >= 0:
-    #             p = [_f for _f in piece.split('.') if _f]
-    #             tmp += [x+'.' for x in p]
-    #         else:
-    #             tmp += [piece]
-    #     return tmp
 
     def parse_pieces(self, parts, additional_parts_count=0):
         """
