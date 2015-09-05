@@ -71,12 +71,12 @@ sets`_ of titles, prefixes, etc., or by subclassing the `HumanName` class. See t
 .. _customizing the configured pre-defined sets: http://nameparser.readthedocs.org/en/latest/customize.html
 .. _full documentation: http://nameparser.readthedocs.org/en/latest/
 
+Documentation
+-------------
 
-Unit Tests
-------------
+`Full documentation`_
 
-Hundreds of unit tests with example names. `Start a New Issue`_ 
-for names that fail and I will try to fix it. 
+.. _Full documentation: http://nameparser.readthedocs.org/en/latest/
 
 
 Installation
@@ -95,26 +95,13 @@ If you're looking for a web service, check out
 simple Heroku-friendly Flask wrapper for this module.
 
 
-Documentation
--------------
-
-Full documentation
-
-http://nameparser.readthedocs.org/en/latest/
-
-
 Contributing
 ------------
 
 If you come across name piece that you think should be in the default config, you're
 probably right. `Start a New Issue`_ and we can get them added. 
 
-Or, use GitHub's nifty
-web interface to add your new pieces directly to the config files and create a pull
-request all in one go, no fork needed. As an example, `click here to propose changes to
-the titles`_ config.
-
-Please let me know if there are ways this library could be restructured to make
+Please let me know if there are ways this library could be structured to make
 it easier for you to use in your projects. Read CONTRIBUTING.md_ for more info
 on running the tests and contributing to the project.
 

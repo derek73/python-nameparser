@@ -1472,7 +1472,15 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.middle, "E", hn)
         self.m(hn.last, "Maid", hn)
 
-    def test_last_name_is_also_title2(self):
+    def test_last_name_is_also_title_no_comma(self):
+        hn = HumanName("Dr. Martin Luther King Jr.")
+        self.m(hn.title, "Dr.", hn)
+        self.m(hn.first, "Martin", hn)
+        self.m(hn.middle, "Luther", hn)
+        self.m(hn.last, "King", hn)
+        self.m(hn.suffix, "Jr.", hn)
+
+    def test_last_name_is_also_title_with_comma(self):
         hn = HumanName("Duke Martin Luther King, Jr.")
         self.m(hn.title, "Duke", hn)
         self.m(hn.first, "Martin", hn)
@@ -1573,14 +1581,6 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.first, "John", hn)
         self.m(hn.last, "V.", hn)
         
-    def test_last_name_is_also_title(self):
-        hn = HumanName("Dr. Martin Luther King Jr.")
-        self.m(hn.title, "Dr.", hn)
-        self.m(hn.first, "Martin", hn)
-        self.m(hn.middle, "Luther", hn)
-        self.m(hn.last, "King", hn)
-        self.m(hn.suffix, "Jr.", hn)
-
     def test_initials_also_suffix(self):
         hn = HumanName("Smith, J.R.")
         self.m(hn.first, "J.R.", hn)
