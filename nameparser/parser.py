@@ -390,8 +390,10 @@ class HumanName(object):
         self.nickname_list = []
         self.unparsable = True
         
-        if not isinstance(self._full_name, text_types):
+        try:
             self._full_name = u(self._full_name, self.ENCODING)
+        except TypeError:
+            pass
         
         self.pre_process()
         

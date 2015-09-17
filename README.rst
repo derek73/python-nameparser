@@ -89,8 +89,7 @@ Installation
 
 ``pip install nameparser``
 
-I usually push changes to `PyPi <https://pypi.python.org/pypi/nameparser>`_
-pretty quickly. If you want to try out the latest code from GitHub you can
+If you want to try out the latest code from GitHub you can
 install with pip using the command below.
 
 ``pip install -e git+git://github.com/derek73/python-nameparser.git#egg=nameparser``
