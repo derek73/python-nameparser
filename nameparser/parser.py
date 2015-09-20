@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 import sys
 from nameparser.util import u
-from nameparser.util import text_types
+from nameparser.util import text_types, binary_type
 from nameparser.util import lc
 from nameparser.util import log
 from nameparser.config import CONSTANTS
@@ -324,6 +324,8 @@ class HumanName(object):
     def full_name(self, value):
         self.original = value
         self._full_name = value
+        if isinstance(value, binary_type):
+            self._full_name = value.decode(self.ENCODING)
         self.parse_full_name()
     
     def collapse_whitespace(self, string):
@@ -390,10 +392,6 @@ class HumanName(object):
         self.nickname_list = []
         self.unparsable = True
         
-        try:
-            self._full_name = u(self._full_name, self.ENCODING)
-        except TypeError:
-            pass
         
         self.pre_process()
         

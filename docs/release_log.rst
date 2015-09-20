@@ -1,5 +1,7 @@
 Release Log
 ===========
+* 0.3.10 - September 19, 2015
+    - Fix encoding of byte strings on python 2.x (#37)
 * 0.3.9 - September 5, 2015
     - Separate suffixes that are acronyms to handle periods differently, fixes #29, #21
     - Don't find titles after first name is filled, fixes (#27)

@@ -62,10 +62,10 @@ class HumanNamePythonTests(HumanNameTestBase):
         print(hn)
         print(repr(hn))
 
-    def test_escaped_u(self):
-        hn = HumanName('B\xe4ck, Gerald')
+    def test_escaped_utf8_bytes(self):
+        hn = HumanName(b'B\xc3\xb6ck, Gerald')
         self.m(hn.first, "Gerald", hn)
-        self.m(hn.last, "B\xe4ck", hn)
+        self.m(hn.last, "Böck", hn)
 
     def test_len(self):
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
