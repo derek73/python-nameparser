@@ -4,7 +4,7 @@ import re
 
 REGEXES = set([
     ("spaces", re.compile(r"\s+", re.U)),
-    ("word", re.compile(r"\w+", re.U)),
+    ("word", re.compile(r"(\w|\.)+", re.U)),
     ("mac", re.compile(r'^(ma?c)(\w+)', re.I | re.U)),
     ("initial", re.compile(r'^(\w\.|[A-Z])?$', re.U)),
     ("nickname", re.compile(r'\s*?[\("](.+?)[\)"]', re.U)),

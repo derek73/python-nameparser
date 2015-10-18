@@ -1,5 +1,7 @@
 Release Log
 ===========
+* 0.3.11 - October 17, 2015
+    - Fix bug capitalization exceptions (#39)
 * 0.3.10 - September 19, 2015
     - Fix encoding of byte strings on python 2.x (#37)
 * 0.3.9 - September 5, 2015

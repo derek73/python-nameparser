@@ -265,11 +265,11 @@ class HumanName(object):
     
     def is_conjunction(self, piece):
         """Is in the conjuctions set and not :py:func:`is_an_initial()`."""
-        return lc(piece) in self.C.conjunctions and not self.is_an_initial(piece)
+        return piece.lower() in self.C.conjunctions and not self.is_an_initial(piece)
     
     def is_prefix(self, piece):
         """Is in the prefixes set and not :py:func:`is_an_initial()`."""
-        return lc(piece) in self.C.prefixes and not self.is_an_initial(piece)
+        return piece.lower() in self.C.prefixes and not self.is_an_initial(piece)
 
     def is_roman_numeral(self, value):
         """
@@ -657,7 +657,7 @@ class HumanName(object):
     
     def cap_word(self, word):
         if self.is_prefix(word) or self.is_conjunction(word):
-            return lc(word)
+            return word.lower()
         exceptions = self.C.capitalization_exceptions
         if lc(word) in exceptions:
             return exceptions[lc(word)]

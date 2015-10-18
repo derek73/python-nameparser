@@ -1708,16 +1708,21 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.m(str(hn), 'Donovan McNabb-Smith', hn)
 
+    def test_capitization_middle_initial_is_also_a_conjunction(self):
+        hn = HumanName('scott e. werner')
+        hn.capitalize()
+        self.m(str(hn), 'Scott E. Werner', hn)
+
     # Leaving already-capitalized names alone
-    def test123(self):
+    def test_no_change_to_mixed_chase(self):
         hn = HumanName('Shirley Maclaine')
         hn.capitalize()
         self.m(str(hn), 'Shirley Maclaine', hn)
 
     def test_capitalize_diacritics(self):
-        hn = HumanName('matth\xe4us schmidt')
+        hn = HumanName('matthëus schmidt')
         hn.capitalize()
-        self.m(u(hn), 'Matth\xe4us Schmidt', hn)
+        self.m(u(hn), 'Matthëus Schmidt', hn)
 
     # http://code.google.com/p/python-nameparser/issues/detail?id=15
     def test_downcasing_mac(self):
@@ -1966,7 +1971,8 @@ if __name__ == '__main__':
         name = sys.argv[1]
         hn = HumanName(name, encoding=sys.stdout.encoding)
         print((repr(hn)))
-        print((hn.capitalize()))
+        hn.capitalize()
+        print((repr(hn)))
     else:
         # if log.level > 0:
         #     for name in TEST_NAMES:
