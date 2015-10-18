@@ -6,17 +6,20 @@ Name Parser
 .. image:: https://badge.fury.io/py/nameparser.svg
     :target: http://badge.fury.io/py/nameparser
 
-A simple Python (3.2+ & 2.6+) module for parsing human names into their individual
-components. The HumanName class splits a name string up into name parts
-based on placement in the string and matches against known name pieces
-like titles. It joins name pieces on conjunctions and special prefixes to
-last names like "del". Titles can be chained together and include conjunctions
-to handle titles like "Asst Secretary of State". It can also try to 
-correct capitalization of all upper or lowercase names.
+A simple Python (3.2+ & 2.6+) module for parsing human names into their
+individual components. Pass the HumanName class a string containing a full name.
+The name is split on spaces and then parsed into name parts based on placement
+in the string and matches against known name pieces like titles. Access the name 
+via instance attributes.
+
+It correctly handles some common conjunctions and special prefixes to last names
+like "del". Titles can be chained together and include conjunctions to handle
+titles like "Asst Secretary of State". It can also try to correct capitalization
+of all names that are all upper- or lowercase names.
 
 It attempts the best guess that can be made with a simple, rule-based approach. 
 Unicode is supported, but the parser is not likely to be useful for languages 
-that to not share the same structure as English names. It's not perfect, but it 
+that do not have a structure similar to English names. It's not perfect, but it 
 gets you pretty far.
 
 Quick Start Example
