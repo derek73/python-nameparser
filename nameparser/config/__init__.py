@@ -30,7 +30,9 @@ unexpected results. See `Customizing the Parser <customize.html>`_.
 """
 from __future__ import unicode_literals
 import collections
+import sys
 
+from nameparser.util import binary_type
 from nameparser.util import lc
 from nameparser.config.prefixes import PREFIXES
 from nameparser.config.capitalization import CAPITALIZATION_EXCEPTIONS
@@ -88,7 +90,10 @@ class SetManager(collections.Set):
         Add the lower case and no-period version of the string arguments to the set.
         Returns ``self`` for chaining.
         """
-        [self.elements.add(lc(s)) for s in strings]
+        for s in strings:
+            if type(s) == binary_type:
+                s = s.decode(sys.stdin.encoding)
+            self.elements.add(lc(s))
         return self
     
     def remove(self, *strings):
