@@ -49,13 +49,24 @@ directly to the attribute.
 Customizing the Parser with Your Own Configuration
 ==================================================
 
-Recognition of titles, prefixes, suffixes and conjunctions is provided by
+Recognition of titles, prefixes, suffixes and conjunctions is handled by
 matching the lower case characters of a name piece with pre-defined sets
-of strings located in :py:mod:`nameparser.config`. You can easily adjust
+of strings located in :py:mod:`nameparser.config`. You can adjust
 these predefined sets to help fine tune the parser for your dataset.
 
+Parser Constants:
 
-Changing the Predefined Variables
+* `CONSTANTS.titles` - Pieces that come before the name. Cannot include things that may be first names
+* `CONSTANTS.first_name_titles` - Titles that, when followed by a single name, that name is a first name, e.g. "King David"
+* `CONSTANTS.suffix_acronyms` - Pieces that come at the end of the name that may or may not have periods separating the letters, e.g. "m.d."
+* `CONSTANTS.suffix_not_acronyms` - Pieces that come at the end of the name that never have periods separating the letters, e.g. "Jr."
+* `CONSTANTS.conjunctions` - Connectors like "and" that join the preceeding piece to the following piece.
+* `CONSTANTS.prefixes` - Connectors like "del" and "bin" that join to the following piece but not the preceeding
+* `CONSTANTS.capitalization_exceptions` - Dictionary of pieces that do not capitalize the first letter, e.g. "Ph.D"
+* `CONSTANTS.regexes` - Regular expressions used to find words, initials, nicknames, etc.
+
+
+Changing the Parser Constants
 +++++++++++++++++++++++++++++++++
 
 There are a few ways to adjust the parser configuration depending on your
