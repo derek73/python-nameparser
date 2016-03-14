@@ -1,5 +1,8 @@
 Release Log
 ===========
+* 0.3.12 - October 17, 2015
+    - Fix first name clash with suffixes (#42)
+    - Fix encoding of constants added via the python shell
 * 0.3.11 - October 17, 2015
     - Fix bug capitalization exceptions (#39)
 * 0.3.10 - September 19, 2015

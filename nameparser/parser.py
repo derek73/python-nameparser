@@ -439,10 +439,14 @@ class HumanName(object):
                 
                 self.middle_list.append(piece)
         else:
-            if self.are_suffixes(parts[1].split(' ')):
+            # if all the end parts are suffixes and there is more than one piece in
+            # the first part. (Suffixes will never appear after last names only, and
+            # allows potential first names to be in suffixes, e.g. "Johnson, Bart"
+            if self.are_suffixes(parts[1].split(' ')) and len(parts[0].split(' ')) > 1:
                 
                 # suffix comma: title first middle last [suffix], suffix [suffix] [, suffix]
                 #               parts[0],                         parts[1:...]
+               
                 
                 self.suffix_list += parts[1:]
                 pieces = self.parse_pieces(parts[0].split(' '))
