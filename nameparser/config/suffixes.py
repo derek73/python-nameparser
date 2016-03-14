@@ -85,6 +85,7 @@ SUFFIX_ACRONYMS = set([
     'md',
     'mm',
     'mp',
+    'msc'
     'msm',
     'mvo',
     'obe',
