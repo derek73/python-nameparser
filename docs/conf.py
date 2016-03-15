@@ -124,6 +124,7 @@ html_theme_options = {
     'github_user': 'derek73',
     'github_repo': 'python-nameparser',
     'travis_button': True,
+    'analytics_id': 'UA-339019-11',
 }
 
 # Theme options are theme-specific and customize the look and feel of a theme
