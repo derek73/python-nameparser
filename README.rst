@@ -47,15 +47,16 @@ Quick Start Example
     'Juan de la Vega'
 
 
-3 different comma placement variations are supported for the string that you pass.
+3 different comma placement variations are supported:
 
 * Title Firstname "Nickname" Middle Middle Lastname Suffix
 * Lastname [Suffix], Title Firstname (Nickname) Middle Middle[,] Suffix [, Suffix]
 * Title Firstname M Lastname [Suffix], Suffix [Suffix] [, Suffix]
 
-The parser does not make any attempt to clean the data. It mostly just splits on white
+The parser does not make any attempt to clean the input. It mostly just splits on white
 space and puts things in buckets based on their position in the string. This also means
-the difference between 'title' and 'suffix' is positional, not semantic. ("Pre-nominal"
+the difference between 'title' and 'suffix' is positional, not semantic. "Dr" is a title
+when it comes before the name and a suffix when it comes after. ("Pre-nominal"
 and "post-nominal" would probably be better names.)
 
 ::

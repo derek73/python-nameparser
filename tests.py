@@ -1433,6 +1433,13 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "jr., MD", hn)
 
+    @unittest.expectedFailure
+    def test_phd_with_erroneous_space(self):
+        hn = HumanName("John Smith, Ph. D.")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.suffix, "Ph. D.", hn)
+
     #http://en.wikipedia.org/wiki/Ma_(surname)
     def test_potential_suffix_that_is_also_last_name(self):
         hn = HumanName("Jack Ma")
@@ -1750,6 +1757,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
 
 
 class HumanNameOutputFormatTests(HumanNameTestBase):
+    
     def test_formating(self):
         hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
         hn.string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
@@ -1757,6 +1765,61 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         hn.string_format = "{last}, {title} {first} {middle}, {suffix} ({nickname})"
         self.assertEqual(u(hn), "Doe, Rev John A. Kenneth, III (Kenny)")
 
+    def test_quote_nickname_formating(self):
+        hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
+        hn.string_format = "{title} {first} {middle} {last} {suffix} '{nickname}'"
+        self.assertEqual(u(hn), "Rev John A. Kenneth Doe III 'Kenny'")
+        hn.string_format = "{last}, {title} {first} {middle}, {suffix} '{nickname}'"
+        self.assertEqual(u(hn), "Doe, Rev John A. Kenneth, III 'Kenny'")
+
+    def test_formating_removing_keys_from_format_string(self):
+        hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
+        hn.string_format = "{title} {first} {middle} {last} {suffix} '{nickname}'"
+        self.assertEqual(u(hn), "Rev John A. Kenneth Doe III 'Kenny'")
+        hn.string_format = "{last}, {title} {first} {middle}, {suffix}"
+        self.assertEqual(u(hn), "Doe, Rev John A. Kenneth, III")
+        hn.string_format = "{last}, {title} {first} {middle}"
+        self.assertEqual(u(hn), "Doe, Rev John A. Kenneth")
+        hn.string_format = "{last}, {first} {middle}"
+        self.assertEqual(u(hn), "Doe, John A. Kenneth")
+        hn.string_format = "{last}, {first}"
+        self.assertEqual(u(hn), "Doe, John")
+        hn.string_format = "{first} {last}"
+        self.assertEqual(u(hn), "John Doe")
+
+    def test_formating_removing_pieces_from_name_buckets(self):
+        hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
+        hn.string_format = "{title} {first} {middle} {last} {suffix} '{nickname}'"
+        self.assertEqual(u(hn), "Rev John A. Kenneth Doe III 'Kenny'")
+        hn.string_format = "{title} {first} {middle} {last} {suffix}"
+        self.assertEqual(u(hn), "Rev John A. Kenneth Doe III")
+        hn.middle=''
+        self.assertEqual(u(hn), "Rev John Doe III")
+        hn.suffix=''
+        self.assertEqual(u(hn), "Rev John Doe")
+        hn.title=''
+        self.assertEqual(u(hn), "John Doe")
+
+    def test_formating_of_nicknames_with_parenthesis(self):
+        hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
+        hn.string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
+        self.assertEqual(u(hn), "Rev John A. Kenneth Doe III (Kenny)")
+        hn.nickname=''
+        self.assertEqual(u(hn), "Rev John A. Kenneth Doe III")
+
+    def test_formating_of_nicknames_with_single_quotes(self):
+        hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
+        hn.string_format = "{title} {first} {middle} {last} {suffix} '{nickname}'"
+        self.assertEqual(u(hn), "Rev John A. Kenneth Doe III 'Kenny'")
+        hn.nickname=''
+        self.assertEqual(u(hn), "Rev John A. Kenneth Doe III")
+
+    def test_formating_of_nicknames_with_double_quotes(self):
+        hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
+        hn.string_format = "{title} {first} {middle} {last} {suffix} \"{nickname}\""
+        self.assertEqual(u(hn), "Rev John A. Kenneth Doe III \"Kenny\"")
+        hn.nickname=''
+        self.assertEqual(u(hn), "Rev John A. Kenneth Doe III")
 
 TEST_NAMES = (
     "John Doe",

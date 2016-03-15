@@ -117,7 +117,10 @@ class HumanName(object):
     def __unicode__(self):
         if self.string_format:
             # string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
-            return self.collapse_whitespace(self.string_format.format(**self.as_dict())).strip(', ')
+            _s = self.string_format.format(**self.as_dict())
+            # remove trailing punctation from missing nicknames
+            _s = _s.replace(" ()","").replace(" ''","").replace(' ""',"")
+            return self.collapse_whitespace(_s).strip(', ')
         return " ".join(self)
     
     def __str__(self):

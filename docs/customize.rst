@@ -5,7 +5,10 @@ Pre-processing
 Name buckets
 ++++++++++++++
 
-Each attribute has a corresponding ordered list of name pieces. 
+Each attribute has a corresponding ordered list of name pieces. If you're doing
+pre- or post-processing you may wish to manipulate these lists directly. 
+The strings returned by the attribute names just join these lists with spaces.
+
 
 * o.title_list
 * o.first_list
@@ -13,9 +16,6 @@ Each attribute has a corresponding ordered list of name pieces.
 * o.last_list
 * o.suffix_list
 * o.nickname_list
-
-If you're doing pre- or post-processing you may wish to manipulate these lists directly. 
-The strings returned by the attribute names just join these lists with spaces.
 
 ::
 
@@ -45,6 +45,33 @@ directly to the attribute.
   	nickname: ''
   ]>
 
+Controlling the string representation with string formatting
+============================================================
+
+You can control which name fields are included in the `str()` representation of a `HumanName` instance by changing its `string_format` attribute. Don't want to include nicknames in your output? No problem. 
+
+::
+
+  >>> name = HumanName("Dr. Juan de la Vega (Doc Vega)")
+  >>> str(name)
+  'Dr. Juan de la Vega Doc Vega'
+  >>> name.string_format = "{title} {first} {middle} {last}, {suffix}"
+  >>> str(name)
+  'Dr. Juan de la Vega'
+
+Trailing commas and empty quotes and parenthesis are automatically removed.
+
+::
+
+  >>> name = HumanName('Robert Johnson')
+  >>> name.string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
+  >>> str(name)
+  'Robert Johnson'
+  >>> name = HumanName('Robert "Rob" Johnson')
+  >>> name.string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
+  >>> str(name)
+  'Robert Johnson (Rob)'
+
 
 Customizing the Parser with Your Own Configuration
 ==================================================
@@ -54,17 +81,20 @@ matching the lower case characters of a name piece with pre-defined sets
 of strings located in :py:mod:`nameparser.config`. You can adjust
 these predefined sets to help fine tune the parser for your dataset.
 
-Parser Constants:
+Editable CONSTANTS sets:
 
-* `CONSTANTS.titles` - Pieces that come before the name. Cannot include things that may be first names
-* `CONSTANTS.first_name_titles` - Titles that, when followed by a single name, that name is a first name, e.g. "King David"
-* `CONSTANTS.suffix_acronyms` - Pieces that come at the end of the name that may or may not have periods separating the letters, e.g. "m.d."
-* `CONSTANTS.suffix_not_acronyms` - Pieces that come at the end of the name that never have periods separating the letters, e.g. "Jr."
-* `CONSTANTS.conjunctions` - Connectors like "and" that join the preceeding piece to the following piece.
-* `CONSTANTS.prefixes` - Connectors like "del" and "bin" that join to the following piece but not the preceeding
-* `CONSTANTS.capitalization_exceptions` - Dictionary of pieces that do not capitalize the first letter, e.g. "Ph.D"
-* `CONSTANTS.regexes` - Regular expressions used to find words, initials, nicknames, etc.
+* `titles` - Pieces that come before the name. Cannot include things that may be first names
+* `first_name_titles` - Titles that, when followed by a single name, that name is a first name, e.g. "King David"
+* `suffix_acronyms` - Pieces that come at the end of the name that may or may not have periods separating the letters, e.g. "m.d."
+* `suffix_not_acronyms` - Pieces that come at the end of the name that never have periods separating the letters, e.g. "Jr."
+* `conjunctions` - Connectors like "and" that join the preceeding piece to the following piece.
+* `prefixes` - Connectors like "del" and "bin" that join to the following piece but not the preceeding
+* `capitalization_exceptions` - Dictionary of pieces that do not capitalize the first letter, e.g. "Ph.D"
+* `regexes` - Regular expressions used to find words, initials, nicknames, etc.
 
+Each set of constants comes with `add()` and `remove()` methods for tuning 
+the constants for your project. These methods automatically lower case and
+remove punctuation to normalize them for comparison.
 
 Changing the Parser Constants
 +++++++++++++++++++++++++++++++++
