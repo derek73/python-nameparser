@@ -156,9 +156,9 @@ class HumanName(object):
         
             >>> name = HumanName("Bob Dole")
             >>> name.as_dict()
-            {u'last': u'Dole', u'suffix': u'', u'title': u'', u'middle': u'', u'nickname': u'', u'first': u'Bob'}
+            {'last': 'Dole', 'suffix': '', 'title': '', 'middle': '', 'nickname': '', 'first': 'Bob'}
             >>> name.as_dict(False)
-            {u'last': u'Dole', u'first': u'Bob'}
+            {'last': 'Dole', 'first': 'Bob'}
             
         """
         d = {}
@@ -694,13 +694,13 @@ class HumanName(object):
         
             >>> name = HumanName('bob v. de la macdole-eisenhower phd')
             >>> name.capitalize()
-            >>> unicode(name)
-            u'Bob V. de la MacDole-Eisenhower Ph.D.'
+            >>> str(name)
+            'Bob V. de la MacDole-Eisenhower Ph.D.'
             >>> # Don't touch good names
             >>> name = HumanName('Shirley Maclaine')
             >>> name.capitalize()
-            >>> unicode(name) 
-            u'Shirley Maclaine'
+            >>> str(name) 
+            'Shirley Maclaine'
         
         """
         name = u(self)

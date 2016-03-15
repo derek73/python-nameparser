@@ -46,7 +46,7 @@ The other is the ``C`` attribute of a ``HumanName`` instance, e.g.
     <Constants() instance>
 
 Both places are usually a reference to the same shared module-level
-:py:class:`~nameparser.config.Constants` instance, depending on how you
+:py:class:`~nameparser.config.CONSTANTS` instance, depending on how you
 instantiate the :py:class:`~nameparser.parser.HumanName` class (see below).
 
 Take a look at the :py:mod:`nameparser.config` documentation to see what's
@@ -82,7 +82,7 @@ constant so that "Hon" can be parsed as a first name.
     ]>
     >>> from nameparser.config import CONSTANTS
     >>> CONSTANTS.titles.remove('hon')
-    SetManager(set([u'msgt', ..., u'adjutant']))
+    SetManager({'right', ..., 'tax'})
     >>> hn = HumanName("Hon Solo")
     >>> hn
     <HumanName : [
@@ -99,7 +99,8 @@ constant so that "Hon" can be parsed as a first name.
 constant. But in some contexts it is more common as a title. If you would
 like "Dean" to be parsed as a title, simply add it to the titles constant.
 
-You can pass multiple strings to both the ``add()`` and ``remove()``
+You can pass multiple strings to both the :py:func:`~nameparser.config.SetManager.add` 
+and :py:func:`~nameparser.config.SetManager.remove`
 methods and each string will be added or removed. Both functions
 automatically normalize the strings for the parser's comparison method by
 making them lower case and removing periods.
@@ -110,7 +111,7 @@ making them lower case and removing periods.
     >>> from nameparser import HumanName
     >>> from nameparser.config import CONSTANTS
     >>> CONSTANTS.titles.add('dean', 'Chemistry')
-    SetManager(set([u'msgt', ..., u'adjutant']))
+    SetManager({'right', ..., 'tax'})
     >>> hn = HumanName("Assoc Dean of Chemistry Robert Johns")
     >>> hn
     <HumanName : [
@@ -137,7 +138,7 @@ the config on one instance could modify the behavior of another instance.
     >>> from nameparser import HumanName
     >>> instance = HumanName("")
     >>> instance.C.titles.add('dean')
-    SetManager(set([u'msgt', ..., u'adjutant']))
+    SetManager({'right', ..., 'tax'})
     >>> other_instance = HumanName("Dean Robert Johns")
     >>> other_instance # Dean parses as title
     <HumanName : [
@@ -164,7 +165,7 @@ reference to the module-level config values with the behavior described above.
     >>> instance.has_own_config
     False
     >>> instance.C.titles.add('dean')
-    SetManager(set([u'msgt', ..., u'adjutant']))
+    SetManager({'right', ..., 'tax'})
     >>> other_instance = HumanName("Dean Robert Johns", None) # <-- pass None for per-instance config
     >>> other_instance
     <HumanName : [
@@ -203,7 +204,7 @@ those changes with ``repr()``.
       nickname: ''
     ]>
     >>> CONSTANTS.titles.add('dean')
-    SetManager(set([u'msgt', ..., u'adjutant']))
+    SetManager({'right', ..., 'tax'})
     >>> hn
     <HumanName : [
       title: ''

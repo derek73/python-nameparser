@@ -4,6 +4,8 @@ Using the HumanName Parser
 Example Usage
 -------------
 
+The examples use Python 3, but Python 2.6+ is supported.
+
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
 
@@ -43,8 +45,8 @@ Example Usage
         suffix: 'Jr.'
         nickname: ''
     ]>
-    >>> name.suffix = ["custom","values"]
-    >>> name.suffix
+    >>> name.middle = ["custom","values"]
+    >>> name.middle
     'custom values'
     >>> name.full_name = 'Doe-Ray, Jonathan "John" A. Harris'
     >>> name.as_dict()
@@ -63,12 +65,12 @@ Example Usage
     ['Juan', 'Q. Xavier', 'de la Vega']
     >>> name = HumanName('bob v. de la macdole-eisenhower phd')
     >>> name.capitalize()
-    >>> unicode(name)
+    >>> str(name)
     'Bob V. de la MacDole-Eisenhower Ph.D.'
     >>> # Don't touch mixed case names
     >>> name = HumanName('Shirley Maclaine')
     >>> name.capitalize()
-    >>> unicode(name) 
+    >>> str(name) 
     'Shirley Maclaine'
 
 Capitalization Support
@@ -86,7 +88,7 @@ entered in all upper or lower case.
 
     >>> name = HumanName("bob v. de la macdole-eisenhower phd")
     >>> name.capitalize()
-    >>> unicode(name)
+    >>> str(name)
     'Bob V. de la MacDole-Eisenhower Ph.D.'
 
 It will not adjust the case of mixed case names.
@@ -96,7 +98,7 @@ Nickname Handling
 ------------------
 
 The content of parenthesis or double quotes in the name will be
-available from the nickname attribute. (Added in v0.2.9)
+available from the nickname attribute.
 
 .. doctest:: nicknames
     :options: +NORMALIZE_WHITESPACE
@@ -118,7 +120,8 @@ Change the output string with string formatting
 The string representation of a `HumanName` instance is controlled by its `string_format` attribute. The default value, "{title} {first} {middle} {last} {suffix} ({nickname})", includes parenthesis around nicknames. Trailing commas and empty quotes and parenthesis are automatically removed if the name has no nickname pieces.
 
 You can change the default formatting for all `HumanName` instances by setting a new
-`CONSTANTS.string_format` value.
+:py:attr:`~nameparser.config.Constants.string_format` value on the shared
+:py:class:`~nameparser.config.CONSTANTS` configuration instance.
 
 .. doctest:: string format
 

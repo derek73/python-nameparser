@@ -15,6 +15,12 @@ SUFFIX_NOT_ACRONYMS = set([
     'iv',
     'v',
 ])
+"""
+
+Post-nominal pieces that are not acronyms. The parser does not remove periods
+when matching against these pieces.
+
+"""
 SUFFIX_ACRONYMS = set([
     'ae',
     'afc',
@@ -109,13 +115,14 @@ SUFFIX_ACRONYMS = set([
     'vd',
     'vrd',
 ])
-SUFFIXES = SUFFIX_ACRONYMS | SUFFIX_NOT_ACRONYMS
 """
 
-Pieces that come at the end of the name but are not last names. These potentially
-conflict with initials that might be at the end of the name.
+Post-nominal acronyms. Titles, degrees and other things people stick after their name
+that may or may not have periods between the letters. The parser removes periods 
+when matching against these pieces.
 
-These may be updated in the future because some of them are actually titles that just
-come at the end of the name, so semantically this is wrong. Positionally, it's correct.
-
+"""
+SUFFIXES = SUFFIX_ACRONYMS | SUFFIX_NOT_ACRONYMS
+"""
+A union of the sets :py:attr:`SUFFIX_ACRONYMS` and :py:attr:`SUFFIX_NOT_ACRONYMS`
 """

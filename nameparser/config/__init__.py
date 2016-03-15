@@ -133,14 +133,16 @@ class Constants(object):
     :param set titles: 
         :py:attr:`titles` wrapped with :py:class:`SetManager`.
     :param set first_name_titles: 
-        :py:attr:`first_name_titles` wrapped with :py:class:`SetManager`.
-    :param set suffixes: 
-        :py:attr:`suffixes`  wrapped with :py:class:`SetManager`.
+        :py:attr:`~titles.FIRST_NAME_TITLES` wrapped with :py:class:`SetManager`.
+    :param set suffix_acronyms: 
+        :py:attr:`~suffixes.SUFFIX_ACRONYMS`  wrapped with :py:class:`SetManager`.
+    :param set suffix_not_acronyms: 
+        :py:attr:`~suffixes.SUFFIX_NOT_ACRONYMS`  wrapped with :py:class:`SetManager`.
     :param set conjunctions: 
         :py:attr:`conjunctions`  wrapped with :py:class:`SetManager`.
     :type capitalization_exceptions: tuple or dict
     :param capitalization_exceptions: 
-        :py:attr:`capitalization_exceptions` wrapped with :py:class:`TupleManager`.
+        :py:attr:`~capitalization.CAPITALIZATION_EXCEPTIONS` wrapped with :py:class:`TupleManager`.
     :type regexes: tuple or dict
     :param regexes: 
         :py:attr:`regexes`  wrapped with :py:class:`TupleManager`.
