@@ -1,6 +1,8 @@
 Release Log
 ===========
-* 0.3.12 - March 14, 2016
+* 0.3.13 - March 14, 2016
+    - Improve string format handling (#41)
+* 0.3.12 - March 13, 2016
     - Fix first name clash with suffixes (#42)
     - Fix encoding of constants added via the python shell
     - Add "MSC" to suffixes, fix #41
