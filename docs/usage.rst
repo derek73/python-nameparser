@@ -10,17 +10,17 @@ Example Usage
     >>> from nameparser import HumanName
     >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
     >>> name.title
-    u'Dr.'
+    'Dr.'
     >>> name["title"]
-    u'Dr.'
+    'Dr.'
     >>> name.first
-    u'Juan'
+    'Juan'
     >>> name.middle
-    u'Q. Xavier'
+    'Q. Xavier'
     >>> name.last
-    u'de la Vega'
+    'de la Vega'
     >>> name.suffix
-    u'III'
+    'III'
     >>> name.full_name = "Juan Q. Xavier Velasquez y Garcia, Jr."
     >>> name
     <HumanName : [
@@ -33,7 +33,7 @@ Example Usage
     ]>
     >>> name.middle = "Jason Alexander"
     >>> name.middle
-    u'Jason Alexander'
+    'Jason Alexander'
     >>> name
     <HumanName : [
         title: '' 
@@ -45,12 +45,12 @@ Example Usage
     ]>
     >>> name.suffix = ["custom","values"]
     >>> name.suffix
-    u'custom values'
+    'custom values'
     >>> name.full_name = 'Doe-Ray, Jonathan "John" A. Harris'
     >>> name.as_dict()
-    {u'last': u'Doe-Ray', u'suffix': u'', u'title': u'', u'middle': u'A. Harris', u'nickname': u'John', u'first': u'Jonathan'}
+    {'last': 'Doe-Ray', 'suffix': '', 'title': '', 'middle': 'A. Harris', 'nickname': 'John', 'first': 'Jonathan'}
     >>> name.as_dict(False) # add False to hide keys with empty values
-    {u'middle': u'A. Harris', u'nickname': u'John', u'last': u'Doe-Ray', u'first': u'Jonathan'}
+    {'middle': 'A. Harris', 'nickname': 'John', 'last': 'Doe-Ray', 'first': 'Jonathan'}
     >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
     >>> name2 = HumanName("de la vega, dr. juan Q. xavier III")
     >>> name == name2
@@ -58,18 +58,18 @@ Example Usage
     >>> len(name)
     5
     >>> list(name)
-    [u'Dr.', u'Juan', u'Q. Xavier', u'de la Vega', u'III']
+    ['Dr.', 'Juan', 'Q. Xavier', 'de la Vega', 'III']
     >>> name[1:-2]
-    [u'Juan', u'Q. Xavier', u'de la Vega']
+    ['Juan', 'Q. Xavier', 'de la Vega']
     >>> name = HumanName('bob v. de la macdole-eisenhower phd')
     >>> name.capitalize()
     >>> unicode(name)
-    u'Bob V. de la MacDole-Eisenhower Ph.D.'
+    'Bob V. de la MacDole-Eisenhower Ph.D.'
     >>> # Don't touch mixed case names
     >>> name = HumanName('Shirley Maclaine')
     >>> name.capitalize()
     >>> unicode(name) 
-    u'Shirley Maclaine'
+    'Shirley Maclaine'
 
 Capitalization Support
 ----------------------
@@ -87,7 +87,7 @@ entered in all upper or lower case.
     >>> name = HumanName("bob v. de la macdole-eisenhower phd")
     >>> name.capitalize()
     >>> unicode(name)
-    u'Bob V. de la MacDole-Eisenhower Ph.D.'
+    'Bob V. de la MacDole-Eisenhower Ph.D.'
 
 It will not adjust the case of mixed case names.
 
