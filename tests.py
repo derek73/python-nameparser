@@ -1758,12 +1758,18 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
 
 class HumanNameOutputFormatTests(HumanNameTestBase):
     
-    def test_formating(self):
+    def test_formatting_init_argument(self):
+        hn = HumanName("Rev John A. Kenneth Doe III (Kenny)", 
+            string_format = "TEST1")
+        self.assertEqual(u(hn), "TEST1")
+
+    def test_formatting_constants_attribute(self):
+        from nameparser.config import CONSTANTS
+        _orig = CONSTANTS.string_format
+        CONSTANTS.string_format = "TEST2"
         hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
-        hn.string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
-        self.assertEqual(u(hn), "Rev John A. Kenneth Doe III (Kenny)")
-        hn.string_format = "{last}, {title} {first} {middle}, {suffix} ({nickname})"
-        self.assertEqual(u(hn), "Doe, Rev John A. Kenneth, III (Kenny)")
+        self.assertEqual(u(hn), "TEST2")
+        CONSTANTS.string_format = _orig
 
     def test_quote_nickname_formating(self):
         hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
@@ -1818,6 +1824,13 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
         hn.string_format = "{title} {first} {middle} {last} {suffix} \"{nickname}\""
         self.assertEqual(u(hn), "Rev John A. Kenneth Doe III \"Kenny\"")
+        hn.nickname=''
+        self.assertEqual(u(hn), "Rev John A. Kenneth Doe III")
+
+    def test_formating_of_nicknames_in_middle(self):
+        hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
+        hn.string_format = "{title} {first} ({nickname}) {middle} {last} {suffix}"
+        self.assertEqual(u(hn), "Rev John (Kenny) A. Kenneth Doe III")
         hn.nickname=''
         self.assertEqual(u(hn), "Rev John A. Kenneth Doe III")
 

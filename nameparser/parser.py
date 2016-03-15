@@ -68,7 +68,7 @@ class HumanName(object):
             self.has_own_config = True
         
         self.ENCODING = encoding
-        self.string_format = string_format
+        self.string_format = string_format or self.C.string_format
         self.full_name = full_name
     
     def __iter__(self):
