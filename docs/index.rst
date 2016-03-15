@@ -9,42 +9,39 @@ Python Human Name Parser
 Version |release| 
 
 A simple Python module for parsing human names into their individual 
-components. It attempts the best guess that can be made with a simple, rule-based 
+components. 
+
+* hn.title
+* hn.first
+* hn.middle
+* hn.last
+* hn.suffix
+* hn.nickname
+
+Supports 3 different comma placement variations in the input string.
+
+1. Title Firstname "Nickname" Middle Middle Lastname Suffix
+2. Lastname [Suffix], Title Firstname (Nickname) Middle Middle[,] Suffix [, Suffix]
+3. Title Firstname M Lastname [Suffix], Suffix [Suffix] [, Suffix]
+
+
+It attempts the best guess that can be made with a simple, rule-based 
 approach. It's not perfect, but it gets you pretty far. 
 
 Its main use case is English, but it may be useful for other latin-based languages, especially 
-if you are willing to `customize it`_. Unicode is supported, but the 
-parser is not likely to be useful for languages that to not share the same structure 
-as English names.
+if you are willing to `customize it`_, but it is not likely to be useful for languages 
+that do not share the same structure as English names.
 
 .. _customize it: customize.html
 
-The HumanName class splits a name string up into name parts based 
-on placement in the string and matches against known name pieces like titles. 
-It joins name pieces on conjunctions and special prefixes to last names like 
+Instantiating the `HumanName` class with a string splits on commas and then spaces, 
+classifying name parts based on placement in the string and matches against known name 
+pieces like titles. It joins name pieces on conjunctions and special prefixes to last names like 
 "del". Titles can be chained together and include conjunctions to handle 
 titles like "Asst Secretary of State". It can also try to correct 
 capitalization.
 
-
-
-HumanName Instance Attributes
------------------------------
-
-* o.title
-* o.first
-* o.middle
-* o.last
-* o.suffix
-* o.nickname
-
-Supports 3 different comma placement variations in the input string.
-
-* Title Firstname "Nickname" Middle Middle Lastname Suffix
-* Lastname [Suffix], Title Firstname (Nickname) Middle Middle[,] Suffix [, Suffix]
-* Title Firstname M Lastname [Suffix], Suffix [Suffix] [, Suffix]
-
-When there is ambiguity that cannot be resolved by a rule-based approach, 
+It does not attempt to correct input mistakes. When there is ambiguity that cannot be resolved by a rule-based approach, 
 HumanName prefers to handle the most common cases correctly. For example, 
 "Dean" is not parsed as title because it is more common as a first name 
 (You can customize this behavior though, see `Parser Customization Examples`_).

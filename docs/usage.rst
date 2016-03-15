@@ -1,8 +1,8 @@
 Using the HumanName Parser
 ==========================
 
-Example
--------
+Example Usage
+-------------
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
@@ -71,12 +71,11 @@ Example
     >>> unicode(name) 
     u'Shirley Maclaine'
 
-
 Capitalization Support
 ----------------------
 
 The HumanName class can try to guess the correct capitalization of name
-entered in all upper or lower case. 
+entered in all upper or lower case.
 
 
     Capitalize the name.
@@ -93,7 +92,7 @@ entered in all upper or lower case.
 It will not adjust the case of mixed case names.
 
 
-Handling Nicknames
+Nickname Handling
 ------------------
 
 The content of parenthesis or double quotes in the name will be
@@ -105,31 +104,44 @@ available from the nickname attribute. (Added in v0.2.9)
     >>> name = HumanName('Jonathan "John" A. Smith')
     >>> name
     <HumanName : [
-    	title: '' 
-    	first: 'Jonathan' 
-    	middle: 'A.' 
-    	last: 'Smith' 
-    	suffix: ''
-    	nickname: 'John'
+      title: ''
+      first: 'Jonathan'
+      middle: 'A.'
+      last: 'Smith'
+      suffix: ''
+      nickname: 'John'
     ]>
 
+Change the output string with string formatting
+-----------------------------------------------
 
-String Format
--------------
+The string representation of a `HumanName` instance is controlled by its `string_format` attribute. The default value, "{title} {first} {middle} {last} {suffix} ({nickname})", includes parenthesis around nicknames. Trailing commas and empty quotes and parenthesis are automatically removed if the name has no nickname pieces.
 
-The format of the strings returned with ``str()`` or ``unicode()`` can be adjusted
-using standard python string formatting. The string's ``format()``
-method will be passed a dictionary of names.
+You can change the default formatting for all `HumanName` instances by setting a new
+`CONSTANTS.string_format` value.
 
 .. doctest:: string format
 
-    >>> name = HumanName("Rev John A. Kenneth Doe III")
-    >>> str(name)
-    'Rev John A. Kenneth Doe III'
-    >>> name.string_format = "{last}, {title} {first} {middle}, {suffix}"
-    >>> str(name)
-    'Doe, Rev John A. Kenneth, III'
-    >>> name.string_format = "{first} {last}"
-    >>> str(name)
-    'John Doe'
+  >>> from nameparser.config import CONSTANTS
+  >>> CONSTANTS.string_format = "{title} {first} ({nickname}) {middle} {last} {suffix}"
+  >>> name = HumanName('Robert Johnson')
+  >>> str(name)
+  'Robert Johnson'
+  >>> name = HumanName('Robert "Rob" Johnson')
+  >>> str(name)
+  'Robert (Rob) Johnson'
+
+You can control the order and presense of any name fields by changing the
+:py:attr:`~nameparser.config.Constants.string_format` attribute of the shared CONSTANTS instance.
+Don't want to include nicknames in your output? No problem. Just omit that keyword from the 
+`string_format` attribute.
+
+.. doctest:: string format
+
+  >>> from nameparser.config import CONSTANTS
+  >>> CONSTANTS.string_format = "{title} {first} {last}"
+  >>> name = HumanName("Dr. Juan Ruiz de la Vega III (Doc Vega)")
+  >>> str(name)
+  'Dr. Juan de la Vega'
+
 

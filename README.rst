@@ -7,20 +7,42 @@ Name Parser
     :target: http://badge.fury.io/py/nameparser
 
 A simple Python (3.2+ & 2.6+) module for parsing human names into their
-individual components. Pass the HumanName class a string containing a full name.
-The name is split on spaces and then parsed into name parts based on placement
-in the string and matches against known name pieces like titles. Access the name 
-via instance attributes.
+individual components. 
+
+* hn.title
+* hn.first
+* hn.middle
+* hn.last
+* hn.suffix
+* hn.nickname
+
+Supports 3 different comma placement variations in the input string.
+
+1. Title Firstname "Nickname" Middle Middle Lastname Suffix
+2. Lastname [Suffix], Title Firstname (Nickname) Middle Middle[,] Suffix [, Suffix]
+3. Title Firstname M Lastname [Suffix], Suffix [Suffix] [, Suffix]
+
+Instantiating the `HumanName` class with a string splits on commas and then spaces, 
+classifying name parts based on placement in the string and matches against known name 
+pieces like titles and suffixes. 
 
 It correctly handles some common conjunctions and special prefixes to last names
-like "del". Titles can be chained together and include conjunctions to handle
+like "del". Titles and conjunctions can be chained together to handle complex
 titles like "Asst Secretary of State". It can also try to correct capitalization
 of all names that are all upper- or lowercase names.
 
 It attempts the best guess that can be made with a simple, rule-based approach. 
-Unicode is supported, but the parser is not likely to be useful for languages 
-that do not have a structure similar to English names. It's not perfect, but it 
+Its main use case is English and it is not likely to be useful for languages 
+that do not share the same structure as English names. It's not perfect, but it 
 gets you pretty far.
+
+Installation
+------------
+
+::
+
+  pip install nameparser
+
 
 Quick Start Example
 -------------------
@@ -47,13 +69,7 @@ Quick Start Example
     'Juan de la Vega'
 
 
-3 different comma placement variations are supported:
-
-* Title Firstname "Nickname" Middle Middle Lastname Suffix
-* Lastname [Suffix], Title Firstname (Nickname) Middle Middle[,] Suffix [, Suffix]
-* Title Firstname M Lastname [Suffix], Suffix [Suffix] [, Suffix]
-
-The parser does not make any attempt to clean the input. It mostly just splits on white
+The parser does not attempt to correct mistakes in the input. It mostly just splits on white
 space and puts things in buckets based on their position in the string. This also means
 the difference between 'title' and 'suffix' is positional, not semantic. "Dr" is a title
 when it comes before the name and a suffix when it comes after. ("Pre-nominal"
