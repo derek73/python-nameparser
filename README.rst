@@ -43,6 +43,15 @@ Installation
 
   pip install nameparser
 
+If you want to try out the latest code from GitHub you can
+install with pip using the command below.
+
+``pip install -e git+git://github.com/derek73/python-nameparser.git#egg=nameparser``
+
+If you're looking for a web service, check out
+`eyeseast's nameparse service <https://github.com/eyeseast/nameparse>`_, a
+simple Heroku-friendly Flask wrapper for this module.
+
 
 Quick Start Example
 -------------------
@@ -102,21 +111,6 @@ sets`_ of titles, prefixes, etc., or by subclassing the `HumanName` class. See t
 
 .. _customizing the configured pre-defined sets: http://nameparser.readthedocs.org/en/latest/customize.html
 .. _Full documentation: http://nameparser.readthedocs.org/en/latest/
-
-
-Installation
-------------
-
-``pip install nameparser``
-
-If you want to try out the latest code from GitHub you can
-install with pip using the command below.
-
-``pip install -e git+git://github.com/derek73/python-nameparser.git#egg=nameparser``
-
-If you're looking for a web service, check out
-`eyeseast's nameparse service <https://github.com/eyeseast/nameparse>`_, a
-simple Heroku-friendly Flask wrapper for this module.
 
 
 Contributing
