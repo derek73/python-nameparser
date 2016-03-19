@@ -1265,10 +1265,13 @@ class ConstantsCustomization(HumanNameTestBase):
         from nameparser.config import CONSTANTS
         _orig = CONSTANTS.empty_attribute_default
         CONSTANTS.empty_attribute_default = None
-        hn = HumanName("Benjamin Franklin")
-        self.m(hn.first,"Benjamin", hn)
-        self.m(hn.middle,None, hn)
-        self.m(hn.last,"Franklin", hn)
+        hn = HumanName("")
+        self.m(hn.title, None, hn)
+        self.m(hn.first, None, hn)
+        self.m(hn.middle, None, hn)
+        self.m(hn.last, None, hn)
+        self.m(hn.suffix, None, hn)
+        self.m(hn.nickname, None, hn)
         CONSTANTS.empty_attribute_default = _orig
 
 
