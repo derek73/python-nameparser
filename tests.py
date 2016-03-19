@@ -1275,7 +1275,7 @@ class ConstantsCustomization(HumanNameTestBase):
         CONSTANTS.empty_attribute_default = _orig
 
     def test_empty_attribute_on_instance(self):
-        hn = HumanName("")
+        hn = HumanName("", None)
         hn.C.empty_attribute_default = None
         self.m(hn.title, None, hn)
         self.m(hn.first, None, hn)
@@ -1285,7 +1285,7 @@ class ConstantsCustomization(HumanNameTestBase):
         self.m(hn.nickname, None, hn)
 
     def test_none_empty_attribute_string_formatting(self):
-        hn = HumanName("")
+        hn = HumanName("", None)
         hn.C.empty_attribute_default = None
         self.m('', str(hn), hn)
 
