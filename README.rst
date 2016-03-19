@@ -29,7 +29,7 @@ pieces like titles and suffixes.
 It correctly handles some common conjunctions and special prefixes to last names
 like "del". Titles and conjunctions can be chained together to handle complex
 titles like "Asst Secretary of State". It can also try to correct capitalization
-of all names that are all upper- or lowercase names.
+of names that are all upper- or lowercase names.
 
 It attempts the best guess that can be made with a simple, rule-based approach. 
 Its main use case is English and it is not likely to be useful for languages 

@@ -1,2 +1,2 @@
 excludeDirectories = "{$excludeDirectories,dist,*.egg-info,build,docs/_*}"
-include = "{$include,.gitignore,.hgignore}"
+include = "{$include,.gitignore,.hgignore,.travis.yml}"
