@@ -1274,6 +1274,20 @@ class ConstantsCustomization(HumanNameTestBase):
         self.m(hn.nickname, None, hn)
         CONSTANTS.empty_attribute_default = _orig
 
+    def test_empty_attribute_on_instance(self):
+        hn = HumanName("")
+        hn.C.empty_attribute_default = None
+        self.m(hn.title, None, hn)
+        self.m(hn.first, None, hn)
+        self.m(hn.middle, None, hn)
+        self.m(hn.last, None, hn)
+        self.m(hn.suffix, None, hn)
+        self.m(hn.nickname, None, hn)
+
+    def test_none_empty_attribute_string_formatting(self):
+        hn = HumanName("")
+        hn.C.empty_attribute_default = None
+        self.m('', str(hn), hn)
 
 class HumanNameNicknameTestCase(HumanNameTestBase):
     # https://code.google.com/p/python-nameparser/issues/detail?id=33
