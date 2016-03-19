@@ -180,7 +180,7 @@ class HumanName(object):
         :py:mod:`~nameparser.config.titles` or :py:mod:`~nameparser.config.conjunctions`
         at the beginning of :py:attr:`full_name`.
         """
-        return " ".join(self.title_list)
+        return " ".join(self.title_list) or self.C.empty_attribute_default
     
     @property
     def first(self):
@@ -188,7 +188,7 @@ class HumanName(object):
         The person's first name. The first name piece after any known 
         :py:attr:`title` pieces parsed from :py:attr:`full_name`.
         """
-        return " ".join(self.first_list)
+        return " ".join(self.first_list) or self.C.empty_attribute_default
     
     @property
     def middle(self):
@@ -196,7 +196,7 @@ class HumanName(object):
         The person's middle names. All name pieces after the first name and before 
         the last name parsed from :py:attr:`full_name`.
         """
-        return " ".join(self.middle_list)
+        return " ".join(self.middle_list) or self.C.empty_attribute_default
     
     @property
     def last(self):
@@ -204,7 +204,7 @@ class HumanName(object):
         The person's last name. The last name piece parsed from 
         :py:attr:`full_name`.
         """
-        return " ".join(self.last_list)
+        return " ".join(self.last_list) or self.C.empty_attribute_default
     
     @property
     def suffix(self):
@@ -214,7 +214,7 @@ class HumanName(object):
         of comma separated formats, e.g. "Lastname, Title Firstname Middle[,] Suffix 
         [, Suffix]" parsed from :py:attr:`full_name`.
         """
-        return ", ".join(self.suffix_list)
+        return ", ".join(self.suffix_list) or self.C.empty_attribute_default
     
     @property
     def nickname(self):
@@ -222,7 +222,7 @@ class HumanName(object):
         The person's nicknames. Any text found inside of quotes (``""``) or 
         parenthesis (``()``)
         """
-        return " ".join(self.nickname_list)
+        return " ".join(self.nickname_list) or self.C.empty_attribute_default
     
     ### setter methods
     

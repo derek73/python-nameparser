@@ -1261,6 +1261,17 @@ class ConstantsCustomization(HumanNameTestBase):
         self.m(hn.middle,"Hon", hn)
         self.m(hn.last,"Solo", hn)
 
+    def test_empty_attribute_default(self):
+        from nameparser.config import CONSTANTS
+        _orig = CONSTANTS.empty_attribute_default
+        CONSTANTS.empty_attribute_default = None
+        hn = HumanName("Benjamin Franklin")
+        self.m(hn.first,"Benjamin", hn)
+        self.m(hn.middle,None, hn)
+        self.m(hn.last,"Franklin", hn)
+        CONSTANTS.empty_attribute_default = _orig
+
+
 class HumanNameNicknameTestCase(HumanNameTestBase):
     # https://code.google.com/p/python-nameparser/issues/detail?id=33
     def test_nickname_in_parenthesis(self):

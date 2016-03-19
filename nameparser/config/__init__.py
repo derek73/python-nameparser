@@ -150,7 +150,23 @@ class Constants(object):
     
     string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
     """
-    The default string format use for all new HumanName instances.
+    The default string format use for all new `HumanName` instances.
+    """
+    empty_attribute_default = ''
+    """
+    Default return value for empty attributes. Setting this to something other than empty
+    string will causes :py:attr:`string_format` not to work.
+    
+    .. doctest::
+    
+        >>> from nameparser.config import CONSTANTS
+        >>> CONSTANTS.empty_attribute_default = None
+        >>> name = HumanName("John Doe")
+        >>> name.title
+        None
+        >>>name.first
+        'John'
+        
     """
     
     

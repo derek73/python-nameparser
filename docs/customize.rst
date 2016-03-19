@@ -6,21 +6,6 @@ matching the lower case characters of a name piece with pre-defined sets
 of strings located in :py:mod:`nameparser.config`. You can adjust
 these predefined sets to help fine tune the parser for your dataset.
 
-Editable CONSTANTS sets:
-
-* `titles` - Pieces that come before the name. Cannot include things that may be first names
-* `first_name_titles` - Titles that, when followed by a single name, that name is a first name, e.g. "King David"
-* `suffix_acronyms` - Pieces that come at the end of the name that may or may not have periods separating the letters, e.g. "m.d."
-* `suffix_not_acronyms` - Pieces that come at the end of the name that never have periods separating the letters, e.g. "Jr."
-* `conjunctions` - Connectors like "and" that join the preceeding piece to the following piece.
-* `prefixes` - Connectors like "del" and "bin" that join to the following piece but not the preceeding
-* `capitalization_exceptions` - Dictionary of pieces that do not capitalize the first letter, e.g. "Ph.D"
-* `regexes` - Regular expressions used to find words, initials, nicknames, etc.
-
-Each set of constants comes with `add()` and `remove()` methods for tuning
-the constants for your project. These methods automatically lower case and
-remove punctuation to normalize them for comparison.
-
 Changing the Parser Constants
 -----------------------------
 
@@ -49,13 +34,38 @@ Both places are usually a reference to the same shared module-level
 :py:class:`~nameparser.config.CONSTANTS` instance, depending on how you
 instantiate the :py:class:`~nameparser.parser.HumanName` class (see below).
 
-Take a look at the :py:mod:`nameparser.config` documentation to see what's
-in the constants. Here's a quick walk through of some examples where you
-might want to adjust them.
+
+
+Editable attributes of nameparser.config.CONSTANTS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* :py:attr:`~nameparser.config.Constants.titles` - Pieces that come before the name. Cannot include things that may be first names
+* :py:attr:`~nameparser.config.Constants.first_name_titles` - Titles that, when followed by a single name, that name is a first name, e.g. "King David"
+* :py:attr:`~nameparser.config.Constants.suffix_acronyms` - Pieces that come at the end of the name that may or may not have periods separating the letters, e.g. "m.d."
+* :py:attr:`~nameparser.config.Constants.suffix_not_acronyms` - Pieces that come at the end of the name that never have periods separating the letters, e.g. "Jr."
+* :py:attr:`~nameparser.config.Constants.conjunctions` - Connectors like "and" that join the preceeding piece to the following piece.
+* :py:attr:`~nameparser.config.Constants.prefixes` - Connectors like "del" and "bin" that join to the following piece but not the preceeding
+* :py:attr:`~nameparser.config.Constants.capitalization_exceptions` - Dictionary of pieces that do not capitalize the first letter, e.g. "Ph.D"
+* :py:attr:`~nameparser.config.Constants.regexes` - Regular expressions used to find words, initials, nicknames, etc.
+
+Each set of constants comes with `add()` and `remove()` methods for tuning
+the constants for your project. These methods automatically lower case and
+remove punctuation to normalize them for comparison.
+
+Other editable attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* :py:attr:`~nameparser.config.Constants.string_format`
+* :py:attr:`~nameparser.config.Constants.empty_attribute_default`
+
 
 
 Parser Customization Examples
 -----------------------------
+
+Take a look at the :py:mod:`nameparser.config` documentation to see what's
+in the constants. Here's a quick walk through of some examples where you
+might want to adjust them.
 
 "Hon" is a common abbreviation for "Honorable", a title used when
 addressing judges, and is included in the default tiles constants. This
@@ -99,7 +109,7 @@ constant so that "Hon" can be parsed as a first name.
 constant. But in some contexts it is more common as a title. If you would
 like "Dean" to be parsed as a title, simply add it to the titles constant.
 
-You can pass multiple strings to both the :py:func:`~nameparser.config.SetManager.add` 
+You can pass multiple strings to both the :py:func:`~nameparser.config.SetManager.add`
 and :py:func:`~nameparser.config.SetManager.remove`
 methods and each string will be added or removed. Both functions
 automatically normalize the strings for the parser's comparison method by

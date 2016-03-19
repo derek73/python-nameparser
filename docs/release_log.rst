@@ -1,5 +1,7 @@
 Release Log
 ===========
+* 0.3.14 - March 18, 2016
+    - Add `CONSTANTS.empty_attribute_default` to customize value returned for empty attributes (#44)
 * 0.3.13 - March 14, 2016
     - Improve string format handling (#41)
 * 0.3.12 - March 13, 2016
