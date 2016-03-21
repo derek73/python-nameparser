@@ -1,5 +1,8 @@
 Release Log
 ===========
+* 0.3.15 - March 21, 2016
+    - Fix string format when `empty_attribute_default = None` (#45)
+    - Include tests in release source tarball (#46)
 * 0.3.14 - March 18, 2016
     - Add `CONSTANTS.empty_attribute_default` to customize value returned for empty attributes (#44)
 * 0.3.13 - March 14, 2016

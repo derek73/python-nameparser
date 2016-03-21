@@ -154,8 +154,7 @@ class Constants(object):
     """
     empty_attribute_default = ''
     """
-    Default return value for empty attributes. Setting this to something other than empty
-    string will causes :py:attr:`string_format` not to work.
+    Default return value for empty attributes.
     
     .. doctest::
     
