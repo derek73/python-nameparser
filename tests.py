@@ -37,7 +37,8 @@ except AttributeError:
 
 class HumanNameTestBase(unittest.TestCase):
     def m(self, actual, expected, hn):
-        """assertEquals with a better message"""
+        """assertEquals with a better message and awareness of hn.C.empty_attribute_default"""
+        expected = expected or hn.C.empty_attribute_default
         try:
             self.assertEqual(actual, expected, "'%s' != '%s' for '%s'\n%r" % (
                 actual,
@@ -146,7 +147,7 @@ class HumanNamePythonTests(HumanNameTestBase):
     def test_slice(self):
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         self.m(list(hn), ['Dr.', 'John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC'], hn)
-        self.m(hn[1:], ['John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC',''], hn)
+        self.m(hn[1:], ['John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC',hn.C.empty_attribute_default], hn)
         self.m(hn[1:-2], ['John', 'P.', 'Doe-Ray'], hn)
 
     def test_getitem(self):
@@ -1287,7 +1288,7 @@ class ConstantsCustomization(HumanNameTestBase):
     def test_none_empty_attribute_string_formatting(self):
         hn = HumanName("", None)
         hn.C.empty_attribute_default = None
-        self.m('', str(hn), hn)
+        self.assertEqual('', str(hn), hn)
 
 class HumanNameNicknameTestCase(HumanNameTestBase):
     # https://code.google.com/p/python-nameparser/issues/detail?id=33
@@ -2050,6 +2051,7 @@ class HumanNameVariationTests(HumanNameTestBase):
             hn = HumanName(name)
             if len(hn.suffix_list) > 1:
                 hn = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn.as_dict()).split(',')[0])
+            hn.C.empty_attribute_default = '' # format strings below require empty string
             hn_dict = hn.as_dict()
             attrs = [
                 'title',
@@ -2059,9 +2061,6 @@ class HumanNameVariationTests(HumanNameTestBase):
                 'suffix',
                 'nickname',
             ]
-            for attr in attrs:
-                if not getattr(hn, attr):
-                    setattr(hn,attr,'')
             nocomma = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn_dict))
             lastnamecomma = HumanName("{last}, {title} {first} {middle} {suffix}".format(**hn_dict))
             if hn.suffix:
@@ -2090,11 +2089,11 @@ if __name__ == '__main__':
         hn.capitalize()
         print((repr(hn)))
     else:
-        # if log.level > 0:
-        #     for name in TEST_NAMES:
-        #         hn = HumanName(name)
-        #         print((u(name)))
-        #         print((u(hn)))
-        #         print((repr(hn)))
-        #         print("\n-------------------------------------------\n")
+        print("-"*80)
+        print("Running tests")
+        unittest.main(exit=False)
+        print("-"*80)
+        print("Running tests with empty_attribute_default = None")
+        from nameparser.config import CONSTANTS
+        CONSTANTS.empty_attribute_default = None
         unittest.main()
