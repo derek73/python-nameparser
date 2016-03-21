@@ -19,7 +19,10 @@ https://github.com/derek73/python-nameparser/pulls
 """
 
 import logging
-import dill
+try:
+    import dill
+except ImportError:
+    dill = False
 
 from nameparser import HumanName
 from nameparser.util import u
@@ -78,8 +81,9 @@ class HumanNamePythonTests(HumanNameTestBase):
         C = Constants()
         self.assertTrue(dill.pickles(C))
 
+    @unittest.skipUnless(dill,"requires python-dill module to test pickling")
     def test_name_instance_pickle(self):
-        hn = HumanName("First Last")
+        hn = HumanName("Title First Middle Middle Last, Jr.")
         self.assertTrue(dill.pickles(hn))
 
     def test_comparison(self):
