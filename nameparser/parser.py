@@ -119,7 +119,7 @@ class HumanName(object):
             # string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
             _s = self.string_format.format(**self.as_dict())
             # remove trailing punctation from missing nicknames
-            _s = _s.replace(" ()","").replace(" ''","").replace(' ""',"")
+            _s = _s.replace(str(self.C.empty_attribute_default),'').replace(" ()","").replace(" ''","").replace(' ""',"")
             return self.collapse_whitespace(_s).strip(', ')
         return " ".join(self)
     
@@ -231,8 +231,10 @@ class HumanName(object):
             val = value
         elif isinstance(value, text_types):
             val = [value]
+        elif value is None:
+            val = []
         else:
-            raise TypeError("Can only assign strings and lists to name attributes. "
+            raise TypeError("Can only assign strings, lists or None to name attributes. "
                     "Got {0}".format(type(value)))
         setattr(self, attr+"_list", self.parse_pieces(val))
     
