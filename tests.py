@@ -77,6 +77,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         hn = HumanName("John Doe")
         self.m(len(hn), 2, hn)
 
+    @unittest.skipUnless(dill,"requires python-dill module to test pickling")
     def test_config_pickle(self):
         C = Constants()
         self.assertTrue(dill.pickles(C))
