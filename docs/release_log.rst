@@ -1,5 +1,8 @@
 Release Log
 ===========
+* 0.3.16 - March 24, 2016
+    - Clarify LGPL licence version (#47)
+    - Skip pickle tests if pickle not installed (#48)
 * 0.3.15 - March 21, 2016
     - Fix string format when `empty_attribute_default = None` (#45)
     - Include tests in release source tarball (#46)

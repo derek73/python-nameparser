@@ -100,7 +100,7 @@ and "post-nominal" would probably be better names.)
 Customization
 -------------
 
-Your project may need a bit of adjustments for your dataset. You can
+Your project may need some adjustment for your dataset. You can
 do this in your own pre- or post-processing, by `customizing the configured pre-defined 
 sets`_ of titles, prefixes, etc., or by subclassing the `HumanName` class. See the 
 `full documentation`_ for more information.
