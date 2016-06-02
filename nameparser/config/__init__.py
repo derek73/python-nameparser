@@ -37,7 +37,6 @@ from nameparser.util import lc
 from nameparser.config.prefixes import PREFIXES
 from nameparser.config.capitalization import CAPITALIZATION_EXCEPTIONS
 from nameparser.config.conjunctions import CONJUNCTIONS
-from nameparser.config.suffixes import SUFFIXES 
 from nameparser.config.suffixes import SUFFIX_ACRONYMS
 from nameparser.config.suffixes import SUFFIX_NOT_ACRONYMS
 from nameparser.config.titles import TITLES
@@ -171,7 +170,6 @@ class Constants(object):
     
     def __init__(self, 
                     prefixes=PREFIXES, 
-                    suffixes=SUFFIXES,
                     suffix_acronyms=SUFFIX_ACRONYMS,
                     suffix_not_acronyms=SUFFIX_NOT_ACRONYMS,
                     titles=TITLES,
@@ -181,7 +179,6 @@ class Constants(object):
                     regexes=REGEXES
                 ):
         self.prefixes            = SetManager(prefixes)
-        self.suffixes            = SetManager(suffixes)
         self.suffix_acronyms     = SetManager(suffix_acronyms)
         self.suffix_not_acronyms = SetManager(suffix_not_acronyms)
         self.titles              = SetManager(titles)
@@ -194,7 +191,7 @@ class Constants(object):
     @property
     def suffixes_prefixes_titles(self):
         if not self._pst:
-            self._pst = self.prefixes | self.suffixes | self.titles
+            self._pst = self.prefixes | self.suffix_acronyms | self.suffix_not_acronyms | self.titles
         return self._pst
     
     def __repr__(self):

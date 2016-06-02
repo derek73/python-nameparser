@@ -122,7 +122,3 @@ that may or may not have periods between the letters. The parser removes periods
 when matching against these pieces.
 
 """
-SUFFIXES = SUFFIX_ACRONYMS | SUFFIX_NOT_ACRONYMS
-"""
-A union of the sets :py:attr:`SUFFIX_ACRONYMS` and :py:attr:`SUFFIX_NOT_ACRONYMS`
-"""
