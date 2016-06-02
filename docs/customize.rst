@@ -63,6 +63,9 @@ Other editable attributes
 Parser Customization Examples
 -----------------------------
 
+Removing a Title
+~~~~~~~~~~~~~~~~
+
 Take a look at the :py:mod:`nameparser.config` documentation to see what's
 in the constants. Here's a quick walk through of some examples where you
 might want to adjust them.
@@ -104,6 +107,8 @@ constant so that "Hon" can be parsed as a first name.
       nickname: ''
     ]>
 
+Adding a Title
+~~~~~~~~~~~~~~~~
 
 "Dean" is a common first name so it is not included in the default titles
 constant. But in some contexts it is more common as a title. If you would
@@ -134,8 +139,8 @@ making them lower case and removing periods.
     ]>
 
 
-Parser Customizations Are Module-Wide
-+++++++++++++++++++++++++++++++++++++
+Module-level Shared Configuration Instance
+------------------------------------------
 
 When you modify the configuration, by default this will modify the behavior all
 HumanName instances. This could be a handy way to set it up for your entire
@@ -191,7 +196,7 @@ reference to the module-level config values with the behavior described above.
 
 
 Config Changes May Need Parse Refresh
-+++++++++++++++++++++++++++++++++++++
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The full name is parsed upon assignment to the ``full_name`` attribute or
 instantiation. Sometimes after making changes to configuration or other inner
@@ -237,7 +242,7 @@ those changes with ``repr()``.
 
 
 Adjusting names after parsing them
-===================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Each attribute has a corresponding ordered list of name pieces. If you're doing
 pre- or post-processing you may wish to manipulate these lists directly.
