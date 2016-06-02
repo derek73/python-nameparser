@@ -134,12 +134,12 @@ class HumanName(object):
         else:
             _string = "<%(class)s : [\n\ttitle: '%(title)s' \n\tfirst: '%(first)s' \n\tmiddle: '%(middle)s' \n\tlast: '%(last)s' \n\tsuffix: '%(suffix)s'\n\tnickname: '%(nickname)s'\n]>" % {
                 'class': self.__class__.__name__,
-                'title': self.title,
-                'first': self.first,
-                'middle': self.middle,
-                'last': self.last,
-                'suffix': self.suffix,
-                'nickname': self.nickname,
+                'title': self.title or '',
+                'first': self.first or '',
+                'middle': self.middle or '',
+                'last': self.last or '',
+                'suffix': self.suffix or '',
+                'nickname': self.nickname or '',
             }
         if sys.version >= '3':
             return _string
