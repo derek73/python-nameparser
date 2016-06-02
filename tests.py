@@ -1517,6 +1517,13 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.last, "King", hn)
         self.m(hn.suffix, "Jr", hn)
 
+    def test_suffix_with_periods(self):
+        hn = HumanName("John Doe Msc.Ed.")
+        self.m(hn.first,"John", hn)
+        self.m(hn.last,"Doe", hn)
+        self.m(hn.suffix,"Msc.Ed.", hn)
+
+
 class TitleTestCase(HumanNameTestBase):
 
     def test_last_name_is_also_title(self):
@@ -1730,6 +1737,11 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.first, "J.", hn)
         self.m(hn.last, "Smith", hn)
 
+    def test_title_with_periods(self):
+        hn = HumanName("Lt.Gov. John Doe")
+        self.m(hn.title,"Lt.Gov.", hn)
+        self.m(hn.first,"John", hn)
+        self.m(hn.last,"Doe", hn)
 
 class HumanNameCapitalizationTestCase(HumanNameTestBase):
     def test_capitalization_exception_for_III(self):

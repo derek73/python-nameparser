@@ -559,7 +559,7 @@ class HumanName(object):
                     self.C.titles.add(part)
                     continue
                 if len(list(suffixes)):
-                    self.C.suffixes.add(part)
+                    self.C.suffix_not_acronyms.add(part)
                     continue
         
         return self.join_on_conjunctions(output, additional_parts_count)
