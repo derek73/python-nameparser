@@ -16,6 +16,14 @@ FIRST_NAME_TITLES = set([
     'sir',
     'sister',
     'uncle',
+    'sheikh',
+    'sheik',
+    'shaik',
+    'shayk',
+    'shaykh',
+    'shaikh',
+    'cheikh',
+    'shekh',
 ])
 """
 When these titles appear with a single other name, that name is a first name, e.g.
