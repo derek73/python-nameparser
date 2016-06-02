@@ -16,7 +16,11 @@ individual components.
 * hn.suffix
 * hn.nickname
 
-Supports 3 different comma placement variations in the input string.
+Supported Name Structures
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The supported name structure is generally "Title First Middle Last Suffix", where all pieces 
+are optional. Comma-separated format like "Last, First" is also supported.
 
 1. Title Firstname "Nickname" Middle Middle Lastname Suffix
 2. Lastname [Suffix], Title Firstname (Nickname) Middle Middle[,] Suffix [, Suffix]
@@ -33,7 +37,7 @@ of names that are all upper- or lowercase names.
 
 It attempts the best guess that can be made with a simple, rule-based approach. 
 Its main use case is English and it is not likely to be useful for languages 
-that do not share the same structure as English names. It's not perfect, but it 
+that do not conform to the supported name structure. It's not perfect, but it 
 gets you pretty far.
 
 Installation
@@ -73,6 +77,8 @@ Quick Start Example
     'de la Vega'
     >>> name.as_dict()
     {'last': 'de la Vega', 'suffix': 'III', 'title': 'Dr.', 'middle': 'Q. Xavier', 'nickname': 'Doc Vega', 'first': 'Juan'}
+    >>> str(name)
+    'Dr. Juan Q. Xavier de la Vega III (Doc Vega)'
     >>> name.string_format = "{first} {last}"
     >>> str(name)
     'Juan de la Vega'
