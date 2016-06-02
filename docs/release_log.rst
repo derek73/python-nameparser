@@ -1,5 +1,9 @@
 Release Log
 ===========
+* 0.4.0 - June 2, 2016
+    - Remove "CONSTANTS.suffixes", replaced by "suffix_acronyms" and "suffix_not_acronyms" (#49)
+    - Add "du" to prefixes
+    - Add "sheikh" variations to titles
 * 0.3.16 - March 24, 2016
     - Clarify LGPL licence version (#47)
     - Skip pickle tests if pickle not installed (#48)
