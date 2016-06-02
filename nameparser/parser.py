@@ -60,12 +60,9 @@ class HumanName(object):
     
     def __init__(self, full_name="", constants=CONSTANTS, encoding=ENCODING, 
                 string_format=None):
-        global CONSTANTS
         self.C = constants
-        if not self.C:
+        if type(self.C) is not type(CONSTANTS):
             self.C = Constants()
-        if self.C is not CONSTANTS:
-            self.has_own_config = True
         
         self.ENCODING = encoding
         self.string_format = string_format or self.C.string_format
@@ -170,7 +167,11 @@ class HumanName(object):
                 if val:
                     d[m] = val
         return d
-        
+    
+    @property
+    def has_own_config(self):
+        return self.C is not CONSTANTS
+    
     ### attributes
     
     @property
