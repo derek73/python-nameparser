@@ -1523,6 +1523,18 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.last,"Doe", hn)
         self.m(hn.suffix,"Msc.Ed.", hn)
 
+    def test_suffix_with_periods_with_comma(self):
+        hn = HumanName("John Doe, Msc.Ed.")
+        self.m(hn.first,"John", hn)
+        self.m(hn.last,"Doe", hn)
+        self.m(hn.suffix,"Msc.Ed.", hn)
+
+    def test_suffix_with_periods_with_lastname_comma(self):
+        hn = HumanName("Doe, John Msc.Ed.")
+        self.m(hn.first,"John", hn)
+        self.m(hn.last,"Doe", hn)
+        self.m(hn.suffix,"Msc.Ed.", hn)
+
 
 class TitleTestCase(HumanNameTestBase):
 
@@ -1726,19 +1738,14 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.first, "Jane", hn)
         self.m(hn.last, "Doctor", hn)
 
-    @unittest.expectedFailure
-    def test_title_as_suffix(self):
-        """
-        Semantically, PhD is a title, not a suffix. 
-        http://code.google.com/p/python-nameparser/issues/detail?id=7
-        """
-        hn = HumanName("J. Smith, PhD")
-        self.m(hn.title, "PhD", hn)
-        self.m(hn.first, "J.", hn)
-        self.m(hn.last, "Smith", hn)
-
     def test_title_with_periods(self):
         hn = HumanName("Lt.Gov. John Doe")
+        self.m(hn.title,"Lt.Gov.", hn)
+        self.m(hn.first,"John", hn)
+        self.m(hn.last,"Doe", hn)
+
+    def test_title_with_periods_lastname_comma(self):
+        hn = HumanName("Doe, Lt.Gov. John")
         self.m(hn.title,"Lt.Gov.", hn)
         self.m(hn.first,"John", hn)
         self.m(hn.last,"Doe", hn)
