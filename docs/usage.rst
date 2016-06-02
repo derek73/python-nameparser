@@ -63,21 +63,15 @@ The examples use Python 3, but Python 2.6+ is supported.
     ['Dr.', 'Juan', 'Q. Xavier', 'de la Vega', 'III']
     >>> name[1:-2]
     ['Juan', 'Q. Xavier', 'de la Vega']
-    >>> name = HumanName('bob v. de la macdole-eisenhower phd')
-    >>> name.capitalize()
-    >>> str(name)
-    'Bob V. de la MacDole-Eisenhower Ph.D.'
-    >>> # Don't touch mixed case names
-    >>> name = HumanName('Shirley Maclaine')
-    >>> name.capitalize()
-    >>> str(name) 
-    'Shirley Maclaine'
+
 
 Capitalization Support
 ----------------------
 
 The HumanName class can try to guess the correct capitalization of name
-entered in all upper or lower case.
+entered in all upper or lower case. By default, it will not adjust 
+the case of names entered in mixed case. To run capitalization on all names
+pass the parameter `force=True`.
 
 
     Capitalize the name.
@@ -90,8 +84,13 @@ entered in all upper or lower case.
     >>> name.capitalize()
     >>> str(name)
     'Bob V. de la MacDole-Eisenhower Ph.D.'
-
-It will not adjust the case of mixed case names.
+    >>> name = HumanName('Shirley Maclaine') # Don't change mixed case names
+    >>> name.capitalize()
+    >>> str(name)
+    'Shirley Maclaine'
+    >>> name.capitalize(force=True)
+    >>> str(name) 
+    'Shirley MacLaine'
 
 
 Nickname Handling
