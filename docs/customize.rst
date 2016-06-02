@@ -39,24 +39,24 @@ instantiate the :py:class:`~nameparser.parser.HumanName` class (see below).
 Editable attributes of nameparser.config.CONSTANTS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* :py:attr:`~nameparser.config.Constants.titles` - Pieces that come before the name. Cannot include things that may be first names
-* :py:attr:`~nameparser.config.Constants.first_name_titles` - Titles that, when followed by a single name, that name is a first name, e.g. "King David"
-* :py:attr:`~nameparser.config.Constants.suffix_acronyms` - Pieces that come at the end of the name that may or may not have periods separating the letters, e.g. "m.d."
-* :py:attr:`~nameparser.config.Constants.suffix_not_acronyms` - Pieces that come at the end of the name that never have periods separating the letters, e.g. "Jr."
-* :py:attr:`~nameparser.config.Constants.conjunctions` - Connectors like "and" that join the preceeding piece to the following piece.
-* :py:attr:`~nameparser.config.Constants.prefixes` - Connectors like "del" and "bin" that join to the following piece but not the preceeding
-* :py:attr:`~nameparser.config.Constants.capitalization_exceptions` - Dictionary of pieces that do not capitalize the first letter, e.g. "Ph.D"
-* :py:attr:`~nameparser.config.Constants.regexes` - Regular expressions used to find words, initials, nicknames, etc.
+* :py:obj:`~nameparser.config.Constants.titles` - Pieces that come before the name. Cannot include things that may be first names
+* :py:obj:`~nameparser.config.Constants.first_name_titles` - Titles that, when followed by a single name, that name is a first name, e.g. "King David"
+* :py:obj:`~nameparser.config.Constants.suffix_acronyms` - Pieces that come at the end of the name that may or may not have periods separating the letters, e.g. "m.d."
+* :py:obj:`~nameparser.config.Constants.suffix_not_acronyms` - Pieces that come at the end of the name that never have periods separating the letters, e.g. "Jr."
+* :py:obj:`~nameparser.config.Constants.conjunctions` - Connectors like "and" that join the preceeding piece to the following piece.
+* :py:obj:`~nameparser.config.Constants.prefixes` - Connectors like "del" and "bin" that join to the following piece but not the preceeding
+* :py:obj:`~nameparser.config.Constants.capitalization_exceptions` - Dictionary of pieces that do not capitalize the first letter, e.g. "Ph.D"
+* :py:obj:`~nameparser.config.Constants.regexes` - Regular expressions used to find words, initials, nicknames, etc.
 
-Each set of constants comes with `add()` and `remove()` methods for tuning
+Each set of constants comes with :py:func:`~nameparser.config.SetManager.add` and :py:func:`~nameparser.config.SetManager.remove` methods for tuning
 the constants for your project. These methods automatically lower case and
 remove punctuation to normalize them for comparison.
 
 Other editable attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* :py:attr:`~nameparser.config.Constants.string_format`
-* :py:attr:`~nameparser.config.Constants.empty_attribute_default`
+* :py:obj:`~nameparser.config.Constants.string_format` - controls output from `str()`
+* :py:obj:`~nameparser.config.Constants.empty_attribute_default` - value returned by empty attributes, defaults to empty string
 
 
 
@@ -204,42 +204,6 @@ data after assigning the full name, the name will need to be re-parsed with the
 :py:func:`~nameparser.parser.HumanName.parse_full_name()` method before you see
 those changes with ``repr()``.
 
-::
-
-    >>> from nameparser import HumanName
-    >>> from nameparser.config import CONSTANTS
-    >>> hn = HumanName("Dean Robert Johns")
-    >>> hn
-    <HumanName : [
-      title: ''
-      first: 'Dean'
-      middle: 'Robert'
-      last: 'Johns'
-      suffix: ''
-      nickname: ''
-    ]>
-    >>> CONSTANTS.titles.add('dean')
-    SetManager({'right', ..., 'tax'})
-    >>> hn
-    <HumanName : [
-      title: ''
-      first: 'Dean'
-      middle: 'Robert'
-      last: 'Johns'
-      suffix: ''
-      nickname: ''
-    ]>
-    >>> hn.parse_full_name()
-    >>> hn
-    <HumanName : [
-      title: 'Dean'
-      first: 'Robert'
-      middle: ''
-      last: 'Johns'
-      suffix: ''
-      nickname: ''
-    ]>
-
 
 Adjusting names after parsing them
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -260,10 +224,10 @@ The strings returned by the attribute names just join these lists with spaces.
 
   >>> hn = HumanName("Juan Q. Xavier Velasquez y Garcia, Jr.")
   >>> hn.middle_list
-  [u'Q.', u'Xavier']
+  ['Q.', 'Xavier']
   >>> hn.middle_list += ["Ricardo"]
   >>> hn.middle_list
-  [u'Q.', u'Xavier', 'Ricardo']
+  ['Q.', 'Xavier', 'Ricardo']
 
 
 You can also replace any name bucket's contents by assigning a string or a list
