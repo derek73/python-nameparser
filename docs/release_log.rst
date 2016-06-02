@@ -4,6 +4,7 @@ Release Log
     - Remove "CONSTANTS.suffixes", replaced by "suffix_acronyms" and "suffix_not_acronyms" (#49)
     - Add "du" to prefixes
     - Add "sheikh" variations to titles
+    - Add parameter to force capitalization of mixed case strings
 * 0.3.16 - March 24, 2016
     - Clarify LGPL licence version (#47)
     - Skip pickle tests if pickle not installed (#48)

@@ -1791,6 +1791,11 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.m(str(hn), 'Shirley Maclaine', hn)
 
+    def test_force_capitalization(self):
+        hn = HumanName('Shirley Maclaine')
+        hn.capitalize(force=True)
+        self.m(str(hn), 'Shirley MacLaine', hn)
+
     def test_capitalize_diacritics(self):
         hn = HumanName('matthëus schmidt')
         hn.capitalize()

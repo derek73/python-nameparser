@@ -544,8 +544,8 @@ class HumanName(object):
                 raise TypeError("Name parts must be strings. Got {0}".format(type(part)))
             output += [x.strip(' ,') for x in part.split(' ')]
         
-        # If there's periods, check if it's titles without spaces and add spaces
-        # so they get picked up later as titles.
+        # If part contains periods, check if it's multiple titles or suffixes together without spaces
+        # if so, add the new part with periods to the constants so they get parsed correctly later
         for part in output:
             # if this part has a period not at the beginning or end
             if self.C.regexes.period_not_at_end.match(part):
@@ -684,12 +684,15 @@ class HumanName(object):
         replacement = lambda m: self.cap_word(m.group(0))
         return self.C.regexes.word.sub(replacement, piece)
 
-    def capitalize(self):
+    def capitalize(self, force=False):
         """
         The HumanName class can try to guess the correct capitalization 
-        of name entered in all upper or lower case. It will not adjust 
-        the case of names entered in mixed case.
+        of name entered in all upper or lower case. By default, it will not adjust 
+        the case of names entered in mixed case. To run capitalization on all names
+        pass the parameter `force=True`.
         
+        :param bool force: force capitalization of strings that include mixed case
+
         **Usage**
         
         .. doctest:: capitalize
@@ -703,10 +706,13 @@ class HumanName(object):
             >>> name.capitalize()
             >>> str(name) 
             'Shirley Maclaine'
+            >>> name.capitalize(force=True)
+            >>> str(name) 
+            'Shirley MacLaine'
         
         """
         name = u(self)
-        if not (name == name.upper() or name == name.lower()):
+        if not force and not (name == name.upper() or name == name.lower()):
             return
         self.title_list  = self.cap_piece(self.title ).split(' ')
         self.first_list  = self.cap_piece(self.first ).split(' ')
