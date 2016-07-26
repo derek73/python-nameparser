@@ -64,19 +64,11 @@ comma variations of these names automatically and make sure things
 don't blow up, so it can be a helpful regression indicator.
 
 
-Provide Example Data
-----------------------
+New Releases
+------------
 
-We humans are the learning machine behind this code, and we can't do
-it without real world data. If it doesn't work, start a new issue
-because we probably don't know.
+[https://hynek.me/articles/sharing-your-labor-of-love-pypi-quick-and-dirty/](Publishing to Pypi Guide)
 
-If you have a dataset that has lots of issues, add the data to a
-[gist](https://gist.github.com) and [create a new
-issue](https://github.com/derek73/python-nameparser/issues) so we can
-try to get it working as expected.
-
-Feel free to update this documentation to address any questions that I
-missed. GitHub makes it pretty easy to edit it right on the web site
-now.
+    $ python setup.py sdist bdist_wheel
+    $ twine upload dist/*
 
