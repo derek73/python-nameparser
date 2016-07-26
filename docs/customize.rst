@@ -107,6 +107,12 @@ constant so that "Hon" can be parsed as a first name.
       nickname: ''
     ]>
 
+
+If you don't want to detect any titles at all, you can remove all of them:
+
+    >>> CONSTANTS.titles.remove(*CONSTANTS.titles)
+
+
 Adding a Title
 ~~~~~~~~~~~~~~~~
 
