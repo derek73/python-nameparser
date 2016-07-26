@@ -93,7 +93,6 @@ TITLES = FIRST_NAME_TITLES | set([
     'bench',
     'bg',
     'bgen',
-    'bishop',
     'blessed',
     'bodhisattva',
     'brigadier',
