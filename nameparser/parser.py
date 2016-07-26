@@ -274,8 +274,8 @@ class HumanName(object):
         return piece.lower() in self.C.conjunctions and not self.is_an_initial(piece)
     
     def is_prefix(self, piece):
-        """Is in the prefixes set and not :py:func:`is_an_initial()`."""
-        return piece.lower() in self.C.prefixes and not self.is_an_initial(piece)
+        """Lowercase and no periods version of piece is in the `~nameparser.config.titles.PREFIXES` set."""
+        return lc(piece) in self.C.prefixes
 
     def is_roman_numeral(self, value):
         """

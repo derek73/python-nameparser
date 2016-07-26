@@ -2,6 +2,7 @@ Release Log
 ===========
 * 0.4.1 - July 25, 2016
     - Remove "bishop" from titles because it also could be a first name
+    - Fix handling of lastname prefixes with periods, e.g. "Jane St. John" (#50)
 * 0.4.0 - June 2, 2016
     - Remove "CONSTANTS.suffixes", replaced by "suffix_acronyms" and "suffix_not_acronyms" (#49)
     - Add "du" to prefixes

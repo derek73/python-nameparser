@@ -1378,6 +1378,11 @@ class PrefixesTestCase(HumanNameTestBase):
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "del Sur", hn)
     
+    def test_prefix_with_period(self):
+        hn = HumanName("Jill St. John")
+        self.m(hn.first, "Jill", hn)
+        self.m(hn.last, "St. John", hn)
+    
     def test_prefix_before_two_part_last_name(self):
         hn = HumanName("pennie von bergen wessels")
         self.m(hn.first, "pennie", hn)
