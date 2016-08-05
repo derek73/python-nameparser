@@ -1061,10 +1061,18 @@ class HumanNameBruteForceTests(HumanNameTestBase):
 
 class HumanNameConjunctionTestCase(HumanNameTestBase):
     # Last name with conjunction
-    def test117(self):
+    def test_last_name_with_conjunction(self):
         hn = HumanName('Jose Aznar y Lopez')
         self.m(hn.first, "Jose", hn)
         self.m(hn.last, "Aznar y Lopez", hn)
+
+    def test_multiple_conjunctions(self):
+        hn = HumanName("part1 of The part2 of the part3 and part4")
+        self.m(hn.first, "part1 of The part2 of the part3 and part4", hn)
+
+    def test_multiple_conjunctions2(self):
+        hn = HumanName("part1 of and The part2 of the part3 And part4")
+        self.m(hn.first, "part1 of and The part2 of the part3 And part4", hn)
 
     # Potential conjunction/prefix treated as initial (because uppercase)
     def test_uppercase_middle_initial_conflict_with_conjunction(self):

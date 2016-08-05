@@ -2,6 +2,9 @@
 from __future__ import unicode_literals
 
 import sys
+from operator import itemgetter
+from itertools import groupby
+
 from nameparser.util import u
 from nameparser.util import text_types, binary_type
 from nameparser.util import lc
@@ -9,9 +12,19 @@ from nameparser.util import log
 from nameparser.config import CONSTANTS
 from nameparser.config import Constants
 
-
 ENCODING = 'utf-8'
 
+def group_contiguous_integers(data):
+    """
+    return list of tuples containing first and last index 
+    position of contiguous numbers in a series
+    """
+    ranges = []
+    for key, group in groupby(enumerate(data), lambda (index, item): index - item):
+        group = map(itemgetter(1), group)
+        if len(group) > 1:
+            ranges.append((group[0], group[-1]))
+    return ranges
 
 class HumanName(object):
     """
@@ -568,7 +581,15 @@ class HumanName(object):
     def join_on_conjunctions(self, pieces, additional_parts_count=0):
         """
         Join conjunctions to surrounding pieces, e.g.:
-        ['Mr. and Mrs.'], ['King of the Hill'], ['Jack and Jill'], ['Velasquez y Garcia']
+            
+            ['Mr.', 'and'. 'Mrs.', 'John', 'Doe'] 
+                         v 
+            ['Mr. and Mrs.', 'John', 'Doe']
+            
+            
+            ['The', 'Secretary', 'of', 'State', 'Hillary', 'Clinton']
+                         v
+            ['The Secretary of State', 'Hillary', 'Clinton']
         
         :param list pieces: name pieces strings after split on spaces
         :param int additional_parts_count: 
@@ -580,70 +601,76 @@ class HumanName(object):
         # don't join on conjuctions if there's only 2 parts
         if length < 3:
             return pieces
+            
+        rootname_pieces = [p for p in pieces if self.is_rootname(p)]
+        total_length= len(rootname_pieces) + additional_parts_count
         
-        for conj in filter(self.is_conjunction, pieces[::-1]): # reverse sorted list
-            
-            # loop through the pieces backwards, starting at the end of the list.
-            # Join conjunctions to the pieces on either side of them.
-            
-            rootname_pieces = [p for p in pieces if self.is_rootname(p)]
-            total_length= len(rootname_pieces) + additional_parts_count
-            if len(conj) == 1 and total_length < 4:
-                # if there are only 3 total parts (minus known titles, suffixes and prefixes) 
-                # and this conjunction is a single letter, prefer treating it as an initial
-                # rather than a conjunction.
+        # find all the conjunctions, join any conjunctions that are next to each other, then join those newly joined conjunctions and any single conjunctions to the piece before and after it
+        conj_index = [i for i, piece in enumerate(pieces) if self.is_conjunction(piece)]
+        
+        contiguous_conj_i = []
+        for i, val in enumerate(conj_index):
+            try:
+                if conj_index[i+1] == val+1:
+                     contiguous_conj_i += [val]
+            except IndexError:
+                pass
+        
+        contiguous_conj_i = group_contiguous_integers(conj_index)
+        
+        delete_i = [] 
+        for i in contiguous_conj_i:
+            if type(i) == tuple:
+                new_piece = " ".join(pieces[ i[0] : i[1]+1] )
+                delete_i += list(xrange( i[0]+1, i[1]+1 ))
+                pieces[i[0]] = new_piece
+            else:
+                new_piece = " ".join(pieces[ i : i+2 ])
+                delete_i += [i+1]
+                pieces[i] = new_piece
+            #add newly joined conjunctions to constants to be found later
+            self.C.conjunctions.add(new_piece)
+        
+        for i in reversed(delete_i):
+            # delete pieces in reverse order or the index changes on each delete
+            del pieces[i]
+        
+        # refresh conjunction index locations
+        conj_index = [i for i, piece in enumerate(pieces) if self.is_conjunction(piece)]
+        
+        for i in conj_index:
+            if len(pieces[i]) == 1 and total_length < 4:
+                # if there are only 3 total parts (minus known titles, suffixes
+                # and prefixes) and this conjunction is a single letter, prefer
+                # treating it as an initial rather than a conjunction.
                 # http://code.google.com/p/python-nameparser/issues/detail?id=11
                 continue
             
-            try:
-                i = pieces.index((conj))
-            except ValueError:
-                log.error("Couldn't find '{conj}' in pieces. i={i}, pieces={pieces}".format(**locals()))
-                continue
-            
-            if i < len(pieces) - 1: 
-                # if this is not the last piece
-                
-                if i is 0:
-                    # if this is the first piece and it's a conjunction
-                    nxt = pieces[i+1]
-                    const = self.C.conjunctions
-                    if self.is_title(nxt):
-                        const = self.C.titles
-                    new_piece = ' '.join(pieces[0:2])
-                    const.add(new_piece)
-                    pieces[i] = new_piece
-                    pieces.pop(i+1)
-                    continue
-                
-                if self.is_conjunction(pieces[i-1]):
-                    
-                    # if the piece in front of this one is a conjunction too,
-                    # add new_piece (this conjuction and the following piece) 
-                    # to the conjuctions constant so that it is recognized
-                    # as a conjunction in the next loop. 
-                    # e.g. for ["Lord","of","the Universe"], put "the Universe"
-                    # into the conjunctions constant.
-                    
-                    new_piece = ' '.join(pieces[i:i+2])
-                    self.C.conjunctions.add(new_piece)
-                    pieces[i] = new_piece
-                    pieces.pop(i+1)
-                    continue
-                
-                new_piece = ' '.join(pieces[i-1:i+2])
-                if self.is_title(pieces[i-1]):
-                    
-                    # if the second name is a title, assume the first one is too and add the 
-                    # two titles with the conjunction between them to the titles constant 
-                    # so the combo we just created gets parsed as a title. 
-                    # e.g. "Mr. and Mrs." becomes a title.
-                    
+            if i is 0:
+                new_piece = " ".join(pieces[i:i+2])
+                if self.is_title(pieces[i+1]):
+                    # when joining to a title, make new_piece a title too
                     self.C.titles.add(new_piece)
+                pieces[i] = new_piece
+                pieces.pop(i+1)
+                # subtract 1 from the index of all the remaining conjunctions
+                for j,val in enumerate(conj_index):
+                    if val > i:
+                        conj_index[j]=val-1
                 
+            else:    
+                new_piece = " ".join(pieces[i-1:i+2])
+                if self.is_title(pieces[i-1]):
+                    # when joining to a title, make new_piece a title too
+                    self.C.titles.add(new_piece)
                 pieces[i-1] = new_piece
                 pieces.pop(i)
                 pieces.pop(i)
+                # subtract 2 from the index of all the remaining conjunctions
+                for j,val in enumerate(conj_index):
+                    if val > i:
+                        conj_index[j]=val-2
+        
         
         # join prefixes to following lastnames: ['de la Vega'], ['van Buren']
         prefixes = list(filter(self.is_prefix, pieces))
