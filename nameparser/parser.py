@@ -20,8 +20,8 @@ def group_contiguous_integers(data):
     position of contiguous numbers in a series
     """
     ranges = []
-    for key, group in groupby(enumerate(data), lambda (index, item): index - item):
-        group = map(itemgetter(1), group)
+    for key, group in groupby(enumerate(data), lambda i: i[0] - i[1]):
+        group = list(map(itemgetter(1), group))
         if len(group) > 1:
             ranges.append((group[0], group[-1]))
     return ranges
@@ -565,8 +565,8 @@ class HumanName(object):
             if self.C.regexes.period_not_at_end.match(part):
                 # split on periods, any of the split pieces titles or suffixes? ("Lt.Gov.")
                 period_chunks = part.split(".")
-                titles   = filter(self.is_title,  period_chunks)
-                suffixes = filter(self.is_suffix, period_chunks)
+                titles   = list(filter(self.is_title,  period_chunks))
+                suffixes = list(filter(self.is_suffix, period_chunks))
                 
                 # add the part to the constant so it will be found
                 if len(list(titles)):
@@ -622,7 +622,7 @@ class HumanName(object):
         for i in contiguous_conj_i:
             if type(i) == tuple:
                 new_piece = " ".join(pieces[ i[0] : i[1]+1] )
-                delete_i += list(xrange( i[0]+1, i[1]+1 ))
+                delete_i += list(range( i[0]+1, i[1]+1 ))
                 pieces[i[0]] = new_piece
             else:
                 new_piece = " ".join(pieces[ i : i+2 ])
