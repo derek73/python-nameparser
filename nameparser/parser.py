@@ -580,16 +580,18 @@ class HumanName(object):
         
     def join_on_conjunctions(self, pieces, additional_parts_count=0):
         """
-        Join conjunctions to surrounding pieces, e.g.:
+        Join conjunctions to surrounding pieces. Title- and prefix-aware. e.g.:
             
-            ['Mr.', 'and'. 'Mrs.', 'John', 'Doe'] 
-                         v 
-            ['Mr. and Mrs.', 'John', 'Doe']
+            ['Mr.', 'and'. 'Mrs.', 'John', 'Doe'] ==>
+                            ['Mr. and Mrs.', 'John', 'Doe']
             
-            
-            ['The', 'Secretary', 'of', 'State', 'Hillary', 'Clinton']
-                         v
-            ['The Secretary of State', 'Hillary', 'Clinton']
+            ['The', 'Secretary', 'of', 'State', 'Hillary', 'Clinton'] ==>
+                            ['The Secretary of State', 'Hillary', 'Clinton']
+        
+        When joining titles, saves newly formed piece to the instance's titles
+        constant so they will be parsed correctly later. E.g. after parsing the
+        example names above, 'The Secretary of State' and 'Mr. and Mrs.' would
+        be present in the titles constant set.
         
         :param list pieces: name pieces strings after split on spaces
         :param int additional_parts_count: 

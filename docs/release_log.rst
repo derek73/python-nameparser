@@ -1,5 +1,7 @@
 Release Log
 ===========
+* 0.5.0 - August 4, 2016
+    - Refactor join_on_conjunctions(), fix #53
 * 0.4.1 - July 25, 2016
     - Remove "bishop" from titles because it also could be a first name
     - Fix handling of lastname prefixes with periods, e.g. "Jane St. John" (#50)
