@@ -1073,6 +1073,26 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
     def test_multiple_conjunctions2(self):
         hn = HumanName("part1 of and The part2 of the part3 And part4")
         self.m(hn.first, "part1 of and The part2 of the part3 And part4", hn)
+    
+    def test_ends_with_conjunction(self):
+        hn = HumanName("Jon Dough and")
+        self.m(hn.first, "Jon", hn)
+        self.m(hn.last, "Dough and", hn)
+
+    def test_ends_with_two_conjunctions(self):
+        hn = HumanName("Jon Dough and of")
+        self.m(hn.first, "Jon", hn)
+        self.m(hn.last, "Dough and of", hn)
+
+    def test_starts_with_conjunction(self):
+        hn = HumanName("and Jon Dough")
+        self.m(hn.first, "and Jon", hn)
+        self.m(hn.last, "Dough", hn)
+
+    def test_starts_with_two_conjunctions(self):
+        hn = HumanName("the and Jon Dough")
+        self.m(hn.first, "the and Jon", hn)
+        self.m(hn.last, "Dough", hn)
 
     # Potential conjunction/prefix treated as initial (because uppercase)
     def test_uppercase_middle_initial_conflict_with_conjunction(self):

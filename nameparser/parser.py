@@ -607,7 +607,9 @@ class HumanName(object):
         rootname_pieces = [p for p in pieces if self.is_rootname(p)]
         total_length= len(rootname_pieces) + additional_parts_count
         
-        # find all the conjunctions, join any conjunctions that are next to each other, then join those newly joined conjunctions and any single conjunctions to the piece before and after it
+        # find all the conjunctions, join any conjunctions that are next to each
+        # other, then join those newly joined conjunctions and any single
+        # conjunctions to the piece before and after it
         conj_index = [i for i, piece in enumerate(pieces) if self.is_conjunction(piece)]
         
         contiguous_conj_i = []
@@ -667,11 +669,17 @@ class HumanName(object):
                     self.C.titles.add(new_piece)
                 pieces[i-1] = new_piece
                 pieces.pop(i)
-                pieces.pop(i)
-                # subtract 2 from the index of all the remaining conjunctions
+                rm_count = 2
+                try:
+                    pieces.pop(i)
+                except IndexError:
+                    rm_count = 1
+                    pass
+                # subtract the number of removed pieces from the index
+                # of all the remaining conjunctions
                 for j,val in enumerate(conj_index):
                     if val > i:
-                        conj_index[j]=val-2
+                        conj_index[j] = val - rm_count
         
         
         # join prefixes to following lastnames: ['de la Vega'], ['van Buren']

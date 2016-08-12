@@ -1,5 +1,7 @@
 Release Log
 ===========
+* 0.5.1 - August 12, 2016
+    - Fix error for names that end with conjunction (#54)
 * 0.5.0 - August 4, 2016
     - Refactor join_on_conjunctions(), fix #53
 * 0.4.1 - July 25, 2016
