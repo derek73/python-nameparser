@@ -1231,6 +1231,18 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.first, "Yin", hn)
         self.m(hn.middle, "a", hn)
         self.m(hn.last, "Le", hn)
+        
+    def test_conjunction_in_an_address_with_a_title(self):
+        hn = HumanName("His Excellency Lord Duncan")
+        self.m(hn.title, "His Excellency Lord", hn)
+        self.m(hn.last, "Duncan", hn)
+        
+    @unittest.expectedFailure
+    def test_conjunction_in_an_address_with_a_first_name_title(self):
+        hn = HumanName("Her Majesty Queen Elizabeth")
+        self.m(hn.title, "Her Majesty Queen", hn)
+        # if you want to be technical, Queen is in FIRST_NAME_TITLES
+        self.m(hn.first, "Elizabeth", hn)
 
 class ConstantsCustomization(HumanNameTestBase):
 
