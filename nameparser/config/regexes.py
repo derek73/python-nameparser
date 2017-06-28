@@ -5,16 +5,16 @@ import re
 # emoji regex from https://stackoverflow.com/questions/26568722/remove-unicode-emoji-using-re-in-python
 try:
     # Wide UCS-4 build
-    re_emoji = re.compile(u'['
-        u'\U0001F300-\U0001F64F'
-        u'\U0001F680-\U0001F6FF'
+    re_emoji = re.compile(u'[' +
+        u'\U0001F300-\U0001F64F' +
+        u'\U0001F680-\U0001F6FF' +
         u'\u2600-\u26FF\u2700-\u27BF]+', 
         re.UNICODE)
 except re.error:
     # Narrow UCS-2 build
-    re_emoji = re.compile(u'('
-        u'\ud83c[\udf00-\udfff]|'
-        u'\ud83d[\udc00-\ude4f\ude80-\udeff]|'
+    re_emoji = re.compile(u'(' +
+        u'\ud83c[\udf00-\udfff]|' +
+        u'\ud83d[\udc00-\ude4f\ude80-\udeff]|' +
         u'[\u2600-\u26FF\u2700-\u27BF])+', 
         re.UNICODE)
 
