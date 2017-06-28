@@ -1,7 +1,9 @@
 Release Log
 ===========
-* 0.5.2 - June 27, 2017
+* 0.5.3 - June 27, 2017
     - Remove emojis from initial string by default with option to include emojis (#58)
+* 0.5.2 - March 19, 2017
+    - Added names scrapped from VIAF data, thanks daryanypl (#57)
 * 0.5.1 - August 12, 2016
     - Fix error for names that end with conjunction (#54)
 * 0.5.0 - August 4, 2016
