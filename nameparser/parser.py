@@ -77,6 +77,7 @@ class HumanName(object):
         
         self.ENCODING = encoding
         self.string_format = string_format or self.C.string_format
+        # full_name setter triggers the parse
         self.full_name = full_name
     
     def __iter__(self):
@@ -371,7 +372,7 @@ class HumanName(object):
         
         """
         self.parse_nicknames()
-        
+        self.squash_emoji()
 
     def post_process(self):
         """
@@ -391,6 +392,14 @@ class HumanName(object):
         if re_nickname.search(self._full_name):
             self.nickname_list = re_nickname.findall(self._full_name)
             self._full_name = re_nickname.sub('', self._full_name)
+
+    def squash_emoji(self):
+        """
+        Remove emoji from the input string.
+        """
+        re_emoji = self.C.regexes.emoji
+        if re_emoji and re_emoji.search(self._full_name):
+            self._full_name = re_emoji.sub('', self._full_name)
 
     def handle_firstnames(self):
         """

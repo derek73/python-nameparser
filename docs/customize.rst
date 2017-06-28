@@ -116,6 +116,8 @@ If you don't want to detect any titles at all, you can remove all of them:
 Adding a Title
 ~~~~~~~~~~~~~~~~
 
+You can also pass a ``Constants`` instance to ``HumanName``on instantiation.
+
 "Dean" is a common first name so it is not included in the default titles
 constant. But in some contexts it is more common as a title. If you would
 like "Dean" to be parsed as a title, simply add it to the titles constant.
@@ -130,10 +132,11 @@ making them lower case and removing periods.
     :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
     >>> from nameparser import HumanName
-    >>> from nameparser.config import CONSTANTS
-    >>> CONSTANTS.titles.add('dean', 'Chemistry')
+    >>> from nameparser.config import Constants
+    >>> constants = Constants()
+    >>> constants.titles.add('dean', 'Chemistry')
     SetManager({'right', ..., 'tax'})
-    >>> hn = HumanName("Assoc Dean of Chemistry Robert Johns")
+    >>> hn = HumanName("Assoc Dean of Chemistry Robert Johns", constants=constants)
     >>> hn
     <HumanName : [
       title: 'Assoc Dean of Chemistry'
@@ -172,7 +175,7 @@ the config on one instance could modify the behavior of another instance.
     ]>
 
 
-If you'd prefer new instances to have their own config values, you can pass
+If you'd prefer new instances to have their own config values, one shortcut is to pass
 ``None`` as the second argument (or ``constant`` keyword argument) when
 instantiating ``HumanName``. Each instance always has a ``C`` attribute, but if
 you didn't pass something falsey to the ``constants`` argument then it's a
@@ -200,6 +203,21 @@ reference to the module-level config values with the behavior described above.
     >>> other_instance.has_own_config
     True
 
+Don't Remove Emojis
+~~~~~~~~~~~~~~~~~~~
+
+By default, all emojis are removed from the input string before the name is parsed.
+You can turn this off by setting the ``emoji`` regex to ``False``.
+
+.. doctest::
+
+    >>> from nameparser import HumanName
+    >>> from nameparser.config import Constants
+    >>> constants = Constants()
+    >>> constants.regexes.emoji = False
+    >>> hn = HumanName("Sam 😊 Smith", constants=constants)
+    >>> hn
+    "Sam 😊 Smith"
 
 Config Changes May Need Parse Refresh
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

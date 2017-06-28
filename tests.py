@@ -1936,6 +1936,28 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         self.assertEqual(u(hn), "Rev John (Kenny) A. Kenneth Doe III")
         hn.nickname=''
         self.assertEqual(u(hn), "Rev John A. Kenneth Doe III")
+    
+    def test_remove_emojis(self):
+        hn = HumanName("Sam Smith 😊")
+        self.m(hn.first,"Sam", hn)
+        self.m(hn.last,"Smith", hn)
+        self.assertEqual(u(hn), "Sam Smith")
+
+    def test_keep_non_emojis(self):
+        hn = HumanName("∫≜⩕ Smith 😊")
+        self.m(hn.first,"∫≜⩕", hn)
+        self.m(hn.last,"Smith", hn)
+        self.assertEqual(u(hn), "∫≜⩕ Smith")
+
+    def test_keep_emojis(self):
+        from nameparser.config import Constants
+        constants = Constants()
+        constants.regexes.emoji = False
+        hn = HumanName("∫≜⩕ Smith😊", constants)
+        self.m(hn.first,"∫≜⩕", hn)
+        self.m(hn.last,"Smith😊", hn)
+        self.assertEqual(u(hn), "∫≜⩕ Smith😊")
+        # test cleanup
 
 TEST_NAMES = (
     "John Doe",
