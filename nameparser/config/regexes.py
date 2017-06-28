@@ -12,7 +12,7 @@ try:
         re.UNICODE)
 except re.error:
     # Narrow UCS-2 build
-    re_emoji = re.compile(u'('
+    re_emoji = re.compile('('
         '\ud83c[\udf00-\udfff]|'
         '\ud83d[\udc00-\ude4f\ude80-\udeff]|'
         '[\u2600-\u26FF\u2700-\u27BF])+', 
