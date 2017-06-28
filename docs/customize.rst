@@ -116,7 +116,7 @@ If you don't want to detect any titles at all, you can remove all of them:
 Adding a Title
 ~~~~~~~~~~~~~~~~
 
-You can also pass a ``Constants`` instance to ``HumanName``on instantiation.
+You can also pass a ``Constants`` instance to ``HumanName`` on instantiation.
 
 "Dean" is a common first name so it is not included in the default titles
 constant. But in some contexts it is more common as a title. If you would
