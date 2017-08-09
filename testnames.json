@@ -1190,7 +1190,7 @@
         "last" : "Ma",
         "suffix" : "III, Jr"
     },
-    "_suffix_with_periods" : {
+    "_suffix_with_periods2" : {
         "name" : "John Doe Msc.Ed.",
         "first" : "John",
         "last" : "Doe",
