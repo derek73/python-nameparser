@@ -862,7 +862,7 @@
         "last" : "Almighty"
     },
     "_last_name_with_conjunction" : {
-        "name" : 'Jose Aznar y Lopez',
+        "name" : "Jose Aznar y Lopez",
         "first" : "Jose",
         "last" : "Aznar y Lopez"
     },
@@ -895,62 +895,62 @@
         "last" : "Dough"
     },
     "_uppercase_middle_initial_conflict_with_conjunction" : {
-        "name" : 'John E Smith',
+        "name" : "John E Smith",
         "first" : "John",
         "middle" : "E",
         "last" : "Smith"
     },
     "_lowercase_middle_initial_with_period_conflict_with_conjunction" : {
-        "name" : 'john e. smith',
+        "name" : "john e. smith",
         "first" : "john",
         "middle" : "e.",
         "last" : "smith"
     },
     "_lowercase_first_initial_conflict_with_conjunction" : {
-        "name" : 'e j smith',
+        "name" : "e j smith",
         "first" : "e",
         "middle" : "j",
         "last" : "smith"
     },
     "_lowercase_middle_initial_conflict_with_conjunction" : {
-        "name" : 'John e Smith',
+        "name" : "John e Smith",
         "first" : "John",
         "middle" : "e",
         "last" : "Smith"
     },
     "_lowercase_middle_initial_and_suffix_conflict_with_conjunction" : {
-        "name" : 'John e Smith, III',
+        "name" : "John e Smith, III",
         "first" : "John",
         "middle" : "e",
         "last" : "Smith",
         "suffix" : "III"
     },
     "_lowercase_middle_initial_and_nocomma_suffix_conflict_with_conjunction" : {
-        "name" : 'John e Smith III',
+        "name" : "John e Smith III",
         "first" : "John",
         "middle" : "e",
         "last" : "Smith",
         "suffix" : "III"
     },
     "_lowercase_middle_initial_comma_lastname_and_suffix_conflict_with_conjunction" : {
-        "name" : 'Smith, John e, III, Jr',
+        "name" : "Smith, John e, III, Jr",
         "first" : "John",
         "middle" : "e",
         "last" : "Smith",
         "suffix" : "III, Jr"
     },
     "_couples_names" : {
-        "name" : 'John and Jane Smith',
+        "name" : "John and Jane Smith",
         "first" : "John and Jane",
         "last" : "Smith"
     },
     "_couples_names_with_conjunction_lastname" : {
-        "name" : 'John and Jane Aznar y Lopez',
+        "name" : "John and Jane Aznar y Lopez",
         "first" : "John and Jane",
         "last" : "Aznar y Lopez"
     },
     "_couple_titles" : {
-        "name" : 'Mr. and Mrs. John and Jane Smith',
+        "name" : "Mr. and Mrs. John and Jane Smith",
         "title" : "Mr. and Mrs.",
         "first" : "John and Jane",
         "last" : "Smith"
@@ -1286,19 +1286,19 @@
         "last" : "Jones"
     },
     "_conjunction_before_title" : {
-        "name" : 'The Lord of the Universe',
+        "name" : "The Lord of the Universe",
         "title" : "The Lord of the Universe"
     },
     "_double_conjunction_on_title" : {
-        "name" : 'Lord of the Universe',
+        "name" : "Lord of the Universe",
         "title" : "Lord of the Universe"
     },
     "_triple_conjunction_on_title" : {
-        "name" : 'Lord and of the Universe',
+        "name" : "Lord and of the Universe",
         "title" : "Lord and of the Universe"
     },
     "_multiple_conjunctions_on_multiple_titles" : {
-        "name" : 'Lord of the Universe and Associate Supreme Queen of the World Lisa Simpson',
+        "name" : "Lord of the Universe and Associate Supreme Queen of the World Lisa Simpson",
         "title" : "Lord of the Universe and Associate Supreme Queen of the World",
         "first" : "Lisa",
         "last" : "Simpson"
