@@ -30,6 +30,7 @@ from nameparser.config import Constants
 
 log = logging.getLogger('HumanName')
 
+import json
 import unittest
 try:
     unittest.expectedFailure
@@ -52,7 +53,17 @@ class HumanNameTestBase(unittest.TestCase):
         except UnicodeDecodeError:
             self.assertEquals(actual, expected)
 
+class HumanNamePythonTests(HumanNameTestBase):
 
+    def test_json_names(self):
+        all_name_tests = json.load(open('testnames.json', 'r'))
+        for testname in all_name_tests.keys():
+            hn = HumanName(all_name_tests[testname]['name'])
+            for part in all_name_tests[testname].keys():
+                if part == 'name': continue
+                self.m(getattr(hn, part),
+                       all_name_tests[testname][part],
+                       hn)
 
 class HumanNamePythonTests(HumanNameTestBase):
 
