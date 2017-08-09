@@ -4,11 +4,6 @@
         "first" : "Jüan",
         "last" : "de la Véña"
     },
-    "_escaped_utf8_bytes" : {
-        "name" : b'B\xc3\xb6ck, Gerald',
-        "first" : "Gerald",
-        "last" : "Böck"
-    },
     "_conjunction_names" : {
         "name" : "johnny y",
         "first" : "johnny",
