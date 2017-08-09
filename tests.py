@@ -56,14 +56,10 @@ class HumanNameTestBase(unittest.TestCase):
 
 class HumanNamePythonTests(HumanNameTestBase):
 
-
-
     def test_string_output(self):
         hn = HumanName("de la Véña, Jüan")
         print(hn)
         print(repr(hn))
-
-
 
     def test_len(self):
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
@@ -168,16 +164,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         with self.assertRaises(TypeError):
             hn["suffix"] = {"test":"test"}
 
-
-
-
-
-
-
-
 class FirstNameHandlingTests(HumanNameTestBase):
-
-
 
     # TODO: Seems "Andrews, M.D.", Andrews should be treated as a last name
     # but other suffixes like "George Jr." should be first names. Might be 
@@ -188,23 +175,11 @@ class FirstNameHandlingTests(HumanNameTestBase):
         self.m(hn.suffix, "M.D.", hn)
         self.m(hn.last, "Andrews", hn)
 
-
-
-
-
-
-
-
-
-
-
     def test_first_name_is_not_prefix_if_only_two_parts(self):
         """When there are only two parts, don't join prefixes or conjunctions"""
         hn = HumanName("Van Nguyen")
         self.m(hn.first, "Van", hn)
         self.m(hn.last, "Nguyen", hn)
-
-
 
     @unittest.expectedFailure
     def test_first_name_is_prefix_if_three_parts(self):
@@ -214,275 +189,7 @@ class FirstNameHandlingTests(HumanNameTestBase):
         self.m(hn.last, "Nguyen", hn)
         
 
-class HumanNameBruteForceTests(HumanNameTestBase):
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class HumanNameConjunctionTestCase(HumanNameTestBase):
-
-# Last name with conjunction
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Potential conjunction/prefix treated as initial (because uppercase)
-
-
-
-
-# The conjunction "e" can also be an initial
-
-
-
-
-
-
-
-
 
     @unittest.expectedFailure
     def test_two_initials_conflict_with_conjunction(self):
@@ -491,35 +198,6 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.first, "E.", hn)
         self.m(hn.middle, "T.", hn)
         self.m(hn.last, "Smith", hn)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# tests for Rev. title (Reverend)
-
-
-
-
-
-
-
-
-
-
-
-
 
     @unittest.expectedFailure
     def test_conjunction_in_an_address_with_a_first_name_title(self):
@@ -653,28 +331,7 @@ class HumanNameNicknameTestCase(HumanNameTestBase):
         # not testing the nicknames because we don't actually care
         # about Google Docs.
 
-
-
-class PrefixesTestCase(HumanNameTestBase):
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class SuffixesTestCase(HumanNameTestBase):
-
-
-
-
 
     def test_two_suffixes(self):
         hn = HumanName("Kenneth Clarke QC MP")
@@ -691,18 +348,6 @@ class SuffixesTestCase(HumanNameTestBase):
         # NOTE: this adds a comma when the orginal format did not have one. 
         self.m(hn.suffix, "Jr., MD", hn)
 
-
-
-
-
-
-
-
-
-
-
-
-
     @unittest.expectedFailure
     def test_phd_with_erroneous_space(self):
         hn = HumanName("John Smith, Ph. D.")
@@ -710,23 +355,12 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.last, "Smith", hn)
         self.m(hn.suffix, "Ph. D.", hn)
 
-
-#http://en.wikipedia.org/wiki/Ma_(surname)
-
-
-
-
-
     # TODO: handle conjunctions in last names followed by first names clashing with suffixes
     @unittest.expectedFailure
     def test_potential_suffix_that_is_also_first_name_comma_with_conjunction(self):
         hn = HumanName("De la Vina, Bart")
         self.m(hn.first, "Bart", hn)
         self.m(hn.last, "De la Vina", hn)
-
-
-
-
 
     # https://github.com/derek73/python-nameparser/issues/27
     @unittest.expectedFailure
@@ -736,28 +370,7 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.last, "King", hn)
         self.m(hn.suffix, "Jr", hn)
 
-
-
-
-
-
-
-
 class TitleTestCase(HumanNameTestBase):
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     # TODO: fix handling of U.S.
     @unittest.expectedFailure
@@ -768,48 +381,16 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.middle, "Thomas", hn)
         self.m(hn.last, "Treadwell", hn)
 
-
-
-
-
-
-
-
-
     @unittest.expectedFailure
     def test_title_multiple_titles_with_apostrophe_s(self):
         hn = HumanName("The Right Hon. the President of the Queen's Bench Division")
         self.m(hn.title, "The Right Hon. the President of the Queen's Bench Division", hn)
-
-
-
-
-
-
-
-
-
-
-
-
 
     def test_initials_also_suffix(self):
         hn = HumanName("Smith, J.R.")
         self.m(hn.first, "J.R.", hn)
         # self.m(hn.middle, "R.", hn)
         self.m(hn.last, "Smith", hn)
-
-
-
-
-
-
-
-
-
-
-
-
 
     # 'ben' is removed from PREFIXES in v0.2.5
     # this test could re-enable this test if we decide to support 'ben' as a prefix
@@ -818,19 +399,6 @@ class TitleTestCase(HumanNameTestBase):
         hn = HumanName("Ahmad ben Husain")
         self.m(hn.first,"Ahmad", hn)
         self.m(hn.last,"ben Husain", hn)
-
-
-
-
-
-
-
-
-# http://code.google.com/p/python-nameparser/issues/detail?id=13
-
-
-
-
 
 class HumanNameCapitalizationTestCase(HumanNameTestBase):
     def test_capitalization_exception_for_III(self):
@@ -1168,10 +736,8 @@ TEST_NAMES = (
     "US Magistrate Judge T Michael Putnam",
     "Designated Judge David A. Ezra",
     "Sr US District Judge Richard G Kopf",
-    "U.S. District Judge Marc Thomas Treadwell",
+    "U.S. District Judge Marc Thomas Treadwell")
     
-)
-
 
 class HumanNameVariationTests(HumanNameTestBase):
     # test automated variations of names in TEST_NAMES.
