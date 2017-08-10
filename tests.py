@@ -53,7 +53,7 @@ class HumanNameTestBase(unittest.TestCase):
         except UnicodeDecodeError:
             self.assertEquals(actual, expected)
 
-class HumanNamePythonTests(HumanNameTestBase):
+class HumanNameBruteForceTests(HumanNameTestBase):
 
     def test_json_names(self):
         all_name_tests = json.load(open('testnames.json', 'r'))
