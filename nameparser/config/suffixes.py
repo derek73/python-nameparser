@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 SUFFIX_NOT_ACRONYMS = set([
+    'dr',
     'esq',
     'esquire',
     'jr',
