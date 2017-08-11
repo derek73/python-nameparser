@@ -116,7 +116,10 @@ available from the nickname attribute.
 Change the output string with string formatting
 -----------------------------------------------
 
-The string representation of a `HumanName` instance is controlled by its `string_format` attribute. The default value, "{title} {first} {middle} {last} {suffix} ({nickname})", includes parenthesis around nicknames. Trailing commas and empty quotes and parenthesis are automatically removed if the name has no nickname pieces.
+The string representation of a `HumanName` instance is controlled by its `string_format` attribute.
+The default value, `"{title} {first} {middle} {last} {suffix} ({nickname})"`, includes parenthesis
+around nicknames. Trailing commas and empty quotes and parenthesis are automatically removed if the
+name has no nickname pieces.
 
 You can change the default formatting for all `HumanName` instances by setting a new
 :py:attr:`~nameparser.config.Constants.string_format` value on the shared
