@@ -21,7 +21,7 @@ except re.error:
 REGEXES = set([
     ("spaces", re.compile(r"\s+", re.U)),
     ("word", re.compile(r"(\w|\.)+", re.U)),
-    ("mac", re.compile(r'^(ma?c)(\w+)', re.I | re.U)),
+    ("mac", re.compile(r'^(ma?c)(\w{2,})', re.I | re.U)),
     ("initial", re.compile(r'^(\w\.|[A-Z])?$', re.U)),
     ("nickname", re.compile(r'\s*?[\("](.+?)[\)"]', re.U)),
     ("roman_numeral", re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I | re.U)),

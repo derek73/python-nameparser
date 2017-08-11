@@ -1858,6 +1858,10 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.m(str(hn), 'Ronald McDonald', hn)
 
+    def test_short_names_with_mac(self):
+        hn = HumanName('mack johnson')
+        hn.capitalize()
+        self.m(str(hn), 'Mack Johnson', hn)
 
 class HumanNameOutputFormatTests(HumanNameTestBase):
     
