@@ -133,7 +133,7 @@ class HumanName(object):
         return " ".join(self)
     
     def __str__(self):
-        if sys.version >= '3':
+        if sys.version_info[0] >= 3:
             return self.__unicode__()
         return self.__unicode__().encode(self.ENCODING)
     
@@ -150,7 +150,7 @@ class HumanName(object):
                 'suffix': self.suffix or '',
                 'nickname': self.nickname or '',
             }
-        if sys.version >= '3':
+        if sys.version_info[0] >= 3:
             return _string
         return _string.encode(self.ENCODING)
     
