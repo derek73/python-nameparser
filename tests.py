@@ -1244,6 +1244,10 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         # if you want to be technical, Queen is in FIRST_NAME_TITLES
         self.m(hn.first, "Elizabeth", hn)
 
+    def test_name_is_conjunctions(self):
+        hn = HumanName("e and e")
+        self.m(hn.first, "e and e", hn)
+
 
 class ConstantsCustomization(HumanNameTestBase):
 

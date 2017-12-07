@@ -4,6 +4,7 @@ Release Log
     - Add Dr to suffixes (#62)
     - Add the full set of Italian derivatives from "di" (#59)
     - Add parameter to specify the encoding of strings added to constants, use 'UTF-8' as fallback (#67)
+    - Fix handling of names composed entirely of conjunctions (#66)
 * 0.5.3 - June 27, 2017
     - Remove emojis from initial string by default with option to include emojis (#58)
 * 0.5.2 - March 19, 2017

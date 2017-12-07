@@ -641,7 +641,7 @@ class HumanName(object):
         
         """
         length = len(pieces) + additional_parts_count
-        # don't join on conjuctions if there's only 2 parts
+        # don't join on conjunctions if there's only 2 parts
         if length < 3:
             return pieces
             
@@ -658,7 +658,7 @@ class HumanName(object):
         for i, val in enumerate(conj_index):
             try:
                 if conj_index[i+1] == val+1:
-                     contiguous_conj_i += [val]
+                    contiguous_conj_i += [val]
             except IndexError:
                 pass
         
@@ -680,7 +680,11 @@ class HumanName(object):
         for i in reversed(delete_i):
             # delete pieces in reverse order or the index changes on each delete
             del pieces[i]
-        
+
+        if len(pieces) == 1:
+            # if there's only one piece left, nothing left to do
+            return pieces
+
         # refresh conjunction index locations
         conj_index = [i for i, piece in enumerate(pieces) if self.is_conjunction(piece)]
         
