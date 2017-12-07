@@ -189,6 +189,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(hn.first, "", hn)
         self.m(hn.last, "", hn)
 
+
 class FirstNameHandlingTests(HumanNameTestBase):
     def test_first_name(self):
         hn = HumanName("Andrew")
@@ -1058,7 +1059,6 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.last, "Almighty", hn)
 
 
-
 class HumanNameConjunctionTestCase(HumanNameTestBase):
     # Last name with conjunction
     def test_last_name_with_conjunction(self):
@@ -1244,6 +1244,7 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         # if you want to be technical, Queen is in FIRST_NAME_TITLES
         self.m(hn.first, "Elizabeth", hn)
 
+
 class ConstantsCustomization(HumanNameTestBase):
 
     def test_add_title(self):
@@ -1334,6 +1335,12 @@ class ConstantsCustomization(HumanNameTestBase):
         hn = HumanName("", None)
         hn.C.empty_attribute_default = None
         self.assertEqual('', str(hn), hn)
+
+    def test_add_constant_with_explicit_encoding(self):
+        c = Constants()
+        c.titles.add_with_encoding(b'b\351ck', encoding='latin_1')
+        self.assertIn('béck', c.titles)
+
 
 class HumanNameNicknameTestCase(HumanNameTestBase):
     # https://code.google.com/p/python-nameparser/issues/detail?id=33

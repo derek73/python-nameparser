@@ -43,6 +43,8 @@ from nameparser.config.titles import TITLES
 from nameparser.config.titles import FIRST_NAME_TITLES
 from nameparser.config.regexes import REGEXES
 
+DEFAULT_ENCODING = 'UTF-8'
+
 class SetManager(collections.Set):
     '''
     Easily add and remove config variables per module or instance. Subclass of
@@ -84,15 +86,23 @@ class SetManager(collections.Set):
             self.count = c + 1
             return getattr(self, self.elements[c]) or next(self)
     
+    def add_with_encoding(self, s, encoding=None):
+        """
+        Add the lower case and no-period version of the string to the set. Pass an
+        explicit `encoding` parameter to specify the encoding of binary strings that
+        are not DEFAULT_ENCODING (UTF-8).
+        """
+        encoding = encoding or sys.stdin.encoding or DEFAULT_ENCODING
+        if type(s) == binary_type:
+            s = s.decode(encoding)
+        self.elements.add(lc(s))
+
     def add(self, *strings):
         """
         Add the lower case and no-period version of the string arguments to the set.
-        Returns ``self`` for chaining.
+        Can pass a list of strings. Returns ``self`` for chaining.
         """
-        for s in strings:
-            if type(s) == binary_type:
-                s = s.decode(sys.stdin.encoding)
-            self.elements.add(lc(s))
+        [self.add_with_encoding(s) for s in strings]
         return self
     
     def remove(self, *strings):
@@ -193,7 +203,7 @@ class Constants(object):
         if not self._pst:
             self._pst = self.prefixes | self.suffix_acronyms | self.suffix_not_acronyms | self.titles
         return self._pst
-    
+
     def __repr__(self):
         return "<Constants() instance>"
     

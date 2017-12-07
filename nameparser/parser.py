@@ -11,6 +11,7 @@ from nameparser.util import lc
 from nameparser.util import log
 from nameparser.config import CONSTANTS
 from nameparser.config import Constants
+from nameparser.config import DEFAULT_ENCODING
 
 ENCODING = 'utf-8'
 
@@ -69,13 +70,13 @@ class HumanName(object):
     unparsable = True
     _full_name = ''
     
-    def __init__(self, full_name="", constants=CONSTANTS, encoding=ENCODING, 
+    def __init__(self, full_name="", constants=CONSTANTS, encoding=DEFAULT_ENCODING,
                 string_format=None):
         self.C = constants
         if type(self.C) is not type(CONSTANTS):
             self.C = Constants()
         
-        self.ENCODING = encoding
+        self.encoding = encoding
         self.string_format = string_format or self.C.string_format
         # full_name setter triggers the parse
         self.full_name = full_name
@@ -127,7 +128,7 @@ class HumanName(object):
         if self.string_format:
             # string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
             _s = self.string_format.format(**self.as_dict())
-            # remove trailing punctation from missing nicknames
+            # remove trailing punctuation from missing nicknames
             _s = _s.replace(str(self.C.empty_attribute_default),'').replace(" ()","").replace(" ''","").replace(' ""',"")
             return self.collapse_whitespace(_s).strip(', ')
         return " ".join(self)
@@ -135,7 +136,7 @@ class HumanName(object):
     def __str__(self):
         if sys.version >= '3':
             return self.__unicode__()
-        return self.__unicode__().encode(self.ENCODING)
+        return self.__unicode__().encode(self.encoding)
     
     def __repr__(self):
         if self.unparsable:
@@ -152,7 +153,7 @@ class HumanName(object):
             }
         if sys.version >= '3':
             return _string
-        return _string.encode(self.ENCODING)
+        return _string.encode(self.encoding)
     
     def as_dict(self, include_empty=True):
         """
@@ -355,7 +356,7 @@ class HumanName(object):
         self.original = value
         self._full_name = value
         if isinstance(value, binary_type):
-            self._full_name = value.decode(self.ENCODING)
+            self._full_name = value.decode(self.encoding)
         self.parse_full_name()
     
     def collapse_whitespace(self, string):
