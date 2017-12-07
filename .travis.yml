@@ -9,7 +9,7 @@ python:
   - "3.6"
 # command to install dependencies
 install: 
-  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install --use-mirrors unittest2; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi
   - "pip install dill"
   - "python setup.py install"
 # command to run tests
