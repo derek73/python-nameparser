@@ -1,9 +1,9 @@
 Release Log
 ===========
-* 1.0.0 - August 10, 2017
-    - Refactor tests into fixtures by MilesCranmer (#61)
+* 0.5.4 - December 10, 2017
     - Add Dr to suffixes (#62)
     - Add the full set of Italian derivatives from "di" (#59)
+    - Add parameter to specify the encoding of strings added to constants, use 'UTF-8' as fallback (#67)
 * 0.5.3 - June 27, 2017
     - Remove emojis from initial string by default with option to include emojis (#58)
 * 0.5.2 - March 19, 2017

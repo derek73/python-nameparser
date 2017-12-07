@@ -10,6 +10,7 @@ build
 *.egg
 .coverage
 dist
+.idea
 
 # docs
 docs/_*
