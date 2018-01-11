@@ -73,6 +73,7 @@ SUFFIX_ACRONYMS = set([
     'idsm',
     'iom',
     'iso',
+    'jd',
     'kbe',
     'kcb',
     'kcie',

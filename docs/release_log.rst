@@ -1,5 +1,7 @@
 Release Log
 ===========
+* 0.5.5 - January 10, 2018
+    - Support J.D. as suffix and Wm. as title
 * 0.5.4 - December 10, 2017
     - Add Dr to suffixes (#62)
     - Add the full set of Italian derivatives from "di" (#59)

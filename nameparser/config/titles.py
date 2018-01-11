@@ -618,6 +618,7 @@ TITLES = FIRST_NAME_TITLES | set([
     'warden',
     'warrant',
     'wing',
+    'wm',
     'wo-1',
     'wo1',
     'wo2',
