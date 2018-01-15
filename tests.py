@@ -1476,7 +1476,7 @@ class SuffixesTestCase(HumanNameTestBase):
         hn = HumanName("Kenneth Clarke QC MP")
         self.m(hn.first, "Kenneth", hn)
         self.m(hn.last, "Clarke", hn)
-        # NOTE: this adds a comma when the orginal format did not have one. 
+        # NOTE: this adds a comma when the original format did not have one. 
         # not ideal but at least its in the right bucket
         self.m(hn.suffix, "QC, MP", hn)
 
@@ -1484,7 +1484,7 @@ class SuffixesTestCase(HumanNameTestBase):
         hn = HumanName("Washington Jr. MD, Franklin")
         self.m(hn.first, "Franklin", hn)
         self.m(hn.last, "Washington", hn)
-        # NOTE: this adds a comma when the orginal format did not have one. 
+        # NOTE: this adds a comma when the original format did not have one. 
         self.m(hn.suffix, "Jr., MD", hn)
 
     def test_two_suffixes_suffix_comma_format(self):
