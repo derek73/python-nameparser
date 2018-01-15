@@ -13,7 +13,7 @@ log.setLevel(logging.ERROR)
 
 
 import sys
-if sys.version < '3':
+if sys.version_info[0] < 3:
 
     text_type = unicode
     binary_type = str
