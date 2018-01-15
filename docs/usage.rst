@@ -136,7 +136,7 @@ You can change the default formatting for all `HumanName` instances by setting a
   >>> str(name)
   'Robert (Rob) Johnson'
 
-You can control the order and presense of any name fields by changing the
+You can control the order and presence of any name fields by changing the
 :py:attr:`~nameparser.config.Constants.string_format` attribute of the shared CONSTANTS instance.
 Don't want to include nicknames in your output? No problem. Just omit that keyword from the 
 `string_format` attribute.
