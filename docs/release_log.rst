@@ -1,5 +1,7 @@
 Release Log
 ===========
+* 0.5.6 - January 15, 2018
+    - Fix python version check (#64)
 * 0.5.5 - January 10, 2018
     - Support J.D. as suffix and Wm. as title
 * 0.5.4 - December 10, 2017
