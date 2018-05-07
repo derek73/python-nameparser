@@ -67,7 +67,7 @@ don't blow up, so it can be a helpful regression indicator.
 New Releases
 ------------
 
-[https://hynek.me/articles/sharing-your-labor-of-love-pypi-quick-and-dirty/](Publishing to Pypi Guide)
+[Publishing to Pypi Guide](https://hynek.me/articles/sharing-your-labor-of-love-pypi-quick-and-dirty/)
 
     $ python setup.py sdist bdist_wheel
     $ twine upload dist/*
