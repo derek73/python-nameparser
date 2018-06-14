@@ -1248,6 +1248,19 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         hn = HumanName("e and e")
         self.m(hn.first, "e and e", hn)
 
+    def test_portuguese_dos(self):
+        hn = HumanName("Rafael Sousa dos Anjos")
+        self.m(hn.first, "Rafael", hn)
+        self.m(hn.middle, "Sousa", hn)
+        self.m(hn.last, "dos Anjos", hn)
+
+    def test_portuguese_prefixes(self):
+        hn = HumanName("Joao da Silva do Amaral de Souza")
+        self.m(hn.first, "Joao", hn)
+        self.m(hn.middle, "da Silva do Amaral de", hn)
+        self.m(hn.last, "Souza", hn)
+
+
 
 class ConstantsCustomization(HumanNameTestBase):
 
