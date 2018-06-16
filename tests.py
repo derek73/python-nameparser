@@ -53,7 +53,6 @@ class HumanNameTestBase(unittest.TestCase):
             self.assertEquals(actual, expected)
 
 
-
 class HumanNamePythonTests(HumanNameTestBase):
 
     def test_utf8(self):
@@ -77,12 +76,12 @@ class HumanNamePythonTests(HumanNameTestBase):
         hn = HumanName("John Doe")
         self.m(len(hn), 2, hn)
 
-    @unittest.skipUnless(dill,"requires python-dill module to test pickling")
+    @unittest.skipUnless(dill, "requires python-dill module to test pickling")
     def test_config_pickle(self):
-        C = Constants()
-        self.assertTrue(dill.pickles(C))
+        constants = Constants()
+        self.assertTrue(dill.pickles(constants))
 
-    @unittest.skipUnless(dill,"requires python-dill module to test pickling")
+    @unittest.skipUnless(dill, "requires python-dill module to test pickling")
     def test_name_instance_pickle(self):
         hn = HumanName("Title First Middle Middle Last, Jr.")
         self.assertTrue(dill.pickles(hn))
@@ -91,7 +90,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         hn1 = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         hn2 = HumanName("Dr. John P. Doe-Ray, CLU, CFP, LUTC")
         self.assertTrue(hn1 == hn2)
-        self.assertTrue(not hn1 is hn2)
+        self.assertTrue(hn1 is not hn2)
         self.assertTrue(hn1 == "Dr. John P. Doe-Ray CLU, CFP, LUTC")
         hn1 = HumanName("Doe, Dr. John P., CLU, CFP, LUTC")
         hn2 = HumanName("Dr. John P. Doe-Ray, CLU, CFP, LUTC")
@@ -127,17 +126,17 @@ class HumanNamePythonTests(HumanNameTestBase):
         with self.assertRaises(TypeError):
             hn.suffix = [['test']]
         with self.assertRaises(TypeError):
-            hn.suffix = {"test":"test"}
+            hn.suffix = {"test": "test"}
 
     def test_assign_list_to_attribute(self):
         hn = HumanName("John A. Kenneth Doe, Jr.")
-        hn.title = ["test1","test2"]
+        hn.title = ["test1", "test2"]
         self.m(hn.title, "test1 test2", hn)
-        hn.first = ["test3","test4"]
+        hn.first = ["test3", "test4"]
         self.m(hn.first, "test3 test4", hn)
-        hn.middle = ["test5","test6","test7"]
+        hn.middle = ["test5", "test6", "test7"]
         self.m(hn.middle, "test5 test6 test7", hn)
-        hn.last = ["test8","test9","test10"]
+        hn.last = ["test8", "test9", "test10"]
         self.m(hn.last, "test8 test9 test10", hn)
         hn.suffix = ['test']
         self.m(hn.suffix, "test", hn)
@@ -146,13 +145,13 @@ class HumanNamePythonTests(HumanNameTestBase):
         hn1 = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         hn2 = HumanName("dr. john p. doe-Ray, CLU, CFP, LUTC")
         self.assertTrue(hn1 == hn2)
-        self.assertTrue(not hn1 is hn2)
+        self.assertTrue(hn1 is not hn2)
         self.assertTrue(hn1 == "Dr. John P. Doe-ray clu, CFP, LUTC")
 
     def test_slice(self):
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         self.m(list(hn), ['Dr.', 'John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC'], hn)
-        self.m(hn[1:], ['John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC',hn.C.empty_attribute_default], hn)
+        self.m(hn[1:], ['John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC', hn.C.empty_attribute_default], hn)
         self.m(hn[1:-2], ['John', 'P.', 'Doe-Ray'], hn)
 
     def test_getitem(self):
@@ -167,12 +166,12 @@ class HumanNamePythonTests(HumanNameTestBase):
         hn = HumanName("Dr. John A. Kenneth Doe, Jr.")
         hn['title'] = 'test'
         self.m(hn['title'], "test", hn)
-        hn['last'] = ['test','test2']
+        hn['last'] = ['test', 'test2']
         self.m(hn['last'], "test test2", hn)
         with self.assertRaises(TypeError):
             hn["suffix"] = [['test']]
         with self.assertRaises(TypeError):
-            hn["suffix"] = {"test":"test"}
+            hn["suffix"] = {"test": "test"}
 
     def test_conjunction_names(self):
         hn = HumanName("johnny y")
@@ -1261,31 +1260,30 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.last, "Souza", hn)
 
 
-
 class ConstantsCustomization(HumanNameTestBase):
 
     def test_add_title(self):
         hn = HumanName("Te Awanui-a-Rangi Black", constants=None)
         hn.C.titles.add('te')
         hn.parse_full_name()
-        self.m(hn.title,"Te", hn)
-        self.m(hn.first,"Awanui-a-Rangi", hn)
-        self.m(hn.last,"Black", hn)
+        self.m(hn.title, "Te", hn)
+        self.m(hn.first, "Awanui-a-Rangi", hn)
+        self.m(hn.last, "Black", hn)
     
     def test_remove_title(self):
         hn = HumanName("Hon Solo", constants=None)
         hn.C.titles.remove('hon')
         hn.parse_full_name()
-        self.m(hn.first,"Hon", hn)
-        self.m(hn.last,"Solo", hn)
+        self.m(hn.first, "Hon", hn)
+        self.m(hn.last, "Solo", hn)
     
     def test_add_multiple_arguments(self):
         hn = HumanName("Assoc Dean of Chemistry Robert Johns", constants=None)
         hn.C.titles.add('dean', 'Chemistry')
         hn.parse_full_name()
-        self.m(hn.title,"Assoc Dean of Chemistry", hn)
-        self.m(hn.first,"Robert", hn)
-        self.m(hn.last,"Johns", hn)
+        self.m(hn.title, "Assoc Dean of Chemistry", hn)
+        self.m(hn.first, "Robert", hn)
+        self.m(hn.last, "Johns", hn)
 
     def test_instances_can_have_own_constants(self):
         hn = HumanName("", None)
@@ -1295,8 +1293,7 @@ class ConstantsCustomization(HumanNameTestBase):
         self.assertEqual(hn.has_own_config, True)
         self.assertEqual('hon' in hn2.C.titles, True)
         self.assertEqual(hn2.has_own_config, False)
-    
-    
+
     def test_can_change_global_constants(self):
         hn = HumanName("")
         hn2 = HumanName("")
@@ -1312,18 +1309,18 @@ class ConstantsCustomization(HumanNameTestBase):
         hn = HumanName("Ms Hon Solo", constants=None)
         hn.C.titles.remove('hon', 'ms')
         hn.parse_full_name()
-        self.m(hn.first,"Ms", hn)
-        self.m(hn.middle,"Hon", hn)
-        self.m(hn.last,"Solo", hn)
+        self.m(hn.first, "Ms", hn)
+        self.m(hn.middle, "Hon", hn)
+        self.m(hn.last, "Solo", hn)
 
     def test_chain_multiple_arguments(self):
         hn = HumanName("Dean Ms Hon Solo", constants=None)
         hn.C.titles.remove('hon', 'ms').add('dean')
         hn.parse_full_name()
-        self.m(hn.title,"Dean", hn)
-        self.m(hn.first,"Ms", hn)
-        self.m(hn.middle,"Hon", hn)
-        self.m(hn.last,"Solo", hn)
+        self.m(hn.title, "Dean", hn)
+        self.m(hn.first, "Ms", hn)
+        self.m(hn.middle, "Hon", hn)
+        self.m(hn.last, "Solo", hn)
 
     def test_empty_attribute_default(self):
         from nameparser.config import CONSTANTS
@@ -1421,7 +1418,7 @@ class HumanNameNicknameTestCase(HumanNameTestBase):
         self.m(hn.last, "Aube'", hn)
         self.m(hn.nickname, "", hn)
     
-    #http://code.google.com/p/python-nameparser/issues/detail?id=17
+    # http://code.google.com/p/python-nameparser/issues/detail?id=17
     def test_parenthesis_are_removed(self):
         hn = HumanName("John Jones (Google Docs)")
         self.m(hn.first, "John", hn)
@@ -1434,6 +1431,7 @@ class HumanNameNicknameTestCase(HumanNameTestBase):
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Jones", hn)
         self.m(hn.suffix, "Jr.", hn)
+
 
 class PrefixesTestCase(HumanNameTestBase):
 
@@ -1543,7 +1541,7 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.last, "Smith", hn)
         self.m(hn.suffix, "Ph. D.", hn)
 
-    #http://en.wikipedia.org/wiki/Ma_(surname)
+    # http://en.wikipedia.org/wiki/Ma_(surname)
     def test_potential_suffix_that_is_also_last_name(self):
         hn = HumanName("Jack Ma")
         self.m(hn.first, "Jack", hn)
@@ -1586,23 +1584,23 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.last, "King", hn)
         self.m(hn.suffix, "Jr", hn)
 
-    def test_suffix_with_periods(self):
+    def test_multiple_letter_suffix_with_periods(self):
         hn = HumanName("John Doe Msc.Ed.")
-        self.m(hn.first,"John", hn)
-        self.m(hn.last,"Doe", hn)
-        self.m(hn.suffix,"Msc.Ed.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)
+        self.m(hn.suffix, "Msc.Ed.", hn)
 
     def test_suffix_with_periods_with_comma(self):
         hn = HumanName("John Doe, Msc.Ed.")
-        self.m(hn.first,"John", hn)
-        self.m(hn.last,"Doe", hn)
-        self.m(hn.suffix,"Msc.Ed.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)
+        self.m(hn.suffix, "Msc.Ed.", hn)
 
     def test_suffix_with_periods_with_lastname_comma(self):
         hn = HumanName("Doe, John Msc.Ed.")
-        self.m(hn.first,"John", hn)
-        self.m(hn.last,"Doe", hn)
-        self.m(hn.suffix,"Msc.Ed.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)
+        self.m(hn.suffix, "Msc.Ed.", hn)
 
 
 class TitleTestCase(HumanNameTestBase):
@@ -1652,7 +1650,7 @@ class TitleTestCase(HumanNameTestBase):
 
     # TODO: fix handling of U.S.
     @unittest.expectedFailure
-    def test_chained_title_first_name_initial(self):
+    def test_chained_title_first_name_title_is_initials(self):
         hn = HumanName("U.S. District Judge Marc Thomas Treadwell")
         self.m(hn.title, "U.S. District Judge", hn)
         self.m(hn.first, "Marc", hn)
@@ -1665,7 +1663,7 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.middle, "S.", hn)
         self.m(hn.last, "Grant", hn)
     
-    def test_chained_title_first_name_initial(self):
+    def test_chained_title_first_name_initial_with_no_period(self):
         hn = HumanName("US Magistrate Judge T Michael Putnam")
         self.m(hn.title, "US Magistrate Judge", hn)
         self.m(hn.first, "T", hn)
@@ -1781,8 +1779,8 @@ class TitleTestCase(HumanNameTestBase):
     @unittest.expectedFailure
     def test_ben_as_conjunction(self):
         hn = HumanName("Ahmad ben Husain")
-        self.m(hn.first,"Ahmad", hn)
-        self.m(hn.last,"ben Husain", hn)
+        self.m(hn.first, "Ahmad", hn)
+        self.m(hn.last, "ben Husain", hn)
 
     def test_ben_as_first_name(self):
         hn = HumanName("Ben Johnson")
@@ -1809,15 +1807,16 @@ class TitleTestCase(HumanNameTestBase):
 
     def test_title_with_periods(self):
         hn = HumanName("Lt.Gov. John Doe")
-        self.m(hn.title,"Lt.Gov.", hn)
-        self.m(hn.first,"John", hn)
-        self.m(hn.last,"Doe", hn)
+        self.m(hn.title, "Lt.Gov.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)
 
     def test_title_with_periods_lastname_comma(self):
         hn = HumanName("Doe, Lt.Gov. John")
-        self.m(hn.title,"Lt.Gov.", hn)
-        self.m(hn.first,"John", hn)
-        self.m(hn.last,"Doe", hn)
+        self.m(hn.title, "Lt.Gov.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)
+
 
 class HumanNameCapitalizationTestCase(HumanNameTestBase):
     def test_capitalization_exception_for_III(self):
@@ -1892,11 +1891,12 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.m(str(hn), 'Joao da Silva do Amaral de Souza', hn)
 
+
 class HumanNameOutputFormatTests(HumanNameTestBase):
     
     def test_formatting_init_argument(self):
-        hn = HumanName("Rev John A. Kenneth Doe III (Kenny)", 
-            string_format = "TEST1")
+        hn = HumanName("Rev John A. Kenneth Doe III (Kenny)",
+                        string_format="TEST1")
         self.assertEqual(u(hn), "TEST1")
 
     def test_formatting_constants_attribute(self):
@@ -1935,51 +1935,51 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         self.assertEqual(u(hn), "Rev John A. Kenneth Doe III 'Kenny'")
         hn.string_format = "{title} {first} {middle} {last} {suffix}"
         self.assertEqual(u(hn), "Rev John A. Kenneth Doe III")
-        hn.middle=''
+        hn.middle = ''
         self.assertEqual(u(hn), "Rev John Doe III")
-        hn.suffix=''
+        hn.suffix = ''
         self.assertEqual(u(hn), "Rev John Doe")
-        hn.title=''
+        hn.title = ''
         self.assertEqual(u(hn), "John Doe")
 
     def test_formating_of_nicknames_with_parenthesis(self):
         hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
         hn.string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
         self.assertEqual(u(hn), "Rev John A. Kenneth Doe III (Kenny)")
-        hn.nickname=''
+        hn.nickname = ''
         self.assertEqual(u(hn), "Rev John A. Kenneth Doe III")
 
     def test_formating_of_nicknames_with_single_quotes(self):
         hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
         hn.string_format = "{title} {first} {middle} {last} {suffix} '{nickname}'"
         self.assertEqual(u(hn), "Rev John A. Kenneth Doe III 'Kenny'")
-        hn.nickname=''
+        hn.nickname = ''
         self.assertEqual(u(hn), "Rev John A. Kenneth Doe III")
 
     def test_formating_of_nicknames_with_double_quotes(self):
         hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
         hn.string_format = "{title} {first} {middle} {last} {suffix} \"{nickname}\""
         self.assertEqual(u(hn), "Rev John A. Kenneth Doe III \"Kenny\"")
-        hn.nickname=''
+        hn.nickname = ''
         self.assertEqual(u(hn), "Rev John A. Kenneth Doe III")
 
     def test_formating_of_nicknames_in_middle(self):
         hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
         hn.string_format = "{title} {first} ({nickname}) {middle} {last} {suffix}"
         self.assertEqual(u(hn), "Rev John (Kenny) A. Kenneth Doe III")
-        hn.nickname=''
+        hn.nickname = ''
         self.assertEqual(u(hn), "Rev John A. Kenneth Doe III")
     
     def test_remove_emojis(self):
         hn = HumanName("Sam Smith 😊")
-        self.m(hn.first,"Sam", hn)
-        self.m(hn.last,"Smith", hn)
+        self.m(hn.first, "Sam", hn)
+        self.m(hn.last, "Smith", hn)
         self.assertEqual(u(hn), "Sam Smith")
 
     def test_keep_non_emojis(self):
         hn = HumanName("∫≜⩕ Smith 😊")
-        self.m(hn.first,"∫≜⩕", hn)
-        self.m(hn.last,"Smith", hn)
+        self.m(hn.first, "∫≜⩕", hn)
+        self.m(hn.last, "Smith", hn)
         self.assertEqual(u(hn), "∫≜⩕ Smith")
 
     def test_keep_emojis(self):
@@ -1987,10 +1987,11 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         constants = Constants()
         constants.regexes.emoji = False
         hn = HumanName("∫≜⩕ Smith😊", constants)
-        self.m(hn.first,"∫≜⩕", hn)
-        self.m(hn.last,"Smith😊", hn)
+        self.m(hn.first, "∫≜⩕", hn)
+        self.m(hn.last, "Smith😊", hn)
         self.assertEqual(u(hn), "∫≜⩕ Smith😊")
         # test cleanup
+
 
 TEST_NAMES = (
     "John Doe",
@@ -2180,7 +2181,7 @@ class HumanNameVariationTests(HumanNameTestBase):
             hn = HumanName(name)
             if len(hn.suffix_list) > 1:
                 hn = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn.as_dict()).split(',')[0])
-            hn.C.empty_attribute_default = '' # format strings below require empty string
+            hn.C.empty_attribute_default = ''  # format strings below require empty string
             hn_dict = hn.as_dict()
             attrs = [
                 'title',
@@ -2212,11 +2213,11 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         log.setLevel(logging.ERROR)
         log.addHandler(logging.StreamHandler())
-        name = sys.argv[1]
-        hn = HumanName(name, encoding=sys.stdout.encoding)
-        print((repr(hn)))
-        hn.capitalize()
-        print((repr(hn)))
+        name_string = sys.argv[1]
+        hn_instance = HumanName(name_string, encoding=sys.stdout.encoding)
+        print((repr(hn_instance)))
+        hn_instance.capitalize()
+        print((repr(hn_instance)))
     else:
         print("-"*80)
         print("Running tests")
