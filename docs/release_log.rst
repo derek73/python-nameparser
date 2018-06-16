@@ -1,5 +1,8 @@
 Release Log
 ===========
+* 0.5.7 - June 16, 2018
+    - Fix doc link (#73)
+    - Fix handling of "do" and "dos" Portuguese prefixes (#71, #72)
 * 0.5.6 - January 15, 2018
     - Fix python version check (#64)
 * 0.5.5 - January 10, 2018

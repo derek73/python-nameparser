@@ -1887,6 +1887,11 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.m(str(hn), 'Mack Johnson', hn)
 
+    def test_portuguese_prefixes(self):
+        hn = HumanName("joao da silva do amaral de souza")
+        hn.capitalize()
+        self.m(str(hn), 'Joao da Silva do Amaral de Souza', hn)
+
 class HumanNameOutputFormatTests(HumanNameTestBase):
     
     def test_formatting_init_argument(self):
