@@ -567,6 +567,7 @@ TITLES = FIRST_NAME_TITLES | set([
     'special',
     'sr',
     'sra',
+    'srta',
     'ssg',
     'ssgt',
     'staff',
