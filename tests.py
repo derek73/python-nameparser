@@ -2166,6 +2166,8 @@ TEST_NAMES = (
     "Designated Judge David A. Ezra",
     "Sr US District Judge Richard G Kopf",
     "U.S. District Judge Marc Thomas Treadwell",
+    "Dra. Andréia da Silva",
+    "Srta. Andréia da Silva",
     
 )
 
