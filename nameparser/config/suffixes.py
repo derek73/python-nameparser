@@ -7,6 +7,7 @@ SUFFIX_NOT_ACRONYMS = set([
     'esquire',
     'jr',
     'jnr',
+    'junior',
     'sr',
     'snr',
     '2',
