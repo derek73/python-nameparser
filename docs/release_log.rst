@@ -1,5 +1,8 @@
 Release Log
 ===========
+* 0.5.8 - August 19, 2018
+    - Add "Junior" to suffixes (#76)
+    - Add "dra" and "srta" to titles (#77)
 * 0.5.7 - June 16, 2018
     - Fix doc link (#73)
     - Fix handling of "do" and "dos" Portuguese prefixes (#71, #72)

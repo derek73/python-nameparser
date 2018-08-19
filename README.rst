@@ -52,9 +52,9 @@ install with pip using the command below.
 
 ``pip install -e git+git://github.com/derek73/python-nameparser.git#egg=nameparser``
 
-If you're looking for a web service, check out
-`eyeseast's nameparse service <https://github.com/eyeseast/nameparse>`_, a
-simple Heroku-friendly Flask wrapper for this module.
+If you need to handle lists of names, check out
+`namesparser <https://github.com/gwu-libraries/namesparser>`_, a
+ compliment to this module that handles multiple names in a string.
 
 
 Quick Start Example
