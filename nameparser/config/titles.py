@@ -245,6 +245,7 @@ TITLES = FIRST_NAME_TITLES | set([
     'doyen',
     'dpty',
     'dr',
+    'dra',
     'dramatist',
     'druid',
     'drummer',
