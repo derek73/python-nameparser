@@ -384,15 +384,25 @@ class HumanName(object):
 
     def parse_nicknames(self):
         """
-        The content of parenthesis or double quotes in the name will
-        be treated as nicknames. This happens before any other
-        processing of the name.
+        The content of parenthesis or quotes in the name will be added to the 
+        nicknames list. This happens before any other processing of the name.
+        
+        Single quotes cannot span white space characters to allow for single
+        quotes in names like O'Connor. Double quotes and parenthesis can span
+        white space.
+        
+        Loops through 3 :py:data:`~nameparser.config.regexes.REGEXES`; 
+        `quoted_word`, `double_quotes` and `parenthesis`.
         """
-        # https://code.google.com/p/python-nameparser/issues/detail?id=33
-        re_nickname = self.C.regexes.nickname
-        if re_nickname.search(self._full_name):
-            self.nickname_list = re_nickname.findall(self._full_name)
-            self._full_name = re_nickname.sub('', self._full_name)
+        
+        re_quoted_word = self.C.regexes.quoted_word
+        re_double_quotes = self.C.regexes.double_quotes
+        re_parenthesis = self.C.regexes.parenthesis
+
+        for _re in (re_quoted_word, re_double_quotes, re_parenthesis):
+            if _re.search(self._full_name):
+                self.nickname_list += [x for x in _re.findall(self._full_name)]
+                self._full_name = _re.sub('', self._full_name)
 
     def squash_emoji(self):
         """

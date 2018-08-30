@@ -1,5 +1,8 @@
 Release Log
 ===========
+* 1.0.0 - August 30, 2018
+    - Fix support for nicknames in single quotes (#74)
+    - No other big changes, just bumping to v1 to indicate approprite project maturity
 * 0.5.8 - August 19, 2018
     - Add "Junior" to suffixes (#76)
     - Add "dra" and "srta" to titles (#77)
