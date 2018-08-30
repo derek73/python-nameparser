@@ -779,8 +779,8 @@ class HumanName(object):
     
     ### Capitalization Support
     
-    def cap_word(self, word):
-        if self.is_prefix(word) or self.is_conjunction(word):
+    def cap_word(self, word, attribute):
+        if (self.is_prefix(word) and attribute=='last') or self.is_conjunction(word):
             return word.lower()
         exceptions = self.C.capitalization_exceptions
         if lc(word) in exceptions:
@@ -793,10 +793,10 @@ class HumanName(object):
         else:
             return word.capitalize()
 
-    def cap_piece(self, piece):
+    def cap_piece(self, piece, attribute):
         if not piece:
             return ""
-        replacement = lambda m: self.cap_word(m.group(0))
+        replacement = lambda m: self.cap_word(m.group(0), attribute)
         return self.C.regexes.word.sub(replacement, piece)
 
     def capitalize(self, force=False):
@@ -829,8 +829,8 @@ class HumanName(object):
         name = u(self)
         if not force and not (name == name.upper() or name == name.lower()):
             return
-        self.title_list  = self.cap_piece(self.title ).split(' ')
-        self.first_list  = self.cap_piece(self.first ).split(' ')
-        self.middle_list = self.cap_piece(self.middle).split(' ')
-        self.last_list   = self.cap_piece(self.last  ).split(' ')
-        self.suffix_list = self.cap_piece(self.suffix).split(', ')
+        self.title_list  = self.cap_piece(self.title , 'title').split(' ')
+        self.first_list  = self.cap_piece(self.first , 'first').split(' ')
+        self.middle_list = self.cap_piece(self.middle, 'middle').split(' ')
+        self.last_list   = self.cap_piece(self.last  , 'last').split(' ')
+        self.suffix_list = self.cap_piece(self.suffix, 'suffix').split(', ')

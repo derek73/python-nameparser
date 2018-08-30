@@ -1941,6 +1941,11 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.m(str(hn), 'Joao da Silva do Amaral de Souza', hn)
 
+    def test_capitalize_prefix_clash_on_first_name(self):
+        hn = HumanName("van nguyen")
+        hn.capitalize()
+        self.m(str(hn), 'Van Nguyen', hn)
+
 
 class HumanNameOutputFormatTests(HumanNameTestBase):
     
