@@ -1256,8 +1256,8 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
     def test_portuguese_prefixes(self):
         hn = HumanName("Joao da Silva do Amaral de Souza")
         self.m(hn.first, "Joao", hn)
-        self.m(hn.middle, "da Silva do Amaral de", hn)
-        self.m(hn.last, "Souza", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "da Silva do Amaral de Souza", hn)
 
 
 class ConstantsCustomization(HumanNameTestBase):
@@ -1474,6 +1474,12 @@ class PrefixesTestCase(HumanNameTestBase):
         self.m(hn.last, "von bergen wessels", hn)
         self.m(hn.suffix, "III", hn)
 
+    def test_prefix_before_two_part_last_name_with_acronym_suffix(self):
+        hn = HumanName("pennie von bergen wessels M.D.")
+        self.m(hn.first, "pennie", hn)
+        self.m(hn.last, "von bergen wessels", hn)
+        self.m(hn.suffix, "M.D.", hn)
+
     def test_two_part_last_name_with_suffix_comma(self):
         hn = HumanName("pennie von bergen wessels, III")
         self.m(hn.first, "pennie", hn)
@@ -1485,6 +1491,32 @@ class PrefixesTestCase(HumanNameTestBase):
         self.m(hn.first, "pennie", hn)
         self.m(hn.last, "von bergen wessels", hn)
         self.m(hn.suffix, "III", hn)
+
+    def test_last_name_two_part_last_name_with_two_suffixes(self):
+        hn = HumanName("von bergen wessels MD, pennie III")
+        self.m(hn.first, "pennie", hn)
+        self.m(hn.last, "von bergen wessels", hn)
+        self.m(hn.suffix, "MD, III", hn)
+
+    def test_comma_two_part_last_name_with_acronym_suffix(self):
+        hn = HumanName("von bergen wessels, pennie MD")
+        self.m(hn.first, "pennie", hn)
+        self.m(hn.last, "von bergen wessels", hn)
+        self.m(hn.suffix, "MD", hn)
+
+    def test_comma_two_part_last_name_with_suffix_in_first_part(self):
+        # I'm kinda surprised this works, not really sure if this is a
+        # realistic place for a suffix to be.
+        hn = HumanName("von bergen wessels MD, pennie")
+        self.m(hn.first, "pennie", hn)
+        self.m(hn.last, "von bergen wessels", hn)
+        self.m(hn.suffix, "MD", hn)
+
+    def test_title_two_part_last_name_with_suffix_in_first_part(self):
+        hn = HumanName("pennie von bergen wessels MD, III")
+        self.m(hn.first, "pennie", hn)
+        self.m(hn.last, "von bergen wessels", hn)
+        self.m(hn.suffix, "MD, III", hn)
 
 
 class SuffixesTestCase(HumanNameTestBase):

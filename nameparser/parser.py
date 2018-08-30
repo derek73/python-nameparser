@@ -319,7 +319,7 @@ class HumanName(object):
         return ((lc(piece).replace('.','') in self.C.suffix_acronyms) \
             or (lc(piece) in self.C.suffix_not_acronyms)) \
             and not self.is_an_initial(piece)
-    
+
     def are_suffixes(self, pieces):
         """Return True if all pieces are suffixes."""
         for piece in pieces:
@@ -444,6 +444,7 @@ class HumanName(object):
         self.last_list = []
         self.suffix_list = []
         self.nickname_list = []
+        self.prefix_joins = []
         self.unparsable = True
         
         
@@ -489,6 +490,14 @@ class HumanName(object):
                     self.last_list.append(piece)
                     self.suffix_list += pieces[i+1:]
                     break
+                if piece in self.prefix_joins:
+                    last_piece = pieces[-1:][0]
+                    if self.is_suffix(last_piece):
+                        self.last_list += pieces[i:-1]
+                        self.suffix = last_piece
+                    else:
+                        self.last_list += pieces[i:]
+                    break
                 if not nxt:
                     self.last_list.append(piece)
                     continue
@@ -528,6 +537,14 @@ class HumanName(object):
                         self.last_list.append(piece)
                         self.suffix_list = pieces[i+1:] + self.suffix_list
                         break
+                    if piece in self.prefix_joins:
+                        last_piece = pieces[-1:][0]
+                        if self.is_suffix(last_piece):
+                            self.last_list += pieces[i:-1]
+                            self.suffix_list.insert(0, last_piece)
+                        else:
+                            self.last_list += pieces[i:]
+                        break
                     if not nxt:
                         self.last_list.append(piece)
                         continue
@@ -544,7 +561,7 @@ class HumanName(object):
                 # lastname part may have suffixes in it
                 lastname_pieces = self.parse_pieces(parts[0].split(' '), 1)
                 for piece in lastname_pieces:
-                    # the first one is always a last name, even if it look like
+                    # the first one is always a last name, even if it looks like
                     # a suffix
                     if self.is_suffix(piece) and len(self.last_list) > 0:
                         self.suffix_list.append(piece)
@@ -568,6 +585,9 @@ class HumanName(object):
                     if self.is_suffix(piece):
                         self.suffix_list.append(piece)
                         continue
+                    if piece in self.prefix_joins:
+                        self.last_list += pieces[i:]
+                        break
                     self.middle_list.append(piece)
                 try:
                     if parts[2]:
@@ -742,15 +762,16 @@ class HumanName(object):
         prefixes = list(filter(self.is_prefix, pieces))
         if prefixes:
             i = pieces.index(prefixes[0])
-            # join everything after the prefix until the next suffix
-            next_suffix = list(filter(self.is_suffix, pieces[i:]))
-            if next_suffix:
-                j = pieces.index(next_suffix[0])
-                new_piece = ' '.join(pieces[i:j])
-                pieces = pieces[:i] + [new_piece] + pieces[j:]
-            else:
-                new_piece = ' '.join(pieces[i:])
-                pieces = pieces[:i] + [new_piece]
+            # join everything after the prefix until the next non prefix
+            # store joined pieces in prefix_joins. When a prefix occurs in a last name,
+            # I think it means the rest of the name is part of the last name, so prefix_joins
+            # lets us do that in the parser flow.
+            non_suffixes = list(filter(lambda x: not self.is_prefix(x), pieces[i:]))
+            if non_suffixes:
+                j = pieces.index(non_suffixes[0])
+                new_piece = ' '.join(pieces[i:j + 1])
+                self.prefix_joins += [new_piece]
+                pieces = pieces[:i] + [new_piece] + pieces[j + 1:]
             
         log.debug("pieces: {0}".format(pieces))
         return pieces

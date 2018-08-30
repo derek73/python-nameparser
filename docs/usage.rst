@@ -96,7 +96,7 @@ pass the parameter `force=True`.
 Nickname Handling
 ------------------
 
-The content of parenthesis or double quotes in the name will be
+The content of parenthesis or quotes in the name will be
 available from the nickname attribute.
 
 .. doctest:: nicknames
