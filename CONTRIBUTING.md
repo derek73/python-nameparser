@@ -4,7 +4,7 @@ Contributing
 Development Environment Setup
 --------------------------------
 
-There are some exernal dependencies required in order to run the
+There are some external dependencies required in order to run the
 tests, located in the dev-requirements.txt file.
 
     pip install -r dev-requirements.txt

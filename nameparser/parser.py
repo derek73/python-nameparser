@@ -296,7 +296,7 @@ class HumanName(object):
     def is_prefix(self, piece):
         """
         Lowercase and no periods version of piece is in the 
-        `~nameparser.config.titles.PREFIXES` set.
+        :py:data:`~nameparser.config.prefixes.PREFIXES` set.
         """
         return lc(piece) in self.C.prefixes
 
