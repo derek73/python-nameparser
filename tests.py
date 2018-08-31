@@ -1584,7 +1584,6 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "jr., MD", hn)
 
-    @unittest.expectedFailure
     def test_phd_with_erroneous_space(self):
         hn = HumanName("John Smith, Ph. D.")
         self.m(hn.first, "John", hn)
