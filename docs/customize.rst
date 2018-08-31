@@ -39,14 +39,14 @@ instantiate the :py:class:`~nameparser.parser.HumanName` class (see below).
 Editable attributes of nameparser.config.CONSTANTS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* :py:class:`~nameparser.config.CONSTANTS.titles` - Pieces that come before the name. Includes all `first_name_titles`. Cannot include things that may be first names.
-* :py:class:`~nameparser.config.CONSTANTS.first_name_titles` - Titles that, when followed by a single name, that name is a first name, e.g. "King David".
-* :py:class:`~nameparser.config.CONSTANTS.suffix_acronyms` - Pieces that come at the end of the name that may or may not have periods separating the letters, e.g. "m.d.".
-* :py:class:`~nameparser.config.CONSTANTS.suffix_not_acronyms` - Pieces that come at the end of the name that never have periods separating the letters, e.g. "Jr.".
-* :py:class:`~nameparser.config.CONSTANTS.conjunctions` - Connectors like "and" that join the preceding piece to the following piece.
-* :py:class:`~nameparser.config.CONSTANTS.prefixes` - Connectors like "del" and "bin" that join to the following piece but not the preceding, similar to titles but can appear anywhere in the name.
-* :py:class:`~nameparser.config.CONSTANTS.capitalization_exceptions` - Dictionary of pieces that do not capitalize the first letter, e.g. "Ph.D".
-* :py:class:`~nameparser.config.CONSTANTS.regexes` - Regular expressions used to find words, initials, nicknames, etc.
+* :py:obj:`~nameparser.config.CONSTANTS.titles` - Pieces that come before the name. Includes all `first_name_titles`. Cannot include things that may be first names.
+* :py:obj:`~nameparser.config.CONSTANTS.first_name_titles` - Titles that, when followed by a single name, that name is a first name, e.g. "King David".
+* :py:obj:`~nameparser.config.CONSTANTS.suffix_acronyms` - Pieces that come at the end of the name that may or may not have periods separating the letters, e.g. "m.d.".
+* :py:obj:`~nameparser.config.CONSTANTS.suffix_not_acronyms` - Pieces that come at the end of the name that never have periods separating the letters, e.g. "Jr.".
+* :py:obj:`~nameparser.config.CONSTANTS.conjunctions` - Connectors like "and" that join the preceding piece to the following piece.
+* :py:obj:`~nameparser.config.CONSTANTS.prefixes` - Connectors like "del" and "bin" that join to the following piece but not the preceding, similar to titles but can appear anywhere in the name.
+* :py:obj:`~nameparser.config.CONSTANTS.capitalization_exceptions` - Dictionary of pieces that do not capitalize the first letter, e.g. "Ph.D".
+* :py:obj:`~nameparser.config.CONSTANTS.regexes` - Regular expressions used to find words, initials, nicknames, etc.
 
 Each set of constants comes with :py:func:`~nameparser.config.SetManager.add` and :py:func:`~nameparser.config.SetManager.remove` methods for tuning
 the constants for your project. These methods automatically lower case and

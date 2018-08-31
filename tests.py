@@ -1247,18 +1247,6 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         hn = HumanName("e and e")
         self.m(hn.first, "e and e", hn)
 
-    def test_portuguese_dos(self):
-        hn = HumanName("Rafael Sousa dos Anjos")
-        self.m(hn.first, "Rafael", hn)
-        self.m(hn.middle, "Sousa", hn)
-        self.m(hn.last, "dos Anjos", hn)
-
-    def test_portuguese_prefixes(self):
-        hn = HumanName("Joao da Silva do Amaral de Souza")
-        self.m(hn.first, "Joao", hn)
-        self.m(hn.middle, "", hn)
-        self.m(hn.last, "da Silva do Amaral de Souza", hn)
-
 
 class ConstantsCustomization(HumanNameTestBase):
 
@@ -1517,6 +1505,42 @@ class PrefixesTestCase(HumanNameTestBase):
         self.m(hn.first, "pennie", hn)
         self.m(hn.last, "von bergen wessels", hn)
         self.m(hn.suffix, "MD, III", hn)
+
+    def test_portuguese_dos(self):
+        hn = HumanName("Rafael Sousa dos Anjos")
+        self.m(hn.first, "Rafael", hn)
+        self.m(hn.middle, "Sousa", hn)
+        self.m(hn.last, "dos Anjos", hn)
+
+    def test_portuguese_prefixes(self):
+        hn = HumanName("Joao da Silva do Amaral de Souza")
+        self.m(hn.first, "Joao", hn)
+        self.m(hn.middle, "da Silva do Amaral", hn)
+        self.m(hn.last, "de Souza", hn)
+
+    def test_three_conjunctions(self):
+        hn = HumanName("Dr. Juan Q. Xavier de la dos Vega III")
+        self.m(hn.first, "Juan", hn)
+        self.m(hn.last, "de la dos Vega", hn)
+        self.m(hn.title, "Dr.", hn)
+        self.m(hn.middle, "Q. Xavier", hn)
+        self.m(hn.suffix, "III", hn)
+
+    def test_lastname_three_conjunctions(self):
+        hn = HumanName("de la dos Vega, Dr. Juan Q. Xavier III")
+        self.m(hn.first, "Juan", hn)
+        self.m(hn.last, "de la dos Vega", hn)
+        self.m(hn.title, "Dr.", hn)
+        self.m(hn.middle, "Q. Xavier", hn)
+        self.m(hn.suffix, "III", hn)
+
+    def test_comma_three_conjunctions(self):
+        hn = HumanName("Dr. Juan Q. Xavier de la dos Vega, III")
+        self.m(hn.first, "Juan", hn)
+        self.m(hn.last, "de la dos Vega", hn)
+        self.m(hn.title, "Dr.", hn)
+        self.m(hn.middle, "Q. Xavier", hn)
+        self.m(hn.suffix, "III", hn)
 
 
 class SuffixesTestCase(HumanNameTestBase):

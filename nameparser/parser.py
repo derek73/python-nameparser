@@ -501,14 +501,6 @@ class HumanName(object):
                     self.last_list.append(piece)
                     self.suffix_list += pieces[i+1:]
                     break
-                if piece in self.prefix_joins:
-                    last_piece = pieces[-1:][0]
-                    if self.is_suffix(last_piece):
-                        self.last_list += pieces[i:-1]
-                        self.suffix = last_piece
-                    else:
-                        self.last_list += pieces[i:]
-                    break
                 if not nxt:
                     self.last_list.append(piece)
                     continue
@@ -547,14 +539,6 @@ class HumanName(object):
                     if self.are_suffixes(pieces[i+1:]):
                         self.last_list.append(piece)
                         self.suffix_list = pieces[i+1:] + self.suffix_list
-                        break
-                    if piece in self.prefix_joins:
-                        last_piece = pieces[-1:][0]
-                        if self.is_suffix(last_piece):
-                            self.last_list += pieces[i:-1]
-                            self.suffix_list.insert(0, last_piece)
-                        else:
-                            self.last_list += pieces[i:]
                         break
                     if not nxt:
                         self.last_list.append(piece)
@@ -596,9 +580,6 @@ class HumanName(object):
                     if self.is_suffix(piece):
                         self.suffix_list.append(piece)
                         continue
-                    if piece in self.prefix_joins:
-                        self.last_list += pieces[i:]
-                        break
                     self.middle_list.append(piece)
                 try:
                     if parts[2]:
@@ -685,16 +666,16 @@ class HumanName(object):
         # don't join on conjunctions if there's only 2 parts
         if length < 3:
             return pieces
-            
+
         rootname_pieces = [p for p in pieces if self.is_rootname(p)]
         total_length = len(rootname_pieces) + additional_parts_count
-        
+
         # find all the conjunctions, join any conjunctions that are next to each
         # other, then join those newly joined conjunctions and any single
         # conjunctions to the piece before and after it
-        conj_index = [i for i, piece in enumerate(pieces) 
+        conj_index = [i for i, piece in enumerate(pieces)
                                 if self.is_conjunction(piece)]
-        
+
         contiguous_conj_i = []
         for i, val in enumerate(conj_index):
             try:
@@ -702,10 +683,10 @@ class HumanName(object):
                     contiguous_conj_i += [val]
             except IndexError:
                 pass
-        
+
         contiguous_conj_i = group_contiguous_integers(conj_index)
-        
-        delete_i = [] 
+
+        delete_i = []
         for i in contiguous_conj_i:
             if type(i) == tuple:
                 new_piece = " ".join(pieces[ i[0] : i[1]+1] )
@@ -717,7 +698,7 @@ class HumanName(object):
                 pieces[i] = new_piece
             #add newly joined conjunctions to constants to be found later
             self.C.conjunctions.add(new_piece)
-        
+
         for i in reversed(delete_i):
             # delete pieces in reverse order or the index changes on each delete
             del pieces[i]
@@ -728,7 +709,7 @@ class HumanName(object):
 
         # refresh conjunction index locations
         conj_index = [i for i, piece in enumerate(pieces) if self.is_conjunction(piece)]
-        
+
         for i in conj_index:
             if len(pieces[i]) == 1 and total_length < 4:
                 # if there are only 3 total parts (minus known titles, suffixes
@@ -736,7 +717,7 @@ class HumanName(object):
                 # treating it as an initial rather than a conjunction.
                 # http://code.google.com/p/python-nameparser/issues/detail?id=11
                 continue
-            
+
             if i is 0:
                 new_piece = " ".join(pieces[i:i+2])
                 if self.is_title(pieces[i+1]):
@@ -748,8 +729,8 @@ class HumanName(object):
                 for j,val in enumerate(conj_index):
                     if val > i:
                         conj_index[j]=val-1
-                
-            else:    
+
+            else:
                 new_piece = " ".join(pieces[i-1:i+2])
                 if self.is_title(pieces[i-1]):
                     # when joining to a title, make new_piece a title too
@@ -767,23 +748,51 @@ class HumanName(object):
                 for j,val in enumerate(conj_index):
                     if val > i:
                         conj_index[j] = val - rm_count
-        
-        
-        # join prefixes to following lastnames: ['de la Vega'], ['van Buren']
+
+
+        # join prefixes to following lastnames: ['de la Vega'], ['van Buren III']
         prefixes = list(filter(self.is_prefix, pieces))
         if prefixes:
-            i = pieces.index(prefixes[0])
-            # join everything after the prefix until the next non prefix
-            # store joined pieces in prefix_joins. When a prefix occurs in a last name,
-            # I think it means the rest of the name is part of the last name, so prefix_joins
-            # lets us do that in the parser flow.
-            non_suffixes = list(filter(lambda x: not self.is_prefix(x), pieces[i:]))
-            if non_suffixes:
-                j = pieces.index(non_suffixes[0])
-                new_piece = ' '.join(pieces[i:j + 1])
-                self.prefix_joins += [new_piece]
-                pieces = pieces[:i] + [new_piece] + pieces[j + 1:]
-            
+            for prefix in prefixes:
+                try:
+                    i = pieces.index(prefix)
+                except ValueError:
+                    # If the prefix is no longer in pieces, it's because it has been
+                    # combined with the prefix that appears right before (or before that when
+                    # chained together) in the last loop, so the index of that newly created
+                    # piece is the same as in the last loop, i==i still, and we want to join
+                    # it to the next piece.
+                    pass
+
+                new_piece = ''
+
+                # join everything after the prefix until the next non prefix
+                # store joined pieces in prefix_joins. When a prefix occurs in a last name,
+                # I think it means the rest of the name is part of the last name, so prefix_joins
+                # lets us do that in the parser flow.
+                # for prefix in prefixes:
+
+                try:
+                    next_prefix = next(iter(filter(self.is_prefix, pieces[i + 1:])))
+                    j = pieces.index(next_prefix)
+                    if j == i + 1:
+                        # if there are two prefixes in sequence, join to the following piece
+                        j += 1
+                    new_piece = ' '.join(pieces[i:j])
+                    pieces = pieces[:i] + [new_piece] + pieces[j:]
+                except StopIteration:
+                    try:
+                        # if there are no more prefixes, look for a suffix to stop at
+                        stop_at = next(iter(filter(self.is_suffix, pieces[i + 1:])))
+                        j = pieces.index(stop_at)
+                        new_piece = ' '.join(pieces[i:j])
+                        pieces = pieces[:i] + [new_piece] + pieces[j:]
+                    except StopIteration:
+                        # if there were no suffixes, nothing to stop at so join all
+                        # remaining pieces
+                        new_piece = ' '.join(pieces[i:])
+                        pieces = pieces[:i] + [new_piece]
+
         log.debug("pieces: {0}".format(pieces))
         return pieces
     
