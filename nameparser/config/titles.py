@@ -194,7 +194,6 @@ TITLES = FIRST_NAME_TITLES | set([
     'comtesse',
     'conductor',
     'consultant',
-    'contessa',
     'controller',
     'corporal',
     'corporate',
