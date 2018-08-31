@@ -390,7 +390,7 @@ class HumanName(object):
         _re =  self.C.regexes.phd
         match = _re.search(self._full_name)
         if match:
-            self.suffix_list.append(match.group(0))
+            self.suffix_list.append(match.group(1))
             self._full_name = _re.sub('', self._full_name)
 
     def parse_nicknames(self):

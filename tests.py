@@ -1614,6 +1614,12 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.last, "Smith", hn)
         self.m(hn.suffix, "Ph. D.", hn)
 
+    def test_phd_conflict(self):
+        hn = HumanName("Adolph D")
+        self.m(hn.first, "Adolph", hn)
+        self.m(hn.last, "D", hn)
+
+
     # http://en.wikipedia.org/wiki/Ma_(surname)
     def test_potential_suffix_that_is_also_last_name(self):
         hn = HumanName("Jack Ma")

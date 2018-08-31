@@ -30,7 +30,7 @@ REGEXES = set([
     ("no_vowels",re.compile(r'^[^aeyiuo]+$', re.I | re.U)),
     ("period_not_at_end",re.compile(r'.*\..+$', re.I | re.U)),
     ("emoji",re_emoji),
-    ("phd", re.compile(r'ph\.?\s+d\.?', re.I | re.U)),
+    ("phd", re.compile(r'\s(ph\.?\s+d\.?)', re.I | re.U)),
 ])
 """
 All regular expressions used by the parser are precompiled and stored in the config.

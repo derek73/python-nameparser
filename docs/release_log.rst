@@ -1,5 +1,7 @@
 Release Log
 ===========
+* 1.0.1 - August 30, 2018
+    - Fix overzealous regex for "Ph. D." (#43)
 * 1.0.0 - August 30, 2018
     - Fix support for nicknames in single quotes (#74)
     - Change prefix handling to support prefixes on first names (#60)
