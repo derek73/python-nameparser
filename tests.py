@@ -1260,7 +1260,10 @@ class ConstantsCustomization(HumanNameTestBase):
 
     def test_add_title(self):
         hn = HumanName("Te Awanui-a-Rangi Black", constants=None)
+        start_len = len(hn.C.titles)
+        self.assert_(start_len > 0)
         hn.C.titles.add('te')
+        self.assertEqual(start_len + 1, len(hn.C.titles))
         hn.parse_full_name()
         self.m(hn.title, "Te", hn)
         self.m(hn.first, "Awanui-a-Rangi", hn)
@@ -1268,7 +1271,10 @@ class ConstantsCustomization(HumanNameTestBase):
     
     def test_remove_title(self):
         hn = HumanName("Hon Solo", constants=None)
+        start_len = len(hn.C.titles)
+        self.assert_(start_len > 0)
         hn.C.titles.remove('hon')
+        self.assertEqual(start_len - 1, len(hn.C.titles))
         hn.parse_full_name()
         self.m(hn.first, "Hon", hn)
         self.m(hn.last, "Solo", hn)

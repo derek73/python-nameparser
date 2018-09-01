@@ -23,6 +23,8 @@ The examples use Python 3, but Python 2.6+ is supported.
     'de la Vega'
     >>> name.suffix
     'III'
+    >>> name.surnames
+    'Q. Xavier de la Vega'
     >>> name.full_name = "Juan Q. Xavier Velasquez y Garcia, Jr."
     >>> name
     <HumanName : [
