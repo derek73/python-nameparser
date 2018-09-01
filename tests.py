@@ -188,6 +188,14 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(hn.first, "", hn)
         self.m(hn.last, "", hn)
 
+    def test_surnames_list_attribute(self):
+        hn = HumanName("John Edgar Casey Williams III")
+        self.m(hn.surnames_list, ["Edgar", "Casey", "Williams"], hn)
+
+    def test_surnames_attribute(self):
+        hn = HumanName("John Edgar Casey Williams III")
+        self.m(hn.surnames, "Edgar Casey Williams", hn)
+
 
 class FirstNameHandlingTests(HumanNameTestBase):
     def test_first_name(self):
@@ -1436,7 +1444,6 @@ class HumanNameNicknameTestCase(HumanNameTestBase):
         self.m(hn.first, "Jennifer", hn)
         self.m(hn.last, "Jones", hn)
         self.m(hn.nickname, "Jen Duff", hn)
-
 
 
 class PrefixesTestCase(HumanNameTestBase):

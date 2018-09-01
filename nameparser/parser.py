@@ -243,7 +243,21 @@ class HumanName(object):
         parenthesis (``()``)
         """
         return " ".join(self.nickname_list) or self.C.empty_attribute_default
-    
+
+    @property
+    def surnames_list(self):
+        """
+        List of middle names followed by last name.
+        """
+        return self.middle_list + self.last_list
+
+    @property
+    def surnames(self):
+        """
+        A string of all middle names followed by the last name.
+        """
+        return " ".join(self.surnames_list) or self.C.empty_attribute_default
+
     ### setter methods
     
     def _set_list(self, attr, value):
