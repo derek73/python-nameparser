@@ -43,7 +43,8 @@ class HumanName(object):
     * :py:attr:`last`
     * :py:attr:`suffix`
     * :py:attr:`nickname`
-    
+    * :py:attr:`surnames`
+
     :param str full_name: The name string to be parsed.
     :param constants constants: 
         a :py:class:`~nameparser.config.Constants` instance. Pass ``None`` for 
