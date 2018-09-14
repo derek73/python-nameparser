@@ -470,7 +470,6 @@ class HumanName(object):
         self.last_list = []
         self.suffix_list = []
         self.nickname_list = []
-        self.prefix_joins = []
         self.unparsable = True
         
         
@@ -765,7 +764,7 @@ class HumanName(object):
                         conj_index[j] = val - rm_count
 
 
-        # join prefixes to following lastnames: ['de la Vega'], ['van Buren III']
+        # join prefixes to following lastnames: ['de la Vega'], ['van Buren']
         prefixes = list(filter(self.is_prefix, pieces))
         if prefixes:
             for prefix in prefixes:
@@ -781,11 +780,7 @@ class HumanName(object):
 
                 new_piece = ''
 
-                # join everything after the prefix until the next non prefix
-                # store joined pieces in prefix_joins. When a prefix occurs in a last name,
-                # I think it means the rest of the name is part of the last name, so prefix_joins
-                # lets us do that in the parser flow.
-                # for prefix in prefixes:
+                # join everything after the prefix until the next prefix or suffix
 
                 try:
                     next_prefix = next(iter(filter(self.is_prefix, pieces[i + 1:])))
