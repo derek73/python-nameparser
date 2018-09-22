@@ -1,10 +1,7 @@
 Name Parser
 ===========
 
-.. image:: https://travis-ci.org/derek73/python-nameparser.svg?branch=master
-   :target: https://travis-ci.org/derek73/python-nameparser
-.. image:: https://badge.fury.io/py/nameparser.svg
-    :target: http://badge.fury.io/py/nameparser
+|Build Status| |PyPI| |PyPI version| |Documentation|
 
 A simple Python (3.2+ & 2.6+) module for parsing human names into their
 individual components. 
@@ -15,6 +12,7 @@ individual components.
 * hn.last
 * hn.suffix
 * hn.nickname
+* hn.surnames *(middle + last)*
 
 Supported Name Structures
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -54,7 +52,7 @@ install with pip using the command below.
 
 If you need to handle lists of names, check out
 `namesparser <https://github.com/gwu-libraries/namesparser>`_, a
- compliment to this module that handles multiple names in a string.
+compliment to this module that handles multiple names in a string.
 
 
 Quick Start Example
@@ -136,3 +134,13 @@ https://github.com/derek73/python-nameparser
 .. _CONTRIBUTING.md: https://github.com/derek73/python-nameparser/tree/master/CONTRIBUTING.md
 .. _Start a New Issue: https://github.com/derek73/python-nameparser/issues
 .. _click here to propose changes to the titles: https://github.com/derek73/python-nameparser/edit/master/nameparser/config/titles.py
+
+
+.. |Build Status| image:: https://travis-ci.org/derek73/python-nameparser.svg?branch=master
+   :target: https://travis-ci.org/derek73/python-nameparser
+.. |PyPI| image:: https://img.shields.io/pypi/v/nameparser.svg
+   :target: https://pypi.org/project/nameparser/
+.. |Documentation| image:: https://readthedocs.org/projects/nameparser/badge/?version=latest
+   :target: http://nameparser.readthedocs.io/en/latest/?badge=latest
+.. |PyPI version| image:: https://img.shields.io/pypi/pyversions/nameparser.svg
+   :target: https://pypi.org/project/nameparser/
