@@ -503,6 +503,9 @@ class HumanName(object):
                     self.title_list.append(piece)
                     continue
                 if not self.first:
+                    if p_len == 1 and self.nickname:
+                        self.last_list.append(piece)
+                        continue
                     self.first_list.append(piece)
                     continue
                 if self.are_suffixes(pieces[i+1:]) or \

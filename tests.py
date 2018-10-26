@@ -46,7 +46,7 @@ class HumanNameTestBase(unittest.TestCase):
             self.assertEqual(actual, expected, "'%s' != '%s' for '%s'\n%r" % (
                 actual,
                 expected,
-                hn.full_name,
+                hn.original,
                 hn
             ))
         except UnicodeDecodeError:
@@ -1358,7 +1358,7 @@ class ConstantsCustomization(HumanNameTestBase):
         self.assertIn('béck', c.titles)
 
 
-class HumanNameNicknameTestCase(HumanNameTestBase):
+class NicknameTestCase(HumanNameTestBase):
     # https://code.google.com/p/python-nameparser/issues/detail?id=33
     def test_nickname_in_parenthesis(self):
         hn = HumanName("Benjamin (Ben) Franklin")
@@ -1445,12 +1445,64 @@ class HumanNameNicknameTestCase(HumanNameTestBase):
         self.m(hn.last, "Jones", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test_parenthesis_and_quotes_together(self):
-        hn = HumanName("Jennifer 'Jen' Jones (Duff)")
-        self.m(hn.first, "Jennifer", hn)
-        self.m(hn.last, "Jones", hn)
-        self.m(hn.nickname, "Jen Duff", hn)
+    def test_nickname_and_last_name(self):
+        hn = HumanName('"Rick" Edmonds')
+        self.m(hn.first, "", hn)
+        self.m(hn.last, "Edmonds", hn)
+        self.m(hn.nickname, "Rick", hn)
 
+    @unittest.expectedFailure
+    def test_nickname_and_last_name_with_title(self):
+        hn = HumanName('Senator "Rick" Edmonds')
+        self.m(hn.title, "Senator", hn)
+        self.m(hn.first, "", hn)
+        self.m(hn.last, "Edmonds", hn)
+        self.m(hn.nickname, "Rick", hn)
+
+
+
+# class MaidenNameTestCase(HumanNameTestBase):
+#
+#     def test_parenthesis_and_quotes_together(self):
+#         hn = HumanName("Jennifer 'Jen' Jones (Duff)")
+#         self.m(hn.first, "Jennifer", hn)
+#         self.m(hn.last, "Jones", hn)
+#         self.m(hn.nickname, "Jen", hn)
+#         self.m(hn.maiden, "Duff", hn)
+#
+#     def test_maiden_name_with_nee(self):
+#         # https://en.wiktionary.org/wiki/née
+#         hn = HumanName("Mary Toogood nee Johnson")
+#         self.m(hn.first, "Mary", hn)
+#         self.m(hn.last, "Toogood", hn)
+#         self.m(hn.maiden, "Johnson", hn)
+#
+#     def test_maiden_name_with_accented_nee(self):
+#         # https://en.wiktionary.org/wiki/née
+#         hn = HumanName("Mary Toogood née Johnson")
+#         self.m(hn.first, "Mary", hn)
+#         self.m(hn.last, "Toogood", hn)
+#         self.m(hn.maiden, "Johnson", hn)
+#
+#     def test_maiden_name_with_nee_and_comma(self):
+#         # https://en.wiktionary.org/wiki/née
+#         hn = HumanName("Mary Toogood, née Johnson")
+#         self.m(hn.first, "Mary", hn)
+#         self.m(hn.last, "Toogood", hn)
+#         self.m(hn.maiden, "Johnson", hn)
+#
+#     def test_maiden_name_with_nee_with_parenthesis(self):
+#         hn = HumanName("Mary Toogood (nee Johnson)")
+#         self.m(hn.first, "Mary", hn)
+#         self.m(hn.last, "Toogood", hn)
+#         self.m(hn.maiden, "Johnson", hn)
+#
+#     def test_maiden_name_with_parenthesis(self):
+#         hn = HumanName("Mary Toogood (Johnson)")
+#         self.m(hn.first, "Mary", hn)
+#         self.m(hn.last, "Toogood", hn)
+#         self.m(hn.maiden, "Johnson", hn)
+#
 
 class PrefixesTestCase(HumanNameTestBase):
 

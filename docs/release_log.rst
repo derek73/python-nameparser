@@ -1,5 +1,7 @@
 Release Log
 ===========
+* 1.0.2 - Oct 26, 2018
+    - Fix handling of only nickname and last name (#78)
 * 1.0.1 - August 30, 2018
     - Fix overzealous regex for "Ph. D." (#43)
     - Add `surnames` attribute as aggregate of middle and last names
