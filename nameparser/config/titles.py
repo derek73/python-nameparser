@@ -338,7 +338,8 @@ TITLES = FIRST_NAME_TITLES | set([
     'jr',
     'judge',
     'judicial',
-    'junior',
+    # Junior is also a common name, so don't strip it as a title
+    # 'junior',
     'jurist',
     'keyboardist',
     'kingdom',
