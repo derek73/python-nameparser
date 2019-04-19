@@ -480,8 +480,8 @@ class HumanName(object):
         # break up full_name by commas
         parts = [x.strip() for x in self._full_name.split(",")]
         
-        log.debug("full_name: {0}".format(self._full_name))
-        log.debug("parts: {0}".format(parts))
+        log.debug("full_name: %s", self._full_name)
+        log.debug("parts: %s", parts)
         
         if len(parts) == 1:
             
@@ -538,7 +538,7 @@ class HumanName(object):
                 
                 self.suffix_list += parts[1:]
                 pieces = self.parse_pieces(parts[0].split(' '))
-                log.debug("pieces: {0}".format(u(pieces)))
+                log.debug("pieces: %s", u(pieces))
                 for i, piece in enumerate(pieces):
                     try:
                         nxt = pieces[i + 1]
@@ -568,7 +568,7 @@ class HumanName(object):
                 #      parts[0],      parts[1],              parts[2:...]
                 pieces = self.parse_pieces(parts[1].split(' '), 1)
                 
-                log.debug("pieces: {0}".format(u(pieces)))
+                log.debug("pieces: %s", u(pieces))
                 
                 # lastname part may have suffixes in it
                 lastname_pieces = self.parse_pieces(parts[0].split(' '), 1)
@@ -605,7 +605,7 @@ class HumanName(object):
                     pass
                 
         if len(self) < 0:
-            log.info("Unparsable: \"{}\" ".format(self.original))
+            log.info("Unparsable: \"%s\" ", self.original)
         else:
             self.unparsable = False
         self.post_process()
@@ -806,7 +806,7 @@ class HumanName(object):
                         new_piece = ' '.join(pieces[i:])
                         pieces = pieces[:i] + [new_piece]
 
-        log.debug("pieces: {0}".format(pieces))
+        log.debug("pieces: %s", pieces)
         return pieces
     
     
