@@ -92,7 +92,10 @@ class SetManager(collections.Set):
         explicit `encoding` parameter to specify the encoding of binary strings that
         are not DEFAULT_ENCODING (UTF-8).
         """
-        encoding = encoding or sys.stdin.encoding or DEFAULT_ENCODING
+        stdin_encoding = None
+        if sys.stdin:
+            stdin_encoding = sys.stdin.encoding
+        encoding = encoding or stdin_encoding or DEFAULT_ENCODING
         if type(s) == binary_type:
             s = s.decode(encoding)
         self.elements.add(lc(s))
