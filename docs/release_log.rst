@@ -1,5 +1,8 @@
 Release Log
 ===========
+* 1.0.3 - April 18, 2018
+    - fix sys.stdin usage when stdin doesn't exist (#82)
+    - support for escaping log entry arguments (#84)
 * 1.0.2 - Oct 26, 2018
     - Fix handling of only nickname and last name (#78)
 * 1.0.1 - August 30, 2018

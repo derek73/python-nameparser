@@ -1,4 +1,4 @@
-VERSION = (1, 0, 2)
+VERSION = (1, 0, 3)
 __version__ = '.'.join(map(str, VERSION))
 __author__ = "Derek Gulbranson"
 __author_email__ = 'derek73@gmail.com'
