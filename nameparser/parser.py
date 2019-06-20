@@ -413,9 +413,9 @@ class HumanName(object):
         The content of parenthesis or quotes in the name will be added to the 
         nicknames list. This happens before any other processing of the name.
         
-        Single quotes cannot span white space characters to allow for single
-        quotes in names like O'Connor. Double quotes and parenthesis can span
-        white space.
+        Single quotes cannot span white space characters and must border
+        white space to allow for quotes in names like O'Connor and Kawai'ae'a.
+        Double quotes and parenthesis can span white space.
         
         Loops through 3 :py:data:`~nameparser.config.regexes.REGEXES`; 
         `quoted_word`, `double_quotes` and `parenthesis`.
