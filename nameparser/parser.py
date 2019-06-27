@@ -363,8 +363,8 @@ class HumanName(object):
     
     @property
     def full_name(self):
-        """The name string to be parsed."""
-        return self._full_name
+        """The string output of the HumanName instance."""
+        return self.__str__()
     
     @full_name.setter
     def full_name(self, value):

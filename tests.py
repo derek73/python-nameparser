@@ -111,6 +111,12 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "III", hn)
 
+    def test_get_full_name_attribute_references_internal_lists(self):
+        hn = HumanName("John Williams")
+        hn.first_list = ["Larry"]
+        self.m(hn.full_name, "Larry Williams", hn)
+
+
     def test_assignment_to_attribute(self):
         hn = HumanName("John A. Kenneth Doe, Jr.")
         hn.last = "de la Vega"
