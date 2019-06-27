@@ -1431,6 +1431,34 @@ class NicknameTestCase(HumanNameTestBase):
         self.m(hn.last, "Aube'", hn)
         self.m(hn.nickname, "", hn)
     
+    def test_okina_inside_name_not_treated_as_nickname(self):
+        hn = HumanName("Harrieta Keōpūolani Nāhiʻenaʻena")
+        self.m(hn.first, "Harrieta", hn)
+        self.m(hn.middle, "Keōpūolani", hn)
+        self.m(hn.last, "Nāhiʻenaʻena", hn)
+        self.m(hn.nickname, "", hn)
+
+    def test_single_quotes_not_treated_as_nickname_Hawaiian_example(self):
+        hn = HumanName("Harietta Keopuolani Nahi'ena'ena")
+        self.m(hn.first, "Harietta", hn)
+        self.m(hn.middle, "Keopuolani", hn)
+        self.m(hn.last, "Nahi'ena'ena", hn)
+        self.m(hn.nickname, "", hn)
+
+    def test_single_quotes_not_treated_as_nickname_Kenyan_example(self):
+        hn = HumanName("Naomi Wambui Ng'ang'a")
+        self.m(hn.first, "Naomi", hn)
+        self.m(hn.middle, "Wambui", hn)
+        self.m(hn.last, "Ng'ang'a", hn)
+        self.m(hn.nickname, "", hn)
+
+    def test_single_quotes_not_treated_as_nickname_Samoan_example(self):
+        hn = HumanName("Va'apu'u Vitale")
+        self.m(hn.first, "Va'apu'u", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "Vitale", hn)
+        self.m(hn.nickname, "", hn)
+
     # http://code.google.com/p/python-nameparser/issues/detail?id=17
     def test_parenthesis_are_removed_from_name(self):
         hn = HumanName("John Jones (Unknown)")
