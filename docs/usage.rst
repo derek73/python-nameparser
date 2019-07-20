@@ -72,9 +72,8 @@ Capitalization Support
 
 The HumanName class can try to guess the correct capitalization of name
 entered in all upper or lower case. By default, it will not adjust 
-the case of names entered in mixed case. To run capitalization on all names
-pass the parameter `force=True`.
-
+the case of names entered in mixed case. To run capitalization on a
+`HumanName` instance, pass the parameter `force=True`.
 
     Capitalize the name.
 
@@ -92,6 +91,31 @@ pass the parameter `force=True`.
     'Shirley Maclaine'
     >>> name.capitalize(force=True)
     >>> str(name) 
+    'Shirley MacLaine'
+
+To apply capitalization to all `HumanName` instances, set
+:py:attr:`~nameparser.config.Constants.capitalize_name` to `True`.
+
+.. doctest:: capitalize_name
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> from nameparser.config import CONSTANTS
+    >>> CONSTANTS.capitalize_name = True
+    >>> name = HumanName("bob v. de la macdole-eisenhower phd")
+    >>> str(name)
+    'Bob V. de la MacDole-Eisenhower Ph.D.'
+
+To force the capitalization of mixed case strings on all `HumanName` instances,
+set :py:attr:`~nameparser.config.Constants.force_mixed_case_capitalization` to `True`. 
+
+.. doctest:: force_mixed_case_capitalization
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> from nameparser.config import CONSTANTS
+    >>> CONSTANTS.force_mixed_case_capitalization = True
+    >>> name = HumanName('Shirley Maclaine')
+    >>> name.capitalize()
+    >>> str(name)
     'Shirley MacLaine'
 
 

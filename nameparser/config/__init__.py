@@ -179,8 +179,37 @@ class Constants(object):
         'John'
         
     """
-    
-    
+    capitalize_name = False
+    """
+    If set, applies :py:meth:`~nameparser.parser.HumanName.capitalize` to
+    :py:class:`~nameparser.parser.HumanName` instance.
+
+    .. doctest::
+
+        >>> from nameparser.config import CONSTANTS
+        >>> CONSTANTS.capitalize_name = True
+        >>> name = HumanName("bob v. de la macdole-eisenhower phd")
+        >>> str(name)
+        'Bob V. de la MacDole-Eisenhower Ph.D.'
+
+    """
+    force_mixed_case_capitalization = False
+    """
+    If set, forces the capitalization of mixed case strings when
+    :py:meth:`~nameparser.parser.HumanName.capitalize` is called.
+
+    .. doctest::
+
+        >>> from nameparser.config import CONSTANTS
+        >>> CONSTANTS.force_mixed_case_capitalization = True
+        >>> name = HumanName('Shirley Maclaine')
+        >>> name.capitalize()
+        >>> str(name)
+        'Shirley MacLaine'
+
+    """
+
+
     def __init__(self, 
                     prefixes=PREFIXES, 
                     suffix_acronyms=SUFFIX_ACRONYMS,

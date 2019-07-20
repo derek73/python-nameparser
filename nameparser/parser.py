@@ -387,7 +387,7 @@ class HumanName(object):
         This method happens at the beginning of the :py:func:`parse_full_name`
         before any other processing of the string aside from unicode
         normalization, so it's a good place to do any custom handling in a
-        subclass. Runs :py:func:`parse_nicknames` and py:func:`squash_emoji`.
+        subclass. Runs :py:func:`parse_nicknames` and :py:func:`squash_emoji`.
         
         """
         self.fix_phd()
@@ -397,9 +397,11 @@ class HumanName(object):
     def post_process(self):
         """
         This happens at the end of the :py:func:`parse_full_name` after
-        all other processing has taken place. Runs :py:func:`handle_firstnames`.
+        all other processing has taken place. Runs :py:func:`handle_firstnames`
+        and :py:func:`handle_capitalization`.
         """
         self.handle_firstnames()
+        self.handle_capitalization()
 
     def fix_phd(self):
         _re =  self.C.regexes.phd
@@ -675,9 +677,9 @@ class HumanName(object):
         :param list pieces: name pieces strings after split on spaces
         :param int additional_parts_count: 
         :return: new list with piece next to conjunctions merged into one piece 
-        with spaces in it.
+            with spaces in it.
         :rtype: list
-        
+
         """
         length = len(pieces) + additional_parts_count
         # don't join on conjunctions if there's only 2 parts
@@ -833,14 +835,16 @@ class HumanName(object):
         replacement = lambda m: self.cap_word(m.group(0), attribute)
         return self.C.regexes.word.sub(replacement, piece)
 
-    def capitalize(self, force=False):
+    def capitalize(self, force=None):
         """
         The HumanName class can try to guess the correct capitalization of name
         entered in all upper or lower case. By default, it will not adjust the
         case of names entered in mixed case. To run capitalization on all names
         pass the parameter `force=True`.
         
-        :param bool force: force capitalization of strings that include mixed case
+        :param bool force: Forces capitalization of mixed case strings. This
+            parameter overrides rules set within
+            :py:class:`~nameparser.config.CONSTANTS`.
 
         **Usage**
         
@@ -861,6 +865,9 @@ class HumanName(object):
         
         """
         name = u(self)
+        force = self.C.force_mixed_case_capitalization \
+            if force is None else force
+
         if not force and not (name == name.upper() or name == name.lower()):
             return
         self.title_list  = self.cap_piece(self.title , 'title').split(' ')
@@ -868,3 +875,11 @@ class HumanName(object):
         self.middle_list = self.cap_piece(self.middle, 'middle').split(' ')
         self.last_list   = self.cap_piece(self.last  , 'last').split(' ')
         self.suffix_list = self.cap_piece(self.suffix, 'suffix').split(', ')
+
+    def handle_capitalization(self):
+        """
+        Handles capitalization configurations set within
+        :py:class:`~nameparser.config.CONSTANTS`.
+        """
+        if self.C.capitalize_name:
+            self.capitalize()

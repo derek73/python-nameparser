@@ -2088,6 +2088,28 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         self.assertEqual(u(hn), "TEST2")
         CONSTANTS.string_format = _orig
 
+    def test_capitalize_name_constants_attribute(self):
+        from nameparser.config import CONSTANTS
+        CONSTANTS.capitalize_name = True
+        hn = HumanName("bob v. de la macdole-eisenhower phd")
+        self.assertEqual(str(hn), "Bob V. de la MacDole-Eisenhower Ph.D.")
+        CONSTANTS.capitalize_name = False
+
+    def test_force_mixed_case_capitalization_constants_attribute(self):
+        from nameparser.config import CONSTANTS
+        CONSTANTS.force_mixed_case_capitalization = True
+        hn = HumanName('Shirley Maclaine')
+        hn.capitalize()
+        self.assertEqual(str(hn), "Shirley MacLaine")
+        CONSTANTS.force_mixed_case_capitalization = False
+
+    def test_capitalize_name_and_force_mixed_case_capitalization_constants_attributes(self):
+        from nameparser.config import CONSTANTS
+        CONSTANTS.capitalize_name = True
+        CONSTANTS.force_mixed_case_capitalization = True
+        hn = HumanName('Shirley Maclaine')
+        self.assertEqual(str(hn), "Shirley MacLaine")
+
     def test_quote_nickname_formating(self):
         hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
         hn.string_format = "{title} {first} {middle} {last} {suffix} '{nickname}'"
