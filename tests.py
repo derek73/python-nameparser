@@ -40,7 +40,7 @@ except AttributeError:
 
 class HumanNameTestBase(unittest.TestCase):
     def m(self, actual, expected, hn):
-        """assertEquals with a better message and awareness of hn.C.empty_attribute_default"""
+        """assertEqual with a better message and awareness of hn.C.empty_attribute_default"""
         expected = expected or hn.C.empty_attribute_default
         try:
             self.assertEqual(actual, expected, "'%s' != '%s' for '%s'\n%r" % (
@@ -50,7 +50,7 @@ class HumanNameTestBase(unittest.TestCase):
                 hn
             ))
         except UnicodeDecodeError:
-            self.assertEquals(actual, expected)
+            self.assertEqual(actual, expected)
 
 
 class HumanNamePythonTests(HumanNameTestBase):
@@ -62,8 +62,6 @@ class HumanNamePythonTests(HumanNameTestBase):
 
     def test_string_output(self):
         hn = HumanName("de la Véña, Jüan")
-        print(hn)
-        print(repr(hn))
 
     def test_escaped_utf8_bytes(self):
         hn = HumanName(b'B\xc3\xb6ck, Gerald')
@@ -1267,7 +1265,7 @@ class ConstantsCustomization(HumanNameTestBase):
     def test_add_title(self):
         hn = HumanName("Te Awanui-a-Rangi Black", constants=None)
         start_len = len(hn.C.titles)
-        self.assert_(start_len > 0)
+        self.assertTrue(start_len > 0)
         hn.C.titles.add('te')
         self.assertEqual(start_len + 1, len(hn.C.titles))
         hn.parse_full_name()
@@ -1278,7 +1276,7 @@ class ConstantsCustomization(HumanNameTestBase):
     def test_remove_title(self):
         hn = HumanName("Hon Solo", constants=None)
         start_len = len(hn.C.titles)
-        self.assert_(start_len > 0)
+        self.assertTrue(start_len > 0)
         hn.C.titles.remove('hon')
         self.assertEqual(start_len - 1, len(hn.C.titles))
         hn.parse_full_name()
