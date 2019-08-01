@@ -4,3 +4,4 @@ coverage>=4.0.3
 dill>=0.2.5
 twine
 Sphinx
+pytest

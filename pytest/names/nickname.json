@@ -1,0 +1,105 @@
+[
+    {
+        "id": "test_nickname_in_parenthesis",
+        "_note": "https://code.google.com/p/python-nameparser/issues/detail?id=33",
+        "raw": "Benjamin (Ben) Franklin",
+        "first": "Benjamin",
+        "last": "Franklin",
+        "nickname": "Ben"
+    },
+    {
+        "id": "test_two_word_nickname_in_parenthesis",
+        "raw": "Benjamin (Big Ben) Franklin",
+        "first": "Benjamin",
+        "last": "Franklin",
+        "nickname": "Big Ben"
+    },
+    {
+        "id": "test_two_words_in_quotes",
+        "raw": "Benjamin \"Big Ben\" Franklin",
+        "first": "Benjamin",
+        "last": "Franklin",
+        "nickname": "Big Ben"
+    },
+    {
+        "id": "test_nickname_in_parenthesis_with_comma",
+        "raw": "Franklin, Benjamin (Ben)",
+        "first": "Benjamin",
+        "last": "Franklin",
+        "nickname": "Ben"
+    },
+    {
+        "id": "test_nickname_in_parenthesis_with_comma_and_suffix",
+        "raw": "Franklin, Benjamin (Ben), Jr.",
+        "first": "Benjamin",
+        "last": "Franklin",
+        "suffix": "Jr.",
+        "nickname": "Ben"
+    },
+    {
+        "id": "test_nickname_in_single_quotes",
+        "raw": "Benjamin 'Ben' Franklin",
+        "first": "Benjamin",
+        "last": "Franklin",
+        "nickname": "Ben"
+    },
+    {
+        "id": "test_nickname_in_double_quotes",
+        "raw": "Benjamin \"Ben\" Franklin",
+        "first": "Benjamin",
+        "last": "Franklin",
+        "nickname": "Ben"
+    },
+    {
+        "id": "test_single_quotes_on_first_name_not_treated_as_nickname",
+        "raw": "Brian Andrew O'connor",
+        "first": "Brian",
+        "middle": "Andrew",
+        "last": "O'connor"
+    },
+    {
+        "id": "test_single_quotes_on_both_name_not_treated_as_nickname",
+        "raw": "La'tanya O'connor",
+        "first": "La'tanya",
+        "last": "O'connor"
+    },
+    {
+        "id": "test_single_quotes_on_end_of_last_name_not_treated_as_nickname",
+        "raw": "Mari' Aube'",
+        "first": "Mari'",
+        "last": "Aube'"
+    },
+    {
+        "id": "test_okina_inside_name_not_treated_as_nickname",
+        "raw": "Harrieta Keōpūolani Nāhiʻenaʻena",
+        "first": "Harrieta",
+        "middle": "Keōpūolani",
+        "last": "Nāhiʻenaʻena"
+    },
+    {
+        "id": "test_single_quotes_not_treated_as_nickname_Hawaiian_example",
+        "raw": "Harietta Keopuolani Nahi'ena'ena",
+        "first": "Harietta",
+        "middle": "Keopuolani",
+        "last": "Nahi'ena'ena"
+    },
+    {
+        "id": "test_single_quotes_not_treated_as_nickname_Kenyan_example",
+        "raw": "Naomi Wambui Ng'ang'a",
+        "first": "Naomi",
+        "middle": "Wambui",
+        "last": "Ng'ang'a"
+    },
+    {
+        "id": "test_single_quotes_not_treated_as_nickname_Samoan_example",
+        "raw": "Va'apu'u Vitale",
+        "first": "Va'apu'u",
+        "last": "Vitale"
+    },
+    {
+        "id": "test_nickname_and_last_name",
+        "raw": "\"Rick\" Edmonds",
+        "last": "Edmonds",
+        "nickname": "Rick"
+    }
+]

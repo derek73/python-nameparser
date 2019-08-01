@@ -1,0 +1,199 @@
+[
+    {
+        "id": "test_last_name_with_conjunction",
+        "raw": "Jose Aznar y Lopez",
+        "first": "Jose",
+        "last": "Aznar y Lopez"
+    },
+    {
+        "id": "test_multiple_conjunctions",
+        "raw": "part1 of The part2 of the part3 and part4",
+        "first": "part1 of The part2 of the part3 and part4"
+    },
+    {
+        "id": "test_multiple_conjunctions2",
+        "raw": "part1 of and The part2 of the part3 And part4",
+        "first": "part1 of and The part2 of the part3 And part4"
+    },
+    {
+        "id": "test_ends_with_conjunction",
+        "raw": "Jon Dough and",
+        "first": "Jon",
+        "last": "Dough and"
+    },
+    {
+        "id": "test_ends_with_two_conjunctions",
+        "raw": "Jon Dough and of",
+        "first": "Jon",
+        "last": "Dough and of"
+    },
+    {
+        "id": "test_starts_with_conjunction",
+        "raw": "and Jon Dough",
+        "first": "and Jon",
+        "last": "Dough"
+    },
+    {
+        "id": "test_starts_with_two_conjunctions",
+        "raw": "the and Jon Dough",
+        "first": "the and Jon",
+        "last": "Dough"
+    },
+    {
+        "id": "test_uppercase_middle_initial_conflict_with_conjunction_upper_means_initial",
+        "raw": "John E Smith",
+        "first": "John",
+        "middle": "E",
+        "last": "Smith"
+    },
+    {
+        "id": "test_lowercase_middle_initial_with_period_conflict_with_conjunction",
+        "raw": "john e. smith",
+        "first": "john",
+        "middle": "e.",
+        "last": "smith"
+    },
+    {
+        "id": "test_lowercase_first_initial_conflict_with_conjunction",
+        "raw": "e j smith",
+        "first": "e",
+        "middle": "j",
+        "last": "smith"
+    },
+    {
+        "id": "test_lowercase_middle_initial_conflict_with_conjunction",
+        "raw": "John e Smith",
+        "first": "John",
+        "middle": "e",
+        "last": "Smith"
+    },
+    {
+        "id": "test_lowercase_middle_initial_and_suffix_conflict_with_conjunction",
+        "raw": "John e Smith, III",
+        "first": "John",
+        "middle": "e",
+        "last": "Smith",
+        "suffix": "III"
+    },
+    {
+        "id": "test_lowercase_middle_initial_and_nocomma_suffix_conflict_with_conjun",
+        "raw": "John e Smith III",
+        "first": "John",
+        "middle": "e",
+        "last": "Smith",
+        "suffix": "III"
+    },
+    {
+        "id": "test_lowercase_middle_initial_comma_lastname_and_suffix_conflict_with_conjun",
+        "raw": "Smith, John e, III, Jr",
+        "first": "John",
+        "middle": "e",
+        "last": "Smith",
+        "suffix": "III, Jr"
+    },
+    {
+        "id": "test_couples_names",
+        "raw": "John and Jane Smith",
+        "first": "John and Jane",
+        "last": "Smith"
+    },
+    {
+        "id": "test_couples_names_with_conjunction_lastname",
+        "raw": "John and Jane Aznar y Lopez",
+        "first": "John and Jane",
+        "last": "Aznar y Lopez"
+    },
+    {
+        "id": "test_couple_titles",
+        "raw": "Mr. and Mrs. John and Jane Smith",
+        "title": "Mr. and Mrs.",
+        "first": "John and Jane",
+        "last": "Smith"
+    },
+    {
+        "id": "test_title_with_three_part_name_last_initial_is_suffix_uppercase_no_p",
+        "raw": "King John Alexander V",
+        "title": "King",
+        "first": "John",
+        "last": "Alexander",
+        "suffix": "V"
+    },
+    {
+        "id": "test_four_name_parts_with_suffix_that_could_be_initial_lowercase_no_p",
+        "raw": "larry james edward johnson v",
+        "first": "larry",
+        "middle": "james edward",
+        "last": "johnson",
+        "suffix": "v"
+    },
+    {
+        "id": "test_four_name_parts_with_suffix_that_could_be_initial_uppercase_no_p",
+        "raw": "Larry James Johnson I",
+        "first": "Larry",
+        "middle": "James",
+        "last": "Johnson",
+        "suffix": "I"
+    },
+    {
+        "id": "test_roman_numeral_initials",
+        "raw": "Larry V I",
+        "first": "Larry",
+        "middle": "V",
+        "last": "I"
+    },
+    {
+        "id": "test124_Rev_title",
+        "raw": "Rev. John A. Kenneth Doe",
+        "title": "Rev.",
+        "middle": "A. Kenneth",
+        "first": "John",
+        "last": "Doe"
+    },
+    {
+        "id": "test125_Rev_title",
+        "raw": "Rev John A. Kenneth Doe",
+        "title": "Rev",
+        "middle": "A. Kenneth",
+        "first": "John",
+        "last": "Doe"
+    },
+    {
+        "id": "test126_Rev_title",
+        "raw": "Doe, Rev. John A. Jr.",
+        "title": "Rev.",
+        "first": "John",
+        "last": "Doe",
+        "middle": "A.",
+        "suffix": "Jr."
+    },
+    {
+        "id": "test127",
+        "raw": "Buca di Beppo",
+        "first": "Buca",
+        "last": "di Beppo"
+    },
+    {
+        "id": "test_le_as_last_name",
+        "raw": "Yin Le",
+        "first": "Yin",
+        "last": "Le"
+    },
+    {
+        "id": "test_le_as_last_name_with_middle_initial",
+        "raw": "Yin a Le",
+        "first": "Yin",
+        "middle": "a",
+        "last": "Le"
+    },
+    {
+        "id": "test_conjunction_in_an_address_with_a_title",
+        "raw": "His Excellency Lord Duncan",
+        "title": "His Excellency Lord",
+        "last": "Duncan"
+    },
+    {
+        "id": "test_name_is_conjunctions",
+        "raw": "e and e",
+        "first": "e and e"
+    }
+]

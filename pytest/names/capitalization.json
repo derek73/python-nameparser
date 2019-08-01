@@ -1,0 +1,59 @@
+[
+    {
+        "id": "test_downcasing_mac",
+        "_note": "http://code.google.com/p/python-nameparser/issues/detail?id=15",
+        "raw": "RONALD MACDONALD",
+        "string": "Ronald MacDonald"
+    },
+    {
+        "id": "test_downcasing_mc",
+        "_note": "http://code.google.com/p/python-nameparser/issues/detail?id=23",
+        "raw": "RONALD MCDONALD",
+        "string": "Ronald McDonald"
+    },
+    {
+        "id": "test_capitalization_exception_for_III",
+        "raw": "juan q. xavier velasquez y garcia iii",
+        "string": "Juan Q. Xavier Velasquez y Garcia III"
+    },
+    {
+        "id": "test_capitalize_title",
+        "raw": "lt. gen. john a. kenneth doe iv",
+        "string": "Lt. Gen. John A. Kenneth Doe IV"
+    },
+    {
+        "id": "test_capitalize_title_to_lower",
+        "raw": "LT. GEN. JOHN A. KENNETH DOE IV",
+        "string": "Lt. Gen. John A. Kenneth Doe IV"
+    },
+    {
+        "id": "test_capitalization_with_Mac_as_hyphenated_names",
+        "raw": "donovan mcnabb-smith",
+        "string": "Donovan McNabb-Smith"
+    },
+    {
+        "id": "test_capitization_middle_initial_is_also_a_conjunction",
+        "raw": "scott e. werner",
+        "string": "Scott E. Werner"
+    },
+    {
+        "id": "test_capitalize_diacritics",
+        "raw": "matthëus schmidt",
+        "string": "Matthëus Schmidt"
+    },
+    {
+        "id": "test_short_names_with_mac",
+        "raw": "mack johnson",
+        "string": "Mack Johnson"
+    },
+    {
+        "id": "test_portuguese_prefixes",
+        "raw": "joao da silva do amaral de souza",
+        "string": "Joao da Silva do Amaral de Souza"
+    },
+    {
+        "id": "test_capitalize_prefix_clash_on_first_name",
+        "raw": "van nguyen",
+        "string": "Van Nguyen"
+    }
+]

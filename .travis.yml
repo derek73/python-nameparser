@@ -8,10 +8,12 @@ python:
   - "3.5"
   - "3.6"
 # command to install dependencies
-install: 
+install:
   - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi
   - "pip install dill"
   - "python setup.py install"
 # command to run tests
-script: python tests.py
+script:
+  - python tests.py
+  - python -m pytest
 sudo: false

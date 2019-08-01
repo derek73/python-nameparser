@@ -1,0 +1,118 @@
+[
+    {
+        "id": "test_comma_two_part_last_name_with_suffix_in_first_part",
+        "_note": "I'm kinda surprised this works, not really sure if this is a realistic place for a suffix to be.",
+        "raw": "von bergen wessels MD, pennie",
+        "first": "pennie",
+        "last": "von bergen wessels",
+        "suffix": "MD"
+    },
+    {
+        "id": "test_prefix",
+        "raw": "Juan del Sur",
+        "first": "Juan",
+        "last": "del Sur"
+    },
+    {
+        "id": "test_prefix_with_period",
+        "raw": "Jill St. John",
+        "first": "Jill",
+        "last": "St. John"
+    },
+    {
+        "id": "test_prefix_before_two_part_last_name",
+        "raw": "pennie von bergen wessels",
+        "first": "pennie",
+        "last": "von bergen wessels"
+    },
+    {
+        "id": "test_prefix_before_two_part_last_name_with_suffix",
+        "raw": "pennie von bergen wessels III",
+        "first": "pennie",
+        "last": "von bergen wessels",
+        "suffix": "III"
+    },
+    {
+        "id": "test_prefix_before_two_part_last_name_with_acronym_suffix",
+        "raw": "pennie von bergen wessels M.D.",
+        "first": "pennie",
+        "last": "von bergen wessels",
+        "suffix": "M.D."
+    },
+    {
+        "id": "test_two_part_last_name_with_suffix_comma",
+        "raw": "pennie von bergen wessels, III",
+        "first": "pennie",
+        "last": "von bergen wessels",
+        "suffix": "III"
+    },
+    {
+        "id": "test_two_part_last_name_with_suffix",
+        "raw": "von bergen wessels, pennie III",
+        "first": "pennie",
+        "last": "von bergen wessels",
+        "suffix": "III"
+    },
+    {
+        "id": "test_last_name_two_part_last_name_with_two_suffixes",
+        "raw": "von bergen wessels MD, pennie III",
+        "first": "pennie",
+        "last": "von bergen wessels",
+        "suffix": "MD, III"
+    },
+    {
+        "id": "test_comma_two_part_last_name_with_acronym_suffix",
+        "raw": "von bergen wessels, pennie MD",
+        "first": "pennie",
+        "last": "von bergen wessels",
+        "suffix": "MD"
+    },
+    {
+        "id": "test_title_two_part_last_name_with_suffix_in_first_part",
+        "raw": "pennie von bergen wessels MD, III",
+        "first": "pennie",
+        "last": "von bergen wessels",
+        "suffix": "MD, III"
+    },
+    {
+        "id": "test_portuguese_dos",
+        "raw": "Rafael Sousa dos Anjos",
+        "first": "Rafael",
+        "middle": "Sousa",
+        "last": "dos Anjos"
+    },
+    {
+        "id": "test_portuguese_prefixes",
+        "raw": "Joao da Silva do Amaral de Souza",
+        "first": "Joao",
+        "middle": "da Silva do Amaral",
+        "last": "de Souza"
+    },
+    {
+        "id": "test_three_conjunctions",
+        "raw": "Dr. Juan Q. Xavier de la dos Vega III",
+        "first": "Juan",
+        "last": "de la dos Vega",
+        "title": "Dr.",
+        "middle": "Q. Xavier",
+        "suffix": "III"
+    },
+    {
+        "id": "test_lastname_three_conjunctions",
+        "raw": "de la dos Vega, Dr. Juan Q. Xavier III",
+        "first": "Juan",
+        "last": "de la dos Vega",
+        "title": "Dr.",
+        "middle": "Q. Xavier",
+        "suffix": "III"
+    },
+    {
+        "id": "test_comma_three_conjunctions",
+        "raw": "Dr. Juan Q. Xavier de la dos Vega, III",
+        "first": "Juan",
+        "last": "de la dos Vega",
+        "title": "Dr.",
+        "middle": "Q. Xavier",
+        "suffix": "III"
+    }
+]

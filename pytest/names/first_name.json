@@ -1,0 +1,57 @@
+[
+    {
+        "id": "test_first_name_is_not_prefix_if_only_two_parts",
+        "_note": "When there are only two parts, don't join prefixes or conjunctions",
+        "raw": "Van Nguyen",
+        "first": "Van",
+        "last": "Nguyen"
+    },
+    {
+        "id": "test_first_name",
+        "raw": "Andrew",
+        "first": "Andrew"
+    },
+    {
+        "id": "test_assume_title_and_one_other_name_is_last_name",
+        "raw": "Rev Andrews",
+        "title": "Rev",
+        "last": "Andrews"
+    },
+    {
+        "id": "test_suffix_in_lastname_part_of_lastname_comma_format",
+        "raw": "Smith Jr., John",
+        "last": "Smith",
+        "first": "John",
+        "suffix": "Jr."
+    },
+    {
+        "id": "test_sir_exception_to_first_name_rule",
+        "raw": "Sir Gerald",
+        "title": "Sir",
+        "first": "Gerald"
+    },
+    {
+        "id": "test_king_exception_to_first_name_rule",
+        "raw": "King Henry",
+        "title": "King",
+        "first": "Henry"
+    },
+    {
+        "id": "test_queen_exception_to_first_name_rule",
+        "raw": "Queen Elizabeth",
+        "title": "Queen",
+        "first": "Elizabeth"
+    },
+    {
+        "id": "test_dame_exception_to_first_name_rule",
+        "raw": "Dame Mary",
+        "title": "Dame",
+        "first": "Mary"
+    },
+    {
+        "id": "test_first_name_is_not_prefix_if_only_two_parts_comma",
+        "raw": "Nguyen, Van",
+        "first": "Van",
+        "last": "Nguyen"
+    }
+]
