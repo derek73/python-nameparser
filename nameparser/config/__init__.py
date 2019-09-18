@@ -29,8 +29,13 @@ You can also adjust the configuration of individual instances by passing
 unexpected results. See `Customizing the Parser <customize.html>`_.
 """
 from __future__ import unicode_literals
-import collections
+
 import sys
+try:
+    # Python 3.3+
+    from collections.abc import Set
+except ImportError:
+    from collections import Set
 
 from nameparser.util import binary_type
 from nameparser.util import lc
@@ -45,10 +50,10 @@ from nameparser.config.regexes import REGEXES
 
 DEFAULT_ENCODING = 'UTF-8'
 
-class SetManager(collections.Set):
+class SetManager(Set):
     '''
     Easily add and remove config variables per module or instance. Subclass of
-    ``collections.Set``.
+    ``collections.abc.Set``.
     
     Only special functionality beyond that provided by set() is
     to normalize constants for comparison (lower case, no periods)
