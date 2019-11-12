@@ -528,6 +528,9 @@ class HumanName(object):
             # in the first part. (Suffixes will never appear after last names
             # only, and allows potential first names to be in suffixes, e.g.
             # "Johnson, Bart"
+
+            post_comma_pieces = self.parse_pieces(parts[1].split(' '), 1)
+
             if self.are_suffixes(parts[1].split(' ')) \
                     and len(parts[0].split(' ')) > 1:
                 
@@ -566,9 +569,8 @@ class HumanName(object):
                 # lastname comma: 
                 # last [suffix], title first middles[,] suffix [,suffix]
                 #      parts[0],      parts[1],              parts[2:...]
-                pieces = self.parse_pieces(parts[1].split(' '), 1)
                 
-                log.debug("pieces: %s", u(pieces))
+                log.debug("post-comma pieces: %s", u(post_comma_pieces))
                 
                 # lastname part may have suffixes in it
                 lastname_pieces = self.parse_pieces(parts[0].split(' '), 1)
@@ -580,14 +582,14 @@ class HumanName(object):
                     else:
                         self.last_list.append(piece)
                 
-                for i, piece in enumerate(pieces):
+                for i, piece in enumerate(post_comma_pieces):
                     try:
-                        nxt = pieces[i + 1]
+                        nxt = post_comma_pieces[i + 1]
                     except IndexError:
                         nxt = None
                     
                     if self.is_title(piece) \
-                            and (nxt or len(pieces) == 1) \
+                            and (nxt or len(post_comma_pieces) == 1) \
                             and not self.first:
                         self.title_list.append(piece)
                         continue
