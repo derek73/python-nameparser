@@ -57,6 +57,8 @@ Other editable attributes
 
 * :py:obj:`~nameparser.config.Constants.string_format` - controls output from `str()`
 * :py:obj:`~nameparser.config.Constants.empty_attribute_default` - value returned by empty attributes, defaults to empty string
+* :py:obj:`~nameparser.config.Constants.capitalize_name` - If set, applies :py:meth:`~nameparser.parser.HumanName.capitalize` to :py:class:`~nameparser.parser.HumanName` instance.
+* :py:obj:`~nameparser.config.Constants.force_mixed_case_capitalization` - If set, forces the capitalization of mixed case strings when :py:meth:`~nameparser.parser.HumanName.capitalize` is called.
 
 
 
