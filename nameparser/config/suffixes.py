@@ -30,6 +30,7 @@ SUFFIX_ACRONYMS = set([
     'arrc',
     'bart',
     'bem',
+    'bn',
     'bt',
     'cb',
     'cbe',
@@ -97,6 +98,7 @@ SUFFIX_ACRONYMS = set([
     'msc'
     'msm',
     'mvo',
+    'np',
     'obe',
     'obi',
     'om',
@@ -109,6 +111,7 @@ SUFFIX_ACRONYMS = set([
     'qgm',
     'qpm',
     'rd',
+    'rn',
     'rrc',
     'rvm',
     'sgm',
