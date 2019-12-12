@@ -1,5 +1,11 @@
 Release Log
 ===========
+* 1.0.5 - Dec 12, 2019
+    - Fix suffix parsing bug in comma parts (#98)
+    - Fix deprecation warning on Python 3.7 (#94)
+    - Improved capitalization support of mixed case names (#90)
+    - Remove "elder" from titles (#96)
+    - Add post-nominal list from Wikipedia to suffixes (#93)
 * 1.0.4 - June 26, 2019
     - Better nickname handling of multiple single quotes (#86)
     - full_name attribute now returns formatted string output instead of original string (#87)
