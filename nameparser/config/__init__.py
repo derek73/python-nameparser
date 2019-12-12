@@ -29,7 +29,6 @@ You can also adjust the configuration of individual instances by passing
 unexpected results. See `Customizing the Parser <customize.html>`_.
 """
 from __future__ import unicode_literals
-from collections.abc import Set
 import sys
 try:
     # Python 3.3+
