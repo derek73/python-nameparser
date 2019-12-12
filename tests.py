@@ -1727,19 +1727,7 @@ class SuffixesTestCase(HumanNameTestBase):
         hn = HumanName("Ma, Jack")
         self.m(hn.first, "Jack", hn)
         self.m(hn.last, "Ma", hn)
-    
-    def test_potential_suffix_that_is_also_first_name_comma(self):
-        hn = HumanName("Johnson, Bart")
-        self.m(hn.first, "Bart", hn)
-        self.m(hn.last, "Johnson", hn)
-    
-    # TODO: handle conjunctions in last names followed by first names clashing with suffixes
-    @unittest.expectedFailure
-    def test_potential_suffix_that_is_also_first_name_comma_with_conjunction(self):
-        hn = HumanName("De la Vina, Bart")
-        self.m(hn.first, "Bart", hn)
-        self.m(hn.last, "De la Vina", hn)
-    
+
     def test_potential_suffix_that_is_also_last_name_with_suffix(self):
         hn = HumanName("Jack Ma Jr")
         self.m(hn.first, "Jack", hn)
