@@ -10,6 +10,8 @@ build
 .coverage
 dist
 .idea
+Pipfile
+Pipfile.lock
 
 # docs
 docs/_*
