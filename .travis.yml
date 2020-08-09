@@ -9,7 +9,7 @@ python:
 # command to install dependencies
 install:
   - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi
-  - "pip install dill"
+  - if [[ $TRAVIS_PYTHON_VERSION -ne '3.4' ]]; then pip install dill; fi
   - "python setup.py install"
 # command to run tests
 script: python tests.py
