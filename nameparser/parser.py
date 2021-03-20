@@ -12,6 +12,7 @@ from nameparser.util import log
 from nameparser.config import CONSTANTS
 from nameparser.config import Constants
 from nameparser.config import DEFAULT_ENCODING
+from nameparser.config.regexes import REGEXES
 
 ENCODING = 'utf-8'
 
@@ -70,7 +71,7 @@ class HumanName(object):
     _members = ['title','first','middle','last','suffix','nickname']
     unparsable = True
     _full_name = ''
-
+    
     def __init__(self, full_name="", constants=CONSTANTS, encoding=DEFAULT_ENCODING,
                 string_format=None):
         self.C = constants
@@ -79,7 +80,17 @@ class HumanName(object):
 
         self.encoding = encoding
         self.string_format = string_format or self.C.string_format
+        self._nickname_regexes = [tpl[1] 
+                                  for tpl in REGEXES
+                                  if isinstance(tpl[-1], str)
+                                  and 'nickname' in tpl[-1]
+                                 ]
         # full_name setter triggers the parse
+        #========================================================
+        #IMPORTANT NOTE:
+        #  The followint statement must be the last one in the 
+        #  __init__ function
+        #========================================================
         self.full_name = full_name
 
     def __iter__(self):
@@ -419,18 +430,14 @@ class HumanName(object):
         white space to allow for quotes in names like O'Connor and Kawai'ae'a.
         Double quotes and parenthesis can span white space.
 
-        Loops through 3 :py:data:`~nameparser.config.regexes.REGEXES`;
-        `quoted_word`, `double_quotes` and `parenthesis`.
+        Loops through :py:data:`~nameparser.config.regexes.REGEXES` with
+        label/tag like "nickname"
         """
 
-        re_quoted_word = self.C.regexes.quoted_word
-        re_double_quotes = self.C.regexes.double_quotes
-        re_parenthesis = self.C.regexes.parenthesis
-
-        for _re in (re_quoted_word, re_double_quotes, re_parenthesis):
+        for _re in self._nickname_regexes:
             if _re.search(self._full_name):
                 self.nickname_list += [x for x in _re.findall(self._full_name)]
-                self._full_name = _re.sub('', self._full_name)
+                self._full_name = _re.sub(' ', self._full_name)
 
     def squash_emoji(self):
         """
