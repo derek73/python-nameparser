@@ -27,6 +27,7 @@ except ImportError:
 from nameparser import HumanName
 from nameparser.util import u
 from nameparser.config import Constants
+import re
 
 log = logging.getLogger('HumanName')
 
@@ -1491,7 +1492,36 @@ class NicknameTestCase(HumanNameTestBase):
         self.m(hn.last, "Edmonds", hn)
         self.m(hn.nickname, "Rick", hn)
 
+    def test_append_nickname(self):
+        hn = HumanName()
+        new_rgx = re.compile(r'(?!\w)\(_open(\w[^)]*?)\):close(?!\w)', re.UNICODE)
+        hn._nickname_regexes.append(new_rgx)
+        self.assertEqual(hn._nickname_regexes[-1], new_rgx)
+        hn.full_name = r"Benjamin (_openBen):close Franklin"
+        self.m(hn.first, "Benjamin", hn)
+        self.m(hn.middle, ":close", hn)
+        self.m(hn.last, "Franklin", hn)
+        self.m(hn.nickname, "_openBen", hn)
 
+    def test_prepend_nickname(self):
+        hn = HumanName()
+        new_rgx = re.compile(r'(?!\w)\(_open(\w[^)]*?)\):close(?!\w)', re.UNICODE)
+        hn._nickname_regexes.insert(0, new_rgx)
+        self.assertEqual(hn._nickname_regexes[0], new_rgx)
+        hn.full_name = r"Benjamin (_openBen):close Franklin"
+        self.m(hn.first, "Benjamin", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "Franklin", hn)
+        self.m(hn.nickname, "Ben", hn)
+
+    def test_multiple_nicknames(self):
+        hn = HumanName('Chief Justice John (JR), "No Glove, No Love" Glover Roberts, Jr.')
+        self.m(hn.title, 'Chief Justice', hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.middle, "Glover", hn)
+        self.m(hn.last, "Roberts", hn)
+        self.m(hn.suffix, "Jr.", hn)
+        self.m(hn.nickname, '"JR", "No Glove, No Love"', hn)
 
 # class MaidenNameTestCase(HumanNameTestBase):
 #
@@ -1766,6 +1796,21 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "Msc.Ed.", hn)
 
+    @unittest.SkipTest
+    def test_suffix_in_nickname_dup(self):
+        hn = HumanName("John (JR) Roberts, JR")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Roberts", hn)
+        self.m(hn.suffix, "JR", hn)
+        self.m(hn.nickname, "JR", hn)
+
+    @unittest.SkipTest
+    def test_suffix_in_nickname_solo(self):
+        hn = HumanName("John (JR) Roberts")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Roberts", hn)
+        self.m(hn.suffix, "JR", hn)
+        self.m(hn.nickname, "", hn)
 
 class TitleTestCase(HumanNameTestBase):
 
