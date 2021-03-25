@@ -231,7 +231,7 @@ class Constants(object):
         self.first_name_titles   = SetManager(first_name_titles)
         self.conjunctions        = SetManager(conjunctions)
         self.capitalization_exceptions = TupleManager(capitalization_exceptions)
-        self.regexes             = TupleManager(regexes)
+        self.regexes             = TupleManager([tpl[:2] for tpl in REGEXES])
         self._pst = None
     
     @property

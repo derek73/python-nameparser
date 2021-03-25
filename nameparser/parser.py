@@ -12,6 +12,7 @@ from nameparser.util import log
 from nameparser.config import CONSTANTS
 from nameparser.config import Constants
 from nameparser.config import DEFAULT_ENCODING
+from nameparser.config.regexes import REGEXES
 
 ENCODING = 'utf-8'
 
@@ -70,7 +71,7 @@ class HumanName(object):
     _members = ['title','first','middle','last','suffix','nickname']
     unparsable = True
     _full_name = ''
-
+    
     def __init__(self, full_name="", constants=CONSTANTS, encoding=DEFAULT_ENCODING,
                 string_format=None):
         self.C = constants
@@ -79,7 +80,17 @@ class HumanName(object):
 
         self.encoding = encoding
         self.string_format = string_format or self.C.string_format
+        self._nickname_regexes = [tpl[1] 
+                                  for tpl in REGEXES
+                                  if isinstance(tpl[-1], str)
+                                  and 'nickname' in tpl[-1]
+                                 ]
         # full_name setter triggers the parse
+        #========================================================
+        #IMPORTANT NOTE:
+        #  The followint statement must be the last one in the 
+        #  __init__ function
+        #========================================================
         self.full_name = full_name
 
     def __iter__(self):
@@ -243,7 +254,11 @@ class HumanName(object):
         The person's nicknames. Any text found inside of quotes (``""``) or
         parenthesis (``()``)
         """
-        return " ".join(self.nickname_list) or self.C.empty_attribute_default
+        if len(self.nickname_list) <= 1:
+            f_string = '{0}'
+        else:
+            f_string = '"{0}"'
+        return ", ".join([f_string.format(nn) for nn in self.nickname_list]) or self.C.empty_attribute_default
 
     @property
     def surnames_list(self):
@@ -387,18 +402,24 @@ class HumanName(object):
         This method happens at the beginning of the :py:func:`parse_full_name`
         before any other processing of the string aside from unicode
         normalization, so it's a good place to do any custom handling in a
-        subclass. Runs :py:func:`parse_nicknames` and :py:func:`squash_emoji`.
+        subclass. Runs 
+            :py:func:`fix_phd` 
+            :py:func:`parse_parenthesized_suffixes` 
+            :py:func:`parse_nicknames` 
+            :py:func:`squash_emoji`.
 
         """
         self.fix_phd()
+        self.parse_parenthesized_suffixes()
         self.parse_nicknames()
         self.squash_emoji()
 
     def post_process(self):
         """
         This happens at the end of the :py:func:`parse_full_name` after
-        all other processing has taken place. Runs :py:func:`handle_firstnames`
-        and :py:func:`handle_capitalization`.
+        all other processing has taken place. Runs 
+        :py:func:`handle_firstnames`
+        :py:func:`handle_capitalization`
         """
         self.handle_firstnames()
         self.handle_capitalization()
@@ -412,25 +433,49 @@ class HumanName(object):
 
     def parse_nicknames(self):
         """
-        The content of parenthesis or quotes in the name will be added to the
+        The content of defined nickname regex patterns in the name will be added to the
         nicknames list. This happens before any other processing of the name.
-
-        Single quotes cannot span white space characters and must border
-        white space to allow for quotes in names like O'Connor and Kawai'ae'a.
-        Double quotes and parenthesis can span white space.
-
-        Loops through 3 :py:data:`~nameparser.config.regexes.REGEXES`;
-        `quoted_word`, `double_quotes` and `parenthesis`.
+        
+        Some basic rules for nickname processing:
+          * Nicknames must begin with a word character.
+          * Nickname patterns should include an outer (not processed)
+            delimiter that excludes word characters.
+            
+        Loops through :py:data:`~nameparser.config.regexes.REGEXES` with
+        label/tag like "nickname"
         """
+        #ToDo:
+        # * create a list of matches
+        # * sort the list by span
+        # * check inter-match strings for commas
+        # * remove the commas if safe to remove
+        #   safe = character(s) between matches are ONLY
+        #          spaces and commas
+        # * iterate the matches, collecting the nicknames
+        #   and removing the matches from self._full_name
+        nn_matches = []
+        nn_sep = self.C.regexes.nn_sep_safe
+        _fn = self._full_name
+        for _re in self._nickname_regexes:
+            if _re.search(_fn):
+                nn_matches.extend( _re.finditer(_fn) )
+                #remove matches from string
+                for _match in _re.finditer(_fn):
+                    _fn = (' ' * (_match.end() - _match.start())).join([_fn[:_match.start()], _fn[_match.end():]])
+                    
+        if len(nn_matches) == 0:
+            return #"empty matches"
 
-        re_quoted_word = self.C.regexes.quoted_word
-        re_double_quotes = self.C.regexes.double_quotes
-        re_parenthesis = self.C.regexes.parenthesis
-
-        for _re in (re_quoted_word, re_double_quotes, re_parenthesis):
-            if _re.search(self._full_name):
-                self.nickname_list += [x for x in _re.findall(self._full_name)]
-                self._full_name = _re.sub('', self._full_name)
+        nn_matches.sort(key=lambda x: x.span())
+        
+        #remove any inter-match commas, if safe to do so
+        for low, high in zip(nn_matches[0:-1], nn_matches[1:]):
+            if nn_sep.search(self._full_name[low.span()[1]:high.span()[0]]) is None:
+                self._full_name = ' '.join([self._full_name[:low.span()[1]], self._full_name[high.span()[0]:] ])
+        
+        for nn_match in nn_matches:
+            self.nickname_list.append( nn_match.group(1) )
+            self._full_name = nn_match.re.sub(' ', self._full_name, 1)
 
     def squash_emoji(self):
         """
@@ -451,6 +496,18 @@ class HumanName(object):
                 and len(self) == 2 \
                 and not lc(self.title) in self.C.first_name_titles:
             self.last, self.first = self.first, self.last
+
+    def parse_parenthesized_suffixes(self):
+        """
+        Extract any parenthesized suffixes: (ret. | ret | vet. | vet)
+        """
+        _re = self.C.regexes.paren_suffix
+        if _re.search(self._full_name):
+            for _match in _re.finditer(self._full_name):
+                self.suffix_list.append(_match.group(1))
+                
+            self._full_name = _re.sub(' ', self._full_name)
+                
 
     def parse_full_name(self):
         """

@@ -18,20 +18,39 @@ except re.error:
         '[\u2600-\u26FF\u2700-\u27BF])+', 
         re.UNICODE)
 
-REGEXES = set([
+REGEXES = [
     ("spaces", re.compile(r"\s+", re.U)),
     ("word", re.compile(r"(\w|\.)+", re.U)),
     ("mac", re.compile(r'^(ma?c)(\w{2,})', re.I | re.U)),
     ("initial", re.compile(r'^(\w\.|[A-Z])?$', re.U)),
-    ("quoted_word", re.compile(r'(?<!\w)\'([^\s]*?)\'(?!\w)', re.U)),
-    ("double_quotes", re.compile(r'\"(.*?)\"', re.U)),
-    ("parenthesis", re.compile(r'\((.*?)\)', re.U)),
+    ("double_apostrophe_ASCII", re.compile(r"(?!\w)''(\w[^']*?)''(?!\w)", re.U), 'nickname'),
+    ("smart_quote", re.compile(r"(?!\w)“(\w[^”]*?)”(?!\w)", re.U), 'nickname'),
+    ("smart_single_quote", re.compile(r"(?!\w)‘(\w[^’]*?)’(?!\w)", re.U), 'nickname'),
+    ("grave_accent", re.compile(r'(?!\w)`(\w[^`]*?)`(?!\w)', re.U), 'nickname'),
+    ("grave_acute", re.compile(r'(?!\w)`(\w[^´]*?)´(?!\w)', re.U), 'nickname'),
+    ("apostrophe_ASCII", re.compile(r"(?!\w)'(\w[^']*?)'(?!\w)", re.U), 'nickname'),
+    ("quote_ASCII", re.compile(r'(?!\w)"(\w[^"]*?)"(?!\w)', re.U), 'nickname'),
+    ("parenthesis", re.compile(r'(?!\w)\((\w[^)]*?)\)(?!\w)', re.U), 'nickname'),
     ("roman_numeral", re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I | re.U)),
     ("no_vowels",re.compile(r'^[^aeyiuo]+$', re.I | re.U)),
     ("period_not_at_end",re.compile(r'.*\..+$', re.I | re.U)),
     ("emoji",re_emoji),
     ("phd", re.compile(r'\s(ph\.?\s+d\.?)', re.I | re.U)),
-])
+    ("nn_sep_safe", re.compile(r'[^ ,]', re.U)),
+    ("paren_suffix", re.compile(r'(?!\w)(\((?:ret|vet)\.?\))(?!\w)', re.I | re.U)),
+]
 """
 All regular expressions used by the parser are precompiled and stored in the config.
+
+REGEX tuple positions are:
+    [0] - name of the pattern, used in code as named attribute
+    [1] - compiled pattern
+    [2] - (optional) label/tag of the pattern, used in code for 
+          filtering patterns
+          
+All nickname patterns should follow this pattern: 
+    (?!\w)leading_delim([^trailing_delim]*?)trailing_delim(?!\w)
+
+Nicknames are assume to be delimited by non-word characters.
+
 """

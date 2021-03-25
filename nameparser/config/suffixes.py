@@ -6,6 +6,7 @@ SUFFIX_NOT_ACRONYMS = set([
     'esq',
     'esquire',
     'jr',
+    'jr.',
     'jnr',
     'junior',
     'sr',
@@ -25,6 +26,7 @@ when matching against these pieces.
 """
 SUFFIX_ACRONYMS = set([
     '(ret)',
+    '(ret.)',
     '(vet)',
     '8-vsb',
     'aas',
