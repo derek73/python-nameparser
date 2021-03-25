@@ -402,10 +402,15 @@ class HumanName(object):
         This method happens at the beginning of the :py:func:`parse_full_name`
         before any other processing of the string aside from unicode
         normalization, so it's a good place to do any custom handling in a
-        subclass. Runs :py:func:`parse_nicknames` and :py:func:`squash_emoji`.
+        subclass. Runs 
+            :py:func:`fix_phd` 
+            :py:func:`parse_parenthesized_suffixes` 
+            :py:func:`parse_nicknames` 
+            :py:func:`squash_emoji`.
 
         """
         self.fix_phd()
+        self.parse_parenthesized_suffixes()
         self.parse_nicknames()
         self.squash_emoji()
 
@@ -415,11 +420,9 @@ class HumanName(object):
         all other processing has taken place. Runs 
         :py:func:`handle_firstnames`
         :py:func:`handle_capitalization`
-        :py:func:`check_suffixes_in_nicknames`   #skipping this feature
         """
         self.handle_firstnames()
         self.handle_capitalization()
-        #self.check_suffixes_in_nicknames()
 
     def fix_phd(self):
         _re =  self.C.regexes.phd
@@ -471,7 +474,7 @@ class HumanName(object):
                 self._full_name = ' '.join([self._full_name[:low.span()[1]], self._full_name[high.span()[0]:] ])
         
         for nn_match in nn_matches:
-            self.nickname_list.append( nn_match.groups(0)[0] )
+            self.nickname_list.append( nn_match.group(1) )
             self._full_name = nn_match.re.sub(' ', self._full_name, 1)
 
     def squash_emoji(self):
@@ -494,18 +497,16 @@ class HumanName(object):
                 and not lc(self.title) in self.C.first_name_titles:
             self.last, self.first = self.first, self.last
 
-    def check_suffixes_in_nicknames(self):
+    def parse_parenthesized_suffixes(self):
         """
-        Iterate the nicknames, testing whether any of them are suffixes.
-        If there isn't (also) an identical suffix, then move that nickname
-        to the suffix_list
+        Extract any parenthesized suffixes: (ret. | ret | vet. | vet)
         """
-        for _nn in self.nickname_list:
-            if (_nn.lower() in self.C.suffix_acronyms or \
-                _nn.lower() in self.C.suffix_not_acronyms) and \
-                _nn not in self.suffix_list:
-                self.suffix_list.append(_nn)
-                self.nickname_list.remove(_nn)
+        _re = self.C.regexes.paren_suffix
+        if _re.search(self._full_name):
+            for _match in _re.finditer(self._full_name):
+                self.suffix_list.append(_match.group(1))
+                
+            self._full_name = _re.sub(' ', self._full_name)
                 
 
     def parse_full_name(self):

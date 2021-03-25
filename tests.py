@@ -1796,21 +1796,14 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "Msc.Ed.", hn)
 
-    @unittest.SkipTest
-    def test_suffix_in_nickname_dup(self):
-        hn = HumanName("John (JR) Roberts, JR")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Roberts", hn)
-        self.m(hn.suffix, "JR", hn)
-        self.m(hn.nickname, "JR", hn)
-
-    @unittest.SkipTest
-    def test_suffix_in_nickname_solo(self):
-        hn = HumanName("John (JR) Roberts")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Roberts", hn)
-        self.m(hn.suffix, "JR", hn)
-        self.m(hn.nickname, "", hn)
+    def test_suffix_parenthesized_with_nickname(self):
+        hn = HumanName("Gen Dwight David (Ike) Eisenhower (ret.) KG")
+        self.m(hn.title, "Gen", hn)
+        self.m(hn.first, "Dwight", hn)
+        self.m(hn.middle, "David", hn)
+        self.m(hn.last, "Eisenhower", hn)
+        self.m(hn.suffix, "(ret.), KG", hn)
+        self.m(hn.nickname, "Ike", hn)
 
 class TitleTestCase(HumanNameTestBase):
 
