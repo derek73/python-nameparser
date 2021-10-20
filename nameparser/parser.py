@@ -69,7 +69,7 @@ class HumanName(object):
     """
 
     _count = 0
-    _members = ['title', 'first', 'middle', 'last', 'suffix', 'nickname']
+    _members = ['title', 'first', 'middle', 'last', 'suffix', 'nickname', 'initials']
     unparsable = True
     _full_name = ''
 
@@ -130,7 +130,9 @@ class HumanName(object):
     def __unicode__(self):
         if self.string_format:
             # string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
-            _s = self.string_format.format(**self.as_dict())
+            dict_representation = self.as_dict()
+            dict_representation.pop('initials', None)
+            _s = self.string_format.format(**dict_representation)
             # remove trailing punctuation from missing nicknames
             _s = _s.replace(str(self.C.empty_attribute_default), '').replace(" ()", "").replace(" ''", "").replace(' ""', "")
             return self.collapse_whitespace(_s).strip(', ')
@@ -170,10 +172,9 @@ class HumanName(object):
 
             >>> name = HumanName("Bob Dole")
             >>> name.as_dict()
-            {'last': 'Dole', 'suffix': '', 'title': '', 'middle': '', 'nickname': '', 'first': 'Bob'}
+            {'last': 'Dole', 'suffix': '', 'title': '', 'middle': '', 'nickname': '', 'first': 'Bob', 'initials': 'B.'}
             >>> name.as_dict(False)
-            {'last': 'Dole', 'first': 'Bob'}
-
+            {'last': 'Dole', 'first': 'Bob', 'initials': 'B.'}
         """
         d = {}
         for m in self._members:
@@ -504,6 +505,7 @@ class HumanName(object):
         self.last_list = []
         self.suffix_list = []
         self.nickname_list = []
+        self.initials_list = []
         self.unparsable = True
 
         self.pre_process()

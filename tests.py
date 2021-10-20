@@ -72,9 +72,9 @@ class HumanNamePythonTests(HumanNameTestBase):
 
     def test_len(self):
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
-        self.m(len(hn), 5, hn)
+        self.m(len(hn), 6, hn)
         hn = HumanName("John Doe")
-        self.m(len(hn), 2, hn)
+        self.m(len(hn), 3, hn)
 
     @unittest.skipUnless(dill, "requires python-dill module to test pickling")
     def test_config_pickle(self):
@@ -160,9 +160,9 @@ class HumanNamePythonTests(HumanNameTestBase):
 
     def test_slice(self):
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
-        self.m(list(hn), ['Dr.', 'John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC'], hn)
-        self.m(hn[1:], ['John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC', hn.C.empty_attribute_default], hn)
-        self.m(hn[1:-2], ['John', 'P.', 'Doe-Ray'], hn)
+        self.m(list(hn), ['Dr.', 'John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC', 'J. P.'], hn)
+        self.m(hn[1:], ['John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC', hn.C.empty_attribute_default, 'J. P.'], hn)
+        self.m(hn[1:-3], ['John', 'P.', 'Doe-Ray'], hn)
 
     def test_getitem(self):
         hn = HumanName("Dr. John A. Kenneth Doe, Jr.")

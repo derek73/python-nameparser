@@ -13,6 +13,7 @@ individual components.
 * hn.suffix
 * hn.nickname
 * hn.surnames *(middle + last)*
+* hn.initials
 
 Supported Name Structures
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -65,6 +66,7 @@ Quick Start Example
     >>> name 
     <HumanName : [
     	title: 'Dr.' 
+      initials: 'J. Q. X.'
     	first: 'Juan' 
     	middle: 'Q. Xavier' 
     	last: 'de la Vega' 
@@ -74,7 +76,7 @@ Quick Start Example
     >>> name.last
     'de la Vega'
     >>> name.as_dict()
-    {'last': 'de la Vega', 'suffix': 'III', 'title': 'Dr.', 'middle': 'Q. Xavier', 'nickname': 'Doc Vega', 'first': 'Juan'}
+    {'title': 'Dr.', 'first': 'Juan', 'middle': 'Q. Xavier', 'last': 'de la Vega', 'suffix': 'III', 'nickname': 'Doc Vega', 'initials': 'J. Q. X.'}
     >>> str(name)
     'Dr. Juan Q. Xavier de la Vega III (Doc Vega)'
     >>> name.string_format = "{first} {last}"
