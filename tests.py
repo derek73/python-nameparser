@@ -72,9 +72,9 @@ class HumanNamePythonTests(HumanNameTestBase):
 
     def test_len(self):
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
-        self.m(len(hn), 6, hn)
+        self.m(len(hn), 5, hn)
         hn = HumanName("John Doe")
-        self.m(len(hn), 3, hn)
+        self.m(len(hn), 2, hn)
 
     @unittest.skipUnless(dill, "requires python-dill module to test pickling")
     def test_config_pickle(self):

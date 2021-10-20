@@ -88,7 +88,10 @@ class HumanName(object):
         return self
 
     def __len__(self):
-        l = 0
+        """
+        Initials are a derived value, so should not be considered for the length
+        """
+        l = 0 if not self.initials else -1
         for x in self:
             l += 1
         return l
