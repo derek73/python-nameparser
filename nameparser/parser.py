@@ -459,7 +459,7 @@ class HumanName(object):
 
     def handle_firstnames(self):
         """
-        If there are only three parts and one is a title, assume it's a last name
+        If there are only two parts and one is a title, assume it's a last name
         instead of a first name. e.g. Mr. Johnson. Unless it's a special title
         like "Sir", then when it's followed by a single name that name is always
         a first name.
