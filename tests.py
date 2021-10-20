@@ -59,6 +59,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         hn = HumanName("de la Véña, Jüan")
         self.m(hn.first, "Jüan", hn)
         self.m(hn.last, "de la Véña", hn)
+        self.m(hn.initials, "J.", hn)
 
     def test_string_output(self):
         hn = HumanName("de la Véña, Jüan")
@@ -67,12 +68,13 @@ class HumanNamePythonTests(HumanNameTestBase):
         hn = HumanName(b'B\xc3\xb6ck, Gerald')
         self.m(hn.first, "Gerald", hn)
         self.m(hn.last, "Böck", hn)
+        self.m(hn.initials, "G.", hn)
 
     def test_len(self):
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
-        self.m(len(hn), 6, hn)
+        self.m(len(hn), 5, hn)
         hn = HumanName("John Doe")
-        self.m(len(hn), 3, hn)
+        self.m(len(hn), 2, hn)
 
     @unittest.skipUnless(dill, "requires python-dill module to test pickling")
     def test_config_pickle(self):
@@ -120,12 +122,15 @@ class HumanNamePythonTests(HumanNameTestBase):
         hn = HumanName("John A. Kenneth Doe, Jr.")
         hn.last = "de la Vega"
         self.m(hn.last, "de la Vega", hn)
+        self.m(hn.initials, "J. A. K.", hn)
         hn.title = "test"
         self.m(hn.title, "test", hn)
         hn.first = "test"
         self.m(hn.first, "test", hn)
+        self.m(hn.initials, "t. A. K.", hn)
         hn.middle = "test"
         self.m(hn.middle, "test", hn)
+        self.m(hn.initials, "t. t.", hn)
         hn.suffix = "test"
         self.m(hn.suffix, "test", hn)
         with self.assertRaises(TypeError):
@@ -155,9 +160,9 @@ class HumanNamePythonTests(HumanNameTestBase):
 
     def test_slice(self):
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
-        self.m(list(hn), ['Dr.', 'J. P.', 'John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC'], hn)
-        self.m(hn[1:], ['J. P.', 'John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC', hn.C.empty_attribute_default], hn)
-        self.m(hn[1:-2], ['J. P.', 'John', 'P.', 'Doe-Ray'], hn)
+        self.m(list(hn), ['Dr.', 'John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC'], hn)
+        self.m(hn[1:], ['John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC', hn.C.empty_attribute_default], hn)
+        self.m(hn[1:-2], ['John', 'P.', 'Doe-Ray'], hn)
 
     def test_getitem(self):
         hn = HumanName("Dr. John A. Kenneth Doe, Jr.")
@@ -166,6 +171,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(hn['last'], "Doe", hn)
         self.m(hn['middle'], "A. Kenneth", hn)
         self.m(hn['suffix'], "Jr.", hn)
+        self.m(hn.initials, "J. A. K.", hn)
 
     def test_setitem(self):
         hn = HumanName("Dr. John A. Kenneth Doe, Jr.")
@@ -182,16 +188,19 @@ class HumanNamePythonTests(HumanNameTestBase):
         hn = HumanName("johnny y")
         self.m(hn.first, "johnny", hn)
         self.m(hn.last, "y", hn)
+        self.m(hn.initials, "j.", hn)
 
     def test_prefix_names(self):
         hn = HumanName("vai la")
         self.m(hn.first, "vai", hn)
         self.m(hn.last, "la", hn)
+        self.m(hn.initials, "v.", hn)
 
     def test_blank_name(self):
         hn = HumanName()
         self.m(hn.first, "", hn)
         self.m(hn.last, "", hn)
+        self.m(hn.initials, "", hn)
 
     def test_surnames_list_attribute(self):
         hn = HumanName("John Edgar Casey Williams III")
@@ -200,6 +209,10 @@ class HumanNamePythonTests(HumanNameTestBase):
     def test_surnames_attribute(self):
         hn = HumanName("John Edgar Casey Williams III")
         self.m(hn.surnames, "Edgar Casey Williams", hn)
+
+    def test_initials_list_attribute(self):
+        hn = HumanName("John Edgar Casey Williams III")
+        self.m(hn.initials_list, ["J", "E", "C"], hn)
 
 
 class FirstNameHandlingTests(HumanNameTestBase):
@@ -2182,6 +2195,82 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         self.m(hn.last, "Smith😊", hn)
         self.assertEqual(u(hn), "∫≜⩕ Smith😊")
         # test cleanup
+
+
+class InitialsTestCase(HumanNameTestBase):
+    def test_initials(self):
+        hn = HumanName("Andrew Boris Petersen")
+        self.m(hn.initials, "A. B.", hn)
+        self.m(hn.initials_list, ["A", "B"], hn)
+
+    def test_title_and_last_name(self):
+        hn = HumanName("Dr. Andrews")
+        self.m(hn.initials, "", hn)
+        self.m(hn.initials, [], hn)
+
+    def test_reassignment_first_name(self):
+        hn = HumanName("Andrew Boris Petersen")
+        hn.first = "John"
+        self.m(hn.initials, "J. B.", hn)
+        self.m(hn.initials_list, ["J", "B"], hn)
+
+    def test_reassignment_middle_names(self):
+        hn = HumanName("Andrew Boris Petersen")
+        hn.middle = "John"
+        self.m(hn.initials, "A. J.", hn)
+        self.m(hn.initials_list, ["A", "J"], hn)
+
+    def test_reassignment_middle_names_list(self):
+        hn = HumanName("Andrew Boris Petersen")
+        hn.middle = ["John", "Peter"]
+        self.m(hn.initials, "A. J. P.", hn)
+        self.m(hn.initials_list, ["A", "J", "P"], hn)
+
+    def test_capitalization(self):
+        hn = HumanName("andrew boris Petersen")
+        self.m(hn.initials, "a. b.", hn)
+        self.m(hn.initials_list, ["a", "b"], hn)
+        hn.capitalize(force=True)
+        self.m(hn.initials, "A. B.", hn)
+        self.m(hn.initials_list, ["A", "B"], hn)
+
+    def test_parse_initial(self):
+        hn = HumanName("A. Petersen")
+        self.m(hn.initials, "A.", hn)
+        self.m(hn.initials_list, ["A"], hn)
+
+    def test_parse_multiple_initials(self):
+        hn = HumanName("A. B. Petersen")
+        self.m(hn.initials, "A. B.", hn)
+        self.m(hn.initials_list, ["A", "B"], hn)
+
+    def test_parse_mixed_initials(self):
+        hn1 = HumanName("Andrew B. Petersen")
+        self.m(hn1.initials, "A. B.", hn1)
+        self.m(hn1.initials_list, ["A", "B"], hn1)
+
+        hn2 = HumanName("A. Boris Petersen")
+        self.m(hn2.initials, "A. B.", hn2)
+        self.m(hn2.initials_list, ["A", "B"], hn2)
+
+    def test_parse_commas(self):
+        hn = HumanName("Petersen, Andrew Boris")
+        self.m(hn.initials, "A. B.", hn)
+        self.m(hn.initials_list, ["A", "B"], hn)
+
+    def test_parse_commas_initials(self):
+        hn = HumanName("Petersen, A. B.")
+        self.m(hn.initials, "A. B.", hn)
+        self.m(hn.initials_list, ["A", "B"], hn)
+
+    def test_parse_commas_mixed_initials(self):
+        hn1 = HumanName("Petersen, Andrew B.")
+        self.m(hn1.initials, "A. B.", hn1)
+        self.m(hn1.initials_list, ["A", "B"], hn1)
+
+        hn2 = HumanName("Petersen, A. Boris")
+        self.m(hn2.initials, "A. B.", hn2)
+        self.m(hn2.initials_list, ["A", "B"], hn2)
 
 
 TEST_NAMES = (

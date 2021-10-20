@@ -69,7 +69,7 @@ class HumanName(object):
     """
 
     _count = 0
-    _members = ['title', 'initials', 'first', 'middle', 'last', 'suffix', 'nickname']
+    _members = ['title', 'first', 'middle', 'last', 'suffix', 'nickname']
     unparsable = True
     _full_name = ''
 
@@ -267,7 +267,7 @@ class HumanName(object):
         """"
         A string of all initials
         """
-        return " ".join([initial + "." for initial in self.initials_list])
+        return " ".join([initial + "." for initial in self.initials_list]) or self.C.empty_attribute_default
 
     # setter methods
 
@@ -291,10 +291,12 @@ class HumanName(object):
     @first.setter
     def first(self, value):
         self._set_list('first', value)
+        self.handle_initials()
 
     @middle.setter
     def middle(self, value):
         self._set_list('middle', value)
+        self.handle_initials()
 
     @last.setter
     def last(self, value):
@@ -414,6 +416,7 @@ class HumanName(object):
         and :py:func:`handle_capitalization`.
         """
         self.handle_firstnames()
+        self.handle_initials()
         self.handle_capitalization()
 
     def fix_phd(self):
@@ -461,10 +464,25 @@ class HumanName(object):
         a first name.
         """
         if self.title \
-                and len(self) == 3 \
+                and len(self) == 2 \
                 and not lc(self.title) in self.C.first_name_titles:
             self.last, self.first = self.first, self.last
             self.initials_list = []
+
+    def handle_initials(self):
+        """
+        Initials are the concatination of the first letter of the first name and the first character of each middle name
+        """
+        initials_list = []
+        if self.first and len(self.first):
+            initials_list += [self.first[0]]
+
+        if self.middle_list and len(self.middle_list):
+            for middle in self.middle_list:
+                if len(middle):
+                    initials_list += [middle[0]]
+
+        self.initials_list = initials_list
 
     def parse_full_name(self):
         """
@@ -486,7 +504,6 @@ class HumanName(object):
         self.last_list = []
         self.suffix_list = []
         self.nickname_list = []
-        self.initials_list = []
         self.unparsable = True
 
         self.pre_process()
@@ -522,8 +539,6 @@ class HumanName(object):
                         self.last_list.append(piece)
                         continue
                     self.first_list.append(piece)
-                    if len(piece) > 0:
-                        self.initials_list.append(piece[0])
                     continue
                 if self.are_suffixes(pieces[i+1:]) or \
                         (
@@ -540,8 +555,6 @@ class HumanName(object):
                     continue
 
                 self.middle_list.append(piece)
-                if len(piece) > 0:
-                    self.initials_list.append(piece[0])
         else:
             # if all the end parts are suffixes and there is more than one piece
             # in the first part. (Suffixes will never appear after last names
@@ -573,8 +586,6 @@ class HumanName(object):
                         continue
                     if not self.first:
                         self.first_list.append(piece)
-                        if len(piece) > 0:
-                            self.initials_list.append(piece[0])
                         continue
                     if self.are_suffixes(pieces[i+1:]):
                         self.last_list.append(piece)
@@ -584,8 +595,6 @@ class HumanName(object):
                         self.last_list.append(piece)
                         continue
                     self.middle_list.append(piece)
-                    if len(piece) > 0:
-                        self.initials_list.append(piece[0])
             else:
 
                 # lastname comma:
@@ -617,15 +626,11 @@ class HumanName(object):
                         continue
                     if not self.first:
                         self.first_list.append(piece)
-                        if len(piece) > 0:
-                            self.initials_list.append(piece[0])
                         continue
                     if self.is_suffix(piece):
                         self.suffix_list.append(piece)
                         continue
                     self.middle_list.append(piece)
-                    if len(piece) > 0:
-                        self.initials_list.append(piece[0])
                 try:
                     if parts[2]:
                         self.suffix_list += parts[2:]
