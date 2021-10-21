@@ -213,7 +213,7 @@ class HumanName(object):
 
         return initials_list
 
-    def initials(self, exclude_last_name=False, exclude_middle_name=False, exclude_first_name=False, ):
+    def initials(self, exclude_last_name=False, exclude_middle_name=False, exclude_first_name=False):
         """
             Return period-delimited initials of the first, middle and optionally last name.
 
