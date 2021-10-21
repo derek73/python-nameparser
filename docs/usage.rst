@@ -176,3 +176,29 @@ Don't want to include nicknames in your output? No problem. Just omit that keywo
   'Dr. Juan de la Vega'
 
 
+Initials Support
+----------------
+
+The HumanName class can try to get the correct representation of initials.
+Initials can be tricky as different format usages exist. 
+If you want to exclude on of the name parts from the initials, you can use one of the following boolean parameters:
+`exclude_last_name`, `exclude_middle_name` or `exclude_first_name`
+
+You can also force the behavior using the CONSTANTS:
+:py:attr:`~nameparser.config.Constants.force_exclude_last_name`
+:py:attr:`~nameparser.config.Constants.force_exclude_middle_name`
+:py:attr:`~nameparser.config.Constants.force_exclude_first_name`
+
+Furthermore, the delimiter for the string output can be set through:
+:py:attr:`~nameparser.config.Constants.initials_delimiter`
+
+.. doctest:: initials
+
+    >>> name = HumanName("Doe, John A. Kenneth, Jr.")
+    >>> name.initials()
+    'J. A. K. D.'
+    >>> name.initials(exclude_last_name)
+    'J. A. K.'
+    >>> name.initials_list(exclude_middle_name):
+    ['J', 'D']
+    
