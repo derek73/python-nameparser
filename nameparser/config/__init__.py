@@ -172,6 +172,18 @@ class Constants(object):
     """
     The default string format use for all new `HumanName` instances.
     """
+
+    initials_format = "{first} {middle} {last}"
+    """
+    The default initials format used for all new `HumanName` instances.
+    """
+
+    initials_delimiter = "."
+    """
+    The default initials delimiter used for all new `HumanName` instances.
+    Will be used to add a delimiter between each initial.
+    """
+
     empty_attribute_default = ''
     """
     Default return value for empty attributes.
@@ -203,23 +215,6 @@ class Constants(object):
 
     """
 
-    initials_delimiter = '.'
-    """"
-    Determines how the initials from :py:meth:`~nameparser.parser.HumanName.initials` are seperated.
-
-    .. doctest::
-
-        >>> from nameparser.config import CONSTANTS
-        >>> HumanName('Shirley Maclaine').initials()
-        'S. M.'
-        >>> CONSTANTS.initials_delimiter = ''
-        >>> HumanName('Shirley Maclaine').initials()
-        'S M'
-        >>> CONSTANTS.initials_delimiter = '-'
-        >>> HumanName('Shirley Maclaine').initials()
-        'S- M-'
-    """
-
     force_mixed_case_capitalization = False
     """
     If set, forces the capitalization of mixed case strings when
@@ -234,57 +229,6 @@ class Constants(object):
         >>> str(name)
         'Shirley MacLaine'
 
-    """
-
-    force_exclude_last_name_initial = False
-    """
-    If True, forces the last name to be excluded in the initials when
-    :py:meth:`~nameparser.parser.HumanName.initials` or
-    :py:meth:`~nameparser.parser.HumanName.initials_list` is called.
-
-    .. doctest::
-
-        >>> from nameparser.config import CONSTANTS
-        >>> CONSTANTS.force_exclude_last_name_initial = True
-        >>> name = HumanName('Shirley Ashley Maclaine')
-        >>> name.initials()
-        'S. A.'
-        >>> name.initials_list()
-        ['S', 'A']
-    """
-
-    force_exclude_middle_name_initial = False
-    """
-    If True, forces the middle name to be included in the initials when
-    :py:meth:`~nameparser.parser.HumanName.initials` or
-    :py:meth:`~nameparser.parser.HumanName.initials_list` is called.
-
-    .. doctest::
-
-        >>> from nameparser.config import CONSTANTS
-        >>> CONSTANTS.force_exclude_middle_name_initial = True
-        >>> name = HumanName('Shirley Ashley Maclaine')
-        >>> name.initials()
-        'S. M.'
-        >>> name.initials_list()
-        ['S', 'M']
-    """
-
-    force_exclude_first_name_initial = False
-    """
-    If True, forces the first name to be included in the initials when
-    :py:meth:`~nameparser.parser.HumanName.initials` or
-    :py:meth:`~nameparser.parser.HumanName.initials_list` is called.
-
-    .. doctest::
-
-        >>> from nameparser.config import CONSTANTS
-        >>> CONSTANTS.force_exclude_first_name_initial = True
-        >>> name = HumanName('Shirley Ashley Maclaine')
-        >>> name.initials()
-        'A. M.'
-        >>> name.initials_list()
-        ['A', 'M']
     """
 
     def __init__(self,

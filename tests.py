@@ -2186,84 +2186,51 @@ class InitialsTestCase(HumanNameTestBase):
     def test_initials(self):
         hn = HumanName("Andrew Boris Petersen")
         self.m(hn.initials(), "A. B. P.", hn)
-        self.m(hn.initials(exclude_last_name=True), "A. B.", hn)
-        self.m(hn.initials(exclude_middle_name=True), "A. P.", hn)
-        self.m(hn.initials(exclude_first_name=True), "B. P.", hn)
 
     def test_initials_complex_name(self):
         hn = HumanName("Doe, John A. Kenneth, Jr.")
         self.m(hn.initials(), "J. A. K. D.", hn)
-        self.m(hn.initials(exclude_last_name=True), "J. A. K.", hn)
-        self.m(hn.initials(exclude_middle_name=True), "J. D.", hn)
-        self.m(hn.initials(exclude_first_name=True), "A. K. D.", hn)
+
+    def test_initials_format(self):
+        hn = HumanName("Doe, John A. Kenneth, Jr.", initials_format="{first} {middle}")
+        self.m(hn.initials(), "J. A. K.", hn)
+        hn = HumanName("Doe, John A. Kenneth, Jr.", initials_format="{first} {last}")
+        self.m(hn.initials(), "J. D.", hn)
+        hn = HumanName("Doe, John A. Kenneth, Jr.", initials_format="{middle} {last}")
+        self.m(hn.initials(), "A. K. D.", hn)
+        hn = HumanName("Doe, John A. Kenneth, Jr.", initials_format="{first}, {last}")
+        self.m(hn.initials(), "J., D.", hn)
+
+    def test_initials_format_constants(self):
+        from nameparser.config import CONSTANTS
+        orig_format = CONSTANTS.initials_format
+        CONSTANTS.initials_format = "{first} {last}"
+        hn = HumanName("Doe, John A. Kenneth, Jr.")
+        self.m(hn.initials(), "J. D.", hn)
+        CONSTANTS.initials_format = "{first}  {last}"
+        hn = HumanName("Doe, John A. Kenneth, Jr.")
+        self.m(hn.initials(), "J.  D.", hn)
+        CONSTANTS.initials_format = orig_format
+
+    def test_initials_delimiter(self):
+        hn = HumanName("Doe, John A. Kenneth, Jr.", initials_delimiter=";")
+        self.m(hn.initials(), "J; A; K; D;", hn)
+
+    def test_initials_delimiter_constants(self):
+        from nameparser.config import CONSTANTS
+        orig_delimiter = CONSTANTS.initials_delimiter
+        CONSTANTS.initials_delimiter = ";"
+        hn = HumanName("Doe, John A. Kenneth, Jr.")
+        self.m(hn.initials(), "J; A; K; D;", hn)
+        CONSTANTS.initials_delimiter = orig_delimiter
 
     def test_initials_list(self):
         hn = HumanName("Andrew Boris Petersen")
         self.m(hn.initials_list(), ["A", "B", "P"], hn)
-        self.m(hn.initials_list(exclude_last_name=True), ["A", "B"], hn)
-        self.m(hn.initials_list(exclude_middle_name=True), ["A", "P"], hn)
-        self.m(hn.initials_list(exclude_first_name=True), ["B", "P"], hn)
 
     def test_initials_list_complex_name(self):
         hn = HumanName("Doe, John A. Kenneth, Jr.")
         self.m(hn.initials_list(), ["J", "A", "K", "D"], hn)
-        self.m(hn.initials_list(exclude_last_name=True), ["J", "A", "K"], hn)
-        self.m(hn.initials_list(exclude_middle_name=True), ["J", "D"], hn)
-        self.m(hn.initials_list(exclude_first_name=True), ["A", "K", "D"], hn)
-
-    def test_initials_configuration(self):
-        hn = HumanName("Doe, John A. Kenneth, Jr.")
-        from nameparser.config import CONSTANTS
-
-        CONSTANTS.force_exclude_last_name_initial = True
-        self.m(hn.initials(), "J. A. K.", hn)
-        self.m(hn.initials(exclude_last_name=True), "J. A. K.", hn)
-        self.m(hn.initials(exclude_middle_name=True), "J.", hn)
-        self.m(hn.initials(exclude_first_name=True), "A. K.", hn)
-        CONSTANTS.force_exclude_last_name_initial = False
-
-        CONSTANTS.force_exclude_middle_name_initial = True
-        self.m(hn.initials(), "J. D.", hn)
-        self.m(hn.initials(exclude_last_name=True), "J.", hn)
-        self.m(hn.initials(exclude_middle_name=True), "J. D.", hn)
-        self.m(hn.initials(exclude_first_name=True), "D.", hn)
-        CONSTANTS.force_exclude_middle_name_initial = False
-
-        CONSTANTS.force_exclude_first_name_initial = True
-        self.m(hn.initials(), "A. K. D.", hn)
-        self.m(hn.initials(exclude_last_name=True), "A. K.", hn)
-        self.m(hn.initials(exclude_middle_name=True), "D.", hn)
-        self.m(hn.initials(exclude_first_name=True), "A. K. D.", hn)
-        CONSTANTS.force_exclude_first_name_initial = False
-
-        CONSTANTS.initials_delimiter = ''
-        self.m(hn.initials(), "J A K D", hn)
-        CONSTANTS.initials_delimiter = '.'
-
-    def test_initials_configuration_list(self):
-        hn = HumanName("Doe, John A. Kenneth, Jr.")
-        from nameparser.config import CONSTANTS
-
-        CONSTANTS.force_exclude_last_name_initial = True
-        self.m(hn.initials_list(), ["J", "A", "K"], hn)
-        self.m(hn.initials_list(exclude_last_name=True), ["J", "A", "K"], hn)
-        self.m(hn.initials_list(exclude_middle_name=True), ["J"], hn)
-        self.m(hn.initials_list(exclude_first_name=True), ["A", "K"], hn)
-        CONSTANTS.force_exclude_last_name_initial = False
-
-        CONSTANTS.force_exclude_middle_name_initial = True
-        self.m(hn.initials_list(), ["J", "D"], hn)
-        self.m(hn.initials_list(exclude_last_name=True), ["J"], hn)
-        self.m(hn.initials_list(exclude_middle_name=True), ["J", "D"], hn)
-        self.m(hn.initials_list(exclude_first_name=True), ["D"], hn)
-        CONSTANTS.force_exclude_middle_name_initial = False
-
-        CONSTANTS.force_exclude_first_name_initial = True
-        self.m(hn.initials_list(), ["A", "K", "D"], hn)
-        self.m(hn.initials_list(exclude_last_name=True), ["A", "K"], hn)
-        self.m(hn.initials_list(exclude_middle_name=True), ["D"], hn)
-        self.m(hn.initials_list(exclude_first_name=True), ["A", "K", "D"], hn)
-        CONSTANTS.force_exclude_first_name_initial = False
 
 
 TEST_NAMES = (

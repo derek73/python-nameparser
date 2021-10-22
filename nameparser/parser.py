@@ -53,6 +53,8 @@ class HumanName(object):
         `per-instance config <customize.html>`_.
     :param str encoding: string representing the encoding of your input
     :param str string_format: python string formatting
+    :param str initials_format: python initials string formatting
+    :param str initials_delimter: string delimiter for initials
     """
 
     C = CONSTANTS
@@ -74,13 +76,15 @@ class HumanName(object):
     _full_name = ''
 
     def __init__(self, full_name="", constants=CONSTANTS, encoding=DEFAULT_ENCODING,
-                 string_format=None):
+                 string_format=None, initials_format=None, initials_delimiter=None):
         self.C = constants
         if type(self.C) is not type(CONSTANTS):
             self.C = Constants()
 
         self.encoding = encoding
         self.string_format = string_format or self.C.string_format
+        self.initials_format = initials_format or self.C.initials_format
+        self.initials_delimiter = initials_delimiter or self.C.initials_delimiter
         # full_name setter triggers the parse
         self.full_name = full_name
 
@@ -184,36 +188,27 @@ class HumanName(object):
                     d[m] = val
         return d
 
-    def initials_list(self, exclude_last_name=False, exclude_middle_name=False, exclude_first_name=False):
+    def initials_list(self):
         """
-            Return period-delimited initials of the first, middle and optionally last name.
-
-            :param bool exclude_last_name: Exclude the last name as part of the initials
-            :param bool exclude_middle_name: Exclude the middle name as part of the initials
-            :param bool exclude_first_name: Exclude the first name as part of the initials
-            :rtype: str
+            Returns the initials as a list
 
             .. doctest::
 
                 >>> name = HumanName("Sir Bob Andrew Dole")
                 >>> name.initials()
                 ["B", "A", "D"]
-                >>> name.initials(False)
-                ["B", "A"]
+                >>> name = HumanName("J. Doe")
+                >>> name.initials()
+                ["J", "D"]
         """
         initials_list = []
-        if not self.C.force_exclude_first_name_initial and not exclude_first_name:
-            initials_list = [name[0] for name in self.first_list if len(name)]
-
-        if not self.C.force_exclude_middle_name_initial and not exclude_middle_name:
-            initials_list += [name[0] for name in self.middle_list if len(name)]
-
-        if not self.C.force_exclude_last_name_initial and not exclude_last_name:
-            initials_list += [name[0] for name in self.last_list if len(name)]
+        initials_list = [name[0] for name in self.first_list if len(name)]
+        initials_list += [name[0] for name in self.middle_list if len(name)]
+        initials_list += [name[0] for name in self.last_list if len(name)]
 
         return initials_list
 
-    def initials(self, exclude_last_name=False, exclude_middle_name=False, exclude_first_name=False):
+    def initials(self):
         """
             Return period-delimited initials of the first, middle and optionally last name.
 
@@ -228,9 +223,14 @@ class HumanName(object):
                 >>> name.initials(False)
                 "B. A."
         """
-        initials_list = self.initials_list(exclude_last_name, exclude_middle_name, exclude_first_name)
 
-        return " ".join([initial + self.C.initials_delimiter for initial in initials_list]) or self.C.empty_attribute_default
+        initials_dict = {
+            "first":  (self.initials_delimiter + " ").join([name[0] for name in self.first_list if len(name)]) + self.initials_delimiter,
+            "middle": (self.initials_delimiter + " ").join([name[0] for name in self.middle_list if len(name)]) + self.initials_delimiter,
+            "last": (self.initials_delimiter + " ").join([name[0] for name in self.last_list if len(name)]) + self.initials_delimiter
+        }
+
+        return self.initials_format.format(**initials_dict)
 
     @property
     def has_own_config(self):
