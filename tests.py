@@ -2187,6 +2187,18 @@ class InitialsTestCase(HumanNameTestBase):
         hn = HumanName("Andrew Boris Petersen")
         self.m(hn.initials(), "A. B. P.", hn)
 
+    def test_initials_simple_name(self):
+        hn = HumanName("John Doe")
+        self.m(hn.initials(), "J. D.", hn)
+        hn = HumanName("John Doe", initials_format="{first} {last}")
+        self.m(hn.initials(), "J. D.", hn)
+        hn = HumanName("John Doe", initials_format="{last}")
+        self.m(hn.initials(), "D.", hn)
+        hn = HumanName("John Doe", initials_format="{first}")
+        self.m(hn.initials(), "J.", hn)
+        hn = HumanName("John Doe", initials_format="{middle}")
+        self.m(hn.initials(), "", hn)
+
     def test_initials_complex_name(self):
         hn = HumanName("Doe, John A. Kenneth, Jr.")
         self.m(hn.initials(), "J. A. K. D.", hn)
@@ -2203,14 +2215,14 @@ class InitialsTestCase(HumanNameTestBase):
 
     def test_initials_format_constants(self):
         from nameparser.config import CONSTANTS
-        orig_format = CONSTANTS.initials_format
+        _orig = CONSTANTS.initials_format
         CONSTANTS.initials_format = "{first} {last}"
         hn = HumanName("Doe, John A. Kenneth, Jr.")
         self.m(hn.initials(), "J. D.", hn)
         CONSTANTS.initials_format = "{first}  {last}"
         hn = HumanName("Doe, John A. Kenneth, Jr.")
-        self.m(hn.initials(), "J.  D.", hn)
-        CONSTANTS.initials_format = orig_format
+        self.m(hn.initials(), "J. D.", hn)
+        CONSTANTS.initials_format = _orig
 
     def test_initials_delimiter(self):
         hn = HumanName("Doe, John A. Kenneth, Jr.", initials_delimiter=";")
@@ -2218,11 +2230,11 @@ class InitialsTestCase(HumanNameTestBase):
 
     def test_initials_delimiter_constants(self):
         from nameparser.config import CONSTANTS
-        orig_delimiter = CONSTANTS.initials_delimiter
+        _orig = CONSTANTS.initials_delimiter
         CONSTANTS.initials_delimiter = ";"
         hn = HumanName("Doe, John A. Kenneth, Jr.")
         self.m(hn.initials(), "J; A; K; D;", hn)
-        CONSTANTS.initials_delimiter = orig_delimiter
+        CONSTANTS.initials_delimiter = _orig
 
     def test_initials_list(self):
         hn = HumanName("Andrew Boris Petersen")

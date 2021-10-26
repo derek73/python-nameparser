@@ -224,13 +224,21 @@ class HumanName(object):
                 "B. A."
         """
 
+        first_initials_list = [name[0] for name in self.first_list]
+        middle_initials_list = [name[0] for name in self.middle_list]
+        last_initials_list = [name[0] for name in self.last_list]
+
         initials_dict = {
-            "first":  (self.initials_delimiter + " ").join([name[0] for name in self.first_list if len(name)]) + self.initials_delimiter,
-            "middle": (self.initials_delimiter + " ").join([name[0] for name in self.middle_list if len(name)]) + self.initials_delimiter,
-            "last": (self.initials_delimiter + " ").join([name[0] for name in self.last_list if len(name)]) + self.initials_delimiter
+            "first":  (self.initials_delimiter + " ").join(first_initials_list) + self.initials_delimiter
+            if len(first_initials_list) else self.C.empty_attribute_default,
+            "middle": (self.initials_delimiter + " ").join(middle_initials_list) + self.initials_delimiter
+            if len(middle_initials_list) else self.C.empty_attribute_default,
+            "last": (self.initials_delimiter + " ").join(last_initials_list) + self.initials_delimiter
+            if len(last_initials_list) else self.C.empty_attribute_default
         }
 
-        return self.initials_format.format(**initials_dict)
+        _s = self.initials_format.format(**initials_dict)
+        return self.collapse_whitespace(_s)
 
     @property
     def has_own_config(self):
