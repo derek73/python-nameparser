@@ -188,6 +188,12 @@ class HumanName(object):
                     d[m] = val
         return d
 
+    def process_initial(self, name_part):
+        """
+            Name parts may include prefixes or conjuctions. This function filters these from the name.
+        """
+        return " ".join([split for split in name_part.split(" ") if len(split) and not (self.is_prefix(split) or self.is_conjunction(split))])[0]
+
     def initials_list(self):
         """
             Returns the initials as a list
@@ -195,18 +201,16 @@ class HumanName(object):
             .. doctest::
 
                 >>> name = HumanName("Sir Bob Andrew Dole")
-                >>> name.initials()
+                >>> name.initials_list()
                 ["B", "A", "D"]
                 >>> name = HumanName("J. Doe")
-                >>> name.initials()
+                >>> name.initials_list()
                 ["J", "D"]
         """
-        initials_list = []
-        initials_list = [name[0] for name in self.first_list if len(name)]
-        initials_list += [name[0] for name in self.middle_list if len(name)]
-        initials_list += [name[0] for name in self.last_list if len(name)]
-
-        return initials_list
+        first_initials_list = [self.__process_initial__(name) for name in self.first_list if name]
+        middle_initials_list = [self.__process_initial__(name) for name in self.middle_list if name]
+        last_initials_list = [self.__process_initial__(name) for name in self.last_list if name]
+        return first_initials_list + middle_initials_list + last_initials_list
 
     def initials(self):
         """
@@ -220,13 +224,14 @@ class HumanName(object):
                 >>> name = HumanName("Sir Bob Andrew Dole")
                 >>> name.initials()
                 "B. A. D."
-                >>> name.initials(False)
+                >>> name = HumanName("Sir Bob Andrew Dole", initials_format="{first} {middle}")
+                >>> name.initials()
                 "B. A."
         """
 
-        first_initials_list = [name[0] for name in self.first_list]
-        middle_initials_list = [name[0] for name in self.middle_list]
-        last_initials_list = [name[0] for name in self.last_list]
+        first_initials_list = [self.__process_initial__(name) for name in self.first_list if name]
+        middle_initials_list = [self.__process_initial__(name) for name in self.middle_list if name]
+        last_initials_list = [self.__process_initial__(name) for name in self.last_list if name]
 
         initials_dict = {
             "first":  (self.initials_delimiter + " ").join(first_initials_list) + self.initials_delimiter

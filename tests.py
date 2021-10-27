@@ -2472,6 +2472,7 @@ if __name__ == '__main__':
         print((repr(hn_instance)))
         hn_instance.capitalize()
         print((repr(hn_instance)))
+        print("Initials: " + hn_instance.initials())
     else:
         print("-"*80)
         print("Running tests")
