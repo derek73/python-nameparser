@@ -188,7 +188,7 @@ class HumanName(object):
                     d[m] = val
         return d
 
-    def process_initial(self, name_part):
+    def __process_initial__(self, name_part):
         """
             Name parts may include prefixes or conjuctions. This function filters these from the name.
         """
