@@ -192,7 +192,8 @@ class HumanName(object):
         """
             Name parts may include prefixes or conjuctions. This function filters these from the name.
         """
-        return " ".join([split for split in name_part.split(" ") if len(split) and not (self.is_prefix(split) or self.is_conjunction(split))])[0]
+        parsed = " ".join([split for split in name_part.split(" ") if len(split) and not (self.is_prefix(split) or self.is_conjunction(split))])
+        return parsed[0] if len(parsed) else ""
 
     def initials_list(self):
         """
