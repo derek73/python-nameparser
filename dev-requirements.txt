@@ -1,6 +1,2 @@
-ipdb
-nose>=1.3.7
-coverage>=4.0.3
 dill>=0.2.5
-twine
 Sphinx
