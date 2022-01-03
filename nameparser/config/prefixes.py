@@ -17,6 +17,7 @@ PREFIXES = set([
     'da',
     'dal',
     'de',
+    'de\'',
     'degli',
     'dei',
     'del',
