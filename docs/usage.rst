@@ -181,7 +181,7 @@ Initials Support
 
 The HumanName class can try to get the correct representation of initials.
 Initials can be tricky as different format usages exist. 
-If you want to exclude on of the name parts from the initials, you can use the initials format by chainging
+To exclude any of the name parts from the initials, change the initials format string: 
 :py:attr:`~nameparser.config.Constants.initials_format`
 Three attributes exist for the format, `first`, `middle` and `last`. 
 
@@ -207,7 +207,7 @@ Furthermore, the delimiter for the string output can be set through:
   >>> HumanName("Doe, John A. Kenneth, Jr.", initials_format="{first}{middle}{last}).initials()
   "J.A.K.D."
 
-If you want to receive a list representation of the initials, yo ucan use :py:meth:`~nameparser.HumanName.initials_list`.
+To get a list representation of the initials, use :py:meth:`~nameparser.HumanName.initials_list`.
 This function is unaffected by :py:attr:`~nameparser.config.Constants.initials_format`
 
 .. doctest:: list format
