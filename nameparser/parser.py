@@ -369,7 +369,7 @@ class HumanName(object):
         return lc(value) in self.C.titles
 
     def is_conjunction(self, piece):
-        """Is in the conjuctions set and not :py:func:`is_an_initial()`."""
+        """Is in the conjunctions set and not :py:func:`is_an_initial()`."""
         return piece.lower() in self.C.conjunctions and not self.is_an_initial(piece)
 
     def is_prefix(self, piece):
