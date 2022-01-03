@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import sys
+import re
 from operator import itemgetter
 from itertools import groupby
 
@@ -467,11 +468,14 @@ class HumanName(object):
         self.handle_capitalization()
 
     def fix_phd(self):
-        _re = self.C.regexes.phd
-        match = _re.search(self._full_name)
-        if match:
-            self.suffix_list.append(match.group(1))
-            self._full_name = _re.sub('', self._full_name)
+        try:
+            _re = self.C.regexes.phd
+            match = _re.search(self._full_name)
+            if match:
+                self.suffix_list.append(match.group(1))
+                self._full_name = _re.sub('', self._full_name)
+        except AttributeError:
+            pass
 
     def parse_nicknames(self):
         """
@@ -485,10 +489,12 @@ class HumanName(object):
         Loops through 3 :py:data:`~nameparser.config.regexes.REGEXES`;
         `quoted_word`, `double_quotes` and `parenthesis`.
         """
-
-        re_quoted_word = self.C.regexes.quoted_word
-        re_double_quotes = self.C.regexes.double_quotes
-        re_parenthesis = self.C.regexes.parenthesis
+        
+        empty_re = re.compile("")
+        
+        re_quoted_word = self.C.regexes.quoted_word or empty_re
+        re_double_quotes = self.C.regexes.double_quotes or empty_re
+        re_parenthesis = self.C.regexes.parenthesis or empty_re
 
         for _re in (re_quoted_word, re_double_quotes, re_parenthesis):
             if _re.search(self._full_name):
@@ -704,7 +710,7 @@ class HumanName(object):
         # constants so they get parsed correctly later
         for part in output:
             # if this part has a period not at the beginning or end
-            if self.C.regexes.period_not_at_end.match(part):
+            if self.C.regexes.period_not_at_end and self.C.regexes.period_not_at_end.match(part):
                 # split on periods, any of the split pieces titles or suffixes?
                 # ("Lt.Gov.")
                 period_chunks = part.split(".")

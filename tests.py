@@ -20,6 +20,7 @@ https://github.com/derek73/python-nameparser/pulls
 """
 
 import logging
+import re
 try:
     import dill
 except ImportError:
@@ -27,7 +28,7 @@ except ImportError:
 
 from nameparser import HumanName
 from nameparser.util import u
-from nameparser.config import Constants
+from nameparser.config import Constants, TupleManager
 
 log = logging.getLogger('HumanName')
 
@@ -198,6 +199,59 @@ class HumanNamePythonTests(HumanNameTestBase):
     def test_surnames_attribute(self):
         hn = HumanName("John Edgar Casey Williams III")
         self.m(hn.surnames, "Edgar Casey Williams", hn)
+
+    def test_override_constants(self):
+        C = Constants()
+        hn = HumanName(constants=C)
+        self.assertTrue(hn.C is C)
+
+    def test_override_regex(self):
+        var = TupleManager([("spaces", re.compile(r"\s+", re.U)),])
+        C = Constants(regexes=var)
+        hn = HumanName(constants=C)
+        self.assertTrue(hn.C.regexes == var)
+
+    def test_override_titles(self):
+        var = ["abc","def"]
+        C = Constants(titles=var)
+        hn = HumanName(constants=C)
+        self.assertTrue(sorted(hn.C.titles) == sorted(var))
+
+    def test_override_first_name_titles(self):
+        var = ["abc","def"]
+        C = Constants(first_name_titles=var)
+        hn = HumanName(constants=C)
+        self.assertTrue(sorted(hn.C.first_name_titles) == sorted(var))
+
+    def test_override_prefixes(self):
+        var = ["abc","def"]
+        C = Constants(prefixes=var)
+        hn = HumanName(constants=C)
+        self.assertTrue(sorted(hn.C.prefixes) == sorted(var))
+
+    def test_override_suffix_acronyms(self):
+        var = ["abc","def"]
+        C = Constants(suffix_acronyms=var)
+        hn = HumanName(constants=C)
+        self.assertTrue(sorted(hn.C.suffix_acronyms) == sorted(var))
+
+    def test_override_suffix_not_acronyms(self):
+        var = ["abc","def"]
+        C = Constants(suffix_not_acronyms=var)
+        hn = HumanName(constants=C)
+        self.assertTrue(sorted(hn.C.suffix_not_acronyms) == sorted(var))
+
+    def test_override_conjunctions(self):
+        var = ["abc","def"]
+        C = Constants(conjunctions=var)
+        hn = HumanName(constants=C)
+        self.assertTrue(sorted(hn.C.conjunctions) == sorted(var))
+
+    def test_override_capitalization_exceptions(self):
+        var = TupleManager([("spaces", re.compile(r"\s+", re.U)),])
+        C = Constants(capitalization_exceptions=var)
+        hn = HumanName(constants=C)
+        self.assertTrue(hn.C.capitalization_exceptions == var)
 
 
 class FirstNameHandlingTests(HumanNameTestBase):
