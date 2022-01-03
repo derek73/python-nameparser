@@ -252,7 +252,7 @@ TITLES = FIRST_NAME_TITLES | set([
     'druid',
     'drummer',
     'duchesse',
-    'duke',
+    # 'duke', # a common first name
     'dutchess',
     'ecologist',
     'economist',
