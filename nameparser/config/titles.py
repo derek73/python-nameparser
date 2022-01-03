@@ -117,6 +117,7 @@ TITLES = FIRST_NAME_TITLES | set([
     'banner',
     'bard',
     'baron',
+    'baroness',
     'barrister',
     'baseball',
     'bearer',
