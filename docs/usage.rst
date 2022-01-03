@@ -176,3 +176,41 @@ Don't want to include nicknames in your output? No problem. Just omit that keywo
   'Dr. Juan de la Vega'
 
 
+Initials Support
+----------------
+
+The HumanName class can try to get the correct representation of initials.
+Initials can be tricky as different format usages exist. 
+If you want to exclude on of the name parts from the initials, you can use the initials format by chainging
+:py:attr:`~nameparser.config.Constants.initials_format`
+Three attributes exist for the format, `first`, `middle` and `last`. 
+
+.. doctest:: initials format
+
+  >>> from nameparser.config import CONSTANTS
+  >>> CONSTANTS.initials_format = "{first} {middle}"
+  >>> HumanName("Doe, John A. Kenneth, Jr.").initials()
+  'J. A. K.'
+  >>> HumanName("Doe, John A. Kenneth, Jr.", initials_format="{last}, {first}).initials()
+  'D., J.'
+
+
+Furthermore, the delimiter for the string output can be set through:
+:py:attr:`~nameparser.config.Constants.initials_delimiter`
+
+.. doctest:: initials delimiter
+
+  >>> HumanName("Doe, John A. Kenneth, Jr.", initials_delimiter=";").initials()
+  "J; A; K;"
+  >>> from nameparser.config import CONSTANTS
+  >>> CONSTANTS.initials_delimiter = "."
+  >>> HumanName("Doe, John A. Kenneth, Jr.", initials_format="{first}{middle}{last}).initials()
+  "J.A.K.D."
+
+If you want to receive a list representation of the initials, yo ucan use :py:meth:`~nameparser.HumanName.initials_list`.
+This function is unaffected by :py:attr:`~nameparser.config.Constants.initials_format`
+
+.. doctest:: list format
+  >>> HumanName("Doe, John A. Kenneth, Jr.", initials_delimiter=";").initials_list()
+  ["J", "A", "K", "D"]
+    
