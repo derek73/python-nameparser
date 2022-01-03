@@ -1847,8 +1847,8 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.suffix, "Jr.", hn)
 
     def test_last_name_is_also_title_with_comma(self):
-        hn = HumanName("Duke Martin Luther King, Jr.")
-        self.m(hn.title, "Duke", hn)
+        hn = HumanName("Dr Martin Luther King, Jr.")
+        self.m(hn.title, "Dr", hn)
         self.m(hn.first, "Martin", hn)
         self.m(hn.middle, "Luther", hn)
         self.m(hn.last, "King", hn)
