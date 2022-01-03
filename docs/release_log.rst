@@ -1,5 +1,7 @@
 Release Log
 ===========
+* 1.1.0 - January 3, 2022
+    - Add initials support (#128)
 * 1.0.6 - February 8, 2020
     - Fix Python 3.8 syntax error (#104)
 * 1.0.5 - Dec 12, 2019
