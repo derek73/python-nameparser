@@ -191,10 +191,17 @@ class HumanName(object):
 
     def __process_initial__(self, name_part):
         """
-            Name parts may include prefixes or conjuctions. This function filters these from the name.
+            Name parts may include prefixes or conjuctions. This function filters these from the name unless it is
+            a first name, since first names cannot be conjunctions or prefixes.
         """
-        parsed = " ".join([split for split in name_part.split(" ") if len(split) and not (self.is_prefix(split) or self.is_conjunction(split))])
-        return parsed[0] if len(parsed) else ""
+        parts = name_part.split(" ")
+        parsed = ""
+        if len(parts) and not (name_part == 'first' and (self.is_prefix(parts) or self.is_conjunction(parts))):
+            parsed = " ".join(parts)
+        if len(parsed) > 0:
+            return parsed[0]
+        else:
+            return self.C.empty_attribute_default
 
     def initials_list(self):
         """
@@ -855,6 +862,9 @@ class HumanName(object):
                 # join everything after the prefix until the next prefix or suffix
 
                 try:
+                    if i == 0 and total_length >= 1:
+                        # If it's the first piece and there are more than 1 rootnames, assume it's a first name
+                        continue
                     next_prefix = next(iter(filter(self.is_prefix, pieces[i + 1:])))
                     j = pieces.index(next_prefix)
                     if j == i + 1:

@@ -1605,6 +1605,17 @@ class PrefixesTestCase(HumanNameTestBase):
         self.m(hn.first, "pennie", hn)
         self.m(hn.last, "von bergen wessels", hn)
 
+    def test_prefix_is_first_name(self):
+        hn = HumanName("Van Johnson")
+        self.m(hn.first, "Van", hn)
+        self.m(hn.last, "Johnson", hn)
+
+    def test_prefix_is_first_name_with_middle_name(self):
+        hn = HumanName("Van Jeremy Johnson")
+        self.m(hn.first, "Van", hn)
+        self.m(hn.middle, "Jeremy", hn)
+        self.m(hn.last, "Johnson", hn)
+
     def test_prefix_before_two_part_last_name_with_suffix(self):
         hn = HumanName("pennie von bergen wessels III")
         self.m(hn.first, "pennie", hn)
@@ -2312,6 +2323,10 @@ class InitialsTestCase(HumanNameTestBase):
     def test_initials_list_complex_name(self):
         hn = HumanName("Doe, John A. Kenneth, Jr.")
         self.m(hn.initials_list(), ["J", "A", "K", "D"], hn)
+
+    def test_initials_with_prefix_firstname(self):
+        hn = HumanName("Van Jeremy Johnson")
+        self.m(hn.initials_list(), ["V", "J", "J"], hn)
 
 
 TEST_NAMES = (
