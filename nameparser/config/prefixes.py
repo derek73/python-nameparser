@@ -42,7 +42,6 @@ PREFIXES = set([
     'ste',
     'van',
     'vander',
-    'van der',
     'vel',
     'von',
     'vom',

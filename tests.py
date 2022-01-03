@@ -1979,6 +1979,21 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
 
+    def test_mac_with_spaces(self):
+        hn = HumanName("Jane Mac Beth")
+        self.m(hn.first, "Jane", hn)
+        self.m(hn.last, "Mac Beth", hn)
+
+    def test_mac_as_first_name(self):
+        hn = HumanName("Mac Miller")
+        self.m(hn.first, "Mac", hn)
+        self.m(hn.last, "Miller", hn)
+
+    def test_multiple_prefixes(self):
+        hn = HumanName("Mike van der Velt")
+        self.m(hn.first, "Mike", hn)
+        self.m(hn.last, "van der Velt", hn)
+
 
 class HumanNameCapitalizationTestCase(HumanNameTestBase):
     def test_capitalization_exception_for_III(self):
