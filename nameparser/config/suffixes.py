@@ -239,6 +239,7 @@ SUFFIX_ACRONYMS = set([
     'cpm',
     'cpo',
     'cpp',
+    'cppm',
     'cprc',
     'cpre',
     'cprp',
