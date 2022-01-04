@@ -12,6 +12,7 @@ from __future__ import unicode_literals
 #: correct parsing of the last name "von bergen wessels".
 PREFIXES = set([
     'abu',
+    'al',
     'bin',
     'bon',
     'da',
