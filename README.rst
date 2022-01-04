@@ -13,6 +13,7 @@ individual components.
 * hn.suffix
 * hn.nickname
 * hn.surnames *(middle + last)*
+* hn.initials *first initial of each name part+
 
 Supported Name Structures
 ~~~~~~~~~~~~~~~~~~~~~~~~~
