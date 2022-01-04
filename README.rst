@@ -135,8 +135,8 @@ https://github.com/derek73/python-nameparser
 .. _Start a New Issue: https://github.com/derek73/python-nameparser/issues
 .. _click here to propose changes to the titles: https://github.com/derek73/python-nameparser/edit/master/nameparser/config/titles.py
 
-
-.. [![Tests](https://github.com/derek73/python-nameparser/actions/workflows/python-package.yml/badge.svg)](https://github.com/derek73/python-nameparser/actions/workflows/python-package.yml)
+.. |Build Status| image:: https://github.com/derek73/python-nameparser/actions/workflows/python-package.yml/badge.svg
+   :target: https://github.com/derek73/python-nameparser/actions/workflows/python-package.yml
 .. |PyPI| image:: https://img.shields.io/pypi/v/nameparser.svg
    :target: https://pypi.org/project/nameparser/
 .. |Documentation| image:: https://readthedocs.org/projects/nameparser/badge/?version=latest
