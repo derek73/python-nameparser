@@ -189,17 +189,19 @@ class HumanName(object):
                     d[m] = val
         return d
 
-    def __process_initial__(self, name_part):
+    def __process_initial__(self, name_part, firstname=False):
         """
             Name parts may include prefixes or conjuctions. This function filters these from the name unless it is
             a first name, since first names cannot be conjunctions or prefixes.
         """
         parts = name_part.split(" ")
-        parsed = ""
-        if len(parts) and not (name_part == 'first' and (self.is_prefix(parts) or self.is_conjunction(parts))):
-            parsed = " ".join(parts)
-        if len(parsed) > 0:
-            return parsed[0]
+        initials = []
+        if len(parts) and isinstance(parts, list):
+            for part in parts:
+                if not (self.is_prefix(part) or self.is_conjunction(part)) or firstname == True:
+                    initials.append(part[0])
+        if len(initials) > 0:
+            return " ".join(initials)
         else:
             return self.C.empty_attribute_default
 
@@ -216,7 +218,7 @@ class HumanName(object):
                 >>> name.initials_list()
                 ["J", "D"]
         """
-        first_initials_list = [self.__process_initial__(name) for name in self.first_list if name]
+        first_initials_list = [self.__process_initial__(name, True) for name in self.first_list if name]
         middle_initials_list = [self.__process_initial__(name) for name in self.middle_list if name]
         last_initials_list = [self.__process_initial__(name) for name in self.last_list if name]
         return first_initials_list + middle_initials_list + last_initials_list
@@ -238,7 +240,7 @@ class HumanName(object):
                 "B. A."
         """
 
-        first_initials_list = [self.__process_initial__(name) for name in self.first_list if name]
+        first_initials_list = [self.__process_initial__(name, True) for name in self.first_list if name]
         middle_initials_list = [self.__process_initial__(name) for name in self.middle_list if name]
         last_initials_list = [self.__process_initial__(name) for name in self.last_list if name]
 
@@ -378,14 +380,24 @@ class HumanName(object):
 
     def is_conjunction(self, piece):
         """Is in the conjunctions set and not :py:func:`is_an_initial()`."""
-        return piece.lower() in self.C.conjunctions and not self.is_an_initial(piece)
+        if isinstance(piece, list):
+            for item in piece:
+                if self.is_conjunction(item):
+                    return True
+        else:
+            return piece.lower() in self.C.conjunctions and not self.is_an_initial(piece)
 
     def is_prefix(self, piece):
         """
         Lowercase and no periods version of piece is in the
         :py:data:`~nameparser.config.prefixes.PREFIXES` set.
         """
-        return lc(piece) in self.C.prefixes
+        if isinstance(piece, list):
+            for item in piece:
+                if self.is_prefix(item):
+                    return True
+        else:
+            return lc(piece) in self.C.prefixes
 
     def is_roman_numeral(self, value):
         """
@@ -403,9 +415,14 @@ class HumanName(object):
         `C.suffix_acronyms`.
         """
         # suffixes may have periods inside them like "M.D."
-        return ((lc(piece).replace('.', '') in self.C.suffix_acronyms)
-                or (lc(piece) in self.C.suffix_not_acronyms)) \
-            and not self.is_an_initial(piece)
+        if isinstance(piece, list):
+            for piece in pieces:
+                if self.is_suffix(piece):
+                    return True
+        else:
+            return ((lc(piece).replace('.', '') in self.C.suffix_acronyms)
+                    or (lc(piece) in self.C.suffix_not_acronyms)) \
+                and not self.is_an_initial(piece)
 
     def are_suffixes(self, pieces):
         """Return True if all pieces are suffixes."""

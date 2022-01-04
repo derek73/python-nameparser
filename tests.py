@@ -200,6 +200,18 @@ class HumanNamePythonTests(HumanNameTestBase):
         hn = HumanName("John Edgar Casey Williams III")
         self.m(hn.surnames, "Edgar Casey Williams", hn)
 
+    def test_is_prefix_with_list(self):
+        hn = HumanName()
+        items = ['firstname', 'lastname', 'del']
+        self.assertTrue(hn.is_prefix(items))
+        self.assertTrue(hn.is_prefix(items[1:]))
+
+    def test_is_conjunction_with_list(self):
+        hn = HumanName()
+        items = ['firstname', 'lastname', 'and']
+        self.assertTrue(hn.is_conjunction(items))
+        self.assertTrue(hn.is_conjunction(items[1:]))
+
     def test_override_constants(self):
         C = Constants()
         hn = HumanName(constants=C)
@@ -2327,6 +2339,10 @@ class InitialsTestCase(HumanNameTestBase):
     def test_initials_with_prefix_firstname(self):
         hn = HumanName("Van Jeremy Johnson")
         self.m(hn.initials_list(), ["V", "J", "J"], hn)
+
+    def test_initials_with_prefix(self):
+        hn = HumanName("Alex van Johnson")
+        self.m(hn.initials_list(), ["A", "J"], hn)
 
 
 TEST_NAMES = (
