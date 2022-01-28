@@ -416,8 +416,8 @@ class HumanName(object):
         """
         # suffixes may have periods inside them like "M.D."
         if isinstance(piece, list):
-            for piece in pieces:
-                if self.is_suffix(piece):
+            for item in piece:
+                if self.is_suffix(item):
                     return True
         else:
             return ((lc(piece).replace('.', '') in self.C.suffix_acronyms)
