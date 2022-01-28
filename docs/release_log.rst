@@ -1,7 +1,7 @@
 Release Log
 ===========
 * 1.1.1 - January 28, 2022
-    - Fix bug in is_suffix handling of lists (#128)
+    - Fix bug in is_suffix handling of lists (#129)
 * 1.1.0 - January 3, 2022
     - Add initials support (#128)
     - Add more titles and prefixes (#120, #127, #128, #119)
