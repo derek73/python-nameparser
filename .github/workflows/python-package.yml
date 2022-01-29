@@ -32,5 +32,5 @@ jobs:
     - name: Run Tests
       run: |
         python tests.py
-        python setup.py sdist bdist_wheel
+        python setup.py sdist
         twine check dist/*
