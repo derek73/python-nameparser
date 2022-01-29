@@ -28,9 +28,11 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install twine
+        pip install sphinx
         if [ -f dev-requirements.txt ]; then pip install -r dev-requirements.txt; fi
     - name: Run Tests
       run: |
         python tests.py
         python setup.py sdist
         twine check dist/*
+        sphinx-build -b html docs dist/docs
