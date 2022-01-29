@@ -7,6 +7,7 @@ HumanName.parser
 .. py:module:: nameparser.parser
 
 .. py:class:: HumanName
+    :noindex:
 
 .. autoclass:: HumanName
     :members:
