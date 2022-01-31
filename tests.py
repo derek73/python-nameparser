@@ -187,13 +187,19 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(hn.first, "vai", hn)
         self.m(hn.last, "la", hn)
 
-    def test_family_name(self):
+    def test_family_name_and_prefix(self):
         hn = HumanName("Vincent van Gogh")
-        self.m(hn.family, "Gogh", hn)
+        self.m(hn.family, "van Gogh", hn)
+        self.assertEqual(hn.family_list, [
+            [["van"], ["Gogh"]]
+        ])
 
-    def test_family_name_prefix(self):
-        hn = HumanName("Vincent van Gogh")
-        self.m(hn.family_prefix, "van", hn)
+    def test_family_name_and_double_prefix(self):
+        hn = HumanName("Vincent van der Gogh")
+        self.m(hn.family, "van der Gogh", hn)
+        self.assertEqual(hn.family_list, [
+            [["van", "der"], ["Gogh"]],
+        ])
 
     def test_blank_name(self):
         hn = HumanName()

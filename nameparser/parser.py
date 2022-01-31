@@ -307,14 +307,10 @@ class HumanName(object):
         """
         The person's family name.
         """
-        return " ".join(self.family_list) or self.C.empty_attribute_default
-
-    @property
-    def family_prefix(self):
-        """
-        The person's family name prefix(es).
-        """
-        return " ".join(self.family_prefix_list) or self.C.empty_attribute_default
+        s = ""
+        for affix, family in self.family_list:
+            s += " ".join([*affix, *family]) or self.C.empty_attribute_default
+        return s
 
     @property
     def suffix(self):
@@ -415,17 +411,17 @@ class HumanName(object):
         else:
             return lc(piece) in self.C.prefixes
 
-    def is_family_prefix(self, piece):
+    def is_family_affix(self, piece):
         """
         Lowercase and no periods version of piece is in the
-        :py:data:`~nameparser.config.family_prefixes.PREFIXES` set.
+        :py:data:`~nameparser.config.family_affixes.AFFIXES` set.
         """
         if isinstance(piece, list):
             for item in piece:
-                if self.is_family_prefix(item):
+                if self.is_family_affix(item):
                     return True
         else:
-            return lc(piece) in self.C.family_prefixes
+            return lc(piece) in self.C.family_affixes
 
 
     def is_roman_numeral(self, value):
@@ -593,7 +589,6 @@ class HumanName(object):
         self.middle_list = []
         self.last_list = []
         self.family_list = []
-        self.family_prefix_list = []
         self.suffix_list = []
         self.nickname_list = []
         self.unparsable = True
@@ -732,13 +727,16 @@ class HumanName(object):
 
         for last in self.last_list:
             if " " in last:
+                affix = []
+                family = []
                 for part in last.split(" "):
-                    if self.is_family_prefix(part):
-                        self.family_prefix_list.append(part)
+                    if self.is_family_affix(part):
+                        affix.append(part)
                     else:
-                        self.family_list.append(part)
+                        family.append(part)
+                self.family_list.append([affix, family])
             else:
-                self.family_list.append(last)
+                self.family_list.append([[], [last]])
 
         if len(self) < 0:
             log.info("Unparsable: \"%s\" ", self.original)

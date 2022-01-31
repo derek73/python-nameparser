@@ -30,6 +30,7 @@ unexpected results. See `Customizing the Parser <customize.html>`_.
 """
 from __future__ import unicode_literals
 import sys
+
 try:
     # Python 3.3+
     from collections.abc import Set
@@ -46,6 +47,7 @@ from nameparser.config.suffixes import SUFFIX_NOT_ACRONYMS
 from nameparser.config.titles import TITLES
 from nameparser.config.titles import FIRST_NAME_TITLES
 from nameparser.config.regexes import REGEXES
+from nameparser.config.affixes import AFFIXES
 
 DEFAULT_ENCODING = 'UTF-8'
 
@@ -235,7 +237,7 @@ class Constants(object):
 
     def __init__(self,
                  prefixes=PREFIXES,
-                 family_prefixes=PREFIXES,
+                 family_affixes=AFFIXES,
                  suffix_acronyms=SUFFIX_ACRONYMS,
                  suffix_not_acronyms=SUFFIX_NOT_ACRONYMS,
                  titles=TITLES,
@@ -245,7 +247,7 @@ class Constants(object):
                  regexes=REGEXES
                  ):
         self.prefixes = SetManager(prefixes)
-        self.family_prefixes = SetManager(prefixes)
+        self.family_affixes = SetManager(family_affixes)
         self.suffix_acronyms = SetManager(suffix_acronyms)
         self.suffix_not_acronyms = SetManager(suffix_not_acronyms)
         self.titles = SetManager(titles)
