@@ -47,6 +47,8 @@ class HumanName(object):
     * :py:attr:`suffix`
     * :py:attr:`nickname`
     * :py:attr:`surnames`
+    * :py:attr:`family`
+    * :py:attr:`family_prefix`
 
     :param str full_name: The name string to be parsed.
     :param constants constants:
@@ -301,6 +303,20 @@ class HumanName(object):
         return " ".join(self.last_list) or self.C.empty_attribute_default
 
     @property
+    def family(self):
+        """
+        The person's family name.
+        """
+        return " ".join(self.family_list) or self.C.empty_attribute_default
+
+    @property
+    def family_prefix(self):
+        """
+        The person's family name prefix(es).
+        """
+        return " ".join(self.family_prefix_list) or self.C.empty_attribute_default
+
+    @property
     def suffix(self):
         """
         The persons's suffixes. Pieces at the end of the name that are found in
@@ -398,6 +414,19 @@ class HumanName(object):
                     return True
         else:
             return lc(piece) in self.C.prefixes
+
+    def is_family_prefix(self, piece):
+        """
+        Lowercase and no periods version of piece is in the
+        :py:data:`~nameparser.config.family_prefixes.PREFIXES` set.
+        """
+        if isinstance(piece, list):
+            for item in piece:
+                if self.is_family_prefix(item):
+                    return True
+        else:
+            return lc(piece) in self.C.family_prefixes
+
 
     def is_roman_numeral(self, value):
         """
@@ -513,9 +542,9 @@ class HumanName(object):
         Loops through 3 :py:data:`~nameparser.config.regexes.REGEXES`;
         `quoted_word`, `double_quotes` and `parenthesis`.
         """
-        
+
         empty_re = re.compile("")
-        
+
         re_quoted_word = self.C.regexes.quoted_word or empty_re
         re_double_quotes = self.C.regexes.double_quotes or empty_re
         re_parenthesis = self.C.regexes.parenthesis or empty_re
@@ -563,6 +592,8 @@ class HumanName(object):
         self.first_list = []
         self.middle_list = []
         self.last_list = []
+        self.family_list = []
+        self.family_prefix_list = []
         self.suffix_list = []
         self.nickname_list = []
         self.unparsable = True
@@ -698,6 +729,16 @@ class HumanName(object):
                         self.suffix_list += parts[2:]
                 except IndexError:
                     pass
+
+        for last in self.last_list:
+            if " " in last:
+                for part in last.split(" "):
+                    if self.is_family_prefix(part):
+                        self.family_prefix_list.append(part)
+                    else:
+                        self.family_list.append(part)
+            else:
+                self.family_list.append(last)
 
         if len(self) < 0:
             log.info("Unparsable: \"%s\" ", self.original)
@@ -968,6 +1009,7 @@ class HumanName(object):
         self.first_list = self.cap_piece(self.first, 'first').split(' ')
         self.middle_list = self.cap_piece(self.middle, 'middle').split(' ')
         self.last_list = self.cap_piece(self.last, 'last').split(' ')
+        # self.family_list = self.cap_piece(self.family, 'family').split(' ')
         self.suffix_list = self.cap_piece(self.suffix, 'suffix').split(', ')
 
     def handle_capitalization(self):

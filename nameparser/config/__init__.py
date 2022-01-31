@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 The :py:mod:`nameparser.config` module manages the configuration of the
-nameparser. 
+nameparser.
 
 A module-level instance of :py:class:`~nameparser.config.Constants` is created
 and used by default for all HumanName instances. You can adjust the entire module's
@@ -25,7 +25,7 @@ You can also adjust the configuration of individual instances by passing
     >>> hn.parse_full_name() # need to run this again after config changes
 
 **Potential Gotcha**: If you do not pass ``None`` as the second argument,
-``hn.C`` will be a reference to the module config, possibly yielding 
+``hn.C`` will be a reference to the module config, possibly yielding
 unexpected results. See `Customizing the Parser <customize.html>`_.
 """
 from __future__ import unicode_literals
@@ -57,7 +57,7 @@ class SetManager(Set):
 
     Only special functionality beyond that provided by set() is
     to normalize constants for comparison (lower case, no periods)
-    when they are add()ed and remove()d and allow passing multiple 
+    when they are add()ed and remove()d and allow passing multiple
     string arguments to the :py:func:`add()` and :py:func:`remove()` methods.
 
     '''
@@ -125,7 +125,7 @@ class SetManager(Set):
 
 class TupleManager(dict):
     '''
-    A dictionary with dot.notation access. Subclass of ``dict``. Makes the tuple constants 
+    A dictionary with dot.notation access. Subclass of ``dict``. Makes the tuple constants
     more friendly.
     '''
 
@@ -148,23 +148,25 @@ class Constants(object):
     """
     An instance of this class hold all of the configuration constants for the parser.
 
-    :param set prefixes: 
+    :param set prefixes:
         :py:attr:`prefixes` wrapped with :py:class:`SetManager`.
-    :param set titles: 
+    :param set family prefixes:
+        :py:attr:`prefixes` wrapped with :py:class:`SetManager`.
+    :param set titles:
         :py:attr:`titles` wrapped with :py:class:`SetManager`.
-    :param set first_name_titles: 
+    :param set first_name_titles:
         :py:attr:`~titles.FIRST_NAME_TITLES` wrapped with :py:class:`SetManager`.
-    :param set suffix_acronyms: 
+    :param set suffix_acronyms:
         :py:attr:`~suffixes.SUFFIX_ACRONYMS`  wrapped with :py:class:`SetManager`.
-    :param set suffix_not_acronyms: 
+    :param set suffix_not_acronyms:
         :py:attr:`~suffixes.SUFFIX_NOT_ACRONYMS`  wrapped with :py:class:`SetManager`.
-    :param set conjunctions: 
+    :param set conjunctions:
         :py:attr:`conjunctions`  wrapped with :py:class:`SetManager`.
     :type capitalization_exceptions: tuple or dict
-    :param capitalization_exceptions: 
+    :param capitalization_exceptions:
         :py:attr:`~capitalization.CAPITALIZATION_EXCEPTIONS` wrapped with :py:class:`TupleManager`.
     :type regexes: tuple or dict
-    :param regexes: 
+    :param regexes:
         :py:attr:`regexes`  wrapped with :py:class:`TupleManager`.
     """
 
@@ -187,9 +189,9 @@ class Constants(object):
     empty_attribute_default = ''
     """
     Default return value for empty attributes.
-    
+
     .. doctest::
-    
+
         >>> from nameparser.config import CONSTANTS
         >>> CONSTANTS.empty_attribute_default = None
         >>> name = HumanName("John Doe")
@@ -197,7 +199,7 @@ class Constants(object):
         None
         >>>name.first
         'John'
-        
+
     """
 
     capitalize_name = False
@@ -233,6 +235,7 @@ class Constants(object):
 
     def __init__(self,
                  prefixes=PREFIXES,
+                 family_prefixes=PREFIXES,
                  suffix_acronyms=SUFFIX_ACRONYMS,
                  suffix_not_acronyms=SUFFIX_NOT_ACRONYMS,
                  titles=TITLES,
@@ -242,6 +245,7 @@ class Constants(object):
                  regexes=REGEXES
                  ):
         self.prefixes = SetManager(prefixes)
+        self.family_prefixes = SetManager(prefixes)
         self.suffix_acronyms = SetManager(suffix_acronyms)
         self.suffix_not_acronyms = SetManager(suffix_not_acronyms)
         self.titles = SetManager(titles)

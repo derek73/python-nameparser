@@ -187,6 +187,14 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(hn.first, "vai", hn)
         self.m(hn.last, "la", hn)
 
+    def test_family_name(self):
+        hn = HumanName("Vincent van Gogh")
+        self.m(hn.family, "Gogh", hn)
+
+    def test_family_name_prefix(self):
+        hn = HumanName("Vincent van Gogh")
+        self.m(hn.family_prefix, "van", hn)
+
     def test_blank_name(self):
         hn = HumanName()
         self.m(hn.first, "", hn)
