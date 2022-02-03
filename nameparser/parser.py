@@ -191,7 +191,7 @@ class HumanName(object):
 
     def __process_initial__(self, name_part, firstname=False):
         """
-            Name parts may include prefixes or conjuctions. This function filters these from the name unless it is
+            Name parts may include prefixes or conjunctions. This function filters these from the name unless it is
             a first name, since first names cannot be conjunctions or prefixes.
         """
         parts = name_part.split(" ")
