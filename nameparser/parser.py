@@ -591,9 +591,9 @@ class HumanName(object):
                     nxt = None
 
                 # title must have a next piece, unless it's just a title
-                if self.is_title(piece) \
+                if not self.first \
                         and (nxt or p_len == 1) \
-                        and not self.first:
+                        and self.is_title(piece):
                     self.title_list.append(piece)
                     continue
                 if not self.first:
