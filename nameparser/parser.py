@@ -681,9 +681,9 @@ class HumanName(object):
                     except IndexError:
                         nxt = None
 
-                    if self.is_title(piece) \
+                    if not self.first \
                             and (nxt or len(post_comma_pieces) == 1) \
-                            and not self.first:
+                            and self.is_title(piece):
                         self.title_list.append(piece)
                         continue
                     if not self.first:
