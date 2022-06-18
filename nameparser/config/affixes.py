@@ -33,6 +33,7 @@ AFFIXES = set([
     'del',
     'dele',
     'della',
+    'den',
     'der',
     'di',
     'dos',
