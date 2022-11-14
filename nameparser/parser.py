@@ -153,7 +153,7 @@ class HumanName(object):
         if self.unparsable:
             _string = "<%(class)s : [ Unparsable ] >" % {'class': self.__class__.__name__, }
         else:
-            _string = "<%(class)s : [\n\ttitle: '%(title)s' \n\tfirst: '%(first)s' \n\tmiddle: '%(middle)s' \n\tlast: '%(last)s' \n\tsuffix: '%(suffix)s'\n\tnickname: '%(nickname)s'\n]>" % {
+            _string = "<%(class)s : [\n\ttitle: %(title)r \n\tfirst: %(first)r \n\tmiddle: %(middle)r \n\tlast: %(last)r \n\tsuffix: %(suffix)r\n\tnickname: %(nickname)r\n]>" % {
                 'class': self.__class__.__name__,
                 'title': self.title or '',
                 'first': self.first or '',
