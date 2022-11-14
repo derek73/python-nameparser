@@ -2343,7 +2343,44 @@ class InitialsTestCase(HumanNameTestBase):
     def test_initials_with_prefix(self):
         hn = HumanName("Alex van Johnson")
         self.m(hn.initials_list(), ["A", "J"], hn)
+        
+    def test_constructor_first(self):
+        hn = HumanName(first="TheName")
+        self.assertFalse(hn.unparsable)
+        self.m(hn.first, "TheName", hn)
+    
+    def test_constructor_middle(self):
+        hn = HumanName(middle="TheName")
+        self.assertFalse(hn.unparsable)
+        self.m(hn.middle, "TheName", hn)
 
+    def test_constructor_last(self):
+        hn = HumanName(last="TheName")
+        self.assertFalse(hn.unparsable)
+        self.m(hn.last, "TheName", hn)
+
+    def test_constructor_title(self):
+        hn = HumanName(title="TheName")
+        self.assertFalse(hn.unparsable)
+        self.m(hn.title, "TheName", hn)
+
+    def test_constructor_suffix(self):
+        hn = HumanName(suffix="TheName")
+        self.assertFalse(hn.unparsable)
+        self.m(hn.suffix, "TheName", hn)
+
+    def test_constructor_nickname(self):
+        hn = HumanName(nickname="TheName")
+        self.assertFalse(hn.unparsable)
+        self.m(hn.nickname, "TheName", hn)
+
+    def test_constructor_multiple(self):
+        hn = HumanName(first="TheName", last="lastname", title="mytitle", full_name="donotparse")
+        self.assertFalse(hn.unparsable)
+        self.m(hn.first, "TheName", hn)
+        self.m(hn.last, "lastname", hn)
+        self.m(hn.title, "mytitle", hn)
+    
 
 TEST_NAMES = (
     "John Doe",

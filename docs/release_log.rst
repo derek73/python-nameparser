@@ -1,5 +1,7 @@
 Release Log
 ===========
+* 1.1.2 - November 13, 2022
+    - Add support for attributes in constructor (#140)
 * 1.1.1 - January 28, 2022
     - Fix bug in is_suffix handling of lists (#129)
 * 1.1.0 - January 3, 2022

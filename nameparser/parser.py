@@ -36,7 +36,10 @@ class HumanName(object):
 
     Instantiation assigns to ``full_name``, and assignment to
     :py:attr:`full_name` triggers :py:func:`parse_full_name`. After parsing the
-    name, these instance attributes are available.
+    name, these instance attributes are available. Alternatively, you can pass 
+    any of the instance attributes to the constructor method and skip the parsing
+    process. If any of the the instance attributes are passed to the constructor 
+    as keywords, :py:func:`parse_full_name` will not be performed. 
 
     **HumanName Instance Attributes**
 
@@ -56,6 +59,12 @@ class HumanName(object):
     :param str string_format: python string formatting
     :param str initials_format: python initials string formatting
     :param str initials_delimter: string delimiter for initials
+    :param str first: first name
+    :param str middle: middle name
+    :param str last: last name
+    :param str title: The title or prenominal
+    :param str suffix: The suffix or postnominal
+    :param str nickname: Nicknames
     """
 
     C = CONSTANTS
@@ -77,7 +86,9 @@ class HumanName(object):
     _full_name = ''
 
     def __init__(self, full_name="", constants=CONSTANTS, encoding=DEFAULT_ENCODING,
-                 string_format=None, initials_format=None, initials_delimiter=None):
+                 string_format=None, initials_format=None, initials_delimiter=None,
+                 first=None, middle=None, last=None, title=None, suffix=None,
+                 nickname=None):
         self.C = constants
         if type(self.C) is not type(CONSTANTS):
             self.C = Constants()
@@ -86,8 +97,17 @@ class HumanName(object):
         self.string_format = string_format or self.C.string_format
         self.initials_format = initials_format or self.C.initials_format
         self.initials_delimiter = initials_delimiter or self.C.initials_delimiter
-        # full_name setter triggers the parse
-        self.full_name = full_name
+        if (first or middle or last or title or suffix or nickname):
+            self.first = first
+            self.middle = middle
+            self.last = last
+            self.title = title
+            self.suffix = suffix
+            self.nickname = nickname
+            self.unparsable = False
+        else:
+            # full_name setter triggers the parse
+            self.full_name = full_name
 
     def __iter__(self):
         return self
