@@ -141,6 +141,9 @@ class HumanName(object):
             return self.collapse_whitespace(_s).strip(', ')
         return " ".join(self)
 
+    def __hash__(self):
+        return hash(str(self))
+
     def __str__(self):
         if sys.version_info[0] >= 3:
             return self.__unicode__()
