@@ -2072,9 +2072,10 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.last, "van der Velt", hn)
 
     def test_2_same_prefixes_in_the_name(self):
-        hh = HumanName("Van Ma Van")
-        self.m(hh.first, "Van Ma", hh)
-        self.m(hh.last, "Van", hh)
+        hh = HumanName("Vincent van Gogh van Beethoven")
+        self.m(hh.first, "Vincent", hh)
+        self.m(hh.middle, "van Gogh", hh)
+        self.m(hh.last, "van Beethoven", hh)
 
 class HumanNameCapitalizationTestCase(HumanNameTestBase):
     def test_capitalization_exception_for_III(self):
