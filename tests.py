@@ -2071,6 +2071,10 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.first, "Mike", hn)
         self.m(hn.last, "van der Velt", hn)
 
+    def test_prefix_as_fist_name(self):
+        hh = HumanName("Van Ma Van")
+        self.m(hh.first, "Van Ma", hh)
+        self.m(hh.last, "Van", hh)
 
 class HumanNameCapitalizationTestCase(HumanNameTestBase):
     def test_capitalization_exception_for_III(self):
@@ -2343,12 +2347,12 @@ class InitialsTestCase(HumanNameTestBase):
     def test_initials_with_prefix(self):
         hn = HumanName("Alex van Johnson")
         self.m(hn.initials_list(), ["A", "J"], hn)
-        
+
     def test_constructor_first(self):
         hn = HumanName(first="TheName")
         self.assertFalse(hn.unparsable)
         self.m(hn.first, "TheName", hn)
-    
+
     def test_constructor_middle(self):
         hn = HumanName(middle="TheName")
         self.assertFalse(hn.unparsable)
@@ -2380,7 +2384,7 @@ class InitialsTestCase(HumanNameTestBase):
         self.m(hn.first, "TheName", hn)
         self.m(hn.last, "lastname", hn)
         self.m(hn.title, "mytitle", hn)
-    
+
 
 TEST_NAMES = (
     "John Doe",
