@@ -2071,7 +2071,7 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.first, "Mike", hn)
         self.m(hn.last, "van der Velt", hn)
 
-    def test_prefix_as_fist_name(self):
+    def test_2_same_prefixes_in_the_name(self):
         hh = HumanName("Van Ma Van")
         self.m(hh.first, "Van Ma", hh)
         self.m(hh.last, "Van", hh)

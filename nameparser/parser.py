@@ -906,7 +906,7 @@ class HumanName(object):
                         # If it's the first piece and there are more than 1 rootnames, assume it's a first name
                         continue
                     next_prefix = next(iter(filter(self.is_prefix, pieces[i + 1:])))
-                    j = pieces.index(next_prefix, i+1)
+                    j = pieces.index(next_prefix, i + 1)
                     if j == i + 1:
                         # if there are two prefixes in sequence, join to the following piece
                         j += 1
