@@ -36,10 +36,10 @@ class HumanName(object):
 
     Instantiation assigns to ``full_name``, and assignment to
     :py:attr:`full_name` triggers :py:func:`parse_full_name`. After parsing the
-    name, these instance attributes are available. Alternatively, you can pass 
+    name, these instance attributes are available. Alternatively, you can pass
     any of the instance attributes to the constructor method and skip the parsing
-    process. If any of the the instance attributes are passed to the constructor 
-    as keywords, :py:func:`parse_full_name` will not be performed. 
+    process. If any of the the instance attributes are passed to the constructor
+    as keywords, :py:func:`parse_full_name` will not be performed.
 
     **HumanName Instance Attributes**
 
@@ -536,9 +536,9 @@ class HumanName(object):
         Loops through 3 :py:data:`~nameparser.config.regexes.REGEXES`;
         `quoted_word`, `double_quotes` and `parenthesis`.
         """
-        
+
         empty_re = re.compile("")
-        
+
         re_quoted_word = self.C.regexes.quoted_word or empty_re
         re_double_quotes = self.C.regexes.double_quotes or empty_re
         re_parenthesis = self.C.regexes.parenthesis or empty_re
@@ -906,7 +906,7 @@ class HumanName(object):
                         # If it's the first piece and there are more than 1 rootnames, assume it's a first name
                         continue
                     next_prefix = next(iter(filter(self.is_prefix, pieces[i + 1:])))
-                    j = pieces.index(next_prefix)
+                    j = pieces.index(next_prefix, i + 1)
                     if j == i + 1:
                         # if there are two prefixes in sequence, join to the following piece
                         j += 1
