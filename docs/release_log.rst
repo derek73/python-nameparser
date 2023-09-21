@@ -1,5 +1,7 @@
 Release Log
 ===========
+* 1.1.3 - September 20, 2023
+    - Fix case when we have two same prefixes in the name ()#147)
 * 1.1.2 - November 13, 2022
     - Add support for attributes in constructor (#140)
     - Make HumanName instances hashable (#138)
