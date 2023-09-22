@@ -50,6 +50,8 @@ class HumanName(object):
     * :py:attr:`suffix`
     * :py:attr:`nickname`
     * :py:attr:`surnames`
+    * :py:attr:`family`
+    * :py:attr:`family_prefix`
 
     :param str full_name: The name string to be parsed.
     :param constants constants:
@@ -324,6 +326,16 @@ class HumanName(object):
         return " ".join(self.last_list) or self.C.empty_attribute_default
 
     @property
+    def family(self):
+        """
+        The person's family name.
+        """
+        s = ""
+        for affix, family in self.family_list:
+            s += " ".join([*affix, *family]) or self.C.empty_attribute_default
+        return s
+
+    @property
     def suffix(self):
         """
         The persons's suffixes. Pieces at the end of the name that are found in
@@ -421,6 +433,19 @@ class HumanName(object):
                     return True
         else:
             return lc(piece) in self.C.prefixes
+
+    def is_family_affix(self, piece):
+        """
+        Lowercase and no periods version of piece is in the
+        :py:data:`~nameparser.config.family_affixes.AFFIXES` set.
+        """
+        if isinstance(piece, list):
+            for item in piece:
+                if self.is_family_affix(item):
+                    return True
+        else:
+            return lc(piece) in self.C.family_affixes
+
 
     def is_roman_numeral(self, value):
         """
@@ -586,6 +611,7 @@ class HumanName(object):
         self.first_list = []
         self.middle_list = []
         self.last_list = []
+        self.family_list = []
         self.suffix_list = []
         self.nickname_list = []
         self.unparsable = True
@@ -721,6 +747,19 @@ class HumanName(object):
                         self.suffix_list += parts[2:]
                 except IndexError:
                     pass
+
+        for last in self.last_list:
+            if " " in last:
+                affix = []
+                family = []
+                for part in last.split(" "):
+                    if self.is_family_affix(part):
+                        affix.append(part)
+                    else:
+                        family.append(part)
+                self.family_list.append([affix, family])
+            else:
+                self.family_list.append([[], [last]])
 
         if len(self) < 0:
             log.info("Unparsable: \"%s\" ", self.original)
@@ -991,6 +1030,7 @@ class HumanName(object):
         self.first_list = self.cap_piece(self.first, 'first').split(' ')
         self.middle_list = self.cap_piece(self.middle, 'middle').split(' ')
         self.last_list = self.cap_piece(self.last, 'last').split(' ')
+        # self.family_list = self.cap_piece(self.family, 'family').split(' ')
         self.suffix_list = self.cap_piece(self.suffix, 'suffix').split(', ')
 
     def handle_capitalization(self):
