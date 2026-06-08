@@ -1,7 +1,7 @@
 import re
 
 # emoji regex from https://stackoverflow.com/questions/26568722/remove-unicode-emoji-using-re-in-python
-re_emoji = re.compile('['
+re_emoji = re.compile('['  # lgtm[py/overly-large-range]
     '\U0001F300-\U0001F64F'
     '\U0001F680-\U0001F6FF'
     '\u2600-\u26FF\u2700-\u27BF]+',
