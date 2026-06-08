@@ -11,9 +11,6 @@ from nameparser.config import CONSTANTS
 from nameparser.config import Constants
 from nameparser.config import DEFAULT_ENCODING
 
-ENCODING = 'utf-8'
-
-
 def group_contiguous_integers(data: Iterable[int]) -> list[tuple[int, int]]:
     """
     return list of tuples containing first and last index
@@ -158,9 +155,6 @@ class HumanName:
             self._set_list(key, value)
         else:
             raise KeyError("Not a valid HumanName attribute", key)
-
-    def next(self) -> str:
-        return self.__next__()
 
     def __next__(self) -> str:
         if self._count >= len(self._members):
