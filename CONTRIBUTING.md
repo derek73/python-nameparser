@@ -4,9 +4,9 @@ Contributing
 Development Environment Setup
 --------------------------------
 
-Install dev dependencies:
+Install dev dependencies (requires pip >= 24.1 for dependency group support):
 
-    pip install -r dev-requirements.txt
+    pip install --group dev
 
 Running Tests
 ---------------
@@ -38,5 +38,5 @@ Unless you add better coverage someplace else, add a few examples of your names 
 New Releases
 ------------
 
-    $ python setup.py sdist bdist_wheel
+    $ python -m build
     $ twine upload dist/*

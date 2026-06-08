@@ -7,6 +7,8 @@ re_emoji = re.compile('['
     '\u2600-\u26FF\u2700-\u27BF]+',
     re.UNICODE)
 
+EMPTY_REGEX = re.compile('')
+
 REGEXES = set([
     ("spaces", re.compile(r"\s+", re.U)),
     ("word", re.compile(r"(\w|\.)+", re.U)),

@@ -49,7 +49,7 @@ Installation
 If you want to try out the latest code from GitHub you can
 install with pip using the command below.
 
-``pip install -e git+git://github.com/derek73/python-nameparser.git#egg=nameparser``
+``pip install -e git+https://github.com/derek73/python-nameparser.git``
 
 If you need to handle lists of names, check out
 `namesparser <https://github.com/gwu-libraries/namesparser>`_, a
