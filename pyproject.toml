@@ -1,0 +1,63 @@
+[project]
+name = "nameparser"
+description = "A simple Python module for parsing human names into their individual components."
+readme = "README.rst"
+requires-python = ">=3.10"
+license = {text = "LGPL"}
+authors = [{name = "Derek Gulbranson", email = "derek73@gmail.com"}]
+dynamic = ["version"]
+keywords = ["names", "parser"]
+classifiers = [
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Development Status :: 5 - Production/Stable",
+  "Natural Language :: English",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Text Processing :: Linguistic",
+]
+dependencies = [
+  "typing_extensions (>=4.5.0); python_version < '3.11'"
+]
+
+[build-system]
+requires = ["setuptools (>=82.0.1)"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = {attr = "nameparser._version.__version__"}
+
+[dependency-groups]
+dev = [
+  "dill (>=0.2.5)",
+  "sphinx (>=8)",
+  "mypy (>=2.1)",
+  "ruff (>=0.15)"
+]
+
+[tool.mypy]
+packages = ["nameparser"]
+
+[[tool.mypy.overrides]]
+module = [
+  "dill.*",
+]
+ignore_missing_imports = true
+
+[tool.ruff.lint]
+extend-select = [
+  "ANN",   # flake8-annotations
+  "UP",    # pyupgrade
+]
+ignore = [
+  "E74",     # ambiguous-{variable,class,function}-name (I have trouble believing that these are real rules)
+  "UP031",   # printf-string-formatting (the code already uses % formatting)
+  "UP032",   # f-string (the code already uses str.format)
+]

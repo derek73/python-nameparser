@@ -1,3 +1,4 @@
+# ruff: noqa: E402
 import unittest
 """
 Run this file to run the tests.
@@ -19,6 +20,8 @@ https://github.com/derek73/python-nameparser/pulls
 
 import logging
 import re
+from typing import Generic, TypeVar
+
 try:
     import dill
 except ImportError:
@@ -29,60 +32,58 @@ from nameparser.config import Constants, TupleManager
 
 log = logging.getLogger('HumanName')
 
-try:
-    unittest.expectedFailure
-except AttributeError:
-    # Python 2.6 backport
-    import unittest2 as unittest
+
+T = TypeVar('T')
 
 
-class HumanNameTestBase(unittest.TestCase):
-    def m(self, actual, expected, hn):
+class HumanNameTestBase(unittest.TestCase, Generic[T]):
+    def m(self, actual: T, expected: T, hn: HumanName) -> None:
         """assertEqual with a better message and awareness of hn.C.empty_attribute_default"""
-        expected = expected or hn.C.empty_attribute_default
+        expected_ = expected or hn.C.empty_attribute_default
         try:
-            self.assertEqual(actual, expected, "'%s' != '%s' for '%s'\n%r" % (
+            self.assertEqual(actual, expected_, "'%s' != '%s' for '%s'\n%r" % (
                 actual,
                 expected,
                 hn.original,
                 hn
             ))
         except UnicodeDecodeError:
-            self.assertEqual(actual, expected)
+            self.assertEqual(actual, expected_)
 
 
 class HumanNamePythonTests(HumanNameTestBase):
 
-    def test_utf8(self):
+    def test_utf8(self) -> None:
         hn = HumanName("de la Véña, Jüan")
         self.m(hn.first, "Jüan", hn)
         self.m(hn.last, "de la Véña", hn)
 
-    def test_string_output(self):
+    def test_string_output(self) -> None:
         hn = HumanName("de la Véña, Jüan")
+        self.m(str(hn), "Jüan de la Véña", hn)
 
-    def test_escaped_utf8_bytes(self):
+    def test_escaped_utf8_bytes(self) -> None:
         hn = HumanName(b'B\xc3\xb6ck, Gerald')
         self.m(hn.first, "Gerald", hn)
         self.m(hn.last, "Böck", hn)
 
-    def test_len(self):
+    def test_len(self) -> None:
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         self.m(len(hn), 5, hn)
         hn = HumanName("John Doe")
         self.m(len(hn), 2, hn)
 
     @unittest.skipUnless(dill, "requires python-dill module to test pickling")
-    def test_config_pickle(self):
+    def test_config_pickle(self) -> None:
         constants = Constants()
         self.assertTrue(dill.pickles(constants))
 
     @unittest.skipUnless(dill, "requires python-dill module to test pickling")
-    def test_name_instance_pickle(self):
+    def test_name_instance_pickle(self) -> None:
         hn = HumanName("Title First Middle Middle Last, Jr.")
         self.assertTrue(dill.pickles(hn))
 
-    def test_comparison(self):
+    def test_comparison(self) -> None:
         hn1 = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         hn2 = HumanName("Dr. John P. Doe-Ray, CLU, CFP, LUTC")
         self.assertTrue(hn1 == hn2)
@@ -96,7 +97,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.assertTrue(not hn1 == ["test"])
         self.assertTrue(not hn1 == {"test": hn2})
 
-    def test_assignment_to_full_name(self):
+    def test_assignment_to_full_name(self) -> None:
         hn = HumanName("John A. Kenneth Doe, Jr.")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
@@ -107,12 +108,12 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test_get_full_name_attribute_references_internal_lists(self):
+    def test_get_full_name_attribute_references_internal_lists(self) -> None:
         hn = HumanName("John Williams")
         hn.first_list = ["Larry"]
         self.m(hn.full_name, "Larry Williams", hn)
 
-    def test_assignment_to_attribute(self):
+    def test_assignment_to_attribute(self) -> None:
         hn = HumanName("John A. Kenneth Doe, Jr.")
         hn.last = "de la Vega"
         self.m(hn.last, "de la Vega", hn)
@@ -129,7 +130,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         with self.assertRaises(TypeError):
             hn.suffix = {"test": "test"}
 
-    def test_assign_list_to_attribute(self):
+    def test_assign_list_to_attribute(self) -> None:
         hn = HumanName("John A. Kenneth Doe, Jr.")
         hn.title = ["test1", "test2"]
         self.m(hn.title, "test1 test2", hn)
@@ -142,20 +143,20 @@ class HumanNamePythonTests(HumanNameTestBase):
         hn.suffix = ['test']
         self.m(hn.suffix, "test", hn)
 
-    def test_comparison_case_insensitive(self):
+    def test_comparison_case_insensitive(self) -> None:
         hn1 = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         hn2 = HumanName("dr. john p. doe-Ray, CLU, CFP, LUTC")
         self.assertTrue(hn1 == hn2)
         self.assertTrue(hn1 is not hn2)
         self.assertTrue(hn1 == "Dr. John P. Doe-ray clu, CFP, LUTC")
 
-    def test_slice(self):
+    def test_slice(self) -> None:
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         self.m(list(hn), ['Dr.', 'John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC'], hn)
         self.m(hn[1:], ['John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC', hn.C.empty_attribute_default], hn)
         self.m(hn[1:-2], ['John', 'P.', 'Doe-Ray'], hn)
 
-    def test_getitem(self):
+    def test_getitem(self) -> None:
         hn = HumanName("Dr. John A. Kenneth Doe, Jr.")
         self.m(hn['title'], "Dr.", hn)
         self.m(hn['first'], "John", hn)
@@ -163,7 +164,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(hn['middle'], "A. Kenneth", hn)
         self.m(hn['suffix'], "Jr.", hn)
 
-    def test_setitem(self):
+    def test_setitem(self) -> None:
         hn = HumanName("Dr. John A. Kenneth Doe, Jr.")
         hn['title'] = 'test'
         self.m(hn['title'], "test", hn)
@@ -174,89 +175,89 @@ class HumanNamePythonTests(HumanNameTestBase):
         with self.assertRaises(TypeError):
             hn["suffix"] = {"test": "test"}
 
-    def test_conjunction_names(self):
+    def test_conjunction_names(self) -> None:
         hn = HumanName("johnny y")
         self.m(hn.first, "johnny", hn)
         self.m(hn.last, "y", hn)
 
-    def test_prefix_names(self):
+    def test_prefix_names(self) -> None:
         hn = HumanName("vai la")
         self.m(hn.first, "vai", hn)
         self.m(hn.last, "la", hn)
 
-    def test_blank_name(self):
+    def test_blank_name(self) -> None:
         hn = HumanName()
         self.m(hn.first, "", hn)
         self.m(hn.last, "", hn)
 
-    def test_surnames_list_attribute(self):
+    def test_surnames_list_attribute(self) -> None:
         hn = HumanName("John Edgar Casey Williams III")
         self.m(hn.surnames_list, ["Edgar", "Casey", "Williams"], hn)
 
-    def test_surnames_attribute(self):
+    def test_surnames_attribute(self) -> None:
         hn = HumanName("John Edgar Casey Williams III")
         self.m(hn.surnames, "Edgar Casey Williams", hn)
 
-    def test_is_prefix_with_list(self):
+    def test_is_prefix_with_list(self) -> None:
         hn = HumanName()
         items = ['firstname', 'lastname', 'del']
         self.assertTrue(hn.is_prefix(items))
         self.assertTrue(hn.is_prefix(items[1:]))
 
-    def test_is_conjunction_with_list(self):
+    def test_is_conjunction_with_list(self) -> None:
         hn = HumanName()
         items = ['firstname', 'lastname', 'and']
         self.assertTrue(hn.is_conjunction(items))
         self.assertTrue(hn.is_conjunction(items[1:]))
 
-    def test_override_constants(self):
+    def test_override_constants(self) -> None:
         C = Constants()
         hn = HumanName(constants=C)
         self.assertTrue(hn.C is C)
 
-    def test_override_regex(self):
+    def test_override_regex(self) -> None:
         var = TupleManager([("spaces", re.compile(r"\s+", re.U)),])
         C = Constants(regexes=var)
         hn = HumanName(constants=C)
         self.assertTrue(hn.C.regexes == var)
 
-    def test_override_titles(self):
+    def test_override_titles(self) -> None:
         var = ["abc","def"]
         C = Constants(titles=var)
         hn = HumanName(constants=C)
         self.assertTrue(sorted(hn.C.titles) == sorted(var))
 
-    def test_override_first_name_titles(self):
+    def test_override_first_name_titles(self) -> None:
         var = ["abc","def"]
         C = Constants(first_name_titles=var)
         hn = HumanName(constants=C)
         self.assertTrue(sorted(hn.C.first_name_titles) == sorted(var))
 
-    def test_override_prefixes(self):
+    def test_override_prefixes(self) -> None:
         var = ["abc","def"]
         C = Constants(prefixes=var)
         hn = HumanName(constants=C)
         self.assertTrue(sorted(hn.C.prefixes) == sorted(var))
 
-    def test_override_suffix_acronyms(self):
+    def test_override_suffix_acronyms(self) -> None:
         var = ["abc","def"]
         C = Constants(suffix_acronyms=var)
         hn = HumanName(constants=C)
         self.assertTrue(sorted(hn.C.suffix_acronyms) == sorted(var))
 
-    def test_override_suffix_not_acronyms(self):
+    def test_override_suffix_not_acronyms(self) -> None:
         var = ["abc","def"]
         C = Constants(suffix_not_acronyms=var)
         hn = HumanName(constants=C)
         self.assertTrue(sorted(hn.C.suffix_not_acronyms) == sorted(var))
 
-    def test_override_conjunctions(self):
+    def test_override_conjunctions(self) -> None:
         var = ["abc","def"]
         C = Constants(conjunctions=var)
         hn = HumanName(constants=C)
         self.assertTrue(sorted(hn.C.conjunctions) == sorted(var))
 
-    def test_override_capitalization_exceptions(self):
+    def test_override_capitalization_exceptions(self) -> None:
         var = TupleManager([("spaces", re.compile(r"\s+", re.U)),])
         C = Constants(capitalization_exceptions=var)
         hn = HumanName(constants=C)
@@ -264,11 +265,11 @@ class HumanNamePythonTests(HumanNameTestBase):
 
 
 class FirstNameHandlingTests(HumanNameTestBase):
-    def test_first_name(self):
+    def test_first_name(self) -> None:
         hn = HumanName("Andrew")
         self.m(hn.first, "Andrew", hn)
 
-    def test_assume_title_and_one_other_name_is_last_name(self):
+    def test_assume_title_and_one_other_name_is_last_name(self) -> None:
         hn = HumanName("Rev Andrews")
         self.m(hn.title, "Rev", hn)
         self.m(hn.last, "Andrews", hn)
@@ -277,50 +278,50 @@ class FirstNameHandlingTests(HumanNameTestBase):
     # but other suffixes like "George Jr." should be first names. Might be
     # related to https://github.com/derek73/python-nameparser/issues/2
     @unittest.expectedFailure
-    def test_assume_suffix_title_and_one_other_name_is_last_name(self):
+    def test_assume_suffix_title_and_one_other_name_is_last_name(self) -> None:
         hn = HumanName("Andrews, M.D.")
         self.m(hn.suffix, "M.D.", hn)
         self.m(hn.last, "Andrews", hn)
 
-    def test_suffix_in_lastname_part_of_lastname_comma_format(self):
+    def test_suffix_in_lastname_part_of_lastname_comma_format(self) -> None:
         hn = HumanName("Smith Jr., John")
         self.m(hn.last, "Smith", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test_sir_exception_to_first_name_rule(self):
+    def test_sir_exception_to_first_name_rule(self) -> None:
         hn = HumanName("Sir Gerald")
         self.m(hn.title, "Sir", hn)
         self.m(hn.first, "Gerald", hn)
 
-    def test_king_exception_to_first_name_rule(self):
+    def test_king_exception_to_first_name_rule(self) -> None:
         hn = HumanName("King Henry")
         self.m(hn.title, "King", hn)
         self.m(hn.first, "Henry", hn)
 
-    def test_queen_exception_to_first_name_rule(self):
+    def test_queen_exception_to_first_name_rule(self) -> None:
         hn = HumanName("Queen Elizabeth")
         self.m(hn.title, "Queen", hn)
         self.m(hn.first, "Elizabeth", hn)
 
-    def test_dame_exception_to_first_name_rule(self):
+    def test_dame_exception_to_first_name_rule(self) -> None:
         hn = HumanName("Dame Mary")
         self.m(hn.title, "Dame", hn)
         self.m(hn.first, "Mary", hn)
 
-    def test_first_name_is_not_prefix_if_only_two_parts(self):
+    def test_first_name_is_not_prefix_if_only_two_parts(self) -> None:
         """When there are only two parts, don't join prefixes or conjunctions"""
         hn = HumanName("Van Nguyen")
         self.m(hn.first, "Van", hn)
         self.m(hn.last, "Nguyen", hn)
 
-    def test_first_name_is_not_prefix_if_only_two_parts_comma(self):
+    def test_first_name_is_not_prefix_if_only_two_parts_comma(self) -> None:
         hn = HumanName("Nguyen, Van")
         self.m(hn.first, "Van", hn)
         self.m(hn.last, "Nguyen", hn)
 
     @unittest.expectedFailure
-    def test_first_name_is_prefix_if_three_parts(self):
+    def test_first_name_is_prefix_if_three_parts(self) -> None:
         """Not sure how to fix this without breaking Mr and Mrs"""
         hn = HumanName("Mr. Van Nguyen")
         self.m(hn.first, "Van", hn)
@@ -329,168 +330,168 @@ class FirstNameHandlingTests(HumanNameTestBase):
 
 class HumanNameBruteForceTests(HumanNameTestBase):
 
-    def test1(self):
+    def test1(self) -> None:
         hn = HumanName("John Doe")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
 
-    def test2(self):
+    def test2(self) -> None:
         hn = HumanName("John Doe, Jr.")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test3(self):
+    def test3(self) -> None:
         hn = HumanName("John Doe III")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test4(self):
+    def test4(self) -> None:
         hn = HumanName("Doe, John")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
 
-    def test5(self):
+    def test5(self) -> None:
         hn = HumanName("Doe, John, Jr.")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test6(self):
+    def test6(self) -> None:
         hn = HumanName("Doe, John III")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test7(self):
+    def test7(self) -> None:
         hn = HumanName("John A. Doe")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.middle, "A.", hn)
 
-    def test8(self):
+    def test8(self) -> None:
         hn = HumanName("John A. Doe, Jr")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.middle, "A.", hn)
         self.m(hn.suffix, "Jr", hn)
 
-    def test9(self):
+    def test9(self) -> None:
         hn = HumanName("John A. Doe III")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.middle, "A.", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test10(self):
+    def test10(self) -> None:
         hn = HumanName("Doe, John A.")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.middle, "A.", hn)
 
-    def test11(self):
+    def test11(self) -> None:
         hn = HumanName("Doe, John A., Jr.")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.middle, "A.", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test12(self):
+    def test12(self) -> None:
         hn = HumanName("Doe, John A., III")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.middle, "A.", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test13(self):
+    def test13(self) -> None:
         hn = HumanName("John A. Kenneth Doe")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.middle, "A. Kenneth", hn)
 
-    def test14(self):
+    def test14(self) -> None:
         hn = HumanName("John A. Kenneth Doe, Jr.")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.middle, "A. Kenneth", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test15(self):
+    def test15(self) -> None:
         hn = HumanName("John A. Kenneth Doe III")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.middle, "A. Kenneth", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test16(self):
+    def test16(self) -> None:
         hn = HumanName("Doe, John. A. Kenneth")
         self.m(hn.first, "John.", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.middle, "A. Kenneth", hn)
 
-    def test17(self):
+    def test17(self) -> None:
         hn = HumanName("Doe, John. A. Kenneth, Jr.")
         self.m(hn.first, "John.", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.middle, "A. Kenneth", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test18(self):
+    def test18(self) -> None:
         hn = HumanName("Doe, John. A. Kenneth III")
         self.m(hn.first, "John.", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.middle, "A. Kenneth", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test19(self):
+    def test19(self) -> None:
         hn = HumanName("Dr. John Doe")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.title, "Dr.", hn)
 
-    def test20(self):
+    def test20(self) -> None:
         hn = HumanName("Dr. John Doe, Jr.")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test21(self):
+    def test21(self) -> None:
         hn = HumanName("Dr. John Doe III")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test22(self):
+    def test22(self) -> None:
         hn = HumanName("Doe, Dr. John")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
 
-    def test23(self):
+    def test23(self) -> None:
         hn = HumanName("Doe, Dr. John, Jr.")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test24(self):
+    def test24(self) -> None:
         hn = HumanName("Doe, Dr. John III")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test25(self):
+    def test25(self) -> None:
         hn = HumanName("Dr. John A. Doe")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.middle, "A.", hn)
 
-    def test26(self):
+    def test26(self) -> None:
         hn = HumanName("Dr. John A. Doe, Jr.")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "John", hn)
@@ -498,7 +499,7 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.middle, "A.", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test27(self):
+    def test27(self) -> None:
         hn = HumanName("Dr. John A. Doe III")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "John", hn)
@@ -506,14 +507,14 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.middle, "A.", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test28(self):
+    def test28(self) -> None:
         hn = HumanName("Doe, Dr. John A.")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.middle, "A.", hn)
 
-    def test29(self):
+    def test29(self) -> None:
         hn = HumanName("Doe, Dr. John A. Jr.")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "John", hn)
@@ -521,7 +522,7 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.middle, "A.", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test30(self):
+    def test30(self) -> None:
         hn = HumanName("Doe, Dr. John A. III")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.middle, "A.", hn)
@@ -529,14 +530,14 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test31(self):
+    def test31(self) -> None:
         hn = HumanName("Dr. John A. Kenneth Doe")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.middle, "A. Kenneth", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
 
-    def test32(self):
+    def test32(self) -> None:
         hn = HumanName("Dr. John A. Kenneth Doe, Jr.")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.middle, "A. Kenneth", hn)
@@ -544,14 +545,14 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test33(self):
+    def test33(self) -> None:
         hn = HumanName("Al Arnold Gore, Jr.")
         self.m(hn.middle, "Arnold", hn)
         self.m(hn.first, "Al", hn)
         self.m(hn.last, "Gore", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test34(self):
+    def test34(self) -> None:
         hn = HumanName("Dr. John A. Kenneth Doe III")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.middle, "A. Kenneth", hn)
@@ -559,14 +560,14 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test35(self):
+    def test35(self) -> None:
         hn = HumanName("Doe, Dr. John A. Kenneth")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.middle, "A. Kenneth", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
 
-    def test36(self):
+    def test36(self) -> None:
         hn = HumanName("Doe, Dr. John A. Kenneth Jr.")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.middle, "A. Kenneth", hn)
@@ -574,7 +575,7 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test37(self):
+    def test37(self) -> None:
         hn = HumanName("Doe, Dr. John A. Kenneth III")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.middle, "A. Kenneth", hn)
@@ -582,242 +583,242 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test38(self):
+    def test38(self) -> None:
         hn = HumanName("Juan de la Vega")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
 
-    def test39(self):
+    def test39(self) -> None:
         hn = HumanName("Juan de la Vega, Jr.")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test40(self):
+    def test40(self) -> None:
         hn = HumanName("Juan de la Vega III")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test41(self):
+    def test41(self) -> None:
         hn = HumanName("de la Vega, Juan")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
 
-    def test42(self):
+    def test42(self) -> None:
         hn = HumanName("de la Vega, Juan, Jr.")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test43(self):
+    def test43(self) -> None:
         hn = HumanName("de la Vega, Juan III")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test44(self):
+    def test44(self) -> None:
         hn = HumanName("Juan Velasquez y Garcia")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
 
-    def test45(self):
+    def test45(self) -> None:
         hn = HumanName("Juan Velasquez y Garcia, Jr.")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test46(self):
+    def test46(self) -> None:
         hn = HumanName("Juan Velasquez y Garcia III")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test47(self):
+    def test47(self) -> None:
         hn = HumanName("Velasquez y Garcia, Juan")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
 
-    def test48(self):
+    def test48(self) -> None:
         hn = HumanName("Velasquez y Garcia, Juan, Jr.")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test49(self):
+    def test49(self) -> None:
         hn = HumanName("Velasquez y Garcia, Juan III")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test50(self):
+    def test50(self) -> None:
         hn = HumanName("Dr. Juan de la Vega")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
 
-    def test51(self):
+    def test51(self) -> None:
         hn = HumanName("Dr. Juan de la Vega, Jr.")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test52(self):
+    def test52(self) -> None:
         hn = HumanName("Dr. Juan de la Vega III")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test53(self):
+    def test53(self) -> None:
         hn = HumanName("de la Vega, Dr. Juan")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
 
-    def test54(self):
+    def test54(self) -> None:
         hn = HumanName("de la Vega, Dr. Juan, Jr.")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test55(self):
+    def test55(self) -> None:
         hn = HumanName("de la Vega, Dr. Juan III")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test56(self):
+    def test56(self) -> None:
         hn = HumanName("Dr. Juan Velasquez y Garcia")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
 
-    def test57(self):
+    def test57(self) -> None:
         hn = HumanName("Dr. Juan Velasquez y Garcia, Jr.")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test58(self):
+    def test58(self) -> None:
         hn = HumanName("Dr. Juan Velasquez y Garcia III")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test59(self):
+    def test59(self) -> None:
         hn = HumanName("Velasquez y Garcia, Dr. Juan")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
 
-    def test60(self):
+    def test60(self) -> None:
         hn = HumanName("Velasquez y Garcia, Dr. Juan, Jr.")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test61(self):
+    def test61(self) -> None:
         hn = HumanName("Velasquez y Garcia, Dr. Juan III")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test62(self):
+    def test62(self) -> None:
         hn = HumanName("Juan Q. de la Vega")
         self.m(hn.first, "Juan", hn)
         self.m(hn.middle, "Q.", hn)
         self.m(hn.last, "de la Vega", hn)
 
-    def test63(self):
+    def test63(self) -> None:
         hn = HumanName("Juan Q. de la Vega, Jr.")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
         self.m(hn.middle, "Q.", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test64(self):
+    def test64(self) -> None:
         hn = HumanName("Juan Q. de la Vega III")
         self.m(hn.first, "Juan", hn)
         self.m(hn.middle, "Q.", hn)
         self.m(hn.last, "de la Vega", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test65(self):
+    def test65(self) -> None:
         hn = HumanName("de la Vega, Juan Q.")
         self.m(hn.first, "Juan", hn)
         self.m(hn.middle, "Q.", hn)
         self.m(hn.last, "de la Vega", hn)
 
-    def test66(self):
+    def test66(self) -> None:
         hn = HumanName("de la Vega, Juan Q., Jr.")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
         self.m(hn.middle, "Q.", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test67(self):
+    def test67(self) -> None:
         hn = HumanName("de la Vega, Juan Q. III")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
         self.m(hn.middle, "Q.", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test68(self):
+    def test68(self) -> None:
         hn = HumanName("Juan Q. Velasquez y Garcia")
         self.m(hn.middle, "Q.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
 
-    def test69(self):
+    def test69(self) -> None:
         hn = HumanName("Juan Q. Velasquez y Garcia, Jr.")
         self.m(hn.middle, "Q.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test70(self):
+    def test70(self) -> None:
         hn = HumanName("Juan Q. Velasquez y Garcia III")
         self.m(hn.middle, "Q.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test71(self):
+    def test71(self) -> None:
         hn = HumanName("Velasquez y Garcia, Juan Q.")
         self.m(hn.middle, "Q.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
 
-    def test72(self):
+    def test72(self) -> None:
         hn = HumanName("Velasquez y Garcia, Juan Q., Jr.")
         self.m(hn.middle, "Q.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test73(self):
+    def test73(self) -> None:
         hn = HumanName("Velasquez y Garcia, Juan Q. III")
         self.m(hn.middle, "Q.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test74(self):
+    def test74(self) -> None:
         hn = HumanName("Dr. Juan Q. de la Vega")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.middle, "Q.", hn)
         self.m(hn.last, "de la Vega", hn)
 
-    def test75(self):
+    def test75(self) -> None:
         hn = HumanName("Dr. Juan Q. de la Vega, Jr.")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
@@ -825,7 +826,7 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.title, "Dr.", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test76(self):
+    def test76(self) -> None:
         hn = HumanName("Dr. Juan Q. de la Vega III")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
@@ -833,14 +834,14 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.title, "Dr.", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test77(self):
+    def test77(self) -> None:
         hn = HumanName("de la Vega, Dr. Juan Q.")
         self.m(hn.first, "Juan", hn)
         self.m(hn.middle, "Q.", hn)
         self.m(hn.last, "de la Vega", hn)
         self.m(hn.title, "Dr.", hn)
 
-    def test78(self):
+    def test78(self) -> None:
         hn = HumanName("de la Vega, Dr. Juan Q., Jr.")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
@@ -848,7 +849,7 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.suffix, "Jr.", hn)
         self.m(hn.title, "Dr.", hn)
 
-    def test79(self):
+    def test79(self) -> None:
         hn = HumanName("de la Vega, Dr. Juan Q. III")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
@@ -856,14 +857,14 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.suffix, "III", hn)
         self.m(hn.title, "Dr.", hn)
 
-    def test80(self):
+    def test80(self) -> None:
         hn = HumanName("Dr. Juan Q. Velasquez y Garcia")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.middle, "Q.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
 
-    def test81(self):
+    def test81(self) -> None:
         hn = HumanName("Dr. Juan Q. Velasquez y Garcia, Jr.")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.middle, "Q.", hn)
@@ -871,7 +872,7 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test82(self):
+    def test82(self) -> None:
         hn = HumanName("Dr. Juan Q. Velasquez y Garcia III")
         self.m(hn.middle, "Q.", hn)
         self.m(hn.title, "Dr.", hn)
@@ -879,14 +880,14 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test83(self):
+    def test83(self) -> None:
         hn = HumanName("Velasquez y Garcia, Dr. Juan Q.")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.middle, "Q.", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
 
-    def test84(self):
+    def test84(self) -> None:
         hn = HumanName("Velasquez y Garcia, Dr. Juan Q., Jr.")
         self.m(hn.middle, "Q.", hn)
         self.m(hn.first, "Juan", hn)
@@ -894,7 +895,7 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test85(self):
+    def test85(self) -> None:
         hn = HumanName("Velasquez y Garcia, Dr. Juan Q. III")
         self.m(hn.middle, "Q.", hn)
         self.m(hn.first, "Juan", hn)
@@ -902,54 +903,54 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test86(self):
+    def test86(self) -> None:
         hn = HumanName("Juan Q. Xavier de la Vega")
         self.m(hn.first, "Juan", hn)
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.last, "de la Vega", hn)
 
-    def test87(self):
+    def test87(self) -> None:
         hn = HumanName("Juan Q. Xavier de la Vega, Jr.")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test88(self):
+    def test88(self) -> None:
         hn = HumanName("Juan Q. Xavier de la Vega III")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test89(self):
+    def test89(self) -> None:
         hn = HumanName("de la Vega, Juan Q. Xavier")
         self.m(hn.first, "Juan", hn)
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.last, "de la Vega", hn)
 
-    def test90(self):
+    def test90(self) -> None:
         hn = HumanName("de la Vega, Juan Q. Xavier, Jr.")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test91(self):
+    def test91(self) -> None:
         hn = HumanName("de la Vega, Juan Q. Xavier III")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test92(self):
+    def test92(self) -> None:
         hn = HumanName("Dr. Juan Q. Xavier de la Vega")
         self.m(hn.first, "Juan", hn)
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.title, "Dr.", hn)
         self.m(hn.last, "de la Vega", hn)
 
-    def test93(self):
+    def test93(self) -> None:
         hn = HumanName("Dr. Juan Q. Xavier de la Vega, Jr.")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
@@ -957,7 +958,7 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test94(self):
+    def test94(self) -> None:
         hn = HumanName("Dr. Juan Q. Xavier de la Vega III")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
@@ -965,14 +966,14 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test95(self):
+    def test95(self) -> None:
         hn = HumanName("de la Vega, Dr. Juan Q. Xavier")
         self.m(hn.first, "Juan", hn)
         self.m(hn.title, "Dr.", hn)
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.last, "de la Vega", hn)
 
-    def test96(self):
+    def test96(self) -> None:
         hn = HumanName("de la Vega, Dr. Juan Q. Xavier, Jr.")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la Vega", hn)
@@ -980,7 +981,7 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test97(self):
+    def test97(self) -> None:
         hn = HumanName("de la Vega, Dr. Juan Q. Xavier III")
         self.m(hn.first, "Juan", hn)
         self.m(hn.title, "Dr.", hn)
@@ -988,54 +989,54 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test98(self):
+    def test98(self) -> None:
         hn = HumanName("Juan Q. Xavier Velasquez y Garcia")
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
 
-    def test99(self):
+    def test99(self) -> None:
         hn = HumanName("Juan Q. Xavier Velasquez y Garcia, Jr.")
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test100(self):
+    def test100(self) -> None:
         hn = HumanName("Juan Q. Xavier Velasquez y Garcia III")
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test101(self):
+    def test101(self) -> None:
         hn = HumanName("Velasquez y Garcia, Juan Q. Xavier")
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
 
-    def test102(self):
+    def test102(self) -> None:
         hn = HumanName("Velasquez y Garcia, Juan Q. Xavier, Jr.")
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test103(self):
+    def test103(self) -> None:
         hn = HumanName("Velasquez y Garcia, Juan Q. Xavier III")
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test104(self):
+    def test104(self) -> None:
         hn = HumanName("Dr. Juan Q. Xavier Velasquez y Garcia")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
 
-    def test105(self):
+    def test105(self) -> None:
         hn = HumanName("Dr. Juan Q. Xavier Velasquez y Garcia, Jr.")
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.first, "Juan", hn)
@@ -1043,7 +1044,7 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test106(self):
+    def test106(self) -> None:
         hn = HumanName("Dr. Juan Q. Xavier Velasquez y Garcia III")
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.first, "Juan", hn)
@@ -1051,14 +1052,14 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test107(self):
+    def test107(self) -> None:
         hn = HumanName("Velasquez y Garcia, Dr. Juan Q. Xavier")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "Velasquez y Garcia", hn)
 
-    def test108(self):
+    def test108(self) -> None:
         hn = HumanName("Velasquez y Garcia, Dr. Juan Q. Xavier, Jr.")
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.first, "Juan", hn)
@@ -1066,7 +1067,7 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test109(self):
+    def test109(self) -> None:
         hn = HumanName("Velasquez y Garcia, Dr. Juan Q. Xavier III")
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.first, "Juan", hn)
@@ -1074,20 +1075,20 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.last, "Velasquez y Garcia", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test110(self):
+    def test110(self) -> None:
         hn = HumanName("John Doe, CLU, CFP, LUTC")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "CLU, CFP, LUTC", hn)
 
-    def test111(self):
+    def test111(self) -> None:
         hn = HumanName("John P. Doe, CLU, CFP, LUTC")
         self.m(hn.first, "John", hn)
         self.m(hn.middle, "P.", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "CLU, CFP, LUTC", hn)
 
-    def test112(self):
+    def test112(self) -> None:
         hn = HumanName("Dr. John P. Doe-Ray, CLU, CFP, LUTC")
         self.m(hn.first, "John", hn)
         self.m(hn.middle, "P.", hn)
@@ -1095,7 +1096,7 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.title, "Dr.", hn)
         self.m(hn.suffix, "CLU, CFP, LUTC", hn)
 
-    def test113(self):
+    def test113(self) -> None:
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.middle, "P.", hn)
@@ -1103,14 +1104,14 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.last, "Doe-Ray", hn)
         self.m(hn.suffix, "CLU, CFP, LUTC", hn)
 
-    def test115(self):
+    def test115(self) -> None:
         hn = HumanName("Hon. Barrington P. Doe-Ray, Jr.")
         self.m(hn.title, "Hon.", hn)
         self.m(hn.middle, "P.", hn)
         self.m(hn.first, "Barrington", hn)
         self.m(hn.last, "Doe-Ray", hn)
 
-    def test116(self):
+    def test116(self) -> None:
         hn = HumanName("Doe-Ray, Hon. Barrington P. Jr., CFP, LUTC")
         self.m(hn.title, "Hon.", hn)
         self.m(hn.middle, "P.", hn)
@@ -1118,14 +1119,14 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.last, "Doe-Ray", hn)
         self.m(hn.suffix, "Jr., CFP, LUTC", hn)
 
-    def test117(self):
+    def test117(self) -> None:
         hn = HumanName("Rt. Hon. Paul E. Mary")
         self.m(hn.title, "Rt. Hon.", hn)
         self.m(hn.first, "Paul", hn)
         self.m(hn.middle, "E.", hn)
         self.m(hn.last, "Mary", hn)
 
-    def test119(self):
+    def test119(self) -> None:
         hn = HumanName("Lord God Almighty")
         self.m(hn.title, "Lord", hn)
         self.m(hn.first, "God", hn)
@@ -1134,80 +1135,80 @@ class HumanNameBruteForceTests(HumanNameTestBase):
 
 class HumanNameConjunctionTestCase(HumanNameTestBase):
     # Last name with conjunction
-    def test_last_name_with_conjunction(self):
+    def test_last_name_with_conjunction(self) -> None:
         hn = HumanName('Jose Aznar y Lopez')
         self.m(hn.first, "Jose", hn)
         self.m(hn.last, "Aznar y Lopez", hn)
 
-    def test_multiple_conjunctions(self):
+    def test_multiple_conjunctions(self) -> None:
         hn = HumanName("part1 of The part2 of the part3 and part4")
         self.m(hn.first, "part1 of The part2 of the part3 and part4", hn)
 
-    def test_multiple_conjunctions2(self):
+    def test_multiple_conjunctions2(self) -> None:
         hn = HumanName("part1 of and The part2 of the part3 And part4")
         self.m(hn.first, "part1 of and The part2 of the part3 And part4", hn)
 
-    def test_ends_with_conjunction(self):
+    def test_ends_with_conjunction(self) -> None:
         hn = HumanName("Jon Dough and")
         self.m(hn.first, "Jon", hn)
         self.m(hn.last, "Dough and", hn)
 
-    def test_ends_with_two_conjunctions(self):
+    def test_ends_with_two_conjunctions(self) -> None:
         hn = HumanName("Jon Dough and of")
         self.m(hn.first, "Jon", hn)
         self.m(hn.last, "Dough and of", hn)
 
-    def test_starts_with_conjunction(self):
+    def test_starts_with_conjunction(self) -> None:
         hn = HumanName("and Jon Dough")
         self.m(hn.first, "and Jon", hn)
         self.m(hn.last, "Dough", hn)
 
-    def test_starts_with_two_conjunctions(self):
+    def test_starts_with_two_conjunctions(self) -> None:
         hn = HumanName("the and Jon Dough")
         self.m(hn.first, "the and Jon", hn)
         self.m(hn.last, "Dough", hn)
 
     # Potential conjunction/prefix treated as initial (because uppercase)
-    def test_uppercase_middle_initial_conflict_with_conjunction(self):
+    def test_uppercase_middle_initial_conflict_with_conjunction(self) -> None:
         hn = HumanName('John E Smith')
         self.m(hn.first, "John", hn)
         self.m(hn.middle, "E", hn)
         self.m(hn.last, "Smith", hn)
 
-    def test_lowercase_middle_initial_with_period_conflict_with_conjunction(self):
+    def test_lowercase_middle_initial_with_period_conflict_with_conjunction(self) -> None:
         hn = HumanName('john e. smith')
         self.m(hn.first, "john", hn)
         self.m(hn.middle, "e.", hn)
         self.m(hn.last, "smith", hn)
 
     # The conjunction "e" can also be an initial
-    def test_lowercase_first_initial_conflict_with_conjunction(self):
+    def test_lowercase_first_initial_conflict_with_conjunction(self) -> None:
         hn = HumanName('e j smith')
         self.m(hn.first, "e", hn)
         self.m(hn.middle, "j", hn)
         self.m(hn.last, "smith", hn)
 
-    def test_lowercase_middle_initial_conflict_with_conjunction(self):
+    def test_lowercase_middle_initial_conflict_with_conjunction(self) -> None:
         hn = HumanName('John e Smith')
         self.m(hn.first, "John", hn)
         self.m(hn.middle, "e", hn)
         self.m(hn.last, "Smith", hn)
 
-    def test_lowercase_middle_initial_and_suffix_conflict_with_conjunction(self):
+    def test_lowercase_middle_initial_and_suffix_conflict_with_conjunction(self) -> None:
         hn = HumanName('John e Smith, III')
         self.m(hn.first, "John", hn)
         self.m(hn.middle, "e", hn)
         self.m(hn.last, "Smith", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test_lowercase_middle_initial_and_nocomma_suffix_conflict_with_conjunction(self):
+    def test_lowercase_middle_initial_and_nocomma_suffix_conflict_with_conjunction(self) -> None:
         hn = HumanName('John e Smith III')
         self.m(hn.first, "John", hn)
         self.m(hn.middle, "e", hn)
         self.m(hn.last, "Smith", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test_lowercase_middle_initial_comma_lastname_and_suffix_conflict_with_conjunction(self):
+    def test_lowercase_middle_initial_comma_lastname_and_suffix_conflict_with_conjunction(self) -> None:
         hn = HumanName('Smith, John e, III, Jr')
         self.m(hn.first, "John", hn)
         self.m(hn.middle, "e", hn)
@@ -1215,73 +1216,81 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.suffix, "III, Jr", hn)
 
     @unittest.expectedFailure
-    def test_two_initials_conflict_with_conjunction(self):
+    def test_two_initials_conflict_with_conjunction(self) -> None:
         # Supporting this seems to screw up titles with periods in them like M.B.A.
         hn = HumanName('E.T. Smith')
         self.m(hn.first, "E.", hn)
         self.m(hn.middle, "T.", hn)
         self.m(hn.last, "Smith", hn)
 
-    def test_couples_names(self):
+    def test_couples_names(self) -> None:
         hn = HumanName('John and Jane Smith')
         self.m(hn.first, "John and Jane", hn)
         self.m(hn.last, "Smith", hn)
 
-    def test_couples_names_with_conjunction_lastname(self):
+    def test_couples_names_with_conjunction_lastname(self) -> None:
         hn = HumanName('John and Jane Aznar y Lopez')
         self.m(hn.first, "John and Jane", hn)
         self.m(hn.last, "Aznar y Lopez", hn)
 
-    def test_couple_titles(self):
+    def test_couple_titles(self) -> None:
         hn = HumanName('Mr. and Mrs. John and Jane Smith')
         self.m(hn.title, "Mr. and Mrs.", hn)
         self.m(hn.first, "John and Jane", hn)
         self.m(hn.last, "Smith", hn)
 
-    def test_title_with_three_part_name_last_initial_is_suffix_uppercase_no_period(self):
+    def test_title_with_three_part_name_last_initial_is_suffix_uppercase_no_period(self) -> None:
         hn = HumanName("King John Alexander V")
         self.m(hn.title, "King", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Alexander", hn)
         self.m(hn.suffix, "V", hn)
 
-    def test_four_name_parts_with_suffix_that_could_be_initial_lowercase_no_period(self):
+    def test_four_name_parts_with_suffix_that_could_be_initial_lowercase_no_period(self) -> None:
         hn = HumanName("larry james edward johnson v")
         self.m(hn.first, "larry", hn)
         self.m(hn.middle, "james edward", hn)
         self.m(hn.last, "johnson", hn)
         self.m(hn.suffix, "v", hn)
 
-    def test_four_name_parts_with_suffix_that_could_be_initial_uppercase_no_period(self):
+    def test_four_name_parts_with_suffix_that_could_be_initial_uppercase_no_period(self) -> None:
         hn = HumanName("Larry James Johnson I")
         self.m(hn.first, "Larry", hn)
         self.m(hn.middle, "James", hn)
         self.m(hn.last, "Johnson", hn)
         self.m(hn.suffix, "I", hn)
 
-    def test_roman_numeral_initials(self):
+    def test_roman_numeral_initials(self) -> None:
         hn = HumanName("Larry V I")
         self.m(hn.first, "Larry", hn)
         self.m(hn.middle, "V", hn)
         self.m(hn.last, "I", hn)
         self.m(hn.suffix, "", hn)
 
+    def test_roman_numeral_suffix_not_in_suffix_list(self) -> None:
+        # VI-X are not in the suffix word lists, so they reach the
+        # is_roman_numeral(nxt) branch rather than are_suffixes()
+        hn = HumanName("John Smith VI")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.suffix, "VI", hn)
+
     # tests for Rev. title (Reverend)
-    def test124(self):
+    def test124(self) -> None:
         hn = HumanName("Rev. John A. Kenneth Doe")
         self.m(hn.title, "Rev.", hn)
         self.m(hn.middle, "A. Kenneth", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
 
-    def test125(self):
+    def test125(self) -> None:
         hn = HumanName("Rev John A. Kenneth Doe")
         self.m(hn.title, "Rev", hn)
         self.m(hn.middle, "A. Kenneth", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
 
-    def test126(self):
+    def test126(self) -> None:
         hn = HumanName("Doe, Rev. John A. Jr.")
         self.m(hn.title, "Rev.", hn)
         self.m(hn.first, "John", hn)
@@ -1289,42 +1298,42 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.middle, "A.", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test127(self):
+    def test127(self) -> None:
         hn = HumanName("Buca di Beppo")
         self.m(hn.first, "Buca", hn)
         self.m(hn.last, "di Beppo", hn)
 
-    def test_le_as_last_name(self):
+    def test_le_as_last_name(self) -> None:
         hn = HumanName("Yin Le")
         self.m(hn.first, "Yin", hn)
         self.m(hn.last, "Le", hn)
 
-    def test_le_as_last_name_with_middle_initial(self):
+    def test_le_as_last_name_with_middle_initial(self) -> None:
         hn = HumanName("Yin a Le")
         self.m(hn.first, "Yin", hn)
         self.m(hn.middle, "a", hn)
         self.m(hn.last, "Le", hn)
 
-    def test_conjunction_in_an_address_with_a_title(self):
+    def test_conjunction_in_an_address_with_a_title(self) -> None:
         hn = HumanName("His Excellency Lord Duncan")
         self.m(hn.title, "His Excellency Lord", hn)
         self.m(hn.last, "Duncan", hn)
 
     @unittest.expectedFailure
-    def test_conjunction_in_an_address_with_a_first_name_title(self):
+    def test_conjunction_in_an_address_with_a_first_name_title(self) -> None:
         hn = HumanName("Her Majesty Queen Elizabeth")
         self.m(hn.title, "Her Majesty Queen", hn)
         # if you want to be technical, Queen is in FIRST_NAME_TITLES
         self.m(hn.first, "Elizabeth", hn)
 
-    def test_name_is_conjunctions(self):
+    def test_name_is_conjunctions(self) -> None:
         hn = HumanName("e and e")
         self.m(hn.first, "e and e", hn)
 
 
 class ConstantsCustomization(HumanNameTestBase):
 
-    def test_add_title(self):
+    def test_add_title(self) -> None:
         hn = HumanName("Te Awanui-a-Rangi Black", constants=None)
         start_len = len(hn.C.titles)
         self.assertTrue(start_len > 0)
@@ -1335,7 +1344,7 @@ class ConstantsCustomization(HumanNameTestBase):
         self.m(hn.first, "Awanui-a-Rangi", hn)
         self.m(hn.last, "Black", hn)
 
-    def test_remove_title(self):
+    def test_remove_title(self) -> None:
         hn = HumanName("Hon Solo", constants=None)
         start_len = len(hn.C.titles)
         self.assertTrue(start_len > 0)
@@ -1345,7 +1354,7 @@ class ConstantsCustomization(HumanNameTestBase):
         self.m(hn.first, "Hon", hn)
         self.m(hn.last, "Solo", hn)
 
-    def test_add_multiple_arguments(self):
+    def test_add_multiple_arguments(self) -> None:
         hn = HumanName("Assoc Dean of Chemistry Robert Johns", constants=None)
         hn.C.titles.add('dean', 'Chemistry')
         hn.parse_full_name()
@@ -1353,7 +1362,7 @@ class ConstantsCustomization(HumanNameTestBase):
         self.m(hn.first, "Robert", hn)
         self.m(hn.last, "Johns", hn)
 
-    def test_instances_can_have_own_constants(self):
+    def test_instances_can_have_own_constants(self) -> None:
         hn = HumanName("", None)
         hn2 = HumanName("")
         hn.C.titles.remove('hon')
@@ -1362,7 +1371,7 @@ class ConstantsCustomization(HumanNameTestBase):
         self.assertEqual('hon' in hn2.C.titles, True)
         self.assertEqual(hn2.has_own_config, False)
 
-    def test_can_change_global_constants(self):
+    def test_can_change_global_constants(self) -> None:
         hn = HumanName("")
         hn2 = HumanName("")
         hn.C.titles.remove('hon')
@@ -1373,7 +1382,7 @@ class ConstantsCustomization(HumanNameTestBase):
         # clean up so we don't mess up other tests
         hn.C.titles.add('hon')
 
-    def test_remove_multiple_arguments(self):
+    def test_remove_multiple_arguments(self) -> None:
         hn = HumanName("Ms Hon Solo", constants=None)
         hn.C.titles.remove('hon', 'ms')
         hn.parse_full_name()
@@ -1381,7 +1390,7 @@ class ConstantsCustomization(HumanNameTestBase):
         self.m(hn.middle, "Hon", hn)
         self.m(hn.last, "Solo", hn)
 
-    def test_chain_multiple_arguments(self):
+    def test_chain_multiple_arguments(self) -> None:
         hn = HumanName("Dean Ms Hon Solo", constants=None)
         hn.C.titles.remove('hon', 'ms').add('dean')
         hn.parse_full_name()
@@ -1390,7 +1399,7 @@ class ConstantsCustomization(HumanNameTestBase):
         self.m(hn.middle, "Hon", hn)
         self.m(hn.last, "Solo", hn)
 
-    def test_empty_attribute_default(self):
+    def test_empty_attribute_default(self) -> None:
         from nameparser.config import CONSTANTS
         _orig = CONSTANTS.empty_attribute_default
         CONSTANTS.empty_attribute_default = None
@@ -1403,7 +1412,7 @@ class ConstantsCustomization(HumanNameTestBase):
         self.m(hn.nickname, None, hn)
         CONSTANTS.empty_attribute_default = _orig
 
-    def test_empty_attribute_on_instance(self):
+    def test_empty_attribute_on_instance(self) -> None:
         hn = HumanName("", None)
         hn.C.empty_attribute_default = None
         self.m(hn.title, None, hn)
@@ -1413,12 +1422,12 @@ class ConstantsCustomization(HumanNameTestBase):
         self.m(hn.suffix, None, hn)
         self.m(hn.nickname, None, hn)
 
-    def test_none_empty_attribute_string_formatting(self):
+    def test_none_empty_attribute_string_formatting(self) -> None:
         hn = HumanName("", None)
         hn.C.empty_attribute_default = None
         self.assertEqual('', str(hn), hn)
 
-    def test_add_constant_with_explicit_encoding(self):
+    def test_add_constant_with_explicit_encoding(self) -> None:
         c = Constants()
         c.titles.add_with_encoding(b'b\351ck', encoding='latin_1')
         self.assertIn('béck', c.titles)
@@ -1426,35 +1435,35 @@ class ConstantsCustomization(HumanNameTestBase):
 
 class NicknameTestCase(HumanNameTestBase):
     # https://code.google.com/p/python-nameparser/issues/detail?id=33
-    def test_nickname_in_parenthesis(self):
+    def test_nickname_in_parenthesis(self) -> None:
         hn = HumanName("Benjamin (Ben) Franklin")
         self.m(hn.first, "Benjamin", hn)
         self.m(hn.middle, "", hn)
         self.m(hn.last, "Franklin", hn)
         self.m(hn.nickname, "Ben", hn)
 
-    def test_two_word_nickname_in_parenthesis(self):
+    def test_two_word_nickname_in_parenthesis(self) -> None:
         hn = HumanName("Benjamin (Big Ben) Franklin")
         self.m(hn.first, "Benjamin", hn)
         self.m(hn.middle, "", hn)
         self.m(hn.last, "Franklin", hn)
         self.m(hn.nickname, "Big Ben", hn)
 
-    def test_two_words_in_quotes(self):
+    def test_two_words_in_quotes(self) -> None:
         hn = HumanName('Benjamin "Big Ben" Franklin')
         self.m(hn.first, "Benjamin", hn)
         self.m(hn.middle, "", hn)
         self.m(hn.last, "Franklin", hn)
         self.m(hn.nickname, "Big Ben", hn)
 
-    def test_nickname_in_parenthesis_with_comma(self):
+    def test_nickname_in_parenthesis_with_comma(self) -> None:
         hn = HumanName("Franklin, Benjamin (Ben)")
         self.m(hn.first, "Benjamin", hn)
         self.m(hn.middle, "", hn)
         self.m(hn.last, "Franklin", hn)
         self.m(hn.nickname, "Ben", hn)
 
-    def test_nickname_in_parenthesis_with_comma_and_suffix(self):
+    def test_nickname_in_parenthesis_with_comma_and_suffix(self) -> None:
         hn = HumanName("Franklin, Benjamin (Ben), Jr.")
         self.m(hn.first, "Benjamin", hn)
         self.m(hn.middle, "", hn)
@@ -1462,63 +1471,63 @@ class NicknameTestCase(HumanNameTestBase):
         self.m(hn.suffix, "Jr.", hn)
         self.m(hn.nickname, "Ben", hn)
 
-    def test_nickname_in_single_quotes(self):
+    def test_nickname_in_single_quotes(self) -> None:
         hn = HumanName("Benjamin 'Ben' Franklin")
         self.m(hn.first, "Benjamin", hn)
         self.m(hn.middle, "", hn)
         self.m(hn.last, "Franklin", hn)
         self.m(hn.nickname, "Ben", hn)
 
-    def test_nickname_in_double_quotes(self):
+    def test_nickname_in_double_quotes(self) -> None:
         hn = HumanName("Benjamin \"Ben\" Franklin")
         self.m(hn.first, "Benjamin", hn)
         self.m(hn.middle, "", hn)
         self.m(hn.last, "Franklin", hn)
         self.m(hn.nickname, "Ben", hn)
 
-    def test_single_quotes_on_first_name_not_treated_as_nickname(self):
+    def test_single_quotes_on_first_name_not_treated_as_nickname(self) -> None:
         hn = HumanName("Brian Andrew O'connor")
         self.m(hn.first, "Brian", hn)
         self.m(hn.middle, "Andrew", hn)
         self.m(hn.last, "O'connor", hn)
         self.m(hn.nickname, "", hn)
 
-    def test_single_quotes_on_both_name_not_treated_as_nickname(self):
+    def test_single_quotes_on_both_name_not_treated_as_nickname(self) -> None:
         hn = HumanName("La'tanya O'connor")
         self.m(hn.first, "La'tanya", hn)
         self.m(hn.middle, "", hn)
         self.m(hn.last, "O'connor", hn)
         self.m(hn.nickname, "", hn)
 
-    def test_single_quotes_on_end_of_last_name_not_treated_as_nickname(self):
+    def test_single_quotes_on_end_of_last_name_not_treated_as_nickname(self) -> None:
         hn = HumanName("Mari' Aube'")
         self.m(hn.first, "Mari'", hn)
         self.m(hn.middle, "", hn)
         self.m(hn.last, "Aube'", hn)
         self.m(hn.nickname, "", hn)
 
-    def test_okina_inside_name_not_treated_as_nickname(self):
+    def test_okina_inside_name_not_treated_as_nickname(self) -> None:
         hn = HumanName("Harrieta Keōpūolani Nāhiʻenaʻena")
         self.m(hn.first, "Harrieta", hn)
         self.m(hn.middle, "Keōpūolani", hn)
         self.m(hn.last, "Nāhiʻenaʻena", hn)
         self.m(hn.nickname, "", hn)
 
-    def test_single_quotes_not_treated_as_nickname_Hawaiian_example(self):
+    def test_single_quotes_not_treated_as_nickname_Hawaiian_example(self) -> None:
         hn = HumanName("Harietta Keopuolani Nahi'ena'ena")
         self.m(hn.first, "Harietta", hn)
         self.m(hn.middle, "Keopuolani", hn)
         self.m(hn.last, "Nahi'ena'ena", hn)
         self.m(hn.nickname, "", hn)
 
-    def test_single_quotes_not_treated_as_nickname_Kenyan_example(self):
+    def test_single_quotes_not_treated_as_nickname_Kenyan_example(self) -> None:
         hn = HumanName("Naomi Wambui Ng'ang'a")
         self.m(hn.first, "Naomi", hn)
         self.m(hn.middle, "Wambui", hn)
         self.m(hn.last, "Ng'ang'a", hn)
         self.m(hn.nickname, "", hn)
 
-    def test_single_quotes_not_treated_as_nickname_Samoan_example(self):
+    def test_single_quotes_not_treated_as_nickname_Samoan_example(self) -> None:
         hn = HumanName("Va'apu'u Vitale")
         self.m(hn.first, "Va'apu'u", hn)
         self.m(hn.middle, "", hn)
@@ -1526,27 +1535,27 @@ class NicknameTestCase(HumanNameTestBase):
         self.m(hn.nickname, "", hn)
 
     # http://code.google.com/p/python-nameparser/issues/detail?id=17
-    def test_parenthesis_are_removed_from_name(self):
+    def test_parenthesis_are_removed_from_name(self) -> None:
         hn = HumanName("John Jones (Unknown)")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Jones", hn)
         # not testing the nicknames because we don't actually care
         # about Google Docs here
 
-    def test_duplicate_parenthesis_are_removed_from_name(self):
+    def test_duplicate_parenthesis_are_removed_from_name(self) -> None:
         hn = HumanName("John Jones (Google Docs), Jr. (Unknown)")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Jones", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test_nickname_and_last_name(self):
+    def test_nickname_and_last_name(self) -> None:
         hn = HumanName('"Rick" Edmonds')
         self.m(hn.first, "", hn)
         self.m(hn.last, "Edmonds", hn)
         self.m(hn.nickname, "Rick", hn)
 
     @unittest.expectedFailure
-    def test_nickname_and_last_name_with_title(self):
+    def test_nickname_and_last_name_with_title(self) -> None:
         hn = HumanName('Senator "Rick" Edmonds')
         self.m(hn.title, "Senator", hn)
         self.m(hn.first, "", hn)
@@ -1599,69 +1608,69 @@ class NicknameTestCase(HumanNameTestBase):
 
 class PrefixesTestCase(HumanNameTestBase):
 
-    def test_prefix(self):
+    def test_prefix(self) -> None:
         hn = HumanName("Juan del Sur")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "del Sur", hn)
 
-    def test_prefix_with_period(self):
+    def test_prefix_with_period(self) -> None:
         hn = HumanName("Jill St. John")
         self.m(hn.first, "Jill", hn)
         self.m(hn.last, "St. John", hn)
 
-    def test_prefix_before_two_part_last_name(self):
+    def test_prefix_before_two_part_last_name(self) -> None:
         hn = HumanName("pennie von bergen wessels")
         self.m(hn.first, "pennie", hn)
         self.m(hn.last, "von bergen wessels", hn)
 
-    def test_prefix_is_first_name(self):
+    def test_prefix_is_first_name(self) -> None:
         hn = HumanName("Van Johnson")
         self.m(hn.first, "Van", hn)
         self.m(hn.last, "Johnson", hn)
 
-    def test_prefix_is_first_name_with_middle_name(self):
+    def test_prefix_is_first_name_with_middle_name(self) -> None:
         hn = HumanName("Van Jeremy Johnson")
         self.m(hn.first, "Van", hn)
         self.m(hn.middle, "Jeremy", hn)
         self.m(hn.last, "Johnson", hn)
 
-    def test_prefix_before_two_part_last_name_with_suffix(self):
+    def test_prefix_before_two_part_last_name_with_suffix(self) -> None:
         hn = HumanName("pennie von bergen wessels III")
         self.m(hn.first, "pennie", hn)
         self.m(hn.last, "von bergen wessels", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test_prefix_before_two_part_last_name_with_acronym_suffix(self):
+    def test_prefix_before_two_part_last_name_with_acronym_suffix(self) -> None:
         hn = HumanName("pennie von bergen wessels M.D.")
         self.m(hn.first, "pennie", hn)
         self.m(hn.last, "von bergen wessels", hn)
         self.m(hn.suffix, "M.D.", hn)
 
-    def test_two_part_last_name_with_suffix_comma(self):
+    def test_two_part_last_name_with_suffix_comma(self) -> None:
         hn = HumanName("pennie von bergen wessels, III")
         self.m(hn.first, "pennie", hn)
         self.m(hn.last, "von bergen wessels", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test_two_part_last_name_with_suffix(self):
+    def test_two_part_last_name_with_suffix(self) -> None:
         hn = HumanName("von bergen wessels, pennie III")
         self.m(hn.first, "pennie", hn)
         self.m(hn.last, "von bergen wessels", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test_last_name_two_part_last_name_with_two_suffixes(self):
+    def test_last_name_two_part_last_name_with_two_suffixes(self) -> None:
         hn = HumanName("von bergen wessels MD, pennie III")
         self.m(hn.first, "pennie", hn)
         self.m(hn.last, "von bergen wessels", hn)
         self.m(hn.suffix, "MD, III", hn)
 
-    def test_comma_two_part_last_name_with_acronym_suffix(self):
+    def test_comma_two_part_last_name_with_acronym_suffix(self) -> None:
         hn = HumanName("von bergen wessels, pennie MD")
         self.m(hn.first, "pennie", hn)
         self.m(hn.last, "von bergen wessels", hn)
         self.m(hn.suffix, "MD", hn)
 
-    def test_comma_two_part_last_name_with_suffix_in_first_part(self):
+    def test_comma_two_part_last_name_with_suffix_in_first_part(self) -> None:
         # I'm kinda surprised this works, not really sure if this is a
         # realistic place for a suffix to be.
         hn = HumanName("von bergen wessels MD, pennie")
@@ -1669,25 +1678,25 @@ class PrefixesTestCase(HumanNameTestBase):
         self.m(hn.last, "von bergen wessels", hn)
         self.m(hn.suffix, "MD", hn)
 
-    def test_title_two_part_last_name_with_suffix_in_first_part(self):
+    def test_title_two_part_last_name_with_suffix_in_first_part(self) -> None:
         hn = HumanName("pennie von bergen wessels MD, III")
         self.m(hn.first, "pennie", hn)
         self.m(hn.last, "von bergen wessels", hn)
         self.m(hn.suffix, "MD, III", hn)
 
-    def test_portuguese_dos(self):
+    def test_portuguese_dos(self) -> None:
         hn = HumanName("Rafael Sousa dos Anjos")
         self.m(hn.first, "Rafael", hn)
         self.m(hn.middle, "Sousa", hn)
         self.m(hn.last, "dos Anjos", hn)
 
-    def test_portuguese_prefixes(self):
+    def test_portuguese_prefixes(self) -> None:
         hn = HumanName("Joao da Silva do Amaral de Souza")
         self.m(hn.first, "Joao", hn)
         self.m(hn.middle, "da Silva do Amaral", hn)
         self.m(hn.last, "de Souza", hn)
 
-    def test_three_conjunctions(self):
+    def test_three_conjunctions(self) -> None:
         hn = HumanName("Dr. Juan Q. Xavier de la dos Vega III")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la dos Vega", hn)
@@ -1695,7 +1704,7 @@ class PrefixesTestCase(HumanNameTestBase):
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test_lastname_three_conjunctions(self):
+    def test_lastname_three_conjunctions(self) -> None:
         hn = HumanName("de la dos Vega, Dr. Juan Q. Xavier III")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la dos Vega", hn)
@@ -1703,7 +1712,7 @@ class PrefixesTestCase(HumanNameTestBase):
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.suffix, "III", hn)
 
-    def test_comma_three_conjunctions(self):
+    def test_comma_three_conjunctions(self) -> None:
         hn = HumanName("Dr. Juan Q. Xavier de la dos Vega, III")
         self.m(hn.first, "Juan", hn)
         self.m(hn.last, "de la dos Vega", hn)
@@ -1714,19 +1723,19 @@ class PrefixesTestCase(HumanNameTestBase):
 
 class SuffixesTestCase(HumanNameTestBase):
 
-    def test_suffix(self):
+    def test_suffix(self) -> None:
         hn = HumanName("Joe Franklin Jr")
         self.m(hn.first, "Joe", hn)
         self.m(hn.last, "Franklin", hn)
         self.m(hn.suffix, "Jr", hn)
 
-    def test_suffix_with_periods(self):
+    def test_suffix_with_periods(self) -> None:
         hn = HumanName("Joe Dentist D.D.S.")
         self.m(hn.first, "Joe", hn)
         self.m(hn.last, "Dentist", hn)
         self.m(hn.suffix, "D.D.S.", hn)
 
-    def test_two_suffixes(self):
+    def test_two_suffixes(self) -> None:
         hn = HumanName("Kenneth Clarke QC MP")
         self.m(hn.first, "Kenneth", hn)
         self.m(hn.last, "Clarke", hn)
@@ -1734,79 +1743,85 @@ class SuffixesTestCase(HumanNameTestBase):
         # not ideal but at least its in the right bucket
         self.m(hn.suffix, "QC, MP", hn)
 
-    def test_two_suffixes_lastname_comma_format(self):
+    def test_two_suffixes_lastname_comma_format(self) -> None:
         hn = HumanName("Washington Jr. MD, Franklin")
         self.m(hn.first, "Franklin", hn)
         self.m(hn.last, "Washington", hn)
         # NOTE: this adds a comma when the original format did not have one.
         self.m(hn.suffix, "Jr., MD", hn)
 
-    def test_two_suffixes_suffix_comma_format(self):
+    def test_two_suffixes_suffix_comma_format(self) -> None:
         hn = HumanName("Franklin Washington, Jr. MD")
         self.m(hn.first, "Franklin", hn)
         self.m(hn.last, "Washington", hn)
         self.m(hn.suffix, "Jr. MD", hn)
 
-    def test_suffix_containing_periods(self):
+    def test_suffix_containing_periods(self) -> None:
         hn = HumanName("Kenneth Clarke Q.C.")
         self.m(hn.first, "Kenneth", hn)
         self.m(hn.last, "Clarke", hn)
         self.m(hn.suffix, "Q.C.", hn)
 
-    def test_suffix_containing_periods_lastname_comma_format(self):
+    def test_suffix_containing_periods_lastname_comma_format(self) -> None:
         hn = HumanName("Clarke, Kenneth, Q.C. M.P.")
         self.m(hn.first, "Kenneth", hn)
         self.m(hn.last, "Clarke", hn)
         self.m(hn.suffix, "Q.C. M.P.", hn)
 
-    def test_suffix_containing_periods_suffix_comma_format(self):
+    def test_suffix_containing_periods_suffix_comma_format(self) -> None:
         hn = HumanName("Kenneth Clarke Q.C., M.P.")
         self.m(hn.first, "Kenneth", hn)
         self.m(hn.last, "Clarke", hn)
         self.m(hn.suffix, "Q.C., M.P.", hn)
 
-    def test_suffix_with_single_comma_format(self):
+    def test_suffix_with_single_comma_format(self) -> None:
         hn = HumanName("John Doe jr., MD")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "jr., MD", hn)
 
-    def test_suffix_with_double_comma_format(self):
+    def test_suffix_with_double_comma_format(self) -> None:
         hn = HumanName("Doe, John jr., MD")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "jr., MD", hn)
 
-    def test_phd_with_erroneous_space(self):
+    def test_phd_with_erroneous_space(self) -> None:
         hn = HumanName("John Smith, Ph. D.")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Smith", hn)
         self.m(hn.suffix, "Ph. D.", hn)
 
-    def test_phd_conflict(self):
+    def test_phd_extracted_without_comma(self) -> None:
+        hn = HumanName("John Smith Ph. D.")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.suffix, "Ph. D.", hn)
+
+    def test_phd_conflict(self) -> None:
         hn = HumanName("Adolph D")
         self.m(hn.first, "Adolph", hn)
         self.m(hn.last, "D", hn)
 
     # http://en.wikipedia.org/wiki/Ma_(surname)
 
-    def test_potential_suffix_that_is_also_last_name(self):
+    def test_potential_suffix_that_is_also_last_name(self) -> None:
         hn = HumanName("Jack Ma")
         self.m(hn.first, "Jack", hn)
         self.m(hn.last, "Ma", hn)
 
-    def test_potential_suffix_that_is_also_last_name_comma(self):
+    def test_potential_suffix_that_is_also_last_name_comma(self) -> None:
         hn = HumanName("Ma, Jack")
         self.m(hn.first, "Jack", hn)
         self.m(hn.last, "Ma", hn)
 
-    def test_potential_suffix_that_is_also_last_name_with_suffix(self):
+    def test_potential_suffix_that_is_also_last_name_with_suffix(self) -> None:
         hn = HumanName("Jack Ma Jr")
         self.m(hn.first, "Jack", hn)
         self.m(hn.last, "Ma", hn)
         self.m(hn.suffix, "Jr", hn)
 
-    def test_potential_suffix_that_is_also_last_name_with_suffix_comma(self):
+    def test_potential_suffix_that_is_also_last_name_with_suffix_comma(self) -> None:
         hn = HumanName("Ma III, Jack Jr")
         self.m(hn.first, "Jack", hn)
         self.m(hn.last, "Ma", hn)
@@ -1814,25 +1829,25 @@ class SuffixesTestCase(HumanNameTestBase):
 
     # https://github.com/derek73/python-nameparser/issues/27
     @unittest.expectedFailure
-    def test_king(self):
+    def test_king(self) -> None:
         hn = HumanName("Dr King Jr")
         self.m(hn.title, "Dr", hn)
         self.m(hn.last, "King", hn)
         self.m(hn.suffix, "Jr", hn)
 
-    def test_multiple_letter_suffix_with_periods(self):
+    def test_multiple_letter_suffix_with_periods(self) -> None:
         hn = HumanName("John Doe Msc.Ed.")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "Msc.Ed.", hn)
 
-    def test_suffix_with_periods_with_comma(self):
+    def test_suffix_with_periods_with_comma(self) -> None:
         hn = HumanName("John Doe, Msc.Ed.")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "Msc.Ed.", hn)
 
-    def test_suffix_with_periods_with_lastname_comma(self):
+    def test_suffix_with_periods_with_lastname_comma(self) -> None:
         hn = HumanName("Doe, John Msc.Ed.")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
@@ -1841,13 +1856,13 @@ class SuffixesTestCase(HumanNameTestBase):
 
 class TitleTestCase(HumanNameTestBase):
 
-    def test_last_name_is_also_title(self):
+    def test_last_name_is_also_title(self) -> None:
         hn = HumanName("Amy E Maid")
         self.m(hn.first, "Amy", hn)
         self.m(hn.middle, "E", hn)
         self.m(hn.last, "Maid", hn)
 
-    def test_last_name_is_also_title_no_comma(self):
+    def test_last_name_is_also_title_no_comma(self) -> None:
         hn = HumanName("Dr. Martin Luther King Jr.")
         self.m(hn.title, "Dr.", hn)
         self.m(hn.first, "Martin", hn)
@@ -1855,7 +1870,7 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.last, "King", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test_last_name_is_also_title_with_comma(self):
+    def test_last_name_is_also_title_with_comma(self) -> None:
         hn = HumanName("Dr Martin Luther King, Jr.")
         self.m(hn.title, "Dr", hn)
         self.m(hn.first, "Martin", hn)
@@ -1863,57 +1878,57 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.last, "King", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test_last_name_is_also_title3(self):
+    def test_last_name_is_also_title3(self) -> None:
         hn = HumanName("John King")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "King", hn)
 
-    def test_title_with_conjunction(self):
+    def test_title_with_conjunction(self) -> None:
         hn = HumanName("Secretary of State Hillary Clinton")
         self.m(hn.title, "Secretary of State", hn)
         self.m(hn.first, "Hillary", hn)
         self.m(hn.last, "Clinton", hn)
 
-    def test_compound_title_with_conjunction(self):
+    def test_compound_title_with_conjunction(self) -> None:
         hn = HumanName("Cardinal Secretary of State Hillary Clinton")
         self.m(hn.title, "Cardinal Secretary of State", hn)
         self.m(hn.first, "Hillary", hn)
         self.m(hn.last, "Clinton", hn)
 
-    def test_title_is_title(self):
+    def test_title_is_title(self) -> None:
         hn = HumanName("Coach")
         self.m(hn.title, "Coach", hn)
 
     # TODO: fix handling of U.S.
     @unittest.expectedFailure
-    def test_chained_title_first_name_title_is_initials(self):
+    def test_chained_title_first_name_title_is_initials(self) -> None:
         hn = HumanName("U.S. District Judge Marc Thomas Treadwell")
         self.m(hn.title, "U.S. District Judge", hn)
         self.m(hn.first, "Marc", hn)
         self.m(hn.middle, "Thomas", hn)
         self.m(hn.last, "Treadwell", hn)
 
-    def test_conflict_with_chained_title_first_name_initial(self):
+    def test_conflict_with_chained_title_first_name_initial(self) -> None:
         hn = HumanName("U. S. Grant")
         self.m(hn.first, "U.", hn)
         self.m(hn.middle, "S.", hn)
         self.m(hn.last, "Grant", hn)
 
-    def test_chained_title_first_name_initial_with_no_period(self):
+    def test_chained_title_first_name_initial_with_no_period(self) -> None:
         hn = HumanName("US Magistrate Judge T Michael Putnam")
         self.m(hn.title, "US Magistrate Judge", hn)
         self.m(hn.first, "T", hn)
         self.m(hn.middle, "Michael", hn)
         self.m(hn.last, "Putnam", hn)
 
-    def test_chained_hyphenated_title(self):
+    def test_chained_hyphenated_title(self) -> None:
         hn = HumanName("US Magistrate-Judge Elizabeth E Campbell")
         self.m(hn.title, "US Magistrate-Judge", hn)
         self.m(hn.first, "Elizabeth", hn)
         self.m(hn.middle, "E", hn)
         self.m(hn.last, "Campbell", hn)
 
-    def test_chained_hyphenated_title_with_comma_suffix(self):
+    def test_chained_hyphenated_title_with_comma_suffix(self) -> None:
         hn = HumanName("Mag-Judge Harwell G Davis, III")
         self.m(hn.title, "Mag-Judge", hn)
         self.m(hn.first, "Harwell", hn)
@@ -1922,47 +1937,47 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.suffix, "III", hn)
 
     @unittest.expectedFailure
-    def test_title_multiple_titles_with_apostrophe_s(self):
+    def test_title_multiple_titles_with_apostrophe_s(self) -> None:
         hn = HumanName("The Right Hon. the President of the Queen's Bench Division")
         self.m(hn.title, "The Right Hon. the President of the Queen's Bench Division", hn)
 
-    def test_title_starts_with_conjunction(self):
+    def test_title_starts_with_conjunction(self) -> None:
         hn = HumanName("The Rt Hon John Jones")
         self.m(hn.title, "The Rt Hon", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Jones", hn)
 
-    def test_conjunction_before_title(self):
+    def test_conjunction_before_title(self) -> None:
         hn = HumanName('The Lord of the Universe')
         self.m(hn.title, "The Lord of the Universe", hn)
 
-    def test_double_conjunction_on_title(self):
+    def test_double_conjunction_on_title(self) -> None:
         hn = HumanName('Lord of the Universe')
         self.m(hn.title, "Lord of the Universe", hn)
 
-    def test_triple_conjunction_on_title(self):
+    def test_triple_conjunction_on_title(self) -> None:
         hn = HumanName('Lord and of the Universe')
         self.m(hn.title, "Lord and of the Universe", hn)
 
-    def test_multiple_conjunctions_on_multiple_titles(self):
+    def test_multiple_conjunctions_on_multiple_titles(self) -> None:
         hn = HumanName('Lord of the Universe and Associate Supreme Queen of the World Lisa Simpson')
         self.m(hn.title, "Lord of the Universe and Associate Supreme Queen of the World", hn)
         self.m(hn.first, "Lisa", hn)
         self.m(hn.last, "Simpson", hn)
 
-    def test_title_with_last_initial_is_suffix(self):
+    def test_title_with_last_initial_is_suffix(self) -> None:
         hn = HumanName("King John V.")
         self.m(hn.title, "King", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "V.", hn)
 
-    def test_initials_also_suffix(self):
+    def test_initials_also_suffix(self) -> None:
         hn = HumanName("Smith, J.R.")
         self.m(hn.first, "J.R.", hn)
         # self.m(hn.middle, "R.", hn)
         self.m(hn.last, "Smith", hn)
 
-    def test_two_title_parts_separated_by_periods(self):
+    def test_two_title_parts_separated_by_periods(self) -> None:
         hn = HumanName("Lt.Gen. John A. Kenneth Doe IV")
         self.m(hn.title, "Lt.Gen.", hn)
         self.m(hn.first, "John", hn)
@@ -1970,7 +1985,7 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.middle, "A. Kenneth", hn)
         self.m(hn.suffix, "IV", hn)
 
-    def test_two_part_title(self):
+    def test_two_part_title(self) -> None:
         hn = HumanName("Lt. Gen. John A. Kenneth Doe IV")
         self.m(hn.title, "Lt. Gen.", hn)
         self.m(hn.first, "John", hn)
@@ -1978,7 +1993,7 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.middle, "A. Kenneth", hn)
         self.m(hn.suffix, "IV", hn)
 
-    def test_two_part_title_with_lastname_comma(self):
+    def test_two_part_title_with_lastname_comma(self) -> None:
         hn = HumanName("Doe, Lt. Gen. John A. Kenneth IV")
         self.m(hn.title, "Lt. Gen.", hn)
         self.m(hn.first, "John", hn)
@@ -1986,7 +2001,7 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.middle, "A. Kenneth", hn)
         self.m(hn.suffix, "IV", hn)
 
-    def test_two_part_title_with_suffix_comma(self):
+    def test_two_part_title_with_suffix_comma(self) -> None:
         hn = HumanName("Lt. Gen. John A. Kenneth Doe, Jr.")
         self.m(hn.title, "Lt. Gen.", hn)
         self.m(hn.first, "John", hn)
@@ -1994,7 +2009,7 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.middle, "A. Kenneth", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test_possible_conflict_with_middle_initial_that_could_be_suffix(self):
+    def test_possible_conflict_with_middle_initial_that_could_be_suffix(self) -> None:
         hn = HumanName("Doe, Rev. John V, Jr.")
         self.m(hn.title, "Rev.", hn)
         self.m(hn.first, "John", hn)
@@ -2002,7 +2017,7 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.middle, "V", hn)
         self.m(hn.suffix, "Jr.", hn)
 
-    def test_possible_conflict_with_suffix_that_could_be_initial(self):
+    def test_possible_conflict_with_suffix_that_could_be_initial(self) -> None:
         hn = HumanName("Doe, Rev. John A., V, Jr.")
         self.m(hn.title, "Rev.", hn)
         self.m(hn.first, "John", hn)
@@ -2013,69 +2028,69 @@ class TitleTestCase(HumanNameTestBase):
     # 'ben' is removed from PREFIXES in v0.2.5
     # this test could re-enable this test if we decide to support 'ben' as a prefix
     @unittest.expectedFailure
-    def test_ben_as_conjunction(self):
+    def test_ben_as_conjunction(self) -> None:
         hn = HumanName("Ahmad ben Husain")
         self.m(hn.first, "Ahmad", hn)
         self.m(hn.last, "ben Husain", hn)
 
-    def test_ben_as_first_name(self):
+    def test_ben_as_first_name(self) -> None:
         hn = HumanName("Ben Johnson")
         self.m(hn.first, "Ben", hn)
         self.m(hn.last, "Johnson", hn)
 
-    def test_ben_as_first_name_with_middle_name(self):
+    def test_ben_as_first_name_with_middle_name(self) -> None:
         hn = HumanName("Ben Alex Johnson")
         self.m(hn.first, "Ben", hn)
         self.m(hn.middle, "Alex", hn)
         self.m(hn.last, "Johnson", hn)
 
-    def test_ben_as_middle_name(self):
+    def test_ben_as_middle_name(self) -> None:
         hn = HumanName("Alex Ben Johnson")
         self.m(hn.first, "Alex", hn)
         self.m(hn.middle, "Ben", hn)
         self.m(hn.last, "Johnson", hn)
 
     # http://code.google.com/p/python-nameparser/issues/detail?id=13
-    def test_last_name_also_prefix(self):
+    def test_last_name_also_prefix(self) -> None:
         hn = HumanName("Jane Doctor")
         self.m(hn.first, "Jane", hn)
         self.m(hn.last, "Doctor", hn)
 
-    def test_title_with_periods(self):
+    def test_title_with_periods(self) -> None:
         hn = HumanName("Lt.Gov. John Doe")
         self.m(hn.title, "Lt.Gov.", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
 
-    def test_title_with_periods_lastname_comma(self):
+    def test_title_with_periods_lastname_comma(self) -> None:
         hn = HumanName("Doe, Lt.Gov. John")
         self.m(hn.title, "Lt.Gov.", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
 
-    def test_mac_with_spaces(self):
+    def test_mac_with_spaces(self) -> None:
         hn = HumanName("Jane Mac Beth")
         self.m(hn.first, "Jane", hn)
         self.m(hn.last, "Mac Beth", hn)
 
-    def test_mac_as_first_name(self):
+    def test_mac_as_first_name(self) -> None:
         hn = HumanName("Mac Miller")
         self.m(hn.first, "Mac", hn)
         self.m(hn.last, "Miller", hn)
 
-    def test_multiple_prefixes(self):
+    def test_multiple_prefixes(self) -> None:
         hn = HumanName("Mike van der Velt")
         self.m(hn.first, "Mike", hn)
         self.m(hn.last, "van der Velt", hn)
 
-    def test_2_same_prefixes_in_the_name(self):
+    def test_2_same_prefixes_in_the_name(self) -> None:
         hh = HumanName("Vincent van Gogh van Beethoven")
         self.m(hh.first, "Vincent", hh)
         self.m(hh.middle, "van Gogh", hh)
         self.m(hh.last, "van Beethoven", hh)
 
 class HumanNameCapitalizationTestCase(HumanNameTestBase):
-    def test_capitalization_exception_for_III(self):
+    def test_capitalization_exception_for_III(self) -> None:
         hn = HumanName('juan q. xavier velasquez y garcia iii')
         hn.capitalize()
         self.m(str(hn), 'Juan Q. Xavier Velasquez y Garcia III', hn)
@@ -2083,71 +2098,71 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # FIXME: this test does not pass due to a known issue
     # http://code.google.com/p/python-nameparser/issues/detail?id=22
     @unittest.expectedFailure
-    def test_capitalization_exception_for_already_capitalized_III_KNOWN_FAILURE(self):
+    def test_capitalization_exception_for_already_capitalized_III_KNOWN_FAILURE(self) -> None:
         hn = HumanName('juan garcia III')
         hn.capitalize()
         self.m(str(hn), 'Juan Garcia III', hn)
 
-    def test_capitalize_title(self):
+    def test_capitalize_title(self) -> None:
         hn = HumanName('lt. gen. john a. kenneth doe iv')
         hn.capitalize()
         self.m(str(hn), 'Lt. Gen. John A. Kenneth Doe IV', hn)
 
-    def test_capitalize_title_to_lower(self):
+    def test_capitalize_title_to_lower(self) -> None:
         hn = HumanName('LT. GEN. JOHN A. KENNETH DOE IV')
         hn.capitalize()
         self.m(str(hn), 'Lt. Gen. John A. Kenneth Doe IV', hn)
 
     # Capitalization with M(a)c and hyphenated names
-    def test_capitalization_with_Mac_as_hyphenated_names(self):
+    def test_capitalization_with_Mac_as_hyphenated_names(self) -> None:
         hn = HumanName('donovan mcnabb-smith')
         hn.capitalize()
         self.m(str(hn), 'Donovan McNabb-Smith', hn)
 
-    def test_capitization_middle_initial_is_also_a_conjunction(self):
+    def test_capitization_middle_initial_is_also_a_conjunction(self) -> None:
         hn = HumanName('scott e. werner')
         hn.capitalize()
         self.m(str(hn), 'Scott E. Werner', hn)
 
     # Leaving already-capitalized names alone
-    def test_no_change_to_mixed_chase(self):
+    def test_no_change_to_mixed_chase(self) -> None:
         hn = HumanName('Shirley Maclaine')
         hn.capitalize()
         self.m(str(hn), 'Shirley Maclaine', hn)
 
-    def test_force_capitalization(self):
+    def test_force_capitalization(self) -> None:
         hn = HumanName('Shirley Maclaine')
         hn.capitalize(force=True)
         self.m(str(hn), 'Shirley MacLaine', hn)
 
-    def test_capitalize_diacritics(self):
+    def test_capitalize_diacritics(self) -> None:
         hn = HumanName('matthëus schmidt')
         hn.capitalize()
         self.m(str(hn), 'Matthëus Schmidt', hn)
 
     # http://code.google.com/p/python-nameparser/issues/detail?id=15
-    def test_downcasing_mac(self):
+    def test_downcasing_mac(self) -> None:
         hn = HumanName('RONALD MACDONALD')
         hn.capitalize()
         self.m(str(hn), 'Ronald MacDonald', hn)
 
     # http://code.google.com/p/python-nameparser/issues/detail?id=23
-    def test_downcasing_mc(self):
+    def test_downcasing_mc(self) -> None:
         hn = HumanName('RONALD MCDONALD')
         hn.capitalize()
         self.m(str(hn), 'Ronald McDonald', hn)
 
-    def test_short_names_with_mac(self):
+    def test_short_names_with_mac(self) -> None:
         hn = HumanName('mack johnson')
         hn.capitalize()
         self.m(str(hn), 'Mack Johnson', hn)
 
-    def test_portuguese_prefixes(self):
+    def test_portuguese_prefixes(self) -> None:
         hn = HumanName("joao da silva do amaral de souza")
         hn.capitalize()
         self.m(str(hn), 'Joao da Silva do Amaral de Souza', hn)
 
-    def test_capitalize_prefix_clash_on_first_name(self):
+    def test_capitalize_prefix_clash_on_first_name(self) -> None:
         hn = HumanName("van nguyen")
         hn.capitalize()
         self.m(str(hn), 'Van Nguyen', hn)
@@ -2155,12 +2170,12 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
 
 class HumanNameOutputFormatTests(HumanNameTestBase):
 
-    def test_formatting_init_argument(self):
+    def test_formatting_init_argument(self) -> None:
         hn = HumanName("Rev John A. Kenneth Doe III (Kenny)",
                        string_format="TEST1")
         self.assertEqual(str(hn), "TEST1")
 
-    def test_formatting_constants_attribute(self):
+    def test_formatting_constants_attribute(self) -> None:
         from nameparser.config import CONSTANTS
         _orig = CONSTANTS.string_format
         CONSTANTS.string_format = "TEST2"
@@ -2168,14 +2183,14 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         self.assertEqual(str(hn), "TEST2")
         CONSTANTS.string_format = _orig
 
-    def test_capitalize_name_constants_attribute(self):
+    def test_capitalize_name_constants_attribute(self) -> None:
         from nameparser.config import CONSTANTS
         CONSTANTS.capitalize_name = True
         hn = HumanName("bob v. de la macdole-eisenhower phd")
         self.assertEqual(str(hn), "Bob V. de la MacDole-Eisenhower Ph.D.")
         CONSTANTS.capitalize_name = False
 
-    def test_force_mixed_case_capitalization_constants_attribute(self):
+    def test_force_mixed_case_capitalization_constants_attribute(self) -> None:
         from nameparser.config import CONSTANTS
         CONSTANTS.force_mixed_case_capitalization = True
         hn = HumanName('Shirley Maclaine')
@@ -2183,21 +2198,21 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         self.assertEqual(str(hn), "Shirley MacLaine")
         CONSTANTS.force_mixed_case_capitalization = False
 
-    def test_capitalize_name_and_force_mixed_case_capitalization_constants_attributes(self):
+    def test_capitalize_name_and_force_mixed_case_capitalization_constants_attributes(self) -> None:
         from nameparser.config import CONSTANTS
         CONSTANTS.capitalize_name = True
         CONSTANTS.force_mixed_case_capitalization = True
         hn = HumanName('Shirley Maclaine')
         self.assertEqual(str(hn), "Shirley MacLaine")
 
-    def test_quote_nickname_formating(self):
+    def test_quote_nickname_formating(self) -> None:
         hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
         hn.string_format = "{title} {first} {middle} {last} {suffix} '{nickname}'"
         self.assertEqual(str(hn), "Rev John A. Kenneth Doe III 'Kenny'")
         hn.string_format = "{last}, {title} {first} {middle}, {suffix} '{nickname}'"
         self.assertEqual(str(hn), "Doe, Rev John A. Kenneth, III 'Kenny'")
 
-    def test_formating_removing_keys_from_format_string(self):
+    def test_formating_removing_keys_from_format_string(self) -> None:
         hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
         hn.string_format = "{title} {first} {middle} {last} {suffix} '{nickname}'"
         self.assertEqual(str(hn), "Rev John A. Kenneth Doe III 'Kenny'")
@@ -2212,7 +2227,7 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         hn.string_format = "{first} {last}"
         self.assertEqual(str(hn), "John Doe")
 
-    def test_formating_removing_pieces_from_name_buckets(self):
+    def test_formating_removing_pieces_from_name_buckets(self) -> None:
         hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
         hn.string_format = "{title} {first} {middle} {last} {suffix} '{nickname}'"
         self.assertEqual(str(hn), "Rev John A. Kenneth Doe III 'Kenny'")
@@ -2225,47 +2240,47 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         hn.title = ''
         self.assertEqual(str(hn), "John Doe")
 
-    def test_formating_of_nicknames_with_parenthesis(self):
+    def test_formating_of_nicknames_with_parenthesis(self) -> None:
         hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
         hn.string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
         self.assertEqual(str(hn), "Rev John A. Kenneth Doe III (Kenny)")
         hn.nickname = ''
         self.assertEqual(str(hn), "Rev John A. Kenneth Doe III")
 
-    def test_formating_of_nicknames_with_single_quotes(self):
+    def test_formating_of_nicknames_with_single_quotes(self) -> None:
         hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
         hn.string_format = "{title} {first} {middle} {last} {suffix} '{nickname}'"
         self.assertEqual(str(hn), "Rev John A. Kenneth Doe III 'Kenny'")
         hn.nickname = ''
         self.assertEqual(str(hn), "Rev John A. Kenneth Doe III")
 
-    def test_formating_of_nicknames_with_double_quotes(self):
+    def test_formating_of_nicknames_with_double_quotes(self) -> None:
         hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
         hn.string_format = "{title} {first} {middle} {last} {suffix} \"{nickname}\""
         self.assertEqual(str(hn), "Rev John A. Kenneth Doe III \"Kenny\"")
         hn.nickname = ''
         self.assertEqual(str(hn), "Rev John A. Kenneth Doe III")
 
-    def test_formating_of_nicknames_in_middle(self):
+    def test_formating_of_nicknames_in_middle(self) -> None:
         hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
         hn.string_format = "{title} {first} ({nickname}) {middle} {last} {suffix}"
         self.assertEqual(str(hn), "Rev John (Kenny) A. Kenneth Doe III")
         hn.nickname = ''
         self.assertEqual(str(hn), "Rev John A. Kenneth Doe III")
 
-    def test_remove_emojis(self):
+    def test_remove_emojis(self) -> None:
         hn = HumanName("Sam Smith 😊")
         self.m(hn.first, "Sam", hn)
         self.m(hn.last, "Smith", hn)
         self.assertEqual(str(hn), "Sam Smith")
 
-    def test_keep_non_emojis(self):
+    def test_keep_non_emojis(self) -> None:
         hn = HumanName("∫≜⩕ Smith 😊")
         self.m(hn.first, "∫≜⩕", hn)
         self.m(hn.last, "Smith", hn)
         self.assertEqual(str(hn), "∫≜⩕ Smith")
 
-    def test_keep_emojis(self):
+    def test_keep_emojis(self) -> None:
         from nameparser.config import Constants
         constants = Constants()
         constants.regexes.emoji = False
@@ -2277,11 +2292,11 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
 
 
 class InitialsTestCase(HumanNameTestBase):
-    def test_initials(self):
+    def test_initials(self) -> None:
         hn = HumanName("Andrew Boris Petersen")
         self.m(hn.initials(), "A. B. P.", hn)
 
-    def test_initials_simple_name(self):
+    def test_initials_simple_name(self) -> None:
         hn = HumanName("John Doe")
         self.m(hn.initials(), "J. D.", hn)
         hn = HumanName("John Doe", initials_format="{first} {last}")
@@ -2293,11 +2308,11 @@ class InitialsTestCase(HumanNameTestBase):
         hn = HumanName("John Doe", initials_format="{middle}")
         self.m(hn.initials(), "", hn)
 
-    def test_initials_complex_name(self):
+    def test_initials_complex_name(self) -> None:
         hn = HumanName("Doe, John A. Kenneth, Jr.")
         self.m(hn.initials(), "J. A. K. D.", hn)
 
-    def test_initials_format(self):
+    def test_initials_format(self) -> None:
         hn = HumanName("Doe, John A. Kenneth, Jr.", initials_format="{first} {middle}")
         self.m(hn.initials(), "J. A. K.", hn)
         hn = HumanName("Doe, John A. Kenneth, Jr.", initials_format="{first} {last}")
@@ -2307,7 +2322,7 @@ class InitialsTestCase(HumanNameTestBase):
         hn = HumanName("Doe, John A. Kenneth, Jr.", initials_format="{first}, {last}")
         self.m(hn.initials(), "J., D.", hn)
 
-    def test_initials_format_constants(self):
+    def test_initials_format_constants(self) -> None:
         from nameparser.config import CONSTANTS
         _orig = CONSTANTS.initials_format
         CONSTANTS.initials_format = "{first} {last}"
@@ -2318,11 +2333,11 @@ class InitialsTestCase(HumanNameTestBase):
         self.m(hn.initials(), "J. D.", hn)
         CONSTANTS.initials_format = _orig
 
-    def test_initials_delimiter(self):
+    def test_initials_delimiter(self) -> None:
         hn = HumanName("Doe, John A. Kenneth, Jr.", initials_delimiter=";")
         self.m(hn.initials(), "J; A; K; D;", hn)
 
-    def test_initials_delimiter_constants(self):
+    def test_initials_delimiter_constants(self) -> None:
         from nameparser.config import CONSTANTS
         _orig = CONSTANTS.initials_delimiter
         CONSTANTS.initials_delimiter = ";"
@@ -2330,53 +2345,53 @@ class InitialsTestCase(HumanNameTestBase):
         self.m(hn.initials(), "J; A; K; D;", hn)
         CONSTANTS.initials_delimiter = _orig
 
-    def test_initials_list(self):
+    def test_initials_list(self) -> None:
         hn = HumanName("Andrew Boris Petersen")
         self.m(hn.initials_list(), ["A", "B", "P"], hn)
 
-    def test_initials_list_complex_name(self):
+    def test_initials_list_complex_name(self) -> None:
         hn = HumanName("Doe, John A. Kenneth, Jr.")
         self.m(hn.initials_list(), ["J", "A", "K", "D"], hn)
 
-    def test_initials_with_prefix_firstname(self):
+    def test_initials_with_prefix_firstname(self) -> None:
         hn = HumanName("Van Jeremy Johnson")
         self.m(hn.initials_list(), ["V", "J", "J"], hn)
 
-    def test_initials_with_prefix(self):
+    def test_initials_with_prefix(self) -> None:
         hn = HumanName("Alex van Johnson")
         self.m(hn.initials_list(), ["A", "J"], hn)
 
-    def test_constructor_first(self):
+    def test_constructor_first(self) -> None:
         hn = HumanName(first="TheName")
         self.assertFalse(hn.unparsable)
         self.m(hn.first, "TheName", hn)
 
-    def test_constructor_middle(self):
+    def test_constructor_middle(self) -> None:
         hn = HumanName(middle="TheName")
         self.assertFalse(hn.unparsable)
         self.m(hn.middle, "TheName", hn)
 
-    def test_constructor_last(self):
+    def test_constructor_last(self) -> None:
         hn = HumanName(last="TheName")
         self.assertFalse(hn.unparsable)
         self.m(hn.last, "TheName", hn)
 
-    def test_constructor_title(self):
+    def test_constructor_title(self) -> None:
         hn = HumanName(title="TheName")
         self.assertFalse(hn.unparsable)
         self.m(hn.title, "TheName", hn)
 
-    def test_constructor_suffix(self):
+    def test_constructor_suffix(self) -> None:
         hn = HumanName(suffix="TheName")
         self.assertFalse(hn.unparsable)
         self.m(hn.suffix, "TheName", hn)
 
-    def test_constructor_nickname(self):
+    def test_constructor_nickname(self) -> None:
         hn = HumanName(nickname="TheName")
         self.assertFalse(hn.unparsable)
         self.m(hn.nickname, "TheName", hn)
 
-    def test_constructor_multiple(self):
+    def test_constructor_multiple(self) -> None:
         hn = HumanName(first="TheName", last="lastname", title="mytitle", full_name="donotparse")
         self.assertFalse(hn.unparsable)
         self.m(hn.first, "TheName", hn)
@@ -2569,21 +2584,13 @@ class HumanNameVariationTests(HumanNameTestBase):
 
     TEST_NAMES = TEST_NAMES
 
-    def test_variations_of_TEST_NAMES(self):
+    def test_variations_of_TEST_NAMES(self) -> None:
         for name in self.TEST_NAMES:
             hn = HumanName(name)
             if len(hn.suffix_list) > 1:
                 hn = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn.as_dict()).split(',')[0])
             hn.C.empty_attribute_default = ''  # format strings below require empty string
             hn_dict = hn.as_dict()
-            attrs = [
-                'title',
-                'first',
-                'middle',
-                'last',
-                'suffix',
-                'nickname',
-            ]
             nocomma = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn_dict))
             lastnamecomma = HumanName("{last}, {title} {first} {middle} {suffix}".format(**hn_dict))
             if hn.suffix:
@@ -2608,9 +2615,9 @@ if __name__ == '__main__':
         log.addHandler(logging.StreamHandler())
         name_string = sys.argv[1]
         hn_instance = HumanName(name_string, encoding=sys.stdout.encoding)
-        print((repr(hn_instance)))
+        print(repr(hn_instance))
         hn_instance.capitalize()
-        print((repr(hn_instance)))
+        print(repr(hn_instance))
         print("Initials: " + hn_instance.initials())
     else:
         print("-"*80)
