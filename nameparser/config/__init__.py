@@ -32,7 +32,10 @@ import sys
 from collections.abc import Iterable, Iterator, Mapping, Set
 from typing import Any, TypeVar
 
-from typing_extensions import Self
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 from nameparser.util import lc
 from nameparser.config.prefixes import PREFIXES
