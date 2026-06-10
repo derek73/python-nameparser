@@ -4,9 +4,9 @@ Contributing
 Development Environment Setup
 --------------------------------
 
-Install dev dependencies (requires pip >= 24.1 for dependency group support):
+Install dev dependencies:
 
-    pip install --group dev
+    uv sync
 
 Running Tests
 ---------------
@@ -38,5 +38,6 @@ Unless you add better coverage someplace else, add a few examples of your names 
 New Releases
 ------------
 
-    $ python -m build
-    $ twine upload dist/*
+Releases are published automatically to PyPI via GitHub Actions. To cut a release,
+create and publish a new GitHub Release — the workflow will build and upload the
+package using trusted publishing (no API token or twine needed).
