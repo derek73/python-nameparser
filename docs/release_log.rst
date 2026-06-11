@@ -1,5 +1,11 @@
 Release Log
 ===========
+* 1.2.0 - June 11, 2026
+    - Drop Python 2 and Python < 3.10 support; Python 3.10–3.14 now required
+    - Add type hints and type declarations (PEP 561 ``py.typed`` marker)
+    - Migrate build tooling to ``pyproject.toml``, drop ``setup.py``
+    - Remove dead Python 2 compatibility shims (``ENCODING`` constant, ``next()`` aliases)
+    - Modernize CI: uv-based workflow, trusted publishing to PyPI, Dependabot
 * 1.1.3 - September 20, 2023
     - Fix case when we have two same prefixes in the name ()#147)
 * 1.1.2 - November 13, 2022

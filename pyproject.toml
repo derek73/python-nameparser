@@ -34,6 +34,9 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.dynamic]
 version = {attr = "nameparser._version.__version__"}
 
+[tool.setuptools.package-data]
+nameparser = ["py.typed"]
+
 [dependency-groups]
 dev = [
   "dill (>=0.2.5)",
