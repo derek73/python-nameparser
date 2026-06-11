@@ -24,7 +24,7 @@ You can also pass a name string to `tests.py` to see how it will be parsed:
     	Suffix: ''
     ]>
 
-CI runs tests against Python 3.10–3.13 via GitHub Actions on every push and pull request.
+CI runs tests against Python 3.10–3.14 via GitHub Actions on every push and pull request.
 
 Writing Tests
 ----------------
