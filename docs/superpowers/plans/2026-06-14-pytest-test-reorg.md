@@ -23,26 +23,29 @@ The source today is a single file `tests.py` (344 test methods across 13 classes
 5. **Class names are kept** (e.g. `HumanNamePythonTests`, `TitleTestCase`), so `pytest` is configured with `python_classes = ["*Tests", "*TestCase"]`. The one oddball, `ConstantsCustomization`, is renamed to `ConstantsCustomizationTests` for consistency.
 6. **The debug CLI moves to `nameparser/__main__.py`** so `python -m nameparser "Some Name"` replaces the old `python tests.py "Some Name"`. (User decision.)
 7. **`tests/` is a real package** (`tests/__init__.py` present) so test modules import the base via `from tests.base import HumanNameTestBase`.
+8. **`@unittest.expectedFailure` → `@pytest.mark.xfail`.** This decorator only works on `TestCase` subclasses; the plain-class equivalent is `@pytest.mark.xfail`. It appears on **10 methods** spread across 5 classes (see the "xfail" column in the table). Any file containing one of these needs `import pytest` in its header, and its reported count splits into `passed` + `xfailed` (both are success states — only `failed`/`error` are bad). The 4 `skipUnless` → `skipif` conversions in Task 2 are the analogous case for skips.
 
 **Source-of-truth line ranges in the current `tests.py`** (for the verbatim moves):
 
 | Class | Lines | Methods | Expected pytest count (×2) | Extra imports beyond base + HumanName |
 |---|---|---|---|---|
 | `HumanNamePythonTests` | 54–266 | 31 | 62 | `re`, `pytest`, `dill` (try/except), `Constants`, `TupleManager` |
-| `FirstNameHandlingTests` | 267–330 | 11 | 22 | — |
-| `HumanNameBruteForceTests` | 331–1135 | 117 | 234 | — |
-| `HumanNameConjunctionTestCase` | 1136–1333 | 32 | 64 | — |
-| `ConstantsCustomization` → `ConstantsCustomizationTests` | 1334–1435 | 11 | 22 | `Constants`, `CONSTANTS` |
-| `NicknameTestCase` | 1436–1608 | 18 | 36 | — |
-| `PrefixesTestCase` | 1609–1723 | 18 | 36 | — |
-| `SuffixesTestCase` | 1724–1856 | 21 | 42 | — |
-| `TitleTestCase` | 1857–2091 | 37 | 74 | — |
-| `HumanNameCapitalizationTestCase` | 2092–2170 | 14 | 28 | — |
-| `HumanNameOutputFormatTests` | 2171–2293 | 15 | 30 | `Constants`, `CONSTANTS` |
-| `InitialsTestCase` | 2294–2401 | 18 | 36 | `CONSTANTS` |
+| `FirstNameHandlingTests` | 267–330 | 11 | 18 passed, 4 xfailed | `pytest` (2 xfail) |
+| `HumanNameBruteForceTests` | 331–1135 | 117 | 234 passed | — |
+| `HumanNameConjunctionTestCase` | 1136–1333 | 32 | 60 passed, 4 xfailed | `pytest` (2 xfail) |
+| `ConstantsCustomization` → `ConstantsCustomizationTests` | 1334–1435 | 11 | 22 passed | `Constants`, `CONSTANTS` |
+| `NicknameTestCase` | 1436–1608 | 18 | 34 passed, 2 xfailed | `pytest` (1 xfail) |
+| `PrefixesTestCase` | 1609–1723 | 18 | 36 passed | — |
+| `SuffixesTestCase` | 1724–1856 | 21 | 40 passed, 2 xfailed | `pytest` (1 xfail) |
+| `TitleTestCase` | 1857–2091 | 37 | 68 passed, 6 xfailed | `pytest` (3 xfail) |
+| `HumanNameCapitalizationTestCase` | 2092–2170 | 14 | 26 passed, 2 xfailed | `pytest` (1 xfail) |
+| `HumanNameOutputFormatTests` | 2171–2293 | 15 | 30 passed | `Constants`, `CONSTANTS` |
+| `InitialsTestCase` | 2294–2401 | 18 | 36 passed | `CONSTANTS` |
 | `TEST_NAMES` tuple | 2402–2578 | — | — | (data; lives in `test_variations.py`) |
-| `HumanNameVariationTests` | 2581–2608 | 1 | 2 | — (uses `TEST_NAMES` from same file) |
-| **TOTAL** | | **344** | **688** | |
+| `HumanNameVariationTests` | 2581–2608 | 1 | 2 passed | — (uses `TEST_NAMES` from same file) |
+| **TOTAL** | | **344** | **668 passed, 20 xfailed** | |
+
+**`@unittest.expectedFailure` handling (applies to the move tasks below):** any class whose row shows an xfail count contains that many `@unittest.expectedFailure` decorators. In the moved file, (a) add `import pytest` to the header, and (b) replace each `@unittest.expectedFailure` line with `@pytest.mark.xfail`. Leave the decorated method body unchanged. These convert `unittest`'s expected-failure marker (which only works on `TestCase`) into pytest's equivalent.
 
 `CONSTANTS` / `Constants` / `TupleManager` are imported from `nameparser.config`. `HumanName` from `nameparser`.
 
@@ -141,9 +144,11 @@ def empty_attribute_default(request: pytest.FixtureRequest) -> Iterator[str | No
 
 - [ ] **Step 4: Move `FirstNameHandlingTests` into its own file**
 
-Create `tests/test_first_name.py` with this header, then paste the **body** of `FirstNameHandlingTests` (the class line and everything indented under it, lines 267–330 of `tests.py`) verbatim, changing only the base class reference if needed (it already reads `class FirstNameHandlingTests(HumanNameTestBase):`):
+Create `tests/test_first_name.py` with this header, then paste the **body** of `FirstNameHandlingTests` (the class line and everything indented under it, lines 267–330 of `tests.py`) verbatim. This class has **two** `@unittest.expectedFailure` decorators (lines 280, 323) — replace each with `@pytest.mark.xfail` (leave the method bodies unchanged):
 
 ```python
+import pytest
+
 from nameparser import HumanName
 
 from tests.base import HumanNameTestBase
@@ -151,6 +156,7 @@ from tests.base import HumanNameTestBase
 
 # <-- paste lines 267-330 of tests.py here, starting at:
 # class FirstNameHandlingTests(HumanNameTestBase):
+# ...and change the two `@unittest.expectedFailure` lines to `@pytest.mark.xfail`
 ```
 
 - [ ] **Step 5: Add pytest dependency and config to `pyproject.toml`**
@@ -180,7 +186,7 @@ python_classes = ["*Tests", "*TestCase"]
 
 Run: `uv sync`
 Then: `uv run pytest tests/test_first_name.py -q`
-Expected: `22 passed` (11 methods × 2 dual-run params). Test ids look like `test_first_name[default]` and `test_first_name[none]`.
+Expected: `18 passed, 4 xfailed` (9 passing methods × 2, plus 2 xfail methods × 2). Zero failures. Test ids look like `test_first_name[default]` and `test_first_name[none]`.
 
 - [ ] **Step 7: Confirm ruff is clean on the new files**
 
@@ -317,6 +323,8 @@ git commit -m "test: move HumanNameBruteForceTests to tests/test_brute_force.py"
 - [ ] **Step 1: Create the file**
 
 ```python
+import pytest
+
 from nameparser import HumanName
 
 from tests.base import HumanNameTestBase
@@ -324,12 +332,14 @@ from tests.base import HumanNameTestBase
 
 # <-- paste lines 1136-1333 of tests.py here, starting at:
 # class HumanNameConjunctionTestCase(HumanNameTestBase):
+# This class has TWO @unittest.expectedFailure decorators (lines 1218, 1322).
+# Change each to @pytest.mark.xfail; leave the method bodies unchanged.
 ```
 
 - [ ] **Step 2: Run**
 
 Run: `uv run pytest tests/test_conjunctions.py -q`
-Expected: `64 passed` (32 × 2).
+Expected: `60 passed, 4 xfailed` (30 passing × 2, 2 xfail × 2). Zero failures.
 
 - [ ] **Step 3: Lint and commit**
 
@@ -396,6 +406,8 @@ git commit -m "test: move ConstantsCustomization to tests/test_constants.py and 
 - [ ] **Step 1: Create the file**
 
 ```python
+import pytest
+
 from nameparser import HumanName
 
 from tests.base import HumanNameTestBase
@@ -403,12 +415,14 @@ from tests.base import HumanNameTestBase
 
 # <-- paste lines 1436-1608 of tests.py here, starting at:
 # class NicknameTestCase(HumanNameTestBase):
+# This class has ONE @unittest.expectedFailure decorator (line 1557).
+# Change it to @pytest.mark.xfail; leave the method body unchanged.
 ```
 
 - [ ] **Step 2: Run**
 
 Run: `uv run pytest tests/test_nicknames.py -q`
-Expected: `36 passed` (18 × 2).
+Expected: `34 passed, 2 xfailed` (17 passing × 2, 1 xfail × 2). Zero failures.
 
 - [ ] **Step 3: Lint and commit**
 
@@ -460,6 +474,8 @@ git commit -m "test: move PrefixesTestCase to tests/test_prefixes.py"
 - [ ] **Step 1: Create the file**
 
 ```python
+import pytest
+
 from nameparser import HumanName
 
 from tests.base import HumanNameTestBase
@@ -467,12 +483,14 @@ from tests.base import HumanNameTestBase
 
 # <-- paste lines 1724-1856 of tests.py here, starting at:
 # class SuffixesTestCase(HumanNameTestBase):
+# This class has ONE @unittest.expectedFailure decorator (line 1831).
+# Change it to @pytest.mark.xfail; leave the method body unchanged.
 ```
 
 - [ ] **Step 2: Run**
 
 Run: `uv run pytest tests/test_suffixes.py -q`
-Expected: `42 passed` (21 × 2).
+Expected: `40 passed, 2 xfailed` (20 passing × 2, 1 xfail × 2). Zero failures.
 
 - [ ] **Step 3: Lint and commit**
 
@@ -492,6 +510,8 @@ git commit -m "test: move SuffixesTestCase to tests/test_suffixes.py"
 - [ ] **Step 1: Create the file**
 
 ```python
+import pytest
+
 from nameparser import HumanName
 
 from tests.base import HumanNameTestBase
@@ -499,12 +519,14 @@ from tests.base import HumanNameTestBase
 
 # <-- paste lines 1857-2091 of tests.py here, starting at:
 # class TitleTestCase(HumanNameTestBase):
+# This class has THREE @unittest.expectedFailure decorators (lines 1903, 1939, 2030).
+# Change each to @pytest.mark.xfail; leave the method bodies unchanged.
 ```
 
 - [ ] **Step 2: Run**
 
 Run: `uv run pytest tests/test_titles.py -q`
-Expected: `74 passed` (37 × 2).
+Expected: `68 passed, 6 xfailed` (34 passing × 2, 3 xfail × 2). Zero failures.
 
 - [ ] **Step 3: Lint and commit**
 
@@ -524,6 +546,8 @@ git commit -m "test: move TitleTestCase to tests/test_titles.py"
 - [ ] **Step 1: Create the file**
 
 ```python
+import pytest
+
 from nameparser import HumanName
 
 from tests.base import HumanNameTestBase
@@ -531,12 +555,14 @@ from tests.base import HumanNameTestBase
 
 # <-- paste lines 2092-2170 of tests.py here, starting at:
 # class HumanNameCapitalizationTestCase(HumanNameTestBase):
+# This class has ONE @unittest.expectedFailure decorator (line 2100).
+# Change it to @pytest.mark.xfail; leave the method body unchanged.
 ```
 
 - [ ] **Step 2: Run**
 
 Run: `uv run pytest tests/test_capitalization.py -q`
-Expected: `28 passed` (14 × 2).
+Expected: `26 passed, 2 xfailed` (13 passing × 2, 1 xfail × 2). Zero failures.
 
 - [ ] **Step 3: Lint and commit**
 
@@ -710,7 +736,7 @@ Run: `git rm tests.py`
 - [ ] **Step 4: Run the entire suite**
 
 Run: `uv run pytest -q`
-Expected: `688 passed` (344 methods × 2 dual-run params). With dill present (dev group), no skips.
+Expected: `668 passed, 20 xfailed` (334 passing methods × 2, plus 10 `xfail` methods × 2 = 688 collected). Zero failures, zero errors. With dill present (dev group), no skips.
 
 - [ ] **Step 5: Run ruff and mypy across the repo**
 
@@ -833,7 +859,7 @@ git commit -m "docs: update test instructions and CI for pytest"
 
 ## Final verification (after all tasks)
 
-- [ ] `uv run pytest -q` → `688 passed`
+- [ ] `uv run pytest -q` → `668 passed, 20 xfailed` (688 collected, zero failures)
 - [ ] `uv run ruff check` → clean
 - [ ] `uv run mypy` → clean
 - [ ] `uv run python -m nameparser "Dr. Juan Q. Xavier de la Vega III"` → prints parsed repr
