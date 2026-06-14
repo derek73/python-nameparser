@@ -39,8 +39,8 @@ The source today is a single file `tests.py` (344 test methods across 13 classes
 | `SuffixesTestCase` | 1724–1856 | 21 | 40 passed, 2 xfailed | `pytest` (1 xfail) |
 | `TitleTestCase` | 1857–2091 | 37 | 68 passed, 6 xfailed | `pytest` (3 xfail) |
 | `HumanNameCapitalizationTestCase` | 2092–2170 | 14 | 26 passed, 2 xfailed | `pytest` (1 xfail) |
-| `HumanNameOutputFormatTests` | 2171–2293 | 15 | 30 passed | `Constants`, `CONSTANTS` |
-| `InitialsTestCase` | 2294–2401 | 18 | 36 passed | `CONSTANTS` |
+| `HumanNameOutputFormatTests` | 2171–2293 | 15 | 30 passed | — (Constants/CONSTANTS imported locally in methods) |
+| `InitialsTestCase` | 2294–2401 | 18 | 36 passed | — (CONSTANTS imported locally in methods) |
 | `TEST_NAMES` tuple | 2402–2578 | — | — | (data; lives in `test_variations.py`) |
 | `HumanNameVariationTests` | 2581–2608 | 1 | 2 passed | — (uses `TEST_NAMES` from same file) |
 | **TOTAL** | | **345** | **670 passed, 20 xfailed** (690 collected) | |
@@ -583,13 +583,14 @@ git commit -m "test: move HumanNameCapitalizationTestCase to tests/test_capitali
 
 ```python
 from nameparser import HumanName
-from nameparser.config import CONSTANTS, Constants
 
 from tests.base import HumanNameTestBase
 
 
 # <-- paste lines 2171-2293 of tests.py here, starting at:
 # class HumanNameOutputFormatTests(HumanNameTestBase):
+# NOTE: this class imports Constants/CONSTANTS LOCALLY inside its test methods,
+# so do NOT add a top-level nameparser.config import (it would be redundant — ruff F811).
 ```
 
 - [ ] **Step 2: Run**
@@ -618,7 +619,6 @@ Note: only the class moves here — the `TEST_NAMES` tuple that follows it (line
 
 ```python
 from nameparser import HumanName
-from nameparser.config import CONSTANTS
 
 from tests.base import HumanNameTestBase
 
@@ -626,6 +626,8 @@ from tests.base import HumanNameTestBase
 # <-- paste lines 2294-2401 of tests.py here, starting at:
 # class InitialsTestCase(HumanNameTestBase):
 # Stop BEFORE the `TEST_NAMES = (` line at 2402.
+# NOTE: this class imports CONSTANTS LOCALLY inside its test methods,
+# so do NOT add a top-level nameparser.config import (ruff F811).
 ```
 
 - [ ] **Step 2: Run**
