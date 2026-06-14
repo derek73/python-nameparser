@@ -33,7 +33,7 @@ The source today is a single file `tests.py` (344 test methods across 13 classes
 | `FirstNameHandlingTests` | 267–330 | 11 | 18 passed, 4 xfailed | `pytest` (2 xfail) |
 | `HumanNameBruteForceTests` | 331–1135 | 117 | 234 passed | — |
 | `HumanNameConjunctionTestCase` | 1136–1333 | 32 | 60 passed, 4 xfailed | `pytest` (2 xfail) |
-| `ConstantsCustomization` → `ConstantsCustomizationTests` | 1334–1435 | 12 | 24 passed | `Constants` (NOT top-level `CONSTANTS` — re-imported locally) |
+| `ConstantsCustomization` → `ConstantsCustomizationTests` | 1334–1435 | 11 | 22 passed | `Constants` (NOT top-level `CONSTANTS` — re-imported locally) |
 | `NicknameTestCase` | 1436–1608 | 18 | 34 passed, 2 xfailed | `pytest` (1 xfail) |
 | `PrefixesTestCase` | 1609–1723 | 18 | 36 passed | — |
 | `SuffixesTestCase` | 1724–1856 | 21 | 40 passed, 2 xfailed | `pytest` (1 xfail) |
@@ -43,7 +43,7 @@ The source today is a single file `tests.py` (344 test methods across 13 classes
 | `InitialsTestCase` | 2294–2401 | 18 | 36 passed | — (CONSTANTS imported locally in methods) |
 | `TEST_NAMES` tuple | 2402–2578 | — | — | (data; lives in `test_variations.py`) |
 | `HumanNameVariationTests` | 2581–2608 | 1 | 2 passed | — (uses `TEST_NAMES` from same file) |
-| **TOTAL** | | **345** | **670 passed, 20 xfailed** (690 collected) | |
+| **TOTAL** | | **344** | **668 passed, 20 xfailed** (688 collected) | |
 
 **`@unittest.expectedFailure` handling (applies to the move tasks below):** any class whose row shows an xfail count contains that many `@unittest.expectedFailure` decorators. In the moved file, (a) add `import pytest` to the header, and (b) replace each `@unittest.expectedFailure` line with `@pytest.mark.xfail`. Leave the decorated method body unchanged. These convert `unittest`'s expected-failure marker (which only works on `TestCase`) into pytest's equivalent.
 
@@ -386,7 +386,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 - [ ] **Step 3: Run**
 
 Run: `uv run pytest tests/test_constants.py -q`
-Expected: `24 passed` (12 × 2). Note: drop `CONSTANTS` from the top-level import — `test_empty_attribute_default` re-imports it locally, so a top-level import is redundant (ruff F811). Also add `-> None` to `test_custom_regex_constant`, the one method in the file lacking a return annotation (ruff ANN201).
+Expected: `22 passed` (11 × 2). Note: drop `CONSTANTS` from the top-level import — `test_empty_attribute_default` re-imports it locally, so a top-level import is redundant (ruff F811).
 
 - [ ] **Step 4: Lint and commit**
 
@@ -738,7 +738,7 @@ Run: `git rm tests.py`
 - [ ] **Step 4: Run the entire suite**
 
 Run: `uv run pytest -q`
-Expected: `670 passed, 20 xfailed` (335 passing methods × 2, plus 10 `xfail` methods × 2 = 690 collected). Zero failures, zero errors. With dill present (dev group), no skips.
+Expected: `668 passed, 20 xfailed` (334 passing methods × 2, plus 10 `xfail` methods × 2 = 688 collected). Zero failures, zero errors. With dill present (dev group), no skips.
 
 - [ ] **Step 5: Run ruff and mypy across the repo**
 
@@ -861,7 +861,7 @@ git commit -m "docs: update test instructions and CI for pytest"
 
 ## Final verification (after all tasks)
 
-- [ ] `uv run pytest -q` → `670 passed, 20 xfailed` (690 collected, zero failures)
+- [ ] `uv run pytest -q` → `668 passed, 20 xfailed` (688 collected, zero failures)
 - [ ] `uv run ruff check` → clean
 - [ ] `uv run mypy` → clean
 - [ ] `uv run python -m nameparser "Dr. Juan Q. Xavier de la Vega III"` → prints parsed repr
