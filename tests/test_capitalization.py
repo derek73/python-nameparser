@@ -40,6 +40,28 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.m(str(hn), 'Scott E. Werner', hn)
 
+    def test_capitalize_empty_name_part_has_no_leading_space_in_surnames(self) -> None:
+        # capitalize() split each attribute with str.split(' '), which returns
+        # [''] (rather than []) for an empty string. That spurious element
+        # leaked into surnames_list (middle_list + last_list) and produced a
+        # leading space in the surnames property, e.g. ' Doe' instead of 'Doe'.
+        hn = HumanName('john doe')
+        hn.capitalize()
+        self.m(hn.surnames, 'Doe', hn)
+        self.assertEqual(hn.middle_list, [])
+        self.assertEqual(hn.surnames_list, ['Doe'])
+
+        # force=True on a mixed-case name hits the same code path
+        hn = HumanName('Jane Doe')
+        hn.capitalize(force=True)
+        self.m(hn.surnames, 'Doe', hn)
+        self.assertEqual(hn.middle_list, [])
+
+        # other empty attribute lists are also free of the spurious '' element
+        self.assertEqual(hn.title_list, [])
+        self.assertEqual(hn.first_list, ['Jane'])
+        self.assertEqual(hn.last_list, ['Doe'])
+
     # Leaving already-capitalized names alone
     def test_no_change_to_mixed_chase(self) -> None:
         hn = HumanName('Shirley Maclaine')
