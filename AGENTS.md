@@ -9,13 +9,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 pip install --group dev
 
 # Run all tests
-python tests.py
+pytest
 
-# Run a single test by class/method
-python -m unittest tests.HumanNamePythonTests.test_utf8
+# Run a single test file / class / method
+pytest tests/test_python_api.py
+pytest tests/test_python_api.py::HumanNamePythonTests::test_utf8
 
 # Debug how a specific name string is parsed (prints HumanName repr)
-python tests.py "Dr. Juan Q. Xavier de la Vega III"
+python -m nameparser "Dr. Juan Q. Xavier de la Vega III"
 
 # Build docs
 sphinx-build -b html docs dist/docs
@@ -65,6 +66,6 @@ Parse flow:
 
 Each named attribute (`title`, `first`, etc.) is a `@property` that joins its corresponding `_list`. Setters call `_set_list()` which runs the value through `parse_pieces()`, so assigning `hn.last = "de la Vega"` correctly re-parses prefix tokens.
 
-### Tests (`tests.py`)
+### Tests (`tests/`)
 
-All tests live in a single file. `HumanNameTestBase.m()` is a custom assert helper that prints the original name string on failure. Many test classes group cases by name format type. `TEST_NAMES` is a list of name strings that gets automatically permuted into comma-separated variants as a regression check. When adding a new parsing case, add it to the relevant test class and consider adding the base form to `TEST_NAMES`.
+Tests run under **pytest** and are split one file per concern (`tests/test_titles.py`, `tests/test_suffixes.py`, etc.). `tests/base.py` holds `HumanNameTestBase` — a plain (non-`unittest`) base whose `m()` helper is a custom assert that prints the original name string on failure (plus thin `assert*` shims so the moved test bodies are unchanged). `tests/conftest.py` defines an autouse fixture that runs **every test twice** — once with `empty_attribute_default = ''` and once with `None` — so reported counts are doubled (e.g. 11 methods → 22 results); it also snapshots/restores the scalar `CONSTANTS` config around each test to keep tests order-independent. `TEST_NAMES` (in `tests/test_variations.py`) is a list of name strings permuted into comma-separated variants as a regression check. Tests that should fail use `@pytest.mark.xfail`. When adding a parsing case, add it to the relevant `tests/test_*.py` file and consider adding the base form to `TEST_NAMES`.
