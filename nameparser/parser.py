@@ -273,17 +273,21 @@ class HumanName:
         middle_initials_list = [self.__process_initial__(name) for name in self.middle_list if name]
         last_initials_list = [self.__process_initial__(name) for name in self.last_list if name]
 
+        # Empty parts must render as '' (not empty_attribute_default, which may be
+        # None) so str.format does not interpolate the literal "None" into the
+        # output. A fully-empty result falls back to empty_attribute_default,
+        # matching the other attribute accessors (e.g. ``first``).
         initials_dict = {
             "first":  (self.initials_delimiter + " ").join(first_initials_list) + self.initials_delimiter
-            if len(first_initials_list) else self.C.empty_attribute_default,
+            if len(first_initials_list) else "",
             "middle": (self.initials_delimiter + " ").join(middle_initials_list) + self.initials_delimiter
-            if len(middle_initials_list) else self.C.empty_attribute_default,
+            if len(middle_initials_list) else "",
             "last": (self.initials_delimiter + " ").join(last_initials_list) + self.initials_delimiter
-            if len(last_initials_list) else self.C.empty_attribute_default
+            if len(last_initials_list) else ""
         }
 
         _s = self.initials_format.format(**initials_dict)
-        return self.collapse_whitespace(_s)
+        return self.collapse_whitespace(_s) or self.C.empty_attribute_default
 
     @property
     def has_own_config(self) -> bool:
