@@ -1,5 +1,3 @@
-import pytest
-
 from nameparser import HumanName
 
 from tests.base import HumanNameTestBase
@@ -11,11 +9,6 @@ class InitialsTestCase(HumanNameTestBase):
         self.m(hn.initials(), "A. B. P.", hn)
 
     def test_initials_simple_name(self) -> None:
-        from nameparser.config import CONSTANTS
-        if CONSTANTS.empty_attribute_default is None:
-            # initials() inserts None into the format string for missing parts;
-            # pre-existing bug that also fails in tests.py under None mode.
-            pytest.xfail("initials() renders None for empty parts when empty_attribute_default=None")
         hn = HumanName("John Doe")
         self.m(hn.initials(), "J. D.", hn)
         hn = HumanName("John Doe", initials_format="{first} {last}")

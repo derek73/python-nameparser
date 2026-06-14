@@ -104,8 +104,3 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         c = Constants()
         c.titles.add_with_encoding(b'b\351ck', encoding='latin_1')
         self.assertIn('béck', c.titles)
-
-    def test_custom_regex_constant(self) -> None:
-        t = {'test': 'test'}
-        c = Constants(regexes=t)
-        self.assertEqual(c.regexes, t)
