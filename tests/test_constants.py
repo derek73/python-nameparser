@@ -52,8 +52,8 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.assertEqual('hon' in hn2.C.titles, False)
         self.assertEqual(hn.has_own_config, False)
         self.assertEqual(hn2.has_own_config, False)
-        # clean up so we don't mess up other tests
-        hn.C.titles.add('hon')
+        # No manual cleanup needed: the autouse fixture in conftest.py snapshots
+        # and restores the global CONSTANTS collections around every test.
 
     def test_remove_multiple_arguments(self) -> None:
         hn = HumanName("Ms Hon Solo", constants=None)
