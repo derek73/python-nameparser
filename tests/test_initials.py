@@ -20,6 +20,23 @@ class InitialsTestCase(HumanNameTestBase):
         hn = HumanName("John Doe", initials_format="{middle}")
         self.m(hn.initials(), "", hn)
 
+    def test_initials_empty_part_with_none_default_not_literal_none(self) -> None:
+        # Regression: when empty_attribute_default is None, an empty name part
+        # used to be interpolated by str.format as the literal "None" (e.g.
+        # "John Doe" -> "J. None D."). Empty parts must render as ''.
+        hn = HumanName("John Doe", constants=None)
+        hn.C.empty_attribute_default = None
+        self.assertEqual(hn.initials(), "J. D.")
+        self.assertTrue("None" not in hn.initials())
+
+    def test_initials_all_empty_returns_empty_attribute_default(self) -> None:
+        # Regression: a fully-empty result must fall back to
+        # empty_attribute_default (here None), matching the first/last accessors,
+        # rather than rendering the literal "None None None".
+        hn = HumanName("", constants=None)
+        hn.C.empty_attribute_default = None
+        self.assertEqual(hn.initials(), None)
+
     def test_initials_complex_name(self) -> None:
         hn = HumanName("Doe, John A. Kenneth, Jr.")
         self.m(hn.initials(), "J. A. K. D.", hn)
