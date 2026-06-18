@@ -191,8 +191,9 @@ Three attributes exist for the format, `first`, `middle` and `last`.
   >>> CONSTANTS.initials_format = "{first} {middle}"
   >>> HumanName("Doe, John A. Kenneth, Jr.").initials()
   'J. A. K.'
-  >>> HumanName("Doe, John A. Kenneth, Jr.", initials_format="{last}, {first}).initials()
+  >>> HumanName("Doe, John A. Kenneth, Jr.", initials_format="{last}, {first}").initials()
   'D., J.'
+  >>> CONSTANTS.initials_format = "{first} {middle} {last}"
 
 
 Furthermore, the delimiter for the string output can be set through:
@@ -201,16 +202,15 @@ Furthermore, the delimiter for the string output can be set through:
 .. doctest:: initials delimiter
 
   >>> HumanName("Doe, John A. Kenneth, Jr.", initials_delimiter=";").initials()
-  "J; A; K;"
-  >>> from nameparser.config import CONSTANTS
-  >>> CONSTANTS.initials_delimiter = "."
-  >>> HumanName("Doe, John A. Kenneth, Jr.", initials_format="{first}{middle}{last}).initials()
-  "J.A.K.D."
+  'J; A; K; D;'
+  >>> HumanName("Doe, John A. Kenneth, Jr.", initials_format="{first}{middle}{last}", initials_delimiter=".").initials()
+  'J.A. K.D.'
 
 To get a list representation of the initials, use :py:meth:`~nameparser.HumanName.initials_list`.
 This function is unaffected by :py:attr:`~nameparser.config.Constants.initials_format`
 
 .. doctest:: list format
+
   >>> HumanName("Doe, John A. Kenneth, Jr.", initials_delimiter=";").initials_list()
-  ["J", "A", "K", "D"]
+  ['J', 'A', 'K', 'D']
     

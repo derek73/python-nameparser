@@ -40,7 +40,7 @@ jobs:
       run: mypy
     - name: Run Tests
       run: |
-        python tests.py
+        pytest
         python -m build --sdist
         twine check dist/*
         sphinx-build -b html docs dist/docs

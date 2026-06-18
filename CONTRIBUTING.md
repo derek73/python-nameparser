@@ -11,17 +11,23 @@ Install dev dependencies:
 Running Tests
 ---------------
 
-    python tests.py
+    pytest
 
-You can also pass a name string to `tests.py` to see how it will be parsed:
+Run a single test file or test:
 
-    $ python tests.py "Secretary of State Hillary Rodham-Clinton"
+    pytest tests/test_titles.py
+    pytest tests/test_titles.py::TitleTestCase
+
+You can also pass a name string to see how it will be parsed:
+
+    $ python -m nameparser "Secretary of State Hillary Rodham-Clinton"
     <HumanName : [
-    	Title: 'Secretary of State' 
-    	First: 'Hillary' 
-    	Middle: '' 
-    	Last: 'Rodham-Clinton' 
-    	Suffix: ''
+    	title: 'Secretary of State'
+    	first: 'Hillary'
+    	middle: ''
+    	last: 'Rodham-Clinton'
+    	suffix: ''
+    	nickname: ''
     ]>
 
 CI runs tests against Python 3.10–3.14 via GitHub Actions on every push and pull request.

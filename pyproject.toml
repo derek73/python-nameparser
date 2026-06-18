@@ -39,6 +39,7 @@ nameparser = ["py.typed"]
 
 [dependency-groups]
 dev = [
+  "pytest (>=8)",
   "dill (>=0.2.5)",
   "sphinx (>=8)",
   "mypy (>=2.1)",
@@ -53,6 +54,13 @@ module = [
   "dill.*",
 ]
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_classes = ["*Tests", "*TestCase"]
+# Fail if an xfail-marked test unexpectedly passes, so a fixed/regressed
+# expectation surfaces instead of silently turning into an xpass.
+xfail_strict = true
 
 [tool.ruff.lint]
 extend-select = [
