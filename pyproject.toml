@@ -58,6 +58,9 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_classes = ["*Tests", "*TestCase"]
+# Fail if an xfail-marked test unexpectedly passes, so a fixed/regressed
+# expectation surfaces instead of silently turning into an xpass.
+xfail_strict = true
 
 [tool.ruff.lint]
 extend-select = [

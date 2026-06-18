@@ -22,11 +22,12 @@ You can also pass a name string to see how it will be parsed:
 
     $ python -m nameparser "Secretary of State Hillary Rodham-Clinton"
     <HumanName : [
-    	Title: 'Secretary of State' 
-    	First: 'Hillary' 
-    	Middle: '' 
-    	Last: 'Rodham-Clinton' 
-    	Suffix: ''
+    	title: 'Secretary of State'
+    	first: 'Hillary'
+    	middle: ''
+    	last: 'Rodham-Clinton'
+    	suffix: ''
+    	nickname: ''
     ]>
 
 CI runs tests against Python 3.10–3.14 via GitHub Actions on every push and pull request.
