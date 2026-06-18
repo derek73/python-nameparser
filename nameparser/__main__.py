@@ -18,11 +18,13 @@ def main() -> None:
     log.setLevel(logging.ERROR)
     log.addHandler(logging.StreamHandler())
     name_string = sys.argv[1]
-    hn = HumanName(name_string, encoding=sys.stdout.encoding)
+    hn = HumanName(name_string)
     print(repr(hn))
     hn.capitalize()
     print(repr(hn))
-    print("Initials: " + hn.initials())
+    # Use comma rather than concatenation: initials() returns
+    # empty_attribute_default (possibly None) when there are no initials.
+    print("Initials:", hn.initials())
 
 
 if __name__ == '__main__':
