@@ -1,6 +1,6 @@
 Release Log
 ===========
-* Unreleased
+* 1.2.1 - June 19, 2026
     - Fix ``initials()`` interpolating the literal ``None`` for empty name parts when ``empty_attribute_default = None`` (e.g. ``"J. None D."``); empty parts now render as an empty string and a fully-empty result returns ``empty_attribute_default``
     - Add ``python -m nameparser "Name String"`` command-line helper that prints a parsed name
     - Reorganize the test suite from a single ``tests.py`` into a ``tests/`` pytest package
