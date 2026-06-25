@@ -197,7 +197,6 @@ class Constants:
     capitalization_exceptions: TupleManager[str]
     regexes: RegexTupleManager
 
-    _pst: Set[str] | None
 
     string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
     """
@@ -280,13 +279,10 @@ class Constants:
         self.conjunctions = SetManager(conjunctions)
         self.capitalization_exceptions = TupleManager(capitalization_exceptions)
         self.regexes = RegexTupleManager(regexes)
-        self._pst = None
 
     @property
     def suffixes_prefixes_titles(self) -> Set[str]:
-        if not self._pst:
-            self._pst = self.prefixes | self.suffix_acronyms | self.suffix_not_acronyms | self.titles
-        return self._pst
+        return self.prefixes | self.suffix_acronyms | self.suffix_not_acronyms | self.titles
 
     def __repr__(self) -> str:
         return "<Constants() instance>"

@@ -232,3 +232,35 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 
         # The real customization is recovered and the property key is ignored.
         self.assertIn('legacytitle', restored.titles)
+
+    def test_suffixes_prefixes_titles_reflects_add_title(self) -> None:
+        """suffixes_prefixes_titles must include titles added after construction."""
+        c = Constants()
+        c.titles.add('emerita')
+        self.assertIn('emerita', c.suffixes_prefixes_titles)
+
+    def test_suffixes_prefixes_titles_reflects_add_prefix(self) -> None:
+        """suffixes_prefixes_titles must include prefixes added after construction."""
+        c = Constants()
+        c.prefixes.add('xpfx')
+        self.assertIn('xpfx', c.suffixes_prefixes_titles)
+
+    def test_suffixes_prefixes_titles_reflects_remove_title(self) -> None:
+        """suffixes_prefixes_titles must not include a word that was only in titles and is then removed."""
+        c = Constants()
+        c.titles.add('emerita')
+        self.assertIn('emerita', c.suffixes_prefixes_titles)
+        c.titles.remove('emerita')
+        self.assertFalse('emerita' in c.suffixes_prefixes_titles)
+
+    def test_is_rootname_consistent_with_is_title(self) -> None:
+        """is_rootname must return False for words recognised by is_title."""
+        hn = HumanName("", constants=None)
+        hn.C.titles.add('emerita')
+        self.assertFalse(hn.is_rootname('emerita'))
+
+    def test_is_rootname_consistent_with_is_prefix(self) -> None:
+        """is_rootname must return False for words recognised by is_prefix."""
+        hn = HumanName("", constants=None)
+        hn.C.prefixes.add('xpfx')
+        self.assertFalse(hn.is_rootname('xpfx'))
