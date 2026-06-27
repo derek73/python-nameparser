@@ -299,7 +299,7 @@ class Constants:
 
     @property
     def suffixes_prefixes_titles(self) -> Set[str]:
-        if not self._pst:
+        if self._pst is None:
             self._pst = self.prefixes | self.suffix_acronyms | self.suffix_not_acronyms | self.titles
         return self._pst
 

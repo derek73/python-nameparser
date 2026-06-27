@@ -236,12 +236,14 @@ class ConstantsCustomizationTests(HumanNameTestBase):
     def test_suffixes_prefixes_titles_reflects_add_title(self) -> None:
         """suffixes_prefixes_titles must include titles added after construction."""
         c = Constants()
+        _ = c.suffixes_prefixes_titles  # prime the cache so invalidation is exercised
         c.titles.add('emerita')
         self.assertIn('emerita', c.suffixes_prefixes_titles)
 
     def test_suffixes_prefixes_titles_reflects_add_prefix(self) -> None:
         """suffixes_prefixes_titles must include prefixes added after construction."""
         c = Constants()
+        _ = c.suffixes_prefixes_titles  # prime the cache so invalidation is exercised
         c.prefixes.add('xpfx')
         self.assertIn('xpfx', c.suffixes_prefixes_titles)
 
@@ -264,12 +266,14 @@ class ConstantsCustomizationTests(HumanNameTestBase):
     def test_suffixes_prefixes_titles_reflects_add_suffix_acronym(self) -> None:
         """suffixes_prefixes_titles must include suffix acronyms added after construction."""
         c = Constants()
+        _ = c.suffixes_prefixes_titles  # prime the cache so invalidation is exercised
         c.suffix_acronyms.add('xsfx')
         self.assertIn('xsfx', c.suffixes_prefixes_titles)
 
     def test_suffixes_prefixes_titles_reflects_add_suffix_not_acronym(self) -> None:
         """suffixes_prefixes_titles must include non-acronym suffixes added after construction."""
         c = Constants()
+        _ = c.suffixes_prefixes_titles  # prime the cache so invalidation is exercised
         c.suffix_not_acronyms.add('xsfx')
         self.assertIn('xsfx', c.suffixes_prefixes_titles)
 
@@ -283,11 +287,13 @@ class ConstantsCustomizationTests(HumanNameTestBase):
     def test_is_rootname_consistent_with_is_title(self) -> None:
         """is_rootname must return False for words recognised by is_title."""
         hn = HumanName("", constants=None)
+        _ = hn.C.suffixes_prefixes_titles  # prime the cache so a stale entry would be observable
         hn.C.titles.add('emerita')
         self.assertFalse(hn.is_rootname('emerita'))
 
     def test_is_rootname_consistent_with_is_prefix(self) -> None:
         """is_rootname must return False for words recognised by is_prefix."""
         hn = HumanName("", constants=None)
+        _ = hn.C.suffixes_prefixes_titles  # prime the cache so a stale entry would be observable
         hn.C.prefixes.add('xpfx')
         self.assertFalse(hn.is_rootname('xpfx'))
