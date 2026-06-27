@@ -138,7 +138,11 @@ class TupleManager(dict[str, T]):
         self.update(state)
 
     def __reduce__(self) -> tuple[type, tuple[()], Mapping[str, T]]:
-        return (TupleManager, (), self.__getstate__())
+        # Use type(self), not TupleManager, so subclasses such as
+        # RegexTupleManager survive a pickle round-trip instead of being
+        # downgraded to a plain TupleManager (which loses the EMPTY_REGEX
+        # default for unknown keys).
+        return (type(self), (), self.__getstate__())
 
 
 class RegexTupleManager(TupleManager[re.Pattern[str]]):

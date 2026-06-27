@@ -1,7 +1,8 @@
 import pickle
 
 from nameparser import HumanName
-from nameparser.config import Constants, SetManager
+from nameparser.config import Constants, RegexTupleManager, SetManager
+from nameparser.config.regexes import EMPTY_REGEX
 
 from tests.base import HumanNameTestBase
 
@@ -141,6 +142,22 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         restored = pickle.loads(pickle.dumps(c))
 
         self.assertEqual(restored.empty_attribute_default, None)
+
+    def test_pickle_roundtrip_preserves_regex_manager_subclass(self) -> None:
+        """regexes must round-trip as a RegexTupleManager, not a plain TupleManager.
+
+        TupleManager.__reduce__ previously hardcoded TupleManager, so the
+        RegexTupleManager subclass was downgraded on unpickling. The difference
+        is observable: RegexTupleManager returns the EMPTY_REGEX default for an
+        unknown key, while a plain TupleManager returns None.
+        """
+        c = Constants()
+
+        # Safe: round-tripping a Constants the test just built, not untrusted data.
+        restored = pickle.loads(pickle.dumps(c))
+
+        self.assertEqual(type(restored.regexes), RegexTupleManager)
+        self.assertEqual(restored.regexes.does_not_exist, EMPTY_REGEX)
 
     def test_unpickle_legacy_state_with_property_key(self) -> None:
         """Pickles written by older versions must still load.
