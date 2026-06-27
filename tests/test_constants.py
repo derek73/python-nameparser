@@ -251,7 +251,34 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         c.titles.add('emerita')
         self.assertIn('emerita', c.suffixes_prefixes_titles)
         c.titles.remove('emerita')
-        self.assertFalse('emerita' in c.suffixes_prefixes_titles)
+        self.assertNotIn('emerita', c.suffixes_prefixes_titles)
+
+    def test_suffixes_prefixes_titles_reflects_remove_prefix(self) -> None:
+        """suffixes_prefixes_titles must not include a word that was only in prefixes and is then removed."""
+        c = Constants()
+        c.prefixes.add('xpfx')
+        self.assertIn('xpfx', c.suffixes_prefixes_titles)
+        c.prefixes.remove('xpfx')
+        self.assertNotIn('xpfx', c.suffixes_prefixes_titles)
+
+    def test_suffixes_prefixes_titles_reflects_add_suffix_acronym(self) -> None:
+        """suffixes_prefixes_titles must include suffix acronyms added after construction."""
+        c = Constants()
+        c.suffix_acronyms.add('xsfx')
+        self.assertIn('xsfx', c.suffixes_prefixes_titles)
+
+    def test_suffixes_prefixes_titles_reflects_add_suffix_not_acronym(self) -> None:
+        """suffixes_prefixes_titles must include non-acronym suffixes added after construction."""
+        c = Constants()
+        c.suffix_not_acronyms.add('xsfx')
+        self.assertIn('xsfx', c.suffixes_prefixes_titles)
+
+    def test_suffixes_prefixes_titles_reflects_add_after_initial_read(self) -> None:
+        """suffixes_prefixes_titles must reflect mutations even after the cache has been primed."""
+        c = Constants()
+        _ = c.suffixes_prefixes_titles  # prime the cache
+        c.titles.add('emerita')
+        self.assertIn('emerita', c.suffixes_prefixes_titles)
 
     def test_is_rootname_consistent_with_is_title(self) -> None:
         """is_rootname must return False for words recognised by is_title."""
