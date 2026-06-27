@@ -274,11 +274,22 @@ class Constants:
         return "<Constants() instance>"
 
     def __setstate__(self, state: Mapping[str, Any]) -> None:
-        Constants.__init__(self, state)
+        # Restore each saved attribute directly. The previous implementation
+        # passed the whole state dict to __init__ as the ``prefixes`` argument,
+        # which silently reverted every collection to its module default on
+        # unpickling.
+        self._pst = None
+        for name, value in state.items():
+            setattr(self, name, value)
 
     def __getstate__(self) -> Mapping[str, Any]:
-        attrs = [x for x in dir(self) if not x.startswith('_')]
-        return dict([(a, getattr(self, a)) for a in attrs])
+        # Pickle only the instance's own configuration: the collections built in
+        # __init__ plus any instance-level scalar overrides. Class-level scalar
+        # defaults are restored by the class itself, and underscore-prefixed
+        # names such as the ``_pst`` cache are private and rebuilt on demand.
+        # The computed ``suffixes_prefixes_titles`` property must not be
+        # serialized — it has no setter and would break __setstate__.
+        return {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
 
 
 #: A module-level instance of the :py:class:`Constants()` class.

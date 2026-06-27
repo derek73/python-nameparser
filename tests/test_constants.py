@@ -1,3 +1,5 @@
+import pickle
+
 from nameparser import HumanName
 from nameparser.config import Constants
 
@@ -104,3 +106,35 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         c = Constants()
         c.titles.add_with_encoding(b'b\351ck', encoding='latin_1')
         self.assertIn('béck', c.titles)
+
+    def test_pickle_roundtrip_preserves_customizations(self) -> None:
+        """A pickled Constants must restore its customized collections.
+
+        Regression test: __setstate__ previously passed the whole state dict
+        to __init__ as the `prefixes` argument, so every collection silently
+        reverted to its module default on unpickling.
+        """
+        c = Constants()
+        c.titles.add('customtitle')
+        c.prefixes.add('customprefix')
+        c.titles.remove('hon')
+
+        # Safe: round-tripping a Constants the test just built, not untrusted data.
+        restored = pickle.loads(pickle.dumps(c))
+
+        self.assertIn('customtitle', restored.titles)
+        self.assertIn('customprefix', restored.prefixes)
+        self.assertNotIn('hon', restored.titles)
+        # The contributing collections must match the original exactly.
+        self.assertEqual(set(restored.titles), set(c.titles))
+        self.assertEqual(set(restored.prefixes), set(c.prefixes))
+
+    def test_pickle_roundtrip_preserves_instance_scalar_override(self) -> None:
+        """An instance-level scalar override must survive a pickle round-trip."""
+        c = Constants()
+        c.empty_attribute_default = None
+
+        # Safe: round-tripping a Constants the test just built, not untrusted data.
+        restored = pickle.loads(pickle.dumps(c))
+
+        self.assertEqual(restored.empty_attribute_default, None)
