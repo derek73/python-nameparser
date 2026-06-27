@@ -1,3 +1,4 @@
+import copy
 import pickle
 
 from nameparser import HumanName
@@ -158,6 +159,36 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 
         self.assertEqual(type(restored.regexes), RegexTupleManager)
         self.assertEqual(restored.regexes.does_not_exist, EMPTY_REGEX)
+
+    def test_regexes_deepcopy_roundtrip(self) -> None:
+        """copy.deepcopy of a RegexTupleManager must round-trip.
+
+        __getattr__ answered every unknown name with the EMPTY_REGEX default,
+        including the __deepcopy__ probe copy.deepcopy issues. copy then
+        mistook that re.Pattern for a deep-copy hook and tried to call it.
+        """
+        c = Constants()
+
+        dup = copy.deepcopy(c.regexes)
+
+        self.assertEqual(type(dup), RegexTupleManager)
+        self.assertEqual(dict(dup), dict(c.regexes))
+        # The EMPTY_REGEX default still applies to genuinely unknown keys.
+        self.assertEqual(dup.does_not_exist, EMPTY_REGEX)
+
+    def test_regextuplemanager_ignores_dunder_lookups(self) -> None:
+        """Unknown dunder names report as absent, not as the EMPTY_REGEX default.
+
+        Dunder names are Python's protocol probes (copy.deepcopy looks up
+        __deepcopy__, inspect.unwrap looks up __wrapped__, ...), never config
+        keys. Answering them with a regex breaks that machinery.
+        """
+        c = Constants()
+        sentinel = object()
+
+        self.assertEqual(getattr(c.regexes, '__deepcopy__', sentinel), sentinel)
+        # A normal (non-dunder) unknown key still yields the EMPTY_REGEX default.
+        self.assertEqual(c.regexes.unknown_key, EMPTY_REGEX)
 
     def test_unpickle_legacy_state_with_property_key(self) -> None:
         """Pickles written by older versions must still load.

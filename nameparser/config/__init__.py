@@ -147,6 +147,13 @@ class TupleManager(dict[str, T]):
 
 class RegexTupleManager(TupleManager[re.Pattern[str]]):
     def __getattr__(self, attr: str) -> re.Pattern[str]:
+        # Dunder names are Python's protocol probes (copy.deepcopy looks up
+        # __deepcopy__, inspect.unwrap looks up __wrapped__, ...), never regex
+        # keys. Report them as genuinely absent; otherwise the EMPTY_REGEX
+        # default is mistaken for a real protocol hook — e.g. copy.deepcopy
+        # tries to call the returned re.Pattern and raises TypeError.
+        if attr.startswith("__") and attr.endswith("__"):
+            raise AttributeError(attr)
         return self.get(attr, EMPTY_REGEX)
 
 

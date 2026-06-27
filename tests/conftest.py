@@ -1,10 +1,9 @@
+import copy
 from collections.abc import Iterator
 
 import pytest
 
-from nameparser.config import CONSTANTS, SetManager, TupleManager
-
-ConfigCollection = SetManager | TupleManager
+from nameparser.config import CONSTANTS
 
 # Scalar (non-collection) config attributes that individual tests mutate on the
 # global CONSTANTS singleton. Several tests change these without restoring them;
@@ -38,20 +37,6 @@ _COLLECTION_CONFIG_ATTRS = (
 )
 
 
-def _clone_config_collection(value: ConfigCollection) -> ConfigCollection:
-    """Return an independent copy of a config collection manager.
-
-    ``copy.deepcopy`` is not used because ``RegexTupleManager`` carries compiled
-    patterns that its ``__reduce__`` cannot round-trip. Rebuilding from the
-    manager's own contents copies the container while sharing the (immutable)
-    elements, which is all the snapshot needs.
-    """
-    if isinstance(value, SetManager):
-        return SetManager(set(value))
-    # TupleManager / RegexTupleManager are dict subclasses.
-    return type(value)(dict(value))
-
-
 @pytest.fixture(autouse=True, params=['', None], ids=['default', 'none'])
 def empty_attribute_default(request: pytest.FixtureRequest) -> Iterator[str | None]:
     """Run every test under both empty_attribute_default settings, isolating global config.
@@ -66,7 +51,7 @@ def empty_attribute_default(request: pytest.FixtureRequest) -> Iterator[str | No
     """
     scalar_snapshot = {attr: getattr(CONSTANTS, attr) for attr in _SCALAR_CONFIG_ATTRS}
     collection_snapshot = {
-        attr: _clone_config_collection(getattr(CONSTANTS, attr))
+        attr: copy.deepcopy(getattr(CONSTANTS, attr))
         for attr in _COLLECTION_CONFIG_ATTRS
     }
     CONSTANTS.empty_attribute_default = request.param
