@@ -29,7 +29,7 @@ unexpected results. See `Customizing the Parser <customize.html>`_.
 """
 import re
 import sys
-from collections.abc import Iterable, Iterator, Mapping, Set
+from collections.abc import Callable, Iterable, Iterator, Mapping, Set
 from typing import Any, TypeVar
 
 if sys.version_info >= (3, 11):
@@ -62,8 +62,9 @@ class SetManager(Set):
 
     '''
 
-    def __init__(self, elements: Iterable[str]) -> None:
+    def __init__(self, elements: Iterable[str], on_change: Callable[[], None] | None = None) -> None:
         self.elements = set(elements)
+        self._on_change = on_change
 
     def __call__(self) -> Set[str]:
         return self.elements
@@ -93,6 +94,8 @@ class SetManager(Set):
         if isinstance(s, bytes):
             s = s.decode(encoding)
         self.elements.add(lc(s))
+        if self._on_change:
+            self._on_change()
 
     def add(self, *strings: str) -> Self:
         """
@@ -112,7 +115,8 @@ class SetManager(Set):
         for s in strings:
             if (lower := lc(s)) in self.elements:
                 self.elements.remove(lower)
-
+        if self._on_change:
+            self._on_change()
         return self
 
 
@@ -164,6 +168,9 @@ class RegexTupleManager(TupleManager[re.Pattern[str]]):
         return self.get(attr, EMPTY_REGEX)
 
 
+_PST_ATTRS = frozenset(('prefixes', 'suffix_acronyms', 'suffix_not_acronyms', 'titles'))
+
+
 class Constants:
     """
     An instance of this class hold all of the configuration constants for the parser.
@@ -196,7 +203,7 @@ class Constants:
     conjunctions: SetManager
     capitalization_exceptions: TupleManager[str]
     regexes: RegexTupleManager
-
+    _pst: Set[str] | None
 
     string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
     """
@@ -280,9 +287,21 @@ class Constants:
         self.capitalization_exceptions = TupleManager(capitalization_exceptions)
         self.regexes = RegexTupleManager(regexes)
 
+    def __setattr__(self, name: str, value: object) -> None:
+        if name in _PST_ATTRS:
+            object.__setattr__(self, '_pst', None)
+            if isinstance(value, SetManager):
+                value._on_change = self._invalidate_pst
+        object.__setattr__(self, name, value)
+
+    def _invalidate_pst(self) -> None:
+        self._pst = None
+
     @property
     def suffixes_prefixes_titles(self) -> Set[str]:
-        return self.prefixes | self.suffix_acronyms | self.suffix_not_acronyms | self.titles
+        if not self._pst:
+            self._pst = self.prefixes | self.suffix_acronyms | self.suffix_not_acronyms | self.titles
+        return self._pst
 
     def __repr__(self) -> str:
         return "<Constants() instance>"

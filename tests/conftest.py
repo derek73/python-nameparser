@@ -60,6 +60,3 @@ def empty_attribute_default(request: pytest.FixtureRequest) -> Iterator[str | No
         setattr(CONSTANTS, attr, value)
     for attr, value in collection_snapshot.items():
         setattr(CONSTANTS, attr, value)
-    # Invalidate the lazily-built suffixes/prefixes/titles cache so it is
-    # recomputed from the restored collections rather than a mutated one.
-    CONSTANTS._pst = None
