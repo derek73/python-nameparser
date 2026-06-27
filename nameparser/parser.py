@@ -989,7 +989,7 @@ class HumanName:
         self.middle_list = self.cap_piece(self.middle, 'middle').split()
         self.last_list = self.cap_piece(self.last, 'last').split()
         # suffix is stored comma-separated ("Ph.D., J.D."), not space-separated
-        self.suffix_list = self.cap_piece(self.suffix, 'suffix').split(', ')
+        self.suffix_list = [s for s in self.cap_piece(self.suffix, 'suffix').split(', ') if s]
 
     def handle_capitalization(self) -> None:
         """

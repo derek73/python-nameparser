@@ -76,6 +76,23 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         self.assertEqual(hn.middle_list, [])
         self.m(str(hn), 'Dr Doe', hn)
 
+    def test_capitalize_empty_suffix_produces_no_spurious_tokens(self) -> None:
+        # ''.split(', ') returns [''] just like ''.split(' ') did for the other
+        # attributes — an absent suffix should produce suffix_list == [], not [''].
+        hn = HumanName('JOHN DOE')
+        hn.capitalize()
+        self.assertEqual(hn.suffix_list, [])
+
+    def test_capitalize_single_suffix_still_works(self) -> None:
+        hn = HumanName('JOHN DOE PHD')
+        hn.capitalize()
+        self.assertEqual(hn.suffix_list, ['Ph.D.'])
+
+    def test_capitalize_multiple_suffixes_still_split_correctly(self) -> None:
+        hn = HumanName('JOHN DOE PHD MD')
+        hn.capitalize()
+        self.assertEqual(hn.suffix_list, ['Ph.D.', 'M.D.'])
+
     # Leaving already-capitalized names alone
     def test_no_change_to_mixed_chase(self) -> None:
         hn = HumanName('Shirley Maclaine')
