@@ -40,27 +40,41 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.m(str(hn), 'Scott E. Werner', hn)
 
-    def test_capitalize_empty_name_part_has_no_leading_space_in_surnames(self) -> None:
-        # capitalize() split each attribute with str.split(' '), which returns
-        # [''] (rather than []) for an empty string. That spurious element
-        # leaked into surnames_list (middle_list + last_list) and produced a
-        # leading space in the surnames property, e.g. ' Doe' instead of 'Doe'.
+    def test_capitalize_empty_middle_produces_no_leading_space_in_surnames(self) -> None:
+        # str.split(' ') on an empty string returns [''] rather than [], so an
+        # absent middle produced a spurious token that leaked into surnames_list
+        # and caused a leading space in the surnames property (' Doe' not 'Doe').
         hn = HumanName('john doe')
         hn.capitalize()
         self.m(hn.surnames, 'Doe', hn)
         self.assertEqual(hn.middle_list, [])
         self.assertEqual(hn.surnames_list, ['Doe'])
 
-        # force=True on a mixed-case name hits the same code path
+    def test_capitalize_force_empty_middle_produces_no_leading_space_in_surnames(self) -> None:
+        # Without force=True, capitalize() exits early for mixed-case names and
+        # never reaches the split lines. Confirm the fix covers that path too.
         hn = HumanName('Jane Doe')
         hn.capitalize(force=True)
         self.m(hn.surnames, 'Doe', hn)
         self.assertEqual(hn.middle_list, [])
 
-        # other empty attribute lists are also free of the spurious '' element
+    def test_capitalize_empty_attributes_produce_no_spurious_tokens(self) -> None:
+        # Confirm the fix extends beyond surnames: empty attribute lists are []
+        # not [''], and non-empty ones contain only real tokens.
+        hn = HumanName('Jane Doe')
+        hn.capitalize(force=True)
         self.assertEqual(hn.title_list, [])
         self.assertEqual(hn.first_list, ['Jane'])
         self.assertEqual(hn.last_list, ['Doe'])
+
+    def test_capitalize_title_and_last_only_no_spurious_tokens(self) -> None:
+        # title+last with no first or middle leaves first_list and middle_list
+        # both empty. All-caps triggers capitalize() without force=True.
+        hn = HumanName('DR DOE')
+        hn.capitalize()
+        self.assertEqual(hn.first_list, [])
+        self.assertEqual(hn.middle_list, [])
+        self.m(str(hn), 'Dr Doe', hn)
 
     # Leaving already-capitalized names alone
     def test_no_change_to_mixed_chase(self) -> None:
