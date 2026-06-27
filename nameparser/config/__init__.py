@@ -280,6 +280,16 @@ class Constants:
         # unpickling.
         self._pst = None
         for name, value in state.items():
+            # Migration shim: pickles written before this fix used a dir() sweep
+            # for __getstate__, so their state carries the read-only
+            # ``suffixes_prefixes_titles`` property. Skip any such computed
+            # property rather than raising AttributeError on its missing setter;
+            # the real config is restored from the other keys. We don't promise
+            # to read pre-fix blobs forever — this only smooths migration for
+            # anyone persisting them, and can be dropped a release or two after
+            # 1.2.1 once they've re-pickled.
+            if isinstance(getattr(type(self), name, None), property):
+                continue
             setattr(self, name, value)
 
     def __getstate__(self) -> Mapping[str, Any]:
@@ -287,8 +297,9 @@ class Constants:
         # __init__ plus any instance-level scalar overrides. Class-level scalar
         # defaults are restored by the class itself, and underscore-prefixed
         # names such as the ``_pst`` cache are private and rebuilt on demand.
-        # The computed ``suffixes_prefixes_titles`` property must not be
-        # serialized — it has no setter and would break __setstate__.
+        # Filtering on ``self.__dict__`` also excludes the computed
+        # ``suffixes_prefixes_titles`` property automatically, since properties
+        # live on the class and never appear in an instance's ``__dict__``.
         return {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
 
 
