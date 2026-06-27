@@ -41,3 +41,6 @@ class HumanNameTestBase(Generic[T]):
 
     def assertNotIn(self, member: object, container: object, msg: object = None) -> None:
         assert member not in container, msg  # type: ignore[operator]
+
+    def assertIs(self, first: object, second: object, msg: object = None) -> None:
+        assert first is second, msg

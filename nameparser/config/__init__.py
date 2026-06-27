@@ -30,7 +30,7 @@ unexpected results. See `Customizing the Parser <customize.html>`_.
 import re
 import sys
 from collections.abc import Callable, Iterable, Iterator, Mapping, Set
-from typing import Any, TypeVar
+from typing import Any, TypeVar, overload
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -62,9 +62,14 @@ class SetManager(Set):
 
     '''
 
-    def __init__(self, elements: Iterable[str], on_change: Callable[[], None] | None = None) -> None:
+    _on_change: Callable[[], None] | None
+
+    def __init__(self, elements: Iterable[str]) -> None:
         self.elements = set(elements)
-        self._on_change = on_change
+        # Optional invalidation hook, wired by an owning Constants so that
+        # in-place add()/remove() can clear its cached suffixes_prefixes_titles
+        # union. None when the manager is used standalone.
+        self._on_change = None
 
     def __call__(self) -> Set[str]:
         return self.elements
@@ -168,7 +173,40 @@ class RegexTupleManager(TupleManager[re.Pattern[str]]):
         return self.get(attr, EMPTY_REGEX)
 
 
-_PST_ATTRS = frozenset(('prefixes', 'suffix_acronyms', 'suffix_not_acronyms', 'titles'))
+class _CachedUnionMember:
+    """Descriptor for the four ``SetManager`` attributes whose union ``Constants``
+    caches in ``_pst`` (``prefixes``, ``suffix_acronyms``, ``suffix_not_acronyms``,
+    ``titles``).
+
+    Assigning a new manager — or mutating one in place via ``add()`` / ``remove()``
+    — invalidates that cache. Keeping the behavior on a descriptor scopes it to
+    exactly these attributes, beside their declarations, rather than spreading it
+    across a catch-all ``__setattr__`` and a separate attribute-name list.
+    """
+
+    _attr: str
+
+    def __set_name__(self, owner: type, name: str) -> None:
+        self._attr = '_' + name
+
+    @overload
+    def __get__(self, obj: None, objtype: type | None = None) -> '_CachedUnionMember': ...
+    @overload
+    def __get__(self, obj: 'Constants', objtype: type | None = None) -> SetManager: ...
+
+    def __get__(self, obj: 'Constants | None', objtype: type | None = None) -> 'SetManager | _CachedUnionMember':
+        if obj is None:
+            return self
+        return getattr(obj, self._attr)
+
+    def __set__(self, obj: 'Constants', value: SetManager) -> None:
+        previous = getattr(obj, self._attr, None)
+        if isinstance(previous, SetManager):
+            previous._on_change = None  # detach the replaced manager so it no longer invalidates
+        if isinstance(value, SetManager):
+            value._on_change = obj._invalidate_pst
+        obj._invalidate_pst()
+        setattr(obj, self._attr, value)
 
 
 class Constants:
@@ -195,10 +233,10 @@ class Constants:
         :py:attr:`regexes`  wrapped with :py:class:`TupleManager`.
     """
 
-    prefixes: SetManager
-    suffix_acronyms: SetManager
-    suffix_not_acronyms: SetManager
-    titles: SetManager
+    prefixes = _CachedUnionMember()
+    suffix_acronyms = _CachedUnionMember()
+    suffix_not_acronyms = _CachedUnionMember()
+    titles = _CachedUnionMember()
     first_name_titles: SetManager
     conjunctions: SetManager
     capitalization_exceptions: TupleManager[str]
@@ -286,13 +324,6 @@ class Constants:
         self.conjunctions = SetManager(conjunctions)
         self.capitalization_exceptions = TupleManager(capitalization_exceptions)
         self.regexes = RegexTupleManager(regexes)
-
-    def __setattr__(self, name: str, value: object) -> None:
-        if name in _PST_ATTRS:
-            object.__setattr__(self, '_pst', None)
-            if isinstance(value, SetManager):
-                value._on_change = self._invalidate_pst
-        object.__setattr__(self, name, value)
 
     def _invalidate_pst(self) -> None:
         self._pst = None
