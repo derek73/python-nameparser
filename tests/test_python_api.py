@@ -1,3 +1,4 @@
+import copy
 import pickle
 import re
 
@@ -65,6 +66,31 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.assertIn('chancellor', restored.C.titles)
         restored.full_name = "Chancellor Jane Smith"
         self.assertEqual(restored.title, "Chancellor")
+
+    def test_name_instance_deepcopy(self) -> None:
+        """copy.deepcopy of a HumanName must round-trip.
+
+        HumanName has no custom copy hooks, so deepcopy recurses into its
+        Constants (`.C`), and previously into `.C.regexes`, whose __getattr__
+        answered copy's __deepcopy__ probe with a re.Pattern — making
+        deepcopy of *any* HumanName raise TypeError.
+        """
+        hn = HumanName("Dr. John P. Doe-Ray, CLU")
+
+        dup = copy.deepcopy(hn)
+
+        self.assertEqual(str(dup), str(hn))
+
+    def test_name_instance_deepcopy_isolates_instance_config(self) -> None:
+        """A deep-copied HumanName with its own config must be independent."""
+        hn = HumanName("Smith, Dr. John", None)
+        hn.C.titles.add('chancellor')
+
+        dup = copy.deepcopy(hn)
+        dup.C.titles.add('marker')
+
+        self.assertIn('chancellor', dup.C.titles)
+        self.assertNotIn('marker', hn.C.titles)
 
     def test_comparison(self) -> None:
         hn1 = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")

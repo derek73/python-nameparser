@@ -2,7 +2,7 @@ import copy
 import pickle
 
 from nameparser import HumanName
-from nameparser.config import Constants, RegexTupleManager, SetManager
+from nameparser.config import Constants, RegexTupleManager, SetManager, TupleManager
 from nameparser.config.regexes import EMPTY_REGEX
 
 from tests.base import HumanNameTestBase
@@ -189,6 +189,23 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.assertEqual(getattr(c.regexes, '__deepcopy__', sentinel), sentinel)
         # A normal (non-dunder) unknown key still yields the EMPTY_REGEX default.
         self.assertEqual(c.regexes.unknown_key, EMPTY_REGEX)
+
+    def test_tuplemanager_ignores_dunder_lookups(self) -> None:
+        """Base TupleManager must report unknown dunder names as absent too.
+
+        It returned None for any missing attribute, so `hasattr(tm, '__x__')`
+        was always True — a landmine for any probe that does hasattr-then-call.
+        Guarding dunders keeps the base consistent with RegexTupleManager.
+        """
+        c = Constants()
+        tm = c.capitalization_exceptions  # a plain TupleManager
+        sentinel = object()
+
+        self.assertEqual(type(tm), TupleManager)
+        self.assertFalse(hasattr(tm, '__deepcopy__'))
+        self.assertEqual(getattr(tm, '__wrapped__', sentinel), sentinel)
+        # A normal (non-dunder) unknown key still returns the None default.
+        self.assertEqual(tm.unknown_key, None)
 
     def test_unpickle_legacy_state_with_property_key(self) -> None:
         """Pickles written by older versions must still load.

@@ -126,6 +126,13 @@ class TupleManager(dict[str, T]):
     '''
 
     def __getattr__(self, attr: str) -> T | None:
+        # Dunder names are Python's protocol probes (copy looks up __deepcopy__,
+        # inspect.unwrap looks up __wrapped__, ...), never config keys. Report
+        # them as genuinely absent so hasattr() is honest and those probes work;
+        # otherwise the dict default is mistaken for a real protocol hook. See
+        # RegexTupleManager.__getattr__ for the concrete failure this prevents.
+        if attr.startswith("__") and attr.endswith("__"):
+            raise AttributeError(attr)
         return self.get(attr)
 
     __setattr__ = dict.__setitem__
