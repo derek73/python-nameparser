@@ -357,14 +357,23 @@ class Constants:
             setattr(self, name, value)
 
     def __getstate__(self) -> Mapping[str, Any]:
-        # Pickle only the instance's own configuration: the collections built in
-        # __init__ plus any instance-level scalar overrides. Class-level scalar
-        # defaults are restored by the class itself, and underscore-prefixed
-        # names such as the ``_pst`` cache are private and rebuilt on demand.
-        # Filtering on ``self.__dict__`` also excludes the computed
-        # ``suffixes_prefixes_titles`` property automatically, since properties
-        # live on the class and never appear in an instance's ``__dict__``.
-        return {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
+        # Pickle the instance's own configuration: the collections built in
+        # __init__ plus any instance-level scalar overrides.
+        # _CachedUnionMember descriptors store their values with a leading
+        # underscore (e.g. `_prefixes` for `prefixes`) so that the descriptor's
+        # __set__ owns assignment. We map those back to the public names so
+        # __setstate__ can restore them through the descriptor, re-wiring the
+        # invalidation callbacks. All other underscore-prefixed names (_pst, etc.)
+        # are private/cache and are intentionally excluded.
+        state: dict[str, Any] = {}
+        for name, val in self.__dict__.items():
+            if name.startswith('_'):
+                public = name[1:]
+                if isinstance(getattr(type(self), public, None), _CachedUnionMember):
+                    state[public] = val
+            else:
+                state[name] = val
+        return state
 
 
 #: A module-level instance of the :py:class:`Constants()` class.
