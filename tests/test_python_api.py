@@ -10,7 +10,7 @@ except ImportError:
     dill = False  # type: ignore[assignment]
 
 from nameparser import HumanName
-from nameparser.config import Constants, TupleManager
+from nameparser.config import CONSTANTS, Constants, TupleManager
 
 from tests.base import HumanNameTestBase
 
@@ -96,7 +96,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         hn1 = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         hn2 = HumanName("Dr. John P. Doe-Ray, CLU, CFP, LUTC")
         self.assertTrue(hn1 == hn2)
-        self.assertTrue(hn1 is not hn2)
+        self.assertIsNot(hn1, hn2)
         self.assertTrue(hn1 == "Dr. John P. Doe-Ray CLU, CFP, LUTC")
         hn1 = HumanName("Doe, Dr. John P., CLU, CFP, LUTC")
         hn2 = HumanName("Dr. John P. Doe-Ray, CLU, CFP, LUTC")
@@ -156,7 +156,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         hn1 = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         hn2 = HumanName("dr. john p. doe-Ray, CLU, CFP, LUTC")
         self.assertTrue(hn1 == hn2)
-        self.assertTrue(hn1 is not hn2)
+        self.assertIsNot(hn1, hn2)
         self.assertTrue(hn1 == "Dr. John P. Doe-ray clu, CFP, LUTC")
 
     def test_slice(self) -> None:
@@ -222,7 +222,7 @@ class HumanNamePythonTests(HumanNameTestBase):
     def test_override_constants(self) -> None:
         C = Constants()
         hn = HumanName(constants=C)
-        self.assertTrue(hn.C is C)
+        self.assertIs(hn.C, C)
 
     def test_override_regex(self) -> None:
         var = TupleManager([("spaces", re.compile(r"\s+", re.U)),])
