@@ -108,6 +108,33 @@ class HumanNamePythonTests(HumanNameTestBase):
 
         self.assertIs(restored.C, CONSTANTS)
         self.assertFalse(restored.has_own_config)
+        self.assertEqual(str(restored), str(hn))
+        self.assertEqual(restored.first, hn.first)
+        self.assertEqual(restored.last, hn.last)
+
+    def test_pickle_instance_config_name_preserves_own_config(self) -> None:
+        """A HumanName with its own Constants must not be collapsed onto CONSTANTS after pickle."""
+        hn = HumanName("Smith, Dr. John", None)
+        hn.C.titles.add('chancellor')
+        hn.parse_full_name()
+        self.assertTrue(hn.has_own_config)
+        self.assertIsNot(hn.C, CONSTANTS)
+
+        # Safe: round-tripping a HumanName the test just built, not untrusted data.
+        restored = pickle.loads(pickle.dumps(hn))
+
+        self.assertTrue(restored.has_own_config)
+        self.assertIsNot(restored.C, CONSTANTS)
+        self.assertIn('chancellor', restored.C.titles)
+
+    def test_shallow_copy_default_name_preserves_singleton_identity(self) -> None:
+        """copy.copy of a default HumanName shares the CONSTANTS reference without hooks."""
+        hn = HumanName("John Doe")
+
+        sc = copy.copy(hn)
+
+        self.assertIs(sc.C, CONSTANTS)
+        self.assertFalse(sc.has_own_config)
 
     def test_deepcopy_default_name_preserves_singleton_identity(self) -> None:
         """copy.deepcopy of a default HumanName must re-attach to CONSTANTS."""
@@ -117,6 +144,9 @@ class HumanNamePythonTests(HumanNameTestBase):
 
         self.assertIs(dup.C, CONSTANTS)
         self.assertFalse(dup.has_own_config)
+        self.assertEqual(str(dup), str(hn))
+        self.assertEqual(dup.first, hn.first)
+        self.assertEqual(dup.last, hn.last)
 
     def test_comparison(self) -> None:
         hn1 = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
