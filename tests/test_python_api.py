@@ -1,3 +1,5 @@
+import copy
+import pickle
 import re
 
 import pytest
@@ -44,6 +46,51 @@ class HumanNamePythonTests(HumanNameTestBase):
     def test_name_instance_pickle(self) -> None:
         hn = HumanName("Title First Middle Middle Last, Jr.")
         self.assertTrue(dill.pickles(hn))
+
+    def test_name_instance_pickle_preserves_instance_config(self) -> None:
+        """A HumanName carrying its own config must parse identically after a
+        pickle round-trip.
+
+        HumanName pickles its instance Constants (``.C``) through the default
+        __dict__ path, so a broken Constants round-trip silently produced a
+        differently-configured parser on the other side.
+        """
+        # Passing None as the second argument gives this name its own Constants.
+        hn = HumanName("Smith, Dr. John", None)
+        hn.C.titles.add('chancellor')
+        hn.parse_full_name()
+
+        # Safe: round-tripping a HumanName the test just built, not untrusted data.
+        restored = pickle.loads(pickle.dumps(hn))
+
+        self.assertIn('chancellor', restored.C.titles)
+        restored.full_name = "Chancellor Jane Smith"
+        self.assertEqual(restored.title, "Chancellor")
+
+    def test_name_instance_deepcopy(self) -> None:
+        """copy.deepcopy of a HumanName must round-trip.
+
+        HumanName has no custom copy hooks, so deepcopy recurses into its
+        Constants (`.C`), and previously into `.C.regexes`, whose __getattr__
+        answered copy's __deepcopy__ probe with a re.Pattern — making
+        deepcopy of *any* HumanName raise TypeError.
+        """
+        hn = HumanName("Dr. John P. Doe-Ray, CLU")
+
+        dup = copy.deepcopy(hn)
+
+        self.assertEqual(str(dup), str(hn))
+
+    def test_name_instance_deepcopy_isolates_instance_config(self) -> None:
+        """A deep-copied HumanName with its own config must be independent."""
+        hn = HumanName("Smith, Dr. John", None)
+        hn.C.titles.add('chancellor')
+
+        dup = copy.deepcopy(hn)
+        dup.C.titles.add('marker')
+
+        self.assertIn('chancellor', dup.C.titles)
+        self.assertNotIn('marker', hn.C.titles)
 
     def test_comparison(self) -> None:
         hn1 = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")

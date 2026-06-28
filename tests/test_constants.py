@@ -1,5 +1,9 @@
+import copy
+import pickle
+
 from nameparser import HumanName
-from nameparser.config import Constants
+from nameparser.config import Constants, RegexTupleManager, SetManager, TupleManager
+from nameparser.config.regexes import EMPTY_REGEX
 
 from tests.base import HumanNameTestBase
 
@@ -104,3 +108,127 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         c = Constants()
         c.titles.add_with_encoding(b'b\351ck', encoding='latin_1')
         self.assertIn('béck', c.titles)
+
+    def test_pickle_roundtrip_preserves_customizations(self) -> None:
+        """A pickled Constants must restore its customized collections.
+
+        Regression test: __setstate__ previously passed the whole state dict
+        to __init__ as the `prefixes` argument, so every collection silently
+        reverted to its module default on unpickling.
+        """
+        c = Constants()
+        c.titles.add('customtitle')
+        c.prefixes.add('customprefix')
+        c.titles.remove('hon')
+
+        # Safe: round-tripping a Constants the test just built, not untrusted data.
+        restored = pickle.loads(pickle.dumps(c))
+
+        self.assertIn('customtitle', restored.titles)
+        self.assertIn('customprefix', restored.prefixes)
+        self.assertNotIn('hon', restored.titles)
+        # The contributing collections must match the original exactly.
+        self.assertEqual(set(restored.titles), set(c.titles))
+        self.assertEqual(set(restored.prefixes), set(c.prefixes))
+        # The collections must also keep their manager type, not just contents.
+        self.assertEqual(type(restored.titles), SetManager)
+        self.assertEqual(type(restored.prefixes), SetManager)
+
+    def test_pickle_roundtrip_preserves_instance_scalar_override(self) -> None:
+        """An instance-level scalar override must survive a pickle round-trip."""
+        c = Constants()
+        c.empty_attribute_default = None
+
+        # Safe: round-tripping a Constants the test just built, not untrusted data.
+        restored = pickle.loads(pickle.dumps(c))
+
+        self.assertEqual(restored.empty_attribute_default, None)
+
+    def test_pickle_roundtrip_preserves_regex_manager_subclass(self) -> None:
+        """regexes must round-trip as a RegexTupleManager, not a plain TupleManager.
+
+        TupleManager.__reduce__ previously hardcoded TupleManager, so the
+        RegexTupleManager subclass was downgraded on unpickling. The difference
+        is observable: RegexTupleManager returns the EMPTY_REGEX default for an
+        unknown key, while a plain TupleManager returns None.
+        """
+        c = Constants()
+
+        # Safe: round-tripping a Constants the test just built, not untrusted data.
+        restored = pickle.loads(pickle.dumps(c))
+
+        self.assertEqual(type(restored.regexes), RegexTupleManager)
+        self.assertEqual(restored.regexes.does_not_exist, EMPTY_REGEX)
+
+    def test_regexes_deepcopy_roundtrip(self) -> None:
+        """copy.deepcopy of a RegexTupleManager must round-trip.
+
+        __getattr__ answered every unknown name with the EMPTY_REGEX default,
+        including the __deepcopy__ probe copy.deepcopy issues. copy then
+        mistook that re.Pattern for a deep-copy hook and tried to call it.
+        """
+        c = Constants()
+
+        dup = copy.deepcopy(c.regexes)
+
+        self.assertEqual(type(dup), RegexTupleManager)
+        self.assertEqual(dict(dup), dict(c.regexes))
+        # The EMPTY_REGEX default still applies to genuinely unknown keys.
+        self.assertEqual(dup.does_not_exist, EMPTY_REGEX)
+
+    def test_regextuplemanager_ignores_dunder_lookups(self) -> None:
+        """Unknown dunder names report as absent, not as the EMPTY_REGEX default.
+
+        Dunder names are Python's protocol probes (copy.deepcopy looks up
+        __deepcopy__, inspect.unwrap looks up __wrapped__, ...), never config
+        keys. Answering them with a regex breaks that machinery.
+        """
+        c = Constants()
+        sentinel = object()
+
+        self.assertEqual(getattr(c.regexes, '__deepcopy__', sentinel), sentinel)
+        # A normal (non-dunder) unknown key still yields the EMPTY_REGEX default.
+        self.assertEqual(c.regexes.unknown_key, EMPTY_REGEX)
+
+    def test_tuplemanager_ignores_dunder_lookups(self) -> None:
+        """Base TupleManager must report unknown dunder names as absent too.
+
+        It returned None for any missing attribute, so `hasattr(tm, '__x__')`
+        was always True — a landmine for any probe that does hasattr-then-call.
+        Guarding dunders keeps the base consistent with RegexTupleManager.
+        """
+        c = Constants()
+        tm = c.capitalization_exceptions  # a plain TupleManager
+        sentinel = object()
+
+        self.assertEqual(type(tm), TupleManager)
+        self.assertFalse(hasattr(tm, '__deepcopy__'))
+        self.assertEqual(getattr(tm, '__wrapped__', sentinel), sentinel)
+        # A normal (non-dunder) unknown key still returns the None default.
+        self.assertEqual(tm.unknown_key, None)
+
+    def test_unpickle_legacy_state_with_property_key(self) -> None:
+        """Pickles written by older versions must still load.
+
+        The previous __getstate__ built its state from a dir() sweep, which
+        always included the computed `suffixes_prefixes_titles` property (no
+        customization required). That property has no setter, so __setstate__
+        must skip such keys instead of raising AttributeError.
+
+        Covers the temporary migration shim in __setstate__; remove this test
+        when that shim is dropped (a release or two after 1.2.1).
+        """
+        c = Constants()
+        c.titles.add('legacytitle')
+        # Reproduce the legacy dir()-sweep state dict, which carries the
+        # read-only `suffixes_prefixes_titles` property alongside the real config.
+        legacy_state = {
+            name: getattr(c, name) for name in dir(c) if not name.startswith('_')
+        }
+        self.assertIn('suffixes_prefixes_titles', legacy_state)
+
+        restored = Constants.__new__(Constants)
+        restored.__setstate__(legacy_state)
+
+        # The real customization is recovered and the property key is ignored.
+        self.assertIn('legacytitle', restored.titles)

@@ -126,6 +126,13 @@ class TupleManager(dict[str, T]):
     '''
 
     def __getattr__(self, attr: str) -> T | None:
+        # Dunder names are Python's protocol probes (copy looks up __deepcopy__,
+        # inspect.unwrap looks up __wrapped__, ...), never config keys. Report
+        # them as genuinely absent so hasattr() is honest and those probes work;
+        # otherwise the dict default is mistaken for a real protocol hook. See
+        # RegexTupleManager.__getattr__ for the concrete failure this prevents.
+        if attr.startswith("__") and attr.endswith("__"):
+            raise AttributeError(attr)
         return self.get(attr)
 
     __setattr__ = dict.__setitem__
@@ -138,11 +145,22 @@ class TupleManager(dict[str, T]):
         self.update(state)
 
     def __reduce__(self) -> tuple[type, tuple[()], Mapping[str, T]]:
-        return (TupleManager, (), self.__getstate__())
+        # Use type(self), not TupleManager, so subclasses such as
+        # RegexTupleManager survive a pickle round-trip instead of being
+        # downgraded to a plain TupleManager (which loses the EMPTY_REGEX
+        # default for unknown keys).
+        return (type(self), (), self.__getstate__())
 
 
 class RegexTupleManager(TupleManager[re.Pattern[str]]):
     def __getattr__(self, attr: str) -> re.Pattern[str]:
+        # Dunder names are Python's protocol probes (copy.deepcopy looks up
+        # __deepcopy__, inspect.unwrap looks up __wrapped__, ...), never regex
+        # keys. Report them as genuinely absent; otherwise the EMPTY_REGEX
+        # default is mistaken for a real protocol hook — e.g. copy.deepcopy
+        # tries to call the returned re.Pattern and raises TypeError.
+        if attr.startswith("__") and attr.endswith("__"):
+            raise AttributeError(attr)
         return self.get(attr, EMPTY_REGEX)
 
 
@@ -274,11 +292,33 @@ class Constants:
         return "<Constants() instance>"
 
     def __setstate__(self, state: Mapping[str, Any]) -> None:
-        Constants.__init__(self, state)
+        # Restore each saved attribute directly. The previous implementation
+        # passed the whole state dict to __init__ as the ``prefixes`` argument,
+        # which silently reverted every collection to its module default on
+        # unpickling.
+        self._pst = None
+        for name, value in state.items():
+            # Migration shim: pickles written before this fix used a dir() sweep
+            # for __getstate__, so their state carries the read-only
+            # ``suffixes_prefixes_titles`` property. Skip any such computed
+            # property rather than raising AttributeError on its missing setter;
+            # the real config is restored from the other keys. We don't promise
+            # to read pre-fix blobs forever — this only smooths migration for
+            # anyone persisting them, and can be dropped a release or two after
+            # 1.2.1 once they've re-pickled.
+            if isinstance(getattr(type(self), name, None), property):
+                continue
+            setattr(self, name, value)
 
     def __getstate__(self) -> Mapping[str, Any]:
-        attrs = [x for x in dir(self) if not x.startswith('_')]
-        return dict([(a, getattr(self, a)) for a in attrs])
+        # Pickle only the instance's own configuration: the collections built in
+        # __init__ plus any instance-level scalar overrides. Class-level scalar
+        # defaults are restored by the class itself, and underscore-prefixed
+        # names such as the ``_pst`` cache are private and rebuilt on demand.
+        # Filtering on ``self.__dict__`` also excludes the computed
+        # ``suffixes_prefixes_titles`` property automatically, since properties
+        # live on the class and never appear in an instance's ``__dict__``.
+        return {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
 
 
 #: A module-level instance of the :py:class:`Constants()` class.
