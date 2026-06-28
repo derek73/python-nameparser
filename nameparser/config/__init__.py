@@ -117,10 +117,12 @@ class SetManager(Set):
         Remove the lower case and no-period version of the string arguments from the set.
         Returns ``self`` for chaining.
         """
+        changed = False
         for s in strings:
             if (lower := lc(s)) in self.elements:
                 self.elements.remove(lower)
-        if self._on_change:
+                changed = True
+        if changed and self._on_change:
             self._on_change()
         return self
 
@@ -200,11 +202,15 @@ class _CachedUnionMember:
         return getattr(obj, self._attr)
 
     def __set__(self, obj: 'Constants', value: SetManager) -> None:
+        if not isinstance(value, SetManager):
+            raise TypeError(
+                f"Expected a SetManager instance, got {type(value).__name__!r}. "
+                "Wrap your iterable: SetManager(['mr', 'ms'])"
+            )
         previous = getattr(obj, self._attr, None)
         if isinstance(previous, SetManager):
             previous._on_change = None  # detach the replaced manager so it no longer invalidates
-        if isinstance(value, SetManager):
-            value._on_change = obj._invalidate_pst
+        value._on_change = obj._invalidate_pst
         obj._invalidate_pst()
         setattr(obj, self._attr, value)
 
@@ -316,6 +322,9 @@ class Constants:
                  capitalization_exceptions: TupleManager[str] | Iterable[tuple[str, str]] = CAPITALIZATION_EXCEPTIONS,
                  regexes: RegexTupleManager | TupleManager[re.Pattern[str]] | Iterable[tuple[str, re.Pattern[str]]] = REGEXES
                  ) -> None:
+        # These four descriptor assignments call _CachedUnionMember.__set__, which
+        # calls _invalidate_pst() and establishes self._pst. They must come before
+        # any read of suffixes_prefixes_titles.
         self.prefixes = SetManager(prefixes)
         self.suffix_acronyms = SetManager(suffix_acronyms)
         self.suffix_not_acronyms = SetManager(suffix_not_acronyms)
@@ -355,6 +364,16 @@ class Constants:
             if isinstance(getattr(type(self), name, None), property):
                 continue
             setattr(self, name, value)
+        # Verify each descriptor-backed attr was restored. Without this, a missing
+        # key surfaces later as AttributeError: 'Constants' object has no attribute
+        # '_prefixes' — the private mangled name, not the public one, making it
+        # very hard to diagnose.
+        for attr in (n for n, v in vars(type(self)).items() if isinstance(v, _CachedUnionMember)):
+            if not hasattr(self, '_' + attr):
+                raise ValueError(
+                    f"Pickle state is missing required field {attr!r}. "
+                    "The state blob may be truncated or from an incompatible version."
+                )
 
     def __getstate__(self) -> Mapping[str, Any]:
         # Pickle the instance's own configuration: the collections built in

@@ -277,12 +277,14 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         c.suffix_not_acronyms.add('xsfx')
         self.assertIn('xsfx', c.suffixes_prefixes_titles)
 
-    def test_suffixes_prefixes_titles_reflects_add_after_initial_read(self) -> None:
-        """suffixes_prefixes_titles must reflect mutations even after the cache has been primed."""
+    def test_pickle_roundtrip_rewires_invalidation_callbacks(self) -> None:
+        """Mutations on a deserialized Constants must still invalidate the cache."""
         c = Constants()
-        _ = c.suffixes_prefixes_titles  # prime the cache
-        c.titles.add('emerita')
-        self.assertIn('emerita', c.suffixes_prefixes_titles)
+        # Safe: round-tripping a Constants the test just built, not untrusted data.
+        restored = pickle.loads(pickle.dumps(c))
+        _ = restored.suffixes_prefixes_titles  # prime the cache
+        restored.titles.add('posttitle')
+        self.assertIn('posttitle', restored.suffixes_prefixes_titles)
 
     def test_is_rootname_consistent_with_is_title(self) -> None:
         """is_rootname must return False for words recognised by is_title."""
