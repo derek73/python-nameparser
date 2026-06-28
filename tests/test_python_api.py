@@ -92,6 +92,32 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.assertIn('chancellor', dup.C.titles)
         self.assertNotIn('marker', hn.C.titles)
 
+    def test_pickle_default_name_preserves_singleton_identity(self) -> None:
+        """A default HumanName must re-attach to CONSTANTS after a pickle round-trip.
+
+        Without __getstate__/__setstate__, pickle serializes .C by value, so the
+        restored name gets a detached copy — has_own_config flips to True and
+        every pickled default name carries a full Constants copy.
+        """
+        hn = HumanName("John Doe")
+        self.assertFalse(hn.has_own_config)
+        self.assertIs(hn.C, CONSTANTS)
+
+        # Safe: round-tripping an object we just built, not untrusted data.
+        restored = pickle.loads(pickle.dumps(hn))
+
+        self.assertIs(restored.C, CONSTANTS)
+        self.assertFalse(restored.has_own_config)
+
+    def test_deepcopy_default_name_preserves_singleton_identity(self) -> None:
+        """copy.deepcopy of a default HumanName must re-attach to CONSTANTS."""
+        hn = HumanName("John Doe")
+
+        dup = copy.deepcopy(hn)
+
+        self.assertIs(dup.C, CONSTANTS)
+        self.assertFalse(dup.has_own_config)
+
     def test_comparison(self) -> None:
         hn1 = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         hn2 = HumanName("Dr. John P. Doe-Ray, CLU, CFP, LUTC")

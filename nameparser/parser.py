@@ -121,6 +121,17 @@ class HumanName:
             # full_name setter triggers the parse
             self.full_name = full_name
 
+    def __getstate__(self) -> dict:
+        state = self.__dict__.copy()
+        if state.get('C') is CONSTANTS:
+            state['C'] = None  # sentinel: restore shared singleton on load
+        return state
+
+    def __setstate__(self, state: dict) -> None:
+        if state.get('C') is None:
+            state['C'] = CONSTANTS
+        self.__dict__.update(state)
+
     def __iter__(self) -> Iterator[str]:
         return self
 
