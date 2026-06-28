@@ -10,7 +10,7 @@ except ImportError:
     dill = False  # type: ignore[assignment]
 
 from nameparser import HumanName
-from nameparser.config import Constants, TupleManager
+from nameparser.config import CONSTANTS, Constants, TupleManager
 
 from tests.base import HumanNameTestBase
 
@@ -92,11 +92,67 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.assertIn('chancellor', dup.C.titles)
         self.assertNotIn('marker', hn.C.titles)
 
+    def test_pickle_default_name_preserves_singleton_identity(self) -> None:
+        """A default HumanName must re-attach to CONSTANTS after a pickle round-trip.
+
+        Without __getstate__/__setstate__, pickle serializes .C by value, so the
+        restored name gets a detached copy — has_own_config flips to True and
+        every pickled default name carries a full Constants copy.
+        """
+        hn = HumanName("John Doe")
+        self.assertFalse(hn.has_own_config)
+        self.assertIs(hn.C, CONSTANTS)
+
+        # Safe: round-tripping an object we just built, not untrusted data.
+        restored = pickle.loads(pickle.dumps(hn))
+
+        self.assertIs(restored.C, CONSTANTS)
+        self.assertFalse(restored.has_own_config)
+        self.assertEqual(str(restored), str(hn))
+        self.assertEqual(restored.first, hn.first)
+        self.assertEqual(restored.last, hn.last)
+
+    def test_pickle_instance_config_name_preserves_own_config(self) -> None:
+        """A HumanName with its own Constants must not be collapsed onto CONSTANTS after pickle."""
+        hn = HumanName("Smith, Dr. John", None)
+        hn.C.titles.add('chancellor')
+        hn.parse_full_name()
+        self.assertTrue(hn.has_own_config)
+        self.assertIsNot(hn.C, CONSTANTS)
+
+        # Safe: round-tripping a HumanName the test just built, not untrusted data.
+        restored = pickle.loads(pickle.dumps(hn))
+
+        self.assertTrue(restored.has_own_config)
+        self.assertIsNot(restored.C, CONSTANTS)
+        self.assertIn('chancellor', restored.C.titles)
+
+    def test_shallow_copy_default_name_preserves_singleton_identity(self) -> None:
+        """copy.copy of a default HumanName shares the CONSTANTS reference without hooks."""
+        hn = HumanName("John Doe")
+
+        sc = copy.copy(hn)
+
+        self.assertIs(sc.C, CONSTANTS)
+        self.assertFalse(sc.has_own_config)
+
+    def test_deepcopy_default_name_preserves_singleton_identity(self) -> None:
+        """copy.deepcopy of a default HumanName must re-attach to CONSTANTS."""
+        hn = HumanName("John Doe")
+
+        dup = copy.deepcopy(hn)
+
+        self.assertIs(dup.C, CONSTANTS)
+        self.assertFalse(dup.has_own_config)
+        self.assertEqual(str(dup), str(hn))
+        self.assertEqual(dup.first, hn.first)
+        self.assertEqual(dup.last, hn.last)
+
     def test_comparison(self) -> None:
         hn1 = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         hn2 = HumanName("Dr. John P. Doe-Ray, CLU, CFP, LUTC")
         self.assertTrue(hn1 == hn2)
-        self.assertTrue(hn1 is not hn2)
+        self.assertIsNot(hn1, hn2)
         self.assertTrue(hn1 == "Dr. John P. Doe-Ray CLU, CFP, LUTC")
         hn1 = HumanName("Doe, Dr. John P., CLU, CFP, LUTC")
         hn2 = HumanName("Dr. John P. Doe-Ray, CLU, CFP, LUTC")
@@ -156,7 +212,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         hn1 = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         hn2 = HumanName("dr. john p. doe-Ray, CLU, CFP, LUTC")
         self.assertTrue(hn1 == hn2)
-        self.assertTrue(hn1 is not hn2)
+        self.assertIsNot(hn1, hn2)
         self.assertTrue(hn1 == "Dr. John P. Doe-ray clu, CFP, LUTC")
 
     def test_slice(self) -> None:
@@ -222,7 +278,7 @@ class HumanNamePythonTests(HumanNameTestBase):
     def test_override_constants(self) -> None:
         C = Constants()
         hn = HumanName(constants=C)
-        self.assertTrue(hn.C is C)
+        self.assertIs(hn.C, C)
 
     def test_override_regex(self) -> None:
         var = TupleManager([("spaces", re.compile(r"\s+", re.U)),])

@@ -43,4 +43,7 @@ class HumanNameTestBase(Generic[T]):
         assert member not in container, msg  # type: ignore[operator]
 
     def assertIs(self, first: object, second: object, msg: object = None) -> None:
-        assert first is second, msg
+        assert first is second, msg or f"{first!r} is not {second!r}"
+
+    def assertIsNot(self, first: object, second: object, msg: object = None) -> None:
+        assert first is not second, msg or f"{first!r} is {second!r}"
