@@ -44,6 +44,7 @@ class HumanName:
     * :py:attr:`suffix`
     * :py:attr:`nickname`
     * :py:attr:`surnames`
+    * :py:attr:`given_names`
 
     :param str full_name: The name string to be parsed.
     :param constants constants:
@@ -414,6 +415,20 @@ class HumanName:
         A string of all middle names followed by the last name.
         """
         return " ".join(self.surnames_list) or self.C.empty_attribute_default
+
+    @property
+    def given_names_list(self) -> list[str]:
+        """
+        List of first name followed by middle names.
+        """
+        return self.first_list + self.middle_list
+
+    @property
+    def given_names(self) -> str:
+        """
+        A string of the first name followed by all middle names.
+        """
+        return " ".join(self.given_names_list) or self.C.empty_attribute_default
 
     # setter methods
 
