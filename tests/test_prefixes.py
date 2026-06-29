@@ -1,3 +1,5 @@
+import pytest
+
 from nameparser import HumanName
 
 from tests.base import HumanNameTestBase
@@ -55,15 +57,37 @@ class PrefixesTestCase(HumanNameTestBase):
         self.m(hn.last, "van Gogh", hn)
         self.m(hn.suffix, "dr", hn)
 
+    def test_suffix_token_collision_with_two_word_prefix(self) -> None:
+        # Same fix as #100 but with a two-word prefix ("van der"). Exercises a
+        # different iteration count through the prefix-joining loop.
+        hn = HumanName("dr Vincent van der Gogh dr")
+        self.m(hn.title, "dr", hn)
+        self.m(hn.first, "Vincent", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "van der Gogh", hn)
+        self.m(hn.suffix, "dr", hn)
+
+    def test_title_before_and_after_prefixed_last_name_with_middle(self) -> None:
+        # The pre-fix bug corrupted the middle field; verify it is not disturbed
+        # when a genuine middle name is present alongside the repeated token.
+        hn = HumanName("dr Vincent James van Gogh dr")
+        self.m(hn.title, "dr", hn)
+        self.m(hn.first, "Vincent", hn)
+        self.m(hn.middle, "James", hn)
+        self.m(hn.last, "van Gogh", hn)
+        self.m(hn.suffix, "dr", hn)
+
+    @pytest.mark.timeout(2)
     def test_many_repeated_prefixes_does_not_blow_up(self) -> None:
         # Issue #108: a name with a long run of repeated prefixes used to grow
-        # the pieces list exponentially and exhaust memory. Guard against a
-        # regression: this must parse quickly and not raise. If an exponential
-        # code path is reintroduced, this test will hang (CI timeout catches it).
+        # the pieces list exponentially and exhaust memory. The 2-second timeout
+        # enforces this locally and in CI — if the test hangs, an exponential
+        # regression has been reintroduced.
         name = "Jan " + "van der " * 30 + "Berg"
         hn = HumanName(name)
         self.assertFalse(hn.unparsable)
         self.m(hn.first, "Jan", hn)
+        self.assertIn("Berg", hn.last)
 
     def test_two_part_last_name_with_suffix_comma(self) -> None:
         hn = HumanName("pennie von bergen wessels, III")

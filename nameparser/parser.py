@@ -980,9 +980,11 @@ class HumanName:
                     try:
                         # if there are no more prefixes, look for a suffix to stop at
                         stop_at = next(iter(filter(self.is_suffix, pieces[i + 1:])))
-                        # search from i + 1 so a repeated token earlier in the
-                        # list (e.g. a leading title that is also a suffix
-                        # acronym) is not matched instead of the trailing one
+                        # search from i + 1: filter() finds the value of stop_at
+                        # in pieces[i+1:] but pieces.index() without a start
+                        # argument searches from 0, so an earlier occurrence of
+                        # the same token (e.g. a suffix token that also appears
+                        # before the prefix) would be matched instead.
                         j = pieces.index(stop_at, i + 1)
                         new_piece = ' '.join(pieces[i:j])
                         pieces = pieces[:i] + [new_piece] + pieces[j:]
