@@ -189,7 +189,7 @@ class HumanName:
             _s = self.string_format.format(**self.as_dict())
             # remove trailing punctuation from missing nicknames
             _s = _s.replace(str(self.C.empty_attribute_default), '').replace(" ()", "").replace(" ''", "").replace(' ""', "")
-            _s = self.C.regexes.space_before_punct.sub(r'\1', _s)
+            _s = self.C.regexes.space_before_comma.sub(',', _s)
             return self.collapse_whitespace(_s).strip(', ')
         return " ".join(self)
 
