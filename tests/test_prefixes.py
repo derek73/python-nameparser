@@ -55,6 +55,16 @@ class PrefixesTestCase(HumanNameTestBase):
         self.m(hn.last, "van Gogh", hn)
         self.m(hn.suffix, "dr", hn)
 
+    def test_many_repeated_prefixes_does_not_blow_up(self) -> None:
+        # Issue #108: a name with a long run of repeated prefixes used to grow
+        # the pieces list exponentially and exhaust memory. Guard against a
+        # regression: this must parse quickly and not raise. If an exponential
+        # code path is reintroduced, this test will hang (CI timeout catches it).
+        name = "Jan " + "van der " * 30 + "Berg"
+        hn = HumanName(name)
+        self.assertFalse(hn.unparsable)
+        self.m(hn.first, "Jan", hn)
+
     def test_two_part_last_name_with_suffix_comma(self) -> None:
         hn = HumanName("pennie von bergen wessels, III")
         self.m(hn.first, "pennie", hn)
