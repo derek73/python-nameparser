@@ -234,6 +234,124 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         # The real customization is recovered and the property key is ignored.
         self.assertIn('legacytitle', restored.titles)
 
+    def test_suffixes_prefixes_titles_reflects_add_title(self) -> None:
+        """suffixes_prefixes_titles must include titles added after construction."""
+        c = Constants()
+        _ = c.suffixes_prefixes_titles  # prime the cache so invalidation is exercised
+        c.titles.add('emerita')
+        self.assertIn('emerita', c.suffixes_prefixes_titles)
+
+    def test_suffixes_prefixes_titles_reflects_add_prefix(self) -> None:
+        """suffixes_prefixes_titles must include prefixes added after construction."""
+        c = Constants()
+        _ = c.suffixes_prefixes_titles  # prime the cache so invalidation is exercised
+        c.prefixes.add('xpfx')
+        self.assertIn('xpfx', c.suffixes_prefixes_titles)
+
+    def test_suffixes_prefixes_titles_reflects_remove_title(self) -> None:
+        """suffixes_prefixes_titles must not include a word that was only in titles and is then removed."""
+        c = Constants()
+        c.titles.add('emerita')
+        self.assertIn('emerita', c.suffixes_prefixes_titles)
+        c.titles.remove('emerita')
+        self.assertNotIn('emerita', c.suffixes_prefixes_titles)
+
+    def test_suffixes_prefixes_titles_reflects_remove_prefix(self) -> None:
+        """suffixes_prefixes_titles must not include a word that was only in prefixes and is then removed."""
+        c = Constants()
+        c.prefixes.add('xpfx')
+        self.assertIn('xpfx', c.suffixes_prefixes_titles)
+        c.prefixes.remove('xpfx')
+        self.assertNotIn('xpfx', c.suffixes_prefixes_titles)
+
+    def test_suffixes_prefixes_titles_reflects_add_suffix_acronym(self) -> None:
+        """suffixes_prefixes_titles must include suffix acronyms added after construction."""
+        c = Constants()
+        _ = c.suffixes_prefixes_titles  # prime the cache so invalidation is exercised
+        c.suffix_acronyms.add('xsfx')
+        self.assertIn('xsfx', c.suffixes_prefixes_titles)
+
+    def test_suffixes_prefixes_titles_reflects_add_suffix_not_acronym(self) -> None:
+        """suffixes_prefixes_titles must include non-acronym suffixes added after construction."""
+        c = Constants()
+        _ = c.suffixes_prefixes_titles  # prime the cache so invalidation is exercised
+        c.suffix_not_acronyms.add('xsfx')
+        self.assertIn('xsfx', c.suffixes_prefixes_titles)
+
+    def test_pickle_roundtrip_rewires_invalidation_callbacks(self) -> None:
+        """Mutations on a deserialized Constants must still invalidate the cache."""
+        c = Constants()
+        # Safe: round-tripping a Constants the test just built, not untrusted data.
+        restored = pickle.loads(pickle.dumps(c))
+        _ = restored.suffixes_prefixes_titles  # prime the cache
+        restored.titles.add('posttitle')
+        self.assertIn('posttitle', restored.suffixes_prefixes_titles)
+
+    def test_is_rootname_consistent_with_is_title(self) -> None:
+        """is_rootname must return False for words recognised by is_title."""
+        hn = HumanName("", constants=None)
+        _ = hn.C.suffixes_prefixes_titles  # prime the cache so a stale entry would be observable
+        hn.C.titles.add('emerita')
+        self.assertFalse(hn.is_rootname('emerita'))
+
+    def test_is_rootname_consistent_with_is_prefix(self) -> None:
+        """is_rootname must return False for words recognised by is_prefix."""
+        hn = HumanName("", constants=None)
+        _ = hn.C.suffixes_prefixes_titles  # prime the cache so a stale entry would be observable
+        hn.C.prefixes.add('xpfx')
+        self.assertFalse(hn.is_rootname('xpfx'))
+
+    def test_suffixes_prefixes_titles_reflects_remove_suffix_acronym(self) -> None:
+        """suffixes_prefixes_titles must reflect a suffix acronym removed after the cache is primed."""
+        c = Constants()
+        c.suffix_acronyms.add('xsfx')
+        self.assertIn('xsfx', c.suffixes_prefixes_titles)  # primes the cache
+        c.suffix_acronyms.remove('xsfx')
+        self.assertNotIn('xsfx', c.suffixes_prefixes_titles)
+
+    def test_suffixes_prefixes_titles_reflects_remove_suffix_not_acronym(self) -> None:
+        """suffixes_prefixes_titles must reflect a non-acronym suffix removed after the cache is primed."""
+        c = Constants()
+        c.suffix_not_acronyms.add('xsfx')
+        self.assertIn('xsfx', c.suffixes_prefixes_titles)  # primes the cache
+        c.suffix_not_acronyms.remove('xsfx')
+        self.assertNotIn('xsfx', c.suffixes_prefixes_titles)
+
+    def test_suffixes_prefixes_titles_reflects_add_with_encoding(self) -> None:
+        """add_with_encoding must invalidate the cache like add()/remove() do."""
+        c = Constants()
+        _ = c.suffixes_prefixes_titles  # prime the cache
+        c.titles.add_with_encoding(b'b\351ck', encoding='latin_1')
+        self.assertIn('béck', c.suffixes_prefixes_titles)
+
+    def test_suffixes_prefixes_titles_reflects_replaced_manager(self) -> None:
+        """Replacing a whole SetManager must invalidate the cache and wire the new manager.
+
+        Covers the config-teardown path where a fresh SetManager is assigned
+        directly (e.g. ``setattr(CONSTANTS, 'titles', SetManager(...))``).
+        """
+        c = Constants()
+        _ = c.suffixes_prefixes_titles  # prime the cache
+        c.titles = SetManager(['brandnewtitle'])
+        # The replacement is reflected immediately...
+        self.assertIn('brandnewtitle', c.suffixes_prefixes_titles)
+        # ...and the new manager's own mutations invalidate the cache too,
+        # proving the on_change callback was re-wired to the replacement.
+        _ = c.suffixes_prefixes_titles
+        c.titles.add('secondtitle')
+        self.assertIn('secondtitle', c.suffixes_prefixes_titles)
+
+    def test_replaced_manager_no_longer_invalidates_cache(self) -> None:
+        """A SetManager detached by reassignment must not invalidate the new cache."""
+        c = Constants()
+        replaced = c.titles
+        c.titles = SetManager(['brandnewtitle'])
+        primed = c.suffixes_prefixes_titles
+        # Mutating the orphaned manager must leave the live cache untouched.
+        replaced.add('ghost')
+        self.assertIs(c.suffixes_prefixes_titles, primed)
+        self.assertNotIn('ghost', c.suffixes_prefixes_titles)
+
 
 class SuffixesPrefixesTitlesPerformanceTests(HumanNameTestBase):
     """Guard against accidental cache removal on suffixes_prefixes_titles.

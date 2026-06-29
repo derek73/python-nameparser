@@ -27,8 +27,8 @@ unexpected results. See `Customizing the Parser <customize.html>`_.
 """
 import re
 import sys
-from collections.abc import Iterable, Iterator, Mapping, Set
-from typing import Any, TypeVar
+from collections.abc import Callable, Iterable, Iterator, Mapping, Set
+from typing import Any, TypeVar, overload
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -60,8 +60,14 @@ class SetManager(Set):
 
     '''
 
+    _on_change: Callable[[], None] | None
+
     def __init__(self, elements: Iterable[str]) -> None:
         self.elements = set(elements)
+        # Optional invalidation hook, wired by an owning Constants so that
+        # in-place add()/remove() can clear its cached suffixes_prefixes_titles
+        # union. None when the manager is used standalone.
+        self._on_change = None
 
     def __call__(self) -> Set[str]:
         return self.elements
@@ -91,6 +97,8 @@ class SetManager(Set):
         if isinstance(s, bytes):
             s = s.decode(encoding)
         self.elements.add(lc(s))
+        if self._on_change:
+            self._on_change()
 
     def add(self, *strings: str) -> Self:
         """
@@ -107,10 +115,13 @@ class SetManager(Set):
         Remove the lower case and no-period version of the string arguments from the set.
         Returns ``self`` for chaining.
         """
+        changed = False
         for s in strings:
             if (lower := lc(s)) in self.elements:
                 self.elements.remove(lower)
-
+                changed = True
+        if changed and self._on_change:
+            self._on_change()
         return self
 
 
@@ -162,6 +173,46 @@ class RegexTupleManager(TupleManager[re.Pattern[str]]):
         return self.get(attr, EMPTY_REGEX)
 
 
+class _CachedUnionMember:
+    """Descriptor for the four ``SetManager`` attributes whose union ``Constants``
+    caches in ``_pst`` (``prefixes``, ``suffix_acronyms``, ``suffix_not_acronyms``,
+    ``titles``).
+
+    Assigning a new manager — or mutating one in place via ``add()`` / ``remove()``
+    — invalidates that cache. Keeping the behavior on a descriptor scopes it to
+    exactly these attributes, beside their declarations, rather than spreading it
+    across a catch-all ``__setattr__`` and a separate attribute-name list.
+    """
+
+    _attr: str
+
+    def __set_name__(self, owner: type, name: str) -> None:
+        self._attr = '_' + name
+
+    @overload
+    def __get__(self, obj: None, objtype: type | None = None) -> '_CachedUnionMember': ...
+    @overload
+    def __get__(self, obj: 'Constants', objtype: type | None = None) -> SetManager: ...
+
+    def __get__(self, obj: 'Constants | None', objtype: type | None = None) -> 'SetManager | _CachedUnionMember':
+        if obj is None:
+            return self
+        return getattr(obj, self._attr)
+
+    def __set__(self, obj: 'Constants', value: SetManager) -> None:
+        if not isinstance(value, SetManager):
+            raise TypeError(
+                f"Expected a SetManager instance, got {type(value).__name__!r}. "
+                "Wrap your iterable: SetManager(['mr', 'ms'])"
+            )
+        previous = getattr(obj, self._attr, None)
+        if isinstance(previous, SetManager):
+            previous._on_change = None  # detach the replaced manager so it no longer invalidates
+        value._on_change = obj._invalidate_pst
+        obj._invalidate_pst()
+        setattr(obj, self._attr, value)
+
+
 class Constants:
     """
     An instance of this class hold all of the configuration constants for the parser.
@@ -186,15 +237,14 @@ class Constants:
         :py:attr:`regexes`  wrapped with :py:class:`TupleManager`.
     """
 
-    prefixes: SetManager
-    suffix_acronyms: SetManager
-    suffix_not_acronyms: SetManager
-    titles: SetManager
+    prefixes = _CachedUnionMember()
+    suffix_acronyms = _CachedUnionMember()
+    suffix_not_acronyms = _CachedUnionMember()
+    titles = _CachedUnionMember()
     first_name_titles: SetManager
     conjunctions: SetManager
     capitalization_exceptions: TupleManager[str]
     regexes: RegexTupleManager
-
     _pst: Set[str] | None
 
     string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
@@ -302,6 +352,9 @@ class Constants:
                  capitalization_exceptions: TupleManager[str] | Iterable[tuple[str, str]] = CAPITALIZATION_EXCEPTIONS,
                  regexes: RegexTupleManager | TupleManager[re.Pattern[str]] | Iterable[tuple[str, re.Pattern[str]]] = REGEXES
                  ) -> None:
+        # These four descriptor assignments call _CachedUnionMember.__set__, which
+        # calls _invalidate_pst() and establishes self._pst. They must come before
+        # any read of suffixes_prefixes_titles.
         self.prefixes = SetManager(prefixes)
         self.suffix_acronyms = SetManager(suffix_acronyms)
         self.suffix_not_acronyms = SetManager(suffix_not_acronyms)
@@ -310,11 +363,13 @@ class Constants:
         self.conjunctions = SetManager(conjunctions)
         self.capitalization_exceptions = TupleManager(capitalization_exceptions)
         self.regexes = RegexTupleManager(regexes)
+
+    def _invalidate_pst(self) -> None:
         self._pst = None
 
     @property
     def suffixes_prefixes_titles(self) -> Set[str]:
-        if not self._pst:
+        if self._pst is None:
             self._pst = self.prefixes | self.suffix_acronyms | self.suffix_not_acronyms | self.titles
         return self._pst
 
@@ -339,16 +394,35 @@ class Constants:
             if isinstance(getattr(type(self), name, None), property):
                 continue
             setattr(self, name, value)
+        # Verify each descriptor-backed attr was restored. Without this, a missing
+        # key surfaces later as AttributeError: 'Constants' object has no attribute
+        # '_prefixes' — the private mangled name, not the public one, making it
+        # very hard to diagnose.
+        for attr in (n for n, v in vars(type(self)).items() if isinstance(v, _CachedUnionMember)):
+            if not hasattr(self, '_' + attr):
+                raise ValueError(
+                    f"Pickle state is missing required field {attr!r}. "
+                    "The state blob may be truncated or from an incompatible version."
+                )
 
     def __getstate__(self) -> Mapping[str, Any]:
-        # Pickle only the instance's own configuration: the collections built in
-        # __init__ plus any instance-level scalar overrides. Class-level scalar
-        # defaults are restored by the class itself, and underscore-prefixed
-        # names such as the ``_pst`` cache are private and rebuilt on demand.
-        # Filtering on ``self.__dict__`` also excludes the computed
-        # ``suffixes_prefixes_titles`` property automatically, since properties
-        # live on the class and never appear in an instance's ``__dict__``.
-        return {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
+        # Pickle the instance's own configuration: the collections built in
+        # __init__ plus any instance-level scalar overrides.
+        # _CachedUnionMember descriptors store their values with a leading
+        # underscore (e.g. `_prefixes` for `prefixes`) so that the descriptor's
+        # __set__ owns assignment. We map those back to the public names so
+        # __setstate__ can restore them through the descriptor, re-wiring the
+        # invalidation callbacks. All other underscore-prefixed names (_pst, etc.)
+        # are private/cache and are intentionally excluded.
+        state: dict[str, Any] = {}
+        for name, val in self.__dict__.items():
+            if name.startswith('_'):
+                public = name[1:]
+                if isinstance(getattr(type(self), public, None), _CachedUnionMember):
+                    state[public] = val
+            else:
+                state[name] = val
+        return state
 
 
 #: A module-level instance of the :py:class:`Constants()` class.

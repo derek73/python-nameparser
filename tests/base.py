@@ -25,7 +25,7 @@ class HumanNameTestBase(Generic[T]):
                 hn,
             )
         except UnicodeDecodeError:
-            assert actual == expected_
+            assert actual == expected_, f"actual={actual!r} != expected={expected_!r}"
 
     def assertEqual(self, first: object, second: object, msg: object = None) -> None:
         assert first == second, msg
