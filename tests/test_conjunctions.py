@@ -119,6 +119,20 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Smith", hn)
 
+    def test_ampersand_conjunction_short_name_no_titles(self) -> None:
+        # & is non-alpha so it should always be honored as a conjunction,
+        # even when total_length < 4 (no titles to inflate the count)
+        hn = HumanName('John & Jane')
+        self.m(hn.first, "John & Jane", hn)
+
+    def test_single_char_alpha_conjunction_still_treated_as_initial_when_short(self) -> None:
+        # single-char alpha conjunctions (e, y) are still treated as initials
+        # when total_length < 4; only non-alpha symbols like & bypass this guard
+        hn = HumanName('John y Jane')
+        self.m(hn.first, "John", hn)
+        self.m(hn.middle, "y", hn)
+        self.m(hn.last, "Jane", hn)
+
     def test_title_with_three_part_name_last_initial_is_suffix_uppercase_no_period(self) -> None:
         hn = HumanName("King John Alexander V")
         self.m(hn.title, "King", hn)
