@@ -2,18 +2,30 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Workflow
+
+For non-trivial changes, use a feature branch and open a PR.
+Branch naming: `fix/issue-NNN-short-description` or `feat/short-description`.
+
 ## Commands
 
 ```bash
-# Install dev dependencies (requires pip >= 24.1)
-pip install --group dev
+# Preferred: use uv run (works without activating the venv)
+# Alternative: .venv/bin/<tool> if the venv is already active
 
-# Run all tests
-pytest
+# Run all tests (includes --doctest-modules, so doctests in nameparser/ are also run;
+# the dual-parametrize fixture doubles the count, so ~370 methods → ~740 results)
+uv run pytest
 
 # Run a single test file / class / method
-pytest tests/test_python_api.py
-pytest tests/test_python_api.py::HumanNamePythonTests::test_utf8
+uv run pytest tests/test_python_api.py
+uv run pytest tests/test_python_api.py::HumanNamePythonTests::test_utf8
+
+# Type check
+uv run mypy nameparser/
+
+# Lint
+uv run ruff check nameparser/
 
 # Debug how a specific name string is parsed (prints HumanName repr)
 python -m nameparser "Dr. Juan Q. Xavier de la Vega III"
@@ -52,6 +64,8 @@ Each module defines a plain Python set of known name pieces:
 
 **Two-tier config pattern**: `CONSTANTS` is global; passing `None` as the second arg to `HumanName` creates a fresh per-instance `Constants()`. After modifying per-instance config you must call `hn.parse_full_name()` again. `SetManager.add()`/`remove()` normalizes inputs to lowercase with no periods, so callers don't need to worry about case.
 
+**`_CachedUnionMember` descriptor**: The four PST-contributing attrs (`prefixes`, `suffix_acronyms`, `suffix_not_acronyms`, `titles`) are managed by this descriptor, which stores their values under the *private* name (`_prefixes`, `_titles`, etc.) in the instance `__dict__` so that the descriptor's `__set__` owns every assignment and can wire the cache-invalidation callback. Any code that inspects `__dict__` directly (e.g. `__getstate__`) must map `_xxx` → `xxx` for descriptor-managed attrs rather than filtering on `not k.startswith('_')`.
+
 ### Parser (`nameparser/parser.py`)
 
 `HumanName` is the single public class. Assigning to `full_name` (or instantiating with a string) triggers `parse_full_name()`.
@@ -66,6 +80,14 @@ Parse flow:
 
 Each named attribute (`title`, `first`, etc.) is a `@property` that joins its corresponding `_list`. Setters call `_set_list()` which runs the value through `parse_pieces()`, so assigning `hn.last = "de la Vega"` correctly re-parses prefix tokens.
 
+## Extension Patterns
+
+**Adding a scalar `Constants` attribute + `HumanName` kwarg** (e.g. `initials_separator`, `suffix_delimiter`):
+1. Add class attr to `Constants` in `config/__init__.py` with docstring
+2. Add `x: str | None = None` to `HumanName.__init__` signature after related kwargs
+3. Add `self.x = x if x is not None else self.C.x` in body — use `is not None`, not `or`, to allow falsy values like `""`
+4. conftest auto-restores scalar CONSTANTS between tests, but tests that *set* CONSTANTS mid-run still need their own try/finally
+
 ### Tests (`tests/`)
 
-Tests run under **pytest** and are split one file per concern (`tests/test_titles.py`, `tests/test_suffixes.py`, etc.). `tests/base.py` holds `HumanNameTestBase` — a plain (non-`unittest`) base whose `m()` helper is a custom assert that prints the original name string on failure (plus thin `assert*` shims so the moved test bodies are unchanged). `tests/conftest.py` defines an autouse fixture that runs **every test twice** — once with `empty_attribute_default = ''` and once with `None` — so reported counts are doubled (e.g. 11 methods → 22 results); it also snapshots/restores the scalar `CONSTANTS` config around each test to keep tests order-independent. `TEST_NAMES` (in `tests/test_variations.py`) is a list of name strings permuted into comma-separated variants as a regression check. Tests that should fail use `@pytest.mark.xfail`. When adding a parsing case, add it to the relevant `tests/test_*.py` file and consider adding the base form to `TEST_NAMES`.
+Tests run under **pytest** (via `.venv/bin/pytest`) and are split one file per concern (`tests/test_titles.py`, `tests/test_suffixes.py`, etc.). `tests/base.py` holds `HumanNameTestBase` — a plain (non-`unittest`) base whose `m()` helper is a custom assert that prints the original name string on failure (plus thin `assert*` shims so the moved test bodies are unchanged). `tests/conftest.py` defines an autouse fixture that runs **every test twice** — once with `empty_attribute_default = ''` and once with `None` — so reported counts are doubled (e.g. 11 methods → 22 results); it also snapshots/restores the scalar `CONSTANTS` config around each test to keep tests order-independent. `TEST_NAMES` (in `tests/test_variations.py`) is a list of name strings permuted into comma-separated variants as a regression check. Tests that should fail use `@pytest.mark.xfail`. When adding a parsing case, add it to the relevant `tests/test_*.py` file and consider adding the base form to `TEST_NAMES`.
