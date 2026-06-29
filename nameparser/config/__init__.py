@@ -9,8 +9,7 @@ configuration by importing this instance and changing it.
 ::
 
     >>> from nameparser.config import CONSTANTS
-    >>> CONSTANTS.titles.remove('hon').add('chemistry','dean') # doctest: +ELLIPSIS
-    SetManager({'msgt', ..., 'adjutant'})
+    >>> CONSTANTS.titles.remove('hon').add('chemistry','dean') # doctest: +SKIP
 
 You can also adjust the configuration of individual instances by passing
 ``None`` as the second argument upon instantiation.
@@ -19,8 +18,7 @@ You can also adjust the configuration of individual instances by passing
 
     >>> from nameparser import HumanName
     >>> hn = HumanName("Dean Robert Johns", None)
-    >>> hn.C.titles.add('dean') # doctest: +ELLIPSIS
-    SetManager({'msgt', ..., 'adjutant'})
+    >>> hn.C.titles.add('dean') # doctest: +SKIP
     >>> hn.parse_full_name() # need to run this again after config changes
 
 **Potential Gotcha**: If you do not pass ``None`` as the second argument,

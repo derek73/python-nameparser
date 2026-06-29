@@ -222,9 +222,9 @@ class HumanName:
 
             >>> name = HumanName("Bob Dole")
             >>> name.as_dict()
-            {'last': 'Dole', 'suffix': '', 'title': '', 'middle': '', 'nickname': '', 'first': 'Bob'}
+            {'title': '', 'first': 'Bob', 'middle': '', 'last': 'Dole', 'suffix': '', 'nickname': ''}
             >>> name.as_dict(False)
-            {'last': 'Dole', 'first': 'Bob'}
+            {'first': 'Bob', 'last': 'Dole'}
 
         """
         d = {}
@@ -261,10 +261,10 @@ class HumanName:
 
                 >>> name = HumanName("Sir Bob Andrew Dole")
                 >>> name.initials_list()
-                ["B", "A", "D"]
+                ['B', 'A', 'D']
                 >>> name = HumanName("J. Doe")
                 >>> name.initials_list()
-                ["J", "D"]
+                ['J', 'D']
         """
         first_initials_list = [self.__process_initial__(name, True) for name in self.first_list if name]
         middle_initials_list = [self.__process_initial__(name) for name in self.middle_list if name]
@@ -285,13 +285,13 @@ class HumanName:
 
             >>> name = HumanName("Sir Bob Andrew Dole")
             >>> name.initials()
-            "B. A. D."
+            'B. A. D.'
             >>> name = HumanName("Sir Bob Andrew Dole", initials_format="{first} {middle}")
             >>> name.initials()
-            "B. A."
+            'B. A.'
             >>> name = HumanName("Doe, John A.", initials_delimiter="", initials_separator="")
             >>> name.initials()
-            "J A D"
+            'J A D'
         """
 
         first_initials_list = [self.__process_initial__(name, True) for name in self.first_list if name]
