@@ -43,6 +43,18 @@ class PrefixesTestCase(HumanNameTestBase):
         self.m(hn.last, "von bergen wessels", hn)
         self.m(hn.suffix, "M.D.", hn)
 
+    def test_title_before_and_after_prefixed_last_name(self) -> None:
+        # Issue #100: a repeated title/suffix token ("dr") before AND after a
+        # prefixed last name used to corrupt the middle name into
+        # " dr Vincent van" because the suffix-boundary lookup matched the
+        # LEADING "dr" instead of the trailing one.
+        hn = HumanName("dr Vincent van Gogh dr")
+        self.m(hn.title, "dr", hn)
+        self.m(hn.first, "Vincent", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "van Gogh", hn)
+        self.m(hn.suffix, "dr", hn)
+
     def test_two_part_last_name_with_suffix_comma(self) -> None:
         hn = HumanName("pennie von bergen wessels, III")
         self.m(hn.first, "pennie", hn)
