@@ -136,3 +136,70 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "Msc.Ed.", hn)
+
+    def test_suffix_delimiter_default_on_constants(self) -> None:
+        from nameparser.config import CONSTANTS
+        self.assertIs(CONSTANTS.suffix_delimiter, None)
+
+    def test_suffix_delimiter_kwarg_accepted(self) -> None:
+        hn = HumanName("Steven Hardman, RN - CRNA", suffix_delimiter=" - ")
+        self.assertEqual(hn.suffix_delimiter, " - ")
+
+    def test_suffix_delimiter_basic(self) -> None:
+        hn = HumanName("Steven Hardman, RN - CRNA", suffix_delimiter=" - ")
+        self.m(hn.first, "Steven", hn)
+        self.m(hn.last, "Hardman", hn)
+        self.m(hn.suffix, "RN, CRNA", hn)
+
+    def test_suffix_delimiter_multiple(self) -> None:
+        hn = HumanName("John Doe, MD - PhD - FACS", suffix_delimiter=" - ")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)
+        self.m(hn.suffix, "MD, PhD, FACS", hn)
+
+    def test_suffix_delimiter_no_effect_without_comma(self) -> None:
+        # suffix_delimiter only applies after the comma split; space-separated
+        # suffixes already work via the no-comma parse path
+        hn = HumanName("John Doe MD PhD", suffix_delimiter=" - ")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)
+        self.m(hn.suffix, "MD, PhD", hn)
+
+    def test_suffix_delimiter_constants_level(self) -> None:
+        from nameparser.config import CONSTANTS
+        _orig = CONSTANTS.suffix_delimiter
+        try:
+            CONSTANTS.suffix_delimiter = " - "
+            hn = HumanName("Steven Hardman, RN - CRNA")
+            self.m(hn.first, "Steven", hn)
+            self.m(hn.last, "Hardman", hn)
+            self.m(hn.suffix, "RN, CRNA", hn)
+        finally:
+            CONSTANTS.suffix_delimiter = _orig
+
+    def test_suffix_delimiter_none_by_default_known_limitation(self) -> None:
+        # Without suffix_delimiter set, " - " between suffixes breaks parsing.
+        # This test documents the known limitation — do not "fix" it.
+        hn = HumanName("Steven Hardman, RN - CRNA")
+        self.m(hn.first, "RN", hn)
+        self.m(hn.last, "Steven Hardman", hn)
+        self.m(hn.suffix, "CRNA", hn)
+
+    def test_suffix_delimiter_trailing_delimiter_ignored(self) -> None:
+        # Trailing delimiter produces an empty token that must be filtered out.
+        # Using a non-whitespace-terminated delimiter so stripping doesn't consume it.
+        hn = HumanName("John Doe, MD-PhD-", suffix_delimiter="-")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)
+        self.m(hn.suffix, "MD, PhD", hn)
+
+    def test_suffix_delimiter_comma_space_is_noop(self) -> None:
+        hn = HumanName("John Doe, MD, PhD", suffix_delimiter=", ")
+        self.m(hn.suffix, "MD, PhD", hn)
+
+    def test_suffix_delimiter_inverted_format_known_limitation(self) -> None:
+        # In inverted format, the first-name part is also split on the delimiter.
+        # "Mary - Kate" becomes two separate parts, causing a wrong parse.
+        # This is a documented limitation — do not "fix" it without a broader solution.
+        hn = HumanName("Doe, Mary - Kate, RN", suffix_delimiter=" - ")
+        self.assertNotEqual(hn.first, "Mary - Kate")

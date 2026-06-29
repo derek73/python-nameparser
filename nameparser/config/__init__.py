@@ -228,6 +228,25 @@ class Constants:
     spacing from the template is still applied.
     """
 
+    suffix_delimiter = None
+    """
+    If set, an additional delimiter used to split suffix groups after
+    comma-splitting. For example, setting ``suffix_delimiter=" - "`` allows
+    ``"RN - CRNA"`` to be parsed as two separate suffixes. Default is
+    ``None`` (no additional splitting beyond the standard comma split).
+
+    Note: setting this to ``","`` or ``", "`` has no additional effect —
+    the full name is already split on bare commas first, and each resulting
+    part is stripped of surrounding whitespace before this step runs.
+
+    Known limitation: the expansion is applied to all post-comma parts, not
+    just suffix groups. In inverted format (``"Last, First, suffix"``), the
+    first-name part is also split on the delimiter. In practice this is
+    harmless since first names rarely contain the delimiter string, but a
+    name like ``"Doe, Mary - Kate, RN"`` with ``suffix_delimiter=" - "``
+    would misparse.
+    """
+
     empty_attribute_default = ''
     """
     Default return value for empty attributes.
