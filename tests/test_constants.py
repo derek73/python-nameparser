@@ -1,5 +1,6 @@
 import copy
 import pickle
+import timeit
 
 from nameparser import HumanName
 from nameparser.config import Constants, RegexTupleManager, SetManager, TupleManager
@@ -232,3 +233,33 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 
         # The real customization is recovered and the property key is ignored.
         self.assertIn('legacytitle', restored.titles)
+
+
+class SuffixesPrefixesTitlesPerformanceTests(HumanNameTestBase):
+    """Guard against accidental cache removal on suffixes_prefixes_titles.
+
+    This library is commonly used to parse large batches of names, so
+    suffixes_prefixes_titles must remain cached.  Without the cache, each call
+    rebuilds the union from ~700 strings (~50-100 µs); with it, repeated access
+    is ~1000x faster.  This test asserts that 10 000 repeated calls complete
+    well within the time a single uncached union build would take.
+    """
+
+    def test_repeated_access_is_cached(self) -> None:
+        c = Constants()
+        first = c.suffixes_prefixes_titles
+        second = c.suffixes_prefixes_titles
+        assert first is second, "suffixes_prefixes_titles should return the same cached object on repeated access"
+
+        n = 10_000
+        elapsed = timeit.timeit(lambda: c.suffixes_prefixes_titles, number=n)
+
+        # One uncached union build over ~700 strings takes ~50-100 µs on any
+        # modern machine.  If caching is broken, 10 000 calls would take
+        # seconds; with caching they finish in well under 10 ms total.
+        limit = 0.010  # 10 ms = 1 µs/call average
+        assert elapsed < limit, (
+            f"suffixes_prefixes_titles appears uncached: {n} calls took "
+            f"{elapsed * 1000:.1f} ms (limit {limit * 1000:.0f} ms). "
+            "Was _pst caching removed?"
+        )
