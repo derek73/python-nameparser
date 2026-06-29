@@ -263,6 +263,14 @@ class HumanNamePythonTests(HumanNameTestBase):
         hn = HumanName("John Edgar Casey Williams III")
         self.m(hn.surnames, "Edgar Casey Williams", hn)
 
+    def test_given_names_list_attribute(self) -> None:
+        hn = HumanName("John Edgar Casey Williams III")
+        self.m(hn.given_names_list, ["John", "Edgar", "Casey"], hn)
+
+    def test_given_names_attribute(self) -> None:
+        hn = HumanName("John Edgar Casey Williams III")
+        self.m(hn.given_names, "John Edgar Casey", hn)
+
     def test_is_prefix_with_list(self) -> None:
         hn = HumanName()
         items = ['firstname', 'lastname', 'del']

@@ -25,6 +25,8 @@ Requires Python 3.10+.
     'III'
     >>> name.surnames
     'Q. Xavier de la Vega'
+    >>> name.given_names
+    'Juan Q. Xavier'
     >>> name.full_name = "Juan Q. Xavier Velasquez y Garcia, Jr."
     >>> name
     <HumanName : [
