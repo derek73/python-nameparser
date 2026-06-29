@@ -67,6 +67,8 @@ logging.getLogger('HumanName').setLevel(logging.DEBUG)
 
 The library has two layers: `nameparser/config/` (data) and `nameparser/parser.py` (logic).
 
+**Design philosophy — positional and language-agnostic.** The parser assigns parts by *position* plus small sets of words that join to neighbors; it never detects language. A name's language can't be reliably inferred from Latin-script transliteration ("Ali" is Arabic or Italian; "Van"/"Della"/"Bin" are first names in some cultures, particles in others), so language-specific rules belong in opt-in `Constants` config, never global defaults. Many "wrong for language X" reports (#133, #150, #130, #85, #103, #146, #83) are irreducible ambiguities — e.g. `de Mesnil` (want last name) vs `Van Johnson` (want first name) are the same `[prefix][word]` shape. Before adding a rule, confirm it doesn't break the opposite case (run the full suite — Portuguese and "Van Johnson" tests are the usual canaries).
+
 ### Configuration layer (`nameparser/config/`)
 
 Each module defines a plain Python set of known name pieces:
@@ -119,6 +121,8 @@ Each named attribute (`title`, `first`, etc.) is a `@property` that joins its co
 **`initials_separator` is intra-group only** — it controls the joiner between consecutive initials *within* a name group (e.g. two middle names in `middle_list`). Spaces *between* groups come from `initials_format`. To fully concatenate initials you need both `initials_separator=""` and `initials_format="{first}{middle}{last}"`.
 
 **`pr/NNN` local branches** track upstream PRs — don't commit to them by accident. Check `git branch --show-current` before starting work.
+
+**Prefix-join uses value-based `list.index()`** in `join_on_conjunctions` — fragile when a token value repeats (e.g. a trailing title that's also a suffix acronym, or two `van`s); constrain such lookups to start at `i + 1`. See #100.
 
 ### Tests (`tests/`)
 
