@@ -203,8 +203,25 @@ Furthermore, the delimiter for the string output can be set through:
 
   >>> HumanName("Doe, John A. Kenneth, Jr.", initials_delimiter=";").initials()
   'J; A; K; D;'
-  >>> HumanName("Doe, John A. Kenneth, Jr.", initials_format="{first}{middle}{last}", initials_delimiter=".").initials()
-  'J.A. K.D.'
+
+The separator between consecutive initials *within* a name group (e.g. two middle
+names) is controlled by :py:attr:`~nameparser.config.Constants.initials_separator`,
+which defaults to ``" "``. Setting it to ``""`` removes that space.
+
+``initials_delimiter``, ``initials_separator``, and ``initials_format`` work together:
+
+- ``initials_delimiter`` — appended *after* each individual initial (default ``"."``)
+- ``initials_separator`` — placed *between* consecutive initials in the same group (default ``" "``)
+- ``initials_format`` — controls how the first, middle, and last groups are arranged
+
+For example, to produce compact period-separated initials with no spaces:
+
+.. doctest:: initials separator
+
+  >>> HumanName("Doe, John A. Kenneth, Jr.", initials_separator="", initials_format="{first}{middle}{last}").initials()
+  'J.A.K.D.'
+  >>> HumanName("Doe, John A. Kenneth, Jr.", initials_delimiter="", initials_separator="", initials_format="{first}{middle}{last}").initials()
+  'JAKD'
 
 To get a list representation of the initials, use :py:meth:`~nameparser.HumanName.initials_list`.
 This function is unaffected by :py:attr:`~nameparser.config.Constants.initials_format`

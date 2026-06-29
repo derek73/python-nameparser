@@ -74,6 +74,10 @@ class InitialsTestCase(HumanNameTestBase):
         self.m(hn.initials(), "J; A; K; D;", hn)
         CONSTANTS.initials_delimiter = _orig
 
+    def test_initials_separator_default_on_constants(self) -> None:
+        from nameparser.config import CONSTANTS
+        self.assertEqual(CONSTANTS.initials_separator, " ")
+
     def test_initials_list(self) -> None:
         hn = HumanName("Andrew Boris Petersen")
         self.m(hn.initials_list(), ["A", "B", "P"], hn)
@@ -89,6 +93,30 @@ class InitialsTestCase(HumanNameTestBase):
     def test_initials_with_prefix(self) -> None:
         hn = HumanName("Alex van Johnson")
         self.m(hn.initials_list(), ["A", "J"], hn)
+
+    def test_initials_delimiter_empty_string_kwarg(self) -> None:
+        # Regression: initials_delimiter='' was silently ignored due to `or` defaulting
+        hn = HumanName("Doe, John A.", initials_delimiter="")
+        self.m(hn.initials(), "J A D", hn)
+
+    def test_initials_format_empty_string_kwarg(self) -> None:
+        # Regression: initials_format='' was silently ignored due to `or` defaulting
+        hn = HumanName("Doe, John A.")
+        hn2 = HumanName("Doe, John A.", initials_format="")
+        assert hn.initials() != hn2.initials()
+        # When format is empty string, result should be either "" or empty_attribute_default
+        result = hn2.initials()
+        assert result == "" or result == hn2.C.empty_attribute_default
+
+    def test_initials_separator_kwarg(self) -> None:
+        # initials_separator="" with initials_format="{first}{middle}{last}" gives
+        # period-separated initials with no spaces — a common academic citation style
+        hn = HumanName(
+            "Doe, John A. Kenneth",
+            initials_separator="",
+            initials_format="{first}{middle}{last}",
+        )
+        self.m(hn.initials(), "J.A.K.D.", hn)
 
     def test_constructor_first(self) -> None:
         hn = HumanName(first="TheName")
@@ -126,3 +154,38 @@ class InitialsTestCase(HumanNameTestBase):
         self.m(hn.first, "TheName", hn)
         self.m(hn.last, "lastname", hn)
         self.m(hn.title, "mytitle", hn)
+
+    def test_initials_separator_multiword_name_part(self) -> None:
+        # __process_initial__ splits on spaces internally for multi-word tokens;
+        # initials_separator must flow through there too.
+        hn = HumanName("", constants=None)
+        hn.C.initials_separator = ""
+        # Directly exercise __process_initial__ with a two-word part
+        result = hn.__process_initial__("Van Berg", firstname=True)
+        self.assertEqual(result, "VB")
+
+    def test_initials_separator_empty_multi_part_middle(self) -> None:
+        # Full workflow from issue #152: empty delimiter + separator + compact format
+        # gives fully concatenated initials with no spaces or punctuation.
+        # Spaces between groups come from initials_format, so that must also be set.
+        hn = HumanName(
+            "Doe, John A. Kenneth",
+            initials_delimiter="",
+            initials_separator="",
+            initials_format="{first}{middle}{last}",
+        )
+        self.m(hn.initials(), "JAKD", hn)
+
+    def test_initials_separator_constants_multi_part_middle(self) -> None:
+        from nameparser.config import CONSTANTS
+        _orig_d = CONSTANTS.initials_delimiter
+        _orig_s = CONSTANTS.initials_separator
+        _orig_f = CONSTANTS.initials_format
+        CONSTANTS.initials_delimiter = ""
+        CONSTANTS.initials_separator = ""
+        CONSTANTS.initials_format = "{first}{middle}{last}"
+        hn = HumanName("Doe, John A. Kenneth")
+        self.m(hn.initials(), "JAKD", hn)
+        CONSTANTS.initials_delimiter = _orig_d
+        CONSTANTS.initials_separator = _orig_s
+        CONSTANTS.initials_format = _orig_f
