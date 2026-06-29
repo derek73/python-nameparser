@@ -206,12 +206,13 @@ Furthermore, the delimiter for the string output can be set through:
 
 The separator between consecutive initials *within* a name group (e.g. two middle
 names) is controlled by :py:attr:`~nameparser.config.Constants.initials_separator`,
-which defaults to ``" "``. Setting it to ``""`` removes that space.
+which defaults to ``" "``. Setting it to ``""`` removes that space within a group;
+spacing *between* groups is still governed by ``initials_format``.
 
 ``initials_delimiter``, ``initials_separator``, and ``initials_format`` work together:
 
 - ``initials_delimiter`` — appended *after* each individual initial (default ``"."``)
-- ``initials_separator`` — placed *between* consecutive initials in the same group (default ``" "``)
+- ``initials_separator`` — placed *after* the delimiter between consecutive initials in the same group (default ``" "``), so with ``delimiter="."`` and ``separator=" "`` you get ``A. K.``
 - ``initials_format`` — controls how the first, middle, and last groups are arranged
 
 For example, to produce compact period-separated initials with no spaces:

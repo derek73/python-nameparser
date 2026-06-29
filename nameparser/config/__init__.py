@@ -223,7 +223,9 @@ class Constants:
 
     With defaults ``initials_delimiter="."`` and ``initials_separator=" "``,
     ``initials()`` produces ``"J. A. D."``. Setting ``initials_separator=""``
-    with ``initials_delimiter="."`` produces ``"J.A.D."``.
+    with ``initials_delimiter="."`` and ``initials_format="{first}{middle}{last}"``
+    produces ``"J.A.D."``. With the default ``initials_format``, group-level
+    spacing from the template is still applied.
     """
 
     empty_attribute_default = ''

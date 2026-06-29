@@ -155,11 +155,23 @@ class InitialsTestCase(HumanNameTestBase):
         self.m(hn.last, "lastname", hn)
         self.m(hn.title, "mytitle", hn)
 
+    def test_initials_separator_kwarg_multiword_part(self) -> None:
+        # Regression: initials_separator kwarg must flow into __process_initial__
+        # for multi-word name parts, not just into the initials() join calls.
+        hn = HumanName("", initials_separator="")
+        result = hn.__process_initial__("Van Berg", firstname=True)
+        self.assertEqual(result, "VB")
+
+    def test_string_format_empty_string_kwarg(self) -> None:
+        # Regression: string_format='' was silently ignored due to `or` defaulting
+        hn = HumanName("John Doe", string_format="")
+        self.assertEqual(str(hn), "")
+
     def test_initials_separator_multiword_name_part(self) -> None:
         # __process_initial__ splits on spaces internally for multi-word tokens;
         # initials_separator must flow through there too.
         hn = HumanName("", constants=None)
-        hn.C.initials_separator = ""
+        hn.initials_separator = ""
         # Directly exercise __process_initial__ with a two-word part
         result = hn.__process_initial__("Van Berg", firstname=True)
         self.assertEqual(result, "VB")

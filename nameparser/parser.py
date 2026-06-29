@@ -179,7 +179,7 @@ class HumanName:
             return getattr(self, self._members[c]) or next(self)
 
     def __str__(self) -> str:
-        if self.string_format:
+        if self.string_format is not None:
             # string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
             _s = self.string_format.format(**self.as_dict())
             # remove trailing punctuation from missing nicknames
@@ -243,7 +243,7 @@ class HumanName:
                 if not (self.is_prefix(part) or self.is_conjunction(part)) or firstname:
                     initials.append(part[0])
         if len(initials) > 0:
-            return self.C.initials_separator.join(initials)
+            return self.initials_separator.join(initials)
         else:
             return self.C.empty_attribute_default
 
