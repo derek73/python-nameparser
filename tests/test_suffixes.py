@@ -136,3 +136,7 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "Msc.Ed.", hn)
+
+    def test_suffix_delimiter_default_on_constants(self) -> None:
+        from nameparser.config import CONSTANTS
+        self.assertIs(CONSTANTS.suffix_delimiter, None)

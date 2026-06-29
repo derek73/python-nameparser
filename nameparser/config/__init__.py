@@ -228,6 +228,17 @@ class Constants:
     spacing from the template is still applied.
     """
 
+    suffix_delimiter = None
+    """
+    If set, an additional delimiter used to split suffix groups after
+    comma-splitting. For example, setting ``suffix_delimiter=" - "`` allows
+    ``"RN - CRNA"`` to be parsed as two separate suffixes. Default is
+    ``None`` (no additional splitting beyond the standard comma split).
+
+    Note: setting this to ``", "`` is a no-op — comma-splitting already
+    occurs unconditionally before this step.
+    """
+
     empty_attribute_default = ''
     """
     Default return value for empty attributes.
