@@ -237,6 +237,13 @@ class Constants:
 
     Note: setting this to ``", "`` is a no-op — comma-splitting already
     occurs unconditionally before this step.
+
+    Known limitation: the expansion is applied to all post-comma parts, not
+    just suffix groups. In inverted format (``"Last, First, suffix"``), the
+    first-name part is also split on the delimiter. In practice this is
+    harmless since first names rarely contain the delimiter string, but a
+    name like ``"Doe, Mary - Kate, RN"`` with ``suffix_delimiter=" - "``
+    would misparse.
     """
 
     empty_attribute_default = ''

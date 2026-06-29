@@ -180,5 +180,6 @@ class SuffixesTestCase(HumanNameTestBase):
     def test_suffix_delimiter_none_by_default_known_limitation(self) -> None:
         # Without suffix_delimiter set, " - " between suffixes breaks parsing.
         # This test documents the known limitation — do not "fix" it.
+        # (Passes when first is "RN" or empty — any incorrect parse is acceptable.)
         hn = HumanName("Steven Hardman, RN - CRNA")
         self.assertNotEqual(hn.first, "Steven")
