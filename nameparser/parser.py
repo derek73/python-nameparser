@@ -870,7 +870,7 @@ class HumanName:
         conj_index = [i for i, piece in enumerate(pieces) if self.is_conjunction(piece)]
 
         for i in conj_index:
-            if len(pieces[i]) == 1 and total_length < 4:
+            if len(pieces[i]) == 1 and total_length < 4 and pieces[i].isalpha():
                 # if there are only 3 total parts (minus known titles, suffixes
                 # and prefixes) and this conjunction is a single letter, prefer
                 # treating it as an initial rather than a conjunction.
