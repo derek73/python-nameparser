@@ -109,15 +109,15 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         hn.string_format = "{last} {suffix}, {first}"
         self.assertEqual(str(hn), "Smith, John")
 
-    def test_empty_field_drops_surrounding_punctuation(self) -> None:
-        hn = HumanName("John Smith")
-        hn.string_format = "{title} {first} {last}"
-        self.assertEqual(str(hn), "John Smith")
+    def test_empty_field_present_suffix_unaffected(self) -> None:
+        hn = HumanName("John Smith Jr")
+        hn.string_format = "{last} {suffix}, {first}"
+        self.assertEqual(str(hn), "Smith Jr, John")
 
-    def test_empty_field_interior_comma_dropped(self) -> None:
+    def test_multiple_empty_fields_before_comma(self) -> None:
         hn = HumanName("John Smith")
-        hn.string_format = "{last}, {suffix} {first}"
-        self.assertEqual(str(hn), "Smith, John")
+        hn.string_format = "{title} {suffix}, {first} {last}"
+        self.assertEqual(str(hn), "John Smith")
 
     def test_remove_emojis(self) -> None:
         hn = HumanName("Sam Smith 😊")
