@@ -111,6 +111,14 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.first, "John and Jane", hn)
         self.m(hn.last, "Smith", hn)
 
+    def test_couple_titles_ampersand_conjunction(self) -> None:
+        # issue 151: single-char conjunctions in the conjunctions list should
+        # be honored even when total_length < 4
+        hn = HumanName('Mr. & Mrs. John Smith')
+        self.m(hn.title, "Mr. & Mrs.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)
+
     def test_title_with_three_part_name_last_initial_is_suffix_uppercase_no_period(self) -> None:
         hn = HumanName("King John Alexander V")
         self.m(hn.title, "King", hn)
