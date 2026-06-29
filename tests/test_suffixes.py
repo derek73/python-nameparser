@@ -34,6 +34,15 @@ class SuffixesTestCase(HumanNameTestBase):
         # NOTE: this adds a comma when the original format did not have one.
         self.m(hn.suffix, "Jr., MD", hn)
 
+    def test_roman_numeral_v_suffix_comma_format(self) -> None:
+        # 'V' is a single uppercase letter, so it was incorrectly matched as an
+        # initial and not recognized as a suffix (issue #136)
+        hn = HumanName("John W. Ingram, V")
+        self.m(hn.first, "John", hn)
+        self.m(hn.middle, "W.", hn)
+        self.m(hn.last, "Ingram", hn)
+        self.m(hn.suffix, "V", hn)
+
     def test_two_suffixes_suffix_comma_format(self) -> None:
         hn = HumanName("Franklin Washington, Jr. MD")
         self.m(hn.first, "Franklin", hn)

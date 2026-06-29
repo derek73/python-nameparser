@@ -487,6 +487,21 @@ class HumanName:
                 return False
         return True
 
+    def are_suffixes_after_comma(self, pieces: Iterable[str]) -> bool:
+        """Like are_suffixes but suffix_not_acronyms members are always
+        recognized, even when they look like single-letter initials.
+
+        Used when detecting suffix-comma format (e.g. "John Ingram, V") where
+        the post-comma position is unambiguous: a single uppercase roman
+        numeral like 'V' is definitionally a suffix there, not an initial.
+        """
+        for piece in pieces:
+            if lc(piece) in self.C.suffix_not_acronyms:
+                continue
+            if not self.is_suffix(piece):
+                return False
+        return True
+
     def is_rootname(self, piece: str) -> bool:
         """
         Is not a known title, suffix or prefix. Just first, middle, last names.
@@ -686,7 +701,7 @@ class HumanName:
 
             post_comma_pieces = self.parse_pieces(parts[1].split(' '), 1)
 
-            if self.are_suffixes(parts[1].split(' ')) \
+            if self.are_suffixes_after_comma(parts[1].split(' ')) \
                     and len(parts[0].split(' ')) > 1:
 
                 # suffix comma:
