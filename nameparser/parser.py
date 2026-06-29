@@ -53,6 +53,9 @@ class HumanName:
     :param str string_format: python string formatting
     :param str initials_format: python initials string formatting
     :param str initials_delimter: string delimiter for initials
+    :param str initials_separator: string separator between consecutive initials
+    :param str suffix_delimiter: additional delimiter to split suffix groups
+        after comma-splitting, e.g. ``" - "`` for ``"RN - CRNA"``
     :param str first: first name
     :param str middle: middle name
     :param str last: last name
@@ -95,6 +98,7 @@ class HumanName:
         initials_format: str | None = None,
         initials_delimiter: str | None = None,
         initials_separator: str | None = None,
+        suffix_delimiter: str | None = None,
         first: str | list[str] | None = None,
         middle: str | list[str] | None = None,
         last: str | list[str] | None = None,
@@ -111,6 +115,7 @@ class HumanName:
         self.initials_format    = initials_format    if initials_format    is not None else self.C.initials_format
         self.initials_delimiter = initials_delimiter if initials_delimiter is not None else self.C.initials_delimiter
         self.initials_separator = initials_separator if initials_separator is not None else self.C.initials_separator
+        self.suffix_delimiter   = suffix_delimiter   if suffix_delimiter   is not None else self.C.suffix_delimiter
         if (first or middle or last or title or suffix or nickname):
             self.first = first
             self.middle = middle

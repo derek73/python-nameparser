@@ -140,3 +140,7 @@ class SuffixesTestCase(HumanNameTestBase):
     def test_suffix_delimiter_default_on_constants(self) -> None:
         from nameparser.config import CONSTANTS
         self.assertIs(CONSTANTS.suffix_delimiter, None)
+
+    def test_suffix_delimiter_kwarg_accepted(self) -> None:
+        hn = HumanName("Steven Hardman, RN - CRNA", suffix_delimiter=" - ")
+        self.assertEqual(hn.suffix_delimiter, " - ")
