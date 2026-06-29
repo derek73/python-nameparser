@@ -144,3 +144,23 @@ class SuffixesTestCase(HumanNameTestBase):
     def test_suffix_delimiter_kwarg_accepted(self) -> None:
         hn = HumanName("Steven Hardman, RN - CRNA", suffix_delimiter=" - ")
         self.assertEqual(hn.suffix_delimiter, " - ")
+
+    def test_suffix_delimiter_basic(self) -> None:
+        hn = HumanName("Steven Hardman, RN - CRNA", suffix_delimiter=" - ")
+        self.m(hn.first, "Steven", hn)
+        self.m(hn.last, "Hardman", hn)
+        self.m(hn.suffix, "RN, CRNA", hn)
+
+    def test_suffix_delimiter_multiple(self) -> None:
+        hn = HumanName("John Doe, MD - PhD - FACS", suffix_delimiter=" - ")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)
+        self.m(hn.suffix, "MD, PhD, FACS", hn)
+
+    def test_suffix_delimiter_no_effect_without_comma(self) -> None:
+        # suffix_delimiter only applies after the comma split; space-separated
+        # suffixes already work via the no-comma parse path
+        hn = HumanName("John Doe MD PhD", suffix_delimiter=" - ")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)
+        self.m(hn.suffix, "MD, PhD", hn)

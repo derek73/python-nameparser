@@ -628,6 +628,12 @@ class HumanName:
         # break up full_name by commas
         parts = [x.strip() for x in self._full_name.split(",")]
 
+        if self.suffix_delimiter and len(parts) > 1:
+            expanded = [parts[0]]
+            for part in parts[1:]:
+                expanded.extend([p.strip() for p in part.split(self.suffix_delimiter)])
+            parts = expanded
+
         log.debug("full_name: %s", self._full_name)
         log.debug("parts: %s", parts)
 
