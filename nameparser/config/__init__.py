@@ -215,6 +215,19 @@ class Constants:
     Will be used to add a delimiter between each initial.
     """
 
+    initials_separator = " "
+    """
+    The default separator placed between consecutive initials within a name
+    group (first, middle, or last). Distinct from ``initials_delimiter``,
+    which is the trailing character after each individual initial.
+
+    With defaults ``initials_delimiter="."`` and ``initials_separator=" "``,
+    ``initials()`` produces ``"J. A. D."``. Setting ``initials_separator=""``
+    with ``initials_delimiter="."`` and ``initials_format="{first}{middle}{last}"``
+    produces ``"J.A.D."``. With the default ``initials_format``, group-level
+    spacing from the template is still applied.
+    """
+
     empty_attribute_default = ''
     """
     Default return value for empty attributes.

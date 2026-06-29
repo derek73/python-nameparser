@@ -94,6 +94,7 @@ class HumanName:
         string_format: str | None = None,
         initials_format: str | None = None,
         initials_delimiter: str | None = None,
+        initials_separator: str | None = None,
         first: str | list[str] | None = None,
         middle: str | list[str] | None = None,
         last: str | list[str] | None = None,
@@ -106,9 +107,10 @@ class HumanName:
             self.C = Constants()
 
         self.encoding = encoding
-        self.string_format = string_format or self.C.string_format
-        self.initials_format = initials_format or self.C.initials_format
-        self.initials_delimiter = initials_delimiter or self.C.initials_delimiter
+        self.string_format      = string_format      if string_format      is not None else self.C.string_format
+        self.initials_format    = initials_format    if initials_format    is not None else self.C.initials_format
+        self.initials_delimiter = initials_delimiter if initials_delimiter is not None else self.C.initials_delimiter
+        self.initials_separator = initials_separator if initials_separator is not None else self.C.initials_separator
         if (first or middle or last or title or suffix or nickname):
             self.first = first
             self.middle = middle
@@ -177,7 +179,7 @@ class HumanName:
             return getattr(self, self._members[c]) or next(self)
 
     def __str__(self) -> str:
-        if self.string_format:
+        if self.string_format is not None:
             # string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
             _s = self.string_format.format(**self.as_dict())
             # remove trailing punctuation from missing nicknames
@@ -241,7 +243,7 @@ class HumanName:
                 if not (self.is_prefix(part) or self.is_conjunction(part)) or firstname:
                     initials.append(part[0])
         if len(initials) > 0:
-            return " ".join(initials)
+            return self.initials_separator.join(initials)
         else:
             return self.C.empty_attribute_default
 
@@ -265,19 +267,25 @@ class HumanName:
 
     def initials(self) -> str:
         """
-            Return period-delimited initials of the first, middle and optionally last name.
+        Return formatted initials for the name, controlled by
+        ``initials_format``, ``initials_delimiter``, and ``initials_separator``.
 
-            :param bool include_last_name: Include the last name as part of the initials
-            :rtype: str
+        ``initials_delimiter`` is appended after each individual initial.
+        ``initials_separator`` is placed between consecutive initials within
+        a name group (first, middle, or last). Both can be set as
+        ``Constants`` attributes or as ``HumanName`` constructor kwargs.
 
-            .. doctest::
+        .. doctest::
 
-                >>> name = HumanName("Sir Bob Andrew Dole")
-                >>> name.initials()
-                "B. A. D."
-                >>> name = HumanName("Sir Bob Andrew Dole", initials_format="{first} {middle}")
-                >>> name.initials()
-                "B. A."
+            >>> name = HumanName("Sir Bob Andrew Dole")
+            >>> name.initials()
+            "B. A. D."
+            >>> name = HumanName("Sir Bob Andrew Dole", initials_format="{first} {middle}")
+            >>> name.initials()
+            "B. A."
+            >>> name = HumanName("Doe, John A.", initials_delimiter="", initials_separator="")
+            >>> name.initials()
+            "J A D"
         """
 
         first_initials_list = [self.__process_initial__(name, True) for name in self.first_list if name]
@@ -289,11 +297,11 @@ class HumanName:
         # output. A fully-empty result falls back to empty_attribute_default,
         # matching the other attribute accessors (e.g. ``first``).
         initials_dict = {
-            "first":  (self.initials_delimiter + " ").join(first_initials_list) + self.initials_delimiter
+            "first":  (self.initials_delimiter + self.initials_separator).join(first_initials_list) + self.initials_delimiter
             if len(first_initials_list) else "",
-            "middle": (self.initials_delimiter + " ").join(middle_initials_list) + self.initials_delimiter
+            "middle": (self.initials_delimiter + self.initials_separator).join(middle_initials_list) + self.initials_delimiter
             if len(middle_initials_list) else "",
-            "last": (self.initials_delimiter + " ").join(last_initials_list) + self.initials_delimiter
+            "last": (self.initials_delimiter + self.initials_separator).join(last_initials_list) + self.initials_delimiter
             if len(last_initials_list) else ""
         }
 
