@@ -247,8 +247,9 @@ class SuffixesPrefixesTitlesPerformanceTests(HumanNameTestBase):
 
     def test_repeated_access_is_cached(self) -> None:
         c = Constants()
-        # Prime the cache with one access.
-        _ = c.suffixes_prefixes_titles
+        first = c.suffixes_prefixes_titles
+        second = c.suffixes_prefixes_titles
+        assert first is second, "suffixes_prefixes_titles should return the same cached object on repeated access"
 
         n = 10_000
         elapsed = timeit.timeit(lambda: c.suffixes_prefixes_titles, number=n)
