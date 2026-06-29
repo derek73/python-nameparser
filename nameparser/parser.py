@@ -488,12 +488,14 @@ class HumanName:
         return True
 
     def are_suffixes_after_comma(self, pieces: Iterable[str]) -> bool:
-        """Like are_suffixes but suffix_not_acronyms members are always
-        recognized, even when they look like single-letter initials.
+        """Like are_suffixes, but pieces found in suffix_not_acronyms are
+        accepted unconditionally without passing through is_suffix().
 
         Used when detecting suffix-comma format (e.g. "John Ingram, V") where
-        the post-comma position is unambiguous: a single uppercase roman
-        numeral like 'V' is definitionally a suffix there, not an initial.
+        the post-comma position is unambiguous. This covers all
+        suffix_not_acronyms members (i, ii, iii, iv, v, jr, sr, etc.),
+        case-insensitively, including single-letter entries that is_suffix()
+        would otherwise reject via is_an_initial().
         """
         for piece in pieces:
             if lc(piece) in self.C.suffix_not_acronyms:

@@ -35,13 +35,33 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.suffix, "Jr., MD", hn)
 
     def test_roman_numeral_v_suffix_comma_format(self) -> None:
-        # 'V' is a single uppercase letter, so it was incorrectly matched as an
-        # initial and not recognized as a suffix (issue #136)
+        # suffix-comma position is unambiguous: 'V' must be a suffix, not a single-letter initial
         hn = HumanName("John W. Ingram, V")
         self.m(hn.first, "John", hn)
         self.m(hn.middle, "W.", hn)
         self.m(hn.last, "Ingram", hn)
         self.m(hn.suffix, "V", hn)
+
+    def test_roman_numeral_i_suffix_comma_format(self) -> None:
+        # 'I' has the same single-letter ambiguity as 'V'
+        hn = HumanName("John W. Smith, I")
+        self.m(hn.first, "John", hn)
+        self.m(hn.middle, "W.", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.suffix, "I", hn)
+
+    def test_suffix_not_acronym_then_acronym_suffix_comma_format(self) -> None:
+        # single-letter suffix_not_acronyms entry followed by an acronym suffix
+        hn = HumanName("John Smith, V MD")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.suffix, "V MD", hn)
+
+    def test_two_suffix_not_acronyms_suffix_comma_format(self) -> None:
+        hn = HumanName("John Smith, V Jr.")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.suffix, "V Jr.", hn)
 
     def test_two_suffixes_suffix_comma_format(self) -> None:
         hn = HumanName("Franklin Washington, Jr. MD")
