@@ -59,6 +59,8 @@ Other editable attributes
 * :py:obj:`~nameparser.config.Constants.empty_attribute_default` - value returned by empty attributes, defaults to empty string
 * :py:obj:`~nameparser.config.Constants.capitalize_name` - If set, applies :py:meth:`~nameparser.parser.HumanName.capitalize` to :py:class:`~nameparser.parser.HumanName` instance.
 * :py:obj:`~nameparser.config.Constants.force_mixed_case_capitalization` - If set, forces the capitalization of mixed case strings when :py:meth:`~nameparser.parser.HumanName.capitalize` is called.
+* :py:obj:`~nameparser.config.Constants.suffix_delimiter` - additional delimiter used to split suffix groups after comma-splitting, e.g. ``" - "`` for names like ``"Jane Smith, RN - CRNA"``. Defaults to ``None`` (disabled).
+* :py:obj:`~nameparser.config.Constants.initials_separator` - string placed between consecutive initials within the same name group (after the delimiter). Defaults to ``" "``, so ``"A. K."``; set to ``""`` for compact ``"A.K."``.
 
 
 

@@ -1,5 +1,16 @@
 Release Log
 ===========
+* 1.3.0 - Unreleased
+    - Add ``suffix_delimiter`` to ``Constants`` and ``HumanName`` for parsing suffixes separated by arbitrary delimiters, e.g. ``"RN - CRNA"`` (#156)
+    - Add ``initials_separator`` to ``Constants`` and ``HumanName`` to control spacing between consecutive initials within a name group (#171)
+    - Fix ``Constants`` customizations, singleton identity, and ``TupleManager`` subclass being lost across ``pickle``/``deepcopy`` round-trips (#167, #168, #169)
+    - Fix capitalization of suffix acronyms written with dots, e.g. ``"M.D."`` (closes #141)
+    - Fix recognition of single-letter roman numeral suffixes (e.g. ``"I"``, ``"V"``) in suffix-comma format (closes #136)
+    - Fix recognition of trailing ``suffix_not_acronyms`` (e.g. ``"Jr."``) in lastname-comma format (closes #144)
+    - Fix single-character symbol conjunctions (e.g. ``"&"``, ``"/"``) being ignored in short names (#173)
+    - Fix spurious leading space in surnames and empty token in suffix list after ``capitalize()`` with an empty middle or suffix (#164)
+    - Fix extra whitespace before punctuation in ``str()`` output when a ``string_format`` field is empty (closes #139)
+    - Fix ``'apn aprn'`` split into separate ``suffix_acronyms`` entries so each is recognized independently (closes #155)
 * 1.2.1 - June 19, 2026
     - Fix ``initials()`` interpolating the literal ``None`` for empty name parts when ``empty_attribute_default = None`` (e.g. ``"J. None D."``); empty parts now render as an empty string and a fully-empty result returns ``empty_attribute_default``
     - Add ``python -m nameparser "Name String"`` command-line helper that prints a parsed name

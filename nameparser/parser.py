@@ -53,6 +53,9 @@ class HumanName:
     :param str string_format: python string formatting
     :param str initials_format: python initials string formatting
     :param str initials_delimter: string delimiter for initials
+    :param str initials_separator: string separator between consecutive initials
+    :param str suffix_delimiter: additional delimiter to split post-comma parts
+        before suffix detection, e.g. ``" - "`` for ``"RN - CRNA"``
     :param str first: first name
     :param str middle: middle name
     :param str last: last name
@@ -94,6 +97,8 @@ class HumanName:
         string_format: str | None = None,
         initials_format: str | None = None,
         initials_delimiter: str | None = None,
+        initials_separator: str | None = None,
+        suffix_delimiter: str | None = None,
         first: str | list[str] | None = None,
         middle: str | list[str] | None = None,
         last: str | list[str] | None = None,
@@ -106,9 +111,11 @@ class HumanName:
             self.C = Constants()
 
         self.encoding = encoding
-        self.string_format = string_format or self.C.string_format
-        self.initials_format = initials_format or self.C.initials_format
-        self.initials_delimiter = initials_delimiter or self.C.initials_delimiter
+        self.string_format      = string_format      if string_format      is not None else self.C.string_format
+        self.initials_format    = initials_format    if initials_format    is not None else self.C.initials_format
+        self.initials_delimiter = initials_delimiter if initials_delimiter is not None else self.C.initials_delimiter
+        self.initials_separator = initials_separator if initials_separator is not None else self.C.initials_separator
+        self.suffix_delimiter   = suffix_delimiter   if suffix_delimiter   is not None else self.C.suffix_delimiter
         if (first or middle or last or title or suffix or nickname):
             self.first = first
             self.middle = middle
@@ -177,11 +184,12 @@ class HumanName:
             return getattr(self, self._members[c]) or next(self)
 
     def __str__(self) -> str:
-        if self.string_format:
+        if self.string_format is not None:
             # string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
             _s = self.string_format.format(**self.as_dict())
             # remove trailing punctuation from missing nicknames
             _s = _s.replace(str(self.C.empty_attribute_default), '').replace(" ()", "").replace(" ''", "").replace(' ""', "")
+            _s = self.C.regexes.space_before_comma.sub(',', _s)
             return self.collapse_whitespace(_s).strip(', ')
         return " ".join(self)
 
@@ -214,9 +222,9 @@ class HumanName:
 
             >>> name = HumanName("Bob Dole")
             >>> name.as_dict()
-            {'last': 'Dole', 'suffix': '', 'title': '', 'middle': '', 'nickname': '', 'first': 'Bob'}
+            {'title': '', 'first': 'Bob', 'middle': '', 'last': 'Dole', 'suffix': '', 'nickname': ''}
             >>> name.as_dict(False)
-            {'last': 'Dole', 'first': 'Bob'}
+            {'first': 'Bob', 'last': 'Dole'}
 
         """
         d = {}
@@ -241,7 +249,7 @@ class HumanName:
                 if not (self.is_prefix(part) or self.is_conjunction(part)) or firstname:
                     initials.append(part[0])
         if len(initials) > 0:
-            return " ".join(initials)
+            return self.initials_separator.join(initials)
         else:
             return self.C.empty_attribute_default
 
@@ -253,10 +261,10 @@ class HumanName:
 
                 >>> name = HumanName("Sir Bob Andrew Dole")
                 >>> name.initials_list()
-                ["B", "A", "D"]
+                ['B', 'A', 'D']
                 >>> name = HumanName("J. Doe")
                 >>> name.initials_list()
-                ["J", "D"]
+                ['J', 'D']
         """
         first_initials_list = [self.__process_initial__(name, True) for name in self.first_list if name]
         middle_initials_list = [self.__process_initial__(name) for name in self.middle_list if name]
@@ -265,19 +273,25 @@ class HumanName:
 
     def initials(self) -> str:
         """
-            Return period-delimited initials of the first, middle and optionally last name.
+        Return formatted initials for the name, controlled by
+        ``initials_format``, ``initials_delimiter``, and ``initials_separator``.
 
-            :param bool include_last_name: Include the last name as part of the initials
-            :rtype: str
+        ``initials_delimiter`` is appended after each individual initial.
+        ``initials_separator`` is placed between consecutive initials within
+        a name group (first, middle, or last). Both can be set as
+        ``Constants`` attributes or as ``HumanName`` constructor kwargs.
 
-            .. doctest::
+        .. doctest::
 
-                >>> name = HumanName("Sir Bob Andrew Dole")
-                >>> name.initials()
-                "B. A. D."
-                >>> name = HumanName("Sir Bob Andrew Dole", initials_format="{first} {middle}")
-                >>> name.initials()
-                "B. A."
+            >>> name = HumanName("Sir Bob Andrew Dole")
+            >>> name.initials()
+            'B. A. D.'
+            >>> name = HumanName("Sir Bob Andrew Dole", initials_format="{first} {middle}")
+            >>> name.initials()
+            'B. A.'
+            >>> name = HumanName("Doe, John A.", initials_delimiter="", initials_separator="")
+            >>> name.initials()
+            'J A D'
         """
 
         first_initials_list = [self.__process_initial__(name, True) for name in self.first_list if name]
@@ -289,11 +303,11 @@ class HumanName:
         # output. A fully-empty result falls back to empty_attribute_default,
         # matching the other attribute accessors (e.g. ``first``).
         initials_dict = {
-            "first":  (self.initials_delimiter + " ").join(first_initials_list) + self.initials_delimiter
+            "first":  (self.initials_delimiter + self.initials_separator).join(first_initials_list) + self.initials_delimiter
             if len(first_initials_list) else "",
-            "middle": (self.initials_delimiter + " ").join(middle_initials_list) + self.initials_delimiter
+            "middle": (self.initials_delimiter + self.initials_separator).join(middle_initials_list) + self.initials_delimiter
             if len(middle_initials_list) else "",
-            "last": (self.initials_delimiter + " ").join(last_initials_list) + self.initials_delimiter
+            "last": (self.initials_delimiter + self.initials_separator).join(last_initials_list) + self.initials_delimiter
             if len(last_initials_list) else ""
         }
 
@@ -474,6 +488,44 @@ class HumanName:
                 return False
         return True
 
+    def are_suffixes_after_comma(self, pieces: Iterable[str]) -> bool:
+        """Like are_suffixes, but pieces found in suffix_not_acronyms are
+        accepted unconditionally without passing through is_suffix().
+
+        Used when detecting suffix-comma format (e.g. "John Ingram, V") where
+        the post-comma position is unambiguous. This covers all
+        suffix_not_acronyms members (i, ii, iii, iv, v, jr, sr, etc.),
+        case-insensitively, including single-letter entries that is_suffix()
+        would otherwise reject via is_an_initial().
+        """
+        for piece in pieces:
+            if lc(piece) in self.C.suffix_not_acronyms:
+                continue
+            if not self.is_suffix(piece):
+                return False
+        return True
+
+    def is_suffix_at_lastname_comma_end(self, piece: str, nxt: str | None, parts: list[str]) -> bool:
+        """True when ``piece`` is a suffix_not_acronyms member that should be
+        treated as a suffix at the end of ``parts[1]`` (the post-comma segment)
+        in a lastname-comma name, where ``parts`` is the full comma-split of the
+        name string.
+
+        Returns True only when all three conditions hold:
+        - ``nxt is None``: piece is the last token in the post-comma segment
+        - ``len(parts) == 2``: no ``parts[2]`` suffix segment exists
+        - ``lc(piece) in suffix_not_acronyms``
+
+        When ``parts[2]`` exists the caller already declared an explicit suffix
+        via comma (e.g. 'Doe, Rev. John V, Jr.'), making the trailing token more
+        likely a middle initial; ``len(parts) == 2`` excludes that case.
+        Used as an OR alternative to ``is_suffix()`` for pieces that
+        ``is_suffix()`` would reject via ``is_an_initial()``.
+        """
+        return (nxt is None
+                and len(parts) == 2
+                and lc(piece) in self.C.suffix_not_acronyms)
+
     def is_rootname(self, piece: str) -> bool:
         """
         Is not a known title, suffix or prefix. Just first, middle, last names.
@@ -615,6 +667,12 @@ class HumanName:
         # break up full_name by commas
         parts = [x.strip() for x in self._full_name.split(",")]
 
+        if self.suffix_delimiter and len(parts) > 1:
+            expanded = [parts[0]]
+            for part in parts[1:]:
+                expanded.extend([p for p in (p.strip() for p in part.split(self.suffix_delimiter)) if p])
+            parts = expanded
+
         log.debug("full_name: %s", self._full_name)
         log.debug("parts: %s", parts)
 
@@ -667,7 +725,7 @@ class HumanName:
 
             post_comma_pieces = self.parse_pieces(parts[1].split(' '), 1)
 
-            if self.are_suffixes(parts[1].split(' ')) \
+            if self.are_suffixes_after_comma(parts[1].split(' ')) \
                     and len(parts[0].split(' ')) > 1:
 
                 # suffix comma:
@@ -731,7 +789,7 @@ class HumanName:
                     if not self.first:
                         self.first_list.append(piece)
                         continue
-                    if self.is_suffix(piece):
+                    if self.is_suffix(piece) or self.is_suffix_at_lastname_comma_end(piece, nxt, parts):
                         self.suffix_list.append(piece)
                         continue
                     self.middle_list.append(piece)
@@ -851,7 +909,7 @@ class HumanName:
         conj_index = [i for i, piece in enumerate(pieces) if self.is_conjunction(piece)]
 
         for i in conj_index:
-            if len(pieces[i]) == 1 and total_length < 4:
+            if len(pieces[i]) == 1 and total_length < 4 and pieces[i].isalpha():
                 # if there are only 3 total parts (minus known titles, suffixes
                 # and prefixes) and this conjunction is a single letter, prefer
                 # treating it as an initial rather than a conjunction.
@@ -943,6 +1001,8 @@ class HumanName:
         exceptions = self.C.capitalization_exceptions
         if lc(word) in exceptions:
             return exceptions[lc(word)]
+        if lc(word).replace('.', '') in exceptions:
+            return exceptions[lc(word).replace('.', '')]
         mac_match = self.C.regexes.mac.match(word)
         if mac_match:
             def cap_after_mac(m: re.Match) -> str:
