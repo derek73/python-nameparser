@@ -116,7 +116,7 @@ Each named attribute (`title`, `first`, etc.) is a `@property` that joins its co
 
 **`lc()` strips only trailing periods** — `'M.D.'` → `'m.d'`, not `'md'`. Exception keys in `capitalization_exceptions` are dot-free, so lookups must also try `.replace('.', '')`.
 
-**`docs/usage.rst` contains live doctests** — edits can break `uv run pytest` (run via `--doctest-modules`). Verify new examples with `python3 -c "..."` before committing.
+**Doctests** — docstring examples in `nameparser/*.py` run under `uv run pytest` (`--doctest-modules`; `testpaths` is `tests` + `nameparser` only). The `.rst` doctests in `docs/` (`usage.rst`, `customize.rst`) are **not** run by pytest or CI (CI does `sphinx-build -b html`, not `-b doctest`), so verify `.rst` examples manually: `python3 -c "import doctest; print(doctest.testfile('docs/usage.rst', module_relative=False, optionflags=doctest.NORMALIZE_WHITESPACE))"`. Note `customize.rst` has pre-existing failures under `-b doctest` (CONSTANTS state leaks across examples — no per-example reset like `tests/conftest.py` provides — plus non-deterministic `SetManager` repr).
 
 **`initials_separator` is intra-group only** — it controls the joiner between consecutive initials *within* a name group (e.g. two middle names in `middle_list`). Spaces *between* groups come from `initials_format`. To fully concatenate initials you need both `initials_separator=""` and `initials_format="{first}{middle}{last}"`.
 
