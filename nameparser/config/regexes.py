@@ -22,6 +22,7 @@ REGEXES = set([
     ("period_not_at_end",re.compile(r'.*\..+$', re.I | re.U)),
     ("emoji",re_emoji),
     ("phd", re.compile(r'\s(ph\.?\s+d\.?)', re.I | re.U)),
+    ("space_before_comma", re.compile(r'\s+,', re.U)),
 ])
 """
 All regular expressions used by the parser are precompiled and stored in the config.
