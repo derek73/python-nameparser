@@ -166,6 +166,14 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "Msc.Ed.", hn)
 
+    def test_roman_numeral_i_lastname_comma_format(self) -> None:
+        # trailing 'I' in lastname-comma format must be a suffix, not a middle initial (issue #144)
+        hn = HumanName("Maier, Amy Lauren I")
+        self.m(hn.first, "Amy", hn)
+        self.m(hn.middle, "Lauren", hn)
+        self.m(hn.last, "Maier", hn)
+        self.m(hn.suffix, "I", hn)
+
     def test_suffix_delimiter_default_on_constants(self) -> None:
         from nameparser.config import CONSTANTS
         self.assertIs(CONSTANTS.suffix_delimiter, None)
