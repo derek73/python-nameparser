@@ -167,12 +167,46 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.suffix, "Msc.Ed.", hn)
 
     def test_roman_numeral_i_lastname_comma_format(self) -> None:
-        # trailing 'I' in lastname-comma format must be a suffix, not a middle initial (issue #144)
+        # 'I' is in suffix_not_acronyms; trailing suffix_not_acronyms members in
+        # "Lastname, First Middle Suffix" format (no comma-suffix segment) must
+        # parse as suffix, not middle initial (issue #144)
         hn = HumanName("Maier, Amy Lauren I")
         self.m(hn.first, "Amy", hn)
         self.m(hn.middle, "Lauren", hn)
         self.m(hn.last, "Maier", hn)
         self.m(hn.suffix, "I", hn)
+
+    def test_roman_numeral_v_lastname_comma_format(self) -> None:
+        # 'V' shares the same suffix_not_acronyms ambiguity as 'I' (issue #144)
+        hn = HumanName("Smith, John V")
+        self.m(hn.first, "John", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.suffix, "V", hn)
+
+    def test_roman_numeral_i_no_middle_lastname_comma_format(self) -> None:
+        # no middle name: trailing 'I' must still be a suffix (issue #144)
+        hn = HumanName("Smith, John I")
+        self.m(hn.first, "John", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.suffix, "I", hn)
+
+    def test_roman_numeral_i_after_single_initial_lastname_comma_format(self) -> None:
+        # single-letter middle initial followed by trailing 'I' (reporter pattern, issue #144)
+        hn = HumanName("Chang, Andy C I")
+        self.m(hn.first, "Andy", hn)
+        self.m(hn.middle, "C", hn)
+        self.m(hn.last, "Chang", hn)
+        self.m(hn.suffix, "I", hn)
+
+    @pytest.mark.xfail
+    def test_roman_numeral_i_with_explicit_suffix_comma_known_limitation(self) -> None:
+        # When an explicit suffix comma is present (len(parts)==3), the trailing 'I'
+        # is conservatively left in middle to avoid misclassifying true initials.
+        # This is a known limitation of is_suffix_at_lastname_comma_end (issue #144).
+        hn = HumanName("Maier, Amy I, Jr.")
+        self.m(hn.suffix, "I, Jr.", hn)
 
     def test_suffix_delimiter_default_on_constants(self) -> None:
         from nameparser.config import CONSTANTS
