@@ -93,6 +93,13 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.assertEqual(hn.suffix_list, ['Ph.D.', 'M.D.'])
 
+    def test_capitalize_suffix_acronym_with_dots(self) -> None:
+        # Suffixes already written with dots (e.g. "M.D.") should capitalize
+        # to their exception form, not title-case to "M.d." (issue #141)
+        hn = HumanName('GREGORY HOUSE M.D.')
+        hn.capitalize()
+        self.assertEqual(hn.suffix, 'M.D.')
+
     # Leaving already-capitalized names alone
     def test_no_change_to_mixed_chase(self) -> None:
         hn = HumanName('Shirley Maclaine')

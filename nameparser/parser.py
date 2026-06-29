@@ -962,6 +962,8 @@ class HumanName:
         exceptions = self.C.capitalization_exceptions
         if lc(word) in exceptions:
             return exceptions[lc(word)]
+        if lc(word).replace('.', '') in exceptions:
+            return exceptions[lc(word).replace('.', '')]
         mac_match = self.C.regexes.mac.match(word)
         if mac_match:
             def cap_after_mac(m: re.Match) -> str:
