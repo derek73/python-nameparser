@@ -103,6 +103,22 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         hn.nickname = ''
         self.assertEqual(str(hn), "Rev John A. Kenneth Doe III")
 
+    def test_empty_field_drops_surrounding_whitespace(self) -> None:
+        # issue #139: adjacent whitespace/punctuation should be dropped when a field is empty
+        hn = HumanName("John Smith")
+        hn.string_format = "{last} {suffix}, {first}"
+        self.assertEqual(str(hn), "Smith, John")
+
+    def test_empty_field_drops_surrounding_punctuation(self) -> None:
+        hn = HumanName("John Smith")
+        hn.string_format = "{title} {first} {last}"
+        self.assertEqual(str(hn), "John Smith")
+
+    def test_empty_field_interior_comma_dropped(self) -> None:
+        hn = HumanName("John Smith")
+        hn.string_format = "{last}, {suffix} {first}"
+        self.assertEqual(str(hn), "Smith, John")
+
     def test_remove_emojis(self) -> None:
         hn = HumanName("Sam Smith 😊")
         self.m(hn.first, "Sam", hn)
