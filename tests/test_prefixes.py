@@ -163,6 +163,7 @@ class PrefixesTestCase(HumanNameTestBase):
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.suffix, "III", hn)
 
+
 class LastNamePrefixSplitTestCase(HumanNameTestBase):
 
     def test_van_gogh_last_base(self) -> None:
@@ -196,6 +197,7 @@ class LastNamePrefixSplitTestCase(HumanNameTestBase):
         hn = HumanName("John Smith")
         self.m(hn.last_base, "Smith", hn)
         self.m(hn.last_prefixes, "", hn)
+        # self.m() coerces [] via `expected or empty_attribute_default`; use assertEqual for empty lists
         self.assertEqual(hn.last_prefixes_list, [])
 
     def test_do_guard_surname_equals_prefix_word(self) -> None:
@@ -228,5 +230,6 @@ class LastNamePrefixSplitTestCase(HumanNameTestBase):
         hn = HumanName()
         self.m(hn.last_base, "", hn)
         self.m(hn.last_prefixes, "", hn)
+        # self.m() coerces [] via `expected or empty_attribute_default`; use assertEqual for empty lists
         self.assertEqual(hn.last_base_list, [])
         self.assertEqual(hn.last_prefixes_list, [])
