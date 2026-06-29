@@ -1,6 +1,12 @@
 Release Log
 ===========
 * 1.3.0 - Unreleased
+
+    **Upgrade note — pickle migration**: ``Constants`` pickles written before
+    1.2.1 cannot be loaded under 1.3.0+. If you have persisted blobs, upgrade
+    to 1.2.1 first (which includes a one-version compatibility shim), load and
+    re-pickle under 1.2.1, then upgrade to 1.3.0.
+
     - Add ``suffix_delimiter`` to ``Constants`` and ``HumanName`` for parsing suffixes separated by arbitrary delimiters, e.g. ``"RN - CRNA"`` (#156)
     - Add ``initials_separator`` to ``Constants`` and ``HumanName`` to control spacing between consecutive initials within a name group (#171)
     - Fix ``Constants`` customizations, singleton identity, and ``TupleManager`` subclass being lost across ``pickle``/``deepcopy`` round-trips (#167, #168, #169)
