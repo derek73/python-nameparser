@@ -54,8 +54,8 @@ class HumanName:
     :param str initials_format: python initials string formatting
     :param str initials_delimter: string delimiter for initials
     :param str initials_separator: string separator between consecutive initials
-    :param str suffix_delimiter: additional delimiter to split suffix groups
-        after comma-splitting, e.g. ``" - "`` for ``"RN - CRNA"``
+    :param str suffix_delimiter: additional delimiter to split post-comma parts
+        before suffix detection, e.g. ``" - "`` for ``"RN - CRNA"``
     :param str first: first name
     :param str middle: middle name
     :param str last: last name
@@ -631,7 +631,7 @@ class HumanName:
         if self.suffix_delimiter and len(parts) > 1:
             expanded = [parts[0]]
             for part in parts[1:]:
-                expanded.extend([p.strip() for p in part.split(self.suffix_delimiter)])
+                expanded.extend([p for p in (p.strip() for p in part.split(self.suffix_delimiter)) if p])
             parts = expanded
 
         log.debug("full_name: %s", self._full_name)

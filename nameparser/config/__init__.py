@@ -235,8 +235,9 @@ class Constants:
     ``"RN - CRNA"`` to be parsed as two separate suffixes. Default is
     ``None`` (no additional splitting beyond the standard comma split).
 
-    Note: setting this to ``", "`` is a no-op — comma-splitting already
-    occurs unconditionally before this step.
+    Note: setting this to ``","`` or ``", "`` has no additional effect —
+    the full name is already split on bare commas first, and each resulting
+    part is stripped of surrounding whitespace before this step runs.
 
     Known limitation: the expansion is applied to all post-comma parts, not
     just suffix groups. In inverted format (``"Last, First, suffix"``), the
