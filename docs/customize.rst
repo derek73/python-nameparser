@@ -63,6 +63,26 @@ Other editable attributes
 * :py:obj:`~nameparser.config.Constants.initials_separator` - string placed between consecutive initials within the same name group (after the delimiter). Defaults to ``" "``, so ``"A. K."``; set to ``""`` for compact ``"A.K."``.
 
 
+Splitting last-name prefix particles
+-------------------------------------
+
+The :py:attr:`~nameparser.parser.HumanName.last_base` and
+:py:attr:`~nameparser.parser.HumanName.last_prefixes` properties split the last
+name at the boundary between leading prefix particles and the core surname.  They
+use the same ``PREFIXES`` set, so adding a particle makes the split pick it up
+automatically::
+
+    >>> from nameparser import HumanName
+    >>> from nameparser.config import CONSTANTS
+    >>> CONSTANTS.prefixes.add('ter')
+    >>> HumanName("Jan ter Horst").last_base
+    'Horst'
+    >>> HumanName("Jan ter Horst").last_prefixes
+    'ter'
+    >>> CONSTANTS.prefixes.remove('ter')
+
+Note the ``remove`` call at the end — ``customize.rst`` examples share global
+``CONSTANTS``, so mutations must be reversed to avoid affecting later examples.
 
 Parser Customization Examples
 -----------------------------
