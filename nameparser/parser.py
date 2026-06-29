@@ -504,6 +504,27 @@ class HumanName:
                 return False
         return True
 
+    def is_suffix_at_lastname_comma_end(self, piece: str, nxt: str | None, parts: list[str]) -> bool:
+        """True when ``piece`` is a suffix_not_acronyms member that should be
+        treated as a suffix at the end of ``parts[1]`` (the post-comma segment)
+        in a lastname-comma name, where ``parts`` is the full comma-split of the
+        name string.
+
+        Returns True only when all three conditions hold:
+        - ``nxt is None``: piece is the last token in the post-comma segment
+        - ``len(parts) == 2``: no ``parts[2]`` suffix segment exists
+        - ``lc(piece) in suffix_not_acronyms``
+
+        When ``parts[2]`` exists the caller already declared an explicit suffix
+        via comma (e.g. 'Doe, Rev. John V, Jr.'), making the trailing token more
+        likely a middle initial; ``len(parts) == 2`` excludes that case.
+        Used as an OR alternative to ``is_suffix()`` for pieces that
+        ``is_suffix()`` would reject via ``is_an_initial()``.
+        """
+        return (nxt is None
+                and len(parts) == 2
+                and lc(piece) in self.C.suffix_not_acronyms)
+
     def is_rootname(self, piece: str) -> bool:
         """
         Is not a known title, suffix or prefix. Just first, middle, last names.
@@ -767,7 +788,7 @@ class HumanName:
                     if not self.first:
                         self.first_list.append(piece)
                         continue
-                    if self.is_suffix(piece):
+                    if self.is_suffix(piece) or self.is_suffix_at_lastname_comma_end(piece, nxt, parts):
                         self.suffix_list.append(piece)
                         continue
                     self.middle_list.append(piece)
