@@ -84,6 +84,23 @@ automatically::
 Note the ``remove`` call at the end — ``customize.rst`` examples share global
 ``CONSTANTS``, so mutations must be reversed to avoid affecting later examples.
 
+Because ``last_base`` is a plain string property, sorting a list of names by
+core surname (ignoring prefix particles like *van*, *de la*) is just a key
+function::
+
+    names = [
+        HumanName("Vincent van Gogh"),
+        HumanName("Juan de la Vega"),
+        HumanName("John Smith"),
+    ]
+    sorted_names = sorted(names, key=lambda n: n.last_base.lower())
+    # sort keys: 'gogh', 'smith', 'vega'  →  van Gogh, Smith, de la Vega
+
+To sort by first name when two people share the same ``last_base``, add it as
+a secondary key::
+
+    sorted_names = sorted(names, key=lambda n: (n.last_base.lower(), n.first.lower()))
+
 Parser Customization Examples
 -----------------------------
 
