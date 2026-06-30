@@ -433,17 +433,24 @@ class HumanName:
     def _split_last(self) -> tuple[list[str], list[str]]:
         """Return (prefix_particles, base_words) split from the last name.
 
+        The base_words list is never empty: if every word in the last name
+        matches a prefix particle, the guard fires and all words are returned
+        as the base with an empty prefix list (heuristic: a family name is
+        assumed not to consist entirely of particles).
+
         >>> HumanName("Vincent van Gogh")._split_last()
         (['van'], ['Gogh'])
+        >>> HumanName("Anh Do")._split_last()
+        ([], ['Do'])
         """
         words = " ".join(self.last_list).split()
         i = 0
         while i < len(words) and self.is_prefix(words[i]):
             i += 1
         if i == len(words):
-            # Every word is a prefix (e.g. surname "Do" which is also a
-            # prefix word). A family name can't consist only of particles,
-            # so don't strip — treat the whole last name as the base.
+            # Heuristic: assume a family name isn't entirely composed of
+            # particles (e.g. surname "Do" which also appears in PREFIXES).
+            # Don't strip — treat the whole last name as the base.
             return [], words
         return words[:i], words[i:]
 
@@ -451,6 +458,8 @@ class HumanName:
     def last_prefixes_list(self) -> list[str]:
         """
         List of leading prefix particles in the last name (the *tussenvoegsel*).
+        Returns ``[]`` when there are none, including the case where every word
+        in the last name matches a prefix — see :py:meth:`_split_last`.
 
         >>> HumanName("Juan de la Vega").last_prefixes_list
         ['de', 'la']
@@ -461,6 +470,8 @@ class HumanName:
     def last_base_list(self) -> list[str]:
         """
         List of last-name words after stripping leading prefix particles.
+        Never empty: when every word matches a prefix, no stripping occurs and
+        the full last name is returned — see :py:meth:`_split_last`.
 
         >>> HumanName("Vincent van Gogh").last_base_list
         ['Gogh']
@@ -472,7 +483,8 @@ class HumanName:
         """
         The last name with leading prefix particles removed (the core surname).
         For ``"van Gogh"`` this is ``"Gogh"``; for ``"Smith"`` it is ``"Smith"``.
-        ``last`` is always unchanged.
+        ``last`` is always unchanged. When every word in the last name matches a
+        prefix particle, no stripping occurs and the full last name is returned.
 
         >>> HumanName("Vincent van Gogh").last_base
         'Gogh'
@@ -485,7 +497,9 @@ class HumanName:
     def last_prefixes(self) -> str:
         """
         The leading prefix particle(s) of the last name (the *tussenvoegsel*).
-        Returns ``""`` (or ``empty_attribute_default``) when there are none.
+        Returns ``""`` (or ``empty_attribute_default``) when there are none,
+        including when every word in the last name matches a prefix particle
+        (the all-particles guard; see :py:meth:`_split_last`).
 
         >>> HumanName("Vincent van Gogh").last_prefixes
         'van'

@@ -186,6 +186,8 @@ class LastNamePrefixSplitTestCase(HumanNameTestBase):
         hn = HumanName("pennie von bergen wessels")
         self.m(hn.last_base, "bergen wessels", hn)
         self.m(hn.last_prefixes, "von", hn)
+        self.m(hn.last_base_list, ["bergen", "wessels"], hn)
+        self.m(hn.last_prefixes_list, ["von"], hn)
 
     def test_de_la_vega_multiword_prefix(self) -> None:
         hn = HumanName("Juan de la Vega")
@@ -233,3 +235,8 @@ class LastNamePrefixSplitTestCase(HumanNameTestBase):
         # self.m() coerces [] via `expected or empty_attribute_default`; use assertEqual for empty lists
         self.assertEqual(hn.last_base_list, [])
         self.assertEqual(hn.last_prefixes_list, [])
+
+    def test_case_insensitive_prefix_detection(self) -> None:
+        hn = HumanName("VINCENT VAN GOGH")
+        self.m(hn.last_prefixes, "VAN", hn)
+        self.m(hn.last_base, "GOGH", hn)
