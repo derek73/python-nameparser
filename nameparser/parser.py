@@ -118,6 +118,7 @@ class HumanName:
         self.initials_delimiter = initials_delimiter if initials_delimiter is not None else self.C.initials_delimiter
         self.initials_separator = initials_separator if initials_separator is not None else self.C.initials_separator
         self.suffix_delimiter   = suffix_delimiter   if suffix_delimiter   is not None else self.C.suffix_delimiter
+        self._had_comma = False
         if (first or middle or last or title or suffix or nickname):
             self.first = first
             self.middle = middle

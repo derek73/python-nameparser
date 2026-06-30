@@ -103,7 +103,7 @@ def test_cyrillic_patronymic_matches_special_fokich() -> None:
     assert C.regexes.patronymic_cyrillic.search("фокич")
 
 
-class PatronymicNameOrderReordersTests(HumanNameTestBase):
+class PatronymicNameOrderReorderTests(HumanNameTestBase):
     """Names that SHOULD be rotated when the flag is on."""
 
     def setup_method(self) -> None:
@@ -212,7 +212,7 @@ class PatronymicNameOrderGuardsTests(HumanNameTestBase):
         n = self.hn("Sergeevich, Ivan Petrov")
         assert n.last == "Sergeevich"
 
-    def test_documented_tradeoff(self) -> None:
+    def test_western_patronymic_surname_reordered_when_flag_on(self) -> None:
         # With the flag ON a western patronymic-form surname is reordered.
         # This is the documented opt-in tradeoff — not a bug to fix.
         n = self.hn("David Michael Abramovich")
