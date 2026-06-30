@@ -551,7 +551,7 @@ class HumanName:
 
     def is_prefix(self, piece: str) -> bool:
         """
-        Lowercase and no periods version of piece is in the
+        Lowercased, leading/trailing-periods-stripped version of piece is in the
         :py:data:`~nameparser.config.prefixes.PREFIXES` set.
         """
         if isinstance(piece, list):
@@ -560,6 +560,37 @@ class HumanName:
                     return True
         else:
             return lc(piece) in self.C.prefixes
+
+    def is_first_name_prefix(self, piece: str) -> bool:
+        """Lowercased, leading/trailing-periods-stripped version of piece is in :py:attr:`~nameparser.config.Constants.first_name_prefixes`."""
+        return lc(piece) in self.C.first_name_prefixes
+
+    def _join_first_name_prefix(self, pieces: list[str], reserve_last: bool) -> list[str]:
+        """Join a first-name prefix to its following piece.
+
+        Finds the first non-title piece; if it is in ``first_name_prefixes``,
+        merges it with the next piece — unless ``reserve_last`` is True and no
+        further piece would remain for the last name.
+        """
+        fi = next((i for i, p in enumerate(pieces) if not self.is_title(p)), None)
+        if fi is None:
+            return pieces
+        if not self.is_first_name_prefix(pieces[fi]):
+            return pieces
+        next_i = fi + 1
+        if next_i >= len(pieces):
+            return pieces
+        if reserve_last:
+            # Count non-suffix pieces from next_i onward; need ≥2 so the join
+            # target and at least one last-name piece both exist.
+            non_suffix_remaining = sum(
+                1 for p in pieces[next_i:] if not self.is_suffix(p)
+            )
+            if non_suffix_remaining <= 1:
+                return pieces
+        pieces[fi] = pieces[fi] + " " + pieces[next_i]
+        del pieces[next_i]
+        return pieces
 
     def is_roman_numeral(self, value: str) -> bool:
         """
@@ -827,6 +858,7 @@ class HumanName:
             #            part[0]
 
             pieces = self.parse_pieces(parts)
+            pieces = self._join_first_name_prefix(pieces, reserve_last=True)
             p_len = len(pieces)
             for i, piece in enumerate(pieces):
                 try:
@@ -909,6 +941,7 @@ class HumanName:
                 #      parts[0],      parts[1],              parts[2:...]
 
                 log.debug("post-comma pieces: %s", str(post_comma_pieces))
+                post_comma_pieces = self._join_first_name_prefix(post_comma_pieces, reserve_last=False)
 
                 # lastname part may have suffixes in it
                 lastname_pieces = self.parse_pieces(parts[0].split(' '), 1)

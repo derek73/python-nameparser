@@ -11,7 +11,7 @@ HumanNameAttributeT = Literal['title', 'first', 'middle', 'last', 'suffix', 'nic
 
 
 def lc(value: str) -> str:
-    """Lower case and remove any periods to normalize for comparison."""
+    """Lowercase and strip leading/trailing periods to normalize for comparison."""
     if not value:
         return ''
     return value.lower().strip('.')

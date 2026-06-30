@@ -20,6 +20,12 @@ Release Log
     - Fix ``'apn aprn'`` split into separate ``suffix_acronyms`` entries so each is recognized independently (closes #155)
     - Add ``last_base``, ``last_prefixes`` (and ``_list`` variants) plus ``family`` / ``family_prefixes`` aliases for splitting last-name prefix particles (tussenvoegsels) from the core surname (#130, #132)
     - Add ``patronymic_name_order`` flag to ``Constants`` and ``HumanName`` for opt-in detection and reordering of Russian formal-order names (Surname GivenName Patronymic) (#85)
+    - Add ``first_name_prefixes`` set to ``Constants``; bound Arabic given-name
+      prefixes (``abdul``, ``abu``, etc.) now join forward to form a single first
+      name (e.g. ``"abdul salam ahmed salem"`` → ``first="abdul salam"``,
+      ``middle="ahmed"``, ``last="salem"``). Disable via
+      ``CONSTANTS.first_name_prefixes.clear()``. **Default-on: changes parsing
+      output for names with these prefixes.** (#150)
 * 1.2.1 - June 19, 2026
     - Fix ``initials()`` interpolating the literal ``None`` for empty name parts when ``empty_attribute_default = None`` (e.g. ``"J. None D."``); empty parts now render as an empty string and a fully-empty result returns ``empty_attribute_default``
     - Add ``python -m nameparser "Name String"`` command-line helper that prints a parsed name
