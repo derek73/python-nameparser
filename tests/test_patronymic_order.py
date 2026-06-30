@@ -3,54 +3,11 @@ from nameparser.config import Constants
 from tests.base import HumanNameTestBase
 
 
-def test_latin_patronymic_matches_ovich() -> None:
+def test_latin_patronymic_matches() -> None:
+    # One common suffix and one irregular — the integration tests cover the rest.
     C = Constants()
     assert C.regexes.patronymic.search("Ivanovich")
-
-
-def test_latin_patronymic_matches_ovna() -> None:
-    C = Constants()
-    assert C.regexes.patronymic.search("Ivanovna")
-
-
-def test_latin_patronymic_matches_evich() -> None:
-    C = Constants()
-    assert C.regexes.patronymic.search("Sergeevich")
-
-
-def test_latin_patronymic_matches_evna() -> None:
-    C = Constants()
-    assert C.regexes.patronymic.search("Sergeevna")
-
-
-def test_latin_patronymic_matches_ichna() -> None:
-    C = Constants()
-    assert C.regexes.patronymic.search("Nikitichna")
-
-
-def test_latin_patronymic_matches_special_ilyich() -> None:
-    C = Constants()
     assert C.regexes.patronymic.search("Ilyich")
-
-
-def test_latin_patronymic_matches_special_kuzmich() -> None:
-    C = Constants()
-    assert C.regexes.patronymic.search("Kuzmich")
-
-
-def test_latin_patronymic_matches_special_lukich() -> None:
-    C = Constants()
-    assert C.regexes.patronymic.search("Lukich")
-
-
-def test_latin_patronymic_matches_special_fomich() -> None:
-    C = Constants()
-    assert C.regexes.patronymic.search("Fomich")
-
-
-def test_latin_patronymic_matches_special_fokich() -> None:
-    C = Constants()
-    assert C.regexes.patronymic.search("Fokich")
 
 
 def test_latin_patronymic_rejects_non_patronymic() -> None:
@@ -60,67 +17,23 @@ def test_latin_patronymic_rejects_non_patronymic() -> None:
     assert not C.regexes.patronymic.search("Smith")
 
 
-def test_latin_patronymic_matches_surname_with_patronymic_suffix() -> None:
-    # Surnames that end in a patronymic suffix also match the regex;
-    # the end-anchor does not prevent this.
-    # Separate guard tests verify the *parser* doesn't reorder it incorrectly.
+def test_latin_patronymic_end_anchored() -> None:
+    # A surname ending in a patronymic suffix matches; the end-anchor does not
+    # prevent this. The parser guard tests verify reordering is suppressed.
     C = Constants()
     assert C.regexes.patronymic.search("Abramovich")
 
 
-def test_cyrillic_patronymic_matches_ovich() -> None:
+def test_cyrillic_patronymic_matches() -> None:
+    # One common suffix and one irregular.
     C = Constants()
     assert C.regexes.patronymic_cyrillic.search("Иванович")
-
-
-def test_cyrillic_patronymic_matches_ovna() -> None:
-    C = Constants()
-    assert C.regexes.patronymic_cyrillic.search("Ивановна")
+    assert C.regexes.patronymic_cyrillic.search("ильич")
 
 
 def test_cyrillic_patronymic_rejects_non_patronymic() -> None:
     C = Constants()
     assert not C.regexes.patronymic_cyrillic.search("Иванов")
-
-
-def test_cyrillic_patronymic_matches_evich() -> None:
-    C = Constants()
-    assert C.regexes.patronymic_cyrillic.search("Сергеевич")
-
-
-def test_cyrillic_patronymic_matches_evna() -> None:
-    C = Constants()
-    assert C.regexes.patronymic_cyrillic.search("Сергеевна")
-
-
-def test_cyrillic_patronymic_matches_ichna() -> None:
-    C = Constants()
-    assert C.regexes.patronymic_cyrillic.search("Никитична")
-
-
-def test_cyrillic_patronymic_matches_special_ilyich() -> None:
-    C = Constants()
-    assert C.regexes.patronymic_cyrillic.search("ильич")
-
-
-def test_cyrillic_patronymic_matches_special_kuzmich() -> None:
-    C = Constants()
-    assert C.regexes.patronymic_cyrillic.search("кузьмич")
-
-
-def test_cyrillic_patronymic_matches_special_lukich() -> None:
-    C = Constants()
-    assert C.regexes.patronymic_cyrillic.search("лукич")
-
-
-def test_cyrillic_patronymic_matches_special_fomich() -> None:
-    C = Constants()
-    assert C.regexes.patronymic_cyrillic.search("фомич")
-
-
-def test_cyrillic_patronymic_matches_special_fokich() -> None:
-    C = Constants()
-    assert C.regexes.patronymic_cyrillic.search("фокич")
 
 
 class PatronymicNameOrderReorderTests(HumanNameTestBase):
