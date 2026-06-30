@@ -74,12 +74,12 @@ automatically::
 
     >>> from nameparser import HumanName
     >>> from nameparser.config import CONSTANTS
-    >>> CONSTANTS.prefixes.add('ter')
-    >>> HumanName("Jan ter Horst").last_base
-    'Horst'
-    >>> HumanName("Jan ter Horst").last_prefixes
-    'ter'
-    >>> CONSTANTS.prefixes.remove('ter')
+    >>> CONSTANTS.prefixes.add('op')
+    >>> HumanName("Jan op den Berg").last_base
+    'Berg'
+    >>> HumanName("Jan op den Berg").last_prefixes
+    'op den'
+    >>> CONSTANTS.prefixes.remove('op')
 
 Note the ``remove`` call at the end — ``customize.rst`` examples share global
 ``CONSTANTS``, so mutations must be reversed to avoid affecting later examples.
