@@ -79,9 +79,11 @@ Russian data in formal order (``Surname GivenName Patronymic``), enable
     ('Ivan', 'Ivanovich', 'Ivanov')
 
 Detection is anchored on a recognised East-Slavic patronymic suffix
-(``-ovich``, ``-ovna``, ``-evich``, ``-evna``, ``-ichna``, and several
-irregular forms; same patterns in Cyrillic). A comma in the input is treated as
-an explicit field-order declaration and suppresses reordering.
+(``-ovich``, ``-ovna``, ``-evich``, ``-evna``, ``-ichna``, and the irregular
+forms ``-ilyich``, ``-kuzmich``, ``-lukich``, ``-fomich``, ``-fokich``; same
+patterns in Cyrillic). A comma activates the parser's standard
+Last, First Middle path, which already handles Russian formal order —
+reordering is suppressed to avoid a double-transformation.
 
 **Opt-in tradeoff:** when the flag is on, any name whose last token happens to
 end in a patronymic suffix is reordered — including Western names with

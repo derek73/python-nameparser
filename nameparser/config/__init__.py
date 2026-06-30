@@ -347,12 +347,17 @@ class Constants:
     If set, detects names in Russian formal order (``Surname GivenName Patronymic``)
     by recognizing a trailing East-Slavic patronymic suffix on the last token, and
     rotates the three name parts so that ``first``/``middle``/``last`` map to
-    given name / patronymic / surname respectively.
+    given name / patronymic / surname respectively.  Detection requires exactly one
+    token in each of first, middle, and last; names with multi-part given names or
+    multiple middle names are left unchanged.
 
     Opt-in because a Western person whose surname happens to end in a patronymic
     suffix (e.g. ``"David Michael Abramovich"``) will be reordered incorrectly
     when the flag is on. Enable only when your data is predominantly Russian
     formal-order names.
+
+    For per-instance control without a shared ``Constants``, pass a dedicated
+    instance: ``HumanName("...", constants=Constants(patronymic_name_order=True))``.
 
     .. doctest::
 

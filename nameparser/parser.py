@@ -648,6 +648,14 @@ class HumanName:
         return bool(self.C.regexes.initial.match(value))
 
     def is_patronymic(self, piece: str) -> bool:
+        """
+        Return True if ``piece`` ends with a recognised East-Slavic patronymic
+        suffix, checked against both Latin-script and Cyrillic patterns in
+        ``self.C.regexes``.  Latin suffixes: ``-ovich``, ``-ovna``, ``-evich``,
+        ``-evna``, ``-ichna``, and the irregular forms ``-ilyich``, ``-kuzmich``,
+        ``-lukich``, ``-fomich``, ``-fokich``.  Cyrillic equivalents are matched
+        by a separate pattern.
+        """
         return bool(
             self.C.regexes.patronymic.search(piece)
             or self.C.regexes.patronymic_cyrillic.search(piece)
@@ -696,7 +704,9 @@ class HumanName:
         When patronymic_name_order is enabled, detect Russian formal order
         (Surname GivenName Patronymic) and rotate to Western order.
         Fires only for no-comma, single-token first/middle/last where the last
-        token is a patronymic and the middle token is not.
+        token is a patronymic and the middle token is not.  Title, suffix, and
+        nickname parts do not affect this guard — reordering proceeds regardless
+        of whether they are present.
         """
         if (
             not self._had_comma

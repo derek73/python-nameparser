@@ -158,6 +158,14 @@ class PatronymicNameOrderReorderTests(HumanNameTestBase):
         assert n.last == "Ivanov"
         assert n.suffix == "Jr."
 
+    def test_western_patronymic_surname_reordered_when_flag_on(self) -> None:
+        # Documented opt-in tradeoff: a Western name whose last token ends in a
+        # patronymic suffix is reordered incorrectly. Not a bug to fix.
+        n = self.hn("David Michael Abramovich")
+        assert n.first == "Michael"
+        assert n.middle == "Abramovich"
+        assert n.last == "David"
+
 
 class PatronymicNameOrderGuardsTests(HumanNameTestBase):
     """Names that must NOT be reordered even when the flag is on."""
@@ -189,10 +197,11 @@ class PatronymicNameOrderGuardsTests(HumanNameTestBase):
         assert n.last == "Abramovich"
 
     def test_no_patronymic(self) -> None:
-        # No patronymic anchor → not reordered
-        n = self.hn("Mogilny Alexander")
-        assert n.first == "Mogilny"
-        assert n.last == "Alexander"
+        # Three tokens but no patronymic suffix on last → not reordered
+        n = self.hn("Ivanov Ivan Petrov")
+        assert n.first == "Ivanov"
+        assert n.middle == "Ivan"
+        assert n.last == "Petrov"
 
     def test_western_name_unchanged(self) -> None:
         n = self.hn("John Michael Smith")
@@ -211,15 +220,6 @@ class PatronymicNameOrderGuardsTests(HumanNameTestBase):
         # Without the comma guard this would wrongly rotate
         n = self.hn("Sergeevich, Ivan Petrov")
         assert n.last == "Sergeevich"
-
-    def test_western_patronymic_surname_reordered_when_flag_on(self) -> None:
-        # With the flag ON a western patronymic-form surname is reordered.
-        # This is the documented opt-in tradeoff — not a bug to fix.
-        n = self.hn("David Michael Abramovich")
-        assert n.first == "Michael"
-        assert n.middle == "Abramovich"
-        assert n.last == "David"
-
 
 class PatronymicNameOrderFlagOffTests(HumanNameTestBase):
     """With default Constants (flag=False) nothing changes."""
