@@ -61,6 +61,32 @@ Other editable attributes
 * :py:obj:`~nameparser.config.Constants.force_mixed_case_capitalization` - If set, forces the capitalization of mixed case strings when :py:meth:`~nameparser.parser.HumanName.capitalize` is called.
 * :py:obj:`~nameparser.config.Constants.suffix_delimiter` - additional delimiter used to split suffix groups after comma-splitting, e.g. ``" - "`` for names like ``"Jane Smith, RN - CRNA"``. Defaults to ``None`` (disabled).
 * :py:obj:`~nameparser.config.Constants.initials_separator` - string placed between consecutive initials within the same name group (after the delimiter). Defaults to ``" "``, so ``"A. K."``; set to ``""`` for compact ``"A.K."``.
+* :py:obj:`~nameparser.config.Constants.patronymic_name_order` - If set, detects Russian formal-order names (``Surname GivenName Patronymic``) via a trailing East-Slavic patronymic suffix and rotates the parts to Western order (``first=GivenName``, ``middle=Patronymic``, ``last=Surname``). Opt-in; see subsection below.
+
+
+Russian Formal Name Order
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default the parser treats all three-part names as ``First Middle Last``. For
+Russian data in formal order (``Surname GivenName Patronymic``), enable
+``patronymic_name_order``::
+
+    >>> from nameparser import HumanName
+    >>> from nameparser.config import Constants
+    >>> C = Constants(patronymic_name_order=True)
+    >>> hn = HumanName("Ivanov Ivan Ivanovich", constants=C)
+    >>> hn.first, hn.middle, hn.last
+    ('Ivan', 'Ivanovich', 'Ivanov')
+
+Detection is anchored on a recognised East-Slavic patronymic suffix
+(``-ovich``, ``-ovna``, ``-evich``, ``-evna``, ``-ichna``, and several
+irregular forms; same patterns in Cyrillic). A comma in the input is treated as
+an explicit field-order declaration and suppresses reordering.
+
+**Opt-in tradeoff:** when the flag is on, any name whose last token happens to
+end in a patronymic suffix is reordered — including Western names with
+patronymic-form surnames such as ``"David Michael Abramovich"``. Enable this
+flag only when your data is predominantly Russian formal-order names.
 
 
 Splitting last-name prefix particles
@@ -74,12 +100,14 @@ automatically::
 
     >>> from nameparser import HumanName
     >>> from nameparser.config import CONSTANTS
-    >>> CONSTANTS.prefixes.add('op')
+    >>> CONSTANTS.prefixes.add('op')  # doctest: +ELLIPSIS
+    SetManager({...})
     >>> HumanName("Jan op den Berg").last_base
     'Berg'
     >>> HumanName("Jan op den Berg").last_prefixes
     'op den'
-    >>> CONSTANTS.prefixes.remove('op')
+    >>> CONSTANTS.prefixes.remove('op')  # doctest: +ELLIPSIS
+    SetManager({...})
 
 Note the ``remove`` call at the end — ``customize.rst`` examples share global
 ``CONSTANTS``, so mutations must be reversed to avoid affecting later examples.
