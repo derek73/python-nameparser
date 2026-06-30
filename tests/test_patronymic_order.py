@@ -99,3 +99,20 @@ def test_cyrillic_patronymic_matches_special_fomich() -> None:
 def test_cyrillic_patronymic_matches_special_fokich() -> None:
     C = Constants()
     assert C.regexes.patronymic_cyrillic.search("фокич")
+
+
+class PatronymicNameOrderFlagTests:
+
+    def test_default_is_false(self) -> None:
+        C = Constants()
+        assert C.patronymic_name_order is False
+
+    def test_can_set_true_via_constructor(self) -> None:
+        C = Constants(patronymic_name_order=True)
+        assert C.patronymic_name_order is True
+
+    def test_does_not_affect_other_instance(self) -> None:
+        C1 = Constants(patronymic_name_order=True)
+        C2 = Constants()
+        assert C1.patronymic_name_order is True
+        assert C2.patronymic_name_order is False

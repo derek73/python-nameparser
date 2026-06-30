@@ -342,6 +342,29 @@ class Constants:
 
     """
 
+    patronymic_name_order = False
+    """
+    If set, detects names in Russian formal order (``Surname GivenName Patronymic``)
+    by recognising a trailing East-Slavic patronymic suffix on the last token, and
+    rotates the three name parts so that ``first``/``middle``/``last`` map to
+    given name / patronymic / surname respectively.
+
+    Opt-in because a Western person whose surname happens to end in a patronymic
+    suffix (e.g. ``"David Michael Abramovich"``) will be reordered incorrectly
+    when the flag is on. Enable only when your data is predominantly Russian
+    formal-order names.
+
+    .. doctest::
+
+        >>> from nameparser import HumanName
+        >>> from nameparser.config import Constants
+        >>> C = Constants(patronymic_name_order=True)
+        >>> hn = HumanName("Ivanov Ivan Ivanovich", constants=C)
+        >>> hn.first, hn.middle, hn.last
+        ('Ivan', 'Ivanovich', 'Ivanov')
+
+    """
+
     def __init__(self,
                  prefixes: Iterable[str] = PREFIXES,
                  suffix_acronyms: Iterable[str] = SUFFIX_ACRONYMS,
@@ -350,7 +373,8 @@ class Constants:
                  first_name_titles: Iterable[str] = FIRST_NAME_TITLES,
                  conjunctions: Iterable[str] = CONJUNCTIONS,
                  capitalization_exceptions: TupleManager[str] | Iterable[tuple[str, str]] = CAPITALIZATION_EXCEPTIONS,
-                 regexes: RegexTupleManager | TupleManager[re.Pattern[str]] | Iterable[tuple[str, re.Pattern[str]]] = REGEXES
+                 regexes: RegexTupleManager | TupleManager[re.Pattern[str]] | Iterable[tuple[str, re.Pattern[str]]] = REGEXES,
+                 patronymic_name_order: bool = False,
                  ) -> None:
         # These four descriptor assignments call _CachedUnionMember.__set__, which
         # calls _invalidate_pst() and establishes self._pst. They must come before
@@ -363,6 +387,7 @@ class Constants:
         self.conjunctions = SetManager(conjunctions)
         self.capitalization_exceptions = TupleManager(capitalization_exceptions)
         self.regexes = RegexTupleManager(regexes)
+        self.patronymic_name_order = patronymic_name_order
 
     def _invalidate_pst(self) -> None:
         self._pst = None
