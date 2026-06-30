@@ -131,6 +131,41 @@ a secondary key::
 
     sorted_names = sorted(names, key=lambda n: (n.last_base.lower(), n.first.lower()))
 
+First-Name Prefixes
+-------------------
+
+``CONSTANTS.first_name_prefixes`` controls bound given-name prefixes that attach
+to the following word to form one first name. By default it contains
+``{'abdul', 'abdel', 'abdal', 'abu', 'abou', 'umm'}``.
+
+Example::
+
+    >>> from nameparser import HumanName
+    >>> hn = HumanName("abdul salam ahmed salem")
+    >>> hn.first, hn.middle, hn.last
+    ('abdul salam', 'ahmed', 'salem')
+
+To **disable** the feature entirely::
+
+    >>> from nameparser.config import CONSTANTS
+    >>> CONSTANTS.first_name_prefixes.clear()
+
+To **add** a word (e.g. if your data uses ``mohamad`` as a bound prefix)::
+
+    >>> CONSTANTS.first_name_prefixes.add('mohamad')
+
+To **remove** a single entry::
+
+    >>> CONSTANTS.first_name_prefixes.remove('umm')
+
+You can also pass a custom set per ``Constants`` instance::
+
+    >>> from nameparser.config import Constants
+    >>> c = Constants(first_name_prefixes={'abu', 'umm'})
+    >>> hn2 = HumanName("abu bakr al saud", constants=c)
+    >>> hn2.first, hn2.last
+    ('abu bakr', 'al saud')
+
 Parser Customization Examples
 -----------------------------
 
@@ -181,7 +216,7 @@ constant so that "Hon" can be parsed as a first name.
 
 If you don't want to detect any titles at all, you can remove all of them:
 
-    >>> CONSTANTS.titles.remove(*CONSTANTS.titles)
+    >>> CONSTANTS.titles.clear()
 
 
 Adding a Title

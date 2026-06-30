@@ -99,6 +99,12 @@ class FirstNamePrefixesTestCase(HumanNameTestBase):
         self.m(hn.first, "abdul", hn)
         self.m(hn.last, "salem", hn)
 
+    def test_mid_name_prefix_becomes_last_prefix(self) -> None:
+        """abu in non-first position is handled as a last-name prefix, not first-name."""
+        hn = HumanName("ahmed abu bakr")
+        self.m(hn.first, "ahmed", hn)
+        self.m(hn.last, "abu bakr", hn)
+
     # --- opt-out ---
     def test_opt_out_via_clear(self) -> None:
         """Clearing first_name_prefixes restores prior behavior."""
@@ -108,3 +114,4 @@ class FirstNamePrefixesTestCase(HumanNameTestBase):
         self.m(hn.first, "abdul", hn)
         self.m(hn.middle, "salam ahmed", hn)
         self.m(hn.last, "salem", hn)
+

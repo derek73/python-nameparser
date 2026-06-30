@@ -125,6 +125,13 @@ class SetManager(Set):
             self._on_change()
         return self
 
+    def clear(self) -> Self:
+        """Remove all entries from the set. Returns ``self`` for chaining."""
+        self.elements.clear()
+        if self._on_change:
+            self._on_change()
+        return self
+
 
 T = TypeVar('T')
 

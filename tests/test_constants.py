@@ -77,6 +77,14 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.m(hn.middle, "Hon", hn)
         self.m(hn.last, "Solo", hn)
 
+    def test_clear_removes_all_entries(self) -> None:
+        hn = HumanName("Ms Hon Solo", constants=None)
+        hn.C.titles.clear()
+        hn.parse_full_name()
+        self.m(hn.first, "Ms", hn)
+        self.m(hn.middle, "Hon", hn)
+        self.m(hn.last, "Solo", hn)
+
     def test_empty_attribute_default(self) -> None:
         from nameparser.config import CONSTANTS
         _orig = CONSTANTS.empty_attribute_default
