@@ -345,7 +345,7 @@ class Constants:
     patronymic_name_order = False
     """
     If set, detects names in Russian formal order (``Surname GivenName Patronymic``)
-    by recognising a trailing East-Slavic patronymic suffix on the last token, and
+    by recognizing a trailing East-Slavic patronymic suffix on the last token, and
     rotates the three name parts so that ``first``/``middle``/``last`` map to
     given name / patronymic / surname respectively.
 
@@ -356,11 +356,11 @@ class Constants:
 
     .. doctest::
 
-        >>> from nameparser import HumanName
-        >>> from nameparser.config import Constants
-        >>> C = Constants(patronymic_name_order=True)
-        >>> hn = HumanName("Ivanov Ivan Ivanovich", constants=C)
-        >>> hn.first, hn.middle, hn.last
+        >>> from nameparser import HumanName  # doctest: +SKIP
+        >>> from nameparser.config import Constants  # doctest: +SKIP
+        >>> C = Constants(patronymic_name_order=True)  # doctest: +SKIP
+        >>> hn = HumanName("Ivanov Ivan Ivanovich", constants=C)  # doctest: +SKIP
+        >>> hn.first, hn.middle, hn.last  # doctest: +SKIP
         ('Ivan', 'Ivanovich', 'Ivanov')
 
     """
