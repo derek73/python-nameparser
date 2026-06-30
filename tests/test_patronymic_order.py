@@ -38,8 +38,9 @@ def test_latin_patronymic_rejects_non_patronymic() -> None:
     assert not C.regexes.patronymic.search("Smith")
 
 
-def test_latin_patronymic_rejects_abramovich_substring_match() -> None:
-    # Must be end-anchored so "Abramovich" also matches (it ends in -ovich).
+def test_latin_patronymic_matches_surname_with_patronymic_suffix() -> None:
+    # Surnames that end in a patronymic suffix also match the regex;
+    # the end-anchor does not prevent this.
     # Separate guard tests verify the *parser* doesn't reorder it incorrectly.
     C = Constants()
     assert C.regexes.patronymic.search("Abramovich")
@@ -58,3 +59,43 @@ def test_cyrillic_patronymic_matches_ovna() -> None:
 def test_cyrillic_patronymic_rejects_non_patronymic() -> None:
     C = Constants()
     assert not C.regexes.patronymic_cyrillic.search("Иванов")
+
+
+def test_cyrillic_patronymic_matches_evich() -> None:
+    C = Constants()
+    assert C.regexes.patronymic_cyrillic.search("Сергеевич")
+
+
+def test_cyrillic_patronymic_matches_evna() -> None:
+    C = Constants()
+    assert C.regexes.patronymic_cyrillic.search("Сергеевна")
+
+
+def test_cyrillic_patronymic_matches_ichna() -> None:
+    C = Constants()
+    assert C.regexes.patronymic_cyrillic.search("Никитична")
+
+
+def test_cyrillic_patronymic_matches_special_ilyich() -> None:
+    C = Constants()
+    assert C.regexes.patronymic_cyrillic.search("ильич")
+
+
+def test_cyrillic_patronymic_matches_special_kuzmich() -> None:
+    C = Constants()
+    assert C.regexes.patronymic_cyrillic.search("кузьмич")
+
+
+def test_cyrillic_patronymic_matches_special_lukich() -> None:
+    C = Constants()
+    assert C.regexes.patronymic_cyrillic.search("лукич")
+
+
+def test_cyrillic_patronymic_matches_special_fomich() -> None:
+    C = Constants()
+    assert C.regexes.patronymic_cyrillic.search("фомич")
+
+
+def test_cyrillic_patronymic_matches_special_fokich() -> None:
+    C = Constants()
+    assert C.regexes.patronymic_cyrillic.search("фокич")
