@@ -89,6 +89,7 @@ class HumanName:
     last_list: list[str]
     suffix_list: list[str]
     nickname_list: list[str]
+    _had_comma: bool
 
     def __init__(
         self,
@@ -645,6 +646,12 @@ class HumanName:
         """
         return bool(self.C.regexes.initial.match(value))
 
+    def is_patronymic(self, piece: str) -> bool:
+        return bool(
+            self.C.regexes.patronymic.search(piece)
+            or self.C.regexes.patronymic_cyrillic.search(piece)
+        )
+
     # full_name parser
 
     @property
@@ -683,6 +690,27 @@ class HumanName:
         self.parse_nicknames()
         self.squash_emoji()
 
+    def handle_patronymic_name_order(self) -> None:
+        """
+        When patronymic_name_order is enabled, detect Russian formal order
+        (Surname GivenName Patronymic) and rotate to Western order.
+        Fires only for no-comma, single-token first/middle/last where the last
+        token is a patronymic and the middle token is not.
+        """
+        if (
+            not self._had_comma
+            and len(self.first_list) == 1
+            and len(self.middle_list) == 1
+            and len(self.last_list) == 1
+            and self.is_patronymic(self.last_list[0])
+            and not self.is_patronymic(self.middle_list[0])
+        ):
+            self.first_list, self.middle_list, self.last_list = (
+                self.middle_list,
+                self.last_list,
+                self.first_list,
+            )
+
     def post_process(self) -> None:
         """
         This happens at the end of the :py:func:`parse_full_name` after
@@ -690,6 +718,8 @@ class HumanName:
         and :py:func:`handle_capitalization`.
         """
         self.handle_firstnames()
+        if self.C.patronymic_name_order:
+            self.handle_patronymic_name_order()
         self.handle_capitalization()
 
     def fix_phd(self) -> None:
@@ -769,6 +799,7 @@ class HumanName:
 
         # break up full_name by commas
         parts = [x.strip() for x in self._full_name.split(",")]
+        self._had_comma = len(parts) > 1
 
         if self.suffix_delimiter and len(parts) > 1:
             expanded = [parts[0]]

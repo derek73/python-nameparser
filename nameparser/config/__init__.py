@@ -356,11 +356,11 @@ class Constants:
 
     .. doctest::
 
-        >>> from nameparser import HumanName  # doctest: +SKIP
-        >>> from nameparser.config import Constants  # doctest: +SKIP
-        >>> C = Constants(patronymic_name_order=True)  # doctest: +SKIP
-        >>> hn = HumanName("Ivanov Ivan Ivanovich", constants=C)  # doctest: +SKIP
-        >>> hn.first, hn.middle, hn.last  # doctest: +SKIP
+        >>> from nameparser import HumanName
+        >>> from nameparser.config import Constants
+        >>> C = Constants(patronymic_name_order=True)
+        >>> hn = HumanName("Ivanov Ivan Ivanovich", constants=C)
+        >>> hn.first, hn.middle, hn.last
         ('Ivan', 'Ivanovich', 'Ivanov')
 
     """
