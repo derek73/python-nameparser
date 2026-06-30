@@ -178,6 +178,13 @@ TEST_NAMES = (
     "U.S. District Judge Marc Thomas Treadwell",
     "Dra. Andréia da Silva",
     "Srta. Andréia da Silva",
+    "Herr Klaus Schmidt",
+    "Frau Anna Müller",
+    "Monsieur Jean Dupont",
+    "Señor Carlos García",
+    "Señora María García",
+    "Signor Marco Rossi",
+    "Mevrouw Anna de Vries",
 
 )
 

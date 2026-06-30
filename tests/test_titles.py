@@ -239,3 +239,36 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hh.first, "Vincent", hh)
         self.m(hh.middle, "van Gogh", hh)
         self.m(hh.last, "van Beethoven", hh)
+
+    # Non-ASCII title normalization — confirm diacritic titles survive
+    # the lowercase lookup path end-to-end.
+
+    def test_señora_non_ascii_title(self) -> None:
+        hn = HumanName("Señora María García")
+        self.m(hn.title, "Señora", hn)
+        self.m(hn.first, "María", hn)
+        self.m(hn.last, "García", hn)
+
+    def test_señora_lowercase_non_ascii_title(self) -> None:
+        hn = HumanName("señora María García")
+        self.m(hn.title, "señora", hn)
+        self.m(hn.first, "María", hn)
+        self.m(hn.last, "García", hn)
+
+    def test_frøken_non_ascii_title(self) -> None:
+        hn = HumanName("Frøken Jensen")
+        self.m(hn.title, "Frøken", hn)
+        self.m(hn.first, "", hn)
+        self.m(hn.last, "Jensen", hn)
+
+    def test_herr_title_not_first_name(self) -> None:
+        hn = HumanName("Herr Schmidt")
+        self.m(hn.title, "Herr", hn)
+        self.m(hn.first, "", hn)
+        self.m(hn.last, "Schmidt", hn)
+
+    def test_herr_title_with_first_name(self) -> None:
+        hn = HumanName("Herr Klaus Schmidt")
+        self.m(hn.title, "Herr", hn)
+        self.m(hn.first, "Klaus", hn)
+        self.m(hn.last, "Schmidt", hn)
