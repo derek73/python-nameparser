@@ -33,6 +33,26 @@ def test_latin_patronymic_matches_special_ilyich() -> None:
     assert C.regexes.patronymic.search("Ilyich")
 
 
+def test_latin_patronymic_matches_special_kuzmich() -> None:
+    C = Constants()
+    assert C.regexes.patronymic.search("Kuzmich")
+
+
+def test_latin_patronymic_matches_special_lukich() -> None:
+    C = Constants()
+    assert C.regexes.patronymic.search("Lukich")
+
+
+def test_latin_patronymic_matches_special_fomich() -> None:
+    C = Constants()
+    assert C.regexes.patronymic.search("Fomich")
+
+
+def test_latin_patronymic_matches_special_fokich() -> None:
+    C = Constants()
+    assert C.regexes.patronymic.search("Fokich")
+
+
 def test_latin_patronymic_rejects_non_patronymic() -> None:
     # EMPTY_REGEX (the default for missing keys) matches everything,
     # so this test is red until the real pattern is in place.
