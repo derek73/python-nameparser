@@ -23,6 +23,14 @@ REGEXES = set([
     ("emoji",re_emoji),
     ("phd", re.compile(r'\s(ph\.?\s+d\.?)', re.I | re.U)),
     ("space_before_comma", re.compile(r'\s+,', re.U)),
+    ("patronymic", re.compile(
+        r'(ovich|ovna|evich|evna|ichna|ilyich|kuzmich|lukich|fomich|fokich)$',
+        re.I | re.U,
+    )),
+    ("patronymic_cyrillic", re.compile(
+        r'(ович|овна|евич|евна|ична|ильич|кузьмич|лукич|фомич|фокич)$',
+        re.U,
+    )),
 ])
 """
 All regular expressions used by the parser are precompiled and stored in the config.
