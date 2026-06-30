@@ -76,6 +76,7 @@ Each module defines a plain Python set of known name pieces:
 - `titles.py` — `TITLES` (prenominals) and `FIRST_NAME_TITLES` (e.g. "Sir", which treat the following name as first, not last)
 - `suffixes.py` — `SUFFIX_ACRONYMS` (with periods, e.g. "M.D.") and `SUFFIX_NOT_ACRONYMS` (e.g. "Jr.")
 - `prefixes.py` — `PREFIXES` (lastname particles, e.g. "de", "van")
+- `first_name_prefixes.py` — `FIRST_NAME_PREFIXES` (bound given-name prefixes, e.g. "abdul", "abu"); `_join_first_name_prefix` joins the first non-title piece to its following piece before the main assignment loop
 - `conjunctions.py` — `CONJUNCTIONS` (e.g. "and", "of") used to chain multi-word titles
 - `capitalization.py` — `CAPITALIZATION_EXCEPTIONS` mapping (e.g. `{'phd': 'Ph.D.'}`)
 - `regexes.py` — compiled regular expressions wrapped in a `TupleManager`
@@ -95,6 +96,7 @@ Parse flow:
 2. Split on commas → 1 part (no comma), 2 parts (suffix-comma or lastname-comma), 3+ parts
 3. `parse_pieces()` — splits on spaces, detects dotted abbreviations like "Lt.Gov." and adds them to constants dynamically
 4. `join_on_conjunctions()` — merges pieces adjacent to conjunctions into single tokens (e.g. `['Secretary', 'of', 'State']` → `['Secretary of State']`); also joins prefix particles to the following lastname token
+4a. `_join_first_name_prefix()` — called immediately after step 4 in both the no-comma and lastname-comma paths; merges bound given-name prefixes (e.g. "abdul") with the next piece before the assignment loop runs; suffixes are still in `pieces` at this point, so the `reserve_last` guard must count non-suffix pieces only
 5. Iterates pieces, assigning to `title_list`, `first_list`, `middle_list`, `last_list`, `suffix_list`
 6. `post_process()` — `handle_firstnames()` swaps first/last when only a title + one name; `handle_capitalization()` applies optional auto-cap
 
@@ -108,13 +110,21 @@ Each named attribute (`title`, `first`, etc.) is a `@property` that joins its co
 3. Add `self.x = x if x is not None else self.C.x` in body — use `is not None`, not `or`, to allow falsy values like `""`
 4. conftest auto-restores scalar CONSTANTS between tests, but tests that *set* CONSTANTS mid-run still need their own try/finally
 
+**Adding a word to a config set** — first check the *other* sets for the same word (grep `nameparser/config/` or intersect the sets in a `python3 -c`). Real overlaps exist: `do`/`st`/`mc` ∈ `PREFIXES` ∩ `TITLES`/`SUFFIX_ACRONYMS`; `abd` = "ABD" ∈ `SUFFIX_ACRONYMS`; `abu` ∈ `PREFIXES` ∩ `first_name_prefixes` (position-dependent: leading token → first-name join, mid-name → last-name join). Usually position-dependent and harmless, but can force a guard or an exclusion (the `last_base` all-particles guard; dropping `abd` from `first_name_prefixes`).
+
+**Adding a flag-gated post-parse transform** (reorder/adjust, e.g. `patronymic_name_order`) — add a `Constants` boolean (default `False`), implement a `handle_*()` method, and call it in `post_process()` after `handle_firstnames()` and before `handle_capitalization()`, gated on the flag. Default-off keeps existing parses byte-for-byte unchanged. (#85; extension point for #185 Turkic.)
+
+**Validating a new parsing rule** — before implementing, simulate it in a throwaway script against `TEST_NAMES` (plus a few target-language examples) to catch regressions/false-positives early. E.g. this surfaced the `last_base` `do`/`st`/`mc` empties and the patronymic `"David Michael Abramovich"` false-reorder.
+
 ## Gotchas
 
 **`suffix_not_acronyms` vs `is_an_initial` tension** — single-letter roman numeral suffixes (`i`, `v`) are in `suffix_not_acronyms` but also match the `is_an_initial` regex (single uppercase letter), so `is_suffix()` rejects them. Two separate code paths need context-aware workarounds: (1) suffix-comma detection uses `are_suffixes_after_comma()` which bypasses `is_suffix()` for `suffix_not_acronyms` members; (2) lastname-comma post-comma parsing uses `is_suffix_at_lastname_comma_end()` which only fires when `nxt is None` and `len(parts)==2` (no `parts[2]` suffix segment). See issues #136, #144.
 
 **Expected-failure tests use `@pytest.mark.xfail`** — the conftest parametrized fixture breaks `@unittest.expectedFailure`; always use `@pytest.mark.xfail` instead.
 
-**`lc()` strips only trailing periods** — `'M.D.'` → `'m.d'`, not `'md'`. Exception keys in `capitalization_exceptions` are dot-free, so lookups must also try `.replace('.', '')`.
+**`lc()` strips leading and trailing periods** — `'M.D.'` → `'m.d'`, not `'md'` (interior periods are preserved). Exception keys in `capitalization_exceptions` are dot-free, so lookups must also try `.replace('.', '')`.
+
+**`_join_first_name_prefix` guard must exclude trailing suffixes** — suffix tokens are still in `pieces` when the helper runs (suffix detection happens in the assignment loop, later). The `reserve_last` guard must count `if not self.is_suffix(p)` to avoid treating a trailing suffix like "Jr." as a last-name slot; otherwise `"abdul salam jr"` → `last='jr'`.
 
 **Doctests** — docstring examples in `nameparser/*.py` run under `uv run pytest` (`--doctest-modules`; `testpaths` is `tests` + `nameparser` only). The `.rst` doctests in `docs/` (`usage.rst`, `customize.rst`) are **not** run by pytest or CI (CI does `sphinx-build -b html`, not `-b doctest`), so verify `.rst` examples manually: `python3 -c "import doctest; print(doctest.testfile('docs/usage.rst', module_relative=False, optionflags=doctest.NORMALIZE_WHITESPACE))"`. Note `customize.rst` has pre-existing failures under `-b doctest` (CONSTANTS state leaks across examples — no per-example reset like `tests/conftest.py` provides — plus non-deterministic `SetManager` repr).
 
