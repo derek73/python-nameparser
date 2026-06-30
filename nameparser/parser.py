@@ -565,6 +565,28 @@ class HumanName:
         """Lowercase and no periods version of piece is in :py:attr:`~nameparser.config.Constants.first_name_prefixes`."""
         return lc(piece) in self.C.first_name_prefixes
 
+    def _join_first_name_prefix(self, pieces: list[str], reserve_last: bool) -> list[str]:
+        """Join a first-name prefix to its following piece.
+
+        Finds the first non-title piece; if it is in ``first_name_prefixes``,
+        merges it with the next piece — unless ``reserve_last`` is True and no
+        further piece would remain for the last name.
+        """
+        fi = next((i for i, p in enumerate(pieces) if not self.is_title(p)), None)
+        if fi is None:
+            return pieces
+        if not self.is_first_name_prefix(pieces[fi]):
+            return pieces
+        next_i = fi + 1
+        if next_i >= len(pieces):
+            return pieces
+        if reserve_last and next_i >= len(pieces) - 1:
+            # Joining would consume the only remaining piece (the last name).
+            return pieces
+        pieces[fi] = pieces[fi] + " " + pieces[next_i]
+        del pieces[next_i]
+        return pieces
+
     def is_roman_numeral(self, value: str) -> bool:
         """
         Matches the ``roman_numeral`` regular expression in
@@ -831,6 +853,7 @@ class HumanName:
             #            part[0]
 
             pieces = self.parse_pieces(parts)
+            pieces = self._join_first_name_prefix(pieces, reserve_last=True)
             p_len = len(pieces)
             for i, piece in enumerate(pieces):
                 try:
