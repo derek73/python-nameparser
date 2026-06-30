@@ -551,7 +551,7 @@ class HumanName:
 
     def is_prefix(self, piece: str) -> bool:
         """
-        Lowercase and no periods version of piece is in the
+        Lowercased, leading/trailing-periods-stripped version of piece is in the
         :py:data:`~nameparser.config.prefixes.PREFIXES` set.
         """
         if isinstance(piece, list):
@@ -562,7 +562,7 @@ class HumanName:
             return lc(piece) in self.C.prefixes
 
     def is_first_name_prefix(self, piece: str) -> bool:
-        """Lowercase and no periods version of piece is in :py:attr:`~nameparser.config.Constants.first_name_prefixes`."""
+        """Lowercased, leading/trailing-periods-stripped version of piece is in :py:attr:`~nameparser.config.Constants.first_name_prefixes`."""
         return lc(piece) in self.C.first_name_prefixes
 
     def _join_first_name_prefix(self, pieces: list[str], reserve_last: bool) -> list[str]:

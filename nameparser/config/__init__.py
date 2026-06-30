@@ -87,7 +87,7 @@ class SetManager(Set):
 
     def add_with_encoding(self, s: str, encoding: str | None = None) -> None:
         """
-        Add the lower case and no-period version of the string to the set. Pass an
+        Add the lowercased, leading/trailing-periods-stripped version of the string to the set. Pass an
         explicit `encoding` parameter to specify the encoding of binary strings that
         are not DEFAULT_ENCODING (UTF-8).
         """
@@ -97,13 +97,15 @@ class SetManager(Set):
         encoding = encoding or stdin_encoding or DEFAULT_ENCODING
         if isinstance(s, bytes):
             s = s.decode(encoding)
-        self.elements.add(lc(s))
-        if self._on_change:
-            self._on_change()
+        normalized = lc(s)
+        if normalized not in self.elements:
+            self.elements.add(normalized)
+            if self._on_change:
+                self._on_change()
 
     def add(self, *strings: str) -> Self:
         """
-        Add the lower case and no-period version of the string arguments to the set.
+        Add the lowercased, leading/trailing-periods-stripped version of the string arguments to the set.
         Can pass a list of strings. Returns ``self`` for chaining.
         """
         for s in strings:
@@ -127,9 +129,10 @@ class SetManager(Set):
 
     def clear(self) -> Self:
         """Remove all entries from the set. Returns ``self`` for chaining."""
-        self.elements.clear()
-        if self._on_change:
-            self._on_change()
+        if self.elements:
+            self.elements.clear()
+            if self._on_change:
+                self._on_change()
         return self
 
 
