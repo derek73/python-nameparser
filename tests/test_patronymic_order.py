@@ -101,7 +101,7 @@ def test_cyrillic_patronymic_matches_special_fokich() -> None:
     assert C.regexes.patronymic_cyrillic.search("фокич")
 
 
-class PatronymicNameOrderFlagTests:
+class TestPatronymicNameOrderFlag:
 
     def test_default_is_false(self) -> None:
         C = Constants()
