@@ -89,6 +89,7 @@ class HumanName:
     last_list: list[str]
     suffix_list: list[str]
     nickname_list: list[str]
+    _had_comma: bool
 
     def __init__(
         self,
@@ -117,6 +118,7 @@ class HumanName:
         self.initials_delimiter = initials_delimiter if initials_delimiter is not None else self.C.initials_delimiter
         self.initials_separator = initials_separator if initials_separator is not None else self.C.initials_separator
         self.suffix_delimiter   = suffix_delimiter   if suffix_delimiter   is not None else self.C.suffix_delimiter
+        self._had_comma = False
         if (first or middle or last or title or suffix or nickname):
             self.first = first
             self.middle = middle
@@ -645,6 +647,20 @@ class HumanName:
         """
         return bool(self.C.regexes.initial.match(value))
 
+    def is_patronymic(self, piece: str) -> bool:
+        """
+        Return True if ``piece`` ends with a recognised East-Slavic patronymic
+        suffix, checked against both Latin-script and Cyrillic patterns in
+        ``self.C.regexes``.  Latin suffixes: ``-ovich``, ``-ovna``, ``-evich``,
+        ``-evna``, ``-ichna``, and the irregular forms ``-ilyich``, ``-kuzmich``,
+        ``-lukich``, ``-fomich``, ``-fokich``.  Cyrillic equivalents are matched
+        by a separate pattern.
+        """
+        return bool(
+            self.C.regexes.patronymic.search(piece)
+            or self.C.regexes.patronymic_cyrillic.search(piece)
+        )
+
     # full_name parser
 
     @property
@@ -683,6 +699,29 @@ class HumanName:
         self.parse_nicknames()
         self.squash_emoji()
 
+    def handle_patronymic_name_order(self) -> None:
+        """
+        When patronymic_name_order is enabled, detect Russian formal order
+        (Surname GivenName Patronymic) and rotate to Western order.
+        Fires only for no-comma, single-token first/middle/last where the last
+        token is a patronymic and the middle token is not.  Title, suffix, and
+        nickname parts do not affect this guard — reordering proceeds regardless
+        of whether they are present.
+        """
+        if (
+            not self._had_comma
+            and len(self.first_list) == 1
+            and len(self.middle_list) == 1
+            and len(self.last_list) == 1
+            and self.is_patronymic(self.last_list[0])
+            and not self.is_patronymic(self.middle_list[0])
+        ):
+            self.first_list, self.middle_list, self.last_list = (
+                self.middle_list,
+                self.last_list,
+                self.first_list,
+            )
+
     def post_process(self) -> None:
         """
         This happens at the end of the :py:func:`parse_full_name` after
@@ -690,6 +729,8 @@ class HumanName:
         and :py:func:`handle_capitalization`.
         """
         self.handle_firstnames()
+        if self.C.patronymic_name_order:
+            self.handle_patronymic_name_order()
         self.handle_capitalization()
 
     def fix_phd(self) -> None:
@@ -769,6 +810,7 @@ class HumanName:
 
         # break up full_name by commas
         parts = [x.strip() for x in self._full_name.split(",")]
+        self._had_comma = len(parts) > 1
 
         if self.suffix_delimiter and len(parts) > 1:
             expanded = [parts[0]]
