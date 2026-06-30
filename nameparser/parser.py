@@ -561,6 +561,10 @@ class HumanName:
         else:
             return lc(piece) in self.C.prefixes
 
+    def is_first_name_prefix(self, piece: str) -> bool:
+        """Lowercase and no periods version of piece is in :py:attr:`~nameparser.config.Constants.first_name_prefixes`."""
+        return lc(piece) in self.C.first_name_prefixes
+
     def is_roman_numeral(self, value: str) -> bool:
         """
         Matches the ``roman_numeral`` regular expression in
