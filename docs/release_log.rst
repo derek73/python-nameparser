@@ -18,6 +18,7 @@ Release Log
     - Fix spurious leading space in surnames and empty token in suffix list after ``capitalize()`` with an empty middle or suffix (#164)
     - Fix extra whitespace before punctuation in ``str()`` output when a ``string_format`` field is empty (closes #139)
     - Fix ``'apn aprn'`` split into separate ``suffix_acronyms`` entries so each is recognized independently (closes #155)
+    - Add ``last_base``, ``last_prefixes`` (and ``_list`` variants) plus ``family`` / ``family_prefixes`` aliases for splitting last-name prefix particles (tussenvoegsels) from the core surname (#130, #132)
 * 1.2.1 - June 19, 2026
     - Fix ``initials()`` interpolating the literal ``None`` for empty name parts when ``empty_attribute_default = None`` (e.g. ``"J. None D."``); empty parts now render as an empty string and a fully-empty result returns ``empty_attribute_default``
     - Add ``python -m nameparser "Name String"`` command-line helper that prints a parsed name

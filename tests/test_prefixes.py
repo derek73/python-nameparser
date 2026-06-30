@@ -162,3 +162,81 @@ class PrefixesTestCase(HumanNameTestBase):
         self.m(hn.title, "Dr.", hn)
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.suffix, "III", hn)
+
+
+class LastNamePrefixSplitTestCase(HumanNameTestBase):
+
+    def test_van_gogh_last_base(self) -> None:
+        hn = HumanName("Vincent van Gogh")
+        self.m(hn.last_base, "Gogh", hn)
+
+    def test_van_gogh_last_prefixes(self) -> None:
+        hn = HumanName("Vincent van Gogh")
+        self.m(hn.last_prefixes, "van", hn)
+
+    def test_van_gogh_last_base_list(self) -> None:
+        hn = HumanName("Vincent van Gogh")
+        self.m(hn.last_base_list, ["Gogh"], hn)
+
+    def test_van_gogh_last_prefixes_list(self) -> None:
+        hn = HumanName("Vincent van Gogh")
+        self.m(hn.last_prefixes_list, ["van"], hn)
+
+    def test_von_bergen_wessels(self) -> None:
+        hn = HumanName("pennie von bergen wessels")
+        self.m(hn.last_base, "bergen wessels", hn)
+        self.m(hn.last_prefixes, "von", hn)
+        self.m(hn.last_base_list, ["bergen", "wessels"], hn)
+        self.m(hn.last_prefixes_list, ["von"], hn)
+
+    def test_de_la_vega_multiword_prefix(self) -> None:
+        hn = HumanName("Juan de la Vega")
+        self.m(hn.last_base, "Vega", hn)
+        self.m(hn.last_prefixes, "de la", hn)
+        self.m(hn.last_prefixes_list, ["de", "la"], hn)
+
+    def test_no_prefix(self) -> None:
+        hn = HumanName("John Smith")
+        self.m(hn.last_base, "Smith", hn)
+        self.m(hn.last_prefixes, "", hn)
+        # self.m() coerces [] via `expected or empty_attribute_default`; use assertEqual for empty lists
+        self.assertEqual(hn.last_prefixes_list, [])
+
+    def test_do_guard_surname_equals_prefix_word(self) -> None:
+        # "Do" is in PREFIXES; without the guard last_base would be empty
+        hn = HumanName("Anh Do")
+        self.m(hn.last_base, "Do", hn)
+        self.m(hn.last_prefixes, "", hn)
+
+    def test_all_particles_guard(self) -> None:
+        # Artificial case: last name whose every word is a prefix — must not strip
+        hn = HumanName("Smith van der")
+        # last="van der"; both words are prefixes — guard fires, base = full last
+        self.m(hn.last_base, hn.last, hn)
+        self.m(hn.last_prefixes, "", hn)
+
+    def test_alias_family_equals_last_base(self) -> None:
+        hn = HumanName("Vincent van Gogh")
+        self.m(hn.family, hn.last_base, hn)
+
+    def test_alias_family_prefixes_equals_last_prefixes(self) -> None:
+        hn = HumanName("Vincent van Gogh")
+        self.m(hn.family_prefixes, hn.last_prefixes, hn)
+
+    def test_da_silva_title_plus_prefix(self) -> None:
+        hn = HumanName("Dra. Andréia da Silva")
+        self.m(hn.last_base, "Silva", hn)
+        self.m(hn.last_prefixes, "da", hn)
+
+    def test_empty_name(self) -> None:
+        hn = HumanName()
+        self.m(hn.last_base, "", hn)
+        self.m(hn.last_prefixes, "", hn)
+        # self.m() coerces [] via `expected or empty_attribute_default`; use assertEqual for empty lists
+        self.assertEqual(hn.last_base_list, [])
+        self.assertEqual(hn.last_prefixes_list, [])
+
+    def test_case_insensitive_prefix_detection(self) -> None:
+        hn = HumanName("VINCENT VAN GOGH")
+        self.m(hn.last_prefixes, "VAN", hn)
+        self.m(hn.last_base, "GOGH", hn)

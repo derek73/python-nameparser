@@ -21,6 +21,12 @@ Requires Python 3.10+.
     'Q. Xavier'
     >>> name.last
     'de la Vega'
+    >>> name.last_base
+    'Vega'
+    >>> name.last_prefixes
+    'de la'
+    >>> name.family
+    'Vega'
     >>> name.suffix
     'III'
     >>> name.surnames

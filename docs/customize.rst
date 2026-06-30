@@ -63,6 +63,43 @@ Other editable attributes
 * :py:obj:`~nameparser.config.Constants.initials_separator` - string placed between consecutive initials within the same name group (after the delimiter). Defaults to ``" "``, so ``"A. K."``; set to ``""`` for compact ``"A.K."``.
 
 
+Splitting last-name prefix particles
+-------------------------------------
+
+The :py:attr:`~nameparser.parser.HumanName.last_base` and
+:py:attr:`~nameparser.parser.HumanName.last_prefixes` properties split the last
+name at the boundary between leading prefix particles and the core surname.  They
+use the same ``PREFIXES`` set, so adding a particle makes the split pick it up
+automatically::
+
+    >>> from nameparser import HumanName
+    >>> from nameparser.config import CONSTANTS
+    >>> CONSTANTS.prefixes.add('op')
+    >>> HumanName("Jan op den Berg").last_base
+    'Berg'
+    >>> HumanName("Jan op den Berg").last_prefixes
+    'op den'
+    >>> CONSTANTS.prefixes.remove('op')
+
+Note the ``remove`` call at the end — ``customize.rst`` examples share global
+``CONSTANTS``, so mutations must be reversed to avoid affecting later examples.
+
+Because ``last_base`` is a plain string property, sorting a list of names by
+core surname (ignoring prefix particles like *van*, *de la*) is just a key
+function::
+
+    names = [
+        HumanName("Vincent van Gogh"),
+        HumanName("Juan de la Vega"),
+        HumanName("John Smith"),
+    ]
+    sorted_names = sorted(names, key=lambda n: n.last_base.lower())
+    # sort keys: 'gogh', 'smith', 'vega'  →  van Gogh, Smith, de la Vega
+
+To sort by first name when two people share the same ``last_base``, add it as
+a secondary key::
+
+    sorted_names = sorted(names, key=lambda n: (n.last_base.lower(), n.first.lower()))
 
 Parser Customization Examples
 -----------------------------
