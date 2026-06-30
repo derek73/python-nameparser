@@ -580,9 +580,14 @@ class HumanName:
         next_i = fi + 1
         if next_i >= len(pieces):
             return pieces
-        if reserve_last and next_i >= len(pieces) - 1:
-            # Joining would consume the only remaining piece (the last name).
-            return pieces
+        if reserve_last:
+            # Count non-suffix pieces from next_i onward; need ≥2 so the join
+            # target and at least one last-name piece both exist.
+            non_suffix_remaining = sum(
+                1 for p in pieces[next_i:] if not self.is_suffix(p)
+            )
+            if non_suffix_remaining <= 1:
+                return pieces
         pieces[fi] = pieces[fi] + " " + pieces[next_i]
         del pieces[next_i]
         return pieces

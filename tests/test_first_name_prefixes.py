@@ -37,6 +37,13 @@ class FirstNamePrefixesTestCase(HumanNameTestBase):
         self.m(hn.first, "abdul", hn)
         self.m(hn.last, "salam", hn)
 
+    def test_no_comma_guard_suffix_not_swallowed(self) -> None:
+        """Guard: prefix + one name + suffix — suffix must not become last."""
+        hn = HumanName("abdul salam jr")
+        self.m(hn.first, "abdul", hn)
+        self.m(hn.last, "salam", hn)
+        self.m(hn.suffix, "jr", hn)
+
     # --- lastname-comma path ---
     def test_lastname_comma_join(self) -> None:
         hn = HumanName("salem, abdul salam")
