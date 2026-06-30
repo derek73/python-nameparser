@@ -98,7 +98,7 @@ Parse flow:
 4. `join_on_conjunctions()` — merges pieces adjacent to conjunctions into single tokens (e.g. `['Secretary', 'of', 'State']` → `['Secretary of State']`); also joins prefix particles to the following lastname token
 4a. `_join_first_name_prefix()` — called immediately after step 4 in both the no-comma and lastname-comma paths; merges bound given-name prefixes (e.g. "abdul") with the next piece before the assignment loop runs; suffixes are still in `pieces` at this point, so the `reserve_last` guard must count non-suffix pieces only
 5. Iterates pieces, assigning to `title_list`, `first_list`, `middle_list`, `last_list`, `suffix_list`
-6. `post_process()` — `handle_firstnames()` swaps first/last when only a title + one name; `handle_capitalization()` applies optional auto-cap
+6. `post_process()` — `handle_firstnames()` swaps first/last when only a title + one name; `handle_capitalization()` applies optional auto-cap. Any new `self._attr` used by `post_process()` helpers must be initialized in `__init__` (with its default value) — the direct-kwargs path bypasses `parse_full_name()`, so the attribute won't exist otherwise.
 
 Each named attribute (`title`, `first`, etc.) is a `@property` that joins its corresponding `_list`. Setters call `_set_list()` which runs the value through `parse_pieces()`, so assigning `hn.last = "de la Vega"` correctly re-parses prefix tokens.
 
@@ -117,6 +117,8 @@ Each named attribute (`title`, `first`, etc.) is a `@property` that joins its co
 **Validating a new parsing rule** — before implementing, simulate it in a throwaway script against `TEST_NAMES` (plus a few target-language examples) to catch regressions/false-positives early. E.g. this surfaced the `last_base` `do`/`st`/`mc` empties and the patronymic `"David Michael Abramovich"` false-reorder.
 
 ## Gotchas
+
+**Titles permanently shadow first names — be conservative** — any word in `TITLES` is always consumed as a title and can never be parsed as a first name. `"Dean"` is the canonical example: it's a common academic title *and* a common given name, so it is intentionally absent from the default titles (see `docs/customize.rst` — users who need it add it via opt-in `Constants`). Before adding a word to `TITLES`, ask: "Could this plausibly be someone's given name in any culture?" If yes, don't add it globally; it belongs in caller-supplied `Constants` instead. This same caution applies to international honorifics — `Prince`, `Sheikh`, `Frau` are all first names in some contexts.
 
 **`suffix_not_acronyms` vs `is_an_initial` tension** — single-letter roman numeral suffixes (`i`, `v`) are in `suffix_not_acronyms` but also match the `is_an_initial` regex (single uppercase letter), so `is_suffix()` rejects them. Two separate code paths need context-aware workarounds: (1) suffix-comma detection uses `are_suffixes_after_comma()` which bypasses `is_suffix()` for `suffix_not_acronyms` members; (2) lastname-comma post-comma parsing uses `is_suffix_at_lastname_comma_end()` which only fires when `nxt is None` and `len(parts)==2` (no `parts[2]` suffix segment). See issues #136, #144.
 
@@ -137,5 +139,7 @@ Each named attribute (`title`, `first`, etc.) is a `@property` that joins its co
 ### Tests (`tests/`)
 
 **When adding a new aggregate property** (like `given_names` or `surnames`), always include a test for the empty path — a name that produces no value for that property — so the `or self.C.empty_attribute_default` guard is covered. The conftest dual-fixture then automatically exercises both `""` and `None` variants. Example: `HumanName("Williams")` for a given-names property (last-name-only string has no first or middle).
+
+**`python_classes = ["*Tests", "*TestCase"]`** in `pyproject.toml` — suffix style (`FooTests`), NOT prefix (`TestFoo`); wrong style silently skips discovery.
 
 Tests run under **pytest** (via `uv run pytest`) and are split one file per concern (`tests/test_titles.py`, `tests/test_suffixes.py`, etc.). `tests/base.py` holds `HumanNameTestBase` — a plain (non-`unittest`) base whose `m()` helper is a custom assert that prints the original name string on failure (plus thin `assert*` shims so the moved test bodies are unchanged). `tests/conftest.py` defines an autouse fixture that runs **every test twice** — once with `empty_attribute_default = ''` and once with `None` — so reported counts are doubled (e.g. 11 methods → 22 results); it also snapshots/restores the scalar `CONSTANTS` config around each test to keep tests order-independent. `TEST_NAMES` (in `tests/test_variations.py`) is a list of name strings permuted into comma-separated variants as a regression check. Tests that should fail use `@pytest.mark.xfail`. When adding a parsing case, add it to the relevant `tests/test_*.py` file and consider adding the base form to `TEST_NAMES`.
