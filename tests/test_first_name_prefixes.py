@@ -36,3 +36,16 @@ class FirstNamePrefixesTestCase(HumanNameTestBase):
         hn = HumanName("abdul salam")
         self.m(hn.first, "abdul", hn)
         self.m(hn.last, "salam", hn)
+
+    # --- lastname-comma path ---
+    def test_lastname_comma_join(self) -> None:
+        hn = HumanName("salem, abdul salam")
+        self.m(hn.first, "abdul salam", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "salem", hn)
+
+    def test_lastname_comma_join_with_middle(self) -> None:
+        hn = HumanName("salem, abdul salam ahmed")
+        self.m(hn.first, "abdul salam", hn)
+        self.m(hn.middle, "ahmed", hn)
+        self.m(hn.last, "salem", hn)

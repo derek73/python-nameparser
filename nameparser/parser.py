@@ -936,6 +936,7 @@ class HumanName:
                 #      parts[0],      parts[1],              parts[2:...]
 
                 log.debug("post-comma pieces: %s", str(post_comma_pieces))
+                post_comma_pieces = self._join_first_name_prefix(post_comma_pieces, reserve_last=False)
 
                 # lastname part may have suffixes in it
                 lastname_pieces = self.parse_pieces(parts[0].split(' '), 1)
