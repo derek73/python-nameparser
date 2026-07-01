@@ -254,3 +254,23 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         hn = HumanName("and van Buren")
         self.m(hn.first, "and van", hn)
         self.m(hn.last, "Buren", hn)
+
+    def test_conjunction_bridges_word_that_is_both_title_and_prefix(self) -> None:
+        # "freiherr" is registered as both a title and a prefix. When it sits
+        # next to a conjunction, join_on_conjunctions() runs the is_title and
+        # is_prefix checks independently (not elif), so the merged piece
+        # ("freiherr und") is added to both constants sets. Confirms that
+        # dual registration doesn't break the prefix-bridging into last.
+        hn = HumanName("Fritz Freiherr und von Bar")
+        self.m(hn.first, "Fritz", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "Freiherr und von Bar", hn)
+
+    def test_conjunction_bridges_prefix_chain_with_multiple_conjunctions(self) -> None:
+        # Two separate conjunctions ("und" appearing twice, not contiguous)
+        # each bridge their own pair of adjacent prefixes, so both merges
+        # must register as prefixes for the whole chain to join into last.
+        hn = HumanName("Alois von und zu und von Liechtenstein")
+        self.m(hn.first, "Alois", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "von und zu und von Liechtenstein", hn)
