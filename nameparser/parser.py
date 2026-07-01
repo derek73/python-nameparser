@@ -803,10 +803,17 @@ class HumanName:
             # also rejects single-letter initials via is_an_initial(), which
             # isn't relevant here, and the suffix_acronyms_ambiguous exclusion
             # needs to be interleaved into the acronym branch specifically.
+            # Acronym suffixes may have periods between every letter (e.g.
+            # "M.D", "Ph.D") that aren't necessarily trailing, so -- exactly
+            # like is_suffix() -- strip all periods before checking
+            # suffix_acronyms/suffix_acronyms_ambiguous membership. Bare
+            # `stripped` (lc() only strips leading/trailing periods) is still
+            # used for suffix_not_acronyms, matching is_suffix()'s asymmetry.
+            acronym_stripped = stripped.replace('.', '')
             is_unambiguous_suffix = (
                 stripped in self.C.suffix_not_acronyms
-                or (stripped in self.C.suffix_acronyms
-                    and stripped not in self.C.suffix_acronyms_ambiguous)
+                or (acronym_stripped in self.C.suffix_acronyms
+                    and acronym_stripped not in self.C.suffix_acronyms_ambiguous)
             )
             if is_unambiguous_suffix or content.endswith('.'):
                 # Leave the bare content -- no delimiters -- so downstream

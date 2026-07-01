@@ -325,6 +325,17 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.suffix, "MBA", hn)
         self.m(hn.nickname, "", hn)
 
+    def test_acronym_suffix_with_internal_periods_in_parenthesis(self) -> None:
+        # "M.D" has a non-trailing period between every letter -- unlike
+        # is_suffix(), handle_match()'s suffix_acronyms check must also strip
+        # internal periods (not just rely on the trailing content.endswith('.')
+        # heuristic, which doesn't fire here since "M.D" has no trailing period).
+        hn = HumanName("Andrew Perkins (M.D)")
+        self.m(hn.first, "Andrew", hn)
+        self.m(hn.last, "Perkins", hn)
+        self.m(hn.suffix, "M.D", hn)
+        self.m(hn.nickname, "", hn)
+
     def test_period_terminated_content_in_parenthesis_not_forced_either_way(self) -> None:
         # "Mgr." isn't in any suffix list, but it ends in a period, so the
         # period heuristic (rule 2) excludes it from nickname_list. It flows
