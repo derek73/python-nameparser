@@ -110,6 +110,8 @@ Each named attribute (`title`, `first`, etc.) is a `@property` that joins its co
 3. Add `self.x = x if x is not None else self.C.x` in body — use `is not None`, not `or`, to allow falsy values like `""`
 4. conftest auto-restores scalar CONSTANTS between tests, but tests that *set* CONSTANTS mid-run still need their own try/finally
 
+**Adding a new mutable/collection `Constants` attribute** (a `SetManager`/`TupleManager`-backed group, e.g. `extra_nickname_delimiters`): add it to `_COLLECTION_CONFIG_ATTRS` in `tests/conftest.py`, or tests that mutate the global `CONSTANTS` copy will leak state into later tests. Contents must be deep-copyable (the snapshot uses `copy.deepcopy`) — already true for the existing manager types.
+
 **Adding a word to a config set** — first check the *other* sets for the same word (grep `nameparser/config/` or intersect the sets in a `python3 -c`). Real overlaps exist: `do`/`st`/`mc` ∈ `PREFIXES` ∩ `TITLES`/`SUFFIX_ACRONYMS`; `abd` = "ABD" ∈ `SUFFIX_ACRONYMS`; `abu` ∈ `PREFIXES` ∩ `first_name_prefixes` (position-dependent: leading token → first-name join, mid-name → last-name join). Usually position-dependent and harmless, but can force a guard or an exclusion (the `last_base` all-particles guard; dropping `abd` from `first_name_prefixes`).
 
 **Adding a flag-gated post-parse transform** (reorder/adjust, e.g. `patronymic_name_order`) — add a `Constants` boolean (default `False`), implement a `handle_*()` method, and call it in `post_process()` after `handle_firstnames()` and before `handle_capitalization()`, gated on the flag. Default-off keeps existing parses byte-for-byte unchanged. (#85; extension point for #185 Turkic.)
