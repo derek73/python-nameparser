@@ -784,8 +784,12 @@ class HumanName:
         white space to allow for quotes in names like O'Connor and Kawai'ae'a.
         Double quotes and parenthesis can span white space.
 
-        Loops through 3 :py:data:`~nameparser.config.regexes.REGEXES`;
-        `quoted_word`, `double_quotes` and `parenthesis`.
+        Loops through the built-in `quoted_word`, `double_quotes` and
+        `parenthesis` patterns in :py:attr:`~nameparser.config.Constants.regexes`,
+        followed by any patterns added to
+        :py:attr:`~nameparser.config.Constants.extra_nickname_delimiters` --
+        see the "Adding Custom Nickname Delimiters" section of the
+        customization docs.
         """
 
         def handle_match(m: 're.Match[str]') -> str:
@@ -825,10 +829,18 @@ class HumanName:
         # Same handle_match for every delimiter: suffix-shaped content
         # is rare in quotes but not impossible, and the logic is delimiter-
         # agnostic, so there's no reason to special-case parenthesis here.
-        # Iterating self.C.nickname_delimiters (rather than a hardcoded
-        # tuple) lets callers add new delimiter patterns at runtime -- see
-        # issue #112.
-        for _re in self.C.nickname_delimiters.values():
+        # The three built-ins are read live from self.C.regexes (not copied),
+        # so overriding e.g. self.C.regexes.parenthesis keeps working as
+        # before; extra_nickname_delimiters is iterated afterward so callers
+        # can add new delimiter patterns at runtime without needing to
+        # override parse_nicknames() itself -- see issue #112.
+        delimiters = (
+            self.C.regexes.quoted_word,
+            self.C.regexes.double_quotes,
+            self.C.regexes.parenthesis,
+            *self.C.extra_nickname_delimiters.values(),
+        )
+        for _re in delimiters:
             self._full_name = _re.sub(handle_match, self._full_name)
 
     def squash_emoji(self) -> None:

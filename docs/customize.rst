@@ -56,13 +56,15 @@ remove punctuation to normalize them for comparison.
 Adding Custom Nickname Delimiters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:py:obj:`~nameparser.config.Constants.nickname_delimiters` is a named,
-appendable group of the delimiter patterns that
-:py:meth:`~nameparser.parser.HumanName.parse_nicknames` loops through
-(``quoted_word``, ``double_quotes`` and ``parenthesis`` by default). Add
-your own pattern under a new key to recognize additional delimiters, then
-re-run :py:meth:`~nameparser.parser.HumanName.parse_full_name` to pick it
-up:
+:py:meth:`~nameparser.parser.HumanName.parse_nicknames` recognizes three
+built-in delimiters -- ``quoted_word``, ``double_quotes`` and
+``parenthesis`` -- read from :py:attr:`~nameparser.config.Constants.regexes`,
+so overriding e.g. ``CONSTANTS.regexes.parenthesis`` still works exactly as
+before. To recognize an *additional* delimiter without overriding one of the
+built-ins, add a pattern to
+:py:obj:`~nameparser.config.Constants.extra_nickname_delimiters` (empty by
+default) under any key, then re-run
+:py:meth:`~nameparser.parser.HumanName.parse_full_name` to pick it up:
 
 .. doctest::
 
@@ -71,7 +73,7 @@ up:
     >>> hn = HumanName("Benjamin {Ben} Franklin", constants=None)
     >>> hn.nickname
     ''
-    >>> hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}', re.U)
+    >>> hn.C.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}', re.U)
     >>> hn.parse_full_name()
     >>> hn.nickname
     'Ben'

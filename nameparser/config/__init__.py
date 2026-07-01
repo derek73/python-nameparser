@@ -263,7 +263,7 @@ class Constants:
     suffix_acronyms_ambiguous: SetManager
     capitalization_exceptions: TupleManager[str]
     regexes: RegexTupleManager
-    nickname_delimiters: TupleManager[re.Pattern[str]]
+    extra_nickname_delimiters: TupleManager[re.Pattern[str]]
     _pst: Set[str] | None
 
     string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
@@ -415,15 +415,13 @@ class Constants:
         self.suffix_acronyms_ambiguous = SetManager(suffix_acronyms_ambiguous)
         self.capitalization_exceptions = TupleManager(capitalization_exceptions)
         self.regexes = RegexTupleManager(regexes)
-        # Named, appendable group of delimiter patterns that parse_nicknames()
-        # iterates in order -- see nameparser.config.regexes for the defaults.
-        # Add a pattern here (and re-parse) to recognize a new delimiter
-        # without needing to override parse_nicknames() itself. See issue #112.
-        self.nickname_delimiters = TupleManager({
-            'quoted_word': self.regexes.quoted_word,
-            'double_quotes': self.regexes.double_quotes,
-            'parenthesis': self.regexes.parenthesis,
-        })
+        # Named, appendable group of *additional* delimiter patterns that
+        # parse_nicknames() iterates after its three built-in delimiters
+        # (quoted_word/double_quotes/parenthesis, read live from self.regexes
+        # so overriding those keeps working as before). Empty by default; add
+        # a pattern here (and re-parse) to recognize a new delimiter without
+        # needing to override parse_nicknames() itself. See issue #112.
+        self.extra_nickname_delimiters = TupleManager()
         self.patronymic_name_order = patronymic_name_order
 
     def _invalidate_pst(self) -> None:
