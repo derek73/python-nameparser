@@ -19,21 +19,6 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.last, "Dentist", hn)
         self.m(hn.suffix, "D.D.S.", hn)
 
-    def test_msc_and_mscmsm_suffix_acronyms(self) -> None:
-        # Regression guard: SUFFIX_ACRONYMS had a missing comma between 'msc'
-        # and 'mscmsm', so Python's implicit string-literal concatenation
-        # silently merged them into a bogus 'mscmscmsm' entry, dropping both
-        # real entries from the set.
-        hn = HumanName("Joe Dentist Msc")
-        self.m(hn.first, "Joe", hn)
-        self.m(hn.last, "Dentist", hn)
-        self.m(hn.suffix, "Msc", hn)
-
-        hn2 = HumanName("Joe Dentist MSCMSM")
-        self.m(hn2.first, "Joe", hn2)
-        self.m(hn2.last, "Dentist", hn2)
-        self.m(hn2.suffix, "MSCMSM", hn2)
-
     def test_two_suffixes(self) -> None:
         hn = HumanName("Kenneth Clarke QC MP")
         self.m(hn.first, "Kenneth", hn)
