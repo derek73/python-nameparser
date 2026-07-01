@@ -274,3 +274,114 @@ class SuffixesTestCase(HumanNameTestBase):
         # This is a documented limitation — do not "fix" it without a broader solution.
         hn = HumanName("Doe, Mary - Kate, RN", suffix_delimiter=" - ")
         self.assertNotEqual(hn.first, "Mary - Kate")
+
+    def test_suffix_acronyms_ambiguous_is_customizable(self) -> None:
+        from nameparser.config import Constants
+        custom = Constants(suffix_acronyms_ambiguous=['xyz'])
+        self.assertEqual(set(custom.suffix_acronyms_ambiguous), {'xyz'})
+        # Constructing without the kwarg still works and uses the module default.
+        default = Constants()
+        self.assertIn('jd', default.suffix_acronyms_ambiguous)
+
+    def test_suffix_in_parenthesis_with_other_suffixes(self) -> None:
+        hn = HumanName("Andrew Perkins, Jr., Col. (Ret)")
+        self.m(hn.first, "Andrew", hn)
+        self.m(hn.last, "Perkins", hn)
+        self.assertIn("Ret", hn.suffix)
+        self.m(hn.nickname, "", hn)
+
+    def test_suffix_in_parenthesis_mid_name(self) -> None:
+        # "Jr." is suffix-shaped, so parse_nicknames() no longer treats it as
+        # a nickname. But it isn't in trailing position, and parse_full_name's
+        # suffix detection only recognizes a trailing run of suffix-shaped
+        # pieces -- so it lands wherever normal parsing would put a bare
+        # mid-name "Jr." token, exactly as if the parens were never there
+        # (verified: HumanName("Lon Jr. Williams") parses identically).
+        # Known limitation: making this land in `suffix` would require
+        # changing parse_full_name's suffix detection, out of scope here --
+        # issue #111 is specifically about the nickname misclassification.
+        hn = HumanName("Lon (Jr.) Williams")
+        self.m(hn.first, "Lon", hn)
+        self.m(hn.middle, "Jr.", hn)
+        self.m(hn.last, "Williams", hn)
+        self.m(hn.suffix, "", hn)
+        self.m(hn.nickname, "", hn)
+
+    def test_suffix_in_parenthesis_with_period(self) -> None:
+        # Same known limitation as above: "Ret." is mid-name (no comma), so
+        # it's outside the trailing run parse_full_name's suffix detection
+        # requires. It parses exactly as bare "Col. Ret. Smith" would.
+        hn = HumanName("Col. (Ret.) Smith")
+        self.m(hn.title, "Col.", hn)
+        self.m(hn.first, "Ret.", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.suffix, "", hn)
+        self.m(hn.nickname, "", hn)
+
+    def test_acronym_suffix_in_parenthesis(self) -> None:
+        hn = HumanName("Andrew Perkins (MBA)")
+        self.m(hn.first, "Andrew", hn)
+        self.m(hn.last, "Perkins", hn)
+        self.m(hn.suffix, "MBA", hn)
+        self.m(hn.nickname, "", hn)
+
+    def test_acronym_suffix_with_internal_periods_in_parenthesis(self) -> None:
+        # "M.D" has a non-trailing period between every letter -- unlike
+        # is_suffix(), handle_match()'s suffix_acronyms check must also strip
+        # internal periods (not just rely on the trailing content.endswith('.')
+        # heuristic, which doesn't fire here since "M.D" has no trailing period).
+        hn = HumanName("Andrew Perkins (M.D)")
+        self.m(hn.first, "Andrew", hn)
+        self.m(hn.last, "Perkins", hn)
+        self.m(hn.suffix, "M.D", hn)
+        self.m(hn.nickname, "", hn)
+
+    def test_period_terminated_content_in_parenthesis_not_forced_either_way(self) -> None:
+        # "Mgr." isn't in any suffix list, but it ends in a period, so the
+        # period heuristic (rule 2) excludes it from nickname_list. It flows
+        # into normal parsing instead of being force-classified as a suffix.
+        hn = HumanName("Andrew Perkins (Mgr.)")
+        self.m(hn.nickname, "", hn)
+        self.m(hn.suffix, "", hn)
+
+    def test_suffix_in_single_quotes(self) -> None:
+        # handle_match() is shared across all three delimiter regexes, not
+        # just parenthesis -- confirm suffix-shaped single-quoted content
+        # routes the same way.
+        hn = HumanName("Andrew Perkins 'MBA'")
+        self.m(hn.first, "Andrew", hn)
+        self.m(hn.last, "Perkins", hn)
+        self.m(hn.suffix, "MBA", hn)
+        self.m(hn.nickname, "", hn)
+
+    def test_suffix_in_double_quotes(self) -> None:
+        hn = HumanName('Andrew Perkins "MBA"')
+        self.m(hn.first, "Andrew", hn)
+        self.m(hn.last, "Perkins", hn)
+        self.m(hn.suffix, "MBA", hn)
+        self.m(hn.nickname, "", hn)
+
+    def test_suffix_acronyms_ambiguous_custom_entry_stays_nickname(self) -> None:
+        # A custom suffix_acronyms_ambiguous entry keeps a suffix_acronyms
+        # member classified as a nickname instead of a suffix, confirming
+        # the exception list -- not a hardcoded check -- drives the behavior.
+        from nameparser.config import Constants
+        C = Constants(
+            suffix_acronyms=['xyz'],
+            suffix_acronyms_ambiguous=['xyz'],
+        )
+        hn = HumanName("Andrew Perkins (XYZ)", constants=C)
+        self.m(hn.nickname, "XYZ", hn)
+        self.m(hn.suffix, "", hn)
+
+    def test_suffix_acronyms_ambiguous_removal_routes_to_suffix(self) -> None:
+        # Removing 'jd' from a custom suffix_acronyms_ambiguous flips JD
+        # from nickname to suffix. Uses a trailing-position name (unlike the
+        # JEFFREY (JD) BRICKEN regression guard in test_nicknames.py) so
+        # parse_full_name's trailing-run suffix detection actually picks it
+        # up -- see the known mid-name limitation noted on the tests above.
+        from nameparser.config import Constants
+        C = Constants(suffix_acronyms_ambiguous=[])
+        hn = HumanName("Andrew Perkins (JD)", constants=C)
+        self.m(hn.nickname, "", hn)
+        self.m(hn.suffix, "JD", hn)

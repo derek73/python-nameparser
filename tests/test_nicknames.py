@@ -134,6 +134,14 @@ class NicknameTestCase(HumanNameTestBase):
         self.m(hn.last, "Edmonds", hn)
         self.m(hn.nickname, "Rick", hn)
 
+    def test_ambiguous_suffix_acronym_in_parenthesis_stays_nickname(self) -> None:
+        # JD is in SUFFIX_ACRONYMS_AMBIGUOUS: both a law-degree acronym and a
+        # common given-name nickname. Existing behavior (nickname) must be
+        # preserved -- see issue #111.
+        hn = HumanName("JEFFREY (JD) BRICKEN")
+        self.m(hn.nickname, "JD", hn)
+        self.m(hn.suffix, "", hn)
+
 
 # class MaidenNameTestCase(HumanNameTestBase):
 #

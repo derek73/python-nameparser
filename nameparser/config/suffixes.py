@@ -13,6 +13,14 @@ SUFFIX_NOT_ACRONYMS = set([
     'iii',
     'iv',
     'v',
+    # Bare, not '(ret)'/'(vet)': moved here from literal parenthesized
+    # entries in SUFFIX_ACRONYMS. parse_nicknames()'s handle_match() now
+    # strips parens/quotes before this set is consulted, so the bare form
+    # is correct -- do not re-add the parenthesized form, that would
+    # silently reintroduce the #111 bug (parenthesized "(Ret)" matching
+    # literally instead of going through nickname/suffix disambiguation).
+    'ret',
+    'vet',
 ])
 """
 
@@ -20,9 +28,29 @@ Post-nominal pieces that are not acronyms. The parser does not remove periods
 when matching against these pieces.
 
 """
+SUFFIX_ACRONYMS_AMBIGUOUS = set([
+    # Suffix acronyms that also commonly work as given-name nicknames on
+    # their own (e.g. "Ed", "JD"). Read only by HumanName.parse_nicknames()
+    # when deciding whether parenthesized/quoted content is a nickname or a
+    # suffix -- content matching one of these stays a nickname rather than
+    # being reclassified as a suffix, since that's the more common reading
+    # in ambiguous, delimiter-only context.
+    #
+    # When adding a new entry to SUFFIX_ACRONYMS, also add it here only if
+    # the exact letter sequence could plausibly be someone's given name or
+    # common nickname on its own (e.g. 'jd', 'ed'). Unambiguous
+    # certifications/degrees (e.g. 'mba', 'cpa', 'phd') don't need an entry.
+    'ed',
+    'jd',
+])
+"""
+
+Acronym suffixes from SUFFIX_ACRONYMS that also plausibly collide with a
+common given-name nickname. Not a partition of SUFFIX_ACRONYMS -- a small,
+standalone exception list consulted only by parse_nicknames().
+
+"""
 SUFFIX_ACRONYMS = set([
-    '(ret)',
-    '(vet)',
     '8-vsb',
     'aas',
     'aba',
@@ -501,7 +529,7 @@ SUFFIX_ACRONYMS = set([
     'mra',
     'ms',
     'msa',
-    'msc'
+    'msc',
     'mscmsm',
     'msm',
     'mt',

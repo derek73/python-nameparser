@@ -7,6 +7,9 @@ Release Log
     to 1.2.1 first (which includes a one-version compatibility shim), load and
     re-pickle under 1.2.1, then upgrade to 1.3.0.
 
+    - Fix suffix-shaped parenthesized/quoted content (e.g. ``"(Ret)"``, ``"(MBA)"``) being misclassified as a nickname instead of a suffix (closes #111)
+    - Add ``suffix_acronyms_ambiguous`` to ``Constants`` for acronym suffixes that also read as given-name nicknames (e.g. ``"JD"``, ``"Ed"``), used when disambiguating parenthesized/quoted content (#111)
+    - Fix missing comma between ``'msc'`` and ``'mscmsm'`` in ``suffix_acronyms``, which silently concatenated them into a bogus ``'mscmscmsm'`` entry (#111)
     - Add ``given_names`` (and ``given_names_list``) attribute as aggregate of first and middle names, mirroring ``surnames`` (closes #157)
     - Add ``suffix_delimiter`` to ``Constants`` and ``HumanName`` for parsing suffixes separated by arbitrary delimiters, e.g. ``"RN - CRNA"`` (#156)
     - Add ``initials_separator`` to ``Constants`` and ``HumanName`` to control spacing between consecutive initials within a name group (#171)
