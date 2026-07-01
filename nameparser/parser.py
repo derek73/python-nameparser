@@ -788,10 +788,6 @@ class HumanName:
         `quoted_word`, `double_quotes` and `parenthesis`.
         """
 
-        re_quoted_word = self.C.regexes.quoted_word
-        re_double_quotes = self.C.regexes.double_quotes
-        re_parenthesis = self.C.regexes.parenthesis
-
         def handle_match(m: 're.Match[str]') -> str:
             # Fall back to the whole match when the regex has no capturing
             # group (e.g. a custom override regex without one, like
@@ -826,10 +822,13 @@ class HumanName:
             self.nickname_list.append(content)
             return ''
 
-        # Same handle_match for all three delimiters: suffix-shaped content
+        # Same handle_match for every delimiter: suffix-shaped content
         # is rare in quotes but not impossible, and the logic is delimiter-
         # agnostic, so there's no reason to special-case parenthesis here.
-        for _re in (re_quoted_word, re_double_quotes, re_parenthesis):
+        # Iterating self.C.nickname_delimiters (rather than a hardcoded
+        # tuple) lets callers add new delimiter patterns at runtime -- see
+        # issue #112.
+        for _re in self.C.nickname_delimiters.values():
             self._full_name = _re.sub(handle_match, self._full_name)
 
     def squash_emoji(self) -> None:

@@ -53,6 +53,29 @@ Each set of constants comes with :py:func:`~nameparser.config.SetManager.add` an
 the constants for your project. These methods automatically lower case and
 remove punctuation to normalize them for comparison.
 
+Adding Custom Nickname Delimiters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:py:obj:`~nameparser.config.Constants.nickname_delimiters` is a named,
+appendable group of the delimiter patterns that
+:py:meth:`~nameparser.parser.HumanName.parse_nicknames` loops through
+(``quoted_word``, ``double_quotes`` and ``parenthesis`` by default). Add
+your own pattern under a new key to recognize additional delimiters, then
+re-run :py:meth:`~nameparser.parser.HumanName.parse_full_name` to pick it
+up:
+
+.. doctest::
+
+    >>> import re
+    >>> from nameparser import HumanName
+    >>> hn = HumanName("Benjamin {Ben} Franklin", constants=None)
+    >>> hn.nickname
+    ''
+    >>> hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}', re.U)
+    >>> hn.parse_full_name()
+    >>> hn.nickname
+    'Ben'
+
 Other editable attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 

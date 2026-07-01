@@ -1,3 +1,5 @@
+import re
+
 import pytest
 
 from nameparser import HumanName
@@ -11,6 +13,17 @@ class NicknameTestCase(HumanNameTestBase):
         hn = HumanName("Benjamin (Ben) Franklin")
         self.m(hn.first, "Benjamin", hn)
         self.m(hn.middle, "", hn)
+        self.m(hn.last, "Franklin", hn)
+        self.m(hn.nickname, "Ben", hn)
+
+    # https://github.com/derek73/python-nameparser/issues/112
+    def test_add_custom_nickname_delimiter(self) -> None:
+        hn = HumanName("Benjamin {Ben} Franklin", constants=None)
+        # curly braces aren't a recognized delimiter by default
+        self.m(hn.nickname, "", hn)
+        hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}', re.U)
+        hn.parse_full_name()
+        self.m(hn.first, "Benjamin", hn)
         self.m(hn.last, "Franklin", hn)
         self.m(hn.nickname, "Ben", hn)
 
