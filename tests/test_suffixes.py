@@ -333,6 +333,23 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.nickname, "", hn)
         self.m(hn.suffix, "", hn)
 
+    def test_suffix_in_single_quotes(self) -> None:
+        # handle_match() is shared across all three delimiter regexes, not
+        # just parenthesis -- confirm suffix-shaped single-quoted content
+        # routes the same way.
+        hn = HumanName("Andrew Perkins 'MBA'")
+        self.m(hn.first, "Andrew", hn)
+        self.m(hn.last, "Perkins", hn)
+        self.m(hn.suffix, "MBA", hn)
+        self.m(hn.nickname, "", hn)
+
+    def test_suffix_in_double_quotes(self) -> None:
+        hn = HumanName('Andrew Perkins "MBA"')
+        self.m(hn.first, "Andrew", hn)
+        self.m(hn.last, "Perkins", hn)
+        self.m(hn.suffix, "MBA", hn)
+        self.m(hn.nickname, "", hn)
+
     def test_suffix_acronyms_ambiguous_custom_entry_stays_nickname(self) -> None:
         # A custom suffix_acronyms_ambiguous entry keeps a suffix_acronyms
         # member classified as a nickname instead of a suffix, confirming

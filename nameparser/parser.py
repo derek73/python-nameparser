@@ -799,6 +799,10 @@ class HumanName:
             # returns the whole match for group-less patterns.
             content = m.group(1) if m.lastindex else m.group(0)
             stripped = lc(content)
+            # Inlined rather than calling self.is_suffix(content): is_suffix()
+            # also rejects single-letter initials via is_an_initial(), which
+            # isn't relevant here, and the suffix_acronyms_ambiguous exclusion
+            # needs to be interleaved into the acronym branch specifically.
             is_unambiguous_suffix = (
                 stripped in self.C.suffix_not_acronyms
                 or (stripped in self.C.suffix_acronyms
@@ -815,6 +819,9 @@ class HumanName:
             self.nickname_list.append(content)
             return ''
 
+        # Same handle_match for all three delimiters: suffix-shaped content
+        # is rare in quotes but not impossible, and the logic is delimiter-
+        # agnostic, so there's no reason to special-case parenthesis here.
         for _re in (re_quoted_word, re_double_quotes, re_parenthesis):
             self._full_name = _re.sub(handle_match, self._full_name)
 
