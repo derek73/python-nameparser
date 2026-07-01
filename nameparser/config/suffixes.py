@@ -501,7 +501,7 @@ SUFFIX_ACRONYMS = set([
     'mra',
     'ms',
     'msa',
-    'msc'
+    'msc',
     'mscmsm',
     'msm',
     'mt',
