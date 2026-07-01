@@ -1,5 +1,6 @@
 import copy
 import pickle
+import re
 import timeit
 
 from nameparser import HumanName
@@ -59,6 +60,17 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.assertEqual(hn2.has_own_config, False)
         # No manual cleanup needed: the autouse fixture in conftest.py snapshots
         # and restores the global CONSTANTS collections around every test.
+
+    def test_can_add_global_extra_nickname_delimiter(self) -> None:
+        # https://github.com/derek73/python-nameparser/issues/112
+        hn = HumanName("")
+        hn.C.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}', re.U)
+        hn2 = HumanName("Benjamin {Ben} Franklin")
+        self.assertEqual(hn2.has_own_config, False)
+        self.m(hn2.nickname, "Ben", hn2)
+        # No manual cleanup needed: the autouse fixture in conftest.py snapshots
+        # and restores the global CONSTANTS collections (including
+        # extra_nickname_delimiters) around every test.
 
     def test_remove_multiple_arguments(self) -> None:
         hn = HumanName("Ms Hon Solo", constants=None)
@@ -129,6 +141,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         c.titles.add('customtitle')
         c.prefixes.add('customprefix')
         c.titles.remove('hon')
+        c.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}', re.U)
 
         # Safe: round-tripping a Constants the test just built, not untrusted data.
         restored = pickle.loads(pickle.dumps(c))
@@ -142,6 +155,8 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         # The collections must also keep their manager type, not just contents.
         self.assertEqual(type(restored.titles), SetManager)
         self.assertEqual(type(restored.prefixes), SetManager)
+        self.assertIn('curly_braces', restored.extra_nickname_delimiters)
+        self.assertEqual(type(restored.extra_nickname_delimiters), TupleManager)
 
     def test_pickle_roundtrip_preserves_instance_scalar_override(self) -> None:
         """An instance-level scalar override must survive a pickle round-trip."""
@@ -184,6 +199,25 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.assertEqual(dict(dup), dict(c.regexes))
         # The EMPTY_REGEX default still applies to genuinely unknown keys.
         self.assertEqual(dup.does_not_exist, EMPTY_REGEX)
+
+    def test_extra_nickname_delimiters_deepcopy_roundtrip(self) -> None:
+        """copy.deepcopy of extra_nickname_delimiters must round-trip.
+
+        Mirrors test_regexes_deepcopy_roundtrip: extra_nickname_delimiters is a
+        plain TupleManager (not RegexTupleManager), but shares the same
+        __getattr__/__reduce__ machinery, so it's exercised here directly
+        rather than only incidentally via conftest's autouse snapshot/restore.
+        """
+        c = Constants()
+        c.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}', re.U)
+
+        dup = copy.deepcopy(c.extra_nickname_delimiters)
+
+        self.assertEqual(type(dup), TupleManager)
+        self.assertEqual(dict(dup), dict(c.extra_nickname_delimiters))
+        # Plain TupleManager has no EMPTY_REGEX fallback: unknown keys are None.
+        self.assertIsNone(dup.does_not_exist)
+        self.assertIsNotNone(dup.curly_braces)
 
     def test_regextuplemanager_ignores_dunder_lookups(self) -> None:
         """Unknown dunder names report as absent, not as the EMPTY_REGEX default.
