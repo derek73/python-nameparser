@@ -138,6 +138,8 @@ Each named attribute (`title`, `first`, etc.) is a `@property` that joins its co
 
 ### Tests (`tests/`)
 
+**Prefer behavior tests over constant-content tests** — don't assert on the literal contents/structure of config constants (e.g. `SUFFIX_ACRONYMS == SET_A | SET_B`, `'x' in SOME_SET`). Test observable parsing behavior instead (`HumanName(...)` output). Constant-content assertions just create a second place to update whenever the lists change.
+
 **When adding a new aggregate property** (like `given_names` or `surnames`), always include a test for the empty path — a name that produces no value for that property — so the `or self.C.empty_attribute_default` guard is covered. The conftest dual-fixture then automatically exercises both `""` and `None` variants. Example: `HumanName("Williams")` for a given-names property (last-name-only string has no first or middle).
 
 **`python_classes = ["*Tests", "*TestCase"]`** in `pyproject.toml` — suffix style (`FooTests`), NOT prefix (`TestFoo`); wrong style silently skips discovery.
