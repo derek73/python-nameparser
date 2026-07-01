@@ -774,7 +774,11 @@ class HumanName:
     def parse_nicknames(self) -> None:
         """
         The content of parenthesis or quotes in the name will be added to the
-        nicknames list. This happens before any other processing of the name.
+        nicknames list, unless that content is suffix-shaped -- an unambiguous
+        suffix_not_acronyms/suffix_acronyms member, or content ending in a
+        period -- in which case it's left in place (undelimited) for normal
+        downstream suffix/title/word parsing instead. This happens before any
+        other processing of the name.
 
         Single quotes cannot span white space characters and must border
         white space to allow for quotes in names like O'Connor and Kawai'ae'a.
@@ -788,10 +792,31 @@ class HumanName:
         re_double_quotes = self.C.regexes.double_quotes
         re_parenthesis = self.C.regexes.parenthesis
 
+        def handle_match(m: 're.Match[str]') -> str:
+            # Fall back to the whole match when the regex has no capturing
+            # group (e.g. a custom override regex without one, like
+            # EMPTY_REGEX) -- mirrors the old code's use of findall(), which
+            # returns the whole match for group-less patterns.
+            content = m.group(1) if m.lastindex else m.group(0)
+            stripped = lc(content)
+            is_unambiguous_suffix = (
+                stripped in self.C.suffix_not_acronyms
+                or (stripped in self.C.suffix_acronyms
+                    and stripped not in self.C.suffix_acronyms_ambiguous)
+            )
+            if is_unambiguous_suffix or content.endswith('.'):
+                # Leave the bare content -- no delimiters -- so downstream
+                # word-splitting/suffix-matching sees it exactly as if it had
+                # never been wrapped in parens/quotes. is_suffix()/lc() only
+                # strip periods, never parens/quotes, so returning m.group(0)
+                # here (e.g. literal "(Ret)") would never match
+                # suffix_not_acronyms ("ret").
+                return content
+            self.nickname_list.append(content)
+            return ''
+
         for _re in (re_quoted_word, re_double_quotes, re_parenthesis):
-            if _re.search(self._full_name):
-                self.nickname_list += [x for x in _re.findall(self._full_name)]
-                self._full_name = _re.sub('', self._full_name)
+            self._full_name = _re.sub(handle_match, self._full_name)
 
     def squash_emoji(self) -> None:
         """
