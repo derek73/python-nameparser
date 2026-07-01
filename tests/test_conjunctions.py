@@ -223,3 +223,34 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
     def test_name_is_conjunctions(self) -> None:
         hn = HumanName("e and e")
         self.m(hn.first, "e and e", hn)
+
+    def test_conjunction_bridges_prefix_chain(self) -> None:
+        # "von" and "zu" are both prefixes, but "und" between them is only a
+        # conjunction. join_on_conjunctions() merges "von und zu" into one
+        # piece before the prefix-joining step runs, so without registering
+        # that merged piece as a prefix too, it's stranded in the middle name
+        # instead of joining to the last name. See German nobility styles
+        # like "von und zu".
+        hn = HumanName("Alois von und zu Liechtenstein")
+        self.m(hn.first, "Alois", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "von und zu Liechtenstein", hn)
+
+    def test_conjunction_bridges_prefix_chain_with_leading_title(self) -> None:
+        # Same bridging, but with extra prefix words on both sides of the
+        # conjunction and a leading title-like word ("Freiherrin") that is
+        # itself a prefix, confirming the chain still joins fully into last.
+        hn = HumanName("Annette Charlotte Freiherrin von und zu der Tann-Rathsamhausen")
+        self.m(hn.first, "Annette", hn)
+        self.m(hn.middle, "Charlotte", hn)
+        self.m(hn.last, "Freiherrin von und zu der Tann-Rathsamhausen", hn)
+
+    def test_conjunction_prefix_merge_at_start_stays_first_name(self) -> None:
+        # Guards the i == 0 branch of the same fix: when the conjunction is
+        # merged with a following prefix at the very start of the name, the
+        # existing leading-prefix rule (a lone prefix opening the name is
+        # treated as part of the first name, not joined to last) must still
+        # apply to the merged piece.
+        hn = HumanName("and van Buren")
+        self.m(hn.first, "and van", hn)
+        self.m(hn.last, "Buren", hn)
