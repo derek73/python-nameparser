@@ -1149,6 +1149,11 @@ class HumanName:
                 if self.is_title(pieces[i+1]):
                     # when joining to a title, make new_piece a title too
                     self.C.titles.add(new_piece)
+                if self.is_prefix(pieces[i+1]):
+                    # when joining to a prefix, make new_piece a prefix too, so
+                    # e.g. "von" + "und" bridges into "von und" and can still
+                    # chain onto a following prefix/lastname (see "von und zu")
+                    self.C.prefixes.add(new_piece)
                 pieces[i] = new_piece
                 pieces.pop(i+1)
                 # subtract 1 from the index of all the remaining conjunctions
@@ -1161,6 +1166,11 @@ class HumanName:
                 if self.is_title(pieces[i-1]):
                     # when joining to a title, make new_piece a title too
                     self.C.titles.add(new_piece)
+                if self.is_prefix(pieces[i-1]):
+                    # when joining to a prefix, make new_piece a prefix too, so
+                    # e.g. "von" + "und" bridges into "von und" and can still
+                    # chain onto a following prefix/lastname (see "von und zu")
+                    self.C.prefixes.add(new_piece)
                 pieces[i-1] = new_piece
                 pieces.pop(i)
                 rm_count = 2
