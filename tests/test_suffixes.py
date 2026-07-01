@@ -274,3 +274,11 @@ class SuffixesTestCase(HumanNameTestBase):
         # This is a documented limitation — do not "fix" it without a broader solution.
         hn = HumanName("Doe, Mary - Kate, RN", suffix_delimiter=" - ")
         self.assertNotEqual(hn.first, "Mary - Kate")
+
+    def test_suffix_acronyms_ambiguous_is_customizable(self) -> None:
+        from nameparser.config import Constants
+        custom = Constants(suffix_acronyms_ambiguous=['xyz'])
+        self.assertEqual(set(custom.suffix_acronyms_ambiguous), {'xyz'})
+        # Constructing without the kwarg still works and uses the module default.
+        default = Constants()
+        self.assertIn('jd', default.suffix_acronyms_ambiguous)
