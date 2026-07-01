@@ -36,6 +36,17 @@ class NicknameTestCase(HumanNameTestBase):
         hn.parse_full_name()
         self.m(hn.nickname, "", hn)
 
+    def test_multiple_custom_nickname_delimiters_together(self) -> None:
+        # Two extras registered at once must both be recognized in a single
+        # parse, independent of insertion order.
+        hn = HumanName("Benjamin {Ben} <Benny> Franklin", constants=None)
+        hn.C.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}', re.U)
+        hn.C.extra_nickname_delimiters['angle_brackets'] = re.compile(r'<(.*?)>', re.U)
+        hn.parse_full_name()
+        self.m(hn.first, "Benjamin", hn)
+        self.m(hn.last, "Franklin", hn)
+        self.m(hn.nickname, "Ben Benny", hn)
+
     def test_overriding_builtin_regex_still_affects_nickname_parsing(self) -> None:
         # The pre-existing customization path (overriding self.C.regexes
         # directly, documented since before #112) must keep working now that

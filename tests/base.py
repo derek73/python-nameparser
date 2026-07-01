@@ -50,3 +50,9 @@ class HumanNameTestBase(Generic[T]):
 
     def assertIsNot(self, first: object, second: object, msg: object = None) -> None:
         assert first is not second, msg or f"{first!r} is {second!r}"
+
+    def assertIsNone(self, expr: object, msg: object = None) -> None:
+        assert expr is None, msg or f"{expr!r} is not None"
+
+    def assertIsNotNone(self, expr: object, msg: object = None) -> None:
+        assert expr is not None, msg or "unexpectedly None"

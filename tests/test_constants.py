@@ -200,6 +200,25 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         # The EMPTY_REGEX default still applies to genuinely unknown keys.
         self.assertEqual(dup.does_not_exist, EMPTY_REGEX)
 
+    def test_extra_nickname_delimiters_deepcopy_roundtrip(self) -> None:
+        """copy.deepcopy of extra_nickname_delimiters must round-trip.
+
+        Mirrors test_regexes_deepcopy_roundtrip: extra_nickname_delimiters is a
+        plain TupleManager (not RegexTupleManager), but shares the same
+        __getattr__/__reduce__ machinery, so it's exercised here directly
+        rather than only incidentally via conftest's autouse snapshot/restore.
+        """
+        c = Constants()
+        c.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}', re.U)
+
+        dup = copy.deepcopy(c.extra_nickname_delimiters)
+
+        self.assertEqual(type(dup), TupleManager)
+        self.assertEqual(dict(dup), dict(c.extra_nickname_delimiters))
+        # Plain TupleManager has no EMPTY_REGEX fallback: unknown keys are None.
+        self.assertIsNone(dup.does_not_exist)
+        self.assertIsNotNone(dup.curly_braces)
+
     def test_regextuplemanager_ignores_dunder_lookups(self) -> None:
         """Unknown dunder names report as absent, not as the EMPTY_REGEX default.
 
