@@ -147,6 +147,47 @@ available from the nickname attribute.
       nickname: 'John'
     ]>
 
+Exception: content that looks like a suffix (a member of
+:py:data:`~nameparser.config.SUFFIX_ACRONYMS` or
+:py:data:`~nameparser.config.SUFFIX_NOT_ACRONYMS`, or anything ending in a
+period) is treated as a suffix instead of a nickname, since that's usually
+what's meant, e.g. a retired military title or a professional designation
+written in parenthesis.
+
+.. doctest:: nicknames
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> name = HumanName('Andrew Perkins (MBA)')
+    >>> name
+    <HumanName : [
+      title: ''
+      first: 'Andrew'
+      middle: ''
+      last: 'Perkins'
+      suffix: 'MBA'
+      nickname: ''
+    ]>
+
+A few suffix acronyms, listed in
+:py:data:`~nameparser.config.SUFFIX_ACRONYMS_AMBIGUOUS`, also work as common
+given-name nicknames on their own (e.g. "JD", "Ed"). These stay nicknames
+when found alone in parenthesis or quotes, since that's the more common
+reading in that ambiguous context:
+
+.. doctest:: nicknames
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> name = HumanName('JEFFREY (JD) BRICKEN')
+    >>> name
+    <HumanName : [
+      title: ''
+      first: 'JEFFREY'
+      middle: ''
+      last: 'BRICKEN'
+      suffix: ''
+      nickname: 'JD'
+    ]>
+
 Change the output string with string formatting
 -----------------------------------------------
 
