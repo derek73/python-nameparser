@@ -753,6 +753,15 @@ class HumanName:
                 self.first_list,
             )
 
+    def handle_middle_name_as_last(self) -> None:
+        """
+        When middle_name_as_last is enabled, fold middle_list into last_list
+        (prepended, preserving order) and clear middle_list. No-op when
+        middle_list is already empty.
+        """
+        self.last_list = self.middle_list + self.last_list
+        self.middle_list = []
+
     def post_process(self) -> None:
         """
         This happens at the end of the :py:func:`parse_full_name` after
@@ -762,6 +771,8 @@ class HumanName:
         self.handle_firstnames()
         if self.C.patronymic_name_order:
             self.handle_patronymic_name_order()
+        if self.C.middle_name_as_last:
+            self.handle_middle_name_as_last()
         self.handle_capitalization()
 
     def fix_phd(self) -> None:
