@@ -29,6 +29,7 @@ Release Log
       ``middle="ahmed"``, ``last="salem"``). Disable via
       ``CONSTANTS.first_name_prefixes.clear()``. **Default-on: changes parsing
       output for names with these prefixes.** (#150)
+    - Add ``middle_name_as_last`` flag to ``Constants`` and ``HumanName`` for opt-in folding of middle names into the last name, for naming systems with no middle-name concept (e.g. Arabic patronymic chaining) (#133)
 * 1.2.1 - June 19, 2026
     - Fix ``initials()`` interpolating the literal ``None`` for empty name parts when ``empty_attribute_default = None`` (e.g. ``"J. None D."``); empty parts now render as an empty string and a fully-empty result returns ``empty_attribute_default``
     - Add ``python -m nameparser "Name String"`` command-line helper that prints a parsed name

@@ -88,6 +88,7 @@ Other editable attributes
 * :py:obj:`~nameparser.config.Constants.suffix_delimiter` - additional delimiter used to split suffix groups after comma-splitting, e.g. ``" - "`` for names like ``"Jane Smith, RN - CRNA"``. Defaults to ``None`` (disabled).
 * :py:obj:`~nameparser.config.Constants.initials_separator` - string placed between consecutive initials within the same name group (after the delimiter). Defaults to ``" "``, so ``"A. K."``; set to ``""`` for compact ``"A.K."``.
 * :py:obj:`~nameparser.config.Constants.patronymic_name_order` - If set, detects Russian formal-order names (``Surname GivenName Patronymic``) via a trailing East-Slavic patronymic suffix and rotates the parts to Western order (``first=GivenName``, ``middle=Patronymic``, ``last=Surname``). Opt-in; see subsection below.
+* :py:obj:`~nameparser.config.Constants.middle_name_as_last` - If set, folds middle names into the last name (``.last`` becomes what ``.surnames`` already was, ``.middle`` becomes empty). Opt-in; see subsection below.
 
 
 Russian Formal Name Order
@@ -115,6 +116,29 @@ reordering is suppressed to avoid a double-transformation.
 end in a patronymic suffix is reordered — including Western names with
 patronymic-form surnames such as ``"David Michael Abramovich"``. Enable this
 flag only when your data is predominantly Russian formal-order names.
+
+
+Suppressing Middle Names
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some naming systems have no middle-name concept — everything after the given
+name is lineage or family (e.g. Arabic patronymic chaining: given + father +
+grandfather + family). Enable ``middle_name_as_last`` to fold the middle name
+into the last name instead of splitting them::
+
+    >>> from nameparser import HumanName
+    >>> from nameparser.config import Constants
+    >>> C = Constants(middle_name_as_last=True)
+    >>> hn = HumanName("Mohamad Ahmad Ali Hassan", constants=C)
+    >>> hn.first, hn.middle, hn.last
+    ('Mohamad', '', 'Ahmad Ali Hassan')
+
+The fold applies uniformly to comma input too, so both written forms of a name
+converge on the same result::
+
+    >>> hn2 = HumanName("Hassan, Mohamad Ahmad Ali", constants=C)
+    >>> hn2.first, hn2.last
+    ('Mohamad', 'Ahmad Ali Hassan')
 
 
 Splitting last-name prefix particles
