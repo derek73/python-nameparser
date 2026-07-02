@@ -234,3 +234,61 @@ class TurkicPatronymicNameOrderFlagOffTests(HumanNameTestBase):
         assert n.first == "Aliyev"
         assert n.middle == "Vusal Said"
         assert n.last == "oglu"
+
+
+class PatronymicHandlerInteractionTests(HumanNameTestBase):
+    """Both handlers run in sequence under the same flag; confirm no interference."""
+
+    def setup_method(self) -> None:
+        self.C = Constants(patronymic_name_order=True)
+
+    def hn(self, name: str) -> HumanName:
+        return HumanName(name, constants=self.C)
+
+    def test_east_slavic_shape_unaffected_by_turkic_handler(self) -> None:
+        # If handle_turkic_patronymic_name_order() ran BEFORE the East-Slavic
+        # handler could fire, middle_list would already be length 1 (not 2),
+        # so the Turkic guard is a no-op here regardless of call order.
+        n = self.hn("Ivanov Ivan Ivanovich")
+        assert n.first == "Ivan"
+        assert n.middle == "Ivanovich"
+        assert n.last == "Ivanov"
+
+    def test_turkic_shape_unaffected_by_east_slavic_handler(self) -> None:
+        # East-Slavic's own guard requires middle_list of length 1; this
+        # input has middle_list of length 2, so it's a genuine no-op rather
+        # than a partial mutation before the Turkic handler runs.
+        n = self.hn("Aliyev Vusal Said oglu")
+        assert n.first == "Vusal"
+        assert n.middle == "Said oglu"
+        assert n.last == "Aliyev"
+
+    def test_no_regex_collision_latin(self) -> None:
+        C = Constants()
+        east_slavic_examples = [
+            "Ivanovich", "Ivanovna", "Sergeevich", "Sergeevna",
+            "Nikitichna", "Ilyich", "Kuzmich", "Lukich", "Fomich", "Fokich",
+        ]
+        turkic_examples = [
+            "oglu", "oğlu", "ogly", "ogli", "o'g'li",
+            "qizi", "qızı", "kizi", "kyzy", "gyzy", "uly", "uulu",
+        ]
+        for word in east_slavic_examples:
+            assert not C.regexes.turkic_patronymic_marker.match(word), word
+        for word in turkic_examples:
+            assert not C.regexes.east_slavic_patronymic.search(word), word
+
+    def test_no_regex_collision_cyrillic(self) -> None:
+        C = Constants()
+        east_slavic_examples = [
+            "Иванович", "Ивановна", "Сергеевич", "Сергеевна",
+            "Никитична", "Ильич", "Кузьмич", "Лукич", "Фомич", "Фокич",
+        ]
+        turkic_examples = [
+            "оглу", "оглы", "оғлу", "ўғли", "угли",
+            "кызы", "гызы", "қызы", "қизи", "улы", "ұлы", "уулу",
+        ]
+        for word in east_slavic_examples:
+            assert not C.regexes.turkic_patronymic_marker_cyrillic.match(word), word
+        for word in turkic_examples:
+            assert not C.regexes.east_slavic_patronymic_cyrillic.search(word), word
