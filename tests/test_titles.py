@@ -29,6 +29,12 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.last, "King", hn)
         self.m(hn.suffix, "Jr.", hn)
 
+    def test_leading_period_abbreviation_is_title(self) -> None:
+        hn = HumanName("Major. Dona Smith")
+        self.m(hn.title, "Major.", hn)
+        self.m(hn.first, "Dona", hn)
+        self.m(hn.last, "Smith", hn)
+
     def test_last_name_is_also_title3(self) -> None:
         hn = HumanName("John King")
         self.m(hn.first, "John", hn)

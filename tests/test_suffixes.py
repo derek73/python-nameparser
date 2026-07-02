@@ -310,10 +310,13 @@ class SuffixesTestCase(HumanNameTestBase):
     def test_suffix_in_parenthesis_with_period(self) -> None:
         # Same known limitation as above: "Ret." is mid-name (no comma), so
         # it's outside the trailing run parse_full_name's suffix detection
-        # requires. It parses exactly as bare "Col. Ret. Smith" would.
+        # requires. It parses exactly as bare "Col. Ret. Smith" would: since
+        # "Ret." is an unrecognized period-abbreviation appearing before the
+        # first name is set, is_leading_title() treats it as a second title
+        # token (see #109), joining "Col." into a single title string.
         hn = HumanName("Col. (Ret.) Smith")
-        self.m(hn.title, "Col.", hn)
-        self.m(hn.first, "Ret.", hn)
+        self.m(hn.title, "Col. Ret.", hn)
+        self.m(hn.first, "", hn)
         self.m(hn.last, "Smith", hn)
         self.m(hn.suffix, "", hn)
         self.m(hn.nickname, "", hn)
