@@ -291,3 +291,46 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.title, "Major.", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Smith", hn)
+
+    def test_leading_period_abbreviation_unknown_word(self) -> None:
+        hn = HumanName("Foo. John Smith")
+        self.m(hn.title, "Foo.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_leading_period_abbreviation_chained(self) -> None:
+        hn = HumanName("Foo. Xyz. John Smith")
+        self.m(hn.title, "Foo. Xyz.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_leading_single_letter_initial_excluded(self) -> None:
+        hn = HumanName("J. Smith")
+        self.m(hn.first, "J.", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.title, "", hn)
+
+    def test_leading_internal_period_abbreviation_excluded(self) -> None:
+        hn = HumanName("E.T. Smith")
+        self.m(hn.first, "E.T.", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.title, "", hn)
+
+    def test_period_abbreviation_after_first_name_stays_middle(self) -> None:
+        hn = HumanName("John Major. Smith")
+        self.m(hn.first, "John", hn)
+        self.m(hn.middle, "Major.", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.title, "", hn)
+
+    def test_known_title_with_period_still_a_title(self) -> None:
+        hn = HumanName("Dr. John Smith")
+        self.m(hn.title, "Dr.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_middle_initial_with_period_unaffected(self) -> None:
+        hn = HumanName("John Q. Smith")
+        self.m(hn.first, "John", hn)
+        self.m(hn.middle, "Q.", hn)
+        self.m(hn.last, "Smith", hn)
