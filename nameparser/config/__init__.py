@@ -370,6 +370,12 @@ class Constants:
     token in each of first, middle, and last; names with multi-part given names or
     multiple middle names are left unchanged.
 
+    Also detects reversed-order Azerbaijani/Central-Asian Turkic patronymics
+    (``Surname GivenName PatronymicRoot Marker``, e.g. ``oglu``/``qizi``), a
+    structurally different, standalone-marker-word patronymic family. Detection
+    requires exactly one token in each of first and last, exactly two tokens in
+    middle, and the last token a recognised Turkic marker.
+
     Opt-in because a Western person whose surname happens to end in a patronymic
     suffix (e.g. ``"David Michael Abramovich"``) will be reordered incorrectly
     when the flag is on. Enable only when your data is predominantly Russian
@@ -386,6 +392,9 @@ class Constants:
         >>> hn = HumanName("Ivanov Ivan Ivanovich", constants=C)
         >>> hn.first, hn.middle, hn.last
         ('Ivan', 'Ivanovich', 'Ivanov')
+        >>> hn2 = HumanName("Aliyev Vusal Said oglu", constants=C)
+        >>> hn2.first, hn2.middle, hn2.last
+        ('Vusal', 'Said oglu', 'Aliyev')
 
     """
 
