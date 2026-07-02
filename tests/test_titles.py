@@ -334,3 +334,27 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.first, "John", hn)
         self.m(hn.middle, "Q.", hn)
         self.m(hn.last, "Smith", hn)
+
+    def test_leading_period_abbreviation_excludes_digits(self) -> None:
+        hn = HumanName("No1. John Smith")
+        self.m(hn.title, "", hn)
+        self.m(hn.first, "No1.", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_leading_period_abbreviation_excludes_apostrophe(self) -> None:
+        hn = HumanName("O'B. John Smith")
+        self.m(hn.title, "", hn)
+        self.m(hn.first, "O'B.", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_leading_period_abbreviation_case_insensitive(self) -> None:
+        hn = HumanName("xyz. John Smith")
+        self.m(hn.title, "xyz.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_leading_period_abbreviation_with_nickname(self) -> None:
+        hn = HumanName("Xyz. (Bud) Smith")
+        self.m(hn.title, "Xyz.", hn)
+        self.m(hn.first, "Smith", hn)
+        self.m(hn.nickname, "Bud", hn)

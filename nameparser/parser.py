@@ -543,11 +543,14 @@ class HumanName:
     def is_leading_title(self, piece: str) -> bool:
         """
         True if ``piece`` is a known title, or an unrecognized multi-letter
-        word ending in a single trailing period (e.g. ``"Major."``). Only
-        meaningful for pieces in the title position (before the first name is
-        set) — a period-abbreviation appearing later in the name is left as a
-        middle name. Does not mutate ``C.titles``, so the periodless form
-        (``"Major"``) is never affected in later parses.
+        word ending in a single trailing period (e.g. ``"Major."``). The
+        ``{2,}`` in the ``period_abbreviation`` regex, not a separate
+        ``is_an_initial()`` check, is what excludes single-letter initials
+        like ``"J."``. Only meaningful for pieces in the title position
+        (before the first name is set) — a period-abbreviation appearing
+        later in the name is left as a middle name. Does not mutate
+        ``C.titles``, so the periodless form (``"Major"``) is never affected
+        in later parses.
         """
         return self.is_title(piece) or bool(self.C.regexes.period_abbreviation.match(piece))
 

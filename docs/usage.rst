@@ -191,12 +191,13 @@ reading in that ambiguous context:
 Leading Period-Abbreviation Titles
 -----------------------------------
 
-An unrecognized, multi-letter word ending in a period, appearing before the
-first name, is treated as a title -- this covers military ranks and other
-abbreviations that aren't in the built-in titles list. Single-letter
-initials (``"J."``) and internal-period abbreviations (``"E.T."``) are not
-affected, and the same word appearing after the first name is left as a
-middle name.
+An unrecognized, multi-letter word ending in a period, found anywhere in the
+leading title run (i.e. before the first name is set), is treated as a title
+-- this covers military ranks and other abbreviations that aren't in the
+built-in titles list, including chained abbreviations like
+``"Foo. Xyz. John Smith"``. Single-letter initials (``"J."``) and
+internal-period abbreviations (``"E.T."``) are not affected, and the same
+word appearing after the first name is left as a middle name.
 
 .. doctest:: leading_period_titles
     :options: +NORMALIZE_WHITESPACE
