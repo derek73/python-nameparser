@@ -224,3 +224,13 @@ class TurkicPatronymicNameOrderGuardsTests(HumanNameTestBase):
         assert n.first == "Smith"
         assert n.middle == "John Michael"
         assert n.last == "Anderson"
+
+
+class TurkicPatronymicNameOrderFlagOffTests(HumanNameTestBase):
+    """With default Constants (flag=False) nothing changes."""
+
+    def test_reversed_order_unchanged(self) -> None:
+        n = HumanName("Aliyev Vusal Said oglu")
+        assert n.first == "Aliyev"
+        assert n.middle == "Vusal Said"
+        assert n.last == "oglu"
