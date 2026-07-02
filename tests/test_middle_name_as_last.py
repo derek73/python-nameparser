@@ -46,6 +46,22 @@ class MiddleNameAsLastFoldTests(HumanNameTestBase):
         self.m(n.last, "Ahmad Hassan", n)
         self.m(n.suffix, "Jr", n)
 
+    def test_suffix_preserved_comma_format(self) -> None:
+        # Comma-delimited suffix takes a different code path than the
+        # title/suffix no-comma case above; the fold must still apply.
+        n = self.hn("Hassan, Mohamad Ahmad Ali, Jr.")
+        self.m(n.first, "Mohamad", n)
+        self.m(n.middle, "", n)
+        self.m(n.last, "Ahmad Ali Hassan", n)
+        self.m(n.suffix, "Jr.", n)
+
+    def test_nickname_preserved(self) -> None:
+        # Nicknames are stripped in pre_process(), before the fold runs.
+        n = self.hn('Mohamad "Mo" Ahmad Ali Hassan')
+        self.m(n.nickname, "Mo", n)
+        self.m(n.middle, "", n)
+        self.m(n.last, "Ahmad Ali Hassan", n)
+
     def test_no_middle_is_noop(self) -> None:
         n = self.hn("John Doe")
         self.m(n.first, "John", n)
@@ -55,6 +71,7 @@ class MiddleNameAsLastFoldTests(HumanNameTestBase):
     def test_single_token_is_noop(self) -> None:
         n = self.hn("Cher")
         self.m(n.first, "Cher", n)
+        self.m(n.middle, "", n)
         self.m(n.last, "", n)
 
     def test_given_names_and_surnames_track_fold(self) -> None:
