@@ -45,7 +45,7 @@ uv run sphinx-build -b html docs dist/docs
 # 0. Review docs/ for anything stale — especially usage.rst (examples, API surface)
 #    and any .rst files that reference config constants or HumanName kwargs
 #    Also review AGENTS.md for stale commands, architecture notes, or gotchas
-# 1. Bump VERSION in nameparser/_version.py
+# 1. Bump VERSION in nameparser/_version.py (and the `version:` field in CITATION.cff to match)
 # 2. Stamp "Unreleased" → "X.Y.Z - Month DD, YYYY" in docs/release_log.rst
 # 3. git commit + git tag -a vX.Y.Z -m "Release X.Y.Z"
 # 4. git push origin master && git push origin vX.Y.Z  ← tag must be pushed separately before gh release create
