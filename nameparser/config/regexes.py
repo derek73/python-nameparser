@@ -29,6 +29,15 @@ REGEXES = set([
     ("east_slavic_patronymic_cyrillic", re.compile(
         r'(ович|овна|евич|евна|ична|ильич|кузьмич|лукич|фомич|фокич)$',
     )),
+    ("turkic_patronymic_marker", re.compile(
+        r"^(oglu|oğlu|ogly|ogli|o['’ʻ]g['’ʻ]li"
+        r"|qizi|qızı|kizi|kyzy|gyzy|uly|uulu)$",
+        re.I,
+    )),
+    ("turkic_patronymic_marker_cyrillic", re.compile(
+        r'^(оглу|оглы|оғлу|ўғли|угли|кызы|гызы|қызы|қизи|улы|ұлы|уулу)$',
+        re.I,
+    )),
     ("period_abbreviation", re.compile(r'^[^\W\d_]{2,}\.$')),
 ])
 """
