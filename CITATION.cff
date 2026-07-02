@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: python-nameparser
+abstract: "A simple Python module for parsing human names into their individual components."
+type: software
+authors:
+  - family-names: Gulbranson
+    given-names: Derek
+repository-code: "https://github.com/derek73/python-nameparser"
+url: "https://github.com/derek73/python-nameparser"
+license: LGPL-2.1-or-later
+version: "1.2.1"
