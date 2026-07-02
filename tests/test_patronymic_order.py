@@ -6,34 +6,34 @@ from tests.base import HumanNameTestBase
 def test_latin_patronymic_matches() -> None:
     # One common suffix and one irregular — the integration tests cover the rest.
     C = Constants()
-    assert C.regexes.patronymic.search("Ivanovich")
-    assert C.regexes.patronymic.search("Ilyich")
+    assert C.regexes.east_slavic_patronymic.search("Ivanovich")
+    assert C.regexes.east_slavic_patronymic.search("Ilyich")
 
 
 def test_latin_patronymic_rejects_non_patronymic() -> None:
     # EMPTY_REGEX (the default for missing keys) matches everything,
     # so this test is red until the real pattern is in place.
     C = Constants()
-    assert not C.regexes.patronymic.search("Smith")
+    assert not C.regexes.east_slavic_patronymic.search("Smith")
 
 
 def test_latin_patronymic_end_anchored() -> None:
     # A surname ending in a patronymic suffix matches; the end-anchor does not
     # prevent this. The parser guard tests verify reordering is suppressed.
     C = Constants()
-    assert C.regexes.patronymic.search("Abramovich")
+    assert C.regexes.east_slavic_patronymic.search("Abramovich")
 
 
 def test_cyrillic_patronymic_matches() -> None:
     # One common suffix and one irregular.
     C = Constants()
-    assert C.regexes.patronymic_cyrillic.search("Иванович")
-    assert C.regexes.patronymic_cyrillic.search("ильич")
+    assert C.regexes.east_slavic_patronymic_cyrillic.search("Иванович")
+    assert C.regexes.east_slavic_patronymic_cyrillic.search("ильич")
 
 
 def test_cyrillic_patronymic_rejects_non_patronymic() -> None:
     C = Constants()
-    assert not C.regexes.patronymic_cyrillic.search("Иванов")
+    assert not C.regexes.east_slavic_patronymic_cyrillic.search("Иванов")
 
 
 class PatronymicNameOrderReorderTests(HumanNameTestBase):

@@ -22,11 +22,11 @@ REGEXES = set([
     ("emoji",re_emoji),
     ("phd", re.compile(r'\s(ph\.?\s+d\.?)', re.I)),
     ("space_before_comma", re.compile(r'\s+,')),
-    ("patronymic", re.compile(
+    ("east_slavic_patronymic", re.compile(
         r'(ovich|ovna|evich|evna|ichna|ilyich|kuzmich|lukich|fomich|fokich)$',
         re.I,
     )),
-    ("patronymic_cyrillic", re.compile(
+    ("east_slavic_patronymic_cyrillic", re.compile(
         r'(ович|овна|евич|евна|ична|ильич|кузьмич|лукич|фомич|фокич)$',
     )),
     ("period_abbreviation", re.compile(r'^[^\W\d_]{2,}\.$')),

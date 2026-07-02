@@ -692,7 +692,7 @@ class HumanName:
         """
         return bool(self.C.regexes.initial.match(value))
 
-    def is_patronymic(self, piece: str) -> bool:
+    def is_east_slavic_patronymic(self, piece: str) -> bool:
         """
         Return True if ``piece`` ends with a recognised East-Slavic patronymic
         suffix, checked against both Latin-script and Cyrillic patterns in
@@ -702,8 +702,8 @@ class HumanName:
         by a separate pattern.
         """
         return bool(
-            self.C.regexes.patronymic.search(piece)
-            or self.C.regexes.patronymic_cyrillic.search(piece)
+            self.C.regexes.east_slavic_patronymic.search(piece)
+            or self.C.regexes.east_slavic_patronymic_cyrillic.search(piece)
         )
 
     # full_name parser
@@ -758,8 +758,8 @@ class HumanName:
             and len(self.first_list) == 1
             and len(self.middle_list) == 1
             and len(self.last_list) == 1
-            and self.is_patronymic(self.last_list[0])
-            and not self.is_patronymic(self.middle_list[0])
+            and self.is_east_slavic_patronymic(self.last_list[0])
+            and not self.is_east_slavic_patronymic(self.middle_list[0])
         ):
             self.first_list, self.middle_list, self.last_list = (
                 self.middle_list,
