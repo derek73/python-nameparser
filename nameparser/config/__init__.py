@@ -323,9 +323,9 @@ class Constants:
         >>> from nameparser.config import CONSTANTS
         >>> CONSTANTS.empty_attribute_default = None
         >>> name = HumanName("John Doe")
-        >>> name.title
+        >>> print(name.title)
         None
-        >>>name.first
+        >>> name.first
         'John'
 
     """
