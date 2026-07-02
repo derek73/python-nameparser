@@ -79,3 +79,35 @@ class MiddleNameAsLastFlagOffTests(HumanNameTestBase):
         n = HumanName("Mohamad Ahmad Ali Hassan")
         self.m(n.middle, "Ahmad Ali", n)
         self.m(n.last, "Hassan", n)
+
+
+class MiddleNameAsLastWithPatronymicOrderTests(HumanNameTestBase):
+    """Both localization flags on: patronymic reordering must settle
+    first/middle/last before the fold collapses middle into last, per the
+    design's stated ordering rationale (post_process() runs the patronymic
+    hook before the middle_name_as_last hook)."""
+
+    def setup_method(self) -> None:
+        self.C = Constants(middle_name_as_last=True, patronymic_name_order=True)
+
+    def hn(self, name: str) -> HumanName:
+        return HumanName(name, constants=self.C)
+
+    def test_rotate_then_fold_no_comma(self) -> None:
+        # patronymic_name_order rotates "Ivanov Petr Sergeyevich" to
+        # first=Petr, middle=Sergeyevich, last=Ivanov; the fold then
+        # collapses that settled middle into last.
+        n = self.hn("Ivanov Petr Sergeyevich")
+        self.m(n.first, "Petr", n)
+        self.m(n.middle, "", n)
+        self.m(n.last, "Sergeyevich Ivanov", n)
+
+    def test_fold_applies_even_when_comma_suppresses_rotation(self) -> None:
+        # A comma suppresses patronymic_name_order's rotation (_had_comma
+        # guard), so middle stays "Sergeyevich" unrotated going into the
+        # fold. The fold still absorbs it into last, producing the same
+        # first/last as the no-comma case above via a different mechanism.
+        n = self.hn("Ivanov, Petr Sergeyevich")
+        self.m(n.first, "Petr", n)
+        self.m(n.middle, "", n)
+        self.m(n.last, "Sergeyevich Ivanov", n)
