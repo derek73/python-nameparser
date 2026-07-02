@@ -64,7 +64,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
     def test_can_add_global_extra_nickname_delimiter(self) -> None:
         # https://github.com/derek73/python-nameparser/issues/112
         hn = HumanName("")
-        hn.C.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}', re.U)
+        hn.C.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
         hn2 = HumanName("Benjamin {Ben} Franklin")
         self.assertEqual(hn2.has_own_config, False)
         self.m(hn2.nickname, "Ben", hn2)
@@ -141,7 +141,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         c.titles.add('customtitle')
         c.prefixes.add('customprefix')
         c.titles.remove('hon')
-        c.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}', re.U)
+        c.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
 
         # Safe: round-tripping a Constants the test just built, not untrusted data.
         restored = pickle.loads(pickle.dumps(c))
@@ -209,7 +209,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         rather than only incidentally via conftest's autouse snapshot/restore.
         """
         c = Constants()
-        c.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}', re.U)
+        c.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
 
         dup = copy.deepcopy(c.extra_nickname_delimiters)
 

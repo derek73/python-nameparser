@@ -298,7 +298,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.assertIs(hn.C, C)
 
     def test_override_regex(self) -> None:
-        var = TupleManager([("spaces", re.compile(r"\s+", re.U)),])
+        var = TupleManager([("spaces", re.compile(r"\s+")),])
         C = Constants(regexes=var)
         hn = HumanName(constants=C)
         self.assertTrue(hn.C.regexes == var)
@@ -340,7 +340,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.assertTrue(sorted(hn.C.conjunctions) == sorted(var))
 
     def test_override_capitalization_exceptions(self) -> None:
-        var = TupleManager([("spaces", re.compile(r"\s+", re.U)),])
+        var = TupleManager([("spaces", re.compile(r"\s+")),])
         C = Constants(capitalization_exceptions=var)
         hn = HumanName(constants=C)
         self.assertTrue(hn.C.capitalization_exceptions == var)
