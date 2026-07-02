@@ -188,6 +188,36 @@ reading in that ambiguous context:
       nickname: 'JD'
     ]>
 
+Leading Period-Abbreviation Titles
+-----------------------------------
+
+An unrecognized, multi-letter word ending in a period, found anywhere in the
+leading title run (i.e. before the first name is set), is treated as a title
+-- this covers military ranks and other abbreviations that aren't in the
+built-in titles list, including chained abbreviations like
+``"Foo. Xyz. John Smith"``. Single-letter initials (``"J."``) and
+internal-period abbreviations (``"E.T."``) are not affected, and the same
+word appearing after the first name is left as a middle name.
+
+.. doctest:: leading_period_titles
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> name = HumanName("Major. Dona Smith")
+    >>> name
+    <HumanName : [
+      title: 'Major.'
+      first: 'Dona'
+      middle: ''
+      last: 'Smith'
+      suffix: ''
+      nickname: ''
+    ]>
+    >>> name = HumanName("J. Smith")
+    >>> name.first
+    'J.'
+    >>> name.title
+    ''
+
 Change the output string with string formatting
 -----------------------------------------------
 

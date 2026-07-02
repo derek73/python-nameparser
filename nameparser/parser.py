@@ -540,6 +540,20 @@ class HumanName:
         """Is in the :py:data:`~nameparser.config.titles.TITLES` set."""
         return lc(value) in self.C.titles
 
+    def is_leading_title(self, piece: str) -> bool:
+        """
+        True if ``piece`` is a known title, or an unrecognized multi-letter
+        word ending in a single trailing period (e.g. ``"Major."``). The
+        ``{2,}`` in the ``period_abbreviation`` regex, not a separate
+        ``is_an_initial()`` check, is what excludes single-letter initials
+        like ``"J."``. Only meaningful for pieces in the title position
+        (before the first name is set) — a period-abbreviation appearing
+        later in the name is left as a middle name. Does not mutate
+        ``C.titles``, so the periodless form (``"Major"``) is never affected
+        in later parses.
+        """
+        return self.is_title(piece) or bool(self.C.regexes.period_abbreviation.match(piece))
+
     def is_conjunction(self, piece: str) -> bool:
         """Is in the conjunctions set and not :py:func:`is_an_initial()`."""
         if isinstance(piece, list):
@@ -930,7 +944,7 @@ class HumanName:
                 # title must have a next piece, unless it's just a title
                 if not self.first \
                         and (nxt or p_len == 1) \
-                        and self.is_title(piece):
+                        and self.is_leading_title(piece):
                     self.title_list.append(piece)
                     continue
                 if not self.first:
@@ -981,7 +995,7 @@ class HumanName:
 
                     if not self.first \
                             and (nxt or len(pieces) == 1) \
-                            and self.is_title(piece):
+                            and self.is_leading_title(piece):
                         self.title_list.append(piece)
                         continue
                     if not self.first:
@@ -1022,7 +1036,7 @@ class HumanName:
 
                     if not self.first \
                             and (nxt or len(post_comma_pieces) == 1) \
-                            and self.is_title(piece):
+                            and self.is_leading_title(piece):
                         self.title_list.append(piece)
                         continue
                     if not self.first:

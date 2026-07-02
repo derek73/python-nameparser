@@ -29,6 +29,12 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.last, "King", hn)
         self.m(hn.suffix, "Jr.", hn)
 
+    def test_leading_period_abbreviation_is_title(self) -> None:
+        hn = HumanName("Major. Dona Smith")
+        self.m(hn.title, "Major.", hn)
+        self.m(hn.first, "Dona", hn)
+        self.m(hn.last, "Smith", hn)
+
     def test_last_name_is_also_title3(self) -> None:
         hn = HumanName("John King")
         self.m(hn.first, "John", hn)
@@ -272,3 +278,83 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.title, "Herr", hn)
         self.m(hn.first, "Klaus", hn)
         self.m(hn.last, "Schmidt", hn)
+
+    def test_leading_period_abbreviation_suffix_comma(self) -> None:
+        hn = HumanName("Major. John Smith, Jr.")
+        self.m(hn.title, "Major.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.suffix, "Jr.", hn)
+
+    def test_leading_period_abbreviation_lastname_comma(self) -> None:
+        hn = HumanName("Smith, Major. John")
+        self.m(hn.title, "Major.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_leading_period_abbreviation_unknown_word(self) -> None:
+        hn = HumanName("Foo. John Smith")
+        self.m(hn.title, "Foo.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_leading_period_abbreviation_chained(self) -> None:
+        hn = HumanName("Foo. Xyz. John Smith")
+        self.m(hn.title, "Foo. Xyz.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_leading_single_letter_initial_excluded(self) -> None:
+        hn = HumanName("J. Smith")
+        self.m(hn.first, "J.", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.title, "", hn)
+
+    def test_leading_internal_period_abbreviation_excluded(self) -> None:
+        hn = HumanName("E.T. Smith")
+        self.m(hn.first, "E.T.", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.title, "", hn)
+
+    def test_period_abbreviation_after_first_name_stays_middle(self) -> None:
+        hn = HumanName("John Major. Smith")
+        self.m(hn.first, "John", hn)
+        self.m(hn.middle, "Major.", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.title, "", hn)
+
+    def test_known_title_with_period_still_a_title(self) -> None:
+        hn = HumanName("Dr. John Smith")
+        self.m(hn.title, "Dr.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_middle_initial_with_period_unaffected(self) -> None:
+        hn = HumanName("John Q. Smith")
+        self.m(hn.first, "John", hn)
+        self.m(hn.middle, "Q.", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_leading_period_abbreviation_excludes_digits(self) -> None:
+        hn = HumanName("No1. John Smith")
+        self.m(hn.title, "", hn)
+        self.m(hn.first, "No1.", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_leading_period_abbreviation_excludes_apostrophe(self) -> None:
+        hn = HumanName("O'B. John Smith")
+        self.m(hn.title, "", hn)
+        self.m(hn.first, "O'B.", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_leading_period_abbreviation_case_insensitive(self) -> None:
+        hn = HumanName("xyz. John Smith")
+        self.m(hn.title, "xyz.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_leading_period_abbreviation_with_nickname(self) -> None:
+        hn = HumanName("Xyz. (Bud) Smith")
+        self.m(hn.title, "Xyz.", hn)
+        self.m(hn.first, "Smith", hn)
+        self.m(hn.nickname, "Bud", hn)

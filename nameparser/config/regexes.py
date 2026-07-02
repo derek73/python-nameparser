@@ -31,6 +31,7 @@ REGEXES = set([
         r'(ович|овна|евич|евна|ична|ильич|кузьмич|лукич|фомич|фокич)$',
         re.U,
     )),
+    ("period_abbreviation", re.compile(r'^[^\W\d_]{2,}\.$', re.U)),
 ])
 """
 All regular expressions used by the parser are precompiled and stored in the config.
