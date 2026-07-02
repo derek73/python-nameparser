@@ -181,3 +181,46 @@ class TurkicPatronymicNameOrderReorderTests(HumanNameTestBase):
         assert n.first == "ВУСАЛ"
         assert n.middle == "САИД ОГЛЫ"
         assert n.last == "АЛИЕВ"
+
+
+class TurkicPatronymicNameOrderGuardsTests(HumanNameTestBase):
+    """Names that must NOT be reordered even when the flag is on."""
+
+    def setup_method(self) -> None:
+        self.C = Constants(patronymic_name_order=True)
+
+    def hn(self, name: str) -> HumanName:
+        return HumanName(name, constants=self.C)
+
+    def test_already_correct_natural_order(self) -> None:
+        n = self.hn("Vusal Said oglu Aliyev")
+        assert n.first == "Vusal"
+        assert n.middle == "Said oglu"
+        assert n.last == "Aliyev"
+
+    def test_comma_guard(self) -> None:
+        n = self.hn("Aliyev, Vusal Said oglu")
+        assert n.first == "Vusal"
+        assert n.middle == "Said oglu"
+        assert n.last == "Aliyev"
+
+    def test_three_token_no_surname(self) -> None:
+        # No surname to rotate into place — parses as last=oglu, unchanged.
+        n = self.hn("Vusal Said oglu")
+        assert n.first == "Vusal"
+        assert n.middle == "Said"
+        assert n.last == "oglu"
+
+    def test_five_token_extra_given_name(self) -> None:
+        # Extra token before the patronymic phrase breaks the strict 4-token shape.
+        n = self.hn("Aliyev Vusal Rza Said oglu")
+        assert n.first == "Aliyev"
+        assert n.middle == "Vusal Rza Said"
+        assert n.last == "oglu"
+
+    def test_ordinary_western_four_token_name(self) -> None:
+        # Last word isn't a recognised marker → no rotation.
+        n = self.hn("Smith John Michael Anderson")
+        assert n.first == "Smith"
+        assert n.middle == "John Michael"
+        assert n.last == "Anderson"
