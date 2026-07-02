@@ -96,6 +96,7 @@ Parse flow:
 2. Split on commas → 1 part (no comma), 2 parts (suffix-comma or lastname-comma), 3+ parts
 3. `parse_pieces()` — splits on spaces, detects dotted abbreviations like "Lt.Gov." and adds them to constants dynamically
 4. `join_on_conjunctions()` — merges pieces adjacent to conjunctions into single tokens (e.g. `['Secretary', 'of', 'State']` → `['Secretary of State']`); also joins prefix particles to the following lastname token
+   — a piece merged with a title *or prefix* neighbor is re-registered into that constant set so later steps still recognize it, e.g. `von`+`und`+`zu` → registered as a prefix so the whole phrase joins to the last name (German "von und zu"; PR #191)
 4a. `_join_first_name_prefix()` — called immediately after step 4 in both the no-comma and lastname-comma paths; merges bound given-name prefixes (e.g. "abdul") with the next piece before the assignment loop runs; suffixes are still in `pieces` at this point, so the `reserve_last` guard must count non-suffix pieces only
 5. Iterates pieces, assigning to `title_list`, `first_list`, `middle_list`, `last_list`, `suffix_list`
 6. `post_process()` — `handle_firstnames()` swaps first/last when only a title + one name; `handle_capitalization()` applies optional auto-cap. Any new `self._attr` used by `post_process()` helpers must be initialized in `__init__` (with its default value) — the direct-kwargs path bypasses `parse_full_name()`, so the attribute won't exist otherwise.
@@ -109,12 +110,15 @@ Each named attribute (`title`, `first`, etc.) is a `@property` that joins its co
 2. Add `x: str | None = None` to `HumanName.__init__` signature after related kwargs
 3. Add `self.x = x if x is not None else self.C.x` in body — use `is not None`, not `or`, to allow falsy values like `""`
 4. conftest auto-restores scalar CONSTANTS between tests, but tests that *set* CONSTANTS mid-run still need their own try/finally
+5. Update `docs/customize.rst`'s constants list (and `docs/usage.rst` if it affects a documented example) — don't wait for the release checklist, these `.rst` docs aren't covered by CI so a stale one can ship silently.
 
 **Adding a new mutable/collection `Constants` attribute** (a `SetManager`/`TupleManager`-backed group, e.g. `extra_nickname_delimiters`): add it to `_COLLECTION_CONFIG_ATTRS` in `tests/conftest.py`, or tests that mutate the global `CONSTANTS` copy will leak state into later tests. Contents must be deep-copyable (the snapshot uses `copy.deepcopy`) — already true for the existing manager types.
 
 Add a dedicated `copy.deepcopy()` round-trip test for it too (see `test_regexes_deepcopy_roundtrip`/`test_extra_nickname_delimiters_deepcopy_roundtrip` in `tests/test_constants.py`), not just reliance on conftest's autouse snapshot/restore exercising it incidentally. `TupleManager`/`RegexTupleManager.__getattr__` answer *any* unknown attribute lookup — including dunder probes like `__deepcopy__` — so a new manager subtype or a `__getattr__` tweak can silently break `copy.deepcopy` (this bit `RegexTupleManager` before the dunder-lookup guard was added). A direct test on the new attribute's own manager instance catches that where the conftest fixture, which never asserts on the copy, would not.
 
 **Adding a word to a config set** — first check the *other* sets for the same word (grep `nameparser/config/` or intersect the sets in a `python3 -c`). Real overlaps exist: `do`/`st`/`mc` ∈ `PREFIXES` ∩ `TITLES`/`SUFFIX_ACRONYMS`; `abd` = "ABD" ∈ `SUFFIX_ACRONYMS`; `abu` ∈ `PREFIXES` ∩ `first_name_prefixes` (position-dependent: leading token → first-name join, mid-name → last-name join). Usually position-dependent and harmless, but can force a guard or an exclusion (the `last_base` all-particles guard; dropping `abd` from `first_name_prefixes`).
+
+**Before adding a short/common word to `PREFIXES` globally**, test it mid-string against realistic 3-token names, not just check for English-word collisions: Korean/Vietnamese given names put a short syllable in the middle slot (`Park In Hwan`, `Nguyen To Nga`), and Western names put a bare initial there (`John V. Smith`). A word that looks safe ("nobody is named 'to'") can still swallow a real middle name/initial into the last name once it's a global prefix — confirmed regressions for `to`/`in`/`an`/`ten`/`then` and bare `v` this way (PR #191).
 
 **Adding a flag-gated post-parse transform** (reorder/adjust, e.g. `patronymic_name_order`) — add a `Constants` boolean (default `False`), implement a `handle_*()` method, and call it in `post_process()` after `handle_firstnames()` and before `handle_capitalization()`, gated on the flag. Default-off keeps existing parses byte-for-byte unchanged. (#85; extension point for #185 Turkic.)
 
@@ -130,6 +134,8 @@ Add a dedicated `copy.deepcopy()` round-trip test for it too (see `test_regexes_
 
 **`lc()` strips leading and trailing periods** — `'M.D.'` → `'m.d'`, not `'md'` (interior periods are preserved). Exception keys in `capitalization_exceptions` are dot-free, so lookups must also try `.replace('.', '')`.
 
+**`is_suffix()`'s period-stripping is asymmetric** — it does `lc(piece).replace('.', '')` (strips *all* periods) before checking `suffix_acronyms`, but only `lc(piece)` (leading/trailing only) before checking `suffix_not_acronyms`. Code that reimplements this check instead of calling `is_suffix()` must mirror both branches or it will misclassify acronym suffixes with internal-only periods (e.g. `"M.D"` with no trailing dot) — bit `parse_nicknames()`'s `handle_match()` in PR #189.
+
 **`_join_first_name_prefix` guard must exclude trailing suffixes** — suffix tokens are still in `pieces` when the helper runs (suffix detection happens in the assignment loop, later). The `reserve_last` guard must count `if not self.is_suffix(p)` to avoid treating a trailing suffix like "Jr." as a last-name slot; otherwise `"abdul salam jr"` → `last='jr'`.
 
 **Doctests** — docstring examples in `nameparser/*.py` run under `uv run pytest` (`--doctest-modules`; `testpaths` is `tests` + `nameparser` only). The `.rst` doctests in `docs/` (`usage.rst`, `customize.rst`) are **not** run by pytest or CI (CI does `sphinx-build -b html`, not `-b doctest`), so verify `.rst` examples manually: `python3 -c "import doctest; print(doctest.testfile('docs/usage.rst', module_relative=False, optionflags=doctest.NORMALIZE_WHITESPACE))"`. Note `customize.rst` has pre-existing failures under `-b doctest` (CONSTANTS state leaks across examples — no per-example reset like `tests/conftest.py` provides — plus non-deterministic `SetManager` repr).
@@ -140,9 +146,13 @@ Add a dedicated `copy.deepcopy()` round-trip test for it too (see `test_regexes_
 
 **Prefix-join uses value-based `list.index()`** in `join_on_conjunctions` — fragile when a token value repeats (e.g. a trailing title that's also a suffix acronym, or two `van`s); constrain such lookups to start at `i + 1`. See #100.
 
+**Title vs suffix is purely positional** — a word matching `TITLES` at the front of a name becomes `title`; the same word matching `SUFFIX_ACRONYMS`/`SUFFIX_NOT_ACRONYMS` at the end becomes `suffix` (never both, regardless of the word's real-world meaning). External test sources (old issue gists, etc.) sometimes assert `suffix` for a leading professional abbreviation like `RA`/`PD`/`Dipl.-Ing.` — that's the source data being wrong, not a parser bug. Verify position before "fixing" it.
+
 ### Tests (`tests/`)
 
 **Prefer behavior tests over constant-content tests** — don't assert on the literal contents/structure of config constants (e.g. `SUFFIX_ACRONYMS == SET_A | SET_B`, `'x' in SOME_SET`). Test observable parsing behavior instead (`HumanName(...)` output). Constant-content assertions just create a second place to update whenever the lists change.
+
+A parse-behavior test can still be a disguised constant-content test if it only exercises one or two hardcoded entries from a large list (e.g. guarding a specific missing-comma typo in `SUFFIX_ACRONYMS`) — it documents that one instance without catching the same bug class elsewhere in the list. Prefer a test on the structural property itself, or skip a dedicated test for narrow, unrepeatable typo fixes.
 
 **When adding a new aggregate property** (like `given_names` or `surnames`), always include a test for the empty path — a name that produces no value for that property — so the `or self.C.empty_attribute_default` guard is covered. The conftest dual-fixture then automatically exercises both `""` and `None` variants. Example: `HumanName("Williams")` for a given-names property (last-name-only string has no first or middle).
 
