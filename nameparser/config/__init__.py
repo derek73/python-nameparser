@@ -389,6 +389,32 @@ class Constants:
 
     """
 
+    middle_name_as_last = False
+    """
+    If set, folds middle names into the last name: ``middle_list`` is prepended
+    to ``last_list`` and ``middle_list`` is cleared, so ``.last`` becomes what
+    ``.surnames`` already was and ``.middle`` becomes empty. Useful for naming
+    systems with no middle-name concept, where everything after the given name
+    is lineage/family (e.g. Arabic patronymic chaining: given + father +
+    grandfather + family).
+
+    The fold is uniform across both no-comma and comma ("Last, First Middle")
+    input, so the two written forms of a name converge on the same result.
+
+    For per-instance control without a shared ``Constants``, pass a dedicated
+    instance: ``HumanName("...", constants=Constants(middle_name_as_last=True))``.
+
+    .. doctest::
+
+        >>> from nameparser import HumanName
+        >>> from nameparser.config import Constants
+        >>> C = Constants(middle_name_as_last=True)
+        >>> hn = HumanName("Mohamad Ahmad Ali Hassan", constants=C)
+        >>> hn.first, hn.middle, hn.last
+        ('Mohamad', '', 'Ahmad Ali Hassan')
+
+    """
+
     def __init__(self,
                  prefixes: Iterable[str] = PREFIXES,
                  suffix_acronyms: Iterable[str] = SUFFIX_ACRONYMS,
@@ -401,6 +427,7 @@ class Constants:
                  capitalization_exceptions: TupleManager[str] | Iterable[tuple[str, str]] = CAPITALIZATION_EXCEPTIONS,
                  regexes: RegexTupleManager | TupleManager[re.Pattern[str]] | Iterable[tuple[str, re.Pattern[str]]] = REGEXES,
                  patronymic_name_order: bool = False,
+                 middle_name_as_last: bool = False,
                  ) -> None:
         # These four descriptor assignments call _CachedUnionMember.__set__, which
         # calls _invalidate_pst() and establishes self._pst. They must come before
@@ -423,6 +450,7 @@ class Constants:
         # needing to override parse_nicknames() itself. See issue #112.
         self.extra_nickname_delimiters = TupleManager()
         self.patronymic_name_order = patronymic_name_order
+        self.middle_name_as_last = middle_name_as_last
 
     def _invalidate_pst(self) -> None:
         self._pst = None
