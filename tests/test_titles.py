@@ -285,3 +285,9 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Smith", hn)
         self.m(hn.suffix, "Jr.", hn)
+
+    def test_leading_period_abbreviation_lastname_comma(self) -> None:
+        hn = HumanName("Smith, Major. John")
+        self.m(hn.title, "Major.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)

@@ -100,23 +100,31 @@ class HumanNameBruteForceTests(HumanNameTestBase):
         self.m(hn.suffix, "III", hn)
 
     def test16(self) -> None:
+        # "John." is an unrecognized period-abbreviation in the leading
+        # title position of the lastname-comma format, so is_leading_title()
+        # now treats it as a title rather than a first name (see #109).
         hn = HumanName("Doe, John. A. Kenneth")
-        self.m(hn.first, "John.", hn)
+        self.m(hn.title, "John.", hn)
+        self.m(hn.first, "A.", hn)
         self.m(hn.last, "Doe", hn)
-        self.m(hn.middle, "A. Kenneth", hn)
+        self.m(hn.middle, "Kenneth", hn)
 
     def test17(self) -> None:
+        # Same period-abbreviation-as-title behavior as test16 (see #109).
         hn = HumanName("Doe, John. A. Kenneth, Jr.")
-        self.m(hn.first, "John.", hn)
+        self.m(hn.title, "John.", hn)
+        self.m(hn.first, "A.", hn)
         self.m(hn.last, "Doe", hn)
-        self.m(hn.middle, "A. Kenneth", hn)
+        self.m(hn.middle, "Kenneth", hn)
         self.m(hn.suffix, "Jr.", hn)
 
     def test18(self) -> None:
+        # Same period-abbreviation-as-title behavior as test16 (see #109).
         hn = HumanName("Doe, John. A. Kenneth III")
-        self.m(hn.first, "John.", hn)
+        self.m(hn.title, "John.", hn)
+        self.m(hn.first, "A.", hn)
         self.m(hn.last, "Doe", hn)
-        self.m(hn.middle, "A. Kenneth", hn)
+        self.m(hn.middle, "Kenneth", hn)
         self.m(hn.suffix, "III", hn)
 
     def test19(self) -> None:

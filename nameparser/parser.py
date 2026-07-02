@@ -1033,7 +1033,7 @@ class HumanName:
 
                     if not self.first \
                             and (nxt or len(post_comma_pieces) == 1) \
-                            and self.is_title(piece):
+                            and self.is_leading_title(piece):
                         self.title_list.append(piece)
                         continue
                     if not self.first:
