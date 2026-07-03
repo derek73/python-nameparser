@@ -73,7 +73,7 @@ Requires Python 3.10+.
     5
     >>> list(name)
     ['Dr.', 'Juan', 'Q. Xavier', 'de la Vega', 'III']
-    >>> name[1:-2]
+    >>> name[1:-3]
     ['Juan', 'Q. Xavier', 'de la Vega']
 
 

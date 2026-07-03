@@ -327,6 +327,7 @@ constant so that "Hon" can be parsed as a first name.
       last: 'Solo'
       suffix: ''
       nickname: ''
+      maiden: ''
     ]>
     >>> from nameparser.config import CONSTANTS
     >>> CONSTANTS.titles.remove('hon')
@@ -340,6 +341,7 @@ constant so that "Hon" can be parsed as a first name.
       last: 'Solo'
       suffix: ''
       nickname: ''
+      maiden: ''
     ]>
 
 
@@ -380,6 +382,7 @@ making them lower case and removing periods.
       last: 'Johns'
       suffix: ''
       nickname: ''
+      maiden: ''
     ]>
 
 
@@ -407,6 +410,7 @@ the config on one instance could modify the behavior of another instance.
       last: 'Johns'
       suffix: ''
       nickname: ''
+      maiden: ''
     ]>
 
 
@@ -434,6 +438,7 @@ reference to the module-level config values with the behavior described above.
       last: 'Johns'
       suffix: ''
       nickname: ''
+      maiden: ''
     ]>
     >>> other_instance.has_own_config
     True
@@ -505,6 +510,7 @@ directly to the attribute.
     last: 'Doe'
     suffix: 'Md.'
     nickname: ''
+    maiden: ''
   ]>
 
 
