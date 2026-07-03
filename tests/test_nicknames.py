@@ -3,6 +3,7 @@ import re
 import pytest
 
 from nameparser import HumanName
+from nameparser.config import Constants
 
 from tests.base import HumanNameTestBase
 
@@ -232,3 +233,52 @@ class MaidenNameTestCase(HumanNameTestBase):
         self.m(hn.last, "Baker", hn)
         self.m(hn.maiden, "Johnson", hn)
         self.assertFalse(hn.unparsable)
+
+    def test_maiden_name_in_parenthesis_with_comma(self) -> None:
+        C = Constants()
+        C.maiden_delimiters['parenthesis'] = C.nickname_delimiters.pop('parenthesis')
+        hn = HumanName("Baker (Johnson), Jenny", constants=C)
+        self.m(hn.first, "Jenny", hn)
+        self.m(hn.last, "Baker", hn)
+        self.m(hn.maiden, "Johnson", hn)
+
+    def test_maiden_name_in_parenthesis_no_comma(self) -> None:
+        C = Constants()
+        C.maiden_delimiters['parenthesis'] = C.nickname_delimiters.pop('parenthesis')
+        hn = HumanName("Jenny Baker (Johnson)", constants=C)
+        self.m(hn.first, "Jenny", hn)
+        self.m(hn.last, "Baker", hn)
+        self.m(hn.maiden, "Johnson", hn)
+
+    def test_quotes_still_nickname_when_parens_routed_to_maiden(self) -> None:
+        C = Constants()
+        C.maiden_delimiters['parenthesis'] = C.nickname_delimiters.pop('parenthesis')
+        hn = HumanName('Jenny "JJ" Baker (Johnson)', constants=C)
+        self.m(hn.first, "Jenny", hn)
+        self.m(hn.last, "Baker", hn)
+        self.m(hn.nickname, "JJ", hn)
+        self.m(hn.maiden, "Johnson", hn)
+
+    def test_maiden_off_by_default_parenthesis_still_routes_to_nickname(self) -> None:
+        hn = HumanName("Baker (Johnson), Jenny")
+        self.m(hn.first, "Jenny", hn)
+        self.m(hn.last, "Baker", hn)
+        self.m(hn.nickname, "Johnson", hn)
+        self.m(hn.maiden, "", hn)
+
+    def test_suffix_shaped_content_in_maiden_bucket_stays_in_place(self) -> None:
+        # The #189 suffix-shaped carve-out in handle_match() applies
+        # regardless of which bucket the delimiter routes to.
+        C = Constants()
+        C.maiden_delimiters['parenthesis'] = C.nickname_delimiters.pop('parenthesis')
+        hn = HumanName("Baker (Jr.), Jenny", constants=C)
+        self.m(hn.first, "Jenny", hn)
+        self.m(hn.last, "Baker", hn)
+        self.m(hn.suffix, "Jr.", hn)
+        self.m(hn.maiden, "", hn)
+
+    def test_maiden_appears_in_as_dict_via_routing(self) -> None:
+        C = Constants()
+        C.maiden_delimiters['parenthesis'] = C.nickname_delimiters.pop('parenthesis')
+        hn = HumanName("Baker (Johnson), Jenny", constants=C)
+        self.assertEqual(hn.as_dict()['maiden'], "Johnson")
