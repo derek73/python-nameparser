@@ -61,16 +61,16 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         # No manual cleanup needed: the autouse fixture in conftest.py snapshots
         # and restores the global CONSTANTS collections around every test.
 
-    def test_can_add_global_extra_nickname_delimiter(self) -> None:
+    def test_can_add_global_nickname_delimiter(self) -> None:
         # https://github.com/derek73/python-nameparser/issues/112
         hn = HumanName("")
-        hn.C.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
+        hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
         hn2 = HumanName("Benjamin {Ben} Franklin")
         self.assertEqual(hn2.has_own_config, False)
         self.m(hn2.nickname, "Ben", hn2)
         # No manual cleanup needed: the autouse fixture in conftest.py snapshots
         # and restores the global CONSTANTS collections (including
-        # extra_nickname_delimiters) around every test.
+        # nickname_delimiters) around every test.
 
     def test_remove_multiple_arguments(self) -> None:
         hn = HumanName("Ms Hon Solo", constants=None)
@@ -141,7 +141,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         c.titles.add('customtitle')
         c.prefixes.add('customprefix')
         c.titles.remove('hon')
-        c.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
+        c.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
 
         # Safe: round-tripping a Constants the test just built, not untrusted data.
         restored = pickle.loads(pickle.dumps(c))
@@ -155,8 +155,8 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         # The collections must also keep their manager type, not just contents.
         self.assertEqual(type(restored.titles), SetManager)
         self.assertEqual(type(restored.prefixes), SetManager)
-        self.assertIn('curly_braces', restored.extra_nickname_delimiters)
-        self.assertEqual(type(restored.extra_nickname_delimiters), TupleManager)
+        self.assertIn('curly_braces', restored.nickname_delimiters)
+        self.assertEqual(type(restored.nickname_delimiters), TupleManager)
 
     def test_pickle_roundtrip_preserves_instance_scalar_override(self) -> None:
         """An instance-level scalar override must survive a pickle round-trip."""
@@ -200,24 +200,76 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         # The EMPTY_REGEX default still applies to genuinely unknown keys.
         self.assertEqual(dup.does_not_exist, EMPTY_REGEX)
 
-    def test_extra_nickname_delimiters_deepcopy_roundtrip(self) -> None:
-        """copy.deepcopy of extra_nickname_delimiters must round-trip.
+    def test_nickname_delimiters_deepcopy_roundtrip(self) -> None:
+        """copy.deepcopy of nickname_delimiters must round-trip.
 
-        Mirrors test_regexes_deepcopy_roundtrip: extra_nickname_delimiters is a
+        Mirrors test_regexes_deepcopy_roundtrip: nickname_delimiters is a
         plain TupleManager (not RegexTupleManager), but shares the same
-        __getattr__/__reduce__ machinery, so it's exercised here directly
-        rather than only incidentally via conftest's autouse snapshot/restore.
+        __getattr__/__reduce__ machinery.
         """
         c = Constants()
-        c.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
+        c.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
 
-        dup = copy.deepcopy(c.extra_nickname_delimiters)
+        dup = copy.deepcopy(c.nickname_delimiters)
 
         self.assertEqual(type(dup), TupleManager)
-        self.assertEqual(dict(dup), dict(c.extra_nickname_delimiters))
+        self.assertEqual(dict(dup), dict(c.nickname_delimiters))
         # Plain TupleManager has no EMPTY_REGEX fallback: unknown keys are None.
         self.assertIsNone(dup.does_not_exist)
         self.assertIsNotNone(dup.curly_braces)
+
+    def test_maiden_delimiters_deepcopy_roundtrip(self) -> None:
+        """copy.deepcopy of maiden_delimiters (empty by default) must round-trip."""
+        c = Constants()
+
+        dup = copy.deepcopy(c.maiden_delimiters)
+
+        self.assertEqual(type(dup), TupleManager)
+        self.assertEqual(dict(dup), {})
+        self.assertIsNone(dup.does_not_exist)
+
+    def test_nickname_delimiters_default_builtins_resolve_live(self) -> None:
+        # The three built-ins are stored as the *name* of a regexes entry
+        # (a plain string), not a copied pattern, so overriding
+        # self.C.regexes.parenthesis etc. keeps affecting nickname parsing --
+        # see test_overriding_builtin_regex_still_affects_nickname_parsing in
+        # test_nicknames.py.
+        c = Constants()
+        self.assertEqual(dict(c.nickname_delimiters), {
+            'quoted_word': 'quoted_word',
+            'double_quotes': 'double_quotes',
+            'parenthesis': 'parenthesis',
+        })
+        self.assertEqual(dict(c.maiden_delimiters), {})
+
+    def test_extra_nickname_delimiters_removed(self) -> None:
+        c = Constants()
+        self.assertFalse(hasattr(c, 'extra_nickname_delimiters'))
+
+    def test_tuplemanager_setattr_delattr_ignore_dunder_names(self) -> None:
+        """Regression test for the bug that motivated nickname_delimiters'
+        __setattr__/__delattr__ dunder guard.
+
+        Constructing a subscripted generic, e.g.
+        TupleManager[re.Pattern[str] | str]({...}), makes typing's
+        GenericAlias.__call__ set __orig_class__ on the new instance right
+        after __init__ returns. Before the guard existed, __setattr__ was a
+        bare dict.__setitem__ alias, so that assignment silently inserted a
+        bogus '__orig_class__' entry into the dict itself, corrupting
+        .values()/iteration for every TupleManager instance -- exactly what
+        parse_nicknames() iterates over. This bit nickname_delimiters'
+        construction (#22) before the guard was added.
+        """
+        tm = TupleManager[re.Pattern[str] | str]({'a': re.compile('x')})
+        self.assertNotIn('__orig_class__', tm)
+        self.assertEqual(dict(tm), {'a': re.compile('x')})
+        # Dunder assignment/deletion still work as normal object attributes,
+        # just routed around dict-backed storage.
+        tm.__custom_dunder__ = 'probe'  # type: ignore[attr-defined]
+        self.assertEqual(tm.__custom_dunder__, 'probe')  # type: ignore[attr-defined]
+        self.assertNotIn('__custom_dunder__', tm)
+        del tm.__custom_dunder__  # type: ignore[attr-defined]
+        self.assertFalse(hasattr(tm, '__custom_dunder__'))
 
     def test_regextuplemanager_ignores_dunder_lookups(self) -> None:
         """Unknown dunder names report as absent, not as the EMPTY_REGEX default.

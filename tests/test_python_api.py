@@ -218,8 +218,8 @@ class HumanNamePythonTests(HumanNameTestBase):
     def test_slice(self) -> None:
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         self.m(list(hn), ['Dr.', 'John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC'], hn)
-        self.m(hn[1:], ['John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC', hn.C.empty_attribute_default], hn)
-        self.m(hn[1:-2], ['John', 'P.', 'Doe-Ray'], hn)
+        self.m(hn[1:], ['John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC', hn.C.empty_attribute_default, hn.C.empty_attribute_default], hn)
+        self.m(hn[1:-3], ['John', 'P.', 'Doe-Ray'], hn)
 
     def test_getitem(self) -> None:
         hn = HumanName("Dr. John A. Kenneth Doe, Jr.")

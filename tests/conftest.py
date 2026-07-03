@@ -35,7 +35,8 @@ _COLLECTION_CONFIG_ATTRS = (
     "first_name_prefixes",
     "capitalization_exceptions",
     "regexes",
-    "extra_nickname_delimiters",
+    "nickname_delimiters",
+    "maiden_delimiters",
 )
 
 

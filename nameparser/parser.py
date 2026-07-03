@@ -1,5 +1,5 @@
 import re
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from operator import itemgetter
 from itertools import groupby
 
@@ -43,6 +43,7 @@ class HumanName:
     * :py:attr:`last`
     * :py:attr:`suffix`
     * :py:attr:`nickname`
+    * :py:attr:`maiden`
     * :py:attr:`surnames`
     * :py:attr:`given_names`
 
@@ -63,6 +64,7 @@ class HumanName:
     :param str title: The title or prenominal
     :param str suffix: The suffix or postnominal
     :param str nickname: Nicknames
+    :param str maiden: Maiden name
     """
 
     C = CONSTANTS
@@ -79,7 +81,7 @@ class HumanName:
     """
 
     _count = 0
-    _members = ['title', 'first', 'middle', 'last', 'suffix', 'nickname']
+    _members = ['title', 'first', 'middle', 'last', 'suffix', 'nickname', 'maiden']
     unparsable = True
     _full_name = ''
 
@@ -89,6 +91,7 @@ class HumanName:
     last_list: list[str]
     suffix_list: list[str]
     nickname_list: list[str]
+    maiden_list: list[str]
     _had_comma: bool
 
     def __init__(
@@ -107,6 +110,7 @@ class HumanName:
         title: str | list[str] | None = None,
         suffix: str | list[str] | None = None,
         nickname: str | list[str] | None = None,
+        maiden: str | list[str] | None = None,
     ) -> None:
         self.C = constants
         if type(self.C) is not type(CONSTANTS):
@@ -119,13 +123,14 @@ class HumanName:
         self.initials_separator = initials_separator if initials_separator is not None else self.C.initials_separator
         self.suffix_delimiter   = suffix_delimiter   if suffix_delimiter   is not None else self.C.suffix_delimiter
         self._had_comma = False
-        if (first or middle or last or title or suffix or nickname):
+        if (first or middle or last or title or suffix or nickname or maiden):
             self.first = first
             self.middle = middle
             self.last = last
             self.title = title
             self.suffix = suffix
             self.nickname = nickname
+            self.maiden = maiden
             self.unparsable = False
         else:
             # full_name setter triggers the parse
@@ -203,7 +208,7 @@ class HumanName:
         if self.unparsable:
             _string = "<%(class)s : [ Unparsable ] >" % {'class': self.__class__.__name__, }
         else:
-            _string = "<%(class)s : [\n\ttitle: %(title)r \n\tfirst: %(first)r \n\tmiddle: %(middle)r \n\tlast: %(last)r \n\tsuffix: %(suffix)r\n\tnickname: %(nickname)r\n]>" % {
+            _string = "<%(class)s : [\n\ttitle: %(title)r \n\tfirst: %(first)r \n\tmiddle: %(middle)r \n\tlast: %(last)r \n\tsuffix: %(suffix)r\n\tnickname: %(nickname)r\n\tmaiden: %(maiden)r\n]>" % {
                 'class': self.__class__.__name__,
                 'title': self.title or '',
                 'first': self.first or '',
@@ -211,6 +216,7 @@ class HumanName:
                 'last': self.last or '',
                 'suffix': self.suffix or '',
                 'nickname': self.nickname or '',
+                'maiden': self.maiden or '',
             }
         return _string
 
@@ -225,7 +231,7 @@ class HumanName:
 
             >>> name = HumanName("Bob Dole")
             >>> name.as_dict()
-            {'title': '', 'first': 'Bob', 'middle': '', 'last': 'Dole', 'suffix': '', 'nickname': ''}
+            {'title': '', 'first': 'Bob', 'middle': '', 'last': 'Dole', 'suffix': '', 'nickname': '', 'maiden': ''}
             >>> name.as_dict(False)
             {'first': 'Bob', 'last': 'Dole'}
 
@@ -403,6 +409,20 @@ class HumanName:
     @nickname.setter
     def nickname(self, value: str | list[str] | None) -> None:
         self._set_list('nickname', value)
+
+    @property
+    def maiden(self) -> str:
+        """
+        The person's maiden (alternate/prior) last name. Empty unless a
+        delimiter has been routed to it via
+        :py:attr:`~nameparser.config.Constants.maiden_delimiters` -- see the
+        "Routing to Maiden Name" section of the customization docs.
+        """
+        return " ".join(self.maiden_list) or self.C.empty_attribute_default
+
+    @maiden.setter
+    def maiden(self, value: str | list[str] | None) -> None:
+        self._set_list('maiden', value)
 
     @property
     def surnames_list(self) -> list[str]:
@@ -833,75 +853,103 @@ class HumanName:
 
     def parse_nicknames(self) -> None:
         """
-        The content of parenthesis or quotes in the name will be added to the
-        nicknames list, unless that content is suffix-shaped -- an unambiguous
-        suffix_not_acronyms/suffix_acronyms member, or content ending in a
-        period -- in which case it's left in place (undelimited) for normal
-        downstream suffix/title/word parsing instead. This happens before any
-        other processing of the name.
+        Delimited content in the name is routed to either the nickname or
+        maiden bucket, based on which of
+        :py:attr:`~nameparser.config.Constants.nickname_delimiters` /
+        :py:attr:`~nameparser.config.Constants.maiden_delimiters` the matching
+        delimiter belongs to -- unless that content is suffix-shaped -- an
+        unambiguous suffix_not_acronyms/suffix_acronyms member, or content
+        ending in a period -- in which case it's left in place (undelimited)
+        for normal downstream suffix/title/word parsing instead. This happens
+        before any other processing of the name.
 
         Single quotes cannot span white space characters and must border
         white space to allow for quotes in names like O'Connor and Kawai'ae'a.
         Double quotes and parenthesis can span white space.
 
-        Loops through the built-in `quoted_word`, `double_quotes` and
-        `parenthesis` patterns in :py:attr:`~nameparser.config.Constants.regexes`,
-        followed by any patterns added to
-        :py:attr:`~nameparser.config.Constants.extra_nickname_delimiters` --
-        see the "Adding Custom Nickname Delimiters" section of the
-        customization docs.
+        By default, ``nickname_delimiters`` holds the three built-in
+        delimiters (``quoted_word``, ``double_quotes`` and ``parenthesis``,
+        resolved live from :py:attr:`~nameparser.config.Constants.regexes` so
+        overriding e.g. ``CONSTANTS.regexes.parenthesis`` keeps affecting
+        nickname parsing) and ``maiden_delimiters`` is empty. Move a key
+        between the two dicts, e.g.
+        ``maiden_delimiters['parenthesis'] = nickname_delimiters.pop('parenthesis')``,
+        to route it to ``maiden`` instead, or add a new compiled pattern under
+        any key to recognize an additional delimiter -- see the "Adding
+        Custom Nickname Delimiters" and "Routing to Maiden Name" sections of
+        the customization docs.
         """
 
-        def handle_match(m: 're.Match[str]') -> str:
-            # Fall back to the whole match when the regex has no capturing
-            # group (e.g. a custom override regex without one, like
-            # EMPTY_REGEX) -- mirrors the old code's use of findall(), which
-            # returns the whole match for group-less patterns.
-            content = m.group(1) if m.lastindex else m.group(0)
-            stripped = lc(content)
-            # Inlined rather than calling self.is_suffix(content): is_suffix()
-            # also rejects single-letter initials via is_an_initial(), which
-            # isn't relevant here, and the suffix_acronyms_ambiguous exclusion
-            # needs to be interleaved into the acronym branch specifically.
-            # Acronym suffixes may have periods between every letter (e.g.
-            # "M.D", "Ph.D") that aren't necessarily trailing, so -- exactly
-            # like is_suffix() -- strip all periods before checking
-            # suffix_acronyms/suffix_acronyms_ambiguous membership. Bare
-            # `stripped` (lc() only strips leading/trailing periods) is still
-            # used for suffix_not_acronyms, matching is_suffix()'s asymmetry.
-            acronym_stripped = stripped.replace('.', '')
-            is_unambiguous_suffix = (
-                stripped in self.C.suffix_not_acronyms
-                or (acronym_stripped in self.C.suffix_acronyms
-                    and acronym_stripped not in self.C.suffix_acronyms_ambiguous)
-            )
-            if is_unambiguous_suffix or content.endswith('.'):
-                # Leave the bare content -- no delimiters -- so downstream
-                # word-splitting/suffix-matching sees it exactly as if it had
-                # never been wrapped in parens/quotes. is_suffix()/lc() only
-                # strip periods, never parens/quotes, so returning m.group(0)
-                # here (e.g. literal "(Ret)") would never match
-                # suffix_not_acronyms ("ret").
-                return content
-            self.nickname_list.append(content)
-            return ''
+        def handle_match(target_list: list[str]) -> Callable[['re.Match[str]'], str]:
+            def _handle(m: 're.Match[str]') -> str:
+                # Fall back to the whole match when the regex has no capturing
+                # group (e.g. a custom override regex without one, like
+                # EMPTY_REGEX) -- mirrors the old code's use of findall(), which
+                # returns the whole match for group-less patterns.
+                content = m.group(1) if m.lastindex else m.group(0)
+                stripped = lc(content)
+                # Inlined rather than calling self.is_suffix(content): is_suffix()
+                # also rejects single-letter initials via is_an_initial(), which
+                # isn't relevant here, and the suffix_acronyms_ambiguous exclusion
+                # needs to be interleaved into the acronym branch specifically.
+                # Acronym suffixes may have periods between every letter (e.g.
+                # "M.D", "Ph.D") that aren't necessarily trailing, so -- exactly
+                # like is_suffix() -- strip all periods before checking
+                # suffix_acronyms/suffix_acronyms_ambiguous membership. Bare
+                # `stripped` (lc() only strips leading/trailing periods) is still
+                # used for suffix_not_acronyms, matching is_suffix()'s asymmetry.
+                acronym_stripped = stripped.replace('.', '')
+                is_unambiguous_suffix = (
+                    stripped in self.C.suffix_not_acronyms
+                    or (acronym_stripped in self.C.suffix_acronyms
+                        and acronym_stripped not in self.C.suffix_acronyms_ambiguous)
+                )
+                if is_unambiguous_suffix or content.endswith('.'):
+                    # Leave the bare content -- no delimiters -- so downstream
+                    # word-splitting/suffix-matching sees it exactly as if it had
+                    # never been wrapped in parens/quotes. is_suffix()/lc() only
+                    # strip periods, never parens/quotes, so returning m.group(0)
+                    # here (e.g. literal "(Ret)") would never match
+                    # suffix_not_acronyms ("ret").
+                    return content
+                target_list.append(content)
+                return ''
+            return _handle
 
-        # Same handle_match for every delimiter: suffix-shaped content
-        # is rare in quotes but not impossible, and the logic is delimiter-
-        # agnostic, so there's no reason to special-case parenthesis here.
-        # The three built-ins are read live from self.C.regexes (not copied),
-        # so overriding e.g. self.C.regexes.parenthesis keeps working as
-        # before; extra_nickname_delimiters is iterated afterward so callers
-        # can add new delimiter patterns at runtime without needing to
-        # override parse_nicknames() itself -- see issue #112.
-        delimiters = (
-            self.C.regexes.quoted_word,
-            self.C.regexes.double_quotes,
-            self.C.regexes.parenthesis,
-            *self.C.extra_nickname_delimiters.values(),
-        )
-        for _re in delimiters:
-            self._full_name = _re.sub(handle_match, self._full_name)
+        # Same handle_match for every delimiter: suffix-shaped content is rare
+        # in quotes but not impossible, and the logic is delimiter-agnostic,
+        # so there's no reason to special-case parenthesis here. A string
+        # delimiter value names a Constants.regexes entry, resolved via
+        # getattr() so overriding e.g. self.C.regexes.parenthesis keeps
+        # working; anything else is already a compiled pattern, added
+        # directly by a caller. Unlike a caller directly querying
+        # self.C.regexes (where RegexTupleManager's EMPTY_REGEX default for
+        # an unknown attribute is harmless -- the caller sees the pattern and
+        # can react to it), a bad string here is an internal cross-reference
+        # the delimiter dict itself is responsible for keeping valid.
+        # EMPTY_REGEX matches the empty string at every position, so
+        # silently falling back to it would not just skip the delimiter --
+        # handle_match() would fire on every zero-width match and append ''
+        # into the bucket's list repeatedly, producing a truthy
+        # whitespace-only nickname/maiden while leaving the real delimited
+        # content (e.g. literal parentheses) unstripped. Fail loudly instead.
+        for bucket, delimiters in (
+            ('nickname', self.C.nickname_delimiters),
+            ('maiden', self.C.maiden_delimiters),
+        ):
+            target_list = getattr(self, bucket + '_list')
+            _handle_match = handle_match(target_list)
+            for raw_pattern in delimiters.values():
+                if isinstance(raw_pattern, re.Pattern):
+                    _re = raw_pattern
+                elif raw_pattern in self.C.regexes:
+                    _re = getattr(self.C.regexes, raw_pattern)
+                else:
+                    raise ValueError(
+                        f"{bucket}_delimiters references unknown regexes key {raw_pattern!r}. "
+                        f"Known regexes keys: {sorted(self.C.regexes)}"
+                    )
+                self._full_name = _re.sub(_handle_match, self._full_name)
 
     def squash_emoji(self) -> None:
         """
@@ -943,6 +991,7 @@ class HumanName:
         self.last_list = []
         self.suffix_list = []
         self.nickname_list = []
+        self.maiden_list = []
         self.unparsable = True
 
         self.pre_process()

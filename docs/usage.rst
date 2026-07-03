@@ -42,6 +42,7 @@ Requires Python 3.10+.
     	last: 'Velasquez y Garcia' 
     	suffix: 'Jr.'
     	nickname: ''
+    	maiden: ''
     ]>
     >>> name.middle = "Jason Alexander"
     >>> name.middle
@@ -54,15 +55,16 @@ Requires Python 3.10+.
         last: 'Velasquez y Garcia' 
         suffix: 'Jr.'
         nickname: ''
+        maiden: ''
     ]>
     >>> name.middle = ["custom","values"]
     >>> name.middle
     'custom values'
     >>> name.full_name = 'Doe-Ray, Jonathan "John" A. Harris'
     >>> name.as_dict()
-    {'last': 'Doe-Ray', 'suffix': '', 'title': '', 'middle': 'A. Harris', 'nickname': 'John', 'first': 'Jonathan'}
+    {'title': '', 'first': 'Jonathan', 'middle': 'A. Harris', 'last': 'Doe-Ray', 'suffix': '', 'nickname': 'John', 'maiden': ''}
     >>> name.as_dict(False) # add False to hide keys with empty values
-    {'middle': 'A. Harris', 'nickname': 'John', 'last': 'Doe-Ray', 'first': 'Jonathan'}
+    {'first': 'Jonathan', 'middle': 'A. Harris', 'last': 'Doe-Ray', 'nickname': 'John'}
     >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
     >>> name2 = HumanName("de la vega, dr. juan Q. xavier III")
     >>> name == name2
@@ -71,7 +73,7 @@ Requires Python 3.10+.
     5
     >>> list(name)
     ['Dr.', 'Juan', 'Q. Xavier', 'de la Vega', 'III']
-    >>> name[1:-2]
+    >>> name[1:-3]
     ['Juan', 'Q. Xavier', 'de la Vega']
 
 
@@ -145,6 +147,7 @@ available from the nickname attribute.
       last: 'Smith'
       suffix: ''
       nickname: 'John'
+      maiden: ''
     ]>
 
 Exception: content that looks like a suffix (a member of
@@ -166,6 +169,7 @@ written in parenthesis.
       last: 'Perkins'
       suffix: 'MBA'
       nickname: ''
+      maiden: ''
     ]>
 
 A few suffix acronyms, listed in
@@ -186,6 +190,7 @@ reading in that ambiguous context:
       last: 'BRICKEN'
       suffix: ''
       nickname: 'JD'
+      maiden: ''
     ]>
 
 Leading Period-Abbreviation Titles
@@ -211,6 +216,7 @@ word appearing after the first name is left as a middle name.
       last: 'Smith'
       suffix: ''
       nickname: ''
+      maiden: ''
     ]>
     >>> name = HumanName("J. Smith")
     >>> name.first

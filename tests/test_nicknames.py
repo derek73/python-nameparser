@@ -3,6 +3,7 @@ import re
 import pytest
 
 from nameparser import HumanName
+from nameparser.config import Constants
 
 from tests.base import HumanNameTestBase
 
@@ -21,7 +22,7 @@ class NicknameTestCase(HumanNameTestBase):
         hn = HumanName("Benjamin {Ben} Franklin", constants=None)
         # curly braces aren't a recognized delimiter by default
         self.m(hn.nickname, "", hn)
-        hn.C.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
+        hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
         hn.parse_full_name()
         self.m(hn.first, "Benjamin", hn)
         self.m(hn.last, "Franklin", hn)
@@ -29,10 +30,10 @@ class NicknameTestCase(HumanNameTestBase):
 
     def test_remove_custom_nickname_delimiter(self) -> None:
         hn = HumanName("Benjamin {Ben} Franklin", constants=None)
-        hn.C.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
+        hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
         hn.parse_full_name()
         self.m(hn.nickname, "Ben", hn)
-        del hn.C.extra_nickname_delimiters['curly_braces']
+        del hn.C.nickname_delimiters['curly_braces']
         hn.parse_full_name()
         self.m(hn.nickname, "", hn)
 
@@ -40,8 +41,8 @@ class NicknameTestCase(HumanNameTestBase):
         # Two extras registered at once must both be recognized in a single
         # parse, independent of insertion order.
         hn = HumanName("Benjamin {Ben} <Benny> Franklin", constants=None)
-        hn.C.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
-        hn.C.extra_nickname_delimiters['angle_brackets'] = re.compile(r'<(.*?)>')
+        hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
+        hn.C.nickname_delimiters['angle_brackets'] = re.compile(r'<(.*?)>')
         hn.parse_full_name()
         self.m(hn.first, "Benjamin", hn)
         self.m(hn.last, "Franklin", hn)
@@ -49,8 +50,9 @@ class NicknameTestCase(HumanNameTestBase):
 
     def test_overriding_builtin_regex_still_affects_nickname_parsing(self) -> None:
         # The pre-existing customization path (overriding self.C.regexes
-        # directly, documented since before #112) must keep working now that
-        # parse_nicknames() also consults extra_nickname_delimiters.
+        # directly) must keep working: nickname_delimiters' three built-in
+        # entries resolve self.C.regexes.<name> live at parse time rather than
+        # storing a snapshotted pattern.
         hn = HumanName("Benjamin [Ben] Franklin", constants=None)
         self.m(hn.nickname, "", hn)
         hn.C.regexes['parenthesis'] = re.compile(r'\[(.*?)\]')
@@ -187,54 +189,122 @@ class NicknameTestCase(HumanNameTestBase):
         self.m(hn.nickname, "JD", hn)
         self.m(hn.suffix, "", hn)
 
-    def test_ambiguous_suffix_acronym_in_extra_delimiter_stays_nickname(self) -> None:
+    def test_ambiguous_suffix_acronym_in_custom_delimiter_stays_nickname(self) -> None:
         # Same suffix-vs-nickname disambiguation as above, but through a
-        # custom delimiter added via extra_nickname_delimiters -- confirms
+        # custom delimiter added via nickname_delimiters -- confirms
         # handle_match() is applied uniformly regardless of which delimiter
         # matched, not just the three built-ins.
         hn = HumanName("JEFFREY {JD} BRICKEN", constants=None)
-        hn.C.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
+        hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
         hn.parse_full_name()
         self.m(hn.nickname, "JD", hn)
         self.m(hn.suffix, "", hn)
 
 
-# class MaidenNameTestCase(HumanNameTestBase):
-#
-#     def test_parenthesis_and_quotes_together(self):
-#         hn = HumanName("Jennifer 'Jen' Jones (Duff)")
-#         self.m(hn.first, "Jennifer", hn)
-#         self.m(hn.last, "Jones", hn)
-#         self.m(hn.nickname, "Jen", hn)
-#         self.m(hn.maiden, "Duff", hn)
-#
-#     def test_maiden_name_with_nee(self):
-#         # https://en.wiktionary.org/wiki/née
-#         hn = HumanName("Mary Toogood nee Johnson")
-#         self.m(hn.first, "Mary", hn)
-#         self.m(hn.last, "Toogood", hn)
-#         self.m(hn.maiden, "Johnson", hn)
-#
-#     def test_maiden_name_with_accented_nee(self):
-#         # https://en.wiktionary.org/wiki/née
-#         hn = HumanName("Mary Toogood née Johnson")
-#         self.m(hn.first, "Mary", hn)
-#         self.m(hn.last, "Toogood", hn)
-#         self.m(hn.maiden, "Johnson", hn)
-#
-#     def test_maiden_name_with_nee_and_comma(self):
-#         # https://en.wiktionary.org/wiki/née
-#         hn = HumanName("Mary Toogood, née Johnson")
-#         self.m(hn.first, "Mary", hn)
-#         self.m(hn.last, "Toogood", hn)
-#         self.m(hn.maiden, "Johnson", hn)
-#
-#     def test_maiden_name_with_nee_with_parenthesis(self):
-#         hn = HumanName("Mary Toogood (nee Johnson)")
-#         self.m(hn.first, "Mary", hn)
-#         self.m(hn.last, "Toogood", hn)
-#         self.m(hn.maiden, "Johnson", hn)
-#
-#     def test_maiden_name_with_parenthesis(self):
-#         hn = HumanName("Mary Toogood (Johnson)")
-#         self.m(hn.first, "Mary", hn)
+class MaidenNameTestCase(HumanNameTestBase):
+    def test_maiden_assignment_and_property(self) -> None:
+        hn = HumanName("Jenny Baker")
+        hn.maiden = "Johnson"
+        self.m(hn.maiden, "Johnson", hn)
+
+    def test_maiden_defaults_empty(self) -> None:
+        hn = HumanName("Jenny Baker")
+        self.m(hn.maiden, "", hn)
+
+    def test_maiden_key_always_in_as_dict(self) -> None:
+        hn = HumanName("Bob Dole")
+        self.assertEqual(hn.as_dict()['maiden'], hn.C.empty_attribute_default)
+        self.assertNotIn('maiden', hn.as_dict(False))
+
+    def test_maiden_appears_in_as_dict_when_populated(self) -> None:
+        hn = HumanName("Jenny Baker")
+        hn.maiden = "Johnson"
+        self.assertEqual(hn.as_dict()['maiden'], "Johnson")
+        self.assertEqual(hn.as_dict(False)['maiden'], "Johnson")
+
+    def test_maiden_appears_in_slice(self) -> None:
+        hn = HumanName("Jenny Baker")
+        hn.maiden = "Johnson"
+        self.assertIn("Johnson", hn[:])
+
+    def test_maiden_via_constructor_kwarg(self) -> None:
+        hn = HumanName(first="Jenny", last="Baker", maiden="Johnson")
+        self.m(hn.first, "Jenny", hn)
+        self.m(hn.last, "Baker", hn)
+        self.m(hn.maiden, "Johnson", hn)
+        self.assertFalse(hn.unparsable)
+
+    def test_maiden_name_in_parenthesis_with_comma(self) -> None:
+        C = Constants()
+        C.maiden_delimiters['parenthesis'] = C.nickname_delimiters.pop('parenthesis')
+        hn = HumanName("Baker (Johnson), Jenny", constants=C)
+        self.m(hn.first, "Jenny", hn)
+        self.m(hn.last, "Baker", hn)
+        self.m(hn.maiden, "Johnson", hn)
+
+    def test_maiden_name_in_parenthesis_no_comma(self) -> None:
+        C = Constants()
+        C.maiden_delimiters['parenthesis'] = C.nickname_delimiters.pop('parenthesis')
+        hn = HumanName("Jenny Baker (Johnson)", constants=C)
+        self.m(hn.first, "Jenny", hn)
+        self.m(hn.last, "Baker", hn)
+        self.m(hn.maiden, "Johnson", hn)
+
+    def test_quotes_still_nickname_when_parens_routed_to_maiden(self) -> None:
+        C = Constants()
+        C.maiden_delimiters['parenthesis'] = C.nickname_delimiters.pop('parenthesis')
+        hn = HumanName('Jenny "JJ" Baker (Johnson)', constants=C)
+        self.m(hn.first, "Jenny", hn)
+        self.m(hn.last, "Baker", hn)
+        self.m(hn.nickname, "JJ", hn)
+        self.m(hn.maiden, "Johnson", hn)
+
+    def test_maiden_off_by_default_parenthesis_still_routes_to_nickname(self) -> None:
+        hn = HumanName("Baker (Johnson), Jenny")
+        self.m(hn.first, "Jenny", hn)
+        self.m(hn.last, "Baker", hn)
+        self.m(hn.nickname, "Johnson", hn)
+        self.m(hn.maiden, "", hn)
+
+    def test_suffix_shaped_content_in_maiden_bucket_stays_in_place(self) -> None:
+        # The #189 suffix-shaped carve-out in handle_match() applies
+        # regardless of which bucket the delimiter routes to.
+        C = Constants()
+        C.maiden_delimiters['parenthesis'] = C.nickname_delimiters.pop('parenthesis')
+        hn = HumanName("Baker (Jr.), Jenny", constants=C)
+        self.m(hn.first, "Jenny", hn)
+        self.m(hn.last, "Baker", hn)
+        self.m(hn.suffix, "Jr.", hn)
+        self.m(hn.maiden, "", hn)
+
+    def test_maiden_appears_in_as_dict_via_routing(self) -> None:
+        C = Constants()
+        C.maiden_delimiters['parenthesis'] = C.nickname_delimiters.pop('parenthesis')
+        hn = HumanName("Baker (Johnson), Jenny", constants=C)
+        self.assertEqual(hn.as_dict()['maiden'], "Johnson")
+
+    def test_unresolvable_string_sentinel_raises(self) -> None:
+        # A string value in nickname_delimiters/maiden_delimiters that
+        # doesn't name a real regexes key used to silently fall back to
+        # EMPTY_REGEX, which matches at every position and corrupts parsing
+        # (appends '' into the bucket repeatedly, and leaves the intended
+        # delimiter's content unstripped elsewhere in the name). It must
+        # raise instead.
+        C = Constants()
+        C.nickname_delimiters['typo'] = 'parenthesus'
+        with pytest.raises(ValueError):
+            HumanName("Jenny (Johnson) Baker", constants=C)
+
+    def test_routing_same_delimiter_to_both_buckets_nickname_wins(self) -> None:
+        # Misuse case: assigning the same key into both dicts instead of
+        # moving it with pop() (as the docs instruct). nickname_delimiters is
+        # processed first in parse_nicknames()'s bucket loop, so it consumes
+        # the match via re.sub() before maiden_delimiters ever sees it --
+        # maiden stays empty. Pinning this precedence so it doesn't silently
+        # change if the bucket processing order is ever reordered.
+        C = Constants()
+        C.maiden_delimiters['parenthesis'] = C.regexes['parenthesis']
+        hn = HumanName("Baker (Johnson), Jenny", constants=C)
+        self.m(hn.nickname, "Johnson", hn)
+        self.m(hn.maiden, "", hn)
+
