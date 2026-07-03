@@ -87,7 +87,7 @@ Other editable attributes
 * :py:obj:`~nameparser.config.Constants.force_mixed_case_capitalization` - If set, forces the capitalization of mixed case strings when :py:meth:`~nameparser.parser.HumanName.capitalize` is called.
 * :py:obj:`~nameparser.config.Constants.suffix_delimiter` - additional delimiter used to split suffix groups after comma-splitting, e.g. ``" - "`` for names like ``"Jane Smith, RN - CRNA"``. Defaults to ``None`` (disabled).
 * :py:obj:`~nameparser.config.Constants.initials_separator` - string placed between consecutive initials within the same name group (after the delimiter). Defaults to ``" "``, so ``"A. K."``; set to ``""`` for compact ``"A.K."``.
-* :py:obj:`~nameparser.config.Constants.patronymic_name_order` - If set, detects Russian formal-order names (``Surname GivenName Patronymic``) via a trailing East-Slavic patronymic suffix and rotates the parts to Western order (``first=GivenName``, ``middle=Patronymic``, ``last=Surname``). Opt-in; see subsection below.
+* :py:obj:`~nameparser.config.Constants.patronymic_name_order` - If set, detects Russian formal-order names (``Surname GivenName Patronymic``) via a trailing East-Slavic patronymic suffix and rotates the parts to Western order (``first=GivenName``, ``middle=Patronymic``, ``last=Surname``). Also detects reversed-order Azerbaijani/Central-Asian Turkic patronymics (``Surname GivenName PatronymicRoot Marker``, e.g. ``oglu``/``qizi``). Opt-in; see subsections below.
 * :py:obj:`~nameparser.config.Constants.middle_name_as_last` - If set, folds middle names into the last name (``.last`` becomes what ``.surnames`` already was, ``.middle`` becomes empty). Opt-in; see subsection below.
 
 
@@ -116,6 +116,41 @@ reordering is suppressed to avoid a double-transformation.
 end in a patronymic suffix is reordered — including Western names with
 patronymic-form surnames such as ``"David Michael Abramovich"``. Enable this
 flag only when your data is predominantly Russian formal-order names.
+
+
+Turkic Patronymics
+~~~~~~~~~~~~~~~~~~
+
+Azerbaijani and Central-Asian formal names follow a different shape: a
+4-word ``[Given] [Father's given name] [Marker] [Family]``, where the
+marker is a standalone word (``oglu``/``oğlu`` "son of",
+``qizi``/``qızı`` "daughter of", and further variants — see below), not a
+bound suffix. The same ``patronymic_name_order`` flag also detects and
+rotates the reversed, no-comma form of this shape::
+
+    >>> from nameparser import HumanName
+    >>> from nameparser.config import Constants
+    >>> C = Constants(patronymic_name_order=True)
+    >>> hn = HumanName("Aliyev Vusal Said oglu", constants=C)
+    >>> hn.first, hn.middle, hn.last
+    ('Vusal', 'Said oglu', 'Aliyev')
+
+Natural order (``"Vusal Said oglu Aliyev"``) and comma order
+(``"Aliyev, Vusal Said oglu"``) already parse correctly without this flag
+and are left unchanged.
+
+Detection is scoped strictly to the 4-token shape (single-token first/last,
+exactly two middle tokens, last token a recognised marker) — matching the
+East-Slavic guard's token-count strictness above. Unlike that guard, there's
+no additional check on the given-name token, since Turkic markers are a
+small, closed set unlikely to coincide with an ordinary given name (whereas
+East-Slavic patronymic suffixes can coincide with real Western surnames).
+Recognised markers cover common transliterations and native orthographies:
+Latin ``oglu``, ``oğlu``, ``ogly``, ``ogli``, ``o'g'li`` (and its Uzbek
+modifier-apostrophe and right-single-quote variants), ``qizi``, ``qızı``,
+``kizi``, ``kyzy``, ``gyzy``, ``uly``, ``uulu``; and Cyrillic ``оглу``,
+``оглы``, ``оғлу``, ``ўғли``, ``угли``, ``кызы``, ``гызы``, ``қызы``,
+``қизи``, ``улы``, ``ұлы``, ``уулу``. Matching is case-insensitive.
 
 
 Suppressing Middle Names

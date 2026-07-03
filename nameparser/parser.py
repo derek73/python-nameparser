@@ -692,7 +692,7 @@ class HumanName:
         """
         return bool(self.C.regexes.initial.match(value))
 
-    def is_patronymic(self, piece: str) -> bool:
+    def is_east_slavic_patronymic(self, piece: str) -> bool:
         """
         Return True if ``piece`` ends with a recognised East-Slavic patronymic
         suffix, checked against both Latin-script and Cyrillic patterns in
@@ -702,8 +702,21 @@ class HumanName:
         by a separate pattern.
         """
         return bool(
-            self.C.regexes.patronymic.search(piece)
-            or self.C.regexes.patronymic_cyrillic.search(piece)
+            self.C.regexes.east_slavic_patronymic.search(piece)
+            or self.C.regexes.east_slavic_patronymic_cyrillic.search(piece)
+        )
+
+    def is_turkic_patronymic_marker(self, piece: str) -> bool:
+        """
+        Return True if ``piece`` is exactly a recognised Turkic patronymic
+        marker word (e.g. ``oglu``, ``qizi``, ``uly``), checked against both
+        Latin-script and Cyrillic patterns in ``self.C.regexes``. Unlike
+        East-Slavic patronymics, these are standalone marker words, not
+        suffixes, so the match is whole-word rather than a suffix search.
+        """
+        return bool(
+            self.C.regexes.turkic_patronymic_marker.match(piece)
+            or self.C.regexes.turkic_patronymic_marker_cyrillic.match(piece)
         )
 
     # full_name parser
@@ -744,7 +757,7 @@ class HumanName:
         self.parse_nicknames()
         self.squash_emoji()
 
-    def handle_patronymic_name_order(self) -> None:
+    def handle_east_slavic_patronymic_name_order(self) -> None:
         """
         When patronymic_name_order is enabled, detect Russian formal order
         (Surname GivenName Patronymic) and rotate to Western order.
@@ -758,12 +771,33 @@ class HumanName:
             and len(self.first_list) == 1
             and len(self.middle_list) == 1
             and len(self.last_list) == 1
-            and self.is_patronymic(self.last_list[0])
-            and not self.is_patronymic(self.middle_list[0])
+            and self.is_east_slavic_patronymic(self.last_list[0])
+            and not self.is_east_slavic_patronymic(self.middle_list[0])
         ):
             self.first_list, self.middle_list, self.last_list = (
                 self.middle_list,
                 self.last_list,
+                self.first_list,
+            )
+
+    def handle_turkic_patronymic_name_order(self) -> None:
+        """
+        When patronymic_name_order is enabled, detect the reversed Turkic
+        formal order (Surname GivenName PatronymicRoot Marker) and rotate to
+        Western order. Fires only for the strict 4-token, no-comma shape:
+        single-token first/last and exactly two middle tokens, where the last
+        token is a recognised Turkic patronymic marker.
+        """
+        if (
+            not self._had_comma
+            and len(self.first_list) == 1
+            and len(self.middle_list) == 2
+            and len(self.last_list) == 1
+            and self.is_turkic_patronymic_marker(self.last_list[0])
+        ):
+            self.first_list, self.middle_list, self.last_list = (
+                [self.middle_list[0]],
+                [self.middle_list[1], self.last_list[0]],
                 self.first_list,
             )
 
@@ -784,7 +818,8 @@ class HumanName:
         """
         self.handle_firstnames()
         if self.C.patronymic_name_order:
-            self.handle_patronymic_name_order()
+            self.handle_east_slavic_patronymic_name_order()
+            self.handle_turkic_patronymic_name_order()
         if self.C.middle_name_as_last:
             self.handle_middle_name_as_last()
         self.handle_capitalization()
