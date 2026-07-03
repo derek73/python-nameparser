@@ -476,13 +476,13 @@ Each attribute has a corresponding ordered list of name pieces. If you're doing
 pre- or post-processing you may wish to manipulate these lists directly.
 The strings returned by the attribute names just join these lists with spaces.
 
-
 * o.title_list
 * o.first_list
 * o.middle_list
 * o.last_list
 * o.suffix_list
 * o.nickname_list
+* o.maiden_list
 
 ::
 
