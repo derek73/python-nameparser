@@ -43,6 +43,7 @@ class HumanName:
     * :py:attr:`last`
     * :py:attr:`suffix`
     * :py:attr:`nickname`
+    * :py:attr:`maiden`
     * :py:attr:`surnames`
     * :py:attr:`given_names`
 
@@ -63,6 +64,7 @@ class HumanName:
     :param str title: The title or prenominal
     :param str suffix: The suffix or postnominal
     :param str nickname: Nicknames
+    :param str maiden: Maiden name
     """
 
     C = CONSTANTS
@@ -79,7 +81,7 @@ class HumanName:
     """
 
     _count = 0
-    _members = ['title', 'first', 'middle', 'last', 'suffix', 'nickname']
+    _members = ['title', 'first', 'middle', 'last', 'suffix', 'nickname', 'maiden']
     unparsable = True
     _full_name = ''
 
@@ -89,6 +91,7 @@ class HumanName:
     last_list: list[str]
     suffix_list: list[str]
     nickname_list: list[str]
+    maiden_list: list[str]
     _had_comma: bool
 
     def __init__(
@@ -107,6 +110,7 @@ class HumanName:
         title: str | list[str] | None = None,
         suffix: str | list[str] | None = None,
         nickname: str | list[str] | None = None,
+        maiden: str | list[str] | None = None,
     ) -> None:
         self.C = constants
         if type(self.C) is not type(CONSTANTS):
@@ -119,13 +123,14 @@ class HumanName:
         self.initials_separator = initials_separator if initials_separator is not None else self.C.initials_separator
         self.suffix_delimiter   = suffix_delimiter   if suffix_delimiter   is not None else self.C.suffix_delimiter
         self._had_comma = False
-        if (first or middle or last or title or suffix or nickname):
+        if (first or middle or last or title or suffix or nickname or maiden):
             self.first = first
             self.middle = middle
             self.last = last
             self.title = title
             self.suffix = suffix
             self.nickname = nickname
+            self.maiden = maiden
             self.unparsable = False
         else:
             # full_name setter triggers the parse
@@ -203,7 +208,7 @@ class HumanName:
         if self.unparsable:
             _string = "<%(class)s : [ Unparsable ] >" % {'class': self.__class__.__name__, }
         else:
-            _string = "<%(class)s : [\n\ttitle: %(title)r \n\tfirst: %(first)r \n\tmiddle: %(middle)r \n\tlast: %(last)r \n\tsuffix: %(suffix)r\n\tnickname: %(nickname)r\n]>" % {
+            _string = "<%(class)s : [\n\ttitle: %(title)r \n\tfirst: %(first)r \n\tmiddle: %(middle)r \n\tlast: %(last)r \n\tsuffix: %(suffix)r\n\tnickname: %(nickname)r\n\tmaiden: %(maiden)r\n]>" % {
                 'class': self.__class__.__name__,
                 'title': self.title or '',
                 'first': self.first or '',
@@ -211,6 +216,7 @@ class HumanName:
                 'last': self.last or '',
                 'suffix': self.suffix or '',
                 'nickname': self.nickname or '',
+                'maiden': self.maiden or '',
             }
         return _string
 
@@ -225,7 +231,7 @@ class HumanName:
 
             >>> name = HumanName("Bob Dole")
             >>> name.as_dict()
-            {'title': '', 'first': 'Bob', 'middle': '', 'last': 'Dole', 'suffix': '', 'nickname': ''}
+            {'title': '', 'first': 'Bob', 'middle': '', 'last': 'Dole', 'suffix': '', 'nickname': '', 'maiden': ''}
             >>> name.as_dict(False)
             {'first': 'Bob', 'last': 'Dole'}
 
@@ -403,6 +409,20 @@ class HumanName:
     @nickname.setter
     def nickname(self, value: str | list[str] | None) -> None:
         self._set_list('nickname', value)
+
+    @property
+    def maiden(self) -> str:
+        """
+        The person's maiden (alternate/prior) last name. Empty unless a
+        delimiter has been routed to it via
+        :py:attr:`~nameparser.config.Constants.maiden_delimiters` -- see the
+        "Routing to Maiden Name" section of the customization docs.
+        """
+        return " ".join(self.maiden_list) or self.C.empty_attribute_default
+
+    @maiden.setter
+    def maiden(self, value: str | list[str] | None) -> None:
+        self._set_list('maiden', value)
 
     @property
     def surnames_list(self) -> list[str]:
@@ -943,6 +963,7 @@ class HumanName:
         self.last_list = []
         self.suffix_list = []
         self.nickname_list = []
+        self.maiden_list = []
         self.unparsable = True
 
         self.pre_process()

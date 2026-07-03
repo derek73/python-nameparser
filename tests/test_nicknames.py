@@ -199,42 +199,35 @@ class NicknameTestCase(HumanNameTestBase):
         self.m(hn.suffix, "", hn)
 
 
-# class MaidenNameTestCase(HumanNameTestBase):
-#
-#     def test_parenthesis_and_quotes_together(self):
-#         hn = HumanName("Jennifer 'Jen' Jones (Duff)")
-#         self.m(hn.first, "Jennifer", hn)
-#         self.m(hn.last, "Jones", hn)
-#         self.m(hn.nickname, "Jen", hn)
-#         self.m(hn.maiden, "Duff", hn)
-#
-#     def test_maiden_name_with_nee(self):
-#         # https://en.wiktionary.org/wiki/née
-#         hn = HumanName("Mary Toogood nee Johnson")
-#         self.m(hn.first, "Mary", hn)
-#         self.m(hn.last, "Toogood", hn)
-#         self.m(hn.maiden, "Johnson", hn)
-#
-#     def test_maiden_name_with_accented_nee(self):
-#         # https://en.wiktionary.org/wiki/née
-#         hn = HumanName("Mary Toogood née Johnson")
-#         self.m(hn.first, "Mary", hn)
-#         self.m(hn.last, "Toogood", hn)
-#         self.m(hn.maiden, "Johnson", hn)
-#
-#     def test_maiden_name_with_nee_and_comma(self):
-#         # https://en.wiktionary.org/wiki/née
-#         hn = HumanName("Mary Toogood, née Johnson")
-#         self.m(hn.first, "Mary", hn)
-#         self.m(hn.last, "Toogood", hn)
-#         self.m(hn.maiden, "Johnson", hn)
-#
-#     def test_maiden_name_with_nee_with_parenthesis(self):
-#         hn = HumanName("Mary Toogood (nee Johnson)")
-#         self.m(hn.first, "Mary", hn)
-#         self.m(hn.last, "Toogood", hn)
-#         self.m(hn.maiden, "Johnson", hn)
-#
-#     def test_maiden_name_with_parenthesis(self):
-#         hn = HumanName("Mary Toogood (Johnson)")
-#         self.m(hn.first, "Mary", hn)
+class MaidenNameTestCase(HumanNameTestBase):
+    def test_maiden_assignment_and_property(self) -> None:
+        hn = HumanName("Jenny Baker")
+        hn.maiden = "Johnson"
+        self.m(hn.maiden, "Johnson", hn)
+
+    def test_maiden_defaults_empty(self) -> None:
+        hn = HumanName("Jenny Baker")
+        self.m(hn.maiden, "", hn)
+
+    def test_maiden_key_always_in_as_dict(self) -> None:
+        hn = HumanName("Bob Dole")
+        self.assertEqual(hn.as_dict()['maiden'], hn.C.empty_attribute_default)
+        self.assertNotIn('maiden', hn.as_dict(False))
+
+    def test_maiden_appears_in_as_dict_when_populated(self) -> None:
+        hn = HumanName("Jenny Baker")
+        hn.maiden = "Johnson"
+        self.assertEqual(hn.as_dict()['maiden'], "Johnson")
+        self.assertEqual(hn.as_dict(False)['maiden'], "Johnson")
+
+    def test_maiden_appears_in_slice(self) -> None:
+        hn = HumanName("Jenny Baker")
+        hn.maiden = "Johnson"
+        self.assertIn("Johnson", hn[:])
+
+    def test_maiden_via_constructor_kwarg(self) -> None:
+        hn = HumanName(first="Jenny", last="Baker", maiden="Johnson")
+        self.m(hn.first, "Jenny", hn)
+        self.m(hn.last, "Baker", hn)
+        self.m(hn.maiden, "Johnson", hn)
+        self.assertFalse(hn.unparsable)
