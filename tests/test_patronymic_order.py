@@ -31,6 +31,19 @@ def test_cyrillic_patronymic_matches() -> None:
     assert C.regexes.east_slavic_patronymic_cyrillic.search("ильич")
 
 
+def test_cyrillic_patronymic_matches_capitalized_irregular_forms() -> None:
+    # The irregular forms (Ильич, Кузьмич, ...) are short enough that the
+    # capitalized first letter falls within the matched suffix itself, unlike
+    # the common suffixes (-ович, -евна, ...) where only the surname root is
+    # capitalized. Case-insensitivity is required for these to match.
+    C = Constants()
+    assert C.regexes.east_slavic_patronymic_cyrillic.search("Ильич")
+    assert C.regexes.east_slavic_patronymic_cyrillic.search("Кузьмич")
+    assert C.regexes.east_slavic_patronymic_cyrillic.search("Лукич")
+    assert C.regexes.east_slavic_patronymic_cyrillic.search("Фомич")
+    assert C.regexes.east_slavic_patronymic_cyrillic.search("Фокич")
+
+
 def test_cyrillic_patronymic_rejects_non_patronymic() -> None:
     C = Constants()
     assert not C.regexes.east_slavic_patronymic_cyrillic.search("Иванов")
@@ -75,6 +88,14 @@ class PatronymicNameOrderReorderTests(HumanNameTestBase):
         n = self.hn("Иванов Иван Иванович")
         assert n.first == "Иван"
         assert n.middle == "Иванович"
+        assert n.last == "Иванов"
+
+    def test_cyrillic_capitalized_irregular_form(self) -> None:
+        # "Ильич" is short enough that the capitalized first letter falls
+        # within the irregular suffix itself; requires case-insensitive match.
+        n = self.hn("Иванов Иван Ильич")
+        assert n.first == "Иван"
+        assert n.middle == "Ильич"
         assert n.last == "Иванов"
 
     def test_title_preserved(self) -> None:

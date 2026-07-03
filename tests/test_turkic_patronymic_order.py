@@ -274,8 +274,12 @@ class PatronymicHandlerInteractionTests(HumanNameTestBase):
             "qizi", "qızı", "kizi", "kyzy", "gyzy", "uly", "uulu",
         ]
         for word in east_slavic_examples:
+            # Sanity check: each word actually matches its own family's
+            # regex, so the non-collision assertion below is non-vacuous.
+            assert C.regexes.east_slavic_patronymic.search(word), word
             assert not C.regexes.turkic_patronymic_marker.match(word), word
         for word in turkic_examples:
+            assert C.regexes.turkic_patronymic_marker.match(word), word
             assert not C.regexes.east_slavic_patronymic.search(word), word
 
     def test_no_regex_collision_cyrillic(self) -> None:
@@ -289,6 +293,10 @@ class PatronymicHandlerInteractionTests(HumanNameTestBase):
             "кызы", "гызы", "қызы", "қизи", "улы", "ұлы", "уулу",
         ]
         for word in east_slavic_examples:
+            # Sanity check: each word actually matches its own family's
+            # regex, so the non-collision assertion below is non-vacuous.
+            assert C.regexes.east_slavic_patronymic_cyrillic.search(word), word
             assert not C.regexes.turkic_patronymic_marker_cyrillic.match(word), word
         for word in turkic_examples:
+            assert C.regexes.turkic_patronymic_marker_cyrillic.match(word), word
             assert not C.regexes.east_slavic_patronymic_cyrillic.search(word), word

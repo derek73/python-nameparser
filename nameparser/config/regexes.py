@@ -28,6 +28,7 @@ REGEXES = set([
     )),
     ("east_slavic_patronymic_cyrillic", re.compile(
         r'(ович|овна|евич|евна|ична|ильич|кузьмич|лукич|фомич|фокич)$',
+        re.I,
     )),
     ("turkic_patronymic_marker", re.compile(
         r"^(oglu|oğlu|ogly|ogli|o['’ʻ]g['’ʻ]li"
