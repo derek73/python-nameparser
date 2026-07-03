@@ -757,7 +757,7 @@ class HumanName:
         self.parse_nicknames()
         self.squash_emoji()
 
-    def handle_patronymic_name_order(self) -> None:
+    def handle_east_slavic_patronymic_name_order(self) -> None:
         """
         When patronymic_name_order is enabled, detect Russian formal order
         (Surname GivenName Patronymic) and rotate to Western order.
@@ -818,7 +818,7 @@ class HumanName:
         """
         self.handle_firstnames()
         if self.C.patronymic_name_order:
-            self.handle_patronymic_name_order()
+            self.handle_east_slavic_patronymic_name_order()
             self.handle_turkic_patronymic_name_order()
         if self.C.middle_name_as_last:
             self.handle_middle_name_as_last()
