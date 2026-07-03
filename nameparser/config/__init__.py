@@ -485,10 +485,14 @@ class Constants:
         # routes to without losing that live link. maiden_delimiters starts
         # empty -- maiden is off until a caller routes a delimiter to it.
         # See issue #22.
+        # Only seed a built-in name if it's actually present in self.regexes --
+        # a caller who overrides regexes with a minimal custom set (dropping
+        # e.g. "parenthesis" entirely) shouldn't end up with a dangling
+        # string sentinel that parse_nicknames() would treat as a mistake.
+        # See parse_nicknames()'s fail-loud check on an unresolvable sentinel.
         self.nickname_delimiters = TupleManager[re.Pattern[str] | str]({
-            'quoted_word': 'quoted_word',
-            'double_quotes': 'double_quotes',
-            'parenthesis': 'parenthesis',
+            name: name for name in ('quoted_word', 'double_quotes', 'parenthesis')
+            if name in self.regexes
         })
         self.maiden_delimiters = TupleManager[re.Pattern[str] | str]()
         self.patronymic_name_order = patronymic_name_order

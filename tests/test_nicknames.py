@@ -282,3 +282,29 @@ class MaidenNameTestCase(HumanNameTestBase):
         C.maiden_delimiters['parenthesis'] = C.nickname_delimiters.pop('parenthesis')
         hn = HumanName("Baker (Johnson), Jenny", constants=C)
         self.assertEqual(hn.as_dict()['maiden'], "Johnson")
+
+    def test_unresolvable_string_sentinel_raises(self) -> None:
+        # A string value in nickname_delimiters/maiden_delimiters that
+        # doesn't name a real regexes key used to silently fall back to
+        # EMPTY_REGEX, which matches at every position and corrupts parsing
+        # (appends '' into the bucket repeatedly, and leaves the intended
+        # delimiter's content unstripped elsewhere in the name). It must
+        # raise instead.
+        C = Constants()
+        C.nickname_delimiters['typo'] = 'parenthesus'
+        with pytest.raises(ValueError):
+            HumanName("Jenny (Johnson) Baker", constants=C)
+
+    def test_routing_same_delimiter_to_both_buckets_nickname_wins(self) -> None:
+        # Misuse case: assigning the same key into both dicts instead of
+        # moving it with pop() (as the docs instruct). nickname_delimiters is
+        # processed first in parse_nicknames()'s bucket loop, so it consumes
+        # the match via re.sub() before maiden_delimiters ever sees it --
+        # maiden stays empty. Pinning this precedence so it doesn't silently
+        # change if the bucket processing order is ever reordered.
+        C = Constants()
+        C.maiden_delimiters['parenthesis'] = C.regexes['parenthesis']
+        hn = HumanName("Baker (Johnson), Jenny", constants=C)
+        self.m(hn.nickname, "Johnson", hn)
+        self.m(hn.maiden, "", hn)
+

@@ -922,7 +922,17 @@ class HumanName:
         # delimiter value names a Constants.regexes entry, resolved via
         # getattr() so overriding e.g. self.C.regexes.parenthesis keeps
         # working; anything else is already a compiled pattern, added
-        # directly by a caller.
+        # directly by a caller. Unlike a caller directly querying
+        # self.C.regexes (where RegexTupleManager's EMPTY_REGEX default for
+        # an unknown attribute is harmless -- the caller sees the pattern and
+        # can react to it), a bad string here is an internal cross-reference
+        # the delimiter dict itself is responsible for keeping valid.
+        # EMPTY_REGEX matches the empty string at every position, so
+        # silently falling back to it would not just skip the delimiter --
+        # handle_match() would fire on every zero-width match and append ''
+        # into the bucket's list repeatedly, producing a truthy
+        # whitespace-only nickname/maiden while leaving the real delimited
+        # content (e.g. literal parentheses) unstripped. Fail loudly instead.
         for bucket, delimiters in (
             ('nickname', self.C.nickname_delimiters),
             ('maiden', self.C.maiden_delimiters),
@@ -930,7 +940,15 @@ class HumanName:
             target_list = getattr(self, bucket + '_list')
             _handle_match = handle_match(target_list)
             for raw_pattern in delimiters.values():
-                _re = raw_pattern if isinstance(raw_pattern, re.Pattern) else getattr(self.C.regexes, raw_pattern)
+                if isinstance(raw_pattern, re.Pattern):
+                    _re = raw_pattern
+                elif raw_pattern in self.C.regexes:
+                    _re = getattr(self.C.regexes, raw_pattern)
+                else:
+                    raise ValueError(
+                        f"{bucket}_delimiters references unknown regexes key {raw_pattern!r}. "
+                        f"Known regexes keys: {sorted(self.C.regexes)}"
+                    )
                 self._full_name = _re.sub(_handle_match, self._full_name)
 
     def squash_emoji(self) -> None:
