@@ -270,6 +270,16 @@ class Constants:
     :type regexes: tuple or dict
     :param regexes: 
         :py:attr:`regexes`  wrapped with :py:class:`TupleManager`.
+
+    :py:attr:`nickname_delimiters` and :py:attr:`maiden_delimiters` are not
+    constructor arguments -- they're always set in ``__init__`` (see the
+    comment there for the string-sentinel-vs-compiled-pattern mechanism) --
+    but are documented here since they're the two `Constants` attributes a
+    caller is most likely to want to look up: per-bucket
+    :py:class:`TupleManager` collections that :py:meth:`~nameparser.parser.HumanName.parse_nicknames`
+    consults to route delimited content into ``nickname``/``maiden``. See
+    the "Adding Custom Nickname Delimiters" and "Routing to Maiden Name"
+    sections of the customization docs.
     """
 
     prefixes = _CachedUnionMember()
