@@ -156,8 +156,27 @@ class TupleManager(dict[str, T]):
             raise AttributeError(attr)
         return self.get(attr)
 
-    __setattr__ = dict.__setitem__
-    __delattr__ = dict.__delitem__
+    def __setattr__(self, attr: str, value: T) -> None:
+        # Dunder names are Python's protocol probes, not config keys -- same
+        # rationale as __getattr__ above. Concretely: constructing a
+        # subscripted generic, e.g. TupleManager[re.Pattern[str] | str](...),
+        # makes typing's GenericAlias.__call__ set `__orig_class__` on the new
+        # instance right after __init__ returns. Without this guard that
+        # assignment falls through to dict.__setitem__ and silently inserts a
+        # bogus '__orig_class__' entry into the dict itself, corrupting
+        # .values()/iteration. Fall back to normal object attribute storage
+        # for dunders; everything else keeps the dict-backed dot-notation
+        # behavior this class exists for.
+        if attr.startswith("__") and attr.endswith("__"):
+            object.__setattr__(self, attr, value)
+        else:
+            self[attr] = value
+
+    def __delattr__(self, attr: str) -> None:
+        if attr.startswith("__") and attr.endswith("__"):
+            object.__delattr__(self, attr)
+        else:
+            del self[attr]
 
     def __getstate__(self) -> Mapping[str, T]:
         return dict(self)
@@ -263,7 +282,8 @@ class Constants:
     suffix_acronyms_ambiguous: SetManager
     capitalization_exceptions: TupleManager[str]
     regexes: RegexTupleManager
-    extra_nickname_delimiters: TupleManager[re.Pattern[str]]
+    nickname_delimiters: TupleManager[re.Pattern[str] | str]
+    maiden_delimiters: TupleManager[re.Pattern[str] | str]
     _pst: Set[str] | None
 
     string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
@@ -451,13 +471,26 @@ class Constants:
         self.suffix_acronyms_ambiguous = SetManager(suffix_acronyms_ambiguous)
         self.capitalization_exceptions = TupleManager(capitalization_exceptions)
         self.regexes = RegexTupleManager(regexes)
-        # Named, appendable group of *additional* delimiter patterns that
-        # parse_nicknames() iterates after its three built-in delimiters
-        # (quoted_word/double_quotes/parenthesis, read live from self.regexes
-        # so overriding those keeps working as before). Empty by default; add
-        # a pattern here (and re-parse) to recognize a new delimiter without
-        # needing to override parse_nicknames() itself. See issue #112.
-        self.extra_nickname_delimiters = TupleManager()
+        # Per-bucket delimiter collections that parse_nicknames() consults to
+        # route delimited content into nickname_list / maiden_list. Each value
+        # is either a compiled re.Pattern (a custom delimiter a caller adds --
+        # the old extra_nickname_delimiters use case, see issue #112) or the
+        # string name of a self.regexes entry to resolve live at parse time.
+        # The latter is how the three built-ins (quoted_word, double_quotes,
+        # parenthesis) stay linked to self.regexes, so overriding e.g.
+        # self.regexes.parenthesis keeps affecting nickname/maiden parsing
+        # exactly as before. Move a key between the two dicts
+        # (`maiden_delimiters['parenthesis'] =
+        # nickname_delimiters.pop('parenthesis')`) to change which bucket it
+        # routes to without losing that live link. maiden_delimiters starts
+        # empty -- maiden is off until a caller routes a delimiter to it.
+        # See issue #22.
+        self.nickname_delimiters = TupleManager[re.Pattern[str] | str]({
+            'quoted_word': 'quoted_word',
+            'double_quotes': 'double_quotes',
+            'parenthesis': 'parenthesis',
+        })
+        self.maiden_delimiters = TupleManager[re.Pattern[str] | str]()
         self.patronymic_name_order = patronymic_name_order
         self.middle_name_as_last = middle_name_as_last
 
