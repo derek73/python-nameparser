@@ -56,14 +56,17 @@ remove punctuation to normalize them for comparison.
 Adding Custom Nickname Delimiters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:py:meth:`~nameparser.parser.HumanName.parse_nicknames` recognizes three
-built-in delimiters -- ``quoted_word``, ``double_quotes`` and
-``parenthesis`` -- read from :py:attr:`~nameparser.config.Constants.regexes`,
-so overriding e.g. ``CONSTANTS.regexes.parenthesis`` still works exactly as
-before. To recognize an *additional* delimiter without overriding one of the
-built-ins, add a pattern to
-:py:obj:`~nameparser.config.Constants.extra_nickname_delimiters` (empty by
-default) under any key, then re-run
+:py:meth:`~nameparser.parser.HumanName.parse_nicknames` recognizes delimiters
+through two per-bucket collections:
+:py:obj:`~nameparser.config.Constants.nickname_delimiters` (default: the
+three built-ins -- ``quoted_word``, ``double_quotes`` and ``parenthesis``,
+each resolved live from :py:attr:`~nameparser.config.Constants.regexes`, so
+overriding e.g. ``CONSTANTS.regexes.parenthesis`` still works exactly as
+before) and :py:obj:`~nameparser.config.Constants.maiden_delimiters` (empty
+by default -- see "Routing to Maiden Name" below).
+
+To recognize an *additional* delimiter, add a compiled pattern to
+``nickname_delimiters`` under any key, then re-run
 :py:meth:`~nameparser.parser.HumanName.parse_full_name` to pick it up:
 
 .. doctest::
@@ -73,10 +76,51 @@ default) under any key, then re-run
     >>> hn = HumanName("Benjamin {Ben} Franklin", constants=None)
     >>> hn.nickname
     ''
-    >>> hn.C.extra_nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}', re.U)
+    >>> hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}', re.U)
     >>> hn.parse_full_name()
     >>> hn.nickname
     'Ben'
+
+Routing to Maiden Name
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Parenthesized (or otherwise delimited) alternate/maiden surnames --
+``"Baker (Johnson), Jenny"`` -- go to ``nickname`` by default, same as any
+other delimited content. To route a delimiter to the first-class ``maiden``
+field instead, move its key from ``nickname_delimiters`` to
+``maiden_delimiters`` on a ``Constants`` instance (a plain ``dict.pop()`` +
+assign -- this preserves the live link back to ``regexes`` for the three
+built-ins) *before* parsing a name with it, the same way you'd configure
+``patronymic_name_order`` or ``middle_name_as_last``:
+
+.. doctest::
+
+    >>> from nameparser import HumanName
+    >>> from nameparser.config import Constants
+    >>> C = Constants()
+    >>> C.maiden_delimiters['parenthesis'] = C.nickname_delimiters.pop('parenthesis')
+    >>> hn = HumanName("Baker (Johnson), Jenny", constants=C)
+    >>> hn.first, hn.last, hn.maiden
+    ('Jenny', 'Baker', 'Johnson')
+
+This also strips the parenthesized maiden name from the no-comma written
+form, since routing happens before positional parsing:
+
+.. doctest::
+
+    >>> hn = HumanName("Jenny Baker (Johnson)", constants=C)
+    >>> hn.first, hn.last, hn.maiden
+    ('Jenny', 'Baker', 'Johnson')
+
+Routing an already-active built-in delimiter on an *existing* ``HumanName``
+instance and calling ``parse_full_name()`` again will not work: only the
+``full_name`` setter resets the working copy of the name string back to the
+original input, so re-parsing in place has nothing left for the moved
+delimiter to match if it already matched during the first parse. Configure
+the ``Constants`` first, as above.
+
+``maiden`` is not included in the default :py:obj:`~nameparser.config.Constants.string_format`,
+so ``str(hn)`` is unaffected unless you add ``{maiden}`` to your own format.
 
 Other editable attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
