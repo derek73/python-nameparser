@@ -140,14 +140,17 @@ Natural order (``"Vusal Said oglu Aliyev"``) and comma order
 and are left unchanged.
 
 Detection is scoped strictly to the 4-token shape (single-token first/last,
-exactly two middle tokens, last token a recognised marker) — mirroring the
-strictness of the East-Slavic guard above. Recognised markers cover common
-transliterations and native orthographies: Latin ``oglu``, ``oğlu``,
-``ogly``, ``ogli``, ``o'g'li`` (and its Uzbek modifier-apostrophe and
-right-single-quote variants), ``qizi``, ``qızı``, ``kizi``, ``kyzy``,
-``gyzy``, ``uly``, ``uulu``; and Cyrillic ``оглу``, ``оглы``, ``оғлу``,
-``ўғли``, ``угли``, ``кызы``, ``гызы``, ``қызы``, ``қизи``, ``улы``,
-``ұлы``, ``уулу``. Matching is case-insensitive.
+exactly two middle tokens, last token a recognised marker) — matching the
+East-Slavic guard's token-count strictness above. Unlike that guard, there's
+no additional check on the given-name token, since Turkic markers are a
+small, closed set unlikely to coincide with an ordinary given name (whereas
+East-Slavic patronymic suffixes can coincide with real Western surnames).
+Recognised markers cover common transliterations and native orthographies:
+Latin ``oglu``, ``oğlu``, ``ogly``, ``ogli``, ``o'g'li`` (and its Uzbek
+modifier-apostrophe and right-single-quote variants), ``qizi``, ``qızı``,
+``kizi``, ``kyzy``, ``gyzy``, ``uly``, ``uulu``; and Cyrillic ``оглу``,
+``оглы``, ``оғлу``, ``ўғли``, ``угли``, ``кызы``, ``гызы``, ``қызы``,
+``қизи``, ``улы``, ``ұлы``, ``уулу``. Matching is case-insensitive.
 
 
 Suppressing Middle Names

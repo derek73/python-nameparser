@@ -3,6 +3,18 @@ from nameparser.config import Constants
 from tests.base import HumanNameTestBase
 
 
+def test_marker_is_whole_word_not_substring() -> None:
+    # is_turkic_patronymic_marker() deliberately uses whole-word .match(),
+    # not suffix .search() (unlike is_east_slavic_patronymic()) — pin this
+    # so a future .match()->.search() slip doesn't silently start matching
+    # surnames/given-names that merely contain a marker as a substring.
+    C = Constants()
+    assert not C.regexes.turkic_patronymic_marker.match("ogluu")
+    assert not C.regexes.turkic_patronymic_marker.match("Bogluchik")
+    assert not C.regexes.turkic_patronymic_marker_cyrillic.match("оглуш")
+    assert not C.regexes.turkic_patronymic_marker_cyrillic.match("Оглуев")
+
+
 class TurkicPatronymicNameOrderReorderTests(HumanNameTestBase):
     """Names that SHOULD be rotated when the flag is on."""
 
