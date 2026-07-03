@@ -246,6 +246,31 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         c = Constants()
         self.assertFalse(hasattr(c, 'extra_nickname_delimiters'))
 
+    def test_tuplemanager_setattr_delattr_ignore_dunder_names(self) -> None:
+        """Regression test for the bug that motivated nickname_delimiters'
+        __setattr__/__delattr__ dunder guard.
+
+        Constructing a subscripted generic, e.g.
+        TupleManager[re.Pattern[str] | str]({...}), makes typing's
+        GenericAlias.__call__ set __orig_class__ on the new instance right
+        after __init__ returns. Before the guard existed, __setattr__ was a
+        bare dict.__setitem__ alias, so that assignment silently inserted a
+        bogus '__orig_class__' entry into the dict itself, corrupting
+        .values()/iteration for every TupleManager instance -- exactly what
+        parse_nicknames() iterates over. This bit nickname_delimiters'
+        construction (#22) before the guard was added.
+        """
+        tm = TupleManager[re.Pattern[str] | str]({'a': re.compile('x')})
+        self.assertNotIn('__orig_class__', tm)
+        self.assertEqual(dict(tm), {'a': re.compile('x')})
+        # Dunder assignment/deletion still work as normal object attributes,
+        # just routed around dict-backed storage.
+        tm.__custom_dunder__ = 'probe'  # type: ignore[attr-defined]
+        self.assertEqual(tm.__custom_dunder__, 'probe')  # type: ignore[attr-defined]
+        self.assertNotIn('__custom_dunder__', tm)
+        del tm.__custom_dunder__  # type: ignore[attr-defined]
+        self.assertFalse(hasattr(tm, '__custom_dunder__'))
+
     def test_regextuplemanager_ignores_dunder_lookups(self) -> None:
         """Unknown dunder names report as absent, not as the EMPTY_REGEX default.
 
