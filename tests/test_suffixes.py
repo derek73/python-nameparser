@@ -238,15 +238,11 @@ class SuffixesTestCase(HumanNameTestBase):
 
     def test_suffix_delimiter_constants_level(self) -> None:
         from nameparser.config import CONSTANTS
-        _orig = CONSTANTS.suffix_delimiter
-        try:
-            CONSTANTS.suffix_delimiter = " - "
-            hn = HumanName("Steven Hardman, RN - CRNA")
-            self.m(hn.first, "Steven", hn)
-            self.m(hn.last, "Hardman", hn)
-            self.m(hn.suffix, "RN, CRNA", hn)
-        finally:
-            CONSTANTS.suffix_delimiter = _orig
+        CONSTANTS.suffix_delimiter = " - "
+        hn = HumanName("Steven Hardman, RN - CRNA")
+        self.m(hn.first, "Steven", hn)
+        self.m(hn.last, "Hardman", hn)
+        self.m(hn.suffix, "RN, CRNA", hn)
 
     def test_suffix_delimiter_none_by_default_known_limitation(self) -> None:
         # Without suffix_delimiter set, " - " between suffixes breaks parsing.
