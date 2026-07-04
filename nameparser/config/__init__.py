@@ -156,10 +156,7 @@ class TupleManager(dict[str, T]):
     '''
 
     def __getattr__(self, attr: str) -> T | None:
-        # Report dunders as genuinely absent so hasattr() is honest and
-        # protocol probes work; otherwise the dict default is mistaken for a
-        # real protocol hook. See RegexTupleManager.__getattr__ for the
-        # concrete failure this prevents.
+        # Otherwise the dict default (None) is mistaken for a real protocol hook.
         if _is_dunder(attr):
             raise AttributeError(attr)
         return self.get(attr)
@@ -201,9 +198,8 @@ class TupleManager(dict[str, T]):
 
 class RegexTupleManager(TupleManager[re.Pattern[str]]):
     def __getattr__(self, attr: str) -> re.Pattern[str]:
-        # Report dunders as genuinely absent; otherwise the EMPTY_REGEX
-        # default is mistaken for a real protocol hook — e.g. copy.deepcopy
-        # tries to call the returned re.Pattern and raises TypeError.
+        # Otherwise EMPTY_REGEX is returned for a dunder probe; copy.deepcopy
+        # then tries to call the returned re.Pattern and raises TypeError.
         if _is_dunder(attr):
             raise AttributeError(attr)
         return self.get(attr, EMPTY_REGEX)
@@ -541,6 +537,16 @@ class Constants:
         self._pst = None
         for name, value in state.items():
             setattr(self, name, value)
+        # Verify each descriptor-backed attr was restored. Without this, a missing
+        # key surfaces later as AttributeError: 'Constants' object has no attribute
+        # '_prefixes' — the private mangled name, not the public one, making it
+        # very hard to diagnose.
+        for attr in (n for n, v in vars(type(self)).items() if isinstance(v, _CachedUnionMember)):
+            if not hasattr(self, '_' + attr):
+                raise ValueError(
+                    f"Pickle state is missing required field {attr!r}. "
+                    "The state blob may be truncated or from an incompatible version."
+                )
 
     def __getstate__(self) -> Mapping[str, Any]:
         # Pickle the instance's own configuration: the collections built in
