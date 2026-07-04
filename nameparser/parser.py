@@ -599,6 +599,11 @@ class HumanName:
         """Lowercased, leading/trailing-periods-stripped version of piece is in :py:attr:`~nameparser.config.Constants.first_name_prefixes`."""
         return lc(piece) in self.C.first_name_prefixes
 
+    def is_non_first_name_prefix(self, piece: str) -> bool:
+        """Lowercased, leading/trailing-periods-stripped version of piece is in
+        :py:attr:`~nameparser.config.Constants.non_first_name_prefixes`."""
+        return lc(piece) in self.C.non_first_name_prefixes
+
     def _join_first_name_prefix(self, pieces: list[str], reserve_last: bool) -> list[str]:
         """Join a first-name prefix to its following piece.
 
@@ -821,6 +826,21 @@ class HumanName:
                 self.first_list,
             )
 
+    def handle_non_first_name_prefix(self) -> None:
+        """
+        A leading prefix that is never a first name means the whole name is a
+        surname -- fold first (and any middle) into last. Keys on the parsed
+        first name, so a non-leading particle ("Jean de Mesnil") is untouched
+        and title/suffix are preserved. The middle_list/last_list guard leaves a
+        degenerate bare "de" as first="de" rather than inventing a surname.
+        """
+        if (len(self.first_list) == 1
+                and self.is_non_first_name_prefix(self.first_list[0])
+                and (self.middle_list or self.last_list)):
+            self.last_list = self.first_list + self.middle_list + self.last_list
+            self.first_list = []
+            self.middle_list = []
+
     def handle_middle_name_as_last(self) -> None:
         """
         When middle_name_as_last is enabled, fold middle_list into last_list
@@ -837,6 +857,7 @@ class HumanName:
         and :py:func:`handle_capitalization`.
         """
         self.handle_firstnames()
+        self.handle_non_first_name_prefix()
         if self.C.patronymic_name_order:
             self.handle_east_slavic_patronymic_name_order()
             self.handle_turkic_patronymic_name_order()

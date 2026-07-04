@@ -1,6 +1,9 @@
 import pytest
 
 from nameparser import HumanName
+from nameparser.config import CONSTANTS, Constants
+from nameparser.config.prefixes import PREFIXES, NON_FIRST_NAME_PREFIXES
+from nameparser.config.first_name_prefixes import FIRST_NAME_PREFIXES
 
 from tests.base import HumanNameTestBase
 
@@ -163,6 +166,41 @@ class PrefixesTestCase(HumanNameTestBase):
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.suffix, "III", hn)
 
+    def test_non_first_name_prefixes_subset_of_prefixes(self) -> None:
+        # Every non-first-name prefix must still be a prefix so it joins forward.
+        self.assertTrue(NON_FIRST_NAME_PREFIXES <= PREFIXES)
+
+    def test_non_first_name_prefixes_disjoint_from_first_name_prefixes(self) -> None:
+        # A word cannot be both "joins to the first name" and "never a first
+        # name" (e.g. 'abu' is a first_name_prefix, so it is excluded here).
+        self.assertEqual(NON_FIRST_NAME_PREFIXES & FIRST_NAME_PREFIXES, set())
+
+    def test_non_first_name_prefixes_expected_members(self) -> None:
+        # 'abu' is in PREFIXES but excluded (it is a first_name_prefix);
+        # 'von'/'van'/'della'/'di'/'del' are excluded (they can be first names).
+        self.assertIn('de', NON_FIRST_NAME_PREFIXES)
+        self.assertIn('dos', NON_FIRST_NAME_PREFIXES)
+        self.assertNotIn('abu', NON_FIRST_NAME_PREFIXES)
+        self.assertNotIn('von', NON_FIRST_NAME_PREFIXES)
+        self.assertNotIn('van', NON_FIRST_NAME_PREFIXES)
+        self.assertNotIn('della', NON_FIRST_NAME_PREFIXES)
+
+    def test_constants_exposes_non_first_name_prefixes(self) -> None:
+        self.assertEqual(set(CONSTANTS.non_first_name_prefixes), NON_FIRST_NAME_PREFIXES)
+
+    def test_non_first_name_prefixes_disjoint_from_titles(self) -> None:
+        # A member that is also a title is consumed as a title before the fold
+        # would run, making it inert (the st/ste footgun). Pin the invariant on
+        # the live default sets.
+        self.assertEqual(
+            set(CONSTANTS.non_first_name_prefixes) & set(CONSTANTS.titles),
+            set(),
+        )
+
+    def test_non_first_name_prefixes_constructor_arg(self) -> None:
+        c = Constants(non_first_name_prefixes={'zzz'})
+        self.assertEqual(set(c.non_first_name_prefixes), {'zzz'})
+
 
 class LastNamePrefixSplitTestCase(HumanNameTestBase):
 
@@ -240,3 +278,106 @@ class LastNamePrefixSplitTestCase(HumanNameTestBase):
         hn = HumanName("VINCENT VAN GOGH")
         self.m(hn.last_prefixes, "VAN", hn)
         self.m(hn.last_base, "GOGH", hn)
+
+    # --- targets: leading non-first-name prefix becomes the surname ---
+
+    def test_leading_non_first_name_prefix_de(self) -> None:
+        hn = HumanName("de Mesnil")
+        self.m(hn.first, "", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "de Mesnil", hn)
+
+    def test_leading_non_first_name_prefix_dos(self) -> None:
+        hn = HumanName("dos Santos")
+        self.m(hn.first, "", hn)
+        self.m(hn.last, "dos Santos", hn)
+
+    def test_leading_non_first_name_prefix_chain(self) -> None:
+        hn = HumanName("de la Vega")
+        self.m(hn.first, "", hn)
+        self.m(hn.last, "de la Vega", hn)
+
+    def test_leading_non_first_name_prefix_derived_props(self) -> None:
+        hn = HumanName("de Mesnil")
+        self.m(hn.last_prefixes, "de", hn)
+        self.m(hn.last_base, "Mesnil", hn)
+
+    def test_non_first_name_prefix_with_custom_title(self) -> None:
+        # 'Gunny' is NOT a default title -> genuinely exercises the custom-title
+        # path. Title is consumed first (first_list == ['']), so the fold does
+        # not fire and the surname is already correct; asserts we don't corrupt
+        # the title case.
+        CONSTANTS.titles.add('gunny')
+        hn = HumanName("Gunny de Mesnil")
+        self.m(hn.title, "Gunny", hn)
+        self.m(hn.first, "", hn)
+        self.m(hn.last, "de Mesnil", hn)
+
+    # --- safety: excluded / ambiguous particles are unchanged ---
+
+    def test_leading_von_is_unchanged(self) -> None:
+        hn = HumanName("von Braun")
+        self.m(hn.first, "von", hn)
+        self.m(hn.last, "Braun", hn)
+
+    def test_leading_van_is_unchanged(self) -> None:
+        hn = HumanName("Van Johnson")
+        self.m(hn.first, "Van", hn)
+        self.m(hn.last, "Johnson", hn)
+
+    def test_leading_della_is_unchanged(self) -> None:
+        hn = HumanName("Della Reese")
+        self.m(hn.first, "Della", hn)
+        self.m(hn.last, "Reese", hn)
+
+    def test_leading_di_is_unchanged(self) -> None:
+        hn = HumanName("Di Caprio")
+        self.m(hn.first, "Di", hn)
+        self.m(hn.last, "Caprio", hn)
+
+    def test_leading_del_is_unchanged(self) -> None:
+        hn = HumanName("Del Toro")
+        self.m(hn.first, "Del", hn)
+        self.m(hn.last, "Toro", hn)
+
+    def test_non_leading_prefix_is_unchanged(self) -> None:
+        hn = HumanName("Jean de Mesnil")
+        self.m(hn.first, "Jean", hn)
+        self.m(hn.last, "de Mesnil", hn)
+
+    # --- guard: bare particle with nothing to attach to ---
+
+    def test_bare_non_first_name_prefix_guard(self) -> None:
+        hn = HumanName("de")
+        self.m(hn.first, "de", hn)
+        self.m(hn.last, "", hn)
+
+    # --- interactions with opt-in handlers that also run in post_process ---
+
+    def test_leading_non_first_name_prefix_case_insensitive(self) -> None:
+        hn = HumanName("DE MESNIL")
+        self.m(hn.first, "", hn)
+        self.m(hn.last, "DE MESNIL", hn)
+
+    def test_leading_non_first_name_prefix_with_suffix(self) -> None:
+        hn = HumanName("de Mesnil Jr.")
+        self.m(hn.first, "", hn)
+        self.m(hn.last, "de Mesnil", hn)
+        self.m(hn.suffix, "Jr.", hn)
+
+    def test_leading_non_first_name_prefix_with_patronymic_name_order(self) -> None:
+        # The fold requires a single-token first_list; patronymic_name_order
+        # only matters once first_list has more than one piece, so the fold
+        # and this opt-in handler don't fight over the same input shape here.
+        constants = Constants(patronymic_name_order=True)
+        hn = HumanName("de Mesnil", constants=constants)
+        self.m(hn.first, "", hn)
+        self.m(hn.last, "de Mesnil", hn)
+
+    def test_leading_non_first_name_prefix_with_middle_name_as_last(self) -> None:
+        # handle_non_first_name_prefix runs first and empties middle_list, so
+        # the later opt-in handle_middle_name_as_last has nothing left to do.
+        constants = Constants(middle_name_as_last=True)
+        hn = HumanName("de Mesnil Garcia", constants=constants)
+        self.m(hn.first, "", hn)
+        self.m(hn.last, "de Mesnil Garcia", hn)
