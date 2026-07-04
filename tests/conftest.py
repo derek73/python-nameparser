@@ -16,6 +16,8 @@ _SCALAR_CONFIG_ATTRS = (
     "string_format",
     "initials_format",
     "initials_delimiter",
+    "initials_separator",
+    "suffix_delimiter",
     "capitalize_name",
     "force_mixed_case_capitalization",
 )

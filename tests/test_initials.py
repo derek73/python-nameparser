@@ -53,14 +53,12 @@ class InitialsTestCase(HumanNameTestBase):
 
     def test_initials_format_constants(self) -> None:
         from nameparser.config import CONSTANTS
-        _orig = CONSTANTS.initials_format
         CONSTANTS.initials_format = "{first} {last}"
         hn = HumanName("Doe, John A. Kenneth, Jr.")
         self.m(hn.initials(), "J. D.", hn)
         CONSTANTS.initials_format = "{first}  {last}"
         hn = HumanName("Doe, John A. Kenneth, Jr.")
         self.m(hn.initials(), "J. D.", hn)
-        CONSTANTS.initials_format = _orig
 
     def test_initials_delimiter(self) -> None:
         hn = HumanName("Doe, John A. Kenneth, Jr.", initials_delimiter=";")
@@ -68,13 +66,9 @@ class InitialsTestCase(HumanNameTestBase):
 
     def test_initials_delimiter_constants(self) -> None:
         from nameparser.config import CONSTANTS
-        _orig = CONSTANTS.initials_delimiter
-        try:
-            CONSTANTS.initials_delimiter = ";"
-            hn = HumanName("Doe, John A. Kenneth, Jr.")
-            self.m(hn.initials(), "J; A; K; D;", hn)
-        finally:
-            CONSTANTS.initials_delimiter = _orig
+        CONSTANTS.initials_delimiter = ";"
+        hn = HumanName("Doe, John A. Kenneth, Jr.")
+        self.m(hn.initials(), "J; A; K; D;", hn)
 
     def test_initials_separator_default_on_constants(self) -> None:
         from nameparser.config import CONSTANTS
@@ -197,16 +191,8 @@ class InitialsTestCase(HumanNameTestBase):
 
     def test_initials_separator_constants_multi_part_middle(self) -> None:
         from nameparser.config import CONSTANTS
-        _orig_d = CONSTANTS.initials_delimiter
-        _orig_s = CONSTANTS.initials_separator
-        _orig_f = CONSTANTS.initials_format
-        try:
-            CONSTANTS.initials_delimiter = ""
-            CONSTANTS.initials_separator = ""
-            CONSTANTS.initials_format = "{first}{middle}{last}"
-            hn = HumanName("Doe, John A. Kenneth")
-            self.m(hn.initials(), "JAKD", hn)
-        finally:
-            CONSTANTS.initials_delimiter = _orig_d
-            CONSTANTS.initials_separator = _orig_s
-            CONSTANTS.initials_format = _orig_f
+        CONSTANTS.initials_delimiter = ""
+        CONSTANTS.initials_separator = ""
+        CONSTANTS.initials_format = "{first}{middle}{last}"
+        hn = HumanName("Doe, John A. Kenneth")
+        self.m(hn.initials(), "JAKD", hn)
