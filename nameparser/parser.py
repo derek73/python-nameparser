@@ -1217,7 +1217,7 @@ class HumanName:
         """
         Join conjunctions to surrounding pieces. Title- and prefix-aware. e.g.:
 
-            ['Mr.', 'and'. 'Mrs.', 'John', 'Doe'] ==>
+            ['Mr.', 'and', 'Mrs.', 'John', 'Doe'] ==>
                             ['Mr. and Mrs.', 'John', 'Doe']
 
             ['The', 'Secretary', 'of', 'State', 'Hillary', 'Clinton'] ==>
