@@ -2,6 +2,8 @@ from nameparser import HumanName
 
 from tests.base import HumanNameTestBase
 
+from types import SimpleNamespace
+
 
 TEST_NAMES = (
     "John Doe",
@@ -199,18 +201,19 @@ class HumanNameVariationTests(HumanNameTestBase):
         for name in self.TEST_NAMES:
             hn = HumanName(name)
             if len(hn.suffix_list) > 1:
-                hn = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn.as_dict()).split(',')[0])
+                d = SimpleNamespace(**hn.as_dict())
+                hn = HumanName(f"{d.title} {d.first} {d.middle} {d.last} {d.suffix}".split(',')[0])
             hn.C.empty_attribute_default = ''  # format strings below require empty string
-            hn_dict = hn.as_dict()
-            nocomma = HumanName("{title} {first} {middle} {last} {suffix}".format(**hn_dict))
-            lastnamecomma = HumanName("{last}, {title} {first} {middle} {suffix}".format(**hn_dict))
-            if hn.suffix:
-                suffixcomma = HumanName("{title} {first} {middle} {last}, {suffix}".format(**hn_dict))
-            if hn.nickname:
-                nocomma = HumanName("{title} {first} {middle} {last} {suffix} ({nickname})".format(**hn_dict))
-                lastnamecomma = HumanName("{last}, {title} {first} {middle} {suffix} ({nickname})".format(**hn_dict))
-                if hn.suffix:
-                    suffixcomma = HumanName("{title} {first} {middle} {last}, {suffix} ({nickname})".format(**hn_dict))
+            d = SimpleNamespace(**hn.as_dict())
+            nocomma = HumanName(f"{d.title} {d.first} {d.middle} {d.last} {d.suffix}")
+            lastnamecomma = HumanName(f"{d.last}, {d.title} {d.first} {d.middle} {d.suffix}")
+            if d.suffix:
+                suffixcomma = HumanName(f"{d.title} {d.first} {d.middle} {d.last}, {d.suffix}")
+            if d.nickname:
+                nocomma = HumanName(f"{d.title} {d.first} {d.middle} {d.last} {d.suffix} ({d.nickname})")
+                lastnamecomma = HumanName(f"{d.last}, {d.title} {d.first} {d.middle} {d.suffix} ({d.nickname})")
+                if d.suffix:
+                    suffixcomma = HumanName(f"{d.title} {d.first} {d.middle} {d.last}, {d.suffix} ({d.nickname})")
             for attr in hn._members:
                 self.m(getattr(hn, attr), getattr(nocomma, attr), hn)
                 self.m(getattr(hn, attr), getattr(lastnamecomma, attr), hn)

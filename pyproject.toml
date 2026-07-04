@@ -71,6 +71,4 @@ extend-select = [
 ]
 ignore = [
   "E74",     # ambiguous-{variable,class,function}-name (I have trouble believing that these are real rules)
-  "UP031",   # printf-string-formatting (the code already uses % formatting)
-  "UP032",   # f-string (the code already uses str.format)
 ]
