@@ -70,10 +70,6 @@ class InitialsTestCase(HumanNameTestBase):
         hn = HumanName("Doe, John A. Kenneth, Jr.")
         self.m(hn.initials(), "J; A; K; D;", hn)
 
-    def test_initials_separator_default_on_constants(self) -> None:
-        from nameparser.config import CONSTANTS
-        self.assertEqual(CONSTANTS.initials_separator, " ")
-
     def test_initials_list(self) -> None:
         hn = HumanName("Andrew Boris Petersen")
         self.m(hn.initials_list(), ["A", "B", "P"], hn)
@@ -196,3 +192,10 @@ class InitialsTestCase(HumanNameTestBase):
         CONSTANTS.initials_format = "{first}{middle}{last}"
         hn = HumanName("Doe, John A. Kenneth")
         self.m(hn.initials(), "JAKD", hn)
+
+    def test_initials_separator_default_on_constants(self) -> None:
+        # Runs after test_initials_separator_constants_multi_part_middle so that,
+        # in file/definition order, it verifies the autouse fixture restored
+        # CONSTANTS.initials_separator rather than leaking the "" set above.
+        from nameparser.config import CONSTANTS
+        self.assertEqual(CONSTANTS.initials_separator, " ")

@@ -99,7 +99,6 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 
     def test_empty_attribute_default(self) -> None:
         from nameparser.config import CONSTANTS
-        _orig = CONSTANTS.empty_attribute_default
         CONSTANTS.empty_attribute_default = None
         hn = HumanName("")
         self.m(hn.title, None, hn)
@@ -108,7 +107,6 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.m(hn.last, None, hn)
         self.m(hn.suffix, None, hn)
         self.m(hn.nickname, None, hn)
-        CONSTANTS.empty_attribute_default = _orig
 
     def test_empty_attribute_on_instance(self) -> None:
         hn = HumanName("", None)
