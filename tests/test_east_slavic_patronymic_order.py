@@ -1,6 +1,6 @@
 from nameparser import HumanName
 from nameparser.config import Constants
-from tests.base import HumanNameTestBase
+from tests.base import FlaggedConstantsTestBase, HumanNameTestBase
 
 
 def test_latin_patronymic_matches() -> None:
@@ -49,14 +49,10 @@ def test_cyrillic_patronymic_rejects_non_patronymic() -> None:
     assert not C.regexes.east_slavic_patronymic_cyrillic.search("Иванов")
 
 
-class PatronymicNameOrderReorderTests(HumanNameTestBase):
+class PatronymicNameOrderReorderTests(FlaggedConstantsTestBase):
     """Names that SHOULD be rotated when the flag is on."""
 
-    def setup_method(self) -> None:
-        self.C = Constants(patronymic_name_order=True)
-
-    def hn(self, name: str) -> HumanName:
-        return HumanName(name, constants=self.C)
+    constants_kwargs = {"patronymic_name_order": True}
 
     def test_canonical_latin(self) -> None:
         n = self.hn("Ivanov Ivan Ivanovich")
@@ -121,14 +117,10 @@ class PatronymicNameOrderReorderTests(HumanNameTestBase):
         assert n.last == "David"
 
 
-class PatronymicNameOrderGuardsTests(HumanNameTestBase):
+class PatronymicNameOrderGuardsTests(FlaggedConstantsTestBase):
     """Names that must NOT be reordered even when the flag is on."""
 
-    def setup_method(self) -> None:
-        self.C = Constants(patronymic_name_order=True)
-
-    def hn(self, name: str) -> HumanName:
-        return HumanName(name, constants=self.C)
+    constants_kwargs = {"patronymic_name_order": True}
 
     def test_already_correct_order(self) -> None:
         # middle is patronymic → already in Western order, do not rotate

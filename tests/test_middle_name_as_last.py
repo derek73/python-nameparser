@@ -1,6 +1,6 @@
 from nameparser import HumanName
 from nameparser.config import Constants
-from tests.base import HumanNameTestBase
+from tests.base import FlaggedConstantsTestBase, HumanNameTestBase
 
 
 class MiddleNameAsLastFlagTests(HumanNameTestBase):
@@ -20,13 +20,9 @@ class MiddleNameAsLastFlagTests(HumanNameTestBase):
         assert C2.middle_name_as_last is False
 
 
-class MiddleNameAsLastFoldTests(HumanNameTestBase):
+class MiddleNameAsLastFoldTests(FlaggedConstantsTestBase):
 
-    def setup_method(self) -> None:
-        self.C = Constants(middle_name_as_last=True)
-
-    def hn(self, name: str) -> HumanName:
-        return HumanName(name, constants=self.C)
+    constants_kwargs = {"middle_name_as_last": True}
 
     def test_fold_no_comma(self) -> None:
         n = self.hn("Mohamad Ahmad Ali Hassan")
@@ -98,17 +94,13 @@ class MiddleNameAsLastFlagOffTests(HumanNameTestBase):
         self.m(n.last, "Hassan", n)
 
 
-class MiddleNameAsLastWithPatronymicOrderTests(HumanNameTestBase):
+class MiddleNameAsLastWithPatronymicOrderTests(FlaggedConstantsTestBase):
     """Both localization flags on: patronymic reordering must settle
     first/middle/last before the fold collapses middle into last, per the
     design's stated ordering rationale (post_process() runs the patronymic
     hook before the middle_name_as_last hook)."""
 
-    def setup_method(self) -> None:
-        self.C = Constants(middle_name_as_last=True, patronymic_name_order=True)
-
-    def hn(self, name: str) -> HumanName:
-        return HumanName(name, constants=self.C)
+    constants_kwargs = {"middle_name_as_last": True, "patronymic_name_order": True}
 
     def test_rotate_then_fold_no_comma(self) -> None:
         # patronymic_name_order rotates "Ivanov Petr Sergeyevich" to

@@ -663,43 +663,24 @@ class HumanName:
                 return False
         return True
 
+    def is_suffix_lenient(self, piece: str) -> bool:
+        """Like is_suffix(), but suffix_not_acronyms members are accepted
+        unconditionally, bypassing is_suffix()'s is_an_initial() veto.
+
+        This covers all suffix_not_acronyms members (i, ii, iii, iv, v, jr,
+        sr, etc.), case-insensitively, including single-letter entries that
+        is_suffix() would otherwise reject. Only safe for pieces in
+        unambiguous positions, e.g. after a comma ("John Ingram, V").
+        """
+        return lc(piece) in self.C.suffix_not_acronyms or self.is_suffix(piece)
+
     def are_suffixes_after_comma(self, pieces: Iterable[str]) -> bool:
-        """Like are_suffixes, but pieces found in suffix_not_acronyms are
-        accepted unconditionally without passing through is_suffix().
-
-        Used when detecting suffix-comma format (e.g. "John Ingram, V") where
-        the post-comma position is unambiguous. This covers all
-        suffix_not_acronyms members (i, ii, iii, iv, v, jr, sr, etc.),
-        case-insensitively, including single-letter entries that is_suffix()
-        would otherwise reject via is_an_initial().
+        """Return True if all pieces are suffixes by the lenient
+        :py:func:`is_suffix_lenient` test. Used when detecting suffix-comma
+        format (e.g. "John Ingram, V") where the post-comma position is
+        unambiguous.
         """
-        for piece in pieces:
-            if lc(piece) in self.C.suffix_not_acronyms:
-                continue
-            if not self.is_suffix(piece):
-                return False
-        return True
-
-    def is_suffix_at_lastname_comma_end(self, piece: str, nxt: str | None, parts: list[str]) -> bool:
-        """True when ``piece`` is a suffix_not_acronyms member that should be
-        treated as a suffix at the end of ``parts[1]`` (the post-comma segment)
-        in a lastname-comma name, where ``parts`` is the full comma-split of the
-        name string.
-
-        Returns True only when all three conditions hold:
-        - ``nxt is None``: piece is the last token in the post-comma segment
-        - ``len(parts) == 2``: no ``parts[2]`` suffix segment exists
-        - ``lc(piece) in suffix_not_acronyms``
-
-        When ``parts[2]`` exists the caller already declared an explicit suffix
-        via comma (e.g. 'Doe, Rev. John V, Jr.'), making the trailing token more
-        likely a middle initial; ``len(parts) == 2`` excludes that case.
-        Used as an OR alternative to ``is_suffix()`` for pieces that
-        ``is_suffix()`` would reject via ``is_an_initial()``.
-        """
-        return (nxt is None
-                and len(parts) == 2
-                and lc(piece) in self.C.suffix_not_acronyms)
+        return all(self.is_suffix_lenient(piece) for piece in pieces)
 
     def is_rootname(self, piece: str) -> bool:
         """
@@ -1147,7 +1128,16 @@ class HumanName:
                     if not self.first:
                         self.first_list.append(piece)
                         continue
-                    if self.is_suffix(piece) or self.is_suffix_at_lastname_comma_end(piece, nxt, parts):
+                    # A trailing token in a two-part lastname-comma name is
+                    # unambiguously positioned, so use the lenient test that
+                    # accepts suffix_not_acronyms members is_suffix() would
+                    # veto as initials. When parts[2] exists the caller
+                    # already declared an explicit suffix via comma (e.g.
+                    # 'Doe, Rev. John V, Jr.'), making the trailing token
+                    # more likely a middle initial.
+                    if self.is_suffix(piece) or \
+                            (nxt is None and len(parts) == 2
+                             and self.is_suffix_lenient(piece)):
                         self.suffix_list.append(piece)
                         continue
                     self.middle_list.append(piece)
@@ -1266,6 +1256,16 @@ class HumanName:
         # refresh conjunction index locations
         conj_index = [i for i, piece in enumerate(pieces) if self.is_conjunction(piece)]
 
+        def register_joined_piece(new_piece: str, neighbor: str) -> None:
+            if self.is_title(neighbor):
+                # when joining to a title, make new_piece a title too
+                self.C.titles.add(new_piece)
+            if self.is_prefix(neighbor):
+                # when joining to a prefix, make new_piece a prefix too, so
+                # e.g. "von" + "und" bridges into "von und" and can still
+                # chain onto a following prefix/lastname (see "von und zu")
+                self.C.prefixes.add(new_piece)
+
         for i in conj_index:
             if len(pieces[i]) == 1 and total_length < 4 and pieces[i].isalpha():
                 # if there are only 3 total parts (minus known titles, suffixes
@@ -1276,14 +1276,7 @@ class HumanName:
 
             if i == 0:
                 new_piece = " ".join(pieces[i:i+2])
-                if self.is_title(pieces[i+1]):
-                    # when joining to a title, make new_piece a title too
-                    self.C.titles.add(new_piece)
-                if self.is_prefix(pieces[i+1]):
-                    # when joining to a prefix, make new_piece a prefix too, so
-                    # e.g. "von" + "und" bridges into "von und" and can still
-                    # chain onto a following prefix/lastname (see "von und zu")
-                    self.C.prefixes.add(new_piece)
+                register_joined_piece(new_piece, pieces[i+1])
                 pieces[i] = new_piece
                 pieces.pop(i+1)
                 # subtract 1 from the index of all the remaining conjunctions
@@ -1293,14 +1286,7 @@ class HumanName:
 
             else:
                 new_piece = " ".join(pieces[i-1:i+2])
-                if self.is_title(pieces[i-1]):
-                    # when joining to a title, make new_piece a title too
-                    self.C.titles.add(new_piece)
-                if self.is_prefix(pieces[i-1]):
-                    # when joining to a prefix, make new_piece a prefix too, so
-                    # e.g. "von" + "und" bridges into "von und" and can still
-                    # chain onto a following prefix/lastname (see "von und zu")
-                    self.C.prefixes.add(new_piece)
+                register_joined_piece(new_piece, pieces[i-1])
                 pieces[i-1] = new_piece
                 pieces.pop(i)
                 rm_count = 2
@@ -1372,10 +1358,10 @@ class HumanName:
                 or self.is_conjunction(word):
             return word.lower()
         exceptions = self.C.capitalization_exceptions
-        if lc(word) in exceptions:
-            return exceptions[lc(word)]
-        if lc(word).replace('.', '') in exceptions:
-            return exceptions[lc(word).replace('.', '')]
+        key = lc(word)
+        for k in (key, key.replace('.', '')):
+            if k in exceptions:
+                return exceptions[k]
         mac_match = self.C.regexes.mac.match(word)
         if mac_match:
             def cap_after_mac(m: re.Match) -> str:

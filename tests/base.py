@@ -1,6 +1,7 @@
-from typing import Generic, TypeVar
+from typing import Any, ClassVar, Generic, TypeVar
 
 from nameparser import HumanName
+from nameparser.config import Constants
 
 T = TypeVar('T')
 
@@ -51,3 +52,20 @@ class HumanNameTestBase(Generic[T]):
 
     def assertIsNotNone(self, expr: object, msg: object = None) -> None:
         assert expr is not None, msg or "unexpectedly None"
+
+
+class FlaggedConstantsTestBase(HumanNameTestBase[T]):
+    """Base for test classes that parse with a dedicated, flagged Constants.
+
+    Subclasses set ``constants_kwargs``; each test method gets a fresh
+    ``Constants(**constants_kwargs)`` via ``setup_method``, and ``hn()``
+    parses with it.
+    """
+
+    constants_kwargs: ClassVar[dict[str, Any]] = {}
+
+    def setup_method(self) -> None:
+        self.C = Constants(**self.constants_kwargs)
+
+    def hn(self, name: str) -> HumanName:
+        return HumanName(name, constants=self.C)
