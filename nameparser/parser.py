@@ -1251,17 +1251,13 @@ class HumanName:
 
         contiguous_conj_i = group_contiguous_integers(conj_index)
 
-        delete_i: list[int] = []
-        for cont_i in contiguous_conj_i:
+        # process ranges in reverse so deleting one range doesn't shift the
+        # indices of ranges still to be processed
+        for cont_i in reversed(contiguous_conj_i):
             new_piece = " ".join(pieces[cont_i[0]: cont_i[1]+1])
-            delete_i += list(range(cont_i[0]+1, cont_i[1]+1))
-            pieces[cont_i[0]] = new_piece
+            pieces[cont_i[0]:cont_i[1]+1] = [new_piece]
             # add newly joined conjunctions to constants to be found later
             self.C.conjunctions.add(new_piece)
-
-        for i in reversed(delete_i):
-            # delete pieces in reverse order or the index changes on each delete
-            del pieces[i]
 
         if len(pieces) == 1:
             # if there's only one piece left, nothing left to do
