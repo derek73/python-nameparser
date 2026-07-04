@@ -307,6 +307,16 @@ class LastNamePrefixSplitTestCase(HumanNameTestBase):
         self.m(hn.first, "", hn)
         self.m(hn.last, "de Mesnil", hn)
 
+    def test_repeated_prefix_chain_de_la(self) -> None:
+        hn = HumanName("Juan de la de la Vega")
+        self.m(hn.first, "Juan", hn)
+        self.m(hn.last, "de la de la Vega", hn)
+
+    def test_repeated_prefix_chain_van_der(self) -> None:
+        hn = HumanName("Charles van der van der Berg")
+        self.m(hn.first, "Charles", hn)
+        self.m(hn.last, "van der van der Berg", hn)
+
     # --- safety: excluded / ambiguous particles are unchanged ---
 
     def test_leading_von_is_unchanged(self) -> None:

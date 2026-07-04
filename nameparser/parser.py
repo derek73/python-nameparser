@@ -1304,51 +1304,26 @@ class HumanName:
             shift_conj_index(past=i, by=end - start - 1)
 
         # join prefixes to following lastnames: ['de la Vega'], ['van Buren']
-        prefixes = list(filter(self.is_prefix, pieces))
-        if prefixes:
-            for prefix in prefixes:
-                try:
-                    i = pieces.index(prefix)
-                except ValueError:
-                    # If the prefix is no longer in pieces, it's because it has been
-                    # combined with the prefix that appears right before (or before that when
-                    # chained together) in the last loop, so the index of that newly created
-                    # piece is the same as in the last loop, i==i still, and we want to join
-                    # it to the next piece.
-                    pass
+        i = 0
+        while i < len(pieces):
+            if not self.is_prefix(pieces[i]) or (i == 0 and total_length >= 1):
+                # If it's the first piece and there are more than 1 rootnames,
+                # assume it's a first name rather than a prefix.
+                i += 1
+                continue
 
-                new_piece = ''
+            # absorb any immediately-adjacent prefixes into one contiguous run
+            # e.g. "von und zu der" ==> chain them all before looking further
+            j = i + 1
+            while j < len(pieces) and self.is_prefix(pieces[j]):
+                j += 1
 
-                # join everything after the prefix until the next prefix or suffix
+            # then join everything after the run until the next prefix or suffix
+            while j < len(pieces) and not self.is_prefix(pieces[j]) and not self.is_suffix(pieces[j]):
+                j += 1
 
-                try:
-                    if i == 0 and total_length >= 1:
-                        # If it's the first piece and there are more than 1 rootnames, assume it's a first name
-                        continue
-                    next_prefix = next(iter(filter(self.is_prefix, pieces[i + 1:])))
-                    j = pieces.index(next_prefix, i + 1)
-                    if j == i + 1:
-                        # if there are two prefixes in sequence, join to the following piece
-                        j += 1
-                    new_piece = ' '.join(pieces[i:j])
-                    pieces[i:j] = [new_piece]
-                except StopIteration:
-                    try:
-                        # if there are no more prefixes, look for a suffix to stop at
-                        stop_at = next(iter(filter(self.is_suffix, pieces[i + 1:])))
-                        # search from i + 1: filter() finds the value of stop_at
-                        # in pieces[i+1:] but pieces.index() without a start
-                        # argument searches from 0, so an earlier occurrence of
-                        # the same token (e.g. a suffix token that also appears
-                        # before the prefix) would be matched instead.
-                        j = pieces.index(stop_at, i + 1)
-                        new_piece = ' '.join(pieces[i:j])
-                        pieces[i:j] = [new_piece]
-                    except StopIteration:
-                        # if there were no suffixes, nothing to stop at so join all
-                        # remaining pieces
-                        new_piece = ' '.join(pieces[i:])
-                        pieces[i:] = [new_piece]
+            pieces[i:j] = [' '.join(pieces[i:j])]
+            i += 1
 
         log.debug("pieces: %s", pieces)
         return pieces
