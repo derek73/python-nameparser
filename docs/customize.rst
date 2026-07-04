@@ -295,6 +295,33 @@ You can also pass a custom set per ``Constants`` instance::
     >>> hn2.first, hn2.last
     ('abu bakr', 'al saud')
 
+Non-First-Name Prefixes
+-----------------------
+
+``CONSTANTS.non_first_name_prefixes`` is the subset of prefixes that are *never*
+a standalone first name (``de``, ``dos``, ``ibn``, ...). When a name **starts**
+with one of these, there is no first name -- the whole thing is a surname.
+
+Example::
+
+    >>> from nameparser import HumanName
+    >>> hn = HumanName("de Mesnil")
+    >>> hn.first, hn.last
+    ('', 'de Mesnil')
+
+A member must be a prefix that is never a given name in any culture, and the set
+must stay **disjoint** from ``first_name_prefixes`` (a word cannot both join to
+the first name and never be a first name). Ambiguous particles that *can* be
+given names (``van``, ``von``, ``della``, ``di``, ``del``, ...) are intentionally
+excluded; add them yourself if your data warrants it::
+
+    >>> from nameparser.config import CONSTANTS
+    >>> CONSTANTS.non_first_name_prefixes.add('von')  # doctest: +SKIP
+
+To **disable** the feature entirely::
+
+    >>> CONSTANTS.non_first_name_prefixes.clear()  # doctest: +SKIP
+
 Parser Customization Examples
 -----------------------------
 
