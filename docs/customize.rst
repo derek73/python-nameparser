@@ -348,13 +348,13 @@ constant so that "Hon" can be parsed as a first name.
     >>> hn = HumanName("Hon Solo")
     >>> hn
     <HumanName : [
-      title: 'Hon'
-      first: ''
-      middle: ''
-      last: 'Solo'
-      suffix: ''
-      nickname: ''
-      maiden: ''
+        title: 'Hon'
+        first: ''
+        middle: ''
+        last: 'Solo'
+        suffix: ''
+        nickname: ''
+        maiden: ''
     ]>
     >>> from nameparser.config import CONSTANTS
     >>> CONSTANTS.titles.remove('hon')
@@ -362,13 +362,13 @@ constant so that "Hon" can be parsed as a first name.
     >>> hn = HumanName("Hon Solo")
     >>> hn
     <HumanName : [
-      title: ''
-      first: 'Hon'
-      middle: ''
-      last: 'Solo'
-      suffix: ''
-      nickname: ''
-      maiden: ''
+        title: ''
+        first: 'Hon'
+        middle: ''
+        last: 'Solo'
+        suffix: ''
+        nickname: ''
+        maiden: ''
     ]>
 
 
@@ -403,13 +403,13 @@ making them lower case and removing periods.
     >>> hn = HumanName("Assoc Dean of Chemistry Robert Johns", constants=constants)
     >>> hn
     <HumanName : [
-      title: 'Assoc Dean of Chemistry'
-      first: 'Robert'
-      middle: ''
-      last: 'Johns'
-      suffix: ''
-      nickname: ''
-      maiden: ''
+        title: 'Assoc Dean of Chemistry'
+        first: 'Robert'
+        middle: ''
+        last: 'Johns'
+        suffix: ''
+        nickname: ''
+        maiden: ''
     ]>
 
 
@@ -431,13 +431,13 @@ the config on one instance could modify the behavior of another instance.
     >>> other_instance = HumanName("Dean Robert Johns")
     >>> other_instance # Dean parses as title
     <HumanName : [
-      title: 'Dean'
-      first: 'Robert'
-      middle: ''
-      last: 'Johns'
-      suffix: ''
-      nickname: ''
-      maiden: ''
+        title: 'Dean'
+        first: 'Robert'
+        middle: ''
+        last: 'Johns'
+        suffix: ''
+        nickname: ''
+        maiden: ''
     ]>
 
 
@@ -459,13 +459,13 @@ reference to the module-level config values with the behavior described above.
     >>> other_instance = HumanName("Dean Robert Johns", None) # <-- pass None for per-instance config
     >>> other_instance
     <HumanName : [
-      title: ''
-      first: 'Dean'
-      middle: 'Robert'
-      last: 'Johns'
-      suffix: ''
-      nickname: ''
-      maiden: ''
+        title: ''
+        first: 'Dean'
+        middle: 'Robert'
+        last: 'Johns'
+        suffix: ''
+        nickname: ''
+        maiden: ''
     ]>
     >>> other_instance.has_own_config
     True
@@ -531,13 +531,13 @@ directly to the attribute.
   >>> hn.suffix = "Md."
   >>> hn.suffix
   <HumanName : [
-    title: 'Associate Processor'
-    first: 'John'
-    middle: 'A. Kenneth'
-    last: 'Doe'
-    suffix: 'Md.'
-    nickname: ''
-    maiden: ''
+      title: 'Associate Processor'
+      first: 'John'
+      middle: 'A. Kenneth'
+      last: 'Doe'
+      suffix: 'Md.'
+      nickname: ''
+      maiden: ''
   ]>
 
 

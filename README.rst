@@ -69,13 +69,13 @@ Quick Start Example
     >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III (Doc Vega)")
     >>> name 
     <HumanName : [
-    	title: 'Dr.' 
-    	first: 'Juan' 
-    	middle: 'Q. Xavier' 
-    	last: 'de la Vega' 
-    	suffix: 'III'
-    	nickname: 'Doc Vega'
-    	maiden: ''
+        title: 'Dr.'
+        first: 'Juan'
+        middle: 'Q. Xavier'
+        last: 'de la Vega'
+        suffix: 'III'
+        nickname: 'Doc Vega'
+        maiden: ''
     ]>
     >>> name.last
     'de la Vega'
@@ -99,13 +99,13 @@ and "post-nominal" would probably be better names.)
     >>> name = HumanName("1 & 2, 3 4 5, Mr.")
     >>> name 
     <HumanName : [
-    	title: '' 
-    	first: '3' 
-    	middle: '4 5' 
-    	last: '1 & 2'
-    	suffix: 'Mr.'
-    	nickname: ''
-    	maiden: ''
+        title: ''
+        first: '3'
+        middle: '4 5'
+        last: '1 & 2'
+        suffix: 'Mr.'
+        nickname: ''
+        maiden: ''
     ]>
 
 Customization
