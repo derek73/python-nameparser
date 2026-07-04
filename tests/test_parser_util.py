@@ -32,7 +32,8 @@ def test_isolated_values_between_runs_are_excluded() -> None:
 
 
 def test_unsorted_input_is_not_treated_as_contiguous() -> None:
-    # the function assumes ascending, strictly increasing input (as produced
-    # by an `enumerate`-based index scan, which is how join_on_conjunctions
-    # uses it); descending or out-of-order input won't find real-world runs
+    # the grouping key (enumerate index - value) only repeats for ascending,
+    # strictly increasing runs (as produced by an `enumerate`-based index
+    # scan, which is how join_on_conjunctions uses it); a descending
+    # sequence changes the key at every step, so no run is ever found
     assert group_contiguous_integers([3, 2, 1]) == []
