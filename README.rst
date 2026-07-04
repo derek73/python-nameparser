@@ -12,8 +12,12 @@ individual components.
 * hn.last
 * hn.suffix
 * hn.nickname
+* hn.maiden
 * hn.surnames *(middle + last)*
+* hn.given_names *(first + middle)*
 * hn.initials *(first initial of each name part)*
+* hn.last_base *(last, minus any prefixes)*
+* hn.last_prefixes *(leading last-name particles, e.g. "van der")*
 
 Supported Name Structures
 ~~~~~~~~~~~~~~~~~~~~~~~~~
