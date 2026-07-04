@@ -595,26 +595,26 @@ class HumanName:
         else:
             return lc(piece) in self.C.prefixes
 
-    def is_first_name_prefix(self, piece: str) -> bool:
-        """Lowercased, leading/trailing-periods-stripped version of piece is in :py:attr:`~nameparser.config.Constants.first_name_prefixes`."""
-        return lc(piece) in self.C.first_name_prefixes
+    def is_bound_first_name(self, piece: str) -> bool:
+        """Lowercased, leading/trailing-periods-stripped version of piece is in :py:attr:`~nameparser.config.Constants.bound_first_names`."""
+        return lc(piece) in self.C.bound_first_names
 
     def is_non_first_name_prefix(self, piece: str) -> bool:
         """Lowercased, leading/trailing-periods-stripped version of piece is in
         :py:attr:`~nameparser.config.Constants.non_first_name_prefixes`."""
         return lc(piece) in self.C.non_first_name_prefixes
 
-    def _join_first_name_prefix(self, pieces: list[str], reserve_last: bool) -> list[str]:
+    def _join_bound_first_name(self, pieces: list[str], reserve_last: bool) -> list[str]:
         """Join a first-name prefix to its following piece.
 
-        Finds the first non-title piece; if it is in ``first_name_prefixes``,
+        Finds the first non-title piece; if it is in ``bound_first_names``,
         merges it with the next piece — unless ``reserve_last`` is True and no
         further piece would remain for the last name.
         """
         fi = next((i for i, p in enumerate(pieces) if not self.is_title(p)), None)
         if fi is None:
             return pieces
-        if not self.is_first_name_prefix(pieces[fi]):
+        if not self.is_bound_first_name(pieces[fi]):
             return pieces
         next_i = fi + 1
         if next_i >= len(pieces):
@@ -1038,7 +1038,7 @@ class HumanName:
             #            part[0]
 
             pieces = self.parse_pieces(parts)
-            pieces = self._join_first_name_prefix(pieces, reserve_last=True)
+            pieces = self._join_bound_first_name(pieces, reserve_last=True)
             p_len = len(pieces)
             for i, piece in enumerate(pieces):
                 try:
@@ -1121,7 +1121,7 @@ class HumanName:
                 #      parts[0],      parts[1],              parts[2:...]
 
                 log.debug("post-comma pieces: %s", str(post_comma_pieces))
-                post_comma_pieces = self._join_first_name_prefix(post_comma_pieces, reserve_last=False)
+                post_comma_pieces = self._join_bound_first_name(post_comma_pieces, reserve_last=False)
 
                 # lastname part may have suffixes in it
                 lastname_pieces = self.parse_pieces(parts[0].split(' '), 1)

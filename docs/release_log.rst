@@ -29,11 +29,11 @@ Release Log
     - Fix suffix boundary lookup for prefixed last names with a title before and after (e.g. ``"dr Vincent van Gogh dr"`` producing a corrupted middle name) (closes #100)
     - Add ``patronymic_name_order`` flag to ``Constants`` and ``HumanName`` for opt-in detection and reordering of Russian formal-order names (Surname GivenName Patronymic) (#85)
     - Add Turkic (Azerbaijani/Central-Asian) patronymic detection to ``patronymic_name_order``, rotating the reversed 4-token formal shape (``Surname GivenName PatronymicRoot Marker``, e.g. ``oglu``/``qizi``) into Western order (#185)
-    - Add ``first_name_prefixes`` set to ``Constants``; bound Arabic given-name
+    - Add ``bound_first_names`` set to ``Constants``; bound Arabic given-name
       prefixes (``abdul``, ``abu``, etc.) now join forward to form a single first
       name (e.g. ``"abdul salam ahmed salem"`` → ``first="abdul salam"``,
       ``middle="ahmed"``, ``last="salem"``). Disable via
-      ``CONSTANTS.first_name_prefixes.clear()``. **Default-on: changes parsing
+      ``CONSTANTS.bound_first_names.clear()``. **Default-on: changes parsing
       output for names with these prefixes.** (#150)
     - Add ``middle_name_as_last`` flag to ``Constants`` and ``HumanName`` for opt-in folding of middle names into the last name, for naming systems with no middle-name concept (e.g. Arabic patronymic chaining) (#133)
     - Treat an unrecognized, multi-letter token ending in a period in the leading title run (before the first name is set), e.g. ``"Major."``, as a ``title`` instead of a ``first`` name; internal-period abbreviations (``"E.T."``) and single-letter initials (``"J."``) are unaffected. **Default-on: changes parsing of names with a leading unknown period-abbreviation** (closes #109)

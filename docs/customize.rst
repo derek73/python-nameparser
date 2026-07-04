@@ -260,10 +260,10 @@ a secondary key::
 
     sorted_names = sorted(names, key=lambda n: (n.last_base.lower(), n.first.lower()))
 
-First-Name Prefixes
--------------------
+Bound First Names
+------------------
 
-``CONSTANTS.first_name_prefixes`` controls bound given-name prefixes that attach
+``CONSTANTS.bound_first_names`` controls bound given-name prefixes that attach
 to the following word to form one first name. By default it contains
 ``{'abdul', 'abdel', 'abdal', 'abu', 'abou', 'umm'}``.
 
@@ -277,20 +277,20 @@ Example::
 To **disable** the feature entirely::
 
     >>> from nameparser.config import CONSTANTS
-    >>> CONSTANTS.first_name_prefixes.clear()
+    >>> CONSTANTS.bound_first_names.clear()
 
 To **add** a word (e.g. if your data uses ``mohamad`` as a bound prefix)::
 
-    >>> CONSTANTS.first_name_prefixes.add('mohamad')
+    >>> CONSTANTS.bound_first_names.add('mohamad')
 
 To **remove** a single entry::
 
-    >>> CONSTANTS.first_name_prefixes.remove('umm')
+    >>> CONSTANTS.bound_first_names.remove('umm')
 
 You can also pass a custom set per ``Constants`` instance::
 
     >>> from nameparser.config import Constants
-    >>> c = Constants(first_name_prefixes={'abu', 'umm'})
+    >>> c = Constants(bound_first_names={'abu', 'umm'})
     >>> hn2 = HumanName("abu bakr al saud", constants=c)
     >>> hn2.first, hn2.last
     ('abu bakr', 'al saud')
@@ -310,7 +310,7 @@ Example::
     ('', 'de Mesnil')
 
 A member must be a prefix that is never a given name in any culture, and the set
-must stay **disjoint** from ``first_name_prefixes`` (a word cannot both join to
+must stay **disjoint** from ``bound_first_names`` (a word cannot both join to
 the first name and never be a first name). Ambiguous particles that *can* be
 given names (``van``, ``von``, ``della``, ``di``, ``del``, ...) are intentionally
 excluded; add them yourself if your data warrants it::

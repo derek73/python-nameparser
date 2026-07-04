@@ -37,7 +37,7 @@ else:
 
 from nameparser.util import lc
 from nameparser.config.prefixes import PREFIXES, NON_FIRST_NAME_PREFIXES
-from nameparser.config.first_name_prefixes import FIRST_NAME_PREFIXES
+from nameparser.config.bound_first_names import BOUND_FIRST_NAMES
 from nameparser.config.capitalization import CAPITALIZATION_EXCEPTIONS
 from nameparser.config.conjunctions import CONJUNCTIONS
 from nameparser.config.suffixes import SUFFIX_ACRONYMS
@@ -262,13 +262,13 @@ class Constants:
         :py:attr:`~suffixes.SUFFIX_ACRONYMS_AMBIGUOUS` wrapped with :py:class:`SetManager`.
     :param set conjunctions:
         :py:attr:`conjunctions`  wrapped with :py:class:`SetManager`.
-    :param set first_name_prefixes:
-        :py:attr:`~first_name_prefixes.FIRST_NAME_PREFIXES` wrapped with :py:class:`SetManager`.
+    :param set bound_first_names:
+        :py:attr:`~bound_first_names.BOUND_FIRST_NAMES` wrapped with :py:class:`SetManager`.
     :param set non_first_name_prefixes:
         :py:attr:`~prefixes.NON_FIRST_NAME_PREFIXES` wrapped with :py:class:`SetManager`.
         The subset of prefixes that are never a first name, so a *leading* one
         marks the whole name as a surname. Must stay disjoint from
-        ``first_name_prefixes``.
+        ``bound_first_names``.
     :type capitalization_exceptions: tuple or dict
     :param capitalization_exceptions: 
         :py:attr:`~capitalization.CAPITALIZATION_EXCEPTIONS` wrapped with :py:class:`TupleManager`.
@@ -293,7 +293,7 @@ class Constants:
     titles = _CachedUnionMember()
     first_name_titles: SetManager
     conjunctions: SetManager
-    first_name_prefixes: SetManager
+    bound_first_names: SetManager
     non_first_name_prefixes: SetManager
     suffix_acronyms_ambiguous: SetManager
     capitalization_exceptions: TupleManager[str]
@@ -468,7 +468,7 @@ class Constants:
                  titles: Iterable[str] = TITLES,
                  first_name_titles: Iterable[str] = FIRST_NAME_TITLES,
                  conjunctions: Iterable[str] = CONJUNCTIONS,
-                 first_name_prefixes: Iterable[str] = FIRST_NAME_PREFIXES,
+                 bound_first_names: Iterable[str] = BOUND_FIRST_NAMES,
                  non_first_name_prefixes: Iterable[str] = NON_FIRST_NAME_PREFIXES,
                  capitalization_exceptions: TupleManager[str] | Iterable[tuple[str, str]] = CAPITALIZATION_EXCEPTIONS,
                  regexes: RegexTupleManager | TupleManager[re.Pattern[str]] | Iterable[tuple[str, re.Pattern[str]]] = REGEXES,
@@ -484,7 +484,7 @@ class Constants:
         self.titles = SetManager(titles)
         self.first_name_titles = SetManager(first_name_titles)
         self.conjunctions = SetManager(conjunctions)
-        self.first_name_prefixes = SetManager(first_name_prefixes)
+        self.bound_first_names = SetManager(bound_first_names)
         self.non_first_name_prefixes = SetManager(non_first_name_prefixes)
         self.suffix_acronyms_ambiguous = SetManager(suffix_acronyms_ambiguous)
         self.capitalization_exceptions = TupleManager(capitalization_exceptions)

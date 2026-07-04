@@ -1,4 +1,4 @@
-from nameparser.config.first_name_prefixes import FIRST_NAME_PREFIXES
+from nameparser.config.bound_first_names import BOUND_FIRST_NAMES
 
 #: The sub-set of :py:data:`PREFIXES` that are *never* a standalone first name.
 #: A name that *starts* with one of these has no first name -- the whole thing
@@ -8,7 +8,7 @@ from nameparser.config.first_name_prefixes import FIRST_NAME_PREFIXES
 #: name prefix (`abu`). When unsure, leave a word out: a missing member just
 #: means that name is not auto-fixed, whereas a wrong member misparses a real
 #: person. Must stay a subset of :py:data:`PREFIXES` and disjoint from
-#: :py:data:`~nameparser.config.first_name_prefixes.FIRST_NAME_PREFIXES`.
+#: :py:data:`~nameparser.config.bound_first_names.BOUND_FIRST_NAMES`.
 NON_FIRST_NAME_PREFIXES = set([
     "'t",
     'af',
@@ -93,5 +93,5 @@ PREFIXES = NON_FIRST_NAME_PREFIXES | set([
 # happens to catch it.
 assert NON_FIRST_NAME_PREFIXES <= PREFIXES, \
     "NON_FIRST_NAME_PREFIXES must stay a subset of PREFIXES"
-assert not (NON_FIRST_NAME_PREFIXES & FIRST_NAME_PREFIXES), \
-    "NON_FIRST_NAME_PREFIXES must stay disjoint from FIRST_NAME_PREFIXES"
+assert not (NON_FIRST_NAME_PREFIXES & BOUND_FIRST_NAMES), \
+    "NON_FIRST_NAME_PREFIXES must stay disjoint from BOUND_FIRST_NAMES"
