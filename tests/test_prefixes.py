@@ -1,6 +1,8 @@
 import pytest
 
 from nameparser import HumanName
+from nameparser.config.prefixes import PREFIXES, NON_FIRST_NAME_PREFIXES
+from nameparser.config.first_name_prefixes import FIRST_NAME_PREFIXES
 
 from tests.base import HumanNameTestBase
 
@@ -162,6 +164,25 @@ class PrefixesTestCase(HumanNameTestBase):
         self.m(hn.title, "Dr.", hn)
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.suffix, "III", hn)
+
+    def test_non_first_name_prefixes_subset_of_prefixes(self) -> None:
+        # Every non-first-name prefix must still be a prefix so it joins forward.
+        self.assertTrue(NON_FIRST_NAME_PREFIXES <= PREFIXES)
+
+    def test_non_first_name_prefixes_disjoint_from_first_name_prefixes(self) -> None:
+        # A word cannot be both "joins to the first name" and "never a first
+        # name" (e.g. 'abu' is a first_name_prefix, so it is excluded here).
+        self.assertEqual(NON_FIRST_NAME_PREFIXES & FIRST_NAME_PREFIXES, set())
+
+    def test_non_first_name_prefixes_expected_members(self) -> None:
+        # 'abu' is in PREFIXES but excluded (it is a first_name_prefix);
+        # 'von'/'van'/'della'/'di'/'del' are excluded (they can be first names).
+        self.assertIn('de', NON_FIRST_NAME_PREFIXES)
+        self.assertIn('dos', NON_FIRST_NAME_PREFIXES)
+        self.assertNotIn('abu', NON_FIRST_NAME_PREFIXES)
+        self.assertNotIn('von', NON_FIRST_NAME_PREFIXES)
+        self.assertNotIn('van', NON_FIRST_NAME_PREFIXES)
+        self.assertNotIn('della', NON_FIRST_NAME_PREFIXES)
 
 
 class LastNamePrefixSplitTestCase(HumanNameTestBase):
