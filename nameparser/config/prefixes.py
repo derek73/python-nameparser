@@ -1,3 +1,5 @@
+from nameparser.config.first_name_prefixes import FIRST_NAME_PREFIXES
+
 #: The sub-set of :py:data:`PREFIXES` that are *never* a standalone first name.
 #: A name that *starts* with one of these has no first name -- the whole thing
 #: is a surname (e.g. "de Mesnil" -> last name "de Mesnil"). Curated to exclude
@@ -85,3 +87,11 @@ PREFIXES = NON_FIRST_NAME_PREFIXES | set([
     'vel',
     'von',
 ])
+
+# Guard the two invariants the docstring above promises, so a future edit that
+# breaks them fails at import time instead of silently drifting until a test
+# happens to catch it.
+assert NON_FIRST_NAME_PREFIXES <= PREFIXES, \
+    "NON_FIRST_NAME_PREFIXES must stay a subset of PREFIXES"
+assert not (NON_FIRST_NAME_PREFIXES & FIRST_NAME_PREFIXES), \
+    "NON_FIRST_NAME_PREFIXES must stay disjoint from FIRST_NAME_PREFIXES"
