@@ -678,7 +678,8 @@ class HumanName:
         """Split a single post-comma part on :py:attr:`suffix_delimiter`,
         if configured. Used only at suffix-consumption sites, where a part
         has already been identified as a suffix group, so splitting it
-        further can't misparse an unrelated name segment.
+        further can't misparse an unrelated name segment. Returns ``[part]``
+        unchanged if no delimiter is configured.
         """
         if not self.suffix_delimiter:
             return [part]
@@ -1067,6 +1068,9 @@ class HumanName:
 
             post_comma_pieces = self.parse_pieces(parts[1].split(' '), 1)
 
+            # Detection must see the delimiter-expanded words too, or a
+            # delimiter-joined suffix group like "RN - CRNA" would never be
+            # recognized as suffix-comma format in the first place.
             suffix_delimiter_pieces = [word for part in self.expand_suffix_delimiter(parts[1])
                                         for word in part.split(' ')]
 

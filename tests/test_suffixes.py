@@ -273,6 +273,40 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.first, "Mary", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "RN", hn)
+        # "Kate" stays in the given-name segment rather than being pulled
+        # into the suffix, since it's separated from "RN" by its own comma.
+        # The bare "-" landing in middle is a pre-existing, delimiter-
+        # independent quirk of tokenizing a lone hyphen (reproducible with
+        # suffix_delimiter unset), not something this fix is responsible for.
+        self.m(hn.middle, "- Kate", hn)
+
+    def test_suffix_delimiter_expands_each_comma_segment(self) -> None:
+        # parts[1:] holds two separate comma segments here ("MD - PhD" and
+        # "FACS"); each must be expanded on its own, not just the first.
+        hn = HumanName("John Doe, MD - PhD, FACS", suffix_delimiter=" - ")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)
+        self.m(hn.suffix, "MD, PhD, FACS", hn)
+
+    def test_suffix_delimiter_detection_with_multi_word_side(self) -> None:
+        # The suffix-comma detection check flattens on spaces after
+        # expanding on the delimiter, so a multi-word token on one side of
+        # the delimiter is still tokenized correctly.
+        hn = HumanName("Doe, John, MD PhD - FACS Fellow", suffix_delimiter=" - ")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)
+        self.m(hn.suffix, "MD PhD, FACS Fellow", hn)
+
+    def test_suffix_delimiter_no_effect_when_not_suffix_comma(self) -> None:
+        # When the comma format isn't recognized as suffix-comma (here the
+        # last-name part is a single word), the delimiter must not affect
+        # parsing at all: output should match the no-delimiter baseline.
+        with_delim = HumanName("Smith, MD - PhD - FACS", suffix_delimiter=" - ")
+        without_delim = HumanName("Smith, MD - PhD - FACS")
+        self.assertEqual(
+            (with_delim.first, with_delim.middle, with_delim.last, with_delim.suffix),
+            (without_delim.first, without_delim.middle, without_delim.last, without_delim.suffix),
+        )
 
     def test_suffix_acronyms_ambiguous_is_customizable(self) -> None:
         from nameparser.config import Constants
