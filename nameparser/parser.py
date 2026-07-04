@@ -1306,10 +1306,10 @@ class HumanName:
         # join prefixes to following lastnames: ['de la Vega'], ['van Buren']
         i = 0
         while i < len(pieces):
-            if not self.is_prefix(pieces[i]) or (i == 0 and total_length >= 1):
-                # If it's the first piece and there's at least 1 rootname
-                # elsewhere, assume this piece is a first name rather than a
-                # prefix (total_length >= 1 covers essentially all real input).
+            # total_length >= 1 covers essentially all real input, so this
+            # treats any leading piece as a first name rather than a prefix.
+            leading_first_name = i == 0 and total_length >= 1
+            if not self.is_prefix(pieces[i]) or leading_first_name:
                 i += 1
                 continue
 
