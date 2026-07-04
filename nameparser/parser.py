@@ -674,6 +674,17 @@ class HumanName:
         """
         return lc(piece) in self.C.suffix_not_acronyms or self.is_suffix(piece)
 
+    def expand_suffix_delimiter(self, part: str) -> list[str]:
+        """Split a single post-comma part on :py:attr:`suffix_delimiter`,
+        if configured. Used only at suffix-consumption sites, where a part
+        has already been identified as a suffix group, so splitting it
+        further can't misparse an unrelated name segment. Returns ``[part]``
+        unchanged if no delimiter is configured.
+        """
+        if not self.suffix_delimiter:
+            return [part]
+        return [p for p in (p.strip() for p in part.split(self.suffix_delimiter)) if p]
+
     def are_suffixes_after_comma(self, pieces: Iterable[str]) -> bool:
         """Return True if all pieces are suffixes by the lenient
         :py:func:`is_suffix_lenient` test. Used when detecting suffix-comma
@@ -1004,12 +1015,6 @@ class HumanName:
         parts = [x.strip() for x in self._full_name.split(",")]
         self._had_comma = len(parts) > 1
 
-        if self.suffix_delimiter and len(parts) > 1:
-            expanded = [parts[0]]
-            for part in parts[1:]:
-                expanded.extend([p for p in (p.strip() for p in part.split(self.suffix_delimiter)) if p])
-            parts = expanded
-
         log.debug("full_name: %s", self._full_name)
         log.debug("parts: %s", parts)
 
@@ -1063,14 +1068,21 @@ class HumanName:
 
             post_comma_pieces = self.parse_pieces(parts[1].split(' '), 1)
 
-            if self.are_suffixes_after_comma(parts[1].split(' ')) \
+            # Detection must see the delimiter-expanded words too, or a
+            # delimiter-joined suffix group like "RN - CRNA" would never be
+            # recognized as suffix-comma format in the first place.
+            suffix_delimiter_pieces = [word for part in self.expand_suffix_delimiter(parts[1])
+                                        for word in part.split(' ')]
+
+            if self.are_suffixes_after_comma(suffix_delimiter_pieces) \
                     and len(parts[0].split(' ')) > 1:
 
                 # suffix comma:
                 # title first middle last [suffix], suffix [suffix] [, suffix]
                 #               parts[0],          parts[1:...]
 
-                self.suffix_list += parts[1:]
+                for part in parts[1:]:
+                    self.suffix_list += self.expand_suffix_delimiter(part)
                 pieces = self.parse_pieces(parts[0].split(' '))
                 pieces = self._join_bound_first_name(pieces, reserve_last=True)
                 log.debug("pieces: %s", str(pieces))
@@ -1144,7 +1156,8 @@ class HumanName:
                     self.middle_list.append(piece)
                 try:
                     if parts[2]:
-                        self.suffix_list += parts[2:]
+                        for part in parts[2:]:
+                            self.suffix_list += self.expand_suffix_delimiter(part)
                 except IndexError:
                     pass
 
