@@ -1307,8 +1307,9 @@ class HumanName:
         i = 0
         while i < len(pieces):
             if not self.is_prefix(pieces[i]) or (i == 0 and total_length >= 1):
-                # If it's the first piece and there are more than 1 rootnames,
-                # assume it's a first name rather than a prefix.
+                # If it's the first piece and there's at least 1 rootname
+                # elsewhere, assume this piece is a first name rather than a
+                # prefix (total_length >= 1 covers essentially all real input).
                 i += 1
                 continue
 
