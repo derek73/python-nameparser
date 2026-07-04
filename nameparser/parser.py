@@ -209,13 +209,13 @@ class HumanName:
             _string = f"<{self.__class__.__name__} : [ Unparsable ] >"
         else:
             attrs = (
-                f"\ttitle: {self.title or ''!r} \n"
-                f"\tfirst: {self.first or ''!r} \n"
-                f"\tmiddle: {self.middle or ''!r} \n"
-                f"\tlast: {self.last or ''!r} \n"
-                f"\tsuffix: {self.suffix or ''!r}\n"
-                f"\tnickname: {self.nickname or ''!r}\n"
-                f"\tmaiden: {self.maiden or ''!r}"
+                f"    title: {self.title or ''!r}\n"
+                f"    first: {self.first or ''!r}\n"
+                f"    middle: {self.middle or ''!r}\n"
+                f"    last: {self.last or ''!r}\n"
+                f"    suffix: {self.suffix or ''!r}\n"
+                f"    nickname: {self.nickname or ''!r}\n"
+                f"    maiden: {self.maiden or ''!r}"
             )
             _string = f"<{self.__class__.__name__} : [\n{attrs}\n]>"
         return _string

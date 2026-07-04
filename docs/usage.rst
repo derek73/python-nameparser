@@ -34,23 +34,23 @@ Requires Python 3.10+.
     >>> name.full_name = "Juan Q. Xavier Velasquez y Garcia, Jr."
     >>> name
     <HumanName : [
-    	title: '' 
-    	first: 'Juan' 
-    	middle: 'Q. Xavier' 
-    	last: 'Velasquez y Garcia' 
-    	suffix: 'Jr.'
-    	nickname: ''
-    	maiden: ''
+        title: ''
+        first: 'Juan'
+        middle: 'Q. Xavier'
+        last: 'Velasquez y Garcia'
+        suffix: 'Jr.'
+        nickname: ''
+        maiden: ''
     ]>
     >>> name.middle = "Jason Alexander"
     >>> name.middle
     'Jason Alexander'
     >>> name
     <HumanName : [
-        title: '' 
-        first: 'Juan' 
-        middle: 'Jason Alexander' 
-        last: 'Velasquez y Garcia' 
+        title: ''
+        first: 'Juan'
+        middle: 'Jason Alexander'
+        last: 'Velasquez y Garcia'
         suffix: 'Jr.'
         nickname: ''
         maiden: ''
@@ -139,13 +139,13 @@ available from the nickname attribute.
     >>> name = HumanName('Jonathan "John" A. Smith')
     >>> name
     <HumanName : [
-      title: ''
-      first: 'Jonathan'
-      middle: 'A.'
-      last: 'Smith'
-      suffix: ''
-      nickname: 'John'
-      maiden: ''
+        title: ''
+        first: 'Jonathan'
+        middle: 'A.'
+        last: 'Smith'
+        suffix: ''
+        nickname: 'John'
+        maiden: ''
     ]>
 
 Exception: content that looks like a suffix (a member of
@@ -161,13 +161,13 @@ written in parenthesis.
     >>> name = HumanName('Andrew Perkins (MBA)')
     >>> name
     <HumanName : [
-      title: ''
-      first: 'Andrew'
-      middle: ''
-      last: 'Perkins'
-      suffix: 'MBA'
-      nickname: ''
-      maiden: ''
+        title: ''
+        first: 'Andrew'
+        middle: ''
+        last: 'Perkins'
+        suffix: 'MBA'
+        nickname: ''
+        maiden: ''
     ]>
 
 A few suffix acronyms, listed in
@@ -182,13 +182,13 @@ reading in that ambiguous context:
     >>> name = HumanName('JEFFREY (JD) BRICKEN')
     >>> name
     <HumanName : [
-      title: ''
-      first: 'JEFFREY'
-      middle: ''
-      last: 'BRICKEN'
-      suffix: ''
-      nickname: 'JD'
-      maiden: ''
+        title: ''
+        first: 'JEFFREY'
+        middle: ''
+        last: 'BRICKEN'
+        suffix: ''
+        nickname: 'JD'
+        maiden: ''
     ]>
 
 Leading Period-Abbreviation Titles
@@ -208,13 +208,13 @@ word appearing after the first name is left as a middle name.
     >>> name = HumanName("Major. Dona Smith")
     >>> name
     <HumanName : [
-      title: 'Major.'
-      first: 'Dona'
-      middle: ''
-      last: 'Smith'
-      suffix: ''
-      nickname: ''
-      maiden: ''
+        title: 'Major.'
+        first: 'Dona'
+        middle: ''
+        last: 'Smith'
+        suffix: ''
+        nickname: ''
+        maiden: ''
     ]>
     >>> name = HumanName("J. Smith")
     >>> name.first
