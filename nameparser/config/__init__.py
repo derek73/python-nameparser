@@ -75,7 +75,7 @@ class SetManager(Set):
         return self.elements
 
     def __repr__(self) -> str:
-        return "SetManager({})".format(self.elements)  # used for docs
+        return f"SetManager({self.elements})"  # used for docs
 
     def __iter__(self) -> Iterator[str]:
         return iter(self.elements)

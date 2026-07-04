@@ -194,7 +194,7 @@ class HumanName:
     def __str__(self) -> str:
         if self.string_format is not None:
             # string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
-            _s = self.string_format.format(**self.as_dict())
+            _s = self.string_format.format(**self.as_dict())  # noqa: UP032
             # remove trailing punctuation from missing nicknames
             _s = _s.replace(str(self.C.empty_attribute_default), '').replace(" ()", "").replace(" ''", "").replace(' ""', "")
             _s = self.C.regexes.space_before_comma.sub(',', _s)
@@ -206,18 +206,18 @@ class HumanName:
 
     def __repr__(self) -> str:
         if self.unparsable:
-            _string = "<%(class)s : [ Unparsable ] >" % {'class': self.__class__.__name__, }
+            _string = f"<{self.__class__.__name__} : [ Unparsable ] >"
         else:
-            _string = "<%(class)s : [\n\ttitle: %(title)r \n\tfirst: %(first)r \n\tmiddle: %(middle)r \n\tlast: %(last)r \n\tsuffix: %(suffix)r\n\tnickname: %(nickname)r\n\tmaiden: %(maiden)r\n]>" % {
-                'class': self.__class__.__name__,
-                'title': self.title or '',
-                'first': self.first or '',
-                'middle': self.middle or '',
-                'last': self.last or '',
-                'suffix': self.suffix or '',
-                'nickname': self.nickname or '',
-                'maiden': self.maiden or '',
-            }
+            attrs = (
+                f"\ttitle: {self.title or ''!r} \n"
+                f"\tfirst: {self.first or ''!r} \n"
+                f"\tmiddle: {self.middle or ''!r} \n"
+                f"\tlast: {self.last or ''!r} \n"
+                f"\tsuffix: {self.suffix or ''!r}\n"
+                f"\tnickname: {self.nickname or ''!r}\n"
+                f"\tmaiden: {self.maiden or ''!r}"
+            )
+            _string = f"<{self.__class__.__name__} : [\n{attrs}\n]>"
         return _string
 
     def as_dict(self, include_empty: bool = True) -> dict[str, str]:
@@ -320,7 +320,7 @@ class HumanName:
             if len(last_initials_list) else ""
         }
 
-        _s = self.initials_format.format(**initials_dict)
+        _s = self.initials_format.format(**initials_dict)  # noqa: UP032
         return self.collapse_whitespace(_s) or self.C.empty_attribute_default
 
     @property
@@ -552,7 +552,7 @@ class HumanName:
         else:
             raise TypeError(
                 "Can only assign strings, lists or None to name attributes."
-                " Got {}".format(type(value)))
+                f" Got {type(value)}")
         setattr(self, attr+"_list", self.parse_pieces(val))
 
     # Parse helpers
@@ -1163,7 +1163,7 @@ class HumanName:
         for part in parts:
             if not isinstance(part, (str, bytes)):
                 raise TypeError("Name parts must be strings. "
-                                " Got {}".format(type(part)))
+                                f" Got {type(part)}")
             output += [x.strip(' ,') for x in part.split(' ')]
 
         # If part contains periods, check if it's multiple titles or suffixes

@@ -50,7 +50,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Nameparser'
-copyright = '{:%Y}, Derek Gulbranson'.format(date.today())
+copyright = f'{date.today():%Y}, Derek Gulbranson'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

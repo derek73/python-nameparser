@@ -18,12 +18,7 @@ class HumanNameTestBase(Generic[T]):
         """assertEqual with a better message and awareness of hn.C.empty_attribute_default"""
         expected_ = expected or hn.C.empty_attribute_default
         try:
-            assert actual == expected_, "'%s' != '%s' for '%s'\n%r" % (
-                actual,
-                expected,
-                hn.original,
-                hn,
-            )
+            assert actual == expected_, f"{actual!r} != {expected!r} for {hn.original!r}\n{hn!r}"
         except UnicodeDecodeError:
             assert actual == expected_, f"actual={actual!r} != expected={expected_!r}"
 
