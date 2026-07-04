@@ -1306,7 +1306,10 @@ class HumanName:
                 new_piece = " ".join(pieces[i-1:i+2])
                 register_joined_piece(new_piece, pieces[i-1])
                 pieces[i-1] = new_piece
+                # len(pieces) - i is always >= 1 here: pieces[i-1:i+2] above
+                # already accessed index i, so i is guaranteed in range.
                 rm_count = min(2, len(pieces) - i)
+                assert rm_count > 0, f"unexpected empty deletion at i={i}, pieces={pieces}"
                 del pieces[i:i+rm_count]
                 shift_conj_index(past=i, by=rm_count)
 
