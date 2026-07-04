@@ -166,6 +166,32 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 
         self.assertEqual(restored.empty_attribute_default, None)
 
+    def test_unpickle_legacy_state_with_property_key(self) -> None:
+        """Pickles written by older versions must still load.
+
+        The previous __getstate__ built its state from a dir() sweep, which
+        always included the computed `suffixes_prefixes_titles` property (no
+        customization required). That property has no setter, so __setstate__
+        must skip such keys instead of raising AttributeError.
+
+        Covers the temporary migration shim in __setstate__; remove this test
+        when that shim is dropped (a release or two after 1.3.0).
+        """
+        c = Constants()
+        c.titles.add('legacytitle')
+        # Reproduce the legacy dir()-sweep state dict, which carries the
+        # read-only `suffixes_prefixes_titles` property alongside the real config.
+        legacy_state = {
+            name: getattr(c, name) for name in dir(c) if not name.startswith('_')
+        }
+        self.assertIn('suffixes_prefixes_titles', legacy_state)
+
+        restored = Constants.__new__(Constants)
+        restored.__setstate__(legacy_state)
+
+        # The real customization is recovered and the property key is ignored.
+        self.assertIn('legacytitle', restored.titles)
+
     def test_pickle_roundtrip_preserves_regex_manager_subclass(self) -> None:
         """regexes must round-trip as a RegexTupleManager, not a plain TupleManager.
 
