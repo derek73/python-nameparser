@@ -1072,6 +1072,7 @@ class HumanName:
 
                 self.suffix_list += parts[1:]
                 pieces = self.parse_pieces(parts[0].split(' '))
+                pieces = self._join_bound_first_name(pieces, reserve_last=True)
                 log.debug("pieces: %s", str(pieces))
                 for i, piece in enumerate(pieces):
                     try:

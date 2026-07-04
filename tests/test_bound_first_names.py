@@ -106,6 +106,42 @@ class BoundFirstNamesTestCase(HumanNameTestBase):
         self.m(hn.first, "ahmed", hn)
         self.m(hn.last, "abu bakr", hn)
 
+    # --- suffix-comma path ---
+    def test_suffix_comma_join(self) -> None:
+        hn = HumanName("Abdul Salam Hassan, MD")
+        self.m(hn.first, "Abdul Salam", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "Hassan", hn)
+        self.m(hn.suffix, "MD", hn)
+
+    def test_suffix_comma_join_with_middle(self) -> None:
+        hn = HumanName("Abdul Salam Ahmed Salem, MD")
+        self.m(hn.first, "Abdul Salam", hn)
+        self.m(hn.middle, "Ahmed", hn)
+        self.m(hn.last, "Salem", hn)
+        self.m(hn.suffix, "MD", hn)
+
+    def test_suffix_comma_guard_two_tokens_no_join(self) -> None:
+        """Guard: only last name remains after prefix → no join, even with suffix comma."""
+        hn = HumanName("Abdul Salam, MD")
+        self.m(hn.first, "Abdul", hn)
+        self.m(hn.last, "Salam", hn)
+        self.m(hn.suffix, "MD", hn)
+
+    def test_suffix_comma_title_kept_prefix_joins(self) -> None:
+        hn = HumanName("Dr. Abdul Salam Hassan, MD")
+        self.m(hn.title, "Dr.", hn)
+        self.m(hn.first, "Abdul Salam", hn)
+        self.m(hn.last, "Hassan", hn)
+        self.m(hn.suffix, "MD", hn)
+
+    def test_suffix_comma_abu_bakr_al_baghdadi(self) -> None:
+        """abu joins forward as first-prefix; al joins forward as last-prefix, even with suffix comma."""
+        hn = HumanName("Abu Bakr Al Baghdadi, MD")
+        self.m(hn.first, "Abu Bakr", hn)
+        self.m(hn.last, "Al Baghdadi", hn)
+        self.m(hn.suffix, "MD", hn)
+
     # --- opt-out ---
     def test_opt_out_via_clear(self) -> None:
         """Clearing bound_first_names restores prior behavior."""
