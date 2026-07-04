@@ -265,12 +265,14 @@ class SuffixesTestCase(HumanNameTestBase):
         hn = HumanName("John Doe, MD, PhD", suffix_delimiter=", ")
         self.m(hn.suffix, "MD, PhD", hn)
 
-    def test_suffix_delimiter_inverted_format_known_limitation(self) -> None:
-        # In inverted format, the first-name part is also split on the delimiter.
-        # "Mary - Kate" becomes two separate parts, causing a wrong parse.
-        # This is a documented limitation — do not "fix" it without a broader solution.
+    def test_suffix_delimiter_inverted_format_not_misparsed(self) -> None:
+        # The delimiter only expands parts once they're identified as a
+        # suffix group, so a hyphenated given name in inverted format isn't
+        # mistaken for a suffix split.
         hn = HumanName("Doe, Mary - Kate, RN", suffix_delimiter=" - ")
-        self.assertNotEqual(hn.first, "Mary - Kate")
+        self.m(hn.first, "Mary", hn)
+        self.m(hn.last, "Doe", hn)
+        self.m(hn.suffix, "RN", hn)
 
     def test_suffix_acronyms_ambiguous_is_customizable(self) -> None:
         from nameparser.config import Constants

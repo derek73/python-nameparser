@@ -343,12 +343,11 @@ class Constants:
     the full name is already split on bare commas first, and each resulting
     part is stripped of surrounding whitespace before this step runs.
 
-    Known limitation: the expansion is applied to all post-comma parts, not
-    just suffix groups. In inverted format (``"Last, First, suffix"``), the
-    first-name part is also split on the delimiter. In practice this is
-    harmless since first names rarely contain the delimiter string, but a
-    name like ``"Doe, Mary - Kate, RN"`` with ``suffix_delimiter=" - "``
-    would misparse.
+    The delimiter is only applied to parts once they've been identified as
+    a suffix group, so it never leaks into a first- or middle-name part. For
+    example, in inverted format (``"Last, First, suffix"``) a hyphenated
+    given name like ``"Doe, Mary - Kate, RN"`` with ``suffix_delimiter=" - "``
+    does not get mistaken for a suffix split.
     """
 
     empty_attribute_default = ''
