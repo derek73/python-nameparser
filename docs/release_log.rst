@@ -1,12 +1,6 @@
 Release Log
 ===========
 * 1.3.0 - Unreleased
-
-    **Upgrade note — pickle migration**: ``Constants`` pickles written before
-    1.2.1 cannot be loaded under 1.3.0+. If you have persisted blobs, upgrade
-    to 1.2.1 first (which includes a one-version compatibility shim), load and
-    re-pickle under 1.2.1, then upgrade to 1.3.0.
-
     - Add ``non_first_name_prefixes`` to ``Constants``: a leading particle that is never a first name (e.g. ``"de Mesnil"``, ``"dos Santos"``) now parses as a surname with an empty first name, instead of treating the particle as the first name (closes #121)
     - Add a first-class ``maiden`` field and ``maiden_delimiters`` to ``Constants``, so a delimiter (e.g. parenthesis) can be routed to ``maiden`` instead of ``nickname`` for alternate/maiden surnames, e.g. ``"Baker (Johnson), Jenny"`` (closes #22)
     - Fix suffix-shaped parenthesized/quoted content (e.g. ``"(Ret)"``, ``"(MBA)"``) being misclassified as a nickname instead of a suffix (closes #111)

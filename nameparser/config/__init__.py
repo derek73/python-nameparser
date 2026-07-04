@@ -535,6 +535,16 @@ class Constants:
         # unpickling.
         self._pst = None
         for name, value in state.items():
+            # Migration shim: pickles written before this fix (1.3.0 and earlier,
+            # including 1.2.1) used a dir() sweep for __getstate__, so their state
+            # carries the read-only ``suffixes_prefixes_titles`` property. Skip any
+            # such computed property rather than raising AttributeError on its
+            # missing setter; the real config is restored from the other keys. We
+            # don't promise to read pre-fix blobs forever — this only smooths
+            # migration for anyone persisting them, and can be dropped a release
+            # or two after 1.3.0 once they've re-pickled.
+            if isinstance(getattr(type(self), name, None), property):
+                continue
             setattr(self, name, value)
         # Verify each descriptor-backed attr was restored. Without this, a missing
         # key surfaces later as AttributeError: 'Constants' object has no attribute
