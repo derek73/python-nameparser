@@ -128,6 +128,20 @@ class BoundFirstNamesTestCase(HumanNameTestBase):
         self.m(hn.last, "Salam", hn)
         self.m(hn.suffix, "MD", hn)
 
+    def test_suffix_comma_title_kept_prefix_joins(self) -> None:
+        hn = HumanName("Dr. Abdul Salam Hassan, MD")
+        self.m(hn.title, "Dr.", hn)
+        self.m(hn.first, "Abdul Salam", hn)
+        self.m(hn.last, "Hassan", hn)
+        self.m(hn.suffix, "MD", hn)
+
+    def test_suffix_comma_abu_bakr_al_baghdadi(self) -> None:
+        """abu joins forward as first-prefix; al joins forward as last-prefix, even with suffix comma."""
+        hn = HumanName("Abu Bakr Al Baghdadi, MD")
+        self.m(hn.first, "Abu Bakr", hn)
+        self.m(hn.last, "Al Baghdadi", hn)
+        self.m(hn.suffix, "MD", hn)
+
     # --- opt-out ---
     def test_opt_out_via_clear(self) -> None:
         """Clearing bound_first_names restores prior behavior."""
