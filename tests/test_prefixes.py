@@ -247,14 +247,6 @@ class LastNamePrefixSplitTestCase(HumanNameTestBase):
         self.m(hn.last_base, hn.last, hn)
         self.m(hn.last_prefixes, "", hn)
 
-    def test_alias_family_equals_last_base(self) -> None:
-        hn = HumanName("Vincent van Gogh")
-        self.m(hn.family, hn.last_base, hn)
-
-    def test_alias_family_prefixes_equals_last_prefixes(self) -> None:
-        hn = HumanName("Vincent van Gogh")
-        self.m(hn.family_prefixes, hn.last_prefixes, hn)
-
     def test_da_silva_title_plus_prefix(self) -> None:
         hn = HumanName("Dra. Andréia da Silva")
         self.m(hn.last_base, "Silva", hn)

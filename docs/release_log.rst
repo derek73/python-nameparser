@@ -19,7 +19,7 @@ Release Log
     - Fix spurious leading space in surnames and empty token in suffix list after ``capitalize()`` with an empty middle or suffix (#164)
     - Fix extra whitespace before punctuation in ``str()`` output when a ``string_format`` field is empty (closes #139)
     - Fix ``'apn aprn'`` split into separate ``suffix_acronyms`` entries so each is recognized independently (closes #155)
-    - Add ``last_base``, ``last_prefixes`` (and ``_list`` variants) plus ``family`` / ``family_prefixes`` aliases for splitting last-name prefix particles (tussenvoegsels) from the core surname (#130, #132)
+    - Add ``last_base``, ``last_prefixes`` (and ``_list`` variants) for splitting last-name prefix particles (tussenvoegsels) from the core surname (#130, #132)
     - Fix suffix boundary lookup for prefixed last names with a title before and after (e.g. ``"dr Vincent van Gogh dr"`` producing a corrupted middle name) (closes #100)
     - Add ``patronymic_name_order`` flag to ``Constants`` and ``HumanName`` for opt-in detection and reordering of Russian formal-order names (Surname GivenName Patronymic) (#85)
     - Add Turkic (Azerbaijani/Central-Asian) patronymic detection to ``patronymic_name_order``, rotating the reversed 4-token formal shape (``Surname GivenName PatronymicRoot Marker``, e.g. ``oglu``/``qizi``) into Western order (#185)

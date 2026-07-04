@@ -530,16 +530,6 @@ class HumanName:
         """
         return " ".join(self.last_prefixes_list) or self.C.empty_attribute_default
 
-    @property
-    def family(self) -> str:
-        """Alias for :py:attr:`last_base`."""
-        return self.last_base
-
-    @property
-    def family_prefixes(self) -> str:
-        """Alias for :py:attr:`last_prefixes`."""
-        return self.last_prefixes
-
     # setter methods
 
     def _set_list(self, attr: str, value: str | list[str] | None) -> None:
