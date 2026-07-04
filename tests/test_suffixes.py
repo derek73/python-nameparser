@@ -204,7 +204,8 @@ class SuffixesTestCase(HumanNameTestBase):
     def test_roman_numeral_i_with_explicit_suffix_comma_known_limitation(self) -> None:
         # When an explicit suffix comma is present (len(parts)==3), the trailing 'I'
         # is conservatively left in middle to avoid misclassifying true initials.
-        # This is a known limitation of is_suffix_at_lastname_comma_end (issue #144).
+        # This is a known limitation of the lastname-comma lenient-suffix
+        # guard in parse_full_name (issue #144).
         hn = HumanName("Maier, Amy I, Jr.")
         self.m(hn.suffix, "I, Jr.", hn)
 

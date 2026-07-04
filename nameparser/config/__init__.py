@@ -140,40 +140,44 @@ class SetManager(Set):
 T = TypeVar('T')
 
 
+def _is_dunder(attr: str) -> bool:
+    # Dunder names are Python's protocol probes (copy looks up __deepcopy__,
+    # inspect.unwrap looks up __wrapped__, typing's GenericAlias.__call__ sets
+    # __orig_class__, ...), never config keys. The TupleManager attribute hooks
+    # all route dunders to normal object-attribute behavior so those probes
+    # work instead of being mistaken for dict entries.
+    return attr.startswith("__") and attr.endswith("__")
+
+
 class TupleManager(dict[str, T]):
     '''
-    A dictionary with dot.notation access. Subclass of ``dict``. Makes the tuple constants 
+    A dictionary with dot.notation access. Subclass of ``dict``. Makes the tuple constants
     more friendly.
     '''
 
     def __getattr__(self, attr: str) -> T | None:
-        # Dunder names are Python's protocol probes (copy looks up __deepcopy__,
-        # inspect.unwrap looks up __wrapped__, ...), never config keys. Report
-        # them as genuinely absent so hasattr() is honest and those probes work;
-        # otherwise the dict default is mistaken for a real protocol hook. See
-        # RegexTupleManager.__getattr__ for the concrete failure this prevents.
-        if attr.startswith("__") and attr.endswith("__"):
+        # Otherwise the dict default (None) is mistaken for a real protocol hook.
+        if _is_dunder(attr):
             raise AttributeError(attr)
         return self.get(attr)
 
     def __setattr__(self, attr: str, value: T) -> None:
-        # Dunder names are Python's protocol probes, not config keys -- same
-        # rationale as __getattr__ above. Concretely: constructing a
-        # subscripted generic, e.g. TupleManager[re.Pattern[str] | str](...),
-        # makes typing's GenericAlias.__call__ set `__orig_class__` on the new
-        # instance right after __init__ returns. Without this guard that
-        # assignment falls through to dict.__setitem__ and silently inserts a
-        # bogus '__orig_class__' entry into the dict itself, corrupting
-        # .values()/iteration. Fall back to normal object attribute storage
-        # for dunders; everything else keeps the dict-backed dot-notation
-        # behavior this class exists for.
-        if attr.startswith("__") and attr.endswith("__"):
+        # Fall back to normal object attribute storage for dunders; everything
+        # else keeps the dict-backed dot-notation behavior this class exists
+        # for. Concretely: constructing a subscripted generic, e.g.
+        # TupleManager[re.Pattern[str] | str](...), makes typing's
+        # GenericAlias.__call__ set `__orig_class__` on the new instance right
+        # after __init__ returns. Without this guard that assignment falls
+        # through to dict.__setitem__ and silently inserts a bogus
+        # '__orig_class__' entry into the dict itself, corrupting
+        # .values()/iteration.
+        if _is_dunder(attr):
             object.__setattr__(self, attr, value)
         else:
             self[attr] = value
 
     def __delattr__(self, attr: str) -> None:
-        if attr.startswith("__") and attr.endswith("__"):
+        if _is_dunder(attr):
             object.__delattr__(self, attr)
         else:
             del self[attr]
@@ -194,12 +198,9 @@ class TupleManager(dict[str, T]):
 
 class RegexTupleManager(TupleManager[re.Pattern[str]]):
     def __getattr__(self, attr: str) -> re.Pattern[str]:
-        # Dunder names are Python's protocol probes (copy.deepcopy looks up
-        # __deepcopy__, inspect.unwrap looks up __wrapped__, ...), never regex
-        # keys. Report them as genuinely absent; otherwise the EMPTY_REGEX
-        # default is mistaken for a real protocol hook — e.g. copy.deepcopy
-        # tries to call the returned re.Pattern and raises TypeError.
-        if attr.startswith("__") and attr.endswith("__"):
+        # Otherwise EMPTY_REGEX is returned for a dunder probe; copy.deepcopy
+        # then tries to call the returned re.Pattern and raises TypeError.
+        if _is_dunder(attr):
             raise AttributeError(attr)
         return self.get(attr, EMPTY_REGEX)
 

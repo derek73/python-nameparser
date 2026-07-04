@@ -1,6 +1,6 @@
 from nameparser import HumanName
 from nameparser.config import Constants
-from tests.base import HumanNameTestBase
+from tests.base import FlaggedConstantsTestBase, HumanNameTestBase
 
 
 def test_marker_is_whole_word_not_substring() -> None:
@@ -15,14 +15,10 @@ def test_marker_is_whole_word_not_substring() -> None:
     assert not C.regexes.turkic_patronymic_marker_cyrillic.match("Оглуев")
 
 
-class TurkicPatronymicNameOrderReorderTests(HumanNameTestBase):
+class TurkicPatronymicNameOrderReorderTests(FlaggedConstantsTestBase):
     """Names that SHOULD be rotated when the flag is on."""
 
-    def setup_method(self) -> None:
-        self.C = Constants(patronymic_name_order=True)
-
-    def hn(self, name: str) -> HumanName:
-        return HumanName(name, constants=self.C)
+    constants_kwargs = {"patronymic_name_order": True}
 
     def test_oglu(self) -> None:
         n = self.hn("Aliyev Vusal Said oglu")
@@ -195,14 +191,10 @@ class TurkicPatronymicNameOrderReorderTests(HumanNameTestBase):
         assert n.last == "АЛИЕВ"
 
 
-class TurkicPatronymicNameOrderGuardsTests(HumanNameTestBase):
+class TurkicPatronymicNameOrderGuardsTests(FlaggedConstantsTestBase):
     """Names that must NOT be reordered even when the flag is on."""
 
-    def setup_method(self) -> None:
-        self.C = Constants(patronymic_name_order=True)
-
-    def hn(self, name: str) -> HumanName:
-        return HumanName(name, constants=self.C)
+    constants_kwargs = {"patronymic_name_order": True}
 
     def test_already_correct_natural_order(self) -> None:
         n = self.hn("Vusal Said oglu Aliyev")
@@ -248,14 +240,10 @@ class TurkicPatronymicNameOrderFlagOffTests(HumanNameTestBase):
         assert n.last == "oglu"
 
 
-class PatronymicHandlerInteractionTests(HumanNameTestBase):
+class PatronymicHandlerInteractionTests(FlaggedConstantsTestBase):
     """Both handlers run in sequence under the same flag; confirm no interference."""
 
-    def setup_method(self) -> None:
-        self.C = Constants(patronymic_name_order=True)
-
-    def hn(self, name: str) -> HumanName:
-        return HumanName(name, constants=self.C)
+    constants_kwargs = {"patronymic_name_order": True}
 
     def test_east_slavic_shape_unaffected_by_turkic_handler(self) -> None:
         # If handle_turkic_patronymic_name_order() ran BEFORE the East-Slavic
