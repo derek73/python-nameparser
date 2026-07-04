@@ -1280,6 +1280,13 @@ class HumanName:
                 # chain onto a following prefix/lastname (see "von und zu")
                 self.C.prefixes.add(new_piece)
 
+        def shift_conj_index(past: int, by: int) -> None:
+            # after removing pieces at/after `past`, indices of the
+            # remaining conjunctions need to shift down by `by`
+            for j, val in enumerate(conj_index):
+                if val > past:
+                    conj_index[j] = val - by
+
         for i in conj_index:
             if len(pieces[i]) == 1 and total_length < 4 and pieces[i].isalpha():
                 # if there are only 3 total parts (minus known titles, suffixes
@@ -1293,27 +1300,18 @@ class HumanName:
                 register_joined_piece(new_piece, pieces[i+1])
                 pieces[i] = new_piece
                 pieces.pop(i+1)
-                # subtract 1 from the index of all the remaining conjunctions
-                for j, val in enumerate(conj_index):
-                    if val > i:
-                        conj_index[j] = val-1
+                shift_conj_index(past=i, by=1)
 
             else:
                 new_piece = " ".join(pieces[i-1:i+2])
                 register_joined_piece(new_piece, pieces[i-1])
                 pieces[i-1] = new_piece
-                pieces.pop(i)
-                rm_count = 2
-                try:
-                    pieces.pop(i)
-                except IndexError:
-                    rm_count = 1
-
-                # subtract the number of removed pieces from the index
-                # of all the remaining conjunctions
-                for j, val in enumerate(conj_index):
-                    if val > i:
-                        conj_index[j] = val - rm_count
+                # len(pieces) - i is always >= 1 here: pieces[i-1:i+2] above
+                # already accessed index i, so i is guaranteed in range.
+                rm_count = min(2, len(pieces) - i)
+                assert rm_count > 0, f"unexpected empty deletion at i={i}, pieces={pieces}"
+                del pieces[i:i+rm_count]
+                shift_conj_index(past=i, by=rm_count)
 
         # join prefixes to following lastnames: ['de la Vega'], ['van Buren']
         prefixes = list(filter(self.is_prefix, pieces))
@@ -1343,7 +1341,7 @@ class HumanName:
                         # if there are two prefixes in sequence, join to the following piece
                         j += 1
                     new_piece = ' '.join(pieces[i:j])
-                    pieces = pieces[:i] + [new_piece] + pieces[j:]
+                    pieces[i:j] = [new_piece]
                 except StopIteration:
                     try:
                         # if there are no more prefixes, look for a suffix to stop at
@@ -1355,12 +1353,12 @@ class HumanName:
                         # before the prefix) would be matched instead.
                         j = pieces.index(stop_at, i + 1)
                         new_piece = ' '.join(pieces[i:j])
-                        pieces = pieces[:i] + [new_piece] + pieces[j:]
+                        pieces[i:j] = [new_piece]
                     except StopIteration:
                         # if there were no suffixes, nothing to stop at so join all
                         # remaining pieces
                         new_piece = ' '.join(pieces[i:])
-                        pieces = pieces[:i] + [new_piece]
+                        pieces[i:] = [new_piece]
 
         log.debug("pieces: %s", pieces)
         return pieces
