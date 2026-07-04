@@ -1,6 +1,7 @@
 import pytest
 
 from nameparser import HumanName
+from nameparser.config import CONSTANTS, Constants
 from nameparser.config.prefixes import PREFIXES, NON_FIRST_NAME_PREFIXES
 from nameparser.config.first_name_prefixes import FIRST_NAME_PREFIXES
 
@@ -183,6 +184,22 @@ class PrefixesTestCase(HumanNameTestBase):
         self.assertNotIn('von', NON_FIRST_NAME_PREFIXES)
         self.assertNotIn('van', NON_FIRST_NAME_PREFIXES)
         self.assertNotIn('della', NON_FIRST_NAME_PREFIXES)
+
+    def test_constants_exposes_non_first_name_prefixes(self) -> None:
+        self.assertEqual(set(CONSTANTS.non_first_name_prefixes), NON_FIRST_NAME_PREFIXES)
+
+    def test_non_first_name_prefixes_disjoint_from_titles(self) -> None:
+        # A member that is also a title is consumed as a title before the fold
+        # would run, making it inert (the st/ste footgun). Pin the invariant on
+        # the live default sets.
+        self.assertEqual(
+            set(CONSTANTS.non_first_name_prefixes) & set(CONSTANTS.titles),
+            set(),
+        )
+
+    def test_non_first_name_prefixes_constructor_arg(self) -> None:
+        c = Constants(non_first_name_prefixes={'zzz'})
+        self.assertEqual(set(c.non_first_name_prefixes), {'zzz'})
 
 
 class LastNamePrefixSplitTestCase(HumanNameTestBase):

@@ -35,6 +35,7 @@ _COLLECTION_CONFIG_ATTRS = (
     "first_name_titles",
     "conjunctions",
     "first_name_prefixes",
+    "non_first_name_prefixes",
     "capitalization_exceptions",
     "regexes",
     "nickname_delimiters",

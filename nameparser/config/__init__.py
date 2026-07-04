@@ -36,7 +36,7 @@ else:
     from typing_extensions import Self
 
 from nameparser.util import lc
-from nameparser.config.prefixes import PREFIXES
+from nameparser.config.prefixes import PREFIXES, NON_FIRST_NAME_PREFIXES
 from nameparser.config.first_name_prefixes import FIRST_NAME_PREFIXES
 from nameparser.config.capitalization import CAPITALIZATION_EXCEPTIONS
 from nameparser.config.conjunctions import CONJUNCTIONS
@@ -264,6 +264,11 @@ class Constants:
         :py:attr:`conjunctions`  wrapped with :py:class:`SetManager`.
     :param set first_name_prefixes:
         :py:attr:`~first_name_prefixes.FIRST_NAME_PREFIXES` wrapped with :py:class:`SetManager`.
+    :param set non_first_name_prefixes:
+        :py:attr:`~prefixes.NON_FIRST_NAME_PREFIXES` wrapped with :py:class:`SetManager`.
+        The subset of prefixes that are never a first name, so a *leading* one
+        marks the whole name as a surname. Must stay disjoint from
+        ``first_name_prefixes``.
     :type capitalization_exceptions: tuple or dict
     :param capitalization_exceptions: 
         :py:attr:`~capitalization.CAPITALIZATION_EXCEPTIONS` wrapped with :py:class:`TupleManager`.
@@ -289,6 +294,7 @@ class Constants:
     first_name_titles: SetManager
     conjunctions: SetManager
     first_name_prefixes: SetManager
+    non_first_name_prefixes: SetManager
     suffix_acronyms_ambiguous: SetManager
     capitalization_exceptions: TupleManager[str]
     regexes: RegexTupleManager
@@ -463,6 +469,7 @@ class Constants:
                  first_name_titles: Iterable[str] = FIRST_NAME_TITLES,
                  conjunctions: Iterable[str] = CONJUNCTIONS,
                  first_name_prefixes: Iterable[str] = FIRST_NAME_PREFIXES,
+                 non_first_name_prefixes: Iterable[str] = NON_FIRST_NAME_PREFIXES,
                  capitalization_exceptions: TupleManager[str] | Iterable[tuple[str, str]] = CAPITALIZATION_EXCEPTIONS,
                  regexes: RegexTupleManager | TupleManager[re.Pattern[str]] | Iterable[tuple[str, re.Pattern[str]]] = REGEXES,
                  patronymic_name_order: bool = False,
@@ -478,6 +485,7 @@ class Constants:
         self.first_name_titles = SetManager(first_name_titles)
         self.conjunctions = SetManager(conjunctions)
         self.first_name_prefixes = SetManager(first_name_prefixes)
+        self.non_first_name_prefixes = SetManager(non_first_name_prefixes)
         self.suffix_acronyms_ambiguous = SetManager(suffix_acronyms_ambiguous)
         self.capitalization_exceptions = TupleManager(capitalization_exceptions)
         self.regexes = RegexTupleManager(regexes)
