@@ -345,7 +345,9 @@ constant so that "Hon" can be parsed as a first name.
     :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
     >>> from nameparser import HumanName
-    >>> hn = HumanName("Hon Solo")
+    >>> from nameparser.config import Constants
+    >>> constants = Constants()
+    >>> hn = HumanName("Hon Solo", constants=constants)
     >>> hn
     <HumanName : [
         title: 'Hon'
@@ -356,10 +358,9 @@ constant so that "Hon" can be parsed as a first name.
         nickname: ''
         maiden: ''
     ]>
-    >>> from nameparser.config import CONSTANTS
-    >>> CONSTANTS.titles.remove('hon')
-    SetManager({'right', ..., 'tax'})
-    >>> hn = HumanName("Hon Solo")
+    >>> constants.titles.remove('hon')
+    SetManager({'10th', ..., 'zoologist'})
+    >>> hn = HumanName("Hon Solo", constants=constants)
     >>> hn
     <HumanName : [
         title: ''
@@ -374,7 +375,11 @@ constant so that "Hon" can be parsed as a first name.
 
 If you don't want to detect any titles at all, you can remove all of them:
 
-    >>> CONSTANTS.titles.clear()
+.. doctest::
+    :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
+
+    >>> constants.titles.clear()
+    SetManager(set())
 
 
 Adding a Title
@@ -399,7 +404,7 @@ making them lower case and removing periods.
     >>> from nameparser.config import Constants
     >>> constants = Constants()
     >>> constants.titles.add('dean', 'Chemistry')
-    SetManager({'right', ..., 'tax'})
+    SetManager({'10th', ..., 'zoologist'})
     >>> hn = HumanName("Assoc Dean of Chemistry Robert Johns", constants=constants)
     >>> hn
     <HumanName : [
@@ -427,7 +432,7 @@ the config on one instance could modify the behavior of another instance.
     >>> from nameparser import HumanName
     >>> instance = HumanName("")
     >>> instance.C.titles.add('dean')
-    SetManager({'right', ..., 'tax'})
+    SetManager({'10th', ..., 'zoologist'})
     >>> other_instance = HumanName("Dean Robert Johns")
     >>> other_instance # Dean parses as title
     <HumanName : [
@@ -455,7 +460,7 @@ reference to the module-level config values with the behavior described above.
     >>> instance.has_own_config
     False
     >>> instance.C.titles.add('dean')
-    SetManager({'right', ..., 'tax'})
+    SetManager({'10th', ..., 'zoologist'})
     >>> other_instance = HumanName("Dean Robert Johns", None) # <-- pass None for per-instance config
     >>> other_instance
     <HumanName : [
@@ -483,8 +488,8 @@ You can turn this off by setting the ``emoji`` regex to ``False``.
     >>> constants = Constants()
     >>> constants.regexes.emoji = False
     >>> hn = HumanName("Sam 😊 Smith", constants=constants)
-    >>> hn
-    "Sam 😊 Smith"
+    >>> str(hn)
+    'Sam 😊 Smith'
 
 Config Changes May Need Parse Refresh
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -529,9 +534,9 @@ directly to the attribute.
   >>> hn = HumanName("Dr. John A. Kenneth Doe")
   >>> hn.title = ["Associate","Professor"]
   >>> hn.suffix = "Md."
-  >>> hn.suffix
+  >>> hn
   <HumanName : [
-      title: 'Associate Processor'
+      title: 'Associate Professor'
       first: 'John'
       middle: 'A. Kenneth'
       last: 'Doe'
