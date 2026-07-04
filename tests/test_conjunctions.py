@@ -274,3 +274,16 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.first, "Alois", hn)
         self.m(hn.middle, "", hn)
         self.m(hn.last, "von und zu und von Liechtenstein", hn)
+
+    def test_leading_conjunction_joins_to_following_piece(self) -> None:
+        # exercises the i == 0 branch: conjunction is the very first piece
+        hn = HumanName("and Jon Dough")
+        self.m(hn.first, "and Jon", hn)
+        self.m(hn.last, "Dough", hn)
+
+    def test_trailing_conjunction_at_list_end(self) -> None:
+        # exercises the truncated rm_count path: conjunction is the last piece,
+        # so there is no following piece to remove
+        hn = HumanName("Jon Dough and")
+        self.m(hn.first, "Jon", hn)
+        self.m(hn.last, "Dough and", hn)

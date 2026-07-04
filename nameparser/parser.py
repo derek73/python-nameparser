@@ -1295,23 +1295,13 @@ class HumanName:
                 # http://code.google.com/p/python-nameparser/issues/detail?id=11
                 continue
 
-            if i == 0:
-                new_piece = " ".join(pieces[i:i+2])
-                register_joined_piece(new_piece, pieces[i+1])
-                pieces[i] = new_piece
-                pieces.pop(i+1)
-                shift_conj_index(past=i, by=1)
-
-            else:
-                new_piece = " ".join(pieces[i-1:i+2])
-                register_joined_piece(new_piece, pieces[i-1])
-                pieces[i-1] = new_piece
-                # len(pieces) - i is always >= 1 here: pieces[i-1:i+2] above
-                # already accessed index i, so i is guaranteed in range.
-                rm_count = min(2, len(pieces) - i)
-                assert rm_count > 0, f"unexpected empty deletion at i={i}, pieces={pieces}"
-                del pieces[i:i+rm_count]
-                shift_conj_index(past=i, by=rm_count)
+            start = max(0, i - 1)
+            end = min(len(pieces), i + 2)
+            new_piece = " ".join(pieces[start:end])
+            neighbor = pieces[start] if start < i else pieces[end - 1]
+            register_joined_piece(new_piece, neighbor)
+            pieces[start:end] = [new_piece]
+            shift_conj_index(past=i, by=end - start - 1)
 
         # join prefixes to following lastnames: ['de la Vega'], ['van Buren']
         prefixes = list(filter(self.is_prefix, pieces))
