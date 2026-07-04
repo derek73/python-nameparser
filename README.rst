@@ -71,11 +71,12 @@ Quick Start Example
     	last: 'de la Vega' 
     	suffix: 'III'
     	nickname: 'Doc Vega'
+    	maiden: ''
     ]>
     >>> name.last
     'de la Vega'
     >>> name.as_dict()
-    {'last': 'de la Vega', 'suffix': 'III', 'title': 'Dr.', 'middle': 'Q. Xavier', 'nickname': 'Doc Vega', 'first': 'Juan'}
+    {'title': 'Dr.', 'first': 'Juan', 'middle': 'Q. Xavier', 'last': 'de la Vega', 'suffix': 'III', 'nickname': 'Doc Vega', 'maiden': ''}
     >>> str(name)
     'Dr. Juan Q. Xavier de la Vega III (Doc Vega)'
     >>> name.string_format = "{first} {last}"
@@ -97,9 +98,10 @@ and "post-nominal" would probably be better names.)
     	title: '' 
     	first: '3' 
     	middle: '4 5' 
-    	last: '1 & 2' 
+    	last: '1 & 2'
     	suffix: 'Mr.'
     	nickname: ''
+    	maiden: ''
     ]>
 
 Customization
