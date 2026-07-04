@@ -2,15 +2,15 @@ from nameparser import HumanName
 from tests.base import HumanNameTestBase
 
 
-class FirstNamePrefixesTestCase(HumanNameTestBase):
+class BoundFirstNamesTestCase(HumanNameTestBase):
 
-    def test_is_first_name_prefix_true(self) -> None:
+    def test_is_bound_first_name_true(self) -> None:
         hn = HumanName("test")
-        assert hn.is_first_name_prefix("Abdul")
+        assert hn.is_bound_first_name("Abdul")
 
-    def test_is_first_name_prefix_false(self) -> None:
+    def test_is_bound_first_name_false(self) -> None:
         hn = HumanName("test")
-        assert not hn.is_first_name_prefix("Ahmed")
+        assert not hn.is_bound_first_name("Ahmed")
 
     # --- no-comma: basic joining ---
     def test_no_comma_basic_join(self) -> None:
@@ -76,7 +76,7 @@ class FirstNamePrefixesTestCase(HumanNameTestBase):
 
     # --- guard / no-op ---
     def test_mohamad_unchanged(self) -> None:
-        """mohamad is deliberately not in first_name_prefixes."""
+        """mohamad is deliberately not in bound_first_names."""
         hn = HumanName("Mohamad Ali Khalil")
         self.m(hn.first, "Mohamad", hn)
         self.m(hn.middle, "Ali", hn)
@@ -108,9 +108,9 @@ class FirstNamePrefixesTestCase(HumanNameTestBase):
 
     # --- opt-out ---
     def test_opt_out_via_clear(self) -> None:
-        """Clearing first_name_prefixes restores prior behavior."""
+        """Clearing bound_first_names restores prior behavior."""
         from nameparser.config import Constants
-        c = Constants(first_name_prefixes=set())
+        c = Constants(bound_first_names=set())
         hn = HumanName("abdul salam ahmed salem", constants=c)
         self.m(hn.first, "abdul", hn)
         self.m(hn.middle, "salam ahmed", hn)

@@ -3,7 +3,7 @@ import pytest
 from nameparser import HumanName
 from nameparser.config import CONSTANTS, Constants
 from nameparser.config.prefixes import PREFIXES, NON_FIRST_NAME_PREFIXES
-from nameparser.config.first_name_prefixes import FIRST_NAME_PREFIXES
+from nameparser.config.bound_first_names import BOUND_FIRST_NAMES
 
 from tests.base import HumanNameTestBase
 
@@ -170,13 +170,13 @@ class PrefixesTestCase(HumanNameTestBase):
         # Every non-first-name prefix must still be a prefix so it joins forward.
         self.assertTrue(NON_FIRST_NAME_PREFIXES <= PREFIXES)
 
-    def test_non_first_name_prefixes_disjoint_from_first_name_prefixes(self) -> None:
+    def test_non_first_name_prefixes_disjoint_from_bound_first_names(self) -> None:
         # A word cannot be both "joins to the first name" and "never a first
-        # name" (e.g. 'abu' is a first_name_prefix, so it is excluded here).
-        self.assertEqual(NON_FIRST_NAME_PREFIXES & FIRST_NAME_PREFIXES, set())
+        # name" (e.g. 'abu' is a bound_first_name, so it is excluded here).
+        self.assertEqual(NON_FIRST_NAME_PREFIXES & BOUND_FIRST_NAMES, set())
 
     def test_non_first_name_prefixes_expected_members(self) -> None:
-        # 'abu' is in PREFIXES but excluded (it is a first_name_prefix);
+        # 'abu' is in PREFIXES but excluded (it is a bound_first_name);
         # 'von'/'van'/'della'/'di'/'del' are excluded (they can be first names).
         self.assertIn('de', NON_FIRST_NAME_PREFIXES)
         self.assertIn('dos', NON_FIRST_NAME_PREFIXES)

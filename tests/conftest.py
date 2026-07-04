@@ -34,7 +34,7 @@ _COLLECTION_CONFIG_ATTRS = (
     "titles",
     "first_name_titles",
     "conjunctions",
-    "first_name_prefixes",
+    "bound_first_names",
     "non_first_name_prefixes",
     "capitalization_exceptions",
     "regexes",
