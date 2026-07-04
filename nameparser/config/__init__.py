@@ -75,7 +75,10 @@ class SetManager(Set):
         return self.elements
 
     def __repr__(self) -> str:
-        return f"SetManager({self.elements})"  # used for docs
+        # Sorted so repr is stable across runs -- set() iteration order
+        # depends on string hash randomization, which varies per process.
+        elements = "{" + ", ".join(repr(e) for e in sorted(self.elements)) + "}" if self.elements else "set()"
+        return f"SetManager({elements})"  # used for docs
 
     def __iter__(self) -> Iterator[str]:
         return iter(self.elements)
@@ -363,6 +366,7 @@ class Constants:
         None
         >>> name.first
         'John'
+        >>> CONSTANTS.empty_attribute_default = ''
 
     """
 
@@ -378,6 +382,7 @@ class Constants:
         >>> name = HumanName("bob v. de la macdole-eisenhower phd")
         >>> str(name)
         'Bob V. de la MacDole-Eisenhower Ph.D.'
+        >>> CONSTANTS.capitalize_name = False
 
     """
 
@@ -394,6 +399,7 @@ class Constants:
         >>> name.capitalize()
         >>> str(name)
         'Shirley MacLaine'
+        >>> CONSTANTS.force_mixed_case_capitalization = False
 
     """
 

@@ -112,6 +112,7 @@ To apply capitalization to all `HumanName` instances, set
     >>> name = HumanName("bob v. de la macdole-eisenhower phd")
     >>> str(name)
     'Bob V. de la MacDole-Eisenhower Ph.D.'
+    >>> CONSTANTS.capitalize_name = False
 
 To force the capitalization of mixed case strings on all `HumanName` instances,
 set :py:attr:`~nameparser.config.Constants.force_mixed_case_capitalization` to `True`. 
@@ -125,6 +126,7 @@ set :py:attr:`~nameparser.config.Constants.force_mixed_case_capitalization` to `
     >>> name.capitalize()
     >>> str(name)
     'Shirley MacLaine'
+    >>> CONSTANTS.force_mixed_case_capitalization = False
 
 
 Nickname Handling
