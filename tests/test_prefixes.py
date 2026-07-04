@@ -351,3 +351,33 @@ class LastNamePrefixSplitTestCase(HumanNameTestBase):
         hn = HumanName("de")
         self.m(hn.first, "de", hn)
         self.m(hn.last, "", hn)
+
+    # --- interactions with opt-in handlers that also run in post_process ---
+
+    def test_leading_non_first_name_prefix_case_insensitive(self) -> None:
+        hn = HumanName("DE MESNIL")
+        self.m(hn.first, "", hn)
+        self.m(hn.last, "DE MESNIL", hn)
+
+    def test_leading_non_first_name_prefix_with_suffix(self) -> None:
+        hn = HumanName("de Mesnil Jr.")
+        self.m(hn.first, "", hn)
+        self.m(hn.last, "de Mesnil", hn)
+        self.m(hn.suffix, "Jr.", hn)
+
+    def test_leading_non_first_name_prefix_with_patronymic_name_order(self) -> None:
+        # The fold requires a single-token first_list; patronymic_name_order
+        # only matters once first_list has more than one piece, so the fold
+        # and this opt-in handler don't fight over the same input shape here.
+        constants = Constants(patronymic_name_order=True)
+        hn = HumanName("de Mesnil", constants=constants)
+        self.m(hn.first, "", hn)
+        self.m(hn.last, "de Mesnil", hn)
+
+    def test_leading_non_first_name_prefix_with_middle_name_as_last(self) -> None:
+        # handle_non_first_name_prefix runs first and empties middle_list, so
+        # the later opt-in handle_middle_name_as_last has nothing left to do.
+        constants = Constants(middle_name_as_last=True)
+        hn = HumanName("de Mesnil Garcia", constants=constants)
+        self.m(hn.first, "", hn)
+        self.m(hn.last, "de Mesnil Garcia", hn)
