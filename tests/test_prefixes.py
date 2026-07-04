@@ -307,6 +307,33 @@ class LastNamePrefixSplitTestCase(HumanNameTestBase):
         self.m(hn.first, "", hn)
         self.m(hn.last, "de Mesnil", hn)
 
+    def test_repeated_prefix_chain_de_la(self) -> None:
+        hn = HumanName("Juan de la de la Vega")
+        self.m(hn.first, "Juan", hn)
+        self.m(hn.last, "de la de la Vega", hn)
+
+    def test_repeated_prefix_chain_van_der(self) -> None:
+        hn = HumanName("Charles van der van der Berg")
+        self.m(hn.first, "Charles", hn)
+        self.m(hn.last, "van der van der Berg", hn)
+
+    def test_triple_repeated_prefix_chain(self) -> None:
+        # a stronger regression guard than the 2-repeat cases above: the
+        # contiguous-prefix absorption loop should chain any number of
+        # repeats, not just handle exactly two
+        hn = HumanName("Juan de la de la de la Vega")
+        self.m(hn.first, "Juan", hn)
+        self.m(hn.last, "de la de la de la Vega", hn)
+
+    def test_repeated_prefix_chain_followed_by_suffix(self) -> None:
+        # the prefix-run absorption loop and the suffix-boundary loop share
+        # the same index variable, so a repeated chain immediately
+        # followed by a suffix is worth pinning down explicitly
+        hn = HumanName("Juan de la de la Vega Jr.")
+        self.m(hn.first, "Juan", hn)
+        self.m(hn.last, "de la de la Vega", hn)
+        self.m(hn.suffix, "Jr.", hn)
+
     # --- safety: excluded / ambiguous particles are unchanged ---
 
     def test_leading_von_is_unchanged(self) -> None:
