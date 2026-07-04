@@ -27,6 +27,8 @@ Requires Python 3.10+.
     'de la'
     >>> name.family
     'Vega'
+    >>> name.family_prefixes
+    'de la'
     >>> name.suffix
     'III'
     >>> name.surnames
