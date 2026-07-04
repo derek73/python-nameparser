@@ -278,3 +278,76 @@ class LastNamePrefixSplitTestCase(HumanNameTestBase):
         hn = HumanName("VINCENT VAN GOGH")
         self.m(hn.last_prefixes, "VAN", hn)
         self.m(hn.last_base, "GOGH", hn)
+
+    # --- targets: leading non-first-name prefix becomes the surname ---
+
+    def test_leading_non_first_name_prefix_de(self) -> None:
+        hn = HumanName("de Mesnil")
+        self.m(hn.first, "", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "de Mesnil", hn)
+
+    def test_leading_non_first_name_prefix_dos(self) -> None:
+        hn = HumanName("dos Santos")
+        self.m(hn.first, "", hn)
+        self.m(hn.last, "dos Santos", hn)
+
+    def test_leading_non_first_name_prefix_chain(self) -> None:
+        hn = HumanName("de la Vega")
+        self.m(hn.first, "", hn)
+        self.m(hn.last, "de la Vega", hn)
+
+    def test_leading_non_first_name_prefix_derived_props(self) -> None:
+        hn = HumanName("de Mesnil")
+        self.m(hn.last_prefixes, "de", hn)
+        self.m(hn.last_base, "Mesnil", hn)
+
+    def test_non_first_name_prefix_with_custom_title(self) -> None:
+        # 'Gunny' is NOT a default title -> genuinely exercises the custom-title
+        # path. Title is consumed first (first_list == ['']), so the fold does
+        # not fire and the surname is already correct; asserts we don't corrupt
+        # the title case.
+        CONSTANTS.titles.add('gunny')
+        hn = HumanName("Gunny de Mesnil")
+        self.m(hn.title, "Gunny", hn)
+        self.m(hn.first, "", hn)
+        self.m(hn.last, "de Mesnil", hn)
+
+    # --- safety: excluded / ambiguous particles are unchanged ---
+
+    def test_leading_von_is_unchanged(self) -> None:
+        hn = HumanName("von Braun")
+        self.m(hn.first, "von", hn)
+        self.m(hn.last, "Braun", hn)
+
+    def test_leading_van_is_unchanged(self) -> None:
+        hn = HumanName("Van Johnson")
+        self.m(hn.first, "Van", hn)
+        self.m(hn.last, "Johnson", hn)
+
+    def test_leading_della_is_unchanged(self) -> None:
+        hn = HumanName("Della Reese")
+        self.m(hn.first, "Della", hn)
+        self.m(hn.last, "Reese", hn)
+
+    def test_leading_di_is_unchanged(self) -> None:
+        hn = HumanName("Di Caprio")
+        self.m(hn.first, "Di", hn)
+        self.m(hn.last, "Caprio", hn)
+
+    def test_leading_del_is_unchanged(self) -> None:
+        hn = HumanName("Del Toro")
+        self.m(hn.first, "Del", hn)
+        self.m(hn.last, "Toro", hn)
+
+    def test_non_leading_prefix_is_unchanged(self) -> None:
+        hn = HumanName("Jean de Mesnil")
+        self.m(hn.first, "Jean", hn)
+        self.m(hn.last, "de Mesnil", hn)
+
+    # --- guard: bare particle with nothing to attach to ---
+
+    def test_bare_non_first_name_prefix_guard(self) -> None:
+        hn = HumanName("de")
+        self.m(hn.first, "de", hn)
+        self.m(hn.last, "", hn)
