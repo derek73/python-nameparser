@@ -294,6 +294,18 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(hn.first, "vai", hn)
         self.m(hn.last, "la", hn)
 
+    def test_degenerate_comma_input_leaves_no_empty_pieces(self) -> None:
+        # Regression: HumanName(',') (no-comma path after whitespace collapse)
+        # and HumanName('Doe,, Jr.') (lastname-comma path) appended '' to
+        # first_list — a silent empty member in the public *_list attributes.
+        hn = HumanName(",")
+        self.assertEqual(hn.first_list, [])
+        self.assertEqual(len(hn), 0)
+        hn = HumanName("Doe,, Jr.")
+        self.assertEqual(hn.first_list, [])
+        self.m(hn.last, "Doe", hn)
+        self.m(hn.suffix, "Jr.", hn)
+
     def test_blank_name(self) -> None:
         hn = HumanName()
         self.m(hn.first, "", hn)

@@ -1183,7 +1183,10 @@ class HumanName:
             if not isinstance(part, (str, bytes)):
                 raise TypeError("Name parts must be strings. "
                                 f" Got {type(part)}")
-            output += [x.strip(' ,') for x in part.split(' ')]
+            # drop tokens that strip to nothing (e.g. from a bare "," input or
+            # an empty comma segment) so no empty piece reaches the parse
+            # loops and the public *_list attributes
+            output += [s for s in (x.strip(' ,') for x in part.split(' ')) if s]
 
         # If part contains periods, check if it's multiple titles or suffixes
         # together without spaces if so, add the new part with periods to the
