@@ -7,6 +7,7 @@ Release Log
     - Fix a trailing suffix being silently dropped after an empty comma segment, e.g. ``"Doe, John,, Jr."`` losing the ``"Jr."``
     - Remove ``__ne__``; Python 3 derives ``!=`` from ``__eq__`` automatically
     - Change internal initials helper ``__process_initial__`` to ``_process_initial``: double-underscore-both-sides names are reserved for Python special methods; subclasses overriding the old name must rename their override
+    - Fix degenerate comma input (a bare ``","`` or an empty comma segment, e.g. ``"Doe,, Jr."``, ``"John Doe, Jr.,,"``) leaving an empty-string member in ``first_list``, ``last_list``, or ``suffix_list``; whitespace-only tokens assigned via the setters are dropped the same way
     - Add ``non_first_name_prefixes`` to ``Constants``: a leading particle that is never a first name (e.g. ``"de Mesnil"``, ``"dos Santos"``) now parses as a surname with an empty first name, instead of treating the particle as the first name (closes #121)
     - Add a first-class ``maiden`` field and ``maiden_delimiters`` to ``Constants``, so a delimiter (e.g. parenthesis) can be routed to ``maiden`` instead of ``nickname`` for alternate/maiden surnames, e.g. ``"Baker (Johnson), Jenny"`` (closes #22)
     - Fix suffix-shaped parenthesized/quoted content (e.g. ``"(Ret)"``, ``"(MBA)"``) being misclassified as a nickname instead of a suffix (closes #111)

@@ -294,6 +294,41 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(hn.first, "vai", hn)
         self.m(hn.last, "la", hn)
 
+    def test_degenerate_comma_input_leaves_no_empty_pieces(self) -> None:
+        # Regression: HumanName(',') (no-comma path after whitespace collapse)
+        # and HumanName('Doe,, Jr.') (lastname-comma path) appended '' to
+        # first_list — a silent empty member in the public *_list attributes.
+        hn = HumanName(",")
+        self.assertEqual(hn.first_list, [])
+        self.assertEqual(hn.middle_list, [])
+        self.assertEqual(hn.last_list, [])
+        self.assertEqual(len(hn), 0)
+        hn = HumanName("Doe,, Jr.")
+        self.assertEqual(hn.first_list, [])
+        self.m(hn.last, "Doe", hn)
+        self.m(hn.suffix, "Jr.", hn)
+        # empty parts[0] exercises the lastname_pieces call site: the empty
+        # last-name segment must not become a member of last_list
+        hn = HumanName(", John")
+        self.assertEqual(hn.last_list, [])
+        self.m(hn.first, "John", hn)
+
+    def test_assignment_filters_empty_tokens(self) -> None:
+        # parse_pieces() drops tokens that strip to nothing at every entry
+        # point, including the setters: whitespace-only strings and empty
+        # list members never become *_list members (they previously survived,
+        # e.g. hn.first = '  ' left first == '  ' and middle 'a  b' gained an
+        # empty member from ['a', '', 'b']).
+        hn = HumanName("John Doe")
+        hn.first = "  "
+        self.assertEqual(hn.first_list, [])
+        self.m(hn.first, "", hn)
+        hn.middle = ["a", "", "b"]
+        self.assertEqual(hn.middle_list, ["a", "b"])
+        self.m(hn.middle, "a b", hn)
+        hn["last"] = ["", "Smith"]
+        self.assertEqual(hn.last_list, ["Smith"])
+
     def test_blank_name(self) -> None:
         hn = HumanName()
         self.m(hn.first, "", hn)
