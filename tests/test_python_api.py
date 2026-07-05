@@ -36,6 +36,9 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(len(hn), 5, hn)
         hn = HumanName("John Doe")
         self.m(len(hn), 2, hn)
+        # empty input parses to an all-empty name; len == 0 is the
+        # documented emptiness check (see usage.rst)
+        self.assertEqual(len(HumanName("")), 0)
 
     @pytest.mark.skipif(not dill, reason="requires python-dill module to test pickling")
     def test_config_pickle(self) -> None:

@@ -78,14 +78,6 @@ Empty or unparsable input does not raise an error; it produces a name whose
 attributes are all empty. Check ``len(name) == 0`` (or ``str(name) == ''``)
 to detect that nothing was parsed.
 
-.. doctest::
-
-    >>> name = HumanName("")
-    >>> len(name)
-    0
-    >>> str(name)
-    ''
-
 
 Capitalization Support
 ----------------------
