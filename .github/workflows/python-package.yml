@@ -40,9 +40,16 @@ jobs:
       run: uv run mypy
     - name: Run Tests
       run: |
-        uv run pytest
+        uv run pytest --cov=nameparser --cov-report=xml
         uv run --with build python -m build --sdist
         uv run --with twine twine check dist/*
         uv run sphinx-build -b html docs dist/docs
         uv run sphinx-build -b doctest docs dist/doctest
         uv run python -m doctest README.rst
+    - name: Upload coverage to Codecov
+      if: matrix.python-version == '3.13'
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage.xml
+        fail_ci_if_error: false
