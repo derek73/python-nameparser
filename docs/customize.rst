@@ -17,8 +17,10 @@ The first is via ``from nameparser.config import CONSTANTS``.
 .. doctest::
 
     >>> from nameparser.config import CONSTANTS
-    >>> CONSTANTS
-    <Constants() instance>
+    >>> CONSTANTS  # doctest: +ELLIPSIS
+    <Constants : [
+        prefixes: ...
+    ]>
 
 The other is the ``C`` attribute of a ``HumanName`` instance, e.g.
 ``hn.C``.
@@ -27,8 +29,10 @@ The other is the ``C`` attribute of a ``HumanName`` instance, e.g.
 
     >>> from nameparser import HumanName
     >>> hn = HumanName("Dean Robert Johns")
-    >>> hn.C
-    <Constants() instance>
+    >>> hn.C  # doctest: +ELLIPSIS
+    <Constants : [
+        prefixes: ...
+    ]>
 
 Both places are usually a reference to the same shared module-level
 :py:class:`~nameparser.config.CONSTANTS` instance, depending on how you
