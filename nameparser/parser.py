@@ -129,11 +129,11 @@ class HumanName:
         self._derived_prefixes: set[str] = set()
 
         self.encoding = encoding
-        self.string_format      = string_format      if string_format      is not None else self.C.string_format
-        self.initials_format    = initials_format    if initials_format    is not None else self.C.initials_format
+        self.string_format = string_format if string_format is not None else self.C.string_format
+        self.initials_format = initials_format if initials_format is not None else self.C.initials_format
         self.initials_delimiter = initials_delimiter if initials_delimiter is not None else self.C.initials_delimiter
         self.initials_separator = initials_separator if initials_separator is not None else self.C.initials_separator
-        self.suffix_delimiter   = suffix_delimiter   if suffix_delimiter   is not None else self.C.suffix_delimiter
+        self.suffix_delimiter = suffix_delimiter if suffix_delimiter is not None else self.C.suffix_delimiter
         self._had_comma = False
         if (first or middle or last or title or suffix or nickname or maiden):
             self.first = first
