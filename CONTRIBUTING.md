@@ -11,12 +11,12 @@ Install dev dependencies:
 Running Tests
 ---------------
 
-    pytest
+    uv run pytest  # --doctest-modules is set in pyproject.toml, so doctests run automatically
 
 Run a single test file or test:
 
-    pytest tests/test_titles.py
-    pytest tests/test_titles.py::TitleTestCase
+    uv run pytest tests/test_titles.py
+    uv run pytest tests/test_titles.py::TitleTestCase
 
 You can also pass a name string to see how it will be parsed:
 
