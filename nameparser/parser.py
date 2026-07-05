@@ -129,11 +129,11 @@ class HumanName:
         self._derived_prefixes: set[str] = set()
 
         self.encoding = encoding
-        self.string_format      = string_format      if string_format      is not None else self.C.string_format
-        self.initials_format    = initials_format    if initials_format    is not None else self.C.initials_format
+        self.string_format = string_format if string_format is not None else self.C.string_format
+        self.initials_format = initials_format if initials_format is not None else self.C.initials_format
         self.initials_delimiter = initials_delimiter if initials_delimiter is not None else self.C.initials_delimiter
         self.initials_separator = initials_separator if initials_separator is not None else self.C.initials_separator
-        self.suffix_delimiter   = suffix_delimiter   if suffix_delimiter   is not None else self.C.suffix_delimiter
+        self.suffix_delimiter = suffix_delimiter if suffix_delimiter is not None else self.C.suffix_delimiter
         self._had_comma = False
         if (first or middle or last or title or suffix or nickname or maiden):
             self.first = first
@@ -264,10 +264,9 @@ class HumanName:
         """
         parts = name_part.split(" ")
         initials = []
-        if len(parts) and isinstance(parts, list):
-            for part in parts:
-                if not (self.is_prefix(part) or self.is_conjunction(part)) or firstname:
-                    initials.append(part[0])
+        for part in parts:
+            if not (self.is_prefix(part) or self.is_conjunction(part)) or firstname:
+                initials.append(part[0])
         if len(initials) > 0:
             return self.initials_separator.join(initials)
         # Return '' (never empty_attribute_default, which may be None) when a
@@ -775,7 +774,7 @@ class HumanName:
     @property
     def full_name(self) -> str:
         """The string output of the HumanName instance."""
-        return self.__str__()
+        return str(self)
 
     @full_name.setter
     def full_name(self, value: str | bytes) -> None:
@@ -1250,10 +1249,10 @@ class HumanName:
                 suffixes = list(filter(self.is_suffix, period_chunks))
 
                 # register the part so it will be found by the is_* checks
-                if len(list(titles)):
+                if titles:
                     self._derived_titles.add(lc(part))
                     continue
-                if len(list(suffixes)):
+                if suffixes:
                     self._derived_suffixes.add(lc(part))
                     continue
 
