@@ -487,6 +487,107 @@ class ConstantsCustomizationTests(HumanNameTestBase):
             restored.__setstate__(state)
 
 
+class ParsingDoesNotMutateConfigTests(HumanNameTestBase):
+    """Parsing a name must never write back into the Constants it reads.
+
+    The parser derives extra lookup entries while parsing (period-joined
+    titles/suffixes like "Lt.Gov.", conjunction-joined pieces like
+    "Mr. and Mrs." or "von und zu"). Those derivations are needed within the
+    parse, but historically they were add()ed to ``self.C`` — by default the
+    shared module-level CONSTANTS singleton — so parsing one name permanently
+    changed how every later name in the process parsed: parse results depended
+    on input order, and concurrent parsing raced on the shared sets.
+    """
+
+    @staticmethod
+    def _config_snapshot(constants: Constants) -> dict:
+        """Snapshot every piece of configuration ``constants`` owns.
+
+        Enumerated via ``Constants.__getstate__()`` — the canonical listing of
+        an instance's own config (descriptor-backed names mapped to their
+        public form, private caches like ``_pst`` excluded) — so a collection
+        added to ``Constants`` later is watched automatically, with no
+        attribute list to keep in sync.
+        """
+        snap = {}
+        for attr, value in constants.__getstate__().items():
+            if isinstance(value, SetManager):
+                snap[attr] = set(value)
+            elif isinstance(value, TupleManager):
+                snap[attr] = dict(value)
+            else:
+                snap[attr] = value  # scalar override
+        # Fail loud if the structural discovery ever stops seeing the sets
+        # the parser historically leaked into.
+        assert {'titles', 'prefixes', 'conjunctions',
+                'suffix_acronyms', 'suffix_not_acronyms'} <= set(snap), \
+            "config snapshot no longer covers the historically-mutated sets"
+        return snap
+
+    def _assert_config_unchanged(self, constants: Constants, before: dict, parsed: str) -> None:
+        after = self._config_snapshot(constants)
+        diffs = []
+        for attr in sorted(set(before) | set(after)):
+            b, a = before.get(attr), after.get(attr)
+            if b != a:
+                if isinstance(b, set) and isinstance(a, set):
+                    diffs.append(f"{attr}: added {sorted(a - b)}, removed {sorted(b - a)}")
+                else:
+                    diffs.append(f"{attr}: {b!r} -> {a!r}")
+        self.assertEqual(diffs, [], f"parsing {parsed!r} changed the config: {diffs}")
+
+    def _assert_parse_leaves_config_unchanged(self, name: str) -> HumanName:
+        from nameparser.config import CONSTANTS
+        before = self._config_snapshot(CONSTANTS)
+        hn = HumanName(name)
+        self._assert_config_unchanged(CONSTANTS, before, name)
+        return hn
+
+    def test_period_joined_title_does_not_leak_into_titles(self) -> None:
+        hn = self._assert_parse_leaves_config_unchanged("Lt.Gov. John Doe")
+        # the within-parse derivation must still work
+        self.m(hn.title, "Lt.Gov.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)
+
+    def test_period_joined_suffix_does_not_leak_into_suffixes(self) -> None:
+        hn = self._assert_parse_leaves_config_unchanged("John Doe JD.CPA")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)
+        self.m(hn.suffix, "JD.CPA", hn)
+
+    def test_joined_conjunctions_do_not_leak_into_conjunctions(self) -> None:
+        hn = self._assert_parse_leaves_config_unchanged("Louis of the Netherlands")
+        self.m(hn.first, "Louis of the Netherlands", hn)
+
+    def test_title_conjunction_join_does_not_leak_into_titles(self) -> None:
+        hn = self._assert_parse_leaves_config_unchanged("Mr. and Mrs. John Smith")
+        self.m(hn.title, "Mr. and Mrs.", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_prefix_conjunction_join_does_not_leak_into_prefixes(self) -> None:
+        hn = self._assert_parse_leaves_config_unchanged("Alois von und zu Liechtenstein")
+        self.m(hn.first, "Alois", hn)
+        self.m(hn.last, "von und zu Liechtenstein", hn)
+
+    def test_instance_owned_constants_not_mutated_by_parsing(self) -> None:
+        hn = HumanName("", constants=None)
+        before = self._config_snapshot(hn.C)
+        hn.full_name = "Lt.Gov. John Doe"
+        self._assert_config_unchanged(hn.C, before, "Lt.Gov. John Doe")
+        self.m(hn.title, "Lt.Gov.", hn)
+
+    def test_derivations_reset_between_parses_of_same_instance(self) -> None:
+        # Re-assigning full_name re-parses; each parse must re-derive from a
+        # clean slate and still resolve the period-joined title.
+        hn = HumanName("Lt.Gov. John Doe")
+        hn.full_name = "Lt.Gov. Jane Roe"
+        self.m(hn.title, "Lt.Gov.", hn)
+        self.m(hn.first, "Jane", hn)
+        self.m(hn.last, "Roe", hn)
+
+
 class SuffixesPrefixesTitlesPerformanceTests(HumanNameTestBase):
     """Guard against accidental cache removal on suffixes_prefixes_titles.
 

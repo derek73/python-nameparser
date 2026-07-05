@@ -95,6 +95,27 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.assertIn('chancellor', dup.C.titles)
         self.assertNotIn('marker', hn.C.titles)
 
+    def test_unpickle_legacy_state_without_derived_sets(self) -> None:
+        """Pickles from before the per-parse derived sets existed must still work.
+
+        Their state lacks the ``_derived_*`` attributes, which the ``is_*``
+        predicates (and through them ``capitalize()``) read directly, so
+        ``__setstate__`` must backfill them rather than crash with
+        AttributeError on first use.
+        """
+        hn = HumanName("dr. juan de la vega jr.")
+        legacy_state = {
+            k: v for k, v in hn.__getstate__().items()
+            if not k.startswith('_derived_')
+        }
+
+        restored = HumanName.__new__(HumanName)
+        restored.__setstate__(legacy_state)
+
+        self.assertTrue(restored.is_title('dr.'))
+        restored.capitalize()  # reads _derived_prefixes via cap_word/is_prefix
+        self.assertEqual(str(restored), "Dr. Juan de la Vega Jr.")
+
     def test_pickle_default_name_preserves_singleton_identity(self) -> None:
         """A default HumanName must re-attach to CONSTANTS after a pickle round-trip.
 
