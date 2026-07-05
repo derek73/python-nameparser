@@ -7,6 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 For non-trivial changes, use a feature branch and open a PR.
 Branch naming: `fix/issue-NNN-short-description` or `feat/short-description`.
 
+Before opening the PR, if the change alters parser behavior or internals, *read* the Architecture, Extension Patterns, and Gotchas sections of this file against the change — don't grep for it: AGENTS.md paraphrases behavior in its own words, so text made stale by a code change rarely matches the code's phrasing (a doc-staleness sweep driven by grep terms from the diff will miss it every time). The same applies when scoping a doc-review pass or a subagent prompt: include AGENTS.md in the list of docs to check, or it won't be checked.
+
 ## Commands
 
 ```bash
