@@ -1,6 +1,7 @@
 Release Log
 ===========
 * 1.3.0 - Unreleased
+    - Fix parsing writing back into the ``Constants`` it reads (usually the shared module-level ``CONSTANTS``): pieces derived while parsing a name — period-joined titles/suffixes like ``"Lt.Gov."`` and conjunction-joined pieces like ``"Mr. and Mrs."`` or ``"von und zu"`` — are now tracked per parse instead of being permanently ``add()``-ed to the config, so parse results no longer depend on which names were parsed earlier in the process and parsing no longer mutates shared state across threads
     - Remove the vestigial ``unparsable`` attribute: the guard that was meant to set it has been unreachable since 2013 (v0.2.9), so it has reported ``False`` for every parsed name for over a decade; check ``len(name) == 0`` to detect an empty parse
     - Fix ``__hash__`` to lowercase the name like ``__eq__`` does, so equal ``HumanName`` instances hash equal and behave correctly in sets and dicts
     - Fix ``initials()`` emitting a stray empty initial (e.g. ``"J. . V."``) -- or raising ``TypeError`` when ``empty_attribute_default`` is ``None`` -- for name parts with no initialable words, e.g. a prefix-only middle name like ``"de la"``

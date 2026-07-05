@@ -115,6 +115,19 @@ class HumanName:
         if type(self.C) is not type(CONSTANTS):
             self.C = Constants()
 
+        # Lookup entries derived while parsing this instance (period-joined
+        # titles/suffixes like "Lt.Gov.", conjunction-joined pieces like
+        # "Mr. and Mrs." or "von und zu"). Kept separate from self.C so that
+        # parsing never writes into the config — which is usually the shared
+        # module-level CONSTANTS — keeping results independent of what was
+        # parsed before and config reads safe across threads. Values are
+        # lc()-normalized, mirroring how SetManager stores them. Reset at the
+        # start of each parse_full_name() run.
+        self._derived_titles: set[str] = set()
+        self._derived_suffixes: set[str] = set()
+        self._derived_conjunctions: set[str] = set()
+        self._derived_prefixes: set[str] = set()
+
         self.encoding = encoding
         self.string_format      = string_format      if string_format      is not None else self.C.string_format
         self.initials_format    = initials_format    if initials_format    is not None else self.C.initials_format
@@ -144,6 +157,11 @@ class HumanName:
         if state.get('C') is None:
             state['C'] = CONSTANTS
         self.__dict__.update(state)
+        # pickles from before the per-parse derived sets existed lack them;
+        # backfill so the is_* predicates work without a re-parse
+        for attr in ('_derived_titles', '_derived_suffixes',
+                     '_derived_conjunctions', '_derived_prefixes'):
+            self.__dict__.setdefault(attr, set())
 
     def __iter__(self) -> Iterator[str]:
         return self
@@ -550,8 +568,11 @@ class HumanName:
 
     # Parse helpers
     def is_title(self, value: str) -> bool:
-        """Is in the :py:data:`~nameparser.config.titles.TITLES` set."""
-        return lc(value) in self.C.titles
+        """Is in the :py:data:`~nameparser.config.titles.TITLES` set or was
+        derived as a title earlier in this parse (e.g. ``"Lt.Gov."``,
+        ``"Mr. and Mrs."``)."""
+        word = lc(value)
+        return word in self.C.titles or word in self._derived_titles
 
     def is_leading_title(self, piece: str) -> bool:
         """
@@ -574,7 +595,9 @@ class HumanName:
                 if self.is_conjunction(item):
                     return True
             return False
-        return piece.lower() in self.C.conjunctions and not self.is_an_initial(piece)
+        return (piece.lower() in self.C.conjunctions
+                or piece.lower() in self._derived_conjunctions) \
+            and not self.is_an_initial(piece)
 
     def is_prefix(self, piece: str) -> bool:
         """
@@ -586,7 +609,8 @@ class HumanName:
                 if self.is_prefix(item):
                     return True
             return False
-        return lc(piece) in self.C.prefixes
+        word = lc(piece)
+        return word in self.C.prefixes or word in self._derived_prefixes
 
     def is_bound_first_name(self, piece: str) -> bool:
         """Lowercased, leading/trailing-periods-stripped version of piece is in :py:attr:`~nameparser.config.Constants.bound_first_names`."""
@@ -646,8 +670,10 @@ class HumanName:
                     return True
             return False
         else:
-            return ((lc(piece).replace('.', '') in self.C.suffix_acronyms)
-                    or (lc(piece) in self.C.suffix_not_acronyms)) \
+            word = lc(piece)
+            return ((word.replace('.', '') in self.C.suffix_acronyms)
+                    or (word in self.C.suffix_not_acronyms)
+                    or (word in self._derived_suffixes)) \
                 and not self.is_an_initial(piece)
 
     def are_suffixes(self, pieces: Iterable[str]) -> bool:
@@ -671,7 +697,10 @@ class HumanName:
         is_suffix() would otherwise reject. Only safe for pieces in
         unambiguous positions, e.g. after a comma ("John Ingram, V").
         """
-        return lc(piece) in self.C.suffix_not_acronyms or self.is_suffix(piece)
+        word = lc(piece)
+        return word in self.C.suffix_not_acronyms \
+            or word in self._derived_suffixes \
+            or self.is_suffix(piece)
 
     def expand_suffix_delimiter(self, part: str) -> list[str]:
         """Split a single post-comma part on :py:attr:`suffix_delimiter`,
@@ -696,7 +725,11 @@ class HumanName:
         """
         Is not a known title, suffix or prefix. Just first, middle, last names.
         """
-        return lc(piece) not in self.C.suffixes_prefixes_titles \
+        word = lc(piece)
+        return word not in self.C.suffixes_prefixes_titles \
+            and word not in self._derived_titles \
+            and word not in self._derived_suffixes \
+            and word not in self._derived_prefixes \
             and not self.is_an_initial(piece)
 
     def is_an_initial(self, value: str) -> bool:
@@ -1005,6 +1038,13 @@ class HumanName:
         self.nickname_list = []
         self.maiden_list = []
 
+        # each parse derives these from scratch; entries from a previous
+        # full_name must not influence this one
+        self._derived_titles = set()
+        self._derived_suffixes = set()
+        self._derived_conjunctions = set()
+        self._derived_prefixes = set()
+
         self.pre_process()
 
         self._full_name = self.collapse_whitespace(self._full_name)
@@ -1195,8 +1235,8 @@ class HumanName:
             output += [s for s in (x.strip(' ,') for x in part.split(' ')) if s]
 
         # If part contains periods, check if it's multiple titles or suffixes
-        # together without spaces if so, add the new part with periods to the
-        # constants so they get parsed correctly later
+        # together without spaces. If so, register the periods-joined part as
+        # a derived title/suffix for this parse so it gets recognized later
         for part in output:
             # if this part has a period not at the beginning or end
             if self.C.regexes.period_not_at_end and self.C.regexes.period_not_at_end.match(part):
@@ -1206,12 +1246,12 @@ class HumanName:
                 titles = list(filter(self.is_title,  period_chunks))
                 suffixes = list(filter(self.is_suffix, period_chunks))
 
-                # add the part to the constant so it will be found
+                # register the part so it will be found by the is_* checks
                 if len(list(titles)):
-                    self.C.titles.add(part)
+                    self._derived_titles.add(lc(part))
                     continue
                 if len(list(suffixes)):
-                    self.C.suffix_not_acronyms.add(part)
+                    self._derived_suffixes.add(lc(part))
                     continue
 
         return self.join_on_conjunctions(output, additional_parts_count)
@@ -1226,10 +1266,11 @@ class HumanName:
             ['The', 'Secretary', 'of', 'State', 'Hillary', 'Clinton'] ==>
                             ['The Secretary of State', 'Hillary', 'Clinton']
 
-        When joining titles, saves newly formed piece to the instance's titles
-        constant so they will be parsed correctly later. E.g. after parsing the
-        example names above, 'The Secretary of State' and 'Mr. and Mrs.' would
-        be present in the titles constant set.
+        When joining titles, registers the newly formed piece as a derived
+        title for the current parse so it will be recognized correctly later
+        in the same parse. E.g. while parsing the example names above,
+        'The Secretary of State' and 'Mr. and Mrs.' are treated as titles.
+        The configuration in ``self.C`` is never modified.
 
         :param list pieces: name pieces strings after split on spaces
         :param int additional_parts_count:
@@ -1259,8 +1300,8 @@ class HumanName:
         for cont_i in reversed(contiguous_conj_i):
             new_piece = " ".join(pieces[cont_i[0]: cont_i[1]+1])
             pieces[cont_i[0]:cont_i[1]+1] = [new_piece]
-            # add newly joined conjunctions to constants to be found later
-            self.C.conjunctions.add(new_piece)
+            # register newly joined conjunctions to be found later this parse
+            self._derived_conjunctions.add(lc(new_piece))
 
         if len(pieces) == 1:
             # if there's only one piece left, nothing left to do
@@ -1272,12 +1313,12 @@ class HumanName:
         def register_joined_piece(new_piece: str, neighbor: str) -> None:
             if self.is_title(neighbor):
                 # when joining to a title, make new_piece a title too
-                self.C.titles.add(new_piece)
+                self._derived_titles.add(lc(new_piece))
             if self.is_prefix(neighbor):
                 # when joining to a prefix, make new_piece a prefix too, so
                 # e.g. "von" + "und" bridges into "von und" and can still
                 # chain onto a following prefix/lastname (see "von und zu")
-                self.C.prefixes.add(new_piece)
+                self._derived_prefixes.add(lc(new_piece))
 
         def shift_conj_index(past: int, by: int) -> None:
             # after removing pieces at/after `past`, indices of the
