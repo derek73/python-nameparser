@@ -1,7 +1,7 @@
 Name Parser
 ===========
 
-|Build Status| |PyPI| |PyPI version| |Documentation|
+|Build Status| |PyPI| |PyPI version| |Documentation| |License| |Downloads| |Codecov|
 
 A simple Python (3.10+) module for parsing human names into their
 individual components. 
@@ -150,3 +150,9 @@ https://github.com/derek73/python-nameparser
    :target: http://nameparser.readthedocs.io/en/latest/?badge=latest
 .. |PyPI version| image:: https://img.shields.io/pypi/pyversions/nameparser.svg
    :target: https://pypi.org/project/nameparser/
+.. |License| image:: https://img.shields.io/pypi/l/nameparser.svg
+   :target: https://pypi.org/project/nameparser/
+.. |Downloads| image:: https://static.pepy.tech/badge/nameparser
+   :target: https://pepy.tech/project/nameparser
+.. |Codecov| image:: https://codecov.io/gh/derek73/python-nameparser/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/derek73/python-nameparser
