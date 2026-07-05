@@ -477,7 +477,7 @@ class Constants:
                  bound_first_names: Iterable[str] = BOUND_FIRST_NAMES,
                  non_first_name_prefixes: Iterable[str] = NON_FIRST_NAME_PREFIXES,
                  capitalization_exceptions: TupleManager[str] | Iterable[tuple[str, str]] = CAPITALIZATION_EXCEPTIONS,
-                 regexes: RegexTupleManager | TupleManager[re.Pattern[str]] | Iterable[tuple[str, re.Pattern[str]]] = REGEXES,
+                 regexes: Mapping[str, re.Pattern[str]] | Iterable[tuple[str, re.Pattern[str]]] = REGEXES,
                  patronymic_name_order: bool = False,
                  middle_name_as_last: bool = False,
                  ) -> None:
