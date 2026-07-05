@@ -154,8 +154,10 @@ def _is_dunder(attr: str) -> bool:
 
 class TupleManager(dict[str, T]):
     '''
-    A dictionary with dot.notation access. Subclass of ``dict``. Makes the tuple constants
-    more friendly.
+    A dictionary with dot.notation access. Subclass of ``dict``. Wraps the
+    mapping config constants (``capitalization_exceptions``, ``regexes``, and
+    the nickname/maiden delimiter buckets). The name is historical: before
+    1.3.0 these constants were tuples of pairs.
     '''
 
     def __getattr__(self, attr: str) -> T | None:
@@ -276,9 +278,9 @@ class Constants:
     :type capitalization_exceptions: dict or iterable of (key, value) tuples
     :param capitalization_exceptions:
         :py:attr:`~capitalization.CAPITALIZATION_EXCEPTIONS` wrapped with :py:class:`TupleManager`.
-    :type regexes: dict or iterable of (key, value) tuples
+    :type regexes: dict or iterable of (name, compiled pattern) tuples
     :param regexes:
-        :py:attr:`regexes`  wrapped with :py:class:`TupleManager`.
+        :py:attr:`~regexes.REGEXES` wrapped with :py:class:`RegexTupleManager`.
 
     :py:attr:`nickname_delimiters` and :py:attr:`maiden_delimiters` are not
     constructor arguments -- they're always set in ``__init__`` (see the

@@ -73,7 +73,7 @@ The library has two layers: `nameparser/config/` (data) and `nameparser/parser.p
 
 ### Configuration layer (`nameparser/config/`)
 
-Each module defines a plain Python set of known name pieces:
+Most modules define a plain Python set of known name pieces; `capitalization.py` and `regexes.py` define dicts:
 
 - `titles.py` — `TITLES` (prenominals) and `FIRST_NAME_TITLES` (e.g. "Sir", which treat the following name as first, not last)
 - `suffixes.py` — `SUFFIX_ACRONYMS` (with periods, e.g. "M.D.") and `SUFFIX_NOT_ACRONYMS` (e.g. "Jr.")
@@ -81,7 +81,7 @@ Each module defines a plain Python set of known name pieces:
 - `bound_first_names.py` — `BOUND_FIRST_NAMES` (bound given-name prefixes, e.g. "abdul", "abu"); `_join_bound_first_name` joins the first non-title piece to its following piece before the main assignment loop
 - `conjunctions.py` — `CONJUNCTIONS` (e.g. "and", "of") used to chain multi-word titles
 - `capitalization.py` — `CAPITALIZATION_EXCEPTIONS` mapping (e.g. `{'phd': 'Ph.D.'}`)
-- `regexes.py` — compiled regular expressions wrapped in a `TupleManager`
+- `regexes.py` — dict of compiled regular expressions (wrapped in `RegexTupleManager` by `Constants`)
 
 `config/__init__.py` wraps everything into `SetManager` and `TupleManager` instances inside a `Constants` class. A module-level singleton `CONSTANTS` is shared across all `HumanName` instances by default.
 
