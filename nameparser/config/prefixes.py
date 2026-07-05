@@ -9,7 +9,7 @@ from nameparser.config.bound_first_names import BOUND_FIRST_NAMES
 #: means that name is not auto-fixed, whereas a wrong member misparses a real
 #: person. Must stay a subset of :py:data:`PREFIXES` and disjoint from
 #: :py:data:`~nameparser.config.bound_first_names.BOUND_FIRST_NAMES`.
-NON_FIRST_NAME_PREFIXES = set([
+NON_FIRST_NAME_PREFIXES = {
     "'t",
     'af',
     'auf',
@@ -32,7 +32,7 @@ NON_FIRST_NAME_PREFIXES = set([
     'vd',
     'vom',
     'zu',
-])
+}
 
 #: Name pieces that appear before a last name. Prefixes join to the piece
 #: that follows them to make one new piece. They can be chained together, e.g
@@ -48,7 +48,7 @@ NON_FIRST_NAME_PREFIXES = set([
 #: is guaranteed to also be a prefix (and still join forward), with no drift --
 #: mirroring ``TITLES = FIRST_NAME_TITLES | {...}`` in
 #: :py:mod:`nameparser.config.titles`.
-PREFIXES = NON_FIRST_NAME_PREFIXES | set([
+PREFIXES = NON_FIRST_NAME_PREFIXES | {
     'aan',
     'aen',
     'abu',
@@ -86,7 +86,7 @@ PREFIXES = NON_FIRST_NAME_PREFIXES | set([
     'vander',
     'vel',
     'von',
-])
+}
 
 # Guard the two invariants the docstring above promises, so a future edit that
 # breaks them fails at import time instead of silently drifting until a test

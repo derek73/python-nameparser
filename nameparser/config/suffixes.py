@@ -1,4 +1,4 @@
-SUFFIX_NOT_ACRONYMS = set([
+SUFFIX_NOT_ACRONYMS = {
     'dr',
     'esq',
     'esquire',
@@ -21,14 +21,14 @@ SUFFIX_NOT_ACRONYMS = set([
     # literally instead of going through nickname/suffix disambiguation).
     'ret',
     'vet',
-])
+}
 """
 
 Post-nominal pieces that are not acronyms. The parser does not remove periods
 when matching against these pieces.
 
 """
-SUFFIX_ACRONYMS_AMBIGUOUS = set([
+SUFFIX_ACRONYMS_AMBIGUOUS = {
     # Suffix acronyms that also commonly work as given-name nicknames on
     # their own (e.g. "Ed", "JD"). Read only by HumanName.parse_nicknames()
     # when deciding whether parenthesized/quoted content is a nickname or a
@@ -42,7 +42,7 @@ SUFFIX_ACRONYMS_AMBIGUOUS = set([
     # certifications/degrees (e.g. 'mba', 'cpa', 'phd') don't need an entry.
     'ed',
     'jd',
-])
+}
 """
 
 Acronym suffixes from SUFFIX_ACRONYMS that also plausibly collide with a
@@ -50,7 +50,7 @@ common given-name nickname. Not a partition of SUFFIX_ACRONYMS -- a small,
 standalone exception list consulted only by parse_nicknames().
 
 """
-SUFFIX_ACRONYMS = set([
+SUFFIX_ACRONYMS = {
     '8-vsb',
     'aas',
     'aba',
@@ -683,7 +683,7 @@ SUFFIX_ACRONYMS = set([
     'vcp',
     'vd',
     'vrd',
-])
+}
 """
 
 Post-nominal acronyms. Titles, degrees and other things people stick after their name

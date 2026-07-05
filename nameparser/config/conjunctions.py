@@ -1,4 +1,4 @@
-CONJUNCTIONS = set([
+CONJUNCTIONS = {
     '&',
     'and',
     'et',
@@ -7,7 +7,7 @@ CONJUNCTIONS = set([
     'the',
     'und',
     'y',
-])
+}
 """
 Pieces that should join to their neighboring pieces, e.g. "and", "y" and "&".
 "of" and "the" are also include to facilitate joining multiple titles,
