@@ -431,3 +431,8 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "Jr.", hn)
+        # each empty segment is skipped individually; segments after a later
+        # empty must survive too (guards against a break-instead-of-continue
+        # regression that the single-empty case above would not catch)
+        hn = HumanName("Doe, John,, Jr.,, III")
+        self.m(hn.suffix, "Jr., III", hn)

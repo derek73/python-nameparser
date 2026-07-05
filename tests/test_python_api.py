@@ -223,6 +223,12 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.assertEqual(hn1, hn2)
         self.assertEqual(hash(hn1), hash(hn2))
         self.assertEqual(len({hn1, hn2}), 1)
+        # __eq__ also accepts plain strings, so hashing str(self).lower()
+        # specifically (not e.g. an attribute tuple) is what lets strings and
+        # HumanName instances interoperate in sets and dicts
+        hn = HumanName("John Smith")
+        self.assertEqual(hash(hn), hash("john smith"))
+        self.assertIn("john smith", {hn})
 
     def test_not_equal_operator(self) -> None:
         self.assertTrue(HumanName("John Smith") != HumanName("Jane Smith"))

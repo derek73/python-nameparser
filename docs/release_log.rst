@@ -1,7 +1,7 @@
 Release Log
 ===========
 * 1.3.0 - Unreleased
-    - Remove the vestigial ``unparsable`` attribute: the guard that was meant to set it was unreachable, so it has reported ``False`` for every parsed name since the earliest releases
+    - Remove the vestigial ``unparsable`` attribute: the guard that was meant to set it has been unreachable since 2013 (v0.2.9), so it has reported ``False`` for every parsed name for over a decade; check ``len(name) == 0`` to detect an empty parse
     - Fix ``__hash__`` to lowercase the name like ``__eq__`` does, so equal ``HumanName`` instances hash equal and behave correctly in sets and dicts
     - Fix ``initials()`` emitting a stray empty initial (e.g. ``"J. . V."``) -- or raising ``TypeError`` when ``empty_attribute_default`` is ``None`` -- for name parts with no initialable words, e.g. a prefix-only middle name like ``"de la"``
     - Fix a trailing suffix being silently dropped after an empty comma segment, e.g. ``"Doe, John,, Jr."`` losing the ``"Jr."``

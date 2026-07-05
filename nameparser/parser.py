@@ -309,10 +309,11 @@ class HumanName:
 
         first_initials_list, middle_initials_list, last_initials_list = self._initials_lists()
 
-        # Empty parts must render as '' (not empty_attribute_default, which may be
-        # None) so str.format does not interpolate the literal "None" into the
-        # output. A fully-empty result falls back to empty_attribute_default,
-        # matching the other attribute accessors (e.g. ``first``).
+        # Empty name groups must render as '' (not empty_attribute_default,
+        # which may be None) so str.format does not interpolate the literal
+        # "None" into the output. A fully-empty result falls back to
+        # empty_attribute_default, matching the other attribute accessors
+        # (e.g. ``first``).
         initials_dict = {
             "first":  (self.initials_delimiter + self.initials_separator).join(first_initials_list) + self.initials_delimiter
             if len(first_initials_list) else "",
@@ -650,7 +651,12 @@ class HumanName:
                 and not self.is_an_initial(piece)
 
     def are_suffixes(self, pieces: Iterable[str]) -> bool:
-        """Return True if all pieces are suffixes."""
+        """Return True if all pieces are suffixes.
+
+        Vacuously True for an empty iterable — the piece loops in
+        :py:func:`parse_full_name` rely on this to route the final piece
+        to the last-name branch.
+        """
         for piece in pieces:
             if not self.is_suffix(piece):
                 return False
@@ -1044,9 +1050,10 @@ class HumanName:
                             self.is_roman_numeral(nxt) and i == p_len - 2
                             and not self.is_an_initial(piece)
                 ):
-                    # the final piece always lands here: are_suffixes() is
-                    # vacuously True for the empty tail, making this the
-                    # last-name branch as well as the suffix branch
+                    # any piece reaching this check as the final piece lands
+                    # here: are_suffixes() is vacuously True for the empty
+                    # tail, making this the last-name branch as well as the
+                    # suffix branch
                     self.last_list.append(piece)
                     self.suffix_list += pieces[i+1:]
                     break
