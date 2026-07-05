@@ -1,4 +1,4 @@
-FIRST_NAME_TITLES = set([
+FIRST_NAME_TITLES = {
     'aunt',
     'auntie',
     'brother',
@@ -21,7 +21,7 @@ FIRST_NAME_TITLES = set([
     'shaikh',
     'cheikh',
     'shekh',
-])
+}
 """
 When these titles appear with a single other name, that name is a first name, e.g.
 "Sir John", "Sister Mary", "Queen Elizabeth".
@@ -31,7 +31,7 @@ When these titles appear with a single other name, that name is a first name, e.
 #: Many of these from wikipedia: https://en.wikipedia.org/wiki/Title.
 #: The parser recognizes chains of these including conjunctions allowing 
 #: recognition titles like "Deputy Secretary of State".
-TITLES = FIRST_NAME_TITLES | set([
+TITLES = FIRST_NAME_TITLES | {
     "attaché",
     "chargé d'affaires",
     "king's",
@@ -683,4 +683,4 @@ TITLES = FIRST_NAME_TITLES | set([
     'woodman',
     'writer',
     'zoologist',
-])
+}

@@ -43,6 +43,8 @@ Release Log
     - Add German/Austrian nobility and ecclesiastical titles to ``TITLES`` (closes #101)
     - Add German/Dutch last-name prefixes and title/degree suffixes; fix ``join_on_conjunctions()`` to register multi-word prefix chains (e.g. ``"von und zu"``) as prefixes, mirroring existing title handling (closes #18)
     - Change ``Constants.__repr__`` to report collection sizes and non-default scalar config, replacing the uninformative ``<Constants() instance>`` (#221)
+    - Change ``REGEXES`` from a ``set`` of ``(name, pattern)`` tuples to a ``dict``, so a duplicate name is a visible overwrite in the source instead of a nondeterministic winner at import time; code iterating ``REGEXES`` directly now gets keys instead of pairs — use ``.items()`` (#227)
+    - Change ``CAPITALIZATION_EXCEPTIONS`` from a tuple of ``(key, value)`` tuples to a ``dict``; code iterating it directly now gets keys instead of pairs — use ``.items()`` (#233)
 * 1.2.1 - June 19, 2026
     - Fix ``initials()`` interpolating the literal ``None`` for empty name parts when ``empty_attribute_default = None`` (e.g. ``"J. None D."``); empty parts now render as an empty string and a fully-empty result returns ``empty_attribute_default``
     - Add ``python -m nameparser "Name String"`` command-line helper that prints a parsed name
