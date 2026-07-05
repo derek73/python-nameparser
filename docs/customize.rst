@@ -429,6 +429,9 @@ When you modify the configuration, by default this will modify the behavior all
 HumanName instances. This could be a handy way to set it up for your entire
 project, but it could also lead to some unexpected behavior because changing
 the config on one instance could modify the behavior of another instance.
+Parsing itself never modifies the configuration — only your own ``add`` and
+``remove`` calls do — so the shared instance is safe to read concurrently,
+e.g. parsing names on multiple threads.
 
 .. doctest:: module config
     :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
