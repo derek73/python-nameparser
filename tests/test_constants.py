@@ -38,8 +38,12 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.m(hn.last, "Smith", hn)
 
     def test_constants_invalid_type_raises_typeerror(self) -> None:
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError, match="constants must be"):
             HumanName("John Doe", constants="not a Constants")  # type: ignore[arg-type]
+
+    def test_constants_class_instead_of_instance_raises_with_hint(self) -> None:
+        with pytest.raises(TypeError, match=r"did you mean Constants\(\)"):
+            HumanName("John Doe", constants=Constants)  # type: ignore[arg-type]
 
     def test_remove_title(self) -> None:
         hn = HumanName("Hon Solo", constants=None)

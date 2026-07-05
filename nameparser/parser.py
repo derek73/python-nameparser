@@ -48,9 +48,10 @@ class HumanName:
     * :py:attr:`given_names`
 
     :param str full_name: The name string to be parsed.
-    :param constants constants:
-        a :py:class:`~nameparser.config.Constants` instance. Pass ``None`` for
-        `per-instance config <customize.html>`_.
+    :param constants:
+        a :py:class:`~nameparser.config.Constants` instance (subclasses are
+        honored). Pass ``None`` for `per-instance config <customize.html>`_.
+        Anything else raises ``TypeError``.
     :param str encoding: string representing the encoding of your input
     :param str string_format: python string formatting
     :param str initials_format: python initials string formatting
@@ -113,9 +114,13 @@ class HumanName:
         if constants is None:
             constants = Constants()
         elif not isinstance(constants, Constants):
+            # passing the class itself is the likeliest mistake, and
+            # reporting it as "got type" would only add confusion
+            hint = (" (a class was passed; did you mean Constants()?)"
+                    if isinstance(constants, type) else "")
             raise TypeError(
                 "constants must be a Constants instance or None, "
-                f"got {type(constants).__name__}"
+                f"got {type(constants).__name__}{hint}"
             )
         self.C = constants
 
