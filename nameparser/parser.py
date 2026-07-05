@@ -774,7 +774,7 @@ class HumanName:
     @property
     def full_name(self) -> str:
         """The string output of the HumanName instance."""
-        return self.__str__()
+        return str(self)
 
     @full_name.setter
     def full_name(self, value: str | bytes) -> None:
