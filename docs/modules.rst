@@ -29,6 +29,8 @@ HumanName.config Defaults
     :members:
 .. automodule:: nameparser.config.prefixes
     :members:
+.. automodule:: nameparser.config.bound_first_names
+    :members:
 .. automodule:: nameparser.config.conjunctions
     :members:
 .. automodule:: nameparser.config.capitalization
