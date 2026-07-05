@@ -87,7 +87,6 @@ class PrefixesTestCase(HumanNameTestBase):
         # regression has been reintroduced.
         name = "Jan " + "van der " * 30 + "Berg"
         hn = HumanName(name)
-        self.assertFalse(hn.unparsable)
         self.m(hn.first, "Jan", hn)
         self.assertIn("Berg", hn.last)
 

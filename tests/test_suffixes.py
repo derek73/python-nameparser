@@ -421,3 +421,13 @@ class SuffixesTestCase(HumanNameTestBase):
         hn = HumanName("Andrew Perkins (JD)", constants=C)
         self.m(hn.nickname, "", hn)
         self.m(hn.suffix, "JD", hn)
+
+    def test_empty_comma_segment_does_not_drop_following_suffix(self) -> None:
+        # Regression: "Doe, John,, Jr." produced an empty third segment, and
+        # the old `if parts[2]:` guard skipped every remaining segment --
+        # silently dropping the trailing suffix. Empty segments should be
+        # skipped individually.
+        hn = HumanName("Doe, John,, Jr.")
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)
+        self.m(hn.suffix, "Jr.", hn)

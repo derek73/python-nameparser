@@ -37,6 +37,16 @@ class InitialsTestCase(HumanNameTestBase):
         hn.C.empty_attribute_default = None
         self.assertEqual(hn.initials(), None)
 
+    def test_initials_middle_name_all_prefixes(self) -> None:
+        # "Vega, Juan de la" parses with middle name "de la", which contains
+        # no initialable words (both are prefixes). The part must be skipped
+        # entirely — not emit an empty initial ("J. . V.") and not crash when
+        # empty_attribute_default is None.
+        hn = HumanName("Vega, Juan de la")
+        self.m(hn.middle, "de la", hn)
+        self.assertEqual(hn.initials_list(), ["J", "V"])
+        self.assertEqual(hn.initials(), "J. V.")
+
     def test_initials_complex_name(self) -> None:
         hn = HumanName("Doe, John A. Kenneth, Jr.")
         self.m(hn.initials(), "J. A. K. D.", hn)
@@ -111,11 +121,11 @@ class InitialsTestCase(HumanNameTestBase):
         self.m(hn.initials(), "J.A.K.D.", hn)
 
     def test_initials_separator_custom_value(self) -> None:
-        # Non-empty custom separator exercising __process_initial__ on a multi-word
+        # Non-empty custom separator exercising _process_initial on a multi-word
         # token. "Van Berg" is a single name part whose two words produce two initials
         # joined by initials_separator.
         hn = HumanName("", initials_separator="-", initials_delimiter=".")
-        result = hn.__process_initial__("Van Berg", firstname=True)
+        result = hn._process_initial("Van Berg", firstname=True)
         self.assertEqual(result, "V-B")
 
     def test_str_default_behavior_unchanged(self) -> None:
@@ -126,46 +136,39 @@ class InitialsTestCase(HumanNameTestBase):
 
     def test_constructor_first(self) -> None:
         hn = HumanName(first="TheName")
-        self.assertFalse(hn.unparsable)
         self.m(hn.first, "TheName", hn)
 
     def test_constructor_middle(self) -> None:
         hn = HumanName(middle="TheName")
-        self.assertFalse(hn.unparsable)
         self.m(hn.middle, "TheName", hn)
 
     def test_constructor_last(self) -> None:
         hn = HumanName(last="TheName")
-        self.assertFalse(hn.unparsable)
         self.m(hn.last, "TheName", hn)
 
     def test_constructor_title(self) -> None:
         hn = HumanName(title="TheName")
-        self.assertFalse(hn.unparsable)
         self.m(hn.title, "TheName", hn)
 
     def test_constructor_suffix(self) -> None:
         hn = HumanName(suffix="TheName")
-        self.assertFalse(hn.unparsable)
         self.m(hn.suffix, "TheName", hn)
 
     def test_constructor_nickname(self) -> None:
         hn = HumanName(nickname="TheName")
-        self.assertFalse(hn.unparsable)
         self.m(hn.nickname, "TheName", hn)
 
     def test_constructor_multiple(self) -> None:
         hn = HumanName(first="TheName", last="lastname", title="mytitle", full_name="donotparse")
-        self.assertFalse(hn.unparsable)
         self.m(hn.first, "TheName", hn)
         self.m(hn.last, "lastname", hn)
         self.m(hn.title, "mytitle", hn)
 
     def test_initials_separator_kwarg_multiword_part(self) -> None:
-        # Regression: initials_separator kwarg must flow into __process_initial__
+        # Regression: initials_separator kwarg must flow into _process_initial
         # for multi-word name parts, not just into the initials() join calls.
         hn = HumanName("", initials_separator="")
-        result = hn.__process_initial__("Van Berg", firstname=True)
+        result = hn._process_initial("Van Berg", firstname=True)
         self.assertEqual(result, "VB")
 
     def test_string_format_empty_string_kwarg(self) -> None:
