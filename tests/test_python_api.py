@@ -36,6 +36,9 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(len(hn), 5, hn)
         hn = HumanName("John Doe")
         self.m(len(hn), 2, hn)
+        # empty input parses to an all-empty name; len == 0 is the
+        # documented emptiness check (see usage.rst)
+        self.assertEqual(len(HumanName("")), 0)
 
     @pytest.mark.skipif(not dill, reason="requires python-dill module to test pickling")
     def test_config_pickle(self) -> None:
@@ -215,6 +218,42 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.assertIsNot(hn1, hn2)
         self.assertTrue(hn1 == "Dr. John P. Doe-ray clu, CFP, LUTC")
 
+    def test_hash_matches_case_insensitive_equality(self) -> None:
+        # __eq__ compares lowercased strings, so __hash__ must too:
+        # equal objects are required to have equal hashes.
+        hn1 = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
+        hn2 = HumanName("dr. john p. doe-Ray, CLU, CFP, LUTC")
+        self.assertEqual(hn1, hn2)
+        self.assertEqual(hash(hn1), hash(hn2))
+        self.assertEqual(len({hn1, hn2}), 1)
+        # __eq__ also accepts plain strings, so hashing str(self).lower()
+        # specifically (not e.g. an attribute tuple) is what lets strings and
+        # HumanName instances interoperate in sets and dicts
+        hn = HumanName("John Smith")
+        self.assertEqual(hash(hn), hash("john smith"))
+        self.assertIn("john smith", {hn})
+
+    def test_not_equal_operator(self) -> None:
+        self.assertTrue(HumanName("John Smith") != HumanName("Jane Smith"))
+        self.assertFalse(HumanName("John Smith") != HumanName("john smith"))
+
+    def test_unparsable_attribute_removed(self) -> None:
+        # Removed in 1.3.0: the guard that reported unparsable names was
+        # unreachable, so the attribute was always False after any parse.
+        self.assertFalse(hasattr(HumanName("John Smith"), "unparsable"))
+        self.assertFalse(hasattr(HumanName(first="John"), "unparsable"))
+
+    def test_str_fallback_without_string_format(self) -> None:
+        # string_format=None falls back to joining the non-empty attributes
+        hn = HumanName("Dr. John A. Doe, Jr.")
+        hn.string_format = None
+        self.assertEqual(str(hn), "Dr. John A. Doe Jr.")
+
+    def test_repr_blank_name(self) -> None:
+        hn = HumanName()
+        self.assertIn("first: ''", repr(hn))
+        self.assertIn(hn.__class__.__name__, repr(hn))
+
     def test_slice(self) -> None:
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         self.m(list(hn), ['Dr.', 'John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC'], hn)
@@ -239,6 +278,11 @@ class HumanNamePythonTests(HumanNameTestBase):
             hn["suffix"] = [['test']]
         with pytest.raises(TypeError):
             hn["suffix"] = {"test": "test"}
+
+    def test_setitem_invalid_key_raises_keyerror(self) -> None:
+        hn = HumanName("Dr. John A. Kenneth Doe, Jr.")
+        with pytest.raises(KeyError):
+            hn["bogus"] = "value"
 
     def test_conjunction_names(self) -> None:
         hn = HumanName("johnny y")

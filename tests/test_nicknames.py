@@ -232,7 +232,6 @@ class MaidenNameTestCase(HumanNameTestBase):
         self.m(hn.first, "Jenny", hn)
         self.m(hn.last, "Baker", hn)
         self.m(hn.maiden, "Johnson", hn)
-        self.assertFalse(hn.unparsable)
 
     def test_maiden_name_in_parenthesis_with_comma(self) -> None:
         C = Constants()

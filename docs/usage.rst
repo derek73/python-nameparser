@@ -74,6 +74,10 @@ Requires Python 3.10+.
     >>> name[1:-3]
     ['Juan', 'Q. Xavier', 'de la Vega']
 
+Empty or unparsable input does not raise an error; it produces a name whose
+attributes are all empty. Check ``len(name) == 0`` (or ``str(name) == ''``)
+to detect that nothing was parsed.
+
 
 Capitalization Support
 ----------------------

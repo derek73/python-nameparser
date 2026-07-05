@@ -82,7 +82,6 @@ class HumanName:
 
     _count = 0
     _members = ['title', 'first', 'middle', 'last', 'suffix', 'nickname', 'maiden']
-    unparsable = True
     _full_name = ''
 
     title_list: list[str]
@@ -131,7 +130,6 @@ class HumanName:
             self.suffix = suffix
             self.nickname = nickname
             self.maiden = maiden
-            self.unparsable = False
         else:
             # full_name setter triggers the parse
             self.full_name = full_name
@@ -162,9 +160,6 @@ class HumanName:
         lower case unicode representation is the same.
         """
         return str(self).lower() == str(other).lower()
-
-    def __ne__(self, other: object) -> bool:
-        return not str(self).lower() == str(other).lower()
 
     @overload
     def __getitem__(self, key: slice) -> list[str]: ...
@@ -202,23 +197,21 @@ class HumanName:
         return " ".join(self)
 
     def __hash__(self) -> int:
-        return hash(str(self))
+        # __eq__ compares lowercased strings, so hash the lowercased string
+        # to keep equal instances in the same hash bucket.
+        return hash(str(self).lower())
 
     def __repr__(self) -> str:
-        if self.unparsable:
-            _string = f"<{self.__class__.__name__} : [ Unparsable ] >"
-        else:
-            attrs = (
-                f"    title: {self.title or ''!r}\n"
-                f"    first: {self.first or ''!r}\n"
-                f"    middle: {self.middle or ''!r}\n"
-                f"    last: {self.last or ''!r}\n"
-                f"    suffix: {self.suffix or ''!r}\n"
-                f"    nickname: {self.nickname or ''!r}\n"
-                f"    maiden: {self.maiden or ''!r}"
-            )
-            _string = f"<{self.__class__.__name__} : [\n{attrs}\n]>"
-        return _string
+        attrs = (
+            f"    title: {self.title or ''!r}\n"
+            f"    first: {self.first or ''!r}\n"
+            f"    middle: {self.middle or ''!r}\n"
+            f"    last: {self.last or ''!r}\n"
+            f"    suffix: {self.suffix or ''!r}\n"
+            f"    nickname: {self.nickname or ''!r}\n"
+            f"    maiden: {self.maiden or ''!r}"
+        )
+        return f"<{self.__class__.__name__} : [\n{attrs}\n]>"
 
     def as_dict(self, include_empty: bool = True) -> dict[str, str]:
         """
@@ -246,7 +239,7 @@ class HumanName:
                     d[m] = val
         return d
 
-    def __process_initial__(self, name_part: str, firstname: bool = False) -> str:
+    def _process_initial(self, name_part: str, firstname: bool = False) -> str:
         """
             Name parts may include prefixes or conjunctions. This function filters these from the name unless it is
             a first name, since first names cannot be conjunctions or prefixes.
@@ -259,8 +252,21 @@ class HumanName:
                     initials.append(part[0])
         if len(initials) > 0:
             return self.initials_separator.join(initials)
-        else:
-            return self.C.empty_attribute_default
+        # Return '' (never empty_attribute_default, which may be None) when a
+        # part has no initialable words, e.g. a middle name consisting only of
+        # prefixes ("de la"). Callers drop these parts entirely.
+        return ''
+
+    def _initials_lists(self) -> tuple[list[str], list[str], list[str]]:
+        """Initials for the first, middle and last name groups. Parts that
+        yield no initials (e.g. a prefix-only middle name like "de la") are
+        dropped rather than kept as empty strings.
+        """
+        def group_initials(names: list[str], firstname: bool = False) -> list[str]:
+            return [i for i in (self._process_initial(n, firstname) for n in names if n) if i]
+        return (group_initials(self.first_list, True),
+                group_initials(self.middle_list),
+                group_initials(self.last_list))
 
     def initials_list(self) -> list[str]:
         """
@@ -275,9 +281,7 @@ class HumanName:
                 >>> name.initials_list()
                 ['J', 'D']
         """
-        first_initials_list = [self.__process_initial__(name, True) for name in self.first_list if name]
-        middle_initials_list = [self.__process_initial__(name) for name in self.middle_list if name]
-        last_initials_list = [self.__process_initial__(name) for name in self.last_list if name]
+        first_initials_list, middle_initials_list, last_initials_list = self._initials_lists()
         return first_initials_list + middle_initials_list + last_initials_list
 
     def initials(self) -> str:
@@ -303,14 +307,13 @@ class HumanName:
             'J A D'
         """
 
-        first_initials_list = [self.__process_initial__(name, True) for name in self.first_list if name]
-        middle_initials_list = [self.__process_initial__(name) for name in self.middle_list if name]
-        last_initials_list = [self.__process_initial__(name) for name in self.last_list if name]
+        first_initials_list, middle_initials_list, last_initials_list = self._initials_lists()
 
-        # Empty parts must render as '' (not empty_attribute_default, which may be
-        # None) so str.format does not interpolate the literal "None" into the
-        # output. A fully-empty result falls back to empty_attribute_default,
-        # matching the other attribute accessors (e.g. ``first``).
+        # Empty name groups must render as '' (not empty_attribute_default,
+        # which may be None) so str.format does not interpolate the literal
+        # "None" into the output. A fully-empty result falls back to
+        # empty_attribute_default, matching the other attribute accessors
+        # (e.g. ``first``).
         initials_dict = {
             "first":  (self.initials_delimiter + self.initials_separator).join(first_initials_list) + self.initials_delimiter
             if len(first_initials_list) else "",
@@ -648,7 +651,12 @@ class HumanName:
                 and not self.is_an_initial(piece)
 
     def are_suffixes(self, pieces: Iterable[str]) -> bool:
-        """Return True if all pieces are suffixes."""
+        """Return True if all pieces are suffixes.
+
+        Vacuously True for an empty iterable — the piece loops in
+        :py:func:`parse_full_name` rely on this to route the final piece
+        to the last-name branch.
+        """
         for piece in pieces:
             if not self.is_suffix(piece):
                 return False
@@ -996,7 +1004,6 @@ class HumanName:
         self.suffix_list = []
         self.nickname_list = []
         self.maiden_list = []
-        self.unparsable = True
 
         self.pre_process()
 
@@ -1043,12 +1050,13 @@ class HumanName:
                             self.is_roman_numeral(nxt) and i == p_len - 2
                             and not self.is_an_initial(piece)
                 ):
+                    # any piece reaching this check as the final piece lands
+                    # here: are_suffixes() is vacuously True for the empty
+                    # tail, making this the last-name branch as well as the
+                    # suffix branch
                     self.last_list.append(piece)
                     self.suffix_list += pieces[i+1:]
                     break
-                if not nxt:
-                    self.last_list.append(piece)
-                    continue
 
                 self.middle_list.append(piece)
         else:
@@ -1092,12 +1100,12 @@ class HumanName:
                         self.first_list.append(piece)
                         continue
                     if self.are_suffixes(pieces[i+1:]):
+                        # the final piece always lands here: are_suffixes() is
+                        # vacuously True for the empty tail, making this the
+                        # last-name branch as well as the suffix branch
                         self.last_list.append(piece)
                         self.suffix_list = pieces[i+1:] + self.suffix_list
                         break
-                    if not nxt:
-                        self.last_list.append(piece)
-                        continue
                     self.middle_list.append(piece)
             else:
 
@@ -1145,17 +1153,12 @@ class HumanName:
                         self.suffix_list.append(piece)
                         continue
                     self.middle_list.append(piece)
-                try:
-                    if parts[2]:
-                        for part in parts[2:]:
-                            self.suffix_list += self.expand_suffix_delimiter(part)
-                except IndexError:
-                    pass
+                for part in parts[2:]:
+                    # skip empty segments from doubled commas ("Doe, John,, Jr.")
+                    # without dropping the segments that follow them
+                    if part:
+                        self.suffix_list += self.expand_suffix_delimiter(part)
 
-        if len(self) < 0:
-            log.info("Unparsable: \"%s\" ", self.original)
-        else:
-            self.unparsable = False
         self.post_process()
 
     def parse_pieces(self, parts: Iterable[str], additional_parts_count: int = 0) -> list[str]:
