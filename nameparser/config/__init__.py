@@ -273,11 +273,11 @@ class Constants:
         The subset of prefixes that are never a first name, so a *leading* one
         marks the whole name as a surname. Must stay disjoint from
         ``bound_first_names``.
-    :type capitalization_exceptions: tuple or dict
-    :param capitalization_exceptions: 
+    :type capitalization_exceptions: dict or iterable of (key, value) tuples
+    :param capitalization_exceptions:
         :py:attr:`~capitalization.CAPITALIZATION_EXCEPTIONS` wrapped with :py:class:`TupleManager`.
-    :type regexes: tuple or dict
-    :param regexes: 
+    :type regexes: dict or iterable of (key, value) tuples
+    :param regexes:
         :py:attr:`regexes`  wrapped with :py:class:`TupleManager`.
 
     :py:attr:`nickname_delimiters` and :py:attr:`maiden_delimiters` are not
@@ -476,7 +476,7 @@ class Constants:
                  conjunctions: Iterable[str] = CONJUNCTIONS,
                  bound_first_names: Iterable[str] = BOUND_FIRST_NAMES,
                  non_first_name_prefixes: Iterable[str] = NON_FIRST_NAME_PREFIXES,
-                 capitalization_exceptions: TupleManager[str] | Iterable[tuple[str, str]] = CAPITALIZATION_EXCEPTIONS,
+                 capitalization_exceptions: Mapping[str, str] | Iterable[tuple[str, str]] = CAPITALIZATION_EXCEPTIONS,
                  regexes: Mapping[str, re.Pattern[str]] | Iterable[tuple[str, re.Pattern[str]]] = REGEXES,
                  patronymic_name_order: bool = False,
                  middle_name_as_last: bool = False,
