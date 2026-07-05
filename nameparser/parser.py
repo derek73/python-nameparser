@@ -80,7 +80,6 @@ class HumanName:
     The original string, untouched by the parser.
     """
 
-    _count = 0
     _members = ['title', 'first', 'middle', 'last', 'suffix', 'nickname', 'maiden']
     _full_name = ''
 
@@ -164,13 +163,11 @@ class HumanName:
             self.__dict__.setdefault(attr, set())
 
     def __iter__(self) -> Iterator[str]:
-        return self
+        return (value for member in self._members
+                if (value := getattr(self, member)))
 
     def __len__(self) -> int:
-        l = 0
-        for x in self:
-            l += 1
-        return l
+        return sum(1 for member in self._members if getattr(self, member))
 
     def __eq__(self, other: object) -> bool:
         """
@@ -194,15 +191,6 @@ class HumanName:
             self._set_list(key, value)
         else:
             raise KeyError("Not a valid HumanName attribute", key)
-
-    def __next__(self) -> str:
-        if self._count >= len(self._members):
-            self._count = 0
-            raise StopIteration
-        else:
-            c = self._count
-            self._count = c + 1
-            return getattr(self, self._members[c]) or next(self)
 
     def __str__(self) -> str:
         if self.string_format is not None:

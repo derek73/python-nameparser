@@ -40,6 +40,48 @@ class HumanNamePythonTests(HumanNameTestBase):
         # documented emptiness check (see usage.rst)
         self.assertEqual(len(HumanName("")), 0)
 
+    def test_iteration_restarts_after_break(self) -> None:
+        hn = HumanName("John Doe")
+        for _ in hn:
+            break
+        # a plain loop, not list(hn): list() presizes via __len__, which
+        # under the old shared-cursor implementation reset the cursor and
+        # masked this bug
+        collected = []
+        for part in hn:
+            collected.append(part)
+        self.assertEqual(collected, ["John", "Doe"])
+
+    def test_iterators_are_independent(self) -> None:
+        hn = HumanName("John Doe")
+        it1 = iter(hn)
+        it2 = iter(hn)
+        self.assertEqual(next(it1), "John")
+        self.assertEqual(next(it2), "John")
+        self.assertEqual(next(it1), "Doe")
+        self.assertEqual(next(it2), "Doe")
+
+    def test_len_during_iteration(self) -> None:
+        hn = HumanName("John Doe")
+        it = iter(hn)
+        self.assertEqual(next(it), "John")
+        # len() must count all members and leave the live iterator intact
+        self.assertEqual(len(hn), 2)
+        self.assertEqual(next(it), "Doe")
+
+    def test_instance_is_not_its_own_iterator(self) -> None:
+        # iterator state must never live on the instance; see release log
+        # for the next(name) -> next(iter(name)) migration
+        hn = HumanName("John Doe")
+        with pytest.raises(TypeError):
+            next(hn)  # type: ignore[call-overload]
+
+    def test_iterating_empty_name_yields_nothing(self) -> None:
+        collected = []
+        for part in HumanName(""):
+            collected.append(part)
+        self.assertEqual(collected, [])
+
     @pytest.mark.skipif(not dill, reason="requires python-dill module to test pickling")
     def test_config_pickle(self) -> None:
         constants = Constants()
