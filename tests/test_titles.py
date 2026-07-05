@@ -225,6 +225,18 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
 
+    def test_title_with_periods_and_single_letter_middle_name(self) -> None:
+        # A derived title ("Lt.Gov.") must be excluded from the rootname
+        # count that join_on_conjunctions() uses for its single-letter
+        # conjunction heuristic. If is_rootname() misses the derived titles,
+        # the count reaches 4 and "e" is treated as a conjunction, joining
+        # "juan e garcia" into a single last-name piece with no first name.
+        hn = HumanName("Lt.Gov. juan e garcia")
+        self.m(hn.title, "Lt.Gov.", hn)
+        self.m(hn.first, "juan", hn)
+        self.m(hn.middle, "e", hn)
+        self.m(hn.last, "garcia", hn)
+
     def test_mac_with_spaces(self) -> None:
         hn = HumanName("Jane Mac Beth")
         self.m(hn.first, "Jane", hn)

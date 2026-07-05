@@ -582,14 +582,16 @@ class HumanName:
         ``is_an_initial()`` check, is what excludes single-letter initials
         like ``"J."``. Only meaningful for pieces in the title position
         (before the first name is set) — a period-abbreviation appearing
-        later in the name is left as a middle name. Does not mutate
-        ``C.titles``, so the periodless form (``"Major"``) is never affected
-        in later parses.
+        later in the name is left as a middle name. The match is not
+        registered in ``C.titles`` or the per-parse derived titles, so
+        matching ``"Major."`` here never makes ``"Major"`` (or ``"Major."``)
+        a recognized title elsewhere, even within the same parse.
         """
         return self.is_title(piece) or bool(self.C.regexes.period_abbreviation.match(piece))
 
     def is_conjunction(self, piece: str) -> bool:
-        """Is in the conjunctions set and not :py:func:`is_an_initial()`."""
+        """Is in the conjunctions set — config or derived earlier in this
+        parse (e.g. ``"of the"``) — and not :py:func:`is_an_initial()`."""
         if isinstance(piece, list):
             for item in piece:
                 if self.is_conjunction(item):
@@ -602,7 +604,8 @@ class HumanName:
     def is_prefix(self, piece: str) -> bool:
         """
         Lowercased, leading/trailing-periods-stripped version of piece is in the
-        :py:data:`~nameparser.config.prefixes.PREFIXES` set.
+        :py:data:`~nameparser.config.prefixes.PREFIXES` set, or was derived as
+        a prefix earlier in this parse (e.g. ``"von und"``).
         """
         if isinstance(piece, list):
             for item in piece:
@@ -657,7 +660,9 @@ class HumanName:
 
     def is_suffix(self, piece: str) -> bool:
         """
-        Is in the suffixes set and not :py:func:`is_an_initial()`.
+        Is in the suffixes set — or was derived as a period-joined suffix
+        earlier in this parse (e.g. ``"JD.CPA"``) — and not
+        :py:func:`is_an_initial()`.
 
         Some suffixes may be acronyms (M.B.A) while some are not (Jr.),
         so we remove the periods from `piece` when testing against
@@ -697,10 +702,7 @@ class HumanName:
         is_suffix() would otherwise reject. Only safe for pieces in
         unambiguous positions, e.g. after a comma ("John Ingram, V").
         """
-        word = lc(piece)
-        return word in self.C.suffix_not_acronyms \
-            or word in self._derived_suffixes \
-            or self.is_suffix(piece)
+        return lc(piece) in self.C.suffix_not_acronyms or self.is_suffix(piece)
 
     def expand_suffix_delimiter(self, part: str) -> list[str]:
         """Split a single post-comma part on :py:attr:`suffix_delimiter`,
@@ -1211,8 +1213,9 @@ class HumanName:
         lastname prefixes. Tokens that are empty after stripping spaces and
         commas are dropped, so the returned pieces never contain empty
         strings. If parts have periods in the middle, try splitting
-        on periods and check if the parts are titles or suffixes. If they are
-        add to the constant so they will be found.
+        on periods and check if the parts are titles or suffixes. If they are,
+        register the periods-joined part as a derived title/suffix for this
+        parse so it will be recognized; the constants are not modified.
 
         :param list parts: name part strings from the comma split
         :param int additional_parts_count:
