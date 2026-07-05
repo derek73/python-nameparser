@@ -264,10 +264,9 @@ class HumanName:
         """
         parts = name_part.split(" ")
         initials = []
-        if len(parts) and isinstance(parts, list):
-            for part in parts:
-                if not (self.is_prefix(part) or self.is_conjunction(part)) or firstname:
-                    initials.append(part[0])
+        for part in parts:
+            if not (self.is_prefix(part) or self.is_conjunction(part)) or firstname:
+                initials.append(part[0])
         if len(initials) > 0:
             return self.initials_separator.join(initials)
         # Return '' (never empty_attribute_default, which may be None) when a
