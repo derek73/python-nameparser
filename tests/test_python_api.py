@@ -286,11 +286,29 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.assertTrue(hn.is_prefix(items))
         self.assertTrue(hn.is_prefix(items[1:]))
 
+    def test_is_prefix_with_list_no_match(self) -> None:
+        hn = HumanName()
+        self.assertFalse(hn.is_prefix(['firstname', 'lastname']))
+
     def test_is_conjunction_with_list(self) -> None:
         hn = HumanName()
         items = ['firstname', 'lastname', 'and']
         self.assertTrue(hn.is_conjunction(items))
         self.assertTrue(hn.is_conjunction(items[1:]))
+
+    def test_is_conjunction_with_list_no_match(self) -> None:
+        hn = HumanName()
+        self.assertFalse(hn.is_conjunction(['firstname', 'lastname']))
+
+    def test_is_suffix_with_list(self) -> None:
+        hn = HumanName()
+        items = ['firstname', 'lastname', 'jr']
+        self.assertTrue(hn.is_suffix(items))
+        self.assertTrue(hn.is_suffix(items[1:]))
+
+    def test_is_suffix_with_list_no_match(self) -> None:
+        hn = HumanName()
+        self.assertFalse(hn.is_suffix(['firstname', 'lastname']))
 
     def test_override_constants(self) -> None:
         C = Constants()
