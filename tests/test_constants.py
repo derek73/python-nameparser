@@ -3,6 +3,8 @@ import pickle
 import re
 import timeit
 
+import pytest
+
 from nameparser import HumanName
 from nameparser.config import Constants, RegexTupleManager, SetManager, TupleManager
 from nameparser.config.regexes import EMPTY_REGEX
@@ -444,6 +446,45 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         replaced.add('ghost')
         self.assertIs(c.suffixes_prefixes_titles, primed)
         self.assertNotIn('ghost', c.suffixes_prefixes_titles)
+
+    def test_tuplemanager_delattr_removes_dict_entry(self) -> None:
+        """Deleting a non-dunder attribute must remove the dict entry.
+
+        TupleManager routes non-dunder attribute deletion to ``del self[attr]``
+        (the mirror of its dot-notation __setattr__), so ``del tm.key`` and
+        ``del tm['key']`` are the same operation.
+        """
+        c = Constants()
+        c.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
+        self.assertIn('curly_braces', c.nickname_delimiters)
+        del c.nickname_delimiters.curly_braces  # type: ignore[attr-defined]
+        self.assertNotIn('curly_braces', c.nickname_delimiters)
+
+    def test_assigning_non_setmanager_to_cached_union_member_raises(self) -> None:
+        """A cached-union attribute rejects a plain iterable, demanding a SetManager.
+
+        The four ``_CachedUnionMember`` attributes wire an on-change callback into
+        the assigned manager; a bare list would silently break cache invalidation,
+        so __set__ fails loud with a message telling the caller to wrap it.
+        """
+        c = Constants()
+        with pytest.raises(TypeError, match='SetManager'):
+            c.titles = ['mr', 'ms']  # type: ignore[assignment]
+
+    def test_setstate_raises_on_missing_descriptor_field(self) -> None:
+        """Unpickling a state blob missing a cached-union collection must fail loudly.
+
+        __setstate__ verifies every ``_CachedUnionMember``-backed attribute was
+        restored; a missing one would otherwise surface much later as an
+        AttributeError on the private mangled name (e.g. ``_titles``), which is
+        far harder to diagnose than a named ValueError here.
+        """
+        c = Constants()
+        state = dict(c.__getstate__())
+        del state['titles']
+        restored = Constants.__new__(Constants)
+        with pytest.raises(ValueError, match='titles'):
+            restored.__setstate__(state)
 
 
 class SuffixesPrefixesTitlesPerformanceTests(HumanNameTestBase):
