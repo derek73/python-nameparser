@@ -436,3 +436,13 @@ class SuffixesTestCase(HumanNameTestBase):
         # regression that the single-empty case above would not catch)
         hn = HumanName("Doe, John,, Jr.,, III")
         self.m(hn.suffix, "Jr., III", hn)
+
+    def test_suffix_comma_empty_segment_not_added_to_suffix_list(self) -> None:
+        # Regression: in suffix-comma format ("John Doe, Jr.,," -- one
+        # trailing comma survives collapse_whitespace), the unguarded
+        # parts[1:] loop leaked '' into suffix_list via
+        # expand_suffix_delimiter('') returning [''].
+        hn = HumanName("John Doe, Jr.,,")
+        self.assertEqual(hn.suffix_list, ["Jr."])
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Doe", hn)

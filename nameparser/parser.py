@@ -1081,7 +1081,10 @@ class HumanName:
                 #               parts[0],          parts[1:...]
 
                 for part in parts[1:]:
-                    self.suffix_list += self.expand_suffix_delimiter(part)
+                    # skip empty segments from doubled commas, mirroring the
+                    # parts[2:] guard in the lastname-comma path below
+                    if part:
+                        self.suffix_list += self.expand_suffix_delimiter(part)
                 pieces = self.parse_pieces(parts[0].split(' '))
                 pieces = self._join_bound_first_name(pieces, reserve_last=True)
                 log.debug("pieces: %s", str(pieces))
@@ -1100,9 +1103,10 @@ class HumanName:
                         self.first_list.append(piece)
                         continue
                     if self.are_suffixes(pieces[i+1:]):
-                        # the final piece always lands here: are_suffixes() is
-                        # vacuously True for the empty tail, making this the
-                        # last-name branch as well as the suffix branch
+                        # any piece reaching this check as the final piece
+                        # lands here: are_suffixes() is vacuously True for the
+                        # empty tail, making this the last-name branch as well
+                        # as the suffix branch
                         self.last_list.append(piece)
                         self.suffix_list = pieces[i+1:] + self.suffix_list
                         break
@@ -1164,7 +1168,9 @@ class HumanName:
     def parse_pieces(self, parts: Iterable[str], additional_parts_count: int = 0) -> list[str]:
         """
         Split parts on spaces and remove commas, join on conjunctions and
-        lastname prefixes. If parts have periods in the middle, try splitting
+        lastname prefixes. Tokens that are empty after stripping spaces and
+        commas are dropped, so the returned pieces never contain empty
+        strings. If parts have periods in the middle, try splitting
         on periods and check if the parts are titles or suffixes. If they are
         add to the constant so they will be found.
 
