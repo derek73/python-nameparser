@@ -456,10 +456,11 @@ e.g. parsing names on multiple threads.
 
 
 If you'd prefer new instances to have their own config values, one shortcut is to pass
-``None`` as the second argument (or ``constant`` keyword argument) when
+``None`` as the second argument (or ``constants`` keyword argument) when
 instantiating ``HumanName``. Each instance always has a ``C`` attribute, but if
-you didn't pass something falsey to the ``constants`` argument then it's a
-reference to the module-level config values with the behavior described above.
+you didn't pass ``None`` (or your own :py:class:`~nameparser.config.Constants`
+instance) to the ``constants`` argument then it's a reference to the
+module-level config values with the behavior described above.
 
 .. doctest:: module config
     :options: +ELLIPSIS, +NORMALIZE_WHITESPACE

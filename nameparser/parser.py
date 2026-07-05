@@ -95,7 +95,7 @@ class HumanName:
     def __init__(
         self,
         full_name: str | bytes = "",
-        constants: Constants = CONSTANTS,
+        constants: Constants | None = CONSTANTS,
         encoding: str = DEFAULT_ENCODING,
         string_format: str | None = None,
         initials_format: str | None = None,
@@ -110,9 +110,14 @@ class HumanName:
         nickname: str | list[str] | None = None,
         maiden: str | list[str] | None = None,
     ) -> None:
+        if constants is None:
+            constants = Constants()
+        elif not isinstance(constants, Constants):
+            raise TypeError(
+                "constants must be a Constants instance or None, "
+                f"got {type(constants).__name__}"
+            )
         self.C = constants
-        if type(self.C) is not type(CONSTANTS):
-            self.C = Constants()
 
         # Lookup entries derived while parsing this instance (period-joined
         # titles/suffixes like "Lt.Gov.", conjunction-joined pieces like
