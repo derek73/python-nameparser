@@ -1249,10 +1249,10 @@ class HumanName:
                 suffixes = list(filter(self.is_suffix, period_chunks))
 
                 # register the part so it will be found by the is_* checks
-                if len(list(titles)):
+                if titles:
                     self._derived_titles.add(lc(part))
                     continue
-                if len(list(suffixes)):
+                if suffixes:
                     self._derived_suffixes.add(lc(part))
                     continue
 
