@@ -250,7 +250,10 @@ class HumanName:
             Name parts may include prefixes or conjunctions. This function filters these from the name unless it is
             a first name, since first names cannot be conjunctions or prefixes.
         """
-        parts = name_part.split(" ")
+        # split() rather than split(" "): *_list attributes assigned directly
+        # bypass parse_pieces whitespace normalization, and split(" ") yields
+        # empty strings for repeated spaces (#232)
+        parts = name_part.split()
         initials = []
         for part in parts:
             if not (self.is_prefix(part) or self.is_conjunction(part)) or firstname:
