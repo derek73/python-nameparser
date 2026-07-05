@@ -69,6 +69,19 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.assertEqual(len(hn), 2)
         self.assertEqual(next(it), "Doe")
 
+    def test_instance_is_not_its_own_iterator(self) -> None:
+        # iterator state must never live on the instance; see release log
+        # for the next(name) -> next(iter(name)) migration
+        hn = HumanName("John Doe")
+        with pytest.raises(TypeError):
+            next(hn)  # type: ignore[call-overload]
+
+    def test_iterating_empty_name_yields_nothing(self) -> None:
+        collected = []
+        for part in HumanName(""):
+            collected.append(part)
+        self.assertEqual(collected, [])
+
     @pytest.mark.skipif(not dill, reason="requires python-dill module to test pickling")
     def test_config_pickle(self) -> None:
         constants = Constants()
