@@ -499,17 +499,48 @@ class ParsingDoesNotMutateConfigTests(HumanNameTestBase):
     on input order, and concurrent parsing raced on the shared sets.
     """
 
-    _WATCHED_ATTRS = ('titles', 'prefixes', 'conjunctions',
-                      'suffix_acronyms', 'suffix_not_acronyms')
+    @staticmethod
+    def _config_snapshot(constants: Constants) -> dict:
+        """Snapshot every piece of configuration ``constants`` owns.
+
+        Enumerated via ``Constants.__getstate__()`` — the canonical listing of
+        an instance's own config (descriptor-backed names mapped to their
+        public form, private caches like ``_pst`` excluded) — so a collection
+        added to ``Constants`` later is watched automatically, with no
+        attribute list to keep in sync.
+        """
+        snap = {}
+        for attr, value in constants.__getstate__().items():
+            if isinstance(value, SetManager):
+                snap[attr] = set(value)
+            elif isinstance(value, TupleManager):
+                snap[attr] = dict(value)
+            else:
+                snap[attr] = value  # scalar override
+        # Fail loud if the structural discovery ever stops seeing the sets
+        # the parser historically leaked into.
+        assert {'titles', 'prefixes', 'conjunctions',
+                'suffix_acronyms', 'suffix_not_acronyms'} <= set(snap), \
+            "config snapshot no longer covers the historically-mutated sets"
+        return snap
+
+    def _assert_config_unchanged(self, constants: Constants, before: dict, parsed: str) -> None:
+        after = self._config_snapshot(constants)
+        diffs = []
+        for attr in sorted(set(before) | set(after)):
+            b, a = before.get(attr), after.get(attr)
+            if b != a:
+                if isinstance(b, set) and isinstance(a, set):
+                    diffs.append(f"{attr}: added {sorted(a - b)}, removed {sorted(b - a)}")
+                else:
+                    diffs.append(f"{attr}: {b!r} -> {a!r}")
+        self.assertEqual(diffs, [], f"parsing {parsed!r} changed the config: {diffs}")
 
     def _assert_parse_leaves_config_unchanged(self, name: str) -> HumanName:
         from nameparser.config import CONSTANTS
-        before = {a: set(getattr(CONSTANTS, a)) for a in self._WATCHED_ATTRS}
+        before = self._config_snapshot(CONSTANTS)
         hn = HumanName(name)
-        for attr, snapshot in before.items():
-            leaked = set(getattr(CONSTANTS, attr)) - snapshot
-            self.assertEqual(leaked, set(),
-                             f"parsing {name!r} leaked {leaked!r} into CONSTANTS.{attr}")
+        self._assert_config_unchanged(CONSTANTS, before, name)
         return hn
 
     def test_period_joined_title_does_not_leak_into_titles(self) -> None:
@@ -542,12 +573,9 @@ class ParsingDoesNotMutateConfigTests(HumanNameTestBase):
 
     def test_instance_owned_constants_not_mutated_by_parsing(self) -> None:
         hn = HumanName("", constants=None)
-        before = {a: set(getattr(hn.C, a)) for a in self._WATCHED_ATTRS}
+        before = self._config_snapshot(hn.C)
         hn.full_name = "Lt.Gov. John Doe"
-        for attr, snapshot in before.items():
-            leaked = set(getattr(hn.C, attr)) - snapshot
-            self.assertEqual(leaked, set(),
-                             f"parsing leaked {leaked!r} into the instance's own C.{attr}")
+        self._assert_config_unchanged(hn.C, before, "Lt.Gov. John Doe")
         self.m(hn.title, "Lt.Gov.", hn)
 
     def test_derivations_reset_between_parses_of_same_instance(self) -> None:
