@@ -492,9 +492,11 @@ class SuffixesPrefixesTitlesPerformanceTests(HumanNameTestBase):
 
     This library is commonly used to parse large batches of names, so
     suffixes_prefixes_titles must remain cached.  Without the cache, each call
-    rebuilds the union from ~700 strings (~50-100 µs); with it, repeated access
-    is ~1000x faster.  This test asserts that 10 000 repeated calls complete
-    well within the time a single uncached union build would take.
+    rebuilds the union from ~700 strings; with it, repeated access is
+    orders of magnitude faster.  Rather than compare against a fixed
+    wall-clock budget (which flakes on slower/noisier CI runners), this
+    measures the uncached build cost on the same machine and asserts cached
+    access is much faster than that baseline.
     """
 
     def test_repeated_access_is_cached(self) -> None:
@@ -503,15 +505,20 @@ class SuffixesPrefixesTitlesPerformanceTests(HumanNameTestBase):
         second = c.suffixes_prefixes_titles
         assert first is second, "suffixes_prefixes_titles should return the same cached object on repeated access"
 
-        n = 10_000
-        elapsed = timeit.timeit(lambda: c.suffixes_prefixes_titles, number=n)
+        # Baseline: cost of an uncached build, measured via fresh instances
+        # (each instance's first access rebuilds the union) on this machine.
+        m = 50
+        uncached_per_call = timeit.timeit(lambda: Constants().suffixes_prefixes_titles, number=m) / m
 
-        # One uncached union build over ~700 strings takes ~50-100 µs on any
-        # modern machine.  If caching is broken, 10 000 calls would take
-        # seconds; with caching they finish in well under 10 ms total.
-        limit = 0.010  # 10 ms = 1 µs/call average
-        assert elapsed < limit, (
-            f"suffixes_prefixes_titles appears uncached: {n} calls took "
-            f"{elapsed * 1000:.1f} ms (limit {limit * 1000:.0f} ms). "
-            "Was _pst caching removed?"
+        n = 10_000
+        cached_per_call = timeit.timeit(lambda: c.suffixes_prefixes_titles, number=n) / n
+
+        # If caching is broken, cached_per_call would be roughly the same as
+        # uncached_per_call. With caching intact it should be at least an
+        # order of magnitude faster.
+        limit = uncached_per_call / 10
+        assert cached_per_call < limit, (
+            f"suffixes_prefixes_titles appears uncached: cached access averaged "
+            f"{cached_per_call * 1e6:.1f} us/call vs an uncached build cost of "
+            f"{uncached_per_call * 1e6:.1f} us/call. Was _pst caching removed?"
         )
