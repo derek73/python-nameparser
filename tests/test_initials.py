@@ -134,6 +134,15 @@ class InitialsTestCase(HumanNameTestBase):
         hn = HumanName("John Doe")
         self.assertEqual(str(hn), "John Doe")
 
+    def test_initials_with_doubled_space_in_list_element(self) -> None:
+        # direct *_list assignment bypasses parse_pieces whitespace
+        # normalization, so initials must tolerate unnormalized elements
+        # instead of raising IndexError (#232)
+        hn = HumanName(first="John")
+        hn.middle_list = ["Q  R"]
+        self.assertEqual(hn.initials_list(), ["J", "Q R"])
+        self.assertEqual(hn.initials(), "J. Q R.")
+
     def test_constructor_first(self) -> None:
         hn = HumanName(first="TheName")
         self.m(hn.first, "TheName", hn)

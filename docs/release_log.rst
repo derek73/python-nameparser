@@ -1,6 +1,7 @@
 Release Log
 ===========
 * 1.3.0 - Unreleased
+    - Fix ``IndexError`` in ``initials()``/``initials_list()`` when a ``*_list`` attribute was assigned directly with an element containing unnormalized whitespace (e.g. ``name.middle_list = ['Q  R']``), bypassing the parser's whitespace normalization (closes #232)
     - Fix ``HumanName`` acting as its own iterator with a stored cursor: breaking out of a loop, iterating in nested loops, or calling ``len(name)`` mid-loop corrupted subsequent iteration; ``iter(name)`` now returns a fresh independent iterator each time. ``next(name)`` on the instance itself (undocumented) now raises ``TypeError`` — call ``next(iter(name))`` instead (closes #225)
     - Fix parsing writing back into the ``Constants`` it reads (usually the shared module-level ``CONSTANTS``): pieces derived while parsing a name — period-joined titles/suffixes like ``"Lt.Gov."`` and conjunction-joined pieces like ``"Mr. and Mrs."`` or ``"von und zu"`` — are now tracked per parse instead of being permanently ``add()``-ed to the config, so parse results no longer depend on which names were parsed earlier in the process and parsing no longer mutates shared state across threads
     - Remove the vestigial ``unparsable`` attribute: the guard that was meant to set it has been unreachable since 2013 (v0.2.9), so it has reported ``False`` for every parsed name for over a decade; check ``len(name) == 0`` to detect an empty parse
