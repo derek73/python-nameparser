@@ -522,3 +522,51 @@ class SuffixesPrefixesTitlesPerformanceTests(HumanNameTestBase):
             f"{cached_per_call * 1e6:.1f} us/call vs an uncached build cost of "
             f"{uncached_per_call * 1e6:.1f} us/call. Was _pst caching removed?"
         )
+
+
+class ConstantsReprTests(HumanNameTestBase):
+
+    def test_repr_reports_actual_collection_sizes(self) -> None:
+        c = Constants()
+        repr_str = repr(c)
+        for name in Constants._repr_collection_attrs:
+            self.assertIn(f"{name}: {len(getattr(c, name))}", repr_str)
+
+    def test_repr_omits_scalars_at_default_value(self) -> None:
+        c = Constants()
+        repr_str = repr(c)
+        for name in Constants._repr_scalar_attrs:
+            self.assertNotIn(name, repr_str)
+
+    def test_repr_shows_scalar_override_via_constructor(self) -> None:
+        c = Constants(middle_name_as_last=True)
+        self.assertIn("middle_name_as_last: True", repr(c))
+
+    def test_repr_shows_scalar_override_via_assignment(self) -> None:
+        # Most _repr_scalar_attrs (e.g. capitalize_name) aren't __init__ kwargs
+        # at all -- they're only ever overridden by direct assignment.
+        c = Constants()
+        c.capitalize_name = True
+        self.assertIn("capitalize_name: True", repr(c))
+
+    def test_repr_shows_multiple_simultaneous_scalar_overrides(self) -> None:
+        c = Constants(patronymic_name_order=True)
+        c.capitalize_name = True
+        repr_str = repr(c)
+        self.assertIn("patronymic_name_order: True", repr_str)
+        self.assertIn("capitalize_name: True", repr_str)
+
+    def test_repr_reflects_mutated_collection_size(self) -> None:
+        c = Constants()
+        before = len(c.titles)
+        c.titles.add('a-brand-new-title-for-repr-test')
+        self.assertIn(f"titles: {before + 1}", repr(c))
+
+    def test_repr_reports_empty_collection(self) -> None:
+        c = Constants(titles=[])
+        self.assertIn("titles: 0", repr(c))
+
+    def test_repr_is_bracketed_multiline(self) -> None:
+        repr_str = repr(Constants())
+        self.assertTrue(repr_str.startswith("<Constants : [\n"))
+        self.assertTrue(repr_str.endswith("\n]>"))

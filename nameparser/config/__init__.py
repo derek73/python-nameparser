@@ -531,8 +531,29 @@ class Constants:
             self._pst = self.prefixes | self.suffix_acronyms | self.suffix_not_acronyms | self.titles
         return self._pst
 
+    _repr_collection_attrs = (
+        'prefixes', 'suffix_acronyms', 'suffix_not_acronyms', 'titles',
+        'first_name_titles', 'conjunctions', 'bound_first_names',
+        'non_first_name_prefixes', 'suffix_acronyms_ambiguous',
+    )
+    _repr_scalar_attrs = (
+        'string_format', 'initials_format', 'initials_delimiter',
+        'initials_separator', 'suffix_delimiter', 'empty_attribute_default',
+        'capitalize_name', 'force_mixed_case_capitalization',
+        'patronymic_name_order', 'middle_name_as_last',
+    )
+
     def __repr__(self) -> str:
-        return "<Constants() instance>"
+        # Collections (some with hundreds of entries, e.g. titles/prefixes)
+        # are summarized as counts rather than dumped in full. Scalars are
+        # only shown when they differ from the class default, so a plain
+        # Constants() reads as just the collection sizes.
+        lines = [f"    {name}: {len(getattr(self, name))}" for name in self._repr_collection_attrs]
+        lines += [
+            f"    {name}: {value!r}" for name in self._repr_scalar_attrs
+            if (value := getattr(self, name)) != getattr(type(self), name)
+        ]
+        return "<Constants : [\n" + "\n".join(lines) + "\n]>"
 
     def __setstate__(self, state: Mapping[str, Any]) -> None:
         # Restore each saved attribute directly. The previous implementation
