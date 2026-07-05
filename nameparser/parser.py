@@ -570,8 +570,8 @@ class HumanName:
             for item in piece:
                 if self.is_conjunction(item):
                     return True
-        else:
-            return piece.lower() in self.C.conjunctions and not self.is_an_initial(piece)
+            return False
+        return piece.lower() in self.C.conjunctions and not self.is_an_initial(piece)
 
     def is_prefix(self, piece: str) -> bool:
         """
@@ -582,8 +582,8 @@ class HumanName:
             for item in piece:
                 if self.is_prefix(item):
                     return True
-        else:
-            return lc(piece) in self.C.prefixes
+            return False
+        return lc(piece) in self.C.prefixes
 
     def is_bound_first_name(self, piece: str) -> bool:
         """Lowercased, leading/trailing-periods-stripped version of piece is in :py:attr:`~nameparser.config.Constants.bound_first_names`."""
@@ -641,6 +641,7 @@ class HumanName:
             for item in piece:
                 if self.is_suffix(item):
                     return True
+            return False
         else:
             return ((lc(piece).replace('.', '') in self.C.suffix_acronyms)
                     or (lc(piece) in self.C.suffix_not_acronyms)) \
@@ -852,7 +853,7 @@ class HumanName:
 
         if match := _re.search(self._full_name):
             self.suffix_list.extend(match.groups())
-            self._full_name = _re.sub('', self._full_name)
+            self._full_name = _re.sub("", self._full_name)
 
     def parse_nicknames(self) -> None:
         """
