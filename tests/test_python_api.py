@@ -357,13 +357,39 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.assertFalse(hn.matches(HumanName("Jane Smith")))
 
     def test_matches_parses_str_with_instance_constants(self) -> None:
+        # the custom title must not be a default one ('chancellor' is!), or
+        # this passes without the self.C parse path ever mattering
         c = Constants()
-        c.titles.add('chancellor')
-        hn = HumanName("Chancellor Jane Smith", constants=c)
+        c.titles.add('zephyrmark')
+        self.assertNotIn('zephyrmark', CONSTANTS.titles)
+        hn = HumanName("Zephyrmark Jane Smith", constants=c)
         # the str operand is parsed with self.C, so the custom title is
-        # recognized in the comma form; the shared CONSTANTS would not
-        # parse 'chancellor' as a title here
-        self.assertTrue(hn.matches("smith, chancellor jane"))
+        # recognized in the comma form; parsed with the shared CONSTANTS,
+        # 'zephyrmark' would land in first/middle and the keys would differ
+        self.assertTrue(hn.matches("smith, zephyrmark jane"))
+
+    def test_matches_humanname_operand_keeps_its_own_parse(self) -> None:
+        # asymmetry, pinned deliberately: a str operand is reparsed with
+        # self.C, but a HumanName operand is compared as already parsed --
+        # its own constants determined its components
+        c = Constants()
+        c.titles.add('zephyrmark')
+        with_title = HumanName("Zephyrmark Jane Smith", constants=c)
+        default_parse = HumanName("Zephyrmark Jane Smith")
+        self.assertTrue(with_title.matches("Zephyrmark Jane Smith"))
+        self.assertFalse(with_title.matches(default_parse))
+
+    def test_empty_parses_share_a_comparison_key(self) -> None:
+        # documented caveat: empty/unparsable input collapses to the
+        # all-empty key, so such names match each other and collide in
+        # dedup; screen with len(name) == 0 first
+        self.assertTrue(HumanName("").matches(HumanName(",")))
+        self.assertEqual(HumanName("()").comparison_key(),
+                         HumanName("").comparison_key())
+
+    def test_matches_non_ascii_case_insensitive(self) -> None:
+        hn = HumanName("JOSÉ GARCÍA")
+        self.assertTrue(hn.matches("José García"))
 
     def test_matches_rejects_other_types(self) -> None:
         hn = HumanName("John Smith")

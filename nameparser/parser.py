@@ -311,6 +311,10 @@ class HumanName:
         display settings like ``string_format`` and
         ``empty_attribute_default``.
 
+        Empty or unparsable input yields the all-empty key, so such names
+        all compare equal and collide in dedup; screen them out with
+        ``len(name) == 0`` first.
+
         .. doctest::
 
             >>> HumanName("Dr. Juan Q. Xavier de la Vega III").comparison_key()
@@ -327,7 +331,10 @@ class HumanName:
         Compare parsed components case-insensitively; the semantic
         replacement for the deprecated ``==``. A ``str`` argument is parsed
         first, using this instance's configuration, so any written form of
-        the same name matches:
+        the same name matches; a ``HumanName`` argument is compared as
+        already parsed — its own configuration determined its components.
+        Two empty or unparsable names match each other; check
+        ``len(name) == 0`` to screen them.
 
         .. doctest::
 
