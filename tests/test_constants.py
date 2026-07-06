@@ -8,6 +8,7 @@ import pytest
 from nameparser import HumanName
 from nameparser.config import Constants, RegexTupleManager, SetManager, TupleManager
 from nameparser.config.regexes import EMPTY_REGEX
+from nameparser.config.titles import TITLES
 
 from tests.base import HumanNameTestBase
 
@@ -44,6 +45,119 @@ class ConstantsCustomizationTests(HumanNameTestBase):
     def test_constants_class_instead_of_instance_raises_with_hint(self) -> None:
         with pytest.raises(TypeError, match=r"did you mean Constants\(\)"):
             HumanName("John Doe", constants=Constants)  # type: ignore[arg-type]
+
+    def test_constants_bare_string_kwarg_raises_typeerror(self) -> None:
+        # a bare string is an iterable of its characters, so set('dr') would
+        # silently replace the default titles with {'d', 'r'} (#238); the
+        # type system can't catch this because str satisfies Iterable[str]
+        with pytest.raises(TypeError, match=r"wrap it in a list"):
+            Constants(titles='dr')
+
+    def test_set_manager_bare_string_raises_typeerror(self) -> None:
+        with pytest.raises(TypeError, match=r"wrap it in a list"):
+            SetManager('dr')
+
+    def test_set_manager_bytes_raises_with_decode_hint(self) -> None:
+        # a "wrap it in a list" hint would be a trap for bytes: [b'dr'] is
+        # accepted but its elements never match parsed str tokens
+        with pytest.raises(TypeError, match=r"decode it first"):
+            SetManager(b'dr')  # type: ignore[arg-type]
+
+    def test_set_manager_bare_string_operand_raises_typeerror(self) -> None:
+        # Set's mixin __or__/__and__ hand _from_iterable a generator, so the
+        # constructor guard alone never sees a bare-string operand; without
+        # an operand check, c.titles |= 'esq' silently adds 'e', 's', 'q'
+        sm = SetManager(['dr', 'mr'])
+        for op in (lambda: sm | 'abc',
+                   lambda: 'abc' | sm,
+                   lambda: sm & 'abc',
+                   lambda: 'abc' & sm,
+                   lambda: sm - 'abc',
+                   lambda: sm ^ 'abc'):
+            with pytest.raises(TypeError, match=r"wrap it in a list"):
+                op()
+
+    def test_set_manager_operators_accept_lists(self) -> None:
+        # end-to-end: an operator-built set wired back into Constants must
+        # behave like an add()-built one, normalization included
+        c = Constants()
+        with pytest.raises(TypeError, match=r"wrap it in a list"):
+            c.titles |= 'esq'
+        c.titles |= ['Esq.']
+        self.assertIn('esq', c.titles)
+        hn = HumanName("Esq Jane Smith", constants=c)
+        self.m(hn.title, "Esq", hn)
+
+    def test_set_manager_operators_normalize_like_add(self) -> None:
+        # add() lowercases and strips leading/trailing periods; without the
+        # same normalization of operator operands, (titles | ['Esq.']) keeps
+        # a raw 'Esq.', which the parser's lc()-based lookups can never match
+        # — silently broken config, same failure family as the bare-string
+        # shredding (#238)
+        sm = SetManager(['dr', 'mr'])
+        self.assertEqual((sm | ['Esq.']).elements, {'dr', 'mr', 'esq'})
+        self.assertEqual((['Esq.', 'Dr.'] | sm).elements, {'dr', 'mr', 'esq'})
+        self.assertEqual((sm & ['Dr.']).elements, {'dr'})
+        self.assertEqual((['Dr.'] & sm).elements, {'dr'})
+        self.assertEqual((sm - ['Dr.']).elements, {'mr'})
+        self.assertEqual((['Dr.', 'Esq.'] - sm).elements, {'esq'})
+        self.assertEqual((sm ^ ['Dr.', 'Esq.']).elements, {'mr', 'esq'})
+        # pins __rxor__ separately in case it ever stops aliasing __xor__
+        self.assertEqual((['Dr.', 'Esq.'] ^ sm).elements, {'mr', 'esq'})
+
+    def test_set_manager_rsub_is_order_sensitive(self) -> None:
+        # __sub__ and __rsub__ are hand-written separately (subtraction
+        # isn't commutative, unlike |/&/^), so a copy-paste operand swap
+        # in __rsub__ would silently flip the result and nothing else
+        # in this file would catch it
+        sm = SetManager(['dr', 'mr'])
+        self.assertEqual((['Dr.', 'Esq.'] - sm).elements, {'esq'})
+        self.assertEqual((sm - ['Dr.', 'Esq.']).elements, {'mr'})
+
+    def test_set_manager_constructor_normalizes_like_add(self) -> None:
+        # without constructor normalization the operators misfire against
+        # the exact spelling visibly stored in the set: & returns empty
+        # and - silently no-ops
+        sm = SetManager(['Dr.', 'MR'])
+        self.assertEqual(sm.elements, {'dr', 'mr'})
+        self.assertEqual((sm & ['Dr.']).elements, {'dr'})
+        self.assertEqual((sm - ['Dr.']).elements, {'mr'})
+
+    def test_constants_kwarg_elements_are_normalized(self) -> None:
+        # Constants(titles=[...]) was the last silently-dead config path:
+        # a raw 'Chemistry' element can never match the parser's lc() lookups
+        c = Constants(titles=['chancellor', 'Chemistry'])
+        hn = HumanName("Chemistry Jane Smith", constants=c)
+        self.m(hn.title, "Chemistry", hn)
+
+    def test_default_constants_construction_does_not_alias_defaults(self) -> None:
+        # Constants() reuses the prebuilt _DEFAULT_TITLES snapshot via an
+        # identity check instead of re-validating ~1,400 entries; if that
+        # fast path ever returned the shared elements set instead of a
+        # copy, mutating one Constants() instance would corrupt every
+        # other instance's (and the module-level default's) titles
+        c1 = Constants()
+        c1.titles.add('zzz_should_not_leak')
+        c2 = Constants()
+        self.assertNotIn('zzz_should_not_leak', c2.titles)
+        self.assertNotIn('zzz_should_not_leak', TITLES)
+
+    def test_equal_but_not_identical_titles_list_still_validates(self) -> None:
+        # the fast path in Constants.__init__ is an `is` check against the
+        # raw TITLES object, not `==`; an equal-but-copied list must still
+        # go through full normalization rather than accidentally matching
+        c = Constants(titles=list(TITLES) + ['Extra.'])
+        self.assertIn('extra', c.titles)
+
+    def test_set_manager_non_str_elements_raise_typeerror(self) -> None:
+        # lc() on junk elements either crashes context-free (bytes, int) or
+        # silently transmutes None into '' — raise a curated error instead
+        with pytest.raises(TypeError, match=r"decode it first"):
+            SetManager([b'dr'])  # type: ignore[list-item]
+        with pytest.raises(TypeError, match=r"expected str elements"):
+            SetManager([None])  # type: ignore[list-item]
+        with pytest.raises(TypeError, match=r"expected str elements"):
+            SetManager(['dr']) | [1]  # type: ignore[list-item]
 
     def test_remove_title(self) -> None:
         hn = HumanName("Hon Solo", constants=None)

@@ -56,17 +56,77 @@ class SetManager(Set):
     Easily add and remove config variables per module or instance. Subclass of
     ``collections.abc.Set``.
 
-    Only special functionality beyond that provided by set() is
-    to normalize constants for comparison (lower case, no periods)
-    when they are add()ed and remove()d and allow passing multiple 
-    string arguments to the :py:func:`add()` and :py:func:`remove()` methods.
+    Special functionality beyond that provided by set() is to normalize
+    constants for comparison (lowercase, leading/trailing periods stripped)
+    when they are add()ed and remove()d, and to allow passing multiple
+    string arguments to the :py:func:`add()` and :py:func:`remove()`
+    methods. The constructor and the set operators apply the same
+    normalization to their elements and operands, so every entry is stored
+    in the form the parser's lookups expect, and they reject a bare string
+    with ``TypeError``, since e.g. ``set('dr')`` would silently build a set
+    of single characters.
 
     '''
 
     _on_change: Callable[[], None] | None
 
+    @classmethod
+    def _normalized_elements(cls, elements: Iterable[str]) -> set[str]:
+        # a SetManager's elements were validated and normalized when it was
+        # built, so copy them instead of re-validating — this is what keeps
+        # chained unions (suffixes_prefixes_titles) and default Constants()
+        # construction from re-checking ~1,400 entries per step
+        if isinstance(elements, SetManager):
+            return set(elements.elements)
+        # a bare string is an iterable of its characters, so set(value)
+        # would silently build a set of single characters — and bytes
+        # iterates to ints, which can never match parsed tokens (#238)
+        if isinstance(elements, bytes):
+            raise TypeError(
+                "expected an iterable of strings, got a single bytes; "
+                f"decode it first: [{elements!r}.decode()]"
+            )
+        if isinstance(elements, str):
+            raise TypeError(
+                "expected an iterable of strings, got a single str; "
+                f"wrap it in a list: [{elements!r}]"
+            )
+        # apply the same lc() normalization (lowercase, strip leading/
+        # trailing periods) that add() applies, and reject junk elements:
+        # lc() on bytes or int crashes without naming the culprit, and
+        # lc(None) silently transmutes to ''. Divergence from add() is
+        # deliberate: add_with_encoding() decodes bytes for back-compat,
+        # bulk boundaries stay strict.
+        normalized = set()
+        for s in elements:
+            if isinstance(s, bytes):
+                raise TypeError(
+                    f"expected str elements, got bytes; decode it first: {s!r}.decode()"
+                )
+            if not isinstance(s, str):
+                raise TypeError(
+                    f"expected str elements, got {type(s).__name__}: {s!r}"
+                )
+            normalized.add(lc(s))
+        return normalized
+
+    @classmethod
+    def _from_normalized(cls, elements: set[str]) -> 'SetManager':
+        # Private fast constructor: bypasses __init__ so results aren't
+        # re-validated element by element. This performs NO validation or
+        # normalization of `elements` -- the caller is fully responsible
+        # for guaranteeing every element is already a str that has passed
+        # through lc(). Only call this with a set built from other
+        # SetManagers' already-normalized .elements (operator results,
+        # prebuilt default copies); passing anything else silently defeats
+        # the constructor's #238 guarantees with no error raised here.
+        obj = cls.__new__(cls)
+        obj.elements = elements
+        obj._on_change = None
+        return obj
+
     def __init__(self, elements: Iterable[str]) -> None:
-        self.elements = set(elements)
+        self.elements = self._normalized_elements(elements)
         # Optional invalidation hook, wired by an owning Constants so that
         # in-place add()/remove() can clear its cached suffixes_prefixes_titles
         # union. None when the manager is used standalone.
@@ -90,6 +150,36 @@ class SetManager(Set):
     def __len__(self) -> int:
         return len(self.elements)
 
+    # The ABC mixins compare raw operand elements against stored (normalized)
+    # ones, and their __or__/__and__ accept a bare str as Iterable, so every
+    # operand is validated and normalized here. Results are built with plain
+    # set ops on already-normalized elements instead of delegating to the
+    # mixins, whose _from_iterable would re-validate the whole result
+    # through __init__.
+    #
+    # the runtime ABC accepts any Iterable operand, so annotate honestly and
+    # ignore typeshed's narrower AbstractSet declarations
+    def __or__(self, other: Iterable[str]) -> 'SetManager':  # type: ignore[override]
+        return self._from_normalized(self.elements | self._normalized_elements(other))
+
+    __ror__ = __or__
+
+    def __and__(self, other: Iterable[str]) -> 'SetManager':  # type: ignore[override]
+        return self._from_normalized(self.elements & self._normalized_elements(other))
+
+    __rand__ = __and__
+
+    def __sub__(self, other: Iterable[str]) -> 'SetManager':  # type: ignore[override]
+        return self._from_normalized(self.elements - self._normalized_elements(other))
+
+    def __rsub__(self, other: Iterable[str]) -> 'SetManager':
+        return self._from_normalized(self._normalized_elements(other) - self.elements)
+
+    def __xor__(self, other: Iterable[str]) -> 'SetManager':  # type: ignore[override]
+        return self._from_normalized(self.elements ^ self._normalized_elements(other))
+
+    __rxor__ = __xor__
+
     def add_with_encoding(self, s: str, encoding: str | None = None) -> None:
         """
         Add the lowercased, leading/trailing-periods-stripped version of the string to the set. Pass an
@@ -111,7 +201,7 @@ class SetManager(Set):
     def add(self, *strings: str) -> Self:
         """
         Add the lowercased, leading/trailing-periods-stripped version of the string arguments to the set.
-        Can pass a list of strings. Returns ``self`` for chaining.
+        Returns ``self`` for chaining.
         """
         for s in strings:
             self.add_with_encoding(s)
@@ -151,6 +241,31 @@ def _is_dunder(attr: str) -> bool:
     # all route dunders to normal object-attribute behavior so those probes
     # work instead of being mistaken for dict entries.
     return attr.startswith("__") and attr.endswith("__")
+
+
+# The default config sets are module constants that never change, so
+# validate and normalize each one exactly once at import. Constants()
+# copies these via _normalized_elements' SetManager fast path instead of
+# re-checking ~1,400 elements per construction — a cost that otherwise
+# repeats on the per-instance-config path, HumanName(constants=None).
+#
+# This snapshot is taken once, at import time: mutating a raw constant
+# (e.g. `TITLES.add('x')`) after import is *not* picked up by Constants()
+# built afterward, since the identity check in Constants.__init__ reuses
+# this frozen SetManager rather than re-wrapping the (now-changed) raw
+# set. That's a behavior change from re-wrapping every time, but the
+# documented customization path mutates the SetManager wrapper on a
+# Constants instance (``CONSTANTS.titles.add(...)``), not the raw
+# constant, so this only affects an unsupported/undocumented pattern.
+_DEFAULT_PREFIXES = SetManager(PREFIXES)
+_DEFAULT_SUFFIX_ACRONYMS = SetManager(SUFFIX_ACRONYMS)
+_DEFAULT_SUFFIX_NOT_ACRONYMS = SetManager(SUFFIX_NOT_ACRONYMS)
+_DEFAULT_SUFFIX_ACRONYMS_AMBIGUOUS = SetManager(SUFFIX_ACRONYMS_AMBIGUOUS)
+_DEFAULT_TITLES = SetManager(TITLES)
+_DEFAULT_FIRST_NAME_TITLES = SetManager(FIRST_NAME_TITLES)
+_DEFAULT_CONJUNCTIONS = SetManager(CONJUNCTIONS)
+_DEFAULT_BOUND_FIRST_NAMES = SetManager(BOUND_FIRST_NAMES)
+_DEFAULT_NON_FIRST_NAME_PREFIXES = SetManager(NON_FIRST_NAME_PREFIXES)
 
 
 class TupleManager(dict[str, T]):
@@ -487,15 +602,18 @@ class Constants:
         # These four descriptor assignments call _CachedUnionMember.__set__, which
         # calls _invalidate_pst() and establishes self._pst. They must come before
         # any read of suffixes_prefixes_titles.
-        self.prefixes = SetManager(prefixes)
-        self.suffix_acronyms = SetManager(suffix_acronyms)
-        self.suffix_not_acronyms = SetManager(suffix_not_acronyms)
-        self.titles = SetManager(titles)
-        self.first_name_titles = SetManager(first_name_titles)
-        self.conjunctions = SetManager(conjunctions)
-        self.bound_first_names = SetManager(bound_first_names)
-        self.non_first_name_prefixes = SetManager(non_first_name_prefixes)
-        self.suffix_acronyms_ambiguous = SetManager(suffix_acronyms_ambiguous)
+        # untouched defaults (identity check) copy the prebuilt module-level
+        # managers instead of re-validating the raw constants element by
+        # element; user-supplied iterables still get the full check
+        self.prefixes = SetManager(_DEFAULT_PREFIXES if prefixes is PREFIXES else prefixes)
+        self.suffix_acronyms = SetManager(_DEFAULT_SUFFIX_ACRONYMS if suffix_acronyms is SUFFIX_ACRONYMS else suffix_acronyms)
+        self.suffix_not_acronyms = SetManager(_DEFAULT_SUFFIX_NOT_ACRONYMS if suffix_not_acronyms is SUFFIX_NOT_ACRONYMS else suffix_not_acronyms)
+        self.titles = SetManager(_DEFAULT_TITLES if titles is TITLES else titles)
+        self.first_name_titles = SetManager(_DEFAULT_FIRST_NAME_TITLES if first_name_titles is FIRST_NAME_TITLES else first_name_titles)
+        self.conjunctions = SetManager(_DEFAULT_CONJUNCTIONS if conjunctions is CONJUNCTIONS else conjunctions)
+        self.bound_first_names = SetManager(_DEFAULT_BOUND_FIRST_NAMES if bound_first_names is BOUND_FIRST_NAMES else bound_first_names)
+        self.non_first_name_prefixes = SetManager(_DEFAULT_NON_FIRST_NAME_PREFIXES if non_first_name_prefixes is NON_FIRST_NAME_PREFIXES else non_first_name_prefixes)
+        self.suffix_acronyms_ambiguous = SetManager(_DEFAULT_SUFFIX_ACRONYMS_AMBIGUOUS if suffix_acronyms_ambiguous is SUFFIX_ACRONYMS_AMBIGUOUS else suffix_acronyms_ambiguous)
         self.capitalization_exceptions = TupleManager(capitalization_exceptions)
         self.regexes = RegexTupleManager(regexes)
         # Per-bucket delimiter collections that parse_nicknames() consults to
