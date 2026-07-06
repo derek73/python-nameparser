@@ -8,6 +8,7 @@ import pytest
 from nameparser import HumanName
 from nameparser.config import Constants, RegexTupleManager, SetManager, TupleManager
 from nameparser.config.regexes import EMPTY_REGEX
+from nameparser.config.titles import TITLES
 
 from tests.base import HumanNameTestBase
 
@@ -104,6 +105,15 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         # pins __rxor__ separately in case it ever stops aliasing __xor__
         self.assertEqual((['Dr.', 'Esq.'] ^ sm).elements, {'mr', 'esq'})
 
+    def test_set_manager_rsub_is_order_sensitive(self) -> None:
+        # __sub__ and __rsub__ are hand-written separately (subtraction
+        # isn't commutative, unlike |/&/^), so a copy-paste operand swap
+        # in __rsub__ would silently flip the result and nothing else
+        # in this file would catch it
+        sm = SetManager(['dr', 'mr'])
+        self.assertEqual((['Dr.', 'Esq.'] - sm).elements, {'esq'})
+        self.assertEqual((sm - ['Dr.', 'Esq.']).elements, {'mr'})
+
     def test_set_manager_constructor_normalizes_like_add(self) -> None:
         # without constructor normalization the operators misfire against
         # the exact spelling visibly stored in the set: & returns empty
@@ -119,6 +129,25 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         c = Constants(titles=['chancellor', 'Chemistry'])
         hn = HumanName("Chemistry Jane Smith", constants=c)
         self.m(hn.title, "Chemistry", hn)
+
+    def test_default_constants_construction_does_not_alias_defaults(self) -> None:
+        # Constants() reuses the prebuilt _DEFAULT_TITLES snapshot via an
+        # identity check instead of re-validating ~1,400 entries; if that
+        # fast path ever returned the shared elements set instead of a
+        # copy, mutating one Constants() instance would corrupt every
+        # other instance's (and the module-level default's) titles
+        c1 = Constants()
+        c1.titles.add('zzz_should_not_leak')
+        c2 = Constants()
+        self.assertNotIn('zzz_should_not_leak', c2.titles)
+        self.assertNotIn('zzz_should_not_leak', TITLES)
+
+    def test_equal_but_not_identical_titles_list_still_validates(self) -> None:
+        # the fast path in Constants.__init__ is an `is` check against the
+        # raw TITLES object, not `==`; an equal-but-copied list must still
+        # go through full normalization rather than accidentally matching
+        c = Constants(titles=list(TITLES) + ['Extra.'])
+        self.assertIn('extra', c.titles)
 
     def test_set_manager_non_str_elements_raise_typeerror(self) -> None:
         # lc() on junk elements either crashes context-free (bytes, int) or

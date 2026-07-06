@@ -112,9 +112,14 @@ class SetManager(Set):
 
     @classmethod
     def _from_normalized(cls, elements: set[str]) -> 'SetManager':
-        # private fast constructor for sets this class already normalized
-        # (operator results, prebuilt default copies); bypasses __init__
-        # so results aren't re-validated element by element
+        # Private fast constructor: bypasses __init__ so results aren't
+        # re-validated element by element. This performs NO validation or
+        # normalization of `elements` -- the caller is fully responsible
+        # for guaranteeing every element is already a str that has passed
+        # through lc(). Only call this with a set built from other
+        # SetManagers' already-normalized .elements (operator results,
+        # prebuilt default copies); passing anything else silently defeats
+        # the constructor's #238 guarantees with no error raised here.
         obj = cls.__new__(cls)
         obj.elements = elements
         obj._on_change = None
@@ -241,8 +246,17 @@ def _is_dunder(attr: str) -> bool:
 # The default config sets are module constants that never change, so
 # validate and normalize each one exactly once at import. Constants()
 # copies these via _normalized_elements' SetManager fast path instead of
-# re-checking ~1,400 elements per construction — a real cost on the
-# per-instance-config path, HumanName(constants=None).
+# re-checking ~1,400 elements per construction — a cost that otherwise
+# repeats on the per-instance-config path, HumanName(constants=None).
+#
+# This snapshot is taken once, at import time: mutating a raw constant
+# (e.g. `TITLES.add('x')`) after import is *not* picked up by Constants()
+# built afterward, since the identity check in Constants.__init__ reuses
+# this frozen SetManager rather than re-wrapping the (now-changed) raw
+# set. That's a behavior change from re-wrapping every time, but the
+# documented customization path mutates the SetManager wrapper on a
+# Constants instance (``CONSTANTS.titles.add(...)``), not the raw
+# constant, so this only affects an unsupported/undocumented pattern.
 _DEFAULT_PREFIXES = SetManager(PREFIXES)
 _DEFAULT_SUFFIX_ACRONYMS = SetManager(SUFFIX_ACRONYMS)
 _DEFAULT_SUFFIX_NOT_ACRONYMS = SetManager(SUFFIX_NOT_ACRONYMS)
