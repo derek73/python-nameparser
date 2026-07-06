@@ -42,6 +42,7 @@ dev = [
   "pytest (>=8)",
   "dill (>=0.2.5)",
   "sphinx (>=8)",
+  "furo",
   "mypy (>=2.1)",
   "ruff (>=0.15)",
   "pytest-timeout>=2.4.0",
