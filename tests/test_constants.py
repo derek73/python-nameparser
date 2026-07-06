@@ -178,6 +178,35 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         with pytest.raises(TypeError, match=r"expected str elements"):
             SetManager(['dr']) | [1]  # type: ignore[list-item]
 
+    def test_tuplemanager_bare_string_raises_typeerror(self) -> None:
+        # dict(['ab', 'cd']) shreds each 2-char string into a key/value pair
+        # silently -- and dict('ab') itself raises a cryptic "dictionary update
+        # sequence element #0 has length 1; 2 is required" naming no argument
+        # and suggesting no fix (#242)
+        with pytest.raises(TypeError, match=r"wrap it in a list"):
+            TupleManager('ab')
+
+    def test_tuplemanager_bytes_raises_with_decode_hint(self) -> None:
+        with pytest.raises(TypeError, match=r"decode it first"):
+            TupleManager(b'ab')  # type: ignore[arg-type]
+
+    def test_tuplemanager_string_element_raises_typeerror(self) -> None:
+        # the silent variant: an iterable of 2-character strings is a valid
+        # dict-update sequence, so each one shreds into a key/value pair
+        with pytest.raises(TypeError, match=r"key and a value"):
+            TupleManager(['ab', 'cd'])
+
+    def test_constants_capitalization_exceptions_string_elements_raise(self) -> None:
+        with pytest.raises(TypeError, match=r"key and a value"):
+            Constants(capitalization_exceptions=['ii'])
+
+    def test_tuplemanager_accepts_mapping_and_pairs(self) -> None:
+        # the guard must not reject the two legitimate constructor shapes
+        tm = TupleManager({'a': '1'})
+        self.assertEqual(tm.a, '1')
+        tm2 = TupleManager([('b', '2')])
+        self.assertEqual(tm2.b, '2')
+
     def test_remove_title(self) -> None:
         hn = HumanName("Hon Solo", constants=None)
         start_len = len(hn.C.titles)
