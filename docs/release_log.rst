@@ -1,6 +1,6 @@
 Release Log
 ===========
-* 1.3.0 - Unreleased
+* 1.3.0 - July 5, 2026
 
     **Breaking Changes & Deprecations**
 
