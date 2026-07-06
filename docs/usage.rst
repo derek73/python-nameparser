@@ -65,7 +65,9 @@ Requires Python 3.10+.
     {'first': 'Jonathan', 'middle': 'A. Harris', 'last': 'Doe-Ray', 'nickname': 'John'}
     >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
     >>> name2 = HumanName("de la vega, dr. juan Q. xavier III")
-    >>> name == name2
+    >>> name.matches(name2)
+    True
+    >>> name.matches("de la vega, dr. juan Q. xavier III")
     True
     >>> len(name)
     5
@@ -73,6 +75,11 @@ Requires Python 3.10+.
     ['Dr.', 'Juan', 'Q. Xavier', 'de la Vega', 'III']
     >>> name[1:-3]
     ['Juan', 'Q. Xavier', 'de la Vega']
+
+``name == other`` and ``hash(name)`` are deprecated and will be removed in
+2.0; use ``matches()`` for comparison and ``comparison_key()`` for sets,
+dicts, and dedup (see `issue #223
+<https://github.com/derek73/python-nameparser/issues/223>`_).
 
 Empty or unparsable input does not raise an error; it produces a name whose
 attributes are all empty. Check ``len(name) == 0`` (or ``str(name) == ''``)

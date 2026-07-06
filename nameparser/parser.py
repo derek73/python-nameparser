@@ -1,4 +1,5 @@
 import re
+import warnings
 from collections.abc import Callable, Iterable, Iterator
 from operator import itemgetter
 from itertools import groupby
@@ -199,9 +200,22 @@ class HumanName:
 
     def __eq__(self, other: object) -> bool:
         """
+        .. deprecated:: 1.3.0
+            Removed in 2.0 (see issue #223); use :py:meth:`matches`.
+
         HumanName instances are equal to other objects whose
-        lower case unicode representation is the same.
+        lower case unicode representation is the same. Note the
+        differences from :py:meth:`matches`: this compares formatted
+        output, so it depends on ``string_format`` and cannot see
+        ``maiden``, and it stringifies operands of any type.
         """
+        warnings.warn(
+            "HumanName == comparison is deprecated and will be removed in "
+            "2.0; use matches() instead. See "
+            "https://github.com/derek73/python-nameparser/issues/223",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return str(self).lower() == str(other).lower()
 
     @overload
@@ -231,6 +245,18 @@ class HumanName:
         return " ".join(self)
 
     def __hash__(self) -> int:
+        """
+        .. deprecated:: 1.3.0
+            Removed in 2.0 (see issue #223); use :py:meth:`comparison_key`
+            for sets, dicts, and dedup.
+        """
+        warnings.warn(
+            "hash(HumanName) is deprecated and will be removed in 2.0; use "
+            "comparison_key() for sets and dicts. See "
+            "https://github.com/derek73/python-nameparser/issues/223",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         # __eq__ compares lowercased strings, so hash the lowercased string
         # to keep equal instances in the same hash bucket.
         return hash(str(self).lower())

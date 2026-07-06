@@ -1,6 +1,7 @@
 import copy
 import pickle
 import re
+import warnings
 
 import pytest
 
@@ -215,18 +216,22 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.assertEqual(dup.last, hn.last)
 
     def test_comparison(self) -> None:
+        # deprecated behavior (#223/#224), still supported until 2.0:
+        # deprecated_call() asserts the warning fires while silencing it
         hn1 = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         hn2 = HumanName("Dr. John P. Doe-Ray, CLU, CFP, LUTC")
-        self.assertTrue(hn1 == hn2)
-        self.assertIsNot(hn1, hn2)
-        self.assertTrue(hn1 == "Dr. John P. Doe-Ray CLU, CFP, LUTC")
+        with pytest.deprecated_call():
+            self.assertTrue(hn1 == hn2)
+            self.assertIsNot(hn1, hn2)
+            self.assertTrue(hn1 == "Dr. John P. Doe-Ray CLU, CFP, LUTC")
         hn1 = HumanName("Doe, Dr. John P., CLU, CFP, LUTC")
         hn2 = HumanName("Dr. John P. Doe-Ray, CLU, CFP, LUTC")
-        self.assertTrue(not hn1 == hn2)
-        self.assertTrue(not hn1 == 0)
-        self.assertTrue(not hn1 == "test")
-        self.assertTrue(not hn1 == ["test"])
-        self.assertTrue(not hn1 == {"test": hn2})
+        with pytest.deprecated_call():
+            self.assertTrue(not hn1 == hn2)
+            self.assertTrue(not hn1 == 0)
+            self.assertTrue(not hn1 == "test")
+            self.assertTrue(not hn1 == ["test"])
+            self.assertTrue(not hn1 == {"test": hn2})
 
     def test_assignment_to_full_name(self) -> None:
         hn = HumanName("John A. Kenneth Doe, Jr.")
@@ -275,30 +280,37 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(hn.suffix, "test", hn)
 
     def test_comparison_case_insensitive(self) -> None:
+        # deprecated behavior (#223/#224), still supported until 2.0
         hn1 = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         hn2 = HumanName("dr. john p. doe-Ray, CLU, CFP, LUTC")
-        self.assertTrue(hn1 == hn2)
-        self.assertIsNot(hn1, hn2)
-        self.assertTrue(hn1 == "Dr. John P. Doe-ray clu, CFP, LUTC")
+        with pytest.deprecated_call():
+            self.assertTrue(hn1 == hn2)
+            self.assertIsNot(hn1, hn2)
+            self.assertTrue(hn1 == "Dr. John P. Doe-ray clu, CFP, LUTC")
 
     def test_hash_matches_case_insensitive_equality(self) -> None:
+        # deprecated behavior (#223/#224), still supported until 2.0.
         # __eq__ compares lowercased strings, so __hash__ must too:
         # equal objects are required to have equal hashes.
         hn1 = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         hn2 = HumanName("dr. john p. doe-Ray, CLU, CFP, LUTC")
-        self.assertEqual(hn1, hn2)
-        self.assertEqual(hash(hn1), hash(hn2))
-        self.assertEqual(len({hn1, hn2}), 1)
-        # __eq__ also accepts plain strings, so hashing str(self).lower()
-        # specifically (not e.g. an attribute tuple) is what lets strings and
-        # HumanName instances interoperate in sets and dicts
-        hn = HumanName("John Smith")
-        self.assertEqual(hash(hn), hash("john smith"))
-        self.assertIn("john smith", {hn})
+        with pytest.deprecated_call():
+            self.assertEqual(hn1, hn2)
+            self.assertEqual(hash(hn1), hash(hn2))
+            self.assertEqual(len({hn1, hn2}), 1)
+            # __eq__ also accepts plain strings, so hashing str(self).lower()
+            # specifically (not e.g. an attribute tuple) is what lets strings
+            # and HumanName instances interoperate in sets and dicts
+            hn = HumanName("John Smith")
+            self.assertEqual(hash(hn), hash("john smith"))
+            self.assertIn("john smith", {hn})
 
     def test_not_equal_operator(self) -> None:
-        self.assertTrue(HumanName("John Smith") != HumanName("Jane Smith"))
-        self.assertFalse(HumanName("John Smith") != HumanName("john smith"))
+        # deprecated behavior (#223/#224), still supported until 2.0;
+        # != routes through __eq__, so it warns too
+        with pytest.deprecated_call():
+            self.assertTrue(HumanName("John Smith") != HumanName("Jane Smith"))
+            self.assertFalse(HumanName("John Smith") != HumanName("john smith"))
 
     def test_comparison_key_components(self) -> None:
         hn = HumanName("Dr. Juan Q. Xavier de la Vega III")
@@ -358,6 +370,31 @@ class HumanNamePythonTests(HumanNameTestBase):
         for bad in (None, 42, b"John Smith", ["John Smith"]):
             with pytest.raises(TypeError, match="str or HumanName"):
                 hn.matches(bad)  # type: ignore[arg-type]
+
+    def test_eq_emits_deprecation_warning(self) -> None:
+        # behavior is unchanged until 2.0 (#223); 1.3.0 only warns
+        hn1 = HumanName("John Smith")
+        hn2 = HumanName("john smith")
+        with pytest.deprecated_call(match="matches"):
+            result = hn1 == hn2
+        self.assertTrue(result)
+
+    def test_hash_emits_deprecation_warning(self) -> None:
+        hn = HumanName("John Smith")
+        with pytest.deprecated_call(match="comparison_key"):
+            result = hash(hn)
+        self.assertEqual(result, hash("john smith"))
+
+    def test_new_comparison_api_does_not_warn(self) -> None:
+        # the replacements must be adoptable before 2.0 without tripping
+        # -W error test suites; matches(str) parses, so this also covers
+        # the parse path
+        hn = HumanName("John Smith")
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            hn.comparison_key()
+            hn.matches("Smith, John")
+            hn.matches(HumanName("John Smith"))
 
     def test_unparsable_attribute_removed(self) -> None:
         # Removed in 1.3.0: the guard that reported unparsable names was
