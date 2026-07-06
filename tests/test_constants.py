@@ -124,6 +124,23 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         # pins __rxor__ separately in case it ever stops aliasing __xor__
         self.assertEqual((['Dr.', 'Esq.'] ^ sm).elements, {'mr', 'esq'})
 
+    def test_set_manager_contains_normalizes_like_add(self) -> None:
+        # add()/remove()/the constructor/the operators all normalize (lowercase,
+        # strip leading/trailing periods) -- __contains__ was the lone holdout,
+        # so `'Dr.' in c.titles` returned False even though every other
+        # operation on the same value succeeded (#244)
+        sm = SetManager(['dr', 'mr'])
+        self.assertIn('Dr.', sm)
+        self.assertIn('MR', sm)
+        self.assertNotIn('Esq.', sm)
+
+    def test_set_manager_le_uses_normalizing_contains(self) -> None:
+        # the ABC comparison mixins route through __contains__, so an
+        # un-normalized membership check would leak into subset/equality too
+        sm = SetManager(['dr', 'mr'])
+        self.assertTrue(sm <= SetManager(['dr', 'mr', 'esq']))
+        self.assertTrue({'Dr.', 'Mr.'} <= sm)
+
     def test_set_manager_rsub_is_order_sensitive(self) -> None:
         # __sub__ and __rsub__ are hand-written separately (subtraction
         # isn't commutative, unlike |/&/^), so a copy-paste operand swap

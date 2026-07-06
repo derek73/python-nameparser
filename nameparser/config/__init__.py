@@ -145,6 +145,14 @@ class SetManager(Set):
         return iter(self.elements)
 
     def __contains__(self, value: object) -> bool:
+        # add()/remove()/the constructor/the operators all normalize (lowercase,
+        # strip leading/trailing periods) before comparing; without the same
+        # normalization here, `'Dr.' in c.titles` returns False even though
+        # every other operation on the same value succeeds (#244). lc() is
+        # idempotent, so this doesn't change the parser's own lc()-normalized
+        # lookups (e.g. `piece.lower() in self.C.conjunctions`).
+        if isinstance(value, str):
+            value = lc(value)
         return value in self.elements
 
     def __len__(self) -> int:
