@@ -1,4 +1,5 @@
 import re
+import warnings
 from collections.abc import Callable, Iterable, Iterator
 from operator import itemgetter
 from itertools import groupby
@@ -199,9 +200,22 @@ class HumanName:
 
     def __eq__(self, other: object) -> bool:
         """
+        .. deprecated:: 1.3.0
+            Removed in 2.0 (see issue #223); use :py:meth:`matches`.
+
         HumanName instances are equal to other objects whose
-        lower case unicode representation is the same.
+        lower case unicode representation is the same. Note the
+        differences from :py:meth:`matches`: this compares formatted
+        output, so it depends on ``string_format`` and cannot see
+        ``maiden``, and it stringifies operands of any type.
         """
+        warnings.warn(
+            "HumanName == comparison is deprecated and will be removed in "
+            "2.0; use matches() instead. See "
+            "https://github.com/derek73/python-nameparser/issues/223",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return str(self).lower() == str(other).lower()
 
     @overload
@@ -231,6 +245,18 @@ class HumanName:
         return " ".join(self)
 
     def __hash__(self) -> int:
+        """
+        .. deprecated:: 1.3.0
+            Removed in 2.0 (see issue #223); use :py:meth:`comparison_key`
+            for sets, dicts, and dedup.
+        """
+        warnings.warn(
+            "hash(HumanName) is deprecated and will be removed in 2.0; use "
+            "comparison_key() for sets and dicts. See "
+            "https://github.com/derek73/python-nameparser/issues/223",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         # __eq__ compares lowercased strings, so hash the lowercased string
         # to keep equal instances in the same hash bucket.
         return hash(str(self).lower())
@@ -272,6 +298,69 @@ class HumanName:
                 if val:
                     d[m] = val
         return d
+
+    def comparison_key(self) -> tuple[str, ...]:
+        """
+        The seven name components (title, first, middle, last, suffix,
+        nickname, maiden) as a lowercased tuple: a canonical, hashable
+        identity for the parsed name. Use it for dedup, dict keys, and
+        sorting or grouping, e.g.
+        ``unique = {n.comparison_key(): n for n in names}.values()``.
+
+        Built from the ``*_list`` attributes, so it is unaffected by
+        display settings like ``string_format`` and
+        ``empty_attribute_default``.
+
+        Empty or unparsable input yields the all-empty key, so such names
+        all compare equal and collide in dedup; screen them out with
+        ``len(name) == 0`` first.
+
+        .. doctest::
+
+            >>> HumanName("Dr. Juan Q. Xavier de la Vega III").comparison_key()
+            ('dr.', 'juan', 'q. xavier', 'de la vega', 'iii', '', '')
+
+        """
+        return tuple(
+            " ".join(getattr(self, member + "_list")).lower()
+            for member in self._members
+        )
+
+    def matches(self, other: 'str | HumanName') -> bool:
+        """
+        Compare parsed components case-insensitively; the semantic
+        replacement for the deprecated ``==``. A ``str`` argument is parsed
+        first, using this instance's configuration, so any written form of
+        the same name matches; a ``HumanName`` argument is compared as
+        already parsed — its own configuration determined its components.
+        Two empty or unparsable names match each other; check
+        ``len(name) == 0`` to screen them.
+
+        .. doctest::
+
+            >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
+            >>> name.matches("de la vega, dr. juan Q. xavier III")
+            True
+            >>> name.matches("Juan de la Vega")
+            False
+
+        Unlike the deprecated ``==``, all seven components participate
+        (including ``maiden``, which the default ``string_format`` omits)
+        and display settings have no effect. Raises ``TypeError`` for
+        anything that is not a ``str`` or ``HumanName``; guard optional
+        values explicitly, e.g. ``x is not None and name.matches(x)``.
+
+        Parses string arguments on every call. When matching one name
+        against many candidates, parse the candidates once or compare
+        :py:meth:`comparison_key` values instead.
+        """
+        if isinstance(other, HumanName):
+            return self.comparison_key() == other.comparison_key()
+        if isinstance(other, str):
+            return self.comparison_key() == type(self)(other, self.C).comparison_key()
+        raise TypeError(
+            f"matches() requires a str or HumanName, got {type(other).__name__}"
+        )
 
     def _process_initial(self, name_part: str, firstname: bool = False) -> str:
         """
