@@ -300,6 +300,65 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.assertTrue(HumanName("John Smith") != HumanName("Jane Smith"))
         self.assertFalse(HumanName("John Smith") != HumanName("john smith"))
 
+    def test_comparison_key_components(self) -> None:
+        hn = HumanName("Dr. Juan Q. Xavier de la Vega III")
+        self.assertEqual(
+            hn.comparison_key(),
+            ('dr.', 'juan', 'q. xavier', 'de la vega', 'iii', '', ''))
+
+    def test_comparison_key_case_insensitive_across_formats(self) -> None:
+        hn1 = HumanName("Dr. Juan Q. Xavier de la Vega III")
+        hn2 = HumanName("de la vega, dr. juan Q. xavier III")
+        self.assertEqual(hn1.comparison_key(), hn2.comparison_key())
+
+    def test_comparison_key_independent_of_string_format(self) -> None:
+        # unlike ==, which compares str(self) and so changes meaning when
+        # display config changes, the key is built from the parsed lists
+        hn1 = HumanName("John Smith")
+        hn2 = HumanName("John Smith", string_format="{last}")
+        self.assertEqual(hn1.comparison_key(), hn2.comparison_key())
+
+    def test_comparison_key_includes_maiden(self) -> None:
+        # maiden isn't in the default string_format, so == can't see it;
+        # the key includes all seven members
+        hn1 = HumanName(first="Jenny", last="Baker", maiden="Johnson")
+        hn2 = HumanName(first="Jenny", last="Baker")
+        self.assertNotEqual(hn1.comparison_key(), hn2.comparison_key())
+
+    def test_comparison_key_usable_for_dedup(self) -> None:
+        names = [HumanName("John Smith"), HumanName("Smith, John"),
+                 HumanName("JOHN SMITH"), HumanName("Jane Smith")]
+        unique = {n.comparison_key(): n for n in names}
+        self.assertEqual(len(unique), 2)
+
+    def test_matches_str_is_semantic_not_textual(self) -> None:
+        # any written form of the same name matches, unlike == which only
+        # matches strings that render exactly like str(self)
+        hn = HumanName("Dr. Juan Q. Xavier de la Vega III")
+        self.assertTrue(hn.matches("de la vega, dr. juan Q. xavier III"))
+        self.assertTrue(hn.matches("Dr. Juan Q. Xavier de la Vega III"))
+        self.assertFalse(hn.matches("Juan de la Vega"))
+
+    def test_matches_humanname_operand(self) -> None:
+        hn = HumanName("John Smith")
+        self.assertTrue(hn.matches(HumanName("JOHN SMITH")))
+        self.assertFalse(hn.matches(HumanName("Jane Smith")))
+
+    def test_matches_parses_str_with_instance_constants(self) -> None:
+        c = Constants()
+        c.titles.add('chancellor')
+        hn = HumanName("Chancellor Jane Smith", constants=c)
+        # the str operand is parsed with self.C, so the custom title is
+        # recognized in the comma form; the shared CONSTANTS would not
+        # parse 'chancellor' as a title here
+        self.assertTrue(hn.matches("smith, chancellor jane"))
+
+    def test_matches_rejects_other_types(self) -> None:
+        hn = HumanName("John Smith")
+        for bad in (None, 42, b"John Smith", ["John Smith"]):
+            with pytest.raises(TypeError, match="str or HumanName"):
+                hn.matches(bad)  # type: ignore[arg-type]
+
     def test_unparsable_attribute_removed(self) -> None:
         # Removed in 1.3.0: the guard that reported unparsable names was
         # unreachable, so the attribute was always False after any parse.

@@ -273,6 +273,62 @@ class HumanName:
                     d[m] = val
         return d
 
+    def comparison_key(self) -> tuple[str, ...]:
+        """
+        The seven name components (title, first, middle, last, suffix,
+        nickname, maiden) as a lowercased tuple: a canonical, hashable
+        identity for the parsed name. Use it for dedup, dict keys, and
+        sorting or grouping, e.g.
+        ``unique = {n.comparison_key(): n for n in names}.values()``.
+
+        Built from the ``*_list`` attributes, so it is unaffected by
+        display settings like ``string_format`` and
+        ``empty_attribute_default``.
+
+        .. doctest::
+
+            >>> HumanName("Dr. Juan Q. Xavier de la Vega III").comparison_key()
+            ('dr.', 'juan', 'q. xavier', 'de la vega', 'iii', '', '')
+
+        """
+        return tuple(
+            " ".join(getattr(self, member + "_list")).lower()
+            for member in self._members
+        )
+
+    def matches(self, other: 'str | HumanName') -> bool:
+        """
+        Compare parsed components case-insensitively; the semantic
+        replacement for the deprecated ``==``. A ``str`` argument is parsed
+        first, using this instance's configuration, so any written form of
+        the same name matches:
+
+        .. doctest::
+
+            >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
+            >>> name.matches("de la vega, dr. juan Q. xavier III")
+            True
+            >>> name.matches("Juan de la Vega")
+            False
+
+        Unlike the deprecated ``==``, all seven components participate
+        (including ``maiden``, which the default ``string_format`` omits)
+        and display settings have no effect. Raises ``TypeError`` for
+        anything that is not a ``str`` or ``HumanName``; guard optional
+        values explicitly, e.g. ``x is not None and name.matches(x)``.
+
+        Parses string arguments on every call. When matching one name
+        against many candidates, parse the candidates once or compare
+        :py:meth:`comparison_key` values instead.
+        """
+        if isinstance(other, HumanName):
+            return self.comparison_key() == other.comparison_key()
+        if isinstance(other, str):
+            return self.comparison_key() == type(self)(other, self.C).comparison_key()
+        raise TypeError(
+            f"matches() requires a str or HumanName, got {type(other).__name__}"
+        )
+
     def _process_initial(self, name_part: str, firstname: bool = False) -> str:
         """
             Name parts may include prefixes or conjunctions. This function filters these from the name unless it is
