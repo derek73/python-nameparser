@@ -104,27 +104,12 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'alabaster'
+html_theme = 'furo'
 
-import alabaster
-
-html_theme_path = [alabaster.get_path()]
-extensions += ['alabaster']
-html_theme = 'alabaster'
-html_sidebars = {
-    '**': [
-        'about.html',
-        'navigation.html',
-        'relations.html',
-        'searchbox.html',
-        'donate.html',
-    ]
-}
 html_theme_options = {
-    'github_user': 'derek73',
-    'github_repo': 'python-nameparser',
-    'travis_button': True,
-    'analytics_id': 'UA-339019-11',
+    'source_repository': 'https://github.com/derek73/python-nameparser/',
+    'source_branch': 'master',
+    'source_directory': 'docs/',
 }
 
 # Theme options are theme-specific and customize the look and feel of a theme
