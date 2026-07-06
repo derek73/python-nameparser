@@ -85,6 +85,28 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         hn = HumanName("Esq Jane Smith", constants=c)
         self.m(hn.title, "Esq", hn)
 
+    def test_set_manager_operators_normalize_like_add(self) -> None:
+        # add() lowercases and strips periods; without the same normalization
+        # of operator operands, (titles | ['Esq.']) contains raw 'Esq.', which
+        # the parser's lc()-based lookups can never match — silently broken
+        # config, same failure family as the bare-string shredding (#238)
+        sm = SetManager(['dr', 'mr'])
+        self.assertEqual((sm | ['Esq.']).elements, {'dr', 'mr', 'esq'})
+        self.assertEqual((['Esq.', 'Dr.'] | sm).elements, {'dr', 'mr', 'esq'})
+        self.assertEqual((sm & ['Dr.']).elements, {'dr'})
+        self.assertEqual((['Dr.'] & sm).elements, {'dr'})
+        self.assertEqual((sm - ['Dr.']).elements, {'mr'})
+        self.assertEqual((['Dr.', 'Esq.'] - sm).elements, {'esq'})
+        self.assertEqual((sm ^ ['Dr.', 'Esq.']).elements, {'mr', 'esq'})
+
+    def test_set_manager_operator_result_parses_when_wired_into_constants(self) -> None:
+        # end-to-end: an operator-built set must behave like an add()-built
+        # one once assigned back to Constants
+        c = Constants()
+        c.titles |= ['Esq.']
+        hn = HumanName("Esq Jane Smith", constants=c)
+        self.m(hn.title, "Esq", hn)
+
     def test_remove_title(self) -> None:
         hn = HumanName("Hon Solo", constants=None)
         start_len = len(hn.C.titles)

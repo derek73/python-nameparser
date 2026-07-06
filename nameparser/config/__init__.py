@@ -61,7 +61,9 @@ class SetManager(Set):
     and remove()d, and to allow passing multiple string arguments to the
     :py:func:`add()` and :py:func:`remove()` methods. The constructor and
     the set operators also reject a bare string with ``TypeError``, since
-    e.g. ``set('dr')`` would silently build a set of single characters.
+    e.g. ``set('dr')`` would silently build a set of single characters, and
+    the set operators normalize their operands the same way :py:func:`add()`
+    does, so operator results keep the normalized-elements invariant.
 
     '''
 
@@ -113,32 +115,37 @@ class SetManager(Set):
     # __init__ guard never sees a bare-string operand (c.titles |= 'esq'
     # would silently add 'e', 's', 'q'); __sub__/__xor__ raised only by
     # accident of constructing from the operand. Check all four uniformly.
+    # Operands are also normalized the way add() normalizes elements: the
+    # mixins build results from raw operand elements and test them against
+    # the stored (normalized) ones, so without this (titles | ['Esq.'])
+    # keeps a raw 'Esq.' the parser's lc() lookups can never match, and
+    # (titles & ['Dr.']) misses 'dr' — silently broken config either way.
+    @classmethod
+    def _normalized_operand(cls, other: Iterable[str]) -> set[str]:
+        cls._reject_bare_string(other)
+        return {lc(s) for s in other}
+
     # the runtime ABC accepts any Iterable operand, so annotate honestly and
     # ignore typeshed's narrower AbstractSet declarations
     def __or__(self, other: Iterable[str]) -> 'SetManager':  # type: ignore[override]
-        self._reject_bare_string(other)
-        return super().__or__(other)  # type: ignore[operator, return-value]
+        return super().__or__(self._normalized_operand(other))  # type: ignore[operator, return-value]
 
     __ror__ = __or__
 
     def __and__(self, other: Iterable[str]) -> 'SetManager':  # type: ignore[override]
-        self._reject_bare_string(other)
-        return super().__and__(other)  # type: ignore[operator, return-value]
+        return super().__and__(self._normalized_operand(other))  # type: ignore[operator, return-value]
 
     __rand__ = __and__
 
     def __sub__(self, other: Iterable[str]) -> 'SetManager':  # type: ignore[override]
-        self._reject_bare_string(other)
-        return super().__sub__(other)  # type: ignore[operator, return-value]
+        return super().__sub__(self._normalized_operand(other))  # type: ignore[operator, return-value]
 
     def __rsub__(self, other: Iterable[str]) -> 'SetManager':  # type: ignore[override]
-        self._reject_bare_string(other)
         # typeshed omits Set.__rsub__, but the runtime ABC defines it
-        return super().__rsub__(other)  # type: ignore[misc, operator, return-value]
+        return super().__rsub__(self._normalized_operand(other))  # type: ignore[misc, operator, return-value]
 
     def __xor__(self, other: Iterable[str]) -> 'SetManager':  # type: ignore[override]
-        self._reject_bare_string(other)
-        return super().__xor__(other)  # type: ignore[operator, return-value]
+        return super().__xor__(self._normalized_operand(other))  # type: ignore[operator, return-value]
 
     __rxor__ = __xor__
 
