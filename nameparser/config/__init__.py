@@ -51,6 +51,22 @@ from nameparser.config.regexes import EMPTY_REGEX, REGEXES
 DEFAULT_ENCODING = 'UTF-8'
 
 
+def _reject_bare_str_or_bytes(value: object, expected: str) -> None:
+    # A bare string is an iterable of its characters, so e.g. set('dr') or
+    # dict('ab') would silently shred it, and bytes iterates to ints, which
+    # can never match parsed str tokens -- shared by SetManager's constructor/
+    # operands (#238) and TupleManager's constructor (#242).
+    if isinstance(value, bytes):
+        raise TypeError(
+            f"expected {expected}, got a single bytes; "
+            f"decode it first: [{value!r}.decode()]"
+        )
+    if isinstance(value, str):
+        raise TypeError(
+            f"expected {expected}, got a single str; wrap it in a list: [{value!r}]"
+        )
+
+
 class SetManager(Set):
     '''
     Easily add and remove config variables per module or instance. Subclass of
@@ -78,19 +94,7 @@ class SetManager(Set):
         # construction from re-checking ~1,400 entries per step
         if isinstance(elements, SetManager):
             return set(elements.elements)
-        # a bare string is an iterable of its characters, so set(value)
-        # would silently build a set of single characters — and bytes
-        # iterates to ints, which can never match parsed tokens (#238)
-        if isinstance(elements, bytes):
-            raise TypeError(
-                "expected an iterable of strings, got a single bytes; "
-                f"decode it first: [{elements!r}.decode()]"
-            )
-        if isinstance(elements, str):
-            raise TypeError(
-                "expected an iterable of strings, got a single str; "
-                f"wrap it in a list: [{elements!r}]"
-            )
+        _reject_bare_str_or_bytes(elements, "an iterable of strings")
         # apply the same lc() normalization (lowercase, strip leading/
         # trailing periods) that add() applies, and reject junk elements:
         # lc() on bytes or int crashes without naming the culprit, and
@@ -148,12 +152,13 @@ class SetManager(Set):
         # add()/remove()/the constructor/the operators all normalize (lowercase,
         # strip leading/trailing periods) before comparing; without the same
         # normalization here, `'Dr.' in c.titles` returns False even though
-        # every other operation on the same value succeeds (#244). lc() is
-        # idempotent, so this doesn't change the parser's own lc()-normalized
-        # lookups (e.g. `piece.lower() in self.C.conjunctions`).
-        if isinstance(value, str):
-            value = lc(value)
-        return value in self.elements
+        # every other operation on the same value succeeds (#244). The parser's
+        # own lookups (e.g. `piece.lower() in self.C.conjunctions`) already pass
+        # an lc()-normalized value, which is the hot path during parsing, so
+        # try the raw value first and only pay for lc() on a miss.
+        if value in self.elements:
+            return True
+        return isinstance(value, str) and lc(value) in self.elements
 
     def __len__(self) -> int:
         return len(self.elements)
@@ -296,16 +301,7 @@ class TupleManager(dict[str, T]):
         # pair, silently shredding it -- mirrors SetManager's guard against
         # the same class of mistake (#238), applied to the mapping
         # constructor's own failure modes (#242).
-        if isinstance(arg, bytes):
-            raise TypeError(
-                "expected a mapping or iterable of (key, value) pairs, got a "
-                f"single bytes; decode it first: [{arg!r}.decode()]"
-            )
-        if isinstance(arg, str):
-            raise TypeError(
-                "expected a mapping or iterable of (key, value) pairs, got a "
-                f"single str; wrap it in a list: [{arg!r}]"
-            )
+        _reject_bare_str_or_bytes(arg, "a mapping or iterable of (key, value) pairs")
         if not isinstance(arg, Mapping):
             checked = []
             for item in arg:
