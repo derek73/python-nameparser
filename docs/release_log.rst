@@ -51,6 +51,7 @@ Release Log
     **Parsing fixes**
 
     - Fix suffix boundary lookup for prefixed last names with a title before and after (e.g. ``"dr Vincent van Gogh dr"`` producing a corrupted middle name) (closes #100)
+    - Fix a repeated prefix word in a prefix chain (e.g. ``"Juan de la de la Vega"``) silently dropping the earlier occurrence in ``join_on_conjunctions()``: value-based ``pieces.index(prefix)`` lookups re-found the wrong occurrence once the list had already been mutated by prior joins; prefix positions are now tracked positionally instead of re-derived by value (closes #208)
     - Fix a trailing suffix being silently dropped after an empty comma segment, e.g. ``"Doe, John,, Jr."`` losing the ``"Jr."``
     - Fix degenerate comma input (a bare ``","`` or an empty comma segment, e.g. ``"Doe,, Jr."``, ``"John Doe, Jr.,,"``) leaving an empty-string member in ``first_list``, ``last_list``, or ``suffix_list``; whitespace-only tokens assigned via the setters are dropped the same way
     - Fix suffix-shaped parenthesized/quoted content (e.g. ``"(Ret)"``, ``"(MBA)"``) being misclassified as a nickname instead of a suffix (closes #111)
@@ -79,6 +80,8 @@ Release Log
     - Fix the ``constants`` constructor argument silently discarding ``Constants`` *subclass* instances: the exact-type check replaced them with fresh defaults, throwing away the caller's configuration. Subclass instances are now used as given; anything that is neither ``None`` nor a ``Constants`` instance now raises ``TypeError`` instead of being silently swapped for defaults (closes #226)
     - Fix ``Constants`` customizations, singleton identity, and ``TupleManager`` subclass being lost across ``pickle``/``deepcopy`` round-trips (#167, #168, #169)
     - Fix ``is_rootname()`` returning stale results after ``add()``/``remove()`` on ``titles``, ``prefixes``, ``suffix_acronyms``, or ``suffix_not_acronyms`` (#166)
+    - Fix the library logger calling ``setLevel(logging.ERROR)`` on import, which silently discarded log records regardless of an application's own logging configuration; the logger now leaves its level at ``NOTSET`` and lets the application control verbosity (closes #228)
+    - Minor internal cleanups: drop a dead length check in the initials helper, simplify double-wrapped ``len(list(...))`` calls, and other small parser tidy-ups with no behavior change (closes #229)
     - Change ``Constants.__repr__`` to report collection sizes and non-default scalar config, replacing the uninformative ``<Constants() instance>`` (#221)
 * 1.2.1 - June 19, 2026
     - Fix ``initials()`` interpolating the literal ``None`` for empty name parts when ``empty_attribute_default = None`` (e.g. ``"J. None D."``); empty parts now render as an empty string and a fully-empty result returns ``empty_attribute_default``
