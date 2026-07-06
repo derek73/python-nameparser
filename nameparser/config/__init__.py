@@ -193,7 +193,7 @@ class SetManager(Set):
 
     __rxor__ = __xor__
 
-    def add_with_encoding(self, s: str, encoding: str | None = None) -> None:
+    def add_with_encoding(self, s: str | bytes, encoding: str | None = None) -> None:
         """
         Add the lowercased, leading/trailing-periods-stripped version of the string to the set. Pass an
         explicit `encoding` parameter to specify the encoding of binary strings that
@@ -486,7 +486,7 @@ class Constants:
     maiden_delimiters: TupleManager[re.Pattern[str] | str]
     _pst: Set[str] | None
 
-    string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
+    string_format: str | None = "{title} {first} {middle} {last} {suffix} ({nickname})"
     """
     The default string format use for all new `HumanName` instances.
     """
@@ -515,7 +515,7 @@ class Constants:
     spacing from the template is still applied.
     """
 
-    suffix_delimiter = None
+    suffix_delimiter: str | None = None
     """
     If set, an additional delimiter used to split suffix groups after
     comma-splitting. For example, setting ``suffix_delimiter=" - "`` allows

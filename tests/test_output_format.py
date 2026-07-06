@@ -130,7 +130,7 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
     def test_keep_emojis(self) -> None:
         from nameparser.config import Constants
         constants = Constants()
-        constants.regexes.emoji = False
+        constants.regexes.emoji = False  # type: ignore[assignment]
         hn = HumanName("∫≜⩕ Smith😊", constants)
         self.m(hn.first, "∫≜⩕", hn)
         self.m(hn.last, "Smith😊", hn)

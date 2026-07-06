@@ -262,9 +262,9 @@ class HumanNamePythonTests(HumanNameTestBase):
         hn.suffix = "test"
         self.m(hn.suffix, "test", hn)
         with pytest.raises(TypeError):
-            hn.suffix = [['test']]
+            hn.suffix = [['test']]  # type: ignore[list-item]
         with pytest.raises(TypeError):
-            hn.suffix = {"test": "test"}
+            hn.suffix = {"test": "test"}  # type: ignore[assignment]
 
     def test_assign_list_to_attribute(self) -> None:
         hn = HumanName("John A. Kenneth Doe, Jr.")
@@ -460,9 +460,9 @@ class HumanNamePythonTests(HumanNameTestBase):
         hn['last'] = ['test', 'test2']
         self.m(hn['last'], "test test2", hn)
         with pytest.raises(TypeError):
-            hn["suffix"] = [['test']]
+            hn["suffix"] = [['test']]  # type: ignore[list-item]
         with pytest.raises(TypeError):
-            hn["suffix"] = {"test": "test"}
+            hn["suffix"] = {"test": "test"}  # type: ignore[assignment]
 
     def test_setitem_invalid_key_raises_keyerror(self) -> None:
         hn = HumanName("Dr. John A. Kenneth Doe, Jr.")
@@ -622,7 +622,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.assertTrue(sorted(hn.C.conjunctions) == sorted(var))
 
     def test_override_capitalization_exceptions(self) -> None:
-        var = TupleManager([("spaces", re.compile(r"\s+")),])
+        var = TupleManager([("abc", "ABC")])
         C = Constants(capitalization_exceptions=var)
         hn = HumanName(constants=C)
         self.assertTrue(hn.C.capitalization_exceptions == var)

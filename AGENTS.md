@@ -23,8 +23,8 @@ uv run pytest  # --doctest-modules is set in pyproject.toml, so doctests run aut
 uv run pytest tests/test_python_api.py
 uv run pytest tests/test_python_api.py::HumanNamePythonTests::test_utf8
 
-# Type check
-uv run mypy nameparser/
+# Type check (covers nameparser/ and tests/, per pyproject.toml's [tool.mypy] packages)
+uv run mypy
 
 # Lint
 uv run ruff check nameparser/
@@ -162,7 +162,7 @@ Don't use the bare `python3 -m doctest <file>.rst` CLI (no `optionflags`) to che
 
 `Constants` class attributes (e.g. `patronymic_name_order`, `middle_name_as_last`) document behavior with a bare string literal placed right after the assignment — Sphinx's attribute-docstring convention. That string never becomes a real `__doc__`, so `--doctest-modules` (which walks `__doc__` attributes) never sees any `.. doctest::` examples inside it — this let a stale example slip through CI once (`middle_name_as_last`, #133). `tests/test_config_attribute_docstrings.py` (#195) closes that gap: it parses `nameparser/config/__init__.py` with `ast` to recover those literals and runs any doctest examples through `doctest.DocTestParser`/`DocTestRunner` explicitly, so `pytest -q` now exercises them too. When adding or editing a `.. doctest::` example in a `Constants` attribute's bare-string docstring, this is the mechanism that actually runs it — don't assume `--doctest-modules` covers it.
 
-**`uv run mypy nameparser/` intentionally excludes `tests/`** (`pyproject.toml`'s `[tool.mypy] packages = ["nameparser"]`) — if you run mypy against `tests/` too you'll see ~30 pre-existing errors; don't treat them as a regression. Most are intentionally wrong-typed inputs verifying the code rejects them, or `Constants` attribute assignments the config type hints don't capture.
+**`uv run mypy` covers `tests/` too** (`pyproject.toml`'s `[tool.mypy] packages = ["nameparser", "tests"]`, PR #250) — a test that deliberately passes an off-contract value to assert a `TypeError`/`ValueError`, or exercises a documented falsy-disables-the-feature toggle (e.g. `regexes.emoji = False`), needs a `# type: ignore[code]` comment on that line rather than a signature change. Before reaching for an ignore, check whether the "error" is really a source annotation that hasn't caught up with already-supported runtime behavior (e.g. `is_prefix`/`is_conjunction`/`is_suffix` accepting `list[str]`, `add_with_encoding` accepting `bytes`) — widen the annotation instead in that case.
 
 **`initials_separator` is intra-group only** — it controls the joiner between consecutive initials *within* a name group (e.g. two middle names in `middle_list`). Spaces *between* groups come from `initials_format`. To fully concatenate initials you need both `initials_separator=""` and `initials_format="{first}{middle}{last}"`.
 
