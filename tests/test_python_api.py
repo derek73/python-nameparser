@@ -28,9 +28,28 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(str(hn), "Jüan de la Véña", hn)
 
     def test_escaped_utf8_bytes(self) -> None:
-        hn = HumanName(b'B\xc3\xb6ck, Gerald')
+        # bytes input is deprecated (#245), still supported until 2.0
+        with pytest.deprecated_call():
+            hn = HumanName(b'B\xc3\xb6ck, Gerald')
         self.m(hn.first, "Gerald", hn)
         self.m(hn.last, "Böck", hn)
+
+    def test_bytes_full_name_emits_deprecation_warning(self) -> None:
+        # bytes input is removed in 2.0 (#245); the caller should decode
+        with pytest.deprecated_call(match="decode"):
+            hn = HumanName(b'John Smith')
+        self.m(hn.first, "John", hn)
+        hn2 = HumanName("Jane Doe")
+        with pytest.deprecated_call(match="decode"):
+            hn2.full_name = b'John Smith'
+        self.m(hn2.first, "John", hn2)
+
+    def test_str_full_name_does_not_warn(self) -> None:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            hn = HumanName("John Smith")
+            hn.full_name = "Jane Doe"
+        self.m(hn.first, "Jane", hn)
 
     def test_len(self) -> None:
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")

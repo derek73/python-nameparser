@@ -28,6 +28,7 @@ reference to the module config, possibly yielding unexpected results. See
 """
 import re
 import sys
+import warnings
 from collections.abc import Callable, Iterable, Iterator, Mapping, Set
 from typing import Any, TypeVar, overload
 
@@ -137,6 +138,20 @@ class SetManager(Set):
         self._on_change = None
 
     def __call__(self) -> Set[str]:
+        """
+        .. deprecated:: 1.3.0
+            Removed in 2.0 (see issue #243). Returns the raw underlying set,
+            so mutating it bypasses normalization and cache invalidation;
+            iterate the manager or copy with ``set(manager)`` instead.
+        """
+        warnings.warn(
+            "Calling a SetManager to get the raw underlying set is "
+            "deprecated and will be removed in 2.0; iterate the manager or "
+            "copy it with set(manager) instead. See "
+            "https://github.com/derek73/python-nameparser/issues/243",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self.elements
 
     def __repr__(self) -> str:
@@ -198,12 +213,24 @@ class SetManager(Set):
         Add the lowercased, leading/trailing-periods-stripped version of the string to the set. Pass an
         explicit `encoding` parameter to specify the encoding of binary strings that
         are not DEFAULT_ENCODING (UTF-8).
+
+        .. deprecated:: 1.3.0
+            ``bytes`` arguments will raise ``TypeError`` in 2.0 (see issue
+            #245); decode before adding.
         """
         stdin_encoding = None
         if sys.stdin:
             stdin_encoding = sys.stdin.encoding
         encoding = encoding or stdin_encoding or DEFAULT_ENCODING
         if isinstance(s, bytes):
+            warnings.warn(
+                "Passing bytes to SetManager.add()/add_with_encoding() is "
+                "deprecated and will raise TypeError in 2.0; decode it "
+                "first, e.g. value.decode('utf-8'). See "
+                "https://github.com/derek73/python-nameparser/issues/245",
+                DeprecationWarning,
+                stacklevel=2,
+            )
             s = s.decode(encoding)
         normalized = lc(s)
         if normalized not in self.elements:
@@ -225,6 +252,35 @@ class SetManager(Set):
         """
         Remove the lower case and no-period version of the string arguments from the set.
         Returns ``self`` for chaining.
+
+        .. deprecated:: 1.3.0
+            Removing a *missing* member currently does nothing but will
+            raise ``KeyError`` in 2.0, matching ``set.remove`` (see issue
+            #243); use :py:func:`discard` to ignore missing members.
+        """
+        changed = False
+        for s in strings:
+            if (lower := lc(s)) in self.elements:
+                self.elements.remove(lower)
+                changed = True
+            else:
+                warnings.warn(
+                    "SetManager.remove() of a missing member currently does "
+                    "nothing, but will raise KeyError in 2.0; use discard() "
+                    "to ignore missing members. See "
+                    "https://github.com/derek73/python-nameparser/issues/243",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+        if changed and self._on_change:
+            self._on_change()
+        return self
+
+    def discard(self, *strings: str) -> Self:
+        """
+        Remove the lower case and no-period version of the string arguments
+        from the set if present; missing members are ignored, like
+        ``set.discard``. Returns ``self`` for chaining.
         """
         changed = False
         for s in strings:

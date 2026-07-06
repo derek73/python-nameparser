@@ -54,6 +54,8 @@ class HumanName:
         honored). Pass ``None`` for `per-instance config <customize.html>`_.
         Anything else raises ``TypeError``.
     :param str encoding: string representing the encoding of your input
+        (deprecated with ``bytes`` input, removal in 2.0 — decode before
+        passing; see issue #245)
     :param str string_format: python string formatting
     :param str initials_format: python initials string formatting
     :param str initials_delimter: string delimiter for initials
@@ -889,6 +891,15 @@ class HumanName:
         self.original = value
 
         if isinstance(value, bytes):
+            # deprecated 1.3.0, raises TypeError in 2.0 (#245)
+            warnings.warn(
+                "Passing bytes to HumanName is deprecated and will raise "
+                "TypeError in 2.0; decode it first, e.g. "
+                "value.decode('utf-8'). See "
+                "https://github.com/derek73/python-nameparser/issues/245",
+                DeprecationWarning,
+                stacklevel=2,
+            )
             self._full_name = value.decode(self.encoding)
         else:
             self._full_name = value
