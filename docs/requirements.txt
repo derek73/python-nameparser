@@ -1,2 +1,2 @@
 Sphinx
-alabaster
+furo
