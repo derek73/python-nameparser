@@ -326,7 +326,48 @@ class RegexTupleManager(TupleManager[re.Pattern[str]]):
         return self.get(attr, EMPTY_REGEX)
 
 
-class _CachedUnionMember:
+class _SetManagerAttribute:
+    """Descriptor enforcing ``isinstance(value, SetManager)`` on assignment.
+
+    Backs the five plain SetManager attributes (``first_name_titles``,
+    ``conjunctions``, ``bound_first_names``, ``non_first_name_prefixes``,
+    ``suffix_acronyms_ambiguous``). Without this guard, e.g.
+    ``c.conjunctions = 'and'`` is accepted silently, and every later
+    ``piece.lower() in self.C.conjunctions`` becomes a substring test against
+    the plain str instead of a set membership test (#241).
+
+    ``_CachedUnionMember`` subclasses this to add ``_pst`` cache invalidation
+    for the four attributes whose union ``Constants`` caches.
+    """
+
+    _attr: str
+
+    def __set_name__(self, owner: type, name: str) -> None:
+        self._attr = '_' + name
+
+    @overload
+    def __get__(self, obj: None, objtype: type | None = None) -> '_SetManagerAttribute': ...
+    @overload
+    def __get__(self, obj: 'Constants', objtype: type | None = None) -> SetManager: ...
+
+    def __get__(self, obj: 'Constants | None', objtype: type | None = None) -> 'SetManager | _SetManagerAttribute':
+        if obj is None:
+            return self
+        return getattr(obj, self._attr)
+
+    def _validate(self, value: SetManager) -> None:
+        if not isinstance(value, SetManager):
+            raise TypeError(
+                f"Expected a SetManager instance, got {type(value).__name__!r}. "
+                "Wrap your iterable: SetManager(['mr', 'ms'])"
+            )
+
+    def __set__(self, obj: 'Constants', value: SetManager) -> None:
+        self._validate(value)
+        setattr(obj, self._attr, value)
+
+
+class _CachedUnionMember(_SetManagerAttribute):
     """Descriptor for the four ``SetManager`` attributes whose union ``Constants``
     caches in ``_pst`` (``prefixes``, ``suffix_acronyms``, ``suffix_not_acronyms``,
     ``titles``).
@@ -337,27 +378,8 @@ class _CachedUnionMember:
     across a catch-all ``__setattr__`` and a separate attribute-name list.
     """
 
-    _attr: str
-
-    def __set_name__(self, owner: type, name: str) -> None:
-        self._attr = '_' + name
-
-    @overload
-    def __get__(self, obj: None, objtype: type | None = None) -> '_CachedUnionMember': ...
-    @overload
-    def __get__(self, obj: 'Constants', objtype: type | None = None) -> SetManager: ...
-
-    def __get__(self, obj: 'Constants | None', objtype: type | None = None) -> 'SetManager | _CachedUnionMember':
-        if obj is None:
-            return self
-        return getattr(obj, self._attr)
-
     def __set__(self, obj: 'Constants', value: SetManager) -> None:
-        if not isinstance(value, SetManager):
-            raise TypeError(
-                f"Expected a SetManager instance, got {type(value).__name__!r}. "
-                "Wrap your iterable: SetManager(['mr', 'ms'])"
-            )
+        self._validate(value)
         previous = getattr(obj, self._attr, None)
         if isinstance(previous, SetManager):
             previous._on_change = None  # detach the replaced manager so it no longer invalidates
@@ -413,11 +435,11 @@ class Constants:
     suffix_acronyms = _CachedUnionMember()
     suffix_not_acronyms = _CachedUnionMember()
     titles = _CachedUnionMember()
-    first_name_titles: SetManager
-    conjunctions: SetManager
-    bound_first_names: SetManager
-    non_first_name_prefixes: SetManager
-    suffix_acronyms_ambiguous: SetManager
+    first_name_titles = _SetManagerAttribute()
+    conjunctions = _SetManagerAttribute()
+    bound_first_names = _SetManagerAttribute()
+    non_first_name_prefixes = _SetManagerAttribute()
+    suffix_acronyms_ambiguous = _SetManagerAttribute()
     capitalization_exceptions: TupleManager[str]
     regexes: RegexTupleManager
     nickname_delimiters: TupleManager[re.Pattern[str] | str]
@@ -698,7 +720,7 @@ class Constants:
         # key surfaces later as AttributeError: 'Constants' object has no attribute
         # '_prefixes' — the private mangled name, not the public one, making it
         # very hard to diagnose.
-        for attr in (n for n, v in vars(type(self)).items() if isinstance(v, _CachedUnionMember)):
+        for attr in (n for n, v in vars(type(self)).items() if isinstance(v, _SetManagerAttribute)):
             if not hasattr(self, '_' + attr):
                 raise ValueError(
                     f"Pickle state is missing required field {attr!r}. "
@@ -718,7 +740,7 @@ class Constants:
         for name, val in self.__dict__.items():
             if name.startswith('_'):
                 public = name[1:]
-                if isinstance(getattr(type(self), public, None), _CachedUnionMember):
+                if isinstance(getattr(type(self), public, None), _SetManagerAttribute):
                     state[public] = val
             else:
                 state[name] = val

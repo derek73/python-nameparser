@@ -605,6 +605,27 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         with pytest.raises(TypeError, match='SetManager'):
             c.titles = ['mr', 'ms']  # type: ignore[assignment]
 
+    def test_assigning_non_setmanager_to_plain_set_attr_raises(self) -> None:
+        """The five non-cached-union SetManager attributes reject bare assignment too.
+
+        Only the four ``_CachedUnionMember`` attributes were guarded; these five
+        were plain instance attributes, so ``c.conjunctions = 'and'`` silently
+        replaced the SetManager with a str, turning later ``in`` membership
+        checks into substring tests (#241).
+        """
+        c = Constants()
+        for name in ('first_name_titles', 'conjunctions', 'bound_first_names',
+                     'non_first_name_prefixes', 'suffix_acronyms_ambiguous'):
+            with pytest.raises(TypeError, match='SetManager'):
+                setattr(c, name, ['x'])
+
+    def test_bare_string_assignment_to_conjunctions_raises(self) -> None:
+        # the original #241 repro: 'and' assigned as a bare str silently
+        # degrades `piece.lower() in self.C.conjunctions` into a substring test
+        c = Constants()
+        with pytest.raises(TypeError, match='SetManager'):
+            c.conjunctions = 'and'  # type: ignore[assignment]
+
     def test_setstate_raises_on_missing_descriptor_field(self) -> None:
         """Unpickling a state blob missing a cached-union collection must fail loudly.
 
