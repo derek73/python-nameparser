@@ -2,6 +2,7 @@ import copy
 import pickle
 import re
 import timeit
+import warnings
 from typing import Any
 
 import pytest
@@ -332,9 +333,78 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.assertEqual('', str(hn), hn)
 
     def test_add_constant_with_explicit_encoding(self) -> None:
+        # bytes input is deprecated (#245), still supported until 2.0
         c = Constants()
-        c.titles.add_with_encoding(b'b\351ck', encoding='latin_1')
+        with pytest.deprecated_call():
+            c.titles.add_with_encoding(b'b\351ck', encoding='latin_1')
         self.assertIn('béck', c.titles)
+
+    def test_set_manager_add_bytes_emits_deprecation_warning(self) -> None:
+        # bytes elements will be removed in 2.0 (#245); the caller should decode
+        sm = SetManager(['dr'])
+        with pytest.deprecated_call(match="decode"):
+            sm.add(b'esq')  # type: ignore[arg-type]  # deliberately deprecated input
+        self.assertIn('esq', sm)
+
+    def test_set_manager_add_str_does_not_warn(self) -> None:
+        sm = SetManager(['dr'])
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            sm.add('esq')
+        self.assertIn('esq', sm)
+
+    def test_set_manager_call_emits_deprecation_warning(self) -> None:
+        # __call__ hands out the raw underlying set, bypassing normalization
+        # and cache invalidation; will be removed in 2.0 (#243)
+        sm = SetManager(['dr'])
+        with pytest.deprecated_call(match="raw underlying set"):
+            elements = sm()
+        self.assertEqual(elements, {'dr'})
+
+    def test_set_manager_discard_ignores_missing_without_warning(self) -> None:
+        sm = SetManager(['dr', 'mr'])
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            result = sm.discard('nope').discard('Dr.')  # normalizes like remove()
+        self.assertIs(result, sm)
+        self.assertEqual(set(sm), {'mr'})
+
+    def test_set_manager_discard_invalidates_cached_union(self) -> None:
+        c = Constants()
+        self.assertIn('hon', c.suffixes_prefixes_titles)  # prime the cache
+        c.titles.discard('hon')
+        self.assertNotIn('hon', c.suffixes_prefixes_titles)
+
+    def test_set_manager_remove_missing_member_emits_deprecation_warning(self) -> None:
+        # ignore-missing remove() becomes KeyError in 2.0 (#243); discard()
+        # is the intentional ignore-missing spelling
+        sm = SetManager(['dr'])
+        with pytest.deprecated_call(match="discard"):
+            sm.remove('nope')
+        self.assertEqual(set(sm), {'dr'})
+        # removing a present member stays silent
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            sm.remove('dr')
+        self.assertEqual(len(sm), 0)
+
+    def test_set_manager_remove_mixed_present_and_missing_in_one_call(self) -> None:
+        # a single call mixing a present and a missing member must still warn
+        # (for the missing one) and still invalidate the cache (for the
+        # present one) -- not short-circuit either behavior
+        c = Constants()
+        self.assertIn('hon', c.suffixes_prefixes_titles)  # prime the cache
+        with pytest.deprecated_call(match="discard"):
+            c.titles.remove('hon', 'nope')
+        self.assertNotIn('hon', c.suffixes_prefixes_titles)
+
+    def test_set_manager_discard_mixed_present_and_missing_in_one_call(self) -> None:
+        sm = SetManager(['dr', 'mr'])
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            result = sm.discard('dr', 'nope')
+        self.assertIs(result, sm)
+        self.assertEqual(set(sm), {'mr'})
 
     def test_pickle_roundtrip_preserves_customizations(self) -> None:
         """A pickled Constants must restore its customized collections.
@@ -622,7 +692,8 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         """add_with_encoding must invalidate the cache like add()/remove() do."""
         c = Constants()
         _ = c.suffixes_prefixes_titles  # prime the cache
-        c.titles.add_with_encoding(b'b\351ck', encoding='latin_1')
+        with pytest.deprecated_call():  # bytes input deprecated (#245)
+            c.titles.add_with_encoding(b'b\351ck', encoding='latin_1')
         self.assertIn('béck', c.suffixes_prefixes_titles)
 
     def test_suffixes_prefixes_titles_reflects_replaced_manager(self) -> None:

@@ -53,7 +53,7 @@ Editable attributes of nameparser.config.CONSTANTS
 * :py:data:`~nameparser.config.CAPITALIZATION_EXCEPTIONS` - Dictionary of pieces that do not capitalize the first letter, e.g. "Ph.D".
 * :py:data:`~nameparser.config.REGEXES` - Regular expressions used to find words, initials, nicknames, etc.
 
-Each set-valued constant comes with :py:func:`~nameparser.config.SetManager.add` and :py:func:`~nameparser.config.SetManager.remove` methods for tuning
+Each set-valued constant comes with :py:func:`~nameparser.config.SetManager.add`, :py:func:`~nameparser.config.SetManager.remove`, and :py:func:`~nameparser.config.SetManager.discard` methods for tuning
 the constants for your project. These methods automatically lower case and
 remove punctuation to normalize them for comparison. The two dict-valued
 constants (``CAPITALIZATION_EXCEPTIONS`` and ``REGEXES``) are edited with
