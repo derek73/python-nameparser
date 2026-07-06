@@ -86,10 +86,11 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.m(hn.title, "Esq", hn)
 
     def test_set_manager_operators_normalize_like_add(self) -> None:
-        # add() lowercases and strips periods; without the same normalization
-        # of operator operands, (titles | ['Esq.']) contains raw 'Esq.', which
-        # the parser's lc()-based lookups can never match — silently broken
-        # config, same failure family as the bare-string shredding (#238)
+        # add() lowercases and strips leading/trailing periods; without the
+        # same normalization of operator operands, (titles | ['Esq.']) keeps
+        # a raw 'Esq.', which the parser's lc()-based lookups can never match
+        # — silently broken config, same failure family as the bare-string
+        # shredding (#238)
         sm = SetManager(['dr', 'mr'])
         self.assertEqual((sm | ['Esq.']).elements, {'dr', 'mr', 'esq'})
         self.assertEqual((['Esq.', 'Dr.'] | sm).elements, {'dr', 'mr', 'esq'})
@@ -98,6 +99,34 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.assertEqual((sm - ['Dr.']).elements, {'mr'})
         self.assertEqual((['Dr.', 'Esq.'] - sm).elements, {'esq'})
         self.assertEqual((sm ^ ['Dr.', 'Esq.']).elements, {'mr', 'esq'})
+        # pins __rxor__ separately in case it ever stops aliasing __xor__
+        self.assertEqual((['Dr.', 'Esq.'] ^ sm).elements, {'mr', 'esq'})
+
+    def test_set_manager_constructor_normalizes_like_add(self) -> None:
+        # without constructor normalization the operators misfire against
+        # the exact spelling visibly stored in the set: & returns empty
+        # and - silently no-ops
+        sm = SetManager(['Dr.', 'MR'])
+        self.assertEqual(sm.elements, {'dr', 'mr'})
+        self.assertEqual((sm & ['Dr.']).elements, {'dr'})
+        self.assertEqual((sm - ['Dr.']).elements, {'mr'})
+
+    def test_constants_kwarg_elements_are_normalized(self) -> None:
+        # Constants(titles=[...]) was the last silently-dead config path:
+        # a raw 'Chemistry' element can never match the parser's lc() lookups
+        c = Constants(titles=['chancellor', 'Chemistry'])
+        hn = HumanName("Chemistry Jane Smith", constants=c)
+        self.m(hn.title, "Chemistry", hn)
+
+    def test_set_manager_non_str_elements_raise_typeerror(self) -> None:
+        # lc() on junk elements either crashes context-free (bytes, int) or
+        # silently transmutes None into '' — raise a curated error instead
+        with pytest.raises(TypeError, match=r"decode it first"):
+            SetManager([b'dr'])  # type: ignore[list-item]
+        with pytest.raises(TypeError, match=r"expected str elements"):
+            SetManager([None])  # type: ignore[list-item]
+        with pytest.raises(TypeError, match=r"expected str elements"):
+            SetManager(['dr']) | [1]  # type: ignore[list-item]
 
     def test_set_manager_operator_result_parses_when_wired_into_constants(self) -> None:
         # end-to-end: an operator-built set must behave like an add()-built

@@ -57,13 +57,14 @@ class SetManager(Set):
     ``collections.abc.Set``.
 
     Special functionality beyond that provided by set() is to normalize
-    constants for comparison (lower case, no periods) when they are add()ed
-    and remove()d, and to allow passing multiple string arguments to the
-    :py:func:`add()` and :py:func:`remove()` methods. The constructor and
-    the set operators also reject a bare string with ``TypeError``, since
-    e.g. ``set('dr')`` would silently build a set of single characters, and
-    the set operators normalize their operands the same way :py:func:`add()`
-    does, so operator results keep the normalized-elements invariant.
+    constants for comparison (lowercase, leading/trailing periods stripped)
+    when they are add()ed and remove()d, and to allow passing multiple
+    string arguments to the :py:func:`add()` and :py:func:`remove()`
+    methods. The constructor and the set operators apply the same
+    normalization to their elements and operands, so every entry is stored
+    in the form the parser's lookups expect, and they reject a bare string
+    with ``TypeError``, since e.g. ``set('dr')`` would silently build a set
+    of single characters.
 
     '''
 
@@ -85,9 +86,28 @@ class SetManager(Set):
                 f"wrap it in a list: [{value!r}]"
             )
 
+    @classmethod
+    def _normalized_elements(cls, elements: Iterable[str]) -> set[str]:
+        # apply the same lc() normalization (lowercase, strip leading/
+        # trailing periods) that add() applies, and reject junk elements:
+        # lc() on bytes or int crashes without naming the culprit, and
+        # lc(None) silently transmutes to ''
+        cls._reject_bare_string(elements)
+        normalized = set()
+        for s in elements:
+            if isinstance(s, bytes):
+                raise TypeError(
+                    f"expected str elements, got bytes; decode it first: {s!r}.decode()"
+                )
+            if not isinstance(s, str):
+                raise TypeError(
+                    f"expected str elements, got {type(s).__name__}: {s!r}"
+                )
+            normalized.add(lc(s))
+        return normalized
+
     def __init__(self, elements: Iterable[str]) -> None:
-        self._reject_bare_string(elements)
-        self.elements = set(elements)
+        self.elements = self._normalized_elements(elements)
         # Optional invalidation hook, wired by an owning Constants so that
         # in-place add()/remove() can clear its cached suffixes_prefixes_titles
         # union. None when the manager is used standalone.
@@ -111,41 +131,36 @@ class SetManager(Set):
     def __len__(self) -> int:
         return len(self.elements)
 
-    # Set's mixin __or__/__and__ hand _from_iterable a generator, so the
-    # __init__ guard never sees a bare-string operand (c.titles |= 'esq'
-    # would silently add 'e', 's', 'q'); __sub__/__xor__ raised only by
-    # accident of constructing from the operand. Check all four uniformly.
-    # Operands are also normalized the way add() normalizes elements: the
-    # mixins build results from raw operand elements and test them against
-    # the stored (normalized) ones, so without this (titles | ['Esq.'])
-    # keeps a raw 'Esq.' the parser's lc() lookups can never match, and
-    # (titles & ['Dr.']) misses 'dr' — silently broken config either way.
-    @classmethod
-    def _normalized_operand(cls, other: Iterable[str]) -> set[str]:
-        cls._reject_bare_string(other)
-        return {lc(s) for s in other}
-
+    # Set's mixin operators compare operand and stored elements without
+    # normalizing (and __or__/__and__ hand _from_iterable a generator, so
+    # the __init__ guard alone never sees a bare-string operand: c.titles
+    # |= 'esq' would silently add 'e', 's', 'q'). Normalize every operand
+    # through _normalized_elements so operator results behave like
+    # add()-built sets: without it (titles | ['Esq.']) keeps a raw 'Esq.'
+    # the parser's lc() lookups can never match, and (titles & ['Dr.'])
+    # misses the stored 'dr'.
+    #
     # the runtime ABC accepts any Iterable operand, so annotate honestly and
     # ignore typeshed's narrower AbstractSet declarations
     def __or__(self, other: Iterable[str]) -> 'SetManager':  # type: ignore[override]
-        return super().__or__(self._normalized_operand(other))  # type: ignore[operator, return-value]
+        return super().__or__(self._normalized_elements(other))  # type: ignore[operator, return-value]
 
     __ror__ = __or__
 
     def __and__(self, other: Iterable[str]) -> 'SetManager':  # type: ignore[override]
-        return super().__and__(self._normalized_operand(other))  # type: ignore[operator, return-value]
+        return super().__and__(self._normalized_elements(other))  # type: ignore[operator, return-value]
 
     __rand__ = __and__
 
     def __sub__(self, other: Iterable[str]) -> 'SetManager':  # type: ignore[override]
-        return super().__sub__(self._normalized_operand(other))  # type: ignore[operator, return-value]
+        return super().__sub__(self._normalized_elements(other))  # type: ignore[operator, return-value]
 
     def __rsub__(self, other: Iterable[str]) -> 'SetManager':  # type: ignore[override]
         # typeshed omits Set.__rsub__, but the runtime ABC defines it
-        return super().__rsub__(self._normalized_operand(other))  # type: ignore[misc, operator, return-value]
+        return super().__rsub__(self._normalized_elements(other))  # type: ignore[misc, operator, return-value]
 
     def __xor__(self, other: Iterable[str]) -> 'SetManager':  # type: ignore[override]
-        return super().__xor__(self._normalized_operand(other))  # type: ignore[operator, return-value]
+        return super().__xor__(self._normalized_elements(other))  # type: ignore[operator, return-value]
 
     __rxor__ = __xor__
 
