@@ -45,6 +45,19 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         with pytest.raises(TypeError, match=r"did you mean Constants\(\)"):
             HumanName("John Doe", constants=Constants)  # type: ignore[arg-type]
 
+    def test_constants_bare_string_kwarg_raises_typeerror(self) -> None:
+        # a bare string is an iterable of its characters, so set('dr') would
+        # silently replace the default titles with {'d', 'r'} (#238); the
+        # type system can't catch this because str satisfies Iterable[str]
+        with pytest.raises(TypeError, match=r"wrap it in a list"):
+            Constants(titles='dr')
+
+    def test_set_manager_bare_string_raises_typeerror(self) -> None:
+        with pytest.raises(TypeError, match=r"wrap it in a list"):
+            SetManager('dr')
+        with pytest.raises(TypeError, match=r"wrap it in a list"):
+            SetManager(b'dr')  # type: ignore[arg-type]
+
     def test_remove_title(self) -> None:
         hn = HumanName("Hon Solo", constants=None)
         start_len = len(hn.C.titles)

@@ -66,6 +66,13 @@ class SetManager(Set):
     _on_change: Callable[[], None] | None
 
     def __init__(self, elements: Iterable[str]) -> None:
+        # a bare string is an iterable of its characters, so set(elements)
+        # would silently build a set of single characters (#238)
+        if isinstance(elements, (str, bytes)):
+            raise TypeError(
+                "expected an iterable of strings, got a single "
+                f"{type(elements).__name__}; wrap it in a list: [{elements!r}]"
+            )
         self.elements = set(elements)
         # Optional invalidation hook, wired by an owning Constants so that
         # in-place add()/remove() can clear its cached suffixes_prefixes_titles
