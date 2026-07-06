@@ -28,7 +28,18 @@ You can also pass a name string to see how it will be parsed:
     	last: 'Rodham-Clinton'
     	suffix: ''
     	nickname: ''
+    	maiden: ''
     ]>
+    <HumanName : [
+    	title: 'Secretary of State'
+    	first: 'Hillary'
+    	middle: ''
+    	last: 'Rodham-Clinton'
+    	suffix: ''
+    	nickname: ''
+    	maiden: ''
+    ]>
+    Initials: H. R.
 
 CI runs tests against Python 3.10–3.14 via GitHub Actions on every push and pull request.
 

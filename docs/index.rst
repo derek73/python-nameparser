@@ -17,6 +17,7 @@ components.
 * hn.last
 * hn.suffix
 * hn.nickname
+* hn.maiden
 
 Supports 3 different comma placement variations in the input string.
 
