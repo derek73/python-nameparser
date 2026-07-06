@@ -25,6 +25,26 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.m(hn.first, "Awanui-a-Rangi", hn)
         self.m(hn.last, "Black", hn)
 
+    def test_constants_subclass_instance_is_used(self) -> None:
+        class CustomConstants(Constants):
+            pass
+
+        c = CustomConstants()
+        c.titles.add('chancellor')
+        hn = HumanName("Chancellor Jane Smith", constants=c)
+        self.assertIs(hn.C, c)
+        self.m(hn.title, "Chancellor", hn)
+        self.m(hn.first, "Jane", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_constants_invalid_type_raises_typeerror(self) -> None:
+        with pytest.raises(TypeError, match="constants must be"):
+            HumanName("John Doe", constants="not a Constants")  # type: ignore[arg-type]
+
+    def test_constants_class_instead_of_instance_raises_with_hint(self) -> None:
+        with pytest.raises(TypeError, match=r"did you mean Constants\(\)"):
+            HumanName("John Doe", constants=Constants)  # type: ignore[arg-type]
+
     def test_remove_title(self) -> None:
         hn = HumanName("Hon Solo", constants=None)
         start_len = len(hn.C.titles)

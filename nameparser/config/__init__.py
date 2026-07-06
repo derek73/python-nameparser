@@ -21,9 +21,10 @@ You can also adjust the configuration of individual instances by passing
     >>> hn.C.titles.add('dean') # doctest: +SKIP
     >>> hn.parse_full_name() # need to run this again after config changes
 
-**Potential Gotcha**: If you do not pass ``None`` as the second argument,
-``hn.C`` will be a reference to the module config, possibly yielding 
-unexpected results. See `Customizing the Parser <customize.html>`_.
+**Potential Gotcha**: If you do not pass ``None`` (or your own
+:py:class:`Constants` instance) as the second argument, ``hn.C`` will be a
+reference to the module config, possibly yielding unexpected results. See
+`Customizing the Parser <customize.html>`_.
 """
 import re
 import sys
