@@ -77,10 +77,12 @@ class ConstantsCustomizationTests(HumanNameTestBase):
                 op()
 
     def test_set_manager_operators_accept_lists(self) -> None:
+        # end-to-end: an operator-built set wired back into Constants must
+        # behave like an add()-built one, normalization included
         c = Constants()
         with pytest.raises(TypeError, match=r"wrap it in a list"):
             c.titles |= 'esq'
-        c.titles |= ['esq']
+        c.titles |= ['Esq.']
         self.assertIn('esq', c.titles)
         hn = HumanName("Esq Jane Smith", constants=c)
         self.m(hn.title, "Esq", hn)
@@ -127,14 +129,6 @@ class ConstantsCustomizationTests(HumanNameTestBase):
             SetManager([None])  # type: ignore[list-item]
         with pytest.raises(TypeError, match=r"expected str elements"):
             SetManager(['dr']) | [1]  # type: ignore[list-item]
-
-    def test_set_manager_operator_result_parses_when_wired_into_constants(self) -> None:
-        # end-to-end: an operator-built set must behave like an add()-built
-        # one once assigned back to Constants
-        c = Constants()
-        c.titles |= ['Esq.']
-        hn = HumanName("Esq Jane Smith", constants=c)
-        self.m(hn.title, "Esq", hn)
 
     def test_remove_title(self) -> None:
         hn = HumanName("Hon Solo", constants=None)

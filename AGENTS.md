@@ -85,7 +85,7 @@ Most modules define a plain Python set of known name pieces; `capitalization.py`
 
 `config/__init__.py` wraps everything into `SetManager` and `TupleManager` instances inside a `Constants` class. A module-level singleton `CONSTANTS` is shared across all `HumanName` instances by default.
 
-**Two-tier config pattern**: `CONSTANTS` is global; passing `None` as the second arg to `HumanName` creates a fresh per-instance `Constants()`. After modifying per-instance config you must call `hn.parse_full_name()` again. `SetManager.add()`/`remove()` normalizes inputs to lowercase with no periods, so callers don't need to worry about case.
+**Two-tier config pattern**: `CONSTANTS` is global; passing `None` as the second arg to `HumanName` creates a fresh per-instance `Constants()`. After modifying per-instance config you must call `hn.parse_full_name()` again. `SetManager` normalizes elements (lowercase, leading/trailing periods stripped) at every entry point — constructor, `add()`/`remove()`, and set operators — and raises `TypeError` for bare strings/bytes and non-str elements, so callers don't need to worry about case.
 
 **`_CachedUnionMember` descriptor**: The four PST-contributing attrs (`prefixes`, `suffix_acronyms`, `suffix_not_acronyms`, `titles`) are managed by this descriptor, which stores their values under the *private* name (`_prefixes`, `_titles`, etc.) in the instance `__dict__` so that the descriptor's `__set__` owns every assignment and can wire the cache-invalidation callback. Any code that inspects `__dict__` directly (e.g. `__getstate__`) must map `_xxx` → `xxx` for descriptor-managed attrs rather than filtering on `not k.startswith('_')`.
 
