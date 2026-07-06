@@ -20,12 +20,12 @@ Run a single test file or test:
 
 You can also pass a name string to see how it will be parsed:
 
-    $ python -m nameparser "Secretary of State Hillary Rodham-Clinton"
+    $ python -m nameparser "secretary of state hillary rodham-clinton"
     <HumanName : [
-    	title: 'Secretary of State'
-    	first: 'Hillary'
+    	title: 'secretary of state'
+    	first: 'hillary'
     	middle: ''
-    	last: 'Rodham-Clinton'
+    	last: 'rodham-clinton'
     	suffix: ''
     	nickname: ''
     	maiden: ''
