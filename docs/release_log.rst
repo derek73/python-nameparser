@@ -1,8 +1,49 @@
 Release Log
 ===========
 * 1.3.0 - Unreleased
-    - Add ``matches()`` and ``comparison_key()`` for explicit name comparison: ``matches()`` compares parsed components case-insensitively (parsing ``str`` arguments first, so ``name.matches("Smith, John")`` and ``name.matches("John Smith")`` both match) and ``comparison_key()`` returns a hashable tuple of the seven components for dedup, dict keys, and sorting (#224)
+
+    **Breaking Changes & Deprecations**
+
     - Deprecate ``HumanName.__eq__`` and ``__hash__`` for removal in 2.0 (#223): the current design's three promises — case-insensitive equality, equality with plain strings, and hashability — are mutually inconsistent (equal objects can hash differently), equality depends on ``string_format``, and ``maiden`` is invisible to it. Both now emit ``DeprecationWarning`` naming the replacement; behavior is otherwise unchanged until 2.0 (closes #224)
+    - Fix ``HumanName`` acting as its own iterator with a stored cursor: breaking out of a loop, iterating in nested loops, or calling ``len(name)`` mid-loop corrupted subsequent iteration; ``iter(name)`` now returns a fresh independent iterator each time. ``next(name)`` on the instance itself (undocumented) now raises ``TypeError`` — call ``next(iter(name))`` instead (closes #225)
+    - Remove the vestigial ``unparsable`` attribute: the guard that was meant to set it has been unreachable since 2013 (v0.2.9), so it has reported ``False`` for every parsed name for over a decade; check ``len(name) == 0`` to detect an empty parse
+    - Remove ``__ne__``; Python 3 derives ``!=`` from ``__eq__`` automatically
+    - Change internal initials helper ``__process_initial__`` to ``_process_initial``: double-underscore-both-sides names are reserved for Python special methods; subclasses overriding the old name must rename their override
+    - Change ``REGEXES`` from a ``set`` of ``(name, pattern)`` tuples to a ``dict``, so a duplicate name is a visible overwrite in the source instead of a nondeterministic winner at import time; code iterating ``REGEXES`` directly now gets keys instead of pairs — use ``.items()`` (#227)
+    - Change ``CAPITALIZATION_EXCEPTIONS`` from a tuple of ``(key, value)`` tuples to a ``dict``; code iterating it directly now gets keys instead of pairs — use ``.items()`` (#233)
+
+    **Behavior Changes (affect existing parse output)**
+
+    - Add ``bound_first_names`` set to ``Constants``; bound Arabic given-name
+      prefixes (``abdul``, ``abu``, etc.) now join forward to form a single first
+      name (e.g. ``"abdul salam ahmed salem"`` → ``first="abdul salam"``,
+      ``middle="ahmed"``, ``last="salem"``). Disable via
+      ``CONSTANTS.bound_first_names.clear()``. **Default-on: changes parsing
+      output for names with these prefixes.** (#150)
+    - Treat an unrecognized, multi-letter token ending in a period in the leading title run (before the first name is set), e.g. ``"Major."``, as a ``title`` instead of a ``first`` name; internal-period abbreviations (``"E.T."``) and single-letter initials (``"J."``) are unaffected. **Default-on: changes parsing of names with a leading unknown period-abbreviation** (closes #109)
+    - Fix parsing writing back into the ``Constants`` it reads (usually the shared module-level ``CONSTANTS``): pieces derived while parsing a name — period-joined titles/suffixes like ``"Lt.Gov."`` and conjunction-joined pieces like ``"Mr. and Mrs."`` or ``"von und zu"`` — are now tracked per parse instead of being permanently ``add()``-ed to the config, so parse results no longer depend on which names were parsed earlier in the process and parsing no longer mutates shared state across threads
+    - Fix ``__hash__`` to lowercase the name like ``__eq__`` does, so equal ``HumanName`` instances hash equal and behave correctly in sets and dicts
+
+    **New Features**
+
+    - Add ``matches()`` and ``comparison_key()`` for explicit name comparison: ``matches()`` compares parsed components case-insensitively (parsing ``str`` arguments first, so ``name.matches("Smith, John")`` and ``name.matches("John Smith")`` both match) and ``comparison_key()`` returns a hashable tuple of the seven components for dedup, dict keys, and sorting (#224)
+    - Add ``non_first_name_prefixes`` to ``Constants``: a leading particle that is never a first name (e.g. ``"de Mesnil"``, ``"dos Santos"``) now parses as a surname with an empty first name, instead of treating the particle as the first name (closes #121)
+    - Add a first-class ``maiden`` field and ``maiden_delimiters`` to ``Constants``, so a delimiter (e.g. parenthesis) can be routed to ``maiden`` instead of ``nickname`` for alternate/maiden surnames, e.g. ``"Baker (Johnson), Jenny"`` (closes #22)
+    - Add ``suffix_acronyms_ambiguous`` to ``Constants`` for acronym suffixes that also read as given-name nicknames (e.g. ``"JD"``, ``"Ed"``), used when disambiguating parenthesized/quoted content (#111)
+    - Add ``nickname_delimiters`` to ``Constants`` for registering additional nickname-delimiter regex patterns at runtime, without subclassing (closes #110, #112)
+    - Add ``given_names`` (and ``given_names_list``) attribute as aggregate of first and middle names, mirroring ``surnames`` (closes #157)
+    - Add ``suffix_delimiter`` to ``Constants`` and ``HumanName`` for parsing suffixes separated by arbitrary delimiters, e.g. ``"RN - CRNA"`` (#156)
+    - Add ``initials_separator`` to ``Constants`` and ``HumanName`` to control spacing between consecutive initials within a name group (#171)
+    - Add ``last_base``, ``last_prefixes`` (and ``_list`` variants) for splitting last-name prefix particles (tussenvoegsels) from the core surname (#130, #132)
+    - Add ``patronymic_name_order`` flag to ``Constants`` and ``HumanName`` for opt-in detection and reordering of Russian formal-order names (Surname GivenName Patronymic) (#85)
+    - Add Turkic (Azerbaijani/Central-Asian) patronymic detection to ``patronymic_name_order``, rotating the reversed 4-token formal shape (``Surname GivenName PatronymicRoot Marker``, e.g. ``oglu``/``qizi``) into Western order (#185)
+    - Add ``middle_name_as_last`` flag to ``Constants`` and ``HumanName`` for opt-in folding of middle names into the last name, for naming systems with no middle-name concept (e.g. Arabic patronymic chaining) (#133)
+    - Add international honorifics to ``TITLES`` (#187)
+    - Add German/Austrian nobility and ecclesiastical titles to ``TITLES`` (closes #101)
+    - Add German/Dutch last-name prefixes and title/degree suffixes; fix ``join_on_conjunctions()`` to register multi-word prefix chains (e.g. ``"von und zu"``) as prefixes, mirroring existing title handling (closes #18)
+
+    **Bug Fixes**
+
     - Fix the five non-cached-union ``SetManager``-backed ``Constants`` attributes (``first_name_titles``, ``conjunctions``, ``bound_first_names``, ``non_first_name_prefixes``, ``suffix_acronyms_ambiguous``) accepting non-``SetManager`` assignment silently (e.g. ``constants.conjunctions = 'and'``), degrading membership checks into substring tests with no error; assignment now raises ``TypeError`` like the four cached-union attributes already did (closes #241)
     - Fix ``HumanName.C`` accepting an invalid ``constants`` value on post-construction assignment (e.g. ``hn.C = 'garbage'``), bypassing the constructor's validation and failing later with an unrelated ``AttributeError``; ``C`` is now a property that validates on assignment too (closes #239)
     - Fix ``TupleManager`` (and ``RegexTupleManager``) accepting a bare string/bytes argument (raising a cryptic ``dict``-internals ``ValueError``) or an iterable of 2-character strings (silently shredding each into a key/value pair, e.g. ``Constants(capitalization_exceptions=['ii'])`` becoming ``{'i': 'i'}``); both now raise ``TypeError`` with a clear message (closes #242)
@@ -10,52 +51,23 @@ Release Log
     - Fix a bare string passed to a set-backed ``Constants`` argument (e.g. ``Constants(titles='dr')``), to ``SetManager``, or as a ``SetManager`` set-operator operand (e.g. ``constants.titles |= 'esq'``) being silently split into single characters, replacing or polluting the set and producing wrong parses with no error; it now raises ``TypeError`` with the suggested fix — wrap strings in a list, decode ``bytes`` first (closes #238)
     - Fix ``SetManager`` set operators and the constructor skipping the lowercase/strip-edge-periods normalization that ``add()`` applies: ``constants.titles |= ['Esq.']`` kept a raw ``'Esq.'`` the parser's lookups could never match, ``titles & ['Dr.']`` missed ``'dr'``, and ``Constants(titles=[...])`` stored raw elements that silently never matched; elements and operands are now normalized everywhere, and non-``str`` elements (``bytes``, ``None``, numbers) raise ``TypeError`` instead of crashing cryptically or being coerced
     - Fix the ``constants`` constructor argument silently discarding ``Constants`` *subclass* instances: the exact-type check replaced them with fresh defaults, throwing away the caller's configuration. Subclass instances are now used as given; anything that is neither ``None`` nor a ``Constants`` instance now raises ``TypeError`` instead of being silently swapped for defaults (closes #226)
+    - Fix ``Constants`` customizations, singleton identity, and ``TupleManager`` subclass being lost across ``pickle``/``deepcopy`` round-trips (#167, #168, #169)
     - Fix ``IndexError`` in ``initials()``/``initials_list()`` when a ``*_list`` attribute was assigned directly with an element containing unnormalized whitespace (e.g. ``name.middle_list = ['Q  R']``), bypassing the parser's whitespace normalization (closes #232)
-    - Fix ``HumanName`` acting as its own iterator with a stored cursor: breaking out of a loop, iterating in nested loops, or calling ``len(name)`` mid-loop corrupted subsequent iteration; ``iter(name)`` now returns a fresh independent iterator each time. ``next(name)`` on the instance itself (undocumented) now raises ``TypeError`` — call ``next(iter(name))`` instead (closes #225)
-    - Fix parsing writing back into the ``Constants`` it reads (usually the shared module-level ``CONSTANTS``): pieces derived while parsing a name — period-joined titles/suffixes like ``"Lt.Gov."`` and conjunction-joined pieces like ``"Mr. and Mrs."`` or ``"von und zu"`` — are now tracked per parse instead of being permanently ``add()``-ed to the config, so parse results no longer depend on which names were parsed earlier in the process and parsing no longer mutates shared state across threads
-    - Remove the vestigial ``unparsable`` attribute: the guard that was meant to set it has been unreachable since 2013 (v0.2.9), so it has reported ``False`` for every parsed name for over a decade; check ``len(name) == 0`` to detect an empty parse
-    - Fix ``__hash__`` to lowercase the name like ``__eq__`` does, so equal ``HumanName`` instances hash equal and behave correctly in sets and dicts
     - Fix ``initials()`` emitting a stray empty initial (e.g. ``"J. . V."``) -- or raising ``TypeError`` when ``empty_attribute_default`` is ``None`` -- for name parts with no initialable words, e.g. a prefix-only middle name like ``"de la"``
     - Fix a trailing suffix being silently dropped after an empty comma segment, e.g. ``"Doe, John,, Jr."`` losing the ``"Jr."``
-    - Remove ``__ne__``; Python 3 derives ``!=`` from ``__eq__`` automatically
-    - Change internal initials helper ``__process_initial__`` to ``_process_initial``: double-underscore-both-sides names are reserved for Python special methods; subclasses overriding the old name must rename their override
     - Fix degenerate comma input (a bare ``","`` or an empty comma segment, e.g. ``"Doe,, Jr."``, ``"John Doe, Jr.,,"``) leaving an empty-string member in ``first_list``, ``last_list``, or ``suffix_list``; whitespace-only tokens assigned via the setters are dropped the same way
-    - Add ``non_first_name_prefixes`` to ``Constants``: a leading particle that is never a first name (e.g. ``"de Mesnil"``, ``"dos Santos"``) now parses as a surname with an empty first name, instead of treating the particle as the first name (closes #121)
-    - Add a first-class ``maiden`` field and ``maiden_delimiters`` to ``Constants``, so a delimiter (e.g. parenthesis) can be routed to ``maiden`` instead of ``nickname`` for alternate/maiden surnames, e.g. ``"Baker (Johnson), Jenny"`` (closes #22)
     - Fix suffix-shaped parenthesized/quoted content (e.g. ``"(Ret)"``, ``"(MBA)"``) being misclassified as a nickname instead of a suffix (closes #111)
-    - Add ``suffix_acronyms_ambiguous`` to ``Constants`` for acronym suffixes that also read as given-name nicknames (e.g. ``"JD"``, ``"Ed"``), used when disambiguating parenthesized/quoted content (#111)
-    - Add ``nickname_delimiters`` to ``Constants`` for registering additional nickname-delimiter regex patterns at runtime, without subclassing (closes #110, #112)
     - Fix missing comma between ``'msc'`` and ``'mscmsm'`` in ``suffix_acronyms``, which silently concatenated them into a bogus ``'mscmscmsm'`` entry (#111)
-    - Add ``given_names`` (and ``given_names_list``) attribute as aggregate of first and middle names, mirroring ``surnames`` (closes #157)
-    - Add ``suffix_delimiter`` to ``Constants`` and ``HumanName`` for parsing suffixes separated by arbitrary delimiters, e.g. ``"RN - CRNA"`` (#156)
-    - Add ``initials_separator`` to ``Constants`` and ``HumanName`` to control spacing between consecutive initials within a name group (#171)
-    - Fix ``Constants`` customizations, singleton identity, and ``TupleManager`` subclass being lost across ``pickle``/``deepcopy`` round-trips (#167, #168, #169)
     - Fix ``is_rootname()`` returning stale results after ``add()``/``remove()`` on ``titles``, ``prefixes``, ``suffix_acronyms``, or ``suffix_not_acronyms`` (#166)
     - Fix capitalization of suffix acronyms written with dots, e.g. ``"M.D."`` (closes #141)
     - Fix recognition of single-letter roman numeral suffixes (e.g. ``"I"``, ``"V"``) in suffix-comma format (closes #136)
     - Fix recognition of trailing ``suffix_not_acronyms`` (e.g. ``"Jr."``) in lastname-comma format (closes #144)
     - Fix single-character symbol conjunctions (e.g. ``"&"``, ``"/"``) being ignored in short names (#173)
+    - Fix suffix boundary lookup for prefixed last names with a title before and after (e.g. ``"dr Vincent van Gogh dr"`` producing a corrupted middle name) (closes #100)
     - Fix spurious leading space in surnames and empty token in suffix list after ``capitalize()`` with an empty middle or suffix (#164)
     - Fix extra whitespace before punctuation in ``str()`` output when a ``string_format`` field is empty (closes #139)
     - Fix ``'apn aprn'`` split into separate ``suffix_acronyms`` entries so each is recognized independently (closes #155)
-    - Add ``last_base``, ``last_prefixes`` (and ``_list`` variants) for splitting last-name prefix particles (tussenvoegsels) from the core surname (#130, #132)
-    - Fix suffix boundary lookup for prefixed last names with a title before and after (e.g. ``"dr Vincent van Gogh dr"`` producing a corrupted middle name) (closes #100)
-    - Add ``patronymic_name_order`` flag to ``Constants`` and ``HumanName`` for opt-in detection and reordering of Russian formal-order names (Surname GivenName Patronymic) (#85)
-    - Add Turkic (Azerbaijani/Central-Asian) patronymic detection to ``patronymic_name_order``, rotating the reversed 4-token formal shape (``Surname GivenName PatronymicRoot Marker``, e.g. ``oglu``/``qizi``) into Western order (#185)
-    - Add ``bound_first_names`` set to ``Constants``; bound Arabic given-name
-      prefixes (``abdul``, ``abu``, etc.) now join forward to form a single first
-      name (e.g. ``"abdul salam ahmed salem"`` → ``first="abdul salam"``,
-      ``middle="ahmed"``, ``last="salem"``). Disable via
-      ``CONSTANTS.bound_first_names.clear()``. **Default-on: changes parsing
-      output for names with these prefixes.** (#150)
-    - Add ``middle_name_as_last`` flag to ``Constants`` and ``HumanName`` for opt-in folding of middle names into the last name, for naming systems with no middle-name concept (e.g. Arabic patronymic chaining) (#133)
-    - Treat an unrecognized, multi-letter token ending in a period in the leading title run (before the first name is set), e.g. ``"Major."``, as a ``title`` instead of a ``first`` name; internal-period abbreviations (``"E.T."``) and single-letter initials (``"J."``) are unaffected. **Default-on: changes parsing of names with a leading unknown period-abbreviation** (closes #109)
-    - Add international honorifics to ``TITLES`` (#187)
-    - Add German/Austrian nobility and ecclesiastical titles to ``TITLES`` (closes #101)
-    - Add German/Dutch last-name prefixes and title/degree suffixes; fix ``join_on_conjunctions()`` to register multi-word prefix chains (e.g. ``"von und zu"``) as prefixes, mirroring existing title handling (closes #18)
     - Change ``Constants.__repr__`` to report collection sizes and non-default scalar config, replacing the uninformative ``<Constants() instance>`` (#221)
-    - Change ``REGEXES`` from a ``set`` of ``(name, pattern)`` tuples to a ``dict``, so a duplicate name is a visible overwrite in the source instead of a nondeterministic winner at import time; code iterating ``REGEXES`` directly now gets keys instead of pairs — use ``.items()`` (#227)
-    - Change ``CAPITALIZATION_EXCEPTIONS`` from a tuple of ``(key, value)`` tuples to a ``dict``; code iterating it directly now gets keys instead of pairs — use ``.items()`` (#233)
 * 1.2.1 - June 19, 2026
     - Fix ``initials()`` interpolating the literal ``None`` for empty name parts when ``empty_attribute_default = None`` (e.g. ``"J. None D."``); empty parts now render as an empty string and a fully-empty result returns ``empty_attribute_default``
     - Add ``python -m nameparser "Name String"`` command-line helper that prints a parsed name
