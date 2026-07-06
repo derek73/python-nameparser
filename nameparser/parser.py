@@ -68,14 +68,6 @@ class HumanName:
     :param str maiden: Maiden name
     """
 
-    C = CONSTANTS
-    """
-    A reference to the configuration for this instance, which may or may not be
-    a reference to the shared, module-wide instance at
-    :py:mod:`~nameparser.config.CONSTANTS`. See `Customizing the Parser
-    <customize.html>`_.
-    """
-
     original: str | bytes = ''
     """
     The original string, untouched by the parser.
@@ -111,17 +103,6 @@ class HumanName:
         nickname: str | list[str] | None = None,
         maiden: str | list[str] | None = None,
     ) -> None:
-        if constants is None:
-            constants = Constants()
-        elif not isinstance(constants, Constants):
-            # passing the class itself is the likeliest mistake, and
-            # reporting it as "got type" would only add confusion
-            hint = (" (a class was passed; did you mean Constants()?)"
-                    if isinstance(constants, type) else "")
-            raise TypeError(
-                "constants must be a Constants instance or None, "
-                f"got {type(constants).__name__}{hint}"
-            )
         self.C = constants
 
         # Lookup entries derived while parsing this instance (period-joined
@@ -156,15 +137,52 @@ class HumanName:
             # full_name setter triggers the parse
             self.full_name = full_name
 
+    @staticmethod
+    def _validate_constants(constants: 'Constants | None') -> 'Constants':
+        # Shared by the constructor and the C setter so both assignment paths
+        # give the same immediate TypeError instead of one bypassing the
+        # other and failing far from the cause (#239).
+        if constants is None:
+            return Constants()
+        if not isinstance(constants, Constants):
+            # passing the class itself is the likeliest mistake, and
+            # reporting it as "got type" would only add confusion
+            hint = (" (a class was passed; did you mean Constants()?)"
+                    if isinstance(constants, type) else "")
+            raise TypeError(
+                "constants must be a Constants instance or None, "
+                f"got {type(constants).__name__}{hint}"
+            )
+        return constants
+
+    @property
+    def C(self) -> 'Constants':
+        """
+        A reference to the configuration for this instance, which may or may not be
+        a reference to the shared, module-wide instance at
+        :py:mod:`~nameparser.config.CONSTANTS`. See `Customizing the Parser
+        <customize.html>`_.
+
+        Assigning a non-``Constants`` value (besides ``None``, which builds a
+        fresh private ``Constants()``) raises the same ``TypeError`` as passing
+        an invalid ``constants`` argument to the constructor (#239).
+        """
+        return self._C
+
+    @C.setter
+    def C(self, constants: 'Constants | None') -> None:
+        self._C = self._validate_constants(constants)
+
     def __getstate__(self) -> dict:
         state = self.__dict__.copy()
-        if state.get('C') is CONSTANTS:
-            state['C'] = None  # sentinel: restore shared singleton on load
+        c = state.pop('_C')
+        state['C'] = None if c is CONSTANTS else c  # sentinel: restore shared singleton on load
         return state
 
     def __setstate__(self, state: dict) -> None:
-        if state.get('C') is None:
-            state['C'] = CONSTANTS
+        state = dict(state)
+        c = state.pop('C', None)
+        self._C = CONSTANTS if c is None else c
         self.__dict__.update(state)
         # pickles from before the per-parse derived sets existed lack them;
         # backfill so the is_* predicates work without a re-parse

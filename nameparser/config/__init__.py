@@ -51,6 +51,22 @@ from nameparser.config.regexes import EMPTY_REGEX, REGEXES
 DEFAULT_ENCODING = 'UTF-8'
 
 
+def _reject_bare_str_or_bytes(value: object, expected: str) -> None:
+    # A bare string is an iterable of its characters, so e.g. set('dr') or
+    # dict('ab') would silently shred it, and bytes iterates to ints, which
+    # can never match parsed str tokens -- shared by SetManager's constructor/
+    # operands (#238) and TupleManager's constructor (#242).
+    if isinstance(value, bytes):
+        raise TypeError(
+            f"expected {expected}, got a single bytes; "
+            f"decode it first: [{value!r}.decode()]"
+        )
+    if isinstance(value, str):
+        raise TypeError(
+            f"expected {expected}, got a single str; wrap it in a list: [{value!r}]"
+        )
+
+
 class SetManager(Set):
     '''
     Easily add and remove config variables per module or instance. Subclass of
@@ -78,19 +94,7 @@ class SetManager(Set):
         # construction from re-checking ~1,400 entries per step
         if isinstance(elements, SetManager):
             return set(elements.elements)
-        # a bare string is an iterable of its characters, so set(value)
-        # would silently build a set of single characters — and bytes
-        # iterates to ints, which can never match parsed tokens (#238)
-        if isinstance(elements, bytes):
-            raise TypeError(
-                "expected an iterable of strings, got a single bytes; "
-                f"decode it first: [{elements!r}.decode()]"
-            )
-        if isinstance(elements, str):
-            raise TypeError(
-                "expected an iterable of strings, got a single str; "
-                f"wrap it in a list: [{elements!r}]"
-            )
+        _reject_bare_str_or_bytes(elements, "an iterable of strings")
         # apply the same lc() normalization (lowercase, strip leading/
         # trailing periods) that add() applies, and reject junk elements:
         # lc() on bytes or int crashes without naming the culprit, and
@@ -145,7 +149,16 @@ class SetManager(Set):
         return iter(self.elements)
 
     def __contains__(self, value: object) -> bool:
-        return value in self.elements
+        # add()/remove()/the constructor/the operators all normalize (lowercase,
+        # strip leading/trailing periods) before comparing; without the same
+        # normalization here, `'Dr.' in c.titles` returns False even though
+        # every other operation on the same value succeeds (#244). The parser's
+        # own lookups (e.g. `piece.lower() in self.C.conjunctions`) already pass
+        # an lc()-normalized value, which is the hot path during parsing, so
+        # try the raw value first and only pay for lc() on a miss.
+        if value in self.elements:
+            return True
+        return isinstance(value, str) and lc(value) in self.elements
 
     def __len__(self) -> int:
         return len(self.elements)
@@ -276,6 +289,33 @@ class TupleManager(dict[str, T]):
     1.3.0 these constants were tuples of pairs.
     '''
 
+    def __init__(
+        self,
+        arg: Mapping[str, T] | Iterable[tuple[str, T]] = (),
+        **kwargs: T,
+    ) -> None:
+        # dict.__init__ accepts a bare str/bytes as an iterable-of-pairs
+        # argument (each character iterates further, and dict() only
+        # complains once it hits a "pair" of the wrong length) and accepts an
+        # iterable of 2-character strings as if each one were a (key, value)
+        # pair, silently shredding it -- mirrors SetManager's guard against
+        # the same class of mistake (#238), applied to the mapping
+        # constructor's own failure modes (#242).
+        _reject_bare_str_or_bytes(arg, "a mapping or iterable of (key, value) pairs")
+        if not isinstance(arg, Mapping):
+            checked = []
+            for item in arg:
+                if isinstance(item, (str, bytes)):
+                    raise TypeError(
+                        "expected (key, value) pairs, got a "
+                        f"{'bytes' if isinstance(item, bytes) else 'str'} "
+                        f"element {item!r}; a 2-character string silently "
+                        "splits into a key and a value"
+                    )
+                checked.append(item)
+            arg = checked
+        super().__init__(arg, **kwargs)
+
     def __getattr__(self, attr: str) -> T | None:
         # Otherwise the dict default (None) is mistaken for a real protocol hook.
         if _is_dunder(attr):
@@ -326,7 +366,48 @@ class RegexTupleManager(TupleManager[re.Pattern[str]]):
         return self.get(attr, EMPTY_REGEX)
 
 
-class _CachedUnionMember:
+class _SetManagerAttribute:
+    """Descriptor enforcing ``isinstance(value, SetManager)`` on assignment.
+
+    Backs the five plain SetManager attributes (``first_name_titles``,
+    ``conjunctions``, ``bound_first_names``, ``non_first_name_prefixes``,
+    ``suffix_acronyms_ambiguous``). Without this guard, e.g.
+    ``c.conjunctions = 'and'`` is accepted silently, and every later
+    ``piece.lower() in self.C.conjunctions`` becomes a substring test against
+    the plain str instead of a set membership test (#241).
+
+    ``_CachedUnionMember`` subclasses this to add ``_pst`` cache invalidation
+    for the four attributes whose union ``Constants`` caches.
+    """
+
+    _attr: str
+
+    def __set_name__(self, owner: type, name: str) -> None:
+        self._attr = '_' + name
+
+    @overload
+    def __get__(self, obj: None, objtype: type | None = None) -> '_SetManagerAttribute': ...
+    @overload
+    def __get__(self, obj: 'Constants', objtype: type | None = None) -> SetManager: ...
+
+    def __get__(self, obj: 'Constants | None', objtype: type | None = None) -> 'SetManager | _SetManagerAttribute':
+        if obj is None:
+            return self
+        return getattr(obj, self._attr)
+
+    def _validate(self, value: SetManager) -> None:
+        if not isinstance(value, SetManager):
+            raise TypeError(
+                f"Expected a SetManager instance, got {type(value).__name__!r}. "
+                "Wrap your iterable: SetManager(['mr', 'ms'])"
+            )
+
+    def __set__(self, obj: 'Constants', value: SetManager) -> None:
+        self._validate(value)
+        setattr(obj, self._attr, value)
+
+
+class _CachedUnionMember(_SetManagerAttribute):
     """Descriptor for the four ``SetManager`` attributes whose union ``Constants``
     caches in ``_pst`` (``prefixes``, ``suffix_acronyms``, ``suffix_not_acronyms``,
     ``titles``).
@@ -337,27 +418,8 @@ class _CachedUnionMember:
     across a catch-all ``__setattr__`` and a separate attribute-name list.
     """
 
-    _attr: str
-
-    def __set_name__(self, owner: type, name: str) -> None:
-        self._attr = '_' + name
-
-    @overload
-    def __get__(self, obj: None, objtype: type | None = None) -> '_CachedUnionMember': ...
-    @overload
-    def __get__(self, obj: 'Constants', objtype: type | None = None) -> SetManager: ...
-
-    def __get__(self, obj: 'Constants | None', objtype: type | None = None) -> 'SetManager | _CachedUnionMember':
-        if obj is None:
-            return self
-        return getattr(obj, self._attr)
-
     def __set__(self, obj: 'Constants', value: SetManager) -> None:
-        if not isinstance(value, SetManager):
-            raise TypeError(
-                f"Expected a SetManager instance, got {type(value).__name__!r}. "
-                "Wrap your iterable: SetManager(['mr', 'ms'])"
-            )
+        self._validate(value)
         previous = getattr(obj, self._attr, None)
         if isinstance(previous, SetManager):
             previous._on_change = None  # detach the replaced manager so it no longer invalidates
@@ -413,11 +475,11 @@ class Constants:
     suffix_acronyms = _CachedUnionMember()
     suffix_not_acronyms = _CachedUnionMember()
     titles = _CachedUnionMember()
-    first_name_titles: SetManager
-    conjunctions: SetManager
-    bound_first_names: SetManager
-    non_first_name_prefixes: SetManager
-    suffix_acronyms_ambiguous: SetManager
+    first_name_titles = _SetManagerAttribute()
+    conjunctions = _SetManagerAttribute()
+    bound_first_names = _SetManagerAttribute()
+    non_first_name_prefixes = _SetManagerAttribute()
+    suffix_acronyms_ambiguous = _SetManagerAttribute()
     capitalization_exceptions: TupleManager[str]
     regexes: RegexTupleManager
     nickname_delimiters: TupleManager[re.Pattern[str] | str]
@@ -698,7 +760,7 @@ class Constants:
         # key surfaces later as AttributeError: 'Constants' object has no attribute
         # '_prefixes' — the private mangled name, not the public one, making it
         # very hard to diagnose.
-        for attr in (n for n, v in vars(type(self)).items() if isinstance(v, _CachedUnionMember)):
+        for attr in (n for n, v in vars(type(self)).items() if isinstance(v, _SetManagerAttribute)):
             if not hasattr(self, '_' + attr):
                 raise ValueError(
                     f"Pickle state is missing required field {attr!r}. "
@@ -718,7 +780,7 @@ class Constants:
         for name, val in self.__dict__.items():
             if name.startswith('_'):
                 public = name[1:]
-                if isinstance(getattr(type(self), public, None), _CachedUnionMember):
+                if isinstance(getattr(type(self), public, None), _SetManagerAttribute):
                     state[public] = val
             else:
                 state[name] = val

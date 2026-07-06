@@ -6,7 +6,7 @@ import timeit
 import pytest
 
 from nameparser import HumanName
-from nameparser.config import Constants, RegexTupleManager, SetManager, TupleManager
+from nameparser.config import CONSTANTS, Constants, RegexTupleManager, SetManager, TupleManager
 from nameparser.config.regexes import EMPTY_REGEX
 from nameparser.config.titles import TITLES
 
@@ -45,6 +45,25 @@ class ConstantsCustomizationTests(HumanNameTestBase):
     def test_constants_class_instead_of_instance_raises_with_hint(self) -> None:
         with pytest.raises(TypeError, match=r"did you mean Constants\(\)"):
             HumanName("John Doe", constants=Constants)  # type: ignore[arg-type]
+
+    def test_assigning_invalid_constants_after_construction_raises(self) -> None:
+        # #226 validated the constructor's `constants` argument, but `hn.C = ...`
+        # bypassed it entirely: the bad value was accepted silently and only
+        # surfaced far later, deep inside parsing, with no mention of `C` (#239)
+        hn = HumanName("John Doe")
+        with pytest.raises(TypeError, match="constants must be"):
+            hn.C = "garbage"  # type: ignore[assignment]
+
+    def test_assigning_constants_class_after_construction_raises_with_hint(self) -> None:
+        hn = HumanName("John Doe")
+        with pytest.raises(TypeError, match=r"did you mean Constants\(\)"):
+            hn.C = Constants  # type: ignore[assignment]
+
+    def test_assigning_none_to_constants_after_construction_builds_new_instance(self) -> None:
+        hn = HumanName("John Doe")
+        hn.C = None
+        self.assertIsNot(hn.C, CONSTANTS)
+        self.assertTrue(isinstance(hn.C, Constants))
 
     def test_constants_bare_string_kwarg_raises_typeerror(self) -> None:
         # a bare string is an iterable of its characters, so set('dr') would
@@ -105,6 +124,23 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         # pins __rxor__ separately in case it ever stops aliasing __xor__
         self.assertEqual((['Dr.', 'Esq.'] ^ sm).elements, {'mr', 'esq'})
 
+    def test_set_manager_contains_normalizes_like_add(self) -> None:
+        # add()/remove()/the constructor/the operators all normalize (lowercase,
+        # strip leading/trailing periods) -- __contains__ was the lone holdout,
+        # so `'Dr.' in c.titles` returned False even though every other
+        # operation on the same value succeeded (#244)
+        sm = SetManager(['dr', 'mr'])
+        self.assertIn('Dr.', sm)
+        self.assertIn('MR', sm)
+        self.assertNotIn('Esq.', sm)
+
+    def test_set_manager_le_uses_normalizing_contains(self) -> None:
+        # the ABC comparison mixins route through __contains__, so an
+        # un-normalized membership check would leak into subset/equality too
+        sm = SetManager(['dr', 'mr'])
+        self.assertTrue(sm <= SetManager(['dr', 'mr', 'esq']))
+        self.assertTrue({'Dr.', 'Mr.'} <= sm)
+
     def test_set_manager_rsub_is_order_sensitive(self) -> None:
         # __sub__ and __rsub__ are hand-written separately (subtraction
         # isn't commutative, unlike |/&/^), so a copy-paste operand swap
@@ -158,6 +194,35 @@ class ConstantsCustomizationTests(HumanNameTestBase):
             SetManager([None])  # type: ignore[list-item]
         with pytest.raises(TypeError, match=r"expected str elements"):
             SetManager(['dr']) | [1]  # type: ignore[list-item]
+
+    def test_tuplemanager_bare_string_raises_typeerror(self) -> None:
+        # dict(['ab', 'cd']) shreds each 2-char string into a key/value pair
+        # silently -- and dict('ab') itself raises a cryptic "dictionary update
+        # sequence element #0 has length 1; 2 is required" naming no argument
+        # and suggesting no fix (#242)
+        with pytest.raises(TypeError, match=r"wrap it in a list"):
+            TupleManager('ab')
+
+    def test_tuplemanager_bytes_raises_with_decode_hint(self) -> None:
+        with pytest.raises(TypeError, match=r"decode it first"):
+            TupleManager(b'ab')  # type: ignore[arg-type]
+
+    def test_tuplemanager_string_element_raises_typeerror(self) -> None:
+        # the silent variant: an iterable of 2-character strings is a valid
+        # dict-update sequence, so each one shreds into a key/value pair
+        with pytest.raises(TypeError, match=r"key and a value"):
+            TupleManager(['ab', 'cd'])
+
+    def test_constants_capitalization_exceptions_string_elements_raise(self) -> None:
+        with pytest.raises(TypeError, match=r"key and a value"):
+            Constants(capitalization_exceptions=['ii'])
+
+    def test_tuplemanager_accepts_mapping_and_pairs(self) -> None:
+        # the guard must not reject the two legitimate constructor shapes
+        tm = TupleManager({'a': '1'})
+        self.assertEqual(tm.a, '1')
+        tm2 = TupleManager([('b', '2')])
+        self.assertEqual(tm2.b, '2')
 
     def test_remove_title(self) -> None:
         hn = HumanName("Hon Solo", constants=None)
@@ -604,6 +669,27 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         c = Constants()
         with pytest.raises(TypeError, match='SetManager'):
             c.titles = ['mr', 'ms']  # type: ignore[assignment]
+
+    def test_assigning_non_setmanager_to_plain_set_attr_raises(self) -> None:
+        """The five non-cached-union SetManager attributes reject bare assignment too.
+
+        Only the four ``_CachedUnionMember`` attributes were guarded; these five
+        were plain instance attributes, so ``c.conjunctions = 'and'`` silently
+        replaced the SetManager with a str, turning later ``in`` membership
+        checks into substring tests (#241).
+        """
+        c = Constants()
+        for name in ('first_name_titles', 'conjunctions', 'bound_first_names',
+                     'non_first_name_prefixes', 'suffix_acronyms_ambiguous'):
+            with pytest.raises(TypeError, match='SetManager'):
+                setattr(c, name, ['x'])
+
+    def test_bare_string_assignment_to_conjunctions_raises(self) -> None:
+        # the original #241 repro: 'and' assigned as a bare str silently
+        # degrades `piece.lower() in self.C.conjunctions` into a substring test
+        c = Constants()
+        with pytest.raises(TypeError, match='SetManager'):
+            c.conjunctions = 'and'  # type: ignore[assignment]
 
     def test_setstate_raises_on_missing_descriptor_field(self) -> None:
         """Unpickling a state blob missing a cached-union collection must fail loudly.
