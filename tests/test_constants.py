@@ -301,6 +301,12 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 
     def test_empty_attribute_default(self) -> None:
         from nameparser.config import CONSTANTS
+        # empty_attribute_default has no explicit annotation (mypy infers str
+        # from the '' default), but None is documented/supported here -- see
+        # the doctest on the attribute's docstring in config/__init__.py.
+        # Not widened to str | None like string_format/suffix_delimiter
+        # because it cascades into ~8 public str-typed properties (title,
+        # first, middle, last, suffix, nickname, initials()).
         CONSTANTS.empty_attribute_default = None  # type: ignore[assignment]
         hn = HumanName("")
         self.m(hn.title, None, hn)
@@ -312,7 +318,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 
     def test_empty_attribute_on_instance(self) -> None:
         hn = HumanName("", None)
-        hn.C.empty_attribute_default = None  # type: ignore[assignment]
+        hn.C.empty_attribute_default = None  # type: ignore[assignment]  # see test_empty_attribute_default above
         self.m(hn.title, None, hn)
         self.m(hn.first, None, hn)
         self.m(hn.middle, None, hn)
@@ -322,7 +328,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 
     def test_none_empty_attribute_string_formatting(self) -> None:
         hn = HumanName("", None)
-        hn.C.empty_attribute_default = None  # type: ignore[assignment]
+        hn.C.empty_attribute_default = None  # type: ignore[assignment]  # see test_empty_attribute_default above
         self.assertEqual('', str(hn), hn)
 
     def test_add_constant_with_explicit_encoding(self) -> None:
@@ -361,7 +367,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
     def test_pickle_roundtrip_preserves_instance_scalar_override(self) -> None:
         """An instance-level scalar override must survive a pickle round-trip."""
         c = Constants()
-        c.empty_attribute_default = None  # type: ignore[assignment]
+        c.empty_attribute_default = None  # type: ignore[assignment]  # see test_empty_attribute_default above
 
         # Safe: round-tripping a Constants the test just built, not untrusted data.
         restored = pickle.loads(pickle.dumps(c))

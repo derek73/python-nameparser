@@ -25,6 +25,12 @@ class InitialsTestCase(HumanNameTestBase):
         # used to be interpolated by str.format as the literal "None" (e.g.
         # "John Doe" -> "J. None D."). Empty parts must render as ''.
         hn = HumanName("John Doe", constants=None)
+        # empty_attribute_default has no explicit annotation (mypy infers str
+        # from the '' default), but None is documented/supported here -- see
+        # the doctest on the attribute's docstring in config/__init__.py. Not
+        # widened to str | None like string_format/suffix_delimiter because
+        # it cascades into ~8 public str-typed properties (title, first,
+        # middle, last, suffix, nickname, initials()).
         hn.C.empty_attribute_default = None  # type: ignore[assignment]
         self.assertEqual(hn.initials(), "J. D.")
         self.assertTrue("None" not in hn.initials())
@@ -34,7 +40,7 @@ class InitialsTestCase(HumanNameTestBase):
         # empty_attribute_default (here None), matching the first/last accessors,
         # rather than rendering the literal "None None None".
         hn = HumanName("", constants=None)
-        hn.C.empty_attribute_default = None  # type: ignore[assignment]
+        hn.C.empty_attribute_default = None  # type: ignore[assignment]  # see test above
         self.assertEqual(hn.initials(), None)
 
     def test_initials_middle_name_all_prefixes(self) -> None:
