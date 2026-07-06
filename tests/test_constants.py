@@ -55,8 +55,35 @@ class ConstantsCustomizationTests(HumanNameTestBase):
     def test_set_manager_bare_string_raises_typeerror(self) -> None:
         with pytest.raises(TypeError, match=r"wrap it in a list"):
             SetManager('dr')
-        with pytest.raises(TypeError, match=r"wrap it in a list"):
+
+    def test_set_manager_bytes_raises_with_decode_hint(self) -> None:
+        # a "wrap it in a list" hint would be a trap for bytes: [b'dr'] is
+        # accepted but its elements never match parsed str tokens
+        with pytest.raises(TypeError, match=r"decode it first"):
             SetManager(b'dr')  # type: ignore[arg-type]
+
+    def test_set_manager_bare_string_operand_raises_typeerror(self) -> None:
+        # Set's mixin __or__/__and__ hand _from_iterable a generator, so the
+        # constructor guard alone never sees a bare-string operand; without
+        # an operand check, c.titles |= 'esq' silently adds 'e', 's', 'q'
+        sm = SetManager(['dr', 'mr'])
+        for op in (lambda: sm | 'abc',
+                   lambda: 'abc' | sm,
+                   lambda: sm & 'abc',
+                   lambda: 'abc' & sm,
+                   lambda: sm - 'abc',
+                   lambda: sm ^ 'abc'):
+            with pytest.raises(TypeError, match=r"wrap it in a list"):
+                op()
+
+    def test_set_manager_operators_accept_lists(self) -> None:
+        c = Constants()
+        with pytest.raises(TypeError, match=r"wrap it in a list"):
+            c.titles |= 'esq'
+        c.titles |= ['esq']
+        self.assertIn('esq', c.titles)
+        hn = HumanName("Esq Jane Smith", constants=c)
+        self.m(hn.title, "Esq", hn)
 
     def test_remove_title(self) -> None:
         hn = HumanName("Hon Solo", constants=None)

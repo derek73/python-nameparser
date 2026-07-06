@@ -56,23 +56,35 @@ class SetManager(Set):
     Easily add and remove config variables per module or instance. Subclass of
     ``collections.abc.Set``.
 
-    Only special functionality beyond that provided by set() is
-    to normalize constants for comparison (lower case, no periods)
-    when they are add()ed and remove()d and allow passing multiple 
-    string arguments to the :py:func:`add()` and :py:func:`remove()` methods.
+    Special functionality beyond that provided by set() is to normalize
+    constants for comparison (lower case, no periods) when they are add()ed
+    and remove()d, and to allow passing multiple string arguments to the
+    :py:func:`add()` and :py:func:`remove()` methods. The constructor and
+    the set operators also reject a bare string with ``TypeError``, since
+    e.g. ``set('dr')`` would silently build a set of single characters.
 
     '''
 
     _on_change: Callable[[], None] | None
 
-    def __init__(self, elements: Iterable[str]) -> None:
-        # a bare string is an iterable of its characters, so set(elements)
-        # would silently build a set of single characters (#238)
-        if isinstance(elements, (str, bytes)):
+    @staticmethod
+    def _reject_bare_string(value: object) -> None:
+        # a bare string is an iterable of its characters, so set(value)
+        # would silently build a set of single characters — and bytes
+        # iterates to ints, which can never match parsed tokens (#238)
+        if isinstance(value, bytes):
             raise TypeError(
-                "expected an iterable of strings, got a single "
-                f"{type(elements).__name__}; wrap it in a list: [{elements!r}]"
+                "expected an iterable of strings, got a single bytes; "
+                f"decode it first: [{value!r}.decode()]"
             )
+        if isinstance(value, str):
+            raise TypeError(
+                "expected an iterable of strings, got a single str; "
+                f"wrap it in a list: [{value!r}]"
+            )
+
+    def __init__(self, elements: Iterable[str]) -> None:
+        self._reject_bare_string(elements)
         self.elements = set(elements)
         # Optional invalidation hook, wired by an owning Constants so that
         # in-place add()/remove() can clear its cached suffixes_prefixes_titles
@@ -97,6 +109,39 @@ class SetManager(Set):
     def __len__(self) -> int:
         return len(self.elements)
 
+    # Set's mixin __or__/__and__ hand _from_iterable a generator, so the
+    # __init__ guard never sees a bare-string operand (c.titles |= 'esq'
+    # would silently add 'e', 's', 'q'); __sub__/__xor__ raised only by
+    # accident of constructing from the operand. Check all four uniformly.
+    # the runtime ABC accepts any Iterable operand, so annotate honestly and
+    # ignore typeshed's narrower AbstractSet declarations
+    def __or__(self, other: Iterable[str]) -> 'SetManager':  # type: ignore[override]
+        self._reject_bare_string(other)
+        return super().__or__(other)  # type: ignore[operator, return-value]
+
+    __ror__ = __or__
+
+    def __and__(self, other: Iterable[str]) -> 'SetManager':  # type: ignore[override]
+        self._reject_bare_string(other)
+        return super().__and__(other)  # type: ignore[operator, return-value]
+
+    __rand__ = __and__
+
+    def __sub__(self, other: Iterable[str]) -> 'SetManager':  # type: ignore[override]
+        self._reject_bare_string(other)
+        return super().__sub__(other)  # type: ignore[operator, return-value]
+
+    def __rsub__(self, other: Iterable[str]) -> 'SetManager':  # type: ignore[override]
+        self._reject_bare_string(other)
+        # typeshed omits Set.__rsub__, but the runtime ABC defines it
+        return super().__rsub__(other)  # type: ignore[misc, operator, return-value]
+
+    def __xor__(self, other: Iterable[str]) -> 'SetManager':  # type: ignore[override]
+        self._reject_bare_string(other)
+        return super().__xor__(other)  # type: ignore[operator, return-value]
+
+    __rxor__ = __xor__
+
     def add_with_encoding(self, s: str, encoding: str | None = None) -> None:
         """
         Add the lowercased, leading/trailing-periods-stripped version of the string to the set. Pass an
@@ -118,7 +163,7 @@ class SetManager(Set):
     def add(self, *strings: str) -> Self:
         """
         Add the lowercased, leading/trailing-periods-stripped version of the string arguments to the set.
-        Can pass a list of strings. Returns ``self`` for chaining.
+        Returns ``self`` for chaining.
         """
         for s in strings:
             self.add_with_encoding(s)
