@@ -49,7 +49,7 @@ dev = [
 ]
 
 [tool.mypy]
-packages = ["nameparser"]
+packages = ["nameparser", "tests"]
 
 [[tool.mypy.overrides]]
 module = [

@@ -228,7 +228,7 @@ class HumanName:
         else:
             return getattr(self, key)
 
-    def __setitem__(self, key: str, value: str) -> None:
+    def __setitem__(self, key: str, value: str | list[str] | None) -> None:
         if key in self._members:
             self._set_list(key, value)
         else:
@@ -696,7 +696,7 @@ class HumanName:
         """
         return self.is_title(piece) or bool(self.C.regexes.period_abbreviation.match(piece))
 
-    def is_conjunction(self, piece: str) -> bool:
+    def is_conjunction(self, piece: str | list[str]) -> bool:
         """Is in the conjunctions set — config or derived earlier in this
         parse (e.g. ``"of the"``) — and not :py:func:`is_an_initial()`."""
         if isinstance(piece, list):
@@ -708,7 +708,7 @@ class HumanName:
                 or piece.lower() in self._derived_conjunctions) \
             and not self.is_an_initial(piece)
 
-    def is_prefix(self, piece: str) -> bool:
+    def is_prefix(self, piece: str | list[str]) -> bool:
         """
         Lowercased, leading/trailing-periods-stripped version of piece is in the
         :py:data:`~nameparser.config.prefixes.PREFIXES` set, or was derived as
@@ -765,7 +765,7 @@ class HumanName:
         """
         return bool(self.C.regexes.roman_numeral.match(value))
 
-    def is_suffix(self, piece: str) -> bool:
+    def is_suffix(self, piece: str | list[str]) -> bool:
         """
         Is in the suffixes set — or was derived as a period-joined suffix
         earlier in this parse (e.g. ``"JD.CPA"``) — and not

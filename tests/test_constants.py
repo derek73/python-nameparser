@@ -2,6 +2,7 @@ import copy
 import pickle
 import re
 import timeit
+from typing import Any
 
 import pytest
 
@@ -201,7 +202,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         # sequence element #0 has length 1; 2 is required" naming no argument
         # and suggesting no fix (#242)
         with pytest.raises(TypeError, match=r"wrap it in a list"):
-            TupleManager('ab')
+            TupleManager('ab')  # type: ignore[arg-type]
 
     def test_tuplemanager_bytes_raises_with_decode_hint(self) -> None:
         with pytest.raises(TypeError, match=r"decode it first"):
@@ -211,11 +212,11 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         # the silent variant: an iterable of 2-character strings is a valid
         # dict-update sequence, so each one shreds into a key/value pair
         with pytest.raises(TypeError, match=r"key and a value"):
-            TupleManager(['ab', 'cd'])
+            TupleManager(['ab', 'cd'])  # type: ignore[arg-type]
 
     def test_constants_capitalization_exceptions_string_elements_raise(self) -> None:
         with pytest.raises(TypeError, match=r"key and a value"):
-            Constants(capitalization_exceptions=['ii'])
+            Constants(capitalization_exceptions=['ii'])  # type: ignore[list-item]
 
     def test_tuplemanager_accepts_mapping_and_pairs(self) -> None:
         # the guard must not reject the two legitimate constructor shapes
@@ -300,7 +301,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 
     def test_empty_attribute_default(self) -> None:
         from nameparser.config import CONSTANTS
-        CONSTANTS.empty_attribute_default = None
+        CONSTANTS.empty_attribute_default = None  # type: ignore[assignment]
         hn = HumanName("")
         self.m(hn.title, None, hn)
         self.m(hn.first, None, hn)
@@ -311,7 +312,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 
     def test_empty_attribute_on_instance(self) -> None:
         hn = HumanName("", None)
-        hn.C.empty_attribute_default = None
+        hn.C.empty_attribute_default = None  # type: ignore[assignment]
         self.m(hn.title, None, hn)
         self.m(hn.first, None, hn)
         self.m(hn.middle, None, hn)
@@ -321,7 +322,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 
     def test_none_empty_attribute_string_formatting(self) -> None:
         hn = HumanName("", None)
-        hn.C.empty_attribute_default = None
+        hn.C.empty_attribute_default = None  # type: ignore[assignment]
         self.assertEqual('', str(hn), hn)
 
     def test_add_constant_with_explicit_encoding(self) -> None:
@@ -360,7 +361,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
     def test_pickle_roundtrip_preserves_instance_scalar_override(self) -> None:
         """An instance-level scalar override must survive a pickle round-trip."""
         c = Constants()
-        c.empty_attribute_default = None
+        c.empty_attribute_default = None  # type: ignore[assignment]
 
         # Safe: round-tripping a Constants the test just built, not untrusted data.
         restored = pickle.loads(pickle.dumps(c))
@@ -729,7 +730,7 @@ class ParsingDoesNotMutateConfigTests(HumanNameTestBase):
         added to ``Constants`` later is watched automatically, with no
         attribute list to keep in sync.
         """
-        snap = {}
+        snap: dict[str, Any] = {}
         for attr, value in constants.__getstate__().items():
             if isinstance(value, SetManager):
                 snap[attr] = set(value)
