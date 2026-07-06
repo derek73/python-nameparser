@@ -54,6 +54,8 @@ class HumanName:
         honored). Pass ``None`` for `per-instance config <customize.html>`_.
         Anything else raises ``TypeError``.
     :param str encoding: string representing the encoding of your input
+        (deprecated with ``bytes`` input, removal in 2.0 — decode before
+        passing; see issue #245)
     :param str string_format: python string formatting
     :param str initials_format: python initials string formatting
     :param str initials_delimter: string delimiter for initials
@@ -135,8 +137,10 @@ class HumanName:
             self.nickname = nickname
             self.maiden = maiden
         else:
-            # full_name setter triggers the parse
-            self.full_name = full_name
+            # calls _apply_full_name directly (not the setter) so the
+            # deprecation warning below attributes to this constructor's
+            # caller rather than to the setter
+            self._apply_full_name(full_name, stacklevel=3)
 
     @staticmethod
     def _validate_constants(constants: 'Constants | None') -> 'Constants':
@@ -886,9 +890,25 @@ class HumanName:
 
     @full_name.setter
     def full_name(self, value: str | bytes) -> None:
+        self._apply_full_name(value, stacklevel=3)
+
+    def _apply_full_name(self, value: str | bytes, *, stacklevel: int) -> None:
+        # Shared by the setter and the constructor so each can call it
+        # directly with a stacklevel that attributes the warning to *its own*
+        # caller -- the constructor going through the setter would otherwise
+        # add a frame and misattribute the warning to this module.
         self.original = value
 
         if isinstance(value, bytes):
+            # deprecated 1.3.0, raises TypeError in 2.0 (#245)
+            warnings.warn(
+                "Passing bytes to HumanName is deprecated and will raise "
+                "TypeError in 2.0; decode it first, e.g. "
+                "value.decode('utf-8'). See "
+                "https://github.com/derek73/python-nameparser/issues/245",
+                DeprecationWarning,
+                stacklevel=stacklevel,
+            )
             self._full_name = value.decode(self.encoding)
         else:
             self._full_name = value
