@@ -24,9 +24,12 @@ Release Log
     - Fix parsing writing back into the ``Constants`` it reads (usually the shared module-level ``CONSTANTS``): pieces derived while parsing a name — period-joined titles/suffixes like ``"Lt.Gov."`` and conjunction-joined pieces like ``"Mr. and Mrs."`` or ``"von und zu"`` — are now tracked per parse instead of being permanently ``add()``-ed to the config, so parse results no longer depend on which names were parsed earlier in the process and parsing no longer mutates shared state across threads
     - Fix ``__hash__`` to lowercase the name like ``__eq__`` does, so equal ``HumanName`` instances hash equal and behave correctly in sets and dicts
 
-    **New name fields**
+    **New comparison methods**
 
     - Add ``matches()`` and ``comparison_key()`` for explicit name comparison: ``matches()`` compares parsed components case-insensitively (parsing ``str`` arguments first, so ``name.matches("Smith, John")`` and ``name.matches("John Smith")`` both match) and ``comparison_key()`` returns a hashable tuple of the seven components for dedup, dict keys, and sorting (#224)
+
+    **New name fields**
+
     - Add a first-class ``maiden`` field and ``maiden_delimiters`` to ``Constants``, so a delimiter (e.g. parenthesis) can be routed to ``maiden`` instead of ``nickname`` for alternate/maiden surnames, e.g. ``"Baker (Johnson), Jenny"`` (closes #22)
     - Add ``given_names`` (and ``given_names_list``) attribute as aggregate of first and middle names, mirroring ``surnames`` (closes #157)
     - Add ``last_base``, ``last_prefixes`` (and ``_list`` variants) for splitting last-name prefix particles (tussenvoegsels) from the core surname (#130, #132)
