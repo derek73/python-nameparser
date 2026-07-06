@@ -284,7 +284,11 @@ class TupleManager(dict[str, T]):
     1.3.0 these constants were tuples of pairs.
     '''
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        arg: Mapping[str, T] | Iterable[tuple[str, T]] = (),
+        **kwargs: T,
+    ) -> None:
         # dict.__init__ accepts a bare str/bytes as an iterable-of-pairs
         # argument (each character iterates further, and dict() only
         # complains once it hits a "pair" of the wrong length) and accepts an
@@ -292,33 +296,29 @@ class TupleManager(dict[str, T]):
         # pair, silently shredding it -- mirrors SetManager's guard against
         # the same class of mistake (#238), applied to the mapping
         # constructor's own failure modes (#242).
-        if args:
-            arg = args[0]
-            if isinstance(arg, bytes):
-                raise TypeError(
-                    "expected a mapping or iterable of (key, value) pairs, got a "
-                    f"single bytes; decode it first: [{arg!r}.decode()]"
-                )
-            if isinstance(arg, str):
-                raise TypeError(
-                    "expected a mapping or iterable of (key, value) pairs, got a "
-                    f"single str; wrap it in a list: [{arg!r}]"
-                )
-            if not isinstance(arg, Mapping):
-                checked = []
-                for item in arg:
-                    if isinstance(item, (str, bytes)):
-                        raise TypeError(
-                            "expected (key, value) pairs, got a "
-                            f"{'bytes' if isinstance(item, bytes) else 'str'} "
-                            f"element {item!r}; a 2-character string silently "
-                            "splits into a key and a value"
-                        )
-                    checked.append(item)
-                arg = checked
-            super().__init__(arg, **kwargs)
-        else:
-            super().__init__(**kwargs)
+        if isinstance(arg, bytes):
+            raise TypeError(
+                "expected a mapping or iterable of (key, value) pairs, got a "
+                f"single bytes; decode it first: [{arg!r}.decode()]"
+            )
+        if isinstance(arg, str):
+            raise TypeError(
+                "expected a mapping or iterable of (key, value) pairs, got a "
+                f"single str; wrap it in a list: [{arg!r}]"
+            )
+        if not isinstance(arg, Mapping):
+            checked = []
+            for item in arg:
+                if isinstance(item, (str, bytes)):
+                    raise TypeError(
+                        "expected (key, value) pairs, got a "
+                        f"{'bytes' if isinstance(item, bytes) else 'str'} "
+                        f"element {item!r}; a 2-character string silently "
+                        "splits into a key and a value"
+                    )
+                checked.append(item)
+            arg = checked
+        super().__init__(arg, **kwargs)
 
     def __getattr__(self, attr: str) -> T | None:
         # Otherwise the dict default (None) is mistaken for a real protocol hook.
