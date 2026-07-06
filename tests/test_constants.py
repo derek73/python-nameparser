@@ -6,7 +6,7 @@ import timeit
 import pytest
 
 from nameparser import HumanName
-from nameparser.config import Constants, RegexTupleManager, SetManager, TupleManager
+from nameparser.config import CONSTANTS, Constants, RegexTupleManager, SetManager, TupleManager
 from nameparser.config.regexes import EMPTY_REGEX
 from nameparser.config.titles import TITLES
 
@@ -45,6 +45,25 @@ class ConstantsCustomizationTests(HumanNameTestBase):
     def test_constants_class_instead_of_instance_raises_with_hint(self) -> None:
         with pytest.raises(TypeError, match=r"did you mean Constants\(\)"):
             HumanName("John Doe", constants=Constants)  # type: ignore[arg-type]
+
+    def test_assigning_invalid_constants_after_construction_raises(self) -> None:
+        # #226 validated the constructor's `constants` argument, but `hn.C = ...`
+        # bypassed it entirely: the bad value was accepted silently and only
+        # surfaced far later, deep inside parsing, with no mention of `C` (#239)
+        hn = HumanName("John Doe")
+        with pytest.raises(TypeError, match="constants must be"):
+            hn.C = "garbage"  # type: ignore[assignment]
+
+    def test_assigning_constants_class_after_construction_raises_with_hint(self) -> None:
+        hn = HumanName("John Doe")
+        with pytest.raises(TypeError, match=r"did you mean Constants\(\)"):
+            hn.C = Constants  # type: ignore[assignment]
+
+    def test_assigning_none_to_constants_after_construction_builds_new_instance(self) -> None:
+        hn = HumanName("John Doe")
+        hn.C = None
+        self.assertIsNot(hn.C, CONSTANTS)
+        self.assertTrue(isinstance(hn.C, Constants))
 
     def test_constants_bare_string_kwarg_raises_typeerror(self) -> None:
         # a bare string is an iterable of its characters, so set('dr') would
