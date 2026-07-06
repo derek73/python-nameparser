@@ -208,16 +208,11 @@ class SetManager(Set):
 
     __rxor__ = __xor__
 
-    def add_with_encoding(self, s: str | bytes, encoding: str | None = None) -> None:
-        """
-        Add the lowercased, leading/trailing-periods-stripped version of the string to the set. Pass an
-        explicit `encoding` parameter to specify the encoding of binary strings that
-        are not DEFAULT_ENCODING (UTF-8).
-
-        .. deprecated:: 1.3.0
-            ``bytes`` arguments will raise ``TypeError`` in 2.0 (see issue
-            #245); decode before adding.
-        """
+    def _add_normalized(self, s: str | bytes, encoding: str | None, *, stacklevel: int) -> None:
+        # Shared by add() and add_with_encoding() so each can call it
+        # directly with a stacklevel that attributes the warning to *its own*
+        # caller -- add() delegating to add_with_encoding() would otherwise
+        # add a frame and misattribute the warning to this module.
         stdin_encoding = None
         if sys.stdin:
             stdin_encoding = sys.stdin.encoding
@@ -229,7 +224,7 @@ class SetManager(Set):
                 "first, e.g. value.decode('utf-8'). See "
                 "https://github.com/derek73/python-nameparser/issues/245",
                 DeprecationWarning,
-                stacklevel=2,
+                stacklevel=stacklevel,
             )
             s = s.decode(encoding)
         normalized = lc(s)
@@ -238,13 +233,29 @@ class SetManager(Set):
             if self._on_change:
                 self._on_change()
 
+    def add_with_encoding(self, s: str | bytes, encoding: str | None = None) -> None:
+        """
+        Add the lowercased, leading/trailing-periods-stripped version of the string to the set. Pass an
+        explicit `encoding` parameter to specify the encoding of binary strings that
+        are not DEFAULT_ENCODING (UTF-8).
+
+        .. deprecated:: 1.3.0
+            ``bytes`` arguments will raise ``TypeError`` in 2.0 (see issue
+            #245); decode before adding.
+        """
+        self._add_normalized(s, encoding, stacklevel=3)
+
     def add(self, *strings: str) -> Self:
         """
         Add the lowercased, leading/trailing-periods-stripped version of the string arguments to the set.
         Returns ``self`` for chaining.
+
+        .. deprecated:: 1.3.0
+            ``bytes`` arguments will raise ``TypeError`` in 2.0 (see issue
+            #245); decode before adding.
         """
         for s in strings:
-            self.add_with_encoding(s)
+            self._add_normalized(s, None, stacklevel=3)
 
         return self
 

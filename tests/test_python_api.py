@@ -35,7 +35,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.m(hn.last, "Böck", hn)
 
     def test_bytes_full_name_emits_deprecation_warning(self) -> None:
-        # bytes input is removed in 2.0 (#245); the caller should decode
+        # bytes input will be removed in 2.0 (#245); the caller should decode
         with pytest.deprecated_call(match="decode"):
             hn = HumanName(b'John Smith')
         self.m(hn.first, "John", hn)

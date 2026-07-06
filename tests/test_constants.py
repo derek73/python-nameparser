@@ -340,7 +340,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.assertIn('béck', c.titles)
 
     def test_set_manager_add_bytes_emits_deprecation_warning(self) -> None:
-        # bytes elements are removed in 2.0 (#245); the caller should decode
+        # bytes elements will be removed in 2.0 (#245); the caller should decode
         sm = SetManager(['dr'])
         with pytest.deprecated_call(match="decode"):
             sm.add(b'esq')  # type: ignore[arg-type]  # deliberately deprecated input
@@ -355,9 +355,9 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 
     def test_set_manager_call_emits_deprecation_warning(self) -> None:
         # __call__ hands out the raw underlying set, bypassing normalization
-        # and cache invalidation; removed in 2.0 (#243)
+        # and cache invalidation; will be removed in 2.0 (#243)
         sm = SetManager(['dr'])
-        with pytest.deprecated_call(match="set"):
+        with pytest.deprecated_call(match="raw underlying set"):
             elements = sm()
         self.assertEqual(elements, {'dr'})
 
@@ -387,6 +387,24 @@ class ConstantsCustomizationTests(HumanNameTestBase):
             warnings.simplefilter("error")
             sm.remove('dr')
         self.assertEqual(len(sm), 0)
+
+    def test_set_manager_remove_mixed_present_and_missing_in_one_call(self) -> None:
+        # a single call mixing a present and a missing member must still warn
+        # (for the missing one) and still invalidate the cache (for the
+        # present one) -- not short-circuit either behavior
+        c = Constants()
+        self.assertIn('hon', c.suffixes_prefixes_titles)  # prime the cache
+        with pytest.deprecated_call(match="discard"):
+            c.titles.remove('hon', 'nope')
+        self.assertNotIn('hon', c.suffixes_prefixes_titles)
+
+    def test_set_manager_discard_mixed_present_and_missing_in_one_call(self) -> None:
+        sm = SetManager(['dr', 'mr'])
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            result = sm.discard('dr', 'nope')
+        self.assertIs(result, sm)
+        self.assertEqual(set(sm), {'mr'})
 
     def test_pickle_roundtrip_preserves_customizations(self) -> None:
         """A pickled Constants must restore its customized collections.
