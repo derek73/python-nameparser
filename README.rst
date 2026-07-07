@@ -29,19 +29,35 @@ are optional. Comma-separated format like "Last, First" is also supported.
 2. Lastname [Suffix], Title Firstname (Nickname) Middle Middle[,] Suffix [, Suffix]
 3. Title Firstname M Lastname [Suffix], Suffix [Suffix] [, Suffix]
 
-Instantiating the `HumanName` class with a string splits on commas and then spaces, 
-classifying name parts based on placement in the string and matches against known name 
-pieces like titles and suffixes. 
+How It Works
+~~~~~~~~~~~~
 
-It correctly handles some common conjunctions and special prefixes to last names
-like "del". Titles and conjunctions can be chained together to handle complex
-titles like "Asst Secretary of State". It can also try to correct capitalization
-of names that are all upper- or lowercase names.
+The parser works in two layers.
 
-It attempts the best guess that can be made with a simple, rule-based approach. 
-Its main use case is English and it is not likely to be useful for languages 
-that do not conform to the supported name structure. It's not perfect, but it 
-gets you pretty far.
+A **vocabulary layer** recognizes name pieces by what they are, using
+configurable sets of known words: titles ("Dr."), suffixes ("III", "PhD"),
+last-name prefixes ("de la"), conjunctions ("y", "&"), and delimited
+nicknames ("Doc"). Titles and conjunctions chain together to handle complex
+titles like "Asst Secretary of State"; prefixes join forward so "de la Vega"
+stays one last name. This layer doesn't care where in the string a word
+appears — and it's the layer you customize, by adding or removing entries
+in the sets to fit your dataset.
+
+A **positional layer** then assigns everything the vocabulary layer didn't
+claim, based purely on where it sits: the first unclaimed word is the first
+name, the last one is the last name, and anything between them is a middle
+name. There is no semantic understanding — "Dr" is a title when it comes
+before a name and a suffix when it comes after ("pre-nominal" and
+"post-nominal" would probably be better names) — and no attempt to correct
+mistakes in the input.
+
+It attempts the best guess that can be made with a simple, deterministic,
+rule-based approach — no statistical models or machine learning; the same
+input always parses the same way. The positional layer assumes Western name
+order (given name first), so the main use case is English and other
+languages that share that structure. It can also try to correct the
+capitalization of names that are all upper- or lowercase. It's not perfect,
+but it gets you pretty far.
 
 Installation
 ------------
@@ -88,11 +104,8 @@ Quick Start Example
     'Juan de la Vega'
 
 
-The parser does not attempt to correct mistakes in the input. It mostly just splits on white
-space and puts things in buckets based on their position in the string. This also means
-the difference between 'title' and 'suffix' is positional, not semantic. "Dr" is a title
-when it comes before the name and a suffix when it comes after. ("Pre-nominal"
-and "post-nominal" would probably be better names.)
+Because the positional layer has no semantic understanding, position is
+everything:
 
 ::
 
@@ -111,10 +124,11 @@ and "post-nominal" would probably be better names.)
 Customization
 -------------
 
-Your project may need some adjustment for your dataset. You can
-do this in your own pre- or post-processing, by `customizing the configured pre-defined 
-sets`_ of titles, prefixes, etc., or by subclassing the `HumanName` class. See the 
-`full documentation`_ for more information.
+Your project may need some adjustment for your dataset. Most customization
+is vocabulary — `customizing the configured pre-defined sets`_ of titles,
+prefixes, etc. that the vocabulary layer matches against. You can also do
+your own pre- or post-processing, or subclass the `HumanName` class for
+deeper changes. See the `full documentation`_ for more information.
 
 
 `Full documentation`_
