@@ -6,6 +6,12 @@ re_emoji = re.compile('['  # lgtm[py/overly-large-range]
     '\U0001F680-\U0001F6FF'
     '\u2600-\u26FF\u2700-\u27BF]+')
 
+# Invisible bidirectional formatting characters: ALM, LRM, RLM, the
+# embedding/override marks (LRE/RLE/PDF/LRO/RLO) and the isolates
+# (LRI/RLI/FSI/PDI). Copy-pasted RTL names often carry these; they render
+# as nothing but stick to name parts and break equality/lookups.
+re_bidi = re.compile('[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]+')
+
 EMPTY_REGEX = re.compile('')
 
 REGEXES = {
@@ -20,6 +26,7 @@ REGEXES = {
     "no_vowels": re.compile(r'^[^aeyiuo]+$', re.I),
     "period_not_at_end": re.compile(r'.*\..+$', re.I),
     "emoji": re_emoji,
+    "bidi": re_bidi,
     "phd": re.compile(r'\s(ph\.?\s+d\.?)', re.I),
     "space_before_comma": re.compile(r'\s+,'),
     "east_slavic_patronymic": re.compile(

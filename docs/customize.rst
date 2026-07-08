@@ -501,6 +501,24 @@ You can turn this off by setting the ``emoji`` regex to ``False``.
     >>> str(hn)
     'Sam 😊 Smith'
 
+Don't Remove Bidi Control Characters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default, invisible bidirectional control characters (the left-to-right and
+right-to-left marks and friends, common in copy-pasted right-to-left names) are
+removed from the input string before the name is parsed. You can turn this off
+by setting the ``bidi`` regex to ``False``.
+
+.. doctest::
+
+    >>> from nameparser import HumanName
+    >>> from nameparser.config import Constants
+    >>> constants = Constants()
+    >>> constants.regexes.bidi = False
+    >>> hn = HumanName("\u200fJohn\u200f Smith", constants=constants)
+    >>> hn.first == "\u200fJohn\u200f"
+    True
+
 Config Changes May Need Parse Refresh
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

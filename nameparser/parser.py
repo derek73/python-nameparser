@@ -928,9 +928,11 @@ class HumanName:
         This method happens at the beginning of the :py:func:`parse_full_name`
         before any other processing of the string aside from unicode
         normalization, so it's a good place to do any custom handling in a
-        subclass. Runs :py:func:`parse_nicknames` and :py:func:`squash_emoji`.
+        subclass. Runs :py:func:`squash_bidi`, :py:func:`parse_nicknames` and
+        :py:func:`squash_emoji`.
 
         """
+        self.squash_bidi()
         self.fix_phd()
         self.parse_nicknames()
         self.squash_emoji()
@@ -1132,6 +1134,16 @@ class HumanName:
         re_emoji = self.C.regexes.emoji
         if re_emoji and re_emoji.search(self._full_name):
             self._full_name = re_emoji.sub('', self._full_name)
+
+    def squash_bidi(self) -> None:
+        """
+        Remove invisible bidirectional control characters from the input
+        string. They carry no name content but stick to the parts they
+        surround, so parsed attributes stop comparing equal to the clean name.
+        """
+        re_bidi = self.C.regexes.bidi
+        if re_bidi and re_bidi.search(self._full_name):
+            self._full_name = re_bidi.sub('', self._full_name)
 
     def handle_firstnames(self) -> None:
         """

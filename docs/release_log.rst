@@ -1,5 +1,9 @@
 Release Log
 ===========
+* 1.3.1 - Unreleased
+
+    - Fix invisible Unicode bidirectional control characters (LRM/RLM/ALM, the embedding/override marks, and the isolates U+2066–U+2069) surviving parsing and sticking to ``first``/``last``/etc., so a copy-pasted right-to-left name silently failed equality and dedup. They are now stripped in preprocessing like emoji; disable via ``CONSTANTS.regexes.bidi = False`` (closes #266)
+
 * 1.3.0 - July 5, 2026
 
     **Breaking Changes & Deprecations**
