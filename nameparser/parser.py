@@ -241,9 +241,14 @@ class HumanName:
     def __str__(self) -> str:
         if self.string_format is not None:
             # string_format = "{title} {first} {middle} {last} {suffix} ({nickname})"
-            _s = self.string_format.format(**self.as_dict())  # noqa: UP032
+            # Empty attributes must render as '' (not empty_attribute_default,
+            # which may be None) so str.format does not interpolate the
+            # literal "None" into the output, which cannot be scrubbed
+            # afterward without corrupting name text containing the same
+            # substring (#254).
+            _s = self.string_format.format(**{k: v or '' for k, v in self.as_dict().items()})
             # remove trailing punctuation from missing nicknames
-            _s = _s.replace(str(self.C.empty_attribute_default), '').replace(" ()", "").replace(" ''", "").replace(' ""', "")
+            _s = _s.replace(" ()", "").replace(" ''", "").replace(' ""', "")
             _s = self.C.regexes.space_before_comma.sub(',', _s)
             return self.collapse_whitespace(_s).strip(', ')
         return " ".join(self)
