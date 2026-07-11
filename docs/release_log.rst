@@ -1,6 +1,6 @@
 Release Log
 ===========
-* 1.3.1 - Unreleased
+* 1.3.1 - July 11, 2026
 
     - Fix invisible Unicode bidirectional control characters (LRM/RLM/ALM, the embedding/override marks, and the isolates U+2066–U+2069) surviving parsing and sticking to ``first``/``last``/etc., so a copy-pasted right-to-left name silently failed equality and dedup. They are now stripped in preprocessing like emoji; disable via ``CONSTANTS.regexes.bidi = False`` (closes #266)
     - Fix ``str()`` corrupting name text containing the substring ``"None"`` when ``empty_attribute_default`` is ``None`` (e.g. ``"Nonez Smith"`` rendered as ``"z Smith"``): empty attributes are now substituted as ``''`` before the format string is applied, instead of scrubbing the interpolated ``"None"`` from the output afterward (closes #254)
