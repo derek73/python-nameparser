@@ -3,8 +3,14 @@ Name Parser
 
 |Build Status| |PyPI| |PyPI version| |Documentation| |License| |Downloads| |Codecov|
 
+📣 **nameparser 2.0 is in design** — a new immutable core API, with full
+compatibility for existing code through 2.x. Read the `design RFC
+<https://github.com/derek73/python-nameparser/pull/285>`__ and share
+feedback on `the discussion issue
+<https://github.com/derek73/python-nameparser/issues/284>`__.
+
 A simple Python (3.10+) module for parsing human names into their
-individual components. 
+individual components.
 
 * hn.title
 * hn.first
