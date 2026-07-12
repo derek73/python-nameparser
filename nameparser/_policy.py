@@ -94,6 +94,30 @@ class Policy:
             self, "extra_suffix_delimiters", frozenset(delimiters)
         )
 
+    def __repr__(self) -> str:
+        # Bounded: only fields that deviate from the default are shown
+        # (design rule, see nameparser._types module docstring).
+        constant_names = {
+            GIVEN_FIRST: "GIVEN_FIRST",
+            FAMILY_FIRST: "FAMILY_FIRST",
+            FAMILY_FIRST_GIVEN_LAST: "FAMILY_FIRST_GIVEN_LAST",
+        }
+        parts = []
+        for f in dataclasses.fields(self):
+            value = getattr(self, f.name)
+            if value == f.default:
+                continue
+            if f.name == "name_order":
+                # Only 3 of the 6 possible role permutations have named
+                # constants; fall back to a compact role-name tuple for
+                # the rest so this can't KeyError on an unnamed order.
+                order_repr = constant_names.get(
+                    value, "(" + ", ".join(r.name for r in value) + ")")
+                parts.append(f"name_order={order_repr}")
+            else:
+                parts.append(f"{f.name}={value!r}")
+        return f"Policy({', '.join(parts)})"
+
 
 class _Unset(Enum):
     UNSET = auto()

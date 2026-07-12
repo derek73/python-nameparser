@@ -9,10 +9,11 @@ added in a later task, enforces this).
 """
 from __future__ import annotations
 
+import dataclasses
 from dataclasses import dataclass
 
 from nameparser._lexicon import Lexicon
-from nameparser._policy import PolicyPatch
+from nameparser._policy import UNSET, PolicyPatch
 
 
 @dataclass(frozen=True, slots=True)
@@ -42,3 +43,12 @@ class Locale:
             raise ValueError(
                 f"Locale.policy must be a PolicyPatch, got {self.policy!r}"
             )
+
+    def __repr__(self) -> str:
+        # Bounded: shows the code and which Policy fields the patch sets,
+        # never the Lexicon contents or the patched values themselves
+        # (design rule, see nameparser._types module docstring).
+        patched = [f.name for f in dataclasses.fields(self.policy)
+                   if getattr(self.policy, f.name) is not UNSET]
+        suffix = f": {', '.join(patched)}" if patched else ""
+        return f"Locale({self.code!r}{suffix})"

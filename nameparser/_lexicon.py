@@ -99,6 +99,25 @@ class Lexicon:
                 f"not in particles: {extra}"
             )
 
+    def __repr__(self) -> str:
+        # Bounded: renders only which fields deviate from default() and by
+        # how many entries -- never the entries themselves (design rule,
+        # see nameparser._types module docstring).
+        default = Lexicon.default()
+        if self == default:
+            return "Lexicon(default)"
+        deltas = []
+        for name in _VOCAB_FIELDS + ("capitalization_exceptions",):
+            mine = set(getattr(self, name))
+            theirs = set(getattr(default, name))
+            added, removed = len(mine - theirs), len(theirs - mine)
+            if added or removed:
+                delta = "".join(
+                    part for part, n in ((f"+{added}", added), (f"-{removed}", removed)) if n
+                )
+                deltas.append(f"{name}: {delta}")
+        return f"Lexicon(default + {', '.join(deltas)})"
+
     @property
     def capitalization_exceptions_map(self) -> Mapping[str, str]:
         return self._cap_map

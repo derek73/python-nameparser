@@ -2,6 +2,11 @@
 
 Layering (enforced by tests/v2/test_layering.py): this module imports
 nothing from nameparser -- it is the bottom of the dependency graph.
+
+Repr policy (applies to every v2 type's __repr__, across this module and
+_lexicon.py/_policy.py/_locale.py): bounded output only. No repr may scale
+with vocabulary size -- collections render as counts or deltas, never
+contents.
 """
 from __future__ import annotations
 
@@ -64,6 +69,14 @@ class Token:
             object.__setattr__(self, "span", Span(start, end))
         object.__setattr__(self, "tags", frozenset(self.tags))
 
+    def __repr__(self) -> str:
+        # Bounded output: a single token's text/span/role/tags, never
+        # scales with vocabulary size (design rule -- see module docstring).
+        where = (f"@{self.span.start}:{self.span.end}"
+                 if self.span is not None else "@synthetic")
+        tags = f" {{{', '.join(sorted(self.tags))}}}" if self.tags else ""
+        return f"Token({self.text!r} {where} {self.role.name}{tags})"
+
 
 class AmbiguityKind(StrEnum):
     """Stable identifiers (API); members ARE their string values."""
@@ -102,6 +115,10 @@ class Ambiguity:
                     f"got {tok!r}"
                 )
         object.__setattr__(self, "tokens", toks)
+
+    def __repr__(self) -> str:
+        texts = "/".join(repr(t.text) for t in self.tokens)
+        return f"Ambiguity({self.kind.value!r}: {texts})"
 
 
 @dataclass(frozen=True, slots=True)
@@ -162,6 +179,18 @@ class ParsedName:
 
     def __bool__(self) -> bool:
         return bool(self.tokens)
+
+    def __repr__(self) -> str:
+        lines = []
+        for role in Role:
+            text = self._text_for(role)
+            if text:
+                lines.append(f"\t{role.value}: {text!r}")
+        if self.ambiguities:
+            kinds = [a.kind.value for a in self.ambiguities]
+            lines.append(f"\tambiguities: {kinds!r}")
+        body = "\n".join(lines)
+        return f"<ParsedName: [\n{body}\n]>" if lines else "<ParsedName: []>"
 
     # -- string views (canonical order = Role declaration order) --------
 
