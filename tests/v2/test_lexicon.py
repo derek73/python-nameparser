@@ -22,6 +22,12 @@ def test_default_sources_v1_vocabulary() -> None:
     # normalized -- only keys are casefolded/period-stripped at
     # construction, values pass through unchanged).
     assert lex.capitalization_exceptions_map["phd"] == "Ph.D."
+    # maiden markers source from the same data-module pattern (#274);
+    # non-colliding Cyrillic entries live in the default per the locales
+    # design's sorting rule, and both ё/е spellings are listed because
+    # casefold() does not fold them.
+    assert "geborene" in lex.maiden_markers
+    assert "урожденная" in lex.maiden_markers and "урождённая" in lex.maiden_markers
 
 
 def test_default_is_cached_single_instance() -> None:

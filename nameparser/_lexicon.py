@@ -223,6 +223,7 @@ def _default_lexicon() -> Lexicon:
     from nameparser.config.bound_first_names import BOUND_FIRST_NAMES
     from nameparser.config.capitalization import CAPITALIZATION_EXCEPTIONS
     from nameparser.config.conjunctions import CONJUNCTIONS
+    from nameparser.config.maiden_markers import MAIDEN_MARKERS
     from nameparser.config.prefixes import NON_FIRST_NAME_PREFIXES, PREFIXES
     from nameparser.config.suffixes import (
         SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_NOT_ACRONYMS,
@@ -243,7 +244,7 @@ def _default_lexicon() -> Lexicon:
         particles_ambiguous=frozenset(PREFIXES - NON_FIRST_NAME_PREFIXES),
         conjunctions=frozenset(CONJUNCTIONS),
         bound_given_names=frozenset(BOUND_FIRST_NAMES),
-        maiden_markers=frozenset({"née", "nee", "geb"}),
+        maiden_markers=frozenset(MAIDEN_MARKERS),
         # pass canonical pair-tuples so this strictly-typed call site never
         # feeds a Mapping to the tuple-annotated field; __post_init__
         # still tolerates a Mapping at runtime for interactive use

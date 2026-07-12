@@ -33,6 +33,8 @@ HumanName.config Defaults
     :members:
 .. automodule:: nameparser.config.conjunctions
     :members:
+.. automodule:: nameparser.config.maiden_markers
+    :members:
 .. automodule:: nameparser.config.capitalization
     :members:
 .. automodule:: nameparser.config.regexes
