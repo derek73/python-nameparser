@@ -45,12 +45,7 @@ import re
 import sys
 import warnings
 from collections.abc import Callable, Iterable, Iterator, Mapping, Set
-from typing import Any, TypeVar, overload
-
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
+from typing import Any, Self, TypeVar, overload
 
 from nameparser.util import lc
 from nameparser.config.prefixes import PREFIXES, NON_FIRST_NAME_PREFIXES

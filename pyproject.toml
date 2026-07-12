@@ -22,9 +22,7 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Topic :: Text Processing :: Linguistic",
 ]
-dependencies = [
-  "typing_extensions (>=4.5.0); python_version < '3.11'"
-]
+dependencies = []
 
 [build-system]
 requires = ["setuptools (>=82.0.1)"]

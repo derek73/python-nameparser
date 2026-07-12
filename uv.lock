@@ -585,7 +585,6 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "typing-extensions", marker = "python_full_version < '3.11'", specifier = ">=4.5.0" }]
 
 [package.metadata.requires-dev]
 dev = [

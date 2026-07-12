@@ -26,10 +26,23 @@ def _nameparser_imports(path: pathlib.Path) -> list[str]:
     return [m for m in found if m.startswith("nameparser")]
 
 
+def _permitted(imported: str, allowed: tuple[str, ...]) -> bool:
+    # An entry ending in "." is a pure prefix (subpackage contents only);
+    # any other entry means that exact module or its submodules -- a bare
+    # startswith would also admit siblings like nameparser._types_helpers.
+    for entry in allowed:
+        if entry.endswith("."):
+            if imported.startswith(entry):
+                return True
+        elif imported == entry or imported.startswith(entry + "."):
+            return True
+    return False
+
+
 def test_layering_contract():
     for mod, allowed in ALLOWED.items():
         for imported in _nameparser_imports(PKG / mod):
-            assert imported.startswith(allowed), (
+            assert _permitted(imported, allowed), (
                 f"{mod} imports {imported}, which the layering contract "
                 f"forbids (allowed prefixes: {allowed or 'none'})"
             )

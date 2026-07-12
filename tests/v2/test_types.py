@@ -1,6 +1,8 @@
 import pytest
 
-from nameparser._types import Ambiguity, AmbiguityKind, ParsedName, Role, Span, Token
+from nameparser._types import (
+    STABLE_TAGS, Ambiguity, AmbiguityKind, ParsedName, Role, Span, Token,
+)
 
 
 def test_role_declaration_order_is_canonical_field_order():
@@ -195,6 +197,9 @@ def test_suffix_joins_with_comma_space():
 
 
 def test_derived_views_filter_on_stable_particle_tag():
+    # Pin the hard-coded "particle" string in _text_for to the published
+    # contract until Plan 3's tag-emission contract tests land.
+    assert "particle" in STABLE_TAGS
     pn = _delavega()
     assert pn.family_particles == "de la"
     assert pn.family_base == "Vega"
