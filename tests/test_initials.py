@@ -32,8 +32,9 @@ class InitialsTestCase(HumanNameTestBase):
         # from the '' default), but None is documented/supported here -- see
         # the doctest on the attribute's docstring in config/__init__.py. Not
         # widened to str | None like string_format/suffix_delimiter because
-        # it cascades into ~8 public str-typed properties (title, first,
-        # middle, last, suffix, nickname, initials()).
+        # it cascades into every public str-typed name accessor (title,
+        # first, middle, last, suffix, nickname, maiden, surnames,
+        # given_names, last_base, last_prefixes, initials()).
         with pytest.deprecated_call():
             hn.C.empty_attribute_default = None  # type: ignore[assignment]
         self.assertEqual(hn.initials(), "J. D.")

@@ -71,9 +71,12 @@ def empty_attribute_default(request: pytest.FixtureRequest) -> Iterator[str | No
         warnings.simplefilter("ignore", DeprecationWarning)
         CONSTANTS.empty_attribute_default = request.param
     yield request.param
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", DeprecationWarning)
-        for attr, value in scalar_snapshot.items():
+    for attr, value in scalar_snapshot.items():
+        if attr == "empty_attribute_default":
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", DeprecationWarning)
+                setattr(CONSTANTS, attr, value)
+        else:
             setattr(CONSTANTS, attr, value)
     for attr, value in collection_snapshot.items():
         setattr(CONSTANTS, attr, value)

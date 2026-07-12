@@ -309,6 +309,16 @@ class ConstantsCustomizationTests(HumanNameTestBase):
             c.empty_attribute_default = None  # type: ignore[assignment]
         self.assertIsNone(c.empty_attribute_default)
 
+    def test_empty_attribute_default_rejects_non_str_non_none(self) -> None:
+        # A cheap early check on the invariant 2.0 will fully enforce (only
+        # '' will be legal): non-str/non-None values fail loudly here
+        # instead of surfacing later as a confusing failure deep in some
+        # unrelated HumanName string property.
+        c = Constants()
+        with pytest.raises(TypeError, match="str or None"):
+            c.empty_attribute_default = 42  # type: ignore[assignment]
+        self.assertEqual(c.empty_attribute_default, '')
+
     def test_empty_attribute_default_read_does_not_warn(self) -> None:
         c = Constants()
         with warnings.catch_warnings():
@@ -321,8 +331,9 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         # from the '' default), but None is documented/supported here -- see
         # the doctest on the attribute's docstring in config/__init__.py.
         # Not widened to str | None like string_format/suffix_delimiter
-        # because it cascades into ~8 public str-typed properties (title,
-        # first, middle, last, suffix, nickname, initials()).
+        # because it cascades into every public str-typed name accessor
+        # (title, first, middle, last, suffix, nickname, maiden, surnames,
+        # given_names, last_base, last_prefixes, initials()).
         with pytest.deprecated_call():
             CONSTANTS.empty_attribute_default = None  # type: ignore[assignment]
         hn = HumanName("")
@@ -369,8 +380,14 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         # (#263/#245); the str path is otherwise silent, so this method's
         # own removal is unwarned without this
         sm = SetManager(['dr'])
-        with pytest.deprecated_call(match="add\\(\\)"):
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
             sm.add_with_encoding('esq')
+        deprecations = [w for w in caught if issubclass(w.category, DeprecationWarning)]
+        # Exactly one -- the str path must not also trip the bytes-decode
+        # warning (that one's for the *other* argument type).
+        self.assertEqual(len(deprecations), 1)
+        self.assertIn('add()', str(deprecations[0].message))
         self.assertIn('esq', sm)
 
     def test_add_with_encoding_bytes_emits_two_distinct_warnings(self) -> None:
@@ -526,6 +543,30 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.assertIn('suffixes_prefixes_titles', legacy_state)
 
         restored = Constants.__new__(Constants)
+        with pytest.deprecated_call(match="re-pickle") as record:
+            restored.__setstate__(legacy_state)
+        deprecations = [w for w in record.list if issubclass(w.category, DeprecationWarning)]
+        self.assertEqual(len(deprecations), 1)
+
+    def test_unpickle_legacy_state_with_two_stale_property_keys_warns_once(self) -> None:
+        # Pins "once per __setstate__ call, not once per skipped key": with
+        # only one computed property (suffixes_prefixes_titles) on the real
+        # Constants class, the test above can't distinguish the two
+        # semantics. A second read-only property on a throwaway subclass
+        # forces two keys through the skip branch in one __setstate__ call.
+        class ConstantsWithExtraProperty(Constants):
+            @property
+            def another_computed_property(self) -> str:
+                return 'computed'
+
+        c = ConstantsWithExtraProperty()
+        legacy_state = {
+            name: getattr(c, name) for name in dir(c) if not name.startswith('_')
+        }
+        self.assertIn('suffixes_prefixes_titles', legacy_state)
+        self.assertIn('another_computed_property', legacy_state)
+
+        restored = ConstantsWithExtraProperty.__new__(ConstantsWithExtraProperty)
         with pytest.deprecated_call(match="re-pickle") as record:
             restored.__setstate__(legacy_state)
         deprecations = [w for w in record.list if issubclass(w.category, DeprecationWarning)]
@@ -1133,6 +1174,20 @@ class ConstantsCopyTests(HumanNameTestBase):
         c = CustomConstants()
         dup = c.copy()
         self.assertTrue(isinstance(dup, CustomConstants))
+
+    def test_copy_preserves_empty_attribute_default_without_warning(self) -> None:
+        # copy() round-trips through __getstate__/__setstate__ like pickle
+        # does; restoring saved state isn't a user assignment, so it must not
+        # emit #255's deprecation warning (the __setstate__ bypass exists
+        # specifically for this call path, not just pickle.loads).
+        c = Constants()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            c.empty_attribute_default = None  # type: ignore[assignment]
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            dup = c.copy()
+        self.assertIsNone(dup.empty_attribute_default)
 
     def test_copy_snapshots_current_customizations(self) -> None:
         # Unlike Constants(), which always starts from library defaults,

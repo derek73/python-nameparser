@@ -556,12 +556,22 @@ class _EmptyAttributeDefaultAttribute:
         # Annotated `str`, not `str | None`, to match the pre-descriptor
         # plain-attribute inference: None is documented/supported (see the
         # class docstring), but typing it honestly cascades `| None`
-        # through ~8 public str-typed properties (title, first, ... ).
+        # through every public str-typed name accessor (title, first, ...).
+        # Returning '' rather than `self` on class access (unlike
+        # _SetManagerAttribute, which returns `self`) is also load-bearing
+        # for Constants.__repr__'s `getattr(type(self), name)` default
+        # comparison in _repr_scalar_attrs -- returning `self` there would
+        # make every Constants() show this attribute as "customized".
         if obj is None:
             return ''
         return getattr(obj, self._attr, '')
 
     def __set__(self, obj: 'Constants', value: str | None) -> None:
+        if value is not None and not isinstance(value, str):
+            raise TypeError(
+                f"empty_attribute_default must be a str or None, got "
+                f"{type(value).__name__!r}"
+            )
         warnings.warn(
             "Assigning Constants.empty_attribute_default is deprecated and "
             "will raise TypeError in 2.0; empty attributes will always "
