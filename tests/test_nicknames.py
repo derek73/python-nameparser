@@ -19,7 +19,7 @@ class NicknameTestCase(HumanNameTestBase):
 
     # https://github.com/derek73/python-nameparser/issues/112
     def test_add_custom_nickname_delimiter(self) -> None:
-        hn = HumanName("Benjamin {Ben} Franklin", constants=None)
+        hn = HumanName("Benjamin {Ben} Franklin", constants=Constants())
         # curly braces aren't a recognized delimiter by default
         self.m(hn.nickname, "", hn)
         hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
@@ -29,7 +29,7 @@ class NicknameTestCase(HumanNameTestBase):
         self.m(hn.nickname, "Ben", hn)
 
     def test_remove_custom_nickname_delimiter(self) -> None:
-        hn = HumanName("Benjamin {Ben} Franklin", constants=None)
+        hn = HumanName("Benjamin {Ben} Franklin", constants=Constants())
         hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
         hn.parse_full_name()
         self.m(hn.nickname, "Ben", hn)
@@ -40,7 +40,7 @@ class NicknameTestCase(HumanNameTestBase):
     def test_multiple_custom_nickname_delimiters_together(self) -> None:
         # Two extras registered at once must both be recognized in a single
         # parse, independent of insertion order.
-        hn = HumanName("Benjamin {Ben} <Benny> Franklin", constants=None)
+        hn = HumanName("Benjamin {Ben} <Benny> Franklin", constants=Constants())
         hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
         hn.C.nickname_delimiters['angle_brackets'] = re.compile(r'<(.*?)>')
         hn.parse_full_name()
@@ -53,7 +53,7 @@ class NicknameTestCase(HumanNameTestBase):
         # directly) must keep working: nickname_delimiters' three built-in
         # entries resolve self.C.regexes.<name> live at parse time rather than
         # storing a snapshotted pattern.
-        hn = HumanName("Benjamin [Ben] Franklin", constants=None)
+        hn = HumanName("Benjamin [Ben] Franklin", constants=Constants())
         self.m(hn.nickname, "", hn)
         hn.C.regexes['parenthesis'] = re.compile(r'\[(.*?)\]')
         hn.parse_full_name()
@@ -194,7 +194,7 @@ class NicknameTestCase(HumanNameTestBase):
         # custom delimiter added via nickname_delimiters -- confirms
         # handle_match() is applied uniformly regardless of which delimiter
         # matched, not just the three built-ins.
-        hn = HumanName("JEFFREY {JD} BRICKEN", constants=None)
+        hn = HumanName("JEFFREY {JD} BRICKEN", constants=Constants())
         hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
         hn.parse_full_name()
         self.m(hn.nickname, "JD", hn)

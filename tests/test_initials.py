@@ -1,4 +1,5 @@
 from nameparser import HumanName
+from nameparser.config import Constants
 
 from tests.base import HumanNameTestBase
 
@@ -24,7 +25,7 @@ class InitialsTestCase(HumanNameTestBase):
         # Regression: when empty_attribute_default is None, an empty name part
         # used to be interpolated by str.format as the literal "None" (e.g.
         # "John Doe" -> "J. None D."). Empty parts must render as ''.
-        hn = HumanName("John Doe", constants=None)
+        hn = HumanName("John Doe", constants=Constants())
         # empty_attribute_default has no explicit annotation (mypy infers str
         # from the '' default), but None is documented/supported here -- see
         # the doctest on the attribute's docstring in config/__init__.py. Not
@@ -39,7 +40,7 @@ class InitialsTestCase(HumanNameTestBase):
         # Regression: a fully-empty result must fall back to
         # empty_attribute_default (here None), matching the first/last accessors,
         # rather than rendering the literal "None None None".
-        hn = HumanName("", constants=None)
+        hn = HumanName("", constants=Constants())
         hn.C.empty_attribute_default = None  # type: ignore[assignment]  # see test above
         self.assertEqual(hn.initials(), None)
 

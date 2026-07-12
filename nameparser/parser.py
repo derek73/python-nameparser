@@ -51,8 +51,14 @@ class HumanName:
     :param str full_name: The name string to be parsed.
     :param constants:
         a :py:class:`~nameparser.config.Constants` instance (subclasses are
-        honored). Pass ``None`` for `per-instance config <customize.html>`_.
-        Anything else raises ``TypeError``.
+        honored). Defaults to the shared module-level ``CONSTANTS``. For
+        `per-instance config <customize.html>`_, pass ``Constants()`` for
+        fresh library defaults, or ``CONSTANTS.copy()`` for a private
+        snapshot of the current shared config. Passing ``None`` also builds
+        a fresh ``Constants()``, but is deprecated (warns; raises
+        ``TypeError`` in 2.0, see issue #260) since it silently discards any
+        customizations the caller may have expected to carry over. Anything
+        else raises ``TypeError``.
     :param str encoding: string representing the encoding of your input
         (deprecated with ``bytes`` input, removal in 2.0 — decode before
         passing; see issue #245)
@@ -106,7 +112,10 @@ class HumanName:
         nickname: str | list[str] | None = None,
         maiden: str | list[str] | None = None,
     ) -> None:
-        self.C = constants
+        # calls _validate_constants directly (not through the C setter) so
+        # the deprecation warning below attributes to this constructor's
+        # caller rather than to the setter, mirroring _apply_full_name below
+        self._C = self._validate_constants(constants, stacklevel=3)
 
         # Lookup entries derived while parsing this instance (period-joined
         # titles/suffixes like "Lt.Gov.", conjunction-joined pieces like
@@ -143,11 +152,27 @@ class HumanName:
             self._apply_full_name(full_name, stacklevel=3)
 
     @staticmethod
-    def _validate_constants(constants: 'Constants | None') -> 'Constants':
+    def _validate_constants(constants: 'Constants | None', *, stacklevel: int) -> 'Constants':
         # Shared by the constructor and the C setter so both assignment paths
         # give the same immediate TypeError instead of one bypassing the
         # other and failing far from the cause (#239).
         if constants is None:
+            # deprecated 1.4.0, raises TypeError in 2.0 (#260, removal #261):
+            # None means "build a fresh private Constants()", the opposite of
+            # what None conventionally means (the default is the *shared*
+            # CONSTANTS) -- an easy trap since customizing CONSTANTS then
+            # passing None elsewhere silently drops those customizations with
+            # no error. CONSTANTS.copy() is the explicit spelling for the
+            # other reading: a private snapshot of the current shared config.
+            warnings.warn(
+                "Passing constants=None is deprecated and will raise "
+                "TypeError in 2.0; use constants=Constants() for fresh "
+                "library defaults, or constants=CONSTANTS.copy() to snapshot "
+                "the current shared config. See "
+                "https://github.com/derek73/python-nameparser/issues/260",
+                DeprecationWarning,
+                stacklevel=stacklevel,
+            )
             return Constants()
         if not isinstance(constants, Constants):
             # passing the class itself is the likeliest mistake, and
@@ -169,14 +194,16 @@ class HumanName:
         <customize.html>`_.
 
         Assigning a non-``Constants`` value (besides ``None``, which builds a
-        fresh private ``Constants()``) raises the same ``TypeError`` as passing
-        an invalid ``constants`` argument to the constructor (#239).
+        fresh private ``Constants()`` and emits a ``DeprecationWarning`` --
+        see :py:meth:`~nameparser.parser.HumanName.__init__`) raises the same
+        ``TypeError`` as passing an invalid ``constants`` argument to the
+        constructor (#239).
         """
         return self._C
 
     @C.setter
     def C(self, constants: 'Constants | None') -> None:
-        self._C = self._validate_constants(constants)
+        self._C = self._validate_constants(constants, stacklevel=3)
 
     def __getstate__(self) -> dict:
         state = self.__dict__.copy()

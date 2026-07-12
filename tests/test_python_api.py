@@ -121,7 +121,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         differently-configured parser on the other side.
         """
         # Passing None as the second argument gives this name its own Constants.
-        hn = HumanName("Smith, Dr. John", None)
+        hn = HumanName("Smith, Dr. John", Constants())
         hn.C.titles.add('chancellor')
         hn.parse_full_name()
 
@@ -148,7 +148,7 @@ class HumanNamePythonTests(HumanNameTestBase):
 
     def test_name_instance_deepcopy_isolates_instance_config(self) -> None:
         """A deep-copied HumanName with its own config must be independent."""
-        hn = HumanName("Smith, Dr. John", None)
+        hn = HumanName("Smith, Dr. John", Constants())
         hn.C.titles.add('chancellor')
 
         dup = copy.deepcopy(hn)
@@ -200,7 +200,7 @@ class HumanNamePythonTests(HumanNameTestBase):
 
     def test_pickle_instance_config_name_preserves_own_config(self) -> None:
         """A HumanName with its own Constants must not be collapsed onto CONSTANTS after pickle."""
-        hn = HumanName("Smith, Dr. John", None)
+        hn = HumanName("Smith, Dr. John", Constants())
         hn.C.titles.add('chancellor')
         hn.parse_full_name()
         self.assertTrue(hn.has_own_config)

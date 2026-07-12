@@ -2,6 +2,8 @@ Release Log
 ===========
 * 1.4.0 - Unreleased
 
+    - Add ``Constants.copy()``, a detached deep copy that preserves the source instance's current customizations (unlike ``Constants()``, which always starts from library defaults) -- useful as ``CONSTANTS.copy()`` for a private snapshot of the shared config (#260)
+    - Deprecate passing ``constants=None`` to ``HumanName`` (or assigning ``hn.C = None``): it silently builds a fresh ``Constants()``, discarding any customizations the caller may have expected to carry over from the shared ``CONSTANTS``. Emits ``DeprecationWarning``; will raise ``TypeError`` in 2.0. Use ``constants=Constants()`` for fresh library defaults or ``constants=CONSTANTS.copy()`` for a private snapshot instead (closes #260)
     - Fix the ``"Lastname, Firstname"`` comma format not being recognized when the input uses the Arabic comma ``،`` (U+060C, the standard comma in Arabic/Persian/Urdu text) or the fullwidth CJK comma ``，`` (U+FF0C) instead of the ASCII comma: both variants now also split the format and no longer leak into the parsed output (closes #265)
 
 * 1.3.1 - July 11, 2026
