@@ -10,7 +10,7 @@ def test_role_declaration_order_is_canonical_field_order():
 
 
 def test_token_construction_and_span_coercion():
-    t = Token("Juan", (0, 4), Role.GIVEN)
+    t = Token("Juan", (0, 4), Role.GIVEN)  # type: ignore[arg-type]
     assert t.span == Span(0, 4)
     assert isinstance(t.span, Span)
     assert t.span.start == 0 and t.span.end == 4
@@ -24,17 +24,17 @@ def test_synthetic_token_has_no_span():
 
 def test_token_rejects_empty_text():
     with pytest.raises(ValueError, match="non-empty"):
-        Token("", (0, 0), Role.GIVEN)
+        Token("", Span(0, 0), Role.GIVEN)
 
 
 def test_token_rejects_inverted_span():
     with pytest.raises(ValueError, match="start <= end"):
-        Token("x", (5, 2), Role.GIVEN)
+        Token("x", Span(5, 2), Role.GIVEN)
 
 
 def test_token_rejects_negative_span():
     with pytest.raises(ValueError, match="start <= end"):
-        Token("x", (-1, 1), Role.GIVEN)
+        Token("x", Span(-1, 1), Role.GIVEN)
 
 
 def test_token_rejects_malformed_span_shapes():
@@ -50,10 +50,10 @@ def test_token_rejects_non_string_text():
 
 
 def test_token_is_frozen_and_hashable():
-    t = Token("Juan", (0, 4), Role.GIVEN)
+    t = Token("Juan", Span(0, 4), Role.GIVEN)
     with pytest.raises(AttributeError):
         t.text = "X"  # type: ignore[misc]
-    assert hash(t) == hash(Token("Juan", (0, 4), Role.GIVEN))
+    assert hash(t) == hash(Token("Juan", Span(0, 4), Role.GIVEN))
 
 
 def test_ambiguity_kind_members_are_their_string_values():
@@ -62,15 +62,15 @@ def test_ambiguity_kind_members_are_their_string_values():
 
 
 def test_ambiguity_construction_coerces_kind_string():
-    t = Token("Van", (0, 3), Role.GIVEN, frozenset({"particle"}))
-    a = Ambiguity("particle-or-given", "leading 'van' may be a particle", (t,))
+    t = Token("Van", Span(0, 3), Role.GIVEN, frozenset({"particle"}))
+    a = Ambiguity("particle-or-given", "leading 'van' may be a particle", (t,))  # type: ignore[arg-type]
     assert a.kind is AmbiguityKind.PARTICLE_OR_GIVEN
     assert a.tokens == (t,)
 
 
 def test_ambiguity_rejects_unknown_kind():
     with pytest.raises(ValueError, match="particle-or-given"):
-        Ambiguity("no-such-kind", "detail", ())
+        Ambiguity("no-such-kind", "detail", ())  # type: ignore[arg-type]
 
 
 def test_ambiguity_rejects_non_token_elements():
@@ -80,7 +80,7 @@ def test_ambiguity_rejects_non_token_elements():
 
 def test_ambiguity_rejects_empty_detail():
     with pytest.raises(ValueError, match="non-empty string"):
-        Ambiguity("order", "", ())
+        Ambiguity(AmbiguityKind.ORDER, "", ())
 
 
 def _pn(original, tokens, ambiguities=()):
@@ -90,8 +90,8 @@ def _pn(original, tokens, ambiguities=()):
 
 def test_parsedname_accepts_valid_spans_and_is_truthy():
     pn = _pn("John Smith", [
-        Token("John", (0, 4), Role.GIVEN),
-        Token("Smith", (5, 10), Role.FAMILY),
+        Token("John", Span(0, 4), Role.GIVEN),
+        Token("Smith", Span(5, 10), Role.FAMILY),
     ])
     assert bool(pn) is True
 
@@ -103,47 +103,47 @@ def test_empty_parse_is_falsy():
 
 def test_parsedname_rejects_out_of_bounds_span():
     with pytest.raises(ValueError, match="out of bounds"):
-        _pn("John", [Token("Johnny", (0, 6), Role.GIVEN)])
+        _pn("John", [Token("Johnny", Span(0, 6), Role.GIVEN)])
 
 
 def test_parsedname_rejects_overlapping_spans():
     with pytest.raises(ValueError, match="ascending"):
         _pn("John Smith", [
-            Token("John", (0, 4), Role.GIVEN),
-            Token("ohn S", (1, 6), Role.FAMILY),
+            Token("John", Span(0, 4), Role.GIVEN),
+            Token("ohn S", Span(1, 6), Role.FAMILY),
         ])
 
 
 def test_parsedname_rejects_descending_spans():
     with pytest.raises(ValueError, match="ascending"):
         _pn("John Smith", [
-            Token("Smith", (5, 10), Role.FAMILY),
-            Token("John", (0, 4), Role.GIVEN),
+            Token("Smith", Span(5, 10), Role.FAMILY),
+            Token("John", Span(0, 4), Role.GIVEN),
         ])
 
 
 def test_synthetic_tokens_skip_span_checks():
     pn = _pn("John Smith", [
-        Token("John", (0, 4), Role.GIVEN),
+        Token("John", Span(0, 4), Role.GIVEN),
         Token("Qux", None, Role.MIDDLE),
-        Token("Smith", (5, 10), Role.FAMILY),
+        Token("Smith", Span(5, 10), Role.FAMILY),
     ])
     assert len(pn.tokens) == 3
 
 
 def test_ambiguity_tokens_must_be_subset_of_parse_tokens():
-    inside = Token("Van", (0, 3), Role.GIVEN)
+    inside = Token("Van", Span(0, 3), Role.GIVEN)
     outside = Token("Zzz", None, Role.GIVEN)
     with pytest.raises(ValueError, match="subset"):
         _pn("Van Johnson",
-            [inside, Token("Johnson", (4, 11), Role.FAMILY)],
+            [inside, Token("Johnson", Span(4, 11), Role.FAMILY)],
             [Ambiguity(AmbiguityKind.PARTICLE_OR_GIVEN, "d", (outside,))])
 
 
 def test_parsedname_equality_is_strict_structural():
-    a = _pn("John", [Token("John", (0, 4), Role.GIVEN)])
-    b = _pn("John", [Token("John", (0, 4), Role.GIVEN)])
-    c = _pn("John ", [Token("John", (0, 4), Role.GIVEN)])
+    a = _pn("John", [Token("John", Span(0, 4), Role.GIVEN)])
+    b = _pn("John", [Token("John", Span(0, 4), Role.GIVEN)])
+    c = _pn("John ", [Token("John", Span(0, 4), Role.GIVEN)])
     assert a == b and hash(a) == hash(b)
     assert a != c  # different original: not interchangeable
 
@@ -157,19 +157,19 @@ def test_parsedname_rejects_non_token_and_non_ambiguity_elements():
     with pytest.raises(ValueError, match="only Token instances"):
         _pn("x", ["not-a-token"])  # type: ignore[list-item]
     with pytest.raises(ValueError, match="only Ambiguity instances"):
-        _pn("John", [Token("John", (0, 4), Role.GIVEN)], ["nope"])  # type: ignore[list-item]
+        _pn("John", [Token("John", Span(0, 4), Role.GIVEN)], ["nope"])  # type: ignore[list-item]
 
 
 def _delavega():
     # "Dr. Juan de la Vega III" -- hand-built, spans verified by hand
     #  0123456789012345678901234
     return _pn("Dr. Juan de la Vega III", [
-        Token("Dr.", (0, 3), Role.TITLE),
-        Token("Juan", (4, 8), Role.GIVEN),
-        Token("de", (9, 11), Role.FAMILY, frozenset({"particle"})),
-        Token("la", (12, 14), Role.FAMILY, frozenset({"particle"})),
-        Token("Vega", (15, 19), Role.FAMILY),
-        Token("III", (20, 23), Role.SUFFIX),
+        Token("Dr.", Span(0, 3), Role.TITLE),
+        Token("Juan", Span(4, 8), Role.GIVEN),
+        Token("de", Span(9, 11), Role.FAMILY, frozenset({"particle"})),
+        Token("la", Span(12, 14), Role.FAMILY, frozenset({"particle"})),
+        Token("Vega", Span(15, 19), Role.FAMILY),
+        Token("III", Span(20, 23), Role.SUFFIX),
     ])
 
 
@@ -186,10 +186,10 @@ def test_string_properties_join_by_role():
 
 def test_suffix_joins_with_comma_space():
     pn = _pn("John Smith PhD MD", [
-        Token("John", (0, 4), Role.GIVEN),
-        Token("Smith", (5, 10), Role.FAMILY),
-        Token("PhD", (11, 14), Role.SUFFIX),
-        Token("MD", (15, 17), Role.SUFFIX),
+        Token("John", Span(0, 4), Role.GIVEN),
+        Token("Smith", Span(5, 10), Role.FAMILY),
+        Token("PhD", Span(11, 14), Role.SUFFIX),
+        Token("MD", Span(15, 17), Role.SUFFIX),
     ])
     assert pn.suffix == "PhD, MD"
 
@@ -232,8 +232,8 @@ def test_replace_swaps_field_with_synthetic_tokens_in_place():
 
 def test_replace_adds_missing_field_at_end():
     pn = _pn("John Smith", [
-        Token("John", (0, 4), Role.GIVEN),
-        Token("Smith", (5, 10), Role.FAMILY),
+        Token("John", Span(0, 4), Role.GIVEN),
+        Token("Smith", Span(5, 10), Role.FAMILY),
     ])
     pn2 = pn.replace(suffix="Jr")
     assert pn2.suffix == "Jr"
@@ -251,9 +251,9 @@ def test_replace_rejects_unknown_field():
 
 
 def test_replace_drops_ambiguities_referencing_removed_tokens():
-    van = Token("Van", (0, 3), Role.GIVEN)
+    van = Token("Van", Span(0, 3), Role.GIVEN)
     pn = _pn("Van Johnson",
-             [van, Token("Johnson", (4, 11), Role.FAMILY)],
+             [van, Token("Johnson", Span(4, 11), Role.FAMILY)],
              [Ambiguity(AmbiguityKind.PARTICLE_OR_GIVEN, "d", (van,))])
     assert pn.replace(given="Bob").ambiguities == ()
     assert pn.replace(family="Smith").ambiguities != ()
@@ -265,7 +265,7 @@ def test_replace_rejects_non_str_value():
 
 
 def test_replace_appends_missing_roles_in_canonical_order():
-    pn = _pn("John", [Token("John", (0, 4), Role.GIVEN)])
+    pn = _pn("John", [Token("John", Span(0, 4), Role.GIVEN)])
     pn2 = pn.replace(maiden="X", suffix="Y")
     assert [t.role for t in pn2.tokens] == [Role.GIVEN, Role.SUFFIX, Role.MAIDEN]
 
@@ -276,15 +276,15 @@ def test_comparison_key_is_casefolded_canonical_seven_tuple():
         "dr.", "juan", "", "de la vega", "iii", "", "",
     )
     upper = _pn("JUAN DE LA VEGA", [
-        Token("JUAN", (0, 4), Role.GIVEN),
-        Token("DE", (5, 7), Role.FAMILY, frozenset({"particle"})),
-        Token("LA", (8, 10), Role.FAMILY, frozenset({"particle"})),
-        Token("VEGA", (11, 15), Role.FAMILY),
+        Token("JUAN", Span(0, 4), Role.GIVEN),
+        Token("DE", Span(5, 7), Role.FAMILY, frozenset({"particle"})),
+        Token("LA", Span(8, 10), Role.FAMILY, frozenset({"particle"})),
+        Token("VEGA", Span(11, 15), Role.FAMILY),
     ])
     lower = _pn("juan de la vega", [
-        Token("juan", (0, 4), Role.GIVEN),
-        Token("de", (5, 7), Role.FAMILY, frozenset({"particle"})),
-        Token("la", (8, 10), Role.FAMILY, frozenset({"particle"})),
-        Token("vega", (11, 15), Role.FAMILY),
+        Token("juan", Span(0, 4), Role.GIVEN),
+        Token("de", Span(5, 7), Role.FAMILY, frozenset({"particle"})),
+        Token("la", Span(8, 10), Role.FAMILY, frozenset({"particle"})),
+        Token("vega", Span(11, 15), Role.FAMILY),
     ])
     assert upper.comparison_key() == lower.comparison_key()

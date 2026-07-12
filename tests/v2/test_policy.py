@@ -38,10 +38,10 @@ def test_name_order_must_be_permutation_and_error_names_constants():
 
 
 def test_patronymic_rules_coerce_and_reject():
-    p = Policy(patronymic_rules=frozenset({"east-slavic"}))
+    p = Policy(patronymic_rules=frozenset({"east-slavic"}))  # type: ignore[arg-type]
     assert p.patronymic_rules == frozenset({PatronymicRule.EAST_SLAVIC})
     with pytest.raises(ValueError, match="east-slavic, turkic"):
-        Policy(patronymic_rules=frozenset({"klingon"}))
+        Policy(patronymic_rules=frozenset({"klingon"}))  # type: ignore[arg-type]
 
 
 def test_delimiter_pairs_must_be_nonempty_string_pairs():
@@ -79,7 +79,7 @@ def test_extra_suffix_delimiters_validated_and_coerced():
     with pytest.raises(ValueError, match="bare string"):
         Policy(extra_suffix_delimiters="ab")  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="non-empty strings"):
-        Policy(extra_suffix_delimiters={""})
+        Policy(extra_suffix_delimiters=frozenset({""}))
     p = Policy(extra_suffix_delimiters=["-"])  # type: ignore[arg-type]
     assert p.extra_suffix_delimiters == frozenset({"-"})
     assert isinstance(hash(p), int)
@@ -98,7 +98,7 @@ def test_policy_patch_mirrors_policy_field_types():
 
 
 def test_policy_patch_canonicalizes_union_fields():
-    p = PolicyPatch(extra_suffix_delimiters={"-"})
+    p = PolicyPatch(extra_suffix_delimiters=frozenset({"-"}))
     assert isinstance(p.extra_suffix_delimiters, frozenset)
     assert isinstance(hash(p), int)
     out = apply_patch(Policy(), PolicyPatch(extra_suffix_delimiters=["-"]))  # type: ignore[arg-type]
