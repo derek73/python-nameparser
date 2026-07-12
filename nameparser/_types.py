@@ -1,7 +1,10 @@
 """Core value types for the 2.0 API.
 
 Layering (enforced by tests/v2/test_layering.py): this module imports
-nothing from nameparser -- it is the bottom of the dependency graph.
+nothing from nameparser at module level -- it is the bottom of the
+module-import dependency graph. The rendering delegates import _render
+at call time, and a TYPE_CHECKING-only _lexicon import supplies the
+Lexicon annotation.
 
 Repr policy (applies to every v2 type's __repr__, across this module and
 _lexicon.py/_policy.py/_locale.py): bounded output only. No repr may scale

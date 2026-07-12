@@ -1,9 +1,14 @@
 """Rendering for the 2.0 API: ParsedName -> display strings.
 
-Layering: imports nameparser._types, and nameparser._lexicon only for
-Lexicon.default() when capitalized() receives lexicon=None (enforced by
-tests/v2/test_layering.py). Parsing code never imports this module;
-ParsedName's rendering methods delegate here via call-time imports.
+Layering: imports nameparser._types, and nameparser._lexicon for
+Lexicon.default() (capitalized() with lexicon=None) and _normalize
+(enforced by tests/v2/test_layering.py). Parsing code never imports
+this module; ParsedName's rendering methods delegate here via
+call-time imports.
+
+Malformed str.format specs beyond unknown keys (positional fields,
+bad conversions) surface the raw str.format error; only unknown KEYS
+get the enriched KeyError.
 """
 from __future__ import annotations
 
