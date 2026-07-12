@@ -13,7 +13,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum, StrEnum
-from typing import NamedTuple, NoReturn
+from typing import NamedTuple, NoReturn, TypeVar
 
 
 class Role(Enum):
@@ -49,6 +49,23 @@ class Span(NamedTuple):
 #: namespaced ("vocab:...", "patronymic:...") and unstable.
 STABLE_TAGS = frozenset({"particle", "conjunction", "initial"})
 
+_E = TypeVar("_E", bound=Enum)
+
+
+def _coerce_enum(value: object, enum_cls: type[_E], noun: str, plural: str) -> _E:
+    """Coerce value to enum_cls, or raise the enriched ValueError listing
+    every valid member (enum lookups stay ValueError for any input --
+    stdlib EnumType precedent, see AGENTS.md's taxonomy rule)."""
+    if isinstance(value, enum_cls):
+        return value
+    try:
+        return enum_cls(value)
+    except ValueError:
+        valid = ", ".join(str(m.value) for m in enum_cls)
+        raise ValueError(
+            f"unknown {noun} {value!r}; valid {plural}: {valid}"
+        ) from None
+
 
 @dataclass(frozen=True, slots=True)
 class Token:
@@ -64,14 +81,8 @@ class Token:
             )
         if not self.text:
             raise ValueError("Token.text must be a non-empty string")
-        if not isinstance(self.role, Role):
-            try:
-                object.__setattr__(self, "role", Role(self.role))
-            except ValueError:
-                valid = ", ".join(r.value for r in Role)
-                raise ValueError(
-                    f"unknown Role {self.role!r}; valid roles: {valid}"
-                ) from None
+        object.__setattr__(
+            self, "role", _coerce_enum(self.role, Role, "Role", "roles"))
         if self.span is not None:
             if not (
                 isinstance(self.span, tuple)
@@ -137,14 +148,9 @@ class Ambiguity:
     tokens: tuple[Token, ...]
 
     def __post_init__(self) -> None:
-        if not isinstance(self.kind, AmbiguityKind):
-            try:
-                object.__setattr__(self, "kind", AmbiguityKind(self.kind))
-            except ValueError:
-                valid = ", ".join(k.value for k in AmbiguityKind)
-                raise ValueError(
-                    f"unknown AmbiguityKind {self.kind!r}; valid kinds: {valid}"
-                ) from None
+        object.__setattr__(
+            self, "kind",
+            _coerce_enum(self.kind, AmbiguityKind, "AmbiguityKind", "kinds"))
         if not isinstance(self.detail, str):
             raise TypeError(
                 f"Ambiguity.detail must be a str, got {self.detail!r}"
