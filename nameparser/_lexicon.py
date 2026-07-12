@@ -69,6 +69,53 @@ def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
     return frozenset(normalized)
 
 
+def _normpairs(
+    raw: Mapping[str, str] | Iterable[tuple[str, str]],
+) -> tuple[tuple[str, str], ...]:
+    """Canonicalize capitalization_exceptions input: _normset's sibling
+    for the one pair-valued field. Dedupes on the NORMALIZED key so the
+    tuple and the derived map always agree ("Ph.D." and "phd" collide
+    after normalization); last occurrence wins, matching dict semantics
+    and the right-bias rule used elsewhere."""
+    if isinstance(raw, str):
+        raise TypeError(
+            "capitalization_exceptions must be a mapping or an "
+            "iterable of (key, value) pairs, not a bare string"
+        )
+    pairs = raw.items() if isinstance(raw, Mapping) else raw
+    deduped: dict[str, str] = {}
+    for entry in pairs:
+        # A 2-char str entry would unpack "ab" into ("a", "b")
+        # silently, so reject str outright; other mis-shapes would
+        # otherwise surface as bare unpack errors.
+        if isinstance(entry, str):
+            raise TypeError(
+                f"capitalization_exceptions entries must be "
+                f"(key, value) pairs, got {entry!r}"
+            )
+        try:
+            k, v = entry
+        except (TypeError, ValueError):
+            raise TypeError(
+                f"capitalization_exceptions entries must be "
+                f"(key, value) pairs, got {entry!r}"
+            ) from None
+        if not isinstance(k, str) or not isinstance(v, str):
+            raise TypeError(
+                f"capitalization_exceptions entries must be "
+                f"str -> str, got {k!r}: {v!r}"
+            )
+        normalized_key = _normalize(k)
+        if not normalized_key:
+            raise ValueError(
+                f"capitalization_exceptions key {k!r} normalizes to "
+                f"empty (casefold + strip periods/whitespace leaves "
+                f"nothing)"
+            )
+        deduped[normalized_key] = v
+    return tuple(sorted(deduped.items()))
+
+
 @dataclass(frozen=True, slots=True)
 class Lexicon:
     titles: frozenset[str] = frozenset()
@@ -93,48 +140,7 @@ class Lexicon:
     def __post_init__(self) -> None:
         for name in _VOCAB_FIELDS:
             object.__setattr__(self, name, _normset(getattr(self, name), name))
-        raw = self.capitalization_exceptions
-        if isinstance(raw, str):
-            raise TypeError(
-                "capitalization_exceptions must be a mapping or an "
-                "iterable of (key, value) pairs, not a bare string"
-            )
-        pairs = raw.items() if isinstance(raw, Mapping) else raw
-        # Dedupe on the NORMALIZED key before storing so the tuple and the
-        # map always agree ("Ph.D." and "phd" collide after normalization).
-        # Last occurrence wins, matching dict semantics and the right-bias
-        # rule used elsewhere.
-        deduped: dict[str, str] = {}
-        for entry in pairs:
-            # A 2-char str entry would unpack "ab" into ("a", "b")
-            # silently, so reject str outright; other mis-shapes would
-            # otherwise surface as bare unpack errors.
-            if isinstance(entry, str):
-                raise TypeError(
-                    f"capitalization_exceptions entries must be "
-                    f"(key, value) pairs, got {entry!r}"
-                )
-            try:
-                k, v = entry
-            except (TypeError, ValueError):
-                raise TypeError(
-                    f"capitalization_exceptions entries must be "
-                    f"(key, value) pairs, got {entry!r}"
-                ) from None
-            if not isinstance(k, str) or not isinstance(v, str):
-                raise TypeError(
-                    f"capitalization_exceptions entries must be "
-                    f"str -> str, got {k!r}: {v!r}"
-                )
-            normalized_key = _normalize(k)
-            if not normalized_key:
-                raise ValueError(
-                    f"capitalization_exceptions key {k!r} normalizes to "
-                    f"empty (casefold + strip periods/whitespace leaves "
-                    f"nothing)"
-                )
-            deduped[normalized_key] = v
-        canonical = tuple(sorted(deduped.items()))
+        canonical = _normpairs(self.capitalization_exceptions)
         object.__setattr__(self, "capitalization_exceptions", canonical)
         object.__setattr__(self, "_cap_map", MappingProxyType(dict(canonical)))
         if not self.particles_ambiguous <= self.particles:
