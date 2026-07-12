@@ -66,3 +66,11 @@ def test_locale_code_is_pinned_to_registry_charset() -> None:
         with pytest.raises(ValueError, match="a-z0-9_"):
             Locale(code=bad, lexicon=Lexicon.empty())
     assert Locale(code="tr_az", lexicon=Lexicon.empty()).code == "tr_az"
+
+
+def test_setstate_rejects_layout_skew() -> None:
+    loc = Locale(code="ru", lexicon=Lexicon.empty())
+    state = dict(loc.__getstate__())
+    del state["code"]
+    with pytest.raises(ValueError, match="code"):
+        Locale.__new__(Locale).__setstate__(state)

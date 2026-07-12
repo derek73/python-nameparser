@@ -15,6 +15,7 @@ from dataclasses import dataclass
 
 from nameparser._lexicon import Lexicon
 from nameparser._policy import UNSET, PolicyPatch
+from nameparser._types import _guarded_getstate, _guarded_setstate
 
 
 @dataclass(frozen=True, slots=True)
@@ -22,6 +23,10 @@ class Locale:
     code: str
     lexicon: Lexicon
     policy: PolicyPatch = PolicyPatch()
+
+    # in the class body so @dataclass(slots=True) keeps them
+    __getstate__ = _guarded_getstate
+    __setstate__ = _guarded_setstate
 
     def __post_init__(self) -> None:
         if not isinstance(self.code, str):

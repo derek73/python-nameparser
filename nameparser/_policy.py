@@ -9,7 +9,7 @@ import dataclasses
 from dataclasses import dataclass, field
 from enum import Enum, StrEnum, auto
 
-from nameparser._types import Role
+from nameparser._types import Role, _guarded_getstate, _guarded_setstate
 
 
 class PatronymicRule(StrEnum):
@@ -44,6 +44,10 @@ class Policy:
     lenient_comma_suffixes: bool = True
     strip_emoji: bool = True
     strip_bidi: bool = True  # =False replaces v1's opt-out CONSTANTS.regexes.bidi = False
+
+    # in the class body so @dataclass(slots=True) keeps them
+    __getstate__ = _guarded_getstate
+    __setstate__ = _guarded_setstate
 
     def __post_init__(self) -> None:
         order = tuple(self.name_order)
@@ -180,6 +184,10 @@ class PolicyPatch:
     lenient_comma_suffixes: bool | _Unset = UNSET
     strip_emoji: bool | _Unset = UNSET
     strip_bidi: bool | _Unset = UNSET
+
+    # in the class body so @dataclass(slots=True) keeps them
+    __getstate__ = _guarded_getstate
+    __setstate__ = _guarded_setstate
 
     def __post_init__(self) -> None:
         # Canonicalize (but do NOT validate) collection fields so a patch

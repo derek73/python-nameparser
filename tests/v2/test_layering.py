@@ -16,7 +16,10 @@ ALLOWED = {
     # any config submodule; "data only" holds by convention/review
     "_lexicon.py": ("nameparser.config.",),
     "_policy.py": ("nameparser._types",),
-    "_locale.py": ("nameparser._lexicon", "nameparser._policy"),
+    # _types is a downward import (bottom of the graph): Locale shares
+    # the _guarded_getstate/_guarded_setstate pickle functions
+    "_locale.py": ("nameparser._types", "nameparser._lexicon",
+                   "nameparser._policy"),
     # _lexicon is needed at runtime: capitalized(lexicon=None) resolves
     # to Lexicon.default()
     "_render.py": ("nameparser._types", "nameparser._lexicon"),

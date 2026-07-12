@@ -206,3 +206,10 @@ def test_policy_and_patch_pickle_round_trip_preserves_unset_identity() -> None:
     # object() sentinel would break this silently.
     assert loaded.name_order is UNSET
     assert loaded.strip_emoji is False
+
+
+def test_setstate_rejects_layout_skew() -> None:
+    state = dict(Policy().__getstate__())
+    del state["name_order"]
+    with pytest.raises(ValueError, match="name_order"):
+        Policy.__new__(Policy).__setstate__(state)

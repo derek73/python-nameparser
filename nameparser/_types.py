@@ -13,6 +13,7 @@ contents.
 """
 from __future__ import annotations
 
+import dataclasses
 from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum, StrEnum
@@ -73,12 +74,49 @@ def _coerce_enum(value: object, enum_cls: type[_E], noun: str, plural: str) -> _
         ) from None
 
 
+# Pickle support shared by the frozen slots dataclasses: fail at the
+# LOAD site when a pickle's field layout does not match this version of
+# the class (version skew) -- silently loading would defer the failure
+# to a distant attribute read. Values are deliberately NOT re-validated:
+# pickle is not a security boundary (arbitrary pickles can execute code
+# anyway), and canonical state only comes from a validated instance.
+# These are ASSIGNED IN EACH CLASS BODY (not inherited from a mixin):
+# @dataclass(slots=True) regenerates the class and installs its own
+# pickle methods unless __getstate__/__setstate__ are in the class's
+# own __dict__. Lexicon duplicates this logic by design (its slots also
+# carry a rebuilt mappingproxy) -- layering keeps _lexicon import-free
+# of _types.
+
+
+def _guarded_getstate(self: object) -> dict[str, object]:
+    fields = dataclasses.fields(self)  # type: ignore[arg-type]
+    return {f.name: getattr(self, f.name) for f in fields}
+
+
+def _guarded_setstate(self: object, state: dict[str, object]) -> None:
+    fields = dataclasses.fields(self)  # type: ignore[arg-type]
+    expected = {f.name for f in fields}
+    if set(state) != expected:
+        missing = ", ".join(sorted(expected - set(state))) or "none"
+        unexpected = ", ".join(sorted(set(state) - expected)) or "none"
+        raise ValueError(
+            f"incompatible {type(self).__name__} pickle: missing "
+            f"fields: {missing}; unexpected fields: {unexpected}"
+        )
+    for name, value in state.items():
+        object.__setattr__(self, name, value)
+
+
 @dataclass(frozen=True, slots=True)
 class Token:
     text: str
     span: Span | None  # None = synthetic (from replace())
     role: Role
     tags: frozenset[str] = frozenset()
+
+    # in the class body so @dataclass(slots=True) keeps them
+    __getstate__ = _guarded_getstate
+    __setstate__ = _guarded_setstate
 
     def __post_init__(self) -> None:
         if not isinstance(self.text, str):
@@ -153,6 +191,10 @@ class Ambiguity:
     detail: str
     tokens: tuple[Token, ...]
 
+    # in the class body so @dataclass(slots=True) keeps them
+    __getstate__ = _guarded_getstate
+    __setstate__ = _guarded_setstate
+
     def __post_init__(self) -> None:
         object.__setattr__(
             self, "kind",
@@ -189,6 +231,10 @@ class ParsedName:
     original: str
     tokens: tuple[Token, ...]
     ambiguities: tuple[Ambiguity, ...] = ()
+
+    # in the class body so @dataclass(slots=True) keeps them
+    __getstate__ = _guarded_getstate
+    __setstate__ = _guarded_setstate
 
     def __post_init__(self) -> None:
         if not isinstance(self.original, str):

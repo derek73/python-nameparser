@@ -350,3 +350,21 @@ def test_token_rejects_bool_span_coordinates() -> None:
     # leaking into a coordinate slot, not a span.
     with pytest.raises(TypeError, match="pair of ints"):
         Token("x", (False, True), Role.GIVEN)  # type: ignore[arg-type]
+
+
+def test_setstate_rejects_layout_skew_on_frozen_types() -> None:
+    # version-skewed pickles must fail at the LOAD site, naming the
+    # mismatch -- not at a distant attribute read (same policy as
+    # Lexicon; values are deliberately NOT re-validated: pickle is not
+    # a security boundary)
+    tok = Token("Juan", Span(0, 4), Role.GIVEN)
+    state = tok.__getstate__()
+    bad = dict(state)
+    del bad["tags"]
+    with pytest.raises(ValueError, match="tags"):
+        Token.__new__(Token).__setstate__(bad)
+    pn = _pn("Juan", [tok])
+    bad_pn = dict(pn.__getstate__())
+    bad_pn["zq_future"] = ()
+    with pytest.raises(ValueError, match="zq_future"):
+        ParsedName.__new__(ParsedName).__setstate__(bad_pn)
