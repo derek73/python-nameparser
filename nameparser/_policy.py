@@ -5,8 +5,9 @@ added in a later task, enforces this).
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
-from enum import StrEnum
+import dataclasses
+from dataclasses import dataclass, field
+from enum import Enum, StrEnum, auto
 
 from nameparser._types import Role
 
@@ -92,3 +93,53 @@ class Policy:
         object.__setattr__(
             self, "extra_suffix_delimiters", frozenset(delimiters)
         )
+
+
+class _Unset(Enum):
+    UNSET = auto()
+
+
+#: Sentinel for "this patch does not set this field" (picklable enum
+#: member, distinguishable from every real value including None/False).
+UNSET = _Unset.UNSET
+
+_UNION = {"compose": "union"}  # field metadata: set-valued -> union
+
+
+@dataclass(frozen=True, slots=True)
+class PolicyPatch:
+    """A partial Policy: one field per Policy field, all defaulting to
+    UNSET. Composition per field is DECLARED via metadata -- set-valued
+    fields union, scalars override (later wins). Kept in lockstep with
+    Policy by the parity test in tests/v2/test_policy.py.
+    """
+
+    name_order: tuple[Role, Role, Role] | _Unset = UNSET
+    patronymic_rules: frozenset[PatronymicRule] | _Unset = field(
+        default=UNSET, metadata=_UNION)
+    middle_as_family: bool | _Unset = UNSET
+    nickname_delimiters: frozenset[tuple[str, str]] | _Unset = field(
+        default=UNSET, metadata=_UNION)
+    maiden_delimiters: frozenset[tuple[str, str]] | _Unset = field(
+        default=UNSET, metadata=_UNION)
+    extra_suffix_delimiters: frozenset[str] | _Unset = field(
+        default=UNSET, metadata=_UNION)
+    lenient_comma_suffixes: bool | _Unset = UNSET
+    strip_emoji: bool | _Unset = UNSET
+    strip_bidi: bool | _Unset = UNSET
+
+
+def apply_patch(policy: Policy, patch: PolicyPatch) -> Policy:
+    """Fold a PolicyPatch onto a Policy. Policy.__post_init__ re-runs via
+    dataclasses.replace, so patched values are revalidated for free."""
+    updates: dict[str, object] = {}
+    for f in dataclasses.fields(PolicyPatch):
+        value = getattr(patch, f.name)
+        if value is UNSET:
+            continue
+        if f.metadata.get("compose") == "union":
+            value = getattr(policy, f.name) | value
+        updates[f.name] = value
+    if not updates:
+        return policy
+    return dataclasses.replace(policy, **updates)  # type: ignore[arg-type]

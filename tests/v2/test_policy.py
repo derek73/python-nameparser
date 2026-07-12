@@ -4,7 +4,7 @@ import pytest
 
 from nameparser._policy import (
     FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
-    PatronymicRule, Policy,
+    PatronymicRule, Policy, PolicyPatch, UNSET, apply_patch,
 )
 from nameparser._types import Role
 
@@ -83,3 +83,33 @@ def test_extra_suffix_delimiters_validated_and_coerced():
     p = Policy(extra_suffix_delimiters=["-"])  # type: ignore[arg-type]
     assert p.extra_suffix_delimiters == frozenset({"-"})
     assert isinstance(hash(p), int)
+
+
+def test_policy_patch_mirrors_policy_fields_and_types():
+    policy_fields = {f.name for f in dataclasses.fields(Policy)}
+    patch_fields = {f.name for f in dataclasses.fields(PolicyPatch)}
+    assert policy_fields == patch_fields
+
+
+def test_apply_patch_overrides_scalars_and_unions_sets():
+    base = Policy(patronymic_rules=frozenset({PatronymicRule.EAST_SLAVIC}))
+    patch = PolicyPatch(
+        name_order=FAMILY_FIRST,
+        patronymic_rules=frozenset({PatronymicRule.TURKIC}),
+    )
+    out = apply_patch(base, patch)
+    assert out.name_order == FAMILY_FIRST                      # override
+    assert out.patronymic_rules == frozenset(                   # union
+        {PatronymicRule.EAST_SLAVIC, PatronymicRule.TURKIC})
+    assert out.strip_emoji is True                              # untouched
+
+
+def test_apply_patch_with_empty_patch_returns_same_policy():
+    base = Policy()
+    assert apply_patch(base, PolicyPatch()) is base
+
+
+def test_unset_fields_are_distinguishable_from_defaults():
+    patch = PolicyPatch(strip_emoji=True)  # explicitly set to the default value
+    assert patch.strip_emoji is True
+    assert PolicyPatch().strip_emoji is UNSET
