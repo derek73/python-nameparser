@@ -118,6 +118,19 @@ class Lexicon:
                 deltas.append(f"{name}: {delta}")
         return f"Lexicon(default + {', '.join(deltas)})"
 
+    def __getstate__(self) -> dict[str, object]:
+        # _cap_map is a MappingProxyType, which pickle rejects; ship every
+        # other slot and rebuild the proxy from the canonical tuple on load.
+        return {f.name: getattr(self, f.name)
+                for f in dataclasses.fields(self) if f.name != "_cap_map"}
+
+    def __setstate__(self, state: dict[str, object]) -> None:
+        for name, value in state.items():
+            object.__setattr__(self, name, value)
+        object.__setattr__(
+            self, "_cap_map",
+            MappingProxyType(dict(self.capitalization_exceptions)))
+
     @property
     def capitalization_exceptions_map(self) -> Mapping[str, str]:
         return self._cap_map

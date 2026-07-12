@@ -110,3 +110,18 @@ def test_remove_breaking_subset_invariant_raises():
     lex = Lexicon(particles=frozenset({"van"}), particles_ambiguous=frozenset({"van"}))
     with pytest.raises(ValueError, match="subset"):
         lex.remove(particles={"van"})  # would orphan particles_ambiguous
+
+
+def test_pickle_round_trip_preserves_equality_and_cap_map():
+    # _cap_map holds a MappingProxyType, which pickle rejects; Lexicon
+    # must round-trip anyway because Parser is picklable by construction
+    # (spec: 2026-07-11-v2-core-api-design.md) and a Parser holds a Lexicon.
+    import pickle
+
+    for lex in (Lexicon.default(),
+                Lexicon.empty().add(titles={"Dr."})):
+        loaded = pickle.loads(pickle.dumps(lex))
+        assert loaded == lex
+        assert hash(loaded) == hash(lex)
+        assert (loaded.capitalization_exceptions_map
+                == lex.capitalization_exceptions_map)

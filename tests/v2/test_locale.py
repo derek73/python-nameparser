@@ -44,3 +44,10 @@ def test_locale_validates_component_types():
         Locale(code="ru", lexicon={"titles": set()})  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="PolicyPatch"):
         Locale(code="ru", lexicon=Lexicon.empty(), policy={"name_order": None})  # type: ignore[arg-type]
+
+
+def test_locale_with_lexicon_pickles_round_trip():
+    import pickle
+
+    loc = Locale(code="ru", lexicon=Lexicon.empty().add(titles={"Dr."}))
+    assert pickle.loads(pickle.dumps(loc)) == loc
