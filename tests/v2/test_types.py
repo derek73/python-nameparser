@@ -301,3 +301,26 @@ def test_comparison_key_is_casefolded_canonical_seven_tuple() -> None:
         Token("vega", Span(11, 15), Role.FAMILY),
     ])
     assert upper.comparison_key() == lower.comparison_key()
+
+
+def test_token_rejects_bare_string_and_mapping_tags() -> None:
+    # frozenset("particle") is the set(str) footgun: eight single chars.
+    with pytest.raises(TypeError, match="bare string"):
+        Token("Van", None, Role.GIVEN, tags="particle")  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="mapping"):
+        Token("Van", None, Role.GIVEN, tags={"particle": 1})  # type: ignore[arg-type]
+
+
+def test_token_rejects_non_str_tags() -> None:
+    with pytest.raises(TypeError, match="tags must contain only strings"):
+        Token("Van", None, Role.GIVEN, tags=frozenset({1}))  # type: ignore[arg-type]
+
+
+def test_token_coerces_role_string_and_rejects_unknown() -> None:
+    # mirror Ambiguity.kind: coerce the string form, ValueError for any
+    # failed enum lookup (stdlib EnumType precedent).
+    assert Token("Juan", None, "given").role is Role.GIVEN  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="title, given"):
+        Token("Juan", None, "chief")  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="title, given"):
+        Token("Juan", None, 5)  # type: ignore[arg-type]

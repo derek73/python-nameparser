@@ -10,6 +10,7 @@ contents.
 """
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 from typing import NamedTuple
@@ -53,6 +54,14 @@ class Token:
             )
         if not self.text:
             raise ValueError("Token.text must be a non-empty string")
+        if not isinstance(self.role, Role):
+            try:
+                object.__setattr__(self, "role", Role(self.role))
+            except ValueError:
+                valid = ", ".join(r.value for r in Role)
+                raise ValueError(
+                    f"unknown Role {self.role!r}; valid roles: {valid}"
+                ) from None
         if self.span is not None:
             if not (
                 isinstance(self.span, tuple)
@@ -69,7 +78,25 @@ class Token:
                     f"invalid span ({start}, {end}): need 0 <= start <= end"
                 )
             object.__setattr__(self, "span", Span(start, end))
-        object.__setattr__(self, "tags", frozenset(self.tags))
+        # The same guards _normset applies to Lexicon vocabulary: a bare
+        # string would become its character set, a mapping would silently
+        # contribute only its keys.
+        if isinstance(self.tags, str):
+            raise TypeError(
+                "Token.tags must be an iterable of strings, "
+                "not a bare string"
+            )
+        if isinstance(self.tags, Mapping):
+            raise TypeError(
+                "Token.tags must be an iterable of strings, not a mapping"
+            )
+        tags = frozenset(self.tags)
+        for tag in tags:
+            if not isinstance(tag, str):
+                raise TypeError(
+                    f"Token.tags must contain only strings, got {tag!r}"
+                )
+        object.__setattr__(self, "tags", tags)
 
     def __repr__(self) -> str:
         # Bounded output: a single token's text/span/role/tags, never
