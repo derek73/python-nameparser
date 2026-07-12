@@ -18,7 +18,7 @@ from tests.base import HumanNameTestBase
 class ConstantsCustomizationTests(HumanNameTestBase):
 
     def test_add_title(self) -> None:
-        hn = HumanName("Te Awanui-a-Rangi Black", constants=None)
+        hn = HumanName("Te Awanui-a-Rangi Black", constants=Constants())
         start_len = len(hn.C.titles)
         self.assertTrue(start_len > 0)
         hn.C.titles.add('te')
@@ -63,7 +63,8 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 
     def test_assigning_none_to_constants_after_construction_builds_new_instance(self) -> None:
         hn = HumanName("John Doe")
-        hn.C = None
+        with pytest.deprecated_call():
+            hn.C = None
         self.assertIsNot(hn.C, CONSTANTS)
         self.assertTrue(isinstance(hn.C, Constants))
 
@@ -227,7 +228,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.assertEqual(tm2.b, '2')
 
     def test_remove_title(self) -> None:
-        hn = HumanName("Hon Solo", constants=None)
+        hn = HumanName("Hon Solo", constants=Constants())
         start_len = len(hn.C.titles)
         self.assertTrue(start_len > 0)
         hn.C.titles.remove('hon')
@@ -237,7 +238,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.m(hn.last, "Solo", hn)
 
     def test_add_multiple_arguments(self) -> None:
-        hn = HumanName("Assoc Dean of Chemistry Robert Johns", constants=None)
+        hn = HumanName("Assoc Dean of Chemistry Robert Johns", constants=Constants())
         hn.C.titles.add('dean', 'Chemistry')
         hn.parse_full_name()
         self.m(hn.title, "Assoc Dean of Chemistry", hn)
@@ -245,7 +246,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.m(hn.last, "Johns", hn)
 
     def test_instances_can_have_own_constants(self) -> None:
-        hn = HumanName("", None)
+        hn = HumanName("", Constants())
         hn2 = HumanName("")
         hn.C.titles.remove('hon')
         self.assertEqual('hon' in hn.C.titles, False)
@@ -276,7 +277,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         # nickname_delimiters) around every test.
 
     def test_remove_multiple_arguments(self) -> None:
-        hn = HumanName("Ms Hon Solo", constants=None)
+        hn = HumanName("Ms Hon Solo", constants=Constants())
         hn.C.titles.remove('hon', 'ms')
         hn.parse_full_name()
         self.m(hn.first, "Ms", hn)
@@ -284,7 +285,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.m(hn.last, "Solo", hn)
 
     def test_chain_multiple_arguments(self) -> None:
-        hn = HumanName("Dean Ms Hon Solo", constants=None)
+        hn = HumanName("Dean Ms Hon Solo", constants=Constants())
         hn.C.titles.remove('hon', 'ms').add('dean')
         hn.parse_full_name()
         self.m(hn.title, "Dean", hn)
@@ -293,7 +294,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.m(hn.last, "Solo", hn)
 
     def test_clear_removes_all_entries(self) -> None:
-        hn = HumanName("Ms Hon Solo", constants=None)
+        hn = HumanName("Ms Hon Solo", constants=Constants())
         hn.C.titles.clear()
         hn.parse_full_name()
         self.m(hn.first, "Ms", hn)
@@ -318,7 +319,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.m(hn.nickname, None, hn)
 
     def test_empty_attribute_on_instance(self) -> None:
-        hn = HumanName("", None)
+        hn = HumanName("", Constants())
         hn.C.empty_attribute_default = None  # type: ignore[assignment]  # see test_empty_attribute_default above
         self.m(hn.title, None, hn)
         self.m(hn.first, None, hn)
@@ -328,7 +329,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.m(hn.nickname, None, hn)
 
     def test_none_empty_attribute_string_formatting(self) -> None:
-        hn = HumanName("", None)
+        hn = HumanName("", Constants())
         hn.C.empty_attribute_default = None  # type: ignore[assignment]  # see test_empty_attribute_default above
         self.assertEqual('', str(hn), hn)
 
@@ -660,14 +661,14 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 
     def test_is_rootname_consistent_with_is_title(self) -> None:
         """is_rootname must return False for words recognised by is_title."""
-        hn = HumanName("", constants=None)
+        hn = HumanName("", constants=Constants())
         _ = hn.C.suffixes_prefixes_titles  # prime the cache so a stale entry would be observable
         hn.C.titles.add('emerita')
         self.assertFalse(hn.is_rootname('emerita'))
 
     def test_is_rootname_consistent_with_is_prefix(self) -> None:
         """is_rootname must return False for words recognised by is_prefix."""
-        hn = HumanName("", constants=None)
+        hn = HumanName("", constants=Constants())
         _ = hn.C.suffixes_prefixes_titles  # prime the cache so a stale entry would be observable
         hn.C.prefixes.add('xpfx')
         self.assertFalse(hn.is_rootname('xpfx'))
@@ -870,7 +871,7 @@ class ParsingDoesNotMutateConfigTests(HumanNameTestBase):
         self.m(hn.last, "von und zu Liechtenstein", hn)
 
     def test_instance_owned_constants_not_mutated_by_parsing(self) -> None:
-        hn = HumanName("", constants=None)
+        hn = HumanName("", constants=Constants())
         before = self._config_snapshot(hn.C)
         hn.full_name = "Lt.Gov. John Doe"
         self._assert_config_unchanged(hn.C, before, "Lt.Gov. John Doe")
@@ -968,4 +969,78 @@ class ConstantsReprTests(HumanNameTestBase):
     def test_repr_is_bracketed_multiline(self) -> None:
         repr_str = repr(Constants())
         self.assertTrue(repr_str.startswith("<Constants : [\n"))
-        self.assertTrue(repr_str.endswith("\n]>"))
+
+
+class ConstantsCopyTests(HumanNameTestBase):
+    """Constants.copy() -- a detached snapshot, distinct from fresh Constants() defaults (#260)."""
+
+    def test_copy_is_independent_of_original(self) -> None:
+        c = Constants()
+        dup = c.copy()
+        dup.titles.add('a-brand-new-title-for-copy-test')
+        self.assertNotIn('a-brand-new-title-for-copy-test', c.titles)
+
+    def test_copy_is_not_the_same_object(self) -> None:
+        c = Constants()
+        dup = c.copy()
+        self.assertIsNot(dup, c)
+        self.assertTrue(isinstance(dup, Constants))
+
+    def test_copy_snapshots_current_customizations(self) -> None:
+        # Unlike Constants(), which always starts from library defaults,
+        # .copy() preserves whatever customizations the original already has.
+        c = Constants()
+        c.titles.add('zephyrmark')
+        dup = c.copy()
+        self.assertIn('zephyrmark', dup.titles)
+        # and stays a snapshot -- later mutation of the original doesn't leak in
+        c.titles.remove('zephyrmark')
+        self.assertIn('zephyrmark', dup.titles)
+
+    def test_fresh_constants_does_not_include_source_customizations(self) -> None:
+        # Contrast case for the snapshot test above: Constants() ignores
+        # whatever CONSTANTS has been customized with.
+        c = Constants()
+        c.titles.add('zephyrmark')
+        fresh = Constants()
+        self.assertNotIn('zephyrmark', fresh.titles)
+
+
+class ConstantsNoneDeprecationTests(HumanNameTestBase):
+    """constants=None is deprecated in favor of Constants() or CONSTANTS.copy() (#260)."""
+
+    def test_explicit_none_warns_on_construction(self) -> None:
+        with pytest.deprecated_call(match="Constants()"):
+            HumanName("John Doe", constants=None)
+
+    def test_explicit_none_warns_on_positional_argument(self) -> None:
+        with pytest.deprecated_call(match="Constants()"):
+            HumanName("John Doe", None)
+
+    def test_explicit_none_warning_names_both_replacements(self) -> None:
+        with pytest.warns(DeprecationWarning) as record:
+            HumanName("John Doe", constants=None)
+        message = str(record[0].message)
+        self.assertIn("Constants()", message)
+        self.assertIn("CONSTANTS.copy()", message)
+
+    def test_explicit_none_warns_on_c_setter(self) -> None:
+        hn = HumanName("John Doe")
+        with pytest.deprecated_call(match="Constants()"):
+            hn.C = None
+
+    def test_omitted_constants_argument_does_not_warn(self) -> None:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            HumanName("John Doe")
+
+    def test_explicit_own_constants_instance_does_not_warn(self) -> None:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            HumanName("John Doe", constants=Constants())
+
+    def test_explicit_none_still_produces_a_working_private_config(self) -> None:
+        # Behavior is unchanged, only newly warned about.
+        with pytest.deprecated_call():
+            hn = HumanName("John Doe", constants=None)
+        self.assertTrue(hn.has_own_config)

@@ -79,7 +79,8 @@ To recognize an *additional* delimiter, add a compiled pattern to
 
     >>> import re
     >>> from nameparser import HumanName
-    >>> hn = HumanName("Benjamin {Ben} Franklin", constants=None)
+    >>> from nameparser.config import Constants
+    >>> hn = HumanName("Benjamin {Ben} Franklin", constants=Constants())
     >>> hn.nickname
     ''
     >>> hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}', re.U)
@@ -455,23 +456,37 @@ e.g. parsing names on multiple threads.
     ]>
 
 
-If you'd prefer new instances to have their own config values, one shortcut is to pass
-``None`` as the second argument (or ``constants`` keyword argument) when
-instantiating ``HumanName``. Each instance always has a ``C`` attribute, but if
-you didn't pass ``None`` (or your own :py:class:`~nameparser.config.Constants`
-instance) to the ``constants`` argument then it's a reference to the
-module-level config values with the behavior described above.
+If you'd prefer new instances to have their own config values, pass your own
+:py:class:`~nameparser.config.Constants` instance as the ``constants``
+argument when instantiating ``HumanName``. There are three spellings,
+depending on which config you want the new instance to start from:
+
+.. code-block::
+
+    HumanName(name)                              # shared CONSTANTS (unchanged)
+    HumanName(name, constants=Constants())       # private, fresh library defaults
+    HumanName(name, constants=CONSTANTS.copy())  # private, snapshot of the current shared config
+
+The middle and last forms both give the instance an independent config that
+further changes to ``CONSTANTS`` won't reach, but they answer different
+questions: ``Constants()`` ignores any customization already made to
+``CONSTANTS`` and starts clean, while ``CONSTANTS.copy()`` carries those
+customizations over into the private copy. Each instance always has a ``C``
+attribute, but if you didn't pass one of the private forms to the
+``constants`` argument then it's a reference to the module-level config
+values with the behavior described above.
 
 .. doctest:: module config
     :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
     >>> from nameparser import HumanName
+    >>> from nameparser.config import Constants
     >>> instance = HumanName("Dean Robert Johns")
     >>> instance.has_own_config
     False
     >>> instance.C.titles.add('dean')
     SetManager({'10th', ..., 'zoologist'})
-    >>> other_instance = HumanName("Dean Robert Johns", None) # <-- pass None for per-instance config
+    >>> other_instance = HumanName("Dean Robert Johns", Constants()) # <-- fresh, private config
     >>> other_instance
     <HumanName : [
         title: ''
@@ -484,6 +499,14 @@ module-level config values with the behavior described above.
     ]>
     >>> other_instance.has_own_config
     True
+
+.. deprecated:: 1.4.0
+    Passing ``None`` as the ``constants`` argument also builds a fresh
+    ``Constants()``, but is deprecated: ``None`` conventionally means "use
+    the default," which here is the *shared* ``CONSTANTS`` -- the opposite of
+    what passing ``None`` actually does. It emits a ``DeprecationWarning``
+    and will raise ``TypeError`` in 2.0 (issue #260); use one of the two
+    explicit forms above instead.
 
 Don't Remove Emojis
 ~~~~~~~~~~~~~~~~~~~

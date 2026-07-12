@@ -12,20 +12,29 @@ configuration by importing this instance and changing it.
     >>> CONSTANTS.titles.remove('hon').add('chemistry','dean') # doctest: +SKIP
 
 You can also adjust the configuration of individual instances by passing
-``None`` as the second argument upon instantiation.
+your own :py:class:`Constants` instance as the second argument upon
+instantiation -- ``Constants()`` for fresh library defaults, or
+``CONSTANTS.copy()`` for a private snapshot of the current module config.
 
 ::
 
     >>> from nameparser import HumanName
-    >>> hn = HumanName("Dean Robert Johns", None)
+    >>> from nameparser.config import Constants
+    >>> hn = HumanName("Dean Robert Johns", Constants())
     >>> hn.C.titles.add('dean') # doctest: +SKIP
     >>> hn.parse_full_name() # need to run this again after config changes
 
-**Potential Gotcha**: If you do not pass ``None`` (or your own
-:py:class:`Constants` instance) as the second argument, ``hn.C`` will be a
-reference to the module config, possibly yielding unexpected results. See
-`Customizing the Parser <customize.html>`_.
+**Potential Gotcha**: If you do not pass your own :py:class:`Constants`
+instance as the second argument, ``hn.C`` will be a reference to the module
+config, possibly yielding unexpected results. See `Customizing the Parser
+<customize.html>`_.
+
+.. deprecated:: 1.4.0
+    Passing ``None`` as the second argument also builds a fresh
+    ``Constants()``, but is deprecated in favor of the explicit spellings
+    above; it will raise ``TypeError`` in 2.0 (issue #260).
 """
+import copy
 import re
 import sys
 import warnings
@@ -327,7 +336,7 @@ def _is_dunder(attr: str) -> bool:
 # validate and normalize each one exactly once at import. Constants()
 # copies these via _normalized_elements' SetManager fast path instead of
 # re-checking ~1,400 elements per construction — a cost that otherwise
-# repeats on the per-instance-config path, HumanName(constants=None).
+# repeats on the per-instance-config path, HumanName(constants=Constants()).
 #
 # This snapshot is taken once, at import time: mutating a raw constant
 # (e.g. `TITLES.add('x')`) after import is *not* picked up by Constants()
@@ -805,6 +814,18 @@ class Constants:
             if (value := getattr(self, name)) != getattr(type(self), name)
         ]
         return "<Constants : [\n" + "\n".join(lines) + "\n]>"
+
+    def copy(self) -> 'Constants':
+        """
+        Return a detached deep copy of this ``Constants`` instance, preserving
+        its current customizations -- unlike :py:class:`Constants`'s own
+        constructor, which always starts from library defaults. Useful for
+        snapshotting the shared module-level ``CONSTANTS`` (including
+        whatever it's been customized with) into a private instance, e.g.
+        ``CONSTANTS.copy()``. Relies on the same ``__getstate__``/``__setstate__``
+        pair pickling uses, so it's as cheap and correct as pickle round-tripping.
+        """
+        return copy.deepcopy(self)
 
     def __setstate__(self, state: Mapping[str, Any]) -> None:
         # Restore each saved attribute directly. The previous implementation
