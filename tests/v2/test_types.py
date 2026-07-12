@@ -1,6 +1,6 @@
 import pytest
 
-from nameparser._types import Role, Span, Token
+from nameparser._types import Ambiguity, AmbiguityKind, Role, Span, Token
 
 
 def test_role_declaration_order_is_canonical_field_order():
@@ -54,9 +54,6 @@ def test_token_is_frozen_and_hashable():
     with pytest.raises(AttributeError):
         t.text = "X"  # type: ignore[misc]
     assert hash(t) == hash(Token("Juan", (0, 4), Role.GIVEN))
-
-
-from nameparser._types import Ambiguity, AmbiguityKind
 
 
 def test_ambiguity_kind_members_are_their_string_values():
