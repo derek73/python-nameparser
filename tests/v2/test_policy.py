@@ -134,3 +134,28 @@ def test_unset_fields_are_distinguishable_from_defaults() -> None:
     patch = PolicyPatch(strip_emoji=True)  # explicitly set to the default value
     assert patch.strip_emoji is True
     assert PolicyPatch().strip_emoji is UNSET
+
+
+def test_policy_rejects_non_bool_flags() -> None:
+    # "no" and "false" are truthy: storing them would silently invert
+    # the caller's intent downstream.
+    for flag in ("middle_as_family", "lenient_comma_suffixes",
+                 "strip_emoji", "strip_bidi"):
+        with pytest.raises(TypeError, match="must be a bool"):
+            Policy(**{flag: "no"})  # type: ignore[arg-type]
+
+
+def test_patronymic_rules_generator_errors_propagate_untouched() -> None:
+    # A ValueError raised inside the caller's own generator must not be
+    # rewritten as "unknown patronymic rule" with the traceback erased.
+    def bad_loader():  # noqa: ANN202
+        yield "east-slavic"
+        raise ValueError("config line 7: bad int")
+
+    with pytest.raises(ValueError, match="config line 7"):
+        Policy(patronymic_rules=bad_loader())  # type: ignore[arg-type]
+
+
+def test_unknown_patronymic_rule_error_names_the_offender() -> None:
+    with pytest.raises(ValueError, match="klingon"):
+        Policy(patronymic_rules=iter(["east-slavic", "klingon"]))  # type: ignore[arg-type]

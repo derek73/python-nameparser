@@ -59,17 +59,22 @@ class Policy:
                 f"patronymic_rules must be an iterable of rule names, "
                 f"not a bare string: {self.patronymic_rules!r}"
             )
-        # A non-iterable raises its natural TypeError from the frozenset
-        # call; only failed enum lookups get the enriched message.
-        try:
-            rules = frozenset(PatronymicRule(r) for r in self.patronymic_rules)
-        except ValueError:
-            valid = ", ".join(r.value for r in PatronymicRule)
-            raise ValueError(
-                f"unknown patronymic rule in {self.patronymic_rules!r}; "
-                f"valid rules: {valid}"
-            ) from None
-        object.__setattr__(self, "patronymic_rules", rules)
+        # Materialize before converting (the _normset pattern): a
+        # non-iterable raises its natural TypeError here, and an exception
+        # raised inside a caller's generator propagates untouched instead
+        # of being rewritten as an unknown-rule error. Only the enum
+        # lookup itself gets the enriched message, naming the offender.
+        items = tuple(self.patronymic_rules)
+        rules = set()
+        for r in items:
+            try:
+                rules.add(PatronymicRule(r))
+            except ValueError:
+                valid = ", ".join(v.value for v in PatronymicRule)
+                raise ValueError(
+                    f"unknown patronymic rule {r!r}; valid rules: {valid}"
+                ) from None
+        object.__setattr__(self, "patronymic_rules", frozenset(rules))
         for pairs_name in ("nickname_delimiters", "maiden_delimiters"):
             pairs = tuple(getattr(self, pairs_name))
             for pair in pairs:
@@ -104,6 +109,16 @@ class Policy:
         object.__setattr__(
             self, "extra_suffix_delimiters", frozenset(delimiters)
         )
+        # Truthy strings ("no", "false") would silently invert the
+        # caller's intent downstream; bools are the one field kind the
+        # coercing checks above can't cover.
+        for flag in ("middle_as_family", "lenient_comma_suffixes",
+                     "strip_emoji", "strip_bidi"):
+            value = getattr(self, flag)
+            if not isinstance(value, bool):
+                raise TypeError(
+                    f"{flag} must be a bool, got {value!r}"
+                )
 
     def __repr__(self) -> str:
         # Bounded: only fields that deviate from the default are shown
