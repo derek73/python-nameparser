@@ -1,3 +1,5 @@
+from collections.abc import Iterable
+
 import pytest
 
 from nameparser._types import (
@@ -5,13 +7,13 @@ from nameparser._types import (
 )
 
 
-def test_role_declaration_order_is_canonical_field_order():
+def test_role_declaration_order_is_canonical_field_order() -> None:
     assert [r.value for r in Role] == [
         "title", "given", "middle", "family", "suffix", "nickname", "maiden",
     ]
 
 
-def test_token_construction_and_span_coercion():
+def test_token_construction_and_span_coercion() -> None:
     t = Token("Juan", (0, 4), Role.GIVEN)  # type: ignore[arg-type]
     assert t.span == Span(0, 4)
     assert isinstance(t.span, Span)
@@ -19,78 +21,79 @@ def test_token_construction_and_span_coercion():
     assert t.tags == frozenset()
 
 
-def test_synthetic_token_has_no_span():
+def test_synthetic_token_has_no_span() -> None:
     t = Token("Jane", None, Role.GIVEN)
     assert t.span is None
 
 
-def test_token_rejects_empty_text():
+def test_token_rejects_empty_text() -> None:
     with pytest.raises(ValueError, match="non-empty"):
         Token("", Span(0, 0), Role.GIVEN)
 
 
-def test_token_rejects_inverted_span():
+def test_token_rejects_inverted_span() -> None:
     with pytest.raises(ValueError, match="start <= end"):
         Token("x", Span(5, 2), Role.GIVEN)
 
 
-def test_token_rejects_negative_span():
+def test_token_rejects_negative_span() -> None:
     with pytest.raises(ValueError, match="start <= end"):
         Token("x", Span(-1, 1), Role.GIVEN)
 
 
-def test_token_rejects_malformed_span_shapes():
+def test_token_rejects_malformed_span_shapes() -> None:
     with pytest.raises(ValueError, match="expected a \\(start, end\\) pair"):
         Token("x", (0, 4, 9), Role.GIVEN)  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="expected a \\(start, end\\) pair"):
         Token("x", 5, Role.GIVEN)  # type: ignore[arg-type]
 
 
-def test_token_rejects_non_string_text():
+def test_token_rejects_non_string_text() -> None:
     with pytest.raises(ValueError, match="got None"):
         Token(None, None, Role.GIVEN)  # type: ignore[arg-type]
 
 
-def test_token_is_frozen_and_hashable():
+def test_token_is_frozen_and_hashable() -> None:
     t = Token("Juan", Span(0, 4), Role.GIVEN)
     with pytest.raises(AttributeError):
         t.text = "X"  # type: ignore[misc]
     assert hash(t) == hash(Token("Juan", Span(0, 4), Role.GIVEN))
 
 
-def test_ambiguity_kind_members_are_their_string_values():
+def test_ambiguity_kind_members_are_their_string_values() -> None:
     assert AmbiguityKind.PARTICLE_OR_GIVEN == "particle-or-given"
     assert AmbiguityKind("order") is AmbiguityKind.ORDER
 
 
-def test_ambiguity_construction_coerces_kind_string():
+def test_ambiguity_construction_coerces_kind_string() -> None:
     t = Token("Van", Span(0, 3), Role.GIVEN, frozenset({"particle"}))
     a = Ambiguity("particle-or-given", "leading 'van' may be a particle", (t,))  # type: ignore[arg-type]
     assert a.kind is AmbiguityKind.PARTICLE_OR_GIVEN
     assert a.tokens == (t,)
 
 
-def test_ambiguity_rejects_unknown_kind():
+def test_ambiguity_rejects_unknown_kind() -> None:
     with pytest.raises(ValueError, match="particle-or-given"):
         Ambiguity("no-such-kind", "detail", ())  # type: ignore[arg-type]
 
 
-def test_ambiguity_rejects_non_token_elements():
+def test_ambiguity_rejects_non_token_elements() -> None:
     with pytest.raises(ValueError, match="only Token instances"):
         Ambiguity("order", "detail", ("not-a-token",))  # type: ignore[arg-type]
 
 
-def test_ambiguity_rejects_empty_detail():
+def test_ambiguity_rejects_empty_detail() -> None:
     with pytest.raises(ValueError, match="non-empty string"):
         Ambiguity(AmbiguityKind.ORDER, "", ())
 
 
-def _pn(original, tokens, ambiguities=()):
+def _pn(original: str, tokens: Iterable[Token],
+        ambiguities: Iterable[Ambiguity] = ()) -> ParsedName:
     return ParsedName(original=original, tokens=tuple(tokens),
                       ambiguities=tuple(ambiguities))
 
 
-def test_parsedname_accepts_valid_spans_and_is_truthy():
+def test_parsedname_accepts_valid_spans_and_is_truthy() -> None:
     pn = _pn("John Smith", [
         Token("John", Span(0, 4), Role.GIVEN),
         Token("Smith", Span(5, 10), Role.FAMILY),
@@ -98,17 +101,17 @@ def test_parsedname_accepts_valid_spans_and_is_truthy():
     assert bool(pn) is True
 
 
-def test_empty_parse_is_falsy():
+def test_empty_parse_is_falsy() -> None:
     assert bool(_pn("", [])) is False
     assert bool(_pn("   ", [])) is False
 
 
-def test_parsedname_rejects_out_of_bounds_span():
+def test_parsedname_rejects_out_of_bounds_span() -> None:
     with pytest.raises(ValueError, match="out of bounds"):
         _pn("John", [Token("Johnny", Span(0, 6), Role.GIVEN)])
 
 
-def test_parsedname_rejects_overlapping_spans():
+def test_parsedname_rejects_overlapping_spans() -> None:
     with pytest.raises(ValueError, match="ascending"):
         _pn("John Smith", [
             Token("John", Span(0, 4), Role.GIVEN),
@@ -116,7 +119,7 @@ def test_parsedname_rejects_overlapping_spans():
         ])
 
 
-def test_parsedname_rejects_descending_spans():
+def test_parsedname_rejects_descending_spans() -> None:
     with pytest.raises(ValueError, match="ascending"):
         _pn("John Smith", [
             Token("Smith", Span(5, 10), Role.FAMILY),
@@ -124,7 +127,7 @@ def test_parsedname_rejects_descending_spans():
         ])
 
 
-def test_synthetic_tokens_skip_span_checks():
+def test_synthetic_tokens_skip_span_checks() -> None:
     pn = _pn("John Smith", [
         Token("John", Span(0, 4), Role.GIVEN),
         Token("Qux", None, Role.MIDDLE),
@@ -133,7 +136,7 @@ def test_synthetic_tokens_skip_span_checks():
     assert len(pn.tokens) == 3
 
 
-def test_ambiguity_tokens_must_be_subset_of_parse_tokens():
+def test_ambiguity_tokens_must_be_subset_of_parse_tokens() -> None:
     inside = Token("Van", Span(0, 3), Role.GIVEN)
     outside = Token("Zzz", None, Role.GIVEN)
     with pytest.raises(ValueError, match="subset"):
@@ -142,7 +145,7 @@ def test_ambiguity_tokens_must_be_subset_of_parse_tokens():
             [Ambiguity(AmbiguityKind.PARTICLE_OR_GIVEN, "d", (outside,))])
 
 
-def test_parsedname_equality_is_strict_structural():
+def test_parsedname_equality_is_strict_structural() -> None:
     a = _pn("John", [Token("John", Span(0, 4), Role.GIVEN)])
     b = _pn("John", [Token("John", Span(0, 4), Role.GIVEN)])
     c = _pn("John ", [Token("John", Span(0, 4), Role.GIVEN)])
@@ -150,19 +153,19 @@ def test_parsedname_equality_is_strict_structural():
     assert a != c  # different original: not interchangeable
 
 
-def test_parsedname_rejects_non_str_original():
+def test_parsedname_rejects_non_str_original() -> None:
     with pytest.raises(ValueError, match="must be a str"):
         _pn(None, [])  # type: ignore[arg-type]
 
 
-def test_parsedname_rejects_non_token_and_non_ambiguity_elements():
+def test_parsedname_rejects_non_token_and_non_ambiguity_elements() -> None:
     with pytest.raises(ValueError, match="only Token instances"):
         _pn("x", ["not-a-token"])  # type: ignore[list-item]
     with pytest.raises(ValueError, match="only Ambiguity instances"):
         _pn("John", [Token("John", Span(0, 4), Role.GIVEN)], ["nope"])  # type: ignore[list-item]
 
 
-def _delavega():
+def _delavega() -> ParsedName:
     # "Dr. Juan de la Vega III" -- hand-built, spans verified by hand
     #  0123456789012345678901234
     return _pn("Dr. Juan de la Vega III", [
@@ -175,7 +178,7 @@ def _delavega():
     ])
 
 
-def test_string_properties_join_by_role():
+def test_string_properties_join_by_role() -> None:
     pn = _delavega()
     assert pn.title == "Dr."
     assert pn.given == "Juan"
@@ -186,7 +189,7 @@ def test_string_properties_join_by_role():
     assert pn.maiden == ""
 
 
-def test_suffix_joins_with_comma_space():
+def test_suffix_joins_with_comma_space() -> None:
     pn = _pn("John Smith PhD MD", [
         Token("John", Span(0, 4), Role.GIVEN),
         Token("Smith", Span(5, 10), Role.FAMILY),
@@ -196,7 +199,7 @@ def test_suffix_joins_with_comma_space():
     assert pn.suffix == "PhD, MD"
 
 
-def test_derived_views_filter_on_stable_particle_tag():
+def test_derived_views_filter_on_stable_particle_tag() -> None:
     # Pin the hard-coded "particle" string in _text_for to the published
     # contract until Plan 3's tag-emission contract tests land.
     assert "particle" in STABLE_TAGS
@@ -207,13 +210,13 @@ def test_derived_views_filter_on_stable_particle_tag():
     assert pn.given_names == "Juan"           # given + middle
 
 
-def test_tokens_for_preserves_order():
+def test_tokens_for_preserves_order() -> None:
     pn = _delavega()
     assert [t.text for t in pn.tokens_for(Role.FAMILY)] == ["de", "la", "Vega"]
     assert pn.tokens_for(Role.NICKNAME) == ()
 
 
-def test_as_dict_canonical_order_and_empty_filtering():
+def test_as_dict_canonical_order_and_empty_filtering() -> None:
     pn = _delavega()
     d = pn.as_dict()
     assert list(d) == ["title", "given", "middle", "family",
@@ -223,7 +226,7 @@ def test_as_dict_canonical_order_and_empty_filtering():
     assert list(d2) == ["title", "given", "family", "suffix"]
 
 
-def test_replace_swaps_field_with_synthetic_tokens_in_place():
+def test_replace_swaps_field_with_synthetic_tokens_in_place() -> None:
     pn = _delavega()
     pn2 = pn.replace(given="Jean Paul")
     assert pn2.given == "Jean Paul"
@@ -235,7 +238,7 @@ def test_replace_swaps_field_with_synthetic_tokens_in_place():
     assert [t.role for t in pn2.tokens][:3] == [Role.TITLE, Role.GIVEN, Role.GIVEN]
 
 
-def test_replace_adds_missing_field_at_end():
+def test_replace_adds_missing_field_at_end() -> None:
     pn = _pn("John Smith", [
         Token("John", Span(0, 4), Role.GIVEN),
         Token("Smith", Span(5, 10), Role.FAMILY),
@@ -245,17 +248,17 @@ def test_replace_adds_missing_field_at_end():
     assert pn2.tokens[-1].role is Role.SUFFIX
 
 
-def test_replace_with_empty_string_clears_field():
+def test_replace_with_empty_string_clears_field() -> None:
     pn = _delavega()
     assert pn.replace(title="").title == ""
 
 
-def test_replace_rejects_unknown_field():
+def test_replace_rejects_unknown_field() -> None:
     with pytest.raises(TypeError, match="given"):
         _delavega().replace(firstname="X")
 
 
-def test_replace_drops_ambiguities_referencing_removed_tokens():
+def test_replace_drops_ambiguities_referencing_removed_tokens() -> None:
     van = Token("Van", Span(0, 3), Role.GIVEN)
     pn = _pn("Van Johnson",
              [van, Token("Johnson", Span(4, 11), Role.FAMILY)],
@@ -264,18 +267,18 @@ def test_replace_drops_ambiguities_referencing_removed_tokens():
     assert pn.replace(family="Smith").ambiguities != ()
 
 
-def test_replace_rejects_non_str_value():
+def test_replace_rejects_non_str_value() -> None:
     with pytest.raises(TypeError, match="must be a str"):
         _delavega().replace(given=None)  # type: ignore[arg-type]
 
 
-def test_replace_appends_missing_roles_in_canonical_order():
+def test_replace_appends_missing_roles_in_canonical_order() -> None:
     pn = _pn("John", [Token("John", Span(0, 4), Role.GIVEN)])
     pn2 = pn.replace(maiden="X", suffix="Y")
     assert [t.role for t in pn2.tokens] == [Role.GIVEN, Role.SUFFIX, Role.MAIDEN]
 
 
-def test_comparison_key_is_casefolded_canonical_seven_tuple():
+def test_comparison_key_is_casefolded_canonical_seven_tuple() -> None:
     pn = _delavega()
     assert pn.comparison_key() == (
         "dr.", "juan", "", "de la vega", "iii", "", "",
