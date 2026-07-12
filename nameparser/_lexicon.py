@@ -38,6 +38,14 @@ def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
             f"Lexicon.{field_name} must be an iterable of strings, "
             f"not a bare string"
         )
+    # A Mapping would silently contribute only its keys; a dict here
+    # almost always means the caller confused this field with
+    # capitalization_exceptions.
+    if isinstance(entries, Mapping):
+        raise ValueError(
+            f"Lexicon.{field_name} must be an iterable of strings, not a "
+            f"mapping (only capitalization_exceptions holds key->value pairs)"
+        )
     items = tuple(entries)  # materialize once; entries may be a generator
     for w in items:
         if not isinstance(w, str):

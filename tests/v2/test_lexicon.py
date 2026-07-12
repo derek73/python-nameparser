@@ -125,3 +125,13 @@ def test_pickle_round_trip_preserves_equality_and_cap_map() -> None:
         assert hash(loaded) == hash(lex)
         assert (loaded.capitalization_exceptions_map
                 == lex.capitalization_exceptions_map)
+
+
+def test_lexicon_rejects_mapping_for_plain_vocab_field() -> None:
+    # A dict here almost always means the caller confused the field with
+    # capitalization_exceptions; silently keeping just the keys would be
+    # the lone quiet coercion on an otherwise fail-loud surface.
+    with pytest.raises(ValueError, match="mapping"):
+        Lexicon(titles={"Dr.": "Doctor"})  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="mapping"):
+        Lexicon.empty().add(titles={"Dr.": "Doctor"})
