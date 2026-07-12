@@ -162,3 +162,77 @@ class ParsedName:
 
     def __bool__(self) -> bool:
         return bool(self.tokens)
+
+    # -- string views (canonical order = Role declaration order) --------
+
+    def _text_for(self, *roles: Role, tag: str | None = None,
+                  without_tag: str | None = None) -> str:
+        joiner = ", " if roles == (Role.SUFFIX,) else " "
+        parts = []
+        for tok in self.tokens:
+            if tok.role not in roles:
+                continue
+            if tag is not None and tag not in tok.tags:
+                continue
+            if without_tag is not None and without_tag in tok.tags:
+                continue
+            parts.append(tok.text)
+        return joiner.join(parts)
+
+    @property
+    def title(self) -> str:
+        return self._text_for(Role.TITLE)
+
+    @property
+    def given(self) -> str:
+        return self._text_for(Role.GIVEN)
+
+    @property
+    def middle(self) -> str:
+        return self._text_for(Role.MIDDLE)
+
+    @property
+    def family(self) -> str:
+        return self._text_for(Role.FAMILY)
+
+    @property
+    def suffix(self) -> str:
+        return self._text_for(Role.SUFFIX)
+
+    @property
+    def nickname(self) -> str:
+        return self._text_for(Role.NICKNAME)
+
+    @property
+    def maiden(self) -> str:
+        return self._text_for(Role.MAIDEN)
+
+    # -- derived views (filters over roles + STABLE tags only) ----------
+
+    @property
+    def family_particles(self) -> str:
+        return self._text_for(Role.FAMILY, tag="particle")
+
+    @property
+    def family_base(self) -> str:
+        return self._text_for(Role.FAMILY, without_tag="particle")
+
+    @property
+    def surnames(self) -> str:
+        return self._text_for(Role.MIDDLE, Role.FAMILY)
+
+    @property
+    def given_names(self) -> str:
+        return self._text_for(Role.GIVEN, Role.MIDDLE)
+
+    # -- structured access ----------------------------------------------
+
+    def tokens_for(self, role: Role) -> tuple[Token, ...]:
+        return tuple(t for t in self.tokens if t.role is role)
+
+    def as_dict(self, include_empty: bool = True) -> dict[str, str]:
+        # _text_for handles the suffix ", "-join (single-role SUFFIX call)
+        d = {role.value: self._text_for(role) for role in Role}
+        if not include_empty:
+            d = {k: v for k, v in d.items() if v}
+        return d

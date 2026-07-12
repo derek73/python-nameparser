@@ -158,3 +158,61 @@ def test_parsedname_rejects_non_token_and_non_ambiguity_elements():
         _pn("x", ["not-a-token"])  # type: ignore[list-item]
     with pytest.raises(ValueError, match="only Ambiguity instances"):
         _pn("John", [Token("John", (0, 4), Role.GIVEN)], ["nope"])  # type: ignore[list-item]
+
+
+def _delavega():
+    # "Dr. Juan de la Vega III" -- hand-built, spans verified by hand
+    #  0123456789012345678901234
+    return _pn("Dr. Juan de la Vega III", [
+        Token("Dr.", (0, 3), Role.TITLE),
+        Token("Juan", (4, 8), Role.GIVEN),
+        Token("de", (9, 11), Role.FAMILY, frozenset({"particle"})),
+        Token("la", (12, 14), Role.FAMILY, frozenset({"particle"})),
+        Token("Vega", (15, 19), Role.FAMILY),
+        Token("III", (20, 23), Role.SUFFIX),
+    ])
+
+
+def test_string_properties_join_by_role():
+    pn = _delavega()
+    assert pn.title == "Dr."
+    assert pn.given == "Juan"
+    assert pn.middle == ""
+    assert pn.family == "de la Vega"
+    assert pn.suffix == "III"
+    assert pn.nickname == ""
+    assert pn.maiden == ""
+
+
+def test_suffix_joins_with_comma_space():
+    pn = _pn("John Smith PhD MD", [
+        Token("John", (0, 4), Role.GIVEN),
+        Token("Smith", (5, 10), Role.FAMILY),
+        Token("PhD", (11, 14), Role.SUFFIX),
+        Token("MD", (15, 17), Role.SUFFIX),
+    ])
+    assert pn.suffix == "PhD, MD"
+
+
+def test_derived_views_filter_on_stable_particle_tag():
+    pn = _delavega()
+    assert pn.family_particles == "de la"
+    assert pn.family_base == "Vega"
+    assert pn.surnames == "de la Vega"       # middle + family
+    assert pn.given_names == "Juan"           # given + middle
+
+
+def test_tokens_for_preserves_order():
+    pn = _delavega()
+    assert [t.text for t in pn.tokens_for(Role.FAMILY)] == ["de", "la", "Vega"]
+    assert pn.tokens_for(Role.NICKNAME) == ()
+
+
+def test_as_dict_canonical_order_and_empty_filtering():
+    pn = _delavega()
+    d = pn.as_dict()
+    assert list(d) == ["title", "given", "middle", "family",
+                       "suffix", "nickname", "maiden"]
+    assert d["family"] == "de la Vega" and d["middle"] == ""
+    d2 = pn.as_dict(include_empty=False)
+    assert list(d2) == ["title", "given", "family", "suffix"]
