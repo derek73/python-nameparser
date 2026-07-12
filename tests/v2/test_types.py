@@ -216,3 +216,44 @@ def test_as_dict_canonical_order_and_empty_filtering():
     assert d["family"] == "de la Vega" and d["middle"] == ""
     d2 = pn.as_dict(include_empty=False)
     assert list(d2) == ["title", "given", "family", "suffix"]
+
+
+def test_replace_swaps_field_with_synthetic_tokens_in_place():
+    pn = _delavega()
+    pn2 = pn.replace(given="Jean Paul")
+    assert pn2.given == "Jean Paul"
+    assert pn2.family == "de la Vega"           # untouched
+    assert pn2.original == pn.original           # provenance unchanged
+    assert all(t.span is None for t in pn2.tokens_for(Role.GIVEN))
+    assert pn.given == "Juan"                    # source object unchanged
+    # positional: synthetic given tokens sit where the old ones were
+    assert [t.role for t in pn2.tokens][:3] == [Role.TITLE, Role.GIVEN, Role.GIVEN]
+
+
+def test_replace_adds_missing_field_at_end():
+    pn = _pn("John Smith", [
+        Token("John", (0, 4), Role.GIVEN),
+        Token("Smith", (5, 10), Role.FAMILY),
+    ])
+    pn2 = pn.replace(suffix="Jr")
+    assert pn2.suffix == "Jr"
+    assert pn2.tokens[-1].role is Role.SUFFIX
+
+
+def test_replace_with_empty_string_clears_field():
+    pn = _delavega()
+    assert pn.replace(title="").title == ""
+
+
+def test_replace_rejects_unknown_field():
+    with pytest.raises(TypeError, match="given"):
+        _delavega().replace(firstname="X")
+
+
+def test_replace_drops_ambiguities_referencing_removed_tokens():
+    van = Token("Van", (0, 3), Role.GIVEN)
+    pn = _pn("Van Johnson",
+             [van, Token("Johnson", (4, 11), Role.FAMILY)],
+             [Ambiguity(AmbiguityKind.PARTICLE_OR_GIVEN, "d", (van,))])
+    assert pn.replace(given="Bob").ambiguities == ()
+    assert pn.replace(family="Smith").ambiguities != ()
