@@ -1,20 +1,24 @@
 """
 The :py:mod:`nameparser.config` module manages the configuration of the
-nameparser. 
+nameparser.
 
-A module-level instance of :py:class:`~nameparser.config.Constants` is created
-and used by default for all HumanName instances. You can adjust the entire module's
-configuration by importing this instance and changing it.
+:py:class:`~nameparser.config.Constants` is for application-level
+configuration, set once at startup. ``CONSTANTS``, the module-level instance
+used by every ``HumanName`` created without its own config, is the only
+channel that reaches parses happening in code you don't own (helpers,
+pipelines, a third-party library using nameparser internally) -- the same
+role ``logging`` and ``locale`` play elsewhere. Import it and change it
+directly:
 
 ::
 
     >>> from nameparser.config import CONSTANTS
     >>> CONSTANTS.titles.remove('hon').add('chemistry','dean') # doctest: +SKIP
 
-You can also adjust the configuration of individual instances by passing
-your own :py:class:`Constants` instance as the second argument upon
-instantiation -- ``Constants()`` for fresh library defaults, or
-``CONSTANTS.copy()`` for a private snapshot of the current module config.
+For anything scoped -- one dataset, one library, one test -- pass your own
+:py:class:`Constants` instance as the second argument upon instantiation
+instead: ``Constants()`` for fresh library defaults, or ``CONSTANTS.copy()``
+for a private snapshot of the current module config.
 
 ::
 
@@ -24,9 +28,10 @@ instantiation -- ``Constants()`` for fresh library defaults, or
     >>> hn.C.titles.add('dean') # doctest: +SKIP
     >>> hn.parse_full_name() # need to run this again after config changes
 
-**Potential Gotcha**: If you do not pass your own :py:class:`Constants`
-instance as the second argument, ``hn.C`` will be a reference to the module
-config, possibly yielding unexpected results. See `Customizing the Parser
+Mixing the two up is where the surprises come from, not the API itself: if
+you do not pass your own :py:class:`Constants` instance as the second
+argument, ``hn.C`` will be a reference to the module config, and a change
+there reaches every other instance sharing it. See `Customizing the Parser
 <customize.html>`_.
 
 .. deprecated:: 1.4.0
