@@ -177,6 +177,17 @@ class Lexicon:
                 for f in dataclasses.fields(self) if f.name != "_cap_map"}
 
     def __setstate__(self, state: dict[str, object]) -> None:
+        # Fail at the unpickle site if the state comes from a different
+        # Lexicon field layout (version skew) -- silently loading it
+        # would defer the failure to some distant attribute read.
+        expected = {f.name for f in dataclasses.fields(Lexicon)} - {"_cap_map"}
+        if set(state) != expected:
+            missing = ", ".join(sorted(expected - set(state))) or "none"
+            unexpected = ", ".join(sorted(set(state) - expected)) or "none"
+            raise ValueError(
+                f"incompatible Lexicon pickle: missing fields: {missing}; "
+                f"unexpected fields: {unexpected}"
+            )
         for name, value in state.items():
             object.__setattr__(self, name, value)
         object.__setattr__(

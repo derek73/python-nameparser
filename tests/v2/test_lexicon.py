@@ -152,3 +152,19 @@ def test_capitalization_exceptions_rejects_malformed_shapes() -> None:
         # a 2-char string entry would unpack into two chars and silently
         # store {"a": "b"} -- reject str entries outright
         Lexicon(capitalization_exceptions=("ab",))  # type: ignore[arg-type]
+
+
+def test_setstate_rejects_mismatched_field_layout() -> None:
+    # A pickle from a different Lexicon version (field added/renamed)
+    # must fail at load time with a message naming the mismatch, not at
+    # some later attribute read far from the unpickle site.
+    lex = Lexicon.empty()
+    good_state = lex.__getstate__()
+    missing = dict(good_state)
+    del missing["titles"]
+    with pytest.raises(ValueError, match="titles"):
+        Lexicon.__new__(Lexicon).__setstate__(missing)
+    extra = dict(good_state)
+    extra["zq_future_field"] = frozenset()
+    with pytest.raises(ValueError, match="zq_future_field"):
+        Lexicon.__new__(Lexicon).__setstate__(extra)
