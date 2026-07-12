@@ -324,3 +324,14 @@ def test_token_coerces_role_string_and_rejects_unknown() -> None:
         Token("Juan", None, "chief")  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="title, given"):
         Token("Juan", None, 5)  # type: ignore[arg-type]
+
+
+def test_types_pickle_round_trip() -> None:
+    import pickle
+
+    pn = _delavega()
+    assert pickle.loads(pickle.dumps(pn)) == pn
+    amb = Ambiguity(AmbiguityKind.ORDER, "two-comma structure", ())
+    assert pickle.loads(pickle.dumps(amb)) == amb
+    tok = Token("de", Span(9, 11), Role.FAMILY, frozenset({"particle"}))
+    assert pickle.loads(pickle.dumps(tok)) == tok

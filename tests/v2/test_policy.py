@@ -167,3 +167,42 @@ def test_policy_patch_canonicalizes_scalar_name_order() -> None:
     p = PolicyPatch(name_order=[Role.FAMILY, Role.GIVEN, Role.MIDDLE])  # type: ignore[arg-type]
     assert p.name_order == (Role.FAMILY, Role.GIVEN, Role.MIDDLE)
     assert isinstance(hash(p), int)
+
+
+def test_apply_patch_revalidates_deferred_values() -> None:
+    # PolicyPatch documents lazy validation: invalid values sit latent in
+    # the patch and must fail when applied, not silently flow into Policy.
+    bad_order = PolicyPatch(name_order=(Role.TITLE, Role.GIVEN, Role.FAMILY))
+    with pytest.raises(ValueError, match="permutation"):
+        apply_patch(Policy(), bad_order)
+    bad_rules = PolicyPatch(patronymic_rules=frozenset({"klingon"}))  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="valid rules"):
+        apply_patch(Policy(), bad_rules)
+
+
+def test_all_set_valued_patch_fields_declare_union_composition() -> None:
+    # apply_patch is driven by this metadata; dropping it from one field
+    # would silently flip locale layering from union to override.
+    union_fields = {
+        f.name for f in dataclasses.fields(PolicyPatch)
+        if f.metadata.get("compose") == "union"
+    }
+    assert union_fields == {
+        "patronymic_rules", "nickname_delimiters",
+        "maiden_delimiters", "extra_suffix_delimiters",
+    }
+
+
+def test_policy_and_patch_pickle_round_trip_preserves_unset_identity() -> None:
+    import pickle
+
+    p = Policy(patronymic_rules=frozenset({PatronymicRule.TURKIC}))
+    assert pickle.loads(pickle.dumps(p)) == p
+    patch = PolicyPatch(strip_emoji=False)
+    loaded = pickle.loads(pickle.dumps(patch))
+    assert loaded == patch
+    # apply_patch gates on 'value is UNSET'; an unpickled patch is only
+    # correct because Enum members round-trip BY IDENTITY. A plain
+    # object() sentinel would break this silently.
+    assert loaded.name_order is UNSET
+    assert loaded.strip_emoji is False

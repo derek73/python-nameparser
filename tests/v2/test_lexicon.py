@@ -171,3 +171,11 @@ def test_setstate_rejects_mismatched_field_layout() -> None:
     extra["zq_future_field"] = frozenset()
     with pytest.raises(ValueError, match="zq_future_field"):
         Lexicon.__new__(Lexicon).__setstate__(extra)
+
+
+def test_normalization_casefolds_and_strips_interior_periods() -> None:
+    # Stricter than v1's lc(), which lower()s and trims only EDGE
+    # periods: casefold handles ß, and interior periods are removed too.
+    # A "simplify to .lower()/.strip('.')" regression must fail here.
+    lex = Lexicon(titles=frozenset({"STRAßE", "Ph.D"}))
+    assert lex.titles == frozenset({"strasse", "phd"})
