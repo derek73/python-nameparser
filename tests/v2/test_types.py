@@ -71,3 +71,13 @@ def test_ambiguity_construction_coerces_kind_string():
 def test_ambiguity_rejects_unknown_kind():
     with pytest.raises(ValueError, match="particle-or-given"):
         Ambiguity("no-such-kind", "detail", ())
+
+
+def test_ambiguity_rejects_non_token_elements():
+    with pytest.raises(ValueError, match="only Token instances"):
+        Ambiguity("order", "detail", ("not-a-token",))  # type: ignore[arg-type]
+
+
+def test_ambiguity_rejects_empty_detail():
+    with pytest.raises(ValueError, match="non-empty string"):
+        Ambiguity("order", "", ())

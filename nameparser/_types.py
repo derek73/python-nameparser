@@ -90,4 +90,15 @@ class Ambiguity:
                 raise ValueError(
                     f"unknown AmbiguityKind {self.kind!r}; valid kinds: {valid}"
                 ) from None
-        object.__setattr__(self, "tokens", tuple(self.tokens))
+        if not isinstance(self.detail, str) or not self.detail:
+            raise ValueError(
+                f"Ambiguity.detail must be a non-empty string, got {self.detail!r}"
+            )
+        toks = tuple(self.tokens)
+        for tok in toks:
+            if not isinstance(tok, Token):
+                raise ValueError(
+                    f"Ambiguity.tokens must contain only Token instances, "
+                    f"got {tok!r}"
+                )
+        object.__setattr__(self, "tokens", toks)
