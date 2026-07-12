@@ -46,3 +46,25 @@ def test_capitalization_exceptions_canonical_and_no_aliasing():
 
 def test_lexicon_is_hashable():
     assert isinstance(hash(Lexicon.default()), int)
+
+
+def test_lexicon_rejects_bare_string_vocab():
+    with pytest.raises(ValueError, match="bare string"):
+        Lexicon(titles="dr")  # type: ignore[arg-type]
+
+
+def test_lexicon_rejects_non_str_vocab_entries():
+    with pytest.raises(ValueError, match="entries must be strings"):
+        Lexicon(titles={"Dr.", 42})  # type: ignore[arg-type]
+
+
+def test_colliding_exception_keys_dedupe_last_wins():
+    lex = Lexicon(capitalization_exceptions={"Ph.D.": "A", "phd": "B"})
+    assert lex.capitalization_exceptions == (("phd", "B"),)
+    rebuilt = Lexicon(capitalization_exceptions=lex.capitalization_exceptions_map)
+    assert rebuilt == lex and hash(rebuilt) == hash(lex)
+
+
+def test_lexicon_rejects_non_str_exception_values():
+    with pytest.raises(ValueError, match="str -> str"):
+        Lexicon(capitalization_exceptions={"phd": 42})  # type: ignore[dict-item]

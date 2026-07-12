@@ -28,8 +28,22 @@ def _normalize(word: str) -> str:
     return word.casefold().replace(".", "").strip()
 
 
-def _normset(entries: Iterable[str]) -> frozenset[str]:
-    result = frozenset(_normalize(w) for w in entries)
+def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
+    # Reject a bare str before iterating: iterating "dr" would silently
+    # yield the single characters {'d', 'r'} -- the set(str) footgun on
+    # the primary customization surface.
+    if isinstance(entries, str):
+        raise ValueError(
+            f"Lexicon.{field_name} must be an iterable of strings, "
+            f"not a bare string"
+        )
+    items = tuple(entries)  # materialize once; entries may be a generator
+    for w in items:
+        if not isinstance(w, str):
+            raise ValueError(
+                f"Lexicon.{field_name} entries must be strings, got {w!r}"
+            )
+    result = frozenset(_normalize(w) for w in items)
     return frozenset(w for w in result if w)
 
 
@@ -56,10 +70,22 @@ class Lexicon:
 
     def __post_init__(self) -> None:
         for name in _VOCAB_FIELDS:
-            object.__setattr__(self, name, _normset(getattr(self, name)))
+            object.__setattr__(self, name, _normset(getattr(self, name), name))
         raw = self.capitalization_exceptions
         pairs = raw.items() if isinstance(raw, Mapping) else raw
-        canonical = tuple(sorted((_normalize(k), v) for k, v in pairs))
+        # Dedupe on the NORMALIZED key before storing so the tuple and the
+        # map always agree ("Ph.D." and "phd" collide after normalization).
+        # Last occurrence wins, matching dict semantics and the right-bias
+        # rule used elsewhere.
+        deduped: dict[str, str] = {}
+        for k, v in pairs:
+            if not isinstance(k, str) or not isinstance(v, str):
+                raise ValueError(
+                    f"capitalization_exceptions entries must be "
+                    f"str -> str, got {k!r}: {v!r}"
+                )
+            deduped[_normalize(k)] = v
+        canonical = tuple(sorted(deduped.items()))
         object.__setattr__(self, "capitalization_exceptions", canonical)
         object.__setattr__(self, "_cap_map", MappingProxyType(dict(canonical)))
         if not self.particles_ambiguous <= self.particles:
