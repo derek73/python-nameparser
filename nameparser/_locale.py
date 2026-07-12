@@ -36,10 +36,6 @@ class Locale:
             raise ValueError(
                 f"Locale.code must be lowercase, got {self.code!r}"
             )
-        if any(c.isspace() for c in self.code):
-            raise ValueError(
-                f"Locale.code must not contain whitespace, got {self.code!r}"
-            )
         # Codes are registry keys (parser_for, third-party packs): every
         # accepted character is supported forever, so pin the charset
         # while relaxing later is still compatible. One separator only --

@@ -29,8 +29,10 @@ def test_locale_code_must_be_nonempty_lowercase() -> None:
 
 
 def test_locale_code_rejects_whitespace() -> None:
+    # caught by the [a-z0-9_]+ charset pin (a dedicated whitespace check
+    # would be pure redundancy; the charset message is accurate)
     for bad in ("ru ", " ru", "ru\n", "r u"):
-        with pytest.raises(ValueError, match="whitespace"):
+        with pytest.raises(ValueError, match="a-z0-9_"):
             Locale(code=bad, lexicon=Lexicon.empty())
 
 
