@@ -28,6 +28,12 @@ def test_locale_code_must_be_nonempty_lowercase():
         Locale(code="", lexicon=Lexicon.empty())
 
 
+def test_locale_code_rejects_whitespace():
+    for bad in ("ru ", " ru", "ru\n", "r u"):
+        with pytest.raises(ValueError, match="whitespace"):
+            Locale(code=bad, lexicon=Lexicon.empty())
+
+
 def test_locale_is_hashable():
     loc = Locale(code="ru", lexicon=Lexicon.empty())
     assert isinstance(hash(loc), int)

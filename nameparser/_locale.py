@@ -30,6 +30,10 @@ class Locale:
             raise ValueError(
                 f"Locale.code must be lowercase, got {self.code!r}"
             )
+        if any(c.isspace() for c in self.code):
+            raise ValueError(
+                f"Locale.code must not contain whitespace, got {self.code!r}"
+            )
         if not isinstance(self.lexicon, Lexicon):
             raise ValueError(
                 f"Locale.lexicon must be a Lexicon, got {self.lexicon!r}"
