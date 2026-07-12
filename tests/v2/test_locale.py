@@ -53,3 +53,14 @@ def test_locale_with_lexicon_pickles_round_trip() -> None:
 
     loc = Locale(code="ru", lexicon=Lexicon.empty().add(titles={"Dr."}))
     assert pickle.loads(pickle.dumps(loc)) == loc
+
+
+def test_locale_code_is_pinned_to_registry_charset() -> None:
+    # Codes become registry keys the moment parser_for and third-party
+    # packs exist: every accepted character is supported forever, so pin
+    # [a-z0-9_]+ now (matches ru/tr_az). One separator only -- allowing
+    # both '-' and '_' would make tr-az and tr_az distinct keys.
+    for bad in ("ru!", "tr-az", "тр", "zh/tw"):
+        with pytest.raises(ValueError, match="a-z0-9_"):
+            Locale(code=bad, lexicon=Lexicon.empty())
+    assert Locale(code="tr_az", lexicon=Lexicon.empty()).code == "tr_az"

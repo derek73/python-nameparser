@@ -10,6 +10,7 @@ tests/v2/test_layering.py).
 from __future__ import annotations
 
 import dataclasses
+import re
 from dataclasses import dataclass
 
 from nameparser._lexicon import Lexicon
@@ -38,6 +39,14 @@ class Locale:
         if any(c.isspace() for c in self.code):
             raise ValueError(
                 f"Locale.code must not contain whitespace, got {self.code!r}"
+            )
+        # Codes are registry keys (parser_for, third-party packs): every
+        # accepted character is supported forever, so pin the charset
+        # while relaxing later is still compatible. One separator only --
+        # allowing '-' too would make tr-az and tr_az distinct keys.
+        if not re.fullmatch(r"[a-z0-9_]+", self.code):
+            raise ValueError(
+                f"Locale.code must match [a-z0-9_]+, got {self.code!r}"
             )
         if not isinstance(self.lexicon, Lexicon):
             raise TypeError(
