@@ -923,7 +923,7 @@ class HumanName:
     def collapse_whitespace(self, string: str) -> str:
         # collapse multiple spaces into single space
         string = self.C.regexes.spaces.sub(" ", string.strip())
-        if string.endswith(","):
+        if string and self.C.regexes.commas.fullmatch(string[-1]):
             string = string[:-1]
         return string
 
@@ -1195,8 +1195,14 @@ class HumanName:
 
         self._full_name = self.collapse_whitespace(self._full_name)
 
-        # break up full_name by commas
-        parts = [x.strip() for x in self._full_name.split(",")]
+        # break up full_name by commas. A missing "commas" key in a custom
+        # regexes dict falls back to RegexTupleManager's EMPTY_REGEX, whose
+        # .split() matches between every character rather than not
+        # splitting at all -- guard against that so a custom regexes dict
+        # that omits "commas" disables the comma split instead of shattering
+        # the name into single characters.
+        commas = self.C.regexes.commas
+        parts = [x.strip() for x in (commas.split(self._full_name) if commas.pattern else [self._full_name])]
         self._had_comma = len(parts) > 1
 
         log.debug("full_name: %s", self._full_name)

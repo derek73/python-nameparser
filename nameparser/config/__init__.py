@@ -590,8 +590,9 @@ class Constants:
     ``None`` (no additional splitting beyond the standard comma split).
 
     Note: setting this to ``","`` or ``", "`` has no additional effect —
-    the full name is already split on bare commas first, and each resulting
-    part is stripped of surrounding whitespace before this step runs.
+    the full name is already split on comma characters first (including the
+    Arabic ``،`` and fullwidth ``，`` variants), and each resulting part is
+    stripped of surrounding whitespace before this step runs.
 
     The delimiter is only applied to parts once they've been identified as
     a suffix group, so it never leaks into a first- or middle-name part. For

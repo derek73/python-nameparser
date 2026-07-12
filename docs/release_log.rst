@@ -1,5 +1,9 @@
 Release Log
 ===========
+* 1.4.0 - Unreleased
+
+    - Fix the ``"Lastname, Firstname"`` comma format not being recognized when the input uses the Arabic comma ``،`` (U+060C, the standard comma in Arabic/Persian/Urdu text) or the fullwidth CJK comma ``，`` (U+FF0C) instead of the ASCII comma: both variants now also split the format and no longer leak into the parsed output (closes #265)
+
 * 1.3.1 - July 11, 2026
 
     - Fix invisible Unicode bidirectional control characters (LRM/RLM/ALM, the embedding/override marks, and the isolates U+2066–U+2069) surviving parsing and sticking to ``first``/``last``/etc., so a copy-pasted right-to-left name silently failed equality and dedup. They are now stripped in preprocessing like emoji; disable via ``CONSTANTS.regexes.bidi = False`` (closes #266)
