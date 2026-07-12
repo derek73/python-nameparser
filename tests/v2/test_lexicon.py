@@ -85,9 +85,12 @@ def test_add_and_remove_return_new_lexicons() -> None:
     # "zqtitle" is a synthetic word absent from v1's TITLES data (unlike
     # e.g. "dra", the feminine "dr." abbreviation, which is already there).
     base = Lexicon.default()
-    lex = base.add(titles={"zqtitle"}).remove(suffix_words={"bishop"})
+    lex = base.add(titles={"zqtitle"}).remove(suffix_words={"esquire"})
     assert "zqtitle" in lex.titles and "zqtitle" not in base.titles
-    assert "bishop" not in lex.suffix_words
+    # precondition, or the removal assertion passes vacuously (this is a
+    # guard for the operation under test, not a vocabulary content pin)
+    assert "esquire" in base.suffix_words
+    assert "esquire" not in lex.suffix_words
 
 
 def test_add_unknown_field_raises_with_valid_names() -> None:
