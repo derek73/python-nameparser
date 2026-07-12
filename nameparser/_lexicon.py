@@ -81,13 +81,33 @@ class Lexicon:
         for name in _VOCAB_FIELDS:
             object.__setattr__(self, name, _normset(getattr(self, name), name))
         raw = self.capitalization_exceptions
+        if isinstance(raw, str):
+            raise TypeError(
+                "capitalization_exceptions must be a mapping or an "
+                "iterable of (key, value) pairs, not a bare string"
+            )
         pairs = raw.items() if isinstance(raw, Mapping) else raw
         # Dedupe on the NORMALIZED key before storing so the tuple and the
         # map always agree ("Ph.D." and "phd" collide after normalization).
         # Last occurrence wins, matching dict semantics and the right-bias
         # rule used elsewhere.
         deduped: dict[str, str] = {}
-        for k, v in pairs:
+        for entry in pairs:
+            # A 2-char str entry would unpack "ab" into ("a", "b")
+            # silently, so reject str outright; other mis-shapes would
+            # otherwise surface as bare unpack errors.
+            if isinstance(entry, str):
+                raise TypeError(
+                    f"capitalization_exceptions entries must be "
+                    f"(key, value) pairs, got {entry!r}"
+                )
+            try:
+                k, v = entry
+            except (TypeError, ValueError):
+                raise TypeError(
+                    f"capitalization_exceptions entries must be "
+                    f"(key, value) pairs, got {entry!r}"
+                ) from None
             if not isinstance(k, str) or not isinstance(v, str):
                 raise TypeError(
                     f"capitalization_exceptions entries must be "

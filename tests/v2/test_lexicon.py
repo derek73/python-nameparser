@@ -141,3 +141,14 @@ def test_lexicon_rejects_mapping_for_plain_vocab_field() -> None:
         Lexicon(titles={"Dr.": "Doctor"})  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="mapping"):
         Lexicon.empty().add(titles={"Dr.": "Doctor"})
+
+
+def test_capitalization_exceptions_rejects_malformed_shapes() -> None:
+    with pytest.raises(TypeError, match="bare string"):
+        Lexicon(capitalization_exceptions="ab")  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="pairs"):
+        Lexicon(capitalization_exceptions=(("a", "b", "c"),))  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="pairs"):
+        # a 2-char string entry would unpack into two chars and silently
+        # store {"a": "b"} -- reject str entries outright
+        Lexicon(capitalization_exceptions=("ab",))  # type: ignore[arg-type]
