@@ -29,6 +29,10 @@ REGEXES = {
     "bidi": re_bidi,
     "phd": re.compile(r'\s(ph\.?\s+d\.?)', re.I),
     "space_before_comma": re.compile(r'\s+,'),
+    # ASCII comma plus its Arabic (U+060C) and fullwidth CJK (U+FF0C)
+    # counterparts, used to split "Last, First" format and to strip a
+    # trailing comma before parsing (#265).
+    "commas": re.compile(r'[,،，]'),
     "east_slavic_patronymic": re.compile(
         r'(ovich|ovna|evich|evna|ichna|ilyich|kuzmich|lukich|fomich|fokich)$',
         re.I,

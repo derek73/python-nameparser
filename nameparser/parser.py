@@ -923,7 +923,7 @@ class HumanName:
     def collapse_whitespace(self, string: str) -> str:
         # collapse multiple spaces into single space
         string = self.C.regexes.spaces.sub(" ", string.strip())
-        if string.endswith(","):
+        if string and self.C.regexes.commas.fullmatch(string[-1]):
             string = string[:-1]
         return string
 
@@ -1196,7 +1196,7 @@ class HumanName:
         self._full_name = self.collapse_whitespace(self._full_name)
 
         # break up full_name by commas
-        parts = [x.strip() for x in self._full_name.split(",")]
+        parts = [x.strip() for x in self.C.regexes.commas.split(self._full_name)]
         self._had_comma = len(parts) > 1
 
         log.debug("full_name: %s", self._full_name)
