@@ -1,3 +1,5 @@
+import warnings
+
 from nameparser import HumanName
 
 from tests.base import HumanNameTestBase
@@ -203,7 +205,11 @@ class HumanNameVariationTests(HumanNameTestBase):
             if len(hn.suffix_list) > 1:
                 d = SimpleNamespace(**hn.as_dict())
                 hn = HumanName(f"{d.title} {d.first} {d.middle} {d.last} {d.suffix}".split(',')[0])
-            hn.C.empty_attribute_default = ''  # format strings below require empty string
+            with warnings.catch_warnings():
+                # format strings below require empty string; #255 deprecation
+                # noise isn't the point of this broad parsing-variation test
+                warnings.simplefilter("ignore", DeprecationWarning)
+                hn.C.empty_attribute_default = ''
             d = SimpleNamespace(**hn.as_dict())
             nocomma = HumanName(f"{d.title} {d.first} {d.middle} {d.last} {d.suffix}")
             lastnamecomma = HumanName(f"{d.last}, {d.title} {d.first} {d.middle} {d.suffix}")

@@ -1,3 +1,5 @@
+import pytest
+
 from nameparser import HumanName
 from nameparser.config import Constants
 
@@ -105,14 +107,16 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         # scrubbed the literal string 'None' from the formatted output,
         # corrupting real name text containing that substring.
         hn = HumanName("Nonez Smith", Constants())
-        hn.C.empty_attribute_default = None  # type: ignore[assignment]  # see test_constants.test_empty_attribute_default
+        with pytest.deprecated_call():
+            hn.C.empty_attribute_default = None  # type: ignore[assignment]  # see test_constants.test_empty_attribute_default
         self.assertEqual(str(hn), "Nonez Smith")
 
     def test_name_none_as_literal_name_with_none_empty_attribute_default(self) -> None:
         # Companion to the #254 regression: a name piece that is exactly
         # 'None' must survive formatting in None-mode.
         hn = HumanName("None Smith", Constants())
-        hn.C.empty_attribute_default = None  # type: ignore[assignment]  # see test_constants.test_empty_attribute_default
+        with pytest.deprecated_call():
+            hn.C.empty_attribute_default = None  # type: ignore[assignment]  # see test_constants.test_empty_attribute_default
         self.assertEqual(str(hn), "None Smith")
 
     def test_empty_field_drops_surrounding_whitespace(self) -> None:

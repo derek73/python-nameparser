@@ -461,8 +461,21 @@ class HumanNamePythonTests(HumanNameTestBase):
     def test_slice(self) -> None:
         hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
         self.m(list(hn), ['Dr.', 'John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC'], hn)
-        self.m(hn[1:], ['John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC', hn.C.empty_attribute_default, hn.C.empty_attribute_default], hn)
-        self.m(hn[1:-3], ['John', 'P.', 'Doe-Ray'], hn)
+        with pytest.deprecated_call(match="Slic"):
+            sliced = hn[1:]
+        self.m(sliced, ['John', 'P.', 'Doe-Ray', 'CLU, CFP, LUTC', hn.C.empty_attribute_default, hn.C.empty_attribute_default], hn)
+        with pytest.deprecated_call(match="Slic"):
+            self.m(hn[1:-3], ['John', 'P.', 'Doe-Ray'], hn)
+
+    def test_slice_getitem_deprecation_names_issue(self) -> None:
+        # slice access is deprecated for removal in 2.0 (#258); string-key
+        # access is unaffected and stays silent
+        hn = HumanName("Doe-Ray, Dr. John P., CLU, CFP, LUTC")
+        with pytest.deprecated_call(match="258"):
+            hn[1:]
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            hn['first']
 
     def test_getitem(self) -> None:
         hn = HumanName("Dr. John A. Kenneth Doe, Jr.")
@@ -474,19 +487,29 @@ class HumanNamePythonTests(HumanNameTestBase):
 
     def test_setitem(self) -> None:
         hn = HumanName("Dr. John A. Kenneth Doe, Jr.")
-        hn['title'] = 'test'
+        with pytest.deprecated_call(match="258"):
+            hn['title'] = 'test'
         self.m(hn['title'], "test", hn)
-        hn['last'] = ['test', 'test2']
+        with pytest.deprecated_call(match="258"):
+            hn['last'] = ['test', 'test2']
         self.m(hn['last'], "test test2", hn)
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError), pytest.deprecated_call():
             hn["suffix"] = [['test']]  # type: ignore[list-item]
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError), pytest.deprecated_call():
             hn["suffix"] = {"test": "test"}  # type: ignore[assignment]
 
     def test_setitem_invalid_key_raises_keyerror(self) -> None:
         hn = HumanName("Dr. John A. Kenneth Doe, Jr.")
-        with pytest.raises(KeyError):
+        with pytest.raises(KeyError), pytest.deprecated_call():
             hn["bogus"] = "value"
+
+    def test_setitem_emits_deprecation_warning_naming_attribute_assignment(self) -> None:
+        # __setitem__ duplicates plain attribute assignment and is deprecated
+        # for removal in 2.0 (#258); use hn.first = ... instead
+        hn = HumanName("Dr. John A. Kenneth Doe, Jr.")
+        with pytest.deprecated_call(match="attribute assignment"):
+            hn['first'] = 'Jane'
+        self.m(hn.first, "Jane", hn)
 
     def test_conjunction_names(self) -> None:
         hn = HumanName("johnny y")
@@ -530,7 +553,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         hn.middle = ["a", "", "b"]
         self.assertEqual(hn.middle_list, ["a", "b"])
         self.m(hn.middle, "a b", hn)
-        hn["last"] = ["", "Smith"]
+        hn.last = ["", "Smith"]
         self.assertEqual(hn.last_list, ["Smith"])
 
     def test_blank_name(self) -> None:
@@ -599,9 +622,15 @@ class HumanNamePythonTests(HumanNameTestBase):
         self.assertIs(hn.C, C)
 
     def test_override_regex(self) -> None:
+        # A regexes dict this sparse omits keys the parser reads
+        # unconditionally (e.g. squash_bidi's 'bidi'); each miss falls back
+        # to EMPTY_REGEX but now also warns -- unknown-key access is
+        # deprecated for removal in 2.0 (#256), which would make this build
+        # AttributeError-crash the parser instead of degrading silently.
         var = TupleManager([("spaces", re.compile(r"\s+")),])
         C = Constants(regexes=var)
-        hn = HumanName(constants=C)
+        with pytest.deprecated_call():
+            hn = HumanName(constants=C)
         self.assertTrue(hn.C.regexes == var)
 
     def test_override_titles(self) -> None:

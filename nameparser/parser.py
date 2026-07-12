@@ -254,12 +254,38 @@ class HumanName:
     @overload
     def __getitem__(self, key: str) -> str: ...
     def __getitem__(self, key: slice | str) -> str | list[str]:
+        """
+        .. deprecated:: 1.4.0
+            Slice access (``name[1:-3]``) is removed in 2.0 (see issue
+            #258); field access by position has no real use case.
+            String-key access (``name['first']``) is unaffected.
+        """
         if isinstance(key, slice):
+            warnings.warn(
+                "Slicing a HumanName by position is deprecated and will be "
+                "removed in 2.0; access the named attributes instead. See "
+                "https://github.com/derek73/python-nameparser/issues/258",
+                DeprecationWarning,
+                stacklevel=2,
+            )
             return [getattr(self, x) for x in self._members[key]]
         else:
             return getattr(self, key)
 
     def __setitem__(self, key: str, value: str | list[str] | None) -> None:
+        """
+        .. deprecated:: 1.4.0
+            Removed in 2.0 (see issue #258); it duplicates plain attribute
+            assignment. Use ``name.first = value`` instead.
+        """
+        warnings.warn(
+            "HumanName item assignment is deprecated and will be removed "
+            "in 2.0; it duplicates plain attribute assignment, use "
+            "name.first = value instead. See "
+            "https://github.com/derek73/python-nameparser/issues/258",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         if key in self._members:
             self._set_list(key, value)
         else:

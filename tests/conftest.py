@@ -1,4 +1,5 @@
 import copy
+import warnings
 from collections.abc import Iterator
 
 import pytest
@@ -60,9 +61,22 @@ def empty_attribute_default(request: pytest.FixtureRequest) -> Iterator[str | No
         attr: copy.deepcopy(getattr(CONSTANTS, attr))
         for attr in _COLLECTION_CONFIG_ATTRS
     }
-    CONSTANTS.empty_attribute_default = request.param
+    # empty_attribute_default assignment is deprecated (#255); this fixture's
+    # own systematic exercise of both settings across the whole suite is
+    # infrastructure, not a test of the deprecation itself, so it's silenced
+    # here (narrowly, around just the assignment) rather than at every one of
+    # its ~1500 call sites. Must not wrap `yield` -- that would suppress
+    # DeprecationWarning for the test body itself, hiding real ones.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        CONSTANTS.empty_attribute_default = request.param
     yield request.param
     for attr, value in scalar_snapshot.items():
-        setattr(CONSTANTS, attr, value)
+        if attr == "empty_attribute_default":
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", DeprecationWarning)
+                setattr(CONSTANTS, attr, value)
+        else:
+            setattr(CONSTANTS, attr, value)
     for attr, value in collection_snapshot.items():
         setattr(CONSTANTS, attr, value)
