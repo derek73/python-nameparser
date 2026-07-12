@@ -5,12 +5,12 @@ import pytest
 from nameparser._lexicon import Lexicon
 
 
-def test_entries_are_normalized_at_construction():
+def test_entries_are_normalized_at_construction() -> None:
     lex = Lexicon(titles=frozenset({"Dr.", "MR"}))
     assert lex.titles == frozenset({"dr", "mr"})
 
 
-def test_default_sources_v1_vocabulary():
+def test_default_sources_v1_vocabulary() -> None:
     lex = Lexicon.default()
     assert "dr" in lex.titles
     assert "van" in lex.particles
@@ -24,16 +24,16 @@ def test_default_sources_v1_vocabulary():
     assert lex.capitalization_exceptions_map["phd"] == "Ph.D."
 
 
-def test_default_is_cached_single_instance():
+def test_default_is_cached_single_instance() -> None:
     assert Lexicon.default() is Lexicon.default()
 
 
-def test_particles_ambiguous_must_be_subset_of_particles():
+def test_particles_ambiguous_must_be_subset_of_particles() -> None:
     with pytest.raises(ValueError, match="subset"):
         Lexicon(particles_ambiguous=frozenset({"van"}))
 
 
-def test_capitalization_exceptions_canonical_and_no_aliasing():
+def test_capitalization_exceptions_canonical_and_no_aliasing() -> None:
     exceptions = {"phd": "PhD", "ii": "II"}
     lex = Lexicon.empty()
     lex2 = dataclasses.replace(lex, capitalization_exceptions=exceptions)  # type: ignore[arg-type]
@@ -44,38 +44,38 @@ def test_capitalization_exceptions_canonical_and_no_aliasing():
     assert lex2 == lex3 and hash(lex2) == hash(lex3)
 
 
-def test_lexicon_is_hashable():
+def test_lexicon_is_hashable() -> None:
     assert isinstance(hash(Lexicon.default()), int)
 
 
-def test_lexicon_rejects_bare_string_vocab():
+def test_lexicon_rejects_bare_string_vocab() -> None:
     with pytest.raises(ValueError, match="bare string"):
         Lexicon(titles="dr")  # type: ignore[arg-type]
 
 
-def test_lexicon_rejects_non_str_vocab_entries():
+def test_lexicon_rejects_non_str_vocab_entries() -> None:
     with pytest.raises(ValueError, match="entries must be strings"):
         Lexicon(titles={"Dr.", 42})  # type: ignore[arg-type]
 
 
-def test_exception_keys_normalizing_to_empty_are_dropped():
+def test_exception_keys_normalizing_to_empty_are_dropped() -> None:
     lex = Lexicon(capitalization_exceptions=(("...", "X"), ("phd", "PhD")))
     assert lex.capitalization_exceptions == (("phd", "PhD"),)
 
 
-def test_colliding_exception_keys_dedupe_last_wins():
+def test_colliding_exception_keys_dedupe_last_wins() -> None:
     lex = Lexicon(capitalization_exceptions=(("Ph.D.", "A"), ("phd", "B")))
     assert lex.capitalization_exceptions == (("phd", "B"),)
     rebuilt = Lexicon(capitalization_exceptions=lex.capitalization_exceptions_map)  # type: ignore[arg-type]
     assert rebuilt == lex and hash(rebuilt) == hash(lex)
 
 
-def test_lexicon_rejects_non_str_exception_values():
+def test_lexicon_rejects_non_str_exception_values() -> None:
     with pytest.raises(ValueError, match="str -> str"):
         Lexicon(capitalization_exceptions={"phd": 42})  # type: ignore[dict-item, arg-type]
 
 
-def test_add_and_remove_return_new_lexicons():
+def test_add_and_remove_return_new_lexicons() -> None:
     # "zqtitle" is a synthetic word absent from v1's TITLES data (unlike
     # e.g. "dra", the feminine "dr." abbreviation, which is already there).
     base = Lexicon.default()
@@ -84,17 +84,17 @@ def test_add_and_remove_return_new_lexicons():
     assert "bishop" not in lex.suffix_words
 
 
-def test_add_unknown_field_raises_with_valid_names():
+def test_add_unknown_field_raises_with_valid_names() -> None:
     with pytest.raises(TypeError, match="prefixes"):
         Lexicon.default().add(prefixes={"van"})  # v1 name: helpful error
 
 
-def test_add_capitalization_exceptions_raises_pointing_at_replace():
+def test_add_capitalization_exceptions_raises_pointing_at_replace() -> None:
     with pytest.raises(TypeError, match="dataclasses.replace"):
         Lexicon.default().add(capitalization_exceptions={"x": "X"})
 
 
-def test_union_is_fieldwise_and_right_biased_for_exceptions():
+def test_union_is_fieldwise_and_right_biased_for_exceptions() -> None:
     a = dataclasses.replace(Lexicon.empty(),
                             capitalization_exceptions=(("phd", "PhD"),))
     a = a.add(titles={"dr"})
@@ -106,13 +106,13 @@ def test_union_is_fieldwise_and_right_biased_for_exceptions():
     assert u.capitalization_exceptions_map["phd"] == "Ph.D."  # right wins
 
 
-def test_remove_breaking_subset_invariant_raises():
+def test_remove_breaking_subset_invariant_raises() -> None:
     lex = Lexicon(particles=frozenset({"van"}), particles_ambiguous=frozenset({"van"}))
     with pytest.raises(ValueError, match="subset"):
         lex.remove(particles={"van"})  # would orphan particles_ambiguous
 
 
-def test_pickle_round_trip_preserves_equality_and_cap_map():
+def test_pickle_round_trip_preserves_equality_and_cap_map() -> None:
     # _cap_map holds a MappingProxyType, which pickle rejects; Lexicon
     # must round-trip anyway because Parser is picklable by construction
     # (spec: 2026-07-11-v2-core-api-design.md) and a Parser holds a Lexicon.

@@ -5,7 +5,7 @@ from nameparser._locale import Locale
 from nameparser._policy import PatronymicRule, PolicyPatch
 
 
-def test_locale_holds_code_lexicon_fragment_and_patch():
+def test_locale_holds_code_lexicon_fragment_and_patch() -> None:
     ru = Locale(
         code="ru",
         lexicon=Lexicon.empty(),
@@ -17,36 +17,36 @@ def test_locale_holds_code_lexicon_fragment_and_patch():
         {PatronymicRule.EAST_SLAVIC})
 
 
-def test_locale_defaults_to_empty_patch():
+def test_locale_defaults_to_empty_patch() -> None:
     assert Locale(code="xx", lexicon=Lexicon.empty()).policy == PolicyPatch()
 
 
-def test_locale_code_must_be_nonempty_lowercase():
+def test_locale_code_must_be_nonempty_lowercase() -> None:
     with pytest.raises(ValueError, match="lowercase"):
         Locale(code="RU", lexicon=Lexicon.empty())
     with pytest.raises(ValueError, match="non-empty"):
         Locale(code="", lexicon=Lexicon.empty())
 
 
-def test_locale_code_rejects_whitespace():
+def test_locale_code_rejects_whitespace() -> None:
     for bad in ("ru ", " ru", "ru\n", "r u"):
         with pytest.raises(ValueError, match="whitespace"):
             Locale(code=bad, lexicon=Lexicon.empty())
 
 
-def test_locale_is_hashable():
+def test_locale_is_hashable() -> None:
     loc = Locale(code="ru", lexicon=Lexicon.empty())
     assert isinstance(hash(loc), int)
 
 
-def test_locale_validates_component_types():
+def test_locale_validates_component_types() -> None:
     with pytest.raises(ValueError, match="Lexicon"):
         Locale(code="ru", lexicon={"titles": set()})  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="PolicyPatch"):
         Locale(code="ru", lexicon=Lexicon.empty(), policy={"name_order": None})  # type: ignore[arg-type]
 
 
-def test_locale_with_lexicon_pickles_round_trip():
+def test_locale_with_lexicon_pickles_round_trip() -> None:
     import pickle
 
     loc = Locale(code="ru", lexicon=Lexicon.empty().add(titles={"Dr."}))
