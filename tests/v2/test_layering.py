@@ -39,7 +39,7 @@ def _permitted(imported: str, allowed: tuple[str, ...]) -> bool:
     return False
 
 
-def test_layering_contract():
+def test_layering_contract() -> None:
     for mod, allowed in ALLOWED.items():
         for imported in _nameparser_imports(PKG / mod):
             assert _permitted(imported, allowed), (
@@ -48,13 +48,13 @@ def test_layering_contract():
             )
 
 
-def test_lexicon_never_imports_config_package_root_or_parser():
+def test_lexicon_never_imports_config_package_root_or_parser() -> None:
     for imported in _nameparser_imports(PKG / "_lexicon.py"):
         assert imported != "nameparser.config"
         assert not imported.startswith("nameparser.parser")
 
 
-def test_public_exports():
+def test_public_exports() -> None:
     expected = {
         "Span", "Role", "Token", "Ambiguity", "AmbiguityKind", "ParsedName",
         "Lexicon", "Policy", "PolicyPatch", "PatronymicRule", "UNSET",
