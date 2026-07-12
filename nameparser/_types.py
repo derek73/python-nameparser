@@ -230,6 +230,9 @@ class ParsedName:
     def __bool__(self) -> bool:
         return bool(self.tokens)
 
+    def __str__(self) -> str:
+        return self.render()
+
     def __repr__(self) -> str:
         lines = []
         for role in Role:
@@ -366,3 +369,15 @@ class ParsedName:
         strict.
         """
         return tuple(self._text_for(role).casefold() for role in Role)
+
+    # -- rendering delegates ----------------------------------------------
+    # One-line delegation to nameparser._render (core spec §5b): parsing
+    # code physically cannot import formatting logic, so these import at
+    # call time -- module level stays internal-import-free.
+
+    def render(self, spec: str = "{title} {given} {middle} {family} {suffix}") -> str:
+        """Fill the str.format spec from the seven role fields and the
+        derived views; empty fields collapse (#254). Unknown keys raise
+        KeyError naming the valid fields."""
+        import nameparser._render as _render
+        return _render.render(self, spec)

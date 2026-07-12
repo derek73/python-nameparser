@@ -71,3 +71,11 @@ def test_render_unknown_key_raises_enriched_keyerror() -> None:
 def test_render_empty_parse_is_empty_string() -> None:
     from nameparser._render import render
     assert render(_pn("", []), "{title} {given} {middle} {family} {suffix}") == ""
+
+
+def test_parsedname_render_and_str_delegate() -> None:
+    pn = _delavega()
+    assert pn.render() == "Dr. Juan de la Vega III"
+    assert pn.render("{family}, {given}") == "de la Vega, Juan"
+    assert str(pn) == pn.render()
+    assert str(_pn("", [])) == ""
