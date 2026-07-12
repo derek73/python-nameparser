@@ -69,12 +69,6 @@ Requires Python 3.10+.
     True
     >>> name.matches("de la vega, dr. juan Q. xavier III")
     True
-    >>> len(name)
-    5
-    >>> list(name)
-    ['Dr.', 'Juan', 'Q. Xavier', 'de la Vega', 'III']
-    >>> name['first']
-    'Juan'
 
 ``name == other`` and ``hash(name)`` are deprecated and will be removed in
 2.0; use ``matches()`` for comparison and ``comparison_key()`` for sets,
