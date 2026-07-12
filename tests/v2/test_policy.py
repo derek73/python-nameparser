@@ -91,6 +91,25 @@ def test_policy_patch_mirrors_policy_field_names():
     assert policy_fields == patch_fields
 
 
+def test_policy_patch_mirrors_policy_field_types():
+    for f in dataclasses.fields(Policy):
+        patch_annotation = PolicyPatch.__dataclass_fields__[f.name].type
+        assert patch_annotation == f"{f.type} | _Unset"
+
+
+def test_policy_patch_canonicalizes_union_fields():
+    p = PolicyPatch(extra_suffix_delimiters={"-"})
+    assert isinstance(p.extra_suffix_delimiters, frozenset)
+    assert isinstance(hash(p), int)
+    out = apply_patch(Policy(), PolicyPatch(extra_suffix_delimiters=["-"]))  # type: ignore[arg-type]
+    assert out.extra_suffix_delimiters == frozenset({"-"})
+
+
+def test_policy_patch_rejects_bare_string_union_fields():
+    with pytest.raises(ValueError, match="bare string"):
+        PolicyPatch(extra_suffix_delimiters="ab")  # type: ignore[arg-type]
+
+
 def test_apply_patch_overrides_scalars_and_unions_sets():
     base = Policy(patronymic_rules=frozenset({PatronymicRule.EAST_SLAVIC}))
     patch = PolicyPatch(

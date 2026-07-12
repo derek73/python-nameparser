@@ -112,6 +112,9 @@ class PolicyPatch:
     UNSET. Composition per field is DECLARED via metadata -- set-valued
     fields union, scalars override (later wins). Kept in lockstep with
     Policy by the parity test in tests/v2/test_policy.py.
+
+    Values are validated when the patch is applied (Policy's constructor
+    re-runs), not at patch construction.
     """
 
     name_order: tuple[Role, Role, Role] | _Unset = UNSET
@@ -127,6 +130,23 @@ class PolicyPatch:
     lenient_comma_suffixes: bool | _Unset = UNSET
     strip_emoji: bool | _Unset = UNSET
     strip_bidi: bool | _Unset = UNSET
+
+    def __post_init__(self) -> None:
+        # Canonicalize (but do NOT validate) union-composed fields so a
+        # patch built from a set/list literal is hashable and unions
+        # cleanly in apply_patch.
+        for f in dataclasses.fields(self):
+            if f.metadata.get("compose") != "union":
+                continue
+            value = getattr(self, f.name)
+            if value is UNSET:
+                continue
+            if isinstance(value, str):
+                raise ValueError(
+                    f"{f.name} must be an iterable, "
+                    f"not a bare string: {value!r}"
+                )
+            object.__setattr__(self, f.name, frozenset(value))
 
 
 def apply_patch(policy: Policy, patch: PolicyPatch) -> Policy:
