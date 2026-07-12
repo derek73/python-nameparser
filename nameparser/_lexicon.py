@@ -85,7 +85,10 @@ class Lexicon:
                     f"capitalization_exceptions entries must be "
                     f"str -> str, got {k!r}: {v!r}"
                 )
-            deduped[_normalize(k)] = v
+            normalized_key = _normalize(k)
+            if not normalized_key:
+                continue  # mirror _normset's drop-empty rule
+            deduped[normalized_key] = v
         canonical = tuple(sorted(deduped.items()))
         object.__setattr__(self, "capitalization_exceptions", canonical)
         object.__setattr__(self, "_cap_map", MappingProxyType(dict(canonical)))

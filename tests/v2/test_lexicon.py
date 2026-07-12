@@ -58,6 +58,11 @@ def test_lexicon_rejects_non_str_vocab_entries():
         Lexicon(titles={"Dr.", 42})  # type: ignore[arg-type]
 
 
+def test_exception_keys_normalizing_to_empty_are_dropped():
+    lex = Lexicon(capitalization_exceptions={"...": "X", "phd": "PhD"})
+    assert lex.capitalization_exceptions == (("phd", "PhD"),)
+
+
 def test_colliding_exception_keys_dedupe_last_wins():
     lex = Lexicon(capitalization_exceptions={"Ph.D.": "A", "phd": "B"})
     assert lex.capitalization_exceptions == (("phd", "B"),)
