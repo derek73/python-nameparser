@@ -118,8 +118,24 @@ class ParsedName:
     ambiguities: tuple[Ambiguity, ...] = ()
 
     def __post_init__(self) -> None:
+        if not isinstance(self.original, str):
+            raise ValueError(
+                f"ParsedName.original must be a str, got {self.original!r}"
+            )
         object.__setattr__(self, "tokens", tuple(self.tokens))
         object.__setattr__(self, "ambiguities", tuple(self.ambiguities))
+        for tok in self.tokens:
+            if not isinstance(tok, Token):
+                raise ValueError(
+                    f"ParsedName.tokens must contain only Token instances, "
+                    f"got {tok!r}"
+                )
+        for amb in self.ambiguities:
+            if not isinstance(amb, Ambiguity):
+                raise ValueError(
+                    f"ParsedName.ambiguities must contain only Ambiguity "
+                    f"instances, got {amb!r}"
+                )
         prev_end = 0
         for tok in self.tokens:
             if tok.span is None:

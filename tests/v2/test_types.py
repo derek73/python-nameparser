@@ -146,3 +146,15 @@ def test_parsedname_equality_is_strict_structural():
     c = _pn("John ", [Token("John", (0, 4), Role.GIVEN)])
     assert a == b and hash(a) == hash(b)
     assert a != c  # different original: not interchangeable
+
+
+def test_parsedname_rejects_non_str_original():
+    with pytest.raises(ValueError, match="must be a str"):
+        _pn(None, [])  # type: ignore[arg-type]
+
+
+def test_parsedname_rejects_non_token_and_non_ambiguity_elements():
+    with pytest.raises(ValueError, match="only Token instances"):
+        _pn("x", ["not-a-token"])  # type: ignore[list-item]
+    with pytest.raises(ValueError, match="only Ambiguity instances"):
+        _pn("John", [Token("John", (0, 4), Role.GIVEN)], ["nope"])  # type: ignore[list-item]
