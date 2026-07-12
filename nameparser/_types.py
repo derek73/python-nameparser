@@ -13,7 +13,10 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum, StrEnum
-from typing import NamedTuple, NoReturn, TypeVar
+from typing import TYPE_CHECKING, NamedTuple, NoReturn, TypeVar
+
+if TYPE_CHECKING:
+    from nameparser._lexicon import Lexicon
 
 
 class Role(Enum):
@@ -389,3 +392,12 @@ class ParsedName:
         given, middle, family."""
         import nameparser._render as _render
         return _render.initials(self, spec, delimiter, separator)
+
+    def capitalized(self, lexicon: Lexicon | None = None, *,
+                    force: bool = False) -> ParsedName:
+        """Case-fixing transform -> new ParsedName, same spans, new
+        token texts. Needs a lexicon for capitalization_exceptions and
+        particle rules; None uses the default lexicon. force=False
+        preserves mixed-case input (v1 parity). Idempotent."""
+        import nameparser._render as _render
+        return _render.capitalized(self, lexicon, force=force)

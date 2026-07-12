@@ -1,7 +1,8 @@
 import pytest
 
+from nameparser._lexicon import Lexicon
 from nameparser._render import _collapse
-from nameparser._types import ParsedName, Role, Span, Token
+from nameparser._types import Ambiguity, AmbiguityKind, ParsedName, Role, Span, Token
 
 
 def test_collapse_is_the_254_algorithm() -> None:
@@ -141,3 +142,82 @@ def test_initials_empty_group_renders_empty() -> None:
     # empty_attribute_default fallback
     assert _bobdole().initials("{middle}") == "A."
     assert _pn("Cher", [Token("Cher", Span(0, 4), Role.GIVEN)]).initials("{middle}") == ""
+
+
+def _lowercase_mac() -> ParsedName:
+    # v1 capitalize() doctest input: 'bob v. de la macdole-eisenhower phd'
+    #  0123456789012345678901234567890123456
+    return _pn("bob v. de la macdole-eisenhower phd", [
+        Token("bob", Span(0, 3), Role.GIVEN),
+        Token("v.", Span(4, 6), Role.MIDDLE),
+        Token("de", Span(7, 9), Role.FAMILY),
+        Token("la", Span(10, 12), Role.FAMILY),
+        Token("macdole-eisenhower", Span(13, 31), Role.FAMILY),
+        Token("phd", Span(32, 35), Role.SUFFIX),
+    ])
+
+
+def test_capitalized_all_lower_input_v1_parity() -> None:
+    out = _lowercase_mac().capitalized()
+    assert out.given == "Bob"
+    assert out.middle == "V."
+    assert out.family == "de la MacDole-Eisenhower"  # particles stay lower
+    assert out.suffix == "Ph.D."                     # exceptions map, verbatim
+    # same spans, new texts (provenance is a documented non-invariant)
+    assert [t.span for t in out.tokens] == [t.span for t in _lowercase_mac().tokens]
+
+
+def test_capitalized_all_upper_input() -> None:
+    pn = _pn("JOHN SMITH", [
+        Token("JOHN", Span(0, 4), Role.GIVEN),
+        Token("SMITH", Span(5, 10), Role.FAMILY),
+    ])
+    assert str(pn.capitalized()) == "John Smith"
+
+
+def test_capitalized_preserves_mixed_case_unless_forced() -> None:
+    pn = _pn("Shirley Maclaine", [
+        Token("Shirley", Span(0, 7), Role.GIVEN),
+        Token("Maclaine", Span(8, 16), Role.FAMILY),
+    ])
+    assert pn.capitalized() == pn                       # untouched
+    assert pn.capitalized(force=True).family == "MacLaine"
+
+
+def test_capitalized_is_idempotent() -> None:
+    once = _lowercase_mac().capitalized()
+    assert once.capitalized() == once
+    assert once.capitalized(force=True) == once
+
+
+def test_capitalized_with_explicit_lexicon() -> None:
+    # empty lexicon: no particle rule, no exceptions -> plain capitalize
+    out = _lowercase_mac().capitalized(Lexicon.empty())
+    assert out.family == "De La MacDole-Eisenhower"
+    assert out.suffix == "Phd"
+
+
+def test_capitalized_lowers_conjunctions() -> None:
+    #  01234567890123456789
+    pn = _pn("juan ortega Y gasset", [
+        Token("juan", Span(0, 4), Role.GIVEN),
+        Token("ortega", Span(5, 11), Role.FAMILY),
+        Token("Y", Span(12, 13), Role.FAMILY, frozenset({"conjunction"})),
+        Token("gasset", Span(14, 20), Role.FAMILY),
+    ])
+    out = pn.capitalized(force=True)
+    assert out.family == "Ortega y Gasset"
+
+
+def test_capitalized_rebuilds_ambiguity_tokens() -> None:
+    tok = Token("van", Span(0, 3), Role.GIVEN, frozenset({"particle"}))
+    pn = ParsedName(
+        original="van johnson",
+        tokens=(tok, Token("johnson", Span(4, 11), Role.FAMILY)),
+        ambiguities=(Ambiguity(AmbiguityKind.PARTICLE_OR_GIVEN,
+                               "leading 'van' may be a particle", (tok,)),),
+    )
+    out = pn.capitalized()
+    # the ambiguity references the NEW capitalized token (subset invariant)
+    assert out.ambiguities[0].tokens[0] is out.tokens[0]
+    assert out.ambiguities[0].tokens[0].text == "Van"

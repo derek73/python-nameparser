@@ -9,11 +9,14 @@ from __future__ import annotations
 
 import re
 
-from nameparser._types import ParsedName, Role
+from nameparser._lexicon import Lexicon, _normalize
+from nameparser._types import Ambiguity, ParsedName, Role, Token
 
 _SPACES = re.compile(r"\s+")
 _SPACE_BEFORE_COMMA = re.compile(r"\s+,")
 _COMMA_CHAR = re.compile(r"[,،，]")  # ASCII, Arabic, fullwidth
+_MAC = re.compile(r"^(ma?c)(\w{2,})", re.IGNORECASE)
+_WORD = re.compile(r"(\w|\.)+")
 
 #: str.format keys render() accepts: the seven role fields in canonical
 #: order (derived from Role -- never restated) plus the derived views.
@@ -84,3 +87,54 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
             f"{', '.join(_INITIALS_KEYS)}"
         ) from None
     return _collapse(rendered)
+
+
+def _cap_word(word: str, role: Role, lex: Lexicon) -> str:
+    # v1 cap_word order: particle/conjunction rule first, then the
+    # exceptions map, then Mac/Mc, then str.capitalize
+    normalized = _normalize(word)
+    if (normalized in lex.particles
+            and role in (Role.MIDDLE, Role.FAMILY)) \
+            or normalized in lex.conjunctions:
+        return word.lower()
+    exception = lex.capitalization_exceptions_map.get(normalized)
+    if exception is not None:
+        return exception
+    if _MAC.match(word):
+        return _MAC.sub(
+            lambda m: m.group(1).capitalize() + m.group(2).capitalize(),
+            word)
+    return word.capitalize()
+
+
+def _cap_text(text: str, role: Role, lex: Lexicon) -> str:
+    # word-by-word within the token text: hyphenated names capitalize
+    # both sides ("macdole-eisenhower" -> "MacDole-Eisenhower")
+    return _WORD.sub(lambda m: _cap_word(m.group(0), role, lex), text)
+
+
+def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
+                force: bool) -> ParsedName:
+    """Case-fixing transform -> new ParsedName, same spans, new token
+    texts (core spec §5b). Gate (v1 parity): only single-case input is
+    touched unless force=True; the gate reads the joined token texts.
+    Idempotent: without force, a capitalized result is mixed-case and
+    the gate returns it unchanged; with force, every _cap_word rule is
+    a fixpoint on its own output."""
+    lex = Lexicon.default() if lexicon is None else lexicon
+    joined = " ".join(t.text for t in name.tokens)
+    if not force and joined not in (joined.upper(), joined.lower()):
+        return name
+    new_tokens = tuple(
+        Token(_cap_text(t.text, t.role, lex), t.span, t.role, t.tags)
+        for t in name.tokens)
+    # equal tokens (possible only for synthetic span=None duplicates)
+    # collapse to one mapping entry -- benign: the rebuilt ambiguity
+    # references an equal token, so the subset invariant still holds
+    replacement = dict(zip(name.tokens, new_tokens))
+    new_ambiguities = tuple(
+        Ambiguity(a.kind, a.detail,
+                  tuple(replacement[t] for t in a.tokens))
+        for a in name.ambiguities)
+    return ParsedName(original=name.original, tokens=new_tokens,
+                      ambiguities=new_ambiguities)
