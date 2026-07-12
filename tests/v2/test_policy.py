@@ -59,3 +59,27 @@ def test_patronymic_rules_rejects_bare_string_and_non_iterable():
         Policy(patronymic_rules="east-slavic")  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="valid rules"):
         Policy(patronymic_rules=5)  # type: ignore[arg-type]
+
+
+def test_policy_delimiters_coerce_to_frozensets():
+    p = Policy(nickname_delimiters=[("(", ")")])  # type: ignore[arg-type]
+    assert isinstance(p.nickname_delimiters, frozenset)
+    assert isinstance(hash(p), int)
+    assert p == Policy(nickname_delimiters=frozenset({("(", ")")}))
+
+
+def test_policy_delimiters_do_not_alias_caller_containers():
+    source = {("(", ")")}
+    p = Policy(nickname_delimiters=source)  # type: ignore[arg-type]
+    source.add(("'", "'"))
+    assert ("'", "'") not in p.nickname_delimiters
+
+
+def test_extra_suffix_delimiters_validated_and_coerced():
+    with pytest.raises(ValueError, match="bare string"):
+        Policy(extra_suffix_delimiters="ab")  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="non-empty strings"):
+        Policy(extra_suffix_delimiters={""})
+    p = Policy(extra_suffix_delimiters=["-"])  # type: ignore[arg-type]
+    assert p.extra_suffix_delimiters == frozenset({"-"})
+    assert isinstance(hash(p), int)

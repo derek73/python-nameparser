@@ -68,10 +68,27 @@ class Policy:
             ) from None
         object.__setattr__(self, "patronymic_rules", rules)
         for pairs_name in ("nickname_delimiters", "maiden_delimiters"):
-            for pair in getattr(self, pairs_name):
+            pairs = tuple(getattr(self, pairs_name))
+            for pair in pairs:
                 if (not isinstance(pair, tuple) or len(pair) != 2
                         or not all(isinstance(s, str) and s for s in pair)):
                     raise ValueError(
                         f"{pairs_name} entries must be (open, close) tuples "
                         f"of non-empty strings, got {pair!r}"
                     )
+            object.__setattr__(self, pairs_name, frozenset(pairs))
+        if isinstance(self.extra_suffix_delimiters, str):
+            raise ValueError(
+                f"extra_suffix_delimiters must be an iterable of strings, "
+                f"not a bare string: {self.extra_suffix_delimiters!r}"
+            )
+        delimiters = tuple(self.extra_suffix_delimiters)
+        for d in delimiters:
+            if not isinstance(d, str) or not d:
+                raise ValueError(
+                    f"extra_suffix_delimiters entries must be non-empty "
+                    f"strings, got {d!r}"
+                )
+        object.__setattr__(
+            self, "extra_suffix_delimiters", frozenset(delimiters)
+        )
