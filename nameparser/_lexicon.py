@@ -107,6 +107,18 @@ class Lexicon:
                 f"not in particles: {extra}"
             )
 
+    # -- constructors ----------------------------------------------------
+
+    @classmethod
+    def empty(cls) -> Lexicon:
+        return cls()
+
+    @classmethod
+    def default(cls) -> Lexicon:
+        return _default_lexicon()
+
+    # -- dunders ----------------------------------------------------------
+
     def _deltas_from(self, baseline: Lexicon) -> list[tuple[str, int, int]]:
         deltas = []
         for name in _VOCAB_FIELDS + ("capitalization_exceptions",):
@@ -151,21 +163,25 @@ class Lexicon:
             self, "_cap_map",
             MappingProxyType(dict(self.capitalization_exceptions)))
 
+    def __or__(self, other: Lexicon) -> Lexicon:
+        if not isinstance(other, Lexicon):
+            return NotImplemented
+        updates: dict[str, object] = {
+            name: getattr(self, name) | getattr(other, name)
+            for name in _VOCAB_FIELDS
+        }
+        # right-biased on key conflicts, mirroring later-wins for scalars
+        merged = dict(self._cap_map) | dict(other._cap_map)
+        updates["capitalization_exceptions"] = tuple(sorted(merged.items()))
+        return dataclasses.replace(self, **updates)  # type: ignore[arg-type]
+
+    # -- properties -------------------------------------------------------
+
     @property
     def capitalization_exceptions_map(self) -> Mapping[str, str]:
         return self._cap_map
 
-    # -- constructors ----------------------------------------------------
-
-    @classmethod
-    def empty(cls) -> Lexicon:
-        return cls()
-
-    @classmethod
-    def default(cls) -> Lexicon:
-        return _default_lexicon()
-
-    # -- composition ------------------------------------------------------
+    # -- editing ----------------------------------------------------------
 
     def _edit(self, op: str, entries: Mapping[str, Iterable[str]]) -> Lexicon:
         updates: dict[str, frozenset[str]] = {}
@@ -199,18 +215,6 @@ class Lexicon:
 
     def remove(self, **entries: Iterable[str]) -> Lexicon:
         return self._edit("remove", entries)
-
-    def __or__(self, other: Lexicon) -> Lexicon:
-        if not isinstance(other, Lexicon):
-            return NotImplemented
-        updates: dict[str, object] = {
-            name: getattr(self, name) | getattr(other, name)
-            for name in _VOCAB_FIELDS
-        }
-        # right-biased on key conflicts, mirroring later-wins for scalars
-        merged = dict(self._cap_map) | dict(other._cap_map)
-        updates["capitalization_exceptions"] = tuple(sorted(merged.items()))
-        return dataclasses.replace(self, **updates)  # type: ignore[arg-type]
 
 
 @functools.cache
