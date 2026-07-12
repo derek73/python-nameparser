@@ -335,3 +335,18 @@ def test_types_pickle_round_trip() -> None:
     assert pickle.loads(pickle.dumps(amb)) == amb
     tok = Token("de", Span(9, 11), Role.FAMILY, frozenset({"particle"}))
     assert pickle.loads(pickle.dumps(tok)) == tok
+
+
+def test_span_add_is_blocked() -> None:
+    # NamedTuple + would concatenate into a 4-tuple, the natural but
+    # wrong spelling of "covering span" (a real cover() arrives with the
+    # pipeline's join stage, its consumer).
+    with pytest.raises(TypeError, match="covering span"):
+        Span(0, 2) + Span(3, 4)  # type: ignore[operator]
+
+
+def test_token_rejects_bool_span_coordinates() -> None:
+    # bool is an int subclass; (False, True) is a comparison result
+    # leaking into a coordinate slot, not a span.
+    with pytest.raises(TypeError, match="pair of ints"):
+        Token("x", (False, True), Role.GIVEN)  # type: ignore[arg-type]

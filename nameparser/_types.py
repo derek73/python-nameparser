@@ -13,7 +13,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum, StrEnum
-from typing import NamedTuple
+from typing import NamedTuple, NoReturn
 
 
 class Role(Enum):
@@ -33,6 +33,16 @@ class Span(NamedTuple):
 
     start: int
     end: int
+
+    def __add__(self, other: object) -> NoReturn:  # type: ignore[override]
+        # Inherited tuple + would concatenate two spans into a 4-tuple --
+        # the natural but wrong spelling of "covering span". The real
+        # covering operation ships with its consumer, the pipeline's
+        # join stage.
+        raise TypeError(
+            "Span does not support +; tuple concatenation is not a "
+            "covering span"
+        )
 
 
 #: Stable, documented tag vocabulary (API). All other tags are
@@ -66,7 +76,10 @@ class Token:
             if not (
                 isinstance(self.span, tuple)
                 and len(self.span) == 2
-                and all(isinstance(v, int) for v in self.span)
+                # bool is an int subclass: (False, True) is a comparison
+                # result leaking into a coordinate slot, not a span
+                and all(isinstance(v, int) and not isinstance(v, bool)
+                        for v in self.span)
             ):
                 raise TypeError(
                     f"invalid span {self.span!r}: expected a (start, end) "
