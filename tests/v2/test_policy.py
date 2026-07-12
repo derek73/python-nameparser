@@ -159,3 +159,11 @@ def test_patronymic_rules_generator_errors_propagate_untouched() -> None:
 def test_unknown_patronymic_rule_error_names_the_offender() -> None:
     with pytest.raises(ValueError, match="klingon"):
         Policy(patronymic_rules=iter(["east-slavic", "klingon"]))  # type: ignore[arg-type]
+
+
+def test_policy_patch_canonicalizes_scalar_name_order() -> None:
+    # A list name_order stored as-is made the patch -- and any Locale
+    # holding it -- unhashable, failing far from the construction site.
+    p = PolicyPatch(name_order=[Role.FAMILY, Role.GIVEN, Role.MIDDLE])  # type: ignore[arg-type]
+    assert p.name_order == (Role.FAMILY, Role.GIVEN, Role.MIDDLE)
+    assert isinstance(hash(p), int)

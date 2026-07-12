@@ -182,9 +182,13 @@ class PolicyPatch:
     strip_bidi: bool | _Unset = UNSET
 
     def __post_init__(self) -> None:
-        # Canonicalize (but do NOT validate) union-composed fields so a
-        # patch built from a set/list literal is hashable and unions
-        # cleanly in apply_patch.
+        # Canonicalize (but do NOT validate) collection fields so a patch
+        # built from a set/list literal is hashable and unions cleanly in
+        # apply_patch. name_order needs the same treatment: Policy would
+        # coerce a list at apply time, but the patch itself (and any
+        # Locale holding it) must already be hashable.
+        if self.name_order is not UNSET:
+            object.__setattr__(self, "name_order", tuple(self.name_order))
         for f in dataclasses.fields(self):
             if f.metadata.get("compose") != "union":
                 continue
