@@ -73,13 +73,17 @@ Requires Python 3.10+.
     5
     >>> list(name)
     ['Dr.', 'Juan', 'Q. Xavier', 'de la Vega', 'III']
-    >>> name[1:-3]
-    ['Juan', 'Q. Xavier', 'de la Vega']
+    >>> name['first']
+    'Juan'
 
 ``name == other`` and ``hash(name)`` are deprecated and will be removed in
 2.0; use ``matches()`` for comparison and ``comparison_key()`` for sets,
 dicts, and dedup (see `issue #223
-<https://github.com/derek73/python-nameparser/issues/223>`_).
+<https://github.com/derek73/python-nameparser/issues/223>`_). Slicing a name
+by position (``name[1:-3]``) and item assignment (``name['first'] = ...``)
+are likewise deprecated and will be removed in 2.0; use the named attributes
+instead (see `issue #258
+<https://github.com/derek73/python-nameparser/issues/258>`_).
 
 Empty or unparsable input does not raise an error; it produces a name whose
 attributes are all empty. Check ``len(name) == 0`` (or ``str(name) == ''``)

@@ -301,6 +301,20 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.m(hn.middle, "Hon", hn)
         self.m(hn.last, "Solo", hn)
 
+    def test_empty_attribute_default_assignment_emits_deprecation_warning(self) -> None:
+        # assigning empty_attribute_default is deprecated for removal in 2.0
+        # (#255); empty attributes will always return '' once removed
+        c = Constants()
+        with pytest.deprecated_call(match="255"):
+            c.empty_attribute_default = None  # type: ignore[assignment]
+        self.assertIsNone(c.empty_attribute_default)
+
+    def test_empty_attribute_default_read_does_not_warn(self) -> None:
+        c = Constants()
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            self.assertEqual(c.empty_attribute_default, '')
+
     def test_empty_attribute_default(self) -> None:
         from nameparser.config import CONSTANTS
         # empty_attribute_default has no explicit annotation (mypy infers str
@@ -309,7 +323,8 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         # Not widened to str | None like string_format/suffix_delimiter
         # because it cascades into ~8 public str-typed properties (title,
         # first, middle, last, suffix, nickname, initials()).
-        CONSTANTS.empty_attribute_default = None  # type: ignore[assignment]
+        with pytest.deprecated_call():
+            CONSTANTS.empty_attribute_default = None  # type: ignore[assignment]
         hn = HumanName("")
         self.m(hn.title, None, hn)
         self.m(hn.first, None, hn)
@@ -320,7 +335,8 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 
     def test_empty_attribute_on_instance(self) -> None:
         hn = HumanName("", Constants())
-        hn.C.empty_attribute_default = None  # type: ignore[assignment]  # see test_empty_attribute_default above
+        with pytest.deprecated_call():
+            hn.C.empty_attribute_default = None  # type: ignore[assignment]  # see test_empty_attribute_default above
         self.m(hn.title, None, hn)
         self.m(hn.first, None, hn)
         self.m(hn.middle, None, hn)
@@ -330,7 +346,8 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 
     def test_none_empty_attribute_string_formatting(self) -> None:
         hn = HumanName("", Constants())
-        hn.C.empty_attribute_default = None  # type: ignore[assignment]  # see test_empty_attribute_default above
+        with pytest.deprecated_call():
+            hn.C.empty_attribute_default = None  # type: ignore[assignment]  # see test_empty_attribute_default above
         self.assertEqual('', str(hn), hn)
 
     def test_add_constant_with_explicit_encoding(self) -> None:
@@ -346,6 +363,27 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         with pytest.deprecated_call(match="decode"):
             sm.add(b'esq')  # type: ignore[arg-type]  # deliberately deprecated input
         self.assertIn('esq', sm)
+
+    def test_add_with_encoding_str_emits_deprecation_warning(self) -> None:
+        # add_with_encoding() itself is deprecated in 1.4 for removal in 2.0
+        # (#263/#245); the str path is otherwise silent, so this method's
+        # own removal is unwarned without this
+        sm = SetManager(['dr'])
+        with pytest.deprecated_call(match="add\\(\\)"):
+            sm.add_with_encoding('esq')
+        self.assertIn('esq', sm)
+
+    def test_add_with_encoding_bytes_emits_two_distinct_warnings(self) -> None:
+        # the bytes-decode warning (#245, shipped 1.3.0) and the
+        # add_with_encoding()-removal warning (#263) are independent
+        sm = SetManager(['dr'])
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            sm.add_with_encoding(b'esq')
+        messages = [str(w.message) for w in caught if issubclass(w.category, DeprecationWarning)]
+        self.assertEqual(len(messages), 2)
+        self.assertTrue(any('decode' in m for m in messages))
+        self.assertTrue(any('use add() instead' in m for m in messages))
 
     def test_set_manager_add_str_does_not_warn(self) -> None:
         sm = SetManager(['dr'])
@@ -438,10 +476,14 @@ class ConstantsCustomizationTests(HumanNameTestBase):
     def test_pickle_roundtrip_preserves_instance_scalar_override(self) -> None:
         """An instance-level scalar override must survive a pickle round-trip."""
         c = Constants()
-        c.empty_attribute_default = None  # type: ignore[assignment]  # see test_empty_attribute_default above
+        with pytest.deprecated_call():
+            c.empty_attribute_default = None  # type: ignore[assignment]  # see test_empty_attribute_default above
 
         # Safe: round-tripping a Constants the test just built, not untrusted data.
-        restored = pickle.loads(pickle.dumps(c))
+        # Restoring a pickled state is not itself a #255-deprecated assignment.
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            restored = pickle.loads(pickle.dumps(c))
 
         self.assertEqual(restored.empty_attribute_default, None)
 
@@ -466,9 +508,39 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.assertIn('suffixes_prefixes_titles', legacy_state)
 
         restored = Constants.__new__(Constants)
-        restored.__setstate__(legacy_state)
+        with pytest.deprecated_call():  # legacy-format load deprecated (#279)
+            restored.__setstate__(legacy_state)
 
         # The real customization is recovered and the property key is ignored.
+        self.assertIn('legacytitle', restored.titles)
+
+    def test_unpickle_legacy_state_emits_deprecation_warning_once(self) -> None:
+        # legacy-format unpickling is deprecated for removal in 2.0 (#279):
+        # the migration shim will stop skipping the computed-property key and
+        # raise ValueError instead; warn once per __setstate__ call (not once
+        # per skipped key) telling users to re-pickle
+        c = Constants()
+        legacy_state = {
+            name: getattr(c, name) for name in dir(c) if not name.startswith('_')
+        }
+        self.assertIn('suffixes_prefixes_titles', legacy_state)
+
+        restored = Constants.__new__(Constants)
+        with pytest.deprecated_call(match="re-pickle") as record:
+            restored.__setstate__(legacy_state)
+        deprecations = [w for w in record.list if issubclass(w.category, DeprecationWarning)]
+        self.assertEqual(len(deprecations), 1)
+
+    def test_setstate_without_legacy_keys_does_not_warn(self) -> None:
+        c = Constants()
+        c.titles.add('legacytitle')
+        state = c.__getstate__()
+        self.assertNotIn('suffixes_prefixes_titles', state)
+
+        restored = Constants.__new__(Constants)
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            restored.__setstate__(state)
         self.assertIn('legacytitle', restored.titles)
 
     def test_pickle_roundtrip_preserves_regex_manager_subclass(self) -> None:
@@ -485,7 +557,8 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         restored = pickle.loads(pickle.dumps(c))
 
         self.assertEqual(type(restored.regexes), RegexTupleManager)
-        self.assertEqual(restored.regexes.does_not_exist, EMPTY_REGEX)
+        with pytest.deprecated_call():  # unknown-key access deprecated (#256)
+            self.assertEqual(restored.regexes.does_not_exist, EMPTY_REGEX)
 
     def test_regexes_deepcopy_roundtrip(self) -> None:
         """copy.deepcopy of a RegexTupleManager must round-trip.
@@ -500,8 +573,10 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 
         self.assertEqual(type(dup), RegexTupleManager)
         self.assertEqual(dict(dup), dict(c.regexes))
-        # The EMPTY_REGEX default still applies to genuinely unknown keys.
-        self.assertEqual(dup.does_not_exist, EMPTY_REGEX)
+        # The EMPTY_REGEX default still applies to genuinely unknown keys,
+        # but accessing one is now deprecated (#256).
+        with pytest.deprecated_call():
+            self.assertEqual(dup.does_not_exist, EMPTY_REGEX)
 
     def test_nickname_delimiters_deepcopy_roundtrip(self) -> None:
         """copy.deepcopy of nickname_delimiters must round-trip.
@@ -517,8 +592,10 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 
         self.assertEqual(type(dup), TupleManager)
         self.assertEqual(dict(dup), dict(c.nickname_delimiters))
-        # Plain TupleManager has no EMPTY_REGEX fallback: unknown keys are None.
-        self.assertIsNone(dup.does_not_exist)
+        # Plain TupleManager has no EMPTY_REGEX fallback: unknown keys are
+        # None, but accessing one is now deprecated (#256).
+        with pytest.deprecated_call():
+            self.assertIsNone(dup.does_not_exist)
         self.assertIsNotNone(dup.curly_braces)
 
     def test_maiden_delimiters_deepcopy_roundtrip(self) -> None:
@@ -529,7 +606,8 @@ class ConstantsCustomizationTests(HumanNameTestBase):
 
         self.assertEqual(type(dup), TupleManager)
         self.assertEqual(dict(dup), {})
-        self.assertIsNone(dup.does_not_exist)
+        with pytest.deprecated_call():  # unknown-key access deprecated (#256)
+            self.assertIsNone(dup.does_not_exist)
 
     def test_nickname_delimiters_default_builtins_resolve_live(self) -> None:
         # The three built-ins are stored as the *name* of a regexes entry
@@ -585,8 +663,10 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         sentinel = object()
 
         self.assertEqual(getattr(c.regexes, '__deepcopy__', sentinel), sentinel)
-        # A normal (non-dunder) unknown key still yields the EMPTY_REGEX default.
-        self.assertEqual(c.regexes.unknown_key, EMPTY_REGEX)
+        # A normal (non-dunder) unknown key still yields the EMPTY_REGEX
+        # default, but accessing one is now deprecated (#256).
+        with pytest.deprecated_call():
+            self.assertEqual(c.regexes.unknown_key, EMPTY_REGEX)
 
     def test_tuplemanager_ignores_dunder_lookups(self) -> None:
         """Base TupleManager must report unknown dunder names as absent too.
@@ -602,8 +682,65 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         self.assertEqual(type(tm), TupleManager)
         self.assertFalse(hasattr(tm, '__deepcopy__'))
         self.assertEqual(getattr(tm, '__wrapped__', sentinel), sentinel)
-        # A normal (non-dunder) unknown key still returns the None default.
-        self.assertEqual(tm.unknown_key, None)
+        # A normal (non-dunder) unknown key still returns the None default,
+        # but accessing one is now deprecated (#256).
+        with pytest.deprecated_call():
+            self.assertEqual(tm.unknown_key, None)
+
+    def test_sunder_probe_does_not_emit_deprecation_warning(self) -> None:
+        # Single-underscore introspection probes (IPython/Jupyter's
+        # _repr_html_, _ipython_canary_method_should_not_exist_, etc.) are
+        # never config keys, just like dunders -- warning on them would
+        # misleadingly flag a typo merely for e.g. displaying CONSTANTS.regexes
+        # in a notebook. No real config key starts with '_'.
+        c = Constants()
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            self.assertEqual(c.regexes._repr_html_, EMPTY_REGEX)
+            self.assertIsNone(c.capitalization_exceptions._ipython_canary_method_should_not_exist_)
+
+    def test_tuplemanager_unknown_key_emits_deprecation_warning(self) -> None:
+        # unknown-key attribute access is deprecated for removal in 2.0
+        # (#256); will become AttributeError naming the known keys
+        c = Constants()
+        tm = c.capitalization_exceptions
+        with pytest.deprecated_call(match="phd_typo") as record:
+            result = tm.phd_typo
+        self.assertIsNone(result)
+        message = str(record.list[0].message)
+        for key in tm.keys():
+            self.assertIn(key, message)
+
+    def test_tuplemanager_known_key_does_not_warn(self) -> None:
+        c = Constants()
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            list(c.capitalization_exceptions.keys())  # sanity: has entries
+            first_key = next(iter(c.capitalization_exceptions))
+            getattr(c.capitalization_exceptions, first_key)
+
+    def test_regextuplemanager_unknown_key_emits_deprecation_warning(self) -> None:
+        c = Constants()
+        with pytest.deprecated_call(match="parenthesys") as record:
+            result = c.regexes.parenthesys
+        self.assertEqual(result, EMPTY_REGEX)
+        message = str(record.list[0].message)
+        self.assertIn('mac', message)  # a known regexes key
+
+    def test_regextuplemanager_known_key_does_not_warn(self) -> None:
+        c = Constants()
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            c.regexes.mac
+
+    def test_dunder_probe_does_not_emit_deprecation_warning(self) -> None:
+        # dunder protocol probes must stay silent -- only real config typos warn
+        c = Constants()
+        sentinel = object()
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            self.assertEqual(getattr(c.regexes, '__deepcopy__', sentinel), sentinel)
+            self.assertEqual(getattr(c.capitalization_exceptions, '__deepcopy__', sentinel), sentinel)
 
 
     def test_suffixes_prefixes_titles_reflects_add_title(self) -> None:

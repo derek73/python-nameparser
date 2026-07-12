@@ -1,3 +1,5 @@
+import pytest
+
 from nameparser import HumanName
 from nameparser.config import Constants
 from nameparser.config.regexes import REGEXES
@@ -40,8 +42,12 @@ class HumanNameCommaVariantsTests(HumanNameTestBase):
         # other no-comma input (word tokenizing drops the punctuation),
         # yielding a plain first/last pair -- not the inverted "Last, First"
         # reading, and definitely not single-character pieces.
+        # Unknown-key access (here, the deliberately-omitted 'commas') is
+        # deprecated for removal in 2.0 (#256); this fallback pattern will
+        # AttributeError-crash the parser instead of degrading silently.
         custom = {k: v for k, v in REGEXES.items() if k != 'commas'}
         c = Constants(regexes=custom)
-        hn = HumanName("Smith, John", constants=c)
+        with pytest.deprecated_call():
+            hn = HumanName("Smith, John", constants=c)
         self.m(hn.first, "Smith", hn)
         self.m(hn.last, "John", hn)

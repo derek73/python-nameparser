@@ -223,9 +223,10 @@ class MaidenNameTestCase(HumanNameTestBase):
         self.assertEqual(hn.as_dict(False)['maiden'], "Johnson")
 
     def test_maiden_appears_in_slice(self) -> None:
+        # list(hn), not the deprecated hn[:] slice (#258)
         hn = HumanName("Jenny Baker")
         hn.maiden = "Johnson"
-        self.assertIn("Johnson", hn[:])
+        self.assertIn("Johnson", list(hn))
 
     def test_maiden_via_constructor_kwarg(self) -> None:
         hn = HumanName(first="Jenny", last="Baker", maiden="Johnson")
