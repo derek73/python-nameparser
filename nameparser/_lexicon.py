@@ -107,24 +107,36 @@ class Lexicon:
                 f"not in particles: {extra}"
             )
 
-    def __repr__(self) -> str:
-        # Bounded: renders only which fields deviate from default() and by
-        # how many entries -- never the entries themselves (design rule,
-        # see nameparser._types module docstring).
-        default = Lexicon.default()
-        if self == default:
-            return "Lexicon(default)"
+    def _deltas_from(self, baseline: Lexicon) -> list[tuple[str, int, int]]:
         deltas = []
         for name in _VOCAB_FIELDS + ("capitalization_exceptions",):
             mine = set(getattr(self, name))
-            theirs = set(getattr(default, name))
+            theirs = set(getattr(baseline, name))
             added, removed = len(mine - theirs), len(theirs - mine)
             if added or removed:
-                delta = "".join(
-                    part for part, n in ((f"+{added}", added), (f"-{removed}", removed)) if n
-                )
-                deltas.append(f"{name}: {delta}")
-        return f"Lexicon(default + {', '.join(deltas)})"
+                deltas.append((name, added, removed))
+        return deltas
+
+    def __repr__(self) -> str:
+        # Bounded: renders only which fields deviate from the nearer of
+        # the two named constructors and by how many entries -- never the
+        # entries themselves (design rule, see nameparser._types module
+        # docstring). Diffing empty()-built lexicons against default()
+        # would tell the wrong story ("default minus ~700 entries").
+        if self == Lexicon.default():
+            return "Lexicon(default)"
+        if self == Lexicon.empty():
+            return "Lexicon(empty)"
+        candidates = [(label, self._deltas_from(baseline))
+                      for label, baseline in (("default", Lexicon.default()),
+                                              ("empty", Lexicon.empty()))]
+        label, deltas = min(
+            candidates, key=lambda c: sum(a + r for _, a, r in c[1]))
+        rendered = ", ".join(
+            name + ": " + "".join(
+                part for part, n in ((f"+{a}", a), (f"-{r}", r)) if n)
+            for name, a, r in deltas)
+        return f"Lexicon({label} + {rendered})"
 
     def __getstate__(self) -> dict[str, object]:
         # _cap_map is a MappingProxyType, which pickle rejects; ship every

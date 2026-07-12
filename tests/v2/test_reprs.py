@@ -58,3 +58,11 @@ def test_locale_repr_shows_code_and_patched_fields() -> None:
                     {PatronymicRule.EAST_SLAVIC})))
     assert repr(ru) == "Locale('ru': patronymic_rules)"
     assert repr(Locale("xx", Lexicon.empty())) == "Locale('xx')"
+
+
+def test_lexicon_repr_diffs_against_nearer_baseline() -> None:
+    # An empty()-built Lexicon must not render as default() minus ~700
+    # entries -- diff against whichever named constructor is nearer.
+    assert repr(Lexicon.empty()) == "Lexicon(empty)"
+    lex = Lexicon.empty().add(titles={"zqx"})
+    assert repr(lex) == "Lexicon(empty + titles: +1)"
