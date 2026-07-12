@@ -7,6 +7,7 @@ nameparser.parser. Enforced by tests/v2/test_layering.py.
 """
 from __future__ import annotations
 
+import dataclasses
 import functools
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
@@ -108,6 +109,53 @@ class Lexicon:
     @classmethod
     def default(cls) -> Lexicon:
         return _default_lexicon()
+
+    # -- composition ------------------------------------------------------
+
+    def _edit(self, op: str, entries: Mapping[str, Iterable[str]]) -> Lexicon:
+        updates: dict[str, frozenset[str]] = {}
+        for name, words in entries.items():
+            if name == "capitalization_exceptions":
+                raise TypeError(
+                    "capitalization_exceptions holds key->value pairs; "
+                    "use dataclasses.replace(lexicon, "
+                    "capitalization_exceptions={...}) instead of "
+                    f"{op}()"
+                )
+            if name not in _VOCAB_FIELDS:
+                raise TypeError(
+                    f"unknown Lexicon field {name!r}; valid fields: "
+                    f"{', '.join(_VOCAB_FIELDS)}"
+                )
+            current: frozenset[str] = getattr(self, name)
+            normalized = _normset(words, name)
+            updates[name] = (current | normalized if op == "add"
+                             else current - normalized)
+        # mypy's dataclasses.replace() typing checks a **dict's single
+        # value type against every field's type (it can't see which keys
+        # are actually present behind the unpack), so a homogeneous
+        # frozenset[str] dict is flagged against the tuple/Mapping-typed
+        # capitalization_exceptions/_cap_map fields even though this dict
+        # never contains those keys (guarded above).
+        return dataclasses.replace(self, **updates)  # type: ignore[arg-type]
+
+    def add(self, **entries: Iterable[str]) -> Lexicon:
+        return self._edit("add", entries)
+
+    def remove(self, **entries: Iterable[str]) -> Lexicon:
+        return self._edit("remove", entries)
+
+    def __or__(self, other: Lexicon) -> Lexicon:
+        if not isinstance(other, Lexicon):
+            return NotImplemented
+        updates: dict[str, object] = {
+            name: getattr(self, name) | getattr(other, name)
+            for name in _VOCAB_FIELDS
+        }
+        # right-biased on key conflicts, mirroring later-wins for scalars
+        merged = dict(self._cap_map) | dict(other._cap_map)
+        updates["capitalization_exceptions"] = tuple(sorted(merged.items()))
+        return dataclasses.replace(self, **updates)  # type: ignore[arg-type]
 
 
 @functools.cache

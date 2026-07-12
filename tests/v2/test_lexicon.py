@@ -68,3 +68,40 @@ def test_colliding_exception_keys_dedupe_last_wins():
 def test_lexicon_rejects_non_str_exception_values():
     with pytest.raises(ValueError, match="str -> str"):
         Lexicon(capitalization_exceptions={"phd": 42})  # type: ignore[dict-item]
+
+
+def test_add_and_remove_return_new_lexicons():
+    # "zqtitle" is a synthetic word absent from v1's TITLES data (unlike
+    # e.g. "dra", the feminine "dr." abbreviation, which is already there).
+    base = Lexicon.default()
+    lex = base.add(titles={"zqtitle"}).remove(suffix_words={"bishop"})
+    assert "zqtitle" in lex.titles and "zqtitle" not in base.titles
+    assert "bishop" not in lex.suffix_words
+
+
+def test_add_unknown_field_raises_with_valid_names():
+    with pytest.raises(TypeError, match="prefixes"):
+        Lexicon.default().add(prefixes={"van"})  # v1 name: helpful error
+
+
+def test_add_capitalization_exceptions_raises_pointing_at_replace():
+    with pytest.raises(TypeError, match="dataclasses.replace"):
+        Lexicon.default().add(capitalization_exceptions={"x": "X"})
+
+
+def test_union_is_fieldwise_and_right_biased_for_exceptions():
+    a = dataclasses.replace(Lexicon.empty(),
+                            capitalization_exceptions={"phd": "PhD"})
+    a = a.add(titles={"dr"})
+    b = dataclasses.replace(Lexicon.empty(),
+                            capitalization_exceptions={"phd": "Ph.D."})
+    b = b.add(titles={"mr"})
+    u = a | b
+    assert u.titles == frozenset({"dr", "mr"})
+    assert u.capitalization_exceptions_map["phd"] == "Ph.D."  # right wins
+
+
+def test_remove_breaking_subset_invariant_raises():
+    lex = Lexicon(particles={"van"}, particles_ambiguous={"van"})
+    with pytest.raises(ValueError, match="subset"):
+        lex.remove(particles={"van"})  # would orphan particles_ambiguous
