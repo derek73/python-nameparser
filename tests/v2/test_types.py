@@ -1,6 +1,6 @@
 import pytest
 
-from nameparser._types import Ambiguity, AmbiguityKind, Role, Span, Token
+from nameparser._types import Ambiguity, AmbiguityKind, ParsedName, Role, Span, Token
 
 
 def test_role_declaration_order_is_canonical_field_order():
@@ -81,3 +81,68 @@ def test_ambiguity_rejects_non_token_elements():
 def test_ambiguity_rejects_empty_detail():
     with pytest.raises(ValueError, match="non-empty string"):
         Ambiguity("order", "", ())
+
+
+def _pn(original, tokens, ambiguities=()):
+    return ParsedName(original=original, tokens=tuple(tokens),
+                      ambiguities=tuple(ambiguities))
+
+
+def test_parsedname_accepts_valid_spans_and_is_truthy():
+    pn = _pn("John Smith", [
+        Token("John", (0, 4), Role.GIVEN),
+        Token("Smith", (5, 10), Role.FAMILY),
+    ])
+    assert bool(pn) is True
+
+
+def test_empty_parse_is_falsy():
+    assert bool(_pn("", [])) is False
+    assert bool(_pn("   ", [])) is False
+
+
+def test_parsedname_rejects_out_of_bounds_span():
+    with pytest.raises(ValueError, match="out of bounds"):
+        _pn("John", [Token("Johnny", (0, 6), Role.GIVEN)])
+
+
+def test_parsedname_rejects_overlapping_spans():
+    with pytest.raises(ValueError, match="ascending"):
+        _pn("John Smith", [
+            Token("John", (0, 4), Role.GIVEN),
+            Token("ohn S", (1, 6), Role.FAMILY),
+        ])
+
+
+def test_parsedname_rejects_descending_spans():
+    with pytest.raises(ValueError, match="ascending"):
+        _pn("John Smith", [
+            Token("Smith", (5, 10), Role.FAMILY),
+            Token("John", (0, 4), Role.GIVEN),
+        ])
+
+
+def test_synthetic_tokens_skip_span_checks():
+    pn = _pn("John Smith", [
+        Token("John", (0, 4), Role.GIVEN),
+        Token("Qux", None, Role.MIDDLE),
+        Token("Smith", (5, 10), Role.FAMILY),
+    ])
+    assert len(pn.tokens) == 3
+
+
+def test_ambiguity_tokens_must_be_subset_of_parse_tokens():
+    inside = Token("Van", (0, 3), Role.GIVEN)
+    outside = Token("Zzz", None, Role.GIVEN)
+    with pytest.raises(ValueError, match="subset"):
+        _pn("Van Johnson",
+            [inside, Token("Johnson", (4, 11), Role.FAMILY)],
+            [Ambiguity(AmbiguityKind.PARTICLE_OR_GIVEN, "d", (outside,))])
+
+
+def test_parsedname_equality_is_strict_structural():
+    a = _pn("John", [Token("John", (0, 4), Role.GIVEN)])
+    b = _pn("John", [Token("John", (0, 4), Role.GIVEN)])
+    c = _pn("John ", [Token("John", (0, 4), Role.GIVEN)])
+    assert a == b and hash(a) == hash(b)
+    assert a != c  # different original: not interchangeable

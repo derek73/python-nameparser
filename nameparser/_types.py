@@ -102,3 +102,47 @@ class Ambiguity:
                     f"got {tok!r}"
                 )
         object.__setattr__(self, "tokens", toks)
+
+
+@dataclass(frozen=True, slots=True)
+class ParsedName:
+    """Immutable result of a parse. Constructor-enforced invariants:
+    spans ascending, non-overlapping, in bounds of `original`; every
+    Ambiguity's tokens are a subset of `tokens`. Provenance semantics
+    (text == original[span] for parser-produced names) are documented,
+    not enforced -- transforms like replace() legitimately break them.
+    """
+
+    original: str
+    tokens: tuple[Token, ...]
+    ambiguities: tuple[Ambiguity, ...] = ()
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "tokens", tuple(self.tokens))
+        object.__setattr__(self, "ambiguities", tuple(self.ambiguities))
+        prev_end = 0
+        for tok in self.tokens:
+            if tok.span is None:
+                continue
+            if tok.span.end > len(self.original):
+                raise ValueError(
+                    f"token {tok.text!r} span {tuple(tok.span)} is out of "
+                    f"bounds for original of length {len(self.original)}"
+                )
+            if tok.span.start < prev_end:
+                raise ValueError(
+                    f"token spans must be ascending and non-overlapping; "
+                    f"token {tok.text!r} at {tuple(tok.span)} begins before "
+                    f"offset {prev_end}"
+                )
+            prev_end = tok.span.end
+        for amb in self.ambiguities:
+            for tok in amb.tokens:
+                if tok not in self.tokens:
+                    raise ValueError(
+                        f"Ambiguity token {tok.text!r} is not a subset of "
+                        f"this ParsedName's tokens"
+                    )
+
+    def __bool__(self) -> bool:
+        return bool(self.tokens)
