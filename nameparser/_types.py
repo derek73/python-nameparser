@@ -381,3 +381,11 @@ class ParsedName:
         KeyError naming the valid fields."""
         import nameparser._render as _render
         return _render.render(self, spec)
+
+    def initials(self, spec: str = "{given} {middle} {family}",
+                 delimiter: str = ".", separator: str = " ") -> str:
+        """Initials per group; v1's initials_format/_delimiter/_separator
+        become call-site arguments (core spec §5b). Valid spec keys:
+        given, middle, family."""
+        import nameparser._render as _render
+        return _render.initials(self, spec, delimiter, separator)

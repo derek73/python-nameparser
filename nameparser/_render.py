@@ -20,6 +20,13 @@ _COMMA_CHAR = re.compile(r"[,،，]")  # ASCII, Arabic, fullwidth
 _DERIVED_VIEWS = ("family_base", "family_particles", "surnames", "given_names")
 _RENDER_KEYS = tuple(r.value for r in Role) + _DERIVED_VIEWS
 
+#: str.format keys initials() accepts: the three name-bearing roles.
+_INITIALS_KEYS = (Role.GIVEN.value, Role.MIDDLE.value, Role.FAMILY.value)
+
+#: Tags whose tokens contribute no initial outside the given group.
+#: Not STABLE_TAGS -- that also contains "initial", which must contribute.
+_SKIP_TAGS = frozenset({"particle", "conjunction"})
+
 
 def _collapse(rendered: str) -> str:
     """The #254 collapse, normative (core spec §5b): empty fields
@@ -48,5 +55,32 @@ def render(name: ParsedName, spec: str) -> str:
         raise KeyError(
             f"unknown render field {exc.args[0]!r}; valid fields: "
             f"{', '.join(_RENDER_KEYS)}"
+        ) from None
+    return _collapse(rendered)
+
+
+def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str:
+    """First letter of each contributing token per group, v1 semantics:
+    delimiter follows each initial, separator sits between initials
+    within a group. Tokens tagged particle/conjunction contribute no
+    initial in middle/family (given-name tokens always contribute);
+    tags come from the pipeline -- hand-built untagged tokens all
+    contribute. Valid spec keys: given, middle, family."""
+    values: dict[str, str] = {}
+    for key in _INITIALS_KEYS:
+        role = Role(key)
+        tokens = name.tokens_for(role)
+        if role is not Role.GIVEN:
+            tokens = tuple(t for t in tokens
+                           if not (_SKIP_TAGS & t.tags))
+        letters = [t.text[0] for t in tokens]
+        values[key] = ((delimiter + separator).join(letters) + delimiter
+                       if letters else "")
+    try:
+        rendered = spec.format(**values)
+    except KeyError as exc:
+        raise KeyError(
+            f"unknown initials field {exc.args[0]!r}; valid fields: "
+            f"{', '.join(_INITIALS_KEYS)}"
         ) from None
     return _collapse(rendered)

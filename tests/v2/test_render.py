@@ -79,3 +79,65 @@ def test_parsedname_render_and_str_delegate() -> None:
     assert pn.render("{family}, {given}") == "de la Vega, Juan"
     assert str(pn) == pn.render()
     assert str(_pn("", [])) == ""
+
+
+def _bobdole() -> ParsedName:
+    # "Sir Bob Andrew Dole"
+    #  01234567890123456789
+    return _pn("Sir Bob Andrew Dole", [
+        Token("Sir", Span(0, 3), Role.TITLE),
+        Token("Bob", Span(4, 7), Role.GIVEN),
+        Token("Andrew", Span(8, 14), Role.MIDDLE),
+        Token("Dole", Span(15, 19), Role.FAMILY),
+    ])
+
+
+def test_initials_default_spec() -> None:
+    assert _bobdole().initials() == "B. A. D."
+
+
+def test_initials_skips_tagged_particles_outside_given() -> None:
+    # family "de la Vega" with particle tags -> only V contributes;
+    # a given-name token always contributes even if tagged
+    assert _delavega().initials() == "J. V."
+    # conjunction tag skips too
+    pn = _pn("Mr. and Mrs. Smith", [
+        Token("Mr.", Span(0, 3), Role.TITLE),
+        Token("and", Span(4, 7), Role.FAMILY, frozenset({"conjunction"})),
+        Token("Smith", Span(13, 18), Role.FAMILY),
+    ])
+    assert pn.initials("{family}") == "S."
+
+
+def test_initials_custom_delimiter_and_separator() -> None:
+    assert _bobdole().initials(delimiter="", separator="") == "B A D"
+
+
+def test_initials_multiword_group_joins_within_group() -> None:
+    pn = _pn("Mary Jane Watson", [
+        Token("Mary", Span(0, 4), Role.GIVEN),
+        Token("Jane", Span(5, 9), Role.GIVEN),
+        Token("Watson", Span(10, 16), Role.FAMILY),
+    ])
+    assert pn.initials() == "M. J. W."
+
+
+def test_initials_custom_spec_and_unknown_key() -> None:
+    assert _bobdole().initials("{given} {middle}") == "B. A."
+    with pytest.raises(KeyError, match="valid fields"):
+        _bobdole().initials("{title}")
+
+
+def test_initials_already_initial_words() -> None:
+    pn = _pn("J. Doe", [
+        Token("J.", Span(0, 2), Role.GIVEN),
+        Token("Doe", Span(3, 6), Role.FAMILY),
+    ])
+    assert pn.initials() == "J. D."
+
+
+def test_initials_empty_group_renders_empty() -> None:
+    # v2 returns "" for an empty result -- no v1-style
+    # empty_attribute_default fallback
+    assert _bobdole().initials("{middle}") == "A."
+    assert _pn("Cher", [Token("Cher", Span(0, 4), Role.GIVEN)]).initials("{middle}") == ""
