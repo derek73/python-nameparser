@@ -50,14 +50,14 @@ def test_delimiter_pairs_must_be_nonempty_string_pairs() -> None:
 
 
 def test_delimiter_pair_rejects_two_char_string() -> None:
-    with pytest.raises(ValueError, match="tuples"):
+    with pytest.raises(TypeError, match="tuples"):
         Policy(nickname_delimiters=frozenset({"()"}))  # type: ignore[arg-type]
 
 
 def test_patronymic_rules_rejects_bare_string_and_non_iterable() -> None:
-    with pytest.raises(ValueError, match="bare string"):
+    with pytest.raises(TypeError, match="bare string"):
         Policy(patronymic_rules="east-slavic")  # type: ignore[arg-type]
-    with pytest.raises(ValueError, match="valid rules"):
+    with pytest.raises(TypeError, match="iterable"):
         Policy(patronymic_rules=5)  # type: ignore[arg-type]
 
 
@@ -76,8 +76,10 @@ def test_policy_delimiters_do_not_alias_caller_containers() -> None:
 
 
 def test_extra_suffix_delimiters_validated_and_coerced() -> None:
-    with pytest.raises(ValueError, match="bare string"):
+    with pytest.raises(TypeError, match="bare string"):
         Policy(extra_suffix_delimiters="ab")  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="must be strings"):
+        Policy(extra_suffix_delimiters=frozenset({5}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="non-empty strings"):
         Policy(extra_suffix_delimiters=frozenset({""}))
     p = Policy(extra_suffix_delimiters=["-"])  # type: ignore[arg-type]
@@ -106,7 +108,7 @@ def test_policy_patch_canonicalizes_union_fields() -> None:
 
 
 def test_policy_patch_rejects_bare_string_union_fields() -> None:
-    with pytest.raises(ValueError, match="bare string"):
+    with pytest.raises(TypeError, match="bare string"):
         PolicyPatch(extra_suffix_delimiters="ab")  # type: ignore[arg-type]
 
 

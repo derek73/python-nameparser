@@ -40,10 +40,12 @@ def test_locale_is_hashable() -> None:
 
 
 def test_locale_validates_component_types() -> None:
-    with pytest.raises(ValueError, match="Lexicon"):
+    with pytest.raises(TypeError, match="Lexicon"):
         Locale(code="ru", lexicon={"titles": set()})  # type: ignore[arg-type]
-    with pytest.raises(ValueError, match="PolicyPatch"):
+    with pytest.raises(TypeError, match="PolicyPatch"):
         Locale(code="ru", lexicon=Lexicon.empty(), policy={"name_order": None})  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="must be a str"):
+        Locale(code=5, lexicon=Lexicon.empty())  # type: ignore[arg-type]
 
 
 def test_locale_with_lexicon_pickles_round_trip() -> None:

@@ -55,13 +55,15 @@ class Policy:
             )
         object.__setattr__(self, "name_order", order)
         if isinstance(self.patronymic_rules, str):
-            raise ValueError(
+            raise TypeError(
                 f"patronymic_rules must be an iterable of rule names, "
                 f"not a bare string: {self.patronymic_rules!r}"
             )
+        # A non-iterable raises its natural TypeError from the frozenset
+        # call; only failed enum lookups get the enriched message.
         try:
             rules = frozenset(PatronymicRule(r) for r in self.patronymic_rules)
-        except (TypeError, ValueError):
+        except ValueError:
             valid = ", ".join(r.value for r in PatronymicRule)
             raise ValueError(
                 f"unknown patronymic rule in {self.patronymic_rules!r}; "
@@ -72,23 +74,32 @@ class Policy:
             pairs = tuple(getattr(self, pairs_name))
             for pair in pairs:
                 if (not isinstance(pair, tuple) or len(pair) != 2
-                        or not all(isinstance(s, str) and s for s in pair)):
-                    raise ValueError(
+                        or not all(isinstance(s, str) for s in pair)):
+                    raise TypeError(
                         f"{pairs_name} entries must be (open, close) tuples "
-                        f"of non-empty strings, got {pair!r}"
+                        f"of strings, got {pair!r}"
+                    )
+                if not all(pair):
+                    raise ValueError(
+                        f"{pairs_name} entries must be pairs of non-empty "
+                        f"strings, got {pair!r}"
                     )
             object.__setattr__(self, pairs_name, frozenset(pairs))
         if isinstance(self.extra_suffix_delimiters, str):
-            raise ValueError(
+            raise TypeError(
                 f"extra_suffix_delimiters must be an iterable of strings, "
                 f"not a bare string: {self.extra_suffix_delimiters!r}"
             )
         delimiters = tuple(self.extra_suffix_delimiters)
         for d in delimiters:
-            if not isinstance(d, str) or not d:
+            if not isinstance(d, str):
+                raise TypeError(
+                    f"extra_suffix_delimiters entries must be strings, "
+                    f"got {d!r}"
+                )
+            if not d:
                 raise ValueError(
-                    f"extra_suffix_delimiters entries must be non-empty "
-                    f"strings, got {d!r}"
+                    "extra_suffix_delimiters entries must be non-empty strings"
                 )
         object.__setattr__(
             self, "extra_suffix_delimiters", frozenset(delimiters)
@@ -166,7 +177,7 @@ class PolicyPatch:
             if value is UNSET:
                 continue
             if isinstance(value, str):
-                raise ValueError(
+                raise TypeError(
                     f"{f.name} must be an iterable, "
                     f"not a bare string: {value!r}"
                 )

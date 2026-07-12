@@ -23,7 +23,11 @@ class Locale:
     policy: PolicyPatch = PolicyPatch()
 
     def __post_init__(self) -> None:
-        if not isinstance(self.code, str) or not self.code.strip():
+        if not isinstance(self.code, str):
+            raise TypeError(
+                f"Locale.code must be a str, got {self.code!r}"
+            )
+        if not self.code.strip():
             raise ValueError(
                 f"Locale.code must be a non-empty string, got {self.code!r}"
             )
@@ -36,11 +40,11 @@ class Locale:
                 f"Locale.code must not contain whitespace, got {self.code!r}"
             )
         if not isinstance(self.lexicon, Lexicon):
-            raise ValueError(
+            raise TypeError(
                 f"Locale.lexicon must be a Lexicon, got {self.lexicon!r}"
             )
         if not isinstance(self.policy, PolicyPatch):
-            raise ValueError(
+            raise TypeError(
                 f"Locale.policy must be a PolicyPatch, got {self.policy!r}"
             )
 

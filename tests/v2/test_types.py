@@ -42,14 +42,14 @@ def test_token_rejects_negative_span() -> None:
 
 
 def test_token_rejects_malformed_span_shapes() -> None:
-    with pytest.raises(ValueError, match="expected a \\(start, end\\) pair"):
+    with pytest.raises(TypeError, match="expected a \\(start, end\\) pair"):
         Token("x", (0, 4, 9), Role.GIVEN)  # type: ignore[arg-type]
-    with pytest.raises(ValueError, match="expected a \\(start, end\\) pair"):
+    with pytest.raises(TypeError, match="expected a \\(start, end\\) pair"):
         Token("x", 5, Role.GIVEN)  # type: ignore[arg-type]
 
 
 def test_token_rejects_non_string_text() -> None:
-    with pytest.raises(ValueError, match="got None"):
+    with pytest.raises(TypeError, match="got None"):
         Token(None, None, Role.GIVEN)  # type: ignore[arg-type]
 
 
@@ -78,13 +78,18 @@ def test_ambiguity_rejects_unknown_kind() -> None:
 
 
 def test_ambiguity_rejects_non_token_elements() -> None:
-    with pytest.raises(ValueError, match="only Token instances"):
+    with pytest.raises(TypeError, match="only Token instances"):
         Ambiguity("order", "detail", ("not-a-token",))  # type: ignore[arg-type]
 
 
 def test_ambiguity_rejects_empty_detail() -> None:
     with pytest.raises(ValueError, match="non-empty string"):
         Ambiguity(AmbiguityKind.ORDER, "", ())
+
+
+def test_ambiguity_rejects_non_str_detail() -> None:
+    with pytest.raises(TypeError, match="must be a str"):
+        Ambiguity(AmbiguityKind.ORDER, None, ())  # type: ignore[arg-type]
 
 
 def _pn(original: str, tokens: Iterable[Token],
@@ -154,14 +159,14 @@ def test_parsedname_equality_is_strict_structural() -> None:
 
 
 def test_parsedname_rejects_non_str_original() -> None:
-    with pytest.raises(ValueError, match="must be a str"):
+    with pytest.raises(TypeError, match="must be a str"):
         _pn(None, [])  # type: ignore[arg-type]
 
 
 def test_parsedname_rejects_non_token_and_non_ambiguity_elements() -> None:
-    with pytest.raises(ValueError, match="only Token instances"):
+    with pytest.raises(TypeError, match="only Token instances"):
         _pn("x", ["not-a-token"])  # type: ignore[list-item]
-    with pytest.raises(ValueError, match="only Ambiguity instances"):
+    with pytest.raises(TypeError, match="only Ambiguity instances"):
         _pn("John", [Token("John", Span(0, 4), Role.GIVEN)], ["nope"])  # type: ignore[list-item]
 
 

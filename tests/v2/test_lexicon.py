@@ -49,12 +49,12 @@ def test_lexicon_is_hashable() -> None:
 
 
 def test_lexicon_rejects_bare_string_vocab() -> None:
-    with pytest.raises(ValueError, match="bare string"):
+    with pytest.raises(TypeError, match="bare string"):
         Lexicon(titles="dr")  # type: ignore[arg-type]
 
 
 def test_lexicon_rejects_non_str_vocab_entries() -> None:
-    with pytest.raises(ValueError, match="entries must be strings"):
+    with pytest.raises(TypeError, match="entries must be strings"):
         Lexicon(titles={"Dr.", 42})  # type: ignore[arg-type]
 
 
@@ -71,7 +71,7 @@ def test_colliding_exception_keys_dedupe_last_wins() -> None:
 
 
 def test_lexicon_rejects_non_str_exception_values() -> None:
-    with pytest.raises(ValueError, match="str -> str"):
+    with pytest.raises(TypeError, match="str -> str"):
         Lexicon(capitalization_exceptions={"phd": 42})  # type: ignore[dict-item, arg-type]
 
 
@@ -131,7 +131,7 @@ def test_lexicon_rejects_mapping_for_plain_vocab_field() -> None:
     # A dict here almost always means the caller confused the field with
     # capitalization_exceptions; silently keeping just the keys would be
     # the lone quiet coercion on an otherwise fail-loud surface.
-    with pytest.raises(ValueError, match="mapping"):
+    with pytest.raises(TypeError, match="mapping"):
         Lexicon(titles={"Dr.": "Doctor"})  # type: ignore[arg-type]
-    with pytest.raises(ValueError, match="mapping"):
+    with pytest.raises(TypeError, match="mapping"):
         Lexicon.empty().add(titles={"Dr.": "Doctor"})

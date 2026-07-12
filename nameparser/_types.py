@@ -47,17 +47,19 @@ class Token:
     tags: frozenset[str] = frozenset()
 
     def __post_init__(self) -> None:
-        if not isinstance(self.text, str) or not self.text:
-            raise ValueError(
-                f"Token.text must be a non-empty string, got {self.text!r}"
+        if not isinstance(self.text, str):
+            raise TypeError(
+                f"Token.text must be a str, got {self.text!r}"
             )
+        if not self.text:
+            raise ValueError("Token.text must be a non-empty string")
         if self.span is not None:
             if not (
                 isinstance(self.span, tuple)
                 and len(self.span) == 2
                 and all(isinstance(v, int) for v in self.span)
             ):
-                raise ValueError(
+                raise TypeError(
                     f"invalid span {self.span!r}: expected a (start, end) "
                     "pair of ints or None"
                 )
@@ -103,14 +105,16 @@ class Ambiguity:
                 raise ValueError(
                     f"unknown AmbiguityKind {self.kind!r}; valid kinds: {valid}"
                 ) from None
-        if not isinstance(self.detail, str) or not self.detail:
-            raise ValueError(
-                f"Ambiguity.detail must be a non-empty string, got {self.detail!r}"
+        if not isinstance(self.detail, str):
+            raise TypeError(
+                f"Ambiguity.detail must be a str, got {self.detail!r}"
             )
+        if not self.detail:
+            raise ValueError("Ambiguity.detail must be a non-empty string")
         toks = tuple(self.tokens)
         for tok in toks:
             if not isinstance(tok, Token):
-                raise ValueError(
+                raise TypeError(
                     f"Ambiguity.tokens must contain only Token instances, "
                     f"got {tok!r}"
                 )
@@ -136,20 +140,20 @@ class ParsedName:
 
     def __post_init__(self) -> None:
         if not isinstance(self.original, str):
-            raise ValueError(
+            raise TypeError(
                 f"ParsedName.original must be a str, got {self.original!r}"
             )
         object.__setattr__(self, "tokens", tuple(self.tokens))
         object.__setattr__(self, "ambiguities", tuple(self.ambiguities))
         for tok in self.tokens:
             if not isinstance(tok, Token):
-                raise ValueError(
+                raise TypeError(
                     f"ParsedName.tokens must contain only Token instances, "
                     f"got {tok!r}"
                 )
         for amb in self.ambiguities:
             if not isinstance(amb, Ambiguity):
-                raise ValueError(
+                raise TypeError(
                     f"ParsedName.ambiguities must contain only Ambiguity "
                     f"instances, got {amb!r}"
                 )

@@ -34,7 +34,7 @@ def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
     # yield the single characters {'d', 'r'} -- the set(str) footgun on
     # the primary customization surface.
     if isinstance(entries, str):
-        raise ValueError(
+        raise TypeError(
             f"Lexicon.{field_name} must be an iterable of strings, "
             f"not a bare string"
         )
@@ -42,14 +42,14 @@ def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
     # almost always means the caller confused this field with
     # capitalization_exceptions.
     if isinstance(entries, Mapping):
-        raise ValueError(
+        raise TypeError(
             f"Lexicon.{field_name} must be an iterable of strings, not a "
             f"mapping (only capitalization_exceptions holds key->value pairs)"
         )
     items = tuple(entries)  # materialize once; entries may be a generator
     for w in items:
         if not isinstance(w, str):
-            raise ValueError(
+            raise TypeError(
                 f"Lexicon.{field_name} entries must be strings, got {w!r}"
             )
     result = frozenset(_normalize(w) for w in items)
@@ -89,7 +89,7 @@ class Lexicon:
         deduped: dict[str, str] = {}
         for k, v in pairs:
             if not isinstance(k, str) or not isinstance(v, str):
-                raise ValueError(
+                raise TypeError(
                     f"capitalization_exceptions entries must be "
                     f"str -> str, got {k!r}: {v!r}"
                 )
