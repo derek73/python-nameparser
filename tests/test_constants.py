@@ -986,6 +986,17 @@ class ConstantsCopyTests(HumanNameTestBase):
         self.assertIsNot(dup, c)
         self.assertTrue(isinstance(dup, Constants))
 
+    def test_copy_preserves_subclass_type(self) -> None:
+        # copy() is deepcopy-based (restored via __getstate__/__setstate__,
+        # not by re-invoking type(self)(...)), so a naive reimplementation
+        # could silently downgrade a subclass instance to plain Constants.
+        class CustomConstants(Constants):
+            pass
+
+        c = CustomConstants()
+        dup = c.copy()
+        self.assertTrue(isinstance(dup, CustomConstants))
+
     def test_copy_snapshots_current_customizations(self) -> None:
         # Unlike Constants(), which always starts from library defaults,
         # .copy() preserves whatever customizations the original already has.
