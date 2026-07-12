@@ -60,6 +60,7 @@ module = [
   "nameparser._types",
   "nameparser._lexicon",
   "nameparser._policy",
+  "nameparser._render",
   "nameparser._locale",
 ]
 disallow_untyped_defs = true

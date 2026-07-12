@@ -8,23 +8,47 @@ PKG = pathlib.Path(nameparser.__file__).parent
 
 # module -> prefixes it may import from within nameparser
 ALLOWED = {
-    "_types.py": (),
+    # call-time imports only (inside the rendering-delegate method
+    # bodies); module level stays import-free. TYPE_CHECKING imports
+    # are skipped by _nameparser_imports and need no entry.
+    "_types.py": ("nameparser._render",),
     # intent: DATA modules only, during 2.x -- mechanically this admits
     # any config submodule; "data only" holds by convention/review
     "_lexicon.py": ("nameparser.config.",),
     "_policy.py": ("nameparser._types",),
     "_locale.py": ("nameparser._lexicon", "nameparser._policy"),
+    # _lexicon is needed at runtime: capitalized(lexicon=None) resolves
+    # to Lexicon.default()
+    "_render.py": ("nameparser._types", "nameparser._lexicon"),
 }
 
 
+def _is_type_checking(test: ast.expr) -> bool:
+    return (isinstance(test, ast.Name) and test.id == "TYPE_CHECKING") or (
+        isinstance(test, ast.Attribute) and test.attr == "TYPE_CHECKING")
+
+
 def _nameparser_imports(path: pathlib.Path) -> list[str]:
-    tree = ast.parse(path.read_text())
-    found = []
-    for node in ast.walk(tree):
+    """All nameparser-internal imports in the module, at any nesting
+    depth, EXCEPT those under `if TYPE_CHECKING:` -- annotation-only
+    imports are not runtime dependencies."""
+    found: list[str] = []
+
+    def _record(node: ast.AST) -> None:
+        # guard checked on EVERY node uniformly, so `elif TYPE_CHECKING:`
+        # (a nested If in orelse) is skipped exactly like the plain form
+        if isinstance(node, ast.If) and _is_type_checking(node.test):
+            for stmt in node.orelse:
+                _record(stmt)
+            return
         if isinstance(node, ast.Import):
-            found += [a.name for a in node.names]
+            found.extend(a.name for a in node.names)
         elif isinstance(node, ast.ImportFrom) and node.module:
             found.append(node.module)
+        for child in ast.iter_child_nodes(node):
+            _record(child)
+
+    _record(ast.parse(path.read_text()))
     return [m for m in found if m.startswith("nameparser")]
 
 
@@ -65,3 +89,19 @@ def test_public_exports() -> None:
     assert expected <= set(nameparser.__all__)
     for name in expected:
         assert getattr(nameparser, name) is not None
+
+
+def test_type_checking_imports_do_not_count(tmp_path: pathlib.Path) -> None:
+    mod = tmp_path / "snippet.py"
+    mod.write_text(
+        "from typing import TYPE_CHECKING\n"
+        "if TYPE_CHECKING:\n"
+        "    from nameparser._lexicon import Lexicon\n"
+        "elif TYPE_CHECKING:\n"
+        "    import nameparser.never_runtime\n"
+        "else:\n"
+        "    import nameparser.util\n"
+        "def f():\n"
+        "    from nameparser import _render\n"
+    )
+    assert _nameparser_imports(mod) == ["nameparser.util", "nameparser"]
