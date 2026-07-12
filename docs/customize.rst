@@ -7,7 +7,8 @@ instance is the only channel that reaches parses happening in code you don't
 own -- helpers, pipelines, a third-party library using nameparser internally
 -- the same role ``logging`` and ``locale`` play elsewhere. For anything
 scoped to one dataset, one library, or one test, pass your own ``Constants``
-instance instead; see "Module-level Shared Configuration Instance" below.
+instance instead -- see the three explicit forms under "Module-level Shared
+Configuration Instance" below.
 
 Recognition of titles, prefixes, suffixes and conjunctions is handled by
 matching the lower case characters of a name piece with pre-defined sets
