@@ -142,4 +142,6 @@ def apply_patch(policy: Policy, patch: PolicyPatch) -> Policy:
         updates[f.name] = value
     if not updates:
         return policy
+    # Known mypy limitation with **dict-unpacked replace; see the full
+    # explanation at Lexicon._edit in _lexicon.py.
     return dataclasses.replace(policy, **updates)  # type: ignore[arg-type]

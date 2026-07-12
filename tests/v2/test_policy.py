@@ -85,7 +85,7 @@ def test_extra_suffix_delimiters_validated_and_coerced():
     assert isinstance(hash(p), int)
 
 
-def test_policy_patch_mirrors_policy_fields_and_types():
+def test_policy_patch_mirrors_policy_field_names():
     policy_fields = {f.name for f in dataclasses.fields(Policy)}
     patch_fields = {f.name for f in dataclasses.fields(PolicyPatch)}
     assert policy_fields == patch_fields
