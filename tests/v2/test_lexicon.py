@@ -64,9 +64,16 @@ def test_lexicon_rejects_non_str_vocab_entries() -> None:
         Lexicon(titles={"Dr.", 42})  # type: ignore[arg-type]
 
 
-def test_exception_keys_normalizing_to_empty_are_dropped() -> None:
-    lex = Lexicon(capitalization_exceptions=(("...", "X"), ("phd", "PhD")))
-    assert lex.capitalization_exceptions == (("phd", "PhD"),)
+def test_entries_normalizing_to_empty_raise() -> None:
+    # "." or "" is a data bug (stray split artifact, empty CSV cell);
+    # dropping it silently would also let a future data-module typo
+    # vanish instead of failing CI. One rule for vocab AND exception keys.
+    with pytest.raises(ValueError, match="normalizes to empty"):
+        Lexicon(titles=frozenset({"Dr.", "."}))
+    with pytest.raises(ValueError, match="normalizes to empty"):
+        Lexicon.empty().add(titles={" "})
+    with pytest.raises(ValueError, match="normalizes to empty"):
+        Lexicon(capitalization_exceptions=(("...", "X"), ("phd", "PhD")))
 
 
 def test_colliding_exception_keys_dedupe_last_wins() -> None:

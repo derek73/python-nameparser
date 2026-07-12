@@ -50,13 +50,23 @@ def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
             f"mapping (only capitalization_exceptions holds key->value pairs)"
         )
     items = tuple(entries)  # materialize once; entries may be a generator
+    normalized = set()
     for w in items:
         if not isinstance(w, str):
             raise TypeError(
                 f"Lexicon.{field_name} entries must be strings, got {w!r}"
             )
-    result = frozenset(_normalize(w) for w in items)
-    return frozenset(w for w in result if w)
+        n = _normalize(w)
+        # "." or "" is a data bug (stray split artifact, empty CSV
+        # cell); dropping it silently would also let a data-module typo
+        # vanish instead of failing CI.
+        if not n:
+            raise ValueError(
+                f"Lexicon.{field_name} entry {w!r} normalizes to empty "
+                f"(casefold + strip periods/whitespace leaves nothing)"
+            )
+        normalized.add(n)
+    return frozenset(normalized)
 
 
 @dataclass(frozen=True, slots=True)
@@ -118,7 +128,11 @@ class Lexicon:
                 )
             normalized_key = _normalize(k)
             if not normalized_key:
-                continue  # mirror _normset's drop-empty rule
+                raise ValueError(
+                    f"capitalization_exceptions key {k!r} normalizes to "
+                    f"empty (casefold + strip periods/whitespace leaves "
+                    f"nothing)"
+                )
             deduped[normalized_key] = v
         canonical = tuple(sorted(deduped.items()))
         object.__setattr__(self, "capitalization_exceptions", canonical)
