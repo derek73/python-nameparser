@@ -268,3 +268,23 @@ def test_replace_appends_missing_roles_in_canonical_order():
     pn = _pn("John", [Token("John", (0, 4), Role.GIVEN)])
     pn2 = pn.replace(maiden="X", suffix="Y")
     assert [t.role for t in pn2.tokens] == [Role.GIVEN, Role.SUFFIX, Role.MAIDEN]
+
+
+def test_comparison_key_is_casefolded_canonical_seven_tuple():
+    pn = _delavega()
+    assert pn.comparison_key() == (
+        "dr.", "juan", "", "de la vega", "iii", "", "",
+    )
+    upper = _pn("JUAN DE LA VEGA", [
+        Token("JUAN", (0, 4), Role.GIVEN),
+        Token("DE", (5, 7), Role.FAMILY, frozenset({"particle"})),
+        Token("LA", (8, 10), Role.FAMILY, frozenset({"particle"})),
+        Token("VEGA", (11, 15), Role.FAMILY),
+    ])
+    lower = _pn("juan de la vega", [
+        Token("juan", (0, 4), Role.GIVEN),
+        Token("de", (5, 7), Role.FAMILY, frozenset({"particle"})),
+        Token("la", (8, 10), Role.FAMILY, frozenset({"particle"})),
+        Token("vega", (11, 15), Role.FAMILY),
+    ])
+    assert upper.comparison_key() == lower.comparison_key()

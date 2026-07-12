@@ -277,3 +277,11 @@ class ParsedName:
             if all(t in new_tokens for t in amb.tokens)
         )
         return ParsedName(self.original, tuple(new_tokens), kept)
+
+    # -- comparison -------------------------------------------------------
+
+    def comparison_key(self) -> tuple[str, ...]:
+        """Casefolded seven components in canonical order, for dedup,
+        dict keys, and sorting. The semantic layer; __eq__ stays strict.
+        """
+        return tuple(self._text_for(role).casefold() for role in Role)
