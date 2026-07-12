@@ -206,7 +206,7 @@ def test_suffix_joins_with_comma_space() -> None:
 
 def test_derived_views_filter_on_stable_particle_tag() -> None:
     # Pin the hard-coded "particle" string in _text_for to the published
-    # contract until Plan 3's tag-emission contract tests land.
+    # contract until parser tag-emission contract tests land.
     assert "particle" in STABLE_TAGS
     pn = _delavega()
     assert pn.family_particles == "de la"

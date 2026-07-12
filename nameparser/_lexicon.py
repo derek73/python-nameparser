@@ -1,8 +1,8 @@
 """Immutable vocabulary configuration for the 2.0 API.
 
-Layering: may import nameparser.config DATA modules (titles, suffixes,
-prefixes, conjunctions, capitalization, bound_first_names) as the single
-source of vocabulary during 2.x -- never nameparser.config itself, never
+Layering: may import nameparser.config DATA modules (the imports in
+_default_lexicon() are the authoritative list) as the single source of
+vocabulary during 2.x -- never nameparser.config itself, never
 nameparser.parser. Enforced by tests/v2/test_layering.py.
 """
 from __future__ import annotations
@@ -13,9 +13,10 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
 
-#: Vocabulary set fields, in declaration order. add()/remove()/__or__
-#: (a later task) operate on exactly these; capitalization_exceptions is
-#: deliberately excluded (its entries are pairs -- use dataclasses.replace).
+#: Vocabulary set fields, in declaration order. add()/remove() operate
+#: on exactly these and reject capitalization_exceptions (its entries
+#: are pairs -- use dataclasses.replace); __or__ unions these AND merges
+#: capitalization_exceptions right-biased.
 _VOCAB_FIELDS = (
     "titles", "given_name_titles", "suffix_acronyms", "suffix_words",
     "suffix_acronyms_ambiguous", "particles", "particles_ambiguous",
@@ -24,8 +25,10 @@ _VOCAB_FIELDS = (
 
 
 def _normalize(word: str) -> str:
-    """Casefold and strip periods -- v1's lc(). Membership tests never
-    re-normalize because construction already did."""
+    """Casefold, remove ALL periods, strip whitespace -- v2's stricter
+    analogue of v1's lc(), which lower()s and trims only edge periods.
+    Membership tests never re-normalize because construction already
+    did."""
     return word.casefold().replace(".", "").strip()
 
 

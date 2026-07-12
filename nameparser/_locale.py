@@ -4,8 +4,8 @@ A Locale dissolves at parser construction (parser_for, a later plan):
 lexicon fragments union onto the base, the PolicyPatch folds via
 apply_patch. Packs are pure data; they have no privileged capabilities.
 
-Layering: imports _lexicon and _policy only (tests/v2/test_layering.py,
-added in a later task, enforces this).
+Layering: imports _lexicon and _policy only (enforced by
+tests/v2/test_layering.py).
 """
 from __future__ import annotations
 

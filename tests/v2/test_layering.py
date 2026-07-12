@@ -9,7 +9,9 @@ PKG = pathlib.Path(nameparser.__file__).parent
 # module -> prefixes it may import from within nameparser
 ALLOWED = {
     "_types.py": (),
-    "_lexicon.py": ("nameparser.config.",),  # DATA modules only, during 2.x
+    # intent: DATA modules only, during 2.x -- mechanically this admits
+    # any config submodule; "data only" holds by convention/review
+    "_lexicon.py": ("nameparser.config.",),
     "_policy.py": ("nameparser._types",),
     "_locale.py": ("nameparser._lexicon", "nameparser._policy"),
 }

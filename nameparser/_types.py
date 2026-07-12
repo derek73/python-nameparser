@@ -303,6 +303,7 @@ class ParsedName:
         """Return a new ParsedName with the named fields re-tokenized as
         synthetic tokens (span=None). Whitespace-splits each value; an
         empty value clears the field. original is unchanged (provenance).
+        Ambiguities referencing replaced tokens are dropped.
         """
         by_value = {role.value: role for role in Role}
         for key, value in fields.items():
@@ -341,7 +342,8 @@ class ParsedName:
     # -- comparison -------------------------------------------------------
 
     def comparison_key(self) -> tuple[str, ...]:
-        """Casefolded seven components in canonical order, for dedup,
-        dict keys, and sorting. The semantic layer; __eq__ stays strict.
+        """One casefolded component per Role, in canonical order, for
+        dedup, dict keys, and sorting. The semantic layer; __eq__ stays
+        strict.
         """
         return tuple(self._text_for(role).casefold() for role in Role)

@@ -1,7 +1,7 @@
 """Immutable behavior configuration for the 2.0 API.
 
-Layering: imports nameparser._types only (tests/v2/test_layering.py,
-added in a later task, enforces this).
+Layering: imports nameparser._types only (enforced by
+tests/v2/test_layering.py).
 """
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ class Policy:
     extra_suffix_delimiters: frozenset[str] = frozenset()
     lenient_comma_suffixes: bool = True
     strip_emoji: bool = True
-    strip_bidi: bool = True  # replaces v1's CONSTANTS.regexes.bidi = False
+    strip_bidi: bool = True  # =False replaces v1's opt-out CONSTANTS.regexes.bidi = False
 
     def __post_init__(self) -> None:
         order = tuple(self.name_order)
