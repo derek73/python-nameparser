@@ -53,20 +53,25 @@ class Policy:
                 f"GIVEN_FIRST, FAMILY_FIRST, or FAMILY_FIRST_GIVEN_LAST"
             )
         object.__setattr__(self, "name_order", order)
+        if isinstance(self.patronymic_rules, str):
+            raise ValueError(
+                f"patronymic_rules must be an iterable of rule names, "
+                f"not a bare string: {self.patronymic_rules!r}"
+            )
         try:
             rules = frozenset(PatronymicRule(r) for r in self.patronymic_rules)
-        except ValueError:
+        except (TypeError, ValueError):
             valid = ", ".join(r.value for r in PatronymicRule)
             raise ValueError(
-                f"unknown patronymic rule in {set(self.patronymic_rules)!r}; "
+                f"unknown patronymic rule in {self.patronymic_rules!r}; "
                 f"valid rules: {valid}"
             ) from None
         object.__setattr__(self, "patronymic_rules", rules)
         for pairs_name in ("nickname_delimiters", "maiden_delimiters"):
             for pair in getattr(self, pairs_name):
-                if (len(pair) != 2 or not all(
-                        isinstance(s, str) and s for s in pair)):
+                if (not isinstance(pair, tuple) or len(pair) != 2
+                        or not all(isinstance(s, str) and s for s in pair)):
                     raise ValueError(
-                        f"{pairs_name} entries must be pairs of non-empty "
-                        f"strings, got {pair!r}"
+                        f"{pairs_name} entries must be (open, close) tuples "
+                        f"of non-empty strings, got {pair!r}"
                     )

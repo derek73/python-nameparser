@@ -47,3 +47,15 @@ def test_patronymic_rules_coerce_and_reject():
 def test_delimiter_pairs_must_be_nonempty_string_pairs():
     with pytest.raises(ValueError, match="non-empty"):
         Policy(nickname_delimiters=frozenset({("", ")")}))
+
+
+def test_delimiter_pair_rejects_two_char_string():
+    with pytest.raises(ValueError, match="tuples"):
+        Policy(nickname_delimiters=frozenset({"()"}))  # type: ignore[arg-type]
+
+
+def test_patronymic_rules_rejects_bare_string_and_non_iterable():
+    with pytest.raises(ValueError, match="bare string"):
+        Policy(patronymic_rules="east-slavic")  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="valid rules"):
+        Policy(patronymic_rules=5)  # type: ignore[arg-type]
