@@ -1,6 +1,6 @@
 Release Log
 ===========
-* 1.4.0 - Unreleased
+* 1.4.0 - July 12, 2026
 
     - Add ``Constants.copy()``, a detached deep copy that preserves the source instance's current customizations (unlike ``Constants()``, which always starts from library defaults) -- useful as ``CONSTANTS.copy()`` for a private snapshot of the shared config (#260)
     - Deprecate passing ``constants=None`` to ``HumanName`` (or assigning ``hn.C = None``): it silently builds a fresh ``Constants()``, discarding any customizations the caller may have expected to carry over from the shared ``CONSTANTS``. Emits ``DeprecationWarning``; will raise ``TypeError`` in 2.0. Use ``constants=Constants()`` for fresh library defaults or ``constants=CONSTANTS.copy()`` for a private snapshot instead (closes #260)
