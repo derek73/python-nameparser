@@ -257,3 +257,14 @@ def test_replace_drops_ambiguities_referencing_removed_tokens():
              [Ambiguity(AmbiguityKind.PARTICLE_OR_GIVEN, "d", (van,))])
     assert pn.replace(given="Bob").ambiguities == ()
     assert pn.replace(family="Smith").ambiguities != ()
+
+
+def test_replace_rejects_non_str_value():
+    with pytest.raises(TypeError, match="must be a str"):
+        _delavega().replace(given=None)  # type: ignore[arg-type]
+
+
+def test_replace_appends_missing_roles_in_canonical_order():
+    pn = _pn("John", [Token("John", (0, 4), Role.GIVEN)])
+    pn2 = pn.replace(maiden="X", suffix="Y")
+    assert [t.role for t in pn2.tokens] == [Role.GIVEN, Role.SUFFIX, Role.MAIDEN]

@@ -239,17 +239,21 @@ class ParsedName:
 
     # -- editing ----------------------------------------------------------
 
-    def replace(self, **fields: str) -> "ParsedName":
+    def replace(self, **fields: str) -> ParsedName:
         """Return a new ParsedName with the named fields re-tokenized as
         synthetic tokens (span=None). Whitespace-splits each value; an
         empty value clears the field. original is unchanged (provenance).
         """
         by_value = {role.value: role for role in Role}
-        for key in fields:
+        for key, value in fields.items():
             if key not in by_value:
                 raise TypeError(
                     f"unknown field {key!r}; expected one of "
                     f"{', '.join(by_value)}"
+                )
+            if not isinstance(value, str):
+                raise TypeError(
+                    f"field {key!r} must be a str, got {value!r}"
                 )
 
         def synthetic(value: str, role: Role) -> list[Token]:
@@ -265,9 +269,9 @@ class ParsedName:
                     emitted.add(tok.role)
                 continue
             new_tokens.append(tok)
-        for role, value in replaced.items():
-            if role not in emitted:
-                new_tokens.extend(synthetic(value, role))
+        for role in Role:
+            if role in replaced and role not in emitted:
+                new_tokens.extend(synthetic(replaced[role], role))
         kept = tuple(
             amb for amb in self.ambiguities
             if all(t in new_tokens for t in amb.tokens)
