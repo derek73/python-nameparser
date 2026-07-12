@@ -42,9 +42,20 @@ class Token:
     tags: frozenset[str] = frozenset()
 
     def __post_init__(self) -> None:
-        if not self.text:
-            raise ValueError("Token.text must be a non-empty string")
+        if not isinstance(self.text, str) or not self.text:
+            raise ValueError(
+                f"Token.text must be a non-empty string, got {self.text!r}"
+            )
         if self.span is not None:
+            if not (
+                isinstance(self.span, tuple)
+                and len(self.span) == 2
+                and all(isinstance(v, int) for v in self.span)
+            ):
+                raise ValueError(
+                    f"invalid span {self.span!r}: expected a (start, end) "
+                    "pair of ints or None"
+                )
             start, end = self.span
             if start < 0 or end < start:
                 raise ValueError(

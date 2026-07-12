@@ -37,6 +37,18 @@ def test_token_rejects_negative_span():
         Token("x", (-1, 1), Role.GIVEN)
 
 
+def test_token_rejects_malformed_span_shapes():
+    with pytest.raises(ValueError, match="expected a \\(start, end\\) pair"):
+        Token("x", (0, 4, 9), Role.GIVEN)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="expected a \\(start, end\\) pair"):
+        Token("x", 5, Role.GIVEN)  # type: ignore[arg-type]
+
+
+def test_token_rejects_non_string_text():
+    with pytest.raises(ValueError, match="got None"):
+        Token(None, None, Role.GIVEN)  # type: ignore[arg-type]
+
+
 def test_token_is_frozen_and_hashable():
     t = Token("Juan", (0, 4), Role.GIVEN)
     with pytest.raises(AttributeError):
