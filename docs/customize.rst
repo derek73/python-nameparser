@@ -1,6 +1,15 @@
 Customizing the Parser with Your Own Configuration
 ==================================================
 
+:py:class:`~nameparser.config.Constants` is for application-level
+configuration, set once at startup: the shared module-level ``CONSTANTS``
+instance is the only channel that reaches parses happening in code you don't
+own -- helpers, pipelines, a third-party library using nameparser internally
+-- the same role ``logging`` and ``locale`` play elsewhere. For anything
+scoped to one dataset, one library, or one test, pass your own ``Constants``
+instance instead -- see the three explicit forms under "Module-level Shared
+Configuration Instance" below.
+
 Recognition of titles, prefixes, suffixes and conjunctions is handled by
 matching the lower case characters of a name piece with pre-defined sets
 of strings located in :py:mod:`nameparser.config`. You can adjust
@@ -428,13 +437,14 @@ making them lower case and removing periods.
 Module-level Shared Configuration Instance
 ------------------------------------------
 
-When you modify the configuration, by default this will modify the behavior all
-HumanName instances. This could be a handy way to set it up for your entire
-project, but it could also lead to some unexpected behavior because changing
-the config on one instance could modify the behavior of another instance.
-Parsing itself never modifies the configuration — only your own ``add`` and
-``remove`` calls do — so the shared instance is safe to read concurrently,
-e.g. parsing names on multiple threads.
+As established above, ``CONSTANTS`` is shared by every ``HumanName`` created
+without its own config -- that's what makes it the right place for
+application-level setup, and also the source of the one gotcha it carries:
+changing the config on one instance changes the behavior of every other
+instance that shares it, which can be surprising if you only meant to
+configure the one you're holding. Parsing itself never modifies the
+configuration — only your own ``add`` and ``remove`` calls do — so the shared
+instance is safe to read concurrently, e.g. parsing names on multiple threads.
 
 .. doctest:: module config
     :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
