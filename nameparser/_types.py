@@ -6,7 +6,7 @@ nothing from nameparser -- it is the bottom of the dependency graph.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import NamedTuple
 
 
@@ -63,3 +63,31 @@ class Token:
                 )
             object.__setattr__(self, "span", Span(start, end))
         object.__setattr__(self, "tags", frozenset(self.tags))
+
+
+class AmbiguityKind(StrEnum):
+    """Stable identifiers (API); members ARE their string values."""
+
+    ORDER = "order"
+    SUFFIX_OR_NICKNAME = "suffix-or-nickname"
+    PARTICLE_OR_GIVEN = "particle-or-given"
+    UNBALANCED_DELIMITER = "unbalanced-delimiter"
+    COMMA_STRUCTURE = "comma-structure"
+
+
+@dataclass(frozen=True, slots=True)
+class Ambiguity:
+    kind: AmbiguityKind
+    detail: str
+    tokens: tuple[Token, ...]
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.kind, AmbiguityKind):
+            try:
+                object.__setattr__(self, "kind", AmbiguityKind(self.kind))
+            except ValueError:
+                valid = ", ".join(k.value for k in AmbiguityKind)
+                raise ValueError(
+                    f"unknown AmbiguityKind {self.kind!r}; valid kinds: {valid}"
+                ) from None
+        object.__setattr__(self, "tokens", tuple(self.tokens))

@@ -54,3 +54,23 @@ def test_token_is_frozen_and_hashable():
     with pytest.raises(AttributeError):
         t.text = "X"  # type: ignore[misc]
     assert hash(t) == hash(Token("Juan", (0, 4), Role.GIVEN))
+
+
+from nameparser._types import Ambiguity, AmbiguityKind
+
+
+def test_ambiguity_kind_members_are_their_string_values():
+    assert AmbiguityKind.PARTICLE_OR_GIVEN == "particle-or-given"
+    assert AmbiguityKind("order") is AmbiguityKind.ORDER
+
+
+def test_ambiguity_construction_coerces_kind_string():
+    t = Token("Van", (0, 3), Role.GIVEN, frozenset({"particle"}))
+    a = Ambiguity("particle-or-given", "leading 'van' may be a particle", (t,))
+    assert a.kind is AmbiguityKind.PARTICLE_OR_GIVEN
+    assert a.tokens == (t,)
+
+
+def test_ambiguity_rejects_unknown_kind():
+    with pytest.raises(ValueError, match="particle-or-given"):
+        Ambiguity("no-such-kind", "detail", ())
