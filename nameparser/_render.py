@@ -56,6 +56,8 @@ def render(name: ParsedName, spec: str) -> str:
     """Fill the str.format spec from the seven role fields and the
     derived views (empty fields substitute ''), then apply the #254
     collapse. Unknown keys raise KeyError naming the valid fields."""
+    if not isinstance(spec, str):
+        raise TypeError(f"spec must be a str, got {spec!r}")
     values = {key: getattr(name, key) for key in _RENDER_KEYS}
     try:
         rendered = spec.format(**values)
@@ -74,6 +76,10 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
     initial in middle/family (given-name tokens always contribute);
     tags come from the pipeline -- hand-built untagged tokens all
     contribute. Valid spec keys: given, middle, family."""
+    for arg_name, arg in (("spec", spec), ("delimiter", delimiter),
+                          ("separator", separator)):
+        if not isinstance(arg, str):
+            raise TypeError(f"{arg_name} must be a str, got {arg!r}")
     values: dict[str, str] = {}
     for key in _INITIALS_KEYS:
         role = Role(key)
@@ -126,6 +132,10 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     Idempotent: without force, a capitalized result is mixed-case and
     the gate returns it unchanged; with force, every _cap_word rule is
     a fixpoint on its own output."""
+    if lexicon is not None and not isinstance(lexicon, Lexicon):
+        # eager, before the gate: a garbage argument must not become a
+        # silent no-op on mixed-case input or a deep AttributeError
+        raise TypeError(f"lexicon must be a Lexicon or None, got {lexicon!r}")
     lex = Lexicon.default() if lexicon is None else lexicon
     joined = " ".join(t.text for t in name.tokens)
     if not force and joined not in (joined.upper(), joined.lower()):

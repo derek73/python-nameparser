@@ -221,3 +221,25 @@ def test_capitalized_rebuilds_ambiguity_tokens() -> None:
     # the ambiguity references the NEW capitalized token (subset invariant)
     assert out.ambiguities[0].tokens[0] is out.tokens[0]
     assert out.ambiguities[0].tokens[0].text == "Van"
+
+
+def test_render_and_initials_reject_non_str_arguments() -> None:
+    # eager, like every constructor: not an AttributeError frames deep
+    pn = _delavega()
+    with pytest.raises(TypeError, match="spec must be a str"):
+        pn.render(7)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="spec must be a str"):
+        pn.initials(7)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="delimiter must be a str"):
+        pn.initials(delimiter=None)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="separator must be a str"):
+        pn.initials(separator=0)  # type: ignore[arg-type]
+
+
+def test_capitalized_rejects_non_lexicon_argument() -> None:
+    # previously a silent no-op on mixed-case input and a deep
+    # AttributeError on single-case input
+    with pytest.raises(TypeError, match="must be a Lexicon"):
+        _delavega().capitalized("garbage")  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="must be a Lexicon"):
+        _lowercase_mac().capitalized({"titles": set()})  # type: ignore[arg-type]
