@@ -177,7 +177,8 @@ class Lexicon:
         # the two named constructors and by how many entries -- never the
         # entries themselves (design rule, see nameparser._types module
         # docstring). Diffing empty()-built lexicons against default()
-        # would tell the wrong story ("default minus ~700 entries").
+        # would tell the wrong story ("default minus the entire
+        # default vocabulary").
         if self == Lexicon.default():
             return "Lexicon(default)"
         if self == Lexicon.empty():
