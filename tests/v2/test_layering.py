@@ -1,4 +1,5 @@
-"""Enforce the conventions doc's import layering mechanically."""
+"""Enforce the conventions doc's contracts mechanically: import
+layering, public exports, and the pickle layout guards."""
 import ast
 import pathlib
 
@@ -108,3 +109,33 @@ def test_type_checking_imports_do_not_count(tmp_path: pathlib.Path) -> None:
         "    from nameparser import _render\n"
     )
     assert _nameparser_imports(mod) == ["nameparser.util", "nameparser"]
+
+
+def test_every_frozen_dataclass_carries_the_pickle_guards() -> None:
+    # Forgetting the two class-body assignments is SILENT --
+    # @dataclass(slots=True) installs its own working pickle methods
+    # without skew detection. Lexicon keeps a private copy of the guard
+    # (layering keeps _lexicon import-free of _types).
+    import dataclasses
+    import inspect
+
+    import nameparser._lexicon
+    import nameparser._locale
+    import nameparser._policy
+    import nameparser._types
+    from nameparser._types import _guarded_getstate, _guarded_setstate
+
+    modules = (nameparser._types, nameparser._lexicon,
+               nameparser._policy, nameparser._locale)
+    for module in modules:
+        for _, cls in inspect.getmembers(module, inspect.isclass):
+            if cls.__module__ != module.__name__:
+                continue
+            if not dataclasses.is_dataclass(cls):
+                continue
+            if cls.__name__ == "Lexicon":
+                assert "__getstate__" in cls.__dict__
+                assert "__setstate__" in cls.__dict__
+                continue
+            assert cls.__dict__.get("__getstate__") is _guarded_getstate, cls
+            assert cls.__dict__.get("__setstate__") is _guarded_setstate, cls

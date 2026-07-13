@@ -1,7 +1,7 @@
 import pytest
 
 from nameparser._lexicon import Lexicon
-from nameparser._render import _collapse
+from nameparser._render import _collapse, render
 from nameparser._types import Ambiguity, AmbiguityKind, ParsedName, Role, Span, Token
 
 
@@ -40,7 +40,6 @@ def _delavega() -> ParsedName:
 
 
 def test_render_fills_fields_and_collapses() -> None:
-    from nameparser._render import render
     pn = _delavega()
     assert render(pn, "{title} {given} {middle} {family} {suffix}") \
         == "Dr. Juan de la Vega III"
@@ -49,7 +48,6 @@ def test_render_fills_fields_and_collapses() -> None:
 
 
 def test_render_accepts_derived_view_keys() -> None:
-    from nameparser._render import render
     assert render(_delavega(), "{family_base}, {given} {family_particles}") \
         == "Vega, Juan de la"
     assert render(_delavega(), "{surnames}") == "de la Vega"
@@ -57,20 +55,17 @@ def test_render_accepts_derived_view_keys() -> None:
 
 
 def test_render_every_role_key_is_valid() -> None:
-    from nameparser._render import render
     pn = _delavega()
     for role in Role:
         render(pn, f"{{{role.value}}}")  # must not raise
 
 
 def test_render_unknown_key_raises_enriched_keyerror() -> None:
-    from nameparser._render import render
     with pytest.raises(KeyError, match="valid fields"):
         render(_delavega(), "{first}")  # v1 spelling: redirected loudly
 
 
 def test_render_empty_parse_is_empty_string() -> None:
-    from nameparser._render import render
     assert render(_pn("", []), "{title} {given} {middle} {family} {suffix}") == ""
 
 
