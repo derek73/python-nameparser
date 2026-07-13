@@ -11,10 +11,11 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._state import ParseState
 
 #: Filled in by later tasks as stages land; the fold is total either way.
-STAGES: tuple[Callable[[ParseState], ParseState], ...] = ()
+STAGES: tuple[Callable[[ParseState], ParseState], ...] = (extract_delimited,)
 
 
 def run(state: ParseState) -> ParseState:
