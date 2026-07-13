@@ -29,3 +29,39 @@ def test_state_is_frozen_and_replace_works() -> None:
 def test_worktoken_carries_optional_role() -> None:
     t = WorkToken("Jack", Span(6, 10), role=Role.NICKNAME)
     assert t.role is Role.NICKNAME
+
+
+def test_stage_field_ownership() -> None:
+    # The ParseState docstring's ownership map, pinned mechanically: run
+    # the whole case corpus through the fold stage by stage and assert
+    # each stage only changes the fields it owns. Converts the prose
+    # contract into a test (a future stage clobbering another stage's
+    # field fails here, not in a distant assertion).
+    import dataclasses as _dc
+
+    from nameparser import Lexicon as _Lexicon
+    from nameparser._pipeline import STAGES
+
+    from ..cases import CASES
+
+    ownership = {
+        "extract_delimited": {"extracted", "masked", "ambiguities"},
+        "tokenize": {"tokens", "comma_offsets"},
+        "segment": {"segments", "structure", "ambiguities"},
+        "classify": {"tokens"},
+        "group": {"tokens", "pieces", "piece_tags", "dropped"},
+        "assign": {"tokens", "ambiguities"},
+        "post_rules": {"tokens"},
+    }
+    assert {s.__name__ for s in STAGES} == set(ownership)
+    for case in CASES:
+        state = ParseState(original=case.text, lexicon=_Lexicon.default(),
+                           policy=case.policy or Policy())
+        for stage in STAGES:
+            before = {f.name: getattr(state, f.name)
+                      for f in _dc.fields(state)}
+            state = stage(state)
+            changed = {name for name, value in before.items()
+                       if getattr(state, name) != value}
+            assert changed <= ownership[stage.__name__], (
+                f"{case.id}: {stage.__name__} changed {changed - ownership[stage.__name__]}")

@@ -23,7 +23,8 @@ def assemble(state: ParseState) -> ParsedName:
     for i, t in enumerate(state.tokens):
         if i in dropped:
             continue
-        final[i] = Token(t.text, t.span, t.role or Role.GIVEN, t.tags)
+        role = t.role if t.role is not None else Role.GIVEN
+        final[i] = Token(t.text, t.span, role, t.tags)
     ambiguities = tuple(
         Ambiguity(p.kind, p.detail,
                   tuple(final[i] for i in p.indices if i in final))

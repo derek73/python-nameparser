@@ -26,7 +26,10 @@ from nameparser._types import ParsedName, _guarded_getstate, _guarded_setstate
 class Parser:
     """Immutable, thread-safe, picklable by construction (spec §4): all
     validity checking happens at construction; a Parser that constructs
-    successfully cannot fail at parse time on any str content."""
+    successfully cannot fail at parse time on any str content. The None
+    field defaults resolve in __post_init__; after construction both
+    fields are always non-None (the annotations state the steady-state
+    truth, hence the assignment ignores on the defaults)."""
 
     lexicon: Lexicon = None  # type: ignore[assignment]  # None -> default()
     policy: Policy = None  # type: ignore[assignment]    # None -> Policy()

@@ -21,7 +21,9 @@ from nameparser._types import AmbiguityKind, Role, Span
 @dataclass(frozen=True, slots=True)
 class WorkToken:
     """One tokenized word. role stays None until assign; extracted
-    nickname/maiden tokens arrive with their role pre-set."""
+    nickname/maiden tokens arrive with their role pre-set. text is
+    always the exact original slice (tokenize is the sole producer;
+    the anti-#100 invariant depends on it)."""
 
     text: str
     span: Span
@@ -53,8 +55,11 @@ class ParseState:
     dataclasses.replace. Fields are filled progressively:
     extract_delimited -> extracted/masked; tokenize -> tokens (span-
     sorted)/comma_offsets; segment -> segments/structure; classify ->
-    token tags; group -> pieces/dropped; assign/post_rules -> token
-    roles; ambiguities accumulate anywhere."""
+    token tags; group -> pieces/piece_tags/dropped AND maiden token
+    roles; assign/post_rules -> the remaining token roles; ambiguities
+    accumulate anywhere. Post-group, segments may retain indices of
+    dropped tokens -- assign iterates pieces, never segments. This
+    ownership map is pinned by tests/v2/pipeline/test_state.py."""
 
     original: str
     lexicon: Lexicon
