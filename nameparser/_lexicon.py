@@ -149,6 +149,13 @@ class Lexicon:
                 f"particles_ambiguous must be a subset of particles; "
                 f"not in particles: {extra}"
             )
+        if not self.suffix_acronyms_ambiguous <= self.suffix_acronyms:
+            extra = ", ".join(sorted(
+                self.suffix_acronyms_ambiguous - self.suffix_acronyms))
+            raise ValueError(
+                f"suffix_acronyms_ambiguous must be a subset of "
+                f"suffix_acronyms; not in suffix_acronyms: {extra}"
+            )
 
     # -- constructors ----------------------------------------------------
 

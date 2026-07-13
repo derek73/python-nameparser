@@ -2,7 +2,7 @@ from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import is_initial, is_suffix_lenient, is_suffix_strict
 
 _LEX = Lexicon(
-    suffix_acronyms=frozenset({"phd"}),
+    suffix_acronyms=frozenset({"phd", "ma"}),
     suffix_words=frozenset({"jr", "v"}),
     suffix_acronyms_ambiguous=frozenset({"ma"}),
 )
@@ -32,3 +32,9 @@ def test_lenient_accepts_suffix_words_unconditionally() -> None:
     assert is_suffix_lenient("V", _LEX)
     assert is_suffix_lenient("V.", _LEX)
     assert not is_suffix_lenient("Ma", _LEX)
+
+
+def test_strict_excludes_bare_ambiguous_even_when_in_acronyms() -> None:
+    # mirrors the real data shape: ambiguous is a SUBSET of acronyms
+    assert not is_suffix_strict("Ma", _LEX)
+    assert is_suffix_strict("M.A.", _LEX)

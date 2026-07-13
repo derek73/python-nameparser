@@ -186,3 +186,11 @@ def test_normalization_casefolds_and_strips_interior_periods() -> None:
     # A "simplify to .lower()/.strip('.')" regression must fail here.
     lex = Lexicon(titles=frozenset({"STRAßE", "Ph.D"}))
     assert lex.titles == frozenset({"strasse", "phd"})
+
+
+def test_suffix_ambiguous_must_be_subset_of_acronyms() -> None:
+    # same invariant as particles_ambiguous <= particles: the ambiguous
+    # set marks a subset of suffix_acronyms, and classify's period gate
+    # depends on the membership tests agreeing about it
+    with pytest.raises(ValueError, match="subset"):
+        Lexicon(suffix_acronyms_ambiguous=frozenset({"ma"}))

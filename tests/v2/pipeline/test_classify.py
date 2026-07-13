@@ -9,7 +9,7 @@ from nameparser._policy import Policy
 _LEX = Lexicon(
     titles=frozenset({"dr", "sir"}),
     given_name_titles=frozenset({"sir"}),
-    suffix_acronyms=frozenset({"phd"}),
+    suffix_acronyms=frozenset({"phd", "ma"}),
     suffix_words=frozenset({"jr", "v"}),
     suffix_acronyms_ambiguous=frozenset({"ma"}),
     particles=frozenset({"de", "la", "van"}),
@@ -66,3 +66,13 @@ def test_v_is_suffix_word_and_initial() -> None:
     # both tags present; assign applies the veto, not classify
     out = _classified("John V Smith")
     assert {"vocab:suffix", "vocab:suffix-word", "initial"} <= _tags(out, "V")
+
+
+def test_bare_ambiguous_acronym_in_acronyms_is_not_suffix() -> None:
+    # the default lexicon has suffix_acronyms_ambiguous SUBSET OF
+    # suffix_acronyms (v1 data shape); the plain membership test must
+    # exclude the ambiguous members or the period gate is dead code
+    # and bare 'Ed'/'Jd' silently become suffixes (PR review C1)
+    out = _classified("Ma M.A.")
+    assert "vocab:suffix" not in _tags(out, "Ma")
+    assert "vocab:suffix" in _tags(out, "M.A.")

@@ -33,7 +33,10 @@ def is_suffix_strict(text: str, lexicon: Lexicon) -> bool:
         return True
     if is_initial(text):
         return False
-    return n in lexicon.suffix_acronyms or n in lexicon.suffix_words
+    # ambiguous subset excluded from the plain test (see _classify)
+    return (n in lexicon.suffix_acronyms
+            and n not in lexicon.suffix_acronyms_ambiguous) \
+        or n in lexicon.suffix_words
 
 
 def is_suffix_lenient(text: str, lexicon: Lexicon) -> bool:
