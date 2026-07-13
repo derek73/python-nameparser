@@ -90,6 +90,11 @@ def test_phd_split_across_tokens_merges_as_suffix() -> None:
     out = _grouped("John Smith Ph. D.")
     assert _piece_texts(out) == [["John", "Smith", "Ph. D."]]
     assert "suffix" in out.piece_tags[0][2]
+    # continuation tokens of the merged piece carry the stable "joined"
+    # tag so the suffix string view can heal the split (", " join would
+    # otherwise render 'Ph., D.')
+    d_tok = next(t for t in out.tokens if t.text == "D.")
+    assert "joined" in d_tok.tags
 
 
 def test_maiden_marker_consumes_tail() -> None:

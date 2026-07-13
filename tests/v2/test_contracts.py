@@ -55,6 +55,7 @@ _TAG_TRIGGERS: dict[str, tuple[str, str]] = {
     "particle": ("Juan de la Vega", "de"),
     "conjunction": ("Mr. and Mrs. John Smith", "and"),
     "initial": ("John A. Smith", "A."),
+    "joined": ("John Ph. D.", "D."),
 }
 
 

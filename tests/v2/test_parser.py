@@ -131,3 +131,18 @@ def test_matches_accepts_explicit_parser() -> None:
     pn = family_first.parse("Yamada Taro")
     assert pn.matches("Yamada Taro", parser=family_first)
     assert not pn.matches("Yamada Taro")  # default parser reads given-first
+
+
+def test_phd_split_heals_in_the_suffix_view() -> None:
+    # v1 parity via fix_phd: the split credential renders as one suffix
+    assert parse("John Ph. D.").suffix == "Ph. D."
+    assert parse("John Smith PhD MD").suffix == "PhD, MD"  # unchanged
+
+
+def test_phd_split_mid_name_is_a_suffix() -> None:
+    # v1 parity: fix_phd extracted the credential BEFORE parsing, so
+    # position never mattered; the merged piece is a suffix anywhere
+    pn = parse("Dr. John Ph. D. Smith")
+    assert pn.suffix == "Ph. D."
+    assert pn.family == "Smith"
+    assert pn.middle == ""

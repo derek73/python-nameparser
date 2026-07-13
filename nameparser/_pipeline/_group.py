@@ -182,6 +182,14 @@ def group(state: ParseState) -> ParseState:
     additional = 1 if state.structure is Structure.FAMILY_COMMA else 0
     for seg in state.segments:
         pieces, ptags = _group_segment(seg, additional, tuple(tokens))
+        # continuation tokens of a suffix-merged piece (the ph-d merge)
+        # carry the stable "joined" tag: the suffix string view joins
+        # SUFFIX tokens with ", ", and the tag lets it heal the split
+        for piece, piece_tags_ in zip(pieces, ptags):
+            if "suffix" in piece_tags_ and len(piece) > 1:
+                for i in piece[1:]:
+                    tokens[i] = dataclasses.replace(
+                        tokens[i], tags=tokens[i].tags | {"joined"})
         # maiden markers: a non-leading marker piece consumes following
         # pieces until a suffix; consumed tokens become MAIDEN, the
         # marker is dropped (#274)

@@ -94,6 +94,15 @@ def _assign_main(seg_idx: int, state: ParseState,
     rest = list(range(n, len(pieces)))
     if not rest:
         return
+    # group-flagged suffix pieces (the ph-d merge) are suffixes at ANY
+    # position -- v1's fix_phd extracted the credential from the string
+    # before parsing, so position never mattered (PR review I3)
+    flagged = [k for k in rest if "suffix" in ptags[k]]
+    for k in flagged:
+        _set_roles(tokens, pieces[k], Role.SUFFIX)
+    rest = [k for k in rest if "suffix" not in ptags[k]]
+    if not rest:
+        return
     # v1 nickname rule (plan deviation #2)
     if len(rest) == 1 and has_nickname:
         _set_roles(tokens, pieces[rest[0]], Role.FAMILY)

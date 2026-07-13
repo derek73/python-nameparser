@@ -54,8 +54,10 @@ class Span(NamedTuple):
 
 
 #: Stable, documented tag vocabulary (API). All other tags are
-#: namespaced ("vocab:...", "patronymic:...") and unstable.
-STABLE_TAGS = frozenset({"particle", "conjunction", "initial"})
+#: namespaced ("vocab:...", "patronymic:...") and unstable. "joined"
+#: marks a continuation token of a merged piece (the ph-d merge) and
+#: drives the suffix view's space-vs-comma join.
+STABLE_TAGS = frozenset({"particle", "conjunction", "initial", "joined"})
 
 _E = TypeVar("_E", bound=Enum)
 
@@ -302,8 +304,8 @@ class ParsedName:
 
     def _text_for(self, *roles: Role, tag: str | None = None,
                   without_tag: str | None = None) -> str:
-        joiner = ", " if roles == (Role.SUFFIX,) else " "
-        parts = []
+        suffix_join = roles == (Role.SUFFIX,)
+        parts: list[str] = []
         for tok in self.tokens:
             if tok.role not in roles:
                 continue
@@ -311,8 +313,14 @@ class ParsedName:
                 continue
             if without_tag is not None and without_tag in tok.tags:
                 continue
-            parts.append(tok.text)
-        return joiner.join(parts)
+            # "joined" (stable tag) marks a continuation of the previous
+            # token ("Ph." + "D."): attach with a space so the suffix
+            # view's ", " join does not split one credential in two
+            if suffix_join and "joined" in tok.tags and parts:
+                parts[-1] += " " + tok.text
+            else:
+                parts.append(tok.text)
+        return (", " if suffix_join else " ").join(parts)
 
     @property
     def title(self) -> str:
