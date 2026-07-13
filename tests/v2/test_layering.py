@@ -17,7 +17,7 @@ _MUST_EXIST = {"_types.py", "_lexicon.py", "_policy.py", "_locale.py",
                "_pipeline/_vocab.py", "_pipeline/_segment.py",
                "_pipeline/_classify.py", "_pipeline/_group.py",
                "_pipeline/_assign.py", "_pipeline/_post_rules.py",
-               "_pipeline/_assemble.py"}
+               "_pipeline/_assemble.py", "_parser.py"}
 
 _PIPELINE_STAGE_ALLOWED = (
     "nameparser._types", "nameparser._lexicon", "nameparser._policy",
@@ -130,6 +130,7 @@ def test_public_exports() -> None:
         "Span", "Role", "Token", "Ambiguity", "AmbiguityKind", "ParsedName",
         "Lexicon", "Policy", "PolicyPatch", "PatronymicRule", "UNSET",
         "GIVEN_FIRST", "FAMILY_FIRST", "FAMILY_FIRST_GIVEN_LAST", "Locale",
+        "Parser", "parse",
     }
     assert expected <= set(nameparser.__all__)
     for name in expected:
@@ -162,12 +163,15 @@ def test_every_frozen_dataclass_carries_the_pickle_guards() -> None:
 
     import nameparser._lexicon
     import nameparser._locale
+    import nameparser._parser
     import nameparser._policy
     import nameparser._types
     from nameparser._types import _guarded_getstate, _guarded_setstate
 
+    # _pipeline internals (ParseState, WorkToken, ...) are exempt: they
+    # are never pickled and are not public API.
     modules = (nameparser._types, nameparser._lexicon,
-               nameparser._policy, nameparser._locale)
+               nameparser._policy, nameparser._locale, nameparser._parser)
     for module in modules:
         for _, cls in inspect.getmembers(module, inspect.isclass):
             if cls.__module__ != module.__name__:

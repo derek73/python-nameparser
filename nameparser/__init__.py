@@ -8,6 +8,7 @@ __url__ = "https://github.com/derek73/python-nameparser"
 
 from nameparser._lexicon import Lexicon
 from nameparser._locale import Locale
+from nameparser._parser import Parser, parse
 from nameparser._policy import (
     FAMILY_FIRST,
     FAMILY_FIRST_GIVEN_LAST,
@@ -33,4 +34,5 @@ __all__ = [
     "Span", "Role", "Token", "Ambiguity", "AmbiguityKind", "ParsedName",
     "Lexicon", "Policy", "PolicyPatch", "PatronymicRule", "UNSET",
     "GIVEN_FIRST", "FAMILY_FIRST", "FAMILY_FIRST_GIVEN_LAST", "Locale",
+    "Parser", "parse",
 ]
