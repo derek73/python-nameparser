@@ -71,6 +71,22 @@ def post_rules(state: ParseState) -> ParseState:
             for i in givens:
                 _retag(tokens, i, Role.FAMILY)
 
+    # rule 1b: a leading particle that is NEVER a given name means the
+    # whole name is a surname -- fold given (and middles) into family
+    # (v1 handle_non_first_name_prefix; 'de la Vega' -> family, while
+    # ambiguous 'van Gogh' keeps the given reading). The middle/family
+    # guard leaves a degenerate bare 'de' as given rather than
+    # inventing a surname.
+    if len(givens) == 1 and (middles or families):
+        gtags = tokens[givens[0]].tags
+        if "particle" in gtags and "vocab:particle-ambiguous" not in gtags:
+            for i in givens + middles:
+                _retag(tokens, i, Role.FAMILY)
+            # downstream rules key on the role counts: recompute
+            givens = _idx(tokens, Role.GIVEN)
+            middles = _idx(tokens, Role.MIDDLE)
+            families = _idx(tokens, Role.FAMILY)
+
     # v1 gates both rotations on `not self._had_comma`
     if state.structure is not Structure.NO_COMMA:
         return dataclasses.replace(state, tokens=tuple(tokens))

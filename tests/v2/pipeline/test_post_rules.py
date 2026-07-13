@@ -7,6 +7,8 @@ from nameparser._types import Role
 _LEX = Lexicon(
     titles=frozenset({"mr", "sir"}),
     given_name_titles=frozenset({"sir"}),
+    particles=frozenset({"de", "la", "van"}),
+    particles_ambiguous=frozenset({"van"}),
 )
 
 
@@ -81,3 +83,26 @@ def test_turkic_rotation() -> None:
     assert _by_role(out, Role.GIVEN) == "Aygun"
     assert _by_role(out, Role.MIDDLE) == "Ali kizi"
     assert _by_role(out, Role.FAMILY) == "Mammadova"
+
+
+def test_leading_never_given_particle_folds_into_family() -> None:
+    # v1 handle_non_first_name_prefix: a leading particle that is never
+    # a given name ('de') means the whole name is a surname
+    out = _parsed("de la Vega")
+    assert _by_role(out, Role.FAMILY) == "de la Vega"
+    assert not _by_role(out, Role.GIVEN)
+
+
+def test_leading_ambiguous_particle_stays_given() -> None:
+    # 'van' is particles_ambiguous: the given reading stands (v1 parity)
+    out = _parsed("van Gogh")
+    assert _by_role(out, Role.GIVEN) == "van"
+    assert _by_role(out, Role.FAMILY) == "Gogh"
+
+
+def test_degenerate_bare_particle_stays_given() -> None:
+    # v1's guard: with no middle or family, a bare 'de' keeps given='de'
+    # rather than inventing a surname
+    out = _parsed("de")
+    assert _by_role(out, Role.GIVEN) == "de"
+    assert not _by_role(out, Role.FAMILY)

@@ -115,6 +115,10 @@ CASES: tuple[Case, ...] = (
     Case("phd_split_mid_name", "Dr. John Ph. D. Smith",
          {"title": "Dr.", "given": "John", "family": "Smith",
           "suffix": "Ph. D."}),
+    Case("leading_never_given_particle", "de la Vega",
+         {"family": "de la Vega"},
+         notes="v1 handle_non_first_name_prefix: never-given leading "
+               "particle folds the whole name into family"),
     Case("unbalanced_quote", 'Jon "Nick Smith',
          {"given": "Jon", "middle": '"Nick', "family": "Smith"},
          ambiguities=("unbalanced-delimiter",),
