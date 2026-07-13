@@ -52,21 +52,28 @@ def _collapse(rendered: str) -> str:
     return rendered.strip(", ")
 
 
-def render(name: ParsedName, spec: str) -> str:
-    """Fill the str.format spec from the seven role fields and the
-    derived views (empty fields substitute ''), then apply the #254
-    collapse. Unknown keys raise KeyError naming the valid fields."""
+def _format_spec(spec: str, values: dict[str, str], noun: str,
+                 keys: tuple[str, ...]) -> str:
+    """Shared tail of render()/initials(): fill the spec, enrich
+    unknown-KEY errors with the valid key list, collapse."""
     if not isinstance(spec, str):
         raise TypeError(f"spec must be a str, got {spec!r}")
-    values = {key: getattr(name, key) for key in _RENDER_KEYS}
     try:
         rendered = spec.format(**values)
     except KeyError as exc:
         raise KeyError(
-            f"unknown render field {exc.args[0]!r}; valid fields: "
-            f"{', '.join(_RENDER_KEYS)}"
+            f"unknown {noun} field {exc.args[0]!r}; valid fields: "
+            f"{', '.join(keys)}"
         ) from None
     return _collapse(rendered)
+
+
+def render(name: ParsedName, spec: str) -> str:
+    """Fill the str.format spec from the seven role fields and the
+    derived views (empty fields substitute ''), then apply the #254
+    collapse. Unknown keys raise KeyError naming the valid fields."""
+    values = {key: getattr(name, key) for key in _RENDER_KEYS}
+    return _format_spec(spec, values, "render", _RENDER_KEYS)
 
 
 def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str:
@@ -76,10 +83,10 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
     initial in middle/family (given-name tokens always contribute);
     tags come from the pipeline -- hand-built untagged tokens all
     contribute. Valid spec keys: given, middle, family."""
-    for arg_name, arg in (("spec", spec), ("delimiter", delimiter),
-                          ("separator", separator)):
-        if not isinstance(arg, str):
-            raise TypeError(f"{arg_name} must be a str, got {arg!r}")
+    if not isinstance(delimiter, str):
+        raise TypeError(f"delimiter must be a str, got {delimiter!r}")
+    if not isinstance(separator, str):
+        raise TypeError(f"separator must be a str, got {separator!r}")
     values: dict[str, str] = {}
     for key in _INITIALS_KEYS:
         role = Role(key)
@@ -87,26 +94,17 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
         if role is not Role.GIVEN:
             tokens = tuple(t for t in tokens
                            if not (_SKIP_TAGS & t.tags))
-        letters = [t.text[0] for t in tokens]
-        values[key] = ((delimiter + separator).join(letters) + delimiter
-                       if letters else "")
-    try:
-        rendered = spec.format(**values)
-    except KeyError as exc:
-        raise KeyError(
-            f"unknown initials field {exc.args[0]!r}; valid fields: "
-            f"{', '.join(_INITIALS_KEYS)}"
-        ) from None
-    return _collapse(rendered)
+        values[key] = separator.join(
+            t.text[0] + delimiter for t in tokens)
+    return _format_spec(spec, values, "initials", _INITIALS_KEYS)
 
 
 def _cap_word(word: str, role: Role, lex: Lexicon) -> str:
     # v1 cap_word order: particle/conjunction rule first, then the
     # exceptions map, then Mac/Mc, then str.capitalize
     normalized = _normalize(word)
-    if (normalized in lex.particles
-            and role in (Role.MIDDLE, Role.FAMILY)) \
-            or normalized in lex.conjunctions:
+    if ((normalized in lex.particles and role in (Role.MIDDLE, Role.FAMILY))
+            or normalized in lex.conjunctions):
         return word.lower()
     exception = lex.capitalization_exceptions_map.get(normalized)
     if exception is not None:
@@ -128,7 +126,9 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
                 force: bool) -> ParsedName:
     """Case-fixing transform -> new ParsedName, same spans, new token
     texts (core spec §5b). Gate (v1 parity): only single-case input is
-    touched unless force=True; the gate reads the joined token texts.
+    touched unless force=True; the gate reads the joined token texts
+    (not render() output -- the case gate stays decoupled from spec
+    formatting and the #254 collapse).
     Idempotent: without force, a capitalized result is mixed-case and
     the gate returns it unchanged; with force, every _cap_word rule is
     a fixpoint on its own output."""
