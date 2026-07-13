@@ -130,7 +130,7 @@ def test_public_exports() -> None:
         "Span", "Role", "Token", "Ambiguity", "AmbiguityKind", "ParsedName",
         "Lexicon", "Policy", "PolicyPatch", "PatronymicRule", "UNSET",
         "GIVEN_FIRST", "FAMILY_FIRST", "FAMILY_FIRST_GIVEN_LAST", "Locale",
-        "Parser", "parse",
+        "Parser", "parse", "parser_for",
     }
     assert expected <= set(nameparser.__all__)
     for name in expected:

@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING, NamedTuple, NoReturn, TypeVar
 
 if TYPE_CHECKING:
     from nameparser._lexicon import Lexicon
+    from nameparser._parser import Parser
 
 
 class Role(Enum):
@@ -421,6 +422,20 @@ class ParsedName:
         strict.
         """
         return tuple(self._text_for(role).casefold() for role in Role)
+
+    def matches(self, other: str | ParsedName, *,
+                parser: Parser | None = None) -> bool:
+        """Component-wise case-insensitive comparison (the semantic
+        layer; __eq__ stays strict). A str argument is parsed with
+        `parser`, or the default parser when None."""
+        if isinstance(other, str):
+            import nameparser._parser as _parser
+            active = parser if parser is not None else _parser._default_parser()
+            other = active.parse(other)
+        if not isinstance(other, ParsedName):
+            raise TypeError(
+                f"matches() takes a str or ParsedName, got {other!r}")
+        return self.comparison_key() == other.comparison_key()
 
     # -- rendering delegates ----------------------------------------------
     # One-line delegation to nameparser._render (core spec §5b): parsing

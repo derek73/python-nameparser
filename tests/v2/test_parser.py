@@ -2,8 +2,8 @@ import pickle
 
 import pytest
 
-from nameparser import Lexicon, Parser, Policy, parse
-from nameparser._policy import FAMILY_FIRST
+from nameparser import Lexicon, Locale, Parser, Policy, PolicyPatch, parse, parser_for
+from nameparser._policy import FAMILY_FIRST, PatronymicRule
 from nameparser._types import AmbiguityKind
 
 
@@ -78,3 +78,56 @@ def test_parsedname_repr_includes_ambiguities_line() -> None:
 def test_module_parse_reuses_the_default_parser() -> None:
     import nameparser._parser as parser_mod
     assert parser_mod._default_parser() is parser_mod._default_parser()
+
+
+def test_parser_for_stacks_locales() -> None:
+    ru = Locale(code="ru",
+                lexicon=Lexicon.empty().add(titles={"г-н"}),
+                policy=PolicyPatch(patronymic_rules=frozenset(
+                    {PatronymicRule.EAST_SLAVIC})))
+    p = parser_for(ru)
+    assert PatronymicRule.EAST_SLAVIC in p.policy.patronymic_rules
+    pn = p.parse("г-н Сидоров Иван Петрович")
+    assert pn.title == "г-н"
+    assert pn.given == "Иван"
+    assert pn.family == "Сидоров"
+
+
+def test_parser_for_rejects_non_locales() -> None:
+    with pytest.raises(TypeError, match="Locale"):
+        parser_for("ru")  # type: ignore[arg-type]
+
+
+def test_parser_for_wraps_pack_errors_with_identity() -> None:
+    # PolicyPatch validates lazily (by design), so an invalid value sits
+    # latent in a perfectly constructible Locale until apply time
+    bad = Locale(code="xx", lexicon=Lexicon.empty(),
+                 policy=PolicyPatch(name_order=(1, 2, 3)))  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="while applying locale 'xx'"):
+        parser_for(bad)
+
+
+def test_parser_for_warns_on_scalar_conflict() -> None:
+    a = Locale(code="aa", lexicon=Lexicon.empty(),
+               policy=PolicyPatch(strip_emoji=False))
+    b = Locale(code="bb", lexicon=Lexicon.empty(),
+               policy=PolicyPatch(strip_emoji=True))
+    with pytest.warns(UserWarning, match="strip_emoji"):
+        p = parser_for(a, b)
+    assert p.policy.strip_emoji is True  # later wins
+
+
+def test_matches_component_wise_case_insensitive() -> None:
+    pn = parse("John Smith")
+    assert pn.matches("JOHN SMITH")
+    assert pn.matches(parse("john smith"))
+    assert not pn.matches("John Smythe")
+    with pytest.raises(TypeError, match="str or ParsedName"):
+        pn.matches(42)  # type: ignore[arg-type]
+
+
+def test_matches_accepts_explicit_parser() -> None:
+    family_first = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    pn = family_first.parse("Yamada Taro")
+    assert pn.matches("Yamada Taro", parser=family_first)
+    assert not pn.matches("Yamada Taro")  # default parser reads given-first
