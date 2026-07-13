@@ -13,7 +13,7 @@ PKG = pathlib.Path(nameparser.__file__).parent
 # drop out of enforcement. Later tasks add each stage file as it lands.
 _MUST_EXIST = {"_types.py", "_lexicon.py", "_policy.py", "_locale.py",
                "_render.py", "_pipeline/_state.py", "_pipeline/__init__.py",
-               "_pipeline/_extract.py"}
+               "_pipeline/_extract.py", "_pipeline/_tokenize.py"}
 
 _PIPELINE_STAGE_ALLOWED = (
     "nameparser._types", "nameparser._lexicon", "nameparser._policy",
