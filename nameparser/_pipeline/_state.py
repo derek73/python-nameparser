@@ -56,8 +56,9 @@ class ParseState:
     extract_delimited -> extracted/masked; tokenize -> tokens (span-
     sorted)/comma_offsets; segment -> segments/structure; classify ->
     token tags; group -> pieces/piece_tags/dropped AND maiden token
-    roles; assign/post_rules -> the remaining token roles; ambiguities
-    accumulate anywhere. Post-group, segments may retain indices of
+    roles; assign/post_rules -> the remaining token roles; ambiguities are
+    recorded by extract/segment/assign only (pinned by the ownership
+    test). Post-group, segments may retain indices of
     dropped tokens -- assign iterates pieces, never segments. This
     ownership map is pinned by tests/v2/pipeline/test_state.py."""
 

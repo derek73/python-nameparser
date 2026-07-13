@@ -37,6 +37,21 @@ def test_name_order_must_be_permutation_and_error_names_constants() -> None:
         Policy(name_order=(Role.GIVEN, Role.GIVEN, Role.FAMILY))
 
 
+def test_name_order_restricted_to_the_three_exported_orders() -> None:
+    # _name_positions only implements the three exported semantics; the
+    # unnamed permutations would silently misassign (PR review I7).
+    # Pre-2.0 strictness is free: relaxing later is compatible.
+    with pytest.raises(ValueError, match="GIVEN_FIRST"):
+        Policy(name_order=(Role.MIDDLE, Role.GIVEN, Role.FAMILY))
+
+
+def test_name_order_rejects_non_role_elements_with_type_error() -> None:
+    # taxonomy: wrong element type -> TypeError, not the permutation
+    # ValueError (PR review polish)
+    with pytest.raises(TypeError, match="Role"):
+        Policy(name_order=(1, 2, 3))  # type: ignore[arg-type]
+
+
 def test_patronymic_rules_coerce_and_reject() -> None:
     p = Policy(patronymic_rules=frozenset({"east-slavic"}))  # type: ignore[arg-type]
     assert p.patronymic_rules == frozenset({PatronymicRule.EAST_SLAVIC})
@@ -175,7 +190,7 @@ def test_apply_patch_revalidates_deferred_values() -> None:
     # PolicyPatch documents lazy validation: invalid values sit latent in
     # the patch and must fail when applied, not silently flow into Policy.
     bad_order = PolicyPatch(name_order=(Role.TITLE, Role.GIVEN, Role.FAMILY))
-    with pytest.raises(ValueError, match="permutation"):
+    with pytest.raises(ValueError, match="exported orders"):
         apply_patch(Policy(), bad_order)
     bad_rules = PolicyPatch(patronymic_rules=frozenset({"klingon"}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="valid rules"):

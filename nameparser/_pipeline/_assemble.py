@@ -25,10 +25,17 @@ def assemble(state: ParseState) -> ParsedName:
             continue
         role = t.role if t.role is not None else Role.GIVEN
         final[i] = Token(t.text, t.span, role, t.tags)
-    ambiguities = tuple(
-        Ambiguity(p.kind, p.detail,
-                  tuple(final[i] for i in p.indices if i in final))
-        for p in state.ambiguities)
+    ambiguities = []
+    for pending in state.ambiguities:
+        materialized = tuple(final[i] for i in pending.indices
+                             if i in final)
+        if pending.indices and not materialized:
+            # every referent was dropped: the ambiguity describes
+            # nothing that survives assembly. Born-empty ambiguities
+            # (unbalanced delimiters) are token-independent and kept.
+            continue
+        ambiguities.append(
+            Ambiguity(pending.kind, pending.detail, materialized))
     return ParsedName(original=state.original,
                       tokens=tuple(final.values()),
-                      ambiguities=ambiguities)
+                      ambiguities=tuple(ambiguities))

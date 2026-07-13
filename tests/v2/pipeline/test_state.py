@@ -54,6 +54,17 @@ def test_stage_field_ownership() -> None:
         "post_rules": {"tokens"},
     }
     assert {s.__name__ for s in STAGES} == set(ownership)
+    # Within the tokens themselves the contract is finer: texts and
+    # spans are fixed at tokenize (the anti-#100 invariant -- tokens
+    # are never re-created), classify touches only tags, and the
+    # role-assigning stages touch only roles (group also tags, for the
+    # ph-d "joined" marker).
+    token_ownership = {
+        "classify": {"tags"},
+        "group": {"tags", "role"},
+        "assign": {"role"},
+        "post_rules": {"role"},
+    }
     for case in CASES:
         state = ParseState(original=case.text, lexicon=_Lexicon.default(),
                            policy=case.policy or Policy())
@@ -65,3 +76,15 @@ def test_stage_field_ownership() -> None:
                        if getattr(state, name) != value}
             assert changed <= ownership[stage.__name__], (
                 f"{case.id}: {stage.__name__} changed {changed - ownership[stage.__name__]}")
+            if stage.__name__ not in token_ownership:
+                continue
+            allowed = token_ownership[stage.__name__]
+            assert len(state.tokens) == len(before["tokens"]), (
+                f"{case.id}: {stage.__name__} changed the token count")
+            for old, new in zip(before["tokens"], state.tokens):
+                token_changed = {
+                    f.name for f in _dc.fields(old)
+                    if getattr(old, f.name) != getattr(new, f.name)}
+                assert token_changed <= allowed, (
+                    f"{case.id}: {stage.__name__} changed token fields "
+                    f"{token_changed - allowed} on {old.text!r}")

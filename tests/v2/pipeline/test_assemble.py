@@ -50,3 +50,27 @@ def test_assemble_drops_structural_marker_tokens() -> None:
 def test_empty_parse_is_falsy() -> None:
     assert not _parse("")
     assert not _parse("   ")
+
+
+def test_ambiguity_with_all_indices_dropped_is_omitted() -> None:
+    # an ambiguity whose referent tokens were ALL dropped describes
+    # nothing; emitting it hollow would mislead consumers. Born-empty
+    # ambiguities (unbalanced delimiters) are kept -- they are
+    # token-independent by design.
+    from nameparser._pipeline._state import PendingAmbiguity
+    from nameparser._types import AmbiguityKind as AK
+    import dataclasses
+    state = run(ParseState(original="Jane Smith née Jones", lexicon=_LEX,
+                           policy=Policy()))
+    née_idx = next(i for i, t in enumerate(state.tokens)
+                   if t.text == "née")
+    poisoned = dataclasses.replace(
+        state, ambiguities=state.ambiguities + (
+            PendingAmbiguity(AK.ORDER, "refers only to the marker",
+                             (née_idx,)),
+            PendingAmbiguity(AK.UNBALANCED_DELIMITER, "born empty", ()),
+        ))
+    pn = assemble(poisoned)
+    kinds = [a.kind for a in pn.ambiguities]
+    assert AK.ORDER not in kinds          # fully dangled: omitted
+    assert AK.UNBALANCED_DELIMITER in kinds  # born empty: kept

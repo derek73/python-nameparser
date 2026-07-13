@@ -3,8 +3,8 @@
 Layering (enforced by tests/v2/test_layering.py): this module imports
 nothing from nameparser at module level -- it is the bottom of the
 module-import dependency graph. The rendering delegates import _render
-at call time, and a TYPE_CHECKING-only _lexicon import supplies the
-Lexicon annotation.
+and matches() imports _parser at call time; TYPE_CHECKING-only imports
+supply the Lexicon/Parser annotations.
 
 Repr policy (applies to every v2 type's __repr__, across this module and
 _lexicon.py/_policy.py/_locale.py): bounded output only. No repr may scale
@@ -43,10 +43,10 @@ class Span(NamedTuple):
     end: int
 
     def __add__(self, other: object) -> NoReturn:  # type: ignore[override]
-        # Inherited tuple + would concatenate two spans into a 4-tuple --
-        # the natural but wrong spelling of "covering span". The real
-        # covering operation ships with its consumer, the pipeline's
-        # join stage.
+        # Inherited tuple + would concatenate two spans into a 4-tuple.
+        # There is deliberately NO covering-span operation: grouping is
+        # index-run based (spec §6, the anti-#100 invariant) and never
+        # merges spans.
         raise TypeError(
             "Span does not support +; tuple concatenation is not a "
             "covering span"

@@ -64,11 +64,21 @@ class Policy:
     def __post_init__(self) -> None:
         _reject_bare_string_order(self.name_order)
         order = tuple(self.name_order)
-        if len(order) != 3 or set(order) != _NAME_ROLES:
+        for element in order:
+            if not isinstance(element, Role):
+                raise TypeError(
+                    f"name_order elements must be Role members, "
+                    f"got {element!r}"
+                )
+        # Only the three exported orders have implemented assignment
+        # semantics; the unnamed permutations would silently misassign.
+        # Pre-2.0 strictness is free -- relaxing later is compatible.
+        if order not in (GIVEN_FIRST, FAMILY_FIRST,
+                         FAMILY_FIRST_GIVEN_LAST):
             raise ValueError(
-                f"name_order must be a permutation of (Role.GIVEN, "
-                f"Role.MIDDLE, Role.FAMILY), got {order!r}; use "
-                f"GIVEN_FIRST, FAMILY_FIRST, or FAMILY_FIRST_GIVEN_LAST"
+                f"name_order must be one of the exported orders, got "
+                f"{order!r}; use GIVEN_FIRST, FAMILY_FIRST, or "
+                f"FAMILY_FIRST_GIVEN_LAST"
             )
         object.__setattr__(self, "name_order", order)
         if isinstance(self.patronymic_rules, str):
@@ -159,9 +169,10 @@ class Policy:
             if value == f.default:
                 continue
             if f.name == "name_order":
-                # Only 3 of the 6 possible role permutations have named
-                # constants; fall back to a compact role-name tuple for
-                # the rest so this can't KeyError on an unnamed order.
+                # __post_init__ restricts to the three named orders, so
+                # the fallback is unreachable via the constructor; kept
+                # because repr must never raise (e.g. a smuggled
+                # __setstate__ value -- layout is validated, values not).
                 order_repr = constant_names.get(
                     value, "(" + ", ".join(r.name for r in value) + ")")
                 parts.append(f"name_order={order_repr}")

@@ -103,7 +103,9 @@ def test_parser_for_wraps_pack_errors_with_identity() -> None:
     # latent in a perfectly constructible Locale until apply time
     bad = Locale(code="xx", lexicon=Lexicon.empty(),
                  policy=PolicyPatch(name_order=(1, 2, 3)))  # type: ignore[arg-type]
-    with pytest.raises(ValueError, match="while applying locale 'xx'"):
+    # the rewrap preserves the taxonomy's exception type (here the
+    # non-Role element TypeError) while adding the pack identity
+    with pytest.raises(TypeError, match="while applying locale 'xx'"):
         parser_for(bad)
 
 
