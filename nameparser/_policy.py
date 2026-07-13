@@ -50,6 +50,13 @@ class Policy:
     __setstate__ = _guarded_setstate
 
     def __post_init__(self) -> None:
+        # tuple("gmf") would be ("g", "m", "f") -- catch the bare string
+        # with the same TypeError every other iterable field raises
+        if isinstance(self.name_order, str):
+            raise TypeError(
+                f"name_order must be an iterable of three Roles, "
+                f"not a bare string: {self.name_order!r}"
+            )
         order = tuple(self.name_order)
         if len(order) != 3 or set(order) != _NAME_ROLES:
             raise ValueError(
@@ -196,6 +203,11 @@ class PolicyPatch:
         # coerce a list at apply time, but the patch itself (and any
         # Locale holding it) must already be hashable.
         if self.name_order is not UNSET:
+            if isinstance(self.name_order, str):
+                raise TypeError(
+                    f"name_order must be an iterable of three Roles, "
+                    f"not a bare string: {self.name_order!r}"
+                )
             object.__setattr__(self, "name_order", tuple(self.name_order))
         for f in dataclasses.fields(self):
             if f.metadata.get("compose") != "union":

@@ -213,3 +213,13 @@ def test_setstate_rejects_layout_skew() -> None:
     del state["name_order"]
     with pytest.raises(ValueError, match="name_order"):
         Policy.__new__(Policy).__setstate__(state)
+
+
+def test_name_order_rejects_bare_string() -> None:
+    # tuple("gmf") is ("g","m","f"): without the guard a bare string
+    # fell through to the permutation ValueError instead of the
+    # taxonomy's bare-string TypeError every other iterable field raises
+    with pytest.raises(TypeError, match="bare string"):
+        Policy(name_order="gmf")  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="bare string"):
+        PolicyPatch(name_order="gmf")  # type: ignore[arg-type]
