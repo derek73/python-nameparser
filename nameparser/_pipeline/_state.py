@@ -1,0 +1,74 @@
+"""Internal pipeline state: WorkToken and ParseState.
+
+WorkTokens are pipeline-internal (no validation -- the tokenizer is the
+only producer) and are addressed BY INDEX in every stage: pieces and
+segments are runs of token indices, never joined strings, so value-based
+lookup (v1's #100 family) is structurally impossible.
+
+Layering: imports _types, _lexicon, _policy only (enforced by
+tests/v2/test_layering.py).
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+from enum import Enum, auto
+
+from nameparser._lexicon import Lexicon
+from nameparser._policy import Policy
+from nameparser._types import AmbiguityKind, Role, Span
+
+
+@dataclass(frozen=True, slots=True)
+class WorkToken:
+    """One tokenized word. role stays None until assign; extracted
+    nickname/maiden tokens arrive with their role pre-set."""
+
+    text: str
+    span: Span
+    tags: frozenset[str] = frozenset()
+    role: Role | None = None
+
+
+class Structure(Enum):
+    """segment's comma-structure decision."""
+
+    NO_COMMA = auto()
+    FAMILY_COMMA = auto()   # "Family, Given ..." (v1 lastname-comma)
+    SUFFIX_COMMA = auto()   # "Given Family, Suffix ..."
+
+
+@dataclass(frozen=True, slots=True)
+class PendingAmbiguity:
+    """An ambiguity recorded mid-pipeline by token INDEX; assemble
+    materializes real Ambiguity objects over the final tokens."""
+
+    kind: AmbiguityKind
+    detail: str
+    indices: tuple[int, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class ParseState:
+    """Carried through the stage fold. Frozen; stages return copies via
+    dataclasses.replace. Fields are filled progressively:
+    extract_delimited -> extracted/masked; tokenize -> tokens (span-
+    sorted)/comma_offsets; segment -> segments/structure; classify ->
+    token tags; group -> pieces/dropped; assign/post_rules -> token
+    roles; ambiguities accumulate anywhere."""
+
+    original: str
+    lexicon: Lexicon
+    policy: Policy
+    extracted: tuple[tuple[Role, Span], ...] = ()
+    masked: tuple[Span, ...] = ()
+    tokens: tuple[WorkToken, ...] = ()
+    comma_offsets: tuple[int, ...] = ()
+    segments: tuple[tuple[int, ...], ...] = ()
+    structure: Structure = Structure.NO_COMMA
+    # pieces[s][p] = run of token indices: piece p of segment s.
+    # piece_tags[s][p] = derived flags for that piece ("title", "prefix",
+    # "suffix", "conjunction") set by group's joins.
+    pieces: tuple[tuple[tuple[int, ...], ...], ...] = ()
+    piece_tags: tuple[tuple[frozenset[str], ...], ...] = ()
+    dropped: tuple[int, ...] = ()   # structural tokens (maiden markers)
+    ambiguities: tuple[PendingAmbiguity, ...] = ()

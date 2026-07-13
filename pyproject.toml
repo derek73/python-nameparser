@@ -62,6 +62,8 @@ module = [
   "nameparser._policy",
   "nameparser._render",
   "nameparser._locale",
+  "nameparser._pipeline.*",
+  "nameparser._parser",
 ]
 disallow_untyped_defs = true
 disallow_incomplete_defs = true

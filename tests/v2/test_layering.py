@@ -7,12 +7,26 @@ import nameparser
 
 PKG = pathlib.Path(nameparser.__file__).parent
 
+# ALLOWED keys whose module must exist on disk -- the exists() skip in
+# test_layering_contract is for entries that precede their module within
+# a plan, and without this list a renamed existing module would silently
+# drop out of enforcement. Later tasks add each stage file as it lands.
+_MUST_EXIST = {"_types.py", "_lexicon.py", "_policy.py", "_locale.py",
+               "_render.py", "_pipeline/_state.py", "_pipeline/__init__.py"}
+
+_PIPELINE_STAGE_ALLOWED = (
+    "nameparser._types", "nameparser._lexicon", "nameparser._policy",
+    # stages share _state plus in-package helpers (_vocab, _group's
+    # piece predicates); the prefix still forbids _render/_locale/_parser
+    "nameparser._pipeline.",
+)
+
 # module -> prefixes it may import from within nameparser
 ALLOWED = {
     # call-time imports only (inside the rendering-delegate method
     # bodies); module level stays import-free. TYPE_CHECKING imports
     # are skipped by _nameparser_imports and need no entry.
-    "_types.py": ("nameparser._render",),
+    "_types.py": ("nameparser._render", "nameparser._parser"),
     # intent: DATA modules only, during 2.x -- mechanically this admits
     # any config submodule; "data only" holds by convention/review
     "_lexicon.py": ("nameparser.config.",),
@@ -24,6 +38,22 @@ ALLOWED = {
     # _lexicon is needed at runtime: capitalized(lexicon=None) resolves
     # to Lexicon.default()
     "_render.py": ("nameparser._types", "nameparser._lexicon"),
+    # every stage module: state + the three config/type modules
+    "_pipeline/_state.py": ("nameparser._types", "nameparser._lexicon",
+                            "nameparser._policy"),
+    "_pipeline/__init__.py": ("nameparser._pipeline.",),
+    "_pipeline/_extract.py": _PIPELINE_STAGE_ALLOWED,
+    "_pipeline/_tokenize.py": _PIPELINE_STAGE_ALLOWED,
+    "_pipeline/_segment.py": _PIPELINE_STAGE_ALLOWED,
+    "_pipeline/_classify.py": _PIPELINE_STAGE_ALLOWED,
+    "_pipeline/_group.py": _PIPELINE_STAGE_ALLOWED,
+    "_pipeline/_assign.py": _PIPELINE_STAGE_ALLOWED,
+    "_pipeline/_post_rules.py": _PIPELINE_STAGE_ALLOWED,
+    "_pipeline/_assemble.py": _PIPELINE_STAGE_ALLOWED,
+    # Parser sits on everything except _render and the facade
+    "_parser.py": ("nameparser._types", "nameparser._lexicon",
+                   "nameparser._policy", "nameparser._locale",
+                   "nameparser._pipeline"),
 }
 
 
@@ -71,7 +101,12 @@ def _permitted(imported: str, allowed: tuple[str, ...]) -> bool:
 
 def test_layering_contract() -> None:
     for mod, allowed in ALLOWED.items():
-        for imported in _nameparser_imports(PKG / mod):
+        path = PKG / mod
+        if not path.exists():
+            assert mod not in _MUST_EXIST, (
+                f"{mod} keyed in ALLOWED but file is missing")
+            continue  # entries may precede their module within a plan
+        for imported in _nameparser_imports(path):
             assert _permitted(imported, allowed), (
                 f"{mod} imports {imported}, which the layering contract "
                 f"forbids (allowed prefixes: {allowed or 'none'})"
