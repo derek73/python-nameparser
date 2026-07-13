@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from nameparser._pipeline._assign import assign
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._group import group
@@ -20,7 +21,7 @@ from nameparser._pipeline._tokenize import tokenize
 
 #: Filled in by later tasks as stages land; the fold is total either way.
 STAGES: tuple[Callable[[ParseState], ParseState], ...] = (
-    extract_delimited, tokenize, segment, classify, group)
+    extract_delimited, tokenize, segment, classify, group, assign)
 
 
 def run(state: ParseState) -> ParseState:

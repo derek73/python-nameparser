@@ -15,7 +15,8 @@ _MUST_EXIST = {"_types.py", "_lexicon.py", "_policy.py", "_locale.py",
                "_render.py", "_pipeline/_state.py", "_pipeline/__init__.py",
                "_pipeline/_extract.py", "_pipeline/_tokenize.py",
                "_pipeline/_vocab.py", "_pipeline/_segment.py",
-               "_pipeline/_classify.py", "_pipeline/_group.py"}
+               "_pipeline/_classify.py", "_pipeline/_group.py",
+               "_pipeline/_assign.py"}
 
 _PIPELINE_STAGE_ALLOWED = (
     "nameparser._types", "nameparser._lexicon", "nameparser._policy",
