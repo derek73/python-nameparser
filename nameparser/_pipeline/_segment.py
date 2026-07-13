@@ -5,7 +5,8 @@ Produces: segments (runs of main-token indices), structure,
 COMMA_STRUCTURE ambiguities for unrecognized extra segments.
 Reads: Lexicon suffix vocabulary (via _vocab.is_suffix_lenient) --
 the suffix-comma decision is definitionally vocabulary-dependent
-(recorded plan deviation #3); Policy is not consulted here.
+(recorded plan deviation #3); reads Policy.lenient_comma_suffixes
+to pick the lenient or strict predicate.
 
 Decision (v1 parity): >=1 comma and every post-first segment entirely
 lenient-suffix AND >1 word before the first comma -> SUFFIX_COMMA;
@@ -19,7 +20,7 @@ import bisect
 import dataclasses
 
 from nameparser._pipeline._state import ParseState, PendingAmbiguity, Structure
-from nameparser._pipeline._vocab import is_suffix_lenient
+from nameparser._pipeline._vocab import is_suffix_lenient, is_suffix_strict
 from nameparser._types import AmbiguityKind
 
 
@@ -44,8 +45,13 @@ def segment(state: ParseState) -> ParseState:
         return dataclasses.replace(state, segments=segs,
                                    structure=Structure.NO_COMMA)
 
+    # lenient_comma_suffixes=False drops the post-comma test back to
+    # the strict predicate (initial-shaped suffix words stop qualifying)
+    predicate = (is_suffix_lenient if state.policy.lenient_comma_suffixes
+                 else is_suffix_strict)
+
     def suffixy(seg: tuple[int, ...]) -> bool:
-        return all(is_suffix_lenient(state.tokens[i].text, state.lexicon)
+        return all(predicate(state.tokens[i].text, state.lexicon)
                    for i in seg)
 
     rest = groups[1:]

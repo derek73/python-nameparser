@@ -87,10 +87,12 @@ def post_rules(state: ParseState) -> ParseState:
             middles = _idx(tokens, Role.MIDDLE)
             families = _idx(tokens, Role.FAMILY)
 
-    # v1 gates both rotations on `not self._had_comma`
-    if state.structure is not Structure.NO_COMMA:
-        return dataclasses.replace(state, tokens=tuple(tokens))
+    # v1 gates both rotations on `not self._had_comma`; the
+    # middle_as_family fold below runs comma or not (v1 order:
+    # patronymics first, then handle_middle_name_as_last)
     rules = state.policy.patronymic_rules
+    if state.structure is not Structure.NO_COMMA:
+        rules = frozenset()
     if PatronymicRule.EAST_SLAVIC in rules and \
             len(givens) == 1 and len(middles) == 1 and len(families) == 1:
         tail = tokens[families[0]].text
@@ -111,4 +113,9 @@ def post_rules(state: ParseState) -> ParseState:
             _retag(tokens, m2, Role.MIDDLE)
             _retag(tokens, f, Role.MIDDLE)
             _retag(tokens, g, Role.FAMILY)
+    # rule 4: opt-in fold of middles into family (v1
+    # handle_middle_name_as_last; span order reproduces v1's prepend)
+    if state.policy.middle_as_family:
+        for i in _idx(tokens, Role.MIDDLE):
+            _retag(tokens, i, Role.FAMILY)
     return dataclasses.replace(state, tokens=tuple(tokens))

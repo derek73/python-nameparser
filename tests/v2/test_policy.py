@@ -75,6 +75,7 @@ def test_policy_delimiters_do_not_alias_caller_containers() -> None:
     assert ("'", "'") not in p.nickname_delimiters
 
 
+@pytest.mark.filterwarnings("ignore:extra_suffix_delimiters is not yet")
 def test_extra_suffix_delimiters_validated_and_coerced() -> None:
     with pytest.raises(TypeError, match="bare string"):
         Policy(extra_suffix_delimiters="ab")  # type: ignore[arg-type]
@@ -99,6 +100,7 @@ def test_policy_patch_mirrors_policy_field_types() -> None:
         assert patch_annotation == f"{f.type} | _Unset"
 
 
+@pytest.mark.filterwarnings("ignore:extra_suffix_delimiters is not yet")
 def test_policy_patch_canonicalizes_union_fields() -> None:
     p = PolicyPatch(extra_suffix_delimiters=frozenset({"-"}))
     assert isinstance(p.extra_suffix_delimiters, frozenset)
@@ -223,3 +225,11 @@ def test_name_order_rejects_bare_string() -> None:
         Policy(name_order="gmf")  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="bare string"):
         PolicyPatch(name_order="gmf")  # type: ignore[arg-type]
+
+
+def test_extra_suffix_delimiters_warns_not_yet_consumed() -> None:
+    # accepted-and-ignored would violate the fail-loud culture: until
+    # the migration work wires v1's suffix_delimiter expansion, setting
+    # the field warns instead of silently doing nothing
+    with pytest.warns(UserWarning, match="not yet consumed"):
+        Policy(extra_suffix_delimiters=frozenset({"-"}))

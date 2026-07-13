@@ -3,6 +3,8 @@ from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import ParseState, Structure
 from nameparser._pipeline._tokenize import tokenize
+import dataclasses
+
 from nameparser._policy import Policy
 from nameparser._types import AmbiguityKind
 
@@ -74,3 +76,14 @@ def test_comma_only_input_is_no_comma_structure() -> None:
     out = _segmented(",,,")
     assert out.structure is Structure.NO_COMMA
     assert out.segments == ()
+
+
+def test_strict_comma_suffixes_veto_lenient_only_members() -> None:
+    # lenient_comma_suffixes=False: the post-comma test drops back to
+    # the strict predicate, so initial-shaped suffix words no longer
+    # qualify and the structure reads FAMILY_COMMA
+    state = ParseState(
+        original="John Ingram, V", lexicon=_LEX,
+        policy=dataclasses.replace(Policy(), lenient_comma_suffixes=False))
+    out = segment(tokenize(extract_delimited(state)))
+    assert out.structure is Structure.FAMILY_COMMA

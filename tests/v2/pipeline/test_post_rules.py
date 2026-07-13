@@ -106,3 +106,17 @@ def test_degenerate_bare_particle_stays_given() -> None:
     out = _parsed("de")
     assert _by_role(out, Role.GIVEN) == "de"
     assert not _by_role(out, Role.FAMILY)
+
+
+def test_middle_as_family_folds_middles() -> None:
+    # v1 handle_middle_name_as_last, opt-in: middles prepend to family
+    out = _parsed("John Quincy Adams Smith",
+                  Policy(middle_as_family=True))
+    assert _by_role(out, Role.GIVEN) == "John"
+    assert not _by_role(out, Role.MIDDLE)
+    assert _by_role(out, Role.FAMILY) == "Quincy Adams Smith"
+
+
+def test_middle_as_family_off_by_default() -> None:
+    out = _parsed("John Quincy Adams Smith")
+    assert _by_role(out, Role.MIDDLE) == "Quincy Adams"
