@@ -204,6 +204,8 @@ class Lexicon:
         # Fail at the unpickle site if the state comes from a different
         # Lexicon field layout (version skew) -- silently loading it
         # would defer the failure to some distant attribute read.
+        # Message kept in sync with _types._guarded_setstate by design
+        # (layering keeps this module import-free of _types).
         expected = {f.name for f in dataclasses.fields(Lexicon)} - {"_cap_map"}
         if set(state) != expected:
             missing = ", ".join(sorted(expected - set(state))) or "none"
