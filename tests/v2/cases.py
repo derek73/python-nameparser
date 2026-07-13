@@ -40,6 +40,12 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith"}),
     Case("suffix_comma", "John Smith, PhD",
          {"given": "John", "family": "Smith", "suffix": "PhD"}),
+    Case("comma_extras_become_suffixes", "Smith, John, Extra, Jr.",
+         {"given": "John", "family": "Smith", "suffix": "Extra, Jr."},
+         ambiguities=("comma-structure",),
+         notes="post-comma segments land in suffix even when not "
+               "suffix-shaped; the ambiguity flags the guess (v1 "
+               "parity, pinned live 2026-07-13)"),
     Case("delavega", "Dr. Juan de la Vega III",
          {"title": "Dr.", "given": "Juan", "family": "de la Vega",
           "suffix": "III"}),

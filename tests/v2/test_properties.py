@@ -9,10 +9,12 @@ against regressions; exploratory fuzzing happened during review.
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from nameparser import parse
+from nameparser import Lexicon, Policy, parse
+from nameparser._pipeline import run
+from nameparser._pipeline._state import ParseState
 
 _ALPHABET = st.sampled_from(
-    'abcdefgh ABC .,،，\'"()«»‏‏\U0001f600éñßЖ-')
+    'abcdefgh ABC 12 .,،，\'"()«»‏‏\U0001f600éñßЖ-')
 
 
 @given(st.text(alphabet=_ALPHABET, max_size=200))
@@ -50,3 +52,27 @@ def test_render_reparse_reaches_fixpoint(text: str) -> None:
             break
         s = nxt
     assert str(parse(s)) == s, f"no fixpoint within 10 rounds: {s!r}"
+
+
+@given(st.text(alphabet=_ALPHABET, max_size=100))
+@settings(max_examples=300, deadline=None, derandomize=True)
+def test_every_original_char_is_accounted_for(text: str) -> None:
+    # Reverse coverage (the dual of provenance): no character of the
+    # input silently vanishes. Every char lies in a token span, a
+    # masked delimited span, or is individually ignorable -- whitespace,
+    # a structural comma, or a char the strip options remove. Checked on
+    # the pre-assembly state because dropped/extracted tokens keep their
+    # spans there.
+    state = run(ParseState(original=text, lexicon=Lexicon.default(),
+                           policy=Policy()))
+    covered: set[int] = set()
+    for tok in state.tokens:
+        covered.update(range(tok.span.start, tok.span.end))
+    for span in state.masked:
+        covered.update(range(span.start, span.end))
+    ignorable = {",", "،", "，", "\U0001f600", "‏"}
+    for i, ch in enumerate(text):
+        if i in covered or ch.isspace() or ch in ignorable:
+            continue
+        raise AssertionError(
+            f"char {ch!r} at {i} in {text!r} is unaccounted for")

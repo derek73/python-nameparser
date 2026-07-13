@@ -3,7 +3,9 @@ import pickle
 import pytest
 
 from nameparser import Lexicon, Locale, Parser, Policy, PolicyPatch, parse, parser_for
-from nameparser._policy import FAMILY_FIRST, PatronymicRule
+from nameparser._policy import (
+    FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, PatronymicRule,
+)
 from nameparser._types import AmbiguityKind
 
 
@@ -126,6 +128,26 @@ def test_matches_component_wise_case_insensitive() -> None:
     assert not pn.matches("John Smythe")
     with pytest.raises(TypeError, match="str or ParsedName"):
         pn.matches(42)  # type: ignore[arg-type]
+
+
+def test_family_first_given_last_places_middle_between() -> None:
+    # T1: the three-piece FAMILY_FIRST_GIVEN_LAST assignment -- family
+    # from the front, given from the END, middle between (not a rotation
+    # of FAMILY_FIRST)
+    p = Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST))
+    pn = p.parse("Zeng Xiao Long")
+    assert (pn.family, pn.middle, pn.given) == ("Zeng", "Xiao", "Long")
+
+
+def test_multiple_unbalanced_delimiters_each_reported() -> None:
+    # T4: the extract scan continues past the first unmatched opener;
+    # each one is reported and treated as literal text
+    pn = parse('John "Jack (Smith')
+    unbalanced = [a for a in pn.ambiguities
+                  if a.kind is AmbiguityKind.UNBALANCED_DELIMITER]
+    assert len(unbalanced) == 2
+    assert pn.given == "John" and pn.family == "(Smith"
+    assert not pn.nickname
 
 
 def test_matches_accepts_explicit_parser() -> None:
