@@ -44,6 +44,7 @@ dev = [
   "ruff (>=0.15)",
   "pytest-timeout>=2.4.0",
   "pytest-cov>=6",
+  "hypothesis",
 ]
 
 [tool.mypy]
