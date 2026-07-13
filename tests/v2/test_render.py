@@ -243,3 +243,23 @@ def test_capitalized_rejects_non_lexicon_argument() -> None:
         _delavega().capitalized("garbage")  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="must be a Lexicon"):
         _lowercase_mac().capitalized({"titles": set()})  # type: ignore[arg-type]
+
+
+def test_initials_given_tokens_ignore_skip_tags() -> None:
+    # documented: a given-name token contributes even when tagged (the
+    # PARTICLE_OR_GIVEN case -- 'van' read as a given name)
+    pn = _pn("van Johnson", [
+        Token("van", Span(0, 3), Role.GIVEN, frozenset({"particle"})),
+        Token("Johnson", Span(4, 11), Role.FAMILY),
+    ])
+    assert pn.initials() == "v. J."
+
+
+def test_render_malformed_specs_surface_raw_format_errors() -> None:
+    # documented contract: only unknown KEYS get the enriched KeyError;
+    # positional fields and bad conversions raise str.format's own error
+    pn = _delavega()
+    with pytest.raises(IndexError):
+        pn.render("{}")
+    with pytest.raises(ValueError):
+        pn.render("{given!q}")
