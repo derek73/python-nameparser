@@ -50,10 +50,27 @@ def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
 
 def _is_leading_title(piece: tuple[int, ...], ptags: frozenset[str],
                       tokens: list[WorkToken]) -> bool:
-    if _is_title_piece(list(piece), set(ptags), tuple(tokens)):
+    if _is_title_piece(piece, ptags, tokens):
         return True
     return (len(piece) == 1
             and bool(_PERIOD_ABBREV.match(tokens[piece[0]].text)))
+
+
+def _peel_leading_titles(pieces: tuple[tuple[int, ...], ...],
+                         ptags: tuple[frozenset[str], ...],
+                         tokens: list[WorkToken]) -> int:
+    """Assign TITLE to the leading title pieces and return the first
+    non-title index. A title needs a following piece, unless the whole
+    segment is one title (v1 parity)."""
+    n = 0
+    while n < len(pieces):
+        if ((n + 1 < len(pieces) or len(pieces) == 1)
+                and _is_leading_title(pieces[n], ptags[n], tokens)):
+            _set_roles(tokens, pieces[n], Role.TITLE)
+            n += 1
+            continue
+        break
+    return n
 
 
 def _name_positions(order: tuple[Role, Role, Role],
@@ -82,16 +99,7 @@ def _assign_main(seg_idx: int, state: ParseState,
     pieces = state.pieces[seg_idx]
     ptags = state.piece_tags[seg_idx]
     has_nickname = any(t.role is Role.NICKNAME for t in tokens)
-    # peel leading titles
-    n = 0
-    while n < len(pieces):
-        has_next = n + 1 < len(pieces)
-        if ((has_next or len(pieces) == 1)
-                and _is_leading_title(pieces[n], ptags[n], tokens)):
-            _set_roles(tokens, pieces[n], Role.TITLE)
-            n += 1
-            continue
-        break
+    n = _peel_leading_titles(pieces, ptags, tokens)
     rest = list(range(n, len(pieces)))
     if not rest:
         return
@@ -116,7 +124,7 @@ def _assign_main(seg_idx: int, state: ParseState,
     while k > 0:
         piece = pieces[rest[k - 1]]
         tags = ptags[rest[k - 1]]
-        if _is_suffix_piece(list(piece), set(tags), tuple(tokens)):
+        if _is_suffix_piece(piece, tags, tokens):
             k -= 1
             continue
         if (k == len(rest) and k >= 2 and len(piece) == 1
@@ -153,11 +161,10 @@ def assign(state: ParseState) -> ParseState:
         return state
     if state.structure is Structure.NO_COMMA:
         _assign_main(0, state, tokens, ambiguities)
+        tail = len(state.segments)
     elif state.structure is Structure.SUFFIX_COMMA:
         _assign_main(0, state, tokens, ambiguities)
-        for seg_idx in range(1, len(state.segments)):
-            for piece in state.pieces[seg_idx]:
-                _set_roles(tokens, piece, Role.SUFFIX)
+        tail = 1
     else:  # FAMILY_COMMA
         # PARTICLE_OR_GIVEN is deliberately not emitted here: after a
         # comma the family is already fixed, so a leading given-position
@@ -167,27 +174,20 @@ def assign(state: ParseState) -> ParseState:
         if len(state.segments) > 1:
             pieces = state.pieces[1]
             ptags = state.piece_tags[1]
+            n = _peel_leading_titles(pieces, ptags, tokens)
             given_done = False
-            n = 0
-            while n < len(pieces):
-                if (not given_done
-                        and _is_leading_title(pieces[n], ptags[n], tokens)
-                        and (n + 1 < len(pieces) or len(pieces) == 1)):
-                    _set_roles(tokens, pieces[n], Role.TITLE)
-                    n += 1
-                    continue
-                break
             for m in range(n, len(pieces)):
-                if _is_suffix_piece(list(pieces[m]), set(ptags[m]),
-                                    tuple(tokens)):
+                if _is_suffix_piece(pieces[m], ptags[m], tokens):
                     _set_roles(tokens, pieces[m], Role.SUFFIX)
                 elif not given_done:
                     _set_roles(tokens, pieces[m], Role.GIVEN)
                     given_done = True
                 else:
                     _set_roles(tokens, pieces[m], Role.MIDDLE)
-        for seg_idx in range(2, len(state.segments)):
-            for piece in state.pieces[seg_idx]:
-                _set_roles(tokens, piece, Role.SUFFIX)
+        tail = 2
+    # segments past the structure's name segments are wholly suffixes
+    for seg_idx in range(tail, len(state.segments)):
+        for piece in state.pieces[seg_idx]:
+            _set_roles(tokens, piece, Role.SUFFIX)
     return dataclasses.replace(state, tokens=tuple(tokens),
                                ambiguities=tuple(ambiguities))

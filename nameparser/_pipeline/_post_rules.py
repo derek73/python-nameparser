@@ -21,6 +21,11 @@ Rules (each a small pure function over the role-bearing tokens):
 
 Both rotations fire only on Structure.NO_COMMA (v1 gates them on
 `not self._had_comma`): a comma already established the family.
+
+These rules reconstruct token POSITION from roles, which is faithful
+to v1 only under the default GIVEN_FIRST order; their interaction with
+other name_order values is an open design question for the locale-pack
+work (#270).
 """
 from __future__ import annotations
 
@@ -61,8 +66,8 @@ def post_rules(state: ParseState) -> ParseState:
     givens = _idx(tokens, Role.GIVEN)
     middles = _idx(tokens, Role.MIDDLE)
     families = _idx(tokens, Role.FAMILY)
-    others = [t for t in tokens
-              if t.role in (Role.SUFFIX, Role.NICKNAME, Role.MAIDEN)]
+    others = any(t.role in (Role.SUFFIX, Role.NICKNAME, Role.MAIDEN)
+                 for t in tokens)
 
     # rule 1: title + lone given -> family (v1 handle_firstnames)
     if titles and givens and not middles and not families and not others:
@@ -91,9 +96,8 @@ def post_rules(state: ParseState) -> ParseState:
     # middle_as_family fold below runs comma or not (v1 order:
     # patronymics first, then handle_middle_name_as_last)
     rules = state.policy.patronymic_rules
-    if state.structure is not Structure.NO_COMMA:
-        rules = frozenset()
-    if PatronymicRule.EAST_SLAVIC in rules and \
+    rotations_apply = state.structure is Structure.NO_COMMA
+    if rotations_apply and PatronymicRule.EAST_SLAVIC in rules and \
             len(givens) == 1 and len(middles) == 1 and len(families) == 1:
         tail = tokens[families[0]].text
         mid = tokens[middles[0]].text
@@ -104,7 +108,7 @@ def post_rules(state: ParseState) -> ParseState:
             _retag(tokens, m, Role.GIVEN)
             _retag(tokens, f, Role.MIDDLE)
             _retag(tokens, g, Role.FAMILY)
-    if PatronymicRule.TURKIC in rules and \
+    if rotations_apply and PatronymicRule.TURKIC in rules and \
             len(givens) == 1 and len(middles) == 2 and len(families) == 1:
         tail = tokens[families[0]].text
         if _TURKIC.match(tail) or _TURKIC_CYR.match(tail):
