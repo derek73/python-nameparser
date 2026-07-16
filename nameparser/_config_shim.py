@@ -3,15 +3,21 @@ spec §3). ``nameparser.config`` re-exports these names from the swap
 commit onward; the whole module is deleted in 3.0 with the facade.
 
 Layering: facade layer -- may import anything public; here that's
-``nameparser.util`` for ``lc()`` and ``nameparser.config.regexes`` for
-the read-only regexes proxy's underlying compiled patterns.
+``nameparser.util`` for ``lc()``, ``nameparser.config.regexes`` for
+the read-only regexes proxy's underlying compiled patterns, and
+``nameparser._lexicon``/``_policy``/``_parser`` for the ``_snapshot()``
+translation and the shared parser cache.
 """
 from __future__ import annotations
 
+import functools
 import warnings
 from collections.abc import Callable, Iterable, Iterator, KeysView
-from typing import Self
+from typing import NamedTuple, Self
 
+from nameparser._lexicon import Lexicon
+from nameparser._parser import Parser
+from nameparser._policy import PatronymicRule, Policy
 from nameparser.config.regexes import REGEXES
 from nameparser.util import lc
 
@@ -227,7 +233,17 @@ class TupleManager(dict[str, object]):
         self._on_change = None  # rewired by the owning Constants
 
 
-_DELIMITER_SENTINELS = ("quoted_word", "double_quotes", "parenthesis")
+#: v1's three named delimiter buckets, translated to the ``Policy``
+#: (open, close) pairs they stand for (spec §3).
+_SENTINEL_PAIRS = {
+    "quoted_word": ("'", "'"),
+    "double_quotes": ('"', '"'),
+    "parenthesis": ("(", ")"),
+}
+
+#: derived, so the manager's accepted keys and _snapshot()'s
+#: translation table can never drift apart
+_DELIMITER_SENTINELS = tuple(_SENTINEL_PAIRS)
 
 
 class _DelimiterManager(TupleManager):
@@ -379,12 +395,35 @@ def _default_vocab() -> dict[str, set[str]]:
     }
 
 
+class _RenderDefaults(NamedTuple):
+    """v1 scalar rendering knobs that have no home on ``Policy``
+    (spec §3): ``__str__``/initials formatting and capitalization stay
+    per-Constants defaults, layered onto a shared ``Parser`` by the
+    facade (a later task) rather than folded into the cache key."""
+
+    string_format: str | None
+    initials_format: str
+    initials_delimiter: str
+    initials_separator: str
+    suffix_delimiter: str | None
+    capitalize_name: bool
+    force_mixed_case_capitalization: bool
+
+
+@functools.lru_cache(maxsize=64)
+def _cached_parser(lexicon: Lexicon, policy: Policy) -> Parser:
+    # keyed on hashable value objects: shared across every facade whose
+    # Constants resolve to the same snapshot (spec §3)
+    return Parser(lexicon=lexicon, policy=policy)
+
+
 class Constants:
     """v1 ``Constants`` shim: a mutable container whose state resolves to
-    a frozen ``(Lexicon, Policy, _RenderDefaults)`` snapshot on demand
-    (added in a later task). ``_generation`` increments on every
-    mutation; facades compare it against a cached value to decide
-    whether their snapshot is stale (dirty-tracking, spec §3).
+    a frozen ``(Lexicon, Policy, _RenderDefaults)`` snapshot via
+    ``_snapshot()``. ``_generation`` increments on every mutation;
+    facades compare it against a cached value to decide whether their
+    snapshot is stale (dirty-tracking, spec §3 -- the facade itself is
+    a later task).
 
     The module-level ``CONSTANTS`` singleton (below) has ``_shared``
     flipped to ``True``: any mutation reached through it emits
@@ -509,6 +548,64 @@ class Constants:
         for name in _SCALAR_DEFAULTS:
             object.__setattr__(new, name, getattr(self, name))
         return new
+
+    # -- snapshot -----------------------------------------------------------
+
+    def _snapshot(self) -> tuple[Lexicon, Policy, _RenderDefaults]:
+        """Resolve this v1-shaped, mutable Constants into the frozen
+        2.0 value objects it corresponds to (spec §3). A pure read: no
+        generation bump, no deprecation warning even on the shared
+        singleton -- only direct attribute mutation is on the 3.0
+        removal path.
+        """
+        from nameparser.config.maiden_markers import MAIDEN_MARKERS
+        acronyms = frozenset(self.suffix_acronyms)
+        # keep in sync with _lexicon._default_lexicon() (pinned by the
+        # default-Constants equality test in tests/v2/test_config_shim.py)
+        lexicon = Lexicon(
+            titles=frozenset(self.titles),
+            given_name_titles=frozenset(self.first_name_titles),
+            suffix_acronyms=acronyms,
+            suffix_words=frozenset(self.suffix_not_acronyms),
+            # intersect: Lexicon enforces ambiguous <= acronyms; v1
+            # behaves the same when an acronym is deleted but its
+            # ambiguous entry lingers (the entry simply stops mattering)
+            suffix_acronyms_ambiguous=frozenset(
+                self.suffix_acronyms_ambiguous) & acronyms,
+            particles=frozenset(self.prefixes),
+            # complement translation: v1 marks the never-given subset;
+            # v2 marks the may-be-given subset
+            particles_ambiguous=frozenset(self.prefixes)
+            - frozenset(self.non_first_name_prefixes),
+            conjunctions=frozenset(self.conjunctions),
+            bound_given_names=frozenset(self.bound_first_names),
+            # v1 Constants has no manager for these (#274 is 2.0
+            # behavior); the data module is the only source
+            maiden_markers=frozenset(MAIDEN_MARKERS),
+            # TupleManager is dict[str, object] (v1 parity: values were
+            # never statically str-typed); every real entry is a str,
+            # same assumption _DelimiterManager's sentinel lookup makes
+            capitalization_exceptions=tuple(
+                sorted(self.capitalization_exceptions.items())),  # type: ignore[arg-type]
+        )
+        rules = frozenset({PatronymicRule.EAST_SLAVIC, PatronymicRule.TURKIC}) \
+            if self.patronymic_name_order else frozenset()
+        policy = Policy(
+            patronymic_rules=rules,
+            middle_as_family=self.middle_name_as_last,
+            nickname_delimiters=frozenset(
+                _SENTINEL_PAIRS[k] for k in self.nickname_delimiters),
+            maiden_delimiters=frozenset(
+                _SENTINEL_PAIRS[k] for k in self.maiden_delimiters),
+            # suffix_delimiter is a _RenderDefaults-only field here; the
+            # facade layers it onto extra_suffix_delimiters per instance
+            # (a later task) -- _snapshot() itself stays pure translation
+        )
+        defaults = _RenderDefaults(
+            self.string_format, self.initials_format, self.initials_delimiter,
+            self.initials_separator, self.suffix_delimiter,
+            self.capitalize_name, self.force_mixed_case_capitalization)
+        return lexicon, policy, defaults
 
     # -- pickle -----------------------------------------------------------
 

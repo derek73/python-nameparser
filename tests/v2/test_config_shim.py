@@ -6,9 +6,10 @@ from pathlib import Path
 
 import pytest
 
+from nameparser import GIVEN_FIRST, Lexicon, PatronymicRule, Policy
 from nameparser._config_shim import (
     CONSTANTS, Constants, SetManager, TupleManager, _DelimiterManager,
-    _RegexesProxy,
+    _RegexesProxy, _cached_parser,
 )
 
 _DATA_DIR = Path(__file__).parent / "data"
@@ -311,3 +312,62 @@ def test_v14_constants_blob_unpickles_into_shim() -> None:
         loaded = pickle.load(f)
     assert isinstance(loaded, Constants)
     assert "van" in loaded.prefixes
+
+
+def test_snapshot_field_translation() -> None:
+    c = Constants()
+    lexicon, policy, defaults = c._snapshot()
+    # drift guard: a default Constants must resolve to EXACTLY the v2
+    # defaults -- a field populated in _default_lexicon() but forgotten
+    # in _snapshot() (or vice versa) fails loudly here
+    assert lexicon == Lexicon.default()
+    assert policy == Policy()
+    assert isinstance(lexicon, Lexicon) and isinstance(policy, Policy)
+    assert lexicon.suffix_words == frozenset(c.suffix_not_acronyms)
+    # complement translation: v1 marks never-given, v2 marks may-be-given
+    assert lexicon.particles_ambiguous == \
+        frozenset(c.prefixes) - frozenset(c.non_first_name_prefixes)
+    assert lexicon.suffix_acronyms_ambiguous <= lexicon.suffix_acronyms
+    assert policy.name_order == GIVEN_FIRST
+    assert policy.patronymic_rules == frozenset()
+    assert defaults.string_format == c.string_format
+    # a snapshot is a pure read: no generation bump, no deprecation
+    # warning even on the shared singleton
+    g0 = CONSTANTS._generation
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        CONSTANTS._snapshot()
+    assert CONSTANTS._generation == g0
+
+
+def test_snapshot_patronymic_and_middle_flags() -> None:
+    c = Constants()
+    c.patronymic_name_order = True
+    c.middle_name_as_last = True
+    _, policy, _ = c._snapshot()
+    assert policy.patronymic_rules == frozenset(
+        {PatronymicRule.EAST_SLAVIC, PatronymicRule.TURKIC})
+    assert policy.middle_as_family is True
+
+
+def test_snapshot_delimiter_bucket_move() -> None:
+    c = Constants()
+    c.maiden_delimiters["parenthesis"] = c.nickname_delimiters.pop("parenthesis")
+    _, policy, _ = c._snapshot()
+    assert ("(", ")") in policy.maiden_delimiters
+    assert ("(", ")") not in policy.nickname_delimiters
+
+
+def test_snapshot_ambiguous_removed_acronym_intersects() -> None:
+    c = Constants()
+    c.suffix_acronyms.remove("jd")          # 'jd' stays in ambiguous
+    lexicon, _, _ = c._snapshot()
+    assert "jd" not in lexicon.suffix_acronyms
+    assert "jd" not in lexicon.suffix_acronyms_ambiguous  # subset holds
+
+
+def test_parser_cache_shared_across_equal_snapshots() -> None:
+    a, b = Constants(), Constants()
+    la, pa, _ = a._snapshot()
+    lb, pb, _ = b._snapshot()
+    assert _cached_parser(la, pa) is _cached_parser(lb, pb)

@@ -296,6 +296,8 @@ def _default_lexicon() -> Lexicon:
 
     # v1 data modules export plain `set[str]`; wrap each at this call site
     # so the strictly-typed frozenset[str] fields never see a bare set.
+    # keep in sync with _config_shim.Constants._snapshot() (pinned by the
+    # default-Constants equality test in tests/v2/test_config_shim.py)
     return Lexicon(
         titles=frozenset(TITLES),
         given_name_titles=frozenset(FIRST_NAME_TITLES),
