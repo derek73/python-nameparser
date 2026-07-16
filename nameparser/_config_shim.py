@@ -8,6 +8,7 @@ the read-only regexes proxy's underlying compiled patterns.
 """
 from __future__ import annotations
 
+import warnings
 from collections.abc import Callable, Iterable, Iterator, KeysView
 from typing import Self
 
@@ -319,3 +320,248 @@ class _RegexesProxy:
             f"assigning CONSTANTS.regexes.{name} is not supported in "
             f"2.0: {hint}"
         )
+
+
+_SET_FIELDS = (
+    "prefixes", "suffix_acronyms", "suffix_not_acronyms",
+    "suffix_acronyms_ambiguous", "titles", "first_name_titles",
+    "conjunctions", "bound_first_names", "non_first_name_prefixes",
+)
+_MANAGER_FIELDS = _SET_FIELDS + (
+    "capitalization_exceptions", "nickname_delimiters", "maiden_delimiters",
+)
+_SCALAR_DEFAULTS: dict[str, object] = {
+    "patronymic_name_order": False,
+    "middle_name_as_last": False,
+    "capitalize_name": False,
+    "force_mixed_case_capitalization": False,
+    "string_format": "{title} {first} {middle} {last} {suffix} ({nickname})",
+    "initials_format": "{first} {middle} {last}",
+    "initials_delimiter": ".",
+    "initials_separator": " ",
+    "suffix_delimiter": None,
+}
+
+# distinguishes "attribute not set yet" from any real scalar value
+# (None is a legitimate value for string_format/suffix_delimiter)
+_UNSET = object()
+
+_SHARED_MUTATION_MESSAGE = (
+    "mutating the shared CONSTANTS singleton is deprecated and will be "
+    "removed in 3.0; build a Lexicon/Policy (or a private Constants "
+    "passed as HumanName(constants=...)) instead. See the migration "
+    "guide."
+)
+
+
+def _default_vocab() -> dict[str, set[str]]:
+    # v1 data modules stay the single vocabulary source through 2.x
+    # (same rule as Lexicon.default()).
+    from nameparser.config.bound_first_names import BOUND_FIRST_NAMES
+    from nameparser.config.conjunctions import CONJUNCTIONS
+    from nameparser.config.prefixes import (
+        NON_FIRST_NAME_PREFIXES, PREFIXES,
+    )
+    from nameparser.config.suffixes import (
+        SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_NOT_ACRONYMS,
+    )
+    from nameparser.config.titles import FIRST_NAME_TITLES, TITLES
+    return {
+        "prefixes": PREFIXES,
+        "suffix_acronyms": SUFFIX_ACRONYMS,
+        "suffix_not_acronyms": SUFFIX_NOT_ACRONYMS,
+        "suffix_acronyms_ambiguous": SUFFIX_ACRONYMS_AMBIGUOUS,
+        "titles": TITLES,
+        "first_name_titles": FIRST_NAME_TITLES,
+        "conjunctions": CONJUNCTIONS,
+        "bound_first_names": BOUND_FIRST_NAMES,
+        "non_first_name_prefixes": NON_FIRST_NAME_PREFIXES,
+    }
+
+
+class Constants:
+    """v1 ``Constants`` shim: a mutable container whose state resolves to
+    a frozen ``(Lexicon, Policy, _RenderDefaults)`` snapshot on demand
+    (added in a later task). ``_generation`` increments on every
+    mutation; facades compare it against a cached value to decide
+    whether their snapshot is stale (dirty-tracking, spec §3).
+
+    The module-level ``CONSTANTS`` singleton (below) has ``_shared``
+    flipped to ``True``: any mutation reached through it emits
+    ``DeprecationWarning`` pointing at ``Lexicon``/``Policy`` and
+    ``HumanName(constants=...)``. A private ``Constants()`` never
+    warns -- only the shared instance is on the 3.0 removal path.
+    """
+
+    _shared = False  # the CONSTANTS singleton flips this to True
+    _generation: int
+
+    prefixes: SetManager
+    suffix_acronyms: SetManager
+    suffix_not_acronyms: SetManager
+    suffix_acronyms_ambiguous: SetManager
+    titles: SetManager
+    first_name_titles: SetManager
+    conjunctions: SetManager
+    bound_first_names: SetManager
+    non_first_name_prefixes: SetManager
+    capitalization_exceptions: TupleManager
+    nickname_delimiters: _DelimiterManager
+    maiden_delimiters: _DelimiterManager
+    regexes: _RegexesProxy
+
+    patronymic_name_order: bool
+    middle_name_as_last: bool
+    capitalize_name: bool
+    force_mixed_case_capitalization: bool
+    string_format: str | None
+    initials_format: str
+    initials_delimiter: str
+    initials_separator: str
+    suffix_delimiter: str | None
+
+    def __init__(self) -> None:
+        vocab = _default_vocab()
+        object.__setattr__(self, "_generation", 0)
+        for name in _SET_FIELDS:
+            object.__setattr__(
+                self, name, SetManager(vocab[name], _on_change=self._bump))
+        from nameparser.config.capitalization import (
+            CAPITALIZATION_EXCEPTIONS,
+        )
+        object.__setattr__(self, "capitalization_exceptions", TupleManager(
+            CAPITALIZATION_EXCEPTIONS, _on_change=self._bump))
+        object.__setattr__(self, "nickname_delimiters", _DelimiterManager(
+            {name: name for name in _DELIMITER_SENTINELS},
+            _on_change=self._bump))
+        object.__setattr__(self, "maiden_delimiters", _DelimiterManager(
+            _on_change=self._bump))
+        object.__setattr__(self, "regexes", _RegexesProxy())
+        for name, value in _SCALAR_DEFAULTS.items():
+            object.__setattr__(self, name, value)
+
+    def _bump(self) -> None:
+        # stacklevel=3 is exact for the direct scalar-assignment path
+        # (user code -> Constants.__setattr__ -> here) and lands one
+        # frame short -- inside the manager's own add()/remove()/
+        # __setitem__ -- for the indirect manager-mutation path (user
+        # code -> manager method -> _changed() -> here), since a
+        # single warn() call can't be exact for both call depths at
+        # once. Either way the warning still fires from this module,
+        # not the manager's true caller, which is enough: only the
+        # DeprecationWarning's presence/category/message are load-
+        # bearing (see the specified test), not the reported line.
+        if self._shared:
+            warnings.warn(_SHARED_MUTATION_MESSAGE, DeprecationWarning,
+                          stacklevel=3)
+        object.__setattr__(self, "_generation", self._generation + 1)
+
+    def __setattr__(self, name: str, value: object) -> None:
+        if name == "empty_attribute_default":
+            raise AttributeError(
+                "empty_attribute_default was removed in 2.0 (#255): "
+                "empty attributes are always ''"
+            )
+        if name == "regexes":
+            raise TypeError(
+                "replacing CONSTANTS.regexes is not supported in 2.0; "
+                "parsing behavior is configured through named Policy "
+                "flags"
+            )
+        if name in _SET_FIELDS:
+            # v1 allowed wholesale reassignment (c.titles = {...})
+            value = SetManager(value, _on_change=self._bump)  # type: ignore[arg-type]
+        elif name == "capitalization_exceptions":
+            value = TupleManager(value, _on_change=self._bump)  # type: ignore[arg-type]
+        elif name in ("nickname_delimiters", "maiden_delimiters"):
+            value = _DelimiterManager(value, _on_change=self._bump)  # type: ignore[arg-type]
+        elif name in _SCALAR_DEFAULTS and \
+                getattr(self, name, _UNSET) == value:
+            # no-op scalar assignment: managers already suppress no-op
+            # mutations, so re-assigning the current scalar value must
+            # not bump the generation (or warn on the shared singleton)
+            # either. __init__ writes via object.__setattr__, so this
+            # only runs on real user assignments -- _UNSET never
+            # actually matches, it just keeps a not-yet-set attribute
+            # from raising here. Manager-field reassignment above stays
+            # an unconditional bump: comparing manager contents isn't
+            # worth it.
+            object.__setattr__(self, name, value)
+            return
+        object.__setattr__(self, name, value)
+        if name in _MANAGER_FIELDS or name in _SCALAR_DEFAULTS:
+            self._bump()
+
+    def copy(self) -> Constants:                          # #260
+        # An independent instance with its own generation counter and
+        # its own manager callbacks -- not a shared-state alias like a
+        # naive attribute-for-attribute copy would produce.
+        new = Constants()
+        for name in _SET_FIELDS:
+            object.__setattr__(
+                new, name,
+                SetManager(getattr(self, name), _on_change=new._bump))
+        object.__setattr__(new, "capitalization_exceptions", TupleManager(
+            dict(self.capitalization_exceptions), _on_change=new._bump))
+        for bucket in ("nickname_delimiters", "maiden_delimiters"):
+            object.__setattr__(new, bucket, _DelimiterManager(
+                dict(getattr(self, bucket)), _on_change=new._bump))
+        for name in _SCALAR_DEFAULTS:
+            object.__setattr__(new, name, getattr(self, name))
+        return new
+
+    # -- pickle -----------------------------------------------------------
+
+    def __getstate__(self) -> dict[str, object]:
+        state: dict[str, object] = {}
+        for name in _SET_FIELDS:
+            state[name] = set(getattr(self, name))
+        state["capitalization_exceptions"] = dict(
+            self.capitalization_exceptions)
+        state["nickname_delimiters"] = dict(self.nickname_delimiters)
+        state["maiden_delimiters"] = dict(self.maiden_delimiters)
+        for name in _SCALAR_DEFAULTS:
+            state[name] = getattr(self, name)
+        return state
+
+    def __setstate__(self, state: dict[str, object]) -> None:
+        if "suffixes_prefixes_titles" in state:
+            # pre-1.3.0 blob: its dir()-sweep __getstate__ captured this
+            # computed property. The 1.4 DeprecationWarning promised
+            # ValueError in 2.0 (#279).
+            raise ValueError(
+                "this pickle was written by nameparser <= 1.2.x (#279); "
+                "re-pickle under 1.3/1.4 to migrate, or re-create the "
+                "configuration. See "
+                "https://github.com/derek73/python-nameparser/issues/279"
+            )
+        # Accepts BOTH shapes with a single overlay: the shim's own
+        # state and v1.3/1.4 state (public field names -> manager/
+        # scalar values) share every key that matters, so no shape
+        # marker is needed. empty_attribute_default is accepted and
+        # DROPPED (#255: empty is always '' in 2.0).
+        state = {k: v for k, v in state.items()
+                 if k != "empty_attribute_default"}
+        self.__init__()  # type: ignore[misc]  # defaults, then overlay
+        # (managers re-wrapped below so _on_change points at THIS
+        # instance, not whatever produced the incoming state)
+        for name in _SET_FIELDS:
+            if name in state:
+                object.__setattr__(self, name, SetManager(
+                    state[name], _on_change=self._bump))  # type: ignore[arg-type]
+        if "capitalization_exceptions" in state:
+            object.__setattr__(
+                self, "capitalization_exceptions", TupleManager(
+                    state["capitalization_exceptions"],  # type: ignore[arg-type]
+                    _on_change=self._bump))
+        for bucket in ("nickname_delimiters", "maiden_delimiters"):
+            if bucket in state:
+                object.__setattr__(self, bucket, _DelimiterManager(
+                    state[bucket], _on_change=self._bump))  # type: ignore[arg-type]
+        for name in _SCALAR_DEFAULTS:
+            if name in state:
+                object.__setattr__(self, name, state[name])
+
+
+CONSTANTS = Constants()
+CONSTANTS._shared = True  # type: ignore[attr-defined]
