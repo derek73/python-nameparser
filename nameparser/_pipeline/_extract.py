@@ -22,10 +22,10 @@ from __future__ import annotations
 
 import dataclasses
 
-from nameparser._pipeline._state import ParseState, PendingAmbiguity
+from nameparser._pipeline._state import (
+    COMMA_CHARS, ParseState, PendingAmbiguity,
+)
 from nameparser._types import AmbiguityKind, Role, Span
-
-_CLOSE_BOUNDARY_EXTRAS = {",", "،", "，"}  # comma chars end a close
 
 
 def _open_ok(text: str, i: int) -> bool:
@@ -34,7 +34,7 @@ def _open_ok(text: str, i: int) -> bool:
 
 def _close_ok(text: str, j: int, width: int) -> bool:
     k = j + width
-    return k >= len(text) or text[k].isspace() or text[k] in _CLOSE_BOUNDARY_EXTRAS
+    return k >= len(text) or text[k].isspace() or text[k] in COMMA_CHARS
 
 
 def _overlaps(span: Span, taken: list[Span]) -> bool:

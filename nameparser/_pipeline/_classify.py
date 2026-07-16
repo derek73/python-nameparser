@@ -20,7 +20,7 @@ import dataclasses
 
 from nameparser._lexicon import _normalize
 from nameparser._pipeline._state import ParseState, WorkToken
-from nameparser._pipeline._vocab import is_initial
+from nameparser._pipeline._vocab import is_initial, suffix_as_written
 
 
 def _tags_for(token: WorkToken, state: ParseState) -> frozenset[str]:
@@ -31,20 +31,12 @@ def _tags_for(token: WorkToken, state: ParseState) -> frozenset[str]:
         tags.add("vocab:title")
     if n in lex.given_name_titles:
         tags.add("vocab:given-title")
-    # the ambiguous subset is EXCLUDED from the plain membership test:
-    # in the real data suffix_acronyms_ambiguous is a subset of
-    # suffix_acronyms, and without the exclusion the period gate below
-    # is dead code (bare 'Ed'/'Jd' would silently become suffixes)
-    if (n in lex.suffix_acronyms
-            and n not in lex.suffix_acronyms_ambiguous) \
-            or n in lex.suffix_words:
+    if suffix_as_written(n, token.text, lex):
         tags.add("vocab:suffix")
     if n in lex.suffix_words:
         tags.add("vocab:suffix-word")
     if n in lex.suffix_acronyms_ambiguous:
         tags.add("vocab:suffix-ambiguous")
-        if "." in token.text:
-            tags.add("vocab:suffix")
     if n in lex.particles:
         tags.add("particle")
     if n in lex.particles_ambiguous:

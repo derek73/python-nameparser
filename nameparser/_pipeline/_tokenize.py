@@ -21,10 +21,10 @@ from __future__ import annotations
 import dataclasses
 import re
 
-from nameparser._pipeline._state import ParseState, WorkToken
+from nameparser._pipeline._state import (
+    COMMA_CHARS, ParseState, WorkToken,
+)
 from nameparser._types import Role, Span
-
-_COMMA_CHARS = {",", "،", "，"}  # ASCII, Arabic, fullwidth
 
 # Ported verbatim from v1 (nameparser/config/regexes.py, "emoji" and
 # "bidi") -- layering forbids importing the config package here, so the
@@ -52,12 +52,12 @@ def _tokenize_region(state: ParseState, start: int, end: int,
     tok_start: int | None = None
     for i in range(start, end):
         ch = text[i]
-        if ch in _COMMA_CHARS or _ignorable(ch, state):
+        if ch in COMMA_CHARS or _ignorable(ch, state):
             if tok_start is not None:
                 tokens.append(WorkToken(text[tok_start:i],
                                         Span(tok_start, i), role=role))
                 tok_start = None
-            if ch in _COMMA_CHARS and record_commas:
+            if ch in COMMA_CHARS and record_commas:
                 commas.append(i)
             continue
         if tok_start is None:

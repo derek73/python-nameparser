@@ -18,6 +18,11 @@ from nameparser._policy import Policy
 from nameparser._types import AmbiguityKind, Role, Span
 
 
+# The comma characters (ASCII/Arabic/fullwidth, #265). Shared here so
+# tokenize (separators/segmentation) and extract (close-quote
+# boundaries) cannot drift apart.
+COMMA_CHARS = frozenset({",", "\u060c", "\uff0c"})
+
 @dataclass(frozen=True, slots=True)
 class WorkToken:
     """One tokenized word. role stays None until assign; extracted

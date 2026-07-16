@@ -23,25 +23,42 @@ def is_initial(text: str) -> bool:
     return bool(_INITIAL.fullmatch(text))
 
 
-def is_suffix_strict(text: str, lexicon: Lexicon) -> bool:
-    """v1's is_suffix: suffix vocabulary with the initial veto ('V.' in
-    'John V. Smith' is a middle initial, not roman five); ambiguous
-    acronyms count only when written with periods ('M.A.' yes, 'Ma' no).
+def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
+    """Counts as a suffix as written, with NO initial veto (the veto
+    differs by caller): unambiguous suffix vocabulary, or an ambiguous
+    acronym written with periods ('M.A.' yes, 'Ma' no). `n` is
+    _normalize(text), passed in so callers normalize once.
+
+    Single source for classify's "vocab:suffix" tag and the segment/
+    assign predicates. The ambiguous subset is EXCLUDED from the plain
+    membership test: in the real data suffix_acronyms_ambiguous is a
+    subset of suffix_acronyms, and without the exclusion the period
+    gate is dead code (bare 'Ed'/'Jd' would silently become suffixes).
     """
-    n = _normalize(text)
     if "." in text and n in lexicon.suffix_acronyms_ambiguous:
         return True
-    if is_initial(text):
-        return False
-    # ambiguous subset excluded from the plain test (see _classify)
     return (n in lexicon.suffix_acronyms
             and n not in lexicon.suffix_acronyms_ambiguous) \
         or n in lexicon.suffix_words
+
+
+def _is_suffix_strict_n(n: str, text: str, lexicon: Lexicon) -> bool:
+    if is_initial(text):
+        # period-written ambiguous acronyms are exempt from the veto
+        return "." in text and n in lexicon.suffix_acronyms_ambiguous
+    return suffix_as_written(n, text, lexicon)
+
+
+def is_suffix_strict(text: str, lexicon: Lexicon) -> bool:
+    """v1's is_suffix: suffix_as_written with the initial veto ('V.' in
+    'John V. Smith' is a middle initial, not roman five)."""
+    return _is_suffix_strict_n(_normalize(text), text, lexicon)
 
 
 def is_suffix_lenient(text: str, lexicon: Lexicon) -> bool:
     """v1's is_suffix_lenient: suffix_words accepted unconditionally,
     bypassing the initial veto -- only safe in unambiguous positions
     (after a comma)."""
-    return _normalize(text) in lexicon.suffix_words or \
-        is_suffix_strict(text, lexicon)
+    n = _normalize(text)
+    return n in lexicon.suffix_words \
+        or _is_suffix_strict_n(n, text, lexicon)
