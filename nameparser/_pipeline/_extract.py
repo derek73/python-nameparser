@@ -92,8 +92,8 @@ def extract_delimited(state: ParseState) -> ParseState:
                         extracted.append((role, inner))
                     masked.append(full)
                 pos = j + len(close)
-    extracted.sort(key=lambda pair: tuple(pair[1]))
-    masked.sort(key=tuple)
+    extracted.sort(key=lambda pair: pair[1])
+    masked.sort()
     return dataclasses.replace(
         state, extracted=tuple(extracted), masked=tuple(masked),
         ambiguities=state.ambiguities + tuple(ambiguities))

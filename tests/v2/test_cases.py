@@ -2,12 +2,11 @@
 runner (migration plan) consumes the same CASES."""
 import pytest
 
-from nameparser import Parser
+from nameparser import Parser, Role
 
 from .cases import CASES, Case
 
-_FIELDS = ("title", "given", "middle", "family", "suffix", "nickname",
-           "maiden")
+_FIELDS = tuple(r.value for r in Role)  # declaration order is canonical
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)

@@ -40,6 +40,10 @@ _BIDI = re.compile('[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]+')
 def _ignorable(ch: str, state: ParseState) -> bool:
     if ch.isspace():
         return True
+    if ch.isascii():
+        # both strip classes are entirely non-ASCII (bidi >= U+061C,
+        # emoji >= U+2600): skip two failing regex calls per letter
+        return False
     if state.policy.strip_bidi and _BIDI.match(ch):
         return True
     return bool(state.policy.strip_emoji and _EMOJI.match(ch))
@@ -81,6 +85,6 @@ def tokenize(state: ParseState) -> ParseState:
     for role, inner in state.extracted:
         _tokenize_region(state, inner.start, inner.end, role, False,
                          tokens, commas)
-    tokens.sort(key=lambda t: tuple(t.span))
+    tokens.sort(key=lambda t: t.span)
     return dataclasses.replace(state, tokens=tuple(tokens),
                                comma_offsets=tuple(sorted(commas)))
