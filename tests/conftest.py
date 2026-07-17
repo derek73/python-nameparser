@@ -34,7 +34,6 @@ collect_ignore_glob = [
     #   last='Ivanov Sergeyevich' (v1: 'Sergeyevich Ivanov').
     # Remove once fixed.
     "test_middle_name_as_last.py",
-    "test_parser_util.py",
     "test_variations.py",
 ]
 
