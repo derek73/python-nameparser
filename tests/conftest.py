@@ -19,24 +19,15 @@ collect_ignore_glob = [
     "test_capitalization.py",
     "test_comma_variants.py",
     "test_conjunctions.py",
-    # test_constants.py is UNTOUCHED and blocked: reconciliation probing found
-    # a cluster of shim regressions of shipped v1 fixes (SetManager missing
-    # discard()/clear()/set operators; #238/#241/#242 bare-string and
-    # shred guards gone; #260 subclass-preserving copy(); #221 repr) plus two
-    # pipeline bugs (period-joined title/suffix derivation: 'Lt.Gov. John
-    # Doe' and 'John Doe JD.CPA' misparse). See the M12 batch report for the
-    # full inventory with repros. Reconcile once those are fixed.
+    # test_constants.py is fully reconciled; 2 of its 94 tests fail on one
+    # remaining v1.4-parity gap: the shim Constants.__init__ lacks the
+    # patronymic_name_order/middle_name_as_last bool kwargs (v1.4 had them;
+    # docs/customize.rst doctests use them). Repro:
+    #   Constants(middle_name_as_last=True)  ->  TypeError
+    # Its mypy-exclude entry pairs with this one (mypy flags the same two
+    # calls). Remove both once the kwargs are restored.
     "test_constants.py",
     "test_east_slavic_patronymic_order.py",
-    # test_python_api.py is fully reconciled (and mypy-clean, so it is NOT in
-    # the mypy exclude) but 3 of its 67 tests fail on one confirmed pipeline
-    # bug: _pipeline/_segment.py:85 requires ALL post-first comma segments to
-    # be suffix-shaped for SUFFIX_COMMA, where v1 tested only parts[1] and
-    # consumed the rest as suffixes unconditionally. Repro:
-    #   Parser().parse('Dr. John P. Doe-Ray, CLU, CFP, LUTC')
-    # ('lutc' is not in the suffix vocab) -> family='Dr. John P. Doe-Ray'.
-    # Remove this line once that is fixed.
-    "test_python_api.py",
     "test_first_name.py",
     "test_initials.py",
     "test_middle_name_as_last.py",
