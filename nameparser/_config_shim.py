@@ -21,13 +21,56 @@ from __future__ import annotations
 
 import functools
 import warnings
-from collections.abc import Callable, Iterable, Iterator, KeysView, Mapping
+from collections.abc import (
+    Callable, Iterable, Iterator, KeysView, Mapping, Set,
+)
 from typing import NamedTuple, Self
 
 from nameparser._lexicon import Lexicon
 from nameparser._parser import Parser
 from nameparser._policy import PatronymicRule, Policy
 from nameparser.util import lc
+
+
+def _reject_bare_str_or_bytes(value: object, expected: str) -> None:
+    # A bare string is an iterable of its characters, so e.g. SetManager('dr')
+    # would silently shred it into {'d', 'r'} instead of raising -- shared by
+    # SetManager's constructor/operands (#238/#241) and TupleManager's
+    # constructor (#242). Ported from v1's `_reject_bare_str_or_bytes`.
+    if isinstance(value, bytes):
+        raise TypeError(
+            f"expected {expected}, got a single bytes; decode it first: "
+            f"{value!r}.decode()"
+        )
+    if isinstance(value, str):
+        raise TypeError(
+            f"expected {expected}, got a single str; wrap it in a list: "
+            f"[{value!r}]"
+        )
+
+
+def _lc_validated(s: object) -> str:
+    # Validates and lc()-normalizes a single element -- shared by bulk
+    # iterable normalization (constructor/operands) and add()'s per-string
+    # loop, so every path raises the same #238/#245-shaped TypeError instead
+    # of lc() crashing cryptically (bytes) or silently transmuting (None).
+    if isinstance(s, bytes):
+        raise TypeError(
+            f"expected a str, got bytes; decode it first: {s!r}.decode()"
+        )
+    if not isinstance(s, str):
+        raise TypeError(f"expected a str, got {type(s).__name__}: {s!r}")
+    return lc(s)
+
+
+def _normalize_iterable_of_strings(
+        elements: object, expected: str = "an iterable of strings") -> set[str]:
+    # a SetManager's elements were already validated/normalized when it was
+    # built, so copy them instead of re-validating (v1's fast path)
+    if isinstance(elements, SetManager):
+        return set(elements._elements)
+    _reject_bare_str_or_bytes(elements, expected)
+    return {_lc_validated(s) for s in elements}  # type: ignore[attr-defined]
 
 
 class SetManager:
@@ -43,8 +86,16 @@ class SetManager:
     _on_change: Callable[[], None] | None
 
     def __init__(self, elements: Iterable[str] = (),
-                 _on_change: Callable[[], None] | None = None) -> None:
-        self._elements = {lc(e) for e in elements}
+                 _on_change: Callable[[], None] | None = None,
+                 _field: str | None = None) -> None:
+        # _field carries a Constants field name (e.g. "titles") through to
+        # the bare-str/bytes guard's message, when this SetManager is being
+        # built on behalf of a named Constants field (constructor kwarg or
+        # __setattr__ auto-wrap); a direct SetManager(...) call gets the
+        # generic v1 message instead.
+        expected = f"{_field} to be an iterable of strings" if _field \
+            else "an iterable of strings"
+        self._elements = _normalize_iterable_of_strings(elements, expected)
         self._on_change = _on_change
 
     def _changed(self) -> None:
@@ -58,7 +109,7 @@ class SetManager:
         # bump the owner's generation
         changed = False
         for s in strings:
-            normalized = lc(s)
+            normalized = _lc_validated(s)  # TypeError on bytes (#245)
             if normalized not in self._elements:
                 self._elements.add(normalized)
                 changed = True
@@ -82,6 +133,28 @@ class SetManager:
                 self._changed()
         return self
 
+    def discard(self, *strings: str) -> SetManager:
+        """Remove the normalized string arguments from the set if
+        present; missing members are ignored, like ``set.discard``.
+        Returns ``self`` for chaining."""
+        changed = False
+        for s in strings:
+            normalized = lc(s)
+            if normalized in self._elements:
+                self._elements.discard(normalized)
+                changed = True
+        if changed:
+            self._changed()
+        return self
+
+    def clear(self) -> SetManager:
+        """Remove all entries from the set. Returns ``self`` for
+        chaining."""
+        if self._elements:
+            self._elements.clear()
+            self._changed()
+        return self
+
     def __contains__(self, item: object) -> bool:
         return isinstance(item, str) and lc(item) in self._elements
 
@@ -100,28 +173,62 @@ class SetManager:
 
     __hash__ = None  # type: ignore[assignment]  # mutable; v1 parity
 
-    def _as_operand(self, other: object) -> set[str]:
-        if isinstance(other, SetManager):
-            return other._elements
-        if isinstance(other, (set, frozenset)):
-            return {lc(e) if isinstance(e, str) else e for e in other}
-        raise TypeError(f"unsupported operand type for SetManager: {other!r}")
+    # -- set operators: accept ANY iterable (v1.3 normalize-everywhere) -----
+    # A bare str/bytes operand raises TypeError via _normalize_iterable_of_
+    # strings rather than iterating its characters (#238/#241); everything
+    # else (list, generator, set, another SetManager, ...) is normalized
+    # through lc() before the plain set op runs.
 
     def __or__(self, other: object) -> set[str]:
-        return self._elements | self._as_operand(other)
+        return self._elements | _normalize_iterable_of_strings(other)
 
     __ror__ = __or__
 
     def __and__(self, other: object) -> set[str]:
-        return self._elements & self._as_operand(other)
+        return self._elements & _normalize_iterable_of_strings(other)
 
     __rand__ = __and__
 
     def __sub__(self, other: object) -> set[str]:
-        return self._elements - self._as_operand(other)
+        return self._elements - _normalize_iterable_of_strings(other)
 
     def __rsub__(self, other: object) -> set[str]:
-        return self._as_operand(other) - self._elements
+        return _normalize_iterable_of_strings(other) - self._elements
+
+    def __xor__(self, other: object) -> set[str]:
+        return self._elements ^ _normalize_iterable_of_strings(other)
+
+    __rxor__ = __xor__  # symmetric difference is commutative, like v1
+
+    # -- comparisons: v1 subclassed collections.abc.Set, whose __le__/__lt__/
+    # __ge__/__gt__ mixins only accept another Set-registered operand (set,
+    # frozenset, or another Set subclass) -- NOT an arbitrary iterable like
+    # list, unlike the operators above. Mirrored here since this SetManager
+    # doesn't itself subclass the ABC.
+
+    def __le__(self, other: object) -> bool:
+        if not isinstance(other, (SetManager, Set)):
+            return NotImplemented
+        if len(self) > len(other):
+            return False
+        return all(elem in other for elem in self)
+
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, (SetManager, Set)):
+            return NotImplemented
+        return len(self) < len(other) and self.__le__(other)
+
+    def __ge__(self, other: object) -> bool:
+        if not isinstance(other, (SetManager, Set)):
+            return NotImplemented
+        if len(self) < len(other):
+            return False
+        return all(elem in self for elem in other)
+
+    def __gt__(self, other: object) -> bool:
+        if not isinstance(other, (SetManager, Set)):
+            return NotImplemented
+        return len(self) > len(other) and self.__ge__(other)
 
     def __repr__(self) -> str:
         # Sorted so repr is stable across runs -- set() iteration order
@@ -160,6 +267,26 @@ class TupleManager(dict[str, object]):
     def __init__(self, *args: object,
                  _on_change: Callable[[], None] | None = None,
                  **kwargs: object) -> None:
+        if args:
+            # #242: a bare str/bytes silently shreds into a garbage mapping
+            # (dict's own error), and an iterable of short strings silently
+            # splits each one into a (key, value) pair -- ported from v1's
+            # TupleManager.__init__ guard.
+            arg = args[0]
+            _reject_bare_str_or_bytes(
+                arg, "a mapping or iterable of (key, value) pairs")
+            if not isinstance(arg, Mapping):
+                checked = []
+                for item in arg:  # type: ignore[attr-defined]
+                    if isinstance(item, (str, bytes)):
+                        kind = "bytes" if isinstance(item, bytes) else "str"
+                        raise TypeError(
+                            f"expected (key, value) pairs, got a {kind} "
+                            f"element {item!r}; a 2-character string "
+                            "silently splits into a key and a value"
+                        )
+                    checked.append(item)
+                args = (checked, *args[1:])
         super().__init__(*args, **kwargs)
         self._on_change = _on_change
 
@@ -177,7 +304,31 @@ class TupleManager(dict[str, object]):
         try:
             return self[name]
         except KeyError:
-            raise AttributeError(f"no key {name!r} in this manager") from None
+            # #256: name the known keys, like v1's 1.4 deprecation warning
+            # did -- this shim only speaks 2.0, so what was a warning there
+            # is a hard AttributeError here.
+            raise AttributeError(
+                f"{name!r} is not a known key "
+                f"({', '.join(sorted(self))}); use .get() for intentional "
+                "soft access."
+            ) from None
+
+    def __setattr__(self, name: str, value: object) -> None:
+        # v1 parity: dunder probes (typing's __orig_class__, etc.) and this
+        # shim's own _on_change hook get real object-attribute storage;
+        # every other name -- including single-underscore ones, per v1 --
+        # routes to the dict so `t.mcdonald = 'x'` and `t['mcdonald'] = 'x'`
+        # are the same operation.
+        if name == "_on_change" or (name.startswith("__") and name.endswith("__")):
+            object.__setattr__(self, name, value)
+        else:
+            self[name] = value
+
+    def __delattr__(self, name: str) -> None:
+        if name == "_on_change" or (name.startswith("__") and name.endswith("__")):
+            object.__delattr__(self, name)
+        else:
+            del self[name]
 
     def __setitem__(self, key: str, value: object) -> None:
         super().__setitem__(key, value)
@@ -376,6 +527,24 @@ _SET_FIELDS = (
 _MANAGER_FIELDS = _SET_FIELDS + (
     "capitalization_exceptions", "nickname_delimiters", "maiden_delimiters",
 )
+
+#: v1's Constants.__repr__ field order (#221) -- kept as its own tuple
+#: rather than reusing _SET_FIELDS, whose order differs (v1 lists
+#: suffix_acronyms_ambiguous last, not fourth).
+_REPR_COLLECTION_ATTRS = (
+    "prefixes", "suffix_acronyms", "suffix_not_acronyms", "titles",
+    "first_name_titles", "conjunctions", "bound_first_names",
+    "non_first_name_prefixes", "suffix_acronyms_ambiguous",
+)
+#: v1's repr scalar order, minus empty_attribute_default -- removed in 2.0
+#: (#255), so there's no such attribute on this shim's Constants to show.
+_REPR_SCALAR_ATTRS = (
+    "string_format", "initials_format", "initials_delimiter",
+    "initials_separator", "suffix_delimiter",
+    "capitalize_name", "force_mixed_case_capitalization",
+    "patronymic_name_order", "middle_name_as_last",
+)
+
 _SCALAR_DEFAULTS: dict[str, object] = {
     "patronymic_name_order": False,
     "middle_name_as_last": False,
@@ -396,16 +565,6 @@ _UNSET = object()
 # from any real value a caller might pass, including a falsy one like ""
 _UNSET_KWARG = object()
 
-
-def _reject_bare_str_for_field(value: object, field: str) -> None:
-    # A bare string is an iterable of its characters, so e.g.
-    # SetManager("dr") would silently shred it into {'d', 'r'} instead of
-    # raising -- shared by every Constants() set-field kwarg (#238/#244).
-    if isinstance(value, (str, bytes)):
-        raise TypeError(
-            f"{field} must be an iterable of strings, not a single "
-            f"str/bytes: {value!r}; wrap it in a list, e.g. [{value!r}]"
-        )
 
 _SHARED_MUTATION_MESSAGE = (
     "mutating the shared CONSTANTS singleton is deprecated and will be "
@@ -554,13 +713,13 @@ class Constants:
             value = overrides[name]
             if value is _UNSET_KWARG:
                 value = vocab[name]
-            else:
-                # a caller-supplied value REPLACES that field's default
-                # vocabulary wholesale (v1 parity) -- validated/normalized
-                # by SetManager below, once past the bare-str guard
-                _reject_bare_str_for_field(value, name)
+            # a caller-supplied value REPLACES that field's default
+            # vocabulary wholesale (v1 parity); SetManager itself validates/
+            # normalizes and rejects a bare str/bytes (#238/#241), naming
+            # this field in the message via _field=
             object.__setattr__(
-                self, name, SetManager(value, _on_change=self._bump))  # type: ignore[arg-type]
+                self, name,
+                SetManager(value, _on_change=self._bump, _field=name))  # type: ignore[arg-type]
         if capitalization_exceptions is _UNSET_KWARG:
             from nameparser.config.capitalization import (
                 CAPITALIZATION_EXCEPTIONS,
@@ -626,8 +785,10 @@ class Constants:
                 "flags"
             )
         if name in _SET_FIELDS:
-            # v1 allowed wholesale reassignment (c.titles = {...})
-            value = SetManager(value, _on_change=self._bump)  # type: ignore[arg-type]
+            # v1 allowed wholesale reassignment (c.titles = {...}); same
+            # bare-str/bytes guard as the constructor kwarg path (#238/#241)
+            value = SetManager(
+                value, _on_change=self._bump, _field=name)  # type: ignore[arg-type]
         elif name == "capitalization_exceptions":
             value = TupleManager(value, _on_change=self._bump)  # type: ignore[arg-type]
         elif name in ("nickname_delimiters", "maiden_delimiters"):
@@ -652,8 +813,15 @@ class Constants:
     def copy(self) -> Constants:                          # #260
         # An independent instance with its own generation counter and
         # its own manager callbacks -- not a shared-state alias like a
-        # naive attribute-for-attribute copy would produce.
-        new = Constants()
+        # naive attribute-for-attribute copy would produce. v1's copy()
+        # was `copy.deepcopy(self)`, which builds the new object via
+        # `type(self).__new__(type(self))` -- NOT by calling `type(self)()`
+        # -- so a Constants subclass copies as itself without its __init__
+        # running (and without needing to satisfy whatever signature that
+        # __init__ might require). Mirrored here with an explicit __new__
+        # bypass rather than type(self)().
+        new = object.__new__(type(self))
+        object.__setattr__(new, "_generation", 0)
         for name in _SET_FIELDS:
             object.__setattr__(
                 new, name,
@@ -663,9 +831,25 @@ class Constants:
         for bucket in ("nickname_delimiters", "maiden_delimiters"):
             object.__setattr__(new, bucket, _DelimiterManager(
                 dict(getattr(self, bucket)), _on_change=new._bump))
+        object.__setattr__(new, "regexes", _RegexesProxy())
         for name in _SCALAR_DEFAULTS:
             object.__setattr__(new, name, getattr(self, name))
         return new
+
+    def __repr__(self) -> str:                            # #221
+        # Collections (some with hundreds of entries, e.g. titles/prefixes)
+        # are summarized as counts rather than dumped in full, like v1.
+        # Scalars are only shown when they differ from the library default
+        # -- _SCALAR_DEFAULTS stands in for v1's `getattr(type(self), name)`
+        # class-level default, since this shim's scalar defaults are
+        # instance attributes set in __init__, not class attributes.
+        lines = [f"    {name}: {len(getattr(self, name))}"
+                 for name in _REPR_COLLECTION_ATTRS]
+        lines += [
+            f"    {name}: {value!r}" for name in _REPR_SCALAR_ATTRS
+            if (value := getattr(self, name)) != _SCALAR_DEFAULTS[name]
+        ]
+        return "<Constants : [\n" + "\n".join(lines) + "\n]>"
 
     # -- snapshot -----------------------------------------------------------
 

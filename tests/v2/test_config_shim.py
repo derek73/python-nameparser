@@ -425,3 +425,135 @@ def test_constants_kwarg_feeds_facade_parse() -> None:
     c = Constants(titles=["zzqtitle"])
     n = HumanName("Zzqtitle Judy Dench", constants=c)
     assert n.title == "Zzqtitle"
+
+
+# -- Restoring v1.3/1.4 manager hardening (#221/#238/#241/#242/#260) -------
+
+
+def test_set_manager_discard_is_noop_on_missing_and_notifies_on_real_change() -> None:
+    bumps = []
+    s = SetManager(["a"], _on_change=lambda: bumps.append(1))
+    assert s.discard("missing") is s           # never raises, chainable
+    assert len(bumps) == 0                      # no-op: nothing removed
+    assert s.discard("A") is s                  # normalized match
+    assert "a" not in s
+    assert len(bumps) == 1
+
+
+def test_set_manager_clear_notifies_only_if_non_empty() -> None:
+    bumps = []
+    s = SetManager(["a", "b"], _on_change=lambda: bumps.append(1))
+    assert s.clear() is s
+    assert len(s) == 0
+    assert len(bumps) == 1
+    assert s.clear() is s                       # already empty: no-op
+    assert len(bumps) == 1
+
+
+def test_set_manager_operators_accept_arbitrary_iterables() -> None:
+    a = SetManager(["a", "b"])
+    assert a | ["B.", "z"] == {"a", "b", "z"}    # list operand, normalized
+    assert a & (x for x in ["A", "q"]) == {"a"}  # generator operand
+    assert a - ["a"] == {"b"}
+    assert a ^ ["b", "c"] == {"a", "c"}          # symmetric difference
+    assert ["b", "c"] ^ a == {"a", "c"}          # reflected
+
+
+def test_set_manager_bare_str_or_bytes_operand_raises_typeerror() -> None:
+    a = SetManager(["a"])
+    with pytest.raises(TypeError):
+        a | "ab"
+    with pytest.raises(TypeError):
+        a & b"ab"
+    with pytest.raises(TypeError):
+        "ab" | a                                 # reflected form too
+
+
+def test_set_manager_comparison_operators() -> None:
+    a = SetManager(["a", "b"])
+    assert a <= {"a", "b", "c"}
+    assert a < {"a", "b", "c"}
+    assert not (a < {"a", "b"})
+    assert {"a", "b", "c"} >= a
+    assert a <= SetManager(["a", "b", "c"])
+    assert SetManager(["a", "b", "c"]) > a
+
+
+def test_set_manager_constructor_rejects_bare_str() -> None:
+    with pytest.raises(TypeError):               # #238/#241: not shredded to chars
+        SetManager("dr")                          # type: ignore[arg-type]
+
+
+def test_set_manager_constructor_rejects_bare_bytes_with_decode_hint() -> None:
+    with pytest.raises(TypeError, match="decode"):
+        SetManager(b"dr")                         # type: ignore[arg-type]
+
+
+def test_set_manager_constructor_rejects_non_str_element() -> None:
+    with pytest.raises(TypeError):
+        SetManager([None])                        # type: ignore[list-item]
+
+
+def test_set_manager_add_rejects_bytes_with_decode_hint() -> None:
+    s = SetManager()
+    with pytest.raises(TypeError, match="decode"):
+        s.add(b"dr")                              # type: ignore[arg-type]
+
+
+def test_constants_setattr_rejects_bare_str_like_constructor() -> None:
+    c = Constants()
+    with pytest.raises(TypeError, match="conjunctions"):
+        c.conjunctions = "and"                    # type: ignore[assignment]
+
+
+def test_tuple_manager_constructor_rejects_bare_str() -> None:
+    with pytest.raises(TypeError):                # #242
+        TupleManager("ab")                        # type: ignore[arg-type]
+
+
+def test_tuple_manager_constructor_rejects_iterable_of_strings() -> None:
+    with pytest.raises(TypeError):                # #242: 2-char strings silently split
+        TupleManager(["ab", "cd"])                # type: ignore[arg-type]
+
+
+def test_tuple_manager_unknown_key_error_names_known_keys() -> None:
+    t = TupleManager({"mcdonald": "McDonald", "obrien": "O'Brien"})
+    with pytest.raises(AttributeError, match="mcdonald"):
+        t.bogus
+
+
+def test_tuple_manager_attribute_style_set_and_delete() -> None:
+    bumps = []
+    t = TupleManager({"a": "A"}, _on_change=lambda: bumps.append(1))
+    t.b = "B"                                     # attribute-style routes to dict
+    assert t["b"] == "B"
+    assert len(bumps) == 1
+    del t.a
+    assert "a" not in t
+    assert len(bumps) == 2
+    # the manager's own private attribute is unaffected
+    assert t._on_change is not None
+
+
+def test_constants_copy_preserves_subclass() -> None:                   # #260
+    class MyConstants(Constants):
+        pass
+
+    c = MyConstants()
+    d = c.copy()
+    assert type(d) is MyConstants
+
+
+def test_constants_repr_shows_collection_counts() -> None:              # #221
+    c = Constants()
+    r = repr(c)
+    assert r.startswith("<Constants")
+    assert "titles:" in r
+    assert f"titles: {len(c.titles)}" in r
+
+
+def test_constants_repr_shows_customized_scalars_only() -> None:        # #221
+    c = Constants()
+    assert "capitalize_name" not in repr(c)       # default: not shown
+    c.capitalize_name = True
+    assert "capitalize_name: True" in repr(c)
