@@ -22,6 +22,11 @@ collect_ignore_glob = [
     "test_middle_name_as_last.py",
     "test_nicknames.py",
     "test_parser_util.py",
+    # test_prefixes.py is reconciled (one bucket-C rewrite; 57 pass) but 1
+    # test fails on the same B1 gap held for test_suffixes: the two-word
+    # trailing-suffix routing. Repro: HumanName('Anh Do') -> suffix='Do',
+    # family='' (v1: last='Do'; 'do' is the D.O. suffix acronym). Remove
+    # with test_suffixes' entry once B1 is settled.
     "test_prefixes.py",
     # test_suffixes.py needs NO bucket edits (30 pass, 2 v1 xfails) but 24
     # tests fail across six suspected pipeline gaps -- see the M12 batch-3
