@@ -14,12 +14,27 @@ from nameparser.config import CONSTANTS
 # Explicit list of not-yet-reconciled files. Narrow this as each file is
 # reconciled; remove entirely once the whole suite runs against the facade.
 collect_ignore_glob = [
+    # test_bound_first_names.py is reconciled (bucket A: the two
+    # is_bound_first_name predicate tests died with the v1 hooks) but 1 test
+    # fails on a join-guard bug: the FAMILY_COMMA bound-given join does not
+    # fire when the join would consume the whole post-comma segment. Repro:
+    #   HumanName('salem, abdul salam') -> first='abdul', middle='salam'
+    # (v1: first='abdul salam'; three-token 'salem, abdul salam ahmed'
+    # joins fine). Remove once fixed.
     "test_bound_first_names.py",
     "test_brute_force.py",
-    "test_east_slavic_patronymic_order.py",
+    # test_middle_name_as_last.py needs NO bucket edits but 4 tests fail on
+    # a fold-order bug: v1's middle_name_as_last fold PREPENDED middle_list
+    # to last_list, so comma and rotated forms converge on the no-comma
+    # result; v2 renders the folded family in token order. Repros:
+    #   HumanName('Hassan, Mohamad Ahmad Ali', constants=
+    #     Constants(middle_name_as_last=True)) -> last='Hassan Ahmad Ali'
+    #   (v1: 'Ahmad Ali Hassan');
+    #   with patronymic_name_order too: 'Ivanov Petr Sergeyevich' ->
+    #   last='Ivanov Sergeyevich' (v1: 'Sergeyevich Ivanov').
+    # Remove once fixed.
     "test_middle_name_as_last.py",
     "test_parser_util.py",
-    "test_turkic_patronymic_order.py",
     "test_variations.py",
 ]
 

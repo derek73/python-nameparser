@@ -1,34 +1,39 @@
+import re
+from typing import cast
+
 from nameparser import HumanName
 from nameparser.config import Constants
 from tests.base import FlaggedConstantsTestBase, HumanNameTestBase
 
+# The 2.0 regexes proxy types its attributes as ``object`` (reads are
+# informational); the pattern-inspection tests below cast once here.
+_LATIN = cast('re.Pattern[str]', Constants().regexes.east_slavic_patronymic)
+_CYRILLIC = cast('re.Pattern[str]',
+                 Constants().regexes.east_slavic_patronymic_cyrillic)
+
 
 def test_latin_patronymic_matches() -> None:
     # One common suffix and one irregular — the integration tests cover the rest.
-    C = Constants()
-    assert C.regexes.east_slavic_patronymic.search("Ivanovich")
-    assert C.regexes.east_slavic_patronymic.search("Ilyich")
+    assert _LATIN.search("Ivanovich")
+    assert _LATIN.search("Ilyich")
 
 
 def test_latin_patronymic_rejects_non_patronymic() -> None:
     # EMPTY_REGEX (the default for missing keys) matches everything,
     # so this test is red until the real pattern is in place.
-    C = Constants()
-    assert not C.regexes.east_slavic_patronymic.search("Smith")
+    assert not _LATIN.search("Smith")
 
 
 def test_latin_patronymic_end_anchored() -> None:
     # A surname ending in a patronymic suffix matches; the end-anchor does not
     # prevent this. The parser guard tests verify reordering is suppressed.
-    C = Constants()
-    assert C.regexes.east_slavic_patronymic.search("Abramovich")
+    assert _LATIN.search("Abramovich")
 
 
 def test_cyrillic_patronymic_matches() -> None:
     # One common suffix and one irregular.
-    C = Constants()
-    assert C.regexes.east_slavic_patronymic_cyrillic.search("Иванович")
-    assert C.regexes.east_slavic_patronymic_cyrillic.search("ильич")
+    assert _CYRILLIC.search("Иванович")
+    assert _CYRILLIC.search("ильич")
 
 
 def test_cyrillic_patronymic_matches_capitalized_irregular_forms() -> None:
@@ -36,17 +41,15 @@ def test_cyrillic_patronymic_matches_capitalized_irregular_forms() -> None:
     # capitalized first letter falls within the matched suffix itself, unlike
     # the common suffixes (-ович, -евна, ...) where only the surname root is
     # capitalized. Case-insensitivity is required for these to match.
-    C = Constants()
-    assert C.regexes.east_slavic_patronymic_cyrillic.search("Ильич")
-    assert C.regexes.east_slavic_patronymic_cyrillic.search("Кузьмич")
-    assert C.regexes.east_slavic_patronymic_cyrillic.search("Лукич")
-    assert C.regexes.east_slavic_patronymic_cyrillic.search("Фомич")
-    assert C.regexes.east_slavic_patronymic_cyrillic.search("Фокич")
+    assert _CYRILLIC.search("Ильич")
+    assert _CYRILLIC.search("Кузьмич")
+    assert _CYRILLIC.search("Лукич")
+    assert _CYRILLIC.search("Фомич")
+    assert _CYRILLIC.search("Фокич")
 
 
 def test_cyrillic_patronymic_rejects_non_patronymic() -> None:
-    C = Constants()
-    assert not C.regexes.east_slavic_patronymic_cyrillic.search("Иванов")
+    assert not _CYRILLIC.search("Иванов")
 
 
 class PatronymicNameOrderReorderTests(FlaggedConstantsTestBase):
