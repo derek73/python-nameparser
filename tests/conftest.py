@@ -27,6 +27,11 @@ collect_ignore_glob = [
     "test_comma_variants.py",
     "test_conjunctions.py",
     "test_east_slavic_patronymic_order.py",
+    # test_first_name.py needs NO reconciliation edits (8 pass, 2 v1 xfails)
+    # but 1 test fails on a confirmed pipeline bug: in the family-comma
+    # format a trailing suffix inside the FAMILY segment is not split out.
+    # Repro: Parser().parse('Smith Jr., John') -> family='Smith Jr.',
+    # suffix='' (v1: last='Smith', suffix='Jr.'). Remove once fixed.
     "test_first_name.py",
     "test_middle_name_as_last.py",
     "test_nicknames.py",
