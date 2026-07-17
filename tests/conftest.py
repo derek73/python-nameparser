@@ -38,6 +38,18 @@ collect_ignore_glob = [
     "test_parser_util.py",
     "test_prefixes.py",
     "test_suffixes.py",
+    # test_titles.py is reconciled (stale 'U.S.' xfail removed -- the 2.0
+    # period-joined derivation makes it pass) but 2 of its 57 tests fail on
+    # confirmed pipeline parity bugs:
+    # (1) _lexicon._normalize strips INTERIOR periods, so 'J.R.' -> 'jr',
+    #     which is in the TITLES vocabulary; v1's lc() kept 'j.r' out of it.
+    #     Repro: HumanName('Smith, J.R.') -> title='J.R.'
+    #     (v1: first='J.R.', last='Smith').
+    # (2) _assign's nickname rule (plan deviation #2) counts pieces AFTER
+    #     title peeling; v1's p_len==1 counted the whole segment before it.
+    #     Repro: HumanName('Xyz. (Bud) Smith') -> last='Smith'
+    #     (v1: first='Smith', title='Xyz.', nickname='Bud').
+    # Remove once fixed.
     "test_titles.py",
     "test_turkic_patronymic_order.py",
     "test_variations.py",
