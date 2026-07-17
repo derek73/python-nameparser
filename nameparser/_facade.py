@@ -7,7 +7,9 @@ Layering: facade layer -- may import anything public plus _render.
 from __future__ import annotations
 
 import dataclasses
+import re
 import warnings
+from collections.abc import Iterator
 
 from nameparser._config_shim import CONSTANTS, Constants, _cached_parser
 from nameparser._lexicon import _normalize
@@ -17,6 +19,11 @@ from nameparser._types import ParsedName, Role
 _V2_FIELD = {"first": "given", "last": "family"}  # v1 name -> v2 name
 _MEMBERS = ("title", "first", "middle", "last", "suffix", "nickname",
             "maiden")
+
+_SPACES = re.compile(r"\s+")
+_SPACE_BEFORE_COMMA = re.compile(r"\s+,")
+# the three comma characters, same set as the pipeline's COMMA_CHARS
+_TRAILING_COMMA = re.compile(r"[,،，]$")
 
 #: v1 parsing hooks the facade never calls (spec §2 exception 2 / #280).
 _V1_HOOKS = (
@@ -356,3 +363,54 @@ class HumanName:
     @property
     def last_base(self) -> str:
         return " ".join(self._split_last()[1])
+
+    # -- dunders ------------------------------------------------------------
+
+    def collapse_whitespace(self, string: str) -> str:
+        # v1 parser.py:976 verbatim (regexes.spaces / regexes.commas)
+        string = _SPACES.sub(" ", string.strip())
+        if string and _TRAILING_COMMA.search(string):
+            string = string[:-1]
+        return string
+
+    def __str__(self) -> str:
+        if self.string_format is not None:
+            _s = self.string_format.format(
+                **{k: v or "" for k, v in self.as_dict().items()})
+            _s = _s.replace(" ()", "").replace(" ''", "").replace(' ""', "")
+            _s = _SPACE_BEFORE_COMMA.sub(",", _s)
+            return self.collapse_whitespace(_s).strip(", ")
+        return " ".join(self)
+
+    def __repr__(self) -> str:
+        attrs = (
+            f"    title: {self.title or ''!r}\n"
+            f"    first: {self.first or ''!r}\n"
+            f"    middle: {self.middle or ''!r}\n"
+            f"    last: {self.last or ''!r}\n"
+            f"    suffix: {self.suffix or ''!r}\n"
+            f"    nickname: {self.nickname or ''!r}\n"
+            f"    maiden: {self.maiden or ''!r}"
+        )
+        return f"<{self.__class__.__name__} : [\n{attrs}\n]>"
+
+    def __iter__(self) -> Iterator[str]:
+        return (value for member in _MEMBERS
+                if (value := getattr(self, member)))
+
+    def __len__(self) -> int:
+        return sum(1 for member in _MEMBERS if getattr(self, member))
+
+    def __getitem__(self, key: str) -> str:
+        if isinstance(key, slice):
+            raise TypeError(
+                "slicing a HumanName was removed in 2.0 (#258); access "
+                "the named attributes instead"
+            )
+        return getattr(self, key)
+
+    def as_dict(self, include_empty: bool = True) -> dict[str, str]:
+        d = {member: getattr(self, member) for member in _MEMBERS}
+        if include_empty:
+            return d
+        return {k: v for k, v in d.items() if v}

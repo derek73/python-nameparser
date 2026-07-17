@@ -169,3 +169,62 @@ def test_suffix_list_heals_joined_continuations() -> None:  # v1 fix_phd
     n = HumanName("John Ph. D.")
     assert n.suffix == "Ph. D."
     assert n.suffix_list == ["Ph. D."]       # ONE element, v1 parity
+
+
+def test_str_uses_string_format_with_v1_cleanup() -> None:
+    n = HumanName("Dr. Juan de la Vega III")
+    assert str(n) == "Dr. Juan de la Vega III"
+    n2 = HumanName("John Smith")             # empty nickname: no ' ()'
+    assert str(n2) == "John Smith"
+    n2.string_format = "{last}, {first}"
+    assert str(n2) == "Smith, John"
+
+
+def test_str_none_format_falls_back_to_space_join() -> None:
+    # v1-identical: the format wraps the nickname in parens, the plain
+    # member join does not
+    n = HumanName('John "Jack" Kennedy')
+    assert str(n) == "John Kennedy (Jack)"
+    n.string_format = None
+    assert str(n) == "John Kennedy Jack"
+
+
+def test_getitem_unknown_key_raises_attribute_error() -> None:
+    n = HumanName("John Smith")
+    with pytest.raises(AttributeError):      # v1 behavior, not KeyError
+        n["nope"]
+
+
+def test_repr_v1_shape() -> None:
+    r = repr(HumanName("John Smith"))
+    assert r.startswith("<HumanName : [")
+    assert "first: 'John'" in r and "last: 'Smith'" in r
+
+
+def test_iter_and_len_count_nonempty() -> None:
+    n = HumanName("John Smith")
+    assert list(n) == ["John", "Smith"]
+    assert len(n) == 2
+    assert len(HumanName("")) == 0           # documented emptiness check
+
+
+def test_getitem_str_ok_slice_raises() -> None:            # #258
+    n = HumanName("John Smith")
+    assert n["first"] == "John"
+    with pytest.raises(TypeError, match="#258"):
+        n[1:-1]  # type: ignore[index]
+    with pytest.raises(TypeError):
+        n["first"] = "Jane"  # type: ignore[index] # no __setitem__ in 2.0
+
+
+def test_eq_and_hash_are_object_identity() -> None:        # #223
+    a, b = HumanName("John Smith"), HumanName("John Smith")
+    assert a != b and a == a
+    assert hash(a) != hash(b) or a is b      # default object hash
+
+
+def test_as_dict_v1_keys() -> None:
+    n = HumanName("Dr. John Smith")
+    d = n.as_dict()
+    assert d["title"] == "Dr." and d["first"] == "John" and d["last"] == "Smith"
+    assert set(n.as_dict(include_empty=False)) == {"title", "first", "last"}
