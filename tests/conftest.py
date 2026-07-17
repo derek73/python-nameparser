@@ -19,14 +19,6 @@ collect_ignore_glob = [
     "test_capitalization.py",
     "test_comma_variants.py",
     "test_conjunctions.py",
-    # test_constants.py is fully reconciled; 2 of its 94 tests fail on one
-    # remaining v1.4-parity gap: the shim Constants.__init__ lacks the
-    # patronymic_name_order/middle_name_as_last bool kwargs (v1.4 had them;
-    # docs/customize.rst doctests use them). Repro:
-    #   Constants(middle_name_as_last=True)  ->  TypeError
-    # Its mypy-exclude entry pairs with this one (mypy flags the same two
-    # calls). Remove both once the kwargs are restored.
-    "test_constants.py",
     "test_east_slavic_patronymic_order.py",
     "test_first_name.py",
     "test_initials.py",

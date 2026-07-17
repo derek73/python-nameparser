@@ -107,8 +107,11 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         # behave like an add()-built one, normalization included
         c = Constants()
         with pytest.raises(TypeError, match=r"wrap it in a list"):
-            c.titles |= 'esq'
-        c.titles |= ['Esq.']
+            c.titles |= 'esq'  # type: ignore[assignment]
+        # |= produces a plain set that Constants.__setattr__ re-wraps in a
+        # SetManager (2.0's auto-wrap; see the plain-iterable assignment
+        # test below) -- mypy sees only the set-for-SetManager assignment
+        c.titles |= ['Esq.']  # type: ignore[assignment]
         self.assertIn('esq', c.titles)
         hn = HumanName("Esq Jane Smith", constants=c)
         self.m(hn.title, "Esq", hn)
@@ -449,7 +452,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         ``__getstate__`` captured; the 1.4 DeprecationWarning promised
         ValueError in 2.0, pointing at re-pickling under 1.3/1.4.
         """
-        legacy_state = {
+        legacy_state: dict[str, object] = {
             'prefixes': {'van'},
             'titles': {'dr', 'legacytitle'},
             'suffixes_prefixes_titles': {'van', 'dr'},
@@ -567,7 +570,11 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         parse_nicknames() iterates over. This bit nickname_delimiters'
         construction (#22) before the guard was added.
         """
-        tm = TupleManager[re.Pattern[str] | str]({'a': re.compile('x')})
+        # The 2.0 TupleManager is a plain dict subclass, not Generic like
+        # v1's -- but dict's inherited __class_getitem__ still makes the
+        # subscription work at runtime, which is exactly the GenericAlias
+        # __orig_class__ probe this test exists to exercise.
+        tm = TupleManager[re.Pattern[str] | str]({'a': re.compile('x')})  # type: ignore[misc]
         self.assertNotIn('__orig_class__', tm)
         self.assertEqual(dict(tm), {'a': re.compile('x')})
         # Dunder assignment/deletion still work as normal object attributes,
