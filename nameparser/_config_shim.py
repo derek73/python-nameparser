@@ -679,6 +679,8 @@ class Constants:
             Mapping[str, str] | Iterable[tuple[str, str]] | object
             = _UNSET_KWARG,
         regexes: object = _UNSET_KWARG,
+        patronymic_name_order: bool = False,
+        middle_name_as_last: bool = False,
     ) -> None:
         # v1.4 parity constructor kwargs (#238/#242/#244 hardening); the
         # signature is spelled out rather than **kwargs so an unknown
@@ -736,6 +738,13 @@ class Constants:
         object.__setattr__(self, "regexes", _RegexesProxy())
         for name, value in _SCALAR_DEFAULTS.items():
             object.__setattr__(self, name, value)
+        # the two behavior bools were v1.4 constructor kwargs too
+        # (docs/customize.rst doctests use them); truthiness matches v1,
+        # storage goes through the plain scalar slot
+        if patronymic_name_order:
+            object.__setattr__(self, "patronymic_name_order", True)
+        if middle_name_as_last:
+            object.__setattr__(self, "middle_name_as_last", True)
 
     def _invalidate_pst(self) -> None:
         """Pickle-compat alias only, never called at runtime: v1's four

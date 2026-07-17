@@ -557,3 +557,13 @@ def test_constants_repr_shows_customized_scalars_only() -> None:        # #221
     assert "capitalize_name" not in repr(c)       # default: not shown
     c.capitalize_name = True
     assert "capitalize_name: True" in repr(c)
+
+
+def test_constants_bool_kwargs() -> None:
+    # v1.4 constructor kwargs used by the customize.rst doctests
+    c = Constants(middle_name_as_last=True)
+    assert c.middle_name_as_last is True
+    assert c.patronymic_name_order is False
+    d = Constants(patronymic_name_order=True)
+    _, policy, _ = d._snapshot()
+    assert len(policy.patronymic_rules) == 2
