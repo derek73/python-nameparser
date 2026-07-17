@@ -16,7 +16,6 @@ from nameparser.config import CONSTANTS
 collect_ignore_glob = [
     "test_bound_first_names.py",
     "test_brute_force.py",
-    "test_comma_variants.py",
     # test_conjunctions.py needs NO bucket edits (37 pass, 2 v1 xfails) but
     # 1 test fails on the join-stage sibling of the fixed _cap_word bug:
     # the classify-stage "conjunction" tag (_classify.py:51) lacks v1
