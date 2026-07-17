@@ -233,6 +233,16 @@ class HumanName:
             self._snapshot_gen = gen
         return _cached_parser(self._lexicon, self._policy)
 
+    def parse_full_name(self) -> None:
+        """Re-parse the stored ``full_name`` (v1's documented re-parse
+        trigger, docs/customize.rst): mutate ``name.C`` then call this to
+        force a re-parse without reassigning ``full_name``. The v1
+        parsing INTERNALS this name evokes live in the core ``Parser``,
+        not here; a subclass overriding this method still triggers the
+        #280 hook-override warning, and full_name assignment never
+        consults it."""
+        self._apply_full_name(self._full_name)
+
     def _apply_full_name(self, value: str) -> None:
         if isinstance(value, bytes):
             raise TypeError(
@@ -272,6 +282,28 @@ class HumanName:
     @property
     def C(self) -> Constants:
         return self._C
+
+    @C.setter
+    def C(self, constants: Constants | None) -> None:
+        # v1.4 closed #239 by making C a validating setter that ONLY
+        # stores the new value -- no re-parse (checked against v1.4:
+        # `git show 2d5d8c2:nameparser/parser.py` lines ~204-206, the C
+        # setter body is exactly `self._C = self._validate_constants(...)`).
+        # A caller who wants the new config reflected must still trigger
+        # a re-parse, e.g. via parse_full_name() or a full_name
+        # reassignment -- matched here rather than re-parsing eagerly.
+        if constants is None:
+            raise TypeError(
+                "assigning constants=None to C was removed in 2.0 (#261): "
+                "pass a Constants instance, or use the new Parser/Lexicon/"
+                "Policy API for per-call configuration"
+            )
+        if not isinstance(constants, Constants):
+            raise TypeError(
+                f"constants must be a Constants instance, got {constants!r}"
+            )
+        self._C = constants
+        self._snapshot_gen = -1  # invalidate: next _resolve() rebuilds
 
     @property
     def has_own_config(self) -> bool:
@@ -512,6 +544,12 @@ class HumanName:
     def matches(self, other: str | HumanName) -> bool:
         """Component-wise case-insensitive comparison (v1 parity); a
         str argument is parsed with this instance's resolved parser."""
+        if not isinstance(other, (str, HumanName)):
+            # pre-check so the error names the facade type a caller
+            # actually passed HumanName.matches(), not the core
+            # ParsedName it delegates to below
+            raise TypeError(
+                f"matches() takes a str or HumanName, got {other!r}")
         target = other._parsed if isinstance(other, HumanName) else other
         return self._parsed.matches(target, parser=self._resolve())
 

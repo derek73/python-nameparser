@@ -307,6 +307,61 @@ def test_pickle_round_trip_preserves_components() -> None:
     assert loaded.C is CONSTANTS             # shared sentinel restored
 
 
+# -- Gap 2: parse_full_name() (v1's documented re-parse idiom) -------------
+
+
+def test_parse_full_name_reparses_documented_idiom() -> None:
+    c = Constants()
+    n = HumanName("Zzqtitle Judy Dench", constants=c)
+    assert n.title == ""                     # 'zzqtitle' not a default title
+    c.titles.add("zzqtitle")                  # mutate C in place, no full_name reassignment
+    n.parse_full_name()                       # documented v1 idiom
+    assert n.title == "Zzqtitle"
+
+
+def test_subclass_overriding_parse_full_name_warns() -> None:   # #280
+    class CustomReparse(HumanName):
+        def parse_full_name(self) -> None:
+            pass
+
+    with pytest.deprecated_call(match="parse_full_name"):
+        CustomReparse("John Smith")
+
+
+# -- Gap 3: HumanName.C setter (v1.4 #239) ----------------------------------
+
+
+def test_c_setter_assigns_and_next_parse_honors_it() -> None:
+    n = HumanName("John Smith")
+    c2 = Constants()
+    c2.titles.add("zzqtitle")
+    n.C = c2
+    assert n.C is c2
+    n.full_name = "Zzqtitle Judy Dench"       # next parse: v1's setter only stored, no reparse
+    assert n.title == "Zzqtitle"
+
+
+def test_c_setter_none_raises_migration_hint() -> None:
+    n = HumanName("John Smith")
+    with pytest.raises(TypeError, match="constants"):
+        n.C = None  # type: ignore[assignment]
+
+
+def test_c_setter_non_constants_raises() -> None:
+    n = HumanName("John Smith")
+    with pytest.raises(TypeError):
+        n.C = 42  # type: ignore[assignment]
+
+
+# -- Gap 4: matches() error message names the facade type -------------------
+
+
+def test_matches_type_error_names_facade_type() -> None:
+    n = HumanName("John Smith")
+    with pytest.raises(TypeError, match="HumanName"):
+        n.matches(None)  # type: ignore[arg-type]
+
+
 def test_v14_humanname_blob_unpickles() -> None:
     # tests/v2/data/humanname_v14.pickle was produced by a real 1.4.0
     # install (`uv run --no-project --with "nameparser==1.4.*" ...`) on

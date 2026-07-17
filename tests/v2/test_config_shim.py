@@ -374,3 +374,54 @@ def test_parser_cache_shared_across_equal_snapshots() -> None:
     la, pa, _ = a._snapshot()
     lb, pb, _ = b._snapshot()
     assert _cached_parser(la, pa) is _cached_parser(lb, pb)
+
+
+# -- Gap 1: Constants() constructor kwargs (v1.4 parity, #238/#242/#244) ----
+
+
+def test_constants_kwarg_replaces_field_others_keep_defaults() -> None:
+    default = Constants()
+    c = Constants(titles=["Abc"])
+    assert set(c.titles) == {"abc"}                # lc()-normalized
+    assert "abc" not in default.titles              # sanity: not a real default
+    # a kwarg REPLACES that field's vocabulary wholesale (v1 parity); the
+    # other eight set fields are untouched
+    for field in ("prefixes", "suffix_acronyms", "suffix_not_acronyms",
+                  "suffix_acronyms_ambiguous", "first_name_titles",
+                  "conjunctions", "bound_first_names",
+                  "non_first_name_prefixes"):
+        assert set(getattr(c, field)) == set(getattr(default, field))
+
+
+def test_constants_kwarg_bare_string_raises_typeerror() -> None:
+    with pytest.raises(TypeError, match="titles"):
+        Constants(titles="abc")  # type: ignore[arg-type]
+
+
+def test_constants_kwarg_non_iterable_raises_typeerror() -> None:
+    with pytest.raises(TypeError):
+        Constants(titles=5)  # type: ignore[arg-type]
+
+
+def test_constants_kwarg_capitalization_exceptions_wraps_tuple_manager() -> None:
+    c = Constants(capitalization_exceptions={"mcdonald": "McDonald"})
+    assert isinstance(c.capitalization_exceptions, TupleManager)
+    assert c.capitalization_exceptions["mcdonald"] == "McDonald"
+
+
+def test_constants_kwarg_regexes_raises_typeerror() -> None:
+    with pytest.raises(TypeError, match="Policy"):
+        Constants(regexes={})  # type: ignore[call-arg]
+
+
+def test_constants_kwarg_unknown_raises_typeerror() -> None:
+    with pytest.raises(TypeError):
+        Constants(bogus=1)  # type: ignore[call-arg]
+
+
+def test_constants_kwarg_feeds_facade_parse() -> None:
+    from nameparser._facade import HumanName
+
+    c = Constants(titles=["zzqtitle"])
+    n = HumanName("Zzqtitle Judy Dench", constants=c)
+    assert n.title == "Zzqtitle"

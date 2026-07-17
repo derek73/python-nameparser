@@ -392,6 +392,21 @@ _SCALAR_DEFAULTS: dict[str, object] = {
 # (None is a legitimate value for string_format/suffix_delimiter)
 _UNSET = object()
 
+# distinguishes "kwarg not passed to Constants()" (use library defaults)
+# from any real value a caller might pass, including a falsy one like ""
+_UNSET_KWARG = object()
+
+
+def _reject_bare_str_for_field(value: object, field: str) -> None:
+    # A bare string is an iterable of its characters, so e.g.
+    # SetManager("dr") would silently shred it into {'d', 'r'} instead of
+    # raising -- shared by every Constants() set-field kwarg (#238/#244).
+    if isinstance(value, (str, bytes)):
+        raise TypeError(
+            f"{field} must be an iterable of strings, not a single "
+            f"str/bytes: {value!r}; wrap it in a list, e.g. [{value!r}]"
+        )
+
 _SHARED_MUTATION_MESSAGE = (
     "mutating the shared CONSTANTS singleton is deprecated and will be "
     "removed in 3.0; build a Lexicon/Policy (or a private Constants "
@@ -489,17 +504,71 @@ class Constants:
     initials_separator: str
     suffix_delimiter: str | None
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        prefixes: Iterable[str] | object = _UNSET_KWARG,
+        suffix_acronyms: Iterable[str] | object = _UNSET_KWARG,
+        suffix_not_acronyms: Iterable[str] | object = _UNSET_KWARG,
+        suffix_acronyms_ambiguous: Iterable[str] | object = _UNSET_KWARG,
+        titles: Iterable[str] | object = _UNSET_KWARG,
+        first_name_titles: Iterable[str] | object = _UNSET_KWARG,
+        conjunctions: Iterable[str] | object = _UNSET_KWARG,
+        bound_first_names: Iterable[str] | object = _UNSET_KWARG,
+        non_first_name_prefixes: Iterable[str] | object = _UNSET_KWARG,
+        capitalization_exceptions:
+            Mapping[str, str] | Iterable[tuple[str, str]] | object
+            = _UNSET_KWARG,
+        regexes: object = _UNSET_KWARG,
+    ) -> None:
+        # v1.4 parity constructor kwargs (#238/#242/#244 hardening); the
+        # signature is spelled out rather than **kwargs so an unknown
+        # keyword raises Python's own TypeError with no help from here.
+        # `regexes` is the one deliberate 2.0 divergence: v1.4 accepted it
+        # (RegexTupleManager(regexes)), but constructor injection is
+        # assignment by another door, and __setattr__ above already
+        # forbids `c.regexes = ...` post-construction -- the uniform 2.0
+        # rule is that parsing behavior is configured through Policy, not
+        # by handing Constants a compiled-pattern mapping either way.
+        if regexes is not _UNSET_KWARG:
+            raise TypeError(
+                "Constants(regexes=...) is not supported in 2.0; parsing "
+                "behavior is configured through named Policy flags, not "
+                "by constructing Constants with a regex mapping. See the "
+                "migration guide."
+            )
+        overrides = {
+            "prefixes": prefixes,
+            "suffix_acronyms": suffix_acronyms,
+            "suffix_not_acronyms": suffix_not_acronyms,
+            "suffix_acronyms_ambiguous": suffix_acronyms_ambiguous,
+            "titles": titles,
+            "first_name_titles": first_name_titles,
+            "conjunctions": conjunctions,
+            "bound_first_names": bound_first_names,
+            "non_first_name_prefixes": non_first_name_prefixes,
+        }
         vocab = _default_vocab()
         object.__setattr__(self, "_generation", 0)
         for name in _SET_FIELDS:
+            value = overrides[name]
+            if value is _UNSET_KWARG:
+                value = vocab[name]
+            else:
+                # a caller-supplied value REPLACES that field's default
+                # vocabulary wholesale (v1 parity) -- validated/normalized
+                # by SetManager below, once past the bare-str guard
+                _reject_bare_str_for_field(value, name)
             object.__setattr__(
-                self, name, SetManager(vocab[name], _on_change=self._bump))
-        from nameparser.config.capitalization import (
-            CAPITALIZATION_EXCEPTIONS,
-        )
+                self, name, SetManager(value, _on_change=self._bump))  # type: ignore[arg-type]
+        if capitalization_exceptions is _UNSET_KWARG:
+            from nameparser.config.capitalization import (
+                CAPITALIZATION_EXCEPTIONS,
+            )
+            capitalization_exceptions = CAPITALIZATION_EXCEPTIONS
         object.__setattr__(self, "capitalization_exceptions", TupleManager(
-            CAPITALIZATION_EXCEPTIONS, _on_change=self._bump))
+            capitalization_exceptions,  # type: ignore[arg-type]
+            _on_change=self._bump))
         object.__setattr__(self, "nickname_delimiters", _DelimiterManager(
             {name: name for name in _DELIMITER_SENTINELS},
             _on_change=self._bump))
