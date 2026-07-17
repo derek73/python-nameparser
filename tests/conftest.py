@@ -23,6 +23,23 @@ collect_ignore_glob = [
     "test_nicknames.py",
     "test_parser_util.py",
     "test_prefixes.py",
+    # test_suffixes.py needs NO bucket edits (30 pass, 2 v1 xfails) but 24
+    # tests fail across six suspected pipeline gaps -- see the M12 batch-3
+    # report for full repros. Headlines:
+    #   B1 'Jack Ma' -> suffix='Ma', family='' (v1: last='Ma'; the
+    #      fix(suffix-routing) row pins the same shape for 'Johnson PhD' --
+    #      decision needed on ambiguous-surname suffixes)
+    #   B2 'John Smith, V MD' -> suffix='V, MD' (v1 kept the segment whole:
+    #      'V MD')
+    #   B3 'John Smith, Ph. D.' -> family='John Smith', given='' (split/
+    #      period-joined suffixes fail the segment-stage suffixy test)
+    #   B4 '#144: 'Smith, John V' -> middle='V' (v1: suffix='V'; family-
+    #      comma given-segment trailing suffix_not_acronyms rule missing)
+    #   B5 suffix-in-parens/quotes (#111) missing: 'Andrew Perkins (MBA)'
+    #      -> nickname='MBA' (v1: suffix='MBA'); 9 tests
+    #   B6 suffix_delimiter edges: trailing delimiter kills detection;
+    #      multi-word sides leak the '-' token into suffix
+    # Remove once fixed.
     "test_suffixes.py",
     "test_turkic_patronymic_order.py",
     "test_variations.py",
