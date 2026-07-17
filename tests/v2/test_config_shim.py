@@ -298,20 +298,23 @@ def test_v14_constants_state_shape_accepted() -> None:
     assert not hasattr(c, "empty_attribute_default") or True  # dropped
 
 
-@pytest.mark.xfail(
-    reason="resolves to the v1 class until the M11 swap", strict=True)
 def test_v14_constants_blob_unpickles_into_shim() -> None:
     # tests/v2/data/constants_v14.pickle was produced by a real 1.4.0
     # install (`uv run --no-project --with "nameparser==1.4.*" ...`),
     # not synthesized here -- it is the actual bytes a caller upgrading
-    # from 1.4 to 2.0 would hand to pickle.load(). Until the M11 swap
-    # replaces nameparser.config.Constants with this shim, the blob's
-    # pickled class reference still resolves to the live v1 class, so
-    # this assertion fails today by construction.
+    # from 1.4 to 2.0 would hand to pickle.load(). Since the M11 swap
+    # replaced nameparser.config.Constants with this shim, the blob's
+    # pickled class reference now resolves here. Its nested `regexes`
+    # field pickles as nameparser.config.RegexTupleManager, reconstructed
+    # by the unpickler before Constants.__setstate__ runs -- see
+    # RegexTupleManager's docstring in _config_shim.py.
     with open(_DATA_DIR / "constants_v14.pickle", "rb") as f:
         loaded = pickle.load(f)
     assert isinstance(loaded, Constants)
     assert "van" in loaded.prefixes
+    assert "dr" in loaded.titles
+    assert "jr" in loaded.suffix_not_acronyms
+    assert loaded.string_format == "{title} {first} {middle} {last} {suffix} ({nickname})"
 
 
 def test_snapshot_field_translation() -> None:

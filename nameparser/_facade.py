@@ -12,6 +12,22 @@ import warnings
 from collections.abc import Iterator
 from typing import Any
 
+# Import order matters here -- breaks a real import cycle. nameparser.
+# config's package __init__ re-exports CONSTANTS/Constants/etc. from
+# _config_shim (the v1 nameparser.config.Constants compat path), while
+# _config_shim's own default CONSTANTS singleton needs nameparser.config's
+# DATA submodules (titles, prefixes, ...), imported lazily -- see
+# _config_shim.py's module docstring. If _config_shim were the first of
+# the two ever touched, building its CONSTANTS would need to import
+# nameparser.config, whose __init__ would in turn need _config_shim's
+# (not-yet-built) CONSTANTS: ImportError. Importing the config package
+# here first lets its __init__ run to completion; when IT then imports
+# _config_shim to build the default CONSTANTS, nameparser.config is
+# already registered in sys.modules, so its data-submodule imports
+# resolve directly instead of re-entering (and failing on) its own
+# still-executing __init__.
+import nameparser.config  # noqa: F401
+
 from nameparser._config_shim import CONSTANTS, Constants, _cached_parser
 from nameparser._lexicon import _normalize
 from nameparser._parser import Parser

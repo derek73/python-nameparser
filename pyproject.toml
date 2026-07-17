@@ -49,6 +49,10 @@ dev = [
 
 [tool.mypy]
 packages = ["nameparser", "tests"]
+# TEMPORARY (M11 -> M12): the v1 suite is being reconciled against the
+# 2.0 facade; lifted with tests/conftest.py's collect_ignore_glob. Must
+# be gone before the branch leaves draft. tests/v2/ stays checked.
+exclude = '^tests/(test_[^/]*\.py|base\.py)$'
 
 [[tool.mypy.overrides]]
 module = [

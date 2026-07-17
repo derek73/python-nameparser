@@ -17,7 +17,8 @@ _MUST_EXIST = {"_types.py", "_lexicon.py", "_policy.py", "_locale.py",
                "_pipeline/_vocab.py", "_pipeline/_segment.py",
                "_pipeline/_classify.py", "_pipeline/_group.py",
                "_pipeline/_assign.py", "_pipeline/_post_rules.py",
-               "_pipeline/_assemble.py", "_parser.py"}
+               "_pipeline/_assemble.py", "_parser.py", "_facade.py",
+               "_config_shim.py"}
 
 _PIPELINE_STAGE_ALLOWED = (
     "nameparser._types", "nameparser._lexicon", "nameparser._policy",
@@ -60,6 +61,23 @@ ALLOWED = {
     "_parser.py": ("nameparser._types", "nameparser._lexicon",
                    "nameparser._policy", "nameparser._locale",
                    "nameparser._pipeline"),
+    # facade layer (migration spec §2/§3): may import anything public
+    # plus _render (unused yet) and each other. _facade delegates
+    # parsing to the core Parser resolved from the bound Constants shim.
+    # The bare "nameparser.config" import (not just its submodules) is
+    # deliberate -- it resolves an import cycle, see _facade.py's comment.
+    "_facade.py": ("nameparser._config_shim", "nameparser._lexicon",
+                   "nameparser._parser", "nameparser._types",
+                   "nameparser._render", "nameparser.util",
+                   "nameparser.config"),
+    # the Constants/SetManager/TupleManager shim: config DATA modules
+    # stay the single vocabulary source through 2.x (nameparser.config.*)
+    "_config_shim.py": ("nameparser._lexicon", "nameparser._parser",
+                        "nameparser._policy", "nameparser.util",
+                        "nameparser.config"),
+    # v1 import-path preservation: thin re-exports of the facade/shim
+    "parser.py": ("nameparser._facade",),
+    "config/__init__.py": ("nameparser._config_shim",),
 }
 
 

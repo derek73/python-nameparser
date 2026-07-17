@@ -7,18 +7,26 @@ Layering: facade layer -- may import anything public; here that's
 the read-only regexes proxy's underlying compiled patterns, and
 ``nameparser._lexicon``/``_policy``/``_parser`` for the ``_snapshot()``
 translation and the shared parser cache.
+
+All ``nameparser.config.<data module>`` imports below are deferred
+(function-local), never module-level: ``nameparser/config/__init__.py``
+itself imports ``CONSTANTS``/``Constants``/etc. from this module, so a
+module-level ``from nameparser.config.regexes import REGEXES`` here
+would need the ``nameparser.config`` package's ``__init__.py`` to run
+to completion first -- which needs this module to already be fully
+initialized. Importing the data submodules lazily, on first use, breaks
+that cycle.
 """
 from __future__ import annotations
 
 import functools
 import warnings
-from collections.abc import Callable, Iterable, Iterator, KeysView
+from collections.abc import Callable, Iterable, Iterator, KeysView, Mapping
 from typing import NamedTuple, Self
 
 from nameparser._lexicon import Lexicon
 from nameparser._parser import Parser
 from nameparser._policy import PatronymicRule, Policy
-from nameparser.config.regexes import REGEXES
 from nameparser.util import lc
 
 
@@ -246,6 +254,21 @@ _SENTINEL_PAIRS = {
 _DELIMITER_SENTINELS = tuple(_SENTINEL_PAIRS)
 
 
+class RegexTupleManager(TupleManager):
+    """Pickle-compat alias only: v1.4's ``Constants.regexes`` field was a
+    ``nameparser.config.RegexTupleManager`` instance (a ``TupleManager``
+    subclass whose ``__getattr__`` fell back to ``EMPTY_REGEX`` for an
+    unknown key). Unpickling a v1.4 blob resolves and constructs this
+    class -- via ``TupleManager.__reduce__``'s ``(type(self), (), state)``
+    -- before ``Constants.__setstate__`` runs, so the name must exist
+    here even though the shim's ``Constants._snapshot()`` never reads it:
+    ``regexes`` is a read-only ``_RegexesProxy`` in 2.0 (see above), and
+    ``Constants.__setstate__`` below deliberately ignores an incoming
+    ``regexes`` key rather than restoring it from this reconstructed
+    (and otherwise unused) instance.
+    """
+
+
 class _DelimiterManager(TupleManager):
     """v1 ``nickname_delimiters``/``maiden_delimiters`` bucket. In 2.0
     only the three named sentinels exist (spec §3) -- each maps to the
@@ -293,25 +316,32 @@ class _RegexesProxy:
     (spec §3's uniform read-only rule).
     """
 
+    @staticmethod
+    def _regexes() -> Mapping[str, object]:
+        # deferred import: see the module docstring's note on why every
+        # nameparser.config.<data module> import in this file is lazy
+        from nameparser.config.regexes import REGEXES
+        return REGEXES
+
     def __getattr__(self, name: str) -> object:
         if name.startswith("_"):
             raise AttributeError(name)
         try:
-            return REGEXES[name]
+            return self._regexes()[name]
         except KeyError:
             raise AttributeError(f"no regex named {name!r}") from None
 
     def __getitem__(self, name: str) -> object:
-        return REGEXES[name]
+        return self._regexes()[name]
 
     def __contains__(self, name: object) -> bool:
-        return name in REGEXES
+        return name in self._regexes()
 
     def __iter__(self) -> Iterator[str]:
-        return iter(REGEXES)
+        return iter(self._regexes())
 
     def keys(self) -> KeysView[str]:
-        return REGEXES.keys()
+        return self._regexes().keys()
 
     def __setattr__(self, name: str, value: object) -> None:
         self._raise_readonly(name)
@@ -478,6 +508,25 @@ class Constants:
         object.__setattr__(self, "regexes", _RegexesProxy())
         for name, value in _SCALAR_DEFAULTS.items():
             object.__setattr__(self, name, value)
+
+    def _invalidate_pst(self) -> None:
+        """Pickle-compat alias only, never called at runtime: v1's four
+        cached-union ``SetManager`` fields (``prefixes``,
+        ``suffix_acronyms``, ``suffix_not_acronyms``, ``titles``) stored
+        their ``_on_change`` as the bound method
+        ``Constants._invalidate_pst``. A pickled bound method serializes
+        as a back-reference to its ``__self__`` (this same ``Constants``
+        instance, mid-unpickle) plus the method NAME -- reconstructed via
+        ``getattr(constants_obj, '_invalidate_pst')`` before
+        ``Constants.__setstate__`` ever runs (same two-phase-unpickling
+        story as ``RegexTupleManager`` above). Without this name, loading
+        a v1.4 blob raises ``AttributeError`` looking up the method.
+        ``SetManager.__setstate__`` (shim) never restores ``_on_change``
+        from pickled state regardless -- it always resets to ``None`` and
+        is rewired by ``Constants.__setstate__`` below -- so this bound
+        method value is reconstructed only to satisfy the pickle format;
+        it is discarded immediately and never invoked.
+        """
 
     def _bump(self) -> None:
         # stacklevel=3 is exact for the direct scalar-assignment path

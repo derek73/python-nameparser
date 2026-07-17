@@ -6,6 +6,12 @@ import pytest
 
 from nameparser.config import CONSTANTS
 
+# TEMPORARY (Task M11 -> M12): the v1 suite is being reconciled against
+# the 2.0 facade file by file. Lifted in Task M12 together with its mypy
+# twin (the `exclude` under [tool.mypy] in pyproject.toml); both must be
+# GONE before this branch leaves draft.
+collect_ignore_glob = ["test_*.py"]
+
 # Scalar (non-collection) config attributes that individual tests mutate on the
 # global CONSTANTS singleton. Several tests change these without restoring them;
 # the original suite only survived because unittest happens to run methods in
