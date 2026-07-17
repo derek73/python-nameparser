@@ -16,41 +16,14 @@ from nameparser.config import CONSTANTS
 collect_ignore_glob = [
     "test_bound_first_names.py",
     "test_brute_force.py",
-    # test_capitalization.py needs NO reconciliation edits (20 pass, 1 v1
-    # xfail) but 1 test fails on a confirmed render bug: _render.py's
-    # _cap_word lowercases every conjunction-set word, missing v1
-    # is_conjunction's is_an_initial exclusion (75e3219^ parser.py:761), so
-    # initial-shaped words that double as conjunctions stay lowercase. Repro:
-    #   HumanName('scott e. werner').capitalize() -> 'Scott e. Werner'
-    # (v1: 'Scott E. Werner'; 'e' is in CONJUNCTIONS). Remove once fixed.
-    "test_capitalization.py",
     "test_comma_variants.py",
     "test_conjunctions.py",
     "test_east_slavic_patronymic_order.py",
-    # test_first_name.py needs NO reconciliation edits (8 pass, 2 v1 xfails)
-    # but 1 test fails on a confirmed pipeline bug: in the family-comma
-    # format a trailing suffix inside the FAMILY segment is not split out.
-    # Repro: Parser().parse('Smith Jr., John') -> family='Smith Jr.',
-    # suffix='' (v1: last='Smith', suffix='Jr.'). Remove once fixed.
-    "test_first_name.py",
     "test_middle_name_as_last.py",
     "test_nicknames.py",
     "test_parser_util.py",
     "test_prefixes.py",
     "test_suffixes.py",
-    # test_titles.py is reconciled (stale 'U.S.' xfail removed -- the 2.0
-    # period-joined derivation makes it pass) but 2 of its 57 tests fail on
-    # confirmed pipeline parity bugs:
-    # (1) _lexicon._normalize strips INTERIOR periods, so 'J.R.' -> 'jr',
-    #     which is in the TITLES vocabulary; v1's lc() kept 'j.r' out of it.
-    #     Repro: HumanName('Smith, J.R.') -> title='J.R.'
-    #     (v1: first='J.R.', last='Smith').
-    # (2) _assign's nickname rule (plan deviation #2) counts pieces AFTER
-    #     title peeling; v1's p_len==1 counted the whole segment before it.
-    #     Repro: HumanName('Xyz. (Bud) Smith') -> last='Smith'
-    #     (v1: first='Smith', title='Xyz.', nickname='Bud').
-    # Remove once fixed.
-    "test_titles.py",
     "test_turkic_patronymic_order.py",
     "test_variations.py",
 ]

@@ -56,10 +56,13 @@ class TitleTestCase(HumanNameTestBase):
         hn = HumanName("Coach")
         self.m(hn.title, "Coach", hn)
 
+    # TODO: fix handling of U.S. -- 2.0 matches v1 here: lc()-style
+    # normalization keeps 'u.s' out of the titles vocabulary, so the
+    # chain never starts (an interim 2.0 build that stripped interior
+    # periods made this pass, but that normalization wrongly turned
+    # 'J.R.' into the title 'jr'; v1 parity won)
+    @pytest.mark.xfail
     def test_chained_title_first_name_title_is_initials(self) -> None:
-        # xfail in v1 ("TODO: fix handling of U.S."); the 2.0 pipeline's
-        # period-joined title derivation chains 'U.S.' into the title, so
-        # the long-desired expectation now holds.
         hn = HumanName("U.S. District Judge Marc Thomas Treadwell")
         self.m(hn.title, "U.S. District Judge", hn)
         self.m(hn.first, "Marc", hn)
