@@ -80,21 +80,17 @@ overriding e.g. ``CONSTANTS.regexes.parenthesis`` still works exactly as
 before) and :py:obj:`~nameparser.config.Constants.maiden_delimiters` (empty
 by default -- see "Routing to Maiden Name" below).
 
-To recognize an *additional* delimiter, add a compiled pattern to
-``nickname_delimiters`` under any key, then re-run
-:py:meth:`~nameparser.parser.HumanName.parse_full_name` to pick it up:
+In 2.0, custom delimiter patterns on ``Constants`` were removed; adding a
+non-built-in key raises ``TypeError``. Custom delimiter *pairs* are a
+first-class feature of the new API instead -- pass them to
+:py:class:`~nameparser.Policy`:
 
 .. doctest::
 
-    >>> import re
-    >>> from nameparser import HumanName
-    >>> from nameparser.config import Constants
-    >>> hn = HumanName("Benjamin {Ben} Franklin", constants=Constants())
-    >>> hn.nickname
-    ''
-    >>> hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}', re.U)
-    >>> hn.parse_full_name()
-    >>> hn.nickname
+    >>> from nameparser import Parser, Policy
+    >>> policy = Policy(
+    ...     nickname_delimiters=Policy().nickname_delimiters | {("{", "}")})
+    >>> Parser(policy=policy).parse("Benjamin {Ben} Franklin").nickname
     'Ben'
 
 Routing to Maiden Name
@@ -521,17 +517,16 @@ values with the behavior described above.
 Don't Remove Emojis
 ~~~~~~~~~~~~~~~~~~~
 
-By default, all emojis are removed from the input string before the name is parsed.
-You can turn this off by setting the ``emoji`` regex to ``False``.
+By default, all emojis are removed from the input string before the name is
+parsed. In 2.0 the ``regexes.emoji`` override was removed (assignment raises
+``TypeError``); the switch is the :py:class:`~nameparser.Policy` flag
+``strip_emoji``:
 
 .. doctest::
 
-    >>> from nameparser import HumanName
-    >>> from nameparser.config import Constants
-    >>> constants = Constants()
-    >>> constants.regexes.emoji = False
-    >>> hn = HumanName("Sam 😊 Smith", constants=constants)
-    >>> str(hn)
+    >>> from nameparser import Parser, Policy
+    >>> parser = Parser(policy=Policy(strip_emoji=False))
+    >>> str(parser.parse("Sam 😊 Smith"))
     'Sam 😊 Smith'
 
 Don't Remove Bidi Control Characters
@@ -539,17 +534,15 @@ Don't Remove Bidi Control Characters
 
 By default, invisible bidirectional control characters (the left-to-right and
 right-to-left marks and friends, common in copy-pasted right-to-left names) are
-removed from the input string before the name is parsed. You can turn this off
-by setting the ``bidi`` regex to ``False``.
+removed from the input string before the name is parsed. In 2.0 the
+``regexes.bidi`` override was removed (assignment raises ``TypeError``); the
+switch is the :py:class:`~nameparser.Policy` flag ``strip_bidi``:
 
 .. doctest::
 
-    >>> from nameparser import HumanName
-    >>> from nameparser.config import Constants
-    >>> constants = Constants()
-    >>> constants.regexes.bidi = False
-    >>> hn = HumanName("\u200fJohn\u200f Smith", constants=constants)
-    >>> hn.first == "\u200fJohn\u200f"
+    >>> from nameparser import Parser, Policy
+    >>> parser = Parser(policy=Policy(strip_bidi=False))
+    >>> parser.parse("\u200fJohn\u200f Smith").given == "\u200fJohn\u200f"
     True
 
 Config Changes May Need Parse Refresh

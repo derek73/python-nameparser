@@ -22,10 +22,24 @@ from __future__ import annotations
 
 import dataclasses
 
+from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline._state import (
     COMMA_CHARS, ParseState, PendingAmbiguity,
 )
 from nameparser._types import AmbiguityKind, Role, Span
+
+
+def _suffix_shaped(content: str, lexicon: Lexicon) -> bool:
+    """v1 parse_nicknames' escape (parser.py:1125-1141): an unambiguous
+    suffix_words member (edge-normalized), an unambiguous acronym
+    (period-free form), or anything ending in a period. No initial
+    veto -- v1 deliberately skipped it here."""
+    stripped = _normalize(content)
+    acronym = stripped.replace(".", "")
+    return (stripped in lexicon.suffix_words
+            or (acronym in lexicon.suffix_acronyms
+                and acronym not in lexicon.suffix_acronyms_ambiguous)
+            or content.endswith("."))
 
 
 def _open_ok(text: str, i: int) -> bool:
@@ -88,9 +102,22 @@ def extract_delimited(state: ParseState) -> ParseState:
                 full = Span(i, j + len(close))
                 if not _overlaps(full, masked):
                     inner = Span(i + len(open_), j)
-                    if inner.start < inner.end:
-                        extracted.append((role, inner))
-                    masked.append(full)
+                    if inner.start < inner.end and _suffix_shaped(
+                            text[inner.start:inner.end], state.lexicon):
+                        # v1 parse_nicknames: suffix-shaped delimited
+                        # content is left IN PLACE (undelimited) for
+                        # normal downstream parsing -- 'Andrew Perkins
+                        # (MBA)' keeps MBA a suffix, not a nickname.
+                        # Spans index the original (anti-#100), so the
+                        # v2 spelling masks only the two delimiter
+                        # spans and lets the inner content join the
+                        # main token stream.
+                        masked.append(Span(i, i + len(open_)))
+                        masked.append(Span(j, j + len(close)))
+                    else:
+                        if inner.start < inner.end:
+                            extracted.append((role, inner))
+                        masked.append(full)
                 pos = j + len(close)
     extracted.sort(key=lambda pair: pair[1])
     masked.sort()

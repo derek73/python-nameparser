@@ -156,6 +156,13 @@ CASES: tuple[Case, ...] = (
          notes="v2 surfaces #121's irreducible ambiguity"),
     Case("family_comma_particles", "de la Vega, Juan",
          {"given": "Juan", "family": "de la Vega"}),
+    Case("paren_suffix_escapes_nickname", "Andrew Perkins (MBA)",
+         {"given": "Andrew", "family": "Perkins", "suffix": "MBA"},
+         notes="v1 parse_nicknames: suffix-shaped delimited content is "
+               "left in place for normal parsing (pinned live "
+               "2026-07-17)"),
+    Case("paren_period_escapes_nickname", "Andrew Perkins (Ret.)",
+         {"given": "Andrew", "family": "Perkins", "suffix": "Ret."}),
     Case("nickname_quotes", 'John "Jack" Kennedy',
          {"given": "John", "family": "Kennedy", "nickname": "Jack"}),
     Case("nickname_parens", "John (Jack) Kennedy",
