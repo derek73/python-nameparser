@@ -1,5 +1,29 @@
 Release Log
 ===========
+* 2.0.0 - unreleased
+
+    **Behavior Changes (draft)**
+
+    .. note::
+       This section is a **draft**, generated from the v1-vs-2.0
+       differential harness (``tools/differential/``) run against the
+       pre-M12 v1 test corpus (486 name strings). It will be replaced
+       by hand-written release notes before 2.0 ships; entries below
+       are grouped by the harness's classification and reference the
+       ``tests/v2/cases.py`` row (if any) that pins the new behavior.
+
+    - Fix ``"Andrews, M.D."``-shaped input: the lone strict-suffix-or-title piece after a comma (e.g. ``"Smith, Dr."``, ``"Andrews, M.D."``) was routed to ``first`` in 1.x; 2.0 routes it to ``suffix``/``title`` instead, since the pre-comma piece is definitionally the family name (``tests/v2/cases.py`` rows ``family_comma_lone_suffix_piece``, ``family_comma_lone_title``; verified live against 1.4.0 -- 1/486 corpus names diff, all others parity)
+    - Fix a lone recognized trailing suffix (e.g. ``"Johnson PhD"``, ``"Mr. Johnson PhD"``) being routed to ``first``/``last`` in 1.x when no comma is present; 2.0 keeps a recognized suffix in ``suffix`` (``tests/v2/cases.py`` rows ``suffix_stays_suffix``, ``suffix_stays_suffix_title``; not present in the differential corpus -- no v1 test string exercises the bare two-token shape, so this is unverified against 1.4 live but pinned by the case table)
+    - Fix maiden-name markers (``née``/``nee``/``born``/``geb.``/``roz.``) being folded into ``middle``/``last`` in 1.x (e.g. ``"Jane Smith née Jones"`` → ``middle="Smith née"``); 2.0 recognizes the marker and routes the following name to the new ``maiden`` field (closes #274; ``tests/v2/cases.py`` row ``maiden_marker``; not present in the differential corpus)
+    - Data change: ``ma``/``do`` added to ``suffix_acronyms_ambiguous`` so a bare common surname (``"Jack Ma"``) is no longer misread as a suffix acronym, restoring v1's older (pre-regression) parity (``tests/v2/cases.py`` row ``ambiguous_surname_acronyms``). Side effect: parenthesized/quoted ``"(MA)"``/``"(DO)"`` (no periods) no longer escape to ``suffix`` the way 1.x did -- they now fall through to nickname parsing like any other ambiguous-acronym delimited content. Not present in the differential corpus
+    - Change suffix-delimiter rendering: with a custom ``Policy``/``Constants`` suffix delimiter configured (e.g. ``suffix_delimiter="/"``, ``"John Smith, RN/CRNA"``), 1.x split the token and rendered ``suffix="RN, CRNA"``; 2.0 keeps the no-space delimiter-core token whole (``suffix="RN/CRNA"``) -- role assignment is unchanged, only rendering differs (anti-#100, migration plan deviation 5; ``tests/v2/cases.py`` row ``suffix_delimiter_no_space_core``). Only fires with a non-default policy, so it does not appear in the (default-policy) differential corpus
+
+    Everything else in the 486-name differential corpus (built from the
+    v1 test banks as of commit ``2d5d8c2``, pre-dating the M12 test
+    reconciliation) parses identically between nameparser 1.4.0 and
+    this working tree; see ``tools/differential/README.md`` for how to
+    reproduce the comparison.
+
 * 1.4.0 - July 12, 2026
 
     - Add ``Constants.copy()``, a detached deep copy that preserves the source instance's current customizations (unlike ``Constants()``, which always starts from library defaults) -- useful as ``CONSTANTS.copy()`` for a private snapshot of the shared config (#260)

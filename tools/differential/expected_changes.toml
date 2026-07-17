@@ -1,0 +1,57 @@
+# Every rule needs `issue`; optional `name_regex` and `fields` narrow
+# it. An unexplained diff is a release blocker until classified (spec
+# S5). Rules are seeded from docs/superpowers/plans/notes-m12-diffs.md
+# and the `classification="fix(...)"` rows in tests/v2/cases.py; keep
+# each entry's `name_regex`/`fields` as tight as the diff allows.
+
+[[change]]
+issue = "fix(#274) maiden markers consumed"
+name_regex = "(?i)\\b(n[ée]e|born|geb\\.?|roz\\.?)\\b"
+fields = ["maiden", "middle", "last"]
+
+[[change]]
+issue = "fix(comma-family) lone post-comma piece routes to suffix/title, not first"
+# 'Smith, Dr.' / 'Andrews, M.D.': v1 put the lone strict-suffix-or-title
+# post-comma piece in `first`; 2.0 routes it to `suffix`/`title` instead
+# (family/`last` is unchanged either way -- "pre-comma is definitionally
+# family").
+name_regex = ","
+fields = ["first", "title", "suffix"]
+
+[[change]]
+issue = "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix"
+# 'Johnson PhD' / 'Mr. Johnson PhD': v1 routed a lone trailing suffix
+# to family/first (no comma present); 2.0 keeps recognized suffixes in
+# `suffix`.
+fields = ["first", "last", "suffix"]
+
+[[change]]
+issue = "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole"
+# Only fires when a custom suffix delimiter is configured (Policy /
+# Constants.suffix_delimiters); the corpus runs with default policy, so
+# this rule is expected to match nothing here. Kept for documentation
+# parity with tests/v2/cases.py's 'suffix_delimiter_no_space_core' row
+# (anti-#100, migration plan deviation 5).
+name_regex = "/"
+fields = ["suffix"]
+
+[[change]]
+issue = "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname"
+# suffix_acronyms_ambiguous gained 'ma'/'do' so bare 'Jack Ma' keeps its
+# surname (v1 parity restored); side effect: parenthesized/quoted "MA"
+# or "DO" no longer escape to suffix (v1 did, since v1 treated them as
+# unambiguous there) -- they now fall through to nickname parsing.
+# Not expected to fire against this corpus (no such strings survived
+# into the v1 banks); kept for documentation completeness.
+name_regex = "(?i)[(\"'](m\\.?a\\.?|d\\.?o\\.?)[)\"']"
+fields = ["suffix", "nickname"]
+
+# Deliberately NOT a [[change]] rule: 'Ph. D.' split-token healing
+# ('John Ph. D.', 'John Smith, Ph. D.') is PARITY, not a 2.0 behavior
+# change -- v1's fix_phd healing of the adjacent 'Ph.'/'D.' pair into
+# one suffix unit is replicated exactly by 2.0's 'joined' vocab tag
+# (tests/v2/cases.py classification="parity" on both 'phd_split' and
+# 'suffix_comma_split_phd'; verified empirically, zero diff against the
+# 1.4 worker). Adding a suppression rule for it would risk masking a
+# real regression in this exact shape, so it is intentionally left
+# unclassified: if it ever starts diffing, the harness must fail.
