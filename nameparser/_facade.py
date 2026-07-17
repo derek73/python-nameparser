@@ -95,20 +95,19 @@ class HumanName:
         self.initials_separator = (
             initials_separator if initials_separator is not None
             else defaults.initials_separator)
-        # STALENESS TRAP until M9's validating setters land: these are
-        # plain attributes, so reassigning one after construction (e.g.
-        # n.suffix_delimiter = " - ") does NOT invalidate _snapshot_gen
-        # and a cached snapshot keeps the old value. The M9 setters
-        # reset _snapshot_gen to -1 on assignment.
+        # These five assignments route through the validating properties
+        # below. The suffix_delimiter setter resets _snapshot_gen to -1
+        # on every assignment (including this one, harmlessly -- it's
+        # already -1 above), so reassigning it post-construction (e.g.
+        # n.suffix_delimiter = " - ") correctly forces the next
+        # _resolve() to rebuild the Policy with the new delimiter.
         self.suffix_delimiter = (suffix_delimiter if suffix_delimiter is not None
                                  else defaults.suffix_delimiter)
         self._full_name = ""
         self._parsed = _empty_parsed()
         if first or middle or last or title or suffix or nickname or maiden:
-            # NOTE (M6): these are plain instance attributes until the
-            # field-setter properties land in M7 -- no parsing happens
-            # and full_name stays "". Component-kwarg construction is
-            # not exercised by this task's tests; see tests/v2/test_facade.py.
+            # These route through the field-setter properties (None
+            # clears the field); no full-string parse, full_name stays "".
             self.first = first
             self.middle = middle
             self.last = last
@@ -135,6 +134,70 @@ class HumanName:
                 f"Migrate to the Lexicon/Policy API. See "
                 f"https://github.com/derek73/python-nameparser/issues/280",
                 DeprecationWarning, stacklevel=3)
+
+    # -- render defaults -----------------------------------------------------
+    # One-line validating setters (spec §2): assigning a non-str (or, for
+    # the two fields that allow it, non-str-non-None) raises TypeError at
+    # assignment time instead of failing later inside .format().
+
+    @property
+    def string_format(self) -> str | None:
+        return self._string_format
+
+    @string_format.setter
+    def string_format(self, value: str | None) -> None:
+        if value is not None and not isinstance(value, str):
+            raise TypeError(
+                f"string_format must be a str or None, got {value!r}")
+        self._string_format = value
+
+    @property
+    def initials_format(self) -> str:
+        return self._initials_format
+
+    @initials_format.setter
+    def initials_format(self, value: str) -> None:
+        if not isinstance(value, str):
+            raise TypeError(
+                f"initials_format must be a str, got {value!r}")
+        self._initials_format = value
+
+    @property
+    def initials_delimiter(self) -> str:
+        return self._initials_delimiter
+
+    @initials_delimiter.setter
+    def initials_delimiter(self, value: str) -> None:
+        if not isinstance(value, str):
+            raise TypeError(
+                f"initials_delimiter must be a str, got {value!r}")
+        self._initials_delimiter = value
+
+    @property
+    def initials_separator(self) -> str:
+        return self._initials_separator
+
+    @initials_separator.setter
+    def initials_separator(self, value: str) -> None:
+        if not isinstance(value, str):
+            raise TypeError(
+                f"initials_separator must be a str, got {value!r}")
+        self._initials_separator = value
+
+    @property
+    def suffix_delimiter(self) -> str | None:
+        return self._suffix_delimiter
+
+    @suffix_delimiter.setter
+    def suffix_delimiter(self, value: str | None) -> None:
+        if value is not None and not isinstance(value, str):
+            raise TypeError(
+                f"suffix_delimiter must be a str or None, got {value!r}")
+        self._suffix_delimiter = value
+        # Invalidate the cached Policy: _resolve() layers suffix_delimiter
+        # onto extra_suffix_delimiters, so a stale snapshot would keep
+        # parsing against the old delimiter.
+        self._snapshot_gen = -1
 
     # -- config / parsing ---------------------------------------------------
 
@@ -335,6 +398,10 @@ class HumanName:
         self._resolve()
         return _normalize(text) in self._lexicon.particles
 
+    def _is_conjunction(self, text: str) -> bool:
+        self._resolve()
+        return _normalize(text) in self._lexicon.conjunctions
+
     def _split_last(self) -> tuple[list[str], list[str]]:
         # v1 parser.py _split_last, verbatim: vocabulary lookup at ACCESS
         # time (so assigned last names split too), with the all-particle
@@ -363,6 +430,60 @@ class HumanName:
     @property
     def last_base(self) -> str:
         return " ".join(self._split_last()[1])
+
+    # -- initials -------------------------------------------------------------
+
+    def _process_initial(self, name_part: str, firstname: bool = False) -> str:
+        # v1 parser.py:427 verbatim: particles/conjunctions are filtered
+        # from initials unless the part is a first name. split() rather
+        # than split(" "): *_list attributes assigned directly bypass
+        # whitespace normalization, and split(" ") yields empty strings
+        # for repeated spaces (#232).
+        parts = name_part.split()
+        initials = []
+        for part in parts:
+            if not (self._is_particle(part)
+                    or self._is_conjunction(part)) or firstname:
+                initials.append(part[0])
+        if len(initials) > 0:
+            return self.initials_separator.join(initials)
+        # Return '' (never empty_attribute_default, which may be None)
+        # when a part has no initialable words, e.g. a middle name
+        # consisting only of prefixes ("de la"). Callers drop these
+        # parts entirely.
+        return ""
+
+    def _initials_lists(self) -> tuple[list[str], list[str], list[str]]:
+        """Initials for the first, middle and last name groups. Parts
+        that yield no initials (e.g. a prefix-only middle name like
+        "de la") are dropped rather than kept as empty strings.
+        """
+        def group_initials(names: list[str],
+                            firstname: bool = False) -> list[str]:
+            return [i for i in (self._process_initial(n, firstname)
+                                 for n in names if n) if i]
+        return (group_initials(self.first_list, True),
+                group_initials(self.middle_list),
+                group_initials(self.last_list))
+
+    def initials_list(self) -> list[str]:
+        first, middle, last = self._initials_lists()
+        return first + middle + last
+
+    def initials(self) -> str:
+        first, middle, last = self._initials_lists()
+        joiner = self.initials_delimiter + self.initials_separator
+
+        def group(items: list[str]) -> str:
+            return joiner.join(items) + self.initials_delimiter \
+                if items else ""
+
+        # A fully-empty result renders as "" -- the v1 fallback to
+        # C.empty_attribute_default (which may be None) is dropped per
+        # #255.
+        _s = self.initials_format.format(
+            first=group(first), middle=group(middle), last=group(last))
+        return self.collapse_whitespace(_s)
 
     # -- dunders ------------------------------------------------------------
 

@@ -228,3 +228,33 @@ def test_as_dict_v1_keys() -> None:
     d = n.as_dict()
     assert d["title"] == "Dr." and d["first"] == "John" and d["last"] == "Smith"
     assert set(n.as_dict(include_empty=False)) == {"title", "first", "last"}
+
+
+def test_initials_v1_semantics() -> None:
+    assert HumanName("Sir Bob Andrew Dole").initials() == "B. A. D."
+    assert HumanName("Sir Bob Andrew Dole").initials_list() == ["B", "A", "D"]
+    n = HumanName("Doe, John A.", initials_delimiter="", initials_separator="")
+    assert n.initials() == "J A D"
+    # prefixes/conjunctions are filtered except in first names (v1 rule)
+    assert HumanName("Juan de la Vega").initials() == "J. V."
+
+
+def test_initials_format_kwarg() -> None:
+    n = HumanName("Sir Bob Andrew Dole", initials_format="{first} {middle}")
+    assert n.initials() == "B. A."
+
+
+def test_render_default_setters_validate() -> None:
+    n = HumanName("John Smith")
+    with pytest.raises(TypeError, match="initials_delimiter"):
+        n.initials_delimiter = 5  # type: ignore[assignment]
+    with pytest.raises(TypeError, match="initials_format"):
+        n.initials_format = 5  # type: ignore[assignment]
+    with pytest.raises(TypeError, match="initials_separator"):
+        n.initials_separator = None  # type: ignore[assignment]
+    with pytest.raises(TypeError, match="string_format"):
+        n.string_format = 5  # type: ignore[assignment]
+    with pytest.raises(TypeError, match="suffix_delimiter"):
+        n.suffix_delimiter = 5  # type: ignore[assignment]
+    n.string_format = None                   # None allowed for these two
+    n.suffix_delimiter = None
