@@ -78,6 +78,9 @@ ALLOWED = {
     # v1 import-path preservation: thin re-exports of the facade/shim
     "parser.py": ("nameparser._facade",),
     "config/__init__.py": ("nameparser._config_shim",),
+    # CLI (migration spec §6): imports only the public package, same as
+    # any other consumer -- no access to internal modules.
+    "__main__.py": ("nameparser",),
 }
 
 

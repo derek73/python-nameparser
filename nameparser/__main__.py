@@ -1,31 +1,30 @@
-"""Command-line debug helper: parse a name and print the result.
-
-Usage:
+"""Command-line debug helper over the 2.0 API (migration spec §6).
 
     python -m nameparser "Dr. Juan Q. Xavier de la Vega III"
+    python -m nameparser --json "Doe, John"
 """
-import logging
-import sys
+import argparse
+import json
 
-from nameparser import HumanName
-
-
-def main() -> None:
-    if len(sys.argv) <= 1:
-        print('Usage: python -m nameparser "Name String"')
-        raise SystemExit(1)
-    log = logging.getLogger('HumanName')
-    log.setLevel(logging.ERROR)
-    log.addHandler(logging.StreamHandler())
-    name_string = sys.argv[1]
-    hn = HumanName(name_string)
-    print(repr(hn))
-    hn.capitalize()
-    print(repr(hn))
-    # Use comma rather than concatenation: initials() returns
-    # empty_attribute_default (possibly None) when there are no initials.
-    print("Initials:", hn.initials())
+from nameparser import parse
 
 
-if __name__ == '__main__':
-    main()
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(
+        prog="nameparser", description="Parse a personal name.")
+    ap.add_argument("name", help="the name string to parse")
+    ap.add_argument("--json", action="store_true",
+                    help="print the component dict as JSON")
+    args = ap.parse_args(argv)
+    n = parse(args.name)
+    if args.json:
+        print(json.dumps(n.as_dict(), ensure_ascii=False))
+        return 0
+    print(repr(n))
+    print(repr(n.capitalized()))
+    print("Initials:", n.initials())
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
