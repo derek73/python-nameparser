@@ -28,6 +28,17 @@ collect_ignore_glob = [
     "test_conjunctions.py",
     "test_east_slavic_patronymic_order.py",
     "test_middle_name_as_last.py",
+    # test_nicknames.py is reconciled (buckets A/B: custom-delimiter and
+    # regexes-override mechanisms now pin their Policy-pointing TypeErrors;
+    # #255 as_dict expectation) but 1 test fails on a precedence flip in the
+    # documented both-buckets misuse case: with 'parenthesis' routed to BOTH
+    # nickname_delimiters and maiden_delimiters, v1 processed nickname
+    # first (nickname='Johnson', maiden=''); 2.0 gives maiden='Johnson',
+    # nickname=''. Repro: C.maiden_delimiters['parenthesis'] =
+    # C.regexes['parenthesis']; HumanName('Baker (Johnson), Jenny',
+    # constants=C). The v1 test exists precisely to catch this silent
+    # change -- needs a decision (fix precedence or classify). Remove once
+    # settled.
     "test_nicknames.py",
     "test_parser_util.py",
     # test_prefixes.py is reconciled (one bucket-C rewrite; 57 pass) but 1

@@ -18,48 +18,28 @@ class NicknameTestCase(HumanNameTestBase):
         self.m(hn.nickname, "Ben", hn)
 
     # https://github.com/derek73/python-nameparser/issues/112
-    def test_add_custom_nickname_delimiter(self) -> None:
+    def test_add_custom_nickname_delimiter_raises(self) -> None:
+        # Custom (non-sentinel) delimiter additions raise in 2.0 (deliberate
+        # divergence, migration spec section 3 -- same uniform rule as
+        # regexes); Policy(nickname_delimiters=...) is the replacement. The
+        # v1 tests for removing custom delimiters, registering several at
+        # once, and the ambiguous-acronym carve-out through a custom
+        # delimiter died with the mechanism.
         hn = HumanName("Benjamin {Ben} Franklin", constants=Constants())
         # curly braces aren't a recognized delimiter by default
         self.m(hn.nickname, "", hn)
-        hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
-        hn.parse_full_name()
-        self.m(hn.first, "Benjamin", hn)
-        self.m(hn.last, "Franklin", hn)
-        self.m(hn.nickname, "Ben", hn)
+        with pytest.raises(TypeError, match="Policy"):
+            hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
 
-    def test_remove_custom_nickname_delimiter(self) -> None:
-        hn = HumanName("Benjamin {Ben} Franklin", constants=Constants())
-        hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
-        hn.parse_full_name()
-        self.m(hn.nickname, "Ben", hn)
-        del hn.C.nickname_delimiters['curly_braces']
-        hn.parse_full_name()
-        self.m(hn.nickname, "", hn)
-
-    def test_multiple_custom_nickname_delimiters_together(self) -> None:
-        # Two extras registered at once must both be recognized in a single
-        # parse, independent of insertion order.
-        hn = HumanName("Benjamin {Ben} <Benny> Franklin", constants=Constants())
-        hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
-        hn.C.nickname_delimiters['angle_brackets'] = re.compile(r'<(.*?)>')
-        hn.parse_full_name()
-        self.m(hn.first, "Benjamin", hn)
-        self.m(hn.last, "Franklin", hn)
-        self.m(hn.nickname, "Ben Benny", hn)
-
-    def test_overriding_builtin_regex_still_affects_nickname_parsing(self) -> None:
-        # The pre-existing customization path (overriding self.C.regexes
-        # directly) must keep working: nickname_delimiters' three built-in
-        # entries resolve self.C.regexes.<name> live at parse time rather than
-        # storing a snapshotted pattern.
+    def test_overriding_builtin_regex_raises(self) -> None:
+        # v1's other customization path -- replacing a regexes entry so the
+        # built-in delimiter sentinels resolve to it live -- is the same
+        # uniform 2.0 removal: any regexes assignment raises, pointing at
+        # Policy.
         hn = HumanName("Benjamin [Ben] Franklin", constants=Constants())
         self.m(hn.nickname, "", hn)
-        hn.C.regexes['parenthesis'] = re.compile(r'\[(.*?)\]')
-        hn.parse_full_name()
-        self.m(hn.first, "Benjamin", hn)
-        self.m(hn.last, "Franklin", hn)
-        self.m(hn.nickname, "Ben", hn)
+        with pytest.raises(TypeError, match="Policy"):
+            hn.C.regexes['parenthesis'] = re.compile(r'\[(.*?)\]')
 
     def test_two_word_nickname_in_parenthesis(self) -> None:
         hn = HumanName("Benjamin (Big Ben) Franklin")
@@ -189,18 +169,6 @@ class NicknameTestCase(HumanNameTestBase):
         self.m(hn.nickname, "JD", hn)
         self.m(hn.suffix, "", hn)
 
-    def test_ambiguous_suffix_acronym_in_custom_delimiter_stays_nickname(self) -> None:
-        # Same suffix-vs-nickname disambiguation as above, but through a
-        # custom delimiter added via nickname_delimiters -- confirms
-        # handle_match() is applied uniformly regardless of which delimiter
-        # matched, not just the three built-ins.
-        hn = HumanName("JEFFREY {JD} BRICKEN", constants=Constants())
-        hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}')
-        hn.parse_full_name()
-        self.m(hn.nickname, "JD", hn)
-        self.m(hn.suffix, "", hn)
-
-
 class MaidenNameTestCase(HumanNameTestBase):
     def test_maiden_assignment_and_property(self) -> None:
         hn = HumanName("Jenny Baker")
@@ -212,8 +180,9 @@ class MaidenNameTestCase(HumanNameTestBase):
         self.m(hn.maiden, "", hn)
 
     def test_maiden_key_always_in_as_dict(self) -> None:
+        # empty attributes are always '' in 2.0 (#255)
         hn = HumanName("Bob Dole")
-        self.assertEqual(hn.as_dict()['maiden'], hn.C.empty_attribute_default)
+        self.assertEqual(hn.as_dict()['maiden'], '')
         self.assertNotIn('maiden', hn.as_dict(False))
 
     def test_maiden_appears_in_as_dict_when_populated(self) -> None:
@@ -284,16 +253,15 @@ class MaidenNameTestCase(HumanNameTestBase):
         self.assertEqual(hn.as_dict()['maiden'], "Johnson")
 
     def test_unresolvable_string_sentinel_raises(self) -> None:
-        # A string value in nickname_delimiters/maiden_delimiters that
-        # doesn't name a real regexes key used to silently fall back to
-        # EMPTY_REGEX, which matches at every position and corrupts parsing
-        # (appends '' into the bucket repeatedly, and leaves the intended
-        # delimiter's content unstripped elsewhere in the name). It must
-        # raise instead.
+        # A string value that doesn't name a real delimiter used to silently
+        # fall back to EMPTY_REGEX in v1 (matching at every position and
+        # corrupting parsing) until 1.3 made the parse raise ValueError. 2.0
+        # enforces the invariant one step earlier: the delimiter managers
+        # accept only the named sentinels, so the typo fails loudly at
+        # assignment instead of at the next parse.
         C = Constants()
-        C.nickname_delimiters['typo'] = 'parenthesus'
-        with pytest.raises(ValueError):
-            HumanName("Jenny (Johnson) Baker", constants=C)
+        with pytest.raises(TypeError, match="sentinel"):
+            C.nickname_delimiters['typo'] = 'parenthesus'
 
     def test_routing_same_delimiter_to_both_buckets_nickname_wins(self) -> None:
         # Misuse case: assigning the same key into both dicts instead of
