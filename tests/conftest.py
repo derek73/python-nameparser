@@ -21,7 +21,6 @@ collect_ignore_glob = [
     "test_conjunctions.py",
     "test_east_slavic_patronymic_order.py",
     "test_first_name.py",
-    "test_initials.py",
     "test_middle_name_as_last.py",
     "test_nicknames.py",
     "test_parser_util.py",
