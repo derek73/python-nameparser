@@ -63,7 +63,9 @@ def test_stage_field_ownership() -> None:
         "classify": {"tags"},
         "group": {"tags", "role"},
         "assign": {"role"},
-        "post_rules": {"role"},
+        # post_rules also tags: the middle_as_family fold marks folded
+        # tokens vocab:folded-middle for the family view's prepend order
+        "post_rules": {"role", "tags"},
     }
     for case in CASES:
         state = ParseState(original=case.text, lexicon=_Lexicon.default(),

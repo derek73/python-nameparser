@@ -306,6 +306,7 @@ class ParsedName:
                   without_tag: str | None = None) -> str:
         suffix_join = roles == (Role.SUFFIX,)
         parts: list[str] = []
+        folded: list[str] = []
         for tok in self.tokens:
             if tok.role not in roles:
                 continue
@@ -318,9 +319,13 @@ class ParsedName:
             # view's ", " join does not split one credential in two
             if suffix_join and "joined" in tok.tags and parts:
                 parts[-1] += " " + tok.text
+            elif "vocab:folded-middle" in tok.tags:
+                # middle_as_family fold: v1 PREPENDED middle_list to
+                # last_list; spans cannot reorder, so the view does
+                folded.append(tok.text)
             else:
                 parts.append(tok.text)
-        return (", " if suffix_join else " ").join(parts)
+        return (", " if suffix_join else " ").join(folded + parts)
 
     @property
     def title(self) -> str:

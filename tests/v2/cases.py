@@ -41,6 +41,17 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith"}),
     Case("suffix_comma", "John Smith, PhD",
          {"given": "John", "family": "Smith", "suffix": "PhD"}),
+    Case("bound_given_whole_segment", "salem, abdul salam",
+         {"given": "abdul salam", "family": "salem"},
+         notes="v1 joins bound given names freely in the post-comma "
+               "segment (reserve_last=False, parser.py:1366) -- even "
+               "when the join consumes the whole segment"),
+    Case("middle_as_family_fold_order", "Hassan, Mohamad Ahmad Ali",
+         {"given": "Mohamad", "family": "Ahmad Ali Hassan"},
+         policy=Policy(middle_as_family=True),
+         notes="v1 PREPENDED middle_list to last_list; folded tokens "
+               "carry vocab:folded-middle and the family view orders "
+               "them first (spans cannot reorder)"),
     Case("ambiguous_surname_acronyms", "Jack Ma",
          {"given": "Jack", "family": "Ma"},
          notes="'ma'/'do' joined suffix_acronyms_ambiguous: common "

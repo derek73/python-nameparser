@@ -118,8 +118,12 @@ def post_rules(state: ParseState) -> ParseState:
             _retag(tokens, f, Role.MIDDLE)
             _retag(tokens, g, Role.FAMILY)
     # rule 4: opt-in fold of middles into family (v1
-    # handle_middle_name_as_last; span order reproduces v1's prepend)
+    # handle_middle_name_as_last). v1 PREPENDED middle_list to
+    # last_list; spans cannot reorder (anti-#100), so folded tokens
+    # carry a tag and the family views order them first.
     if state.policy.middle_as_family:
         for i in _idx(tokens, Role.MIDDLE):
-            _retag(tokens, i, Role.FAMILY)
+            tokens[i] = dataclasses.replace(
+                tokens[i], role=Role.FAMILY,
+                tags=tokens[i].tags | {"vocab:folded-middle"})
     return dataclasses.replace(state, tokens=tuple(tokens))

@@ -74,6 +74,7 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
 
 def _group_segment(seg: tuple[int, ...], additional: int,
                    tokens: Sequence[WorkToken],
+                   bound_required: int = 3,
                    ) -> tuple[list[Piece], list[set[str]]]:
     pieces: list[Piece] = [[i] for i in seg]
     ptags: list[set[str]] = [set() for _ in seg]
@@ -156,18 +157,23 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 j += 1
             merge(k, j, drop={"prefix"})
             k += 1
-        # bound given names: first non-title piece joins the next when
-        # enough rootname pieces remain (v1 reserve_last)
+        # bound given names: first non-title piece joins the next.
+        # bound_required is v1's reserve_last: 3 keeps a family piece in
+        # reserve (main segments); 2 joins freely (FAMILY_COMMA's
+        # post-comma segment, v1 reserve_last=False -- 'salem, abdul
+        # salam' -> given 'abdul salam'); 0 disables (family segment,
+        # which v1 never bound-joined).
         first_name_k = next(
             (k for k in range(len(pieces)) if not title(k)), None)
-        if (first_name_k is not None
+        if (bound_required
+                and first_name_k is not None
                 and first_name_k + 1 < len(pieces)
                 and len(pieces[first_name_k]) == 1
                 and "vocab:bound-given"
                 in tokens[pieces[first_name_k][0]].tags):
             non_suffix = sum(1 for k in range(len(pieces))
                              if not title(k) and not suffix(k))
-            if non_suffix >= 3:
+            if non_suffix >= bound_required:
                 merge(first_name_k, first_name_k + 2)
     return pieces, ptags
 
@@ -186,8 +192,14 @@ def group(state: ParseState) -> ParseState:
     cores = delimiter_cores(state.policy.extra_suffix_delimiters)
     tail_start = {Structure.SUFFIX_COMMA: 1,
                   Structure.FAMILY_COMMA: 2}.get(state.structure)
+    family_comma = state.structure is Structure.FAMILY_COMMA
     for seg_idx, seg in enumerate(state.segments):
-        pieces, ptags = _group_segment(seg, additional, tokens)
+        if family_comma:
+            bound_required = 2 if seg_idx == 1 else 0
+        else:
+            bound_required = 3
+        pieces, ptags = _group_segment(seg, additional, tokens,
+                                       bound_required)
         if tail_start is not None and seg_idx >= tail_start:
             # v1 renders each tail COMMA SEGMENT as one suffix entry
             # ('Smith, V MD' -> suffix 'V MD'); a delimiter core inside
