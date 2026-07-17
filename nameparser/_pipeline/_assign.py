@@ -112,8 +112,11 @@ def _assign_main(seg_idx: int, state: ParseState,
     rest = [k for k in rest if "suffix" not in ptags[k]]
     if not rest:
         return
-    # v1 nickname rule (plan deviation #2)
-    if len(rest) == 1 and has_nickname:
+    # v1 nickname rule (plan deviation #2): v1's p_len == 1 counted
+    # the WHOLE segment before any title peeling (parser.py:1285) --
+    # 'Xyz. (Bud) Smith' has two pieces, so the title peel wins and
+    # Smith stays the given name (pinned live 2026-07-17)
+    if len(pieces) == 1 and len(rest) == 1 and has_nickname:
         _set_roles(tokens, pieces[rest[0]], Role.FAMILY)
         return
     # peel the trailing suffix run: k = first index in rest from which
@@ -169,8 +172,17 @@ def assign(state: ParseState) -> ParseState:
         # PARTICLE_OR_GIVEN is deliberately not emitted here: after a
         # comma the family is already fixed, so a leading given-position
         # particle is not meaningfully ambiguous.
-        for piece in state.pieces[0]:
-            _set_roles(tokens, piece, Role.FAMILY)
+        # v1: "lastname part may have suffixes in it" (parser.py:1370)
+        # -- the first piece is always the family even if suffix-shaped;
+        # any later strict-suffix piece goes to SUFFIX per piece
+        # ('Smith Jr., John' -> family=Smith, suffix=Jr.)
+        fam_pieces = state.pieces[0]
+        fam_tags = state.piece_tags[0]
+        for k, piece in enumerate(fam_pieces):
+            if k > 0 and _is_suffix_piece(piece, fam_tags[k], tokens):
+                _set_roles(tokens, piece, Role.SUFFIX)
+            else:
+                _set_roles(tokens, piece, Role.FAMILY)
         if len(state.segments) > 1:
             pieces = state.pieces[1]
             ptags = state.piece_tags[1]

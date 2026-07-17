@@ -35,6 +35,11 @@ _INITIALS_KEYS = (Role.GIVEN.value, Role.MIDDLE.value, Role.FAMILY.value)
 #: Not STABLE_TAGS -- that also contains "initial", which must contribute.
 _SKIP_TAGS = frozenset({"particle", "conjunction"})
 
+# Ported verbatim from v1 (nameparser/config/regexes.py "initial",
+# minus the empty alternative) -- layering forbids importing the
+# pipeline here; keep in sync with _pipeline/_vocab.py by hand.
+_INITIAL = re.compile(r"^(\w\.|[A-Z])$")
+
 
 def _collapse(rendered: str) -> str:
     """The #254 collapse, normative (core spec §5b): empty fields
@@ -103,12 +108,18 @@ def _cap_word(word: str, role: Role, lex: Lexicon) -> str:
     # v1 cap_word order: particle/conjunction rule first, then the
     # exceptions map, then Mac/Mc, then str.capitalize
     normalized = _normalize(word)
+    # v1's is_conjunction excludes initials: 'E.' in 'Scott E. Werner'
+    # is an initial, not the conjunction 'e' (pinned live 2026-07-17)
     if ((normalized in lex.particles and role in (Role.MIDDLE, Role.FAMILY))
-            or normalized in lex.conjunctions):
+            or (normalized in lex.conjunctions
+                and not _INITIAL.fullmatch(word))):
         return word.lower()
-    exception = lex.capitalization_exceptions_map.get(normalized)
-    if exception is not None:
-        return exception
+    # v1 cap_word tries the edge-stripped form, then the period-free
+    # form ('Ph.D.' -> 'ph.d' -> 'phd' hits the exceptions map)
+    for key in (normalized, normalized.replace(".", "")):
+        exception = lex.capitalization_exceptions_map.get(key)
+        if exception is not None:
+            return exception
     if _MAC.match(word):
         return _MAC.sub(
             lambda m: m.group(1).capitalize() + m.group(2).capitalize(),

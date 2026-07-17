@@ -77,7 +77,8 @@ def test_entries_normalizing_to_empty_raise() -> None:
 
 
 def test_colliding_exception_keys_dedupe_last_wins() -> None:
-    lex = Lexicon(capitalization_exceptions=(("Ph.D.", "A"), ("phd", "B")))
+    # 'Phd.' and 'phd' collide under edge-period normalization
+    lex = Lexicon(capitalization_exceptions=(("Phd.", "A"), ("phd", "B")))
     assert lex.capitalization_exceptions == (("phd", "B"),)
     rebuilt = Lexicon(capitalization_exceptions=lex.capitalization_exceptions_map)  # type: ignore[arg-type]
     assert rebuilt == lex and hash(rebuilt) == hash(lex)
@@ -180,12 +181,14 @@ def test_setstate_rejects_mismatched_field_layout() -> None:
         Lexicon.__new__(Lexicon).__setstate__(extra)
 
 
-def test_normalization_casefolds_and_strips_interior_periods() -> None:
-    # Stricter than v1's lc(), which lower()s and trims only EDGE
-    # periods: casefold handles ß, and interior periods are removed too.
-    # A "simplify to .lower()/.strip('.')" regression must fail here.
-    lex = Lexicon(titles=frozenset({"STRAßE", "Ph.D"}))
-    assert lex.titles == frozenset({"strasse", "phd"})
+def test_normalization_casefolds_and_keeps_interior_periods() -> None:
+    # v1's lc() semantics plus casefold: EDGE periods trimmed, interior
+    # periods KEPT ('J.R.' must not collapse to 'jr' and hit the
+    # periodless vocabulary -- v1 parity, pinned live 2026-07-17).
+    # Suffix-ACRONYM membership alone strips periods (see
+    # _vocab.suffix_as_written).
+    lex = Lexicon(titles=frozenset({"STRAßE", "Ph.D", "Dr."}))
+    assert lex.titles == frozenset({"strasse", "ph.d", "dr"})
 
 
 def test_suffix_ambiguous_must_be_subset_of_acronyms() -> None:

@@ -41,6 +41,28 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith"}),
     Case("suffix_comma", "John Smith, PhD",
          {"given": "John", "family": "Smith", "suffix": "PhD"}),
+    Case("family_segment_trailing_suffix", "Smith Jr., John",
+         {"given": "John", "family": "Smith", "suffix": "Jr."},
+         notes="v1: the family part may have suffixes in it "
+               "(parser.py:1370); the first piece is always the family "
+               "(pinned live 2026-07-17)"),
+    Case("family_segment_multiple_suffixes", "Smith Jr. MD, John",
+         {"given": "John", "family": "Smith", "suffix": "Jr., MD"}),
+    Case("family_segment_particle_chain_suffix", "de la Vega III, Juan",
+         {"given": "Juan", "family": "de la Vega", "suffix": "III"}),
+    Case("interior_periods_block_vocab", "Smith, J.R.",
+         {"given": "J.R.", "family": "Smith"},
+         notes="v1's lc() keeps interior periods: 'J.R.' is not the "
+               "title 'jr' (pinned live 2026-07-17)"),
+    Case("dotted_acronym_suffix", "John Smith M.D.",
+         {"given": "John", "family": "Smith", "suffix": "M.D."},
+         notes="suffix-ACRONYM membership alone strips periods (v1 "
+               "is_suffix parity)"),
+    Case("nickname_rule_counts_whole_segment", "Xyz. (Bud) Smith",
+         {"title": "Xyz.", "given": "Smith", "nickname": "Bud"},
+         notes="v1's lone-piece nickname rule counts the segment "
+               "BEFORE title peeling (parser.py:1285, pinned live "
+               "2026-07-17)"),
     Case("suffix_comma_decided_by_first_segment",
          "Dr. John P. Doe-Ray, CLU, CFP, LUTC",
          {"title": "Dr.", "given": "John", "middle": "P.",

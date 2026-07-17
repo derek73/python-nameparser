@@ -25,11 +25,13 @@ _VOCAB_FIELDS = (
 
 
 def _normalize(word: str) -> str:
-    """Casefold, remove ALL periods, strip whitespace -- v2's stricter
-    analogue of v1's lc(), which lower()s and trims only edge periods.
-    Membership tests never re-normalize because construction already
-    did."""
-    return word.casefold().replace(".", "").strip()
+    """Casefold, strip whitespace and EDGE periods -- v1's lc()
+    semantics. Interior periods survive on purpose: 'J.R.' must not
+    collapse to 'jr' and hit the periodless vocabulary (v1 parity,
+    pinned live 2026-07-17). Suffix-ACRONYM membership alone uses the
+    period-free form (see _vocab.suffix_as_written), mirroring v1's
+    is_suffix, which removed periods only for the acronym test."""
+    return word.casefold().strip().strip(".")
 
 
 def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:

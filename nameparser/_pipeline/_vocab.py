@@ -35,17 +35,23 @@ def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
     subset of suffix_acronyms, and without the exclusion the period
     gate is dead code (bare 'Ed'/'Jd' would silently become suffixes).
     """
-    if "." in text and n in lexicon.suffix_acronyms_ambiguous:
+    # acronyms may be written with periods ('M.B.A.'): the ACRONYM
+    # membership alone uses the period-free form (v1's is_suffix
+    # removed periods only for the suffix_acronyms test); suffix WORDS
+    # match on the plain normalized form
+    a = n.replace(".", "")
+    if "." in text and a in lexicon.suffix_acronyms_ambiguous:
         return True
-    return (n in lexicon.suffix_acronyms
-            and n not in lexicon.suffix_acronyms_ambiguous) \
+    return (a in lexicon.suffix_acronyms
+            and a not in lexicon.suffix_acronyms_ambiguous) \
         or n in lexicon.suffix_words
 
 
 def _is_suffix_strict_n(n: str, text: str, lexicon: Lexicon) -> bool:
     if is_initial(text):
         # period-written ambiguous acronyms are exempt from the veto
-        return "." in text and n in lexicon.suffix_acronyms_ambiguous
+        return "." in text and \
+            n.replace(".", "") in lexicon.suffix_acronyms_ambiguous
     return suffix_as_written(n, text, lexicon)
 
 
