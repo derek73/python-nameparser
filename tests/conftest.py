@@ -17,6 +17,14 @@ collect_ignore_glob = [
     "test_bound_first_names.py",
     "test_brute_force.py",
     "test_comma_variants.py",
+    # test_conjunctions.py needs NO bucket edits (37 pass, 2 v1 xfails) but
+    # 1 test fails on the join-stage sibling of the fixed _cap_word bug:
+    # the classify-stage "conjunction" tag (_classify.py:51) lacks v1
+    # is_conjunction's is_an_initial exclusion (75e3219^ parser.py:761), so
+    # the initial 'e.' is joined as a conjunction. The group-stage #11
+    # carve-out only covers the bare single letter 'e', not 'e.'. Repro:
+    #   HumanName('john e. smith') -> first='john e. smith'
+    # (v1: first='john', middle='e.', last='smith'). Remove once fixed.
     "test_conjunctions.py",
     "test_east_slavic_patronymic_order.py",
     "test_middle_name_as_last.py",
