@@ -238,9 +238,13 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.suffix, "MD, PhD", hn)
 
     def test_suffix_delimiter_constants_level(self) -> None:
-        from nameparser.config import CONSTANTS
-        CONSTANTS.suffix_delimiter = " - "
-        hn = HumanName("Steven Hardman, RN - CRNA")
+        # ran on the shared CONSTANTS in v1; 2.0 deprecates shared mutation,
+        # so the config-level (non-kwarg) path is exercised on a private
+        # Constants passed as constants=
+        from nameparser.config import Constants
+        c = Constants()
+        c.suffix_delimiter = " - "
+        hn = HumanName("Steven Hardman, RN - CRNA", constants=c)
         self.m(hn.first, "Steven", hn)
         self.m(hn.last, "Hardman", hn)
         self.m(hn.suffix, "RN, CRNA", hn)
@@ -254,12 +258,15 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.suffix, "CRNA", hn)
 
     def test_suffix_delimiter_trailing_delimiter_ignored(self) -> None:
-        # Trailing delimiter produces an empty token that must be filtered out.
-        # Using a non-whitespace-terminated delimiter so stripping doesn't consume it.
+        # Trailing delimiter must not defeat suffix detection. Using a
+        # non-whitespace-terminated delimiter so stripping doesn't consume it.
         hn = HumanName("John Doe, MD-PhD-", suffix_delimiter="-")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
-        self.m(hn.suffix, "MD, PhD", hn)
+        # 2.0: fix(suffix-delimiter-rendering) -- v1 split the token and
+        # rendered 'MD, PhD'; v2 keeps a no-space delimiter-core token whole
+        # (anti-#100), same rule as the pinned 'RN/CRNA' case row.
+        self.m(hn.suffix, "MD-PhD-", hn)
 
     def test_suffix_delimiter_comma_space_is_noop(self) -> None:
         hn = HumanName("John Doe, MD, PhD", suffix_delimiter=", ")

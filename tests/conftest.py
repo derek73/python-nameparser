@@ -16,54 +16,9 @@ from nameparser.config import CONSTANTS
 collect_ignore_glob = [
     "test_bound_first_names.py",
     "test_brute_force.py",
-    # test_conjunctions.py needs NO bucket edits (37 pass, 2 v1 xfails) but
-    # 1 test fails on the join-stage sibling of the fixed _cap_word bug:
-    # the classify-stage "conjunction" tag (_classify.py:51) lacks v1
-    # is_conjunction's is_an_initial exclusion (75e3219^ parser.py:761), so
-    # the initial 'e.' is joined as a conjunction. The group-stage #11
-    # carve-out only covers the bare single letter 'e', not 'e.'. Repro:
-    #   HumanName('john e. smith') -> first='john e. smith'
-    # (v1: first='john', middle='e.', last='smith'). Remove once fixed.
-    "test_conjunctions.py",
     "test_east_slavic_patronymic_order.py",
     "test_middle_name_as_last.py",
-    # test_nicknames.py is reconciled (buckets A/B: custom-delimiter and
-    # regexes-override mechanisms now pin their Policy-pointing TypeErrors;
-    # #255 as_dict expectation) but 1 test fails on a precedence flip in the
-    # documented both-buckets misuse case: with 'parenthesis' routed to BOTH
-    # nickname_delimiters and maiden_delimiters, v1 processed nickname
-    # first (nickname='Johnson', maiden=''); 2.0 gives maiden='Johnson',
-    # nickname=''. Repro: C.maiden_delimiters['parenthesis'] =
-    # C.regexes['parenthesis']; HumanName('Baker (Johnson), Jenny',
-    # constants=C). The v1 test exists precisely to catch this silent
-    # change -- needs a decision (fix precedence or classify). Remove once
-    # settled.
-    "test_nicknames.py",
     "test_parser_util.py",
-    # test_prefixes.py is reconciled (one bucket-C rewrite; 57 pass) but 1
-    # test fails on the same B1 gap held for test_suffixes: the two-word
-    # trailing-suffix routing. Repro: HumanName('Anh Do') -> suffix='Do',
-    # family='' (v1: last='Do'; 'do' is the D.O. suffix acronym). Remove
-    # with test_suffixes' entry once B1 is settled.
-    "test_prefixes.py",
-    # test_suffixes.py needs NO bucket edits (30 pass, 2 v1 xfails) but 24
-    # tests fail across six suspected pipeline gaps -- see the M12 batch-3
-    # report for full repros. Headlines:
-    #   B1 'Jack Ma' -> suffix='Ma', family='' (v1: last='Ma'; the
-    #      fix(suffix-routing) row pins the same shape for 'Johnson PhD' --
-    #      decision needed on ambiguous-surname suffixes)
-    #   B2 'John Smith, V MD' -> suffix='V, MD' (v1 kept the segment whole:
-    #      'V MD')
-    #   B3 'John Smith, Ph. D.' -> family='John Smith', given='' (split/
-    #      period-joined suffixes fail the segment-stage suffixy test)
-    #   B4 '#144: 'Smith, John V' -> middle='V' (v1: suffix='V'; family-
-    #      comma given-segment trailing suffix_not_acronyms rule missing)
-    #   B5 suffix-in-parens/quotes (#111) missing: 'Andrew Perkins (MBA)'
-    #      -> nickname='MBA' (v1: suffix='MBA'); 9 tests
-    #   B6 suffix_delimiter edges: trailing delimiter kills detection;
-    #      multi-word sides leak the '-' token into suffix
-    # Remove once fixed.
-    "test_suffixes.py",
     "test_turkic_patronymic_order.py",
     "test_variations.py",
 ]
