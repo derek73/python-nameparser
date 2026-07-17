@@ -6,13 +6,12 @@ import pytest
 
 from nameparser.config import CONSTANTS
 
-# TEMPORARY (Task M11 -> M12): the v1 suite is being reconciled against
-# the 2.0 facade file by file. Lifted in Task M12 together with its mypy
-# twin (the `exclude` under [tool.mypy] in pyproject.toml); both must be
-# GONE before this branch leaves draft.
-#
-# Explicit list of not-yet-reconciled files. Narrow this as each file is
-# reconciled; remove entirely once the whole suite runs against the facade.
+# TEMPORARY (Task M12, final remnant): the whole v1 suite is reconciled
+# against the 2.0 facade and mypy-clean (the [tool.mypy] exclude twin in
+# pyproject.toml is gone). Only the two files below remain skipped, each
+# held on one confirmed, repro'd parity bug; delete this list (and the
+# entries' tests will run) once those land. Must be GONE before this
+# branch leaves draft.
 collect_ignore_glob = [
     # test_bound_first_names.py is reconciled (bucket A: the two
     # is_bound_first_name predicate tests died with the v1 hooks) but 1 test
@@ -22,7 +21,6 @@ collect_ignore_glob = [
     # (v1: first='abdul salam'; three-token 'salem, abdul salam ahmed'
     # joins fine). Remove once fixed.
     "test_bound_first_names.py",
-    "test_brute_force.py",
     # test_middle_name_as_last.py needs NO bucket edits but 4 tests fail on
     # a fold-order bug: v1's middle_name_as_last fold PREPENDED middle_list
     # to last_list, so comma and rotated forms converge on the no-comma
