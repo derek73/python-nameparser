@@ -17,10 +17,16 @@ The initial veto is assign's job, not classify's: 'V' carries both
 from __future__ import annotations
 
 import dataclasses
+import re
 
 from nameparser._lexicon import _normalize
 from nameparser._pipeline._state import ParseState, WorkToken
 from nameparser._pipeline._vocab import is_initial, suffix_as_written
+
+# Ported verbatim from v1 (nameparser/config/regexes.py
+# "period_not_at_end") -- layering forbids the config import; keep in
+# sync by hand.
+_PERIOD_NOT_AT_END = re.compile(r".*\..+$", re.I)
 
 
 def _tags_for(token: WorkToken, state: ParseState) -> frozenset[str]:
@@ -49,6 +55,18 @@ def _tags_for(token: WorkToken, state: ParseState) -> frozenset[str]:
         tags.add("vocab:maiden-marker")
     if is_initial(token.text):
         tags.add("initial")
+    # v1's period-joined derivation (parse_pieces): a token with a
+    # period not at the end, ANY of whose period chunks is a title, is
+    # a title as a whole ('Lt.Gov.', and by the ANY rule 'Mr.Smith');
+    # else ANY suffix chunk makes it a suffix ('JD.CPA'). Title wins
+    # (v1's continue). Skipped when the whole token already matched.
+    if ("vocab:title" not in tags and "vocab:suffix" not in tags
+            and _PERIOD_NOT_AT_END.match(token.text)):
+        chunks = [_normalize(c) for c in token.text.split(".") if c]
+        if any(c in lex.titles for c in chunks):
+            tags.add("vocab:title")
+        elif any(suffix_as_written(c, c, lex) for c in chunks):
+            tags.add("vocab:suffix")
     return frozenset(tags)
 
 

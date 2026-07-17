@@ -41,6 +41,29 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith"}),
     Case("suffix_comma", "John Smith, PhD",
          {"given": "John", "family": "Smith", "suffix": "PhD"}),
+    Case("suffix_comma_decided_by_first_segment",
+         "Dr. John P. Doe-Ray, CLU, CFP, LUTC",
+         {"title": "Dr.", "given": "John", "middle": "P.",
+          "family": "Doe-Ray", "suffix": "CLU, CFP, LUTC"},
+         ambiguities=("comma-structure",),
+         notes="only parts[1] decides the suffix-comma structure "
+               "(v1 parser.py:1318); 'lutc' is not in the vocabulary "
+               "but rides along (v1 parity, pinned live 2026-07-16)"),
+    Case("suffix_comma_nonsuffix_tail_flagged", "John Smith, MD, Xyzzy",
+         {"given": "John", "family": "Smith", "suffix": "MD, Xyzzy"},
+         ambiguities=("comma-structure",),
+         notes="the unrecognized tail is consumed best-effort with the "
+               "flag (v1 consumed it silently)"),
+    Case("period_joined_titles", "Lt.Gov. John Doe",
+         {"title": "Lt.Gov.", "given": "John", "family": "Doe"},
+         notes="v1 derived-title rule: ANY period chunk being a title "
+               "makes the token a title (pinned live 2026-07-16)"),
+    Case("period_joined_suffixes", "John Doe JD.CPA",
+         {"given": "John", "family": "Doe", "suffix": "JD.CPA"}),
+    Case("period_joined_any_rule", "Mr.Smith",
+         {"title": "Mr.Smith"},
+         notes="the ANY rule is deliberate v1 parity: one title chunk "
+               "claims the whole token"),
     Case("doubled_comma_suffix", "Doe,, Jr.",
          {"family": "Doe", "suffix": "Jr."},
          notes="the EMPTY given segment keeps its position: 'Jr.' is a "

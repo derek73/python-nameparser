@@ -81,10 +81,13 @@ def segment(state: ParseState) -> ParseState:
         return bool(seg) and all(
             counts_as_suffix(state.tokens[i].text) for i in seg)
 
-    rest = groups[1:]
-    if all(suffixy(s) for s in rest) and len(groups[0]) > 1:
-        return dataclasses.replace(state, segments=tuple(groups),
-                                   structure=Structure.SUFFIX_COMMA)
+    # v1 parity: only parts[1] decides the suffix-comma structure
+    # (parser.py:1318); parts[2:] are consumed as suffixes
+    # unconditionally either way, so a non-suffix tail segment gets the
+    # COMMA_STRUCTURE flag, not a structure veto
+    structure = (Structure.SUFFIX_COMMA
+                 if suffixy(groups[1]) and len(groups[0]) > 1
+                 else Structure.FAMILY_COMMA)
     ambiguities = list(state.ambiguities)
     for seg in groups[2:]:
         # empty segments are consumed silently (v1 skips them without
@@ -97,5 +100,5 @@ def segment(state: ParseState) -> ParseState:
                 f"structures; consumed as suffix best-effort",
                 tuple(seg)))
     return dataclasses.replace(state, segments=tuple(groups),
-                               structure=Structure.FAMILY_COMMA,
+                               structure=structure,
                                ambiguities=tuple(ambiguities))
