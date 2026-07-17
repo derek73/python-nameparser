@@ -10,8 +10,9 @@ import dataclasses
 import warnings
 
 from nameparser._config_shim import CONSTANTS, Constants, _cached_parser
+from nameparser._lexicon import _normalize
 from nameparser._parser import Parser
-from nameparser._types import ParsedName
+from nameparser._types import ParsedName, Role
 
 _V2_FIELD = {"first": "given", "last": "family"}  # v1 name -> v2 name
 _MEMBERS = ("title", "first", "middle", "last", "suffix", "nickname",
@@ -176,17 +177,6 @@ class HumanName:
     def original(self) -> str:
         return self._parsed.original or self._full_name
 
-    def __getattr__(self, name: str) -> str:
-        # Only reached when normal lookup fails -- an instance attribute
-        # set by the component-kwargs branch (self.first = ... in
-        # __init__) shadows this, so that path is untouched. Field
-        # setters land in M7 as real properties; until then, reading a
-        # v1 field name after full_name-driven parsing delegates here.
-        if name in _MEMBERS:
-            return getattr(self._parsed, _V2_FIELD.get(name, name))
-        raise AttributeError(
-            f"{type(self).__name__!r} object has no attribute {name!r}")
-
     @property
     def C(self) -> Constants:
         return self._C
@@ -194,3 +184,175 @@ class HumanName:
     @property
     def has_own_config(self) -> bool:
         return self._C is not CONSTANTS
+
+    # -- fields ---------------------------------------------------------
+
+    def _get_field(self, member: str) -> str:
+        return getattr(self._parsed, _V2_FIELD.get(member, member))
+
+    def _set_field(self, member: str, value: str | list[str] | None) -> None:
+        if value is None:
+            joined = ""
+        elif isinstance(value, list):
+            for element in value:
+                if not isinstance(element, str):
+                    raise TypeError(
+                        f"name parts must be strings, got {element!r}")
+            joined = " ".join(value)
+        elif isinstance(value, str):
+            joined = value
+        else:
+            raise TypeError(
+                f"{member} must be a str, list, or None, got {value!r}")
+        self._parsed = self._parsed.replace(
+            **{_V2_FIELD.get(member, member): joined})
+
+    def _list_for(self, member: str) -> list[str]:
+        # A "joined" continuation token ("Ph." + "D.") belongs to its
+        # predecessor's part, matching v1's fix_phd (suffix_list had ONE
+        # "Ph. D." element). ParsedName._text_for heals only the suffix
+        # string view (the ", " join); the facade list view heals for
+        # every role -- a continuation is never its own list element.
+        role = Role(_V2_FIELD.get(member, member))
+        parts: list[str] = []
+        for tok in self._parsed.tokens_for(role):
+            if "joined" in tok.tags and parts:
+                parts[-1] += " " + tok.text
+            else:
+                parts.append(tok.text)
+        return parts
+
+    @property
+    def title(self) -> str:
+        return self._get_field("title")
+
+    @title.setter
+    def title(self, value: str | list[str] | None) -> None:
+        self._set_field("title", value)
+
+    @property
+    def title_list(self) -> list[str]:
+        return self._list_for("title")
+
+    @property
+    def first(self) -> str:
+        return self._get_field("first")
+
+    @first.setter
+    def first(self, value: str | list[str] | None) -> None:
+        self._set_field("first", value)
+
+    @property
+    def first_list(self) -> list[str]:
+        return self._list_for("first")
+
+    @property
+    def middle(self) -> str:
+        return self._get_field("middle")
+
+    @middle.setter
+    def middle(self, value: str | list[str] | None) -> None:
+        self._set_field("middle", value)
+
+    @property
+    def middle_list(self) -> list[str]:
+        return self._list_for("middle")
+
+    @property
+    def last(self) -> str:
+        return self._get_field("last")
+
+    @last.setter
+    def last(self, value: str | list[str] | None) -> None:
+        self._set_field("last", value)
+
+    @property
+    def last_list(self) -> list[str]:
+        return self._list_for("last")
+
+    @property
+    def suffix(self) -> str:
+        return self._get_field("suffix")
+
+    @suffix.setter
+    def suffix(self, value: str | list[str] | None) -> None:
+        self._set_field("suffix", value)
+
+    @property
+    def suffix_list(self) -> list[str]:
+        return self._list_for("suffix")
+
+    @property
+    def nickname(self) -> str:
+        return self._get_field("nickname")
+
+    @nickname.setter
+    def nickname(self, value: str | list[str] | None) -> None:
+        self._set_field("nickname", value)
+
+    @property
+    def nickname_list(self) -> list[str]:
+        return self._list_for("nickname")
+
+    @property
+    def maiden(self) -> str:
+        return self._get_field("maiden")
+
+    @maiden.setter
+    def maiden(self, value: str | list[str] | None) -> None:
+        self._set_field("maiden", value)
+
+    @property
+    def maiden_list(self) -> list[str]:
+        return self._list_for("maiden")
+
+    # -- derived views ----------------------------------------------------
+
+    @property
+    def surnames_list(self) -> list[str]:
+        return self.middle_list + self.last_list
+
+    @property
+    def surnames(self) -> str:
+        return " ".join(self.surnames_list)
+
+    @property
+    def given_names_list(self) -> list[str]:
+        return self.first_list + self.middle_list
+
+    @property
+    def given_names(self) -> str:
+        return " ".join(self.given_names_list)
+
+    def _is_particle(self, text: str) -> bool:
+        self._resolve()
+        return _normalize(text) in self._lexicon.particles
+
+    def _split_last(self) -> tuple[list[str], list[str]]:
+        # v1 parser.py _split_last, verbatim: vocabulary lookup at ACCESS
+        # time (so assigned last names split too), with the all-particle
+        # guard (a family name is assumed not to consist entirely of
+        # particles, e.g. surname "Do" which also appears in PREFIXES)
+        words = " ".join(self.last_list).split()
+        i = 0
+        while i < len(words) and self._is_particle(words[i]):
+            i += 1
+        if i == len(words):
+            return [], words
+        return words[:i], words[i:]
+
+    @property
+    def last_prefixes_list(self) -> list[str]:
+        return self._split_last()[0]
+
+    @property
+    def last_prefixes(self) -> str:
+        return " ".join(self._split_last()[0])
+
+    @property
+    def last_base_list(self) -> list[str]:
+        return self._split_last()[1]
+
+    @property
+    def last_base(self) -> str:
+        return " ".join(self._split_last()[1])

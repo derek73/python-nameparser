@@ -98,3 +98,74 @@ def test_dirty_tracking_reuses_cached_parser_across_unchanged_generation() -> No
     c.titles.add("zzq")  # bumps the generation
     parser_after = m._resolve()
     assert parser_before is not parser_after
+
+
+def test_component_kwargs_bypass_parsing() -> None:
+    n = HumanName(first="John", last="de la Vega")
+    assert n.first == "John" and n.last == "de la Vega"
+    assert n.full_name == ""
+
+
+def test_field_assignment_str_list_none() -> None:
+    n = HumanName("John Smith")
+    n.first = "Jane"
+    assert n.first == "Jane"
+    n.middle = ["Q", "Xavier"]               # lists join with space
+    assert n.middle == "Q Xavier"
+    n.middle = None                          # None clears
+    assert n.middle == ""
+    assert n.last == "Smith"                 # untouched fields survive
+    assert n.full_name == "John Smith"       # no re-parse (v1 parity)
+
+
+def test_list_attributes_are_snapshots() -> None:          # spec §2 exc. 1
+    n = HumanName("John Quincy Adams Smith")
+    lst = n.middle_list
+    lst.append("HACKED")
+    assert "HACKED" not in n.middle_list
+
+
+def test_derived_views() -> None:
+    n = HumanName("Juan Q. de la Vega")
+    assert n.surnames == "Q. de la Vega"     # middle + last (v1 shape)
+    assert n.given_names == "Juan Q."        # first + middle
+    assert n.last_prefixes == "de la"
+    assert n.last_base == "Vega"
+
+
+def test_split_last_all_prefix_guard() -> None:
+    n = HumanName(last="de la")              # every word is a particle
+    assert n.last_prefixes == ""             # v1 guard: no stripping
+    assert n.last_base == "de la"
+
+
+@pytest.mark.parametrize("member", [
+    "title", "first", "middle", "last", "suffix", "nickname", "maiden",
+])
+def test_every_member_set_get_and_list(member: str) -> None:
+    n = HumanName()
+    setattr(n, member, "Alpha Beta")
+    # the suffix string view joins parts with ", " (v1 parity)
+    joined = "Alpha, Beta" if member == "suffix" else "Alpha Beta"
+    assert getattr(n, member) == joined
+    assert getattr(n, f"{member}_list") == ["Alpha", "Beta"]
+
+
+def test_list_assignment_rejects_non_str_elements() -> None:
+    n = HumanName("John Smith")
+    with pytest.raises(TypeError, match="strings"):
+        n.first = [1, 2]  # type: ignore[list-item]
+    with pytest.raises(TypeError, match="strings"):
+        n.first = [None]  # type: ignore[list-item]
+
+
+def test_list_assignment_multiword_elements_join() -> None:
+    n = HumanName("John Smith")
+    n.middle = ["ab", "cd ef"]
+    assert n.middle == "ab cd ef"
+
+
+def test_suffix_list_heals_joined_continuations() -> None:  # v1 fix_phd
+    n = HumanName("John Ph. D.")
+    assert n.suffix == "Ph. D."
+    assert n.suffix_list == ["Ph. D."]       # ONE element, v1 parity
