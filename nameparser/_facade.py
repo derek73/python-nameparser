@@ -10,6 +10,7 @@ import dataclasses
 import re
 import warnings
 from collections.abc import Iterator
+from typing import Any
 
 from nameparser._config_shim import CONSTANTS, Constants, _cached_parser
 from nameparser._lexicon import _normalize
@@ -229,11 +230,16 @@ class HumanName:
         if self._C.capitalize_name:
             self.capitalize()  # v1 parser.py:1653 parity
 
-    def capitalize(self) -> None:
-        """Minimal M6 body (M10 ports the full force-semantics rules):
-        re-capitalize the current parse against the bound lexicon."""
+    def capitalize(self, force: bool | None = None) -> None:
+        """Re-capitalize the current parse against the bound lexicon.
+        force=None reads the bound Constants' render default
+        (force_mixed_case_capitalization); the core's capitalized()
+        implements the single-case gate (v1 parity) -- not
+        re-implemented here."""
         self._resolve()
-        self._parsed = self._parsed.capitalized(self._lexicon, force=True)
+        if force is None:
+            force = self._C.force_mixed_case_capitalization
+        self._parsed = self._parsed.capitalized(self._lexicon, force=force)
 
     @property
     def full_name(self) -> str:
@@ -485,6 +491,17 @@ class HumanName:
             first=group(first), middle=group(middle), last=group(last))
         return self.collapse_whitespace(_s)
 
+    # -- comparison -----------------------------------------------------------
+
+    def matches(self, other: str | HumanName) -> bool:
+        """Component-wise case-insensitive comparison (v1 parity); a
+        str argument is parsed with this instance's resolved parser."""
+        target = other._parsed if isinstance(other, HumanName) else other
+        return self._parsed.matches(target, parser=self._resolve())
+
+    def comparison_key(self) -> tuple[str, ...]:
+        return self._parsed.comparison_key()
+
     # -- dunders ------------------------------------------------------------
 
     def collapse_whitespace(self, string: str) -> str:
@@ -535,3 +552,55 @@ class HumanName:
         if include_empty:
             return d
         return {k: v for k, v in d.items() if v}
+
+    # -- pickle (v1-shaped state; one path for 1.4 and 2.x blobs) -----------
+
+    def __getstate__(self) -> dict[str, Any]:
+        # The emitted key set matches v1.4's pickle shape (minus
+        # encoding/_had_comma/_derived_*, which are v1-internal and
+        # ignored on read), so one __setstate__ path serves both eras.
+        state: dict[str, Any] = {
+            "_full_name": self._full_name,
+            "original": self.original,
+            "C": None if self._C is CONSTANTS else self._C,
+            "string_format": self.string_format,
+            "initials_format": self.initials_format,
+            "initials_delimiter": self.initials_delimiter,
+            "initials_separator": self.initials_separator,
+            "suffix_delimiter": self.suffix_delimiter,
+        }
+        for member in _MEMBERS:
+            state[f"{member}_list"] = getattr(self, f"{member}_list")
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        c = state.get("C")
+        self._C = CONSTANTS if c is None else c
+        self._snapshot_gen = -1
+        defaults = self._C._snapshot()[2]
+        self._string_format = state.get("string_format",
+                                        defaults.string_format)
+        self._initials_format = state.get("initials_format",
+                                          defaults.initials_format)
+        self._initials_delimiter = state.get("initials_delimiter",
+                                             defaults.initials_delimiter)
+        self._initials_separator = state.get("initials_separator",
+                                             defaults.initials_separator)
+        self._suffix_delimiter = state.get("suffix_delimiter",
+                                           defaults.suffix_delimiter)
+        self._full_name = state.get("_full_name", "")
+        # components come back exactly as pickled (spec §2): synthetic
+        # tokens via replace(), never a re-parse. Known edge: replace()
+        # re-splits on whitespace without the "joined" tag, so joined-tag
+        # healing is lost for multi-word list elements -- v1's fix_phd
+        # suffix pickles as ["Ph. D."] but round-trips to ["Ph.", "D."],
+        # rendering the suffix as "Ph., D.". Classify in the differential
+        # harness / M12 if it surfaces.
+        parsed = ParsedName(original=str(state.get("original", "")),
+                            tokens=(), ambiguities=())
+        fields = {}
+        for member in _MEMBERS:
+            values = state.get(f"{member}_list") or []
+            fields[_V2_FIELD.get(member, member)] = " ".join(values)
+        self._parsed = parsed.replace(
+            **{k: v for k, v in fields.items() if v})
