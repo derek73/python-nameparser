@@ -33,6 +33,7 @@ class Case:
 
 _ES = Policy(patronymic_rules=frozenset({PatronymicRule.EAST_SLAVIC}))
 _TK = Policy(patronymic_rules=frozenset({PatronymicRule.TURKIC}))
+_SD = Policy(extra_suffix_delimiters=frozenset({" - "}))
 
 CASES: tuple[Case, ...] = (
     Case("plain", "John Smith", {"given": "John", "family": "Smith"}),
@@ -40,6 +41,39 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith"}),
     Case("suffix_comma", "John Smith, PhD",
          {"given": "John", "family": "Smith", "suffix": "PhD"}),
+    Case("suffix_delimiter_tail_segment", "Doe, John, RN - CRNA",
+         {"given": "John", "family": "Doe", "suffix": "RN, CRNA"},
+         policy=_SD,
+         notes="v1 suffix_delimiter parity (#191): the delimiter token "
+               "is dropped from consumed tail segments (pinned live "
+               "2026-07-16)"),
+    Case("suffix_delimiter_detection", "Doe, John RN - CRNA",
+         {"given": "John", "middle": "-", "family": "Doe",
+          "suffix": "RN, CRNA"},
+         policy=_SD,
+         notes="the delimiter fires only at suffix sites; the stray "
+               "token keeps its per-piece walk role (v1 parity, pinned "
+               "live 2026-07-16)"),
+    Case("suffix_delimiter_suffix_comma", "John Smith, RN - CRNA",
+         {"given": "John", "family": "Smith", "suffix": "RN, CRNA"},
+         policy=_SD,
+         notes="delimiter transparency in the SUFFIX_COMMA "
+               "determination: the post-comma segment counts as "
+               "all-suffix (v1 parity, pinned live 2026-07-16)"),
+    Case("suffix_delimiter_no_space_core", "John Smith, RN/CRNA",
+         {"given": "John", "family": "Smith", "suffix": "RN/CRNA"},
+         policy=Policy(extra_suffix_delimiters=frozenset({"/"})),
+         classification="fix(suffix-delimiter-rendering)",
+         notes="v1 split 'RN/CRNA' and rendered 'RN, CRNA'; v2 keeps "
+               "the token whole (anti-#100) with Role.SUFFIX -- role "
+               "assignment matches, rendering differs (migration plan "
+               "deviation 5, release-log classified)"),
+    Case("suffix_delimiter_name_segment_untouched", "Doe, Mary - Kate, RN",
+         {"given": "Mary", "middle": "- Kate", "family": "Doe",
+          "suffix": "RN"},
+         policy=_SD,
+         notes="a delimiter token in a NAME segment is kept (v1 parity, "
+               "pinned live 2026-07-16)"),
     Case("comma_extras_become_suffixes", "Smith, John, Extra, Jr.",
          {"given": "John", "family": "Smith", "suffix": "Extra, Jr."},
          ambiguities=("comma-structure",),

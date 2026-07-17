@@ -7,7 +7,8 @@ tail tokens get role=MAIDEN; marker tokens land in dropped.
 Reads: token tags (from classify); Policy is not consulted. The v1
 "derived titles/prefixes" registration becomes piece_tags entries --
 per-parse state that dissolves with the state (v1 kept per-parse sets
-for the same reason).
+for the same reason). Reads Policy.extra_suffix_delimiters: tail
+segments drop delimiter-core tokens (v1 suffix_delimiter parity).
 
 Ports v1's join_on_conjunctions + prefix chains + _join_bound_first_name
 plus two additions: the "Ph. D."-split merge (v1 fix_phd, recorded plan
@@ -22,6 +23,7 @@ import re
 from collections.abc import Sequence, Set
 
 from nameparser._pipeline._state import ParseState, Structure, WorkToken
+from nameparser._pipeline._vocab import delimiter_cores
 from nameparser._types import Role
 
 _PH = re.compile(r"^ph\.?$", re.IGNORECASE)
@@ -178,8 +180,23 @@ def group(state: ParseState) -> ParseState:
     # v1 parity: additional_parts_count=1 applies only to FAMILY_COMMA
     # parts (parser.py:1333); the SUFFIX_COMMA pre-comma segment gets 0.
     additional = 1 if state.structure is Structure.FAMILY_COMMA else 0
-    for seg in state.segments:
+    # v1 expand_suffix_delimiter parity (#191): tail segments (wholly
+    # consumed as suffixes by assign) drop delimiter-core tokens, the
+    # same structural mechanism as the maiden marker below
+    cores = delimiter_cores(state.policy.extra_suffix_delimiters)
+    tail_start = {Structure.SUFFIX_COMMA: 1,
+                  Structure.FAMILY_COMMA: 2}.get(state.structure)
+    for seg_idx, seg in enumerate(state.segments):
         pieces, ptags = _group_segment(seg, additional, tokens)
+        if cores and tail_start is not None and seg_idx >= tail_start:
+            kept = [k for k in range(len(pieces))
+                    if not (len(pieces[k]) == 1
+                            and tokens[pieces[k][0]].text in cores)]
+            if len(kept) != len(pieces):
+                dropped.extend(i for k in range(len(pieces))
+                               if k not in kept for i in pieces[k])
+                pieces = [pieces[k] for k in kept]
+                ptags = [ptags[k] for k in kept]
         # continuation tokens of a suffix-merged piece (the ph-d merge)
         # carry the stable "joined" tag: the suffix string view joins
         # SUFFIX tokens with ", ", and the tag lets it heal the split

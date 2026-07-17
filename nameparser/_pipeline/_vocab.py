@@ -62,3 +62,27 @@ def is_suffix_lenient(text: str, lexicon: Lexicon) -> bool:
     n = _normalize(text)
     return n in lexicon.suffix_words \
         or _is_suffix_strict_n(n, text, lexicon)
+
+
+def delimiter_cores(policy_delimiters: frozenset[str]) -> frozenset[str]:
+    """Configured suffix delimiters with surrounding whitespace
+    stripped: ' - ' -> '-'. Whitespace-padded delimiters surface as
+    standalone tokens; the stripped core is what tokenize produced."""
+    return frozenset(d.strip() for d in policy_delimiters if d.strip())
+
+
+def splits_into_suffixes(text: str, cores: frozenset[str],
+                         lexicon: Lexicon) -> bool:
+    """v1 expand_suffix_delimiter parity for delimiters WITHOUT
+    whitespace ('RN/CRNA' with '/'): the token counts as a suffix when
+    some core splits it into >=2 non-empty parts that are all suffixes.
+    The token text is never rewritten (anti-#100): it takes Role.SUFFIX
+    whole, which renders 'RN/CRNA' where v1 rendered 'RN, CRNA' -- the
+    documented divergence, release-log classified."""
+    for core in cores:
+        if core in text:
+            parts = [part for part in text.split(core) if part]
+            if len(parts) >= 2 and all(
+                    is_suffix_lenient(part, lexicon) for part in parts):
+                return True
+    return False

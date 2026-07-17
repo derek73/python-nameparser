@@ -6,7 +6,9 @@ COMMA_STRUCTURE ambiguities for unrecognized extra segments.
 Reads: Lexicon suffix vocabulary (via _vocab.is_suffix_lenient) --
 the suffix-comma decision is definitionally vocabulary-dependent
 (recorded plan deviation #3); reads Policy.lenient_comma_suffixes
-to pick the lenient or strict predicate.
+to pick the lenient or strict predicate, and
+Policy.extra_suffix_delimiters for v1 suffix_delimiter parity (a
+delimiter-core token is transparent in the all-suffix tests).
 
 Decision (v1 parity): >=1 comma and every post-first segment entirely
 lenient-suffix AND >1 word before the first comma -> SUFFIX_COMMA;
@@ -20,7 +22,10 @@ import bisect
 import dataclasses
 
 from nameparser._pipeline._state import ParseState, PendingAmbiguity, Structure
-from nameparser._pipeline._vocab import is_suffix_lenient, is_suffix_strict
+from nameparser._pipeline._vocab import (
+    delimiter_cores, is_suffix_lenient, is_suffix_strict,
+    splits_into_suffixes,
+)
 from nameparser._types import AmbiguityKind
 
 
@@ -49,10 +54,20 @@ def segment(state: ParseState) -> ParseState:
     # the strict predicate (initial-shaped suffix words stop qualifying)
     predicate = (is_suffix_lenient if state.policy.lenient_comma_suffixes
                  else is_suffix_strict)
+    # v1 expand_suffix_delimiter parity (#191): a configured delimiter
+    # is TRANSPARENT in the all-suffix tests -- v1 split the part string
+    # on the delimiter before checking, so the delimiter never counted
+    cores = delimiter_cores(state.policy.extra_suffix_delimiters)
+
+    def counts_as_suffix(text: str) -> bool:
+        if text in cores:
+            return True
+        return predicate(text, state.lexicon) or (
+            bool(cores)
+            and splits_into_suffixes(text, cores, state.lexicon))
 
     def suffixy(seg: tuple[int, ...]) -> bool:
-        return all(predicate(state.tokens[i].text, state.lexicon)
-                   for i in seg)
+        return all(counts_as_suffix(state.tokens[i].text) for i in seg)
 
     rest = groups[1:]
     if all(suffixy(s) for s in rest) and len(groups[0]) > 1:

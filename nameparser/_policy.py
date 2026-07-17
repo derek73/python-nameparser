@@ -6,7 +6,6 @@ tests/v2/test_layering.py).
 from __future__ import annotations
 
 import dataclasses
-import warnings
 from dataclasses import dataclass, field
 from enum import Enum, StrEnum, auto
 
@@ -136,14 +135,6 @@ class Policy:
         object.__setattr__(
             self, "extra_suffix_delimiters", frozenset(delimiters)
         )
-        if delimiters:
-            # accepted-and-ignored would violate the fail-loud culture:
-            # the pipeline cannot honor these until token re-splitting
-            # lands with the migration work (v1 suffix_delimiter parity)
-            warnings.warn(
-                "extra_suffix_delimiters is not yet consumed by the "
-                "parse pipeline; it takes effect with the 2.0 migration "
-                "work", UserWarning, stacklevel=2)
         # Truthy strings ("no", "false") would silently invert the
         # caller's intent downstream; bools are the one field kind the
         # coercing checks above can't cover.
