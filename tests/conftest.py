@@ -16,6 +16,13 @@ from nameparser.config import CONSTANTS
 collect_ignore_glob = [
     "test_bound_first_names.py",
     "test_brute_force.py",
+    # test_capitalization.py needs NO reconciliation edits (20 pass, 1 v1
+    # xfail) but 1 test fails on a confirmed render bug: _render.py's
+    # _cap_word lowercases every conjunction-set word, missing v1
+    # is_conjunction's is_an_initial exclusion (75e3219^ parser.py:761), so
+    # initial-shaped words that double as conjunctions stay lowercase. Repro:
+    #   HumanName('scott e. werner').capitalize() -> 'Scott e. Werner'
+    # (v1: 'Scott E. Werner'; 'e' is in CONJUNCTIONS). Remove once fixed.
     "test_capitalization.py",
     "test_comma_variants.py",
     "test_conjunctions.py",
