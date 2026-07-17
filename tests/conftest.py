@@ -24,7 +24,6 @@ collect_ignore_glob = [
     "test_initials.py",
     "test_middle_name_as_last.py",
     "test_nicknames.py",
-    "test_output_format.py",
     "test_parser_util.py",
     "test_prefixes.py",
     "test_suffixes.py",
