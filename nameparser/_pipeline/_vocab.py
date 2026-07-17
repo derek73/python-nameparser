@@ -92,3 +92,28 @@ def splits_into_suffixes(text: str, cores: frozenset[str],
                     is_suffix_lenient(part, lexicon) for part in parts):
                 return True
     return False
+
+
+# Ported verbatim from v1 (nameparser/config/regexes.py
+# "period_not_at_end") -- layering forbids the config import; keep in
+# sync by hand.
+_PERIOD_NOT_AT_END = re.compile(r".*\..+$", re.I)
+
+
+def period_joined_vocab(text: str, lexicon: Lexicon) -> str | None:
+    """v1's parse_pieces derivation for interior-period tokens
+    ('Lt.Gov.', 'Msc.Ed.', and by the ANY rule 'Mr.Smith'): ANY title
+    chunk makes the token a title (checked first, v1's continue); else
+    ANY suffix chunk makes it a suffix. Chunk-level suffix membership
+    is v1's is_suffix: bare ambiguous acronyms COUNT ('Msc.Ed.'
+    derives via 'ed') -- the ambiguous period-gate applies to whole
+    tokens only. Returns "title", "suffix", or None."""
+    if not _PERIOD_NOT_AT_END.match(text):
+        return None
+    chunks = [_normalize(c) for c in text.split(".") if c]
+    if any(c in lexicon.titles for c in chunks):
+        return "title"
+    if any(c in lexicon.suffix_acronyms or c in lexicon.suffix_words
+           for c in chunks):
+        return "suffix"
+    return None

@@ -21,13 +21,19 @@ from __future__ import annotations
 
 import bisect
 import dataclasses
+import re
 
 from nameparser._pipeline._state import ParseState, PendingAmbiguity, Structure
 from nameparser._pipeline._vocab import (
     delimiter_cores, is_suffix_lenient, is_suffix_strict,
-    splits_into_suffixes,
+    period_joined_vocab, splits_into_suffixes,
 )
 from nameparser._types import AmbiguityKind
+
+
+# keep in sync with _group.py's merge pair (the fix_phd port)
+_PH = re.compile(r"^ph\.?$", re.IGNORECASE)
+_D = re.compile(r"^d\.?$", re.IGNORECASE)
 
 
 def segment(state: ParseState) -> ParseState:
@@ -70,16 +76,28 @@ def segment(state: ParseState) -> ParseState:
     def counts_as_suffix(text: str) -> bool:
         if text in cores:
             return True
-        return predicate(text, state.lexicon) or (
-            bool(cores)
-            and splits_into_suffixes(text, cores, state.lexicon))
+        return (predicate(text, state.lexicon)
+                or period_joined_vocab(text, state.lexicon) == "suffix"
+                or (bool(cores)
+                    and splits_into_suffixes(text, cores, state.lexicon)))
 
     def suffixy(seg: tuple[int, ...]) -> bool:
         # an EMPTY segment is not suffix-shaped: v1's suffix-comma
         # detection fails on an empty parts[1] ('John Smith,, MD' is a
-        # family-comma parse)
-        return bool(seg) and all(
-            counts_as_suffix(state.tokens[i].text) for i in seg)
+        # family-comma parse). An adjacent Ph./D. pair counts as ONE
+        # suffix unit (v1's fix_phd extracted the credential pre-parse,
+        # so 'Smith, Ph. D.' read as suffix-comma; keep in sync with
+        # group's _PH/_D merge).
+        if not seg:
+            return False
+        texts = [state.tokens[i].text for i in seg]
+        k = 0
+        while k < len(texts) - 1:
+            if _PH.fullmatch(texts[k]) and _D.fullmatch(texts[k + 1]):
+                texts[k:k + 2] = ["phd"]
+            else:
+                k += 1
+        return all(counts_as_suffix(t) for t in texts)
 
     # v1 parity: only parts[1] decides the suffix-comma structure
     # (parser.py:1318); parts[2:] are consumed as suffixes

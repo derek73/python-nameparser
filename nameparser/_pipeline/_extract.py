@@ -60,9 +60,13 @@ def extract_delimited(state: ParseState) -> ParseState:
     extracted: list[tuple[Role, Span]] = []
     masked: list[Span] = []
     ambiguities: list[PendingAmbiguity] = []
+    # nickname first (v1 parse_nicknames order): when the same
+    # delimiter pair sits in BOTH buckets, the nickname reading wins;
+    # the documented bucket-move idiom removes it from nickname, so
+    # maiden still gets it after a move
     for role, pairs in (
-        (Role.MAIDEN, state.policy.maiden_delimiters),
         (Role.NICKNAME, state.policy.nickname_delimiters),
+        (Role.MAIDEN, state.policy.maiden_delimiters),
     ):
         for open_, close in sorted(pairs):
             pos = 0

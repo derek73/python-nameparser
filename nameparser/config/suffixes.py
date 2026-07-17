@@ -37,11 +37,17 @@ SUFFIX_ACRONYMS_AMBIGUOUS = {
     # in ambiguous, delimiter-only context.
     #
     # When adding a new entry to SUFFIX_ACRONYMS, also add it here only if
-    # the exact letter sequence could plausibly be someone's given name or
-    # common nickname on its own (e.g. 'jd', 'ed'). Unambiguous
-    # certifications/degrees (e.g. 'mba', 'cpa', 'phd') don't need an entry.
+    # the exact letter sequence could plausibly be someone's name on its
+    # own -- a given name or nickname (e.g. 'jd', 'ed') or a common
+    # surname (e.g. 'ma', 'do'). Unambiguous certifications/degrees
+    # (e.g. 'mba', 'cpa', 'phd') don't need an entry. In 2.0 this set
+    # also gates bare recognition: an ambiguous acronym counts as a
+    # suffix only when written with periods ('M.A.' yes, 'Ma' no), so
+    # 'Jack Ma' keeps its family name.
+    'do',
     'ed',
     'jd',
+    'ma',
 }
 """
 

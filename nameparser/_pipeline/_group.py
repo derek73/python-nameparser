@@ -188,13 +188,31 @@ def group(state: ParseState) -> ParseState:
                   Structure.FAMILY_COMMA: 2}.get(state.structure)
     for seg_idx, seg in enumerate(state.segments):
         pieces, ptags = _group_segment(seg, additional, tokens)
-        if cores and tail_start is not None and seg_idx >= tail_start:
-            kept = [k for k in range(len(pieces))
-                    if not (len(pieces[k]) == 1
-                            and tokens[pieces[k][0]].text in cores)]
+        if tail_start is not None and seg_idx >= tail_start:
+            # v1 renders each tail COMMA SEGMENT as one suffix entry
+            # ('Smith, V MD' -> suffix 'V MD'); a delimiter core inside
+            # a segment separates entries and is dropped, but a segment
+            # that IS only the core stays whole (v1 expand() splits
+            # within a part, never erases a lone part). Continuation
+            # tokens within an entry take the stable "joined" tag so
+            # the suffix view space-joins them (the fix_phd mechanism).
+            entry_open = False
+            kept: list[int] = []
+            for k in range(len(pieces)):
+                is_core = (len(pieces[k]) == 1
+                           and tokens[pieces[k][0]].text in cores
+                           and len(pieces) > 1)
+                if is_core:
+                    dropped.extend(pieces[k])
+                    entry_open = False
+                    continue
+                kept.append(k)
+                for pos, i in enumerate(pieces[k]):
+                    if entry_open or pos > 0:
+                        tokens[i] = dataclasses.replace(
+                            tokens[i], tags=tokens[i].tags | {"joined"})
+                    entry_open = True
             if len(kept) != len(pieces):
-                dropped.extend(i for k in range(len(pieces))
-                               if k not in kept for i in pieces[k])
                 pieces = [pieces[k] for k in kept]
                 ptags = [ptags[k] for k in kept]
         # continuation tokens of a suffix-merged piece (the ph-d merge)

@@ -41,6 +41,52 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith"}),
     Case("suffix_comma", "John Smith, PhD",
          {"given": "John", "family": "Smith", "suffix": "PhD"}),
+    Case("ambiguous_surname_acronyms", "Jack Ma",
+         {"given": "Jack", "family": "Ma"},
+         notes="'ma'/'do' joined suffix_acronyms_ambiguous: common "
+               "surnames need periods to read as credentials (v1 "
+               "parity restored; data change, flag for release log)"),
+    Case("ambiguous_surname_acronym_with_suffix", "Jack Ma Jr",
+         {"given": "Jack", "family": "Ma", "suffix": "Jr"}),
+    Case("initial_shaped_not_conjunction", "john e. smith",
+         {"given": "john", "middle": "e.", "family": "smith"},
+         notes="v1 is_conjunction excludes initials at classify too"),
+    Case("family_comma_lenient_trailing", "Smith, John V",
+         {"given": "John", "family": "Smith", "suffix": "V"},
+         notes="v1 #144: the trailing piece of a two-part comma name "
+               "takes the lenient suffix test"),
+    Case("family_comma_first_piece_is_given", "Steven Hardman, RN - CRNA",
+         {"given": "RN", "middle": "-", "family": "Steven Hardman",
+          "suffix": "CRNA"},
+         notes="v1 walk order: the first post-comma piece is the given "
+               "before any suffix check (the delimiter is UNSET here "
+               "-- v1's documented limitation, kept)"),
+    Case("family_comma_lone_suffix_piece", "Andrews, M.D.",
+         {"family": "Andrews", "suffix": "M.D."},
+         classification="fix(comma-family)",
+         notes="v1 made the lone post-comma strict-suffix piece the "
+               "given; 2.0 routes it to suffix (same family as the "
+               "'Smith, Dr.' row)"),
+    Case("period_joined_ambiguous_chunk", "John Doe, Msc.Ed.",
+         {"given": "John", "family": "Doe", "suffix": "Msc.Ed."},
+         notes="chunk-level suffix membership is v1's is_suffix: bare "
+               "ambiguous acronyms count within period-joined tokens"),
+    Case("suffix_comma_split_phd", "John Smith, Ph. D.",
+         {"given": "John", "family": "Smith", "suffix": "Ph. D."},
+         notes="the adjacent Ph./D. pair counts as one suffix unit in "
+               "the suffix-comma detection (v1 fix_phd parity)"),
+    Case("tail_segment_entry_space_joined", "John Smith, V MD",
+         {"given": "John", "family": "Smith", "suffix": "V MD"},
+         notes="v1 renders each tail comma segment as ONE suffix "
+               "entry; words within an entry space-join via the "
+               "'joined' tag"),
+    Case("nickname_bucket_wins_when_shared",
+         'Baker (Johnson), Jenny',
+         {"given": "Jenny", "family": "Baker", "nickname": "Johnson"},
+         policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
+         notes="when the same delimiter pair sits in both buckets the "
+               "nickname reading wins (v1 parse_nicknames order); the "
+               "bucket-move idiom removes it from nickname first"),
     Case("family_segment_trailing_suffix", "Smith Jr., John",
          {"given": "John", "family": "Smith", "suffix": "Jr."},
          notes="v1: the family part may have suffixes in it "

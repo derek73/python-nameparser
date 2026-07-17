@@ -27,6 +27,7 @@ from __future__ import annotations
 import dataclasses
 import re
 
+from nameparser._pipeline._vocab import is_suffix_lenient
 from nameparser._pipeline._group import (
     _is_suffix_piece, _is_title_piece,
 )
@@ -189,11 +190,34 @@ def assign(state: ParseState) -> ParseState:
             n = _peel_leading_titles(pieces, ptags, tokens)
             given_done = False
             for m in range(n, len(pieces)):
-                if _is_suffix_piece(pieces[m], ptags[m], tokens):
-                    _set_roles(tokens, pieces[m], Role.SUFFIX)
-                elif not given_done:
+                # v1 walk order (parser.py:1390): the first non-title
+                # piece is ALWAYS the given, before any suffix check --
+                # 'Hardman, RN - CRNA' keeps first='RN'. One deliberate
+                # 2.0 deviation, classified fix(comma-family): when that
+                # piece is the segment's ONLY piece and unambiguously
+                # suffix-shaped ('Andrews, M.D.'), it is a suffix -- v1
+                # made it the given.
+                if not given_done:
+                    if (m == len(pieces) - 1
+                            and _is_suffix_piece(pieces[m], ptags[m],
+                                                 tokens)):
+                        _set_roles(tokens, pieces[m], Role.SUFFIX)
+                        continue
                     _set_roles(tokens, pieces[m], Role.GIVEN)
                     given_done = True
+                    continue
+                # trailing piece of a two-part name is unambiguously
+                # positioned: v1 accepts the lenient test there
+                # ('Smith, John V' -> suffix='V', #144); with a third
+                # comma part the trailing token is more likely a middle
+                # initial, so strict only
+                last_of_two = (m == len(pieces) - 1
+                               and len(state.segments) == 2)
+                if _is_suffix_piece(pieces[m], ptags[m], tokens) or (
+                        last_of_two and len(pieces[m]) == 1
+                        and is_suffix_lenient(
+                            tokens[pieces[m][0]].text, state.lexicon)):
+                    _set_roles(tokens, pieces[m], Role.SUFFIX)
                 else:
                     _set_roles(tokens, pieces[m], Role.MIDDLE)
         tail = 2
