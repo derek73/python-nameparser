@@ -1,7 +1,8 @@
 """Stage: segment.
 
 Consumes: tokens (role-None main stream), comma_offsets.
-Produces: segments (runs of main-token indices), structure,
+Produces: segments (runs of main-token indices; interior segments may
+be EMPTY -- doubled commas keep their structural position), structure,
 COMMA_STRUCTURE ambiguities for unrecognized extra segments.
 Reads: Lexicon suffix vocabulary (via _vocab.is_suffix_lenient) --
 the suffix-comma decision is definitionally vocabulary-dependent
@@ -44,9 +45,16 @@ def segment(state: ParseState) -> ParseState:
         start = state.tokens[i].span.start
         bucket = bisect.bisect_left(state.comma_offsets, start)
         buckets[bucket].append(i)
-    groups = [tuple(b) for b in buckets if b]
+    groups = [tuple(b) for b in buckets]
+    # v1 strips exactly ONE trailing comma as cosmetic (parser.py's
+    # collapse_whitespace); every other empty bucket is STRUCTURAL and
+    # keeps its position -- in 'Doe,, Jr.' the given segment is empty,
+    # so 'Jr.' stays a tail suffix instead of masquerading as a lone
+    # post-comma title (v1 parity, pinned live 2026-07-16)
+    if len(groups) > 1 and not groups[-1]:
+        groups.pop()
     if len(groups) <= 1:
-        segs = tuple(groups) if groups else (tuple(main),)
+        segs = tuple(groups) if groups and groups[0] else (tuple(main),)
         return dataclasses.replace(state, segments=segs,
                                    structure=Structure.NO_COMMA)
 
@@ -67,7 +75,11 @@ def segment(state: ParseState) -> ParseState:
             and splits_into_suffixes(text, cores, state.lexicon))
 
     def suffixy(seg: tuple[int, ...]) -> bool:
-        return all(counts_as_suffix(state.tokens[i].text) for i in seg)
+        # an EMPTY segment is not suffix-shaped: v1's suffix-comma
+        # detection fails on an empty parts[1] ('John Smith,, MD' is a
+        # family-comma parse)
+        return bool(seg) and all(
+            counts_as_suffix(state.tokens[i].text) for i in seg)
 
     rest = groups[1:]
     if all(suffixy(s) for s in rest) and len(groups[0]) > 1:
@@ -75,7 +87,9 @@ def segment(state: ParseState) -> ParseState:
                                    structure=Structure.SUFFIX_COMMA)
     ambiguities = list(state.ambiguities)
     for seg in groups[2:]:
-        if not suffixy(seg):
+        # empty segments are consumed silently (v1 skips them without
+        # comment); only non-empty non-suffix tails get flagged
+        if seg and not suffixy(seg):
             texts = " ".join(state.tokens[i].text for i in seg)
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.COMMA_STRUCTURE,

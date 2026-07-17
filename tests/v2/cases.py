@@ -41,6 +41,26 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith"}),
     Case("suffix_comma", "John Smith, PhD",
          {"given": "John", "family": "Smith", "suffix": "PhD"}),
+    Case("doubled_comma_suffix", "Doe,, Jr.",
+         {"family": "Doe", "suffix": "Jr."},
+         notes="the EMPTY given segment keeps its position: 'Jr.' is a "
+               "tail suffix, not a lone post-comma title (v1 parity, "
+               "pinned live 2026-07-16)"),
+    Case("doubled_comma_given_kept", "Doe, John,, Jr.",
+         {"given": "John", "family": "Doe", "suffix": "Jr."}),
+    Case("single_trailing_comma_cosmetic", "John,",
+         {"given": "John"},
+         notes="v1 collapse_whitespace strips exactly ONE trailing "
+               "comma before parsing"),
+    Case("double_trailing_comma_structural", "Doe,,",
+         {"family": "Doe"},
+         notes="one trailing comma is cosmetic, the second is "
+               "structural: an empty given segment makes this a "
+               "family-comma parse (v1 parity, pinned live 2026-07-16)"),
+    Case("doubled_comma_blocks_suffix_comma", "John Smith,, MD",
+         {"family": "John Smith", "suffix": "MD"},
+         notes="an empty segment 1 fails the suffix-comma detection "
+               "(v1 parity)"),
     Case("suffix_delimiter_tail_segment", "Doe, John, RN - CRNA",
          {"given": "John", "family": "Doe", "suffix": "RN, CRNA"},
          policy=_SD,
