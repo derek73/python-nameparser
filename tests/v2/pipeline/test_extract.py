@@ -58,6 +58,71 @@ def test_no_spurious_unbalanced_from_role_overlapping_pairs() -> None:
         assert out.ambiguities == ()
 
 
+def test_mixed_conventions_both_extract_leftmost_wins() -> None:
+    # Review finding (2026-07-19, three agents independently): with the
+    # default #273 pairs, a string containing TWO delimited asides in
+    # different conventions mis-extracted -- the earlier-sorted pair
+    # claimed the other's close character ('“' closes „…“ but opens
+    # “…”) as its own open and swallowed a bogus span across the real
+    # boundary, silently dropping the legitimate match. The scan must
+    # be position-driven: the leftmost genuine opener wins.
+    text = "Hans „Erster“ und “Zweiter” Müller"
+    out = extract_delimited(_state(text))
+    assert [text[s.start:s.end] for _, s in out.extracted] == [
+        "Erster", "Zweiter"]
+    assert out.ambiguities == ()
+
+
+def test_mixed_guillemet_directions_both_extract() -> None:
+    text = "Jean «Petit» Dupont »Rex« Martin"
+    out = extract_delimited(_state(text))
+    assert [text[s.start:s.end] for _, s in out.extracted] == [
+        "Petit", "Rex"]
+    assert out.ambiguities == ()
+
+
+def test_mixed_conventions_across_maiden_and_nickname_buckets() -> None:
+    # same shape across ROLES: guillemets routed to maiden must not let
+    # the reversed nickname pair steal the maiden close
+    policy = Policy(maiden_delimiters=frozenset({("«", "»")}))
+    text = "Jean «Dupont» Martin »Rex« Smith"
+    out = extract_delimited(_state(text, policy))
+    got = {(role, text[s.start:s.end]) for role, s in out.extracted}
+    assert got == {(Role.MAIDEN, "Dupont"), (Role.NICKNAME, "Rex")}
+    assert out.ambiguities == ()
+
+
+def test_extraction_and_genuine_unbalanced_coexist() -> None:
+    # the kept path: a successful extraction must not suppress a REAL
+    # dangling open elsewhere in the same string
+    text = 'John (Jack) Smith "Extra'
+    out = extract_delimited(_state(text))
+    assert [text[s.start:s.end] for _, s in out.extracted] == ["Jack"]
+    assert [a.kind for a in out.ambiguities] == [
+        AmbiguityKind.UNBALANCED_DELIMITER]
+
+
+def test_same_char_bulk_unbalanced_filtered_by_other_pairs_mask() -> None:
+    # the same-char forward-scan records EVERY dangling quote; one that
+    # sits inside a region another pair successfully extracts is
+    # literal content, not a dangling delimiter -- only the truly
+    # dangling ones surface. All three quotes here fail the close-walk
+    # (no quote is followed by a boundary), so the bulk pass records
+    # all three; the middle one lands inside the paren match.
+    #       01234567890123456789
+    text = 'Jon "A (x "y) Bob "C'
+    out = extract_delimited(_state(text))
+    assert [text[s.start:s.end] for _, s in out.extracted] == ['x "y']
+    # quotes at 4 and 18 are genuinely dangling; the one at 10 was
+    # consumed by the parenthesized extraction
+    assert sorted(a.detail for a in out.ambiguities) == [
+        "unmatched '\"' at offset 18; treated as literal text",
+        "unmatched '\"' at offset 4; treated as literal text",
+    ]
+    assert all(a.kind is AmbiguityKind.UNBALANCED_DELIMITER
+               for a in out.ambiguities)
+
+
 def test_genuine_unbalanced_still_flagged_alongside_overlapping_pairs() -> None:
     # the suppression must not swallow REAL unbalanced opens: here the
     # German open has no close anywhere, and no other pair extracts
