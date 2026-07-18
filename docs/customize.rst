@@ -95,9 +95,11 @@ listed below.
        splits suffix groups and cannot be replaced.
    * - ``lenient_comma_suffixes``
      - ``bool``
-     - Allows a segment after a comma to be read as a suffix using
-       the lenient, initial-shaped test. Set ``False`` to require the
-       strict acronym form.
+     - Reads an initial-shaped suffix word after a comma as a suffix:
+       ``"John Smith, V"`` is John Smith the fifth when ``True``
+       (default); ``False`` reads ``V`` as a given-name initial
+       instead. Multi-letter suffixes (``III``, ``MD``) are
+       unaffected.
    * - ``strip_emoji``
      - ``bool``
      - Excludes emoji from tokenization — they appear in no field or

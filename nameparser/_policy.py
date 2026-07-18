@@ -101,8 +101,11 @@ class Policy:
     #: is structural (the same comma reading that parses
     #: "Family, Given" input), not a configurable delimiter.
     extra_suffix_delimiters: frozenset[str] = frozenset()
-    #: Allows a post-comma segment to read as a suffix via the lenient
-    #: initial-shaped test; False requires the strict acronym form.
+    #: Governs "Family, Suffix"-shaped input where the suffix word is
+    #: also initial-shaped: "John Smith, V" reads as John Smith the
+    #: fifth when True (the default, v1 behavior); False reads "V" as
+    #: a given-name initial instead (family "John Smith", given "V").
+    #: Multi-letter suffixes ("III", "MD") parse the same either way.
     lenient_comma_suffixes: bool = True
     #: Excludes emoji from tokenization: they appear in no token,
     #: field, or rendered view. The original string keeps them (input
