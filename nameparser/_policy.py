@@ -64,9 +64,13 @@ class Policy:
     only what you change -- ``Policy(maiden_delimiters={("(", ")")})``
     -- and pass the result to ``Parser(policy=...)``."""
 
-    #: How positional (no-comma) input maps onto given/middle/family;
-    #: one of the exported GIVEN_FIRST (default), FAMILY_FIRST,
-    #: FAMILY_FIRST_GIVEN_LAST orders.
+    #: How positional (no-comma) input maps onto given/middle/family.
+    #: Valid values are exactly the three exported constants --
+    #: GIVEN_FIRST (the default), FAMILY_FIRST, and
+    #: FAMILY_FIRST_GIVEN_LAST; any other tuple of Roles raises
+    #: ValueError. Ignored when the input contains a comma:
+    #: comma-format input ("Yamamoto, Haruki") states its own order
+    #: explicitly.
     name_order: tuple[Role, Role, Role] = GIVEN_FIRST
     #: Opt-in detectors that reorder patronymic-shaped names
     #: (EAST_SLAVIC, TURKIC); usually set via a locale pack.

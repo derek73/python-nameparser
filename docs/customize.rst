@@ -65,6 +65,8 @@ listed below.
      - Assigns positional (no-comma) input to given/middle/family in
        this order. Use the exported ``GIVEN_FIRST`` (default),
        ``FAMILY_FIRST``, or ``FAMILY_FIRST_GIVEN_LAST`` constants.
+       Ignored for comma-format input ("Yamamoto, Haruki"), which
+       states its own order.
    * - ``patronymic_rules``
      - ``frozenset[PatronymicRule]``
      - Reorders patronymic-shaped names via opt-in detectors — East
