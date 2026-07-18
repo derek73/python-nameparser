@@ -18,7 +18,7 @@ _MUST_EXIST = {"_types.py", "_lexicon.py", "_policy.py", "_locale.py",
                "_pipeline/_classify.py", "_pipeline/_group.py",
                "_pipeline/_assign.py", "_pipeline/_post_rules.py",
                "_pipeline/_assemble.py", "_parser.py", "_facade.py",
-               "_config_shim.py"}
+               "_config_shim.py", "locales/__init__.py", "locales/ru.py"}
 
 _PIPELINE_STAGE_ALLOWED = (
     "nameparser._types", "nameparser._lexicon", "nameparser._policy",
@@ -75,6 +75,16 @@ ALLOWED = {
     "_config_shim.py": ("nameparser._lexicon", "nameparser._parser",
                         "nameparser._policy", "nameparser.util",
                         "nameparser.config"),
+    # PEP 562 lazy loader: the only static import is _locale (for the
+    # Locale return type); pack modules load via importlib.import_module
+    # (a runtime string, invisible to the AST walker) -- the
+    # "nameparser.locales." prefix documents that reach for humans even
+    # though the walker never exercises it.
+    "locales/__init__.py": ("nameparser._locale", "nameparser.locales."),
+    # a locale pack: pure data over the three base types, no pipeline
+    # or config access (locales spec §2)
+    "locales/ru.py": ("nameparser._lexicon", "nameparser._locale",
+                      "nameparser._policy"),
     # v1 import-path preservation: thin re-exports of the facade/shim
     "parser.py": ("nameparser._facade",),
     "config/__init__.py": ("nameparser._config_shim",),
