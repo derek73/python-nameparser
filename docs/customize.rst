@@ -14,9 +14,9 @@ Vocabulary: Lexicon
 .. doctest::
 
     >>> from nameparser import Lexicon, Parser
-    >>> lex = Lexicon.default().add(titles={"chancellor"})
-    >>> Parser(lexicon=lex).parse("Chancellor Angela Merkel").title
-    'Chancellor'
+    >>> lex = Lexicon.default().add(titles={"dean"})
+    >>> Parser(lexicon=lex).parse("Dean Robert Johns").title
+    'Dean'
 
 :meth:`~nameparser.Lexicon.add` and :meth:`~nameparser.Lexicon.remove`
 both return a new :class:`~nameparser.Lexicon` — the one you started
@@ -39,7 +39,11 @@ don't add new vocabulary by themselves; they narrow how an existing
 entry is read when it appears alone. If you're not sure whether a word
 you're adding is one of these ambiguous cases, leave it out — an
 unrecognized word usually still parses reasonably, while a wrongly
-disambiguated one silently picks the less likely reading.
+disambiguated one silently picks the less likely reading. (That
+conservatism is why ``dean`` above isn't in the default vocabulary in
+the first place: "Dean" is also a common given name, and a default
+that swallowed it as a title would misparse "Dean Martin" for
+everyone.)
 
 Behavior: Policy
 -----------------
@@ -145,7 +149,7 @@ you parse.
     # myapp/names.py
     from nameparser import Lexicon, Parser, Policy
 
-    lex = Lexicon.default().add(titles={"chancellor"})
+    lex = Lexicon.default().add(titles={"dean"})
     policy = Policy(strip_emoji=False)
     parser = Parser(lexicon=lex, policy=policy)
 

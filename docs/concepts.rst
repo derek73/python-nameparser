@@ -52,9 +52,9 @@ this setting vary with?
   ``spec`` you pass to ``render(spec)``, or a keyword to
   ``initials()``/``capitalized()``)
 
-"Chancellor" being a title is a fact about German-language input, not
-about any one dataset or report — that's a :class:`~nameparser.Lexicon`
-entry. A CRM that always exports "Family, Given" strings is a fact
+"Dean" being a title in your data is a fact about the language and
+domain the names come from (academic rosters, say), not about any one
+dataset or report — that's a :class:`~nameparser.Lexicon` entry. A CRM that always exports "Family, Given" strings is a fact
 about that one data source, not about the language of the names in
 it — that's a :class:`~nameparser.Policy`. One particular report
 wanting names formatted as "Family, Given" while every other consumer
