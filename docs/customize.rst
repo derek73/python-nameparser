@@ -124,6 +124,8 @@ above is the whole recipe. To *add* delimiters instead of rerouting
 them, build on the named default:
 ``nickname_delimiters=DEFAULT_NICKNAME_DELIMITERS | {("«", "»")}``.
 
+.. _rendering-arguments:
+
 Presentation: rendering arguments
 ----------------------------------
 

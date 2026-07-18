@@ -56,9 +56,9 @@ this setting vary with?
   **data source or application**: the behavior switches — name order,
   patronymic rules, delimiters, strip flags — anything that changes
   how the pipeline runs, not what words it recognizes.
-* Rendering arguments cover everything that varies by **output
-  destination**: the ``spec`` you pass to ``render(spec)``, or a
-  keyword to ``initials()``/``capitalized()``.
+* :ref:`Rendering arguments <rendering-arguments>` cover everything
+  that varies by **output destination**: the ``spec`` you pass to
+  ``render(spec)``, or a keyword to ``initials()``/``capitalized()``.
 
 "Dean" is a common given name, so it is not in the default titles
 vocabulary — but in some data it is more common as a title. Which
