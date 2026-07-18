@@ -1,10 +1,23 @@
 """The locale pack layer (locales spec §2-3): lazy access, the two
 2.0.0 packs, composition, and the non-interference gate."""
+import json
+from collections.abc import Callable, Iterable
+from pathlib import Path
+
 import pytest
 
-from nameparser import Locale
+from nameparser import Locale, Parser, locales, parser_for
 from nameparser._lexicon import Lexicon
 from nameparser._policy import PatronymicRule
+from nameparser.locales import ru as _ru
+from nameparser.locales import tr_az as _tr_az
+
+_CORPUS = [
+    json.loads(line)
+    for line in (Path(__file__).parents[2] / "tools" / "differential"
+                 / "corpus.jsonl").read_text().splitlines()
+    if line.strip()
+]
 
 
 def test_locales_module_attribute_access() -> None:
@@ -111,3 +124,49 @@ def test_locales_import_is_lazy() -> None:
     nameparser.locales.RU
     assert "nameparser.locales.ru" in sys.modules
     importlib.reload(nameparser.locales)
+
+
+def _assert_non_interference(
+    packed: Parser, deviates: Callable[[str], bool], corpus: Iterable[str],
+) -> int:
+    """Return the number of DECLARED deviations seen; fail on any
+    undeclared one (spec §5.2 = the pack-acceptance rejection rule)."""
+    default = Parser()
+    declared = 0
+    for name in corpus:
+        base = default.parse(name).as_dict()
+        got = packed.parse(name).as_dict()
+        if got != base:
+            assert deviates(name), (
+                f"UNDECLARED deviation: {name!r}\n"
+                f"  default: {base}\n  packed:  {got}")
+            declared += 1
+    return declared
+
+
+def _default_corpus() -> list[str]:
+    from .cases import CASES
+
+    return list(_CORPUS) + [c.text for c in CASES
+                             if c.locale is None and c.policy is None]
+
+
+def test_non_interference_ru() -> None:
+    corpus = _default_corpus()
+    declared = _assert_non_interference(
+        parser_for(locales.RU), _ru.DEVIATES, corpus)
+    # the positive side: the gate must be exercising something -- the
+    # corpus contains east-slavic bank names that DO rotate
+    assert declared > 0
+
+
+def test_non_interference_tr_az() -> None:
+    _assert_non_interference(
+        parser_for(locales.TR_AZ), _tr_az.DEVIATES, _default_corpus())
+
+
+def test_non_interference_combined() -> None:
+    _assert_non_interference(
+        parser_for(locales.RU, locales.TR_AZ),
+        lambda n: _ru.DEVIATES(n) or _tr_az.DEVIATES(n),
+        _default_corpus())
