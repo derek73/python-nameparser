@@ -28,6 +28,13 @@ _PIPELINE_STAGE_ALLOWED = (
     "nameparser._pipeline.",
 )
 
+# a locale pack: pure data over the three base types, no pipeline or
+# config access (locales spec §2) -- one contract shared by every pack,
+# like _PIPELINE_STAGE_ALLOWED above, so tightening it is a one-line edit
+_LOCALE_PACK_ALLOWED = (
+    "nameparser._lexicon", "nameparser._locale", "nameparser._policy",
+)
+
 # module -> prefixes it may import from within nameparser
 ALLOWED = {
     # call-time imports only (inside the rendering-delegate method
@@ -82,14 +89,8 @@ ALLOWED = {
     # "nameparser.locales." prefix documents that reach for humans even
     # though the walker never exercises it.
     "locales/__init__.py": ("nameparser._locale", "nameparser.locales."),
-    # a locale pack: pure data over the three base types, no pipeline
-    # or config access (locales spec §2)
-    "locales/ru.py": ("nameparser._lexicon", "nameparser._locale",
-                      "nameparser._policy"),
-    # a locale pack: pure data over the three base types, no pipeline
-    # or config access (locales spec §2)
-    "locales/tr_az.py": ("nameparser._lexicon", "nameparser._locale",
-                         "nameparser._policy"),
+    "locales/ru.py": _LOCALE_PACK_ALLOWED,
+    "locales/tr_az.py": _LOCALE_PACK_ALLOWED,
     # v1 import-path preservation: thin re-exports of the facade/shim
     "parser.py": ("nameparser._facade",),
     "config/__init__.py": ("nameparser._config_shim",),
