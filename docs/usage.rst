@@ -106,6 +106,7 @@ Command line
 ::
 
     $ python -m nameparser --json "Doe, John"
+    {"title": "", "given": "John", "middle": "", "family": "Doe", "suffix": "", "nickname": "", "maiden": ""}
 
 Add ``--locale`` to parse with a locale pack (for example ``--locale
 ru``); see :doc:`locales`.
