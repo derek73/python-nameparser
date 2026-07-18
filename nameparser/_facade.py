@@ -251,8 +251,11 @@ class HumanName:
             )
         if not isinstance(value, str):
             raise TypeError(f"full_name must be a str, got {value!r}")
+        # parse FIRST: if snapshot resolution raises, the instance must
+        # not be left with a new full_name over the old parsed fields
+        parsed = self._resolve().parse(value)
         self._full_name = value
-        self._parsed = self._resolve().parse(value)
+        self._parsed = parsed
         if self._C.capitalize_name:
             self.capitalize()  # v1 parser.py:1653 parity
 
@@ -307,6 +310,8 @@ class HumanName:
 
     @property
     def has_own_config(self) -> bool:
+        """True when this instance is not using the shared module-level
+        CONSTANTS."""
         return self._C is not CONSTANTS
 
     # -- fields ---------------------------------------------------------
@@ -554,6 +559,8 @@ class HumanName:
         return self._parsed.matches(target, parser=self._resolve())
 
     def comparison_key(self) -> tuple[str, ...]:
+        """One casefolded component per field in canonical order -- the
+        v1 replacement for ==/hash (#223); see ParsedName.comparison_key."""
         return self._parsed.comparison_key()
 
     # -- dunders ------------------------------------------------------------
@@ -602,6 +609,8 @@ class HumanName:
         return getattr(self, key)
 
     def as_dict(self, include_empty: bool = True) -> dict[str, str]:
+        """The seven v1-named components as a dict; include_empty=False
+        drops empty fields."""
         d = {member: getattr(self, member) for member in _MEMBERS}
         if include_empty:
             return d

@@ -108,13 +108,18 @@ class SetManager:
         # notify only on real change (v1 parity): a no-op add must not
         # bump the owner's generation
         changed = False
-        for s in strings:
-            normalized = _lc_validated(s)  # TypeError on bytes (#245)
-            if normalized not in self._elements:
-                self._elements.add(normalized)
-                changed = True
-        if changed:
-            self._changed()
+        try:
+            for s in strings:
+                normalized = _lc_validated(s)  # TypeError on bytes (#245)
+                if normalized not in self._elements:
+                    self._elements.add(normalized)
+                    changed = True
+        finally:
+            # a TypeError mid-list still leaves earlier additions
+            # applied, so the owner must hear about them or its cache
+            # goes stale (same rule as remove() below)
+            if changed:
+                self._changed()
         return self
 
     def remove(self, *strings: str) -> SetManager:
@@ -124,7 +129,10 @@ class SetManager:
         changed = False
         try:
             for s in strings:
-                self._elements.remove(lc(s))  # KeyError on missing (#243)
+                # _lc_validated: bytes get the same decode-hint TypeError
+                # as add() (#245)
+                normalized = _lc_validated(s)
+                self._elements.remove(normalized)  # KeyError on missing (#243)
                 changed = True
         finally:
             # a KeyError mid-list still leaves earlier removals applied,
@@ -139,7 +147,7 @@ class SetManager:
         Returns ``self`` for chaining."""
         changed = False
         for s in strings:
-            normalized = lc(s)
+            normalized = _lc_validated(s)  # bytes decode hint (#245)
             if normalized in self._elements:
                 self._elements.discard(normalized)
                 changed = True
@@ -253,6 +261,32 @@ class SetManager:
         self._on_change = None  # rewired by the owning Constants
 
 
+def _validated_mapping_args(args: tuple[object, ...]) -> tuple[object, ...]:
+    """The #242 constructor guard, shared by TupleManager and
+    _DelimiterManager: a bare str/bytes silently shreds into a garbage
+    mapping (dict's own error), and an iterable of short strings
+    silently splits each one into a (key, value) pair -- ported from
+    v1's TupleManager.__init__ guard."""
+    if not args:
+        return args
+    arg = args[0]
+    _reject_bare_str_or_bytes(
+        arg, "a mapping or iterable of (key, value) pairs")
+    if not isinstance(arg, Mapping):
+        checked = []
+        for item in arg:  # type: ignore[attr-defined]
+            if isinstance(item, (str, bytes)):
+                kind = "bytes" if isinstance(item, bytes) else "str"
+                raise TypeError(
+                    f"expected (key, value) pairs, got a {kind} "
+                    f"element {item!r}; a 2-character string "
+                    "silently splits into a key and a value"
+                )
+            checked.append(item)
+        args = (checked, *args[1:])
+    return args
+
+
 class TupleManager(dict[str, object]):
     """v1 ``TupleManager``: a dict with dot-notation access. Backs
     ``capitalization_exceptions``. Unknown-key attribute access raises
@@ -267,26 +301,7 @@ class TupleManager(dict[str, object]):
     def __init__(self, *args: object,
                  _on_change: Callable[[], None] | None = None,
                  **kwargs: object) -> None:
-        if args:
-            # #242: a bare str/bytes silently shreds into a garbage mapping
-            # (dict's own error), and an iterable of short strings silently
-            # splits each one into a (key, value) pair -- ported from v1's
-            # TupleManager.__init__ guard.
-            arg = args[0]
-            _reject_bare_str_or_bytes(
-                arg, "a mapping or iterable of (key, value) pairs")
-            if not isinstance(arg, Mapping):
-                checked = []
-                for item in arg:  # type: ignore[attr-defined]
-                    if isinstance(item, (str, bytes)):
-                        kind = "bytes" if isinstance(item, bytes) else "str"
-                        raise TypeError(
-                            f"expected (key, value) pairs, got a {kind} "
-                            f"element {item!r}; a 2-character string "
-                            "silently splits into a key and a value"
-                        )
-                    checked.append(item)
-                args = (checked, *args[1:])
+        args = _validated_mapping_args(args)
         super().__init__(*args, **kwargs)
         self._on_change = _on_change
 
@@ -405,7 +420,7 @@ _SENTINEL_PAIRS = {
 _DELIMITER_SENTINELS = tuple(_SENTINEL_PAIRS)
 
 
-class RegexTupleManager(TupleManager):
+class RegexTupleManager(TupleManager):  # pickle-compat: do NOT delete
     """Pickle-compat alias only: v1.4's ``Constants.regexes`` field was a
     ``nameparser.config.RegexTupleManager`` instance (a ``TupleManager``
     subclass whose ``__getattr__`` fell back to ``EMPTY_REGEX`` for an
@@ -436,7 +451,10 @@ class _DelimiterManager(TupleManager):
                  **kwargs: object) -> None:
         # dict's C-level __init__ never calls a subclass __setitem__, so
         # collect and validate the initial items here -- BEFORE any item
-        # lands -- or the sentinel rule silently misses the constructor
+        # lands -- or the sentinel rule silently misses the constructor.
+        # The parent's #242 guard runs first: bare str/bytes gets the
+        # friendly TypeError, not dict's cryptic one.
+        args = _validated_mapping_args(args)
         items: dict[str, object] = dict(*args, **kwargs)
         for key in items:
             self._reject_non_sentinel(key)
@@ -782,6 +800,14 @@ class Constants:
         object.__setattr__(self, "_generation", self._generation + 1)
 
     def __setattr__(self, name: str, value: object) -> None:
+        if name == "_shared":
+            # the flag the whole shared-mutation DeprecationWarning
+            # mechanism hinges on: only the module-level singleton flip
+            # (object.__setattr__ below) may set it
+            raise AttributeError(
+                "Constants._shared is read-only; it marks the module "
+                "singleton and is set once at import"
+            )
         if name == "empty_attribute_default":
             raise AttributeError(
                 "empty_attribute_default was removed in 2.0 (#255): "
@@ -972,4 +998,4 @@ class Constants:
 
 
 CONSTANTS = Constants()
-CONSTANTS._shared = True  # type: ignore[attr-defined]
+object.__setattr__(CONSTANTS, "_shared", True)

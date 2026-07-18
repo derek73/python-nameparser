@@ -567,3 +567,39 @@ def test_constants_bool_kwargs() -> None:
     d = Constants(patronymic_name_order=True)
     _, policy, _ = d._snapshot()
     assert len(policy.patronymic_rules) == 2
+
+
+def test_set_manager_partial_add_still_notifies_owner() -> None:
+    # a TypeError mid-argument-list leaves earlier additions applied;
+    # the owner must hear about them or its cached parser goes stale
+    bumps: list[int] = []
+    s = SetManager(["a"], _on_change=lambda: bumps.append(1))
+    with pytest.raises(TypeError, match="decode"):
+        s.add("b", b"bad")  # type: ignore[arg-type]
+    assert "b" in s
+    assert len(bumps) == 1
+
+
+def test_set_manager_remove_discard_bytes_decode_hint() -> None:
+    s = SetManager(["dr"])
+    with pytest.raises(TypeError, match="decode"):
+        s.remove(b"dr")  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="decode"):
+        s.discard(b"dr")  # type: ignore[arg-type]
+
+
+def test_delimiter_manager_constructor_bare_str_gets_242_error() -> None:
+    # the parent's #242 guard, not dict's cryptic ValueError
+    with pytest.raises(TypeError, match="mapping or iterable"):
+        _DelimiterManager("ab")  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="pairs"):
+        _DelimiterManager(["ab", "cd"])  # type: ignore[list-item]
+
+
+def test_constants_shared_flag_is_read_only() -> None:
+    c = Constants()
+    with pytest.raises(AttributeError, match="read-only"):
+        c._shared = True
+    with pytest.raises(AttributeError, match="read-only"):
+        CONSTANTS._shared = False
+    assert CONSTANTS._shared is True and c._shared is False

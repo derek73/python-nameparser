@@ -380,3 +380,44 @@ def test_v14_humanname_blob_unpickles() -> None:
     assert loaded.title == "Dr." and loaded.suffix == "III"
     assert loaded.original == "Dr. Juan de la Vega III"
     assert loaded.C is CONSTANTS  # shared sentinel restored (v1.4's C: None)
+
+
+def test_suffix_delimiter_reassignment_after_construction() -> None:
+    n = HumanName("Doe, John, RN - CRNA")
+    assert n.suffix == "RN - CRNA"          # no delimiter: one entry
+    n.suffix_delimiter = " - "
+    n.parse_full_name()
+    assert n.suffix == "RN, CRNA"           # setter invalidated the Policy
+    n.suffix_delimiter = None
+    n.parse_full_name()
+    assert n.suffix == "RN - CRNA"          # and back
+
+
+def test_c_swap_keeps_instance_suffix_delimiter() -> None:
+    # both invalidation paths together: swapping C must not lose the
+    # instance-level delimiter layered onto the new snapshot's Policy
+    n = HumanName("Doe, John, RN - CRNA", suffix_delimiter=" - ")
+    assert n.suffix == "RN, CRNA"
+    n.C = Constants()
+    n.parse_full_name()
+    assert n.suffix == "RN, CRNA"
+
+
+def test_failed_reparse_leaves_state_consistent() -> None:
+    # _resolve() raising must not leave full_name pointing at the new
+    # value over the OLD parsed fields
+    n = HumanName("John Smith")
+
+    class _Boom(Exception):
+        pass
+
+    def explode() -> None:
+        raise _Boom
+
+    n._C = Constants()
+    n._C._snapshot = explode  # type: ignore[method-assign, assignment]
+    n._snapshot_gen = -1
+    with pytest.raises(_Boom):
+        n.full_name = "Jane Doe"
+    assert n.full_name == "John Smith"
+    assert n.first == "John"
