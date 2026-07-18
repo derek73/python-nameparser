@@ -33,12 +33,21 @@ class Role(Enum):
 
     # Declaration order IS the canonical field order (conventions §3):
     # every listing of the seven fields anywhere derives from this.
+
+    #: Pre-nominal titles and honorifics ("Dr.", "Sir", "Capt.").
     TITLE = "title"
+    #: The given (first) name, or its initial.
     GIVEN = "given"
+    #: Names between given and family -- middle names or initials.
     MIDDLE = "middle"
+    #: The family (last) name, including any particles ("de la Vega").
     FAMILY = "family"
+    #: Post-nominal pieces ("III", "Jr.", "PhD").
     SUFFIX = "suffix"
+    #: Delimited nickname content ("Jonathan 'Jack' Kennedy" -> "Jack").
     NICKNAME = "nickname"
+    #: A birth surname, from a marker word ("Jane Smith née Jones" ->
+    #: "Jones") or a delimiter pair routed via Policy.maiden_delimiters.
     MAIDEN = "maiden"
 
 
