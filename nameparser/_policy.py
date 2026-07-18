@@ -86,10 +86,14 @@ class Policy:
     #: (EAST_SLAVIC, TURKIC); usually set via a locale pack.
     patronymic_rules: frozenset[PatronymicRule] = frozenset()
     #: Folds middle into family instead of splitting them (v1's
-    #: middle_name_as_last).
+    #: middle_name_as_last) -- for data where unrecognized interior
+    #: words are surname parts, not middle names: multi-part surnames
+    #: like Spanish/Portuguese dual surnames ("Gabriel García Márquez"
+    #: -> family "García Márquez" instead of middle "García").
     middle_as_family: bool = False  # v1's middle_name_as_last
     #: (open, close) pairs whose enclosed content becomes the nickname
-    #: field. Defaults to DEFAULT_NICKNAME_DELIMITERS (#273).
+    #: field. Defaults to
+    #: :data:`~nameparser.DEFAULT_NICKNAME_DELIMITERS` (#273).
     nickname_delimiters: frozenset[tuple[str, str]] = DEFAULT_NICKNAME_DELIMITERS
     #: (open, close) pairs whose enclosed content becomes the maiden
     #: field instead; a pair listed here is dropped from the effective
