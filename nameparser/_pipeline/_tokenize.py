@@ -26,14 +26,15 @@ from nameparser._pipeline._state import (
 )
 from nameparser._types import Role, Span
 
-# Ported verbatim from v1 (nameparser/config/regexes.py, "emoji" and
-# "bidi") -- layering forbids importing the config package here, so the
-# patterns are duplicated by design with this provenance note. When
-# editing, keep both copies in sync.
-_EMOJI = re.compile('['
-    '\U0001F300-\U0001F64F'  # lgtm[py/overly-large-range]
-    '\U0001F680-\U0001F6FF'
-    '\u2600-\u26FF\u2700-\u27BF]+')
+# Ported from v1 (nameparser/config/regexes.py, "emoji" and "bidi") --
+# layering forbids importing the config package here, so the tables are
+# duplicated by design with this provenance note. When editing, keep
+# both copies in sync (regexes.py builds its public re_emoji from the
+# SAME codepoint pairs). Integer ranges, not a regex character class:
+# the per-char test needs no regex, and CodeQL's py/overly-large-range
+# false-positives on literal astral ranges (surrogate decomposition).
+_EMOJI_RANGES = ((0x1F300, 0x1F64F), (0x1F680, 0x1F6FF),
+                 (0x2600, 0x26FF), (0x2700, 0x27BF))
 _BIDI = re.compile('[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]+')
 
 
@@ -46,7 +47,10 @@ def _ignorable(ch: str, state: ParseState) -> bool:
         return False
     if state.policy.strip_bidi and _BIDI.match(ch):
         return True
-    return bool(state.policy.strip_emoji and _EMOJI.match(ch))
+    if state.policy.strip_emoji:
+        cp = ord(ch)
+        return any(lo <= cp <= hi for lo, hi in _EMOJI_RANGES)
+    return False
 
 
 def _tokenize_region(state: ParseState, start: int, end: int,

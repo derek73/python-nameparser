@@ -1,10 +1,13 @@
 import re
 
-# emoji regex from https://stackoverflow.com/questions/26568722/remove-unicode-emoji-using-re-in-python
-re_emoji = re.compile('['
-    '\U0001F300-\U0001F64F'  # lgtm[py/overly-large-range]
-    '\U0001F680-\U0001F6FF'
-    '\u2600-\u26FF\u2700-\u27BF]+')
+# emoji ranges from https://stackoverflow.com/questions/26568722/remove-unicode-emoji-using-re-in-python
+# Built from codepoint pairs rather than a literal character class:
+# the compiled pattern is identical, but CodeQL's py/overly-large-range
+# false-positives on literal astral ranges (surrogate decomposition).
+_EMOJI_RANGES = ((0x1F300, 0x1F64F), (0x1F680, 0x1F6FF),
+                 (0x2600, 0x26FF), (0x2700, 0x27BF))
+re_emoji = re.compile(
+    '[' + ''.join(f'{chr(lo)}-{chr(hi)}' for lo, hi in _EMOJI_RANGES) + ']+')
 
 # Invisible bidirectional formatting characters: ALM, LRM, RLM, the
 # embedding/override marks (LRE/RLE/PDF/LRO/RLO) and the isolates
