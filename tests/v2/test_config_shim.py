@@ -361,6 +361,23 @@ def test_snapshot_delimiter_bucket_move() -> None:
     assert ("(", ")") not in policy.nickname_delimiters
 
 
+def test_snapshot_overlap_keeps_v1_nickname_precedence() -> None:
+    # v1 semantics: a pair present in BOTH v1 buckets parses as nickname.
+    # 2.0's Policy resolves overlap the other way (maiden wins), so the
+    # snapshot pre-subtracts on the maiden side -- a v1 user who added
+    # parens to maiden_delimiters WITHOUT removing them from
+    # nickname_delimiters keeps their 1.x parse through the facade.
+    c = Constants()
+    c.maiden_delimiters["parenthesis"] = ("(", ")")  # nickname still has it
+    _, policy, _ = c._snapshot()
+    assert ("(", ")") in policy.nickname_delimiters
+    assert ("(", ")") not in policy.maiden_delimiters
+    from nameparser import HumanName
+
+    n = HumanName("Jane (Jones) Smith", constants=c)
+    assert n.nickname == "Jones" and n.maiden == ""
+
+
 def test_snapshot_ambiguous_removed_acronym_intersects() -> None:
     c = Constants()
     c.suffix_acronyms.remove("jd")          # 'jd' stays in ambiguous

@@ -27,6 +27,13 @@ FAMILY_FIRST_GIVEN_LAST = (Role.FAMILY, Role.MIDDLE, Role.GIVEN)
 
 _NAME_ROLES = frozenset({Role.GIVEN, Role.MIDDLE, Role.FAMILY})
 
+#: Policy.nickname_delimiters' default (v1 parity: quotes + parentheses).
+#: Public and named so customizations read as set math against a
+#: documented value -- e.g. ``DEFAULT_NICKNAME_DELIMITERS | {("«", "»")}``
+#: -- instead of a rebuilt literal the user had to go discover.
+DEFAULT_NICKNAME_DELIMITERS = frozenset(
+    {("'", "'"), ('"', '"'), ("(", ")")})
+
 
 def _reject_bare_string_order(value: object) -> None:
     # tuple("gmf") would be ("g", "m", "f") -- catch the bare string
@@ -45,11 +52,11 @@ class Policy:
     patronymic_rules: frozenset[PatronymicRule] = frozenset()
     middle_as_family: bool = False  # v1's middle_name_as_last
     # v1 default delimiter set (#273)
-    nickname_delimiters: frozenset[tuple[str, str]] = frozenset(
-        {("'", "'"), ('"', '"'), ("(", ")")}
-    )
-    # empty by default (v1 parity); route ("(", ")") here to send
-    # parenthesized content to maiden instead of nickname (#274)
+    nickname_delimiters: frozenset[tuple[str, str]] = DEFAULT_NICKNAME_DELIMITERS
+    # empty by default (v1 parity); a pair listed here routes to maiden
+    # AND is dropped from the effective nickname set (maiden wins, see
+    # __post_init__), so maiden_delimiters={("(", ")")} is the whole
+    # parenthesized-maiden recipe (#274)
     maiden_delimiters: frozenset[tuple[str, str]] = frozenset()
     extra_suffix_delimiters: frozenset[str] = frozenset()
     lenient_comma_suffixes: bool = True
@@ -129,6 +136,16 @@ class Policy:
                         f"strings, got {pair!r}"
                     )
             object.__setattr__(self, pairs_name, frozenset(pairs))
+        # Maiden wins: a pair can route to exactly one field, and listing
+        # it in maiden_delimiters is the specific intent, so the effective
+        # nickname set drops it. Canonicalization, not validation (the
+        # name_order coercion precedent): differently-written but
+        # equivalent Policies converge to equal values. The v1 facade
+        # keeps v1's nickname-wins precedence via a pre-subtraction in
+        # _config_shim's snapshot instead.
+        object.__setattr__(
+            self, "nickname_delimiters",
+            self.nickname_delimiters - self.maiden_delimiters)
         if isinstance(self.extra_suffix_delimiters, str):
             raise TypeError(
                 f"extra_suffix_delimiters must be an iterable of strings, "

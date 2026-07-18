@@ -58,6 +58,8 @@ Configuration
 
 .. autodata:: nameparser.FAMILY_FIRST_GIVEN_LAST
 
+.. autodata:: nameparser.DEFAULT_NICKNAME_DELIMITERS
+
 Locales
 ~~~~~~~
 

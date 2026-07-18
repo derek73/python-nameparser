@@ -90,6 +90,42 @@ def test_patronymic_rules_true_points_at_the_v1_migration() -> None:
         PolicyPatch(extra_suffix_delimiters=True)  # type: ignore[arg-type]
 
 
+def test_maiden_delimiters_win_over_nickname_defaults() -> None:
+    # A pair routes to exactly one field, and listing it in
+    # maiden_delimiters is the specific intent -- so the one-liner works
+    # without knowing (or rebuilding) the nickname default set. The
+    # review that prompted this: routing parens to maiden used to
+    # require both buckets edited in tandem.
+    p = Policy(maiden_delimiters=frozenset({("(", ")")}))
+    assert ("(", ")") in p.maiden_delimiters
+    assert ("(", ")") not in p.nickname_delimiters
+    # canonicalization: the explicit-removal spelling converges to the
+    # same value (equal AND same hash -- cache keys agree)
+    explicit = Policy(
+        nickname_delimiters=frozenset({("'", "'"), ('"', '"')}),
+        maiden_delimiters=frozenset({("(", ")")}),
+    )
+    assert p == explicit and hash(p) == hash(explicit)
+
+
+def test_maiden_precedence_applies_through_policy_patch() -> None:
+    # apply_patch re-runs Policy's constructor, so a patch (e.g. from a
+    # locale pack) adding a maiden pair gets the same subtraction
+    patched = apply_patch(
+        Policy(), PolicyPatch(maiden_delimiters=frozenset({("(", ")")})))
+    assert ("(", ")") in patched.maiden_delimiters
+    assert ("(", ")") not in patched.nickname_delimiters
+
+
+def test_default_nickname_delimiters_constant_is_the_default() -> None:
+    from nameparser import DEFAULT_NICKNAME_DELIMITERS
+
+    assert Policy().nickname_delimiters == DEFAULT_NICKNAME_DELIMITERS
+    # the documented set-math idiom stays valid input
+    p = Policy(nickname_delimiters=DEFAULT_NICKNAME_DELIMITERS | {("«", "»")})
+    assert ("«", "»") in p.nickname_delimiters
+
+
 def test_policy_delimiters_coerce_to_frozensets() -> None:
     p = Policy(nickname_delimiters=[("(", ")")])  # type: ignore[arg-type]
     assert isinstance(p.nickname_delimiters, frozenset)

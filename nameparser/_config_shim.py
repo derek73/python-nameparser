@@ -950,8 +950,12 @@ class Constants:
             middle_as_family=self.middle_name_as_last,
             nickname_delimiters=frozenset(
                 _SENTINEL_PAIRS[k] for k in self.nickname_delimiters),
+            # v1 precedence: a pair in BOTH v1 buckets parses as nickname.
+            # Policy itself resolves overlap the other way (maiden wins),
+            # so pre-subtract here to keep the facade at v1 behavior.
             maiden_delimiters=frozenset(
-                _SENTINEL_PAIRS[k] for k in self.maiden_delimiters),
+                _SENTINEL_PAIRS[k] for k in self.maiden_delimiters
+                if k not in self.nickname_delimiters),
             # suffix_delimiter is a _RenderDefaults-only field here; the
             # facade layers it onto extra_suffix_delimiters per instance
             # (a later task) -- _snapshot() itself stays pure translation

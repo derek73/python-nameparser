@@ -117,13 +117,15 @@ CASES: tuple[Case, ...] = (
          notes="v1 renders each tail comma segment as ONE suffix "
                "entry; words within an entry space-join via the "
                "'joined' tag"),
-    Case("nickname_bucket_wins_when_shared",
+    Case("maiden_delimiters_win_when_shared",
          'Baker (Johnson), Jenny',
-         {"given": "Jenny", "family": "Baker", "nickname": "Johnson"},
+         {"given": "Jenny", "family": "Baker", "maiden": "Johnson"},
          policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
-         notes="when the same delimiter pair sits in both buckets the "
-               "nickname reading wins (v1 parse_nicknames order); the "
-               "bucket-move idiom removes it from nickname first"),
+         notes="listing a pair in maiden_delimiters drops it from the "
+               "effective nickname set (maiden wins, 2026-07-19) -- the "
+               "one-liner replaces the bucket-move idiom; the v1 facade "
+               "keeps v1's nickname-wins precedence via the shim's "
+               "pre-subtraction (pinned in test_config_shim)"),
     Case("family_segment_trailing_suffix", "Smith Jr., John",
          {"given": "John", "family": "Smith", "suffix": "Jr."},
          notes="v1: the family part may have suffixes in it "

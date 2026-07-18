@@ -174,7 +174,10 @@ rendering argument, where the 2.0 equivalent isn't config at all):
        ``(open, close)`` pairs
    * - ``maiden_delimiters``
      - ``Policy.maiden_delimiters``
-     - Same shape change as ``nickname_delimiters``
+     - Same shape change as ``nickname_delimiters``. Precedence
+       differs: in the 2.0 API a pair listed here wins over
+       ``nickname_delimiters``; through the 1.x facade a pair in both
+       buckets keeps parsing as ``nickname`` (v1 behavior)
    * - ``regexes.bidi``
      - ``Policy.strip_bidi``
      - ``regexes.bidi = False`` becomes ``Policy(strip_bidi=False)``

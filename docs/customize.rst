@@ -74,11 +74,14 @@ listed below.
    * - ``nickname_delimiters``
      - ``frozenset[tuple[str, str]]``
      - Routes content enclosed by these delimiter pairs to
-       ``nickname``. Defaults to quotes and parentheses.
+       ``nickname``. Defaults to
+       :data:`~nameparser.DEFAULT_NICKNAME_DELIMITERS` — quotes and
+       parentheses.
    * - ``maiden_delimiters``
      - ``frozenset[tuple[str, str]]``
      - Routes content enclosed by these delimiter pairs to ``maiden``
-       instead. Defaults to empty — see the routing example below.
+       instead, and drops them from the effective nickname set.
+       Defaults to empty — see the routing example below.
    * - ``extra_suffix_delimiters``
      - ``frozenset[str]``
      - Adds separators (beyond a comma) that split suffix groups, e.g.
@@ -100,17 +103,16 @@ listed below.
 .. doctest::
 
     >>> from nameparser import Parser, Policy
-    >>> policy = Policy(
-    ...     nickname_delimiters=frozenset({("'", "'"), ('"', '"')}),
-    ...     maiden_delimiters=frozenset({("(", ")")}),
-    ... )
+    >>> policy = Policy(maiden_delimiters=frozenset({("(", ")")}))
     >>> Parser(policy=policy).parse("Jane (Jones) Smith").maiden
     'Jones'
 
-Routing parentheses to ``maiden`` means moving that pair out of
-``nickname_delimiters`` as well as into ``maiden_delimiters``, as
-above — a delimiter pair present in *both* buckets routes to
-``nickname``.
+A pair routes to exactly one field, and ``maiden_delimiters`` states
+the specific intent — so listing a pair there automatically drops it
+from the effective ``nickname_delimiters`` set, and the one-liner
+above is the whole recipe. To *add* delimiters instead of rerouting
+them, build on the named default:
+``nickname_delimiters=DEFAULT_NICKNAME_DELIMITERS | {("«", "»")}``.
 
 Presentation: rendering arguments
 ----------------------------------
