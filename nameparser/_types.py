@@ -218,10 +218,23 @@ class AmbiguityKind(StrEnum):
     compares directly. New kinds may be added in minor releases;
     existing values never change meaning."""
 
+    #: Reserved: the name's field order itself is uncertain (e.g. a
+    #: two-word name under a non-default name_order). Not yet emitted;
+    #: planned for 2.x.
     ORDER = "order"
+    #: Reserved: a trailing word reads plausibly as either a suffix or
+    #: a nickname. Not yet emitted; planned for 2.x.
     SUFFIX_OR_NICKNAME = "suffix-or-nickname"
+    #: A leading ambiguous particle was read as a given name -- "Van
+    #: Johnson" parses given="Van", but "Van" is also a family-name
+    #: particle in other names.
     PARTICLE_OR_GIVEN = "particle-or-given"
+    #: A nickname/maiden delimiter opened without closing (or closed
+    #: without opening); the text was kept as literal name content.
+    #: May carry no tokens.
     UNBALANCED_DELIMITER = "unbalanced-delimiter"
+    #: More comma-separated segments than any recognized name shape;
+    #: the parse is best-effort over the extra segments.
     COMMA_STRUCTURE = "comma-structure"
 
 

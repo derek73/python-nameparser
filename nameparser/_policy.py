@@ -13,9 +13,17 @@ from nameparser._types import Role, _guarded_getstate, _guarded_setstate
 
 
 class PatronymicRule(StrEnum):
-    """Stable rule names (API); implementations live in the pipeline."""
+    """Stable rule names (API); implementations live in the pipeline.
+    Enable via ``Policy(patronymic_rules={...})`` or, more commonly, a
+    locale pack (:mod:`nameparser.locales`)."""
 
+    #: East Slavic formal order: "Sidorov Ivan Petrovich"
+    #: (family, given, patronymic) is detected by the patronymic
+    #: ending and reordered. Enabled by locales.RU.
     EAST_SLAVIC = "east-slavic"
+    #: Turkic patronymic markers: a standalone "oglu"/"qizi"/"kyzy"
+    #: (etc.) binds to the preceding name as a patronymic. Enabled by
+    #: locales.TR_AZ.
     TURKIC = "turkic"
 
 
