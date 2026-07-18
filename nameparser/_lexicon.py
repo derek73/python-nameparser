@@ -134,37 +134,39 @@ class Lexicon:
     :meth:`empty`, derive variants with :meth:`add` / :meth:`remove` /
     ``|`` (union), and pass the result to ``Parser(lexicon=...)``.
     Entries are normalized at construction -- lowercased, edge periods
-    stripped -- so matching is case-insensitive."""
+    stripped -- so matching is case-insensitive. Field docs below show
+    examples, not full contents; inspect any field's shipped vocabulary
+    directly, e.g. ``Lexicon.default().conjunctions``."""
 
-    #: Pre-nominal titles ("dr", "sir", "capt").
+    #: Pre-nominal titles ("dr", "sir", "capt", ...).
     titles: frozenset[str] = frozenset()
     #: Titles whose single following name reads as a GIVEN name
-    #: ("sheikh", "sister") rather than a family name.
+    #: ("sheikh", "sister", ...) rather than a family name.
     given_name_titles: frozenset[str] = frozenset()
     #: Post-nominal acronym suffixes, matched with or without periods
     #: ("phd" matches "PhD" and "Ph.D.").
     suffix_acronyms: frozenset[str] = frozenset()
-    #: Post-nominal word suffixes ("jr", "esquire", "iii").
+    #: Post-nominal word suffixes ("jr", "esquire", "iii", ...).
     suffix_words: frozenset[str] = frozenset()
     #: Subset of suffix_acronyms counted as suffixes only when written
     #: WITH periods -- their bare forms are common surnames ("ma",
     #: "do": "Jack Ma" keeps his family name).
     suffix_acronyms_ambiguous: frozenset[str] = frozenset()
     #: Family-name particles that chain onto the following piece
-    #: ("van", "de", "bin").
+    #: ("van", "de", "bin", ...).
     particles: frozenset[str] = frozenset()
     #: Subset of particles that can also BE a given name: a leading
     #: one reads as given and records a particle-or-given ambiguity
     #: ("Van Johnson").
     particles_ambiguous: frozenset[str] = frozenset()
     #: Words or characters that join surrounding pieces into one
-    #: ("and", "&", "y", "и").
+    #: ("and", "&", "y", "и", ...).
     conjunctions: frozenset[str] = frozenset()
     #: Given-name prefixes that bind to the following word to form one
     #: given name ("abdul" -> "Abdul Salam"); never standalone names.
     bound_given_names: frozenset[str] = frozenset()
     #: Marker words introducing a birth surname, routed to the maiden
-    #: field ("née", "geb.", "roz.").
+    #: field ("née", "geb.", "roz.", ...).
     maiden_markers: frozenset[str] = frozenset()
     #: Lowercase word -> exact-cased replacement used by capitalized()
     #: ("phd" -> "Ph.D."). Pair-valued: change it with
