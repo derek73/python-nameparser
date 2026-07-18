@@ -700,9 +700,13 @@ TITLES = FIRST_NAME_TITLES | {
     'пан',
     'пані',
 
-    # #269: Greek -- kyrios/kyria/kyrios(abbr)/doctor/professor
-    # abbreviations; same plain-title convention as above.
-    'κ',
+    # #269: Greek -- kyria/kyrios(abbr)/doctor/professor abbreviations;
+    # same plain-title convention as above.
+    # #269: bare κ deferred -- collides with the initial+surname shape
+    # ('Κ. Παπαδόπουλος' would parse as title 'Κ.' with an empty given;
+    # _normalize strips the edge period, so the entry matches the
+    # initial). Latin TITLES deliberately has no bare single-letter
+    # entries for the same reason.
     'κα',
     'κος',
     'δρ',

@@ -56,7 +56,9 @@ issue = "feat(#269) Arabic بن prefix chains onto family (non-Latin new-recogni
 # This is new-recognition on non-Latin input -- the exact behavior
 # #269 exists to add -- not a Latin-corpus regression, so it is
 # classified rather than reverted.
-name_regex = "بن"
+# Word-bounded: a bare "بن" would also match the substring inside e.g.
+# لبنان ("Lebanon") and silently absorb unrelated middle/last diffs.
+name_regex = "\\bبن\\b"
 fields = ["middle", "last"]
 
 # Deliberately NOT a [[change]] rule: 'Ph. D.' split-token healing

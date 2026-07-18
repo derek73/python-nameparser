@@ -200,9 +200,12 @@ def test_non_interference_combined() -> None:
     ("проф и акад Тарас Григорович Шевченко", "title", "проф и акад"),
     ("проф та акад Іван Франко", "title", "проф та акад"),
     # Greek titles + conjunction (και has 3 letters, so the single-char
-    # initial carve-out above never applies to it).
+    # initial carve-out above never applies to it). Bare κ is NOT
+    # shipped -- it collides with the initial+surname shape (see the
+    # regression test below).
     ("δρ Νίκος Παπαδόπουλος", "title", "δρ"),
-    ("κ Γιώργος Παπαδόπουλος", "title", "κ"),
+    ("κος Γιώργος Παπαδόπουλος", "title", "κος"),
+    ("κα Μαρία Παπαδοπούλου", "title", "κα"),
     ("καθ και δρ Νίκος Παπαδόπουλος", "title", "καθ και δρ"),
     # Arabic patronymic/clan prefixes: non-leading "بن"/"بنت" chain onto
     # the family, mirroring the Latin "von"/"bin" prefix-chain rule.
@@ -235,3 +238,14 @@ def test_non_interference_combined() -> None:
 def test_269_nonlatin_vocabulary_parses(
         name: str, field: str, expected: str) -> None:
     assert getattr(parse(name), field) == expected
+
+
+def test_269_bare_greek_kappa_not_a_title() -> None:
+    # Regression for the deferred bare 'κ' entry: were it in TITLES,
+    # _normalize's edge-period strip would make the abbreviated-initial
+    # 'Κ.' match it, degrading the very common initial+surname shape to
+    # title='Κ.' with an EMPTY given. Pin the correct reading.
+    n = parse("Κ. Παπαδόπουλος")
+    assert n.title == ""
+    assert n.given == "Κ."
+    assert n.family == "Παπαδόπουλος"
