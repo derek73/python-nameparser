@@ -17,6 +17,17 @@ from nameparser._lexicon import Lexicon, _normalize
 # sync by hand; layering forbids importing the config package here.
 _INITIAL = re.compile(r"^(\w\.|[A-Z])$")
 
+# Ported verbatim from v1 (nameparser/config/regexes.py
+# "period_not_at_end") -- layering forbids the config import; keep in
+# sync by hand.
+_PERIOD_NOT_AT_END = re.compile(r".*\..+$", re.I)
+
+# The fix_phd credential pair ('Ph.' + 'D.' as adjacent tokens), shared
+# by segment's suffix-comma detection and group's merge (v1 extracted
+# the credential pre-parse; the two stages must agree on the pattern).
+PH = re.compile(r"^ph\.?$", re.IGNORECASE)
+D = re.compile(r"^d\.?$", re.IGNORECASE)
+
 
 def is_initial(text: str) -> bool:
     """'A.' / 'j.' / bare capital -- v1's is_an_initial."""
@@ -94,11 +105,6 @@ def splits_into_suffixes(text: str, cores: frozenset[str],
     return False
 
 
-# Ported verbatim from v1 (nameparser/config/regexes.py
-# "period_not_at_end") -- layering forbids the config import; keep in
-# sync by hand.
-_PERIOD_NOT_AT_END = re.compile(r".*\..+$", re.I)
-
 
 def period_joined_vocab(text: str, lexicon: Lexicon) -> str | None:
     """v1's parse_pieces derivation for interior-period tokens
@@ -118,9 +124,3 @@ def period_joined_vocab(text: str, lexicon: Lexicon) -> str | None:
         return "suffix"
     return None
 
-
-# The fix_phd credential pair ('Ph.' + 'D.' as adjacent tokens), shared
-# by segment's suffix-comma detection and group's merge (v1 extracted
-# the credential pre-parse; the two stages must agree on the pattern).
-PH = re.compile(r"^ph\.?$", re.IGNORECASE)
-D = re.compile(r"^d\.?$", re.IGNORECASE)
