@@ -68,6 +68,14 @@ def test_stage_field_ownership() -> None:
         "post_rules": {"role", "tags"},
     }
     for case in CASES:
+        if case.locale is not None:
+            # locale rows dissolve into a Policy only through parser_for
+            # (nameparser._parser); this test exercises the raw stage
+            # pipeline directly, and the same inputs already run here
+            # under the equivalent synthetic Policy row (_ES/_TK) --
+            # covering them again through a resolved locale policy would
+            # be redundant, not additive.
+            continue
         state = ParseState(original=case.text, lexicon=_Lexicon.default(),
                            policy=case.policy or Policy())
         for stage in STAGES:

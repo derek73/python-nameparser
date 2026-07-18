@@ -56,6 +56,12 @@ def _constants_for(case: Case) -> Constants | None:
 
 @pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
 def test_facade_case(case: Case) -> None:
+    if case.locale is not None:
+        # v1 Constants' patronymic bool enables BOTH the East Slavic and
+        # Turkic rules at once, so it cannot express a single-rule pack
+        # faithfully -- these rows are core-only (proven via parser_for
+        # in test_cases.py instead).
+        pytest.skip("locale rows are core-only")
     constants = _constants_for(case)
     if constants is None:
         pytest.skip("policy not expressible through v1 Constants")

@@ -26,9 +26,17 @@ class Case:
     text: str
     expect: dict[str, str]          # field -> value; absent fields == ""
     policy: Policy | None = None
+    locale: str | None = None       # locale CODE (keeps this table
+                                     # import-light); mutually exclusive
+                                     # with policy
     classification: str = "parity"
     ambiguities: tuple[str, ...] = ()   # expected AmbiguityKind values
     notes: str = ""
+
+    def __post_init__(self) -> None:
+        if self.policy is not None and self.locale is not None:
+            raise ValueError(
+                f"{self.id}: policy and locale are mutually exclusive")
 
 
 _ES = Policy(patronymic_rules=frozenset({PatronymicRule.EAST_SLAVIC}))
@@ -287,6 +295,25 @@ CASES: tuple[Case, ...] = (
     Case("turkic", "Mammadova Aygun Ali kizi",
          {"given": "Aygun", "middle": "Ali kizi", "family": "Mammadova"},
          policy=_TK),
+    Case("ru_pack_formal_rotation", "Сидоров Иван Петрович",
+         {"given": "Иван", "middle": "Петрович", "family": "Сидоров"},
+         locale="ru",
+         notes="the RU pack end-to-end: same expectation as the "
+               "east_slavic synthetic row, through parser_for"),
+    Case("ru_pack_transliterated", "Petrov Ivan Sergeyevich",
+         {"given": "Ivan", "middle": "Sergeyevich", "family": "Petrov"},
+         locale="ru"),
+    Case("ru_pack_comma_untouched", "Петров, Иван",
+         {"given": "Иван", "family": "Петров"},
+         locale="ru",
+         notes="a comma is an explicit signal that suppresses the "
+               "rotation (spec §1)"),
+    Case("tr_az_pack_marker", "Mammadova Aygun Ali kizi",
+         {"given": "Aygun", "middle": "Ali kizi", "family": "Mammadova"},
+         locale="tr_az",
+         notes="the TR_AZ pack end-to-end: same expectation as the "
+               "turkic synthetic row (pinned live during Plan 3), "
+               "through parser_for"),
     Case("empty", "", {}),
     Case("whitespace", "   ", {}),
     Case("bare_ambiguous_acronym", "John Ed",
