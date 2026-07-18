@@ -20,8 +20,20 @@ from nameparser._types import _guarded_getstate, _guarded_setstate
 
 @dataclass(frozen=True, slots=True)
 class Locale:
+    """A named, shareable bundle of vocabulary and behavior for a
+    naming tradition: a lexicon fragment plus a policy patch, applied
+    together by :func:`nameparser.parser_for`. The packs shipped with
+    nameparser live in :mod:`nameparser.locales`; building your own
+    needs no registration -- construct one and pass it to
+    ``parser_for``."""
+
+    #: Identifier, lowercase ``[a-z0-9_]+`` (e.g. "ru", "tr_az").
     code: str
+    #: Vocabulary ADDED to the base parser's lexicon (unioned; a pack
+    #: never removes base vocabulary).
     lexicon: Lexicon
+    #: Behavior changes folded onto the base policy (set-valued fields
+    #: union; scalars override, later pack wins).
     policy: PolicyPatch = PolicyPatch()
 
     # in the class body so @dataclass(slots=True) keeps them

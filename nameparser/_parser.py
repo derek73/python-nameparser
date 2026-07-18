@@ -24,12 +24,18 @@ from nameparser._types import ParsedName, _guarded_getstate, _guarded_setstate
 
 @dataclass(frozen=True, slots=True)
 class Parser:
-    """Immutable, thread-safe, picklable by construction (spec §4): all
-    validity checking happens at construction; a Parser that constructs
-    successfully cannot fail at parse time on any str content. The None
-    field defaults resolve in __post_init__; after construction both
-    fields are always non-None (the annotations state the steady-state
-    truth, hence the assignment ignores on the defaults)."""
+    """A configured name parser: a :class:`Lexicon` (vocabulary) plus
+    a :class:`Policy` (behavior), both defaulted when omitted. Build
+    one when you need non-default configuration, build it once, and
+    call :meth:`parse` many times -- it is immutable, thread-safe, and
+    picklable by construction: all validity checking happens at
+    construction, so a Parser that constructs successfully cannot fail
+    at parse time on any str content.
+
+    (The None field defaults resolve in __post_init__; after
+    construction both fields are always non-None -- the annotations
+    state the steady-state truth, hence the assignment ignores on the
+    defaults.)"""
 
     lexicon: Lexicon = None  # type: ignore[assignment]  # None -> default()
     policy: Policy = None  # type: ignore[assignment]    # None -> Policy()
@@ -55,9 +61,10 @@ class Parser:
         return f"Parser({self.lexicon!r}, {self.policy!r})"
 
     def parse(self, text: str) -> ParsedName:
-        """Total over str (spec §5a): content never raises; non-str
-        raises TypeError eagerly, with a decode hint for bytes (#245:
-        bytes support ended with 1.x)."""
+        """Parse one name string into a :class:`ParsedName`. Never
+        raises on string content (unparseable input yields empty
+        fields plus ambiguities); non-str raises TypeError eagerly,
+        with a decode hint for bytes (bytes support ended with 1.x)."""
         if isinstance(text, bytes):
             raise TypeError(
                 "parse() takes str, not bytes -- decode first, e.g. "
@@ -75,7 +82,10 @@ def _default_parser() -> Parser:
 
 
 def parse(text: str) -> ParsedName:
-    """Module-level convenience over a lazily created default Parser."""
+    """Parse a name with the default configuration and return a
+    :class:`ParsedName`. Equivalent to ``Parser().parse(text)``; build
+    your own :class:`Parser` (or use :func:`parser_for`) for custom
+    vocabulary or behavior. Never raises on string content."""
     return _default_parser().parse(text)
 
 

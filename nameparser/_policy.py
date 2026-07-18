@@ -48,19 +48,38 @@ def _reject_bare_string_order(value: object) -> None:
 
 @dataclass(frozen=True, slots=True)
 class Policy:
+    """The behavior switches a parser runs with: name order,
+    patronymic rules, delimiter routing, input scrubbing. Immutable
+    and hashable; every field has a safe default, so construct with
+    only what you change -- ``Policy(maiden_delimiters={("(", ")")})``
+    -- and pass the result to ``Parser(policy=...)``."""
+
+    #: How positional (no-comma) input maps onto given/middle/family;
+    #: one of the exported GIVEN_FIRST (default), FAMILY_FIRST,
+    #: FAMILY_FIRST_GIVEN_LAST orders.
     name_order: tuple[Role, Role, Role] = GIVEN_FIRST
+    #: Opt-in detectors that reorder patronymic-shaped names
+    #: (EAST_SLAVIC, TURKIC); usually set via a locale pack.
     patronymic_rules: frozenset[PatronymicRule] = frozenset()
+    #: Folds middle into family instead of splitting them (v1's
+    #: middle_name_as_last).
     middle_as_family: bool = False  # v1's middle_name_as_last
-    # v1 default delimiter set (#273)
+    #: (open, close) pairs whose enclosed content becomes the nickname
+    #: field. Defaults to DEFAULT_NICKNAME_DELIMITERS (#273).
     nickname_delimiters: frozenset[tuple[str, str]] = DEFAULT_NICKNAME_DELIMITERS
-    # empty by default (v1 parity); a pair listed here routes to maiden
-    # AND is dropped from the effective nickname set (maiden wins, see
-    # __post_init__), so maiden_delimiters={("(", ")")} is the whole
-    # parenthesized-maiden recipe (#274)
+    #: (open, close) pairs whose enclosed content becomes the maiden
+    #: field instead; a pair listed here is dropped from the effective
+    #: nickname set (maiden wins, see __post_init__), so
+    #: maiden_delimiters={("(", ")")} is the whole recipe (#274).
     maiden_delimiters: frozenset[tuple[str, str]] = frozenset()
+    #: Separators beyond a comma that split suffix groups (e.g. " - ").
     extra_suffix_delimiters: frozenset[str] = frozenset()
+    #: Allows a post-comma segment to read as a suffix via the lenient
+    #: initial-shaped test; False requires the strict acronym form.
     lenient_comma_suffixes: bool = True
+    #: Removes emoji from the input before parsing.
     strip_emoji: bool = True
+    #: Removes bidirectional control characters before parsing.
     strip_bidi: bool = True  # =False replaces v1's opt-out CONSTANTS.regexes.bidi = False
 
     # in the class body so @dataclass(slots=True) keeps them

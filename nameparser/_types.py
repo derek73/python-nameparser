@@ -25,6 +25,12 @@ if TYPE_CHECKING:
 
 
 class Role(Enum):
+    """The seven fields of a parsed name, one per :class:`Token`.
+    Declaration order is the canonical field order everywhere
+    (``as_dict()``, ``comparison_key()``, rendering). Pass a member to
+    :meth:`ParsedName.tokens_for`; a member's ``.value`` is the field's
+    string name (``Role.GIVEN.value == "given"``)."""
+
     # Declaration order IS the canonical field order (conventions §3):
     # every listing of the seven fields anywhere derives from this.
     TITLE = "title"
@@ -37,9 +43,15 @@ class Role(Enum):
 
 
 class Span(NamedTuple):
-    """Provenance range into ParsedName.original. end is exclusive."""
+    """Where a :class:`Token` came from: a character range into
+    :attr:`ParsedName.original` such that ``original[start:end]`` is
+    the token's source text (``end`` exclusive). A plain two-int
+    NamedTuple; ``None`` in :attr:`Token.span` marks a synthetic token
+    with no source position."""
 
+    #: First character index (0-based).
     start: int
+    #: One past the last character index.
     end: int
 
     def __add__(self, other: object) -> NoReturn:  # type: ignore[override]
@@ -120,9 +132,23 @@ def _guarded_setstate(self: object, state: dict[str, object]) -> None:
 
 @dataclass(frozen=True, slots=True)
 class Token:
+    """One classified word of a parsed name: its text, where it came
+    from, which field it belongs to, and how it was classified. Read
+    tokens off :attr:`ParsedName.tokens` or
+    :meth:`ParsedName.tokens_for`; you only construct one directly
+    when hand-building a :class:`ParsedName`."""
+
+    #: The word exactly as written in the input (never empty).
     text: str
-    span: Span | None  # None = synthetic (from replace())
+    #: Position in ParsedName.original; None marks a synthetic token
+    #: (e.g. introduced by replace()) with no source position.
+    span: Span | None
+    #: The field this token belongs to.
     role: Role
+    #: Classification labels. Exactly the four in STABLE_TAGS
+    #: ("particle", "conjunction", "initial", "joined") are API;
+    #: namespaced tags like "vocab:..." are unstable debugging
+    #: provenance -- never match against them.
     tags: frozenset[str] = frozenset()
 
     # in the class body so @dataclass(slots=True) keeps them
@@ -187,7 +213,10 @@ class Token:
 
 
 class AmbiguityKind(StrEnum):
-    """Stable identifiers (API); members ARE their string values."""
+    """The stable vocabulary of :class:`Ambiguity` kinds. A StrEnum:
+    members ARE their string values, so ``kind == "particle-or-given"``
+    compares directly. New kinds may be added in minor releases;
+    existing values never change meaning."""
 
     ORDER = "order"
     SUFFIX_OR_NICKNAME = "suffix-or-nickname"
@@ -198,8 +227,17 @@ class AmbiguityKind(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class Ambiguity:
+    """A call the parser made that could legitimately have gone the
+    other way, surfaced on :attr:`ParsedName.ambiguities` instead of
+    silently guessed away. The parse still commits to one reading --
+    an Ambiguity is a flag for review, not an error."""
+
+    #: Which known ambiguity shape this is (stable API values).
     kind: AmbiguityKind
+    #: Human-readable specifics of this occurrence (wording unstable).
     detail: str
+    #: The tokens involved -- always a subset of the owning
+    #: ParsedName's tokens; may be empty (e.g. unbalanced-delimiter).
     tokens: tuple[Token, ...]
 
     # in the class body so @dataclass(slots=True) keeps them
@@ -232,15 +270,25 @@ class Ambiguity:
 
 @dataclass(frozen=True, slots=True)
 class ParsedName:
-    """Immutable result of a parse. Constructor-enforced invariants:
-    spans ascending, non-overlapping, in bounds of `original`; every
-    Ambiguity's tokens are a subset of `tokens`. Provenance semantics
-    (text == original[span] for parser-produced names) are documented,
-    not enforced -- transforms like replace() legitimately break them.
+    """The immutable result of parsing one name string. Read the seven
+    fields as strings (``.given``, ``.family``, ...); inspect structure
+    through :attr:`tokens` / :meth:`tokens_for`; correct a parse with
+    :meth:`replace` (returns a new value); produce output with
+    :meth:`render`, :meth:`initials`, :meth:`capitalized`, or ``str()``.
+
+    Constructor-enforced invariants: spans ascending, non-overlapping,
+    in bounds of `original`; every Ambiguity's tokens are a subset of
+    `tokens`. Provenance semantics (text == original[span] for
+    parser-produced names) are documented, not enforced -- transforms
+    like replace() legitimately break them.
     """
 
+    #: The input string exactly as passed to parse().
     original: str
+    #: Every classified token, in document order.
     tokens: tuple[Token, ...]
+    #: Judgment calls that could have gone the other way; empty for
+    #: most names (see Ambiguity).
     ambiguities: tuple[Ambiguity, ...] = ()
 
     # in the class body so @dataclass(slots=True) keeps them
