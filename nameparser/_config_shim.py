@@ -845,7 +845,12 @@ class Constants:
         if name in _MANAGER_FIELDS or name in _SCALAR_DEFAULTS:
             self._bump()
 
-    def copy(self) -> Constants:                          # #260
+    def copy(self) -> Constants:
+        """Independent copy (#260), subclass-preserving. Divergence from
+        v1 (which deepcopied __dict__): attributes OUTSIDE the known
+        field surface -- e.g. ad-hoc names stashed on the instance --
+        are not carried by copy() or pickling; only the enumerated
+        fields survive."""                          # #260
         # An independent instance with its own generation counter and
         # its own manager callbacks -- not a shared-state alias like a
         # naive attribute-for-attribute copy would produce. v1's copy()

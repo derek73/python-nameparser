@@ -4,7 +4,8 @@ Consumes: tokens (classified), segments, structure.
 Produces: pieces + piece_tags per segment (runs of token indices --
 tokens are NEVER joined into strings: the anti-#100 invariant); maiden
 tail tokens get role=MAIDEN; marker tokens land in dropped.
-Reads: token tags (from classify); Policy is not consulted. The v1
+Reads: token tags (from classify), and Policy.extra_suffix_delimiters
+for the tail-segment handling below -- no other Policy field. The v1
 "derived titles/prefixes" registration becomes piece_tags entries --
 per-parse state that dissolves with the state (v1 kept per-parse sets
 for the same reason). Reads Policy.extra_suffix_delimiters: tail
@@ -192,7 +193,8 @@ def group(state: ParseState) -> ParseState:
     all_pieces: list[tuple[tuple[int, ...], ...]] = []
     all_ptags: list[tuple[frozenset[str], ...]] = []
     # v1 parity: additional_parts_count=1 applies only to FAMILY_COMMA
-    # parts (parser.py:1333); the SUFFIX_COMMA pre-comma segment gets 0.
+    # parts (parser.py:1313, 1369); the SUFFIX_COMMA pre-comma segment
+    # gets 0 (parser.py:1333).
     additional = 1 if state.structure is Structure.FAMILY_COMMA else 0
     # v1 expand_suffix_delimiter parity (#191): tail segments (wholly
     # consumed as suffixes by assign) drop delimiter-core tokens, the

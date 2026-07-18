@@ -173,7 +173,7 @@ def assign(state: ParseState) -> ParseState:
         # PARTICLE_OR_GIVEN is deliberately not emitted here: after a
         # comma the family is already fixed, so a leading given-position
         # particle is not meaningfully ambiguous.
-        # v1: "lastname part may have suffixes in it" (parser.py:1370)
+        # v1: "lastname part may have suffixes in it" (parser.py:1368)
         # -- the first piece is always the family even if suffix-shaped;
         # any later strict-suffix piece goes to SUFFIX per piece
         # ('Smith Jr., John' -> family=Smith, suffix=Jr.)

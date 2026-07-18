@@ -13,7 +13,7 @@ Rules (each a small pure function over the role-bearing tokens):
    patronymic ending, and the MIDDLE-position token does NOT (given +
    patronymic + patronymic-derived surname like Abramovich must not
    rotate) -> rotate: given<-old MIDDLE, middle<-old FAMILY (the
-   patronymic), family<-old GIVEN (v1 parity, pinned live).
+   patronymic), family<-old GIVEN (v1 parity, pinned live 2026-07-12).
 3. TURKIC (opt-in): exactly 1 GIVEN + 2 MIDDLE + 1 FAMILY tokens and
    the FAMILY-position token is a standalone Turkic marker ->
    given<-first MIDDLE, middle<-(second MIDDLE, marker), family<-old

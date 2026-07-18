@@ -119,7 +119,7 @@ CASES: tuple[Case, ...] = (
     Case("family_segment_trailing_suffix", "Smith Jr., John",
          {"given": "John", "family": "Smith", "suffix": "Jr."},
          notes="v1: the family part may have suffixes in it "
-               "(parser.py:1370); the first piece is always the family "
+               "(parser.py:1368); the first piece is always the family "
                "(pinned live 2026-07-17)"),
     Case("family_segment_multiple_suffixes", "Smith Jr. MD, John",
          {"given": "John", "family": "Smith", "suffix": "Jr., MD"}),
