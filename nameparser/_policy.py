@@ -95,8 +95,9 @@ class Policy:
     #: field, or rendered view. The original string keeps them (input
     #: is never modified -- spans stay true).
     strip_emoji: bool = True
-    #: Excludes bidirectional control characters from tokenization the
-    #: same way.
+    #: Excludes bidirectional control characters from tokenization:
+    #: they appear in no token, field, or rendered view; the original
+    #: string keeps them.
     strip_bidi: bool = True  # =False replaces v1's opt-out CONSTANTS.regexes.bidi = False
 
     # in the class body so @dataclass(slots=True) keeps them
