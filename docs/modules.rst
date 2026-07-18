@@ -60,6 +60,8 @@ Configuration
 .. autoclass:: nameparser.PatronymicRule
    :members:
 
+.. _name-order-constants:
+
 Name-order constants
 ^^^^^^^^^^^^^^^^^^^^
 

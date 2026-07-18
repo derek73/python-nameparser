@@ -65,7 +65,8 @@ class Policy:
     -- and pass the result to ``Parser(policy=...)``."""
 
     #: How positional (no-comma) input maps onto given/middle/family.
-    #: Valid values are exactly the three exported constants --
+    #: Valid values are exactly the three exported
+    #: :ref:`name-order constants <name-order-constants>` --
     #: GIVEN_FIRST (the default), FAMILY_FIRST, and
     #: FAMILY_FIRST_GIVEN_LAST; any other tuple of Roles raises
     #: ValueError. Ignored when the input contains a comma:
