@@ -21,7 +21,7 @@ Marker words that introduce a birth surname, e.g. "Jane Smith née Jones"
 (#274). French née/né/nee, German geb./geborene, Dutch geboren,
 Czech/Slovak roz./rozená, Danish/Norwegian født (Nynorsk fødd), Swedish
 född, Russian урожд./урождённая/урождённый (both ё and е spellings —
-``str.casefold()`` does not fold them, and running text routinely
+case normalization does not fold them, and running text routinely
 writes е). Both grammatical genders are listed where #274 or review
 attested them (née/né, урождённая/урождённый); Czech masculine rozený
 awaits the same vetting. Entries are stored normalized: lowercase, no

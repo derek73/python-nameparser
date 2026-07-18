@@ -25,13 +25,21 @@ _VOCAB_FIELDS = (
 
 
 def _normalize(word: str) -> str:
-    """Casefold, strip whitespace and EDGE periods -- v1's lc()
+    """Lowercase, strip whitespace and EDGE periods -- v1's lc()
     semantics. Interior periods survive on purpose: 'J.R.' must not
     collapse to 'jr' and hit the periodless vocabulary (v1 parity,
     pinned live 2026-07-17). Suffix-ACRONYM membership alone uses the
     period-free form (see _vocab.suffix_as_written), mirroring v1's
-    is_suffix, which removed periods only for the acronym test."""
-    return word.casefold().strip().strip(".")
+    is_suffix, which removed periods only for the acronym test.
+
+    lower(), NOT casefold(): casefold's caseless-matching folds mutate
+    the stored vocabulary itself -- 'κος' becomes the misspelling 'κοσ'
+    (final sigma flattened) and 'großfürst' becomes 'grossfürst' --
+    while lower() applies Unicode SpecialCasing contextually and keeps
+    both as authored. This function is the single fold for storage AND
+    match-time lookups, so matching stays symmetric either way; lower()
+    is what v1's lc() used, preserving which cross-spellings match."""
+    return word.lower().strip().strip(".")
 
 
 def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
@@ -65,7 +73,7 @@ def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
         if not n:
             raise ValueError(
                 f"Lexicon.{field_name} entry {w!r} normalizes to empty "
-                f"(casefold + strip periods/whitespace leaves nothing)"
+                f"(lowercase + strip periods/whitespace leaves nothing)"
             )
         normalized.add(n)
     return frozenset(normalized)
@@ -111,7 +119,7 @@ def _normpairs(
         if not normalized_key:
             raise ValueError(
                 f"capitalization_exceptions key {k!r} normalizes to "
-                f"empty (casefold + strip periods/whitespace leaves "
+                f"empty (lowercase + strip periods/whitespace leaves "
                 f"nothing)"
             )
         deduped[normalized_key] = v

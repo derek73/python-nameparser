@@ -19,15 +19,20 @@ def test_default_sources_v1_vocabulary() -> None:
     assert "dos" in lex.particles and "dos" not in lex.particles_ambiguous
     assert "van" in lex.particles_ambiguous
     # v1's CAPITALIZATION_EXCEPTIONS maps 'phd' -> 'Ph.D.' (verbatim, not
-    # normalized -- only keys are casefolded/period-stripped at
+    # normalized -- only keys are lowercased/period-stripped at
     # construction, values pass through unchanged).
     assert lex.capitalization_exceptions_map["phd"] == "Ph.D."
     # maiden markers source from the same data-module pattern (#274);
     # non-colliding Cyrillic entries live in the default per the locales
     # design's sorting rule, and both ё/е spellings are listed because
-    # casefold() does not fold them.
+    # case normalization does not fold them.
     assert "geborene" in lex.maiden_markers
     assert "урожденная" in lex.maiden_markers and "урождённая" in lex.maiden_markers
+    # #269 fidelity: entries whose spelling casefold() would mutate must
+    # arrive in the lexicon exactly as authored in the data modules
+    # (final sigma intact, ß intact) -- the review that caught 'κοσ'.
+    assert "κος" in lex.titles and "κοσ" not in lex.titles
+    assert "großfürst" in lex.titles and "grossfürst" not in lex.titles
 
 
 def test_default_is_cached_single_instance() -> None:
@@ -181,14 +186,24 @@ def test_setstate_rejects_mismatched_field_layout() -> None:
         Lexicon.__new__(Lexicon).__setstate__(extra)
 
 
-def test_normalization_casefolds_and_keeps_interior_periods() -> None:
-    # v1's lc() semantics plus casefold: EDGE periods trimmed, interior
+def test_normalization_lowercases_and_keeps_interior_periods() -> None:
+    # v1's lc() semantics: lowercase, EDGE periods trimmed, interior
     # periods KEPT ('J.R.' must not collapse to 'jr' and hit the
     # periodless vocabulary -- v1 parity, pinned live 2026-07-17).
     # Suffix-ACRONYM membership alone strips periods (see
     # _vocab.suffix_as_written).
     lex = Lexicon(titles=frozenset({"STRAßE", "Ph.D", "Dr."}))
-    assert lex.titles == frozenset({"strasse", "ph.d", "dr"})
+    assert lex.titles == frozenset({"straße", "ph.d", "dr"})
+
+
+def test_normalization_preserves_spellings_casefold_would_mutate() -> None:
+    # lower(), not casefold(): casefold's caseless-matching folds would
+    # rewrite stored vocabulary -- Greek final sigma flattens ('κος' ->
+    # the misspelling 'κοσ') and German ß expands ('großfürst' ->
+    # 'grossfürst'). lower() follows Unicode SpecialCasing contextually
+    # ('ΚΟΣ' -> 'κος') and keeps entries as authored, matching v1's lc().
+    lex = Lexicon(titles=frozenset({"ΚΟΣ", "Großfürst"}))
+    assert lex.titles == frozenset({"κος", "großfürst"})
 
 
 def test_suffix_ambiguous_must_be_subset_of_acronyms() -> None:
