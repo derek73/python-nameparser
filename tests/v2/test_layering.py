@@ -18,7 +18,8 @@ _MUST_EXIST = {"_types.py", "_lexicon.py", "_policy.py", "_locale.py",
                "_pipeline/_classify.py", "_pipeline/_group.py",
                "_pipeline/_assign.py", "_pipeline/_post_rules.py",
                "_pipeline/_assemble.py", "_parser.py", "_facade.py",
-               "_config_shim.py", "locales/__init__.py", "locales/ru.py"}
+               "_config_shim.py", "locales/__init__.py", "locales/ru.py",
+               "locales/tr_az.py"}
 
 _PIPELINE_STAGE_ALLOWED = (
     "nameparser._types", "nameparser._lexicon", "nameparser._policy",
@@ -85,6 +86,10 @@ ALLOWED = {
     # or config access (locales spec §2)
     "locales/ru.py": ("nameparser._lexicon", "nameparser._locale",
                       "nameparser._policy"),
+    # a locale pack: pure data over the three base types, no pipeline
+    # or config access (locales spec §2)
+    "locales/tr_az.py": ("nameparser._lexicon", "nameparser._locale",
+                         "nameparser._policy"),
     # v1 import-path preservation: thin re-exports of the facade/shim
     "parser.py": ("nameparser._facade",),
     "config/__init__.py": ("nameparser._config_shim",),

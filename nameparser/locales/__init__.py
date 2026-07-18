@@ -32,7 +32,12 @@ def __getattr__(name: str) -> Locale:
         )
     module_name, attr = entry
     locale: Locale = getattr(importlib.import_module(module_name), attr)
-    globals()[name] = locale  # cache: next access skips __getattr__
+    # cache: next access skips __getattr__. Benign race under free
+    # threading: two threads racing here both import the same module
+    # object (import machinery serializes/dedupes that) and assign the
+    # same singleton Locale back to the same name, so the last write
+    # wins with no observable difference.
+    globals()[name] = locale
     return locale
 
 
