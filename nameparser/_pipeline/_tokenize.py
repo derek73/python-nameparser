@@ -30,8 +30,8 @@ from nameparser._types import Role, Span
 # "bidi") -- layering forbids importing the config package here, so the
 # patterns are duplicated by design with this provenance note. When
 # editing, keep both copies in sync.
-_EMOJI = re.compile('['  # lgtm[py/overly-large-range]
-    '\U0001F300-\U0001F64F'
+_EMOJI = re.compile('['
+    '\U0001F300-\U0001F64F'  # lgtm[py/overly-large-range]
     '\U0001F680-\U0001F6FF'
     '\u2600-\u26FF\u2700-\u27BF]+')
 _BIDI = re.compile('[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]+')
