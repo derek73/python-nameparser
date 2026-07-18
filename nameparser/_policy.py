@@ -85,12 +85,24 @@ class Policy:
                 f"patronymic_rules must be an iterable of rule names, "
                 f"not a bare string: {self.patronymic_rules!r}"
             )
-        # Materialize before converting (the _normset pattern): a
-        # non-iterable raises its natural TypeError here, and an exception
-        # raised inside a caller's generator propagates untouched instead
-        # of being rewritten as an unknown-rule error. Only the enum
-        # lookup itself gets the enriched message, naming the offender.
-        items = tuple(self.patronymic_rules)
+        # Probe with iter() rather than wrapping tuple(): non-iterables
+        # (True especially -- v1's patronymic_name_order was a bool flag,
+        # so it's the likeliest wrong value here) get the migration-
+        # pointing message, while an exception raised inside a caller's
+        # generator still propagates untouched from the tuple() below
+        # instead of being rewritten. Only the enum lookup itself gets
+        # the unknown-rule message, naming the offender.
+        try:
+            rule_iter = iter(self.patronymic_rules)
+        except TypeError:
+            raise TypeError(
+                f"patronymic_rules must be an iterable of PatronymicRule "
+                f"names, got {self.patronymic_rules!r}; v1's "
+                f"patronymic_name_order=True becomes "
+                f"patronymic_rules={{PatronymicRule.EAST_SLAVIC}} "
+                f"(or parser_for(locales.RU))"
+            ) from None
+        items = tuple(rule_iter)
         rules = set()
         for r in items:
             try:
@@ -232,6 +244,21 @@ class PolicyPatch:
                     f"{f.name} must be an iterable, "
                     f"not a bare string: {value!r}"
                 )
+            # same iter() probe as Policy: curated message for
+            # non-iterables (with the v1-flag hint where it applies),
+            # caller-generator exceptions propagate from frozenset()
+            try:
+                iter(value)
+            except TypeError:
+                hint = (
+                    "; v1's patronymic_name_order=True becomes "
+                    "patronymic_rules={PatronymicRule.EAST_SLAVIC} "
+                    "(or parser_for(locales.RU))"
+                    if f.name == "patronymic_rules" else ""
+                )
+                raise TypeError(
+                    f"{f.name} must be an iterable, got {value!r}{hint}"
+                ) from None
             object.__setattr__(self, f.name, frozenset(value))
 
 

@@ -76,6 +76,20 @@ def test_patronymic_rules_rejects_bare_string_and_non_iterable() -> None:
         Policy(patronymic_rules=5)  # type: ignore[arg-type]
 
 
+def test_patronymic_rules_true_points_at_the_v1_migration() -> None:
+    # v1's patronymic_name_order was a BOOL flag, so True is the single
+    # likeliest wrong value a migrator passes here -- the message must
+    # name the v1 flag and the working replacements, not just say
+    # "not iterable". Same guard on the PolicyPatch path (packs).
+    with pytest.raises(TypeError, match="patronymic_name_order"):
+        Policy(patronymic_rules=True)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="patronymic_name_order"):
+        PolicyPatch(patronymic_rules=True)  # type: ignore[arg-type]
+    # non-patronymic union fields get the generic curated message
+    with pytest.raises(TypeError, match="extra_suffix_delimiters"):
+        PolicyPatch(extra_suffix_delimiters=True)  # type: ignore[arg-type]
+
+
 def test_policy_delimiters_coerce_to_frozensets() -> None:
     p = Policy(nickname_delimiters=[("(", ")")])  # type: ignore[arg-type]
     assert isinstance(p.nickname_delimiters, frozenset)
