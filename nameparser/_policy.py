@@ -98,9 +98,10 @@ class Policy:
             raise TypeError(
                 f"patronymic_rules must be an iterable of PatronymicRule "
                 f"names, got {self.patronymic_rules!r}; v1's "
-                f"patronymic_name_order=True becomes "
-                f"patronymic_rules={{PatronymicRule.EAST_SLAVIC}} "
-                f"(or parser_for(locales.RU))"
+                f"patronymic_name_order=True enabled both rules -- "
+                f"patronymic_rules={{PatronymicRule.EAST_SLAVIC, "
+                f"PatronymicRule.TURKIC}} (or pick one via "
+                f"parser_for(locales.RU) / locales.TR_AZ)"
             ) from None
         items = tuple(rule_iter)
         rules = set()
@@ -251,9 +252,10 @@ class PolicyPatch:
                 iter(value)
             except TypeError:
                 hint = (
-                    "; v1's patronymic_name_order=True becomes "
-                    "patronymic_rules={PatronymicRule.EAST_SLAVIC} "
-                    "(or parser_for(locales.RU))"
+                    "; v1's patronymic_name_order=True enabled both rules"
+                    " -- patronymic_rules={PatronymicRule.EAST_SLAVIC, "
+                    "PatronymicRule.TURKIC} (or pick one via "
+                    "parser_for(locales.RU) / locales.TR_AZ)"
                     if f.name == "patronymic_rules" else ""
                 )
                 raise TypeError(
