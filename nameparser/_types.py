@@ -297,14 +297,15 @@ class ParsedName:
         return self.render()
 
     def __repr__(self) -> str:
+        # 4-space indent, matching HumanName's repr (v1 style)
         lines = []
         for role in Role:
             text = self._text_for(role)
             if text:
-                lines.append(f"\t{role.value}: {text!r}")
+                lines.append(f"    {role.value}: {text!r}")
         if self.ambiguities:
             kinds = [a.kind.value for a in self.ambiguities]
-            lines.append(f"\tambiguities: {kinds!r}")
+            lines.append(f"    ambiguities: {kinds!r}")
         body = "\n".join(lines)
         return f"<ParsedName: [\n{body}\n]>" if lines else "<ParsedName: []>"
 

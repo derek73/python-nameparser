@@ -23,7 +23,7 @@ def test_parsedname_repr_lists_nonempty_fields_in_canonical_order() -> None:
         Token("Smith", Span(5, 10), Role.FAMILY),
     ))
     assert repr(pn) == (
-        "<ParsedName: [\n\tgiven: 'John'\n\tfamily: 'Smith'\n]>"
+        "<ParsedName: [\n    given: 'John'\n    family: 'Smith'\n]>"
     )
 
 
