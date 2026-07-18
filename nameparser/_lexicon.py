@@ -157,7 +157,8 @@ class Lexicon:
     #: one reads as given and records a particle-or-given ambiguity
     #: ("Van Johnson").
     particles_ambiguous: frozenset[str] = frozenset()
-    #: Words that join surrounding pieces into one ("y", "and", "и").
+    #: Words or characters that join surrounding pieces into one
+    #: ("and", "&", "y", "и").
     conjunctions: frozenset[str] = frozenset()
     #: Given-name prefixes that bind to the following word to form one
     #: given name ("abdul" -> "Abdul Salam"); never standalone names.
