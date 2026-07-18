@@ -25,7 +25,8 @@ class Locale:
     together by :func:`nameparser.parser_for`. The packs shipped with
     nameparser live in :mod:`nameparser.locales`; building your own
     needs no registration -- construct one and pass it to
-    ``parser_for``."""
+    ``parser_for``. See the :doc:`locale packs guide </locales>` for
+    using, creating, and contributing packs."""
 
     #: Identifier, lowercase ``[a-z0-9_]+`` (e.g. "ru", "tr_az").
     code: str
