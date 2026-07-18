@@ -415,6 +415,33 @@ def test_non_interference_all_packs_combined() -> None:
     # transliterated cousin 'sheikh': a single following name reads as
     # given, not family.
     ("الشيخ محمد", "given", "محمد"),
+    # Arabic honorifics precede the GIVEN name, so all ship in
+    # given_name_titles like الشيخ: article forms (never given names)
+    # and the bare doctor/professor/engineer forms (not used as given
+    # names). Deferred with the same collision rule as мл/ст: bare
+    # سيد/شيخ/أمير/سلطان (common given names) and the 'د.'
+    # abbreviation (bare 'د' would swallow initials, the bare-κ trap).
+    ("الدكتور أحمد", "given", "أحمد"),
+    ("الدكتور أحمد", "title", "الدكتور"),
+    ("الدكتورة منى السيد", "title", "الدكتورة"),
+    ("الدكتورة منى السيد", "family", "السيد"),
+    ("دكتور أحمد", "given", "أحمد"),
+    ("دكتورة منى", "given", "منى"),
+    ("الأستاذ محمود", "given", "محمود"),
+    ("أستاذ محمود", "given", "محمود"),
+    ("أستاذة سلمى", "given", "سلمى"),
+    ("الأستاذة سلمى", "given", "سلمى"),
+    ("مهندس حسن", "given", "حسن"),
+    ("الشيخة موزة", "given", "موزة"),
+    ("الحاجة فاطمة", "given", "فاطمة"),
+    # compound with the bound given name: title + bound join + family
+    ("الحاج عبد الرحمن السيد", "title", "الحاج"),
+    ("الحاج عبد الرحمن السيد", "given", "عبد الرحمن"),
+    ("الحاج عبد الرحمن السيد", "family", "السيد"),
+    # "و" ("and") joins title chains like Cyrillic "и"; single-char
+    # conjunctions need the same #11 carve-out headroom (enough
+    # rootname pieces), so pinned with the 6-piece shape the и row uses
+    ("الأستاذ و الدكتور طارق حسن السيد", "title", "الأستاذ و الدكتور"),
     # Hebrew patronymic prefixes: same non-leading chain-onto-family
     # behavior.
     ("דוד בן גוריון", "family", "בן גוריון"),

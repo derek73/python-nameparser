@@ -25,6 +25,27 @@ FIRST_NAME_TITLES = {
     # the transliterated sheikh/sheik/... cluster above; same
     # single-first-name-follows convention ("Sheikh Mohammed").
     'الشيخ',
+    # #269 follow-up: Arabic honorifics precede the GIVEN name, so all
+    # belong here rather than in plain TITLES. Article forms are never
+    # given names; the bare doctor/professor/engineer forms are not
+    # used as given names either. Deferred under the collision rule
+    # (like мл/ст in suffixes.py): bare سيد (Sayyid is a common given
+    # name), bare شيخ (Shaikha is a common female given name), أمير
+    # and سلطان (Amir/Sultan, common given names), and the 'د.'
+    # abbreviation -- edge-period normalization would leave bare 'د',
+    # which swallows single-letter initials (the bare-κ trap above).
+    'الدكتور',     # "the doctor" (m)
+    'الدكتورة',    # "the doctor" (f)
+    'دكتور',       # doctor (m), article-less
+    'دكتورة',      # doctor (f), article-less
+    'الأستاذ',     # "the professor"/Mr. honorific (m)
+    'الأستاذة',    # professor/Mrs. honorific (f)
+    'أستاذ',       # professor (m), article-less
+    'أستاذة',      # professor (f), article-less
+    'الحاج',       # hajj honorific (m)
+    'الحاجة',      # hajj honorific (f)
+    'الشيخة',      # female counterpart of الشيخ
+    'مهندس',       # engineer (a genuine title in Egyptian usage)
 }
 """
 When these titles appear with a single other name, that name is a first name, e.g.

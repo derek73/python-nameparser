@@ -13,6 +13,12 @@ CONJUNCTIONS = {
     'та',
     # #269: Greek "and": και.
     'και',
+    # #269 follow-up: Arabic "and". Formal script attaches و to the
+    # following word (وفاطمة), so a standalone و token appears only in
+    # informal spacing -- common in real data. Single-character like
+    # 'y'/'и': the #11 initial carve-out protects short names (joins
+    # only with enough rootname pieces).
+    'و',
 }
 """
 Pieces that should join to their neighboring pieces, e.g. "and", "y" and "&".
