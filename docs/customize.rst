@@ -371,7 +371,7 @@ constant so that "Hon" can be parsed as a first name.
         maiden: ''
     ]>
     >>> constants.titles.remove('hon')
-    SetManager({'10th', ..., 'zoologist'})
+    SetManager({'10th', ...})
     >>> hn = HumanName("Hon Solo", constants=constants)
     >>> hn
     <HumanName : [
@@ -416,7 +416,7 @@ making them lower case and removing periods.
     >>> from nameparser.config import Constants
     >>> constants = Constants()
     >>> constants.titles.add('dean', 'Chemistry')
-    SetManager({'10th', ..., 'zoologist'})
+    SetManager({'10th', ...})
     >>> hn = HumanName("Assoc Dean of Chemistry Robert Johns", constants=constants)
     >>> hn
     <HumanName : [
@@ -448,7 +448,7 @@ instance is safe to read concurrently, e.g. parsing names on multiple threads.
     >>> from nameparser import HumanName
     >>> instance = HumanName("")
     >>> instance.C.titles.add('dean')
-    SetManager({'10th', ..., 'zoologist'})
+    SetManager({'10th', ...})
     >>> other_instance = HumanName("Dean Robert Johns")
     >>> other_instance # Dean parses as title
     <HumanName : [
@@ -491,7 +491,7 @@ values with the behavior described above.
     >>> instance.has_own_config
     False
     >>> instance.C.titles.add('dean')
-    SetManager({'10th', ..., 'zoologist'})
+    SetManager({'10th', ...})
     >>> other_instance = HumanName("Dean Robert Johns", Constants()) # <-- fresh, private config
     >>> other_instance
     <HumanName : [
