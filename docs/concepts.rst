@@ -1,30 +1,37 @@
-How the parser thinks
-======================
+How the parser works
+====================
 
-Four short essays on the model behind the 2.0 API: how a string
-becomes a :class:`~nameparser.ParsedName`, why configuration lives in
-exactly three places sorted by what varies, why parsers are plain
-values, and what the parser does when a name is genuinely ambiguous.
+``parse()`` turns a name string into a
+:class:`~nameparser.ParsedName`. This page explains the model behind
+that call: how a string becomes tokens and tokens become fields,
+where configuration lives and why it is split the way it is, why
+parsers are plain values, and what happens when a name is genuinely
+ambiguous. The task pages all build on these four ideas.
 
 From string to name
 --------------------
 
-The pipeline, in one breath: the original string becomes a sequence of
-tokens with spans (character positions into the original string),
-each span gets assigned a role — ``title``, ``given``, ``middle``,
-``family``, ``suffix``, ``nickname``, ``maiden`` — and every string you
-read off a :class:`~nameparser.ParsedName` (``.given``, ``.family``,
-``str(name)``, and so on) is a view computed over those roles at read
-time, not stored text.
+Every parse follows the same path: the input string is split into
+tokens, each token is assigned one of the seven roles — ``title``,
+``given``, ``middle``, ``family``, ``suffix``, ``nickname``,
+``maiden`` — and every string you read off the result is computed
+from those tokens at read time.
 
-Spans matter because of what they replace. v1's ``HumanName`` worked
-on plain lists of strings and re-found pieces by searching the list
-for a matching value — so a name with a repeated word could make the
-parser rewrite the wrong occurrence. That whole bug family (starting
-with `issue #100 <https://github.com/derek73/python-nameparser/issues/100>`_)
-traces back to value-based lookup. A token's span is a position, not a
-value, so nothing in the 2.0 pipeline is ever re-found by scanning for
-a string that looks like it.
+Parsing ``"Dr. Juan Q. Xavier de la Vega III"`` produces eight
+tokens. The first is ``Dr.`` with the ``title`` role; ``de``, ``la``,
+and ``Vega`` each carry the ``family`` role, which is why
+``name.family`` returns ``"de la Vega"`` — the field is a view that
+joins the family-role tokens in order, not a stored string.
+
+Each token also records where it came from. A span is a pair of
+character positions bounding the token in the original string:
+``Dr.`` has span ``(0, 3)``, and ``name.original[0:3]`` is exactly
+``"Dr."``. Internally, spans let the pipeline refer to a token by
+position instead of by text. v1 re-found name pieces by searching for
+matching text, so a name with a repeated word could make the parser
+rewrite the wrong occurrence (`issue #100
+<https://github.com/derek73/python-nameparser/issues/100>`_ and its
+relatives); a position cannot be confused with a look-alike.
 
 :class:`~nameparser.ParsedName` is frozen: there is no attribute
 assignment, ever. If a parse is almost right and you want to fix one
@@ -41,20 +48,23 @@ Every piece of nameparser configuration falls into exactly one of
 three places, and which one is decided by a single question: what does
 this setting vary with?
 
-* varies by **language** → :class:`~nameparser.Lexicon` (vocabulary:
-  titles, particles, suffixes, conjunctions, and the rest of the
-  word lists the parser matches against)
-* varies by **data source or application** → :class:`~nameparser.Policy`
-  (behavior switches: name order, patronymic rules, delimiters, strip
-  flags — anything that changes how the pipeline runs, not what words
-  it recognizes)
-* varies by **output destination** → a rendering argument (the
-  ``spec`` you pass to ``render(spec)``, or a keyword to
-  ``initials()``/``capitalized()``)
+* :class:`~nameparser.Lexicon` holds everything that varies by
+  **language**: the vocabulary — titles, particles, suffixes,
+  conjunctions, and the rest of the word lists the parser matches
+  against.
+* :class:`~nameparser.Policy` holds everything that varies by
+  **data source or application**: the behavior switches — name order,
+  patronymic rules, delimiters, strip flags — anything that changes
+  how the pipeline runs, not what words it recognizes.
+* Rendering arguments cover everything that varies by **output
+  destination**: the ``spec`` you pass to ``render(spec)``, or a
+  keyword to ``initials()``/``capitalized()``.
 
-"Dean" being a title in your data is a fact about the language and
-domain the names come from (academic rosters, say), not about any one
-dataset or report — that's a :class:`~nameparser.Lexicon` entry. A CRM that always exports "Family, Given" strings is a fact
+"Dean" is a common given name, so it is not in the default titles
+vocabulary — but in some data it is more common as a title. Which
+reading is right is a fact about the language and domain the names
+come from, not about any one dataset or report: that makes it a
+:class:`~nameparser.Lexicon` entry. A CRM that always exports "Family, Given" strings is a fact
 about that one data source, not about the language of the names in
 it — that's a :class:`~nameparser.Policy`. One particular report
 wanting names formatted as "Family, Given" while every other consumer

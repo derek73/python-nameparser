@@ -114,7 +114,7 @@ ru``); see :doc:`locales`.
 Where next
 ----------
 
-* :doc:`concepts` — how the parser thinks
+* :doc:`concepts` — how the parser works
 * :doc:`customize` — your own vocabulary and behavior
 * :doc:`locales` — locale packs
 * :doc:`migrate` — coming from 1.x ``HumanName``
