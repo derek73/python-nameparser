@@ -16,6 +16,25 @@ FIELDS = ("title", "first", "middle", "last", "suffix", "nickname",
           "maiden")
 
 
+def validate_rules(rules: list[dict[str, object]]) -> None:
+    """Reject malformed allowlist rules LOUDLY at startup. A rule with
+    neither name_regex nor fields would match every diff and shadow
+    every later rule -- the harness would report false confidence,
+    the exact failure it exists to prevent."""
+    for i, rule in enumerate(rules):
+        issue = rule.get("issue")
+        if not isinstance(issue, str) or not issue:
+            raise SystemExit(
+                f"expected_changes.toml rule #{i + 1} has no string "
+                f"'issue': {rule!r}")
+        if not isinstance(rule.get("name_regex"), str) \
+                and not isinstance(rule.get("fields"), list):
+            raise SystemExit(
+                f"expected_changes.toml rule #{i + 1} ({issue!r}) has "
+                f"neither 'name_regex' nor 'fields' -- it would match "
+                f"every diff and shadow every later rule")
+
+
 def classify(name: str, diff_fields: set[str],
              rules: list[dict[str, object]]) -> str | None:
     for rule in rules:
@@ -25,9 +44,7 @@ def classify(name: str, diff_fields: set[str],
         fields = rule.get("fields")
         if isinstance(fields, list) and not diff_fields <= set(fields):
             continue
-        issue = rule["issue"]
-        assert isinstance(issue, str)
-        return issue
+        return rule["issue"]  # type: ignore[return-value]
     return None
 
 
@@ -37,6 +54,7 @@ def main() -> int:
     args = ap.parse_args()
     rules = tomllib.loads(
         (HERE / "expected_changes.toml").read_text()).get("change", [])
+    validate_rules(rules)
     corpus = [json.loads(line) for line in
               Path(args.corpus).read_text().splitlines() if line.strip()]
 
@@ -47,7 +65,15 @@ def main() -> int:
                         for n in corpus)
     v1_lines, _ = proc.communicate(v1_input)
     v1_results = [json.loads(line) for line in v1_lines.splitlines()]
-    assert len(v1_results) == len(corpus), "worker line count mismatch"
+    # hard checks, not asserts: -O must not turn a crashed worker into
+    # a truncated-but-green comparison
+    if proc.returncode != 0:
+        raise SystemExit(
+            f"worker_v1.py exited {proc.returncode}; comparison aborted")
+    if len(v1_results) != len(corpus):
+        raise SystemExit(
+            f"worker returned {len(v1_results)} results for "
+            f"{len(corpus)} corpus names; comparison aborted")
 
     from nameparser import HumanName  # the working tree (2.0 facade)
     by_issue: dict[str, list[str]] = {}
