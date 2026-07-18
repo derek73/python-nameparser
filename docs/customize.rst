@@ -90,8 +90,9 @@ listed below.
        Defaults to empty — see the routing example below.
    * - ``extra_suffix_delimiters``
      - ``frozenset[str]``
-     - Adds separators (beyond a comma) that split suffix groups, e.g.
-       ``" - "`` for ``"Jane Smith, RN - CRNA"``.
+     - Adds separators that split suffix groups, e.g. ``" - "`` for
+       ``"Jane Smith, RN - CRNA"``. Additions only — the comma always
+       splits suffix groups and cannot be replaced.
    * - ``lenient_comma_suffixes``
      - ``bool``
      - Allows a segment after a comma to be read as a suffix using

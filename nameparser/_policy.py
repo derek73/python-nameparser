@@ -86,7 +86,11 @@ class Policy:
     #: nickname set (maiden wins, see __post_init__), so
     #: maiden_delimiters={("(", ")")} is the whole recipe (#274).
     maiden_delimiters: frozenset[tuple[str, str]] = frozenset()
-    #: Separators beyond a comma that split suffix groups (e.g. " - ").
+    #: Additional separators that split suffix groups (e.g. " - " for
+    #: "Jane Smith, RN - CRNA"). Additive only: the comma always
+    #: splits suffix groups and cannot be replaced -- comma handling
+    #: is structural (the same comma reading that parses
+    #: "Family, Given" input), not a configurable delimiter.
     extra_suffix_delimiters: frozenset[str] = frozenset()
     #: Allows a post-comma segment to read as a suffix via the lenient
     #: initial-shaped test; False requires the strict acronym form.
