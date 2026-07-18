@@ -303,6 +303,24 @@ def test_comparison_key_is_casefolded_canonical_seven_tuple() -> None:
     assert upper.comparison_key() == lower.comparison_key()
 
 
+def test_matches_casefolds_unicode_case_pairs() -> None:
+    # Deliberate 1.4 deviation (release log): comparison folds with
+    # casefold() where 1.4 used lower(). Comparison is the one surface
+    # where casefold's aggressive folds are WANTED -- ß/SS and final-
+    # sigma forms are the same name under different case conventions,
+    # and the key is opaque, so the spelling-mutation bug casefold
+    # caused in vocabulary storage (which stays lower(), v1 lc parity
+    # -- see _lexicon._normalize) cannot happen here.
+    from nameparser import HumanName, parse
+
+    assert parse("Hans Straße").matches("HANS STRASSE")   # ß <-> SS
+    assert parse("Νίκος Παπαδόπουλος").matches("Νίκοσ Παπαδόπουλοσ")  # ς <-> σ
+    # same fold on the facade path -- both APIs share the deviation
+    assert HumanName("Hans Straße").matches("HANS STRASSE")
+    key = parse("Hans Straße").comparison_key()
+    assert key == parse("HANS STRASSE").comparison_key()
+
+
 def test_token_rejects_bare_string_and_mapping_tags() -> None:
     # frozenset("particle") is the set(str) footgun: eight single chars.
     with pytest.raises(TypeError, match="bare string"):
