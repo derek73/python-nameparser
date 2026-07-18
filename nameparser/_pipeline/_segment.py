@@ -21,19 +21,18 @@ from __future__ import annotations
 
 import bisect
 import dataclasses
-import re
 
 from nameparser._pipeline._state import ParseState, PendingAmbiguity, Structure
 from nameparser._pipeline._vocab import (
+    D as _D,
+    PH as _PH,
     delimiter_cores, is_suffix_lenient, is_suffix_strict,
     period_joined_vocab, splits_into_suffixes,
 )
 from nameparser._types import AmbiguityKind
 
 
-# keep in sync with _group.py's merge pair (the fix_phd port)
-_PH = re.compile(r"^ph\.?$", re.IGNORECASE)
-_D = re.compile(r"^d\.?$", re.IGNORECASE)
+
 
 
 def segment(state: ParseState) -> ParseState:

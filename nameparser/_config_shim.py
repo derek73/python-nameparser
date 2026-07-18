@@ -894,6 +894,19 @@ class Constants:
     # -- snapshot -----------------------------------------------------------
 
     def _snapshot(self) -> tuple[Lexicon, Policy, _RenderDefaults]:
+        # generation-keyed cache: rebuilding the Lexicon re-normalizes
+        # ~1400 vocabulary entries (~185us) -- the same dirty-tracking
+        # the facade uses, applied one level up. A pure read either way
+        # (no bump, no warning).
+        cached = getattr(self, "_snapshot_cache", None)
+        if cached is not None and cached[0] == self._generation:
+            return cached[1]  # type: ignore[no-any-return]
+        snapshot = self._build_snapshot()
+        object.__setattr__(
+            self, "_snapshot_cache", (self._generation, snapshot))
+        return snapshot
+
+    def _build_snapshot(self) -> tuple[Lexicon, Policy, _RenderDefaults]:
         """Resolve this v1-shaped, mutable Constants into the frozen
         2.0 value objects it corresponds to (spec §3). A pure read: no
         generation bump, no deprecation warning even on the shared

@@ -117,3 +117,10 @@ def period_joined_vocab(text: str, lexicon: Lexicon) -> str | None:
            for c in chunks):
         return "suffix"
     return None
+
+
+# The fix_phd credential pair ('Ph.' + 'D.' as adjacent tokens), shared
+# by segment's suffix-comma detection and group's merge (v1 extracted
+# the credential pre-parse; the two stages must agree on the pattern).
+PH = re.compile(r"^ph\.?$", re.IGNORECASE)
+D = re.compile(r"^d\.?$", re.IGNORECASE)

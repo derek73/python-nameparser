@@ -431,3 +431,20 @@ def test_middle_as_family_list_view_matches_string_view() -> None:
     n = HumanName("Hassan, Mohamad Ahmad Ali", constants=c)
     assert n.last == "Ahmad Ali Hassan"
     assert n.last_list == ["Ahmad", "Ali", "Hassan"]
+
+
+def test_cold_import_order_config_first() -> None:
+    # the _facade cycle-breaker (import nameparser.config first) is
+    # order-dependent; this pins BOTH cold-start directions in fresh
+    # interpreters so an import-sorting pass cannot silently break one
+    import subprocess
+    import sys
+
+    for first in ("nameparser.config", "nameparser._facade"):
+        proc = subprocess.run(
+            [sys.executable, "-c",
+             f"import {first}; import nameparser; "
+             f"print(nameparser.HumanName('John Smith').last)"],
+            capture_output=True, text=True)
+        assert proc.returncode == 0, (first, proc.stderr)
+        assert proc.stdout.strip() == "Smith"

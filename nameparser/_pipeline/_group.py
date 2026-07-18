@@ -20,16 +20,16 @@ structural, like a delimiter char, and is dropped from assembly).
 from __future__ import annotations
 
 import dataclasses
-import re
 from collections.abc import Sequence, Set
 from enum import IntEnum
 
 from nameparser._pipeline._state import ParseState, Structure, WorkToken
+from nameparser._pipeline._vocab import D as _D
+from nameparser._pipeline._vocab import PH as _PH
 from nameparser._pipeline._vocab import delimiter_cores
 from nameparser._types import Role
 
-_PH = re.compile(r"^ph\.?$", re.IGNORECASE)
-_D = re.compile(r"^d\.?$", re.IGNORECASE)
+# the credential-pair regexes live in _vocab (shared with segment)
 
 Piece = list[int]
 
@@ -234,7 +234,8 @@ def group(state: ParseState) -> ParseState:
                     if entry_open or pos > 0:
                         tokens[i] = dataclasses.replace(
                             tokens[i], tags=tokens[i].tags | {"joined"})
-                    entry_open = True
+                # piece-level state: the NEXT piece continues this entry
+                entry_open = True
             if len(kept) != len(pieces):
                 pieces = [pieces[k] for k in kept]
                 ptags = [ptags[k] for k in kept]

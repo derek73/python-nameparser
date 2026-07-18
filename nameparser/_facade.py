@@ -7,7 +7,6 @@ Layering: facade layer -- may import anything public plus _render.
 from __future__ import annotations
 
 import dataclasses
-import re
 import warnings
 from collections.abc import Iterator
 from typing import Any
@@ -28,19 +27,19 @@ from typing import Any
 # still-executing __init__.
 import nameparser.config  # noqa: F401
 
+import nameparser._render as _render
 from nameparser._config_shim import CONSTANTS, Constants, _cached_parser
 from nameparser._lexicon import _normalize
 from nameparser._parser import Parser
 from nameparser._types import FOLDED_TAG, ParsedName, Role
 
 _V2_FIELD = {"first": "given", "last": "family"}  # v1 name -> v2 name
-_MEMBERS = ("title", "first", "middle", "last", "suffix", "nickname",
-            "maiden")
+_V1_SPELLING = {v2: v1 for v1, v2 in _V2_FIELD.items()}
+# derived from Role: declaration order IS the canonical field order
+# (never restated), rendered in the v1 spellings
+_MEMBERS = tuple(_V1_SPELLING.get(r.value, r.value) for r in Role)
 
-_SPACES = re.compile(r"\s+")
-_SPACE_BEFORE_COMMA = re.compile(r"\s+,")
-# the three comma characters, same set as the pipeline's COMMA_CHARS
-_TRAILING_COMMA = re.compile(r"[,،，]$")
+
 
 #: v1 parsing hooks the facade never calls (spec §2 exception 2 / #280).
 _V1_HOOKS = (
@@ -230,8 +229,11 @@ class HumanName:
                     extra_suffix_delimiters=frozenset(
                         {self.suffix_delimiter}))
             self._lexicon, self._policy = lexicon, policy
+            self._parser = _cached_parser(lexicon, policy)
             self._snapshot_gen = gen
-        return _cached_parser(self._lexicon, self._policy)
+        # the fast path is a plain attribute return: hashing the two
+        # value objects for the lru lookup is the whole fast-path cost
+        return self._parser
 
     def parse_full_name(self) -> None:
         """Re-parse the stored ``full_name`` (v1's documented re-parse
@@ -572,19 +574,21 @@ class HumanName:
     # -- dunders ------------------------------------------------------------
 
     def collapse_whitespace(self, string: str) -> str:
-        # v1 parser.py:976 verbatim (regexes.spaces / regexes.commas)
-        string = _SPACES.sub(" ", string.strip())
-        if string and _TRAILING_COMMA.search(string):
+        # v1 parser.py:976 verbatim, over _render's regexes (the #254
+        # collapse owns them; this public method keeps v1's narrower
+        # two-step contract for initials() and direct callers)
+        string = _render._SPACES.sub(" ", string.strip())
+        if string and _render._COMMA_CHAR.fullmatch(string[-1]):
             string = string[:-1]
         return string
 
     def __str__(self) -> str:
         if self.string_format is not None:
-            _s = self.string_format.format(
+            rendered = self.string_format.format(
                 **{k: v or "" for k, v in self.as_dict().items()})
-            _s = _s.replace(" ()", "").replace(" ''", "").replace(' ""', "")
-            _s = _SPACE_BEFORE_COMMA.sub(",", _s)
-            return self.collapse_whitespace(_s).strip(", ")
+            # the full #254 collapse is _render._collapse -- one owner
+            # for the cleanup chain the v1 __str__ spelled inline
+            return _render._collapse(rendered)
         return " ".join(self)
 
     def __repr__(self) -> str:
