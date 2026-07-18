@@ -47,4 +47,13 @@ def DEVIATES(name: str) -> bool:
     """True when this pack may parse `name` differently from the
     default parser (the declared-deviation predicate the
     non-interference gate consumes)."""
-    return bool(_EAST_SLAVIC.search(name) or _EAST_SLAVIC_CYR.search(name))
+    # Scan per token: the rule fires on the family-POSITION token, not
+    # the name's final characters, so a whole-string search would miss
+    # 'Ivan Petr Sidorovich Jr.' (a suffix after the ending -> the $
+    # anchor never lands: under-declaration, the unsafe direction for
+    # the gate). Per-token scanning instead OVER-declares (e.g.
+    # 'Sidorovich Anna' matches though the rule's 1+1+1 shape never
+    # fires) -- the safe direction: DEVIATES may claim more than the
+    # rule changes, never less.
+    return any(_EAST_SLAVIC.search(tok) or _EAST_SLAVIC_CYR.search(tok)
+               for tok in name.split())

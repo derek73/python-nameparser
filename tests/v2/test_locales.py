@@ -50,6 +50,22 @@ def test_pack_marker_regexes_stay_in_sync_with_post_rules() -> None:
         assert pack_regex.flags == rule_regex.flags
 
 
+def test_ru_deviates_scans_per_token() -> None:
+    # Regression: the rule rotates on the family-POSITION token, so a
+    # whole-string search missed a patronymic ending followed by a
+    # suffix -- under-declaration, the unsafe direction for the
+    # non-interference gate. The pack rotates this name; DEVIATES must
+    # say so.
+    from nameparser.locales import ru
+
+    assert ru.DEVIATES("Ivan Petr Sidorovich Jr.")
+    # Over-declaration is the accepted safe direction: the ending
+    # matches a token although the rule's 1 given + 1 middle +
+    # 1 family shape never fires on a two-token name.
+    assert ru.DEVIATES("Sidorovich Anna")
+    assert not ru.DEVIATES("John Smith")
+
+
 def test_locales_unknown_attribute() -> None:
     from nameparser import locales
     with pytest.raises(AttributeError, match="XX"):
