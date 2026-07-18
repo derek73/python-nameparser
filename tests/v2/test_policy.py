@@ -111,6 +111,16 @@ def test_maiden_delimiters_win_over_nickname_defaults() -> None:
     assert p == explicit and hash(p) == hash(explicit)
 
 
+def test_maiden_wins_applies_to_typographic_pairs_too() -> None:
+    # the subtraction is pair-agnostic; pin one #273 pair end-to-end
+    from nameparser import Parser
+
+    p = Policy(maiden_delimiters=frozenset({("«", "»")}))
+    assert ("«", "»") not in p.nickname_delimiters
+    n = Parser(policy=p).parse("Jean «Dupont» Martin")
+    assert n.maiden == "Dupont" and n.nickname == ""
+
+
 def test_maiden_precedence_applies_through_policy_patch() -> None:
     # apply_patch re-runs Policy's constructor, so a patch (e.g. from a
     # locale pack) adding a maiden pair gets the same subtraction

@@ -549,6 +549,21 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         # v1 trio still present, still stored name-as-value
         for name in ('quoted_word', 'double_quotes', 'parenthesis'):
             self.assertEqual(entries[name], name)
+        # A pre-#273 pickle restores as exactly its own three keys --
+        # __setstate__ REPLACES the bucket, never merges defaults in --
+        # so old configs don't silently gain the typographic pairs.
+        legacy = Constants()
+        state = legacy.__getstate__()
+        state['nickname_delimiters'] = {
+            'quoted_word': 'quoted_word', 'double_quotes': 'double_quotes',
+            'parenthesis': 'parenthesis'}
+        restored = Constants.__new__(Constants)
+        restored.__setstate__(state)
+        self.assertEqual(set(restored.nickname_delimiters),
+                         {'quoted_word', 'double_quotes', 'parenthesis'})
+        from nameparser import HumanName
+        assert HumanName('John «Jack» Kennedy', constants=restored).nickname == ''
+        assert HumanName('John (Jack) Kennedy', constants=restored).nickname == 'Jack'
         # 2.0 adds the #273 typographic sentinels alongside them, same
         # name-as-value scheme (full list pinned in tests/v2/
         # test_config_shim.py against _SENTINEL_PAIRS)
