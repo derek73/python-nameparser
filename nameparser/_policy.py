@@ -77,9 +77,10 @@ class Policy:
     #: :ref:`name-order constants <name-order-constants>` --
     #: GIVEN_FIRST (the default), FAMILY_FIRST, and
     #: FAMILY_FIRST_GIVEN_LAST; any other tuple of Roles raises
-    #: ValueError. Ignored when the input contains a comma:
-    #: comma-format input ("Yamamoto, Haruki") states its own order
-    #: explicitly.
+    #: ValueError. Ignored when the input contains a comma: the comma
+    #: itself states the order -- "Thomas, John" puts the family name
+    #: first no matter which words could otherwise be either
+    #: ("Thomas" and "John" both work as given or family names).
     name_order: tuple[Role, Role, Role] = GIVEN_FIRST
     #: Opt-in detectors that reorder patronymic-shaped names
     #: (EAST_SLAVIC, TURKIC); usually set via a locale pack.
