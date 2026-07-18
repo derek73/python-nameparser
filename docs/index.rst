@@ -59,6 +59,7 @@ Parsing Names
    usage
    concepts
    customize
+   locales
 
 **Developer Documentation**
 
