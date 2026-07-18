@@ -47,18 +47,54 @@ Configuration
 .. autoclass:: nameparser.PolicyPatch
    :members:
 
-.. autodata:: nameparser.UNSET
+.. py:data:: nameparser.UNSET
+
+   Sentinel meaning "this patch does not set this field" — the default
+   of every :class:`~nameparser.PolicyPatch` field, distinguishable
+   from every real value including ``None`` and ``False``.
 
 .. autoclass:: nameparser.PatronymicRule
    :members:
 
-.. autodata:: nameparser.GIVEN_FIRST
+Name-order constants
+^^^^^^^^^^^^^^^^^^^^
 
-.. autodata:: nameparser.FAMILY_FIRST
+The three valid values for ``Policy(name_order=...)``. ``name_order``
+is deliberately restricted to these exported constants — an arbitrary
+tuple of :class:`~nameparser.Role` members raises ``ValueError``,
+because only these three orders have defined assignment semantics.
 
-.. autodata:: nameparser.FAMILY_FIRST_GIVEN_LAST
+.. py:data:: nameparser.GIVEN_FIRST
+   :value: (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
 
-.. autodata:: nameparser.DEFAULT_NICKNAME_DELIMITERS
+   Western order (the default): the first word of positional input is
+   the given name, the last is the family name, everything between is
+   middle.
+
+.. py:data:: nameparser.FAMILY_FIRST
+   :value: (Role.FAMILY, Role.GIVEN, Role.MIDDLE)
+
+   Family name first, given name second, remaining words middle —
+   e.g. Hungarian, or East Asian order.
+
+.. py:data:: nameparser.FAMILY_FIRST_GIVEN_LAST
+   :value: (Role.FAMILY, Role.MIDDLE, Role.GIVEN)
+
+   Family name first, given name *last*, the words between middle —
+   e.g. Vietnamese full-name order.
+
+Delimiter defaults
+^^^^^^^^^^^^^^^^^^
+
+.. py:data:: nameparser.DEFAULT_NICKNAME_DELIMITERS
+   :value: frozenset({("'", "'"), ('"', '"'), ("(", ")")})
+
+   The default :attr:`~nameparser.Policy.nickname_delimiters` set —
+   quotes and parentheses. Build on it for additive customizations,
+   e.g. ``nickname_delimiters=DEFAULT_NICKNAME_DELIMITERS |
+   {("«", "»")}``; to *reroute* a pair to ``maiden``, just list it in
+   :attr:`~nameparser.Policy.maiden_delimiters` (it is dropped from
+   the effective nickname set automatically).
 
 Locales
 ~~~~~~~

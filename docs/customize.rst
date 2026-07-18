@@ -61,7 +61,7 @@ listed below.
      - Type
      - Effect
    * - ``name_order``
-     - ``tuple[Role, Role, Role]``
+     - one of the three exported order constants
      - Assigns positional (no-comma) input to given/middle/family in
        this order. Use the exported ``GIVEN_FIRST`` (default),
        ``FAMILY_FIRST``, or ``FAMILY_FIRST_GIVEN_LAST`` constants.

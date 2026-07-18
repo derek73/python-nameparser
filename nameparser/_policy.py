@@ -21,8 +21,18 @@ class PatronymicRule(StrEnum):
 
 # Order-spec constants (#270). Each reads as its contents because roles
 # are named given/family, not first/last.
+
+#: Western order (the default): the first word of positional input is
+#: the given name, the last is the family name, everything between is
+#: middle. One of the three valid ``Policy(name_order=...)`` values.
 GIVEN_FIRST = (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
+#: Family name first, given name second, remaining words middle
+#: (e.g. Hungarian, or East Asian order). One of the three valid
+#: ``Policy(name_order=...)`` values.
 FAMILY_FIRST = (Role.FAMILY, Role.GIVEN, Role.MIDDLE)
+#: Family name first, given name LAST, words between middle
+#: (e.g. Vietnamese full-name order). One of the three valid
+#: ``Policy(name_order=...)`` values.
 FAMILY_FIRST_GIVEN_LAST = (Role.FAMILY, Role.MIDDLE, Role.GIVEN)
 
 _NAME_ROLES = frozenset({Role.GIVEN, Role.MIDDLE, Role.FAMILY})
