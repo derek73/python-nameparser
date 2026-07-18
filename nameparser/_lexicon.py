@@ -138,40 +138,55 @@ class Lexicon:
     examples, not full contents; inspect any field's shipped vocabulary
     directly, e.g. ``Lexicon.default().conjunctions``."""
 
-    #: Pre-nominal titles ("dr", "sir", "capt", ...).
+    #: Pre-nominal titles ("dr", "sir", "capt", ...). Full default
+    #: list: :data:`~nameparser.config.titles.TITLES`.
     titles: frozenset[str] = frozenset()
     #: Titles whose single following name reads as a GIVEN name
-    #: ("sheikh", "sister", ...) rather than a family name.
+    #: ("sheikh", "sister", ...) rather than a family name. Full
+    #: default list: :data:`~nameparser.config.titles.FIRST_NAME_TITLES`.
     given_name_titles: frozenset[str] = frozenset()
     #: Post-nominal acronym suffixes, matched with or without periods
-    #: ("phd" matches "PhD" and "Ph.D.").
+    #: ("phd" matches "PhD" and "Ph.D."). Full default list:
+    #: :data:`~nameparser.config.suffixes.SUFFIX_ACRONYMS`.
     suffix_acronyms: frozenset[str] = frozenset()
-    #: Post-nominal word suffixes ("jr", "esquire", "iii", ...).
+    #: Post-nominal word suffixes ("jr", "esquire", "iii", ...). Full
+    #: default list:
+    #: :data:`~nameparser.config.suffixes.SUFFIX_NOT_ACRONYMS`.
     suffix_words: frozenset[str] = frozenset()
     #: Subset of suffix_acronyms counted as suffixes only when written
     #: WITH periods -- their bare forms are common surnames ("ma",
-    #: "do": "Jack Ma" keeps his family name).
+    #: "do": "Jack Ma" keeps his family name). Full default list:
+    #: :data:`~nameparser.config.suffixes.SUFFIX_ACRONYMS_AMBIGUOUS`.
     suffix_acronyms_ambiguous: frozenset[str] = frozenset()
     #: Family-name particles that chain onto the following piece
-    #: ("van", "de", "bin", ...).
+    #: ("van", "de", "bin", ...). Full default list:
+    #: :data:`~nameparser.config.prefixes.PREFIXES`.
     particles: frozenset[str] = frozenset()
     #: Subset of particles that can also BE a given name: a leading
     #: one reads as given and records a particle-or-given ambiguity
-    #: ("Van Johnson").
+    #: ("Van Johnson"). No constant of its own -- the default derives
+    #: as particles minus
+    #: :data:`~nameparser.config.prefixes.NON_FIRST_NAME_PREFIXES`
+    #: (which marks the opposite, never-given subset).
     particles_ambiguous: frozenset[str] = frozenset()
     #: Words or characters that join surrounding pieces into one
-    #: ("and", "&", "y", "и", ...).
+    #: ("and", "&", "y", "и", ...). Full default list:
+    #: :data:`~nameparser.config.conjunctions.CONJUNCTIONS`.
     conjunctions: frozenset[str] = frozenset()
     #: Given-name prefixes that bind to the following word to form one
     #: given name ("abdul" -> "Abdul Salam"); never standalone names.
+    #: Full default list:
+    #: :data:`~nameparser.config.bound_first_names.BOUND_FIRST_NAMES`.
     bound_given_names: frozenset[str] = frozenset()
     #: Marker words introducing a birth surname, routed to the maiden
-    #: field ("née", "geb.", "roz.", ...).
+    #: field ("née", "geb.", "roz.", ...). Full default list:
+    #: :data:`~nameparser.config.maiden_markers.MAIDEN_MARKERS`.
     maiden_markers: frozenset[str] = frozenset()
     #: Lowercase word -> exact-cased replacement used by capitalized()
     #: ("phd" -> "Ph.D."). Pair-valued: change it with
     #: dataclasses.replace(), not add()/remove(); read it as a mapping
-    #: via capitalization_exceptions_map.
+    #: via capitalization_exceptions_map. Full default mapping:
+    #: :data:`~nameparser.config.capitalization.CAPITALIZATION_EXCEPTIONS`.
     # Canonical storage: sorted tuple of (key, value) pairs. The
     # constructor tolerates any Mapping (or pair iterable) at runtime and
     # canonicalizes here; this closes the caller-aliasing hole and keeps
