@@ -97,12 +97,13 @@ listed below.
        strict acronym form.
    * - ``strip_emoji``
      - ``bool``
-     - Removes emoji from the input before parsing. Defaults to
+     - Excludes emoji from tokenization — they appear in no field or
+       rendered view, though ``original`` keeps them. Defaults to
        ``True``.
    * - ``strip_bidi``
      - ``bool``
-     - Removes bidirectional control characters from the input before
-       parsing. Defaults to ``True``.
+     - Excludes bidirectional control characters the same way.
+       Defaults to ``True``.
 
 .. doctest::
 

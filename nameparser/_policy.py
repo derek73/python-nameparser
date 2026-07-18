@@ -87,9 +87,12 @@ class Policy:
     #: Allows a post-comma segment to read as a suffix via the lenient
     #: initial-shaped test; False requires the strict acronym form.
     lenient_comma_suffixes: bool = True
-    #: Removes emoji from the input before parsing.
+    #: Excludes emoji from tokenization: they appear in no token,
+    #: field, or rendered view. The original string keeps them (input
+    #: is never modified -- spans stay true).
     strip_emoji: bool = True
-    #: Removes bidirectional control characters before parsing.
+    #: Excludes bidirectional control characters from tokenization the
+    #: same way.
     strip_bidi: bool = True  # =False replaces v1's opt-out CONSTANTS.regexes.bidi = False
 
     # in the class body so @dataclass(slots=True) keeps them
