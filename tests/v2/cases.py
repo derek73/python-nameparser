@@ -126,6 +126,45 @@ CASES: tuple[Case, ...] = (
                "one-liner replaces the bucket-move idiom; the v1 facade "
                "keeps v1's nickname-wins precedence via the shim's "
                "pre-subtraction (pinned in test_config_shim)"),
+    # #273: typographic nickname delimiters ship as defaults -- one row
+    # per new pair; expectations verified live 2026-07-19 before the
+    # pairs were added to DEFAULT_NICKNAME_DELIMITERS.
+    Case("smart_double_quotes_nickname", 'John “Jack” Kennedy',
+         {"given": "John", "family": "Kennedy", "nickname": "Jack"},
+         classification="feat(#273)"),
+    Case("low_high_quotes_nickname", 'Hans „Hansi“ Müller',
+         {"given": "Hans", "family": "Müller", "nickname": "Hansi"},
+         classification="feat(#273)",
+         notes="the closing '“' doubles as the English pair's opener; "
+               "no spurious unbalanced-delimiter ambiguity (pinned in "
+               "test_extract)"),
+    Case("guillemets_nickname_inner_spaces", 'Jean « Petit » Dupont',
+         {"given": "Jean", "family": "Dupont", "nickname": "Petit"},
+         classification="feat(#273)",
+         notes="French spacing: inner padding is trimmed from the "
+               "extracted nickname"),
+    Case("reversed_guillemets_nickname", 'Hans »Hansi« Müller',
+         {"given": "Hans", "family": "Müller", "nickname": "Hansi"},
+         classification="feat(#273)"),
+    Case("swedish_right_quotes_nickname", 'Anna ”Ann” Larsson',
+         {"given": "Anna", "family": "Larsson", "nickname": "Ann"},
+         classification="feat(#273)"),
+    Case("cjk_corner_bracket_nickname", '山田「タロ」太郎',
+         {"given": "山田", "family": "太郎", "nickname": "タロ"},
+         classification="feat(#273)",
+         notes="extraction also splits the unspaced remainder -- the "
+               "masked region acts as a token boundary"),
+    Case("cjk_white_corner_bracket_nickname", '田中『ハナ』花子',
+         {"given": "田中", "family": "花子", "nickname": "ハナ"},
+         classification="feat(#273)"),
+    Case("fullwidth_paren_nickname", 'John （Jack） Kennedy',
+         {"given": "John", "family": "Kennedy", "nickname": "Jack"},
+         classification="feat(#273)"),
+    Case("curly_apostrophe_stays_literal", 'Sean O’Connor',
+         {"given": "Sean", "family": "O’Connor"},
+         notes="U+2019 is the typographic apostrophe; curly single "
+               "quotes are deliberately NOT delimiters (#273 excludes "
+               "them)"),
     Case("family_segment_trailing_suffix", "Smith Jr., John",
          {"given": "John", "family": "Smith", "suffix": "Jr."},
          notes="v1: the family part may have suffixes in it "

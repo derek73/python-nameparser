@@ -206,8 +206,14 @@ def test_constants_default_fields_present() -> None:
     assert c.force_mixed_case_capitalization is False
     assert c.string_format == "{title} {first} {middle} {last} {suffix} ({nickname})"
     assert c.suffix_delimiter is None
-    assert set(c.nickname_delimiters) == {"quoted_word", "double_quotes",
-                                          "parenthesis"}
+    # every named sentinel is a default nickname bucket (the v1 trio
+    # plus the #273 typographic pairs); derived from the map itself so
+    # a new sentinel can't leave this pin stale
+    from nameparser._config_shim import _SENTINEL_PAIRS
+
+    assert set(c.nickname_delimiters) == set(_SENTINEL_PAIRS)
+    assert {"quoted_word", "double_quotes", "parenthesis",
+            "smart_double_quotes", "guillemets"} <= set(_SENTINEL_PAIRS)
     assert len(c.maiden_delimiters) == 0
 
 
@@ -351,6 +357,19 @@ def test_snapshot_patronymic_and_middle_flags() -> None:
     assert policy.patronymic_rules == frozenset(
         {PatronymicRule.EAST_SLAVIC, PatronymicRule.TURKIC})
     assert policy.middle_as_family is True
+
+
+def test_typographic_delimiter_sentinels_present_and_movable() -> None:
+    # #273: the eight typographic pairs surface in the v1 API as new
+    # named sentinels, so the documented keyed idioms (pop/move/del)
+    # work on them exactly like the original trio
+    c = Constants()
+    assert "smart_double_quotes" in c.nickname_delimiters
+    assert "guillemets" in c.nickname_delimiters
+    c.maiden_delimiters["guillemets"] = c.nickname_delimiters.pop("guillemets")
+    _, policy, _ = c._snapshot()
+    assert ("«", "»") in policy.maiden_delimiters
+    assert ("«", "»") not in policy.nickname_delimiters
 
 
 def test_snapshot_delimiter_bucket_move() -> None:

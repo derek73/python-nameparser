@@ -99,10 +99,13 @@ def test_maiden_delimiters_win_over_nickname_defaults() -> None:
     p = Policy(maiden_delimiters=frozenset({("(", ")")}))
     assert ("(", ")") in p.maiden_delimiters
     assert ("(", ")") not in p.nickname_delimiters
-    # canonicalization: the explicit-removal spelling converges to the
-    # same value (equal AND same hash -- cache keys agree)
+    # canonicalization: the explicit-removal spelling (the documented
+    # set-math idiom) converges to the same value (equal AND same hash
+    # -- cache keys agree)
+    from nameparser import DEFAULT_NICKNAME_DELIMITERS
+
     explicit = Policy(
-        nickname_delimiters=frozenset({("'", "'"), ('"', '"')}),
+        nickname_delimiters=DEFAULT_NICKNAME_DELIMITERS - {("(", ")")},
         maiden_delimiters=frozenset({("(", ")")}),
     )
     assert p == explicit and hash(p) == hash(explicit)

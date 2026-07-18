@@ -45,12 +45,25 @@ FAMILY_FIRST_GIVEN_LAST = (Role.FAMILY, Role.MIDDLE, Role.GIVEN)
 
 _NAME_ROLES = frozenset({Role.GIVEN, Role.MIDDLE, Role.FAMILY})
 
-#: Policy.nickname_delimiters' default (v1 parity: quotes + parentheses).
-#: Public and named so customizations read as set math against a
-#: documented value -- e.g. ``DEFAULT_NICKNAME_DELIMITERS | {("«", "»")}``
-#: -- instead of a rebuilt literal the user had to go discover.
-DEFAULT_NICKNAME_DELIMITERS = frozenset(
-    {("'", "'"), ('"', '"'), ("(", ")")})
+#: Policy.nickname_delimiters' default. Public and named so
+#: customizations read as set math against a documented value -- e.g.
+#: ``DEFAULT_NICKNAME_DELIMITERS | {("｟", "｠")}`` -- instead of a
+#: rebuilt literal the user had to go discover. The v1 trio (straight
+#: quotes + parentheses) plus the typographic conventions (#273):
+#: smart quotes, low-high and right-right quotes, guillemets both
+#: directions, CJK corner brackets, fullwidth parentheses. Curly
+#: SINGLE quotes are deliberately absent: U+2019 is the typographic
+#: apostrophe ("O’Connor").
+DEFAULT_NICKNAME_DELIMITERS = frozenset({
+    ("'", "'"), ('"', '"'), ("(", ")"),      # v1 trio
+    ("“", "”"),                              # smart quotes (en, zh)
+    ("„", "“"),                              # low-high (de, pl, cs, hu)
+    ("”", "”"),                              # right-right (sv, fi)
+    ("«", "»"),                              # guillemets (fr, ru, it, el)
+    ("»", "«"),                              # reversed guillemets (de alt)
+    ("「", "」"), ("『", "』"),                # CJK corner brackets (ja)
+    ("（", "）"),                             # fullwidth parentheses (CJK)
+})
 
 
 def _reject_bare_string_order(value: object) -> None:

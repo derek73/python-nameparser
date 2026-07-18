@@ -545,11 +545,15 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         # see test_overriding_builtin_regex_still_affects_nickname_parsing in
         # test_nicknames.py.
         c = Constants()
-        self.assertEqual(dict(c.nickname_delimiters), {
-            'quoted_word': 'quoted_word',
-            'double_quotes': 'double_quotes',
-            'parenthesis': 'parenthesis',
-        })
+        entries = dict(c.nickname_delimiters)
+        # v1 trio still present, still stored name-as-value
+        for name in ('quoted_word', 'double_quotes', 'parenthesis'):
+            self.assertEqual(entries[name], name)
+        # 2.0 adds the #273 typographic sentinels alongside them, same
+        # name-as-value scheme (full list pinned in tests/v2/
+        # test_config_shim.py against _SENTINEL_PAIRS)
+        assert all(value == name for name, value in entries.items())
+        assert 'smart_double_quotes' in entries
         self.assertEqual(dict(c.maiden_delimiters), {})
 
     def test_extra_nickname_delimiters_removed(self) -> None:

@@ -43,6 +43,32 @@ def test_unbalanced_delimiter_left_literal_with_ambiguity() -> None:
     assert out.ambiguities[0].kind is AmbiguityKind.UNBALANCED_DELIMITER
 
 
+def test_no_spurious_unbalanced_from_role_overlapping_pairs() -> None:
+    # #273: '“' closes the German „…“ pair but OPENS the English “…”
+    # pair, and '»' closes «…» but opens the reversed »…« pair. A
+    # delimiter character consumed by another pair's successful
+    # extraction is literal for every other pair -- it must not
+    # surface as an unbalanced-delimiter ambiguity.
+    policy = Policy(nickname_delimiters=frozenset(
+        {("“", "”"), ("„", "“"), ("«", "»"), ("»", "«")}))
+    for text, inner in (("Hans „Hansi“ Müller", "Hansi"),
+                        ("Jean «Petit» Dupont", "Petit")):
+        out = extract_delimited(_state(text, policy))
+        assert [text[s.start:s.end] for _, s in out.extracted] == [inner]
+        assert out.ambiguities == ()
+
+
+def test_genuine_unbalanced_still_flagged_alongside_overlapping_pairs() -> None:
+    # the suppression must not swallow REAL unbalanced opens: here the
+    # German open has no close anywhere, and no other pair extracts
+    policy = Policy(nickname_delimiters=frozenset(
+        {("“", "”"), ("„", "“")}))
+    out = extract_delimited(_state("Hans „Hansi Müller", policy))
+    assert out.extracted == ()
+    assert [a.kind for a in out.ambiguities] == [
+        AmbiguityKind.UNBALANCED_DELIMITER]
+
+
 def test_maiden_delimiters_route_to_maiden() -> None:
     policy = dataclasses.replace(
         Policy(),

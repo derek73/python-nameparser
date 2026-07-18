@@ -170,8 +170,9 @@ rendering argument, where the 2.0 equivalent isn't config at all):
      -
    * - ``nickname_delimiters``
      - ``Policy.nickname_delimiters``
-     - Was a three-sentinel dict; now a plain ``frozenset`` of
-       ``(open, close)`` pairs
+     - Was a dict of named sentinels; now a plain ``frozenset`` of
+       ``(open, close)`` pairs. Both APIs gained the #273 typographic
+       defaults (smart quotes, guillemets, CJK brackets, ...) in 2.0
    * - ``maiden_delimiters``
      - ``Policy.maiden_delimiters``
      - Same shape change as ``nickname_delimiters``. Precedence

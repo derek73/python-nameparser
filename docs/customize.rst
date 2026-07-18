@@ -81,8 +81,9 @@ listed below.
      - ``frozenset[tuple[str, str]]``
      - Routes content enclosed by these delimiter pairs to
        ``nickname``. Defaults to
-       :data:`~nameparser.DEFAULT_NICKNAME_DELIMITERS` — quotes and
-       parentheses.
+       :data:`~nameparser.DEFAULT_NICKNAME_DELIMITERS` — straight
+       quotes and parentheses plus the typographic conventions (smart
+       quotes, guillemets, CJK brackets, ...).
    * - ``maiden_delimiters``
      - ``frozenset[tuple[str, str]]``
      - Routes content enclosed by these delimiter pairs to ``maiden``

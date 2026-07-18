@@ -407,12 +407,24 @@ class TupleManager(dict[str, object]):
         self._on_change = None  # rewired by the owning Constants
 
 
-#: v1's three named delimiter buckets, translated to the ``Policy``
-#: (open, close) pairs they stand for (spec §3).
+#: The named delimiter buckets, translated to the ``Policy``
+#: (open, close) pairs they stand for (spec §3). The first three are
+#: v1's; the rest are the #273 typographic conventions, named so the
+#: v1 keyed idioms (pop/move/del) work on them like the originals.
+#: Keep in sync with DEFAULT_NICKNAME_DELIMITERS in _policy.py (pinned
+#: by the default-Constants equality test).
 _SENTINEL_PAIRS = {
     "quoted_word": ("'", "'"),
     "double_quotes": ('"', '"'),
     "parenthesis": ("(", ")"),
+    "smart_double_quotes": ("“", "”"),
+    "low_high_quotes": ("„", "“"),
+    "right_double_quotes": ("”", "”"),
+    "guillemets": ("«", "»"),
+    "reversed_guillemets": ("»", "«"),
+    "corner_brackets": ("「", "」"),
+    "white_corner_brackets": ("『", "』"),
+    "fullwidth_parenthesis": ("（", "）"),
 }
 
 #: derived, so the manager's accepted keys and _snapshot()'s

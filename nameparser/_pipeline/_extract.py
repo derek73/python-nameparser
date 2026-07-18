@@ -59,7 +59,9 @@ def extract_delimited(state: ParseState) -> ParseState:
     text = state.original
     extracted: list[tuple[Role, Span]] = []
     masked: list[Span] = []
-    ambiguities: list[PendingAmbiguity] = []
+    # candidates, not final: each carries the offset of the unmatched
+    # open so cross-pair overlaps can be filtered once all pairs ran
+    unbalanced: list[tuple[int, PendingAmbiguity]] = []
     # nickname first (v1 parse_nicknames order): when the same
     # delimiter pair sits in BOTH buckets, the nickname reading wins;
     # the documented bucket-move idiom removes it from nickname, so
@@ -79,11 +81,11 @@ def extract_delimited(state: ParseState) -> ParseState:
                        and not _close_ok(text, j, len(close))):
                     j = text.find(close, j + 1)
                 if j == -1:
-                    ambiguities.append(PendingAmbiguity(
+                    unbalanced.append((i, PendingAmbiguity(
                         AmbiguityKind.UNBALANCED_DELIMITER,
                         f"unmatched {open_!r} at offset {i}; treated as "
                         f"literal text",
-                    ))
+                    )))
                     if open_ == close:
                         # _close_ok is open-independent, so a failed
                         # close-walk means NO boundary-valid close
@@ -94,11 +96,11 @@ def extract_delimited(state: ParseState) -> ParseState:
                         scan = i + len(open_)
                         while (k := text.find(open_, scan)) != -1:
                             if _open_ok(text, k):
-                                ambiguities.append(PendingAmbiguity(
+                                unbalanced.append((k, PendingAmbiguity(
                                     AmbiguityKind.UNBALANCED_DELIMITER,
                                     f"unmatched {open_!r} at offset {k}; "
                                     f"treated as literal text",
-                                ))
+                                )))
                             scan = k + 1
                         break
                     pos = i + len(open_)
@@ -125,6 +127,14 @@ def extract_delimited(state: ParseState) -> ParseState:
                 pos = j + len(close)
     extracted.sort(key=lambda pair: pair[1])
     masked.sort()
+    # A delimiter character consumed by another pair's successful
+    # extraction is literal for every other pair: drop unbalanced
+    # candidates whose offset lies inside a masked region (#273 -- the
+    # conventions share characters in opposite roles: '“' closes „…“
+    # but opens “…”, '»' closes «…» but opens »…«).
+    ambiguities = tuple(
+        a for offset, a in unbalanced
+        if not any(m.start <= offset < m.end for m in masked))
     return dataclasses.replace(
         state, extracted=tuple(extracted), masked=tuple(masked),
-        ambiguities=state.ambiguities + tuple(ambiguities))
+        ambiguities=state.ambiguities + ambiguities)
