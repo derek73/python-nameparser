@@ -3,8 +3,9 @@
 uulu/kyzy and Cyrillic forms) lives inside the rule implementation in
 nameparser/_pipeline/_post_rules.py (mirrors v1's flag design).
 
-Data sources: the v1 Turkic patronymic rule (its plan and test bank);
-the pack carries no vocabulary.
+Data sources: the v1 Turkic patronymic rule (issue #185 and its test
+bank, tests/test_turkic_patronymic_order.py); the pack carries no
+vocabulary.
 
 Declared deviations (spec §2 authoring requirement 3): applying this
 pack changes only NO_COMMA names where some token is a standalone

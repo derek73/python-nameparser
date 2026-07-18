@@ -35,12 +35,11 @@ NON_FIRST_NAME_PREFIXES = {
 
     # #269: Arabic native-script patronymic/clan particles. Unlike their
     # Latin transliterations, these live in a script namespace with no
-    # collision against an unrelated Latin given name (the reason 'bin'
-    # itself stays ambiguous above), so each is judged on its own
-    # semantics rather than mirrored blindly:
-    'بن',     # "bin"/"ibn" (son of) -- never a bare given name; Latin
-              # 'bin' stays ambiguous only to protect the Chinese given
-              # name "Bin", which cannot collide with this script.
+    # collision against an unrelated Latin given name, so each is judged
+    # on its own semantics rather than mirrored blindly:
+    'بن',     # "bin"/"ibn" (son of) -- never a bare given name. Latin
+              # 'bin' is in PREFIXES but not in this set; that judgment
+              # is unchanged by adding the Arabic-script form.
     'بنت',    # "bint" (daughter of) -- mirrors Latin 'bint' above.
     'ابن',    # "ibn" (son of, alternate spelling) -- mirrors Latin
               # 'ibn' above.
