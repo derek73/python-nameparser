@@ -132,7 +132,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 merge(k, k + 2, add={"conjunction"})
             else:
                 k += 1
-        # each conjunction joins its neighbors (v1 issue #11 carve-out:
+        # each conjunction joins its neighbors (v1's Google Code issue 11
+        # carve-out, the "john e smith" bug:
         # a single-letter alphabetic conjunction in a short name is more
         # likely an initial)
         k = 0

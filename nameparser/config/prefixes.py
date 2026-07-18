@@ -51,6 +51,9 @@ NON_FIRST_NAME_PREFIXES = {
     # #269: Hebrew native-script patronymic particles -- same
     # reasoning as the Arabic ones above: no Latin-script collision,
     # and neither functions as a standalone given name in Hebrew usage.
+    # Deferred under the collision rule: 'בר' (Aramaic son-of, as in
+    # Bar-Lev) -- Bar is a common modern Israeli given name, and the
+    # surname spelling is hyphenated anyway.
     'בן',     # "ben" (son of)
     'בת',     # "bat" (daughter of)
 }

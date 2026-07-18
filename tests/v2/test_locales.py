@@ -372,7 +372,8 @@ def test_non_interference_all_packs_combined() -> None:
     ("акад Іван Франко", "title", "акад"),
     ("пан Тарас Шевченко", "title", "пан"),
     ("пані Марія Іванова", "title", "пані"),
-    # Cyrillic conjunction "и": v1's issue #11 carve-out treats a bare
+    # Cyrillic conjunction "и": v1's single-letter carve-out (Google
+    # Code issue 11, the "john e smith" bug) treats a bare
     # single-alphabetic-character conjunction in a short name as more
     # likely an initial (group._group_segment), so a 3-piece chain
     # ("проф и акад Іван Франко") does NOT join -- "и" reads as a given
@@ -381,13 +382,20 @@ def test_non_interference_all_packs_combined() -> None:
     # with a 5-piece name instead of the shorter guess.
     ("проф и акад Тарас Григорович Шевченко", "title", "проф и акад"),
     ("проф та акад Іван Франко", "title", "проф та акад"),
-    # Ukrainian "і" is single-character like "и", so the same #11
-    # initial carve-out applies: pinned with a 5-piece name.
+    # Ukrainian "і" is single-character like "и", so the same
+    # single-letter carve-out applies: pinned with a 5-piece name.
     ("проф і акад Тарас Григорович Шевченко", "title", "проф і акад"),
     # Greek titles + conjunction (και has 3 letters, so the single-char
     # initial carve-out above never applies to it). Bare κ is NOT
     # shipped -- it collides with the initial+surname shape (see the
     # regression test below).
+    # Match-time contract of the lower()-not-casefold() normalization
+    # (review 2026-07-19): case variants that lower() folds still
+    # match; the ASCII-SS spelling of ß does NOT (v1-parity -- casefold
+    # would have matched it, at the cost of mutating stored spellings).
+    ("ΚΟΣ Γιώργος Παπαδόπουλος", "title", "ΚΟΣ"),
+    ("GROẞFÜRST Otto Schmidt", "title", "GROẞFÜRST"),
+    ("GROSSFÜRST Otto Schmidt", "title", ""),
     ("δρ Νίκος Παπαδόπουλος", "title", "δρ"),
     ("κος Γιώργος Παπαδόπουλος", "title", "κος"),
     ("κα Μαρία Παπαδοπούλου", "title", "κα"),
@@ -439,7 +447,7 @@ def test_non_interference_all_packs_combined() -> None:
     ("الحاج عبد الرحمن السيد", "given", "عبد الرحمن"),
     ("الحاج عبد الرحمن السيد", "family", "السيد"),
     # "و" ("and") joins title chains like Cyrillic "и"; single-char
-    # conjunctions need the same #11 carve-out headroom (enough
+    # conjunctions need the same single-letter carve-out headroom (enough
     # rootname pieces), so pinned with the 6-piece shape the и row uses
     ("الأستاذ و الدكتور طارق حسن السيد", "title", "الأستاذ و الدكتور"),
     # Hebrew patronymic prefixes: same non-leading chain-onto-family
@@ -505,6 +513,11 @@ def test_269_vocabulary_reaches_the_v1_facade() -> None:
     assert HumanName("κος Γιώργος Παπαδόπουλος").title == "κος"
     assert HumanName("محمد بن سلمان").last == "بن سلمان"
     assert HumanName('ד"ר דוד לוי').title == 'ד"ר'
+    # one row per NEW vocabulary category (2026-07-19 batches): bound
+    # given name, Hebrew post-nominal suffix, Devanagari title
+    assert HumanName("عبد الرحمن محمد").first == "عبد الرحمن"
+    assert HumanName('משה כהן ז"ל').suffix == 'ז"ל'
+    assert HumanName("डॉ. राम शर्मा").title == "डॉ."
 
 
 def test_269_bare_greek_kappa_not_a_title() -> None:

@@ -751,9 +751,9 @@ TITLES = FIRST_NAME_TITLES | {
     # #269 follow-up: the rest of the common Israeli honorifics, same
     # plain-title bucket (family follows) and the same dual geresh/
     # gershayim spelling rule as above. Deferred under the collision
-    # rule: bare 'רב' (also the ordinary word "many"); 'בר' as a
-    # particle (Bar is a common modern given name, and the surname
-    # spelling is hyphenated anyway).
+    # rule: bare 'רב' (also the ordinary word "many"). The 'בר'
+    # particle deferral is recorded in prefixes.py with the other
+    # particle decisions.
     'גברת',       # Mrs./Ms., full form
     "פרופ'",      # professor abbreviation, ASCII apostrophe
     'פרופ׳',      # professor abbreviation, U+05F3 geresh

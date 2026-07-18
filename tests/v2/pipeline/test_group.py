@@ -51,7 +51,8 @@ def test_contiguous_conjunctions_join_first() -> None:
 
 
 def test_single_letter_conjunction_prefers_initial_when_short() -> None:
-    # v1 issue #11: 3 rootname parts, single-letter conjunction "y"
+    # v1 Google Code issue 11 ("john e smith"): 3 rootname parts,
+    # single-letter conjunction "y"
     out = _grouped("John y Smith")
     assert _piece_texts(out) == [["John", "y", "Smith"]]
 

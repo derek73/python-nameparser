@@ -16,7 +16,8 @@ CONJUNCTIONS = {
     # #269 follow-up: Arabic "and". Formal script attaches و to the
     # following word (وفاطمة), so a standalone و token appears only in
     # informal spacing -- common in real data. Single-character like
-    # 'y'/'и': the #11 initial carve-out protects short names (joins
+    # 'y'/'и': the single-letter carve-out (Google Code issue 11,
+    # the "john e smith" bug) protects short names (joins
     # only with enough rootname pieces).
     'و',
 }

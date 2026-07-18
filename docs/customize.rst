@@ -65,8 +65,9 @@ listed below.
      - Assigns positional (no-comma) input to given/middle/family in
        this order. Use the exported ``GIVEN_FIRST`` (default),
        ``FAMILY_FIRST``, or ``FAMILY_FIRST_GIVEN_LAST`` constants.
-       Ignored for comma-format input — the comma itself states the
-       order ("Thomas, John" puts the family name first).
+       Ignored when a comma separates family from given ("Thomas,
+       John" puts the family name first); a comma that only sets off
+       suffixes ("John Smith, Jr.") leaves it governing the name part.
    * - ``patronymic_rules``
      - ``frozenset[PatronymicRule]``
      - Reorders patronymic-shaped names via opt-in detectors — East

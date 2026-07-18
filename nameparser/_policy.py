@@ -45,6 +45,16 @@ FAMILY_FIRST_GIVEN_LAST = (Role.FAMILY, Role.MIDDLE, Role.GIVEN)
 
 _NAME_ROLES = frozenset({Role.GIVEN, Role.MIDDLE, Role.FAMILY})
 
+# Single source for the migration hint raised by both Policy and
+# PolicyPatch when patronymic_rules gets a non-iterable (True is the
+# likeliest wrong value -- v1's flag was a bool that enabled BOTH rules).
+_PATRONYMIC_MIGRATION_HINT = (
+    "v1's patronymic_name_order=True enabled both rules -- "
+    "patronymic_rules={PatronymicRule.EAST_SLAVIC, "
+    "PatronymicRule.TURKIC} (or pick one via "
+    "parser_for(locales.RU) / locales.TR_AZ)"
+)
+
 #: Policy.nickname_delimiters' default. Public and named so
 #: customizations read as set math against a documented value -- e.g.
 #: ``DEFAULT_NICKNAME_DELIMITERS | {("｟", "｠")}`` -- instead of a
@@ -90,10 +100,11 @@ class Policy:
     #: :ref:`name-order constants <name-order-constants>` --
     #: GIVEN_FIRST (the default), FAMILY_FIRST, and
     #: FAMILY_FIRST_GIVEN_LAST; any other tuple of Roles raises
-    #: ValueError. Ignored when the input contains a comma: the comma
-    #: itself states the order -- "Thomas, John" puts the family name
-    #: first no matter which words could otherwise be either
-    #: ("Thomas" and "John" both work as given or family names).
+    #: ValueError. Ignored when a comma separates family from given:
+    #: "Thomas, John" puts the family name first no matter which words
+    #: could otherwise be either ("Thomas" and "John" both work as
+    #: given or family names). A comma that only sets off suffixes
+    #: ("John Smith, Jr.") leaves name_order governing the name part.
     name_order: tuple[Role, Role, Role] = GIVEN_FIRST
     #: Opt-in detectors that reorder patronymic-shaped names
     #: (EAST_SLAVIC, TURKIC); usually set via a locale pack.
@@ -177,11 +188,8 @@ class Policy:
         except TypeError:
             raise TypeError(
                 f"patronymic_rules must be an iterable of PatronymicRule "
-                f"names, got {self.patronymic_rules!r}; v1's "
-                f"patronymic_name_order=True enabled both rules -- "
-                f"patronymic_rules={{PatronymicRule.EAST_SLAVIC, "
-                f"PatronymicRule.TURKIC}} (or pick one via "
-                f"parser_for(locales.RU) / locales.TR_AZ)"
+                f"names, got {self.patronymic_rules!r}; "
+                f"{_PATRONYMIC_MIGRATION_HINT}"
             ) from None
         items = tuple(rule_iter)
         rules = set()
@@ -341,13 +349,8 @@ class PolicyPatch:
             try:
                 iter(value)
             except TypeError:
-                hint = (
-                    "; v1's patronymic_name_order=True enabled both rules"
-                    " -- patronymic_rules={PatronymicRule.EAST_SLAVIC, "
-                    "PatronymicRule.TURKIC} (or pick one via "
-                    "parser_for(locales.RU) / locales.TR_AZ)"
-                    if f.name == "patronymic_rules" else ""
-                )
+                hint = ("; " + _PATRONYMIC_MIGRATION_HINT
+                        if f.name == "patronymic_rules" else "")
                 raise TypeError(
                     f"{f.name} must be an iterable, got {value!r}{hint}"
                 ) from None
@@ -356,7 +359,12 @@ class PolicyPatch:
 
 def apply_patch(policy: Policy, patch: PolicyPatch) -> Policy:
     """Fold a PolicyPatch onto a Policy. Policy.__post_init__ re-runs via
-    dataclasses.replace, so patched values are revalidated for free."""
+    dataclasses.replace, so patched values are revalidated for free --
+    including the maiden-wins canonicalization: a patch that adds a
+    maiden pair removes that pair from the base's effective nickname
+    set, exactly as if the combined Policy had been constructed
+    directly. Intended (decided 2026-07-19): maiden_delimiters
+    membership IS the routing decision, whoever contributes it."""
     updates: dict[str, object] = {}
     for f in dataclasses.fields(PolicyPatch):
         value = getattr(patch, f.name)

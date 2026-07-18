@@ -449,8 +449,8 @@ class RegexTupleManager(TupleManager):  # pickle-compat: do NOT delete
 
 class _DelimiterManager(TupleManager):
     """v1 ``nickname_delimiters``/``maiden_delimiters`` bucket. In 2.0
-    only the three named sentinels exist (spec §3) -- each maps to the
-    name of a ``_RegexesProxy`` entry it stays linked to; assigning any
+    only the named sentinels in ``_DELIMITER_SENTINELS`` exist (spec
+    §3; the v1 trio plus the #273 typographic pairs) -- assigning any
     other key raises so a caller reaches for a custom-delimiter Policy
     kwarg instead of a dict entry that silently does nothing. ``pop()``/
     ``__setitem__``/``__delitem__`` stay open (inherited) for the
