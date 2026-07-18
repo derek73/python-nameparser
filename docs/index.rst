@@ -57,6 +57,7 @@ Parsing Names
    :maxdepth: 2
    
    usage
+   concepts
    customize
 
 **Developer Documentation**
