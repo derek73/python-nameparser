@@ -2,6 +2,12 @@ Release Log
 ===========
 * 2.0.0 - unreleased
 
+    **Locale packs (opt-in)**
+
+    - Add ``nameparser.locales`` with the first two packs: ``locales.RU`` (East Slavic patronymic order) and ``locales.TR_AZ`` (Turkic patronymic markers). Packs are pure data folded in at ``parser_for(locales.RU)``; they compose (``parser_for(locales.RU, locales.TR_AZ)`` unions the rules) and are never auto-detected -- there is no reliable way to detect a name's language (closes the pack half of #270; #271/#272/#146 stay staged for 2.x)
+    - The CLI gains ``--locale CODE`` (``python -m nameparser --locale ru "..."``)
+    - Add non-Latin vocabulary to the default lexicon (#269): Cyrillic, Greek, Arabic and Hebrew titles, conjunctions, and name particles -- native-script entries cannot collide with Latin-script names. Deferred pending vetting: Cyrillic ``мл``/``ст`` suffixes and the bare Greek ``κ`` title (it collides with the initial+surname shape). Behavior note: ``محمد بن سلمان`` now chains ``بن`` onto the family name where 1.x read it as a middle name
+
     **Behavior Changes (draft)**
 
     .. note::
