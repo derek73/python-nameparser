@@ -1,10 +1,12 @@
 """The locale pack layer (locales spec §2-3): lazy access, the two
 2.0.0 packs, composition, and the non-interference gate."""
 import functools
+import importlib
 import json
 import re
 from collections.abc import Callable, Iterable
 from pathlib import Path
+from types import ModuleType
 
 import pytest
 
@@ -25,13 +27,26 @@ _CORPUS = [
     if line.strip()
 ]
 
+# The registry is the pack contract (design note 2026-07-18, option C):
+# the DEVIATES requirement, the rotator lists, and the non-interference
+# gate below all iterate the registered packs, so adding a pack is one
+# registry entry plus one rotator list -- the contract meta-test fails
+# until both exist, instead of a human remembering to extend N tests.
+def _pack_modules() -> dict[str, ModuleType]:
+    out: dict[str, ModuleType] = {}
+    for modname, attr in locales._REGISTRY.values():
+        module = importlib.import_module(modname)
+        out[getattr(module, attr).code] = module
+    return out
+
+
+_PACKS = _pack_modules()
+
 # shared across the gate and rotator tests: the default-parser baseline
 # is identical everywhere (only the packed side varies per test), so
 # parse each name once for the whole module instead of once per test
 _DEFAULT_PARSER = Parser()
-_RU_PACKED = parser_for(locales.RU)
-_TR_AZ_PACKED = parser_for(locales.TR_AZ)
-_COMBINED_PACKED = parser_for(locales.RU, locales.TR_AZ)
+_PACKED = {code: parser_for(locales.get(code)) for code in _PACKS}
 
 
 @functools.cache
@@ -114,7 +129,7 @@ def test_locales_unknown_attribute() -> None:
 
 
 def test_ru_plus_tr_az_unions_patronymic_rules() -> None:
-    p = _COMBINED_PACKED
+    p = parser_for(locales.RU, locales.TR_AZ)
     assert p.policy.patronymic_rules == frozenset(
         {PatronymicRule.EAST_SLAVIC, PatronymicRule.TURKIC})
     # both rules live: one name from each pack's case segment
@@ -146,7 +161,7 @@ def test_pack_preserves_custom_base_policy() -> None:
 def test_parser_for_results_chain_as_bases() -> None:
     # parser_for's result is itself a valid base= -- packs applied in
     # two steps accumulate exactly like one call with both packs
-    chained = parser_for(locales.TR_AZ, base=_RU_PACKED)
+    chained = parser_for(locales.TR_AZ, base=_PACKED["ru"])
     assert chained.policy.patronymic_rules == frozenset(
         {PatronymicRule.EAST_SLAVIC, PatronymicRule.TURKIC})
     assert chained.parse("Сидоров Иван Петрович").given == "Иван"
@@ -199,14 +214,15 @@ def _default_corpus() -> list[str]:
                              if c.locale is None and c.policy is None]
 
 
-# Synthetic rotator names: one per alternation branch of each pack's
-# marker regexes (both scripts), in the shape that makes the rule fire
-# (RU: family-first, patronymic last, plain middle; TR_AZ: a standalone
-# marker token). They serve the gate's POSITIVE side -- without them the
-# shared corpus exercises TR_AZ with a single name, leaving the gate
-# nearly vacuous (review finding, 2026-07-17). Branch named per row so a
-# regex edit that orphans a branch is visible here.
-_RU_ROTATORS = [
+# Synthetic rotator names, keyed by pack code: one per alternation
+# branch of each pack's marker regexes (both scripts), in the shape that
+# makes the rule fire (RU: family-first, patronymic last, plain middle;
+# TR_AZ: a standalone marker token). They serve the gate's POSITIVE side
+# -- without them the shared corpus exercises TR_AZ with a single name,
+# leaving the gate nearly vacuous (review finding, 2026-07-17). Branch
+# named per row, enforced by the branch-coverage test below.
+_ROTATORS: dict[str, list[str]] = {}
+_ROTATORS["ru"] = [
     "Sidorov Ivan Petrovich",        # ovich
     "Sidorova Anna Petrovna",        # ovna
     "Karpov Oleg Sergeevich",        # evich
@@ -228,7 +244,7 @@ _RU_ROTATORS = [
     "Орлов Семён Фомич",             # фомич
     "Зайцев Андрей Фокич",           # фокич
 ]
-_TR_AZ_ROTATORS = [
+_ROTATORS["tr_az"] = [
     "Aliyev Ali Vali oglu",              # oglu
     "Aliyev Rashad Vali oğlu",           # oğlu
     "Mammadov Elchin Hasan ogly",        # ogly
@@ -257,6 +273,20 @@ _TR_AZ_ROTATORS = [
 ]
 
 
+def test_registry_is_the_pack_contract() -> None:
+    # spec §2 authoring requirement 3, enforced structurally (design
+    # note 2026-07-18, option C): every registered pack module must
+    # declare its deviation surface, and every pack must feed the gate's
+    # positive side -- a new pack fails HERE until it ships both, rather
+    # than a reviewer remembering to extend the gate by hand.
+    assert set(_PACKS) == set(locales.available())
+    for code, module in _PACKS.items():
+        assert callable(getattr(module, "DEVIATES", None)), (
+            f"pack {code!r} does not declare DEVIATES")
+    assert set(_ROTATORS) == set(_PACKS), (
+        "every pack needs a rotator list (and only registered packs)")
+
+
 def _alternation_branches(pattern: str) -> list[str]:
     """Split a marker regex of the shape '(a|b|...)$' / '^(a|b|...)$'
     into its alternatives. The packs' character classes contain no '|',
@@ -268,64 +298,60 @@ def _alternation_branches(pattern: str) -> list[str]:
     return inner[1:-1].split("|")
 
 
-@pytest.mark.parametrize("regex, rotators, anchored", [
-    (_ru._EAST_SLAVIC, _RU_ROTATORS, False),
-    (_ru._EAST_SLAVIC_CYR, _RU_ROTATORS, False),
-    (_tr_az._TURKIC, _TR_AZ_ROTATORS, True),
-    (_tr_az._TURKIC_CYR, _TR_AZ_ROTATORS, True),
-], ids=["east-slavic", "east-slavic-cyr", "turkic", "turkic-cyr"])
-def test_rotators_cover_every_marker_branch(
-        regex: re.Pattern, rotators: list[str], anchored: bool) -> None:
+@pytest.mark.parametrize("code", sorted(_PACKS))
+def test_rotators_cover_every_marker_branch(code: str) -> None:
     # The rotator lists' per-row branch comments are a human convention;
     # this enforces them mechanically: every alternation branch of every
-    # marker regex must be hit by some rotator token, so a regex edit
-    # that adds a branch (kept in sync with _post_rules by the pattern-
-    # equality test above) fails HERE until a rotator name covers it.
-    tokens = [tok for name in rotators for tok in name.split()]
-    for branch in _alternation_branches(regex.pattern):
-        shape = f"^({branch})$" if anchored else f"({branch})$"
-        branch_re = re.compile(shape, re.I)
-        assert any(branch_re.search(tok) for tok in tokens), (
-            f"no rotator name exercises marker branch {branch!r}")
+    # marker regex a pack defines (any module-level re.Pattern) must be
+    # hit by some rotator token, so a regex edit that adds a branch
+    # (kept in sync with _post_rules by the pattern-equality test above)
+    # fails HERE until a rotator name covers it. Anchoring follows the
+    # pattern's own shape: '^(...)$' = whole-token marker, '(...)$' =
+    # token ending.
+    tokens = [tok for name in _ROTATORS[code] for tok in name.split()]
+    patterns = [v for v in vars(_PACKS[code]).values()
+                if isinstance(v, re.Pattern)]
+    assert patterns, f"pack {code!r} defines no marker regexes"
+    for regex in patterns:
+        for branch in _alternation_branches(regex.pattern):
+            anchored = regex.pattern.startswith("^")
+            branch_re = re.compile(
+                f"^({branch})$" if anchored else f"({branch})$", re.I)
+            assert any(branch_re.search(tok) for tok in tokens), (
+                f"no {code!r} rotator exercises marker branch {branch!r}")
 
 
-@pytest.mark.parametrize("name", _RU_ROTATORS)
-def test_ru_rotator_deviates_and_declares(name: str) -> None:
+@pytest.mark.parametrize("code, name", [
+    (code, name) for code in sorted(_ROTATORS)
+    for name in _ROTATORS[code]])
+def test_rotator_deviates_and_declares(code: str, name: str) -> None:
     # every branch of the pack's marker regexes both FIRES (packed parse
     # differs from default) and is DECLARED (DEVIATES says so) -- the
     # per-name proof behind the gate's declared-count floor below
-    assert _RU_PACKED.parse(name).as_dict() != _default_parse(name)
-    assert _ru.DEVIATES(name)
+    assert _PACKED[code].parse(name).as_dict() != _default_parse(name)
+    assert _PACKS[code].DEVIATES(name)
 
 
-@pytest.mark.parametrize("name", _TR_AZ_ROTATORS)
-def test_tr_az_rotator_deviates_and_declares(name: str) -> None:
-    assert _TR_AZ_PACKED.parse(name).as_dict() != _default_parse(name)
-    assert _tr_az.DEVIATES(name)
-
-
-def test_non_interference_ru() -> None:
-    corpus = _default_corpus() + _RU_ROTATORS
-    declared = _assert_non_interference(_RU_PACKED, _ru.DEVIATES, corpus)
+@pytest.mark.parametrize("code", sorted(_PACKS))
+def test_non_interference_each_pack(code: str) -> None:
+    corpus = _default_corpus() + _ROTATORS[code]
+    declared = _assert_non_interference(
+        _PACKED[code], _PACKS[code].DEVIATES, corpus)
     # the positive side: every synthetic rotator (plus the corpus's own
-    # east-slavic names) must actually flow through the declared branch
-    assert declared >= len(_RU_ROTATORS)
+    # in-scope names) must actually flow through the declared branch
+    assert declared >= len(_ROTATORS[code])
 
 
-def test_non_interference_tr_az() -> None:
-    corpus = _default_corpus() + _TR_AZ_ROTATORS
+def test_non_interference_all_packs_combined() -> None:
+    all_rotators = [n for code in sorted(_ROTATORS)
+                    for n in _ROTATORS[code]]
+    corpus = _default_corpus() + all_rotators
+    packed = parser_for(*(locales.get(code) for code in sorted(_PACKS)))
     declared = _assert_non_interference(
-        _TR_AZ_PACKED, _tr_az.DEVIATES, corpus)
-    assert declared >= len(_TR_AZ_ROTATORS)
-
-
-def test_non_interference_combined() -> None:
-    corpus = _default_corpus() + _RU_ROTATORS + _TR_AZ_ROTATORS
-    declared = _assert_non_interference(
-        _COMBINED_PACKED,
-        lambda n: _ru.DEVIATES(n) or _tr_az.DEVIATES(n),
+        packed,
+        lambda n: any(m.DEVIATES(n) for m in _PACKS.values()),
         corpus)
-    assert declared >= len(_RU_ROTATORS) + len(_TR_AZ_ROTATORS)
+    assert declared >= len(all_rotators)
 
 
 # -- #269: non-Latin default vocabulary (Cyrillic, Greek, Arabic, Hebrew) --
