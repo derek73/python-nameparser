@@ -72,6 +72,30 @@ def test_locales_unknown_attribute() -> None:
         locales.XX
 
 
+def test_ru_plus_tr_az_unions_patronymic_rules() -> None:
+    from nameparser import locales, parser_for
+    from nameparser._policy import PatronymicRule
+
+    p = parser_for(locales.RU, locales.TR_AZ)
+    assert p.policy.patronymic_rules == frozenset(
+        {PatronymicRule.EAST_SLAVIC, PatronymicRule.TURKIC})
+    # both rules live: one name from each pack's case segment
+    ru = p.parse("Сидоров Иван Петрович")
+    assert ru.given == "Иван"
+    tr = p.parse("Mammadova Aygun Ali kizi")
+    assert (tr.given, tr.middle, tr.family) == (
+        "Aygun", "Ali kizi", "Mammadova")
+
+
+def test_pack_over_custom_base() -> None:
+    from nameparser import Lexicon, Parser, locales, parser_for
+
+    base = Parser(lexicon=Lexicon.default().add(titles={"zqxcustom"}))
+    p = parser_for(locales.RU, base=base)
+    n = p.parse("Zqxcustom Иван Петрович")
+    assert n.title == "Zqxcustom"       # base lexicon survives the fold
+
+
 def test_locales_import_is_lazy() -> None:
     # importing the package must not import any pack module; PEP 562
     # loads them on first attribute access (spec §2: "importing
