@@ -24,3 +24,19 @@ def test_cli_json() -> None:
 def test_cli_no_args_usage() -> None:
     proc = _run()
     assert proc.returncode != 0
+
+
+def test_cli_locale() -> None:
+    proc = _run("Сидоров Иван Петрович", "--locale", "ru")
+    assert proc.returncode == 0
+    assert "Иван" in proc.stdout
+
+    proc = _run("Сидоров Иван Петрович", "--locale", "ru", "--json")
+    data = json.loads(proc.stdout)
+    assert "Иван" in data["given"]
+
+
+def test_cli_locale_unknown_code_lists_available() -> None:
+    proc = _run("John Smith", "--locale", "xx")
+    assert proc.returncode != 0
+    assert "ru" in proc.stderr and "tr_az" in proc.stderr

@@ -15,8 +15,19 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("name", help="the name string to parse")
     ap.add_argument("--json", action="store_true",
                     help="print the component dict as JSON")
+    ap.add_argument("--locale", metavar="CODE",
+                    help="parse with a locale pack (e.g. 'ru'); see "
+                         "nameparser.locales")
     args = ap.parse_args(argv)
-    n = parse(args.name)
+    if args.locale:
+        from nameparser import locales, parser_for
+        try:
+            parser = parser_for(locales.get(args.locale))
+        except KeyError as exc:
+            ap.error(exc.args[0])  # exits 2, message to stderr
+        n = parser.parse(args.name)
+    else:
+        n = parse(args.name)
     if args.json:
         print(json.dumps(n.as_dict(), ensure_ascii=False))
         return 0
