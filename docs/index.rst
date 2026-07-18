@@ -60,6 +60,7 @@ Parsing Names
    concepts
    customize
    locales
+   migrate
 
 **Developer Documentation**
 
