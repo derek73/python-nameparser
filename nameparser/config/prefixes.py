@@ -32,6 +32,28 @@ NON_FIRST_NAME_PREFIXES = {
     'vd',
     'vom',
     'zu',
+
+    # #269: Arabic native-script patronymic/clan particles. Unlike their
+    # Latin transliterations, these live in a script namespace with no
+    # collision against an unrelated Latin given name (the reason 'bin'
+    # itself stays ambiguous above), so each is judged on its own
+    # semantics rather than mirrored blindly:
+    'بن',     # "bin"/"ibn" (son of) -- never a bare given name; Latin
+              # 'bin' stays ambiguous only to protect the Chinese given
+              # name "Bin", which cannot collide with this script.
+    'بنت',    # "bint" (daughter of) -- mirrors Latin 'bint' above.
+    'ابن',    # "ibn" (son of, alternate spelling) -- mirrors Latin
+              # 'ibn' above.
+    'آل',     # "aal" (family/clan of, e.g. "Al Saud") -- distinct from
+              # the excluded definite article "ال" (#269 explicitly
+              # excludes standalone "ال"); a clan prefix, never a bare
+              # given name.
+
+    # #269: Hebrew native-script patronymic particles -- same
+    # reasoning as the Arabic ones above: no Latin-script collision,
+    # and neither functions as a standalone given name in Hebrew usage.
+    'בן',     # "ben" (son of)
+    'בת',     # "bat" (daughter of)
 }
 
 #: Name pieces that appear before a last name. Prefixes join to the piece
@@ -86,6 +108,13 @@ PREFIXES = NON_FIRST_NAME_PREFIXES | {
     'vander',
     'vel',
     'von',
+
+    # #269: Arabic "abu" (father of), left ambiguous like its Latin
+    # transliteration 'abu' above (both spellings): "Abu Bakr" reads
+    # "Abu" as a given name, so this stays a PREFIXES-only member, not
+    # NON_FIRST_NAME_PREFIXES.
+    'أبو',
+    'ابو',
 }
 
 # Guard the two invariants the docstring above promises, so a future edit that

@@ -1,4 +1,9 @@
 SUFFIX_NOT_ACRONYMS = {
+    # #269: Cyrillic мл/ст (junior/senior, the jr/sr analogs) deferred
+    # pending collision vetting -- the issue itself flags 'ст' as a
+    # two-letter sequence that collides with real Cyrillic words/
+    # abbreviations, and both are short enough to risk false positives
+    # inside the Cyrillic vocabulary. Not shipped in this pass.
     'dr',
     'esq',
     'esquire',

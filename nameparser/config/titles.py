@@ -21,6 +21,10 @@ FIRST_NAME_TITLES = {
     'shaikh',
     'cheikh',
     'shekh',
+    # #269: Arabic -- "الشيخ" ("the sheikh") is the native-script form of
+    # the transliterated sheikh/sheik/... cluster above; same
+    # single-first-name-follows convention ("Sheikh Mohammed").
+    'الشيخ',
 }
 """
 When these titles appear with a single other name, that name is a first name, e.g.
@@ -683,4 +687,40 @@ TITLES = FIRST_NAME_TITLES | {
     'woodman',
     'writer',
     'zoologist',
+
+    # #269: Cyrillic (ru/uk) -- mr/mrs/dr/prof/academician/pan(i)
+    # honorifics, same title-then-family convention as 'mr'/'dr'/'prof'
+    # above (not FIRST_NAME_TITLES: "г-н Петров" families the surname
+    # just like "Mr. Smith" does).
+    'г-н',
+    'г-жа',
+    'д-р',
+    'проф',
+    'акад',
+    'пан',
+    'пані',
+
+    # #269: Greek -- kyrios/kyria/kyrios(abbr)/doctor/professor
+    # abbreviations; same plain-title convention as above.
+    'κ',
+    'κα',
+    'κος',
+    'δρ',
+    'καθ',
+
+    # #269: Hebrew -- "מר" ("Mr."), plain title like its Latin analog.
+    # Geresh/gershayim forms of "doctor"/"Mrs." -- both the ASCII-quote
+    # spelling ('ד"ר', "גב'") and the typographic Unicode spelling
+    # ('ד״ר' U+05F4 gershayim, 'גב׳' U+05F3 geresh) ship: probed live
+    # against extract_delimited's _open_ok/_close_ok boundary rules
+    # (2026-07-17) -- the quote chars sit mid-word (no preceding
+    # whitespace before the internal quote and, for the closing "'" one,
+    # no following boundary), so both fail the open/close boundary test
+    # and are left untouched as literal text. Extraction is provably
+    # inert on these two ASCII spellings; no delimiter-interaction risk.
+    'מר',
+    'ד"ר',
+    "גב'",
+    'ד״ר',
+    'גב׳',
 }

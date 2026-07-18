@@ -46,6 +46,19 @@ issue = "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stay
 name_regex = "(?i)[(\"'](m\\.?a\\.?|d\\.?o\\.?)[)\"']"
 fields = ["suffix", "nickname"]
 
+[[change]]
+issue = "feat(#269) Arabic بن prefix chains onto family (non-Latin new-recognition)"
+# '‏محمد بن سلمان‏': #269 adds the native-script Arabic
+# patronymic particle بن ("bin"/"son of") to PREFIXES/
+# NON_FIRST_NAME_PREFIXES. v1 had no such entry, so it left بن a plain
+# middle-name token ('سلمان' alone as last); 2.0 now chains it onto the
+# family the same way 'von'/'bin' (Latin) do, giving family 'بن سلمان'.
+# This is new-recognition on non-Latin input -- the exact behavior
+# #269 exists to add -- not a Latin-corpus regression, so it is
+# classified rather than reverted.
+name_regex = "بن"
+fields = ["middle", "last"]
+
 # Deliberately NOT a [[change]] rule: 'Ph. D.' split-token healing
 # ('John Ph. D.', 'John Smith, Ph. D.') is PARITY, not a 2.0 behavior
 # change -- v1's fix_phd healing of the adjacent 'Ph.'/'D.' pair into

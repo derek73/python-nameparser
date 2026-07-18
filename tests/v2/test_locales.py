@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from nameparser import Locale, Parser, locales, parser_for
+from nameparser import Locale, Parser, locales, parse, parser_for
 from nameparser._lexicon import Lexicon
 from nameparser._policy import PatronymicRule
 from nameparser.locales import ru as _ru
@@ -170,3 +170,68 @@ def test_non_interference_combined() -> None:
         parser_for(locales.RU, locales.TR_AZ),
         lambda n: _ru.DEVIATES(n) or _tr_az.DEVIATES(n),
         _default_corpus())
+
+
+# -- #269: non-Latin default vocabulary (Cyrillic, Greek, Arabic, Hebrew) --
+#
+# This is DEFAULT vocabulary (nameparser/config/titles.py,
+# conjunctions.py, prefixes.py), not a locale pack -- it lives here
+# because it's the non-Latin counterpart to the pack tests above. Every
+# row was verified live against a runtime-augmented Lexicon.default()
+# before the data landed (2026-07-17), so these pin actual observed
+# behavior, not guesses -- see the per-script comments below for the
+# rows that came out differently than a first guess would suggest.
+@pytest.mark.parametrize("name, field, expected", [
+    # Cyrillic (ru/uk) titles.
+    ("г-н Иван Петров", "title", "г-н"),
+    ("г-жа Мария Иванова", "title", "г-жа"),
+    ("д-р Мария Иванова", "title", "д-р"),
+    ("проф Петро Шевченко", "title", "проф"),
+    ("акад Іван Франко", "title", "акад"),
+    ("пан Тарас Шевченко", "title", "пан"),
+    ("пані Марія Іванова", "title", "пані"),
+    # Cyrillic conjunction "и": v1's issue #11 carve-out treats a bare
+    # single-alphabetic-character conjunction in a short name as more
+    # likely an initial (group._group_segment), so a 3-piece chain
+    # ("проф и акад Іван Франко") does NOT join -- "и" reads as a given
+    # name instead. The chain only joins once the segment has enough
+    # rootname pieces (total >= 4); pinned against that actual behavior
+    # with a 5-piece name instead of the shorter guess.
+    ("проф и акад Тарас Григорович Шевченко", "title", "проф и акад"),
+    ("проф та акад Іван Франко", "title", "проф та акад"),
+    # Greek titles + conjunction (και has 3 letters, so the single-char
+    # initial carve-out above never applies to it).
+    ("δρ Νίκος Παπαδόπουλος", "title", "δρ"),
+    ("κ Γιώργος Παπαδόπουλος", "title", "κ"),
+    ("καθ και δρ Νίκος Παπαδόπουλος", "title", "καθ και δρ"),
+    # Arabic patronymic/clan prefixes: non-leading "بن"/"بنت" chain onto
+    # the family, mirroring the Latin "von"/"bin" prefix-chain rule.
+    ("محمد بن سلمان", "family", "بن سلمان"),
+    ("فاطمة بنت محمد", "family", "بنت محمد"),
+    # "الشيخ" carries the FIRST_NAME_TITLES semantics of its
+    # transliterated cousin 'sheikh': a single following name reads as
+    # given, not family.
+    ("الشيخ محمد", "given", "محمد"),
+    # Hebrew patronymic prefixes: same non-leading chain-onto-family
+    # behavior.
+    ("דוד בן גוריון", "family", "בן גוריון"),
+    ("שרה בת אברהם", "family", "בת אברהם"),
+    # Hebrew "מר" title (plain title, not FIRST_NAME_TITLES -- like
+    # 'mr', the following name reads as family).
+    ("מר דוד לוי", "title", "מר"),
+    # Geresh/gershayim gate (#269 step 2): probed live against
+    # extract_delimited's _open_ok/_close_ok boundary rules. Both the
+    # ASCII-quote spelling and the typographic Unicode spelling of
+    # "doctor"/"Mrs." survive extraction untouched -- the quote sits
+    # mid-word (no preceding whitespace before '"', and for the
+    # trailing "'" no following word boundary), so it never satisfies
+    # the boundary-valid open/close test and is left as literal text.
+    # Both spellings are shipped; see the titles.py comment.
+    ('ד"ר דוד לוי', "title", 'ד"ר'),
+    ("גב' דוד לוי", "title", "גב'"),
+    ("ד״ר דוד לוי", "title", "ד״ר"),
+    ("גב׳ דוד לוי", "title", "גב׳"),
+])
+def test_269_nonlatin_vocabulary_parses(
+        name: str, field: str, expected: str) -> None:
+    assert getattr(parse(name), field) == expected
