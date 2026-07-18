@@ -1,328 +1,119 @@
-Using the HumanName Parser
-==========================
+Getting started
+===============
 
-Example Usage
--------------
+Requires Python 3.11+.  ``pip install nameparser``
 
-Requires Python 3.10+.
+Parse a name
+------------
 
 .. doctest::
-    :options: +NORMALIZE_WHITESPACE
 
-    >>> from nameparser import HumanName
-    >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
-    >>> name.title
-    'Dr.'
-    >>> name["title"]
-    'Dr.'
-    >>> name.first
-    'Juan'
-    >>> name.middle
-    'Q. Xavier'
-    >>> name.last
-    'de la Vega'
-    >>> name.last_base
-    'Vega'
-    >>> name.last_prefixes
-    'de la'
-    >>> name.suffix
-    'III'
-    >>> name.surnames
-    'Q. Xavier de la Vega'
-    >>> name.given_names
+    >>> from nameparser import parse
+    >>> name = parse("Dr. Juan Q. Xavier de la Vega III")
+    >>> name.given, name.family
+    ('Juan', 'de la Vega')
+    >>> name.title, name.middle, name.suffix
+    ('Dr.', 'Q. Xavier', 'III')
+
+A parsed name has seven fields: ``title``, ``given``, ``middle``,
+``family``, ``suffix``, ``nickname``, and ``maiden``. Parsing never
+raises; unparseable input yields a :class:`~nameparser.ParsedName` with
+empty fields plus any ``ambiguities`` the parser noticed along the way
+(see :doc:`concepts`).
+
+Aggregate views
+----------------
+
+.. doctest::
+
+    >>> name.given_names          # given + middle
     'Juan Q. Xavier'
-    >>> name.full_name = "Juan Q. Xavier Velasquez y Garcia, Jr."
-    >>> name
-    <HumanName : [
-        title: ''
-        first: 'Juan'
-        middle: 'Q. Xavier'
-        last: 'Velasquez y Garcia'
-        suffix: 'Jr.'
-        nickname: ''
-        maiden: ''
-    ]>
-    >>> name.middle = "Jason Alexander"
-    >>> name.middle
-    'Jason Alexander'
-    >>> name
-    <HumanName : [
-        title: ''
-        first: 'Juan'
-        middle: 'Jason Alexander'
-        last: 'Velasquez y Garcia'
-        suffix: 'Jr.'
-        nickname: ''
-        maiden: ''
-    ]>
-    >>> name.middle = ["custom","values"]
-    >>> name.middle
-    'custom values'
-    >>> name.full_name = 'Doe-Ray, Jonathan "John" A. Harris'
-    >>> name.as_dict()
-    {'title': '', 'first': 'Jonathan', 'middle': 'A. Harris', 'last': 'Doe-Ray', 'suffix': '', 'nickname': 'John', 'maiden': ''}
-    >>> name.as_dict(False) # add False to hide keys with empty values
-    {'first': 'Jonathan', 'middle': 'A. Harris', 'last': 'Doe-Ray', 'nickname': 'John'}
-    >>> name = HumanName("Dr. Juan Q. Xavier de la Vega III")
-    >>> name2 = HumanName("de la vega, dr. juan Q. xavier III")
-    >>> name.matches(name2)
-    True
-    >>> name.matches("de la vega, dr. juan Q. xavier III")
-    True
+    >>> name.family_base, name.family_particles   # family, split apart
+    ('Vega', 'de la')
 
-``name == other`` and ``hash(name)`` are deprecated and will be removed in
-2.0; use ``matches()`` for comparison and ``comparison_key()`` for sets,
-dicts, and dedup (see `issue #223
-<https://github.com/derek73/python-nameparser/issues/223>`_). Slicing a name
-by position (``name[1:-3]``) and item assignment (``name['first'] = ...``)
-are likewise deprecated and will be removed in 2.0; use the named attributes
-instead (see `issue #258
-<https://github.com/derek73/python-nameparser/issues/258>`_).
+``surnames`` (``middle`` + ``family``) is the mirror-image aggregate.
+The plural is the tell: ``given`` and ``family`` are single fields,
+while ``given_names`` and ``surnames`` roll several fields together —
+the same sense in which a passport form asks for your "given names" as
+one blank that can hold more than one word.
 
-Empty or unparsable input does not raise an error; it produces a name whose
-attributes are all empty. Check ``len(name) == 0`` (or ``str(name) == ''``)
-to detect that nothing was parsed.
-
-
-Capitalization Support
-----------------------
-
-The HumanName class can try to guess the correct capitalization of name
-entered in all upper or lower case. By default, it will not adjust 
-the case of names entered in mixed case. To run capitalization on a
-`HumanName` instance, pass the parameter `force=True`.
-
-    Capitalize the name.
-
-    * bob v. de la macdole-eisenhower phd -> Bob V. de la MacDole-Eisenhower Ph.D.
-
-.. doctest:: capitalize
-
-    >>> name = HumanName("bob v. de la macdole-eisenhower phd")
-    >>> name.capitalize()
-    >>> str(name)
-    'Bob V. de la MacDole-Eisenhower Ph.D.'
-    >>> name = HumanName('Shirley Maclaine') # Don't change mixed case names
-    >>> name.capitalize()
-    >>> str(name)
-    'Shirley Maclaine'
-    >>> name.capitalize(force=True)
-    >>> str(name) 
-    'Shirley MacLaine'
-
-To apply capitalization to all `HumanName` instances, set
-:py:attr:`~nameparser.config.Constants.capitalize_name` to `True`.
-
-.. doctest:: capitalize_name
-    :options: +NORMALIZE_WHITESPACE
-
-    >>> from nameparser.config import CONSTANTS
-    >>> CONSTANTS.capitalize_name = True
-    >>> name = HumanName("bob v. de la macdole-eisenhower phd")
-    >>> str(name)
-    'Bob V. de la MacDole-Eisenhower Ph.D.'
-    >>> CONSTANTS.capitalize_name = False
-
-To force the capitalization of mixed case strings on all `HumanName` instances,
-set :py:attr:`~nameparser.config.Constants.force_mixed_case_capitalization` to `True`. 
-
-.. doctest:: force_mixed_case_capitalization
-    :options: +NORMALIZE_WHITESPACE
-
-    >>> from nameparser.config import CONSTANTS
-    >>> CONSTANTS.force_mixed_case_capitalization = True
-    >>> name = HumanName('Shirley Maclaine')
-    >>> name.capitalize()
-    >>> str(name)
-    'Shirley MacLaine'
-    >>> CONSTANTS.force_mixed_case_capitalization = False
-
-
-Nickname Handling
+Dicts and strings
 ------------------
 
-The content of parenthesis or quotes in the name will be
-available from the nickname attribute.
+.. doctest::
 
-.. doctest:: nicknames
-    :options: +NORMALIZE_WHITESPACE
+    >>> name.as_dict(include_empty=False)
+    {'title': 'Dr.', 'given': 'Juan', 'middle': 'Q. Xavier', 'family': 'de la Vega', 'suffix': 'III'}
+    >>> str(name)
+    'Dr. Juan Q. Xavier de la Vega III'
+    >>> name.render("{family}, {given}")
+    'de la Vega, Juan'
+    >>> name.initials()
+    'J. Q. X. V.'
 
-    >>> name = HumanName('Jonathan "John" A. Smith')
-    >>> name
-    <HumanName : [
-        title: ''
-        first: 'Jonathan'
-        middle: 'A.'
-        last: 'Smith'
-        suffix: ''
-        nickname: 'John'
-        maiden: ''
-    ]>
+Fixing case
+-----------
 
-Exception: content that looks like a suffix (a member of
-:py:data:`~nameparser.config.SUFFIX_ACRONYMS` or
-:py:data:`~nameparser.config.SUFFIX_NOT_ACRONYMS`, or anything ending in a
-period) is treated as a suffix instead of a nickname, since that's usually
-what's meant, e.g. a retired military title or a professional designation
-written in parenthesis.
+.. doctest::
 
-.. doctest:: nicknames
-    :options: +NORMALIZE_WHITESPACE
+    >>> str(parse("juan de la vega").capitalized())
+    'Juan de la Vega'
 
-    >>> name = HumanName('Andrew Perkins (MBA)')
-    >>> name
-    <HumanName : [
-        title: ''
-        first: 'Andrew'
-        middle: ''
-        last: 'Perkins'
-        suffix: 'MBA'
-        nickname: ''
-        maiden: ''
-    ]>
+Nicknames and maiden names
+----------------------------
 
-A few suffix acronyms, listed in
-:py:data:`~nameparser.config.SUFFIX_ACRONYMS_AMBIGUOUS`, also work as common
-given-name nicknames on their own (e.g. "JD", "Ed"). These stay nicknames
-when found alone in parenthesis or quotes, since that's the more common
-reading in that ambiguous context:
+.. doctest::
 
-.. doctest:: nicknames
-    :options: +NORMALIZE_WHITESPACE
+    >>> parse("Jonathan 'Jack' Kennedy").nickname
+    'Jack'
+    >>> parse("Jane Smith née Jones").maiden
+    'Jones'
 
-    >>> name = HumanName('JEFFREY (JD) BRICKEN')
-    >>> name
-    <HumanName : [
-        title: ''
-        first: 'JEFFREY'
-        middle: ''
-        last: 'BRICKEN'
-        suffix: ''
-        nickname: 'JD'
-        maiden: ''
-    ]>
+Comparing names
+----------------
 
-Leading Period-Abbreviation Titles
------------------------------------
+``==`` is strict value equality — two :class:`~nameparser.ParsedName`
+instances are equal only if every field matches exactly. For "is this
+the same name, allowing for order and case?" use ``matches()`` or
+``comparison_key()`` instead.
 
-An unrecognized, multi-letter word ending in a period, found anywhere in the
-leading title run (i.e. before the first name is set), is treated as a title
--- this covers military ranks and other abbreviations that aren't in the
-built-in titles list, including chained abbreviations like
-``"Foo. Xyz. John Smith"``. Single-letter initials (``"J."``) and
-internal-period abbreviations (``"E.T."``) are not affected, and the same
-word appearing after the first name is left as a middle name.
+.. doctest::
 
-.. doctest:: leading_period_titles
-    :options: +NORMALIZE_WHITESPACE
+    >>> parse("de la Vega, Juan").matches("Juan de la Vega")
+    True
+    >>> parse("JUAN DE LA VEGA").comparison_key() == parse("Juan de la Vega").comparison_key()
+    True
 
-    >>> name = HumanName("Major. Dona Smith")
-    >>> name
-    <HumanName : [
-        title: 'Major.'
-        first: 'Dona'
-        middle: ''
-        last: 'Smith'
-        suffix: ''
-        nickname: ''
-        maiden: ''
-    ]>
-    >>> name = HumanName("J. Smith")
-    >>> name.first
-    'J.'
+Correcting a parse
+--------------------
+
+:class:`~nameparser.ParsedName` is immutable, so a correction is a new
+value: ``replace()`` returns a copy with the given fields changed and
+everything else carried over.
+
+.. doctest::
+
+    >>> name = parse("Juan de la Vega")
+    >>> corrected = name.replace(title="Dr.")
+    >>> str(corrected)
+    'Dr. Juan de la Vega'
     >>> name.title
     ''
 
-Change the output string with string formatting
------------------------------------------------
+Command line
+------------
 
-The string representation of a `HumanName` instance is controlled by its `string_format` attribute.
-The default value, `"{title} {first} {middle} {last} {suffix} ({nickname})"`, includes parenthesis
-around nicknames. Trailing commas and empty quotes and parenthesis are automatically removed if the
-name has no nickname pieces.
+::
 
-You can change the default formatting for all `HumanName` instances by setting a new
-:py:attr:`~nameparser.config.Constants.string_format` value on the shared
-:py:class:`~nameparser.config.CONSTANTS` configuration instance.
+    $ python -m nameparser --json "Doe, John"
 
-.. doctest:: string format
+Add ``--locale`` to parse with a locale pack (for example ``--locale
+ru``); see :doc:`locales`.
 
-  >>> from nameparser.config import CONSTANTS
-  >>> CONSTANTS.string_format = "{title} {first} ({nickname}) {middle} {last} {suffix}"
-  >>> name = HumanName('Robert Johnson')
-  >>> str(name)
-  'Robert Johnson'
-  >>> name = HumanName('Robert "Rob" Johnson')
-  >>> str(name)
-  'Robert (Rob) Johnson'
+Where next
+----------
 
-You can control the order and presence of any name fields by changing the
-:py:attr:`~nameparser.config.Constants.string_format` attribute of the shared CONSTANTS instance.
-Don't want to include nicknames in your output? No problem. Just omit that keyword from the 
-`string_format` attribute.
-
-.. doctest:: string format
-
-  >>> from nameparser.config import CONSTANTS
-  >>> CONSTANTS.string_format = "{title} {first} {last}"
-  >>> name = HumanName("Dr. Juan Ruiz de la Vega III (Doc Vega)")
-  >>> str(name)
-  'Dr. Juan de la Vega'
-
-
-Initials Support
-----------------
-
-The HumanName class can try to get the correct representation of initials.
-Initials can be tricky as different format usages exist. 
-To exclude any of the name parts from the initials, change the initials format string: 
-:py:attr:`~nameparser.config.Constants.initials_format`
-Three attributes exist for the format, `first`, `middle` and `last`. 
-
-.. doctest:: initials format
-
-  >>> from nameparser.config import CONSTANTS
-  >>> CONSTANTS.initials_format = "{first} {middle}"
-  >>> HumanName("Doe, John A. Kenneth, Jr.").initials()
-  'J. A. K.'
-  >>> HumanName("Doe, John A. Kenneth, Jr.", initials_format="{last}, {first}").initials()
-  'D., J.'
-  >>> CONSTANTS.initials_format = "{first} {middle} {last}"
-
-
-Furthermore, the delimiter for the string output can be set through:
-:py:attr:`~nameparser.config.Constants.initials_delimiter`
-
-.. doctest:: initials delimiter
-
-  >>> HumanName("Doe, John A. Kenneth, Jr.", initials_delimiter=";").initials()
-  'J; A; K; D;'
-
-The separator between consecutive initials *within* a name group (e.g. two middle
-names) is controlled by :py:attr:`~nameparser.config.Constants.initials_separator`,
-which defaults to ``" "``. Setting it to ``""`` removes that space within a group;
-spacing *between* groups is still governed by ``initials_format``.
-
-``initials_delimiter``, ``initials_separator``, and ``initials_format`` work together:
-
-- ``initials_delimiter`` — appended *after* each individual initial (default ``"."``)
-- ``initials_separator`` — placed *after* the delimiter between consecutive initials in the same group (default ``" "``), so with ``delimiter="."`` and ``separator=" "`` you get ``A. K.``
-- ``initials_format`` — controls how the first, middle, and last groups are arranged
-
-For example, to produce compact period-separated initials with no spaces:
-
-.. doctest:: initials separator
-
-  >>> HumanName("Doe, John A. Kenneth, Jr.", initials_separator="", initials_format="{first}{middle}{last}").initials()
-  'J.A.K.D.'
-  >>> HumanName("Doe, John A. Kenneth, Jr.", initials_delimiter="", initials_separator="", initials_format="{first}{middle}{last}").initials()
-  'JAKD'
-
-To get a list representation of the initials, use :py:meth:`~nameparser.HumanName.initials_list`.
-This function is unaffected by :py:attr:`~nameparser.config.Constants.initials_format`
-
-.. doctest:: list format
-
-  >>> HumanName("Doe, John A. Kenneth, Jr.", initials_delimiter=";").initials_list()
-  ['J', 'A', 'K', 'D']
-    
+* :doc:`concepts` — how the parser thinks
+* :doc:`customize` — your own vocabulary and behavior
+* :doc:`locales` — locale packs
+* :doc:`migrate` — coming from 1.x ``HumanName``
