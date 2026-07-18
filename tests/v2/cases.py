@@ -126,6 +126,27 @@ CASES: tuple[Case, ...] = (
                "one-liner replaces the bucket-move idiom; the v1 facade "
                "keeps v1's nickname-wins precedence via the shim's "
                "pre-subtraction (pinned in test_config_shim)"),
+    # #269 follow-up: Arabic-script bound given names, mirroring the
+    # Latin transliterations' behavior (probed live 2026-07-19: bound
+    # join fires only with 3+ tokens, eats the NEXT token into given;
+    # two-token kunya stays split -- 'أبو مازن' pinned in test_locales;
+    # non-leading أبو still prefix-chains onto family).
+    Case("arabic_bound_given_abd", 'عبد الرحمن محمد',
+         {"given": "عبد الرحمن", "family": "محمد"},
+         classification="feat(#269)",
+         notes="script twin of 'Abdul Rahman Mohammed'; عبد was the "
+               "missing bound entry -- 1.x split it into given عبد + "
+               "middle الرحمن"),
+    Case("arabic_bound_given_kunya", 'أبو بكر أحمد',
+         {"given": "أبو بكر", "family": "أحمد"},
+         classification="feat(#269)"),
+    Case("arabic_bound_given_kunya_hamzaless", 'ابو بكر احمد',
+         {"given": "ابو بكر", "family": "احمد"},
+         classification="feat(#269)",
+         notes="both kunya spellings ship, like the أبو/ابو prefix pair"),
+    Case("arabic_bound_given_umm", 'أم كلثوم إبراهيم',
+         {"given": "أم كلثوم", "family": "إبراهيم"},
+         classification="feat(#269)"),
     # #273: typographic nickname delimiters ship as defaults -- one row
     # per new pair; expectations verified live 2026-07-19 before the
     # pairs were added to DEFAULT_NICKNAME_DELIMITERS.
