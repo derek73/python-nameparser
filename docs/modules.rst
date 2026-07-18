@@ -51,7 +51,11 @@ Configuration
 
    Sentinel meaning "this patch does not set this field" — the default
    of every :class:`~nameparser.PolicyPatch` field, distinguishable
-   from every real value including ``None`` and ``False``.
+   from every real value including ``None`` and ``False``. You rarely
+   need it: omit a field instead of passing it. Import it to test
+   whether a patch sets a field (``patch.name_order is UNSET``) or to
+   leave a field conditionally unset when building patches
+   programmatically.
 
 .. autoclass:: nameparser.PatronymicRule
    :members:
