@@ -40,3 +40,12 @@ def test_cli_locale_unknown_code_lists_available() -> None:
     proc = _run("John Smith", "--locale", "xx")
     assert proc.returncode != 0
     assert "ru" in proc.stderr and "tr_az" in proc.stderr
+
+
+def test_cli_locale_empty_string_errors_not_silent_default() -> None:
+    # --locale "" is a mistake (empty shell variable, typo), not a
+    # request for the default parser; a truthiness check would swallow
+    # it silently -- it must error like any other unknown code
+    proc = _run("John Smith", "--locale", "")
+    assert proc.returncode != 0
+    assert "ru" in proc.stderr and "tr_az" in proc.stderr

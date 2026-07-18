@@ -19,7 +19,9 @@ def main(argv: list[str] | None = None) -> int:
                     help="parse with a locale pack (e.g. 'ru'); see "
                          "nameparser.locales")
     args = ap.parse_args(argv)
-    if args.locale:
+    # `is not None`, not truthiness: --locale "" must reach get() and
+    # exit 2 listing the codes, not silently fall back to the default
+    if args.locale is not None:
         from nameparser import locales, parser_for
         try:
             parser = parser_for(locales.get(args.locale))
