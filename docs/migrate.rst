@@ -52,7 +52,7 @@ Attribute map
      -
    * - ``maiden``
      - ``maiden``
-     - New field (added 1.4)
+     - New field (added 1.3)
    * - ``title_list``, ``first_list``, ``middle_list``, ``last_list``,
        ``suffix_list``, ``nickname_list``, ``maiden_list``
      - ``tokens_for(Role.TITLE)``, ``tokens_for(Role.GIVEN)``, ...
@@ -88,7 +88,7 @@ Attribute map
      - :meth:`~nameparser.ParsedName.capitalized` returns a new value
        rather than mutating in place
 
-Verified live, for example:
+Side by side:
 
 .. doctest::
 
@@ -160,9 +160,11 @@ rendering argument, where the 2.0 equivalent isn't config at all):
      - 2.0 equivalent
      - Note
    * - ``patronymic_name_order``
-     - ``Policy(patronymic_rules={PatronymicRule.EAST_SLAVIC})``
-     - v1's bare ``True`` becomes the East Slavic rule explicitly (or
-       use ``parser_for(locales.RU)``); see :doc:`locales`
+     - ``Policy(patronymic_rules={PatronymicRule.EAST_SLAVIC,
+       PatronymicRule.TURKIC})``
+     - v1's single flag enabled both detectors at once; pick one rule
+       (or a locale pack, see :doc:`locales`) if you only want one
+       tradition
    * - ``middle_name_as_last``
      - ``Policy.middle_as_family``
      -
@@ -199,7 +201,7 @@ handing the parser a regex.
    ``non_first_name_prefixes`` lists particles that are *never* read as
    a given name; ``particles_ambiguous`` lists the particles that
    *may* be read as one. Translating a customization means flipping
-   the set: ``lexicon.particles_ambiguous == lexicon.particles -
+   the set: ``particles_ambiguous = lexicon.particles -
    constants.non_first_name_prefixes``. Copying
    ``non_first_name_prefixes`` straight into ``particles_ambiguous``
    silently inverts which particles are allowed to double as a given
