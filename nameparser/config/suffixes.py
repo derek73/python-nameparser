@@ -26,6 +26,14 @@ SUFFIX_NOT_ACRONYMS = {
     # literally instead of going through nickname/suffix disambiguation).
     'ret',
     'vet',
+
+    # #269 follow-up: Hebrew post-nominals, both gershayim spellings
+    # (ASCII '"' and U+05F4); the mid-word quote is inert in
+    # extraction, like the ד"ר title. Neither is ever a name.
+    'ז"ל',      # "of blessed memory" (deceased), ASCII quote
+    'ז״ל',      # same, U+05F4 gershayim
+    'שליט"א',   # honorific for a living rabbi, ASCII quote
+    'שליט״א',   # same, U+05F4 gershayim
 }
 """
 

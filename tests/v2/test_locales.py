@@ -449,6 +449,33 @@ def test_non_interference_all_packs_combined() -> None:
     # Hebrew "מר" title (plain title, not FIRST_NAME_TITLES -- like
     # 'mr', the following name reads as family).
     ("מר דוד לוי", "title", "מר"),
+    # Hebrew title/suffix sweep (#269 follow-up): plain titles (Israeli
+    # convention: family follows, the מר precedent); both geresh/
+    # gershayim spellings ship where an abbreviation carries one.
+    ("גברת רות כהן", "title", "גברת"),
+    ("פרופ' דוד לוי", "title", "פרופ'"),
+    ("פרופ׳ דוד לוי", "title", "פרופ׳"),
+    ("פרופסור רות כהן", "title", "פרופסור"),
+    ('עו"ד דוד לוי', "title", 'עו"ד'),
+    ("עו״ד דוד לוי", "title", "עו״ד"),
+    ("הרב עובדיה יוסף", "title", "הרב"),
+    # post-nominal Hebrew suffixes: ז"ל ("of blessed memory") and
+    # שליט"א (honorific for living rabbis) -- suffix words, exact
+    # token incl. the mid-word gershayim (inert in extraction, like
+    # the ד"ר title)
+    ('משה כהן ז"ל', "suffix", 'ז"ל'),
+    ("משה כהן ז״ל", "suffix", "ז״ל"),
+    ('הרב משה פיינשטיין שליט"א', "suffix", 'שליט"א'),
+    ("הרב משה פיינשטיין שליט״א", "title", "הרב"),
+    # Devanagari (hi/mr) titles -- a new #269 script: श्री/श्रीमती are
+    # the Mr./Mrs. analogs, डॉ the Dr. abbreviation (edge-period
+    # normalization makes "डॉ." match too). NO Latin twins on purpose:
+    # transliterated sri/shri collide with real given names (Sri
+    # Mulyani); the native script cannot.
+    ("श्री राम शर्मा", "title", "श्री"),
+    ("श्रीमती सीता शर्मा", "title", "श्रीमती"),
+    ("डॉ राम शर्मा", "title", "डॉ"),
+    ("डॉ. राम शर्मा", "title", "डॉ."),
     # Geresh/gershayim gate (#269 step 2): probed live against
     # extract_delimited's _open_ok/_close_ok boundary rules. Both the
     # ASCII-quote spelling and the typographic Unicode spelling of

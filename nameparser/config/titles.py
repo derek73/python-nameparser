@@ -748,4 +748,25 @@ TITLES = FIRST_NAME_TITLES | {
     "גב'",
     'ד״ר',
     'גב׳',
+    # #269 follow-up: the rest of the common Israeli honorifics, same
+    # plain-title bucket (family follows) and the same dual geresh/
+    # gershayim spelling rule as above. Deferred under the collision
+    # rule: bare 'רב' (also the ordinary word "many"); 'בר' as a
+    # particle (Bar is a common modern given name, and the surname
+    # spelling is hyphenated anyway).
+    'גברת',       # Mrs./Ms., full form
+    "פרופ'",      # professor abbreviation, ASCII apostrophe
+    'פרופ׳',      # professor abbreviation, U+05F3 geresh
+    'פרופסור',    # professor, full form
+    'עו"ד',       # advocate/lawyer, ASCII quote
+    'עו״ד',       # advocate/lawyer, U+05F4 gershayim
+    'הרב',        # "the rabbi" (article form; bare רב deferred)
+
+    # #269 follow-up: Devanagari (hi/mr). NO Latin twins on purpose:
+    # transliterated sri/shri collide with real given names (Sri
+    # Mulyani); the native-script forms cannot. "डॉ." matches via the
+    # edge-period normalization, like Latin "Dr.".
+    'श्री',        # Shri (Mr.)
+    'श्रीमती',     # Shrimati (Mrs.)
+    'डॉ',         # Dr. abbreviation
 }
