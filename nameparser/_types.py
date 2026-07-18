@@ -59,6 +59,14 @@ class Span(NamedTuple):
 #: drives the suffix view's space-vs-comma join.
 STABLE_TAGS = frozenset({"particle", "conjunction", "initial", "joined"})
 
+#: The one sanctioned view-reorder marker (namespaced = unstable API).
+#: Tokens cannot reorder (span order is validated), so a role fold that
+#: must render BEFORE the role's original tokens tags them with this;
+#: _text_for and the facade lists prepend carriers. Single-sourced here
+#: so the emitter (_pipeline/_post_rules) and the consumers cannot
+#: drift.
+FOLDED_TAG = "vocab:folded-middle"
+
 _E = TypeVar("_E", bound=Enum)
 
 
@@ -319,7 +327,7 @@ class ParsedName:
             # view's ", " join does not split one credential in two
             if suffix_join and "joined" in tok.tags and parts:
                 parts[-1] += " " + tok.text
-            elif "vocab:folded-middle" in tok.tags:
+            elif FOLDED_TAG in tok.tags:
                 # middle_as_family fold: v1 PREPENDED middle_list to
                 # last_list; spans cannot reorder, so the view does
                 folded.append(tok.text)

@@ -41,6 +41,24 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith"}),
     Case("suffix_comma", "John Smith, PhD",
          {"given": "John", "family": "Smith", "suffix": "PhD"}),
+    Case("bound_given_pairwise_only", "Salem, Abdul Rahman Ahmed",
+         {"given": "Abdul Rahman", "middle": "Ahmed", "family": "Salem"},
+         notes="the bound-given join is PAIRWISE (one merge, v1 "
+               "parity): the third piece stays a middle name"),
+    Case("family_comma_three_part_trailing_strict", "Smith, John V, Jr.",
+         {"given": "John", "middle": "V", "family": "Smith",
+          "suffix": "Jr."},
+         notes="the lenient trailing test applies only to TWO-part "
+               "names; a third comma part makes the trailing token a "
+               "middle initial (v1 parity, pinned live 2026-07-17)"),
+    Case("triple_trailing_commas", "Doe,,,",
+         {"family": "Doe"},
+         notes="one trailing comma is cosmetic; the rest are "
+               "structural empties (pinned live 2026-07-17)"),
+    Case("paren_suffix_word_escapes_nickname", "John Smith (Esq)",
+         {"given": "John", "family": "Smith", "suffix": "Esq"},
+         notes="the suffix_words branch of the delimited-content "
+               "escape (v1 parity, pinned live 2026-07-17)"),
     Case("bound_given_whole_segment", "salem, abdul salam",
          {"given": "abdul salam", "family": "salem"},
          notes="v1 joins bound given names freely in the post-comma "

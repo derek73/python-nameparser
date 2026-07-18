@@ -421,3 +421,13 @@ def test_failed_reparse_leaves_state_consistent() -> None:
         n.full_name = "Jane Doe"
     assert n.full_name == "John Smith"
     assert n.first == "John"
+
+
+def test_middle_as_family_list_view_matches_string_view() -> None:
+    # v1 PREPENDED middle_list to last_list; the list view must agree
+    # with the string view, not with raw token order
+    c = Constants()
+    c.middle_name_as_last = True
+    n = HumanName("Hassan, Mohamad Ahmad Ali", constants=c)
+    assert n.last == "Ahmad Ali Hassan"
+    assert n.last_list == ["Ahmad", "Ali", "Hassan"]

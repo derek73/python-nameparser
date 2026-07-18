@@ -21,6 +21,7 @@ from __future__ import annotations
 import dataclasses
 import re
 from collections.abc import Sequence, Set
+from enum import IntEnum
 
 from nameparser._pipeline._state import ParseState, Structure, WorkToken
 from nameparser._pipeline._vocab import delimiter_cores
@@ -30,6 +31,16 @@ _PH = re.compile(r"^ph\.?$", re.IGNORECASE)
 _D = re.compile(r"^d\.?$", re.IGNORECASE)
 
 Piece = list[int]
+
+
+class BoundJoin(IntEnum):
+    """v1 _join_bound_first_name's reserve_last, as the three states it
+    actually has. IntEnum: the value IS the non_suffix threshold, so
+    the >= comparison below reads unchanged."""
+
+    DISABLED = 0   # the FAMILY_COMMA family segment (v1 never joined it)
+    LENIENT = 2    # FAMILY_COMMA's post-comma segment (reserve_last=False)
+    STRICT = 3     # main segments (reserve_last=True: keep a family piece)
 
 
 def _is_title_piece(piece: Sequence[int], ptags: Set[str],
@@ -74,7 +85,7 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
 
 def _group_segment(seg: tuple[int, ...], additional: int,
                    tokens: Sequence[WorkToken],
-                   bound_required: int = 3,
+                   bound_join: BoundJoin = BoundJoin.STRICT,
                    ) -> tuple[list[Piece], list[set[str]]]:
     pieces: list[Piece] = [[i] for i in seg]
     ptags: list[set[str]] = [set() for _ in seg]
@@ -157,15 +168,12 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 j += 1
             merge(k, j, drop={"prefix"})
             k += 1
-        # bound given names: first non-title piece joins the next.
-        # bound_required is v1's reserve_last: 3 keeps a family piece in
-        # reserve (main segments); 2 joins freely (FAMILY_COMMA's
-        # post-comma segment, v1 reserve_last=False -- 'salem, abdul
-        # salam' -> given 'abdul salam'); 0 disables (family segment,
-        # which v1 never bound-joined).
+        # bound given names: the first non-title piece joins the next
+        # ONCE (pairwise, v1 parity: 'Salem, Abdul Rahman Ahmed' keeps
+        # Ahmed a middle name). BoundJoin encodes v1's reserve_last.
         first_name_k = next(
             (k for k in range(len(pieces)) if not title(k)), None)
-        if (bound_required
+        if (bound_join is not BoundJoin.DISABLED
                 and first_name_k is not None
                 and first_name_k + 1 < len(pieces)
                 and len(pieces[first_name_k]) == 1
@@ -173,7 +181,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 in tokens[pieces[first_name_k][0]].tags):
             non_suffix = sum(1 for k in range(len(pieces))
                              if not title(k) and not suffix(k))
-            if non_suffix >= bound_required:
+            if non_suffix >= bound_join:
                 merge(first_name_k, first_name_k + 2)
     return pieces, ptags
 
@@ -195,11 +203,12 @@ def group(state: ParseState) -> ParseState:
     family_comma = state.structure is Structure.FAMILY_COMMA
     for seg_idx, seg in enumerate(state.segments):
         if family_comma:
-            bound_required = 2 if seg_idx == 1 else 0
+            bound_join = (BoundJoin.LENIENT if seg_idx == 1
+                          else BoundJoin.DISABLED)
         else:
-            bound_required = 3
+            bound_join = BoundJoin.STRICT
         pieces, ptags = _group_segment(seg, additional, tokens,
-                                       bound_required)
+                                       bound_join)
         if tail_start is not None and seg_idx >= tail_start:
             # v1 renders each tail COMMA SEGMENT as one suffix entry
             # ('Smith, V MD' -> suffix 'V MD'); a delimiter core inside

@@ -35,7 +35,7 @@ import re
 from nameparser._lexicon import _normalize
 from nameparser._pipeline._state import ParseState, Structure, WorkToken
 from nameparser._policy import PatronymicRule
-from nameparser._types import Role
+from nameparser._types import FOLDED_TAG, Role
 
 # Ported verbatim from v1 (nameparser/config/regexes.py) -- layering
 # forbids the config import; keep in sync by hand.
@@ -125,5 +125,5 @@ def post_rules(state: ParseState) -> ParseState:
         for i in _idx(tokens, Role.MIDDLE):
             tokens[i] = dataclasses.replace(
                 tokens[i], role=Role.FAMILY,
-                tags=tokens[i].tags | {"vocab:folded-middle"})
+                tags=tokens[i].tags | {FOLDED_TAG})
     return dataclasses.replace(state, tokens=tuple(tokens))

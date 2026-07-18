@@ -31,7 +31,7 @@ import nameparser.config  # noqa: F401
 from nameparser._config_shim import CONSTANTS, Constants, _cached_parser
 from nameparser._lexicon import _normalize
 from nameparser._parser import Parser
-from nameparser._types import ParsedName, Role
+from nameparser._types import FOLDED_TAG, ParsedName, Role
 
 _V2_FIELD = {"first": "given", "last": "family"}  # v1 name -> v2 name
 _MEMBERS = ("title", "first", "middle", "last", "suffix", "nickname",
@@ -344,12 +344,18 @@ class HumanName:
         # every role -- a continuation is never its own list element.
         role = Role(_V2_FIELD.get(member, member))
         parts: list[str] = []
+        folded: list[str] = []
         for tok in self._parsed.tokens_for(role):
             if "joined" in tok.tags and parts:
                 parts[-1] += " " + tok.text
+            elif FOLDED_TAG in tok.tags:
+                # middle_as_family fold: v1 PREPENDED middle_list to
+                # last_list -- keep the list view consistent with the
+                # string view (_text_for orders folded-first too)
+                folded.append(tok.text)
             else:
                 parts.append(tok.text)
-        return parts
+        return folded + parts
 
     @property
     def title(self) -> str:
