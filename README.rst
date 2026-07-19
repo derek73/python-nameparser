@@ -44,11 +44,16 @@ Learn more
 Coming from 1.x
 ----------------
 
-Nothing breaks. 2.0 keeps ``HumanName`` and ``CONSTANTS`` working exactly
-as before — same imports, same attributes, same mutation API. See
+``HumanName`` and ``CONSTANTS`` keep working in 2.0 — same imports, same
+attributes, same mutation API. What 2.0 removes is the batch of
+deprecations 1.3 and 1.4 announced, so if your test suite runs clean on
+1.4 under ``python -W error::DeprecationWarning``, you are nearly done.
+Two things that check will not catch: four removals 1.4 never warned
+about, which all raise on contact, and one that changes results silently
+— ``name == "John Smith"`` is now ``False``.
 `Migrating from HumanName <https://nameparser.readthedocs.io/en/latest/migrate.html>`__
-for translating a v1 customization into the new API, whenever that's
-convenient for you.
+covers both, and translates a v1 customization into the new API whenever
+that's convenient for you.
 
 See the `release log <https://nameparser.readthedocs.io/en/latest/release_log.html>`__
 for the full list of changes in the 2.0 series.

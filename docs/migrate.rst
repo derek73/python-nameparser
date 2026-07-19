@@ -1,13 +1,12 @@
 Migrating from HumanName
 =========================
 
-Nothing breaks. 2.0 keeps ``HumanName`` and ``CONSTANTS`` working
-exactly as before — same imports, same attributes, same mutation API
-(``name.C.titles.add(...)``, ``name.first = "..."``, and so on).
-Upgrading to 2.0 and migrating your code to the new
-:class:`~nameparser.Parser`/:class:`~nameparser.Lexicon`/
+``HumanName`` and ``CONSTANTS`` keep working in 2.0 — same imports,
+same attributes, same mutation API (``name.C.titles.add(...)``,
+``name.first = "..."``, and so on). Upgrading to 2.0 and migrating your
+code to the new :class:`~nameparser.Parser`/:class:`~nameparser.Lexicon`/
 :class:`~nameparser.Policy` API are two separate decisions — you can do
-the former today and the latter whenever it's convenient, or never. The
+the former today and the latter whenever it's convenient. The
 compatibility layer (``HumanName`` and ``nameparser.config``) is
 removed in 3.0; that release is not scheduled.
 
@@ -18,6 +17,34 @@ currently the 1.4.0 release: https://nameparser.readthedocs.io/en/stable/
 This page exists for the other direction: translating a v1
 customization or a v1-shaped comparison into the 2.0 API, one row per
 old name.
+
+Before you upgrade
+------------------
+
+What 2.0 removes is the batch of deprecations 1.3 and 1.4 announced. If
+your test suite runs clean on 1.4 under ``python -W
+error::DeprecationWarning``, it will run on 2.0 — with four exceptions
+that 1.4 never warned about, each of which fails loudly the first time
+you hit it:
+
+* ``CONSTANTS.regexes.<name> = ...`` raises ``TypeError``. This includes
+  ``CONSTANTS.regexes.bidi = False``, the opt-out 1.3.1 recommended for
+  keeping bidirectional marks; the 2.0 spellings are
+  ``Policy(strip_bidi=False)`` and ``Policy(strip_emoji=False)``
+* assigning a ``*_list`` attribute (``name.first_list = [...]``) raises
+  ``AttributeError`` — the lists are read-only snapshots in 2.0
+* positional ``Constants(...)`` construction raises ``TypeError``; the
+  constructor is keyword-only
+* a subclass overriding a v1 parsing hook (``pre_process``,
+  ``parse_pieces``, ``is_title``, and the rest) gets a
+  ``DeprecationWarning`` at construction naming the hooks it overrode,
+  because 2.0 delegates parsing to the core parser and never calls them
+
+One removal changes results without saying anything. ``HumanName`` no
+longer defines ``__eq__``, so ``name == "John Smith"`` is now ``False``
+where 1.x returned ``True``. That one *did* warn on 1.4, but nothing
+will tell you on 2.0. If you compare names anywhere, grep for ``==``
+before upgrading and move to ``matches()`` — see `Comparison`_.
 
 Attribute map
 -------------
