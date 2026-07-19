@@ -69,6 +69,14 @@ Nicknames and maiden names
     >>> parse("Jane Smith née Jones").maiden
     'Jones'
 
+Both fields appear in the default ``str()`` rendering — the nickname
+in parentheses, the maiden name after ``née``:
+
+.. doctest::
+
+    >>> str(parse("Jane (Janie) Smith née Jones"))
+    'Jane Smith (Janie) née Jones'
+
 Comparing names
 ----------------
 

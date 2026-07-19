@@ -540,9 +540,17 @@ class ParsedName:
     # tests/v2/test_layering.py), so these import at call time -- module
     # level stays internal-import-free.
 
-    def render(self, spec: str = "{title} {given} {middle} {family} {suffix}") -> str:
+    def render(
+        self,
+        spec: str = ("{title} {given} {middle} {family} {suffix} "
+                     "({nickname}) née {maiden}"),
+    ) -> str:
         """Fill the str.format spec from the seven role fields and the
-        derived views; empty fields collapse (#254). Unknown keys raise
+        derived views; empty fields collapse (#254), including the
+        default spec's decorations -- '()' around an absent nickname
+        and a trailing orphaned 'née'. The default shows every
+        non-empty field and round-trips: parentheses re-extract as the
+        nickname and 'née' is a maiden marker. Unknown keys raise
         KeyError naming the valid fields."""
         import nameparser._render as _render
         return _render.render(self, spec)

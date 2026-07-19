@@ -69,6 +69,25 @@ def test_render_empty_parse_is_empty_string() -> None:
     assert render(_pn("", []), "{title} {given} {middle} {family} {suffix}") == ""
 
 
+def test_default_str_includes_nickname_and_maiden() -> None:
+    # Derek's terminal find (2026-07-19): str(parse('Von Johnson
+    # (smith)')) dropped the nickname. v1's default string_format
+    # always showed '({nickname})'; the 2.0 default restores it and
+    # adds 'née {maiden}' -- and both decorations round-trip: parens
+    # re-extract as nickname, née is a maiden marker.
+    from nameparser import parse
+
+    assert str(parse("Von Johnson (smith)")) == "Von Johnson (smith)"
+    assert str(parse("Jane Smith née Jones")) == "Jane Smith née Jones"
+    both = parse("Jane (Janie) Smith née Jones")
+    assert str(both) == "Jane Smith (Janie) née Jones"
+    reparsed = parse(str(both))
+    assert reparsed.nickname == "Janie" and reparsed.maiden == "Jones"
+    # no orphaned decoration when the fields are empty
+    assert str(parse("Dr. Juan Q. Xavier de la Vega III")) == (
+        "Dr. Juan Q. Xavier de la Vega III")
+
+
 def test_parsedname_render_and_str_delegate() -> None:
     pn = _delavega()
     assert pn.render() == "Dr. Juan de la Vega III"
