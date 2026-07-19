@@ -101,6 +101,19 @@ def test_suffix_comma_and_extra_segments() -> None:
     assert _by_role(out, Role.SUFFIX) == "Jr."
 
 
+def test_suffix_comma_structure() -> None:
+    # Structure.SUFFIX_COMMA (segment.py): >1 word before the first
+    # comma AND every post-first segment is entirely lenient-suffix.
+    # ('Smith, John, Jr.' above only has ONE word before its first
+    # comma, so it is FAMILY_COMMA with a trailing suffix segment, not
+    # this branch.) Previously this assign() branch (tail=1) was only
+    # reached via the full-corpus test, not its own isolated case.
+    out = _assigned("John Smith, PhD")
+    assert _by_role(out, Role.GIVEN) == "John"
+    assert _by_role(out, Role.FAMILY) == "Smith"
+    assert _by_role(out, Role.SUFFIX) == "PhD"
+
+
 def test_trailing_suffix_run_no_comma() -> None:
     out = _assigned("John Jack Kennedy PhD MD")
     assert _by_role(out, Role.MIDDLE) == "Jack"

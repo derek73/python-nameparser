@@ -52,6 +52,25 @@ def test_extracted_regions_are_skipped_and_tokenized_with_role() -> None:
     assert starts == sorted(starts)
 
 
+def test_two_simultaneous_extracted_regions_interleave_correctly() -> None:
+    # tokenize's masked/extracted loops each run over ALL their regions
+    # before the final span-sort; every other test here exercises at
+    # most one masked region at a time. With two active extraction
+    # types (nickname parens AND a configured maiden bracket) on the
+    # same string, main-stream and both extracted regions must still
+    # interleave into the correct overall span order.
+    pol = Policy(maiden_delimiters=frozenset({("[", "]")}))
+    out = _tokenized("John (Jack) [Doe] Smith", pol)
+    assert [(t.text, t.role) for t in out.tokens] == [
+        ("John", None),
+        ("Jack", Role.NICKNAME),
+        ("Doe", Role.MAIDEN),
+        ("Smith", None),
+    ]
+    starts = [t.span.start for t in out.tokens]
+    assert starts == sorted(starts)
+
+
 def test_comma_inside_extracted_region_is_not_an_offset() -> None:
     out = _tokenized('John "Jack, Jr" Kim')
     assert out.comma_offsets == ()

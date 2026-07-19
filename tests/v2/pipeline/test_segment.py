@@ -78,6 +78,25 @@ def test_comma_only_input_is_no_comma_structure() -> None:
     assert out.segments == ()
 
 
+def test_single_trailing_comma_is_cosmetic_and_dropped() -> None:
+    # v1 parity: exactly ONE trailing comma is cosmetic and stripped
+    # (segment.py's "pop the trailing empty bucket" step), so
+    # 'Smith, John,' segments identically to 'Smith, John' -- unlike a
+    # genuinely empty INTERIOR bucket ('Doe,, Jr.'), which stays
+    # structural and keeps its position.
+    out = _segmented("Smith, John,")
+    assert out.structure is Structure.FAMILY_COMMA
+    assert [_texts(out, s) for s in out.segments] == [["Smith"], ["John"]]
+
+
+def test_leading_comma_yields_empty_first_segment() -> None:
+    # A leading comma produces a non-trailing empty bucket, which is
+    # structural (not cosmetic) and keeps its position as segment 0.
+    out = _segmented(",John Smith")
+    assert out.structure is Structure.FAMILY_COMMA
+    assert [_texts(out, s) for s in out.segments] == [[], ["John", "Smith"]]
+
+
 def test_strict_comma_suffixes_veto_lenient_only_members() -> None:
     # lenient_comma_suffixes=False: the post-comma test drops back to
     # the strict predicate, so initial-shaped suffix words no longer

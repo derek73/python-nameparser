@@ -22,8 +22,10 @@ _LEX = Lexicon(
 # real vocabulary overlap; the subset rule only constrains particles.
 
 
-def _grouped(text: str) -> ParseState:
-    state = ParseState(original=text, lexicon=_LEX, policy=Policy())
+def _grouped(text: str, policy: Policy | None = None,
+             lexicon: Lexicon | None = None) -> ParseState:
+    state = ParseState(original=text, lexicon=lexicon or _LEX,
+                       policy=policy or Policy())
     return group(classify(segment(tokenize(extract_delimited(state)))))
 
 
@@ -126,6 +128,30 @@ def test_initials_do_not_count_as_rootnames_for_conjunction_carveout() -> None:
     # the single-letter conjunction 'y' is treated as an initial, not joined
     out = _grouped("J. Ruiz y Gomez")
     assert _piece_texts(out) == [["J.", "Ruiz", "y", "Gomez"]]
+
+
+def test_extra_suffix_delimiter_splits_tail_entries() -> None:
+    # v1 expand_suffix_delimiter parity (#191): a configured delimiter
+    # is transparent in a FAMILY_COMMA tail segment -- it separates
+    # suffix ENTRIES (each rendered independently) and is itself
+    # dropped, rather than becoming a suffix token or fusing the
+    # entries on either side into one "joined" run.
+    lex = Lexicon(suffix_acronyms=frozenset({"phd"}),
+                  suffix_words=frozenset({"jr", "v", "md"}))
+    out = _grouped("Smith, John, V MD / PhD",
+                   Policy(extra_suffix_delimiters=frozenset({"/"})),
+                   lexicon=lex)
+    # one tail SEGMENT, split into three suffix pieces: "/" is dropped
+    # rather than surviving as its own piece
+    assert _piece_texts(out) == [["Smith"], ["John"], ["V", "MD", "PhD"]]
+    slash_idx = next(i for i, t in enumerate(out.tokens) if t.text == "/")
+    assert slash_idx in out.dropped
+    # "MD" continues the "V MD" entry (joined); "PhD" starts a fresh
+    # entry across the dropped delimiter, so it does NOT get "joined"
+    md_tok = next(t for t in out.tokens if t.text == "MD")
+    phd_tok = next(t for t in out.tokens if t.text == "PhD")
+    assert "joined" in md_tok.tags
+    assert "joined" not in phd_tok.tags
 
 
 def test_suffix_comma_name_segment_gets_no_additional_count() -> None:
