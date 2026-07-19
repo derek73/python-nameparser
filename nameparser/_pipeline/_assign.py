@@ -114,9 +114,9 @@ def _assign_main(seg_idx: int, state: ParseState,
     if not rest:
         return
     # v1 nickname rule (plan deviation #2): v1's p_len == 1 counted
-    # the WHOLE segment before any title peeling (parser.py:1285) --
-    # 'Xyz. (Bud) Smith' has two pieces, so the title peel wins and
-    # Smith stays the given name (pinned live 2026-07-17)
+    # the WHOLE segment before any title peeling -- 'Xyz. (Bud) Smith'
+    # has two pieces, so the title peel wins and Smith stays the given
+    # name (pinned live 2026-07-17)
     if len(pieces) == 1 and len(rest) == 1 and has_nickname:
         _set_roles(tokens, pieces[rest[0]], Role.FAMILY)
         return
@@ -173,10 +173,10 @@ def assign(state: ParseState) -> ParseState:
         # PARTICLE_OR_GIVEN is deliberately not emitted here: after a
         # comma the family is already fixed, so a leading given-position
         # particle is not meaningfully ambiguous.
-        # v1: "lastname part may have suffixes in it" (parser.py:1368)
-        # -- the first piece is always the family even if suffix-shaped;
-        # any later strict-suffix piece goes to SUFFIX per piece
-        # ('Smith Jr., John' -> family=Smith, suffix=Jr.)
+        # v1: "lastname part may have suffixes in it" -- the first
+        # piece is always the family even if suffix-shaped; any later
+        # strict-suffix piece goes to SUFFIX per piece ('Smith Jr.,
+        # John' -> family=Smith, suffix=Jr.)
         fam_pieces = state.pieces[0]
         fam_tags = state.piece_tags[0]
         for k, piece in enumerate(fam_pieces):
@@ -190,8 +190,8 @@ def assign(state: ParseState) -> ParseState:
             n = _peel_leading_titles(pieces, ptags, tokens)
             given_done = False
             for m in range(n, len(pieces)):
-                # v1 walk order (parser.py:1390): the first non-title
-                # piece is ALWAYS the given, before any suffix check --
+                # v1 walk order: the first non-title piece is ALWAYS
+                # the given, before any suffix check --
                 # 'Hardman, RN - CRNA' keeps first='RN'. One deliberate
                 # 2.0 deviation, classified fix(comma-family): when that
                 # piece is the segment's ONLY piece and unambiguously

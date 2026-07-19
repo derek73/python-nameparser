@@ -194,8 +194,7 @@ def group(state: ParseState) -> ParseState:
     all_pieces: list[tuple[tuple[int, ...], ...]] = []
     all_ptags: list[tuple[frozenset[str], ...]] = []
     # v1 parity: additional_parts_count=1 applies only to FAMILY_COMMA
-    # parts (parser.py:1313, 1369); the SUFFIX_COMMA pre-comma segment
-    # gets 0 (parser.py:1333).
+    # parts; the SUFFIX_COMMA pre-comma segment gets 0.
     additional = 1 if state.structure is Structure.FAMILY_COMMA else 0
     # v1 expand_suffix_delimiter parity (#191): tail segments (wholly
     # consumed as suffixes by assign) drop delimiter-core tokens, the
