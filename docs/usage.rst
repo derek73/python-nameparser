@@ -28,6 +28,28 @@ they exist). A name with no fields set is falsy, which is how you tell
     >>> bool(parse("")), bool(parse("   ")), bool(parse("John"))
     (False, False, True)
 
+Input shapes
+-------------
+
+Three arrangements are understood, and every piece of each is optional:
+
+1. ``Title First Middle Middle Last Suffix``
+2. ``Last, Title First Middle Middle[,] Suffix [, Suffix]``
+3. ``Title First Middle Last [,] Suffix [, Suffix]``
+
+A comma before the given name is the signal for family-first order, so
+the second form needs no configuration:
+
+.. doctest::
+
+    >>> parse("de la Vega, Juan Q. Xavier III").family
+    'de la Vega'
+    >>> parse("Doe Jr., John").suffix
+    'Jr.'
+
+For family-first input *without* a comma — common outside Europe — set
+``name_order``; see :doc:`customize`.
+
 Aggregate views
 ----------------
 

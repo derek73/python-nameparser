@@ -41,6 +41,36 @@ else — tokens, spans, the rest of the roles — carried over unchanged.
 ``str()`` renders the default view; nothing about calling it mutates
 the value you called it on.
 
+Two layers decide the roles
+----------------------------
+
+Roles are not assigned in one pass. A vocabulary layer runs first and
+claims words for what they *are*, wherever they sit: titles, particles,
+conjunctions, recognized suffixes, and anything set off by nickname or
+maiden delimiters. Titles chain, so ``"Asst. Vice Chancellor"`` is one
+title; particles join forward, so ``de la`` attaches to ``Vega``.
+
+Whatever the vocabulary layer has not claimed is left to a positional
+layer, which assigns purely by where a word sits: the first unclaimed
+word is the given name, the last is the family name, and anything
+between them is the middle name. ``name_order`` and an explicit comma
+change what "first" and "last" mean here; nothing else does.
+
+This is the whole parser in two sentences, and it explains its
+character. A word nameparser has never seen still gets a sensible role,
+because the positional layer does not need to recognize anything. The
+same word can play different parts in different places — ``Dr.`` is a
+title before a name and a suffix after it, which is why the field names
+``title`` and ``suffix`` are really "pre-nominal" and "post-nominal".
+And nothing is statistical: there is no model and no training data, so
+the same input always parses the same way, and a parse that is wrong is
+wrong reproducibly, which is what makes it fixable by configuration.
+
+The split also tells you which container a setting belongs in, before
+you look anything up: if you are teaching the parser a *word*, it goes
+in the :class:`~nameparser.Lexicon`; if you are changing how unclaimed
+words are *arranged*, it goes in the :class:`~nameparser.Policy`.
+
 Three containers, three concerns
 --------------------------------
 
