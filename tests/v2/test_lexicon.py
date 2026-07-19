@@ -230,27 +230,44 @@ def test_suffix_ambiguous_must_be_subset_of_acronyms() -> None:
         Lexicon(suffix_acronyms_ambiguous=frozenset({"ma"}))
 
 
-def test_given_name_titles_must_be_subset_of_titles() -> None:
-    # third marker-over-base pair, same rule: given_name_titles marks
-    # which TITLES precede the given name rather than the family name,
-    # so an entry missing from titles is never consulted -- a silent
-    # no-op is exactly the failure mode the other two guards prevent
-    with pytest.raises(ValueError, match="subset"):
+def test_given_name_titles_may_hold_a_multi_word_phrase() -> None:
+    # given_name_titles is looked up against the SPACE-JOINED title run
+    # (_pipeline/_post_rules.py), not per token, so "grand duke" is a
+    # legitimate entry. Its words must be titles -- that is what makes
+    # the run a title in the first place -- but the phrase itself is
+    # not, and must not be required to be.
+    lex = Lexicon(titles=frozenset({"grand", "duke"}),
+                  given_name_titles=frozenset({"grand duke"}))
+    assert "grand duke" in lex.given_name_titles
+
+
+def test_given_name_titles_words_must_be_titles() -> None:
+    # a word that is not a title is never read as one, so the entry
+    # would silently do nothing -- the failure mode the guards prevent.
+    # Checked per WORD, not per entry, so multi-word phrases stay legal
+    # (see test_given_name_titles_may_hold_a_multi_word_phrase).
+    with pytest.raises(ValueError, match="every word of a given_name_titles"):
         Lexicon(given_name_titles=frozenset({"sheikh"}))
+    with pytest.raises(ValueError, match="duke"):
+        Lexicon(titles=frozenset({"grand"}),
+                given_name_titles=frozenset({"grand duke"}))
 
 
-@pytest.mark.parametrize(("make", "base"), [
-    (lambda w: Lexicon(given_name_titles=w), "titles"),
-    (lambda w: Lexicon(particles_ambiguous=w), "particles"),
-    (lambda w: Lexicon(suffix_acronyms_ambiguous=w), "suffix_acronyms"),
-], ids=["given_name_titles", "particles_ambiguous", "suffix_acronyms_ambiguous"])
+@pytest.mark.parametrize(("make", "marker", "base"), [
+    (lambda w: Lexicon(particles_ambiguous=w),
+     "particles_ambiguous", "particles"),
+    (lambda w: Lexicon(suffix_acronyms_ambiguous=w),
+     "suffix_acronyms_ambiguous", "suffix_acronyms"),
+], ids=["particles_ambiguous", "suffix_acronyms_ambiguous"])
 def test_subset_error_names_the_fix(
-    make: Callable[[frozenset[str]], Lexicon], base: str
+    make: Callable[[frozenset[str]], Lexicon], marker: str, base: str
 ) -> None:
-    # the constraint alone leaves the reader to infer the remedy; every
-    # marker field's error should name the base field to add to, since
-    # adding to both is the only thing the caller can have meant
-    with pytest.raises(ValueError, match=f"Add them to {base} as well"):
+    # the constraint alone leaves the reader to infer the remedy, and
+    # the remedy is direction-dependent: a caller who was ADDING wants
+    # to add to the base, one who was REMOVING wants to drop from the
+    # marker. Naming both keeps the message right either way.
+    with pytest.raises(ValueError, match=f"Add them to {base}, or drop "
+                                         f"them from {marker}"):
         make(frozenset({"zzqnovel"}))
 
 
@@ -286,5 +303,15 @@ def test_default_lexicon_satisfies_the_bound_particle_invariant() -> None:
 def test_remove_orphaning_given_name_titles_raises() -> None:
     lex = Lexicon(titles=frozenset({"sheikh"}),
                   given_name_titles=frozenset({"sheikh"}))
-    with pytest.raises(ValueError, match="subset"):
+    with pytest.raises(ValueError, match="every word of a given_name_titles"):
         lex.remove(titles={"sheikh"})
+
+
+def test_remove_error_offers_the_removal_remedy_too() -> None:
+    # a caller removing from the base does not want to be told to add
+    # it back; the message names both directions
+    lex = Lexicon(particles=frozenset({"van"}),
+                  particles_ambiguous=frozenset({"van"}))
+    with pytest.raises(ValueError,
+                       match="drop them from particles_ambiguous"):
+        lex.remove(particles={"van"})

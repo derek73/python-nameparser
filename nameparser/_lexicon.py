@@ -23,16 +23,27 @@ _VOCAB_FIELDS = (
     "conjunctions", "bound_given_names", "maiden_markers",
 )
 
-#: (marker, base) pairs: each marker field narrows how entries of its
-#: base vocabulary are read, and carries no vocabulary of its own. An
-#: entry present in the marker but absent from the base is never
-#: consulted by any rule, so it is rejected rather than silently
-#: ignored -- a no-op configuration is the failure mode these fields
-#: are most likely to be misused into.
+#: (marker, base, why) triples. Each marker narrows how entries of its
+#: base vocabulary are read and carries no vocabulary of its own, so an
+#: entry outside the base is a configuration mistake -- but the mistake
+#: differs per pair, and the reason is recorded here rather than
+#: generalized, because an orphan is NOT simply inert:
+#:
+#: * particles_ambiguous: _assign keys on the tag alone, so an orphan
+#:   makes the parse emit a spurious particle-or-given ambiguity.
+#: * suffix_acronyms_ambiguous: _vocab returns True on the ambiguous
+#:   set before testing suffix_acronyms, so an orphan silently turns a
+#:   word into a period-gated suffix.
+#:
+#: given_name_titles is deliberately NOT here: it is looked up against
+#: the space-joined title run, not per token, so a multi-word phrase is
+#: a legitimate entry whose words -- not whose phrase -- must be
+#: titles. It gets its own per-word check below.
 _SUBSET_FIELDS = (
-    ("particles_ambiguous", "particles"),
-    ("suffix_acronyms_ambiguous", "suffix_acronyms"),
-    ("given_name_titles", "titles"),
+    ("particles_ambiguous", "particles",
+     "an orphan emits a spurious particle-or-given ambiguity"),
+    ("suffix_acronyms_ambiguous", "suffix_acronyms",
+     "an orphan silently becomes a period-gated suffix"),
 )
 
 
@@ -227,15 +238,31 @@ class Lexicon:
         canonical = _normpairs(self.capitalization_exceptions)
         object.__setattr__(self, "capitalization_exceptions", canonical)
         object.__setattr__(self, "_cap_map", MappingProxyType(dict(canonical)))
-        for marker, base in _SUBSET_FIELDS:
+        for marker, base, why in _SUBSET_FIELDS:
             orphans = getattr(self, marker) - getattr(self, base)
             if orphans:
                 raise ValueError(
                     f"{marker} marks a subset of {base}; "
-                    f"not in {base}: {', '.join(sorted(orphans))}. "
-                    f"Add them to {base} as well — "
-                    f"add({base}={{...}}, {marker}={{...}})"
+                    f"not in {base}: {', '.join(sorted(orphans))} "
+                    f"({why}). Add them to {base}, or drop them from "
+                    f"{marker}"
                 )
+        # given_name_titles is matched against the space-joined title
+        # run, so check its WORDS rather than its entries: "grand duke"
+        # is reachable when 'grand' and 'duke' are titles, and requiring
+        # the phrase itself would make multi-word honorifics
+        # inexpressible (and silently reclassify names through the v1
+        # facade, where such entries are legal).
+        title_words = {w for e in self.given_name_titles for w in e.split()}
+        orphans = title_words - self.titles
+        if orphans:
+            raise ValueError(
+                f"every word of a given_name_titles entry must be in "
+                f"titles; not in titles: {', '.join(sorted(orphans))}. "
+                f"A word that is not a title is never read as one, so "
+                f"the entry would have no effect. Add them to titles, "
+                f"or drop the entry from given_name_titles"
+            )
         # The v2 form of prefixes.py's NON_FIRST_NAME_PREFIXES-disjoint-
         # from-BOUND_FIRST_NAMES assertion. That module guards its own
         # data at import; this guards vocabulary a caller supplies.
@@ -248,6 +275,18 @@ class Lexicon:
                 f"{', '.join(sorted(contradictory))}. A particle that never "
                 f"starts a given name cannot also bind one — add them to "
                 f"particles_ambiguous, or drop them from bound_given_names"
+            )
+        # suffix_as_written ORs the acronym and word branches, so a word
+        # membership bypasses the period gate the ambiguous set exists
+        # to impose: listing 'ma' in suffix_words would make "Jack Ma"
+        # read as a suffix and lose the family name.
+        gate_bypassed = self.suffix_acronyms_ambiguous & self.suffix_words
+        if gate_bypassed:
+            raise ValueError(
+                f"an ambiguous suffix acronym must not also be a suffix "
+                f"word; in both: {', '.join(sorted(gate_bypassed))}. The "
+                f"word branch matches without periods, which bypasses the "
+                f"period gate suffix_acronyms_ambiguous exists to impose"
             )
 
     # -- constructors ----------------------------------------------------

@@ -335,6 +335,31 @@ def test_v14_constants_blob_unpickles_into_shim() -> None:
     assert loaded.string_format == "{title} {first} {middle} {last} {suffix} ({nickname})"
 
 
+def test_snapshot_keeps_a_multi_word_first_name_title() -> None:
+    # v1 looks first_name_titles up on the joined title string, so a
+    # multi-word entry is reachable with only its WORDS in titles.
+    # Verified on a live 1.4.0: "Grand Duke John" -> first='John'.
+    # Intersecting the entry away made the lookup miss and silently
+    # reclassified the given name as a family name.
+    c = Constants()
+    c.titles.add("grand", "duke")
+    c.first_name_titles.add("grand duke")
+    lexicon, _, _ = c._snapshot()
+    assert "grand duke" in lexicon.given_name_titles
+    name = HumanName("Grand Duke John", constants=c)
+    assert (name.title, name.first, name.last) == ("Grand Duke", "John", "")
+
+
+def test_snapshot_drops_an_unreachable_first_name_title() -> None:
+    # the single-word case stays dropped: an entry whose word is not a
+    # title is unreachable in v1 too, so removing it preserves v1
+    c = Constants()
+    c.first_name_titles.add("zzqnotatitle")
+    lexicon, _, _ = c._snapshot()
+    assert "zzqnotatitle" not in lexicon.given_name_titles
+    assert HumanName("zzqnotatitle John Smith", constants=c).title == ""
+
+
 def test_snapshot_keeps_a_bound_never_given_prefix_parseable() -> None:
     # prefixes.py asserts its own data keeps non_first_name_prefixes
     # disjoint from bound_first_names, but nothing stops a v1 caller

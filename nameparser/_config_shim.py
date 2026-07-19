@@ -940,14 +940,16 @@ class Constants:
         # default-Constants equality test in tests/v2/test_config_shim.py)
         lexicon = Lexicon(
             titles=titles,
-            # intersect, same reasoning as suffix_acronyms_ambiguous
-            # below: v1 treats titles and first_name_titles as
-            # independent sets, and only consults first_name_titles for
-            # a word already recognized as a title -- so an entry
-            # missing from titles was never reachable in v1 either, and
-            # dropping it preserves v1 behavior exactly while
-            # satisfying Lexicon's subset invariant
-            given_name_titles=frozenset(self.first_name_titles) & titles,
+            # Drop only the entries v1 could never reach. v1 looks
+            # first_name_titles up on the JOINED title string, so a
+            # multi-word entry ("grand duke") is reachable when its
+            # words are titles even though the phrase is not -- keep
+            # those. An entry with a non-title word cannot match in v1
+            # either, so dropping it preserves v1 exactly while
+            # satisfying Lexicon's per-word check.
+            given_name_titles=frozenset(
+                e for e in self.first_name_titles
+                if set(e.split()) <= titles),
             suffix_acronyms=acronyms,
             suffix_words=frozenset(self.suffix_not_acronyms),
             # intersect: Lexicon enforces ambiguous <= acronyms; v1
