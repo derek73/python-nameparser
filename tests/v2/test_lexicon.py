@@ -1,9 +1,10 @@
 import dataclasses
+import pickle
 from collections.abc import Callable
 
 import pytest
 
-from nameparser._lexicon import Lexicon
+from nameparser._lexicon import Lexicon, _normalize
 
 
 def test_entries_are_normalized_at_construction() -> None:
@@ -241,16 +242,21 @@ def test_given_name_titles_may_hold_a_multi_word_phrase() -> None:
     assert "grand duke" in lex.given_name_titles
 
 
-def test_given_name_titles_words_must_be_titles() -> None:
-    # a word that is not a title is never read as one, so the entry
-    # would silently do nothing -- the failure mode the guards prevent.
-    # Checked per WORD, not per entry, so multi-word phrases stay legal
-    # (see test_given_name_titles_may_hold_a_multi_word_phrase).
-    with pytest.raises(ValueError, match="every word of a given_name_titles"):
-        Lexicon(given_name_titles=frozenset({"sheikh"}))
-    with pytest.raises(ValueError, match="duke"):
-        Lexicon(titles=frozenset({"grand"}),
-                given_name_titles=frozenset({"grand duke"}))
+def test_given_name_titles_is_not_constrained_against_titles() -> None:
+    # Deliberately unvalidated. The lookup key is the joined run of
+    # Role.TITLE tokens, which the PARSE builds -- it can hold a
+    # multi-word TITLES member, or a conjunction that is title-tagged
+    # ("sir and dame"). No static relation over these sets decides
+    # reachability, and an unreachable entry is inert rather than
+    # harmful, so nothing is rejected here.
+    from nameparser.config.titles import TITLES
+
+    multi = next(t for t in TITLES if " " in t)     # "chargé d'affaires"
+    assert Lexicon(given_name_titles=frozenset({multi})).given_name_titles
+    assert Lexicon(titles=frozenset({"sir", "dame"}),
+                   given_name_titles=frozenset({"sir and dame"}))
+    # and an entry nothing will ever consult is accepted, not rejected
+    assert Lexicon(given_name_titles=frozenset({"zzqnotatitle"}))
 
 
 @pytest.mark.parametrize(("make", "marker", "base"), [
@@ -300,11 +306,26 @@ def test_default_lexicon_satisfies_the_bound_particle_invariant() -> None:
     assert not (d.bound_given_names & d.particles) - d.particles_ambiguous
 
 
-def test_remove_orphaning_given_name_titles_raises() -> None:
+def test_removing_a_title_leaves_its_given_name_marker_alone() -> None:
+    # the mirror of the above: removing from titles does not raise, and
+    # the now-inert marker entry simply stops being reachable
     lex = Lexicon(titles=frozenset({"sheikh"}),
                   given_name_titles=frozenset({"sheikh"}))
-    with pytest.raises(ValueError, match="every word of a given_name_titles"):
-        lex.remove(titles={"sheikh"})
+    lean = lex.remove(titles={"sheikh"})
+    assert lean.titles == frozenset()
+    assert lean.given_name_titles == frozenset({"sheikh"})
+
+
+@pytest.mark.parametrize("word", [
+    "dr.", " Dr. ", ". a .", ".  .", "..x..", "  .b.  ",
+])
+def test_normalize_reaches_a_fixed_point(word: str) -> None:
+    # strip() then strip(".") leaves periods-around-whitespace half
+    # done: '. a .' -> ' a ' -> 'a'. Anything that stores a normalized
+    # value and later re-normalizes it (unpickling, a second add) then
+    # sees the value change under it, so the fold has to converge.
+    once = _normalize(word)
+    assert _normalize(once) == once
 
 
 def test_unpickling_revalidates_invariants() -> None:
@@ -321,13 +342,26 @@ def test_unpickling_revalidates_invariants() -> None:
         forged.__setstate__(state)
 
 
-def test_unpickling_normalizes_entries() -> None:
+def test_unpickling_rejects_unnormalized_entries() -> None:
+    # a genuine pickle always holds normalized entries, so state that
+    # does not is foreign. Correcting it silently would make the load
+    # path a fourth place where caller data is rewritten without a
+    # word; say so instead, at the site that can still name the entry.
     lex = Lexicon(titles=frozenset({"dr"}))
     state = lex.__getstate__()
-    state["titles"] = {"Sir ", "DR."}         # unnormalized, and a set
+    state["titles"] = {"Sir ", "DR."}
     restored = Lexicon.__new__(Lexicon)
-    restored.__setstate__(state)
-    assert restored.titles == frozenset({"sir", "dr"})
+    with pytest.raises(ValueError, match="not normalized"):
+        restored.__setstate__(state)
+
+
+def test_unpickling_a_real_pickle_is_the_identity() -> None:
+    # the corollary: anything this library produced round-trips
+    # unchanged, including entries whose normalized form needed more
+    # than one strip pass to converge
+    for lex in (Lexicon.default(), Lexicon.empty(),
+                Lexicon(titles=frozenset({". a ."}))):
+        assert pickle.loads(pickle.dumps(lex)) == lex
 
 
 def test_remove_error_offers_the_removal_remedy_too() -> None:

@@ -307,6 +307,25 @@ def test_pickle_round_trip_preserves_components() -> None:
     assert loaded.C is CONSTANTS             # shared sentinel restored
 
 
+@pytest.mark.parametrize("bad", [
+    "John",             # str: iterating yields characters
+    {"John": 1},        # Mapping: iterating yields keys only
+    b"John",            # bytes: iterating yields ints
+    ["John", None],     # a non-str entry
+])
+def test_setstate_rejects_malformed_component_lists(bad: object) -> None:
+    # _normset on the Lexicon side rejects str AND Mapping AND checks
+    # entry types; this guard covered only str, so a dict silently
+    # loaded its keys and bytes/None died later with an opaque
+    # AttributeError instead of naming the field
+    n = HumanName("John Smith")
+    state = n.__getstate__()
+    state["first_list"] = bad
+    loaded = HumanName.__new__(HumanName)
+    with pytest.raises(TypeError, match="first_list"):
+        loaded.__setstate__(state)
+
+
 def test_setstate_rejects_a_bare_string_component_list() -> None:
     # a genuine v1 pickle stores lists, but __setstate__ reads foreign
     # state: a bare str is iterable, so entry.split() over its

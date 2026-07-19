@@ -205,6 +205,17 @@ def test_regexes_supports_the_v1_read_only_mapping_surface() -> None:
     assert dict(r.items())["word"] is REGEXES["word"]
     assert REGEXES["word"] in list(r.values())
     assert len(r) == len(REGEXES)
+    assert r.copy() == dict(REGEXES)          # v1's dict.copy()
+
+
+def test_regexes_unsupported_method_is_not_reported_as_a_missing_regex() -> None:
+    # "no regex named 'pop'" sends the reader looking for a vocabulary
+    # entry when the truth is the proxy does not implement a mutator
+    r = _RegexesProxy()
+    with pytest.raises(AttributeError, match="not supported"):
+        r.pop
+    with pytest.raises(AttributeError, match="no regex named"):
+        r.definitely_not_a_regex
 
 
 def test_regexes_get_is_the_soft_access_escape_hatch() -> None:
@@ -361,14 +372,40 @@ def test_snapshot_keeps_a_multi_word_first_name_title() -> None:
     assert (name.title, name.first, name.last) == ("Grand Duke", "John", "")
 
 
-def test_snapshot_drops_an_unreachable_first_name_title() -> None:
-    # the single-word case stays dropped: an entry whose word is not a
-    # title is unreachable in v1 too, so removing it preserves v1
+@pytest.mark.parametrize(("entry", "text"), [
+    # v1's lookup key is lc(joined-title-run), and lc strips only the
+    # EDGE periods of the whole string, so an interior word keeps its
+    # period. v2 normalizes per token and then joins, so the entry has
+    # to be TRANSLATED between the two spellings, not filtered out.
+    ("lt. col", "Lt. Col. Smith"),
+    # v1 joins titles across conjunctions, and v2 tags the conjunction
+    # Role.TITLE too, so the joined key contains it in both versions
+    ("sir and dame", "Sir and Dame Alex"),
+])
+def test_snapshot_translates_a_multi_word_first_name_title(
+    entry: str, text: str
+) -> None:
     c = Constants()
-    c.first_name_titles.add("zzqnotatitle")
-    lexicon, _, _ = c._snapshot()
-    assert "zzqnotatitle" not in lexicon.given_name_titles
-    assert HumanName("zzqnotatitle John Smith", constants=c).title == ""
+    c.titles.add("lt", "col")
+    c.first_name_titles.add(entry)
+    name = HumanName(text, constants=c)
+    assert name.first and not name.last, f"{entry!r} was not honored"
+
+
+def test_snapshot_ungates_an_ambiguous_acronym_added_as_a_suffix_word() -> None:
+    # v1's is_suffix ORs the acronym and word branches, so adding an
+    # ambiguous acronym to suffix_not_acronyms simply ungates it: 1.4.0
+    # accepts the config and reads "John Smith jd" with suffix='jd'.
+    # Lexicon forbids the overlap (the word branch would bypass the
+    # period gate), so translate rather than let the raise through --
+    # dropping it from the ambiguous set leaves a plain acronym plus a
+    # word, which is v1's effective behavior.
+    c = Constants()
+    c.suffix_not_acronyms.add("jd")
+    lexicon, _, _ = c._snapshot()               # must not raise
+    assert "jd" not in lexicon.suffix_acronyms_ambiguous
+    name = HumanName("John Smith jd", constants=c)
+    assert (name.first, name.last, name.suffix) == ("John", "Smith", "jd")
 
 
 def test_bound_never_given_prefix_deviates_on_two_pieces() -> None:

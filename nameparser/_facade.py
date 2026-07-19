@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import dataclasses
 import warnings
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from typing import Any
 
 # Import order matters here -- breaks a real import cycle. nameparser.
@@ -674,18 +674,25 @@ class HumanName:
         for member in _MEMBERS:
             role = Role(_V2_FIELD.get(member, member))
             entries = state.get(f"{member}_list") or []
-            # A bare str is iterable, so without this the loop below
-            # would split its CHARACTERS and build a plausible-looking
-            # wrong name ("John" -> first "J o h n"). v1 stored lists,
-            # so this only guards foreign or hand-built state -- but it
-            # fails at the load site instead of much later.
-            if isinstance(entries, str):
+            # Everything here is iterable but shreds differently: a str
+            # yields characters ("John" -> first "J o h n"), a Mapping
+            # yields keys only, bytes yields ints. v1 stored lists, so
+            # this only guards foreign or hand-built state -- but it
+            # names the field at the load site instead of failing
+            # opaquely later, or not at all.
+            if isinstance(entries, (str, bytes, Mapping)):
                 raise TypeError(
-                    f"{member}_list must be a list of strings, not a str "
-                    f"({entries!r}); this pickle was not written by "
-                    f"nameparser"
+                    f"{member}_list must be a list of strings, not "
+                    f"{type(entries).__name__} ({entries!r}); this "
+                    f"pickle was not written by nameparser"
                 )
             for entry in entries:
+                if not isinstance(entry, str):
+                    raise TypeError(
+                        f"{member}_list entries must be strings, got "
+                        f"{entry!r}; this pickle was not written by "
+                        f"nameparser"
+                    )
                 for position, word in enumerate(entry.split()):
                     tokens.append(Token(
                         word, None, role,

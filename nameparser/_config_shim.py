@@ -27,7 +27,7 @@ from collections.abc import (
 )
 from typing import NamedTuple, Self
 
-from nameparser._lexicon import Lexicon
+from nameparser._lexicon import Lexicon, _normalize
 from nameparser._parser import Parser
 from nameparser._policy import PatronymicRule, Policy
 from nameparser.util import lc
@@ -505,9 +505,22 @@ class _RegexesProxy:
         from nameparser.config.regexes import REGEXES
         return REGEXES
 
+    #: dict methods this read-only proxy deliberately does not carry.
+    #: Without this, __getattr__ reports them as missing regexes and
+    #: sends the reader hunting for a vocabulary entry.
+    _DICT_ONLY = frozenset({
+        "pop", "popitem", "setdefault", "update", "clear", "fromkeys",
+    })
+
     def __getattr__(self, name: str) -> object:
         if name.startswith("_"):
             raise AttributeError(name)
+        if name in _RegexesProxy._DICT_ONLY:
+            raise AttributeError(
+                f"{name!r} is not supported on CONSTANTS.regexes: it is a "
+                f"read-only view in 2.0, and parsing behavior is configured "
+                f"through named Policy flags"
+            )
         try:
             return self._regexes()[name]
         except KeyError:
@@ -542,6 +555,12 @@ class _RegexesProxy:
 
     def __len__(self) -> int:
         return len(self._regexes())
+
+    def copy(self) -> dict[str, object]:
+        # v1's regexes was a dict subclass, so copy() returned a plain
+        # mutable dict. Mutating the copy never affected parsing there
+        # either, so this is a faithful read-only carry-over.
+        return dict(self._regexes())
 
     def __setattr__(self, name: str, value: object) -> None:
         self._raise_readonly(name)
@@ -953,23 +972,33 @@ class Constants:
         # tests/v2/test_config_shim.py::test_snapshot_field_translation)
         lexicon = Lexicon(
             titles=titles,
-            # Drop only the entries v1 could never reach. v1 looks
-            # first_name_titles up on the JOINED title string, so a
-            # multi-word entry ("grand duke") is reachable when its
-            # words are titles even though the phrase is not -- keep
-            # those. An entry with a non-title word cannot match in v1
-            # either, so dropping it preserves v1 exactly while
-            # satisfying Lexicon's per-word check.
+            # TRANSLATE, do not filter. The two versions build the same
+            # lookup key differently: v1 joins the raw title run and
+            # then applies lc(), which strips only the whole string's
+            # edge periods, so an interior word keeps its own ("lt.
+            # col"). v2 normalizes each token and then joins ("lt col").
+            # Re-folding per word converts a v1 entry into the v2
+            # spelling; filtering instead dropped every multi-word
+            # honorific containing an abbreviation or a conjunction and
+            # silently swapped given and family.
             given_name_titles=frozenset(
-                e for e in self.first_name_titles
-                if set(e.split()) <= titles),
+                " ".join(_normalize(w) for w in e.split())
+                for e in self.first_name_titles),
             suffix_acronyms=acronyms,
             suffix_words=frozenset(self.suffix_not_acronyms),
-            # intersect: Lexicon enforces ambiguous <= acronyms; v1
-            # behaves the same when an acronym is deleted but its
-            # ambiguous entry lingers (the entry simply stops mattering)
-            suffix_acronyms_ambiguous=frozenset(
-                self.suffix_acronyms_ambiguous) & acronyms,
+            # Intersect with acronyms: Lexicon enforces ambiguous <=
+            # acronyms; v1 behaves the same when an acronym is deleted
+            # but its ambiguous entry lingers (the entry stops
+            # mattering). Subtract suffix_words for the mirror reason:
+            # v1's is_suffix ORs the acronym and word branches, so
+            # adding an ambiguous acronym to suffix_not_acronyms simply
+            # ungates it. Lexicon forbids that overlap because the word
+            # branch bypasses the period gate -- so drop it from the
+            # ambiguous set, leaving a plain acronym plus a word, which
+            # is exactly what v1 ends up doing.
+            suffix_acronyms_ambiguous=(
+                frozenset(self.suffix_acronyms_ambiguous)
+                & acronyms) - frozenset(self.suffix_not_acronyms),
             particles=particles,
             # complement translation: v1 marks the never-given subset;
             # v2 marks the may-be-given subset. The trailing union keeps

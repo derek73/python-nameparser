@@ -12,6 +12,7 @@ import functools
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
+from typing import cast
 
 #: Vocabulary set fields, in declaration order. add()/remove() operate
 #: on exactly these and reject capitalization_exceptions (its entries
@@ -61,8 +62,19 @@ def _normalize(word: str) -> str:
     while lower() applies Unicode SpecialCasing contextually and keeps
     both as authored. This function is the single fold for storage AND
     match-time lookups, so matching stays symmetric either way; lower()
-    is what v1's lc() used, preserving which cross-spellings match."""
-    return word.lower().strip().strip(".")
+    is what v1's lc() used, preserving which cross-spellings match.
+
+    Strips to a FIXED POINT. A single strip().strip(".") leaves
+    periods-around-whitespace half done ('. a .' -> ' a '), so a value
+    that is re-normalized later -- on unpickle, or by a second add() --
+    would change under its owner. v1 never re-normalized, so this only
+    matters now that storage and match-time share one fold."""
+    word = word.lower()
+    while True:
+        stripped = word.strip().strip(".")
+        if stripped == word:
+            return word
+        word = stripped
 
 
 def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
@@ -247,22 +259,17 @@ class Lexicon:
                     f"({why}). Add them to {base}, or drop them from "
                     f"{marker}"
                 )
-        # given_name_titles is matched against the space-joined title
-        # run, so check its WORDS rather than its entries: "grand duke"
-        # is reachable when 'grand' and 'duke' are titles, and requiring
-        # the phrase itself would make multi-word honorifics
-        # inexpressible (and silently reclassify names through the v1
-        # facade, where such entries are legal).
-        title_words = {w for e in self.given_name_titles for w in e.split()}
-        orphans = title_words - self.titles
-        if orphans:
-            raise ValueError(
-                f"every word of a given_name_titles entry must be in "
-                f"titles; not in titles: {', '.join(sorted(orphans))}. "
-                f"A word that is not a title is never read as one, so "
-                f"the entry would have no effect. Add them to titles, "
-                f"or drop the entry from given_name_titles"
-            )
+        # NOT validated: given_name_titles against titles. The lookup
+        # key is the space-joined run of Role.TITLE tokens, which is
+        # built by the parse rather than drawn from this vocabulary --
+        # it can hold multi-word entries ("chargé d'affaires" is itself
+        # a TITLES member) and conjunctions ("sir and dame", where 'and'
+        # is tagged Role.TITLE). No static relation over these sets can
+        # decide reachability, and two attempts at one each rejected
+        # working configurations. An unreachable entry here is inert:
+        # nothing consults it, nothing misparses. That is the cheap
+        # failure, and guarding it proved the expensive one.
+        #
         # The v2 form of prefixes.py's NON_FIRST_NAME_PREFIXES-disjoint-
         # from-BOUND_FIRST_NAMES assertion. That module guards its own
         # data at import; this guards vocabulary a caller supplies.
@@ -355,16 +362,36 @@ class Lexicon:
             )
         for name, value in state.items():
             object.__setattr__(self, name, value)
+        # cast is safe: __post_init__ below runs _normset over each of
+        # these and raises for anything that is not an iterable of str,
+        # so the values are only read as such once it has returned
+        given = {name: cast("Iterable[str]", state[name])
+                 for name in _VOCAB_FIELDS}
         # Re-run construction validation rather than trusting the blob.
         # The layout check above catches SHAPE skew; this catches
         # CONTENT skew, which is likelier -- particles_ambiguous flipped
         # meaning between v1's never-given set and v2's may-be-given set
         # without changing its name, so an old pickle would otherwise
-        # load a semantically inverted lexicon in silence. It also
-        # normalizes, so a hand-built state dict cannot smuggle in
-        # unnormalized entries or a plain set. Rebuilds _cap_map for
-        # free, which this used to do by hand.
+        # load a semantically inverted lexicon in silence. Rebuilds
+        # _cap_map for free, which this used to do by hand.
         self.__post_init__()
+        # __post_init__ also normalizes, and quietly accepting a
+        # rewritten value would make this a place where caller data
+        # changes without a word. A pickle this library wrote is always
+        # normalized already (_normalize converges), so a difference
+        # here means the state came from somewhere else -- say so while
+        # the offending entries can still be named.
+        drifted = sorted(
+            f"{name}: {', '.join(sorted(frozenset(given[name]) - getattr(self, name)))}"
+            for name in _VOCAB_FIELDS
+            if frozenset(given[name]) != getattr(self, name)
+        )
+        if drifted:
+            raise ValueError(
+                "incompatible Lexicon pickle: entries are not normalized "
+                f"({'; '.join(drifted)}); this state was not written by "
+                "nameparser"
+            )
 
     def __or__(self, other: Lexicon) -> Lexicon:
         if not isinstance(other, Lexicon):
