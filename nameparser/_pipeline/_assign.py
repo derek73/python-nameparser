@@ -79,8 +79,8 @@ def _name_positions(order: tuple[Role, Role, Role],
     """Roles for `count` name pieces (titles/suffixes already peeled),
     per name_order. GIVEN_FIRST: given, middles..., family.
     FAMILY_FIRST: family, given, middles... FAMILY_FIRST_GIVEN_LAST:
-    family, middles..., given. One piece takes order[0]'s role
-    (spec §5a); two pieces take order[0] and the other primary."""
+    family, middles..., given. One piece takes order[0]'s role; two
+    pieces take order[0] and the other primary."""
     first, second = order[0], order[1]
     if count == 1:
         return [first]

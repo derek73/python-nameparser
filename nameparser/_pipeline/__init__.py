@@ -1,8 +1,8 @@
 """The 2.0 parse pipeline: pure stages folded over ParseState.
 
-Stage names and ParseState are NOT public API (core spec §6). The stage
-list is data; runners other than the plain fold (explain(), parse_all())
-arrive in 2.x minors without changing any stage signature.
+Stage names and ParseState are NOT public API. The stage list is data;
+runners other than the plain fold (explain(), parse_all()) arrive in
+2.x minors without changing any stage signature.
 
 Layering: imports only nameparser._pipeline.* (enforced by
 tests/v2/test_layering.py).
@@ -20,7 +20,7 @@ from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import ParseState
 from nameparser._pipeline._tokenize import tokenize
 
-#: The full seven-stage fold (spec §6).
+#: The full seven-stage fold.
 STAGES: tuple[Callable[[ParseState], ParseState], ...] = (
     extract_delimited, tokenize, segment, classify, group, assign,
     post_rules,
@@ -29,7 +29,9 @@ STAGES: tuple[Callable[[ParseState], ParseState], ...] = (
 
 def run(state: ParseState) -> ParseState:
     """Fold the stages over the initial state. Pure: each stage returns
-    a new ParseState; content never raises (totality, spec §5a)."""
+    a new ParseState; parse is total over str input, so no stage may
+    raise on the *content* of a name (malformed policy/config is a
+    separate, allowed failure mode)."""
     for stage in STAGES:
         state = stage(state)
     return state

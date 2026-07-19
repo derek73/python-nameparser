@@ -42,11 +42,10 @@ _INITIAL = re.compile(r"^(\w\.|[A-Z])$")
 
 
 def _collapse(rendered: str) -> str:
-    """The #254 collapse, normative (core spec §5b): empty fields
-    substitute '' and every artifact of that is removed -- dangling
-    empty-nickname wrappers, space runs, space-before-comma, one
-    trailing comma character (any script), leading/trailing ', '
-    debris."""
+    """The #254 collapse: empty fields substitute '' and every artifact
+    of that is removed -- dangling empty-nickname wrappers, space runs,
+    space-before-comma, one trailing comma character (any script),
+    leading/trailing ', ' debris."""
     rendered = (rendered.replace(" ()", "")
                         .replace(" ''", "")
                         .replace(' ""', ""))
@@ -136,7 +135,7 @@ def _cap_text(text: str, role: Role, lex: Lexicon) -> str:
 def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
                 force: bool) -> ParsedName:
     """Case-fixing transform -> new ParsedName, same spans, new token
-    texts (core spec §5b). Gate (v1 parity): only single-case input is
+    texts. Gate (v1 parity): only single-case input is
     touched unless force=True; the gate reads the joined token texts
     (not render() output -- the case gate stays decoupled from spec
     formatting and the #254 collapse).

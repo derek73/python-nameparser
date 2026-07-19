@@ -66,8 +66,8 @@ class Span(NamedTuple):
     def __add__(self, other: object) -> NoReturn:  # type: ignore[override]
         # Inherited tuple + would concatenate two spans into a 4-tuple.
         # There is deliberately NO covering-span operation: grouping is
-        # index-run based (spec §6, the anti-#100 invariant) and never
-        # merges spans.
+        # index-run based (the anti-#100 invariant: never resolve by
+        # joining text back together) and never merges spans.
         raise TypeError(
             "Span does not support +; tuple concatenation is not a "
             "covering span"
@@ -530,9 +530,10 @@ class ParsedName:
         return self.comparison_key() == other.comparison_key()
 
     # -- rendering delegates ----------------------------------------------
-    # One-line delegation to nameparser._render (core spec §5b): parsing
-    # code physically cannot import formatting logic, so these import at
-    # call time -- module level stays internal-import-free.
+    # One-line delegation to nameparser._render: parsing code physically
+    # cannot import formatting logic (layering rule, enforced by
+    # tests/v2/test_layering.py), so these import at call time -- module
+    # level stays internal-import-free.
 
     def render(self, spec: str = "{title} {given} {middle} {family} {suffix}") -> str:
         """Fill the str.format spec from the seven role fields and the
@@ -544,8 +545,8 @@ class ParsedName:
     def initials(self, spec: str = "{given} {middle} {family}",
                  delimiter: str = ".", separator: str = " ") -> str:
         """Initials per group; v1's initials_format/_delimiter/_separator
-        become call-site arguments (core spec §5b). Valid spec keys:
-        given, middle, family."""
+        become call-site arguments instead of Config-wide settings.
+        Valid spec keys: given, middle, family."""
         import nameparser._render as _render
         return _render.initials(self, spec, delimiter, separator)
 

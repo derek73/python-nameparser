@@ -15,7 +15,8 @@ Decision (v1 parity): >=1 comma and every post-first segment entirely
 lenient-suffix AND >1 word before the first comma -> SUFFIX_COMMA;
 otherwise FAMILY_COMMA ("Family, Given ..."), with segments beyond the
 second that are not lenient-suffix flagged COMMA_STRUCTURE (they are
-still best-effort consumed as suffixes by assign, spec §5a).
+still best-effort consumed as suffixes by assign, since parse must
+stay total over str input and never raise on content).
 """
 from __future__ import annotations
 

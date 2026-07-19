@@ -6,10 +6,10 @@ Produces: tokens (span-sorted WorkTokens; text always == original
 slice), comma_offsets (segmentation points; never tokens).
 Reads: Policy.strip_emoji, Policy.strip_bidi.
 
-There is NO text-rewriting normalize stage (core spec §6): whitespace
-collapsing and emoji/bidi stripping are character-classification rules
-here -- ignorable characters act as separators and never enter a token,
-so spans always index the original exactly as given.
+There is NO text-rewriting normalize stage: whitespace collapsing and
+emoji/bidi stripping are character-classification rules here --
+ignorable characters act as separators and never enter a token, so
+spans always index the original exactly as given.
 
 v1's squash_emoji/squash_bidi REMOVED the char and joined neighbors
 ('A\U0001f600B' -> 'AB'); here an ignorable char is a SEPARATOR
