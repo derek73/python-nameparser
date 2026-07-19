@@ -673,7 +673,19 @@ class HumanName:
         tokens: list[Token] = []
         for member in _MEMBERS:
             role = Role(_V2_FIELD.get(member, member))
-            for entry in state.get(f"{member}_list") or []:
+            entries = state.get(f"{member}_list") or []
+            # A bare str is iterable, so without this the loop below
+            # would split its CHARACTERS and build a plausible-looking
+            # wrong name ("John" -> first "J o h n"). v1 stored lists,
+            # so this only guards foreign or hand-built state -- but it
+            # fails at the load site instead of much later.
+            if isinstance(entries, str):
+                raise TypeError(
+                    f"{member}_list must be a list of strings, not a str "
+                    f"({entries!r}); this pickle was not written by "
+                    f"nameparser"
+                )
+            for entry in entries:
                 for position, word in enumerate(entry.split()):
                     tokens.append(Token(
                         word, None, role,

@@ -949,8 +949,8 @@ class Constants:
         titles = frozenset(self.titles)
         particles = frozenset(self.prefixes)
         bound = frozenset(self.bound_first_names)
-        # keep in sync with _lexicon._default_lexicon() (pinned by the
-        # default-Constants equality test in tests/v2/test_config_shim.py)
+        # keep in sync with _lexicon._default_lexicon() (pinned by
+        # tests/v2/test_config_shim.py::test_snapshot_field_translation)
         lexicon = Lexicon(
             titles=titles,
             # Drop only the entries v1 could never reach. v1 looks

@@ -151,6 +151,14 @@ patch: every field defaults to :data:`~nameparser.UNSET` (leave it
 alone) instead of to a concrete value, so a pack only ever states what
 it changes.
 
+The ``policy`` half works that way, but the ``lexicon`` half does not.
+A pack's :class:`~nameparser.Lexicon` is a complete value in its own
+right and is validated on its own, before it is unioned onto the base
+— so a fragment that marks a word must also carry the word it marks.
+To make an existing base title precede the given name, restate the
+title in the fragment rather than listing it in ``given_name_titles``
+alone. Both shipped packs are policy-only, so neither hits this.
+
 .. doctest::
 
     >>> from nameparser import Lexicon, Locale, PolicyPatch, parser_for

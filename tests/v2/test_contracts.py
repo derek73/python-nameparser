@@ -66,3 +66,19 @@ def test_every_stable_tag_has_a_trigger(tag: str) -> None:
     pn = parse(text)
     tagged = next(t for t in pn.tokens if t.text == token_text)
     assert tag in tagged.tags
+
+
+def test_every_guarded_config_module_is_imported() -> None:
+    """Import-time asserts only run if the module is imported.
+
+    Five of the seven guarded config modules are pulled in by ``import
+    nameparser``, but ``maiden_markers`` is lazy (imported inside
+    ``_snapshot``/``_default_lexicon``), so its guard fired only
+    incidentally, whenever some other test happened to build a default
+    Lexicon. Importing them all here makes every guard unconditional.
+    """
+    import importlib
+
+    for name in ("titles", "suffixes", "prefixes", "bound_first_names",
+                 "conjunctions", "maiden_markers", "capitalization"):
+        importlib.import_module(f"nameparser.config.{name}")

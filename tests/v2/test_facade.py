@@ -307,6 +307,33 @@ def test_pickle_round_trip_preserves_components() -> None:
     assert loaded.C is CONSTANTS             # shared sentinel restored
 
 
+def test_setstate_rejects_a_bare_string_component_list() -> None:
+    # a genuine v1 pickle stores lists, but __setstate__ reads foreign
+    # state: a bare str is iterable, so entry.split() over its
+    # CHARACTERS silently produced a plausible-looking wrong name
+    # ("John" -> first "J o h n") instead of failing at the load site
+    n = HumanName("John Smith")
+    state = n.__getstate__()
+    state["first_list"] = "John"
+    loaded = HumanName.__new__(HumanName)
+    with pytest.raises(TypeError, match="first_list"):
+        loaded.__setstate__(state)
+
+
+def test_setstate_restores_a_foreign_multi_word_suffix_entry() -> None:
+    # the parametrized round-trip tests above go through v2's own
+    # __getstate__, which is self-consistent by construction. The case
+    # the fix actually protects is a 1.4-produced blob carrying a
+    # multi-word suffix entry, so build that state directly.
+    n = HumanName("John Smith")
+    state = n.__getstate__()
+    state["suffix_list"] = ["Ph. D."]
+    loaded = HumanName.__new__(HumanName)
+    loaded.__setstate__(state)
+    assert loaded.suffix_list == ["Ph. D."]
+    assert loaded.suffix == "Ph. D."
+
+
 #: Every name in the 486-name differential corpus whose HumanName pickle
 #: round-trip drifted before the __setstate__ element-boundary fix. Each
 #: carries a multi-word suffix entry -- a "joined" continuation token --
