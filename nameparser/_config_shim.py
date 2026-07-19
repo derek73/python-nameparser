@@ -978,7 +978,18 @@ class Constants:
             # bound_first_names, but nothing stops a caller adding one at
             # runtime, and v1 then lets the bound rule win (leading "dos
             # Santos Silva" parses first="dos Santos"). Treating such a
-            # word as may-be-given reproduces that instead of raising.
+            # word as may-be-given reproduces that rather than raising.
+            #
+            # KNOWN DEVIATION, pinned by
+            # test_bound_never_given_prefix_deviates_on_two_pieces: v1's
+            # join has a reserve_last guard, so with only two pieces it
+            # does NOT fire and the word stays never-given ("dos Santos"
+            # -> last="dos Santos"). Promotion here is unconditional, so
+            # that case reads given="dos", family="Santos". v1's rule is
+            # piece-count dependent and a static vocabulary set cannot
+            # express it; the alternative is raising on a config v1
+            # accepted, which is worse. Only reachable via a runtime
+            # config the shipped data forbids.
             particles_ambiguous=(
                 particles - frozenset(self.non_first_name_prefixes))
             | (bound & particles),

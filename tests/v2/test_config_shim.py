@@ -371,6 +371,20 @@ def test_snapshot_drops_an_unreachable_first_name_title() -> None:
     assert HumanName("zzqnotatitle John Smith", constants=c).title == ""
 
 
+def test_bound_never_given_prefix_deviates_on_two_pieces() -> None:
+    # Pinned DEVIATION, not parity. v1's bound-given join has a
+    # reserve_last guard, so with only two pieces it does not fire and
+    # the word stays never-given: 1.4.0 gives first='', last='dos
+    # Santos'. The shim promotes such a word to may-be-given
+    # unconditionally, because v1's rule is piece-count dependent and a
+    # static vocabulary set cannot express that. Three-piece parity is
+    # the case that matters and is covered below; this records the cost.
+    c = Constants()
+    c.bound_first_names.add("dos")
+    name = HumanName("dos Santos", constants=c)
+    assert (name.first, name.last) == ("dos", "Santos")
+
+
 def test_snapshot_keeps_a_bound_never_given_prefix_parseable() -> None:
     # prefixes.py asserts its own data keeps non_first_name_prefixes
     # disjoint from bound_first_names, but nothing stops a v1 caller
