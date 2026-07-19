@@ -170,6 +170,12 @@ Looking for v1's ``string_format``? It's the ``render(spec)`` argument
 now — pass your own format string per call instead of setting it once
 on a shared config object.
 
+A spec chooses what the output is *for*. The default is written for
+display and does not survive a reparse — it parenthesizes the maiden
+name, which reads back as a nickname. When the rendered string will be
+parsed again, spell the marker out (``née {maiden}``) so the field
+round-trips; see :ref:`the round-trip note in the tour <maiden-roundtrip>`.
+
 Sharing a configured parser
 ----------------------------
 

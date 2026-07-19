@@ -78,6 +78,33 @@ family name:
     >>> str(parse("Jane (Janie) Smith née Jones"))
     'Jane "Janie" Smith (Jones)'
 
+.. _maiden-roundtrip:
+
+That default is built for display, and the two fields differ in what
+survives it. The quoted nickname reparses as a nickname; the
+parenthesized maiden name reparses as a *nickname* too, so a
+parse-render-reparse round trip silently loses it:
+
+.. doctest::
+
+    >>> parse('Jane "Janie" Smith (Jones)').maiden
+    ''
+    >>> parse('Jane "Janie" Smith (Jones)').nickname
+    'Janie Jones'
+
+If the rendered string has to survive a reparse — storing names as text
+and reading them back, for instance — render the marker explicitly
+instead of relying on the default:
+
+.. doctest::
+
+    >>> name = parse("Jane Smith née Jones")
+    >>> text = name.render("{given} {family} née {maiden}")
+    >>> text
+    'Jane Smith née Jones'
+    >>> parse(text).maiden
+    'Jones'
+
 Comparing names
 ----------------
 

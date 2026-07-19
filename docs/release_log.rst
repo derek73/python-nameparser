@@ -83,9 +83,10 @@ Release Log
 
     Parsing changes were checked against a 486-name differential corpus
     built from the v1 test banks; everything not listed above parses
-    identically between 1.4.0 and 2.0. The harness ships in
-    ``tools/differential/`` -- see its README to reproduce the
-    comparison against your own names.
+    identically between 1.4.0 and 2.0. The harness lives in
+    ``tools/differential/`` in the source repository (it is development
+    tooling, not part of the installed package) -- see its README to
+    reproduce the comparison against your own names.
 
 * 1.4.0 - July 12, 2026
 
