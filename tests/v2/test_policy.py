@@ -165,6 +165,22 @@ def test_extra_suffix_delimiters_validated_and_coerced() -> None:
     assert isinstance(hash(p), int)
 
 
+def test_non_iterable_fields_name_the_offending_field() -> None:
+    # Non-iterables (an int, a bool) used to fall through to tuple()/
+    # frozenset() and surface as a bare "'int' object is not iterable",
+    # with no hint which field was wrong -- unlike patronymic_rules,
+    # which has always named itself. Every iterable-typed Policy field
+    # gets the same treatment.
+    with pytest.raises(TypeError, match="name_order"):
+        Policy(name_order=5)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="nickname_delimiters"):
+        Policy(nickname_delimiters=5)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="maiden_delimiters"):
+        Policy(maiden_delimiters=5)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="extra_suffix_delimiters"):
+        Policy(extra_suffix_delimiters=5)  # type: ignore[arg-type]
+
+
 def test_policy_patch_mirrors_policy_field_names() -> None:
     policy_fields = {f.name for f in dataclasses.fields(Policy)}
     patch_fields = {f.name for f in dataclasses.fields(PolicyPatch)}

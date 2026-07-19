@@ -6,8 +6,10 @@ tests/v2/test_layering.py).
 from __future__ import annotations
 
 import dataclasses
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import Enum, StrEnum, auto
+from typing import Any
 
 from nameparser._types import Role, _guarded_getstate, _guarded_setstate
 
@@ -87,6 +89,20 @@ def _reject_bare_string_order(value: object) -> None:
         )
 
 
+def _require_iterable(value: Iterable[Any], field_name: str) -> Iterable[Any]:
+    # Probe with iter() so a non-iterable value (an int, a bool, ...)
+    # raises a message naming the field, matching the treatment
+    # patronymic_rules already gets, instead of a bare "'int' object is
+    # not iterable" surfacing from whatever tuple()/frozenset() call
+    # happens to run first.
+    try:
+        return iter(value)
+    except TypeError:
+        raise TypeError(
+            f"{field_name} must be an iterable, got {value!r}"
+        ) from None
+
+
 @dataclass(frozen=True, slots=True)
 class Policy:
     """The behavior switches a parser runs with: name order,
@@ -153,7 +169,7 @@ class Policy:
 
     def __post_init__(self) -> None:
         _reject_bare_string_order(self.name_order)
-        order = tuple(self.name_order)
+        order = tuple(_require_iterable(self.name_order, "name_order"))
         for element in order:
             if not isinstance(element, Role):
                 raise TypeError(
@@ -203,7 +219,7 @@ class Policy:
                 ) from None
         object.__setattr__(self, "patronymic_rules", frozenset(rules))
         for pairs_name in ("nickname_delimiters", "maiden_delimiters"):
-            pairs = tuple(getattr(self, pairs_name))
+            pairs = tuple(_require_iterable(getattr(self, pairs_name), pairs_name))
             for pair in pairs:
                 if (not isinstance(pair, tuple) or len(pair) != 2
                         or not all(isinstance(s, str) for s in pair)):
@@ -232,7 +248,8 @@ class Policy:
                 f"extra_suffix_delimiters must be an iterable of strings, "
                 f"not a bare string: {self.extra_suffix_delimiters!r}"
             )
-        delimiters = tuple(self.extra_suffix_delimiters)
+        delimiters = tuple(_require_iterable(
+            self.extra_suffix_delimiters, "extra_suffix_delimiters"))
         for d in delimiters:
             if not isinstance(d, str):
                 raise TypeError(

@@ -69,6 +69,21 @@ def test_lexicon_rejects_non_str_vocab_entries() -> None:
         Lexicon(titles={"Dr.", 42})  # type: ignore[arg-type]
 
 
+def test_lexicon_rejects_non_iterable_vocab_field() -> None:
+    # A non-iterable (an int) used to fall through to tuple(entries)
+    # and surface as a bare "'int' object is not iterable" with no
+    # hint which field was wrong.
+    with pytest.raises(TypeError, match="titles.*iterable"):
+        Lexicon(titles=5)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="titles.*iterable"):
+        Lexicon.empty().add(titles=5)  # type: ignore[arg-type]
+
+
+def test_capitalization_exceptions_rejects_non_iterable() -> None:
+    with pytest.raises(TypeError, match="capitalization_exceptions"):
+        Lexicon(capitalization_exceptions=5)  # type: ignore[arg-type]
+
+
 def test_entries_normalizing_to_empty_raise() -> None:
     # "." or "" is a data bug (stray split artifact, empty CSV cell);
     # dropping it silently would also let a future data-module typo

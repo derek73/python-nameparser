@@ -59,7 +59,13 @@ def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
             f"Lexicon.{field_name} must be an iterable of strings, not a "
             f"mapping (only capitalization_exceptions holds key->value pairs)"
         )
-    items = tuple(entries)  # materialize once; entries may be a generator
+    try:
+        items = tuple(entries)  # materialize once; entries may be a generator
+    except TypeError:
+        raise TypeError(
+            f"Lexicon.{field_name} must be an iterable of strings, "
+            f"got {entries!r}"
+        ) from None
     normalized = set()
     for w in items:
         if not isinstance(w, str):
@@ -93,6 +99,13 @@ def _normpairs(
             "iterable of (key, value) pairs, not a bare string"
         )
     pairs = raw.items() if isinstance(raw, Mapping) else raw
+    try:
+        pairs = iter(pairs)
+    except TypeError:
+        raise TypeError(
+            "capitalization_exceptions must be a mapping or an "
+            f"iterable of (key, value) pairs, got {raw!r}"
+        ) from None
     deduped: dict[str, str] = {}
     for entry in pairs:
         # A 2-char str entry would unpack "ab" into ("a", "b")
