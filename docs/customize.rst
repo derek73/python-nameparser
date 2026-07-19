@@ -11,6 +11,9 @@ why the split is drawn there.
 Vocabulary: Lexicon
 --------------------
 
+Adding and removing words
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. doctest::
 
     >>> from nameparser import Lexicon, Parser
@@ -40,8 +43,12 @@ appear in the base field too, so add to both and remove from the marker
 first; anything else raises ``ValueError`` naming the orphans rather
 than leaving a marker entry that no rule will ever consult.
 
-That matters most when clearing a field wholesale. Emptying ``titles``
-alone orphans every ``given_name_titles`` entry, so both go together:
+Turning title detection off
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The subset rule matters most when clearing a field wholesale. Emptying
+``titles`` alone orphans every ``given_name_titles`` entry, so the two
+go together:
 
 .. doctest::
 
@@ -64,6 +71,9 @@ ranks and abbreviations work (see :ref:`abbreviated-titles`):
     >>> bare.parse("Dr. John Smith").title            # structural, stays
     'Dr.'
 
+Combining two lexicons
+~~~~~~~~~~~~~~~~~~~~~~~
+
 Whole lexicons compose with ``|``, which unions field by field — handy
 for keeping a shared house vocabulary separate from a per-source one
 and combining them at parser construction:
@@ -74,6 +84,9 @@ and combining them at parser construction:
     >>> per_source = Lexicon.empty().add(titles={"provost"})
     >>> sorted((house | per_source).titles)
     ['dean', 'provost']
+
+Fixing the case of a particular word
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``capitalization_exceptions`` is the one pair-valued field — each entry
 maps a lowercase key to its exact-cased replacement (``"phd"`` →
@@ -103,6 +116,9 @@ The key is matched against the token with punctuation normalized away,
 not against the raw text, so one ``"phd"`` entry covers ``"phd"``,
 ``"Phd"``, and ``"Ph.D."`` alike — you don't need a separate key for
 each way a source might punctuate it.
+
+Words that are also ordinary names
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Two fields — ``suffix_acronyms_ambiguous`` and ``particles_ambiguous``
 — mark entries from ``suffix_acronyms`` and ``particles`` that are also
@@ -244,6 +260,9 @@ listed below.
      - Excludes bidirectional control characters the same way.
        Defaults to ``True``.
 
+Family-first name order
+~~~~~~~~~~~~~~~~~~~~~~~~
+
 ``name_order`` is the one most likely to matter for non-Western data.
 Positional input is assigned in the order you declare, so a
 family-first name parses as written instead of needing to be
@@ -268,6 +287,14 @@ family-then-given regardless of the configured order:
     >>> family_first.parse("Thomas, John").family
     'Thomas'
 
+Nicknames, maiden names, and brackets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A delimiter pair routes to exactly one field, and ``maiden_delimiters``
+states the more specific intent — so listing a pair there drops it from
+the effective ``nickname_delimiters`` set automatically, and the
+one-liner is the whole recipe:
+
 .. doctest::
 
     >>> policy = Policy(maiden_delimiters={("(", ")")})
@@ -288,6 +315,9 @@ instead of extending them, the same trap as ``capitalization_exceptions``:
     >>> Parser(policy=policy).parse("Benjamin {Ben} Franklin").nickname
     'Ben'
 
+Suffixes not separated by commas
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ``extra_suffix_delimiters`` handles sources that separate post-nominals
 with something other than a comma. The default reading of such a name
 is bad enough to be the reason you'd go looking:
@@ -301,6 +331,9 @@ is bad enough to be the reason you'd go looking:
     >>> name = Parser(policy=policy).parse("Jane Smith, RN - CRNA")
     >>> name.given, name.family, name.suffix
     ('Jane', 'Smith', 'RN, CRNA')
+
+Keeping emoji and control characters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The strip flags keep characters the parser removes by default. Note
 what happens to an emoji you keep — it becomes a token like any other,
@@ -317,13 +350,6 @@ and lands in the middle name:
 ``strip_bidi=False`` does the same for invisible bidirectional control
 characters, which is occasionally what you want when round-tripping
 right-to-left text verbatim.
-
-A pair routes to exactly one field, and ``maiden_delimiters`` states
-the specific intent — so listing a pair there automatically drops it
-from the effective ``nickname_delimiters`` set, and the one-liner
-above is the whole recipe. To *add* delimiters instead of rerouting
-them, build on the named default:
-``nickname_delimiters=DEFAULT_NICKNAME_DELIMITERS | {("[", "]")}``.
 
 .. _rendering-arguments:
 
