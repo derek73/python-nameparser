@@ -33,19 +33,23 @@ Input shapes
 
 Three arrangements are understood, and every piece of each is optional:
 
-1. ``Title First Middle Middle Last Suffix``
-2. ``Last, Title First Middle Middle[,] Suffix [, Suffix]``
-3. ``Title First Middle Last [,] Suffix [, Suffix]``
+1. ``Title Given "Nickname" Middle Middle Family Suffix``
+2. ``Family [Suffix], Title Given (Nickname) Middle Middle[,] Suffix [, Suffix]``
+3. ``Title Given Middle Family [Suffix], Suffix [, Suffix]``
 
-A comma before the given name is the signal for family-first order, so
-the second form needs no configuration:
+The last two differ in what the comma is doing. In form 2 it separates
+the family name from the rest, so the family name comes first; in form
+3 it only sets off suffixes, and the name before it is still
+given-then-family:
 
 .. doctest::
 
-    >>> parse("de la Vega, Juan Q. Xavier III").family
+    >>> parse("de la Vega, Juan Q. Xavier III").family   # form 2
     'de la Vega'
-    >>> parse("Doe Jr., John").suffix
+    >>> parse("Doe Jr., John").suffix                    # form 2, suffix before the comma
     'Jr.'
+    >>> parse("John Doe, Jr.").family                    # form 3
+    'Doe'
 
 For family-first input *without* a comma — common outside Europe — set
 ``name_order``; see :doc:`customize`.
