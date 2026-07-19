@@ -391,6 +391,11 @@ SUFFIX_ACRONYMS = {
     'emt-p',
     'enp',
     'erd',
+    # Also in SUFFIX_NOT_ACRONYMS, and NOT redundant: the word test
+    # strips only edge periods while the acronym test strips all of
+    # them, so the multi-dot spelling "E.S.Q." matches only here while
+    # bare "Esq" matches only there.
+    'esq',
     'evp',
     'faafp',
     'faan',
@@ -718,9 +723,18 @@ when matching against these pieces.
 # construction, which is what protects a caller's own vocabulary.
 assert SUFFIX_ACRONYMS_AMBIGUOUS <= SUFFIX_ACRONYMS, \
     "SUFFIX_ACRONYMS_AMBIGUOUS must stay a subset of SUFFIX_ACRONYMS"
-assert not (SUFFIX_ACRONYMS & SUFFIX_NOT_ACRONYMS), \
-    "a suffix is an acronym or a word, not both: " \
-    f"{sorted(SUFFIX_ACRONYMS & SUFFIX_NOT_ACRONYMS)}"
+# NOT asserted: disjointness of SUFFIX_ACRONYMS and SUFFIX_NOT_ACRONYMS.
+# The two sets are matched with different normalization -- the word test
+# strips only edge periods, the acronym test strips all of them -- so an
+# entry in both is covering two spellings, not duplicated. 'esq' matches
+# "Esq" only as a word and "E.S.Q." only as an acronym.
+# DO assert that an ambiguous acronym is not also a plain suffix word:
+# suffix_as_written ORs the two branches, so the word membership would
+# bypass the period gate the ambiguous set exists to impose.
+assert not (SUFFIX_ACRONYMS_AMBIGUOUS & SUFFIX_NOT_ACRONYMS), \
+    "an ambiguous acronym must not also be a suffix word (the word " \
+    "branch bypasses its period gate): " \
+    f"{sorted(SUFFIX_ACRONYMS_AMBIGUOUS & SUFFIX_NOT_ACRONYMS)}"
 # Entries are looked up in normalized form, so a stray capital or a
 # trailing space makes an entry unreachable by direct membership test even
 # though the parser's own ingest would paper over it.

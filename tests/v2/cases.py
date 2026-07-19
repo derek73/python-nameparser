@@ -67,6 +67,13 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith", "suffix": "Esq"},
          notes="the suffix_words branch of the delimited-content "
                "escape (v1 parity, pinned live 2026-07-17)"),
+    Case("suffix_acronym_multidot_spelling", "John Smith E.S.Q.",
+         {"given": "John", "family": "Smith", "suffix": "E.S.Q."},
+         notes="'esq' is in BOTH suffix_acronyms and suffix_words on "
+               "purpose, and the two are not redundant: the word test "
+               "strips only EDGE periods, the acronym test strips all "
+               "of them, so only the acronym membership matches the "
+               "multi-dot spelling (v1 parity, pinned live 2026-07-19)"),
     Case("bound_given_whole_segment", "salem, abdul salam",
          {"given": "abdul salam", "family": "salem"},
          notes="v1 joins bound given names freely in the post-comma "
