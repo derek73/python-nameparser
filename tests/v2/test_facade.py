@@ -307,6 +307,39 @@ def test_pickle_round_trip_preserves_components() -> None:
     assert loaded.C is CONSTANTS             # shared sentinel restored
 
 
+#: Every name in the 486-name differential corpus whose HumanName pickle
+#: round-trip drifted before the __setstate__ element-boundary fix. Each
+#: carries a multi-word suffix entry -- a "joined" continuation token --
+#: inside one comma segment. Verified against a live 1.4.0: all eight
+#: round-trip unchanged there, so drift here is a regression, not an
+#: inherited quirk.
+_MULTIWORD_SUFFIX_NAMES = [
+    "Andrew Perkins, Jr., Col. (Ret)",
+    "Clarke, Kenneth, Q.C. M.P.",
+    "Doe, John, MD PhD - FACS Fellow",
+    "Franklin Washington, Jr. MD",
+    "John Smith Ph. D.",
+    "John Smith, Ph. D.",
+    "John Smith, V Jr.",
+    "John Smith, V MD",
+]
+
+
+@pytest.mark.parametrize("raw", _MULTIWORD_SUFFIX_NAMES)
+def test_pickle_round_trip_preserves_multiword_suffix_entries(raw: str) -> None:
+    # __setstate__ restores components from the pickled *_list values.
+    # Joining them into one string and letting replace() re-split on
+    # whitespace destroys the entry boundaries, and the suffix view's
+    # ", " join then renders one credential as two ("Ph." + "D." ->
+    # "Ph., D."). Entries must survive as entries.
+    n = HumanName(raw)
+    loaded = pickle.loads(pickle.dumps(n))
+    assert loaded.suffix_list == n.suffix_list
+    assert loaded.suffix == n.suffix
+    assert str(loaded) == str(n)
+    assert loaded.as_dict() == n.as_dict()
+
+
 # -- Gap 2: parse_full_name() (v1's documented re-parse idiom) -------------
 
 

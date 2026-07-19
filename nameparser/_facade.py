@@ -31,7 +31,7 @@ import nameparser._render as _render
 from nameparser._config_shim import CONSTANTS, Constants, _cached_parser
 from nameparser._lexicon import _normalize
 from nameparser._parser import Parser
-from nameparser._types import FOLDED_TAG, ParsedName, Role
+from nameparser._types import FOLDED_TAG, ParsedName, Role, Token
 
 _V2_FIELD = {"first": "given", "last": "family"}  # v1 name -> v2 name
 _V1_SPELLING = {v2: v1 for v1, v2 in _V2_FIELD.items()}
@@ -662,18 +662,21 @@ class HumanName:
         self._suffix_delimiter = state.get("suffix_delimiter",
                                            defaults.suffix_delimiter)
         self._full_name = state.get("_full_name", "")
-        # components come back exactly as pickled (spec §2): synthetic
-        # tokens via replace(), never a re-parse. Known edge: replace()
-        # re-splits on whitespace without the "joined" tag, so joined-tag
-        # healing is lost for multi-word list elements -- v1's fix_phd
-        # suffix pickles as ["Ph. D."] but round-trips to ["Ph.", "D."],
-        # rendering the suffix as "Ph., D.". Classify in the differential
-        # harness / M12 if it surfaces.
-        parsed = ParsedName(original=str(state.get("original", "")),
-                            tokens=(), ambiguities=())
-        fields = {}
+        # Components come back exactly as pickled (spec §2): synthetic
+        # tokens, never a re-parse. Build them per *_list ENTRY rather
+        # than from one joined string -- an entry may hold several words
+        # ("Ph. D.", "Q.C. M.P."), and re-splitting the joined string on
+        # whitespace would promote each word to its own entry, which the
+        # suffix view then renders comma-separated ("Ph., D."). Marking
+        # continuation words "joined" is the inverse of _list_for's heal,
+        # so list -> pickle -> list is the identity v1 gave us.
+        tokens: list[Token] = []
         for member in _MEMBERS:
-            values = state.get(f"{member}_list") or []
-            fields[_V2_FIELD.get(member, member)] = " ".join(values)
-        self._parsed = parsed.replace(
-            **{k: v for k, v in fields.items() if v})
+            role = Role(_V2_FIELD.get(member, member))
+            for entry in state.get(f"{member}_list") or []:
+                for position, word in enumerate(entry.split()):
+                    tokens.append(Token(
+                        word, None, role,
+                        frozenset({"joined"}) if position else frozenset()))
+        self._parsed = ParsedName(
+            original=str(state.get("original", "")), tokens=tuple(tokens))
