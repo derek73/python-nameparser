@@ -110,10 +110,12 @@ Attribute map
      - Moves from a ``HumanName``/``Constants`` scalar to a ``Policy``
        set field, so more than one custom delimiter can be active at
        once
-   * - ``capitalize()``, ``force_mixed_case_capitalization``
-     - ``capitalized(lexicon, force=...)``
+   * - ``capitalize(force=...)``
+     - ``capitalized(force=...)``
      - :meth:`~nameparser.ParsedName.capitalized` returns a new value
-       rather than mutating in place
+       rather than mutating in place. Its optional first argument takes
+       a :class:`~nameparser.Lexicon`, if you need custom
+       capitalization exceptions
 
 Side by side:
 
@@ -214,7 +216,9 @@ rendering argument, where the 2.0 equivalent isn't config at all):
      - ``regexes.emoji = False`` becomes ``Policy(strip_emoji=False)``
    * - ``force_mixed_case_capitalization``
      - ``capitalized(force=True)``
-     - Moves from stored config to a per-call argument
+     - The stored default is gone; pass ``force`` at the call site.
+       v1's ``capitalize(force=True)`` already worked that way — this
+       constant only supplied the default for calls that omitted it
    * - ``capitalize_name``
      - *(no equivalent)*
      - 2.0 never capitalizes automatically during ``parse()``; call
