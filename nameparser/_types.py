@@ -258,8 +258,10 @@ class Ambiguity:
     kind: AmbiguityKind
     #: Human-readable specifics of this occurrence (wording unstable).
     detail: str
-    #: The tokens involved -- always a subset of the owning
-    #: ParsedName's tokens; may be empty (e.g. unbalanced-delimiter).
+    #: The tokens involved -- always a value-equal subset of the owning
+    #: ParsedName's tokens (checked with ==, not identity: two distinct
+    #: Token instances with identical text/span/role/tags satisfy this);
+    #: may be empty (e.g. unbalanced-delimiter).
     tokens: tuple[Token, ...]
 
     # in the class body so @dataclass(slots=True) keeps them
@@ -299,10 +301,10 @@ class ParsedName:
     :meth:`render`, :meth:`initials`, :meth:`capitalized`, or ``str()``.
 
     Constructor-enforced invariants: spans ascending, non-overlapping,
-    in bounds of `original`; every Ambiguity's tokens are a subset of
-    `tokens`. Provenance semantics (text == original[span] for
-    parser-produced names) are documented, not enforced -- transforms
-    like replace() legitimately break them.
+    in bounds of `original`; every Ambiguity's tokens are a value-equal
+    subset of `tokens` (see Ambiguity.tokens). Provenance semantics
+    (text == original[span] for parser-produced names) are documented,
+    not enforced -- transforms like replace() legitimately break them.
     """
 
     #: The input string exactly as passed to parse().
@@ -354,6 +356,9 @@ class ParsedName:
             prev_end = tok.span.end
         for amb in self.ambiguities:
             for tok in amb.tokens:
+                # `in` uses Token's value equality, not identity: this
+                # only guarantees a value-equal token exists in
+                # self.tokens, not that `tok` IS one of those objects.
                 if tok not in self.tokens:
                     raise ValueError(
                         f"Ambiguity token {tok.text!r} is not a subset of "
