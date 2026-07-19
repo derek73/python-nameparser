@@ -26,7 +26,6 @@ REGEXES = {
     "double_quotes": re.compile(r'\"(.*?)\"'),
     "parenthesis": re.compile(r'\((.*?)\)'),
     "roman_numeral": re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I),
-    "no_vowels": re.compile(r'^[^aeyiuo]+$', re.I),
     "period_not_at_end": re.compile(r'.*\..+$', re.I),
     "emoji": re_emoji,
     "bidi": re_bidi,
