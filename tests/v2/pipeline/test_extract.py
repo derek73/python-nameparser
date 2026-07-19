@@ -1,5 +1,8 @@
 import dataclasses
 
+import pytest
+
+from nameparser import parse
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._state import ParseState
@@ -179,3 +182,37 @@ def test_nested_delimiters_inner_scan_order_pins() -> None:
     # flow into the extracted span verbatim -- v1 parity, deliberate
     out = extract_delimited(_state('John ("Jack") Kim'))
     assert out.extracted == ((Role.NICKNAME, Span(6, 12)),)
+
+
+@pytest.mark.parametrize(("text", "char"), [
+    ("John Smith)", ")"),
+    ("John Jack) Smith", ")"),
+    ('John Smith"', '"'),
+    ("John Smith」", "」"),          # a #273 typographic pair
+])
+def test_unmatched_close_is_reported(text: str, char: str) -> None:
+    # the scan is opener-driven, so a close with no open to its left was
+    # never in its search space and went unreported -- even though the
+    # AmbiguityKind docstring promises "or closed without opening"
+    kinds = [a.kind for a in parse(text).ambiguities]
+    assert kinds == [AmbiguityKind.UNBALANCED_DELIMITER]
+    assert char in parse(text).ambiguities[0].detail
+
+
+@pytest.mark.parametrize("text", [
+    "Brian O'connor",       # apostrophe mid-word, not a delimiter
+    "O'B. John Smith",
+    "The Queen's Bench",
+    "John (Jack) Smith",    # matched pair
+    'John "Jack" Smith',
+])
+def test_no_spurious_unmatched_close(text: str) -> None:
+    assert [a for a in parse(text).ambiguities
+            if a.kind is AmbiguityKind.UNBALANCED_DELIMITER] == []
+
+
+def test_unmatched_open_is_not_double_reported_as_a_close() -> None:
+    # a symmetric delimiter can satisfy both boundary tests; it must
+    # still produce exactly one ambiguity
+    assert len(parse('John " Smith').ambiguities) == 1
+    assert len(parse('Jon "Nick Smith').ambiguities) == 1

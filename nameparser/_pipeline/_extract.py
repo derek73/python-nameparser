@@ -174,9 +174,30 @@ def extract_delimited(state: ParseState) -> ParseState:
     # An unmatched-open candidate whose character was consumed by a
     # later successful match (the bulk pass above runs ahead of the
     # main scan) is literal content there, not a dangling delimiter.
-    ambiguities = tuple(
+    reported = {offset for offset, _ in unbalanced}
+    ambiguities = [
         a for offset, a in unbalanced
-        if not _overlaps(Span(offset, offset + 1), masked))
+        if not _overlaps(Span(offset, offset + 1), masked)]
+    # The scan above is opener-driven: it searches for an open and then
+    # looks rightward for its close, so a close with no open to its
+    # LEFT is never in its search space. Sweep for those separately --
+    # they signal the same malformed input, and the kind's contract has
+    # always covered them ("opened without closing, or closed without
+    # opening"). Same boundary test as the matched path, which is what
+    # keeps the apostrophe in "O'connor" out of it.
+    for _, open_, close in order:
+        start = 0
+        while (j := text.find(close, start)) != -1:
+            start = j + 1
+            if (j in reported                      # already an open
+                    or not _close_ok(text, j, len(close))
+                    or _overlaps(Span(j, j + len(close)), masked)):
+                continue
+            reported.add(j)
+            ambiguities.append(PendingAmbiguity(
+                AmbiguityKind.UNBALANCED_DELIMITER,
+                f"unmatched {close!r} at offset {j}; treated as "
+                f"literal text"))
     return dataclasses.replace(
         state, extracted=tuple(extracted), masked=tuple(masked),
-        ambiguities=state.ambiguities + ambiguities)
+        ambiguities=state.ambiguities + tuple(ambiguities))
