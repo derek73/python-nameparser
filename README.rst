@@ -49,8 +49,8 @@ attributes, same mutation API. What 2.0 removes is the batch of
 deprecations 1.3 and 1.4 announced, so if your test suite runs clean on
 1.4 under ``python -W error::DeprecationWarning``, you are nearly done.
 Two things that check will not catch: four removals 1.4 never warned
-about, which all raise on contact, and one that changes results silently
-— ``name == "John Smith"`` is now ``False``.
+about (three raise on contact, the fourth only warns), and one that
+changes results silently — ``name == "John Smith"`` is now ``False``.
 `Migrating from HumanName <https://nameparser.readthedocs.io/en/latest/migrate.html>`__
 covers both, and translates a v1 customization into the new API whenever
 that's convenient for you.

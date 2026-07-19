@@ -24,8 +24,8 @@ Before you upgrade
 What 2.0 removes is the batch of deprecations 1.3 and 1.4 announced. If
 your test suite runs clean on 1.4 under ``python -W
 error::DeprecationWarning``, it will run on 2.0 — with four exceptions
-that 1.4 never warned about, each of which fails loudly the first time
-you hit it:
+that 1.4 never warned about. The first three raise the first time you
+hit them; the fourth only warns, so read it carefully:
 
 * ``CONSTANTS.regexes.<name> = ...`` raises ``TypeError``. This includes
   ``CONSTANTS.regexes.bidi = False``, the opt-out 1.3.1 recommended for
@@ -75,9 +75,11 @@ warned removals:
        for a private snapshot of the current shared config
    * - ``name['first'] = value``
      - ``name.first = value``
-   * - ``CONSTANTS.regexes.typo`` (returned ``None``)
+   * - ``CONSTANTS.regexes.typo`` (returned ``EMPTY_REGEX``)
      - ``.get("typo")`` for intentional soft access; attribute access
-       now raises ``AttributeError`` naming the known keys
+       now raises ``AttributeError``. The same applies to
+       ``capitalization_exceptions``, whose error also lists the known
+       keys
    * - ``CONSTANTS.empty_attribute_default``
      - Gone; empty fields are always ``''``
 
