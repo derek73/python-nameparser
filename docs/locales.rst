@@ -49,8 +49,8 @@ Both fields, because ``given_name_titles`` is a marker over ``titles``
 rather than a separate vocabulary: ``titles`` makes the word a title at
 all, and listing it in ``given_name_titles`` says the honorific
 precedes the *given* name — as Arabic ones do — so the word after it
-isn't read as a family name. Adding it to ``given_name_titles`` alone
-has no effect.
+isn't read as a family name. Listing it in ``given_name_titles`` alone
+raises ``ValueError`` rather than quietly doing nothing.
 
 A pack is for something different: a *structural* rule, like reordering
 a patronymic, that vocabulary alone can't express.

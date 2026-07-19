@@ -227,3 +227,19 @@ def test_suffix_ambiguous_must_be_subset_of_acronyms() -> None:
     # depends on the membership tests agreeing about it
     with pytest.raises(ValueError, match="subset"):
         Lexicon(suffix_acronyms_ambiguous=frozenset({"ma"}))
+
+
+def test_given_name_titles_must_be_subset_of_titles() -> None:
+    # third marker-over-base pair, same rule: given_name_titles marks
+    # which TITLES precede the given name rather than the family name,
+    # so an entry missing from titles is never consulted -- a silent
+    # no-op is exactly the failure mode the other two guards prevent
+    with pytest.raises(ValueError, match="subset"):
+        Lexicon(given_name_titles=frozenset({"sheikh"}))
+
+
+def test_remove_orphaning_given_name_titles_raises() -> None:
+    lex = Lexicon(titles=frozenset({"sheikh"}),
+                  given_name_titles=frozenset({"sheikh"}))
+    with pytest.raises(ValueError, match="subset"):
+        lex.remove(titles={"sheikh"})

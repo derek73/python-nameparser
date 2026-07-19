@@ -29,9 +29,16 @@ Removing works the same way, and drops the word from recognition:
 
 .. doctest::
 
-    >>> lean = Lexicon.default().remove(titles={"sir"})
-    >>> Parser(lexicon=lean).parse("Sir Robert Johns").title
+    >>> lean = Lexicon.default().remove(titles={"professor"})
+    >>> Parser(lexicon=lean).parse("Professor Robert Johns").title
     ''
+
+A few fields mark a subset of another — ``given_name_titles`` over
+``titles``, ``particles_ambiguous`` over ``particles``,
+``suffix_acronyms_ambiguous`` over ``suffix_acronyms``. Entries must
+appear in the base field too, so add to both and remove from the marker
+first; anything else raises ``ValueError`` naming the orphans rather
+than leaving a marker entry that no rule will ever consult.
 
 Whole lexicons compose with ``|``, which unions field by field — handy
 for keeping a shared house vocabulary separate from a per-source one

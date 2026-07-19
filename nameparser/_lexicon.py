@@ -23,6 +23,18 @@ _VOCAB_FIELDS = (
     "conjunctions", "bound_given_names", "maiden_markers",
 )
 
+#: (marker, base) pairs: each marker field narrows how entries of its
+#: base vocabulary are read, and carries no vocabulary of its own. An
+#: entry present in the marker but absent from the base is never
+#: consulted by any rule, so it is rejected rather than silently
+#: ignored -- a no-op configuration is the failure mode these fields
+#: are most likely to be misused into.
+_SUBSET_FIELDS = (
+    ("particles_ambiguous", "particles"),
+    ("suffix_acronyms_ambiguous", "suffix_acronyms"),
+    ("given_name_titles", "titles"),
+)
+
 
 def _normalize(word: str) -> str:
     """Lowercase, strip whitespace and EDGE periods -- v1's lc()
@@ -215,19 +227,13 @@ class Lexicon:
         canonical = _normpairs(self.capitalization_exceptions)
         object.__setattr__(self, "capitalization_exceptions", canonical)
         object.__setattr__(self, "_cap_map", MappingProxyType(dict(canonical)))
-        if not self.particles_ambiguous <= self.particles:
-            extra = ", ".join(sorted(self.particles_ambiguous - self.particles))
-            raise ValueError(
-                f"particles_ambiguous must be a subset of particles; "
-                f"not in particles: {extra}"
-            )
-        if not self.suffix_acronyms_ambiguous <= self.suffix_acronyms:
-            extra = ", ".join(sorted(
-                self.suffix_acronyms_ambiguous - self.suffix_acronyms))
-            raise ValueError(
-                f"suffix_acronyms_ambiguous must be a subset of "
-                f"suffix_acronyms; not in suffix_acronyms: {extra}"
-            )
+        for marker, base in _SUBSET_FIELDS:
+            orphans = getattr(self, marker) - getattr(self, base)
+            if orphans:
+                raise ValueError(
+                    f"{marker} must be a subset of {base}; "
+                    f"not in {base}: {', '.join(sorted(orphans))}"
+                )
 
     # -- constructors ----------------------------------------------------
 

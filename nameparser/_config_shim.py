@@ -933,11 +933,19 @@ class Constants:
         """
         from nameparser.config.maiden_markers import MAIDEN_MARKERS
         acronyms = frozenset(self.suffix_acronyms)
+        titles = frozenset(self.titles)
         # keep in sync with _lexicon._default_lexicon() (pinned by the
         # default-Constants equality test in tests/v2/test_config_shim.py)
         lexicon = Lexicon(
-            titles=frozenset(self.titles),
-            given_name_titles=frozenset(self.first_name_titles),
+            titles=titles,
+            # intersect, same reasoning as suffix_acronyms_ambiguous
+            # below: v1 treats titles and first_name_titles as
+            # independent sets, and only consults first_name_titles for
+            # a word already recognized as a title -- so an entry
+            # missing from titles was never reachable in v1 either, and
+            # dropping it preserves v1 behavior exactly while
+            # satisfying Lexicon's subset invariant
+            given_name_titles=frozenset(self.first_name_titles) & titles,
             suffix_acronyms=acronyms,
             suffix_words=frozenset(self.suffix_not_acronyms),
             # intersect: Lexicon enforces ambiguous <= acronyms; v1
