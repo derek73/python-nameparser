@@ -126,3 +126,8 @@ assert NON_FIRST_NAME_PREFIXES <= PREFIXES, \
     "NON_FIRST_NAME_PREFIXES must stay a subset of PREFIXES"
 assert not (NON_FIRST_NAME_PREFIXES & BOUND_FIRST_NAMES), \
     "NON_FIRST_NAME_PREFIXES must stay disjoint from BOUND_FIRST_NAMES"
+# Entries are looked up in normalized form; a stray capital or trailing
+# space makes one unreachable by direct membership test even though the
+# parser's own ingest normalizes it away.
+assert all(w == w.strip().lower() for w in PREFIXES), \
+    "PREFIXES entries must be stored lowercase and whitespace-free"

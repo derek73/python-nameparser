@@ -26,3 +26,10 @@ Pieces that should join to their neighboring pieces, e.g. "and", "y" and "&".
 "of" and "the" are also include to facilitate joining multiple titles,
 e.g. "President of the United States".
 """
+
+
+# See prefixes.py: entries are looked up in normalized form, so a stray
+# capital or trailing space makes one unreachable by direct membership
+# test even though the parser's own ingest normalizes it away.
+assert all(w == w.strip().lower() for w in CONJUNCTIONS), \
+    "CONJUNCTIONS entries must be stored lowercase and whitespace-free"

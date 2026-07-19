@@ -391,7 +391,6 @@ SUFFIX_ACRONYMS = {
     'emt-p',
     'enp',
     'erd',
-    'esq',
     'evp',
     'faafp',
     'faan',
@@ -710,3 +709,20 @@ that may or may not have periods between the letters. The parser removes periods
 when matching against these pieces.
 
 """
+
+
+# Guard the invariants the docstrings above promise, so a future edit that
+# breaks them fails at import time instead of silently drifting until a test
+# happens to catch it (same rationale as prefixes.py). Note `assert` is
+# stripped under `python -O`; Lexicon re-checks the relationships at
+# construction, which is what protects a caller's own vocabulary.
+assert SUFFIX_ACRONYMS_AMBIGUOUS <= SUFFIX_ACRONYMS, \
+    "SUFFIX_ACRONYMS_AMBIGUOUS must stay a subset of SUFFIX_ACRONYMS"
+assert not (SUFFIX_ACRONYMS & SUFFIX_NOT_ACRONYMS), \
+    "a suffix is an acronym or a word, not both: " \
+    f"{sorted(SUFFIX_ACRONYMS & SUFFIX_NOT_ACRONYMS)}"
+# Entries are looked up in normalized form, so a stray capital or a
+# trailing space makes an entry unreachable by direct membership test even
+# though the parser's own ingest would paper over it.
+assert all(w == w.strip().lower() for w in SUFFIX_ACRONYMS | SUFFIX_NOT_ACRONYMS), \
+    "suffix entries must be stored lowercase and whitespace-free"

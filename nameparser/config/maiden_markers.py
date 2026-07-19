@@ -35,3 +35,10 @@ Deliberately absent: Polish "z domu" (a two-token marker; pending the
 abbreviation "f." (collides with the initial "F." — only the full
 participles are safe).
 """
+
+
+# See prefixes.py: entries are looked up in normalized form, so a stray
+# capital or trailing space makes one unreachable by direct membership
+# test even though the parser's own ingest normalizes it away.
+assert all(w == w.strip().lower() for w in MAIDEN_MARKERS), \
+    "MAIDEN_MARKERS entries must be stored lowercase and whitespace-free"

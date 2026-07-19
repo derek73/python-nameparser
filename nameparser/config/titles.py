@@ -89,7 +89,7 @@ TITLES = FIRST_NAME_TITLES | {
     'academic',
     'acolyte',
     'activist',
-    'actor ',
+    'actor',
     'actress',
     'adept',
     'adjutant',
@@ -664,7 +664,7 @@ TITLES = FIRST_NAME_TITLES | {
     'teacher',
     'technical',
     'technologist',
-    'television ',
+    'television',
     'tenor',
     'theater',
     'theatre',
@@ -770,3 +770,19 @@ TITLES = FIRST_NAME_TITLES | {
     'श्रीमती',     # Shrimati (Mrs.)
     'डॉ',         # Dr. abbreviation
 }
+
+
+# Guard the invariants at import time, so a bad edit fails here instead of
+# drifting silently until a test happens to catch it (see prefixes.py).
+# The subset rule holds by construction today -- TITLES is defined as
+# FIRST_NAME_TITLES | {...} -- so this pins it against a future edit that
+# makes TITLES a standalone set. Lexicon enforces the same rule on
+# caller-supplied vocabulary; `assert` is stripped under `python -O`.
+assert FIRST_NAME_TITLES <= TITLES, \
+    "FIRST_NAME_TITLES must stay a subset of TITLES"
+# Entries are looked up in normalized form, so a stray capital or a
+# trailing space makes an entry unreachable by direct membership test
+# ('actor' in TITLES was False) even though the parser's own ingest
+# normalizes and papers over it. TITLES covers FIRST_NAME_TITLES.
+assert all(w == w.strip().lower() for w in TITLES), \
+    "TITLES entries must be stored lowercase and whitespace-free"

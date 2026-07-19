@@ -21,3 +21,10 @@ BOUND_FIRST_NAMES: set[str] = {
     'أم',     # "umm" (mother of), hamza spelling
     'ام',     # "umm", hamza-less spelling
 }
+
+
+# See prefixes.py: entries are looked up in normalized form, so a stray
+# capital or trailing space makes one unreachable by direct membership
+# test even though the parser's own ingest normalizes it away.
+assert all(w == w.strip().lower() for w in BOUND_FIRST_NAMES), \
+    "BOUND_FIRST_NAMES entries must be stored lowercase and whitespace-free"
