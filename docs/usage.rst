@@ -1,5 +1,5 @@
-Getting started
-===============
+Using the parser
+================
 
 Requires Python 3.11+.  ``pip install nameparser``
 

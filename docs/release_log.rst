@@ -80,7 +80,7 @@ Release Log
 
     **Documentation**
 
-    - Rewrite the documentation new-API-first: a new front page and README, ``usage.rst`` as a 2.0 getting-started tour, a principle-first ``customize.rst``, a reference split into the 2.0 API and the compatibility layer, and new pages for :doc:`concepts`, :doc:`locales` and :doc:`migrate` -- the last carrying full attribute and configuration maps from v1 names to 2.0 names (#262). The 1.x documentation remains online as the readthedocs ``stable`` build
+    - Rewrite the documentation new-API-first: a new front page and README, ``usage.rst`` as a tour of the 2.0 API, a principle-first ``customize.rst``, a reference split into the 2.0 API and the compatibility layer, and new pages for :doc:`concepts`, :doc:`locales` and :doc:`migrate` -- the last carrying full attribute and configuration maps from v1 names to 2.0 names (#262). The 1.x documentation remains online as the readthedocs ``stable`` build
 
     Parsing changes were checked against a 486-name differential corpus
     built from the v1 test banks; everything not listed above parses

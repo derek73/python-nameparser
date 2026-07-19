@@ -36,7 +36,7 @@ for combining or splitting them further.
 Learn more
 ----------
 
-* `Getting started <https://nameparser.readthedocs.io/en/latest/usage.html>`__ — the full tour: parsing, aggregates, dicts, rendering, dedup
+* `Using the parser <https://nameparser.readthedocs.io/en/latest/usage.html>`__ — the full tour: input shapes, aggregates, rendering, comparison, ambiguities, tokens
 * `Customizing the parser <https://nameparser.readthedocs.io/en/latest/customize.html>`__ — vocabulary, behavior, and presentation
 * `Locale packs <https://nameparser.readthedocs.io/en/latest/locales.html>`__ — opt-in bundles for East Slavic patronymics, Turkic markers, and more
 * There's also a CLI: ``python -m nameparser --json "Doe, John"``
