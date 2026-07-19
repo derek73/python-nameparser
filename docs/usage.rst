@@ -20,7 +20,13 @@ A parsed name has seven fields: ``title``, ``given``, ``middle``,
 raises; unparseable input yields a :class:`~nameparser.ParsedName` with
 empty fields plus any ``ambiguities`` the parser noticed along the way
 (see `When the parser had to guess`_ below, and :doc:`concepts` for why
-they exist).
+they exist). A name with no fields set is falsy, which is how you tell
+"nothing parsed" from "parsed to something":
+
+.. doctest::
+
+    >>> bool(parse("")), bool(parse("   ")), bool(parse("John"))
+    (False, False, True)
 
 Aggregate views
 ----------------
@@ -105,6 +111,63 @@ instead of relying on the default:
     'Jane Smith née Jones'
     >>> parse(text).maiden
     'Jones'
+
+Delimited content is not always a nickname. If what's inside is a known
+suffix, or simply ends in a period, it is read as a suffix instead —
+parenthesized credentials and retired ranks are far more common than
+parenthesized nicknames that happen to be credentials:
+
+.. doctest::
+
+    >>> parse("Andrew Perkins (MBA)").suffix
+    'MBA'
+    >>> parse("Andrew Perkins (Ret.)").suffix
+    'Ret.'
+
+The exception to that exception is an *ambiguous* acronym — one that is
+also a plausible name or set of initials. Standing alone inside
+delimiters, it keeps the nickname reading:
+
+.. doctest::
+
+    >>> parse("JEFFREY (JD) BRICKEN").nickname
+    'JD'
+
+``JD`` is in ``suffix_acronyms_ambiguous``; see :doc:`customize` for
+what that field marks and how to add to it.
+
+.. _abbreviated-titles:
+
+Titles you didn't configure
+-----------------------------
+
+A leading word that ends in a period is read as a title even when it is
+in no vocabulary list, which is what lets unfamiliar ranks, honorifics
+and abbreviations work without configuring anything:
+
+.. doctest::
+
+    >>> parse("Major. Dona Smith").title
+    'Major.'
+    >>> parse("Foo. Xyz. John Smith").title      # chains
+    'Foo. Xyz.'
+
+The rule is bounded in three ways, so it doesn't swallow ordinary
+names. Single initials are left alone, so are abbreviations with
+interior periods, and the rule only applies to the leading run — the
+same word after the given name is a middle name:
+
+.. doctest::
+
+    >>> parse("J. Smith").given
+    'J.'
+    >>> parse("E.T. Jones").given
+    'E.T.'
+    >>> parse("John Major. Smith").middle
+    'Major.'
+
+Because this is structural rather than vocabulary-driven, emptying
+``titles`` does not switch it off; see :doc:`customize`.
 
 Comparing names
 ----------------

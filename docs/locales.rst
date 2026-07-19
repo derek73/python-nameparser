@@ -5,7 +5,10 @@ A locale pack is an opt-in bundle of policy — and, when a naming
 tradition needs it, vocabulary — for one specific pattern: East Slavic
 patronymics, Turkic patronymic markers, and so on. Packs apply only
 when you ask for one by name, and every pack makes the same promise:
-a pack never changes a name it doesn't declare.
+it never changes a name outside the shapes it declares. Read that
+precisely — a shape is a pattern, not a language, so a pack can act on
+a name from a tradition it was not written for. The warning under
+`Using a pack`_ shows what that costs.
 
 What works without a pack
 --------------------------
@@ -115,6 +118,27 @@ parsing, equivalent to ``parser_for(locales.get("ru"))``.
 Both shipped packs are policy-only — they carry no vocabulary of their
 own; see :doc:`concepts` for why that split (language vocabulary vs.
 behavior) is drawn where it is.
+
+.. warning::
+
+   A pack declares a name *shape*, not a language, and it cannot tell
+   whose name it is looking at. Any surname that happens to end in a
+   patronymic suffix matches the East Slavic rule, including names
+   that are not East Slavic at all:
+
+   .. doctest::
+
+       >>> ru = parser_for(locales.RU)
+       >>> name = ru.parse("David Michael Abramovich")
+       >>> name.given, name.family
+       ('Michael', 'David')
+
+   The default parser reads that as given ``David``, family
+   ``Abramovich``. This is the trade the pack asks you to make, and it
+   is why packs are opt-in rather than automatic: enable one only for
+   data that is predominantly in the order it detects. If your input
+   mixes traditions, parse the subsets separately with different
+   parsers rather than enabling a pack over all of it.
 
 Creating your own Locale
 -------------------------

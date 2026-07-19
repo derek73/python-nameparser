@@ -40,6 +40,30 @@ appear in the base field too, so add to both and remove from the marker
 first; anything else raises ``ValueError`` naming the orphans rather
 than leaving a marker entry that no rule will ever consult.
 
+That matters most when clearing a field wholesale. Emptying ``titles``
+alone orphans every ``given_name_titles`` entry, so both go together:
+
+.. doctest::
+
+    >>> d = Lexicon.default()
+    >>> lean = d.remove(titles=set(d.titles),
+    ...                 given_name_titles=set(d.given_name_titles))
+    >>> Parser(lexicon=lean).parse("Hon Solo").given
+    'Hon'
+
+Emptying the vocabulary does not switch titles off entirely, though. A
+leading word that ends in a period is read as a title structurally,
+without consulting ``titles`` at all — that is what lets unfamiliar
+ranks and abbreviations work (see :ref:`abbreviated-titles`):
+
+.. doctest::
+
+    >>> bare = Parser(lexicon=Lexicon.empty())
+    >>> bare.parse("Professor John Smith").title      # vocabulary gone
+    ''
+    >>> bare.parse("Dr. John Smith").title            # structural, stays
+    'Dr.'
+
 Whole lexicons compose with ``|``, which unions field by field — handy
 for keeping a shared house vocabulary separate from a per-source one
 and combining them at parser construction:
