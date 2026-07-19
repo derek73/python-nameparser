@@ -542,16 +542,16 @@ class ParsedName:
 
     def render(
         self,
-        spec: str = ("{title} {given} {middle} {family} {suffix} "
-                     "({nickname}) née {maiden}"),
+        spec: str = ('{title} {given} "{nickname}" {middle} {family} '
+                     "({maiden}) {suffix}"),
     ) -> str:
         """Fill the str.format spec from the seven role fields and the
         derived views; empty fields collapse (#254), including the
-        default spec's decorations -- '()' around an absent nickname
-        and a trailing orphaned 'née'. The default shows every
-        non-empty field and round-trips: parentheses re-extract as the
-        nickname and 'née' is a maiden marker. Unknown keys raise
-        KeyError naming the valid fields."""
+        default spec's decorations (empty '""' and '()' wrappers).
+        The default shows every non-empty field: the nickname quoted
+        after the given name, the maiden name parenthesized after the
+        family name. Unknown keys raise KeyError naming the valid
+        fields."""
         import nameparser._render as _render
         return _render.render(self, spec)
 

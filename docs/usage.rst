@@ -70,12 +70,13 @@ Nicknames and maiden names
     'Jones'
 
 Both fields appear in the default ``str()`` rendering — the nickname
-in parentheses, the maiden name after ``née``:
+quoted after the given name, the maiden name parenthesized after the
+family name:
 
 .. doctest::
 
     >>> str(parse("Jane (Janie) Smith née Jones"))
-    'Jane Smith (Janie) née Jones'
+    'Jane "Janie" Smith (Jones)'
 
 Comparing names
 ----------------

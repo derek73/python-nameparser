@@ -51,13 +51,6 @@ def _collapse(rendered: str) -> str:
                         .replace(' ""', ""))
     rendered = _SPACE_BEFORE_COMMA.sub(",", rendered)
     rendered = _SPACES.sub(" ", rendered.strip())
-    # the default spec's maiden decoration: an empty {maiden} leaves a
-    # trailing bare 'née' (lowercase, exactly the template's spelling
-    # -- a capitalized name 'Née' as content is untouched); on an
-    # all-empty parse the decoration IS the whole string
-    rendered = rendered.removesuffix(" née")
-    if rendered == "née":
-        rendered = ""
     if rendered and _COMMA_CHAR.fullmatch(rendered[-1]):
         rendered = rendered[:-1]
     return rendered.strip(", ")
