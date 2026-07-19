@@ -47,11 +47,18 @@ class Structure(Enum):
 @dataclass(frozen=True, slots=True)
 class PendingAmbiguity:
     """An ambiguity recorded mid-pipeline by token INDEX; assemble
-    materializes real Ambiguity objects over the final tokens."""
+    materializes real Ambiguity objects over the final tokens.
+
+    ``origin`` is for the one stage that runs BEFORE tokens exist:
+    extract_delimited knows only a character offset, so it records that
+    and tokenize resolves it to the containing token's index. Stages
+    after tokenize set ``indices`` directly and leave ``origin`` None.
+    """
 
     kind: AmbiguityKind
     detail: str
     indices: tuple[int, ...] = ()
+    origin: int | None = None
 
 
 @dataclass(frozen=True, slots=True)

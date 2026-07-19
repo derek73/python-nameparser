@@ -239,3 +239,20 @@ def test_unmatched_open_is_not_double_reported_as_a_close() -> None:
     # still produce exactly one ambiguity
     assert len(parse('John " Smith').ambiguities) == 1
     assert len(parse('Jon "Nick Smith').ambiguities) == 1
+
+
+@pytest.mark.parametrize(("text", "expected"), [
+    ('Jon "Nick Smith', '"Nick'),
+    ("John (Jack Smith", "(Jack"),
+    ("John Smith)", "Smith)"),
+    ("John Jack) Smith", "Jack)"),
+])
+def test_unbalanced_delimiter_points_at_its_token(
+    text: str, expected: str
+) -> None:
+    # the kind was documented as possibly carrying no tokens, but the
+    # stray character does survive into one -- without it the ambiguity
+    # is locatable only by parsing an offset back out of the detail
+    # string, which is not an API
+    (amb,) = parse(text).ambiguities
+    assert [t.text for t in amb.tokens] == [expected]

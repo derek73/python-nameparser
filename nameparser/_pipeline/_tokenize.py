@@ -90,5 +90,19 @@ def tokenize(state: ParseState) -> ParseState:
         _tokenize_region(state, inner.start, inner.end, role, False,
                          tokens, commas)
     tokens.sort(key=lambda t: t.span)
+    # extract_delimited runs before tokens exist, so its ambiguities
+    # carry a character offset instead of an index. Resolve them now
+    # that the stray character has landed in a token ('"Nick', 'Smith)')
+    # -- without this the ambiguity is locatable only by parsing the
+    # offset back out of its detail string. An offset inside a masked
+    # region belongs to no token; those keep an empty tuple, which the
+    # kind's contract already allows.
+    ambiguities = tuple(
+        a if a.origin is None else dataclasses.replace(
+            a, indices=tuple(
+                i for i, t in enumerate(tokens)
+                if t.span.start <= a.origin < t.span.end))
+        for a in state.ambiguities)
     return dataclasses.replace(state, tokens=tuple(tokens),
-                               comma_offsets=tuple(sorted(commas)))
+                               comma_offsets=tuple(sorted(commas)),
+                               ambiguities=ambiguities)

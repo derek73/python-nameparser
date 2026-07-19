@@ -252,8 +252,10 @@ class AmbiguityKind(StrEnum):
     #: particle in other names.
     PARTICLE_OR_GIVEN = "particle-or-given"
     #: A nickname/maiden delimiter opened without closing (or closed
-    #: without opening); the text was kept as literal name content.
-    #: May carry no tokens.
+    #: without opening); the text was kept as literal name content, so
+    #: the tokens are the one the stray character ended up inside. Rare
+    #: exception: a character that lands in no token at all (inside a
+    #: masked region) leaves the tuple empty.
     UNBALANCED_DELIMITER = "unbalanced-delimiter"
     #: More comma-separated segments than any recognized name shape;
     #: the parse is best-effort over the extra segments.

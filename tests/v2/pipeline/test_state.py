@@ -46,9 +46,15 @@ def test_stage_field_ownership() -> None:
 
     ownership = {
         "extract_delimited": {"extracted", "masked", "ambiguities"},
-        "tokenize": {"tokens", "comma_offsets"},
+        # tokenize also rewrites ambiguities: extract_delimited runs
+        # before tokens exist, so its UNBALANCED_DELIMITER entries carry
+        # a character offset that tokenize resolves to a token index
+        "tokenize": {"tokens", "comma_offsets", "ambiguities"},
         "segment": {"segments", "structure", "ambiguities"},
-        "classify": {"tokens"},
+        # classify also emits SUFFIX_OR_NICKNAME: the delimiter escape
+        # that decides it lives in extract_delimited, which has no token
+        # index to point at, so the report is raised here instead
+        "classify": {"tokens", "ambiguities"},
         "group": {"tokens", "pieces", "piece_tags", "dropped"},
         "assign": {"tokens", "ambiguities"},
         "post_rules": {"tokens"},

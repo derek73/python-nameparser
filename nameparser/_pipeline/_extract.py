@@ -104,6 +104,7 @@ def _unmatched(open_: str, offset: int) -> tuple[int, PendingAmbiguity]:
     return (offset, PendingAmbiguity(
         AmbiguityKind.UNBALANCED_DELIMITER,
         f"unmatched {open_!r} at offset {offset}; treated as literal text",
+        origin=offset,
     ))
 
 
@@ -216,7 +217,7 @@ def extract_delimited(state: ParseState) -> ParseState:
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.UNBALANCED_DELIMITER,
                 f"unmatched {close!r} at offset {j}; treated as "
-                f"literal text"))
+                f"literal text", origin=j))
     return dataclasses.replace(
         state, extracted=tuple(extracted), masked=tuple(masked),
         ambiguities=state.ambiguities + tuple(ambiguities))
