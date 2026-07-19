@@ -25,11 +25,48 @@ accepts a plain set of lowercase words, keyword by field name (``titles``
 above; ``particles``, ``suffix_words``, and the rest work the same
 way) — see :doc:`modules` for the full field list.
 
+Removing works the same way, and drops the word from recognition:
+
+.. doctest::
+
+    >>> lean = Lexicon.default().remove(titles={"sir"})
+    >>> Parser(lexicon=lean).parse("Sir Robert Johns").title
+    ''
+
+Whole lexicons compose with ``|``, which unions field by field — handy
+for keeping a shared house vocabulary separate from a per-source one
+and combining them at parser construction:
+
+.. doctest::
+
+    >>> house = Lexicon.empty().add(titles={"dean"})
+    >>> per_source = Lexicon.empty().add(titles={"provost"})
+    >>> sorted((house | per_source).titles)
+    ['dean', 'provost']
+
 ``capitalization_exceptions`` is the one pair-valued field — each entry
 maps a lowercase key to its exact-cased replacement (``"phd"`` →
 ``"PhD"``), so it isn't a fit for ``add()``/``remove()``. Change it with
-``dataclasses.replace()`` instead: ``dataclasses.replace(lex,
-capitalization_exceptions=(("phd", "PhD"),))``.
+``dataclasses.replace()`` instead, and pass the result to
+``capitalized()``:
+
+.. doctest::
+
+    >>> import dataclasses
+    >>> from nameparser import parse
+    >>> str(parse("jane smith dds").capitalized())
+    'Jane Smith Dds'
+    >>> default = Lexicon.default()
+    >>> lex = dataclasses.replace(
+    ...     default,
+    ...     capitalization_exceptions=tuple(default.capitalization_exceptions)
+    ...     + (("dds", "DDS"),))
+    >>> str(parse("jane smith dds").capitalized(lex))
+    'Jane Smith DDS'
+
+Note the ``tuple(...) + ...``: assigning a bare ``(("dds", "DDS"),)``
+would *replace* the default exceptions rather than extend them, so
+``"phd"`` and the rest would stop being fixed.
 
 The key is matched against the token with punctuation normalized away,
 not against the raw text, so one ``"phd"`` entry covers ``"phd"``,
@@ -49,6 +86,17 @@ conservatism is why ``dean`` above isn't in the default vocabulary in
 the first place: "Dean" is also a common given name, and a default
 that swallowed it as a title would misparse "Dean Martin" for
 everyone.)
+
+``ma`` is a shipped example. It is both a credential and a common
+surname, so it is listed in ``suffix_acronyms_ambiguous`` and counts as
+a suffix only when written with periods:
+
+.. doctest::
+
+    >>> parse("Jack Ma").family
+    'Ma'
+    >>> parse("Jack M.A.").suffix
+    'M.A.'
 
 Behavior: Policy
 -----------------
