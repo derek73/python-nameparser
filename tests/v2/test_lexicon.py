@@ -244,15 +244,12 @@ def test_given_name_titles_may_hold_a_multi_word_phrase() -> None:
 
 def test_given_name_titles_is_not_constrained_against_titles() -> None:
     # Deliberately unvalidated. The lookup key is the joined run of
-    # Role.TITLE tokens, which the PARSE builds -- it can hold a
-    # multi-word TITLES member, or a conjunction that is title-tagged
-    # ("sir and dame"). No static relation over these sets decides
-    # reachability, and an unreachable entry is inert rather than
+    # Role.TITLE tokens, which the PARSE builds, and a conjunction
+    # inside a run is title-tagged too -- so "sir and dame" is a
+    # matchable key whose middle word is a conjunction, not a title.
+    # A per-word check rejected it; a whole-entry check rejected
+    # multi-word entries. An unreachable entry is inert rather than
     # harmful, so nothing is rejected here.
-    from nameparser.config.titles import TITLES
-
-    multi = next(t for t in TITLES if " " in t)     # "chargé d'affaires"
-    assert Lexicon(given_name_titles=frozenset({multi})).given_name_titles
     assert Lexicon(titles=frozenset({"sir", "dame"}),
                    given_name_titles=frozenset({"sir and dame"}))
     # and an entry nothing will ever consult is accepted, not rejected
@@ -350,6 +347,19 @@ def test_unpickling_rejects_unnormalized_entries() -> None:
     lex = Lexicon(titles=frozenset({"dr"}))
     state = lex.__getstate__()
     state["titles"] = {"Sir ", "DR."}
+    restored = Lexicon.__new__(Lexicon)
+    with pytest.raises(ValueError, match="not normalized"):
+        restored.__setstate__(state)
+
+
+def test_unpickling_rejects_uncanonical_capitalization_exceptions() -> None:
+    # the pair field gets the same treatment as the vocab sets: it is
+    # re-canonicalized by __post_init__ (normalized keys, sorted,
+    # deduped), so accepting a rewritten value would leave one field
+    # silently corrected while ten raise
+    lex = Lexicon(capitalization_exceptions=(("phd", "PhD"),))
+    state = lex.__getstate__()
+    state["capitalization_exceptions"] = ((" PhD. ", "Ph.D."), ("aa", "AA"))
     restored = Lexicon.__new__(Lexicon)
     with pytest.raises(ValueError, match="not normalized"):
         restored.__setstate__(state)

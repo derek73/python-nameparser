@@ -36,10 +36,9 @@ _VOCAB_FIELDS = (
 #:   set before testing suffix_acronyms, so an orphan silently turns a
 #:   word into a period-gated suffix.
 #:
-#: given_name_titles is deliberately NOT here: it is looked up against
-#: the space-joined title run, not per token, so a multi-word phrase is
-#: a legitimate entry whose words -- not whose phrase -- must be
-#: titles. It gets its own per-word check below.
+#: given_name_titles is deliberately NOT here and has no check of its
+#: own -- see the note in __post_init__ for why every attempt at one
+#: rejected working configurations.
 _SUBSET_FIELDS = (
     ("particles_ambiguous", "particles",
      "an orphan emits a spurious particle-or-given ambiguity"),
@@ -260,15 +259,16 @@ class Lexicon:
                     f"{marker}"
                 )
         # NOT validated: given_name_titles against titles. The lookup
-        # key is the space-joined run of Role.TITLE tokens, which is
-        # built by the parse rather than drawn from this vocabulary --
-        # it can hold multi-word entries ("chargé d'affaires" is itself
-        # a TITLES member) and conjunctions ("sir and dame", where 'and'
-        # is tagged Role.TITLE). No static relation over these sets can
-        # decide reachability, and two attempts at one each rejected
-        # working configurations. An unreachable entry here is inert:
-        # nothing consults it, nothing misparses. That is the cheap
-        # failure, and guarding it proved the expensive one.
+        # key is the space-joined run of Role.TITLE tokens, built by the
+        # parse rather than drawn from this vocabulary, and a
+        # conjunction inside a run is itself tagged Role.TITLE -- so
+        # "sir and dame" is a matchable key whose middle word is in
+        # conjunctions, not titles. A whole-entry check rejected
+        # multi-word entries; a per-word check rejected that one. An
+        # unreachable entry here is inert: nothing consults it, nothing
+        # misparses. That is the cheap failure, and guarding it proved
+        # the expensive one -- three working configurations broken
+        # across two attempts. Do not add a third.
         #
         # The v2 form of prefixes.py's NON_FIRST_NAME_PREFIXES-disjoint-
         # from-BOUND_FIRST_NAMES assertion. That module guards its own
@@ -386,6 +386,12 @@ class Lexicon:
             for name in _VOCAB_FIELDS
             if frozenset(given[name]) != getattr(self, name)
         )
+        # the pair field too, or ten fields raise and the eleventh is
+        # quietly re-canonicalized (keys normalized, sorted, deduped)
+        given_pairs = cast("Iterable[tuple[str, str]]",
+                          state["capitalization_exceptions"])
+        if tuple(given_pairs) != self.capitalization_exceptions:
+            drifted.append("capitalization_exceptions")
         if drifted:
             raise ValueError(
                 "incompatible Lexicon pickle: entries are not normalized "

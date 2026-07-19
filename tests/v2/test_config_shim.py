@@ -409,20 +409,24 @@ def test_snapshot_translates_a_multi_word_first_name_title(
     assert name.first and not name.last, f"{entry!r} was not honored"
 
 
-def test_snapshot_ungates_an_ambiguous_acronym_added_as_a_suffix_word() -> None:
-    # v1's is_suffix ORs the acronym and word branches, so adding an
-    # ambiguous acronym to suffix_not_acronyms simply ungates it: 1.4.0
-    # accepts the config and reads "John Smith jd" with suffix='jd'.
-    # Lexicon forbids the overlap (the word branch would bypass the
-    # period gate), so translate rather than let the raise through --
-    # dropping it from the ambiguous set leaves a plain acronym plus a
-    # word, which is v1's effective behavior.
+def test_snapshot_ignores_an_ambiguous_acronym_added_as_a_suffix_word() -> None:
+    # Adding an ambiguous acronym to suffix_not_acronyms is INERT in
+    # v1: is_suffix already accepts it through the acronym branch, and
+    # reserve_last keeps it as the surname anyway. 1.4.0 with this
+    # config parses "Jack Ma" exactly as it does without it.
+    #
+    # Lexicon forbids the overlap, since the word branch would bypass
+    # the period gate. Dropping the word from the AMBIGUOUS set instead
+    # (the reverse subtraction) ungates it and loses the family name
+    # entirely -- worse than the raise it was meant to avoid. Drop it
+    # from suffix_words instead, which reproduces v1's inertness.
     c = Constants()
-    c.suffix_not_acronyms.add("jd")
+    c.suffix_not_acronyms.add("ma")
     lexicon, _, _ = c._snapshot()               # must not raise
-    assert "jd" not in lexicon.suffix_acronyms_ambiguous
-    name = HumanName("John Smith jd", constants=c)
-    assert (name.first, name.last, name.suffix) == ("John", "Smith", "jd")
+    assert "ma" in lexicon.suffix_acronyms_ambiguous
+    assert "ma" not in lexicon.suffix_words
+    name = HumanName("Jack Ma", constants=c)
+    assert (name.first, name.last, name.suffix) == ("Jack", "Ma", "")
 
 
 def test_bound_never_given_prefix_deviates_on_two_pieces() -> None:
