@@ -372,6 +372,23 @@ def test_snapshot_keeps_a_multi_word_first_name_title() -> None:
     assert (name.title, name.first, name.last) == ("Grand Duke", "John", "")
 
 
+@pytest.mark.parametrize("entry", [".", "..", "grand  duke", "grand\tduke"])
+def test_snapshot_drops_first_name_titles_v1_could_not_match(entry: str) -> None:
+    # v1's key is lc(" ".join(title_list)) -- always single-spaced, and
+    # never empty -- so an entry with a whitespace run, or one that is
+    # all periods, could never match there. Translating it anyway would
+    # either widen behavior (the double-space entry starts matching) or
+    # raise (the all-period entry normalizes to empty and _normset
+    # rejects it). 1.4.0 accepts all of these and leaves them inert.
+    c = Constants()
+    c.titles.add("grand", "duke")
+    c.first_name_titles.add(entry)
+    lexicon, _, _ = c._snapshot()               # must not raise
+    assert "" not in lexicon.given_name_titles
+    name = HumanName("Grand Duke John", constants=c)
+    assert (name.first, name.last) == ("", "John")
+
+
 @pytest.mark.parametrize(("entry", "text"), [
     # v1's lookup key is lc(joined-title-run), and lc strips only the
     # EDGE periods of the whole string, so an interior word keeps its

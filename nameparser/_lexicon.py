@@ -390,7 +390,7 @@ class Lexicon:
             raise ValueError(
                 "incompatible Lexicon pickle: entries are not normalized "
                 f"({'; '.join(drifted)}); this state was not written by "
-                "nameparser"
+                "this version of nameparser"
             )
 
     def __or__(self, other: Lexicon) -> Lexicon:

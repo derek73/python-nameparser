@@ -981,9 +981,18 @@ class Constants:
             # spelling; filtering instead dropped every multi-word
             # honorific containing an abbreviation or a conjunction and
             # silently swapped given and family.
+            # Only entries v1 could actually match: its key is the
+            # joined title run, so always single-spaced and never
+            # empty. An entry holding a whitespace run was inert there
+            # (translating it would start matching), and one that folds
+            # away entirely would trip _normset's empty-entry check on
+            # a config v1 simply ignored.
             given_name_titles=frozenset(
-                " ".join(_normalize(w) for w in e.split())
-                for e in self.first_name_titles),
+                t for t in (
+                    " ".join(_normalize(w) for w in e.split())
+                    for e in self.first_name_titles
+                    if e == " ".join(e.split())
+                ) if t),
             suffix_acronyms=acronyms,
             suffix_words=frozenset(self.suffix_not_acronyms),
             # Intersect with acronyms: Lexicon enforces ambiguous <=
@@ -994,8 +1003,11 @@ class Constants:
             # adding an ambiguous acronym to suffix_not_acronyms simply
             # ungates it. Lexicon forbids that overlap because the word
             # branch bypasses the period gate -- so drop it from the
-            # ambiguous set, leaving a plain acronym plus a word, which
-            # is exactly what v1 ends up doing.
+            # ambiguous set, leaving a plain acronym plus a word. That
+            # trades a raise for the same two-piece deviation noted
+            # below: v1's reserve_last guard keeps the final piece as a
+            # surname ("Jack Ma" -> last='Ma'), and the ungated word
+            # branch here has none, so it reads suffix='Ma'.
             suffix_acronyms_ambiguous=(
                 frozenset(self.suffix_acronyms_ambiguous)
                 & acronyms) - frozenset(self.suffix_not_acronyms),
