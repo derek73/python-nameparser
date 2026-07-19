@@ -11,6 +11,7 @@ from nameparser._config_shim import (
     CONSTANTS, Constants, SetManager, TupleManager, _DelimiterManager,
     _RegexesProxy, _cached_parser,
 )
+from nameparser.config.regexes import EMPTY_REGEX, REGEXES
 
 _DATA_DIR = Path(__file__).parent / "data"
 
@@ -193,6 +194,17 @@ def test_regexes_membership_iteration_and_deepcopy() -> None:
     # dunder probes must raise AttributeError, not resolve as regex
     # names -- the classic copy.deepcopy regression (see AGENTS.md)
     assert isinstance(copy.deepcopy(r), _RegexesProxy)
+
+
+def test_regexes_get_is_the_soft_access_escape_hatch() -> None:
+    # 1.4's #256 deprecation told users ".get() remains available for
+    # intentional soft access"; __getattr__ must not swallow `get`
+    # itself. capitalization_exceptions inherits it from dict -- the
+    # regexes proxy is not a dict, so it has to say so explicitly.
+    r = _RegexesProxy()
+    assert r.get("word") is REGEXES["word"]
+    assert r.get("typo") is None
+    assert r.get("typo", EMPTY_REGEX) is EMPTY_REGEX
 
 
 def test_constants_default_fields_present() -> None:

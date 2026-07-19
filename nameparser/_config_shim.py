@@ -524,6 +524,12 @@ class _RegexesProxy:
     def keys(self) -> KeysView[str]:
         return self._regexes().keys()
 
+    def get(self, name: str, default: object = None) -> object:
+        # Defined explicitly because __getattr__ would otherwise claim
+        # `get` as a regex name. The sibling managers inherit this from
+        # dict; #256's deprecation text promised it on both.
+        return self._regexes().get(name, default)
+
     def __setattr__(self, name: str, value: object) -> None:
         self._raise_readonly(name)
 
