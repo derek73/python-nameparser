@@ -31,6 +31,11 @@ maps a lowercase key to its exact-cased replacement (``"phd"`` →
 ``dataclasses.replace()`` instead: ``dataclasses.replace(lex,
 capitalization_exceptions=(("phd", "PhD"),))``.
 
+The key is matched against the token with punctuation normalized away,
+not against the raw text, so one ``"phd"`` entry covers ``"phd"``,
+``"Phd"``, and ``"Ph.D."`` alike — you don't need a separate key for
+each way a source might punctuate it.
+
 Two fields — ``suffix_acronyms_ambiguous`` and ``particles_ambiguous``
 — mark entries from ``suffix_acronyms`` and ``particles`` that are also
 plausible as ordinary name words on their own (an acronym suffix that
@@ -115,7 +120,7 @@ listed below.
 .. doctest::
 
     >>> from nameparser import Parser, Policy
-    >>> policy = Policy(maiden_delimiters=frozenset({("(", ")")}))
+    >>> policy = Policy(maiden_delimiters={("(", ")")})
     >>> Parser(policy=policy).parse("Jane (Jones) Smith").maiden
     'Jones'
 
@@ -124,7 +129,7 @@ the specific intent — so listing a pair there automatically drops it
 from the effective ``nickname_delimiters`` set, and the one-liner
 above is the whole recipe. To *add* delimiters instead of rerouting
 them, build on the named default:
-``nickname_delimiters=DEFAULT_NICKNAME_DELIMITERS | {("«", "»")}``.
+``nickname_delimiters=DEFAULT_NICKNAME_DELIMITERS | {("[", "]")}``.
 
 .. _rendering-arguments:
 
@@ -132,19 +137,38 @@ Presentation: rendering arguments
 ----------------------------------
 
 Once a name is parsed, how it's displayed is a separate decision made
-at the point of output, not baked into the parse:
+at the point of output, not baked into the parse. Three methods on
+:class:`~nameparser.ParsedName` cover it — see :doc:`modules` for full
+signatures:
 
-.. code-block:: python
+* :meth:`~nameparser.ParsedName.render` fills a format spec from the
+  seven role fields.
+* :meth:`~nameparser.ParsedName.initials` is the same idea narrowed to
+  first letters, with its own ``delimiter``/``separator`` arguments.
+* :meth:`~nameparser.ParsedName.capitalized` returns a new, case-fixed
+  :class:`~nameparser.ParsedName` instead of a string. It only touches
+  input that's already single-case (all lower, all upper) unless you
+  pass ``force=True`` — mixed case is left alone by default on the
+  assumption that someone already capitalized it on purpose.
 
-    def render(self, spec: str = "{title} {given} {middle} {family} {suffix}") -> str: ...
-    def initials(self, spec: str = "{given} {middle} {family}",
-                 delimiter: str = ".", separator: str = " ") -> str: ...
-    def capitalized(self, lexicon: Lexicon | None = None, *, force: bool = False) -> ParsedName: ...
+.. doctest::
+
+    >>> from nameparser import parse
+    >>> name = parse("Dr. Juan Q. Xavier de la Vega III")
+    >>> name.render("{family}, {given} {middle}")
+    'de la Vega, Juan Q. Xavier'
+    >>> name.initials(spec="{given}{middle}{family}", delimiter="", separator="")
+    'JQXV'
+    >>> str(parse("DR. JUAN DE LA VEGA").capitalized())
+    'Dr. Juan de la Vega'
+    >>> str(parse("JuAn DE LA vEGA").capitalized())
+    'JuAn DE LA vEGA'
+    >>> str(parse("JuAn DE LA vEGA").capitalized(force=True))
+    'Juan de la Vega'
 
 Looking for v1's ``string_format``? It's the ``render(spec)`` argument
 now — pass your own format string per call instead of setting it once
-on a shared config object. See :doc:`usage` for worked examples of all
-three.
+on a shared config object.
 
 Sharing a configured parser
 ----------------------------

@@ -41,8 +41,8 @@ else — tokens, spans, the rest of the roles — carried over unchanged.
 ``str()`` renders the default view; nothing about calling it mutates
 the value you called it on.
 
-The three containers
----------------------
+Three containers, three concerns
+--------------------------------
 
 Every piece of nameparser configuration falls into exactly one of
 three places, and which one is decided by a single question: what does
@@ -61,12 +61,14 @@ this setting vary with?
   ``render(spec)``, or a keyword to ``initials()``/``capitalized()``.
 
 "Dean" is a common given name, so it is not in the default titles
-vocabulary — but in some data it is more common as a title. Which
-reading is right is a fact about the language and domain the names
-come from, not about any one dataset or report: that makes it a
-:class:`~nameparser.Lexicon` entry. A CRM that always exports "Family, Given" strings is a fact
-about that one data source, not about the language of the names in
-it — that's a :class:`~nameparser.Policy`. One particular report
+vocabulary. But in some data it is more common as a title. The right
+reading is a fact about the domain the names come from: that makes it a
+:class:`~nameparser.Lexicon` entry. A CRM that wraps nicknames in
+square brackets — ``John [Johnny] Smith`` — instead of quotes is a
+fact about that one data source's export format, not about the
+language of the names in it — that's a
+:class:`~nameparser.Policy` (``nickname_delimiters={('[', ']')}``).
+One particular report
 wanting names formatted as "Family, Given" while every other consumer
 of the same parsed data wants "Given Family" is a fact about where the
 string is going next, decided at the moment you render it — that's a
