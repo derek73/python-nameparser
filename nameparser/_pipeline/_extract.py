@@ -61,6 +61,24 @@ def _close_ok(text: str, j: int, width: int) -> bool:
     return k >= len(text) or text[k].isspace() or text[k] in COMMA_CHARS
 
 
+def _apostrophe_after_a_word(text: str, j: int, close: str) -> bool:
+    """A "'" directly after a word character is an apostrophe, not a
+    dangling close quote -- "Mari' Aube'", "Ali Baba'".
+
+    An ambiguity means the part could REASONABLY read two ways where it
+    sits, and this one cannot: "'" is the only delimiter character that
+    occurs inside and at the end of real name parts, and it is the
+    least likely of them to mark a nickname. The same position with a
+    quote IS ambiguous, since quotes do not appear inside names, so the
+    carve-out is deliberately this one character. #273 excluded the
+    curly apostrophe from the delimiter set outright for the same
+    reason; the straight one has to stay a delimiter (v1's
+    quoted_word), so it is handled here instead.
+    """
+    return close == "'" and j > 0 and (text[j - 1].isalnum()
+                                       or text[j - 1] == ".")
+
+
 def _overlaps(span: Span, taken: list[Span]) -> bool:
     return any(span.start < t.end and t.start < span.end for t in taken)
 
@@ -191,6 +209,7 @@ def extract_delimited(state: ParseState) -> ParseState:
             start = j + 1
             if (j in reported                      # already an open
                     or not _close_ok(text, j, len(close))
+                    or _apostrophe_after_a_word(text, j, close)
                     or _overlaps(Span(j, j + len(close)), masked)):
                 continue
             reported.add(j)

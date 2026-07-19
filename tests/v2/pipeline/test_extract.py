@@ -199,6 +199,29 @@ def test_unmatched_close_is_reported(text: str, char: str) -> None:
     assert char in parse(text).ambiguities[0].detail
 
 
+def test_word_final_apostrophe_is_not_an_unbalanced_delimiter() -> None:
+    # ambiguity means the part could REASONABLY read two ways where it
+    # sits. A "'" after a word character is an apostrophe -- it is the
+    # one delimiter character that occurs inside and at the end of real
+    # name parts, and the least likely to mark a nickname. The same
+    # position with a quote IS ambiguous, because quotes do not appear
+    # inside names. (#273 excluded the curly apostrophe from the
+    # delimiters entirely for this reason; the straight one is a
+    # delimiter, so it needs the carve-out here instead.)
+    assert parse("Mari' Aube'").ambiguities == ()
+    assert parse("Ali Baba'").ambiguities == ()
+    quoted = parse('Mari" Aube"')
+    assert [a.kind for a in quoted.ambiguities] == \
+        [AmbiguityKind.UNBALANCED_DELIMITER] * 2
+
+
+def test_apostrophe_after_a_space_is_still_reported() -> None:
+    # the carve-out is about what PRECEDES the character: an apostrophe
+    # opening a quote is still an unmatched open when nothing closes it
+    assert [a.kind for a in parse("John 'Jack Smith").ambiguities] == \
+        [AmbiguityKind.UNBALANCED_DELIMITER]
+
+
 @pytest.mark.parametrize("text", [
     "Brian O'connor",       # apostrophe mid-word, not a delimiter
     "O'B. John Smith",
