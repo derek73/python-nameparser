@@ -117,9 +117,32 @@ listed below.
      - Excludes bidirectional control characters the same way.
        Defaults to ``True``.
 
+``name_order`` is the one most likely to matter for non-Western data.
+Positional input is assigned in the order you declare, so a
+family-first name parses as written instead of needing to be
+rearranged afterwards:
+
 .. doctest::
 
-    >>> from nameparser import Parser, Policy
+    >>> from nameparser import Parser, Policy, FAMILY_FIRST, parse
+    >>> parse("Nguyen Van Minh").family              # default GIVEN_FIRST
+    'Van Minh'
+    >>> family_first = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    >>> name = family_first.parse("Nguyen Van Minh")
+    >>> name.family, name.given
+    ('Nguyen', 'Van Minh')
+
+An explicit comma still wins, on the reasoning that someone who wrote
+one meant it — so the same parser reads ``"Thomas, John"`` as
+family-then-given regardless of the configured order:
+
+.. doctest::
+
+    >>> family_first.parse("Thomas, John").family
+    'Thomas'
+
+.. doctest::
+
     >>> policy = Policy(maiden_delimiters={("(", ")")})
     >>> Parser(policy=policy).parse("Jane (Jones) Smith").maiden
     'Jones'
