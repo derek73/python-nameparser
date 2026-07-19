@@ -54,6 +54,67 @@ given-then-family:
 For family-first input *without* a comma — common outside Europe — set
 ``name_order``; see :doc:`customize`.
 
+Words that attach to their neighbors
+--------------------------------------
+
+Input shapes tell you where the fields sit. This tells you which words
+merge into one field instead of standing alone — between them, that is
+most of what decides a parse.
+
+Most words stand alone. A few pull a neighbor in, and the thing worth
+knowing is which field they pull into:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 14 42 44
+
+   * - Pulls into
+     - Example
+     - Words
+   * - ``family``
+     - ``Juan de la Vega`` → ``de la Vega``
+     - Particles (``de``, ``van``, ``von``, ``bin``), and conjunctions
+       inside a surname (``y``)
+   * - ``given``
+     - ``abdul salam ahmed`` → ``abdul salam``
+     - Bound given names (``abdul``, ``abu``, ``umm``, ``عبد``)
+   * - ``title``
+     - ``Asst. Vice Chancellor John Smith`` → ``Asst. Vice Chancellor``
+     - Consecutive titles chain
+   * - ``suffix``
+     - ``John Smith PhD MD`` → ``PhD, MD``
+     - Consecutive suffixes
+   * - ``maiden``
+     - ``Jane Smith née Jones`` → ``Jones``
+     - Maiden markers (``née``, ``geb.``)
+
+A conjunction joins whatever sits on both sides of it, so it can pull
+two given names together as easily as two surnames:
+
+.. doctest::
+
+    >>> parse("John and Jane Smith").given
+    'John and Jane'
+    >>> parse("Juan de la Vega y Rodriguez").family
+    'de la Vega y Rodriguez'
+
+Position matters in exactly one place: the start of a name. A particle
+there has no surname to attach to yet, so it either becomes the given
+name or turns the whole name into a surname, depending on whether it is
+one that can double as a given name:
+
+.. doctest::
+
+    >>> parse("van Gogh").given          # 'van' can be a given name
+    'van'
+    >>> parse("de Mesnil").given         # 'de' cannot
+    ''
+    >>> parse("de Mesnil").family
+    'de Mesnil'
+
+:doc:`customize` covers how to change which words are in each of these
+sets, including which particles may double as given names.
+
 Aggregate views
 ----------------
 
