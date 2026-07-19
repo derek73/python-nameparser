@@ -154,6 +154,16 @@ other names, so the parse records a ``particle-or-given`` ambiguity
 alongside its answer. You can inspect ``ambiguities`` to decide, case
 by case, whether your data needs a second look.
 
+An ambiguity records a *decision*, not a word. The same token in a
+different position may present no fork at all: ``do`` is in the
+ambiguous post-nominal vocabulary, but in ``"Joao da Silva do Amaral
+de Souza"`` it sits mid-name, where nothing has to choose between
+readings — so nothing is recorded. A comma can settle the question
+before it arises, too: ``"Ma, Jack"`` fixes the family name, so the
+credential reading never comes up, while ``"John Smith MA"`` has to
+call it and says so. An empty ``ambiguities`` means the parse faced no
+fork, not that every word in it was unambiguous.
+
 :class:`Tokens <nameparser.Token>` also carry tags — a second, independent label alongside their
 role, recording how a token was classified rather than what part of
 the name it belongs to — but only a handful of them are part of the

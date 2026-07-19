@@ -225,7 +225,13 @@ class AmbiguityKind(StrEnum):
     """The stable vocabulary of :class:`Ambiguity` kinds. A StrEnum:
     members ARE their string values, so ``kind == "particle-or-given"``
     compares directly. New kinds may be added in minor releases;
-    existing values never change meaning."""
+    existing values never change meaning.
+
+    A kind names a FORK THE PARSE HAD TO CALL, not a word that could be
+    read two ways. The same token elsewhere in a name may present no
+    choice at all and is then reported by nothing -- an empty
+    ``ambiguities`` means the parse faced no fork, not that every word
+    was unambiguous."""
 
     #: Reserved: the name's field order itself is uncertain (e.g. a
     #: two-word name under a non-default name_order). Not yet emitted;
