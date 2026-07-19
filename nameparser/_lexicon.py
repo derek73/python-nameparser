@@ -355,9 +355,16 @@ class Lexicon:
             )
         for name, value in state.items():
             object.__setattr__(self, name, value)
-        object.__setattr__(
-            self, "_cap_map",
-            MappingProxyType(dict(self.capitalization_exceptions)))
+        # Re-run construction validation rather than trusting the blob.
+        # The layout check above catches SHAPE skew; this catches
+        # CONTENT skew, which is likelier -- particles_ambiguous flipped
+        # meaning between v1's never-given set and v2's may-be-given set
+        # without changing its name, so an old pickle would otherwise
+        # load a semantically inverted lexicon in silence. It also
+        # normalizes, so a hand-built state dict cannot smuggle in
+        # unnormalized entries or a plain set. Rebuilds _cap_map for
+        # free, which this used to do by hand.
+        self.__post_init__()
 
     def __or__(self, other: Lexicon) -> Lexicon:
         if not isinstance(other, Lexicon):

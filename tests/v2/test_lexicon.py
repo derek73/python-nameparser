@@ -307,6 +307,29 @@ def test_remove_orphaning_given_name_titles_raises() -> None:
         lex.remove(titles={"sheikh"})
 
 
+def test_unpickling_revalidates_invariants() -> None:
+    # the field-layout guard catches SHAPE skew, but the likeliest skew
+    # is same-name/flipped-meaning: particles_ambiguous inverted sense
+    # between v1's never-given set and v2's may-be-given set. A state
+    # dict that violates an invariant must not load in silence.
+    lex = Lexicon(particles=frozenset({"van"}),
+                  particles_ambiguous=frozenset({"van"}))
+    state = lex.__getstate__()
+    state["particles"] = frozenset()          # orphans particles_ambiguous
+    forged = Lexicon.__new__(Lexicon)
+    with pytest.raises(ValueError, match="particles_ambiguous"):
+        forged.__setstate__(state)
+
+
+def test_unpickling_normalizes_entries() -> None:
+    lex = Lexicon(titles=frozenset({"dr"}))
+    state = lex.__getstate__()
+    state["titles"] = {"Sir ", "DR."}         # unnormalized, and a set
+    restored = Lexicon.__new__(Lexicon)
+    restored.__setstate__(state)
+    assert restored.titles == frozenset({"sir", "dr"})
+
+
 def test_remove_error_offers_the_removal_remedy_too() -> None:
     # a caller removing from the base does not want to be told to add
     # it back; the message names both directions
