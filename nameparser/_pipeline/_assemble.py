@@ -8,8 +8,13 @@ three layers away.
 
 Structural tokens (dropped maiden markers) are omitted, like delimiter
 characters. A main-stream token that somehow reaches here with no role
-takes Role.GIVEN -- parse is total over str (spec §5a) and must not
-raise on content; the fallback is deliberately boring.
+takes Role.GIVEN -- parse must never raise on the *content* of a name,
+so the fallback is deliberately boring rather than an exception. This
+should never fire in practice (assign/group must set a role on every
+main-stream token); it exists as a last-resort safety net against a
+pipeline bug, not as sanctioned behavior for real input -- see
+test_assemble_falls_back_to_given_for_unassigned_role in
+tests/v2/pipeline/test_assemble.py.
 """
 from __future__ import annotations
 

@@ -1,9 +1,9 @@
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline import run
 from nameparser._pipeline._assemble import assemble
-from nameparser._pipeline._state import ParseState
+from nameparser._pipeline._state import ParseState, WorkToken
 from nameparser._policy import Policy
-from nameparser._types import AmbiguityKind, ParsedName
+from nameparser._types import AmbiguityKind, ParsedName, Role, Span
 
 _LEX = Lexicon(
     titles=frozenset({"dr"}),
@@ -50,6 +50,23 @@ def test_assemble_drops_structural_marker_tokens() -> None:
 def test_empty_parse_is_falsy() -> None:
     assert not _parse("")
     assert not _parse("   ")
+
+
+def test_assemble_falls_back_to_given_for_unassigned_role() -> None:
+    # This should never happen through the real pipeline -- assign/group
+    # always set a role on every main-stream token before assemble runs.
+    # This test constructs the invariant violation directly to pin the
+    # documented last-resort behavior: assemble() must stay total over
+    # its input and never raise just because upstream left a role unset.
+    state = ParseState(
+        original="Jane",
+        lexicon=Lexicon.default(),
+        policy=Policy(),
+        tokens=(WorkToken("Jane", Span(0, 4), role=None),),
+    )
+    pn = assemble(state)
+    assert pn.tokens[0].role is Role.GIVEN
+    assert pn.given == "Jane"
 
 
 def test_ambiguity_with_all_indices_dropped_is_omitted() -> None:
