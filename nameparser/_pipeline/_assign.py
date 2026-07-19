@@ -136,6 +136,19 @@ def _assign_main(seg_idx: int, state: ParseState,
                 and "initial" not in tokens[pieces[rest[k - 2]][0]].tags):
             k -= 1
             continue
+        # A bare ambiguous acronym ("MA", not "M.A.") is a credential
+        # only when peeling it still leaves a given AND a family name.
+        # With two pieces, "one of them is a credential" is the less
+        # likely reading, so it stays the family name -- "Jack MA" is a
+        # person, "John Smith MA" is a person with a degree. This is
+        # v1's reserve_last narrowed to the ambiguous set: 2.0
+        # deliberately peels UNambiguous suffixes even when nothing is
+        # left ("Smith PhD" -> suffix, a classified fix), because there
+        # the vocabulary is not in doubt.
+        if (k - 1 >= 2 and len(piece) == 1
+                and "vocab:suffix-ambiguous" in tokens[piece[0]].tags):
+            k -= 1
+            continue
         break
     name_pieces, suffix_pieces = rest[:k], rest[k:]
     if not name_pieces and suffix_pieces:

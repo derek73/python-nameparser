@@ -85,13 +85,25 @@ CASES: tuple[Case, ...] = (
          notes="v1 PREPENDED middle_list to last_list; folded tokens "
                "carry vocab:folded-middle and the family view orders "
                "them first (spans cannot reorder)"),
-    Case("ambiguous_surname_acronyms", "Jack Ma",
-         {"given": "Jack", "family": "Ma"},
-         notes="'ma'/'do' joined suffix_acronyms_ambiguous: common "
-               "surnames need periods to read as credentials (v1 "
-               "parity restored; data change, flag for release log)"),
-    Case("ambiguous_surname_acronym_with_suffix", "Jack Ma Jr",
-         {"given": "Jack", "family": "Ma", "suffix": "Jr"}),
+    Case("ambiguous_surname_acronyms", "Jack MA",
+         {"given": "Jack", "family": "MA"},
+         notes="'ma'/'do' joined suffix_acronyms_ambiguous: with only "
+               "two pieces, 'one of them is a credential' is the less "
+               "likely reading, so the ambiguous acronym stays the "
+               "family name (v1 parity via its reserve_last)"),
+    Case("ambiguous_surname_acronym_with_suffix", "Jack MA Jr",
+         {"given": "Jack", "family": "MA", "suffix": "Jr"},
+         notes="'Jr' peels first; 'MA' would then be the only piece "
+               "left beside the given name, so it stays family"),
+    Case("ambiguous_acronym_is_a_suffix_when_a_family_name_remains",
+         "John Smith MA",
+         {"given": "John", "family": "Smith", "suffix": "MA"},
+         notes="the other half of the same rule: three pieces means "
+               "peeling 'MA' still leaves given+family, so the "
+               "credential reading wins (v1 parity)"),
+    Case("ambiguous_acronym_suffix_with_middle", "John Q Smith MA",
+         {"given": "John", "middle": "Q", "family": "Smith",
+          "suffix": "MA"}),
     Case("initial_shaped_not_conjunction", "john e. smith",
          {"given": "john", "middle": "e.", "family": "smith"},
          notes="v1 is_conjunction excludes initials at classify too"),
