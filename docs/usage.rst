@@ -66,6 +66,16 @@ while ``given_names`` and ``surnames`` roll several fields together —
 the same sense in which a passport form asks for your "given names" as
 one blank that can hold more than one word.
 
+``family_base`` is what you want for alphabetizing, since it drops the
+particles a phone book ignores:
+
+.. doctest::
+
+    >>> names = [parse(s) for s in
+    ...          ["Vincent van Gogh", "Juan de la Vega", "John Smith"]]
+    >>> [n.family_base for n in sorted(names, key=lambda n: n.family_base.lower())]
+    ['Gogh', 'Smith', 'Vega']
+
 Dicts and strings
 ------------------
 

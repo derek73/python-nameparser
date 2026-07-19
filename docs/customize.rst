@@ -129,6 +129,54 @@ a suffix only when written with periods:
     >>> parse("Jack M.A.").suffix
     'M.A.'
 
+``particles_ambiguous`` is the same idea for surname particles. A
+particle listed there may also be a given name, so a name that starts
+with one keeps its given name; a particle *not* listed there is never a
+given name, so a name starting with it has no given name at all — the
+whole thing is the surname:
+
+.. doctest::
+
+    >>> parse("van Gogh").given          # 'van' may be a given name
+    'van'
+    >>> parse("de Mesnil").given         # 'de' may not
+    ''
+    >>> parse("de Mesnil").family
+    'de Mesnil'
+
+If your data never uses ``Van`` as a given name, take it out of the
+ambiguous set and leading ``van`` becomes part of the surname:
+
+.. doctest::
+
+    >>> lex = Lexicon.default().remove(particles_ambiguous={"van"})
+    >>> Parser(lexicon=lex).parse("van Gogh").family
+    'van Gogh'
+
+Bound given names
+~~~~~~~~~~~~~~~~~~
+
+``bound_given_names`` holds given-name prefixes that attach to the
+following word to form one given name — ``abdul``, ``abu``, ``umm`` and
+their Arabic-script spellings (``عبد``, ``أبو``, ``أم``) among them:
+
+.. doctest::
+
+    >>> parse("abdul salam ahmed salem").given
+    'abdul salam'
+
+Add your own, or empty the set to switch the behavior off entirely:
+
+.. doctest::
+
+    >>> lex = Lexicon.default().add(bound_given_names={"mohamad"})
+    >>> Parser(lexicon=lex).parse("mohamad salam ahmed salem").given
+    'mohamad salam'
+    >>> d = Lexicon.default()
+    >>> off = d.remove(bound_given_names=set(d.bound_given_names))
+    >>> Parser(lexicon=off).parse("abdul salam ahmed salem").given
+    'abdul'
+
 Behavior: Policy
 -----------------
 
@@ -225,6 +273,50 @@ family-then-given regardless of the configured order:
     >>> policy = Policy(maiden_delimiters={("(", ")")})
     >>> Parser(policy=policy).parse("Jane (Jones) Smith").maiden
     'Jones'
+
+To *add* a delimiter pair rather than reroute one, build on the
+exported default — assigning a bare set replaces the built-in pairs
+instead of extending them, the same trap as ``capitalization_exceptions``:
+
+.. doctest::
+
+    >>> from nameparser import DEFAULT_NICKNAME_DELIMITERS
+    >>> parse("Benjamin {Ben} Franklin").middle        # not a pair by default
+    '{Ben}'
+    >>> policy = Policy(
+    ...     nickname_delimiters=DEFAULT_NICKNAME_DELIMITERS | {("{", "}")})
+    >>> Parser(policy=policy).parse("Benjamin {Ben} Franklin").nickname
+    'Ben'
+
+``extra_suffix_delimiters`` handles sources that separate post-nominals
+with something other than a comma. The default reading of such a name
+is bad enough to be the reason you'd go looking:
+
+.. doctest::
+
+    >>> name = parse("Jane Smith, RN - CRNA")
+    >>> name.given, name.family, name.suffix
+    ('RN', 'Jane Smith', 'CRNA')
+    >>> policy = Policy(extra_suffix_delimiters={" - "})
+    >>> name = Parser(policy=policy).parse("Jane Smith, RN - CRNA")
+    >>> name.given, name.family, name.suffix
+    ('Jane', 'Smith', 'RN, CRNA')
+
+The strip flags keep characters the parser removes by default. Note
+what happens to an emoji you keep — it becomes a token like any other,
+and lands in the middle name:
+
+.. doctest::
+
+    >>> str(parse("Sam 😊 Smith"))                      # stripped by default
+    'Sam Smith'
+    >>> kept = Parser(policy=Policy(strip_emoji=False)).parse("Sam 😊 Smith")
+    >>> str(kept), kept.middle
+    ('Sam 😊 Smith', '😊')
+
+``strip_bidi=False`` does the same for invisible bidirectional control
+characters, which is occasionally what you want when round-tripping
+right-to-left text verbatim.
 
 A pair routes to exactly one field, and ``maiden_delimiters`` states
 the specific intent — so listing a pair there automatically drops it
