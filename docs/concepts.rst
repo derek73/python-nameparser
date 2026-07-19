@@ -12,7 +12,7 @@ From string to name
 --------------------
 
 Every parse follows the same path: the input string is split into
-tokens, each token is assigned one of the seven roles — ``title``,
+:class:`tokens <nameparser.Token>`, each token is assigned one of the seven roles — ``title``,
 ``given``, ``middle``, ``family``, ``suffix``, ``nickname``,
 ``maiden`` — and every string you read off the result is computed
 from those tokens at read time.
@@ -23,7 +23,7 @@ and ``Vega`` each carry the ``family`` role, which is why
 ``name.family`` returns ``"de la Vega"`` — the field is a view that
 joins the family-role tokens in order, not a stored string.
 
-Each token also records where it came from. A span is a pair of
+Each token also records where it came from. A :class:`~nameparser.Span` is a pair of
 character positions bounding the token in the original string:
 ``Dr.`` has span ``(0, 3)``, and ``name.original[0:3]`` is exactly
 ``"Dr."``. Internally, spans let the pipeline refer to a token by
@@ -121,7 +121,7 @@ other names, so the parse records a ``particle-or-given`` ambiguity
 alongside its answer. You can inspect ``ambiguities`` to decide, case
 by case, whether your data needs a second look.
 
-Tokens also carry tags — a second, independent label alongside their
+:class:`Tokens <nameparser.Token>` also carry tags — a second, independent label alongside their
 role, recording how a token was classified rather than what part of
 the name it belongs to — but only a handful of them are part of the
 stable API: ``particle``, ``conjunction``, ``initial``, and ``joined``.
