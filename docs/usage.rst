@@ -131,8 +131,10 @@ while ``given_names`` and ``surnames`` roll several fields together —
 the same sense in which a passport form asks for your "given names" as
 one blank that can hold more than one word.
 
-``family_base`` is what you want for alphabetizing, since it drops the
-particles a phone book ignores:
+``family_base`` is the one to sort on. Dutch and Belgian directories
+file a name under the base surname and ignore the *tussenvoegsel* — the
+``van``, ``de`` or ``van der`` in front of it — and the same convention
+applies wherever particles are common:
 
 .. doctest::
 
@@ -140,6 +142,14 @@ particles a phone book ignores:
     ...          ["Vincent van Gogh", "Juan de la Vega", "John Smith"]]
     >>> [n.family_base for n in sorted(names, key=lambda n: n.family_base.lower())]
     ['Gogh', 'Smith', 'Vega']
+
+Sorting on ``family`` instead files those under "d", "S" and "v", which
+is the problem the split exists to solve:
+
+.. doctest::
+
+    >>> [n.family for n in sorted(names, key=lambda n: n.family.lower())]
+    ['de la Vega', 'Smith', 'van Gogh']
 
 Dicts and strings
 ------------------
@@ -357,6 +367,34 @@ everything else carried over.
 
 Command line
 ------------
+
+``python -m nameparser`` parses one name and prints what it found. It
+is the quickest way to see how a particular string comes out — worth
+reaching for when a name parsed unexpectedly and you want to check a
+variation of it, or when trying a locale pack before wiring one into
+code:
+
+::
+
+    $ python -m nameparser "dr. juan de la vega iii"
+    Parsed:
+    <ParsedName: [
+        title: 'dr.'
+        given: 'juan'
+        family: 'de la vega'
+        suffix: 'iii'
+    ]>
+    Capitalized:
+    <ParsedName: [
+        title: 'Dr.'
+        given: 'Juan'
+        family: 'de la Vega'
+        suffix: 'III'
+    ]>
+    Initials: j. v.
+
+``--json`` prints the fields as a single line instead, which is the
+form to pipe somewhere:
 
 ::
 

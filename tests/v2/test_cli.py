@@ -15,6 +15,17 @@ def test_cli_prints_repr_capitalized_and_initials() -> None:
     assert "Initials:" in out
 
 
+def test_cli_labels_each_section() -> None:
+    # two of the three outputs were unlabeled ParsedName reprs, and for
+    # already-cased input they are byte-identical -- the reader cannot
+    # tell which is the parse and which is the capitalized view
+    out = _run("Dr. Juan de la Vega III").stdout
+    assert out.count("<ParsedName:") == 2     # still both shown
+    assert "Parsed:" in out
+    assert "Capitalized:" in out
+    assert out.index("Parsed:") < out.index("Capitalized:")
+
+
 def test_cli_json() -> None:
     proc = _run("John Smith", "--json")
     data = json.loads(proc.stdout)

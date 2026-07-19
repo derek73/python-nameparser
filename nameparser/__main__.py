@@ -33,7 +33,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.json:
         print(json.dumps(n.as_dict(), ensure_ascii=False))
         return 0
+    # Label each section: the two reprs are byte-identical for input
+    # that is already correctly cased, so without labels there is no
+    # telling which is the parse and which is the capitalized view.
+    print("Parsed:")
     print(repr(n))
+    print("Capitalized:")
     print(repr(n.capitalized()))
     print("Initials:", n.initials())
     return 0
