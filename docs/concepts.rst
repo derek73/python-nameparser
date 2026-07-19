@@ -3,10 +3,11 @@ How the parser works
 
 ``parse()`` turns a name string into a
 :class:`~nameparser.ParsedName`. This page explains the model behind
-that call: how a string becomes tokens and tokens become fields,
-where configuration lives and why it is split the way it is, why
-parsers are plain values, and what happens when a name is genuinely
-ambiguous. The task pages all build on these four ideas.
+that call: how a string becomes tokens and tokens become fields, how
+those tokens get their roles, where configuration lives and why it is
+split the way it is, why parsers are plain values, and what happens
+when a name is genuinely ambiguous. The task pages all build on these
+five ideas.
 
 From string to name
 --------------------
@@ -71,8 +72,8 @@ you look anything up: if you are teaching the parser a *word*, it goes
 in the :class:`~nameparser.Lexicon`; if you are changing how unclaimed
 words are *arranged*, it goes in the :class:`~nameparser.Policy`.
 
-Three containers, three concerns
---------------------------------
+Configuration lives in three containers
+----------------------------------------
 
 Every piece of nameparser configuration falls into exactly one of
 three places, and which one is decided by a single question: what does
