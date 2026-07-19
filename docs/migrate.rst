@@ -46,6 +46,46 @@ where 1.x returned ``True``. That one *did* warn on 1.4, but nothing
 will tell you on 2.0. If you compare names anywhere, grep for ``==``
 before upgrading and move to ``matches()`` — see `Comparison`_.
 
+One step has to happen *before* you upgrade, because the fix is only
+available on the version you're leaving: a ``Constants`` pickle written
+by nameparser 1.2.x or earlier must be re-pickled under 1.3 or 1.4.
+2.0 refuses to load one, and by then the code that could rewrite it is
+gone.
+
+If your suite did *not* run clean, these are the replacements for the
+warned removals:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 45 55
+
+   * - 1.4 spelling
+     - 2.0 replacement
+   * - ``HumanName(b"...")``, ``manager.add(b"...")``
+     - Decode first: ``HumanName(raw.decode("utf-8"))``
+   * - ``SetManager.add_with_encoding(b"...")``
+     - ``add()``, on already-decoded ``str``
+   * - ``manager()`` (calling a set manager)
+     - ``set(manager)``, or iterate it directly
+   * - ``manager.remove(missing)`` (was tolerant)
+     - ``discard()`` to ignore missing; ``remove()`` now raises
+       ``KeyError`` like ``set.remove``
+   * - ``HumanName(..., constants=None)``
+     - ``Constants()`` for library defaults, or ``CONSTANTS.copy()``
+       for a private snapshot of the current shared config
+   * - ``name['first'] = value``
+     - ``name.first = value``
+   * - ``CONSTANTS.regexes.typo`` (returned ``None``)
+     - ``.get("typo")`` for intentional soft access; attribute access
+       now raises ``AttributeError`` naming the known keys
+   * - ``CONSTANTS.empty_attribute_default``
+     - Gone; empty fields are always ``''``
+
+Finally, if you want to see the difference on your own data rather than
+ours, ``tools/differential/`` in the source repository diffs 1.4 and
+2.0 parses over a corpus of names you supply. It is development
+tooling, not part of the installed package — see its README.
+
 Attribute map
 -------------
 
@@ -263,15 +303,35 @@ behavior:
 
 One behavior changed underneath both methods: components now fold with
 ``str.casefold()`` instead of ``str.lower()``, so more Unicode
-case-pairs compare equal than did under 1.4 (see the 2.0.0 section of
-:doc:`release_log` for the exact rule and examples).
+case-pairs compare equal than did under 1.4. The change is strictly
+more permissive — anything 1.4 matched still matches:
+
+.. doctest::
+
+    >>> parse("Anna STRASSE").matches("Anna Straße")
+    True
 
 Behavior changes
 -----------------
 
 Beyond the API surface mapped above, a handful of parse *outputs*
-differ between 1.4 and 2.0 for specific input shapes — comma-suffix
-routing, maiden-marker detection, an ambiguous-acronym data change, and
-one rendering difference under a custom suffix delimiter. These are
-listed with their reasoning and test coverage in the 2.0.0 section of
-:doc:`release_log`; they aren't repeated here.
+differ between 1.4 and 2.0 for specific input shapes. The full list,
+with reasoning, is in the 2.0.0 section of :doc:`release_log`. These
+are the shapes worth grepping your own fixtures for, because a
+recognized suffix or title now stays in its own field instead of
+landing in ``first``/``last``:
+
+.. doctest::
+
+    >>> HumanName("Andrews, M.D.").last, HumanName("Andrews, M.D.").suffix
+    ('Andrews', 'M.D.')
+    >>> HumanName("Johnson PhD").first, HumanName("Johnson PhD").suffix
+    ('Johnson', 'PhD')
+
+Under 1.4 those read ``first="M.D."``/``last="Andrews"`` and
+``first="Johnson"``/``last="PhD"`` respectively. Two more to check for:
+a maiden marker now fills the ``maiden`` field rather than being folded
+into ``middle``/``last`` (``"Jane Smith née Jones"``), and with a
+custom suffix delimiter configured, a no-space delimiter group renders
+whole (``"RN/CRNA"``) where 1.x split it (``"RN, CRNA"``) — the role
+assignment is identical, only the rendered string differs.

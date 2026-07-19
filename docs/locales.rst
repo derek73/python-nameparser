@@ -7,6 +7,54 @@ patronymics, Turkic patronymic markers, and so on. Packs apply only
 when you ask for one by name, and every pack makes the same promise:
 a pack never changes a name it doesn't declare.
 
+What works without a pack
+--------------------------
+
+Most international names need no pack at all. The default vocabulary
+covers five scripts — Latin, Cyrillic, Greek, Arabic and Hebrew, plus
+Devanagari titles — so honorifics, conjunctions and name particles in
+those scripts are recognized out of the box:
+
+.. doctest::
+
+    >>> from nameparser import parse
+    >>> name = parse("الشيخ محمد بن سلمان")
+    >>> name.title, name.given, name.family
+    ('الشيخ', 'محمد', 'بن سلمان')
+    >>> parse("عبد الرحمن محمد").given
+    'عبد الرحمن'
+
+Native-script entries are safe to enable by default precisely because
+they cannot collide with Latin-script names. That rules out the
+reverse: transliterations like ``sri``/``shri`` are *not* in the
+default vocabulary, because they are also ordinary given names in
+Latin script. The same conservatism holds back a handful of native
+entries that collide within their own script — bare ``سيد`` and
+``شيخ`` (common given names), Hebrew ``רב`` (an ordinary word), the
+Arabic ``د.`` abbreviation (it would swallow initials).
+
+If your data is homogeneous enough that a collision can't occur, the
+reasoning behind the default doesn't apply to you — add the entry:
+
+.. doctest::
+
+    >>> from nameparser import Lexicon, Parser
+    >>> lex = Lexicon.default().add(
+    ...     titles={"سيد"}, given_name_titles={"سيد"})
+    >>> name = Parser(lexicon=lex).parse("سيد محمد")
+    >>> name.title, name.given
+    ('سيد', 'محمد')
+
+Both fields, because ``given_name_titles`` is a marker over ``titles``
+rather than a separate vocabulary: ``titles`` makes the word a title at
+all, and listing it in ``given_name_titles`` says the honorific
+precedes the *given* name — as Arabic ones do — so the word after it
+isn't read as a family name. Adding it to ``given_name_titles`` alone
+has no effect.
+
+A pack is for something different: a *structural* rule, like reordering
+a patronymic, that vocabulary alone can't express.
+
 Using a pack
 ------------
 
