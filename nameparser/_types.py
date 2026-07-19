@@ -231,9 +231,16 @@ class AmbiguityKind(StrEnum):
     #: two-word name under a non-default name_order). Not yet emitted;
     #: planned for 2.x.
     ORDER = "order"
-    #: Reserved: a trailing word reads plausibly as either a suffix or
-    #: a nickname. Not yet emitted; planned for 2.x.
+    #: Delimited content is an ambiguous suffix acronym, so it reads
+    #: plausibly as either a post-nominal or a nickname -- "JEFFREY
+    #: (JD) BRICKEN" keeps the nickname reading, where the
+    #: unambiguous "(MBA)" escapes to suffix on vocabulary alone.
     SUFFIX_OR_NICKNAME = "suffix-or-nickname"
+    #: An ambiguous suffix acronym written without periods, which is
+    #: also an ordinary surname -- "John Smith MA" reads MA as a
+    #: post-nominal because a family name remains, "Jack MA" reads it
+    #: as the family name because none would.
+    SUFFIX_OR_FAMILY = "suffix-or-family"
     #: A leading ambiguous particle was read as a given name -- "Van
     #: Johnson" parses given="Van", but "Van" is also a family-name
     #: particle in other names.

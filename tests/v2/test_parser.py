@@ -170,3 +170,44 @@ def test_phd_split_mid_name_is_a_suffix() -> None:
     assert pn.suffix == "Ph. D."
     assert pn.family == "Smith"
     assert pn.middle == ""
+
+
+def test_ambiguous_acronym_reports_the_reading_it_took() -> None:
+    # 'ma' is both a post-nominal and a surname, so whichever way the
+    # peel resolves it is a guess -- the same shape as the leading
+    # ambiguous particle that already reports PARTICLE_OR_GIVEN
+    took_suffix = parse("John Smith MA")
+    assert took_suffix.suffix == "MA"
+    assert [a.kind for a in took_suffix.ambiguities] == \
+        [AmbiguityKind.SUFFIX_OR_FAMILY]
+    assert [t.text for t in took_suffix.ambiguities[0].tokens] == ["MA"]
+
+    took_family = parse("Jack MA")
+    assert took_family.family == "MA"
+    assert [a.kind for a in took_family.ambiguities] == \
+        [AmbiguityKind.SUFFIX_OR_FAMILY]
+
+
+@pytest.mark.parametrize("text", [
+    "John Smith M.A.",                   # periods decide it; no guess
+    "Ma, Jack",                          # a comma fixes the family
+    "Joao da Silva do Amaral de Souza",  # 'do' mid-name, never at the peel
+    "John Smith PhD",                    # unambiguous vocabulary
+])
+def test_no_suffix_ambiguity_when_nothing_was_guessed(text: str) -> None:
+    assert [a for a in parse(text).ambiguities
+            if a.kind is AmbiguityKind.SUFFIX_OR_FAMILY] == []
+
+
+def test_delimited_ambiguous_acronym_reports_suffix_or_nickname() -> None:
+    # inside delimiters the competing readings are suffix and nickname:
+    # "(MBA)" is unambiguously a credential and escapes to suffix, while
+    # "(JD)" could be either, so it keeps the nickname reading -- a
+    # guess, and until now a silent one
+    n = parse("JEFFREY (JD) BRICKEN")
+    assert n.nickname == "JD"
+    assert [a.kind for a in n.ambiguities] == \
+        [AmbiguityKind.SUFFIX_OR_NICKNAME]
+    assert [t.text for t in n.ambiguities[0].tokens] == ["JD"]
+    # the unambiguous one decided on vocabulary, so it is not a guess
+    assert parse("Andrew Perkins (MBA)").ambiguities == ()

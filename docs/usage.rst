@@ -318,6 +318,27 @@ so branching on a kind needs no import:
     >>> [t.text for t in name.ambiguities[0].tokens]
     ['Van']
 
+The post-nominals that double as ordinary surnames report the same way.
+``MA`` after a full name is read as a credential, but after a single
+given name it stays the surname — either way the choice is recorded:
+
+.. doctest::
+
+    >>> parse("John Smith MA").suffix
+    'MA'
+    >>> [a.kind.value for a in parse("John Smith MA").ambiguities]
+    ['suffix-or-family']
+    >>> parse("Jack MA").family
+    'MA'
+
+A reading the vocabulary settles on its own is not a guess and reports
+nothing — periods make ``M.A.`` unambiguously a credential:
+
+.. doctest::
+
+    >>> parse("John Smith M.A.").ambiguities
+    ()
+
 Most names report none. A non-empty ``ambiguities`` is a useful signal
 for routing a record to human review instead of trusting it silently.
 

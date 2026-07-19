@@ -19,7 +19,10 @@ from __future__ import annotations
 import dataclasses
 
 from nameparser._lexicon import _normalize
-from nameparser._pipeline._state import ParseState, WorkToken
+from nameparser._pipeline._state import (
+    ParseState, PendingAmbiguity, WorkToken,
+)
+from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
     is_initial, period_joined_vocab, suffix_as_written,
 )
@@ -73,4 +76,20 @@ def classify(state: ParseState) -> ParseState:
     tokens = tuple(
         dataclasses.replace(t, tags=_tags_for(t, state))
         for t in state.tokens)
-    return dataclasses.replace(state, tokens=tokens)
+    # Delimited content whose vocabulary cannot settle it: extract's
+    # escape sends an UNambiguous suffix straight through ("(MBA)" ->
+    # suffix) and keeps everything else as a nickname, so an AMBIGUOUS
+    # acronym in there was a coin the parser had to call. Reported here
+    # rather than at the escape itself, which runs before tokenize and
+    # so has no token index to point at.
+    ambiguities = list(state.ambiguities)
+    for i, token in enumerate(tokens):
+        if (token.role is Role.NICKNAME
+                and "vocab:suffix-ambiguous" in token.tags):
+            ambiguities.append(PendingAmbiguity(
+                AmbiguityKind.SUFFIX_OR_NICKNAME,
+                f"delimited {token.text!r} is also a post-nominal; read "
+                f"as a nickname rather than a suffix",
+                (i,)))
+    return dataclasses.replace(state, tokens=tokens,
+                               ambiguities=tuple(ambiguities))

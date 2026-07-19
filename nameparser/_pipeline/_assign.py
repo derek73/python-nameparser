@@ -124,6 +124,9 @@ def _assign_main(seg_idx: int, state: ParseState,
     # every piece is a strict suffix (v1's are_suffixes tail rule, with
     # the roman-numeral special: a final roman numeral after a
     # non-initial piece is a suffix)
+    # (piece, reading taken, reading declined) when the peel had to
+    # resolve a bare ambiguous acronym; both directions are guesses
+    ambiguous_pick: tuple[tuple[int, ...], str, str] | None = None
     k = len(rest)
     while k > 0:
         piece = pieces[rest[k - 1]]
@@ -145,10 +148,18 @@ def _assign_main(seg_idx: int, state: ParseState,
         # deliberately peels UNambiguous suffixes even when nothing is
         # left ("Smith PhD" -> suffix, a classified fix), because there
         # the vocabulary is not in doubt.
-        if (k - 1 >= 2 and len(piece) == 1
-                and "vocab:suffix-ambiguous" in tokens[piece[0]].tags):
+        bare_ambiguous = (len(piece) == 1
+                          and "vocab:suffix-ambiguous" in tokens[piece[0]].tags)
+        if bare_ambiguous and k - 1 >= 2:
+            ambiguous_pick = (piece, "a suffix", "an ordinary surname")
             k -= 1
             continue
+        if bare_ambiguous and k >= 2:
+            # not peeled, so it stays the last name piece -- the family
+            # name under every order. (k < 2 means it is the only piece
+            # left and lands in the given position, which is not the
+            # fork this reports.)
+            ambiguous_pick = (piece, "a family name", "a post-nominal")
         break
     name_pieces, suffix_pieces = rest[:k], rest[k:]
     if not name_pieces and suffix_pieces:
@@ -159,6 +170,14 @@ def _assign_main(seg_idx: int, state: ParseState,
         _set_roles(tokens, pieces[piece_idx], roles[pos])
     for piece_idx in suffix_pieces:
         _set_roles(tokens, pieces[piece_idx], Role.SUFFIX)
+    if ambiguous_pick is not None:
+        piece, taken, declined = ambiguous_pick
+        ambiguities.append(PendingAmbiguity(
+            AmbiguityKind.SUFFIX_OR_FAMILY,
+            f"{tokens[piece[0]].text!r} written without periods is both "
+            f"a post-nominal and a surname; read as {taken} rather than "
+            f"{declined}",
+            tuple(piece)))
     # leading ambiguous particle read as a name (#121 surfaced)
     if name_pieces:
         head = pieces[name_pieces[0]]
