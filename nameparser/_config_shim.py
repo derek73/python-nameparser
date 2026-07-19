@@ -934,6 +934,8 @@ class Constants:
         from nameparser.config.maiden_markers import MAIDEN_MARKERS
         acronyms = frozenset(self.suffix_acronyms)
         titles = frozenset(self.titles)
+        particles = frozenset(self.prefixes)
+        bound = frozenset(self.bound_first_names)
         # keep in sync with _lexicon._default_lexicon() (pinned by the
         # default-Constants equality test in tests/v2/test_config_shim.py)
         lexicon = Lexicon(
@@ -953,13 +955,20 @@ class Constants:
             # ambiguous entry lingers (the entry simply stops mattering)
             suffix_acronyms_ambiguous=frozenset(
                 self.suffix_acronyms_ambiguous) & acronyms,
-            particles=frozenset(self.prefixes),
+            particles=particles,
             # complement translation: v1 marks the never-given subset;
-            # v2 marks the may-be-given subset
-            particles_ambiguous=frozenset(self.prefixes)
-            - frozenset(self.non_first_name_prefixes),
+            # v2 marks the may-be-given subset. The trailing union keeps
+            # a config v1 accepted: prefixes.py asserts its own data has
+            # no word in both non_first_name_prefixes and
+            # bound_first_names, but nothing stops a caller adding one at
+            # runtime, and v1 then lets the bound rule win (leading "dos
+            # Santos Silva" parses first="dos Santos"). Treating such a
+            # word as may-be-given reproduces that instead of raising.
+            particles_ambiguous=(
+                particles - frozenset(self.non_first_name_prefixes))
+            | (bound & particles),
             conjunctions=frozenset(self.conjunctions),
-            bound_given_names=frozenset(self.bound_first_names),
+            bound_given_names=bound,
             # v1 Constants has no manager for these (#274 is 2.0
             # behavior); the data module is the only source
             maiden_markers=frozenset(MAIDEN_MARKERS),

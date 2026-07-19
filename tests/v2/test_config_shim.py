@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from nameparser import GIVEN_FIRST, Lexicon, PatronymicRule, Policy
+from nameparser import GIVEN_FIRST, HumanName, Lexicon, PatronymicRule, Policy
 from nameparser._config_shim import (
     CONSTANTS, Constants, SetManager, TupleManager, _DelimiterManager,
     _RegexesProxy, _cached_parser,
@@ -333,6 +333,22 @@ def test_v14_constants_blob_unpickles_into_shim() -> None:
     assert "dr" in loaded.titles
     assert "jr" in loaded.suffix_not_acronyms
     assert loaded.string_format == "{title} {first} {middle} {last} {suffix} ({nickname})"
+
+
+def test_snapshot_keeps_a_bound_never_given_prefix_parseable() -> None:
+    # prefixes.py asserts its own data keeps non_first_name_prefixes
+    # disjoint from bound_first_names, but nothing stops a v1 caller
+    # adding one at runtime, and 1.4 accepts it -- letting the bound
+    # rule win, so "dos Santos Silva" parses first="dos Santos".
+    # Lexicon rejects that combination, so the shim promotes such a word
+    # to may-be-given rather than raising on config v1 allowed.
+    c = Constants()
+    assert "dos" in c.non_first_name_prefixes      # baseline: never-given
+    c.bound_first_names.add("dos")
+    lexicon, _, _ = c._snapshot()                  # must not raise
+    assert "dos" in lexicon.particles_ambiguous
+    name = HumanName("dos Santos Silva", constants=c)
+    assert (name.first, name.last) == ("dos Santos", "Silva")
 
 
 def test_snapshot_field_translation() -> None:

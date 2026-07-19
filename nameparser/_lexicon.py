@@ -236,6 +236,19 @@ class Lexicon:
                     f"Add them to {base} as well — "
                     f"add({base}={{...}}, {marker}={{...}})"
                 )
+        # The v2 form of prefixes.py's NON_FIRST_NAME_PREFIXES-disjoint-
+        # from-BOUND_FIRST_NAMES assertion. That module guards its own
+        # data at import; this guards vocabulary a caller supplies.
+        contradictory = (
+            self.bound_given_names & self.particles) - self.particles_ambiguous
+        if contradictory:
+            raise ValueError(
+                f"bound_given_names entries that are also particles must be "
+                f"in particles_ambiguous; not in particles_ambiguous: "
+                f"{', '.join(sorted(contradictory))}. A particle that never "
+                f"starts a given name cannot also bind one — add them to "
+                f"particles_ambiguous, or drop them from bound_given_names"
+            )
 
     # -- constructors ----------------------------------------------------
 

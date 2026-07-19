@@ -254,6 +254,35 @@ def test_subset_error_names_the_fix(
         make(frozenset({"zzqnovel"}))
 
 
+def test_bound_given_name_that_is_a_particle_must_be_ambiguous() -> None:
+    # nameparser/config/prefixes.py asserts this on its own data:
+    # NON_FIRST_NAME_PREFIXES stays disjoint from BOUND_FIRST_NAMES. In
+    # 2.0's complement model that reads as bound_given_names & particles
+    # <= particles_ambiguous. A particle declared never-to-start-a-given-
+    # name cannot simultaneously bind one; without the check, one of the
+    # two contradictory declarations is silently discarded.
+    with pytest.raises(ValueError, match="particles_ambiguous"):
+        Lexicon(particles=frozenset({"dos"}),
+                particles_ambiguous=frozenset(),
+                bound_given_names=frozenset({"dos"}))
+
+
+def test_bound_given_name_may_overlap_an_ambiguous_particle() -> None:
+    # the shipped case: "abu" is both, and legitimately so
+    lex = Lexicon(particles=frozenset({"abu"}),
+                  particles_ambiguous=frozenset({"abu"}),
+                  bound_given_names=frozenset({"abu"}))
+    assert "abu" in lex.bound_given_names
+    # and a bound name that is not a particle at all is unconstrained
+    assert "abdul" in Lexicon(bound_given_names=frozenset({"abdul"})
+                              ).bound_given_names
+
+
+def test_default_lexicon_satisfies_the_bound_particle_invariant() -> None:
+    d = Lexicon.default()
+    assert not (d.bound_given_names & d.particles) - d.particles_ambiguous
+
+
 def test_remove_orphaning_given_name_titles_raises() -> None:
     lex = Lexicon(titles=frozenset({"sheikh"}),
                   given_name_titles=frozenset({"sheikh"}))
