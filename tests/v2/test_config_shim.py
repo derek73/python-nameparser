@@ -196,6 +196,17 @@ def test_regexes_membership_iteration_and_deepcopy() -> None:
     assert isinstance(copy.deepcopy(r), _RegexesProxy)
 
 
+def test_regexes_supports_the_v1_read_only_mapping_surface() -> None:
+    # v1's regexes was a dict subclass. The proxy is not, and its
+    # catch-all __getattr__ claims every unimplemented mapping method
+    # as a regex name -- the same failure that made .get() raise
+    # "no regex named 'get'". Cover the rest of the read surface.
+    r = _RegexesProxy()
+    assert dict(r.items())["word"] is REGEXES["word"]
+    assert REGEXES["word"] in list(r.values())
+    assert len(r) == len(REGEXES)
+
+
 def test_regexes_get_is_the_soft_access_escape_hatch() -> None:
     # 1.4's #256 deprecation told users ".get() remains available for
     # intentional soft access"; __getattr__ must not swallow `get`

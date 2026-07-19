@@ -22,7 +22,8 @@ from __future__ import annotations
 import functools
 import warnings
 from collections.abc import (
-    Callable, Iterable, Iterator, KeysView, Mapping, Set,
+    Callable, ItemsView, Iterable, Iterator, KeysView, Mapping, Set,
+    ValuesView,
 )
 from typing import NamedTuple, Self
 
@@ -524,11 +525,23 @@ class _RegexesProxy:
     def keys(self) -> KeysView[str]:
         return self._regexes().keys()
 
+    # Defined explicitly because __getattr__ would otherwise claim each
+    # of these names as a regex lookup and raise "no regex named
+    # 'items'". The sibling managers inherit the whole surface from
+    # dict; this proxy has to spell out the read half it supports.
+    # #256's deprecation text promised .get() on both managers.
+
     def get(self, name: str, default: object = None) -> object:
-        # Defined explicitly because __getattr__ would otherwise claim
-        # `get` as a regex name. The sibling managers inherit this from
-        # dict; #256's deprecation text promised it on both.
         return self._regexes().get(name, default)
+
+    def items(self) -> ItemsView[str, object]:
+        return self._regexes().items()
+
+    def values(self) -> ValuesView[object]:
+        return self._regexes().values()
+
+    def __len__(self) -> int:
+        return len(self._regexes())
 
     def __setattr__(self, name: str, value: object) -> None:
         self._raise_readonly(name)
