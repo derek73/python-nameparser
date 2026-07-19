@@ -1,4 +1,5 @@
 import dataclasses
+from collections.abc import Callable
 
 import pytest
 
@@ -236,6 +237,21 @@ def test_given_name_titles_must_be_subset_of_titles() -> None:
     # no-op is exactly the failure mode the other two guards prevent
     with pytest.raises(ValueError, match="subset"):
         Lexicon(given_name_titles=frozenset({"sheikh"}))
+
+
+@pytest.mark.parametrize(("make", "base"), [
+    (lambda w: Lexicon(given_name_titles=w), "titles"),
+    (lambda w: Lexicon(particles_ambiguous=w), "particles"),
+    (lambda w: Lexicon(suffix_acronyms_ambiguous=w), "suffix_acronyms"),
+], ids=["given_name_titles", "particles_ambiguous", "suffix_acronyms_ambiguous"])
+def test_subset_error_names_the_fix(
+    make: Callable[[frozenset[str]], Lexicon], base: str
+) -> None:
+    # the constraint alone leaves the reader to infer the remedy; every
+    # marker field's error should name the base field to add to, since
+    # adding to both is the only thing the caller can have meant
+    with pytest.raises(ValueError, match=f"Add them to {base} as well"):
+        make(frozenset({"zzqnovel"}))
 
 
 def test_remove_orphaning_given_name_titles_raises() -> None:

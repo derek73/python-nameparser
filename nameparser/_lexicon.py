@@ -231,8 +231,10 @@ class Lexicon:
             orphans = getattr(self, marker) - getattr(self, base)
             if orphans:
                 raise ValueError(
-                    f"{marker} must be a subset of {base}; "
-                    f"not in {base}: {', '.join(sorted(orphans))}"
+                    f"{marker} marks a subset of {base}; "
+                    f"not in {base}: {', '.join(sorted(orphans))}. "
+                    f"Add them to {base} as well — "
+                    f"add({base}={{...}}, {marker}={{...}})"
                 )
 
     # -- constructors ----------------------------------------------------
