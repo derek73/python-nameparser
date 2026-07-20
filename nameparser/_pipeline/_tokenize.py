@@ -104,18 +104,22 @@ def tokenize(state: ParseState) -> ParseState:
     # against 9ms before the sweep existed). Spans are non-overlapping
     # and sorted just above, so the candidate is the last token whose
     # start is <= the offset.
-    starts = [t.span.start for t in tokens]
+    # Nothing to resolve on the overwhelmingly common no-ambiguity
+    # parse, and building starts + the closure is not free.
+    ambiguities = state.ambiguities
+    if any(a.origin is not None for a in ambiguities):
+        starts = [t.span.start for t in tokens]
 
-    def _containing(offset: int) -> tuple[int, ...]:
-        i = bisect.bisect_right(starts, offset) - 1
-        if i >= 0 and offset < tokens[i].span.end:
-            return (i,)
-        return ()
+        def _containing(offset: int) -> tuple[int, ...]:
+            i = bisect.bisect_right(starts, offset) - 1
+            if i >= 0 and offset < tokens[i].span.end:
+                return (i,)
+            return ()
 
-    ambiguities = tuple(
-        a if a.origin is None
-        else dataclasses.replace(a, indices=_containing(a.origin))
-        for a in state.ambiguities)
+        ambiguities = tuple(
+            a if a.origin is None
+            else dataclasses.replace(a, indices=_containing(a.origin))
+            for a in ambiguities)
     return dataclasses.replace(state, tokens=tuple(tokens),
                                comma_offsets=tuple(sorted(commas)),
                                ambiguities=ambiguities)

@@ -29,6 +29,7 @@ tie-break for exotic configs where two pairs share an OPEN character.
 """
 from __future__ import annotations
 
+import bisect
 import dataclasses
 import functools
 
@@ -61,26 +62,39 @@ def _close_ok(text: str, j: int, width: int) -> bool:
     return k >= len(text) or text[k].isspace() or text[k] in COMMA_CHARS
 
 
-def _apostrophe_after_a_word(text: str, j: int, close: str) -> bool:
-    """A "'" directly after a word character is an apostrophe, not a
-    dangling close quote -- "Mari' Aube'", "Ali Baba'".
-
-    An ambiguity means the part could REASONABLY read two ways where it
-    sits, and this one cannot: "'" is the only delimiter character that
-    occurs inside and at the end of real name parts, and it is the
-    least likely of them to mark a nickname. The same position with a
-    quote IS ambiguous, since quotes do not appear inside names, so the
-    carve-out is deliberately this one character. #273 excluded the
-    curly apostrophe from the delimiter set outright for the same
-    reason; the straight one has to stay a delimiter (v1's
-    quoted_word), so it is handled here instead.
-    """
-    return close == "'" and j > 0 and (text[j - 1].isalnum()
-                                       or text[j - 1] == ".")
+# Delimiters that also occur INSIDE and at the end of real name parts,
+# so a dangling one is literal rather than unbalanced. Only the straight
+# apostrophe qualifies: quotes do not appear inside names, so the same
+# position with a quote genuinely is ambiguous. #273 dropped the curly
+# apostrophe from the defaults outright for this reason; the straight
+# one has to stay a delimiter (v1's quoted_word), so it is carved out
+# here instead. Deliberately not widened to a configured delimiter set.
+WORD_INTERNAL_DELIMITERS = frozenset({"'"})
 
 
-def _overlaps(span: Span, taken: list[Span]) -> bool:
-    return any(span.start < t.end and t.start < span.end for t in taken)
+def _word_internal(text: str, j: int, close: str) -> bool:
+    """A word-internal delimiter directly after a word character is part
+    of the word, not a dangling close -- "Mari' Aube'", "Ali Baba'"."""
+    return (close in WORD_INTERNAL_DELIMITERS and j > 0
+            and (text[j - 1].isalnum() or text[j - 1] == "."))
+
+
+def _overlaps(span: Span, taken: list[Span], starts: list[int]) -> bool:
+    """`taken` sorted and non-overlapping (both hold by construction),
+    `starts` its start offsets. Bisect rather than scan: the closer
+    sweep tests one span per delimiter character found, so a linear
+    probe is quadratic in the number of matched pairs (400 pairs spent
+    5.4ms here, against 2.5ms before the sweep existed). Same idiom, and
+    the same reason, as the origin resolution in _tokenize."""
+    i = bisect.bisect_right(starts, span.start) - 1
+    # the only candidates are the last span starting at or before us and
+    # its successor -- anything earlier ends before it, anything later
+    # starts after us
+    for k in (i, i + 1):
+        if 0 <= k < len(taken) and span.start < taken[k].end and (
+                taken[k].start < span.end):
+            return True
+    return False
 
 
 @functools.lru_cache(maxsize=128)
@@ -193,10 +207,13 @@ def extract_delimited(state: ParseState) -> ParseState:
     # An unmatched-open candidate whose character was consumed by a
     # later successful match (the bulk pass above runs ahead of the
     # main scan) is literal content there, not a dangling delimiter.
+    # offsets already claimed as unbalanced, by an open above or by a
+    # close in the sweep below -- either way, do not report one twice
     reported = {offset for offset, _ in unbalanced}
+    mask_starts = [s.start for s in masked]
     ambiguities = [
         a for offset, a in unbalanced
-        if not _overlaps(Span(offset, offset + 1), masked)]
+        if not _overlaps(Span(offset, offset + 1), masked, mask_starts)]
     # The scan above is opener-driven: it searches for an open and then
     # looks rightward for its close, so a close with no open to its
     # LEFT is never in its search space. Sweep for those separately --
@@ -204,20 +221,21 @@ def extract_delimited(state: ParseState) -> ParseState:
     # always covered them ("opened without closing, or closed without
     # opening"). Same boundary test as the matched path, which is what
     # keeps the apostrophe in "O'connor" out of it.
-    for _, open_, close in order:
+    # Distinct closes only: the defaults list '”' twice (from both
+    # ('“','”') and ('”','”')), and a repeat can only rediscover
+    # offsets the first pass already handled.
+    for close in sorted({c for _, _, c in order}):
         start = 0
         while (j := text.find(close, start)) != -1:
             start = j + 1
-            if (j in reported                      # already an open
+            if (j in reported
                     or not _close_ok(text, j, len(close))
-                    or _apostrophe_after_a_word(text, j, close)
-                    or _overlaps(Span(j, j + len(close)), masked)):
+                    or _word_internal(text, j, close)
+                    or _overlaps(Span(j, j + len(close)), masked,
+                                 mask_starts)):
                 continue
             reported.add(j)
-            ambiguities.append(PendingAmbiguity(
-                AmbiguityKind.UNBALANCED_DELIMITER,
-                f"unmatched {close!r} at offset {j}; treated as "
-                f"literal text", origin=j))
+            ambiguities.append(_unmatched(close, j)[1])
     return dataclasses.replace(
         state, extracted=tuple(extracted), masked=tuple(masked),
         ambiguities=state.ambiguities + tuple(ambiguities))
