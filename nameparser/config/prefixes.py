@@ -1,3 +1,4 @@
+from nameparser.config._invariants import assert_normalized
 from nameparser.config.bound_first_names import BOUND_FIRST_NAMES
 
 #: The sub-set of :py:data:`PREFIXES` that are *never* a standalone first name.
@@ -126,8 +127,4 @@ assert NON_FIRST_NAME_PREFIXES <= PREFIXES, \
     "NON_FIRST_NAME_PREFIXES must stay a subset of PREFIXES"
 assert not (NON_FIRST_NAME_PREFIXES & BOUND_FIRST_NAMES), \
     "NON_FIRST_NAME_PREFIXES must stay disjoint from BOUND_FIRST_NAMES"
-# Entries are looked up in normalized form; a stray capital or trailing
-# space makes one unreachable by direct membership test even though the
-# parser's own ingest normalizes it away.
-assert all(w == w.strip().lower() for w in PREFIXES), \
-    "PREFIXES entries must be stored lowercase and whitespace-free"
+assert_normalized("PREFIXES", PREFIXES)

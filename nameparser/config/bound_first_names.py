@@ -1,3 +1,5 @@
+from nameparser.config._invariants import assert_normalized
+
 #: Bound Arabic given-name prefixes that attach to the following word to form
 #: one first name (e.g. "abdul salam" → first name "abdul salam"). They are
 #: never standalone names. Join logic runs in the given-name region only,
@@ -23,8 +25,4 @@ BOUND_FIRST_NAMES: set[str] = {
 }
 
 
-# See prefixes.py: entries are looked up in normalized form, so a stray
-# capital or trailing space makes one unreachable by direct membership
-# test even though the parser's own ingest normalizes it away.
-assert all(w == w.strip().lower() for w in BOUND_FIRST_NAMES), \
-    "BOUND_FIRST_NAMES entries must be stored lowercase and whitespace-free"
+assert_normalized("BOUND_FIRST_NAMES", BOUND_FIRST_NAMES)

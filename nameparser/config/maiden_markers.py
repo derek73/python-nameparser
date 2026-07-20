@@ -1,3 +1,5 @@
+from nameparser.config._invariants import assert_normalized
+
 MAIDEN_MARKERS = {
     'née',
     'né',
@@ -37,8 +39,4 @@ participles are safe).
 """
 
 
-# See prefixes.py: entries are looked up in normalized form, so a stray
-# capital or trailing space makes one unreachable by direct membership
-# test even though the parser's own ingest normalizes it away.
-assert all(w == w.strip().lower() for w in MAIDEN_MARKERS), \
-    "MAIDEN_MARKERS entries must be stored lowercase and whitespace-free"
+assert_normalized("MAIDEN_MARKERS", MAIDEN_MARKERS)

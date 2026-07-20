@@ -1,3 +1,5 @@
+from nameparser.config._invariants import assert_normalized
+
 FIRST_NAME_TITLES = {
     'aunt',
     'auntie',
@@ -780,10 +782,5 @@ TITLES = FIRST_NAME_TITLES | {
 # caller-supplied vocabulary; `assert` is stripped under `python -O`.
 assert FIRST_NAME_TITLES <= TITLES, \
     "FIRST_NAME_TITLES must stay a subset of TITLES"
-# Entries are looked up in normalized form, so a stray capital or a
-# trailing space would make an entry unreachable by direct membership
-# test -- 'actor ' with a trailing space makes "'actor' in TITLES"
-# False -- even though the parser's own ingest normalizes and papers
-# over it. TITLES covers FIRST_NAME_TITLES.
-assert all(w == w.strip().lower() for w in TITLES), \
-    "TITLES entries must be stored lowercase and whitespace-free"
+# TITLES covers FIRST_NAME_TITLES, by the subset assert above.
+assert_normalized("TITLES", TITLES)

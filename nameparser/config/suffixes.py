@@ -1,3 +1,5 @@
+from nameparser.config._invariants import assert_normalized
+
 SUFFIX_NOT_ACRONYMS = {
     # #269: Cyrillic мл/ст (junior/senior, the jr/sr analogs) deferred
     # pending the within-script collision vetting the issue asks for;
@@ -735,8 +737,4 @@ assert not (SUFFIX_ACRONYMS_AMBIGUOUS & SUFFIX_NOT_ACRONYMS), \
     "an ambiguous acronym must not also be a suffix word (the word " \
     "branch bypasses its period gate): " \
     f"{sorted(SUFFIX_ACRONYMS_AMBIGUOUS & SUFFIX_NOT_ACRONYMS)}"
-# Entries are looked up in normalized form, so a stray capital or a
-# trailing space makes an entry unreachable by direct membership test even
-# though the parser's own ingest would paper over it.
-assert all(w == w.strip().lower() for w in SUFFIX_ACRONYMS | SUFFIX_NOT_ACRONYMS), \
-    "suffix entries must be stored lowercase and whitespace-free"
+assert_normalized("suffix", SUFFIX_ACRONYMS | SUFFIX_NOT_ACRONYMS)
