@@ -115,6 +115,13 @@ CASES: tuple[Case, ...] = (
                "shifts Van off the given position, the prefix chain "
                "fires, and the fork is reported from group rather than "
                "assign (v1 parity on the fields)"),
+    Case("titled_ambiguous_particle_no_op_chain", "Dr. Van Jr.",
+         {"title": "Dr.", "given": "Van", "suffix": "Jr."},
+         notes="the piece after the particle is a suffix, so the chain "
+               "scan never advances and the merge is a no-op -- nothing "
+               "was chained, so there is no fork to report (the emitter "
+               "fired here for all 39 ambiguous particles, and _assign "
+               "double-reported the same token)"),
     Case("initial_shaped_not_conjunction", "john e. smith",
          {"given": "john", "middle": "e.", "family": "smith"},
          notes="v1 is_conjunction excludes initials at classify too"),

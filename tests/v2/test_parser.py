@@ -271,3 +271,30 @@ def test_ambiguous_particle_reports_both_branches_of_its_fork() -> None:
 def test_unambiguous_particle_chain_reports_nothing() -> None:
     # 'de' is never a given name, so merging it is not a fork
     assert parse("Dr. de la Vega").ambiguities == ()
+
+
+@pytest.mark.parametrize("text", [
+    "Dr. Van Jr.",      # the piece after the particle is a suffix, so
+    "Dr. Van MD",       # the chain scan never advances and merge() is
+    "Dr. Do Jr.",       # a no-op -- nothing was chained, no fork taken
+])
+def test_no_op_prefix_chain_is_not_a_fork(text: str) -> None:
+    assert parse(text).ambiguities == ()
+
+
+def test_a_fork_is_reported_by_exactly_one_stage() -> None:
+    # the no-op merge left the particle a lone leading piece, which is
+    # _assign's trigger, so both stages reported the same token
+    n = parse("Dr. Van Jr Smith")
+    assert n.given == "Van"
+    assert len(n.ambiguities) == 1
+
+
+def test_chained_particle_detail_does_not_claim_a_role() -> None:
+    # _group runs before assignment, so it cannot know which field the
+    # chained piece lands in -- "Dr. Van Johnson de la Cruz" puts it in
+    # GIVEN. The detail must describe the decision, not guess a role.
+    n = parse("Dr. Van Johnson de la Cruz")
+    assert n.given == "Van Johnson"
+    (amb,) = n.ambiguities
+    assert "family name" not in amb.detail

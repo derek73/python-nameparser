@@ -174,7 +174,14 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 j += 1
             while j < len(pieces) and not prefix(j) and not suffix(j):
                 j += 1
-            if (all(title(x) for x in range(k))
+            # j > k + 1 is what makes this a DECISION rather than a
+            # shape: when the next piece is a suffix the inner scan
+            # never advances, merge(k, k+1) folds a piece into itself,
+            # and the particle stays a lone leading piece -- nothing
+            # was chained, and _assign reports that case instead.
+            # Without this the two emitters both fire on the same token.
+            if (j > k + 1
+                    and all(title(x) for x in range(k))
                     and "vocab:particle-ambiguous"
                     in tokens[pieces[k][0]].tags):
                 particle_forks.append(pieces[k][0])
@@ -295,8 +302,9 @@ def group(state: ParseState) -> ParseState:
             for i in particle_forks:
                 ambiguities.append(PendingAmbiguity(
                     AmbiguityKind.PARTICLE_OR_GIVEN,
-                    f"{tokens[i].text!r} was chained into the family "
-                    f"name; it is also a given name in other names",
+                    f"{tokens[i].text!r} was chained onto the following "
+                    f"name piece; it is also a given name in other "
+                    f"names",
                     (i,)))
     return dataclasses.replace(
         state, tokens=tuple(tokens), pieces=tuple(all_pieces),
