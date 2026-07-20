@@ -27,7 +27,7 @@ from collections.abc import (
 )
 from typing import NamedTuple, Self
 
-from nameparser._lexicon import Lexicon, _normalize
+from nameparser._lexicon import Lexicon, _title_key
 from nameparser._parser import Parser
 from nameparser._policy import PatronymicRule, Policy
 from nameparser.util import lc
@@ -965,14 +965,13 @@ class Constants:
         """
         from nameparser.config.maiden_markers import MAIDEN_MARKERS
         acronyms = frozenset(self.suffix_acronyms)
-        titles = frozenset(self.titles)
         particles = frozenset(self.prefixes)
         bound = frozenset(self.bound_first_names)
         ambiguous_acronyms = frozenset(self.suffix_acronyms_ambiguous) & acronyms
         # keep in sync with _lexicon._default_lexicon() (pinned by
         # tests/v2/test_config_shim.py::test_snapshot_field_translation)
         lexicon = Lexicon(
-            titles=titles,
+            titles=frozenset(self.titles),
             # TRANSLATE, do not filter. The two versions build the same
             # lookup key differently: v1 joins the raw title run and
             # then applies lc(), which strips only the whole string's
@@ -990,7 +989,7 @@ class Constants:
             # a config v1 simply ignored.
             given_name_titles=frozenset(
                 t for t in (
-                    " ".join(_normalize(w) for w in e.split())
+                    _title_key(e.split())
                     for e in self.first_name_titles
                     if e == " ".join(e.split())
                 ) if t),

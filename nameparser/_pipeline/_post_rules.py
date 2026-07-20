@@ -32,7 +32,7 @@ from __future__ import annotations
 import dataclasses
 import re
 
-from nameparser._lexicon import _normalize
+from nameparser._lexicon import _title_key
 from nameparser._pipeline._state import ParseState, Structure, WorkToken
 from nameparser._policy import PatronymicRule
 from nameparser._types import FOLDED_TAG, Role
@@ -71,7 +71,7 @@ def post_rules(state: ParseState) -> ParseState:
 
     # rule 1: title + lone given -> family (v1 handle_firstnames)
     if titles and givens and not middles and not families and not others:
-        joined = " ".join(_normalize(tokens[i].text) for i in titles)
+        joined = _title_key(tokens[i].text for i in titles)
         if joined not in state.lexicon.given_name_titles:
             for i in givens:
                 _retag(tokens, i, Role.FAMILY)

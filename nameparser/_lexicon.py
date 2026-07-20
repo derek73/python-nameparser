@@ -76,6 +76,18 @@ def _normalize(word: str) -> str:
         word = stripped
 
 
+def _title_key(words: Iterable[str]) -> str:
+    """The given_name_titles lookup key for a run of title words.
+
+    A multi-word title is matched as one key ('lt col'), so the fold has
+    to run per word and rejoin -- _normalize on the whole phrase would
+    leave interior periods. Defined once because it is built at match
+    time (post_rules) and at translation time (the v1 facade's
+    first_name_titles), and a divergence between the two fails silently:
+    the entry simply stops matching."""
+    return " ".join(_normalize(w) for w in words)
+
+
 def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
     # Reject a bare str before iterating: iterating "dr" would silently
     # yield the single characters {'d', 'r'} -- the set(str) footgun on
@@ -106,7 +118,14 @@ def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
             raise TypeError(
                 f"Lexicon.{field_name} entries must be strings, got {w!r}"
             )
-        n = _normalize(w)
+        # given_name_titles is the one field whose entries are matched as
+        # a multi-word run, so it folds per word: stored as the same key
+        # post_rules builds, or 'lt. col' would be kept verbatim and
+        # never match anything (a silent no-op on the config surface).
+        # Every other field holds single words, where the two folds
+        # agree.
+        n = _title_key(w.split()) if field_name == "given_name_titles" \
+            else _normalize(w)
         # "." or "" is a data bug (stray split artifact, empty CSV
         # cell); dropping it silently would also let a data-module typo
         # vanish instead of failing CI.
@@ -362,11 +381,6 @@ class Lexicon:
             )
         for name, value in state.items():
             object.__setattr__(self, name, value)
-        # cast is safe: __post_init__ below runs _normset over each of
-        # these and raises for anything that is not an iterable of str,
-        # so the values are only read as such once it has returned
-        given = {name: cast("Iterable[str]", state[name])
-                 for name in _VOCAB_FIELDS}
         # Re-run construction validation rather than trusting the blob.
         # The layout check above catches SHAPE skew; this catches
         # CONTENT skew, which is likelier -- particles_ambiguous flipped
@@ -381,11 +395,15 @@ class Lexicon:
         # normalized already (_normalize converges), so a difference
         # here means the state came from somewhere else -- say so while
         # the offending entries can still be named.
-        drifted = sorted(
-            f"{name}: {', '.join(sorted(frozenset(given[name]) - getattr(self, name)))}"
-            for name in _VOCAB_FIELDS
-            if frozenset(given[name]) != getattr(self, name)
-        )
+        # One pass per field, in _VOCAB_FIELDS declaration order. cast is
+        # safe: __post_init__ just ran _normset over each of these and
+        # raised for anything that was not an iterable of str.
+        drifted = []
+        for name in _VOCAB_FIELDS:
+            lost = frozenset(
+                cast("Iterable[str]", state[name])) - getattr(self, name)
+            if lost:
+                drifted.append(f"{name}: {', '.join(sorted(lost))}")
         # the pair field too, or ten fields raise and the eleventh is
         # quietly re-canonicalized (keys normalized, sorted, deduped)
         given_pairs = cast("Iterable[tuple[str, str]]",

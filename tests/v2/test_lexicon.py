@@ -4,6 +4,7 @@ from collections.abc import Callable
 
 import pytest
 
+from nameparser import Parser
 from nameparser._lexicon import Lexicon, _normalize
 
 
@@ -240,6 +241,23 @@ def test_given_name_titles_may_hold_a_multi_word_phrase() -> None:
     lex = Lexicon(titles=frozenset({"grand", "duke"}),
                   given_name_titles=frozenset({"grand duke"}))
     assert "grand duke" in lex.given_name_titles
+
+
+@pytest.mark.parametrize("spelling", ["lt. col", "lt col", "Lt.  Col."])
+def test_given_name_titles_folds_per_word_so_abbreviations_match(
+        spelling: str) -> None:
+    # The key is built per word and rejoined, so an abbreviated entry
+    # has to fold the same way the parse folds the title run. Storing
+    # 'lt. col' verbatim kept the interior period and matched nothing --
+    # a silent no-op on the config surface, the failure this field is
+    # most prone to (it has no validation by design).
+    base = Lexicon.default()
+    lex = dataclasses.replace(
+        base,
+        titles=base.titles | {"lt", "col"},
+        given_name_titles=base.given_name_titles | {spelling})
+    assert "lt col" in lex.given_name_titles
+    assert Parser(lexicon=lex).parse("Lt. Col. Smith").given == "Smith"
 
 
 def test_given_name_titles_is_not_constrained_against_titles() -> None:
