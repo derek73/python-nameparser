@@ -126,13 +126,11 @@ def _assign_main(seg_idx: int, state: ParseState,
     # non-initial piece is a suffix)
     # every bare ambiguous acronym the peel had to resolve -- one
     # coin-flip each, in either direction, so this collects rather than
-    # overwrites. The role each ends up with is read back after
-    # assignment, since which role "not peeled" means depends on
-    # name_order.
-    # (piece, cause) -- one kind, two causes, and they need different
-    # wording: the acronym branch turns on whether periods are written,
-    # the numeral branch on the letter being a numeral at all
-    ambiguous_picks: list[tuple[tuple[int, ...], str]] = []
+    # overwrites. Deferred to after assignment because the wording reads
+    # the role back, and which role "not peeled" means depends on
+    # name_order. (The roman-numeral fork needs no such deferral and is
+    # reported at its trigger below.)
+    ambiguous_picks: list[tuple[int, ...]] = []
     k = len(rest)
     while k > 0:
         piece = pieces[rest[k - 1]]
@@ -146,7 +144,12 @@ def _assign_main(seg_idx: int, state: ParseState,
             # a trailing single letter is a name part unless it happens
             # to be a roman numeral -- and V/X/I are ordinary middle
             # initials, so taking it as a suffix is a call, not a fact
-            ambiguous_picks.append((piece, "numeral"))
+            ambiguities.append(PendingAmbiguity(
+                AmbiguityKind.SUFFIX_OR_NAME,
+                f"{tokens[piece[0]].text!r} is a roman numeral, so it "
+                f"reads as a generational suffix; any other single "
+                f"letter there would be a middle initial",
+                tuple(piece)))
             k -= 1
             continue
         # A bare ambiguous acronym ("MA", not "M.A.") is a credential
@@ -160,16 +163,13 @@ def _assign_main(seg_idx: int, state: ParseState,
         # the vocabulary is not in doubt.
         bare_ambiguous = (len(piece) == 1
                           and "vocab:suffix-ambiguous" in tokens[piece[0]].tags)
-        if bare_ambiguous and k - 1 >= 2:
-            ambiguous_picks.append((piece, "acronym"))
-            k -= 1
-            continue
+        # k < 2 means it is the only piece left, which is not the fork
+        # this reports.
         if bare_ambiguous and k >= 2:
-            # not peeled, so it stays the last NAME piece -- which role
-            # that is depends on name_order, so the detail reads it back
-            # below. (k < 2 means it is the only piece left, which is
-            # not the fork this reports.)
-            ambiguous_picks.append((piece, "acronym"))
+            ambiguous_picks.append(tuple(piece))
+            if k >= 3:            # peeling still leaves given + family
+                k -= 1
+                continue
         break
     name_pieces, suffix_pieces = rest[:k], rest[k:]
     if not name_pieces and suffix_pieces:
@@ -180,26 +180,19 @@ def _assign_main(seg_idx: int, state: ParseState,
         _set_roles(tokens, pieces[piece_idx], roles[pos])
     for piece_idx in suffix_pieces:
         _set_roles(tokens, pieces[piece_idx], Role.SUFFIX)
-    for piece, cause in ambiguous_picks:
+    for piece in ambiguous_picks:
+        # every pick is in rest, so the loops above just gave it a role
         token = tokens[piece[0]]
-        # every pick was assigned a role just above; the fallback only
-        # keeps the wording sane if a future path reports before then
-        role = token.role.value if token.role is not None else "name"
-        if cause == "numeral":
-            detail = (
-                f"{token.text!r} is a roman numeral, so it reads as a "
-                f"generational suffix; any other single letter there "
-                f"would be a middle initial")
-        else:
-            taken, declined = (
-                ("a suffix", "a name part") if token.role is Role.SUFFIX
-                else (f"a {role} name", "a post-nominal"))
-            detail = (
-                f"{token.text!r} written without periods is both a "
-                f"post-nominal and an ordinary name; read as {taken} "
-                f"rather than {declined}")
+        assert token.role is not None
+        taken, declined = (
+            ("a suffix", "a name part") if token.role is Role.SUFFIX
+            else (f"a {token.role.value} name", "a post-nominal"))
         ambiguities.append(PendingAmbiguity(
-            AmbiguityKind.SUFFIX_OR_NAME, detail, tuple(piece)))
+            AmbiguityKind.SUFFIX_OR_NAME,
+            f"{token.text!r} written without periods is both a "
+            f"post-nominal and an ordinary name; read as {taken} "
+            f"rather than {declined}",
+            piece))
     # leading ambiguous particle read as a name (#121 surfaced)
     if name_pieces:
         head = pieces[name_pieces[0]]

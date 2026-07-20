@@ -89,13 +89,15 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
 def _group_segment(seg: tuple[int, ...], additional: int,
                    tokens: Sequence[WorkToken],
                    bound_join: BoundJoin = BoundJoin.STRICT,
-                   ) -> tuple[list[Piece], list[set[str]], list[int]]:
+                   ambiguities: list[PendingAmbiguity] | None = None,
+                   ) -> tuple[list[Piece], list[set[str]]]:
     pieces: list[Piece] = [[i] for i in seg]
     ptags: list[set[str]] = [set() for _ in seg]
-    # token indices where an ambiguous particle was chained into the
-    # family name from the position that would otherwise be the given
-    # name -- the other branch of the fork _assign reports (see group())
-    particle_forks: list[int] = []
+    # Out-parameter, same shape as _assign_main: forks are reported
+    # where they are decided. A caller that passes None (or a throwaway
+    # list) suppresses reporting -- see group() for when that applies.
+    if ambiguities is None:
+        ambiguities = []
 
     def title(k: int) -> bool:
         return _is_title_piece(pieces[k], ptags[k], tokens)
@@ -174,17 +176,33 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 j += 1
             while j < len(pieces) and not prefix(j) and not suffix(j):
                 j += 1
+            # The other half of PARTICLE_OR_GIVEN. _assign reports the
+            # fork when an ambiguous particle stays a lone leading piece
+            # ("Van Johnson" -> given); the chain here takes the
+            # opposite branch whenever a title shifts it off index 0
+            # ("Dr. Van Johnson" -> family "Van Johnson"). A fork whose
+            # two sides are decided in different stages needs an emitter
+            # in each.
+            #
             # j > k + 1 is what makes this a DECISION rather than a
             # shape: when the next piece is a suffix the inner scan
             # never advances, merge(k, k+1) folds a piece into itself,
             # and the particle stays a lone leading piece -- nothing
             # was chained, and _assign reports that case instead.
             # Without this the two emitters both fire on the same token.
+            # (Tag test first: it is a set lookup and almost no name has
+            # an ambiguous particle, while title() is a call per piece.)
             if (j > k + 1
-                    and all(title(x) for x in range(k))
                     and "vocab:particle-ambiguous"
-                    in tokens[pieces[k][0]].tags):
-                particle_forks.append(pieces[k][0])
+                    in tokens[pieces[k][0]].tags
+                    and all(title(x) for x in range(k))):
+                i = pieces[k][0]
+                ambiguities.append(PendingAmbiguity(
+                    AmbiguityKind.PARTICLE_OR_GIVEN,
+                    f"{tokens[i].text!r} was chained onto the following "
+                    f"name piece; it is also a given name in other "
+                    f"names",
+                    (i,)))
             merge(k, j, drop={"prefix"})
             k += 1
         # bound given names: the first non-title piece joins the next
@@ -202,7 +220,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                              if not title(k) and not suffix(k))
             if non_suffix >= bound_join:
                 merge(first_name_k, first_name_k + 2)
-    return pieces, ptags, particle_forks
+    return pieces, ptags
 
 
 def group(state: ParseState) -> ParseState:
@@ -227,8 +245,12 @@ def group(state: ParseState) -> ParseState:
                           else BoundJoin.DISABLED)
         else:
             bound_join = BoundJoin.STRICT
-        pieces, ptags, particle_forks = _group_segment(
-            seg, additional, tokens, bound_join)
+        # Suppressed after a family comma for the same reason _assign
+        # suppresses it there: the family name is already fixed, so
+        # there is no fork left to report.
+        pieces, ptags = _group_segment(
+            seg, additional, tokens, bound_join,
+            None if family_comma else ambiguities)
         if tail_start is not None and seg_idx >= tail_start:
             # v1 renders each tail COMMA SEGMENT as one suffix entry
             # ('Smith, V MD' -> suffix 'V MD'); a delimiter core inside
@@ -289,23 +311,6 @@ def group(state: ParseState) -> ParseState:
                 ptags[m:j] = []
         all_pieces.append(tuple(tuple(p) for p in pieces))
         all_ptags.append(tuple(frozenset(t) for t in ptags))
-        # The other half of PARTICLE_OR_GIVEN. _assign reports the fork
-        # when an ambiguous particle stays a lone leading piece ("Van
-        # Johnson" -> given). The prefix chain above takes the opposite
-        # branch whenever a title shifts it off index 0 ("Dr. Van
-        # Johnson" -> family "Van Johnson"), and that branch lives in
-        # this stage, so it has to report here -- a fork whose two sides
-        # are decided in different stages needs an emitter in each.
-        # Suppressed after a family comma for the same reason _assign
-        # suppresses it there: the family name is already fixed.
-        if not family_comma:
-            for i in particle_forks:
-                ambiguities.append(PendingAmbiguity(
-                    AmbiguityKind.PARTICLE_OR_GIVEN,
-                    f"{tokens[i].text!r} was chained onto the following "
-                    f"name piece; it is also a given name in other "
-                    f"names",
-                    (i,)))
     return dataclasses.replace(
         state, tokens=tuple(tokens), pieces=tuple(all_pieces),
         piece_tags=tuple(all_ptags), dropped=tuple(dropped),
