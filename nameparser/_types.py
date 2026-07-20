@@ -369,12 +369,18 @@ class ParsedName:
                     f"offset {prev_end}"
                 )
             prev_end = tok.span.end
+        # Hash once rather than rescanning the tuple per referenced
+        # token: a name can carry an ambiguity per token (a string of
+        # stray delimiters does), and the linear form made construction
+        # quadratic in their product. Set membership uses the same value
+        # equality the tuple scan did -- Token is frozen and hashable.
+        known = set(self.tokens) if self.ambiguities else ()
         for amb in self.ambiguities:
             for tok in amb.tokens:
-                # `in` uses Token's value equality, not identity: this
-                # only guarantees a value-equal token exists in
+                # membership is by Token's value equality, not identity:
+                # this only guarantees a value-equal token exists in
                 # self.tokens, not that `tok` IS one of those objects.
-                if tok not in self.tokens:
+                if tok not in known:
                     raise ValueError(
                         f"Ambiguity token {tok.text!r} is not a subset of "
                         f"this ParsedName's tokens"

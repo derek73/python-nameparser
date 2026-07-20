@@ -18,6 +18,7 @@ indexing the original exactly.
 """
 from __future__ import annotations
 
+import bisect
 import dataclasses
 import re
 
@@ -97,11 +98,23 @@ def tokenize(state: ParseState) -> ParseState:
     # offset back out of its detail string. An offset inside a masked
     # region belongs to no token; those keep an empty tuple, which the
     # kind's contract already allows.
+    # Bisect rather than rescan: the closer sweep can emit one
+    # ambiguity per delimiter character, so a linear scan per ambiguity
+    # is quadratic on pathological input (') ' * 1600 spent 180ms here,
+    # against 9ms before the sweep existed). Spans are non-overlapping
+    # and sorted just above, so the candidate is the last token whose
+    # start is <= the offset.
+    starts = [t.span.start for t in tokens]
+
+    def _containing(offset: int) -> tuple[int, ...]:
+        i = bisect.bisect_right(starts, offset) - 1
+        if i >= 0 and offset < tokens[i].span.end:
+            return (i,)
+        return ()
+
     ambiguities = tuple(
-        a if a.origin is None else dataclasses.replace(
-            a, indices=tuple(
-                i for i, t in enumerate(tokens)
-                if t.span.start <= a.origin < t.span.end))
+        a if a.origin is None
+        else dataclasses.replace(a, indices=_containing(a.origin))
         for a in state.ambiguities)
     return dataclasses.replace(state, tokens=tuple(tokens),
                                comma_offsets=tuple(sorted(commas)),
