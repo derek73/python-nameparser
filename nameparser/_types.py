@@ -228,10 +228,12 @@ class AmbiguityKind(StrEnum):
     existing values never change meaning.
 
     A kind names a FORK THE PARSE HAD TO CALL, not a word that could be
-    read two ways. The same token elsewhere in a name may present no
-    choice at all and is then reported by nothing -- an empty
-    ``ambiguities`` means the parse faced no fork, not that every word
-    was unambiguous."""
+    read two ways: the same token elsewhere in a name may present no
+    choice at all and is then reported by nothing. An empty
+    ``ambiguities`` therefore means none of the forks listed here came
+    up -- not that the parse was certain of everything. Coverage grows
+    over releases, so a non-empty tuple is a signal to act on; an empty
+    one is not a guarantee."""
 
     #: Reserved: the name's field order itself is uncertain (e.g. a
     #: two-word name under a non-default name_order). Not yet emitted;
@@ -242,11 +244,15 @@ class AmbiguityKind(StrEnum):
     #: (JD) BRICKEN" keeps the nickname reading, where the
     #: unambiguous "(MBA)" escapes to suffix on vocabulary alone.
     SUFFIX_OR_NICKNAME = "suffix-or-nickname"
-    #: An ambiguous suffix acronym written without periods, which is
-    #: also an ordinary surname -- "John Smith MA" reads MA as a
-    #: post-nominal because a family name remains, "Jack MA" reads it
-    #: as the family name because none would.
-    SUFFIX_OR_FAMILY = "suffix-or-family"
+    #: A trailing word reads plausibly as either a post-nominal or an
+    #: ordinary name part. Covers an ambiguous acronym written without
+    #: periods ("John Smith MA" takes MA as a credential because a
+    #: family name remains; "Jack MA" keeps it as the name because none
+    #: would) and a trailing roman numeral, which is a suffix where any
+    #: other single letter would be a name ("John Smith V" vs "John
+    #: Smith B"). Which name part was declined depends on position and
+    #: ``name_order``, so ``detail`` names it rather than the kind.
+    SUFFIX_OR_NAME = "suffix-or-name"
     #: A leading ambiguous particle was read as a given name -- "Van
     #: Johnson" parses given="Van", but "Van" is also a family-name
     #: particle in other names.

@@ -55,7 +55,11 @@ def test_stage_field_ownership() -> None:
         # that decides it lives in extract_delimited, which has no token
         # index to point at, so the report is raised here instead
         "classify": {"tokens", "ambiguities"},
-        "group": {"tokens", "pieces", "piece_tags", "dropped"},
+        # group also emits PARTICLE_OR_GIVEN: the prefix chain takes
+        # the particle branch of a fork whose given branch _assign
+        # takes, so each stage reports the side it decides
+        "group": {"tokens", "pieces", "piece_tags", "dropped",
+                  "ambiguities"},
         "assign": {"tokens", "ambiguities"},
         "post_rules": {"tokens"},
     }

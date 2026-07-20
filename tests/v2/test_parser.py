@@ -179,13 +179,13 @@ def test_ambiguous_acronym_reports_the_reading_it_took() -> None:
     took_suffix = parse("John Smith MA")
     assert took_suffix.suffix == "MA"
     assert [a.kind for a in took_suffix.ambiguities] == \
-        [AmbiguityKind.SUFFIX_OR_FAMILY]
+        [AmbiguityKind.SUFFIX_OR_NAME]
     assert [t.text for t in took_suffix.ambiguities[0].tokens] == ["MA"]
 
     took_family = parse("Jack MA")
     assert took_family.family == "MA"
     assert [a.kind for a in took_family.ambiguities] == \
-        [AmbiguityKind.SUFFIX_OR_FAMILY]
+        [AmbiguityKind.SUFFIX_OR_NAME]
 
 
 @pytest.mark.parametrize("text", [
@@ -196,7 +196,7 @@ def test_ambiguous_acronym_reports_the_reading_it_took() -> None:
 ])
 def test_no_suffix_ambiguity_when_nothing_was_guessed(text: str) -> None:
     assert [a for a in parse(text).ambiguities
-            if a.kind is AmbiguityKind.SUFFIX_OR_FAMILY] == []
+            if a.kind is AmbiguityKind.SUFFIX_OR_NAME] == []
 
 
 def test_delimited_ambiguous_acronym_reports_suffix_or_nickname() -> None:
@@ -219,7 +219,7 @@ def test_every_ambiguous_acronym_in_a_name_is_reported() -> None:
     n = parse("John Smith MA JD")
     assert n.suffix == "MA, JD"
     assert [a.kind for a in n.ambiguities] == \
-        [AmbiguityKind.SUFFIX_OR_FAMILY] * 2
+        [AmbiguityKind.SUFFIX_OR_NAME] * 2
     assert sorted(t.text for a in n.ambiguities for t in a.tokens) == \
         ["JD", "MA"]
 
@@ -233,3 +233,41 @@ def test_ambiguous_acronym_detail_names_the_role_it_got() -> None:
     assert (n.family, n.given) == ("Jack", "MA")
     assert "given name" in n.ambiguities[0].detail
     assert "family name" not in n.ambiguities[0].detail
+
+
+def test_trailing_roman_numeral_reports_the_fork() -> None:
+    # a trailing single letter is a name part unless it happens to be a
+    # roman numeral, in which case it is silently reclassified -- and
+    # V/X/I are common middle initials, so this is a real coin-flip
+    numeral = parse("John Smith V")
+    assert numeral.suffix == "V"
+    assert [a.kind for a in numeral.ambiguities] == \
+        [AmbiguityKind.SUFFIX_OR_NAME]
+    assert [t.text for t in numeral.ambiguities[0].tokens] == ["V"]
+    # the same shape with a non-numeral letter faces no fork
+    assert parse("John Smith B").ambiguities == ()
+    # and a numeral after an initial is not treated as a suffix at all
+    assert parse("John Q. V").ambiguities == ()
+
+
+def test_ambiguous_particle_reports_both_branches_of_its_fork() -> None:
+    # "Van Johnson" reads Van as a given name and says so. A leading
+    # title shifts Van off index 0, the prefix-chain merge fires, and
+    # Van becomes a particle instead -- the SAME fork, called the other
+    # way. The two branches are taken in different stages (_assign vs
+    # _group), so only the one with an emitter used to report.
+    given_reading = parse("Van Johnson")
+    assert given_reading.given == "Van"
+    assert [a.kind for a in given_reading.ambiguities] == \
+        [AmbiguityKind.PARTICLE_OR_GIVEN]
+
+    particle_reading = parse("Dr. Van Johnson")
+    assert particle_reading.family == "Van Johnson"
+    assert [a.kind for a in particle_reading.ambiguities] == \
+        [AmbiguityKind.PARTICLE_OR_GIVEN]
+    assert [t.text for t in particle_reading.ambiguities[0].tokens] == ["Van"]
+
+
+def test_unambiguous_particle_chain_reports_nothing() -> None:
+    # 'de' is never a given name, so merging it is not a fork
+    assert parse("Dr. de la Vega").ambiguities == ()

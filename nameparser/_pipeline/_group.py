@@ -23,11 +23,13 @@ import dataclasses
 from collections.abc import Sequence, Set
 from enum import IntEnum
 
-from nameparser._pipeline._state import ParseState, Structure, WorkToken
+from nameparser._pipeline._state import (
+    ParseState, PendingAmbiguity, Structure, WorkToken,
+)
 from nameparser._pipeline._vocab import D as _D
 from nameparser._pipeline._vocab import PH as _PH
 from nameparser._pipeline._vocab import delimiter_cores
-from nameparser._types import Role
+from nameparser._types import AmbiguityKind, Role
 
 # the credential-pair regexes live in _vocab (shared with segment)
 
@@ -87,9 +89,13 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
 def _group_segment(seg: tuple[int, ...], additional: int,
                    tokens: Sequence[WorkToken],
                    bound_join: BoundJoin = BoundJoin.STRICT,
-                   ) -> tuple[list[Piece], list[set[str]]]:
+                   ) -> tuple[list[Piece], list[set[str]], list[int]]:
     pieces: list[Piece] = [[i] for i in seg]
     ptags: list[set[str]] = [set() for _ in seg]
+    # token indices where an ambiguous particle was chained into the
+    # family name from the position that would otherwise be the given
+    # name -- the other branch of the fork _assign reports (see group())
+    particle_forks: list[int] = []
 
     def title(k: int) -> bool:
         return _is_title_piece(pieces[k], ptags[k], tokens)
@@ -168,6 +174,10 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 j += 1
             while j < len(pieces) and not prefix(j) and not suffix(j):
                 j += 1
+            if (all(title(x) for x in range(k))
+                    and "vocab:particle-ambiguous"
+                    in tokens[pieces[k][0]].tags):
+                particle_forks.append(pieces[k][0])
             merge(k, j, drop={"prefix"})
             k += 1
         # bound given names: the first non-title piece joins the next
@@ -185,12 +195,13 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                              if not title(k) and not suffix(k))
             if non_suffix >= bound_join:
                 merge(first_name_k, first_name_k + 2)
-    return pieces, ptags
+    return pieces, ptags, particle_forks
 
 
 def group(state: ParseState) -> ParseState:
     tokens = list(state.tokens)
     dropped = list(state.dropped)
+    ambiguities = list(state.ambiguities)
     all_pieces: list[tuple[tuple[int, ...], ...]] = []
     all_ptags: list[tuple[frozenset[str], ...]] = []
     # v1 parity: additional_parts_count=1 applies only to FAMILY_COMMA
@@ -209,8 +220,8 @@ def group(state: ParseState) -> ParseState:
                           else BoundJoin.DISABLED)
         else:
             bound_join = BoundJoin.STRICT
-        pieces, ptags = _group_segment(seg, additional, tokens,
-                                       bound_join)
+        pieces, ptags, particle_forks = _group_segment(
+            seg, additional, tokens, bound_join)
         if tail_start is not None and seg_idx >= tail_start:
             # v1 renders each tail COMMA SEGMENT as one suffix entry
             # ('Smith, V MD' -> suffix 'V MD'); a delimiter core inside
@@ -271,6 +282,23 @@ def group(state: ParseState) -> ParseState:
                 ptags[m:j] = []
         all_pieces.append(tuple(tuple(p) for p in pieces))
         all_ptags.append(tuple(frozenset(t) for t in ptags))
+        # The other half of PARTICLE_OR_GIVEN. _assign reports the fork
+        # when an ambiguous particle stays a lone leading piece ("Van
+        # Johnson" -> given). The prefix chain above takes the opposite
+        # branch whenever a title shifts it off index 0 ("Dr. Van
+        # Johnson" -> family "Van Johnson"), and that branch lives in
+        # this stage, so it has to report here -- a fork whose two sides
+        # are decided in different stages needs an emitter in each.
+        # Suppressed after a family comma for the same reason _assign
+        # suppresses it there: the family name is already fixed.
+        if not family_comma:
+            for i in particle_forks:
+                ambiguities.append(PendingAmbiguity(
+                    AmbiguityKind.PARTICLE_OR_GIVEN,
+                    f"{tokens[i].text!r} was chained into the family "
+                    f"name; it is also a given name in other names",
+                    (i,)))
     return dataclasses.replace(
         state, tokens=tuple(tokens), pieces=tuple(all_pieces),
-        piece_tags=tuple(all_ptags), dropped=tuple(dropped))
+        piece_tags=tuple(all_ptags), dropped=tuple(dropped),
+        ambiguities=tuple(ambiguities))

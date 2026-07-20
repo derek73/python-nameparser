@@ -327,7 +327,7 @@ given name it stays the surname — either way the choice is recorded:
     >>> parse("John Smith MA").suffix
     'MA'
     >>> [a.kind.value for a in parse("John Smith MA").ambiguities]
-    ['suffix-or-family']
+    ['suffix-or-name']
     >>> parse("Jack MA").family
     'MA'
 

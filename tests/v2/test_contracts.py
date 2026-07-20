@@ -12,7 +12,7 @@ _AMBIGUITY_TRIGGERS: dict[AmbiguityKind, str | None] = {
     AmbiguityKind.UNBALANCED_DELIMITER: 'Jon "Nick Smith',
     AmbiguityKind.COMMA_STRUCTURE: "Smith, John, Extra, Jr.",
     AmbiguityKind.SUFFIX_OR_NICKNAME: "JEFFREY (JD) BRICKEN",
-    AmbiguityKind.SUFFIX_OR_FAMILY: "John Smith MA",
+    AmbiguityKind.SUFFIX_OR_NAME: "John Smith MA",
     # no emitter yet -- arrives with locale-pack order detection (2.x)
     AmbiguityKind.ORDER: None,
 }

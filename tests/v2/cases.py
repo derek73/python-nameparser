@@ -87,27 +87,34 @@ CASES: tuple[Case, ...] = (
                "them first (spans cannot reorder)"),
     Case("ambiguous_surname_acronyms", "Jack MA",
          {"given": "Jack", "family": "MA"},
-         ambiguities=("suffix-or-family",),
+         ambiguities=("suffix-or-name",),
          notes="'ma'/'do' joined suffix_acronyms_ambiguous: with only "
                "two pieces, 'one of them is a credential' is the less "
                "likely reading, so the ambiguous acronym stays the "
                "family name (v1 parity via its reserve_last)"),
     Case("ambiguous_surname_acronym_with_suffix", "Jack MA Jr",
          {"given": "Jack", "family": "MA", "suffix": "Jr"},
-         ambiguities=("suffix-or-family",),
+         ambiguities=("suffix-or-name",),
          notes="'Jr' peels first; 'MA' would then be the only piece "
                "left beside the given name, so it stays family"),
     Case("ambiguous_acronym_is_a_suffix_when_a_family_name_remains",
          "John Smith MA",
          {"given": "John", "family": "Smith", "suffix": "MA"},
-         ambiguities=("suffix-or-family",),
+         ambiguities=("suffix-or-name",),
          notes="the other half of the same rule: three pieces means "
                "peeling 'MA' still leaves given+family, so the "
                "credential reading wins (v1 parity)"),
     Case("ambiguous_acronym_suffix_with_middle", "John Q Smith MA",
          {"given": "John", "middle": "Q", "family": "Smith",
           "suffix": "MA"},
-         ambiguities=("suffix-or-family",)),
+         ambiguities=("suffix-or-name",)),
+    Case("titled_ambiguous_particle_chains", "Dr. Van Johnson",
+         {"title": "Dr.", "family": "Van Johnson"},
+         ambiguities=("particle-or-given",),
+         notes="the other branch of 'Van Johnson': a leading title "
+               "shifts Van off the given position, the prefix chain "
+               "fires, and the fork is reported from group rather than "
+               "assign (v1 parity on the fields)"),
     Case("initial_shaped_not_conjunction", "john e. smith",
          {"given": "john", "middle": "e.", "family": "smith"},
          notes="v1 is_conjunction excludes initials at classify too"),
@@ -357,7 +364,11 @@ CASES: tuple[Case, ...] = (
     Case("mr_and_mrs", "Mr. and Mrs. John Smith",
          {"title": "Mr. and Mrs.", "given": "John", "family": "Smith"}),
     Case("roman_suffix", "John Smith V",
-         {"given": "John", "family": "Smith", "suffix": "V"}),
+         {"given": "John", "family": "Smith", "suffix": "V"},
+         ambiguities=("suffix-or-name",),
+         notes="a trailing single letter is a name part unless it is a "
+               "roman numeral; V/X/I are also ordinary middle initials, "
+               "so the reading is reported"),
     Case("initial_not_suffix", "John V. Smith",
          {"given": "John", "middle": "V.", "family": "Smith"}),
     Case("lenient_after_comma", "John Ingram, V",
@@ -403,14 +414,14 @@ CASES: tuple[Case, ...] = (
     Case("whitespace", "   ", {}),
     Case("bare_ambiguous_acronym", "John Ed",
          {"given": "John", "family": "Ed"},
-         ambiguities=("suffix-or-family",),
+         ambiguities=("suffix-or-name",),
          notes="'ed' is an ambiguous acronym; bare form is a name (C1), "
                "and the parse reports which reading it took"),
     Case("comma_ambiguous_acronym", "Smith, Ed",
          {"given": "Ed", "family": "Smith"}),
     Case("ambiguous_acronym_with_suffix", "John Ed III",
          {"given": "John", "family": "Ed", "suffix": "III"},
-         ambiguities=("suffix-or-family",)),
+         ambiguities=("suffix-or-name",)),
     Case("phd_split", "John Ph. D.",
          {"given": "John", "suffix": "Ph. D."},
          notes="v1 fix_phd; healed via the stable 'joined' tag"),

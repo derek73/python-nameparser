@@ -140,6 +140,10 @@ def _assign_main(seg_idx: int, state: ParseState,
         if (k == len(rest) and k >= 2 and len(piece) == 1
                 and _ROMAN.match(tokens[piece[0]].text)
                 and "initial" not in tokens[pieces[rest[k - 2]][0]].tags):
+            # a trailing single letter is a name part unless it happens
+            # to be a roman numeral -- and V/X/I are ordinary middle
+            # initials, so taking it as a suffix is a call, not a fact
+            ambiguous_picks.append(piece)
             k -= 1
             continue
         # A bare ambiguous acronym ("MA", not "M.A.") is a credential
@@ -182,7 +186,7 @@ def _assign_main(seg_idx: int, state: ParseState,
             ("a suffix", "a name part") if token.role is Role.SUFFIX
             else (f"a {role} name", "a post-nominal"))
         ambiguities.append(PendingAmbiguity(
-            AmbiguityKind.SUFFIX_OR_FAMILY,
+            AmbiguityKind.SUFFIX_OR_NAME,
             f"{token.text!r} written without periods is both a "
             f"post-nominal and an ordinary name; read as {taken} "
             f"rather than {declined}",

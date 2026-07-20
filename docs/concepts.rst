@@ -161,8 +161,15 @@ de Souza"`` it sits mid-name, where nothing has to choose between
 readings — so nothing is recorded. A comma can settle the question
 before it arises, too: ``"Ma, Jack"`` fixes the family name, so the
 credential reading never comes up, while ``"John Smith MA"`` has to
-call it and says so. An empty ``ambiguities`` means the parse faced no
-fork, not that every word in it was unambiguous.
+call it and says so.
+
+So an empty ``ambiguities`` does not mean every word was unambiguous —
+it means none of the forks the parser *reports on* came up. The kinds
+it reports are listed in :class:`~nameparser.AmbiguityKind`, and they
+are the ones where both readings are genuinely common in real names.
+Coverage grows over releases; a name that reports nothing today may
+report something later, so treat a non-empty ``ambiguities`` as a
+signal worth acting on rather than an empty one as a guarantee.
 
 :class:`Tokens <nameparser.Token>` also carry tags — a second, independent label alongside their
 role, recording how a token was classified rather than what part of
