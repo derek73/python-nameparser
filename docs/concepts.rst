@@ -163,13 +163,13 @@ before it arises, too: ``"Ma, Jack"`` fixes the family name, so the
 credential reading never comes up, while ``"John Smith MA"`` has to
 call it and says so.
 
-So an empty ``ambiguities`` does not mean every word was unambiguous —
-it means none of the forks the parser *reports on* came up. The kinds
-it reports are listed in :class:`~nameparser.AmbiguityKind`, and they
-are the ones where both readings are genuinely common in real names.
-Coverage grows over releases; a name that reports nothing today may
-report something later, so treat a non-empty ``ambiguities`` as a
-signal worth acting on rather than an empty one as a guarantee.
+An empty ``ambiguities`` is therefore not a certificate of certainty.
+Reporting is deliberately partial: :class:`~nameparser.AmbiguityKind`
+lists the forks worth flagging, and even those are not reported
+everywhere they occur — the comma paths stay quiet on purpose, since a
+comma usually settles the structure before the question arises.
+Coverage grows over releases. Treat a non-empty ``ambiguities`` as a
+signal to act on; do not read an empty one as a guarantee.
 
 :class:`Tokens <nameparser.Token>` also carry tags — a second, independent label alongside their
 role, recording how a token was classified rather than what part of

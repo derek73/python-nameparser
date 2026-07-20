@@ -229,11 +229,11 @@ class AmbiguityKind(StrEnum):
 
     A kind names a FORK THE PARSE HAD TO CALL, not a word that could be
     read two ways: the same token elsewhere in a name may present no
-    choice at all and is then reported by nothing. An empty
-    ``ambiguities`` therefore means none of the forks listed here came
-    up -- not that the parse was certain of everything. Coverage grows
-    over releases, so a non-empty tuple is a signal to act on; an empty
-    one is not a guarantee."""
+    choice at all and is then reported by nothing. Reporting is also
+    partial -- a kind listed here is not necessarily emitted everywhere
+    its fork occurs (the comma paths stay quiet by design), and coverage
+    grows over releases. A non-empty tuple is a signal to act on; an
+    empty one is not a guarantee of certainty."""
 
     #: Reserved: the name's field order itself is uncertain (e.g. a
     #: two-word name under a non-default name_order). Not yet emitted;

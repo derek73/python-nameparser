@@ -298,3 +298,16 @@ def test_chained_particle_detail_does_not_claim_a_role() -> None:
     assert n.given == "Van Johnson"
     (amb,) = n.ambiguities
     assert "family name" not in amb.detail
+
+
+def test_each_suffix_or_name_branch_describes_itself() -> None:
+    # one kind, two causes: the acronym branch turns on periods, the
+    # roman-numeral branch turns on the letter being a numeral. Sharing
+    # one template made "V written without periods" -- a distinction
+    # that does not exist for V -- and hid which branch fired.
+    acronym = parse("John Smith MA").ambiguities[0].detail
+    assert "periods" in acronym and "post-nominal" in acronym
+
+    numeral = parse("John Smith V").ambiguities[0].detail
+    assert "periods" not in numeral
+    assert "numeral" in numeral and "initial" in numeral
