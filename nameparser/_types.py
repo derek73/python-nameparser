@@ -380,17 +380,19 @@ class ParsedName:
         # stray delimiters does), and the linear form made construction
         # quadratic in their product. Set membership uses the same value
         # equality the tuple scan did -- Token is frozen and hashable.
-        known = set(self.tokens) if self.ambiguities else ()
-        for amb in self.ambiguities:
-            for tok in amb.tokens:
-                # membership is by Token's value equality, not identity:
-                # this only guarantees a value-equal token exists in
-                # self.tokens, not that `tok` IS one of those objects.
-                if tok not in known:
-                    raise ValueError(
-                        f"Ambiguity token {tok.text!r} is not a subset of "
-                        f"this ParsedName's tokens"
-                    )
+        if self.ambiguities:
+            known = set(self.tokens)
+            for amb in self.ambiguities:
+                for tok in amb.tokens:
+                    # membership is by Token's value equality, not
+                    # identity: this only guarantees a value-equal token
+                    # exists in self.tokens, not that `tok` IS one of
+                    # those objects.
+                    if tok not in known:
+                        raise ValueError(
+                            f"Ambiguity token {tok.text!r} is not a "
+                            f"subset of this ParsedName's tokens"
+                        )
 
     def __bool__(self) -> bool:
         return bool(self.tokens)

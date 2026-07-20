@@ -194,9 +194,10 @@ def test_unmatched_close_is_reported(text: str, char: str) -> None:
     # the scan is opener-driven, so a close with no open to its left was
     # never in its search space and went unreported -- even though the
     # AmbiguityKind docstring promises "or closed without opening"
-    kinds = [a.kind for a in parse(text).ambiguities]
-    assert kinds == [AmbiguityKind.UNBALANCED_DELIMITER]
-    assert char in parse(text).ambiguities[0].detail
+    ambiguities = parse(text).ambiguities
+    assert [a.kind for a in ambiguities] == [
+        AmbiguityKind.UNBALANCED_DELIMITER]
+    assert char in ambiguities[0].detail
 
 
 def test_word_final_apostrophe_is_not_an_unbalanced_delimiter() -> None:
