@@ -63,35 +63,44 @@ most of what decides a parse.
 
 Most words stand alone. A few pull in a neighbor, and each kind pulls
 into one particular field — so this table is also a map of which fields
-get built by attachment rather than by position. Consecutive titles
-chain (``Asst. Vice Chancellor`` is one title), as do consecutive
-suffixes:
+get built by attachment rather than by position. Titles and suffixes
+attach only to *adjacent words of their own kind* (a run of titles
+chains into one, but a title never swallows a plain name); the rest
+reach forward to pull in the next word, whatever it is. Follow a row's
+name to its full vocabulary set:
 
 .. list-table::
    :header-rows: 1
-   :widths: 40 34 26
+   :widths: 22 26 12 40
 
    * - Words
      - Attach to
      - Field
-   * - Titles — ``dr``, ``sir``, ``prof``, ``capt``
+     - Example
+   * - :mod:`Titles <nameparser.config.titles>`
      - adjacent titles
      - ``title``
-   * - Suffixes — ``phd``, ``md``, ``jr``, ``esq``
+     - ``Asst. Vice Chancellor John`` → ``Asst. Vice Chancellor``
+   * - :mod:`Suffixes <nameparser.config.suffixes>`
      - adjacent suffixes
      - ``suffix``
-   * - Bound given names — ``abdul``, ``abu``, ``umm``, ``عبد``
+     - ``John Smith PhD MD`` → ``PhD, MD``
+   * - :mod:`Bound given names <nameparser.config.bound_first_names>`
      - the following word
      - ``given``
-   * - Particles — ``de``, ``van``, ``von``, ``bin``
+     - ``abdul salam ahmed`` → ``abdul salam``
+   * - :mod:`Particles <nameparser.config.prefixes>`
      - the following surname
      - ``family``
-   * - Maiden markers — ``née``, ``geb.``
+     - ``Juan de la Vega`` → ``de la Vega``
+   * - :mod:`Maiden markers <nameparser.config.maiden_markers>`
      - the following name
      - ``maiden``
-   * - Conjunctions — ``and``, ``&``, ``y``, ``и``
-     - both neighbors, whatever they are
-     - whichever field they join
+     - ``Jane Smith née Jones`` → ``Jones``
+   * - :mod:`Conjunctions <nameparser.config.conjunctions>`
+     - the words on both sides
+     - any
+     - ``John and Jane Smith`` → ``John and Jane``
 
 Conjunctions are the exception the last row names: they take the field
 of whatever sits on both sides, so the same ``and`` pulls two given
