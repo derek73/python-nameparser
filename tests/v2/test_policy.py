@@ -324,23 +324,51 @@ def test_name_order_rejects_bare_string() -> None:
 # characters) and a Mapping (contributes only its keys). Both were
 # accepted silently, storing a value the caller never wrote -- the
 # expensive failure this library guards against elsewhere.
-@pytest.mark.parametrize("field", [
-    "nickname_delimiters", "maiden_delimiters", "extra_suffix_delimiters",
-    "patronymic_rules",
-])
-def test_collection_fields_reject_a_mapping(field: str) -> None:
+#
+# Parametrized over BOTH classes on purpose. PolicyPatch had its own
+# inline copy of the bare-string half and never grew the mapping half,
+# so the two silently diverged; a patch is also what a Locale pack
+# ships, and its frozenset() coercion destroys the evidence before
+# Policy could catch it at apply time.
+_GUARDED = ["nickname_delimiters", "maiden_delimiters",
+            "extra_suffix_delimiters", "patronymic_rules"]
+
+
+@pytest.mark.parametrize("cls", [Policy, PolicyPatch])
+@pytest.mark.parametrize("field", _GUARDED)
+@pytest.mark.parametrize("value", [{"dr": "Dr"}, {}])
+def test_collection_fields_reject_a_mapping(
+        cls: type, field: str, value: dict) -> None:
+    # {} is the sharp one: it is Python's empty-set trap, so a caller
+    # disabling delimiters writes it and silently gets what they meant
+    # -- until the day they write a non-empty one.
     with pytest.raises(TypeError, match="mapping"):
-        Policy(**{field: {"dr": "Dr"}})      # type: ignore[arg-type]
+        cls(**{field: value})
 
-
-@pytest.mark.parametrize("field", [
-    "nickname_delimiters", "maiden_delimiters", "extra_suffix_delimiters",
-    "patronymic_rules",
-])
+@pytest.mark.parametrize("cls", [Policy, PolicyPatch])
+@pytest.mark.parametrize("field", _GUARDED)
 @pytest.mark.parametrize("value", ["", "()", "dr"])
 def test_collection_fields_reject_a_bare_string(
-        field: str, value: str) -> None:
-    # '' is the sharp one: it iterates to nothing, so it silently
-    # stored an empty frozenset rather than failing.
+        cls: type, field: str, value: str) -> None:
+    # '' iterates to nothing, so it silently stored an empty frozenset
+    # rather than failing.
     with pytest.raises(TypeError, match="bare string"):
-        Policy(**{field: value})             # type: ignore[arg-type]
+        cls(**{field: value})
+
+
+@pytest.mark.parametrize("cls", [Policy, PolicyPatch])
+def test_legitimate_iterables_are_still_accepted(cls: type) -> None:
+    # The guards must not over-reject. A dict_items view is the
+    # documented way to pass an {open: close} mapping, and it survives
+    # precisely because ItemsView is a Set rather than a Mapping -- if
+    # that ever stops being true this fails rather than silently
+    # narrowing what callers may pass.
+    pairs = [("<", ">"), ("[", "]")]
+    pair_values: list[object] = [
+        frozenset(pairs), set(pairs), list(pairs), tuple(pairs),
+        (p for p in pairs), {"<": ">", "[": "]"}.items()]
+    for value in pair_values:
+        assert cls(nickname_delimiters=value) is not None
+    str_values: list[object] = [frozenset({"/"}), ["/"], ("/",), iter(["/"])]
+    for value in str_values:
+        assert cls(extra_suffix_delimiters=value) is not None

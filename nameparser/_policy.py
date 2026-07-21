@@ -87,6 +87,17 @@ def _reject_bare_string_order(value: object) -> None:
             f"name_order must be an iterable of three Roles, "
             f"not a bare string: {value!r}"
         )
+    # A {Role: position} dict iterates to the right three Roles in the
+    # right order, so it would be accepted -- harmlessly today, since
+    # the result is checked against the three exported orders anyway.
+    # Guarded regardless: "iterating this yields something plausible
+    # but not what you wrote" is one bug class, and leaving one field
+    # out of it is how the PolicyPatch hole happened.
+    if isinstance(value, Mapping):
+        raise TypeError(
+            f"name_order must be an iterable of three Roles, not a "
+            f"mapping: {value!r}"
+        )
 
 
 def _reject_str_and_mapping(value: object, field_name: str) -> None:
@@ -105,9 +116,16 @@ def _reject_str_and_mapping(value: object, field_name: str) -> None:
             f"{value!r}"
         )
     if isinstance(value, Mapping):
+        # Name the way out, not just the harm. "contributes only its
+        # keys" is no help for the two mappings people actually pass:
+        # {} (meant as an empty set -- Python's oldest trap, and the
+        # keys story does not apply because there are none), and an
+        # {open: close} dict, whose keys are only half the pair.
         raise TypeError(
-            f"{field_name} must be an iterable, not a mapping "
-            f"(a mapping would contribute only its keys): {value!r}"
+            f"{field_name} must be an iterable, not a mapping: "
+            f"{value!r}. A mapping yields only its keys -- write "
+            f"frozenset() for an empty set, or .items() if this is an "
+            f"{{open: close}} pair mapping"
         )
 
 
@@ -371,11 +389,12 @@ class PolicyPatch:
             value = getattr(self, f.name)
             if value is UNSET:
                 continue
-            if isinstance(value, str):
-                raise TypeError(
-                    f"{f.name} must be an iterable, "
-                    f"not a bare string: {value!r}"
-                )
+            # Shared with Policy, not re-implemented: this used to be an
+            # inline copy of the bare-string half only, so the mapping
+            # half never reached a patch -- and frozenset() below
+            # destroys the evidence, leaving nothing for Policy to catch
+            # at apply time. A Locale pack ships one of these.
+            _reject_str_and_mapping(value, f.name)
             # same iter() probe as Policy: curated message for
             # non-iterables (with the v1-flag hint where it applies),
             # caller-generator exceptions propagate from frozenset()
