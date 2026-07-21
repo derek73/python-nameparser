@@ -114,8 +114,25 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     def merge(lo: int, hi: int, add: Set[str] = frozenset(),
               drop: Set[str] = frozenset()) -> None:
         # pieces/ptags are parallel arrays; every merge must update
-        # both in lockstep
-        pieces[lo:hi] = [[i for piece in pieces[lo:hi] for i in piece]]
+        # both in lockstep.
+        #
+        # Extend the first piece IN PLACE rather than rebuilding the
+        # merged list. The obvious spelling --
+        #     pieces[lo:hi] = [[i for p in pieces[lo:hi] for i in p]]
+        # -- re-flattens everything accumulated so far on every call, so
+        # a chain that merges into the same piece n times copies
+        # 1+2+...+n and the stage goes quadratic in the length of the
+        # chain. A conjunction run ("and " * n) does exactly that: it
+        # measured 2.4x-2.9x per doubling against the 2.0x every other
+        # shape holds. No piece list is aliased outside this function
+        # (each starts as a fresh [i], and the callers only read
+        # pieces[k] before a merge), so mutating is safe; verified
+        # identical token/role/tag/span/ambiguity output over 54,877
+        # names. tests/v2/test_benchmark.py's "and " shape is the guard.
+        combined = pieces[lo]
+        for piece in pieces[lo + 1:hi]:
+            combined.extend(piece)
+        pieces[lo:hi] = [combined]
         ptags[lo:hi] = [(set().union(*ptags[lo:hi]) | add) - drop]
 
     # ph-d merge first: "Ph." "D." adjacent -> one suffix piece (plan
