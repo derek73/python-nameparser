@@ -61,35 +61,41 @@ Input shapes tell you where the fields sit. This tells you which words
 merge into one field instead of standing alone — between them, that is
 most of what decides a parse.
 
-Most words stand alone. A few pull a neighbor in, and the thing worth
-knowing is which field they pull into:
+Most words stand alone. A few pull in a neighbor, and each kind pulls
+into one particular field — so this table is also a map of which fields
+get built by attachment rather than by position. Consecutive titles
+chain (``Asst. Vice Chancellor`` is one title), as do consecutive
+suffixes:
 
 .. list-table::
    :header-rows: 1
-   :widths: 14 42 44
+   :widths: 40 34 26
 
-   * - Pulls into
-     - Example
-     - Words
-   * - ``family``
-     - ``Juan de la Vega`` → ``de la Vega``
-     - Particles (``de``, ``van``, ``von``, ``bin``), and conjunctions
-       inside a surname (``y``)
-   * - ``given``
-     - ``abdul salam ahmed`` → ``abdul salam``
-     - Bound given names (``abdul``, ``abu``, ``umm``, ``عبد``)
-   * - ``title``
-     - ``Asst. Vice Chancellor John Smith`` → ``Asst. Vice Chancellor``
-     - Consecutive titles chain
-   * - ``suffix``
-     - ``John Smith PhD MD`` → ``PhD, MD``
-     - Consecutive suffixes
-   * - ``maiden``
-     - ``Jane Smith née Jones`` → ``Jones``
-     - Maiden markers (``née``, ``geb.``)
+   * - Words
+     - Attach to
+     - Field
+   * - Titles — ``dr``, ``sir``, ``prof``, ``capt``
+     - adjacent titles
+     - ``title``
+   * - Suffixes — ``phd``, ``md``, ``jr``, ``esq``
+     - adjacent suffixes
+     - ``suffix``
+   * - Bound given names — ``abdul``, ``abu``, ``umm``, ``عبد``
+     - the following word
+     - ``given``
+   * - Particles — ``de``, ``van``, ``von``, ``bin``
+     - the following surname
+     - ``family``
+   * - Maiden markers — ``née``, ``geb.``
+     - the following name
+     - ``maiden``
+   * - Conjunctions — ``and``, ``&``, ``y``, ``и``
+     - both neighbors, whatever they are
+     - whichever field they join
 
-A conjunction joins whatever sits on both sides of it, so it can pull
-two given names together as easily as two surnames:
+Conjunctions are the exception the last row names: they take the field
+of whatever sits on both sides, so the same ``and`` pulls two given
+names together as easily as two surnames:
 
 .. doctest::
 
