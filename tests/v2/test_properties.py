@@ -13,7 +13,10 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from nameparser import Lexicon, Policy, parse
+from nameparser import (
+    FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST, Lexicon, Parser,
+    PatronymicRule, Policy, parse,
+)
 from nameparser._pipeline import run
 from nameparser._pipeline._state import ParseState
 from nameparser._types import AmbiguityKind, Role
@@ -173,3 +176,177 @@ def test_particle_fork_is_never_double_reported(text: str) -> None:
                            policy=Policy()))
     assert _fork_count(state) <= 1, (
         f"{text!r} reported the same fork more than once")
+
+
+# ---------------------------------------------------------------- config
+# Everything above fuzzes the INPUT STRING against the default
+# configuration. That leaves 2.0's largest new surface -- Lexicon and
+# Policy -- covered only by hand-written cases, which is backwards: the
+# vocabulary and the switches are the parts a user is invited to
+# change, so they are the parts most likely to be given a combination
+# nobody tried.
+
+# Deliberately mixed: real vocabulary, one-letter words that collide
+# with initials, an interior period, a multi-word phrase (legal only in
+# given_name_titles), and non-Latin entries. Nothing here normalizes to
+# empty, which Lexicon rejects outright.
+_VOCAB = st.sampled_from([
+    "van", "de", "la", "bin", "abdul", "abu", "dr", "sir", "prof",
+    "md", "jr", "iii", "esq", "ma", "do", "and", "y", "née", "geb",
+    "a", "b", "ph.d", "grand duke", "عبد", "фон", "μεγα",
+])
+
+
+def _fix_invariants(**fields: frozenset[str]) -> dict[str, frozenset[str]]:
+    """Repair a random draw into a legal Lexicon instead of generating
+    one legally.
+
+    Drawing dependent subsets directly (particles_ambiguous from
+    whatever particles happened to be drawn) makes the strategy tree
+    deep and mostly rejects; intersecting after the fact keeps every
+    draw usable and still reaches every shape. The four rules are
+    Lexicon's own, restated here on purpose -- if one changes, this
+    fails loudly rather than silently fuzzing a narrower space.
+    """
+    fields["particles_ambiguous"] &= fields["particles"]
+    fields["suffix_acronyms_ambiguous"] &= fields["suffix_acronyms"]
+    fields["suffix_words"] -= fields["suffix_acronyms_ambiguous"]
+    fields["bound_given_names"] -= (
+        fields["particles"] - fields["particles_ambiguous"])
+    return fields
+
+
+_SET_FIELDS = (
+    "titles", "given_name_titles", "suffix_acronyms", "suffix_words",
+    "suffix_acronyms_ambiguous", "particles", "particles_ambiguous",
+    "conjunctions", "bound_given_names", "maiden_markers",
+)
+
+
+@st.composite
+def _lexicons(draw: st.DrawFn) -> Lexicon:
+    fields = {name: draw(st.frozensets(_VOCAB, max_size=5))
+              for name in _SET_FIELDS}
+    caps = draw(st.lists(st.tuples(_VOCAB, _VOCAB), max_size=3))
+    return Lexicon(capitalization_exceptions=tuple(caps),
+                   **_fix_invariants(**fields))
+
+
+@st.composite
+def _policies(draw: st.DrawFn) -> Policy:
+    pairs = st.sampled_from([("(", ")"), ('"', '"'), ("'", "'"),
+                             ("[", "]"), ("«", "»")])
+    nickname = draw(st.frozensets(pairs, max_size=2))
+    # a pair may not sit in both buckets; Policy canonicalizes overlap
+    # away, but constructing the contradiction is not what this fuzzes
+    maiden = draw(st.frozensets(pairs, max_size=2)) - nickname
+    return Policy(
+        name_order=draw(st.sampled_from(
+            [GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])),
+        patronymic_rules=draw(st.frozensets(
+            st.sampled_from(list(PatronymicRule)), max_size=2)),
+        middle_as_family=draw(st.booleans()),
+        nickname_delimiters=nickname,
+        maiden_delimiters=maiden,
+        extra_suffix_delimiters=draw(
+            st.frozensets(st.sampled_from(["/", ";", "|"]), max_size=2)),
+        lenient_comma_suffixes=draw(st.booleans()),
+        strip_emoji=draw(st.booleans()),
+        strip_bidi=draw(st.booleans()),
+    )
+
+
+@st.composite
+def _names_using(draw: st.DrawFn, lexicon: Lexicon) -> str:
+    """Build the input out of the lexicon's OWN words.
+
+    Fuzzing configuration while feeding unrelated text tests almost
+    nothing: a randomly generated string essentially never contains a
+    randomly generated vocabulary entry, so every configured set would
+    sit unused and the parse would take the same path every time.
+    """
+    vocab = sorted({w for name in _SET_FIELDS
+                    for w in getattr(lexicon, name)})
+    # plain names and structure characters are always available, so the
+    # pool is never empty even for an empty lexicon
+    pieces = st.sampled_from(
+        vocab + ["John", "Smith", "Q.", ",", "(", "'"])
+    return " ".join(draw(st.lists(pieces, min_size=1, max_size=8)))
+
+
+@given(_lexicons(), _policies(), st.data())
+@settings(max_examples=250, deadline=None, derandomize=True)
+def test_any_valid_config_still_parses_totally(
+        lexicon: Lexicon, policy: Policy, data: st.DataObject) -> None:
+    # Building the parser is part of the contract: a Lexicon and Policy
+    # that each constructed must also combine.
+    parser = Parser(lexicon=lexicon, policy=policy)
+    text = data.draw(_names_using(lexicon))
+    parsed = parser.parse(text)          # must not raise, ever
+    # the anti-#100 invariant, under configuration rather than under
+    # the default vocabulary: spans index the original exactly
+    for token in parsed.tokens:
+        assert token.span is not None
+        assert token.text == parsed.original[
+            token.span.start:token.span.end]
+    # rendering is downstream of every config choice above
+    assert isinstance(str(parsed), str)
+    assert isinstance(parsed.capitalized().given, str)
+    assert isinstance(parsed.initials(), str)
+
+
+@given(_lexicons(), _policies())
+@settings(max_examples=100, deadline=None, derandomize=True)
+def test_config_values_are_hashable_and_reusable(
+        lexicon: Lexicon, policy: Policy) -> None:
+    # The docs promise these are frozen values: safe as dict keys, and
+    # safe to build a parser from more than once.
+    assert hash(lexicon) == hash(lexicon)
+    assert {lexicon: 1, policy: 2}
+    assert Parser(lexicon=lexicon, policy=policy) == Parser(
+        lexicon=lexicon, policy=policy)
+
+
+# Values a real caller plausibly passes by mistake: the bare string that
+# iterates into characters, a mapping confused for a set, bytes, None,
+# and entries that normalize to nothing.
+_HOSTILE = st.sampled_from([
+    None, 0, 1, True, "", "dr", "  ", ".", b"dr", ["dr", None],
+    {"dr": "Dr"}, {1, 2}, [("a", "b")], [[]], object(),
+])
+
+_POLICY_FIELDS = (
+    "name_order", "patronymic_rules", "middle_as_family",
+    "nickname_delimiters", "maiden_delimiters",
+    "extra_suffix_delimiters", "lenient_comma_suffixes",
+    "strip_emoji", "strip_bidi",
+)
+
+
+@given(st.sampled_from(_SET_FIELDS + ("capitalization_exceptions",)),
+       _HOSTILE)
+@settings(max_examples=200, deadline=None, derandomize=True)
+def test_bad_lexicon_field_fails_cleanly(field: str, value: object) -> None:
+    """A rejected configuration must be a DOCUMENTED rejection.
+
+    ValueError and TypeError are the contract; anything else means the
+    bad value got past validation and blew up somewhere downstream,
+    where the message no longer names the field the caller typed.
+    """
+    try:
+        lexicon = Lexicon(**{field: value})     # type: ignore[arg-type]
+    except (ValueError, TypeError):
+        return
+    # Accepted, so it has to survive an actual parse -- construction
+    # succeeding while parsing dies is the same bug one stage later.
+    Parser(lexicon=lexicon).parse("Dr. John de la Vega III")
+
+
+@given(st.sampled_from(_POLICY_FIELDS), _HOSTILE)
+@settings(max_examples=200, deadline=None, derandomize=True)
+def test_bad_policy_field_fails_cleanly(field: str, value: object) -> None:
+    try:
+        policy = Policy(**{field: value})       # type: ignore[arg-type]
+    except (ValueError, TypeError):
+        return
+    Parser(policy=policy).parse("Dr. John de la Vega III")
