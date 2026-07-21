@@ -62,17 +62,29 @@ def main() -> int:
     rules = tomllib.loads(
         (HERE / "expected_changes.toml").read_text()).get("change", [])
     validate_rules(rules)
-    # dedupe across files, keeping first-seen order stable for output
-    corpus, seen = [], set()
+    # A glob that matches nothing must not read as "everything passed".
+    # Comparing zero names would print 0 unexplained and exit 0 -- the
+    # harness's own stated nightmare (see validate_rules), and a
+    # regression from the single hard-coded path this replaced, which
+    # raised FileNotFoundError.
+    if not paths:
+        raise SystemExit(
+            f"no corpus files found in {HERE}: expected corpus*.jsonl")
+    per_file = {}
+    corpus = []
     for path in paths:
-        for line in path.read_text().splitlines():
-            if not line.strip():
-                continue
-            name = json.loads(line)
-            if name not in seen:
-                seen.add(name)
-                corpus.append(name)
-    print(f"corpora: {', '.join(p.name for p in paths)}")
+        names = [json.loads(line)
+                 for line in path.read_text().splitlines() if line.strip()]
+        if not names:
+            raise SystemExit(f"{path.name} is empty; comparison aborted")
+        per_file[path.name] = len(names)
+        corpus.extend(names)
+    # dedupe across files, keeping first-seen order stable for output
+    corpus = list(dict.fromkeys(corpus))
+    # per-file counts, not just the total: a corpus that shrinks or
+    # vanishes is only visible if its own number is printed
+    print("corpora: " + ", ".join(f"{name} ({n})"
+                                  for name, n in per_file.items()))
 
     proc = subprocess.Popen(
         ["uv", "run", "--no-project", str(HERE / "worker_v1.py")],

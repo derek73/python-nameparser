@@ -5,7 +5,7 @@ from collections.abc import Callable
 import pytest
 
 from nameparser import Parser
-from nameparser._lexicon import Lexicon, _normalize
+from nameparser._lexicon import Lexicon, _normalize, _title_key
 
 
 def test_entries_are_normalized_at_construction() -> None:
@@ -258,6 +258,48 @@ def test_given_name_titles_folds_per_word_so_abbreviations_match(
         given_name_titles=base.given_name_titles | {spelling})
     assert "lt col" in lex.given_name_titles
     assert Parser(lexicon=lex).parse("Lt. Col. Smith").given == "Smith"
+
+
+@pytest.mark.parametrize("entry", ["lt .", "lt . col", ". col", "lt.  col"])
+def test_given_name_titles_fold_is_a_fixed_point(entry: str) -> None:
+    # Storage re-runs the fold on unpickle and on every
+    # dataclasses.replace, so a value that changes under a second pass
+    # is one Lexicon later rejects as "not written by this version".
+    once = _title_key(entry.split())
+    assert _title_key(once.split()) == once
+    assert once == once.strip() and "  " not in once
+
+
+def test_a_title_word_that_folds_away_leaves_no_gap() -> None:
+    # 'lt .' stored 'lt' before this field folded per word. A per-word
+    # join that keeps the empty slot stores 'lt ', which match time can
+    # never build -- silently inert config, the exact failure the
+    # per-word fold was introduced to remove.
+    base = Lexicon.default()
+    lex = dataclasses.replace(
+        base, titles=base.titles | {"lt", "col"},
+        given_name_titles=base.given_name_titles | {"lt ."})
+    assert "lt" in lex.given_name_titles
+    assert Parser(lexicon=lex).parse("Lt. John").given == "John"
+
+
+def test_the_constructor_and_add_store_an_entry_identically() -> None:
+    # add() goes through dataclasses.replace, which re-runs
+    # __post_init__ -- a non-idempotent fold converges there and not in
+    # the constructor, so the two paths silently disagree.
+    base = dataclasses.replace(Lexicon.default(),
+                               titles=Lexicon.default().titles | {"lt", "col"})
+    built = dataclasses.replace(
+        base, given_name_titles=base.given_name_titles | {"lt . col"})
+    assert built.given_name_titles == base.add(
+        given_name_titles={"lt . col"}).given_name_titles
+
+
+def test_an_all_punctuation_given_name_title_is_rejected() -> None:
+    # every other vocab field raises on this; this one must not be
+    # special just because it folds per word
+    with pytest.raises(ValueError):
+        Lexicon(given_name_titles=frozenset({". ."}))
 
 
 def test_given_name_titles_is_not_constrained_against_titles() -> None:

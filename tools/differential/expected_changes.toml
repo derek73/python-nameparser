@@ -72,15 +72,25 @@ name_regex = "[“”„«»「」『』（）]"
 fields = ["middle", "nickname"]
 
 [[change]]
-issue = "feat(#269) non-Latin titles/conjunctions/particles recognized"
+issue = "feat(#269) non-Latin titles/conjunctions recognized"
 # 'г-н Иван Петров' (Cyrillic title), 'Хосе И Мария Сантос' (Cyrillic
 # conjunction И joining two given names). v1 shipped Latin-only
 # vocabulary, so these were plain name tokens and everything shifted
 # one position. New recognition on non-Latin input -- the point of
-# #269 -- not a Latin-corpus regression. Guarded by requiring a
-# non-Latin character in the name.
-name_regex = "[\\u0400-\\u04FF\\u0370-\\u03FF\\u0590-\\u05FF\\u0600-\\u06FF]"
-fields = ["title", "first", "middle", "last", "suffix"]
+# #269 -- not a Latin-corpus regression.
+#
+# Cyrillic only, and only the three fields the shift can touch. The
+# first draft allowed five fields across four scripts, which put every
+# Arabic name in the corpus -- including ones that are currently
+# PARITY -- into its shadow, and pre-excused Greek and Hebrew, against
+# which nothing has ever been compared. A leading title or an absorbed
+# conjunction moves a word from `first` to `title`, or from `middle`
+# into `first`; it cannot reach `last` or `suffix`. Widen this only
+# with a name that demonstrates the need, and prefer a new rule per
+# script over loosening this one -- the \bبن\b rule below is the
+# model.
+name_regex = "[\\u0400-\\u04FF]"
+fields = ["title", "first", "middle"]
 
 [[change]]
 issue = "fix(leading-credential) a split 'Ph. D.' before the name stays one unit"

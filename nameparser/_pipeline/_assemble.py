@@ -37,17 +37,27 @@ def assemble(state: ParseState) -> ParsedName:
     # script has content and only pure punctuation/symbols empty out.
     # (Embedded junk in a name with content -- 'John . Smith' -- is left
     # alone: that parse is truthy, so bool() is not misled.)
-    if not any(c.isalnum() for t in final.values() for c in t.text):
-        return ParsedName(original=state.original, tokens=(),
-                          ambiguities=())
+    #
+    # The TOKENS go, not the diagnostics: this drops the name, and
+    # "was the input malformed?" is the one question still worth
+    # answering about it -- most of all here, where there is no parse
+    # left to infer it from. parse('(') keeps its unbalanced-delimiter
+    # report, pointing at no token because no token survived.
+    contentless = not any(
+        c.isalnum() for t in final.values() for c in t.text)
+    if contentless:
+        final = {}
     ambiguities = []
     for pending in state.ambiguities:
         materialized = tuple(final[i] for i in pending.indices
                              if i in final)
-        if pending.indices and not materialized:
+        if pending.indices and not materialized and not contentless:
             # every referent was dropped: the ambiguity describes
             # nothing that survives assembly. Born-empty ambiguities
             # (unbalanced delimiters) are token-independent and kept.
+            # Not so when the whole name was emptied just above -- the
+            # referents did not lose a contest, they were discarded
+            # wholesale, and the report still describes the input.
             continue
         ambiguities.append(
             Ambiguity(pending.kind, pending.detail, materialized))

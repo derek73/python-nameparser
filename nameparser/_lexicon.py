@@ -84,8 +84,17 @@ def _title_key(words: Iterable[str]) -> str:
     leave interior periods. Defined once because it is built at match
     time (post_rules) and at translation time (the v1 facade's
     first_name_titles), and a divergence between the two fails silently:
-    the entry simply stops matching."""
-    return " ".join(_normalize(w) for w in words)
+    the entry simply stops matching.
+
+    Words that fold away are DROPPED, not joined as empty. Keeping the
+    gap makes the fold non-idempotent -- 'lt .' would store 'lt ', which
+    match time can never build (post_rules joins token texts, and a lone
+    '.' is not a title token), so the entry is inert. Storage re-runs
+    this fold on unpickle and on every dataclasses.replace, so a value
+    that changes under a second pass is one Lexicon later rejects as
+    "not written by this version". _normalize converges for the same
+    reason; so must anything built on top of it."""
+    return " ".join(filter(None, (_normalize(w) for w in words)))
 
 
 def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
