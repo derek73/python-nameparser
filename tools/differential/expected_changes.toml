@@ -61,12 +61,51 @@ issue = "feat(#269) Arabic بن prefix chains onto family (non-Latin new-recogni
 name_regex = "\\bبن\\b"
 fields = ["middle", "last"]
 
-# Deliberately NOT a [[change]] rule: 'Ph. D.' split-token healing
-# ('John Ph. D.', 'John Smith, Ph. D.') is PARITY, not a 2.0 behavior
-# change -- v1's fix_phd healing of the adjacent 'Ph.'/'D.' pair into
-# one suffix unit is replicated exactly by 2.0's 'joined' vocab tag
-# (tests/v2/cases.py classification="parity" on both 'phd_split' and
-# 'suffix_comma_split_phd'; verified empirically, zero diff against the
-# 1.4 worker). Adding a suppression rule for it would risk masking a
-# real regression in this exact shape, so it is intentionally left
-# unclassified: if it ever starts diffing, the harness must fail.
+[[change]]
+issue = "feat(#273) typographic nickname delimiters recognized by default"
+# 'John “Jack” Kennedy', 'Hans „Hansi“ Müller', 'Jean «Petit» Dupont':
+# v1 knew only straight quotes and parentheses, so a smart-quoted or
+# guillemet-wrapped nickname leaked into `middle` as literal text.
+# Matches only when such a delimiter is actually present -- the ASCII
+# pairs stay unclassified, since a diff there would be a regression.
+name_regex = "[“”„«»「」『』（）]"
+fields = ["middle", "nickname"]
+
+[[change]]
+issue = "feat(#269) non-Latin titles/conjunctions/particles recognized"
+# 'г-н Иван Петров' (Cyrillic title), 'Хосе И Мария Сантос' (Cyrillic
+# conjunction И joining two given names). v1 shipped Latin-only
+# vocabulary, so these were plain name tokens and everything shifted
+# one position. New recognition on non-Latin input -- the point of
+# #269 -- not a Latin-corpus regression. Guarded by requiring a
+# non-Latin character in the name.
+name_regex = "[\\u0400-\\u04FF\\u0370-\\u03FF\\u0590-\\u05FF\\u0600-\\u06FF]"
+fields = ["title", "first", "middle", "last", "suffix"]
+
+[[change]]
+issue = "fix(leading-credential) a split 'Ph. D.' before the name stays one unit"
+# 'Ph. D. John Smith'. v1 healed the adjacent 'Ph.'/'D.' pair only when
+# it TRAILED; leading, it split them -- title 'Ph.', given 'D.', and
+# the real given name pushed to middle. 2.0 keeps the credential whole
+# and routes it to `suffix`, which is the post-nominal field, so a
+# leading credential lands there rather than in `title`. Slightly odd
+# positionally, and still strictly better than manufacturing a given
+# name out of 'D.'.
+#
+# Anchored to the START on purpose. Trailing 'Ph. D.' is PARITY and
+# stays unclassified below; widening this regex would mask a
+# regression in the shape that is the whole reason fix_phd exists.
+name_regex = "^Ph\\. ?D\\."
+fields = ["title", "first", "middle", "suffix"]
+
+# Deliberately NOT a [[change]] rule: TRAILING 'Ph. D.' split-token
+# healing ('John Ph. D.', 'John Smith, Ph. D.') is PARITY, not a 2.0
+# behavior change -- v1's fix_phd healing of the adjacent 'Ph.'/'D.'
+# pair into one suffix unit is replicated exactly by 2.0's 'joined'
+# vocab tag (tests/v2/cases.py classification="parity" on both
+# 'phd_split' and 'suffix_comma_split_phd'; verified empirically, zero
+# diff against the 1.4 worker). Adding a suppression rule for it would
+# risk masking a real regression in this exact shape, so it is
+# intentionally left unclassified: if it ever starts diffing, the
+# harness must fail. (The leading case above is a separate shape, which
+# is why it needed its own anchored rule rather than a widened one.)

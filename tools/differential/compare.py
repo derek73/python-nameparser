@@ -50,13 +50,29 @@ def classify(name: str, diff_fields: set[str],
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--corpus", default=str(HERE / "corpus.jsonl"))
+    # Both corpora by default: they have different blind spots (see
+    # build_issues_corpus.py), and one that has to be asked for by name
+    # is one that stops being run.
+    ap.add_argument("--corpus", action="append", metavar="PATH",
+                    help="corpus file; repeatable. Defaults to every "
+                         "corpus*.jsonl beside this script.")
     args = ap.parse_args()
+    paths = ([Path(p) for p in args.corpus] if args.corpus
+             else sorted(HERE.glob("corpus*.jsonl")))
     rules = tomllib.loads(
         (HERE / "expected_changes.toml").read_text()).get("change", [])
     validate_rules(rules)
-    corpus = [json.loads(line) for line in
-              Path(args.corpus).read_text().splitlines() if line.strip()]
+    # dedupe across files, keeping first-seen order stable for output
+    corpus, seen = [], set()
+    for path in paths:
+        for line in path.read_text().splitlines():
+            if not line.strip():
+                continue
+            name = json.loads(line)
+            if name not in seen:
+                seen.add(name)
+                corpus.append(name)
+    print(f"corpora: {', '.join(p.name for p in paths)}")
 
     proc = subprocess.Popen(
         ["uv", "run", "--no-project", str(HERE / "worker_v1.py")],

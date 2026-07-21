@@ -435,6 +435,13 @@ CASES: tuple[Case, ...] = (
     Case("phd_split_mid_name", "Dr. John Ph. D. Smith",
          {"title": "Dr.", "given": "John", "family": "Smith",
           "suffix": "Ph. D."}),
+    Case("phd_split_leading", "Ph. D. John Smith",
+         {"given": "John", "family": "Smith", "suffix": "Ph. D."},
+         classification="fix",
+         notes="v1 healed 'Ph.'+'D.' only when trailing; leading it "
+               "split them (title 'Ph.', given 'D.', real given name "
+               "pushed to middle). Surfaced by the issue-tracker "
+               "corpus, which is where this shape existed at all."),
     Case("leading_never_given_particle", "de la Vega",
          {"family": "de la Vega"},
          notes="v1 handle_non_first_name_prefix: never-given leading "

@@ -38,6 +38,28 @@ needs widening. The run must exit 0 before a 2.0 release; the classified
 summary it prints is the source for the "Behavior Changes" section of
 `docs/release_log.rst`.
 
+## The two corpora
+
+`compare.py` reads **every** `corpus*.jsonl` beside it by default
+(deduped), because a corpus you have to ask for by name is a corpus
+that stops being run. Pass `--corpus PATH` (repeatable) to narrow it.
+
+| File | Source | Blind to |
+|---|---|---|
+| `corpus.jsonl` | v1's own test suite at a pinned ref | anything 2.0 added — v1's authors had no reason to test a typographic nickname delimiter or a Cyrillic title |
+| `corpus_issues.jsonl` | name-like strings harvested from the GitHub issue tracker | anything nobody ever reported |
+
+They are deliberately separate rather than merged: `corpus.jsonl` is
+reproducible forever from an immutable git ref, while the issue
+tracker is mutable, so regenerating the second one is an explicit,
+reviewable act that can only add names.
+
+The issue corpus earned its place on the first run — 166 of its 198
+names were not in `corpus.jsonl`, and it immediately surfaced five
+intended-but-unclassified 2.0 behaviors (#273 typographic delimiters,
+#269 non-Latin vocabulary) plus one shape no test had considered: a
+**leading** `"Ph. D."`, which v1 split into title `Ph.` + given `D.`.
+
 ## Corpus provenance
 
 `corpus.jsonl` is checked in as a test fixture. It was built by
@@ -68,6 +90,21 @@ decorator/email-shaped fixtures, escape sequences) are dropped.
 Regenerate the corpus only if the v1 test banks are revisited again at
 a still-earlier point in history; otherwise leave the checked-in file
 alone so the harness stays comparable run to run.
+
+`corpus_issues.jsonl` is built by `build_issues_corpus.py` from the
+issue tracker (`gh issue list --state all`), taking `HumanName("...")`
+calls and quoted capitalized phrases -- the two ways a reporter writes
+the input that broke on them. Regenerate with:
+
+```
+uv run python tools/differential/build_issues_corpus.py > tools/differential/corpus_issues.jsonl
+```
+
+Unlike the ref-pinned corpus this is a mutable source, so the
+checked-in file is the snapshot under test; re-running only adds names
+as new issues arrive. Over-collection is fine in both builders: the
+comparator just parses more names, and junk like `Bridge (1.4)` costs
+one parse and produces no diff.
 
 ## `expected_changes.toml`
 
