@@ -52,7 +52,14 @@ _SHAPES = {
     "plain_tokens": "a ",           # tokenize/assign: long token stream
     "commas": "a, ",                # segment: many comma segments
     "titles": "Dr. ",               # group: one long title chain
+    "particles": "van ",            # group: the prefix-chain inner loop
 }
+# Not covered, deliberately: a conjunction chain ("and " * n). group's
+# merge() re-flattens the whole accumulated piece per call, so that
+# shape is ALREADY superlinear in shipped code (2.4x-2.9x per doubling
+# against 2.0 for every shape above) and would fail this test today.
+# Tracked separately rather than silently excluded -- adding it is the
+# regression test for that fix.
 
 _BASE = 400
 _FACTOR = 4
