@@ -317,3 +317,30 @@ def test_name_order_rejects_bare_string() -> None:
         Policy(name_order="gmf")  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="bare string"):
         PolicyPatch(name_order="gmf")  # type: ignore[arg-type]
+
+
+# Policy's collection fields had no guard against the two shapes
+# Lexicon._normset rejects by name: a bare string (iterates into
+# characters) and a Mapping (contributes only its keys). Both were
+# accepted silently, storing a value the caller never wrote -- the
+# expensive failure this library guards against elsewhere.
+@pytest.mark.parametrize("field", [
+    "nickname_delimiters", "maiden_delimiters", "extra_suffix_delimiters",
+    "patronymic_rules",
+])
+def test_collection_fields_reject_a_mapping(field: str) -> None:
+    with pytest.raises(TypeError, match="mapping"):
+        Policy(**{field: {"dr": "Dr"}})      # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("field", [
+    "nickname_delimiters", "maiden_delimiters", "extra_suffix_delimiters",
+    "patronymic_rules",
+])
+@pytest.mark.parametrize("value", ["", "()", "dr"])
+def test_collection_fields_reject_a_bare_string(
+        field: str, value: str) -> None:
+    # '' is the sharp one: it iterates to nothing, so it silently
+    # stored an empty frozenset rather than failing.
+    with pytest.raises(TypeError, match="bare string"):
+        Policy(**{field: value})             # type: ignore[arg-type]

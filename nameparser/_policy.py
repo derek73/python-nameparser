@@ -6,7 +6,7 @@ tests/v2/test_layering.py).
 from __future__ import annotations
 
 import dataclasses
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum, StrEnum, auto
 from typing import Any
@@ -86,6 +86,28 @@ def _reject_bare_string_order(value: object) -> None:
         raise TypeError(
             f"name_order must be an iterable of three Roles, "
             f"not a bare string: {value!r}"
+        )
+
+
+def _reject_str_and_mapping(value: object, field_name: str) -> None:
+    """The two shapes that iterate into something plausible but wrong.
+
+    A bare string yields its characters (and '' yields nothing at all,
+    so it silently stored an empty set); a Mapping yields only its keys.
+    Both used to be accepted here, storing a value the caller never
+    wrote. Lexicon._normset rejects the same two by name -- the wording
+    is deliberately parallel, since a caller who hits one field's guard
+    should recognize the other's.
+    """
+    if isinstance(value, str):
+        raise TypeError(
+            f"{field_name} must be an iterable, not a bare string: "
+            f"{value!r}"
+        )
+    if isinstance(value, Mapping):
+        raise TypeError(
+            f"{field_name} must be an iterable, not a mapping "
+            f"(a mapping would contribute only its keys): {value!r}"
         )
 
 
@@ -187,11 +209,7 @@ class Policy:
                 f"FAMILY_FIRST_GIVEN_LAST"
             )
         object.__setattr__(self, "name_order", order)
-        if isinstance(self.patronymic_rules, str):
-            raise TypeError(
-                f"patronymic_rules must be an iterable of rule names, "
-                f"not a bare string: {self.patronymic_rules!r}"
-            )
+        _reject_str_and_mapping(self.patronymic_rules, "patronymic_rules")
         # Probe with iter() rather than wrapping tuple(): non-iterables
         # (True especially -- v1's patronymic_name_order was a bool flag,
         # so it's the likeliest wrong value here) get the migration-
@@ -219,6 +237,7 @@ class Policy:
                 ) from None
         object.__setattr__(self, "patronymic_rules", frozenset(rules))
         for pairs_name in ("nickname_delimiters", "maiden_delimiters"):
+            _reject_str_and_mapping(getattr(self, pairs_name), pairs_name)
             pairs = tuple(_require_iterable(getattr(self, pairs_name), pairs_name))
             for pair in pairs:
                 if (not isinstance(pair, tuple) or len(pair) != 2
@@ -243,11 +262,8 @@ class Policy:
         object.__setattr__(
             self, "nickname_delimiters",
             self.nickname_delimiters - self.maiden_delimiters)
-        if isinstance(self.extra_suffix_delimiters, str):
-            raise TypeError(
-                f"extra_suffix_delimiters must be an iterable of strings, "
-                f"not a bare string: {self.extra_suffix_delimiters!r}"
-            )
+        _reject_str_and_mapping(self.extra_suffix_delimiters,
+                                "extra_suffix_delimiters")
         delimiters = tuple(_require_iterable(
             self.extra_suffix_delimiters, "extra_suffix_delimiters"))
         for d in delimiters:
