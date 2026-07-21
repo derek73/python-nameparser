@@ -70,6 +70,25 @@ def test_a_single_letter_of_content_survives() -> None:
         assert _parse(real), f"{real!r} should be truthy"
 
 
+def test_a_content_free_parse_keeps_its_diagnostics() -> None:
+    # Emptying the name must not take the reports with it. "Was this
+    # input malformed?" is the one question still worth answering when
+    # there is no parse left to infer it from, and every junk row in
+    # the test above is balanced or delimiter-free, so none of them
+    # would notice if the ambiguities were dropped again.
+    pn = _parse("(")
+    assert not pn and pn.tokens == ()
+    assert [a.kind for a in pn.ambiguities] == [
+        AmbiguityKind.UNBALANCED_DELIMITER]
+    # points at no token, because none survived -- the load-bearing
+    # assertion: a fix that materialized a phantom token would
+    # otherwise pass, and ParsedName would reject it anyway
+    assert pn.ambiguities[0].tokens == ()
+    assert len(_parse("((").ambiguities) == 2      # one report each
+    # a delimiter that IS balanced still reports nothing
+    assert _parse("()").ambiguities == ()
+
+
 def test_assemble_falls_back_to_given_for_unassigned_role() -> None:
     # This should never happen through the real pipeline -- assign/group
     # always set a role on every main-stream token before assemble runs.

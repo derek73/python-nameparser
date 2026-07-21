@@ -12,9 +12,9 @@ from nameparser import Locale, Parser, locales, parse, parser_for
 from nameparser._lexicon import Lexicon
 from nameparser._policy import PatronymicRule, Policy
 from nameparser.locales import ru as _ru
+from nameparser.locales import tr_az as _tr_az
 
 from .conftest import differential_corpus
-from nameparser.locales import tr_az as _tr_az
 
 _CORPUS = differential_corpus()
 

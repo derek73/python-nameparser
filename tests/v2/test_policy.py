@@ -357,18 +357,39 @@ def test_collection_fields_reject_a_bare_string(
 
 
 @pytest.mark.parametrize("cls", [Policy, PolicyPatch])
-def test_legitimate_iterables_are_still_accepted(cls: type) -> None:
-    # The guards must not over-reject. A dict_items view is the
-    # documented way to pass an {open: close} mapping, and it survives
-    # precisely because ItemsView is a Set rather than a Mapping -- if
-    # that ever stops being true this fails rather than silently
-    # narrowing what callers may pass.
-    pairs = [("<", ">"), ("[", "]")]
-    pair_values: list[object] = [
-        frozenset(pairs), set(pairs), list(pairs), tuple(pairs),
-        (p for p in pairs), {"<": ">", "[": "]"}.items()]
-    for value in pair_values:
-        assert cls(nickname_delimiters=value) is not None
-    str_values: list[object] = [frozenset({"/"}), ["/"], ("/",), iter(["/"])]
-    for value in str_values:
-        assert cls(extra_suffix_delimiters=value) is not None
+@pytest.mark.parametrize("field,items,expected", [
+    ("nickname_delimiters", [("<", ">")], frozenset({("<", ">")})),
+    ("maiden_delimiters", [("[", "]")], frozenset({("[", "]")})),
+    ("extra_suffix_delimiters", ["/"], frozenset({"/"})),
+    ("patronymic_rules", ["turkic"], frozenset({PatronymicRule.TURKIC})),
+])
+def test_legitimate_iterables_are_accepted_and_stored_intact(
+        cls: type, field: str, items: list, expected: frozenset) -> None:
+    """The guards must not over-reject -- and must not consume.
+
+    Asserts the STORED value, not merely that construction returned.
+    `assert cls(...) is not None` is a tautology for a dataclass: it
+    passes for a guard that accepts a one-shot iterable, exhausts it,
+    and stores frozenset(). That is the same "stored a value the caller
+    never wrote" failure the guards exist to prevent, so the generator
+    and iter() entries below are the ones that matter.
+
+    All four fields, both classes: an over-strict guard on
+    maiden_delimiters was invisible to the entire suite, because every
+    other call site happens to pass it a frozenset.
+    """
+    for value in (frozenset(items), set(items), list(items), tuple(items),
+                  (x for x in items), iter(items)):
+        stored = getattr(cls(**{field: value}), field)
+        assert stored == expected, (
+            f"{cls.__name__}.{field} stored {stored!r} for "
+            f"{type(value).__name__}")
+
+
+@pytest.mark.parametrize("cls", [Policy, PolicyPatch])
+def test_a_pair_mapping_is_accepted_through_items(cls: type) -> None:
+    # The escape the mapping guard's message recommends. It works only
+    # because ItemsView is a Set rather than a Mapping; if that ever
+    # stops being true, the advice becomes wrong and this fails.
+    stored = cls(nickname_delimiters={"<": ">"}.items()).nickname_delimiters
+    assert stored == frozenset({("<", ">")})

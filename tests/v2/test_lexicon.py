@@ -260,7 +260,7 @@ def test_given_name_titles_folds_per_word_so_abbreviations_match(
     assert Parser(lexicon=lex).parse("Lt. Col. Smith").given == "Smith"
 
 
-@pytest.mark.parametrize("entry", ["lt .", "lt . col", ". col", "lt.  col"])
+@pytest.mark.parametrize("entry", ["lt .", "lt . col", ". col", ". ."])
 def test_given_name_titles_fold_is_a_fixed_point(entry: str) -> None:
     # Storage re-runs the fold on unpickle and on every
     # dataclasses.replace, so a value that changes under a second pass
@@ -298,7 +298,7 @@ def test_the_constructor_and_add_store_an_entry_identically() -> None:
 def test_an_all_punctuation_given_name_title_is_rejected() -> None:
     # every other vocab field raises on this; this one must not be
     # special just because it folds per word
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="normalizes to empty"):
         Lexicon(given_name_titles=frozenset({". ."}))
 
 

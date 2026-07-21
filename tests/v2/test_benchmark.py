@@ -56,22 +56,32 @@ _SHAPES = {
     "conjunctions": "and ",         # group: merge() accumulating one piece
 }
 
-_BASE = 400
+_BASE = 800
 _FACTOR = 4
-# Calibrated, not guessed. A quadratic here is MIXED -- linear work
-# dominates at small sizes and the quadratic term takes over slowly --
-# so the textbook 16x never appears at a testable size, and picking the
-# operating point matters more than the bound. Measured against the
-# real _extract mask-overlap quadratic this test exists to catch:
+# Calibrated, not guessed, and calibrated against the WEAKEST signal.
 #
-#   base    clean ratio    quadratic ratio
-#    200      3.9 - 4.3          7.7        <- under an 8.0 bound: useless
-#    400      4.1 - 4.3          9.2
+# A quadratic here is MIXED -- linear work dominates at small sizes and
+# the quadratic term takes over slowly -- so the textbook 16x never
+# appears at a testable size, different quadratics surface at different
+# strengths, and the operating point matters more than the bound.
+# Measured against the two real bugs this guards, per shape, ratio for
+# 4x the input:
 #
-# At 400 the two populations separate, so the bound sits between them:
-# ~1.5x headroom over the worst clean run (noise on a shared runner)
-# and ~1.4x under the quadratic. Lower this only with fresh numbers.
-_MAX_RATIO = 6.5
+#   base   clean      _extract mask-overlap   _group merge re-flatten
+#    200   3.9 - 4.3          7.7                     5.6
+#    400   4.0 - 4.3          9.2                 6.3 - 6.6
+#    800   4.0 - 4.4         >9.2                 7.9 - 8.1
+#
+# The bound must clear the weakest column, not the first one measured.
+# An earlier version calibrated 6.5 against _extract alone and then
+# gained the conjunction shape, whose signal is 6.3-6.6 at base 400 --
+# the bound landed on the MEDIAN of the broken distribution and caught
+# the regression it was added for about half the time. Raising the base
+# separates the populations again rather than squeezing the bound into
+# a gap that is not there: at 800 the bound has ~1.4x over the worst
+# clean run (noise headroom on a shared runner) and ~1.3x under the
+# weakest quadratic. Re-derive BOTH numbers when adding a shape.
+_MAX_RATIO = 6.0
 
 
 def _best(text: str, repeats: int = 7) -> float:
