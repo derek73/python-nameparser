@@ -30,6 +30,16 @@ def assemble(state: ParseState) -> ParsedName:
             continue
         role = t.role if t.role is not None else Role.GIVEN
         final[i] = Token(t.text, t.span, role, t.tags)
+    # No alphanumeric character anywhere means no name: a bare '.' or
+    # '- -' is not a person. v1 kept such input (parse('.') -> first
+    # '.'); 2.0 empties it so bool() stays an honest "did I get a name?"
+    # check. isalnum() is Unicode-aware, so every real name in any
+    # script has content and only pure punctuation/symbols empty out.
+    # (Embedded junk in a name with content -- 'John . Smith' -- is left
+    # alone: that parse is truthy, so bool() is not misled.)
+    if not any(c.isalnum() for t in final.values() for c in t.text):
+        return ParsedName(original=state.original, tokens=(),
+                          ambiguities=())
     ambiguities = []
     for pending in state.ambiguities:
         materialized = tuple(final[i] for i in pending.indices

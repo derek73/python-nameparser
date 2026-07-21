@@ -52,6 +52,24 @@ def test_empty_parse_is_falsy() -> None:
     assert not _parse("   ")
 
 
+def test_content_free_input_parses_to_empty() -> None:
+    # An input with no alphanumeric character anywhere is not a name.
+    # v1 kept it (parse('.') -> first='.'); 2.0 empties it so bool()
+    # stays an honest "did I get a name?" check. isalnum is
+    # Unicode-aware, so this only fires on pure punctuation/symbols.
+    for junk in [".", ".,", "- -", ". .", "'", "∫≜⩕", "()", "-"]:
+        pn = _parse(junk)
+        assert not pn, f"{junk!r} should be falsy"
+        assert pn.tokens == (), f"{junk!r} should have no tokens"
+        assert pn.original == junk       # the raw input is still remembered
+
+
+def test_a_single_letter_of_content_survives() -> None:
+    # the guard keys on content, not length: one alnum char is a name
+    for real in ["a.", ".a", "a", "李", "О"]:
+        assert _parse(real), f"{real!r} should be truthy"
+
+
 def test_assemble_falls_back_to_given_for_unassigned_role() -> None:
     # This should never happen through the real pipeline -- assign/group
     # always set a role on every main-stream token before assemble runs.

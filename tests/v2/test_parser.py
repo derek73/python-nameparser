@@ -43,6 +43,10 @@ def test_degenerate_inputs_are_total() -> None:
     assert not parse("")
     assert not parse("   ")
     assert parse("").original == ""
+    # an input with no alphanumeric character is not a name (v1 kept it)
+    assert not parse(".,")
+    assert not parse("- -")
+    assert parse(".,").original == ".,"     # but the raw input is kept
     single = parse("John")
     assert single.given == "John"
     family_first = Parser(policy=Policy(name_order=FAMILY_FIRST))
