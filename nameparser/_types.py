@@ -259,9 +259,13 @@ class AmbiguityKind(StrEnum):
     PARTICLE_OR_GIVEN = "particle-or-given"
     #: A nickname/maiden delimiter opened without closing (or closed
     #: without opening); the text was kept as literal name content, so
-    #: the tokens are the one the stray character ended up inside. Rare
-    #: exception: a character that lands in no token at all (inside a
-    #: masked region) leaves the tuple empty.
+    #: the tokens are the one the stray character ended up inside.
+    #: Two cases leave that tuple empty: a character that lands in no
+    #: token at all (inside a masked region), and an input with no
+    #: alphanumeric content anywhere, which parses to an empty name --
+    #: the report survives because "was this malformed?" is the only
+    #: question left, but there is no token for it to point at.
+    #: ``parse("(")`` is the second case, not an exotic one.
     UNBALANCED_DELIMITER = "unbalanced-delimiter"
     #: More comma-separated segments than any recognized name shape;
     #: the parse is best-effort over the extra segments.

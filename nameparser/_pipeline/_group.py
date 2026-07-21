@@ -129,6 +129,13 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # pieces[k] before a merge), so mutating is safe; verified
         # identical token/role/tag/span/ambiguity output over 54,877
         # names. tests/v2/test_benchmark.py's "and " shape is the guard.
+        #
+        # Every call site passes lo < hi, and this REQUIRES it: with
+        # lo >= hi the slice assignment would insert rather than
+        # replace, putting a second reference to pieces[lo] into the
+        # array, and the next merge to touch either index would extend
+        # the same list twice. The old rebuild-a-fresh-list spelling
+        # was harmless there. Keep the bound if you add a caller.
         combined = pieces[lo]
         for piece in pieces[lo + 1:hi]:
             combined.extend(piece)
