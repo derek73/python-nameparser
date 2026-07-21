@@ -6,8 +6,7 @@ appear and the interesting planes go unexercised. derandomize=True
 keeps runs reproducible on shared CI runners -- this layer guards
 against regressions; exploratory fuzzing happened during review.
 """
-import json
-from pathlib import Path
+import dataclasses
 
 import pytest
 from hypothesis import given, settings
@@ -17,21 +16,17 @@ from nameparser import (
     FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST, Lexicon, Parser,
     PatronymicRule, Policy, parse,
 )
+from nameparser._lexicon import _VOCAB_FIELDS
 from nameparser._pipeline import run
 from nameparser._pipeline._state import ParseState
 from nameparser._types import AmbiguityKind, Role
 
+from .conftest import differential_corpus
+
 _ALPHABET = st.sampled_from(
     'abcdefgh ABC 12 .,،，\'"()«»‏‏\U0001f600éñßЖ-')
 
-# Same one-JSON-name-per-line convention test_locales.py reads; see the
-# note there on why tools/ is not imported.
-_FORK_CORPUS = [
-    json.loads(line)
-    for line in (Path(__file__).parents[2] / "tools" / "differential"
-                 / "corpus.jsonl").read_text().splitlines()
-    if line.strip()
-]
+_FORK_CORPUS = differential_corpus()
 
 
 @given(st.text(alphabet=_ALPHABET, max_size=200))
@@ -216,11 +211,10 @@ def _fix_invariants(**fields: frozenset[str]) -> dict[str, frozenset[str]]:
     return fields
 
 
-_SET_FIELDS = (
-    "titles", "given_name_titles", "suffix_acronyms", "suffix_words",
-    "suffix_acronyms_ambiguous", "particles", "particles_ambiguous",
-    "conjunctions", "bound_given_names", "maiden_markers",
-)
+# Derived, never listed: a new vocabulary field must be fuzzed the day
+# it is added, and a hand-copied list would leave it silently unfuzzed
+# -- the invisible gap this whole layer exists to prevent.
+_SET_FIELDS = _VOCAB_FIELDS
 
 
 @st.composite
@@ -315,12 +309,8 @@ _HOSTILE = st.sampled_from([
     {"dr": "Dr"}, {1, 2}, [("a", "b")], [[]], object(),
 ])
 
-_POLICY_FIELDS = (
-    "name_order", "patronymic_rules", "middle_as_family",
-    "nickname_delimiters", "maiden_delimiters",
-    "extra_suffix_delimiters", "lenient_comma_suffixes",
-    "strip_emoji", "strip_bidi",
-)
+# Same rule as _SET_FIELDS; test_policy.py already reflects this way.
+_POLICY_FIELDS = tuple(f.name for f in dataclasses.fields(Policy))
 
 
 @given(st.sampled_from(_SET_FIELDS + ("capitalization_exceptions",)),

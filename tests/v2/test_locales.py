@@ -2,10 +2,8 @@
 2.0.0 packs, composition, and the non-interference gate."""
 import functools
 import importlib
-import json
 import re
 from collections.abc import Callable, Iterable
-from pathlib import Path
 from types import ModuleType
 
 import pytest
@@ -14,18 +12,11 @@ from nameparser import Locale, Parser, locales, parse, parser_for
 from nameparser._lexicon import Lexicon
 from nameparser._policy import PatronymicRule, Policy
 from nameparser.locales import ru as _ru
+
+from .conftest import differential_corpus
 from nameparser.locales import tr_az as _tr_az
 
-# one JSON-encoded name string per line, blank lines skipped -- the same
-# convention tools/differential/compare.py::main() reads (kept as two
-# small copies on purpose: tools/ is a standalone uv-run script tree,
-# not an importable package, and making it one costs more than 3 lines)
-_CORPUS = [
-    json.loads(line)
-    for line in (Path(__file__).parents[2] / "tools" / "differential"
-                 / "corpus.jsonl").read_text().splitlines()
-    if line.strip()
-]
+_CORPUS = differential_corpus()
 
 # The registry is the pack contract (design note 2026-07-18, option C):
 # the DEVIATES requirement, the rotator lists, and the non-interference
