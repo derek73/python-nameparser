@@ -97,6 +97,21 @@ def _title_key(words: Iterable[str]) -> str:
     return " ".join(filter(None, (_normalize(w) for w in words)))
 
 
+def _reject_buffer(value: object, label: str, plural: str) -> None:
+    """Binary sequences iterate to INTS, so every downstream entry check
+    reports a byte value -- "must be strings, got 100" for b'dr', where
+    100 is 'd'. That names neither the cause nor the fix. v1 shipped a
+    decode hint for this (#238), and parse() and the facade both carry
+    one, so no config entry point should be the odd one out.
+    """
+    if isinstance(value, (bytes, bytearray, memoryview)):
+        raise TypeError(
+            f"{label} must be an iterable of {plural}, not "
+            f"{type(value).__name__} -- decode first, e.g. "
+            f"raw.decode('utf-8')"
+        )
+
+
 def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
     # Reject a bare str before iterating: iterating "dr" would silently
     # yield the single characters {'d', 'r'} -- the set(str) footgun on
@@ -106,16 +121,7 @@ def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
             f"Lexicon.{field_name} must be an iterable of strings, "
             f"not a bare string"
         )
-    # bytes iterate to INTS, so without this the entry check below
-    # reports "entries must be strings, got 100" -- the byte value of
-    # 'd', naming neither the cause nor the fix. v1 shipped a decode
-    # hint for exactly this (#238); parse() and the facade carry one,
-    # so the config surface should not be the odd one out.
-    if isinstance(entries, (bytes, bytearray)):
-        raise TypeError(
-            f"Lexicon.{field_name} must be an iterable of strings, not "
-            f"bytes -- decode first, e.g. raw.decode('utf-8')"
-        )
+    _reject_buffer(entries, f"Lexicon.{field_name}", "strings")
     # A Mapping would silently contribute only its keys; a dict here
     # almost always means the caller confused this field with
     # capitalization_exceptions.
@@ -170,6 +176,7 @@ def _normpairs(
             "capitalization_exceptions must be a mapping or an "
             "iterable of (key, value) pairs, not a bare string"
         )
+    _reject_buffer(raw, "capitalization_exceptions", "(key, value) pairs")
     pairs = raw.items() if isinstance(raw, Mapping) else raw
     try:
         pairs = iter(pairs)

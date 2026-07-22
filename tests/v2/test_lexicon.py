@@ -444,12 +444,22 @@ def test_remove_error_offers_the_removal_remedy_too() -> None:
         lex.remove(particles={"van"})
 
 
-@pytest.mark.parametrize("value", [b"dr", bytearray(b"dr")])
-def test_vocab_field_rejects_bytes_with_a_decode_hint(value: object) -> None:
-    # bytes iterate to INTS, so the generic entry check reported
-    # "entries must be strings, got 100" -- the byte value of 'd',
-    # naming neither the cause nor the fix. v1 shipped a decode hint
-    # for exactly this (#238); parse() and the facade already carry
-    # one, so the config surface should not be the odd one out.
+@pytest.mark.parametrize("value", [b"dr", bytearray(b"dr"), memoryview(b"dr")])
+@pytest.mark.parametrize("build", [
+    lambda v: Lexicon(titles=v),
+    lambda v: Lexicon.empty().add(titles=v),
+    lambda v: Lexicon(capitalization_exceptions=v),
+])
+def test_every_lexicon_entry_point_rejects_a_buffer_with_a_decode_hint(
+        build: Callable[[object], object], value: object) -> None:
+    # Binary sequences iterate to INTS, so the generic entry check
+    # reported "entries must be strings, got 100" -- the byte value of
+    # 'd', naming neither the cause nor the fix. v1 shipped a decode
+    # hint for exactly this (#238).
+    #
+    # Every entry point, because the first version of this fix covered
+    # the vocabulary fields and left capitalization_exceptions behind:
+    # guarding one member of a family and not its siblings is the
+    # single most repeated defect on this branch.
     with pytest.raises(TypeError, match="decode"):
-        Lexicon(titles=value)          # type: ignore[arg-type]
+        build(value)

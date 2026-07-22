@@ -45,17 +45,17 @@ def test_facade_thousand_names_under_a_second() -> None:
 # loop. Cheap per unit, so a superlinear stage shows up as growth rather
 # than as a slow parse.
 #
-# What each DIMENSION is covered by, at n=200 (measure before pruning a
-# shape that looks redundant -- several differ only in a column you
-# cannot see from the string):
+# What each DIMENSION is covered by, measured at _BASE. Several shapes
+# differ only in a column you cannot see from the string, so measure
+# before pruning one that looks redundant:
 #
 #   dimension                 covered by
 #   token count               all nine
 #   piece count               unmatched_*, plain_tokens, commas, titles
 #   SEGMENT count             commas ONLY -- deleting it leaves every
 #                             segment-keyed regression unguarded
-#   intra-piece accumulation  particles (199-token piece),
-#                             conjunctions (200) -- the merge() quadratic
+#   intra-piece accumulation  particles (one 799-token piece),
+#                             conjunctions (800) -- the merge() quadratic
 #   masked-span count         delimiter_pairs, quote_pairs (0 pieces:
 #                             everything is consumed as a delimited run)
 _SHAPES = {
