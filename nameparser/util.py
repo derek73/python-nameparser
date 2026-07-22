@@ -1,12 +1,9 @@
-import logging
-from typing import Literal
+"""v1 normalization, kept for the 1.x compatibility layer.
 
-# http://code.google.com/p/python-nameparser/issues/detail?id=10
-log = logging.getLogger('HumanName')
-log.addHandler(logging.NullHandler())
-
-
-HumanNameAttributeT = Literal['title', 'first', 'middle', 'last', 'suffix', 'nickname', 'surnames']
+Removed in 3.0 with the rest of that layer. The 2.0 core does NOT use
+this: :func:`nameparser._lexicon._normalize` is its fold, which strips
+edge periods to a fixed point where ``lc()`` strips once.
+"""
 
 
 def lc(value: str) -> str:
