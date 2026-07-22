@@ -393,3 +393,12 @@ def test_a_pair_mapping_is_accepted_through_items(cls: type) -> None:
     # stops being true, the advice becomes wrong and this fails.
     stored = cls(nickname_delimiters={"<": ">"}.items()).nickname_delimiters
     assert stored == frozenset({("<", ">")})
+
+
+@pytest.mark.parametrize("cls", [Policy, PolicyPatch])
+@pytest.mark.parametrize("value", [b" - ", bytearray(b" - ")])
+def test_collection_fields_reject_bytes_with_a_decode_hint(
+        cls: type, value: object) -> None:
+    # Same cryptic int message as Lexicon had: bytes iterate to ints.
+    with pytest.raises(TypeError, match="decode"):
+        cls(extra_suffix_delimiters=value)

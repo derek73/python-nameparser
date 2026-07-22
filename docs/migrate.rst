@@ -151,7 +151,9 @@ Attribute map
      - ``Policy(extra_suffix_delimiters={...})``
      - Moves from a ``HumanName``/``Constants`` scalar to a ``Policy``
        set field, so more than one custom delimiter can be active at
-       once
+       once. It is the *set* that moved, not just the name: passing the
+       old scalar through (``extra_suffix_delimiters=" - "``) raises,
+       rather than silently registering three one-character delimiters
    * - ``capitalize(force=...)``
      - ``capitalized(force=...)``
      - :meth:`~nameparser.ParsedName.capitalized` returns a new value

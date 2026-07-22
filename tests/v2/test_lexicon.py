@@ -442,3 +442,14 @@ def test_remove_error_offers_the_removal_remedy_too() -> None:
     with pytest.raises(ValueError,
                        match="drop them from particles_ambiguous"):
         lex.remove(particles={"van"})
+
+
+@pytest.mark.parametrize("value", [b"dr", bytearray(b"dr")])
+def test_vocab_field_rejects_bytes_with_a_decode_hint(value: object) -> None:
+    # bytes iterate to INTS, so the generic entry check reported
+    # "entries must be strings, got 100" -- the byte value of 'd',
+    # naming neither the cause nor the fix. v1 shipped a decode hint
+    # for exactly this (#238); parse() and the facade already carry
+    # one, so the config surface should not be the odd one out.
+    with pytest.raises(TypeError, match="decode"):
+        Lexicon(titles=value)          # type: ignore[arg-type]

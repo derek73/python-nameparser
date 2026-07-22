@@ -44,6 +44,20 @@ def test_facade_thousand_names_under_a_second() -> None:
 # Pathological shapes: each repeats a unit that drives one stage's inner
 # loop. Cheap per unit, so a superlinear stage shows up as growth rather
 # than as a slow parse.
+#
+# What each DIMENSION is covered by, at n=200 (measure before pruning a
+# shape that looks redundant -- several differ only in a column you
+# cannot see from the string):
+#
+#   dimension                 covered by
+#   token count               all nine
+#   piece count               unmatched_*, plain_tokens, commas, titles
+#   SEGMENT count             commas ONLY -- deleting it leaves every
+#                             segment-keyed regression unguarded
+#   intra-piece accumulation  particles (199-token piece),
+#                             conjunctions (200) -- the merge() quadratic
+#   masked-span count         delimiter_pairs, quote_pairs (0 pieces:
+#                             everything is consumed as a delimited run)
 _SHAPES = {
     "delimiter_pairs": "(a) ",      # extract: matched pairs -> masked spans
     "quote_pairs": '"a" ',          # extract: the open==close path

@@ -115,6 +115,14 @@ def _reject_str_and_mapping(value: object, field_name: str) -> None:
             f"{field_name} must be an iterable, not a bare string: "
             f"{value!r}"
         )
+    # bytes iterate to ints, so the entry check would report a byte
+    # value and name neither the cause nor the fix; same decode hint
+    # Lexicon and parse() give.
+    if isinstance(value, (bytes, bytearray)):
+        raise TypeError(
+            f"{field_name} must be an iterable of strings, not bytes -- "
+            f"decode first, e.g. raw.decode('utf-8')"
+        )
     if isinstance(value, Mapping):
         # Name the way out, not just the harm. "contributes only its
         # keys" is no help for the two mappings people actually pass:

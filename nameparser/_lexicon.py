@@ -106,6 +106,16 @@ def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
             f"Lexicon.{field_name} must be an iterable of strings, "
             f"not a bare string"
         )
+    # bytes iterate to INTS, so without this the entry check below
+    # reports "entries must be strings, got 100" -- the byte value of
+    # 'd', naming neither the cause nor the fix. v1 shipped a decode
+    # hint for exactly this (#238); parse() and the facade carry one,
+    # so the config surface should not be the odd one out.
+    if isinstance(entries, (bytes, bytearray)):
+        raise TypeError(
+            f"Lexicon.{field_name} must be an iterable of strings, not "
+            f"bytes -- decode first, e.g. raw.decode('utf-8')"
+        )
     # A Mapping would silently contribute only its keys; a dict here
     # almost always means the caller confused this field with
     # capitalization_exceptions.
