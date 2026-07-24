@@ -2,6 +2,13 @@ Release Log
 ===========
 * 2.0.0 - unreleased
 
+    **2.0.0rc1 released 2026-07-23** for testing ahead of the final
+    2.0.0. Install it with ``pip install --pre nameparser`` (a
+    pre-release is not selected by a plain ``pip install``); please
+    report anything the migration missed on `issue #284
+    <https://github.com/derek73/python-nameparser/issues/284>`_. The
+    notes below describe 2.0.0 as a whole.
+
     nameparser 2.0 adds a new parsing API alongside ``HumanName``.
     ``parse()`` returns an immutable ``ParsedName`` whose seven fields
     are named for what they are (``given``, ``family``) rather than
