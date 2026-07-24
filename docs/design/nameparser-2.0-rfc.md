@@ -131,6 +131,8 @@ the standards world already uses (HTML autocomplete
 - `title` and `suffix` **stay** — they have ecosystem gravity, and the
   positional taxonomy ("pre-nominal"/"post-nominal") is documented
   rather than spelled into identifiers.
+- `maiden` is a **new** field — a birth surname introduced by a marker
+  like `née` or `geb.`, which v1 folded into `middle`/`last` (#274).
 
 `HumanName` keeps every v1 spelling, including `string_format` keys, so
 existing code is unaffected; only new-API adopters see the new names.
@@ -176,8 +178,8 @@ reading **and says so**:
 
 ```python
 parse("Van Johnson").ambiguities
-# (Ambiguity(PARTICLE_OR_GIVEN, "leading 'van' can be a particle or a
-#   given name; chose given", tokens=(...)),)
+# (Ambiguity(PARTICLE_OR_GIVEN, "leading 'Van' may be a family-name
+#   particle; read as a given name", tokens=(...)),)
 ```
 
 `Ambiguity.kind` values are stable API you can filter on. This is also
