@@ -3,9 +3,10 @@ Name Parser
 
 |Build Status| |PyPI| |PyPI version| |Documentation| |License| |Downloads| |Codecov|
 
-📣 **nameparser 2.0 is in design** — a new immutable core API, with full
-compatibility for existing code through 2.x. Read the `design RFC
-<https://github.com/derek73/python-nameparser/pull/285>`__ and share
+📣 **nameparser 2.0.0rc1 is available for testing** — a new immutable core
+API, with full compatibility for existing code through 2.x. Install it with
+``pip install --pre nameparser`` (a plain install still gets 1.x), read the
+`2.0 docs <https://nameparser.readthedocs.io/en/v2.0.0rc1/>`__, and share
 feedback on `the discussion issue
 <https://github.com/derek73/python-nameparser/issues/284>`__.
 
