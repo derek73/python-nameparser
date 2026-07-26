@@ -30,16 +30,13 @@ Release Log
     - Add ``name_order`` and the constants ``GIVEN_FIRST``, ``FAMILY_FIRST`` and ``FAMILY_FIRST_GIVEN_LAST``, so a family-first name can be parsed as written rather than reordered by hand (closes the configuration half of #270)
     - Add ``PatronymicRule`` with the members ``EAST_SLAVIC`` and ``TURKIC``. v1's single ``patronymic_name_order`` flag enabled both detectors at once; ``Policy(patronymic_rules=...)`` lets you enable either one alone
     - Add ``PolicyPatch`` and the ``UNSET`` sentinel for partial policy deltas that compose -- set-valued fields union, scalar fields override with later winning. This is the mechanism locale packs are built from, and ``UNSET`` is only needed when you must distinguish "not set" from a real ``False`` or ``None``
-    - Add ``Token``, ``Span`` and ``Role``: every field is backed by tokens carrying exact ``(start, end)`` offsets into the original string, reachable with ``tokens_for(Role.GIVEN)``. This replaces v1's ``*_list`` attributes and makes it possible to highlight or re-slice the input the parse came from
-    - Change ``Role`` to a ``StrEnum``: members compare and stringify as their field names (``Role.GIVEN == "given"``), matching ``AmbiguityKind``
-    - Change ``ParsedName.tokens_for()`` to accept a role's string name and to raise ``ValueError`` for an unknown role instead of silently returning no tokens
+    - Add ``Token``, ``Span`` and ``Role``: every field is backed by tokens carrying exact ``(start, end)`` offsets into the original string, reachable with ``tokens_for(Role.GIVEN)``. This replaces v1's ``*_list`` attributes and makes it possible to highlight or re-slice the input the parse came from. ``Role`` is a ``StrEnum``, so members compare and stringify as their field names (``Role.GIVEN == "given"``), matching ``AmbiguityKind``; ``tokens_for()`` accepts a role's string name too, and raises ``ValueError`` for an unknown role
     - Add ``STABLE_TAGS`` to the public API: the four documented ``Token.tags`` values (``particle``, ``conjunction``, ``initial``, ``joined``)
-    - Change ``ParsedName.as_dict()`` to take ``include_empty`` as keyword-only (``HumanName.as_dict()`` is unchanged)
     - Add ``Policy.patched(patch)``, applying a ``PolicyPatch`` directly without wrapping it in a locale pack
     - Add ``Parser.matches(a, b)`` and ``Parser.capitalized(name)``: the ``ParsedName`` methods of the same names fall back to the default configuration for str/omitted arguments, which is silently wrong for names parsed with a custom ``Parser``
     - Add ``Parser.revise(name, **fields)``: ``ParsedName.replace()`` with the replacement text classified by the parser's vocabulary, so particle/initial/suffix-join behavior survives the edit
     - Add ``Ambiguity`` and the ``AmbiguityKind`` enum, so a parse reports what it had to guess at instead of guessing silently. The kinds emitted today are ``particle-or-given``, ``suffix-or-name``, ``suffix-or-nickname``, ``unbalanced-delimiter`` and ``comma-structure``; ``order`` is reserved and not yet emitted. The two suffix kinds cover the post-nominals that are also ordinary words: ``"John Smith MA"`` reports that ``MA`` was read as a credential rather than a surname, and ``"JEFFREY (JD) BRICKEN"`` that the delimited ``JD`` was read as a nickname rather than a suffix. A reading the vocabulary settles on its own — ``"John Smith M.A."``, ``"Andrew Perkins (MBA)"`` — is not a guess and reports nothing
-    - Add ``ParsedName`` output and comparison methods: ``render(spec)``, ``initials()``, ``capitalized()`` (which returns a new value rather than mutating in place), ``as_dict()``, ``replace(**fields)``, ``matches()`` and ``comparison_key()``
+    - Add ``ParsedName`` output and comparison methods: ``render(spec)``, ``initials()``, ``capitalized()`` (which returns a new value rather than mutating in place), ``as_dict()`` (whose ``include_empty`` flag is keyword-only, unlike ``HumanName.as_dict()``'s), ``replace(**fields)``, ``matches()`` and ``comparison_key()``
     - Add ``Locale``, the public pack type. Writing your own needs no registration -- construct a ``Locale`` and pass it to ``parser_for()``
     - Ship a fully typed public API (PEP 561): the core modules are checked under strict mypy settings, and nameparser 2.0 has no runtime dependencies
 
@@ -108,6 +105,14 @@ Release Log
     ``tools/differential/`` in the source repository (it is development
     tooling, not part of the installed package) -- see its README to
     reproduce the comparison against your own names.
+
+    **Changed since 2.0.0rc1** (for anyone who tested the release candidate)
+
+    - ``Role`` became a ``StrEnum``; ``str(Role.GIVEN)`` is now ``"given"``
+    - ``ParsedName.tokens_for()`` raises ``ValueError`` for unknown roles instead of returning no tokens; it also accepts role-name strings
+    - ``ParsedName.as_dict()``'s ``include_empty`` is keyword-only
+    - ``HumanName`` subscripting accepts ``Role`` members
+    - The eight multi-word vocabulary entries that could never match were repaired (``chargé d'affaires`` split; seven credential acronyms removed), and storing a new multi-word entry now warns
 
 * 1.4.0 - July 12, 2026
 

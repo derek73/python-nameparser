@@ -79,7 +79,11 @@ def test_pack_vocabulary_entries_are_single_words() -> None:
     # this file may already have forced the import, which would make a
     # warning-capture version of this test pass even on a regression.
     # Iterates every registered pack, not just ru/tr_az by name, so a
-    # future pack is covered automatically.
+    # future pack is covered automatically. The field loop is dormant
+    # until a pack actually ships vocabulary -- both current packs build
+    # on Lexicon.empty() -- so the registry-non-empty assert below is
+    # what keeps the test from passing vacuously today.
+    assert locales.available()
     for code in locales.available():
         lexicon = locales.get(code).lexicon
         for field in _VOCAB_FIELDS:

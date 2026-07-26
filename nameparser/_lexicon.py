@@ -182,14 +182,15 @@ def _normset(
         # 2026-07-26). Warn, never raise: an inert entry produces
         # nothing, and the given_name_titles precedent says a raise
         # here costs working configurations (see __post_init__).
-        # warn=False is _edit()'s remove() path: a removal stores
-        # nothing, so warning there would name entries the caller is
-        # trying to get RID of, with "split it" advice that makes no
-        # sense for a no-op. add() still warns exactly once, via the
-        # new instance's __post_init__.
-        # interior whitespace test; split() covers all Unicode whitespace
-        if warn and field_name != "given_name_titles" \
-                and n != "".join(n.split()):
+        # warn=False is _edit()'s pass (both ops): add() warns via the
+        # new instance's __post_init__; remove() stores nothing, so
+        # warning there would name entries the caller is trying to get
+        # RID of, with "split it" advice that makes no sense for a
+        # no-op.
+        if (warn and field_name != "given_name_titles"
+                # interior whitespace test; split() covers all Unicode
+                # whitespace
+                and n != "".join(n.split())):
             _warn_dead_entry(
                 f"Lexicon.{field_name} entries are matched one word at "
                 f"a time; multi-word entry {w!r} can never match. "

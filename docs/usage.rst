@@ -188,6 +188,11 @@ Fixing case
     >>> str(parse("juan de la vega").capitalized())
     'Juan de la Vega'
 
+The no-argument form above uses the DEFAULT lexicon; for a name parsed
+with a custom :class:`~nameparser.Parser`, call
+:meth:`Parser.capitalized() <nameparser.Parser.capitalized>` so the
+parser's own vocabulary decides the exceptions.
+
 Nicknames and maiden names
 ----------------------------
 
@@ -297,7 +302,10 @@ Comparing names
 ``==`` is strict value equality — two :class:`~nameparser.ParsedName`
 instances are equal only if every field matches exactly. For "is this
 the same name, allowing for order and case?" use ``matches()`` or
-``comparison_key()`` instead.
+``comparison_key()`` instead. ``matches()`` parses a str argument with
+the DEFAULT parser; to compare against a string using a custom
+:class:`~nameparser.Parser`'s vocabulary, call
+:meth:`Parser.matches() <nameparser.Parser.matches>`.
 
 .. doctest::
 

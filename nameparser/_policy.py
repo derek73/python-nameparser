@@ -45,8 +45,6 @@ FAMILY_FIRST = (Role.FAMILY, Role.GIVEN, Role.MIDDLE)
 #: ``Policy(name_order=...)`` values.
 FAMILY_FIRST_GIVEN_LAST = (Role.FAMILY, Role.MIDDLE, Role.GIVEN)
 
-_NAME_ROLES = frozenset({Role.GIVEN, Role.MIDDLE, Role.FAMILY})
-
 _ORDER_CONSTANT_NAMES: dict[tuple[Role, ...], str] = {
     GIVEN_FIRST: "GIVEN_FIRST",
     FAMILY_FIRST: "FAMILY_FIRST",

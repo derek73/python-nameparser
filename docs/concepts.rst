@@ -38,7 +38,9 @@ relatives); a position cannot be confused with a look-alike.
 assignment, ever. If a parse is almost right and you want to fix one
 field, you call ``.replace()``, which returns a new
 :class:`~nameparser.ParsedName` with that field changed and everything
-else — tokens, spans, the rest of the roles — carried over unchanged.
+else — tokens, spans, the rest of the roles — carried over unchanged
+(``replace()`` tokens carry no vocabulary tags; :meth:`Parser.revise
+<nameparser.Parser.revise>` is the tag-preserving form).
 ``str()`` renders the default view; nothing about calling it mutates
 the value you called it on.
 
