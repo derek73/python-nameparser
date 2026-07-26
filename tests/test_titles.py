@@ -380,3 +380,10 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.title, "Chargé d'Affaires", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Smith", hn)
+
+    def test_unaccented_charge_daffaires_chains_as_title(self) -> None:
+        # both spellings ship, like attaché/attache
+        hn = HumanName("Charge d'Affaires John Smith")
+        self.m(hn.title, "Charge d'Affaires", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)

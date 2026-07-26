@@ -190,6 +190,7 @@ TITLES = FIRST_NAME_TITLES | {
     'chairs',
     'chancellor',
     'chaplain',
+    'charge',  # unaccented 'chargé', like attaché/'attache'
     'chef',
     'chemist',
     'chief',
