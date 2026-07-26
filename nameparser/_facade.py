@@ -623,6 +623,24 @@ class HumanName:
         # spelling the facade actually exposes as attributes.
         return getattr(self, _V1_SPELLING.get(key, key))
 
+    def __setattr__(self, name: str, value: object) -> None:
+        # "given"/"family" are the 2.0 spellings of first/last; the
+        # facade has no such attributes, so plain assignment creates a
+        # stray instance attribute while the parse (and .first/.last)
+        # keeps the old value -- a silently forked name. Warn but
+        # still set: ad-hoc attribute stashing is a legal v1 pattern,
+        # so any code that worked keeps working. Only these two names
+        # warn -- the other five 2.0 field names are real properties
+        # whose setters work, and Role members reach here as their
+        # string values (StrEnum).
+        if name in _V1_SPELLING:
+            warnings.warn(
+                f"assigning HumanName.{name} creates an inert attribute; "
+                f"the parse is unchanged -- use .{_V1_SPELLING[name]} "
+                f"(the v1 spelling) to update the name",
+                UserWarning, stacklevel=2)
+        super().__setattr__(name, value)
+
     def as_dict(self, include_empty: bool = True) -> dict[str, str]:
         """The seven v1-named components as a dict; include_empty=False
         drops empty fields."""

@@ -90,6 +90,7 @@ Release Log
     - Reimplement ``HumanName`` as a facade over the 2.0 pipeline, and ``Constants`` as a shim resolving to a ``(Lexicon, Policy)`` snapshot with a shared parser cache. Fields, aggregates, mutation through ``name.C.titles.add(...)``, rendering defaults, ``capitalize()``, ``matches()``, ``comparison_key()``, iteration, ``as_dict()`` and pickling are all preserved, and ``nameparser.parser`` and ``nameparser.config`` remain importable. The compatibility layer ships through 2.x and is removed in 3.0
     - Note that ``CONSTANTS.capitalize_name`` and ``force_mixed_case_capitalization`` are still honored through the facade, but the 2.0 API never capitalizes during ``parse()`` -- call ``capitalized()`` when you want it
     - Add ``Role`` members (and their string values ``given``/``family``) as valid ``HumanName`` subscript keys: ``hn[Role.GIVEN]`` returns ``hn.first``
+    - Add a ``UserWarning`` when assigning ``HumanName.given`` or ``.family``: the facade spells those attributes ``first``/``last``, so the assignment creates an inert stray attribute while the parse keeps the old value. The assignment still happens (v1-legal ad-hoc attributes keep working); the warning names the v1 spelling to use
 
     **Command line**
 
@@ -113,6 +114,7 @@ Release Log
     - ``ParsedName.tokens_for()`` raises ``ValueError`` for unknown roles instead of returning no tokens; it also accepts role-name strings
     - ``ParsedName.as_dict()``'s ``include_empty`` is keyword-only
     - ``HumanName`` subscripting accepts ``Role`` members
+    - Assigning ``HumanName.given``/``.family`` warns (the facade spells them ``first``/``last``; the assignment was and remains an inert stray attribute)
     - The eight multi-word vocabulary entries that could never match were repaired (``chargé d'affaires`` split; seven credential acronyms removed), and storing a new multi-word entry now warns; those eight are dropped silently, not warned about, when a restored ``Constants`` pickle carries all eight of them (the pre-2.0 signature)
     - ``PolicyPatch``'s repr shows only the fields a patch sets, instead of all nine with UNSET sentinels
     - New since rc1: ``STABLE_TAGS``, ``Policy.patched()``, ``Parser.matches()``, ``Parser.capitalized()``, and ``Parser.revise()`` -- see the API section above

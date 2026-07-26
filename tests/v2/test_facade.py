@@ -238,6 +238,34 @@ def test_getitem_accepts_role_members() -> None:
     assert hn["family"] == hn.last
 
 
+def test_assigning_v2_field_spellings_warns_but_still_sets() -> None:
+    # "given"/"family" are 2.0 spellings the facade has no attribute
+    # for, so plain assignment silently forks the name: a stray
+    # instance attribute appears while the parse (and .first/.last)
+    # keeps the old value. Warn -- but still set, so any v1-legal code
+    # that worked keeps working.
+    hn = HumanName("John Smith")
+    with pytest.warns(UserWarning, match=r"use \.first"):
+        hn.given = "Jane"  # type: ignore[attr-defined]
+    assert hn.given == "Jane"  # type: ignore[attr-defined]  # stray attr still set
+    assert hn.first == "John"      # the parse did not change
+    with pytest.warns(UserWarning, match=r"use \.last"):
+        setattr(hn, Role.FAMILY, "Doe")   # StrEnum member, same trap
+
+
+def test_other_attribute_assignment_stays_silent() -> None:
+    # The five 2.0 field names that ARE facade properties go through
+    # their setters; the v1 spellings work; ad-hoc attribute stashing
+    # is a legal v1 pattern. None of these warn.
+    hn = HumanName("John Smith")
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        hn.title = "Dr."
+        hn.first = "Jane"
+        hn.my_cache = 42  # type: ignore[attr-defined]
+    assert hn.title == "Dr." and hn.first == "Jane"
+
+
 def test_eq_and_hash_are_object_identity() -> None:        # #223
     a, b = HumanName("John Smith"), HumanName("John Smith")
     assert a != b and a == a
