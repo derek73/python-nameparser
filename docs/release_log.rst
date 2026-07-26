@@ -91,6 +91,7 @@ Release Log
 
     - Reimplement ``HumanName`` as a facade over the 2.0 pipeline, and ``Constants`` as a shim resolving to a ``(Lexicon, Policy)`` snapshot with a shared parser cache. Fields, aggregates, mutation through ``name.C.titles.add(...)``, rendering defaults, ``capitalize()``, ``matches()``, ``comparison_key()``, iteration, ``as_dict()`` and pickling are all preserved, and ``nameparser.parser`` and ``nameparser.config`` remain importable. The compatibility layer ships through 2.x and is removed in 3.0
     - Note that ``CONSTANTS.capitalize_name`` and ``force_mixed_case_capitalization`` are still honored through the facade, but the 2.0 API never capitalizes during ``parse()`` -- call ``capitalized()`` when you want it
+    - Add ``Role`` members (and their string values ``given``/``family``) as valid ``HumanName`` subscript keys: ``hn[Role.GIVEN]`` returns ``hn.first``
 
     **Command line**
 
