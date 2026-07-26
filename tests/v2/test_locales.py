@@ -9,7 +9,7 @@ from types import ModuleType
 import pytest
 
 from nameparser import Locale, Parser, locales, parse, parser_for
-from nameparser._lexicon import Lexicon
+from nameparser._lexicon import _VOCAB_FIELDS, Lexicon
 from nameparser._policy import PatronymicRule, Policy
 from nameparser.locales import ru as _ru
 from nameparser.locales import tr_az as _tr_az
@@ -65,6 +65,30 @@ def test_tr_az_pack_contents() -> None:
     assert locales.TR_AZ.policy.patronymic_rules == frozenset(
         {PatronymicRule.TURKIC})
     assert locales.TR_AZ.lexicon == Lexicon.empty()
+
+
+def test_pack_vocabulary_entries_are_single_words() -> None:
+    # The shipped-vocabulary guard (test_lexicon.py's
+    # test_default_lexicon_builds_warning_free), extended to the OTHER
+    # vocabulary source: a locale pack's lexicon fields are matched one
+    # word at a time same as Lexicon.default()'s, so a multi-word entry
+    # in any field but given_name_titles would be dead. Checked
+    # directly against field contents (not by capturing the
+    # construction-time warning) because a pack module is imported --
+    # and its Locale built -- at most once per process; a later test in
+    # this file may already have forced the import, which would make a
+    # warning-capture version of this test pass even on a regression.
+    # Iterates every registered pack, not just ru/tr_az by name, so a
+    # future pack is covered automatically.
+    for code in locales.available():
+        lexicon = locales.get(code).lexicon
+        for field in _VOCAB_FIELDS:
+            if field == "given_name_titles":
+                continue
+            for entry in getattr(lexicon, field):
+                assert entry == "".join(entry.split()), (
+                    f"{code}: {field} entry {entry!r} contains "
+                    f"whitespace and can never match")
 
 
 def test_pack_marker_regexes_stay_in_sync_with_post_rules() -> None:

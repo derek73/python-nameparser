@@ -182,14 +182,22 @@ def test_particle_fork_is_never_double_reported(text: str) -> None:
 # nobody tried.
 
 # Deliberately mixed: real vocabulary, one-letter words that collide
-# with initials, an interior period, a multi-word phrase (legal only in
-# given_name_titles), and non-Latin entries. Nothing here normalizes to
-# empty, which Lexicon rejects outright.
+# with initials, an interior period, and non-Latin entries. Nothing
+# here normalizes to empty, which Lexicon rejects outright. No
+# multi-word phrase: every field below except given_name_titles is
+# matched one word at a time, so a multi-word draw in a per-word field
+# would be a dead entry that trips Lexicon's multi-word warning.
 _VOCAB = st.sampled_from([
     "van", "de", "la", "bin", "abdul", "abu", "dr", "sir", "prof",
     "md", "jr", "iii", "esq", "ma", "do", "and", "y", "née", "geb",
-    "a", "b", "ph.d", "grand duke", "عبد", "фон", "μεγα",
+    "a", "b", "ph.d", "عبد", "фон", "μεγα",
 ])
+
+# given_name_titles is the one field matched as a space-joined run, so
+# a multi-word phrase there is meaningful (not dead) and must not warn.
+# Derived from _VOCAB rather than duplicated, so the two pools cannot
+# drift apart.
+_TITLE_VOCAB = st.one_of(_VOCAB, st.just("grand duke"))
 
 
 def _fix_invariants(**fields: frozenset[str]) -> dict[str, frozenset[str]]:
@@ -219,7 +227,9 @@ _SET_FIELDS = _VOCAB_FIELDS
 
 @st.composite
 def _lexicons(draw: st.DrawFn) -> Lexicon:
-    fields = {name: draw(st.frozensets(_VOCAB, max_size=5))
+    fields = {name: draw(st.frozensets(
+        _TITLE_VOCAB if name == "given_name_titles" else _VOCAB,
+        max_size=5))
               for name in _SET_FIELDS}
     caps = draw(st.lists(st.tuples(_VOCAB, _VOCAB), max_size=3))
     return Lexicon(capitalization_exceptions=tuple(caps),
