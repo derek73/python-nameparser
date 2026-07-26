@@ -1,6 +1,8 @@
+import pytest
 
 from nameparser._lexicon import Lexicon
 from nameparser._locale import Locale
+from nameparser._parser import Parser
 from nameparser._policy import FAMILY_FIRST, PatronymicRule, Policy, PolicyPatch
 from nameparser._types import Ambiguity, AmbiguityKind, ParsedName, Role, Span, Token
 
@@ -66,3 +68,39 @@ def test_lexicon_repr_diffs_against_nearer_baseline() -> None:
     assert repr(Lexicon.empty()) == "Lexicon(empty)"
     lex = Lexicon.empty().add(titles={"zqx"})
     assert repr(lex) == "Lexicon(empty + titles: +1)"
+
+
+def test_policy_patch_repr_shows_only_set_fields() -> None:
+    assert repr(PolicyPatch()) == "PolicyPatch()"
+    assert repr(PolicyPatch(middle_as_family=True)) == \
+        "PolicyPatch(middle_as_family=True)"
+    assert repr(PolicyPatch(name_order=FAMILY_FIRST)) == \
+        "PolicyPatch(name_order=FAMILY_FIRST)"
+
+
+@pytest.mark.parametrize("obj", [
+    Policy(),
+    Policy(middle_as_family=True),
+    PolicyPatch(),
+    PolicyPatch(strip_emoji=False),
+    Locale("xx", Lexicon.empty()),
+    Locale("xx", Lexicon.empty(), PolicyPatch(middle_as_family=True)),
+    Parser(),
+])
+def test_config_reprs_never_leak_the_unset_sentinel(obj: object) -> None:
+    # Guard the whole family: every config type's repr is bounded and
+    # deviation-only; the UNSET sentinel must never appear.
+    assert "UNSET" not in repr(obj)
+    assert "_Unset" not in repr(obj)
+
+
+def test_policy_patch_repr_survives_unvalidated_name_order() -> None:
+    # PolicyPatch defers name_order validation to apply time, so a
+    # patch can hold a non-canonical or even garbage tuple -- its repr
+    # must describe it, never raise.
+    patch = PolicyPatch(name_order=(Role.GIVEN, Role.FAMILY, Role.MIDDLE))
+    assert repr(patch) == "PolicyPatch(name_order=(GIVEN, FAMILY, MIDDLE))"
+    garbage = PolicyPatch(name_order=("given", "family", "middle"))  # type: ignore[arg-type]
+    assert "given" in repr(garbage)          # described, not crashed
+    unhashable = PolicyPatch(name_order=([1], "y", "z"))  # type: ignore[arg-type]
+    repr(unhashable)                          # must not raise

@@ -47,6 +47,29 @@ FAMILY_FIRST_GIVEN_LAST = (Role.FAMILY, Role.MIDDLE, Role.GIVEN)
 
 _NAME_ROLES = frozenset({Role.GIVEN, Role.MIDDLE, Role.FAMILY})
 
+_ORDER_CONSTANT_NAMES: dict[tuple[Role, ...], str] = {
+    GIVEN_FIRST: "GIVEN_FIRST",
+    FAMILY_FIRST: "FAMILY_FIRST",
+    FAMILY_FIRST_GIVEN_LAST: "FAMILY_FIRST_GIVEN_LAST",
+}
+
+
+def _order_repr(value: tuple[Role, ...]) -> str:
+    # Unreachable via Policy's constructor (its __post_init__ restricts
+    # name_order to the three named orders) but REACHABLE via
+    # PolicyPatch, which defers name_order validation to apply time by
+    # design -- value may hold non-Role, even unhashable, elements.
+    # repr must never raise, so take the named-lookup path only once
+    # every element is confirmed a Role. (The annotation states the
+    # Policy-side truth; the PolicyPatch call site passes getattr-Any.)
+    if all(isinstance(r, Role) for r in value):
+        named = _ORDER_CONSTANT_NAMES.get(value)
+        if named is not None:
+            return named
+        return "(" + ", ".join(r.name for r in value) + ")"
+    return repr(value)
+
+
 # Single source for the migration hint raised by both Policy and
 # PolicyPatch when patronymic_rules gets a non-iterable (True is the
 # likeliest wrong value -- v1's flag was a bool that enabled BOTH rules).
@@ -330,24 +353,13 @@ class Policy:
     def __repr__(self) -> str:
         # Bounded: only fields that deviate from the default are shown
         # (design rule, see nameparser._types module docstring).
-        constant_names = {
-            GIVEN_FIRST: "GIVEN_FIRST",
-            FAMILY_FIRST: "FAMILY_FIRST",
-            FAMILY_FIRST_GIVEN_LAST: "FAMILY_FIRST_GIVEN_LAST",
-        }
         parts = []
         for f in dataclasses.fields(self):
             value = getattr(self, f.name)
             if value == f.default:
                 continue
             if f.name == "name_order":
-                # __post_init__ restricts to the three named orders, so
-                # the fallback is unreachable via the constructor; kept
-                # because repr must never raise (e.g. a smuggled
-                # __setstate__ value -- layout is validated, values not).
-                order_repr = constant_names.get(
-                    value, "(" + ", ".join(r.name for r in value) + ")")
-                parts.append(f"name_order={order_repr}")
+                parts.append(f"name_order={_order_repr(value)}")
             else:
                 parts.append(f"{f.name}={value!r}")
         return f"Policy({', '.join(parts)})"
@@ -435,6 +447,21 @@ class PolicyPatch:
         # module's eager-validation ethos doesn't apply -- see the
         # class docstring ("Values are validated when the patch is
         # applied... not at patch construction").
+
+    def __repr__(self) -> str:
+        # Bounded: only fields the patch actually sets are shown; UNSET
+        # fields are omitted (design rule, see nameparser._types module
+        # docstring -- the sibling of Policy's deviation-only repr).
+        parts = []
+        for f in dataclasses.fields(self):
+            value = getattr(self, f.name)
+            if value is UNSET:
+                continue
+            if f.name == "name_order":
+                parts.append(f"name_order={_order_repr(value)}")
+            else:
+                parts.append(f"{f.name}={value!r}")
+        return f"PolicyPatch({', '.join(parts)})"
 
 
 def apply_patch(policy: Policy, patch: PolicyPatch) -> Policy:
