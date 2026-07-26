@@ -1,3 +1,6 @@
+import dataclasses
+from typing import cast
+
 import pytest
 
 from nameparser._lexicon import Lexicon
@@ -106,3 +109,25 @@ def test_policy_patch_repr_survives_unvalidated_name_order() -> None:
     assert "given" in repr(garbage)          # described, not crashed
     unhashable = PolicyPatch(name_order=([1], "y", "z"))  # type: ignore[arg-type]
     repr(unhashable)                          # must not raise
+
+
+def test_order_repr_survives_smuggled_setstate_values() -> None:
+    # __setstate__ validates layout, not values (the pickling rule), so
+    # the reprs must survive shapes no constructor can produce: an
+    # all-Role list (passes an element check, unhashable), a
+    # non-iterable, and a tuple of Role-EQUAL plain strings (StrEnum
+    # equality would hit the named lookup and lie).
+    for garbage in ([Role.GIVEN, Role.MIDDLE, Role.FAMILY], 5,
+                    ("given", "middle", "family")):
+        for cls in (Policy, PolicyPatch):
+            obj = cls()
+            state = {f.name: getattr(obj, f.name)
+                     for f in dataclasses.fields(obj)}
+            state["name_order"] = garbage
+            smuggled = cast("Policy | PolicyPatch", cls.__new__(cls))
+            smuggled.__setstate__(state)
+            rendered = repr(smuggled)  # must not raise
+            if isinstance(garbage, tuple):
+                # a smuggled string tuple must not render as the
+                # named constant it merely compares equal to
+                assert "GIVEN_FIRST" not in rendered

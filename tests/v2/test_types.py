@@ -428,3 +428,10 @@ def test_stable_tags_is_public_api() -> None:
 def test_as_dict_include_empty_is_keyword_only() -> None:
     with pytest.raises(TypeError):
         parse("John Smith").as_dict(False)  # type: ignore[misc]
+
+
+def test_particle_tag_marks_vocabulary_membership_not_role() -> None:
+    # the tag follows the WORD, not the field: a leading ambiguous
+    # particle read as a given name still carries it (STABLE_TAGS docs)
+    tok = parse("Van Johnson").tokens_for(Role.GIVEN)[0]
+    assert "particle" in tok.tags

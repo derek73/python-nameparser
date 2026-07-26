@@ -524,3 +524,14 @@ def test_remove_does_not_warn() -> None:
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         Lexicon.default().remove(titles=["zqx zqy"])
+
+
+def test_multiword_warning_points_at_caller_line() -> None:
+    # the frame walk is the feature: both entry depths must attribute
+    # the warning to THIS file, not library internals
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        Lexicon(titles=frozenset({"zqx zqy"}))
+        Lexicon.empty().add(titles=["zqx zqy"])
+    assert len(w) >= 2
+    assert all(x.filename == __file__ for x in w)

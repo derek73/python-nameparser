@@ -27,7 +27,9 @@ Results
    :value: frozenset({"particle", "conjunction", "initial", "joined"})
 
    The four :attr:`Token.tags <nameparser.Token.tags>` values that are
-   stable API: ``particle`` (a family-name particle, "de"/"van"),
+   stable API: ``particle`` (a word from the particle vocabulary,
+   "de"/"van", wherever it lands — combine with ``Role.FAMILY`` for
+   actual family particles),
    ``conjunction`` (a joining word, "and"/"y"), ``initial`` (an
    initial-shaped word, "J."), and ``joined`` (a continuation of the
    previous token within one merged piece, so the suffix view renders

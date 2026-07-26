@@ -75,9 +75,12 @@ class Span(NamedTuple):
         )
 
 
-#: The four :attr:`Token.tags` values that are stable API. "particle"
-#: marks a family-name particle ("de", "van"); "conjunction" a joining
-#: word ("and", "y"); "initial" an initial-shaped word ("J.", "Q");
+#: The four :attr:`Token.tags` values that are stable API.
+#: "particle" marks a word from the particle vocabulary ("de", "van")
+#: wherever it lands -- including a given-name "Van" -- so combine it
+#: with Role.FAMILY (as family_particles does) to get actual family
+#: particles; "conjunction" a joining word ("and", "y"); "initial" an
+#: initial-shaped word ("J.", "Q");
 #: "joined" a continuation of the previous token within one merged
 #: piece ("Ph." + "D."), which the suffix view joins with a space
 #: instead of ", ". Every other tag is namespaced ("vocab:...") and is

@@ -117,12 +117,17 @@ def _reject_buffer(value: object, label: str, plural: str) -> None:
 def _warn_dead_entry(message: str) -> None:
     # A fixed stacklevel always lands on library internals: the call
     # depth differs per entry point (Lexicon(), add(), unpickle,
-    # dataclasses.replace). Walk out of this module (and dataclasses'
-    # replace frames) so the warning points at the caller's own line.
+    # dataclasses.replace, and the v1 shim's lazy snapshot -- built on
+    # the first parse after a Constants mutation, several facade frames
+    # below the user's own add()). Walk out of this module (and
+    # dataclasses' replace frames, and the facade layer that builds
+    # lexicons on the caller's behalf) so the warning points at the
+    # caller's own line.
     level = 2
     frame: FrameType | None = sys._getframe(1)
     while frame is not None and frame.f_globals.get("__name__") in (
-            __name__, "dataclasses"):
+            __name__, "dataclasses",
+            "nameparser._config_shim", "nameparser._facade"):
         frame, level = frame.f_back, level + 1
     warnings.warn(message, UserWarning, stacklevel=level)
 

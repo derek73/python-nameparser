@@ -792,3 +792,25 @@ def test_constants_shared_flag_is_read_only() -> None:
     with pytest.raises(AttributeError, match="read-only"):
         CONSTANTS._shared = False
     assert CONSTANTS._shared is True and c._shared is False
+
+
+def test_multiword_warning_through_shim_points_at_caller() -> None:
+    c = Constants()
+    c.titles.add("zqx zqy")
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        HumanName("John Smith", constants=c)   # snapshot builds lazily here
+    multi = [x for x in w if "matched one word at a time" in str(x.message)]
+    assert multi and all(x.filename == __file__ for x in multi)
+
+
+def test_2x_pickle_roundtrip_keeps_a_readded_dead_entry() -> None:
+    # the all-eight gate: a 2.0 user's deliberate re-add of ONE legacy
+    # string survives a round-trip (only a full pre-2.0 blob, which
+    # froze all eight, is subtracted)
+    c = Constants()
+    with pytest.warns(UserWarning):
+        c.suffix_acronyms.add("leed ap")
+        HumanName("John Smith", constants=c)   # snapshot builds lazily here
+    c2 = pickle.loads(pickle.dumps(c))
+    assert "leed ap" in c2.suffix_acronyms

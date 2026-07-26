@@ -56,11 +56,15 @@ def _order_repr(value: tuple[Role, ...]) -> str:
     # Unreachable via Policy's constructor (its __post_init__ restricts
     # name_order to the three named orders) but REACHABLE via
     # PolicyPatch, which defers name_order validation to apply time by
-    # design -- value may hold non-Role, even unhashable, elements.
-    # repr must never raise, so take the named-lookup path only once
-    # every element is confirmed a Role. (The annotation states the
-    # Policy-side truth; the PolicyPatch call site passes getattr-Any.)
-    if all(isinstance(r, Role) for r in value):
+    # design -- value may hold non-Role, even unhashable, elements. A
+    # value smuggled in through __setstate__ (which validates layout,
+    # not values) can also be a non-tuple container or not iterable at
+    # all. repr must never raise, so the named-lookup path is taken
+    # only for a TUPLE whose every element is confirmed a Role;
+    # everything else renders via repr(value). (The annotation states
+    # the Policy-side truth; the PolicyPatch call site passes
+    # getattr-Any.)
+    if isinstance(value, tuple) and all(isinstance(r, Role) for r in value):
         named = _ORDER_CONSTANT_NAMES.get(value)
         if named is not None:
             return named

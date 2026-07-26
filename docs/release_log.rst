@@ -112,7 +112,7 @@ Release Log
     - ``ParsedName.tokens_for()`` raises ``ValueError`` for unknown roles instead of returning no tokens; it also accepts role-name strings
     - ``ParsedName.as_dict()``'s ``include_empty`` is keyword-only
     - ``HumanName`` subscripting accepts ``Role`` members
-    - The eight multi-word vocabulary entries that could never match were repaired (``chargé d'affaires`` split; seven credential acronyms removed), and storing a new multi-word entry now warns; those eight are dropped silently, not warned about, when a pre-2.0 ``Constants`` pickle that froze them is restored
+    - The eight multi-word vocabulary entries that could never match were repaired (``chargé d'affaires`` split; seven credential acronyms removed), and storing a new multi-word entry now warns; those eight are dropped silently, not warned about, when a restored ``Constants`` pickle carries all eight of them (the pre-2.0 signature)
     - ``PolicyPatch``'s repr shows only the fields a patch sets, instead of all nine with UNSET sentinels
     - New since rc1: ``STABLE_TAGS``, ``Policy.patched()``, ``Parser.matches()``, ``Parser.capitalized()``, and ``Parser.revise()`` -- see the API section above
 

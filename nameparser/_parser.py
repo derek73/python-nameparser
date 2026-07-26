@@ -78,30 +78,7 @@ class Parser:
                            policy=self.policy)
         return assemble(run(state))
 
-    def matches(self, a: str | ParsedName, b: str | ParsedName) -> bool:
-        """Component-wise case-insensitive comparison of two names,
-        parsing str arguments with THIS parser.
-        :meth:`ParsedName.matches` parses its str argument with the
-        DEFAULT parser instead -- for names parsed with a custom
-        Parser, use this method."""
-        if isinstance(a, str):
-            a = self.parse(a)
-        elif not isinstance(a, ParsedName):
-            raise TypeError(f"matches() takes str or ParsedName, got {a!r}")
-        if isinstance(b, str):
-            b = self.parse(b)
-        elif not isinstance(b, ParsedName):
-            raise TypeError(f"matches() takes str or ParsedName, got {b!r}")
-        return a.comparison_key() == b.comparison_key()
-
-    def capitalized(self, name: ParsedName, *,
-                    force: bool = False) -> ParsedName:
-        """:meth:`ParsedName.capitalized` under THIS parser's lexicon.
-        The no-argument form of that method uses the DEFAULT lexicon --
-        for names parsed with a custom Parser, use this method."""
-        if not isinstance(name, ParsedName):
-            raise TypeError(f"capitalized() takes a ParsedName, got {name!r}")
-        return name.capitalized(self.lexicon, force=force)
+    # -- editing ----------------------------------------------------------
 
     def revise(self, name: ParsedName, **fields: str) -> ParsedName:
         """:meth:`ParsedName.replace` with this parser's vocabulary:
@@ -130,6 +107,35 @@ class Parser:
             for role, value in replaced.items()
         }
         return name._with_field_tokens(harvested)
+
+    # -- comparison -------------------------------------------------------
+
+    def matches(self, a: str | ParsedName, b: str | ParsedName) -> bool:
+        """Component-wise case-insensitive comparison of two names,
+        parsing str arguments with THIS parser.
+        :meth:`ParsedName.matches` parses its str argument with the
+        DEFAULT parser instead -- for names parsed with a custom
+        Parser, use this method."""
+        if isinstance(a, str):
+            a = self.parse(a)
+        elif not isinstance(a, ParsedName):
+            raise TypeError(f"matches() takes str or ParsedName, got {a!r}")
+        if isinstance(b, str):
+            b = self.parse(b)
+        elif not isinstance(b, ParsedName):
+            raise TypeError(f"matches() takes str or ParsedName, got {b!r}")
+        return a.comparison_key() == b.comparison_key()
+
+    # -- rendering delegates ----------------------------------------------
+
+    def capitalized(self, name: ParsedName, *,
+                    force: bool = False) -> ParsedName:
+        """:meth:`ParsedName.capitalized` under THIS parser's lexicon.
+        The no-argument form of that method uses the DEFAULT lexicon --
+        for names parsed with a custom Parser, use this method."""
+        if not isinstance(name, ParsedName):
+            raise TypeError(f"capitalized() takes a ParsedName, got {name!r}")
+        return name.capitalized(self.lexicon, force=force)
 
 
 @functools.cache
