@@ -260,6 +260,11 @@ listed below.
      - Excludes bidirectional control characters the same way.
        Defaults to ``True``.
 
+To apply a :class:`PolicyPatch <nameparser.PolicyPatch>` directly --
+without going through a locale pack -- call :meth:`Policy.patched()
+<nameparser.Policy.patched>`:
+``Policy().patched(PolicyPatch(middle_as_family=True))``.
+
 Family-first name order
 ~~~~~~~~~~~~~~~~~~~~~~~~
 

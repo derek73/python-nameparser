@@ -149,7 +149,8 @@ You don't need to touch nameparser's registry to use your own pack —
 :class:`~nameparser.PolicyPatch` is a :class:`~nameparser.Policy`-shaped
 patch: every field defaults to :data:`~nameparser.UNSET` (leave it
 alone) instead of to a concrete value, so a pack only ever states what
-it changes.
+it changes. A patch can also be applied directly, without a pack —
+see :meth:`Policy.patched() <nameparser.Policy.patched>`.
 
 The ``policy`` half works that way, but the ``lexicon`` half does not.
 A pack's :class:`~nameparser.Lexicon` is a complete value in its own

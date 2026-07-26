@@ -364,6 +364,21 @@ class Policy:
                 parts.append(f"{f.name}={value!r}")
         return f"Policy({', '.join(parts)})"
 
+    # -- editing ------------------------------------------------------
+
+    def patched(self, patch: PolicyPatch) -> Policy:
+        """Fold a :class:`PolicyPatch` onto this Policy and return the
+        combined Policy. Set-valued fields union with the patch's;
+        scalar fields are overridden by the patch; UNSET fields are
+        left alone. Patch VALUES are validated here (Policy's
+        constructor re-runs on the result), not at patch construction
+        -- see PolicyPatch. The maiden-wins canonicalization applies
+        to the combined result exactly as if it had been constructed
+        directly."""
+        if not isinstance(patch, PolicyPatch):
+            raise TypeError(f"patched() takes a PolicyPatch, got {patch!r}")
+        return apply_patch(self, patch)
+
 
 class _Unset(Enum):
     UNSET = auto()
