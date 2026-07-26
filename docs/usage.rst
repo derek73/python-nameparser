@@ -401,8 +401,11 @@ Correcting a parse
 --------------------
 
 :class:`~nameparser.ParsedName` is immutable, so a correction is a new
-value: ``replace()`` returns a copy with the given fields changed and
-everything else carried over.
+value: ``replace()`` returns a copy with the given fields changed.
+Untouched fields keep their tokens (and ``original`` is preserved),
+with one deliberate exception: an ambiguity that pointed into a
+replaced field is dropped — correcting the field that was flagged
+clears the flag, while correcting an unrelated field keeps it.
 
 .. doctest::
 
@@ -412,6 +415,11 @@ everything else carried over.
     'Dr. Juan de la Vega'
     >>> name.title
     ''
+    >>> flagged = parse("Van Buren")
+    >>> flagged.replace(given="Martin").ambiguities
+    ()
+    >>> [a.kind.value for a in flagged.replace(family="Harrison").ambiguities]
+    ['particle-or-given']
 
 ``replace()`` splits values on whitespace into plain, untagged
 tokens — the vocabulary knowledge a parse would have about the new
