@@ -1,21 +1,16 @@
-"""Neutralize the v1 suite's autouse dual-run fixture for tests/v2.
+"""Shared helpers for the tests/v2 package.
 
-tests/conftest.py runs every test twice (empty_attribute_default '' and
-None) and deep-copy-snapshots the shared CONSTANTS around each test.
-v2 code never reads shared CONSTANTS, so both behaviors are pure
-overhead here. Overriding the fixture by name in this conftest replaces
-the parametrized parent version for this directory.
+The parent suite's autouse `_isolate_constants` fixture
+(tests/conftest.py) applies here ON PURPOSE: the v2 facade/shim tests
+mutate the shared CONSTANTS singleton (tests/v2/test_config_shim.py),
+so the snapshot/restore is wanted protection, not overhead. This
+conftest once overrode the parent's dual-run fixture by name to skip
+it -- that override went dead when the parent was renamed for #255,
+and it was deleted rather than reconnected because its premise ("v2
+code never reads shared CONSTANTS") had stopped being true.
 """
 import json
-from collections.abc import Iterator
 from pathlib import Path
-
-import pytest
-
-
-@pytest.fixture(autouse=True)
-def empty_attribute_default() -> Iterator[None]:
-    yield
 
 
 def differential_corpus() -> list[str]:
