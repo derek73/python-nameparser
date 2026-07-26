@@ -357,6 +357,23 @@ def test_v14_constants_blob_unpickles_into_shim() -> None:
     assert loaded.string_format == "{title} {first} {middle} {last} {suffix} ({nickname})"
 
 
+def test_v14_pickle_restores_and_parses_warning_free() -> None:
+    # A 1.4 pickle froze the then-shipped vocabulary, including the
+    # eight dead multi-word entries 2.0 removed; restoring it must not
+    # spray warnings about entries the user never added. A multi-word
+    # entry the user DID add still warns (second half) -- at PARSE
+    # time, not add() time, since the shim's Lexicon snapshot is built
+    # lazily on the first parse after a mutation.
+    with open(_DATA_DIR / "constants_v14.pickle", "rb") as f:
+        c = pickle.load(f)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        HumanName("John Smith", constants=c)
+    c.titles.add("grand moff")
+    with pytest.warns(UserWarning, match="matched one word at a time"):
+        HumanName("Jane Roe", constants=c)
+
+
 def test_snapshot_keeps_a_multi_word_first_name_title() -> None:
     # v1 looks first_name_titles up on the joined title string, so a
     # multi-word entry is reachable with only its WORDS in titles.

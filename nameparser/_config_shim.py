@@ -33,6 +33,22 @@ from nameparser._policy import PatronymicRule, Policy
 from nameparser.util import lc
 
 
+#: The eight multi-word entries the pre-2.0 DEFAULT vocabulary shipped.
+#: Provably inert in every release (they can never match; see the
+#: 2.0.0 release log), so dropping them from a restored legacy pickle
+#: changes no parse -- and keeps the multi-word warning from firing
+#: eight times, with wrong advice, at library-internal lines, on the
+#: first parse after a supported 1.3/1.4 pickle upgrade. A multi-word
+#: entry the USER added still warns: only these eight exact entries
+#: are dropped.
+_LEGACY_DEAD_ENTRIES = {
+    "titles": frozenset({"chargé d'affaires"}),
+    "suffix_acronyms": frozenset({
+        "leed ap", "nicet i", "nicet ii", "nicet iii", "nicet iv",
+        "psm i", "psm ii"}),
+}
+
+
 def _reject_bare_str_or_bytes(value: object, expected: str) -> None:
     # A bare string is an iterable of its characters, so e.g. SetManager('dr')
     # would silently shred it into {'d', 'r'} instead of raising -- shared by
@@ -1105,8 +1121,17 @@ class Constants:
         # instance, not whatever produced the incoming state)
         for name in _SET_FIELDS:
             if name in state:
-                object.__setattr__(self, name, SetManager(
-                    state[name], _on_change=self._bump))  # type: ignore[arg-type]
+                manager = SetManager(
+                    state[name], _on_change=self._bump)  # type: ignore[arg-type]
+                # SetManager normalized on construction, so the frozen
+                # 1.3/1.4 vocabulary's dead entries are matchable in
+                # their normalized spelling here. Reach past the public
+                # discard() deliberately: this is part of restoring the
+                # state, not a mutation of it, and must not bump the
+                # generation of an instance that is still being built.
+                manager._elements -= _LEGACY_DEAD_ENTRIES.get(
+                    name, frozenset())
+                object.__setattr__(self, name, manager)
         if "capitalization_exceptions" in state:
             object.__setattr__(
                 self, "capitalization_exceptions", TupleManager(
