@@ -262,9 +262,10 @@ class AmbiguityKind(StrEnum):
     #: Smith B"). Which name part was declined depends on position and
     #: ``name_order``, so ``detail`` names it rather than the kind.
     SUFFIX_OR_NAME = "suffix-or-name"
-    #: A leading ambiguous particle was read as a given name -- "Van
-    #: Johnson" parses given="Van", but "Van" is also a family-name
-    #: particle in other names.
+    #: A leading ambiguous particle was read as a given name -- the
+    #: right call for "Van Johnson" (the actor's given name), the
+    #: wrong one for a bare "Van Buren" (the presidential surname);
+    #: the two-word shape cannot distinguish them.
     PARTICLE_OR_GIVEN = "particle-or-given"
     #: A nickname/maiden delimiter opened without closing (or closed
     #: without opening); the text was kept as literal name content, so

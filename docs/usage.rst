@@ -317,16 +317,18 @@ the DEFAULT parser; to compare against a string using a custom
 When the parser had to guess
 -----------------------------
 
-Some names have no single correct reading. ``"Van Johnson"`` could be
-the given name ``Van``, or the family-name particle ``van``. 2.0 takes
-the more likely reading and *records* the choice on ``ambiguities``
-rather than deciding silently:
+Some names have no single correct reading. A leading ``Van`` could be
+a given name — it really is for the actor Van Johnson — or the start
+of a family name, as it is for President Van Buren. Both are the same
+shape, so no rule can tell them apart. 2.0 takes the more likely
+reading and *records* the choice on ``ambiguities`` rather than
+deciding silently:
 
 .. doctest::
 
-    >>> name = parse("Van Johnson")
+    >>> name = parse("Van Buren")
     >>> name.given, name.family
-    ('Van', 'Johnson')
+    ('Van', 'Buren')
     >>> for a in name.ambiguities:
     ...     print(a.kind.value, "-", a.detail)
     particle-or-given - leading 'Van' may be a family-name particle; read as a given name

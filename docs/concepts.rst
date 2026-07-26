@@ -150,10 +150,10 @@ Some calls are irreducibly ambiguous — both readings are legitimate,
 and no amount of rule-tuning resolves them without breaking some other
 name. Those surface as entries on ``ParsedName.ambiguities`` instead
 of being silently guessed away. The canonical example: a leading "Van"
-in "Van Johnson" reads as a given name (that's the common case for
-that shape), but "Van" is also a family-name particle in plenty of
-other names, so the parse records a ``particle-or-given`` ambiguity
-alongside its answer. You can inspect ``ambiguities`` to decide, case
+reads as a given name — the right call for the actor Van Johnson, the
+wrong one for a bare "Van Buren", and nothing in the two-word shape
+distinguishes them — so the parse records a ``particle-or-given``
+ambiguity alongside its answer. You can inspect ``ambiguities`` to decide, case
 by case, whether your data needs a second look.
 
 An ambiguity records a *decision*, not a word. The same token in a

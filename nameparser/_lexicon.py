@@ -308,7 +308,8 @@ class Lexicon:
     particles: frozenset[str] = frozenset()
     #: Subset of particles that can also BE a given name: a leading
     #: one reads as given and records a particle-or-given ambiguity
-    #: ("Van Johnson"). No constant of its own -- the default derives
+    #: ("Van Johnson", but also "Van Buren"). No constant of its own
+    #: -- the default derives
     #: as particles minus
     #: :data:`~nameparser.config.prefixes.NON_FIRST_NAME_PREFIXES`
     #: (which marks the opposite, never-given subset).
