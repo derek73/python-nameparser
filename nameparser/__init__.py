@@ -20,6 +20,7 @@ from nameparser._policy import (
     PolicyPatch,
 )
 from nameparser._types import (
+    STABLE_TAGS,
     Ambiguity,
     AmbiguityKind,
     ParsedName,
@@ -33,6 +34,7 @@ __all__ = [
     "HumanName",
     # v2 core
     "Span", "Role", "Token", "Ambiguity", "AmbiguityKind", "ParsedName",
+    "STABLE_TAGS",
     "Lexicon", "Policy", "PolicyPatch", "PatronymicRule", "UNSET",
     "GIVEN_FIRST", "FAMILY_FIRST", "FAMILY_FIRST_GIVEN_LAST",
     "DEFAULT_NICKNAME_DELIMITERS", "Locale",

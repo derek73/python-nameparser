@@ -28,6 +28,12 @@ accepts a plain set of lowercase words, keyword by field name (``titles``
 above; ``particles``, ``suffix_words``, and the rest work the same
 way) — see :doc:`modules` for the full field list.
 
+Vocabulary entries are matched one word at a time (``given_name_titles``
+excepted), so a multi-word entry like ``titles={"grand moff"}`` can
+never match; the constructor warns when it sees one
+(``capitalization_exceptions`` keys included — they are looked up per
+word too).
+
 Removing works the same way, and drops the word from recognition:
 
 .. doctest::
@@ -259,6 +265,16 @@ listed below.
      - ``bool``
      - Excludes bidirectional control characters the same way.
        Defaults to ``True``.
+
+To apply a :class:`PolicyPatch <nameparser.PolicyPatch>` directly --
+without going through a locale pack -- call :meth:`Policy.patched()
+<nameparser.Policy.patched>`:
+
+.. doctest::
+
+    >>> from nameparser import Policy, PolicyPatch
+    >>> Policy().patched(PolicyPatch(middle_as_family=True))
+    Policy(middle_as_family=True)
 
 Family-first name order
 ~~~~~~~~~~~~~~~~~~~~~~~~

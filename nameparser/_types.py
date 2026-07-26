@@ -24,12 +24,15 @@ if TYPE_CHECKING:
     from nameparser._parser import Parser
 
 
-class Role(Enum):
+class Role(StrEnum):
     """The seven fields of a parsed name, one per :class:`Token`.
     Declaration order is the canonical field order everywhere
-    (``as_dict()``, ``comparison_key()``, rendering). Pass a member to
-    :meth:`ParsedName.tokens_for`; a member's ``.value`` is the field's
-    string name (``Role.GIVEN.value == "given"``)."""
+    (``as_dict()``, ``comparison_key()``, rendering). A StrEnum, like
+    :class:`AmbiguityKind`: members ARE their string values, so
+    ``token.role == "given"`` compares directly and
+    ``str(Role.GIVEN) == "given"``. Members order as strings, so
+    ``sorted()`` yields alphabetical order -- iterate ``Role`` itself
+    for the canonical order."""
 
     # Declaration order IS the canonical field order (conventions §3):
     # every listing of the seven fields anywhere derives from this.
@@ -74,10 +77,16 @@ class Span(NamedTuple):
         )
 
 
-#: Stable, documented tag vocabulary (API). All other tags are
-#: namespaced ("vocab:...", "patronymic:...") and unstable. "joined"
-#: marks a continuation token of a merged piece (the ph-d merge) and
-#: drives the suffix view's space-vs-comma join.
+#: The four :attr:`Token.tags` values that are stable API.
+#: "particle" marks a word from the particle vocabulary ("de", "van")
+#: wherever it lands -- including a given-name "Van" -- so combine it
+#: with Role.FAMILY (as family_particles does) to get actual family
+#: particles; "conjunction" a joining word ("and", "y"); "initial" an
+#: initial-shaped word ("J.", "Q");
+#: "joined" a continuation of the previous token within one merged
+#: piece ("Ph." + "D."), which the suffix view joins with a space
+#: instead of ", ". Every other tag is namespaced ("vocab:...") and is
+#: unstable debugging provenance -- never match against those.
 STABLE_TAGS = frozenset({"particle", "conjunction", "initial", "joined"})
 
 #: The one sanctioned view-reorder marker (namespaced = unstable API).
@@ -154,10 +163,10 @@ class Token:
     span: Span | None
     #: The field this token belongs to.
     role: Role
-    #: Classification labels. Exactly the four in STABLE_TAGS
-    #: ("particle", "conjunction", "initial", "joined") are API;
-    #: namespaced tags like "vocab:..." are unstable debugging
-    #: provenance -- never match against them.
+    #: Classification labels. Exactly the four members of
+    #: :data:`~nameparser.STABLE_TAGS` ("particle", "conjunction",
+    #: "initial", "joined") are API; namespaced tags like "vocab:..."
+    #: are unstable debugging provenance -- never match against them.
     tags: frozenset[str] = frozenset()
 
     # in the class body so @dataclass(slots=True) keeps them
@@ -253,9 +262,10 @@ class AmbiguityKind(StrEnum):
     #: Smith B"). Which name part was declined depends on position and
     #: ``name_order``, so ``detail`` names it rather than the kind.
     SUFFIX_OR_NAME = "suffix-or-name"
-    #: A leading ambiguous particle was read as a given name -- "Van
-    #: Johnson" parses given="Van", but "Van" is also a family-name
-    #: particle in other names.
+    #: A leading ambiguous particle was read as a given name -- the
+    #: right call for "Van Johnson" (the actor's given name), the
+    #: wrong one for a bare "Van Buren" (the presidential surname);
+    #: the two-word shape cannot distinguish them.
     PARTICLE_OR_GIVEN = "particle-or-given"
     #: A nickname/maiden delimiter opened without closing (or closed
     #: without opening); the text was kept as literal name content, so
@@ -317,12 +327,31 @@ class Ambiguity:
         return f"Ambiguity({self.kind.value!r}: {texts})"
 
 
+def _validated_field_strings(fields: dict[str, str]) -> dict[Role, str]:
+    """Shared by ParsedName.replace and Parser.revise: validate a
+    **fields mapping of role names to replacement strings and key it
+    by Role. TypeErrors match replace()'s historical wording."""
+    by_value = {role.value: role for role in Role}
+    for key, value in fields.items():
+        if key not in by_value:
+            raise TypeError(
+                f"unknown field {key!r}; expected one of "
+                f"{', '.join(by_value)}"
+            )
+        if not isinstance(value, str):
+            raise TypeError(
+                f"field {key!r} must be a str, got {value!r}"
+            )
+    return {by_value[k]: v for k, v in fields.items()}
+
+
 @dataclass(frozen=True, slots=True)
 class ParsedName:
     """The immutable result of parsing one name string. Read the seven
     fields as strings (``.given``, ``.family``, ...); inspect structure
     through :attr:`tokens` / :meth:`tokens_for`; correct a parse with
-    :meth:`replace` (returns a new value); produce output with
+    :meth:`replace` (returns a new value; Parser.revise is the
+    tag-preserving form); produce output with
     :meth:`render`, :meth:`initials`, :meth:`capitalized`, or ``str()``.
 
     Constructor-enforced invariants: spans ascending, non-overlapping,
@@ -492,10 +521,14 @@ class ParsedName:
 
     # -- structured access ----------------------------------------------
 
-    def tokens_for(self, role: Role) -> tuple[Token, ...]:
+    def tokens_for(self, role: Role | str) -> tuple[Token, ...]:
+        """The tokens of one field, in document order. Takes a Role
+        member or its string value; anything else raises ValueError
+        naming the valid roles."""
+        role = _coerce_enum(role, Role, "Role", "roles")
         return tuple(t for t in self.tokens if t.role is role)
 
-    def as_dict(self, include_empty: bool = True) -> dict[str, str]:
+    def as_dict(self, *, include_empty: bool = True) -> dict[str, str]:
         # _text_for handles the suffix ", "-join (single-role SUFFIX call)
         d = {role.value: self._text_for(role) for role in Role}
         if not include_empty:
@@ -509,35 +542,49 @@ class ParsedName:
         synthetic tokens (span=None). Whitespace-splits each value; an
         empty value clears the field. original is unchanged (provenance).
         Ambiguities referencing replaced tokens are dropped.
+
+        Replacement tokens carry NO tags, so tag-driven views degrade:
+        family_particles empties, particles regain their initials, and
+        a multi-word suffix is comma-joined. Parser.revise() is the
+        tag-preserving alternative.
         """
-        by_value = {role.value: role for role in Role}
-        for key, value in fields.items():
-            if key not in by_value:
-                raise TypeError(
-                    f"unknown field {key!r}; expected one of "
-                    f"{', '.join(by_value)}"
-                )
-            if not isinstance(value, str):
-                raise TypeError(
-                    f"field {key!r} must be a str, got {value!r}"
-                )
+        replaced = _validated_field_strings(fields)
+        synthetic = {
+            role: tuple(Token(word, None, role) for word in value.split())
+            for role, value in replaced.items()
+        }
+        return self._with_field_tokens(synthetic)
 
-        def synthetic(value: str, role: Role) -> list[Token]:
-            return [Token(word, None, role) for word in value.split()]
-
-        replaced = {by_value[k]: v for k, v in fields.items()}
+    def _with_field_tokens(
+        self, replaced: Mapping[Role, tuple[Token, ...]],
+    ) -> ParsedName:
+        """Shared tail of replace()/Parser.revise(): splice each role's
+        replacement tokens in at the role's first position (appended in
+        canonical order when the role had no tokens); drop ambiguities
+        whose referents were replaced."""
+        # Private contract, made self-enforcing: a token filed under a
+        # key that is not its own role is the one way this shared tail
+        # could build a semantically wrong ParsedName (the splice keys
+        # on the mapping, the views key on the token).
+        for role, toks in replaced.items():
+            for tok in toks:
+                if tok.role is not role:
+                    raise ValueError(
+                        f"replacement token {tok.text!r} has role "
+                        f"{tok.role.value}, not {role.value}"
+                    )
         new_tokens: list[Token] = []
         emitted: set[Role] = set()
         for tok in self.tokens:
             if tok.role in replaced:
                 if tok.role not in emitted:
-                    new_tokens.extend(synthetic(replaced[tok.role], tok.role))
+                    new_tokens.extend(replaced[tok.role])
                     emitted.add(tok.role)
                 continue
             new_tokens.append(tok)
         for role in Role:
             if role in replaced and role not in emitted:
-                new_tokens.extend(synthetic(replaced[role], role))
+                new_tokens.extend(replaced[role])
         kept = tuple(
             amb for amb in self.ambiguities
             if all(t in new_tokens for t in amb.tokens)
@@ -557,7 +604,10 @@ class ParsedName:
                 parser: Parser | None = None) -> bool:
         """Component-wise case-insensitive comparison (the semantic
         layer; __eq__ stays strict). A str argument is parsed with
-        `parser`, or the default parser when None."""
+        `parser`, or with the DEFAULT parser when None -- if this name
+        came from a custom Parser, pass that parser (or use
+        Parser.matches); otherwise the comparison silently runs under
+        the wrong configuration."""
         if isinstance(other, str):
             import nameparser._parser as _parser
             active = parser if parser is not None else _parser._default_parser()
@@ -600,7 +650,9 @@ class ParsedName:
                     force: bool = False) -> ParsedName:
         """Case-fixing transform -> new ParsedName, same spans, new
         token texts. Needs a lexicon for capitalization_exceptions and
-        particle rules; None uses the default lexicon. force=False
-        preserves mixed-case input (v1 parity). Idempotent."""
+        particle rules; None uses the DEFAULT lexicon -- if this name
+        came from a custom Parser, pass its lexicon or use
+        Parser.capitalized. force=False preserves mixed-case input
+        (v1 parity). Idempotent."""
         import nameparser._render as _render
         return _render.capitalized(self, lexicon, force=force)

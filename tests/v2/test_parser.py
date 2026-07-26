@@ -1,3 +1,4 @@
+import dataclasses
 import pickle
 
 import pytest
@@ -6,7 +7,7 @@ from nameparser import Lexicon, Locale, Parser, Policy, PolicyPatch, parse, pars
 from nameparser._policy import (
     FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, PatronymicRule,
 )
-from nameparser._types import AmbiguityKind
+from nameparser._types import AmbiguityKind, Role
 
 
 def test_parser_defaults_and_properties() -> None:
@@ -315,3 +316,123 @@ def test_each_suffix_or_name_branch_describes_itself() -> None:
     numeral = parse("John Smith V").ambiguities[0].detail
     assert "periods" not in numeral
     assert "numeral" in numeral and "initial" in numeral
+
+
+def test_parser_matches_uses_its_own_config() -> None:
+    p = Parser(lexicon=Lexicon.default().add(titles=["moff"]))
+    a = p.parse("Moff Tarkin")
+    # ParsedName.matches falls back to the DEFAULT parser for the str
+    # argument, which reads "Moff" as a given name -- mismatch.
+    assert not a.matches("Moff Tarkin")
+    # Parser.matches parses the str with the same config -- match.
+    assert p.matches(a, "Moff Tarkin")
+    assert p.matches("Moff Tarkin", "MOFF TARKIN")
+
+
+def test_parser_matches_rejects_wrong_types() -> None:
+    p = Parser()
+    with pytest.raises(TypeError, match="takes str or ParsedName"):
+        p.matches(42, "John Smith")  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="takes str or ParsedName"):
+        p.matches("John Smith", 42)  # type: ignore[arg-type]
+
+
+def test_parser_capitalized_uses_its_own_lexicon() -> None:
+    # pair-tuples, not a dict: the field is tuple-annotated and typed
+    # call sites pass canonical pairs (see _default_lexicon's note)
+    exceptions = dict(
+        Lexicon.default().capitalization_exceptions_map) | {"zqx": "ZqX"}
+    lex = dataclasses.replace(
+        Lexicon.default(),
+        capitalization_exceptions=tuple(sorted(exceptions.items())))
+    p = Parser(lexicon=lex)
+    n = p.parse("john zqx")
+    assert p.capitalized(n).family == "ZqX"
+    # ParsedName.capitalized() with no argument uses the DEFAULT
+    # lexicon, which has no such exception.
+    assert n.capitalized().family == "Zqx"
+
+
+def test_parser_capitalized_rejects_non_parsed_name() -> None:
+    with pytest.raises(TypeError, match="takes a ParsedName"):
+        Parser().capitalized("john smith")  # type: ignore[arg-type]
+
+
+def test_revise_preserves_particle_tags() -> None:
+    p = Parser()
+    n = p.parse("Juan de la Vega")
+    r = p.revise(n, family="de la Vega Smith")
+    assert r.family == "de la Vega Smith"
+    assert r.family_particles == "de la"
+    assert r.initials() == "J. V. S."   # particles contribute no initial
+
+
+def test_revise_keeps_multiword_suffix_one_credential() -> None:
+    p = Parser()
+    n = p.parse("John Smith Ph.D.")
+    r = p.revise(n, suffix="Ph. D.")
+    assert r.suffix == "Ph. D."         # replace() would render "Ph., D."
+
+
+def test_revise_views_match_a_fresh_parse() -> None:
+    p = Parser()
+    r = p.revise(p.parse("John Smith"), family="de la Vega")
+    f = p.parse("John de la Vega")
+    for view in ("given", "family", "family_particles", "family_base"):
+        assert getattr(r, view) == getattr(f, view)
+    assert r.initials() == f.initials()
+
+
+def test_revise_replace_shared_semantics() -> None:
+    p = Parser()
+    n = p.parse("Dr. Juan de la Vega Jr.")
+    r = p.revise(n, given="José", suffix="")
+    assert r.given == "José"
+    assert r.suffix == ""               # empty value clears the field
+    assert p.revise(n, suffix="()").suffix == ""   # punctuation-only too
+    assert r.original == n.original     # provenance unchanged
+    assert all(t.span is None for t in r.tokens_for("given"))
+    assert r.title == "Dr."             # untouched fields keep spans
+
+
+def test_revise_validation_matches_replace() -> None:
+    p = Parser()
+    n = p.parse("John Smith")
+    with pytest.raises(TypeError, match="takes a ParsedName"):
+        p.revise("John Smith", family="Doe")  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="unknown field 'last'"):
+        p.revise(n, last="Doe")
+    with pytest.raises(TypeError, match="must be a str"):
+        p.revise(n, family=None)  # type: ignore[arg-type]
+
+
+def test_revise_strips_the_fold_marker() -> None:
+    # middle_as_family's fold tag must not survive the harvest: a
+    # carried tag would make the family view reorder the value.
+    p = Parser(policy=Policy(middle_as_family=True))
+    r = p.revise(p.parse("Juan Perez"), family="Gabriel García Márquez")
+    assert r.family == "Gabriel García Márquez"
+
+
+def test_revise_sub_parse_structural_behavior() -> None:
+    # the docstring's three structural promises, pinned: delimiters
+    # never become tokens, marker words are consumed as in parsing,
+    # and the sub-parse's ambiguities are discarded.
+    p = Parser()
+    n = p.parse("John Smith")
+    assert p.revise(n, family="Smith (Jones)").family == "Smith Jones"
+    revised = p.revise(n, family="Mary née Smith")
+    assert revised.family == "Mary Smith"
+    assert revised.maiden == ""
+    assert p.revise(n, given="J.R. 'Bob'").given == "J.R. Bob"
+    assert p.revise(n, family="Smith (Jones").ambiguities == ()
+
+
+def test_revise_forces_the_named_role_on_every_harvested_token() -> None:
+    # the sub-parse reads "Dr." as a title and "Jr." as a suffix; the
+    # named field's role must win for every token or the family view
+    # silently drops them
+    p = Parser()
+    r = p.revise(p.parse("John Smith"), family="Dr. Vega Jr.")
+    assert r.family == "Dr. Vega Jr."
+    assert all(t.role is Role.FAMILY for t in r.tokens_for(Role.FAMILY))

@@ -33,6 +33,28 @@ from nameparser._policy import PatronymicRule, Policy
 from nameparser.util import lc
 
 
+#: The eight multi-word entries the pre-2.0 DEFAULT vocabulary shipped.
+#: Provably inert in every release (they can never match; see the
+#: 2.0.0 release log), so dropping them from a restored legacy pickle
+#: changes no parse -- and keeps the multi-word warning from firing
+#: eight times, with wrong advice, at library-internal lines, on the
+#: first parse after a supported 1.3/1.4 pickle upgrade.
+#:
+#: Gated on ALL EIGHT being present across the two fields -- the
+#: signature of a pre-2.0 blob, which froze the complete shipped set.
+#: A round-trip of 2.0-era state that carries FEWER than all eight
+#: keeps them (a user who deliberately re-added one or two does not
+#: match the signature, and .copy() never subtracts either). The trade:
+#: a 2.0 user who re-adds ALL eight exact strings is indistinguishable
+#: from a legacy blob and loses them on the next unpickle.
+_LEGACY_DEAD_ENTRIES = {
+    "titles": frozenset({"chargé d'affaires"}),
+    "suffix_acronyms": frozenset({
+        "leed ap", "nicet i", "nicet ii", "nicet iii", "nicet iv",
+        "psm i", "psm ii"}),
+}
+
+
 def _reject_bare_str_or_bytes(value: object, expected: str) -> None:
     # A bare string is an iterable of its characters, so e.g. SetManager('dr')
     # would silently shred it into {'d', 'r'} instead of raising -- shared by
@@ -1103,10 +1125,30 @@ class Constants:
         self.__init__()  # type: ignore[misc]  # defaults, then overlay
         # (managers re-wrapped below so _on_change points at THIS
         # instance, not whatever produced the incoming state)
+        managers: dict[str, SetManager] = {}
         for name in _SET_FIELDS:
             if name in state:
-                object.__setattr__(self, name, SetManager(
-                    state[name], _on_change=self._bump))  # type: ignore[arg-type]
+                managers[name] = SetManager(
+                    state[name], _on_change=self._bump)  # type: ignore[arg-type]
+        # SetManager normalized on construction, so the frozen 1.3/1.4
+        # vocabulary's dead entries are matchable in their normalized
+        # spelling here. Subtract only when ALL EIGHT are present --
+        # the pre-2.0 signature; a 2.0 user who re-added one or two
+        # keeps them through a round-trip (see _LEGACY_DEAD_ENTRIES).
+        legacy = all(
+            name in managers and entry in managers[name]
+            for name, entries in _LEGACY_DEAD_ENTRIES.items()
+            for entry in entries
+        )
+        for name, manager in managers.items():
+            if legacy:
+                # Reach past the public discard() deliberately: this is
+                # part of restoring the state, not a mutation of it, and
+                # must not bump the generation of an instance that is
+                # still being built.
+                manager._elements -= _LEGACY_DEAD_ENTRIES.get(
+                    name, frozenset())
+            object.__setattr__(self, name, manager)
         if "capitalization_exceptions" in state:
             object.__setattr__(
                 self, "capitalization_exceptions", TupleManager(

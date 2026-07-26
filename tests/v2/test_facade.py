@@ -7,6 +7,7 @@ import pytest
 
 from nameparser._config_shim import CONSTANTS, Constants
 from nameparser._facade import HumanName
+from nameparser._types import Role
 
 _DATA_DIR = Path(__file__).parent / "data"
 
@@ -219,6 +220,22 @@ def test_getitem_str_ok_slice_raises() -> None:            # #258
         n[1:-1]  # type: ignore[index]
     with pytest.raises(TypeError):
         n["first"] = "Jane"  # type: ignore[index] # no __setitem__ in 2.0
+
+
+def test_getitem_accepts_role_members() -> None:
+    # Role is a StrEnum, so Role members reach __getitem__'s getattr;
+    # the v1 spellings (first/last) must resolve for given/family too.
+    hn = HumanName("Dr. John Quincy Smith Jr.")
+    assert hn[Role.TITLE] == hn.title
+    assert hn[Role.GIVEN] == hn.first
+    assert hn[Role.MIDDLE] == hn.middle
+    assert hn[Role.FAMILY] == hn.last
+    assert hn[Role.SUFFIX] == hn.suffix
+    assert hn[Role.NICKNAME] == hn.nickname
+    assert hn[Role.MAIDEN] == hn.maiden
+    # the plain strings work the same way
+    assert hn["given"] == hn.first
+    assert hn["family"] == hn.last
 
 
 def test_eq_and_hash_are_object_identity() -> None:        # #223

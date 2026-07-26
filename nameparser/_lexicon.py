@@ -9,9 +9,11 @@ from __future__ import annotations
 
 import dataclasses
 import functools
+import sys
+import warnings
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
-from types import MappingProxyType
+from types import FrameType, MappingProxyType
 from typing import cast
 
 #: Vocabulary set fields, in declaration order. add()/remove() operate
@@ -112,7 +114,27 @@ def _reject_buffer(value: object, label: str, plural: str) -> None:
         )
 
 
-def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
+def _warn_dead_entry(message: str) -> None:
+    # A fixed stacklevel always lands on library internals: the call
+    # depth differs per entry point (Lexicon(), add(), unpickle,
+    # dataclasses.replace, and the v1 shim's lazy snapshot -- built on
+    # the first parse after a Constants mutation, several facade frames
+    # below the user's own add()). Walk out of this module (and
+    # dataclasses' replace frames, and the facade layer that builds
+    # lexicons on the caller's behalf) so the warning points at the
+    # caller's own line.
+    level = 2
+    frame: FrameType | None = sys._getframe(1)
+    while frame is not None and frame.f_globals.get("__name__") in (
+            __name__, "dataclasses",
+            "nameparser._config_shim", "nameparser._facade"):
+        frame, level = frame.f_back, level + 1
+    warnings.warn(message, UserWarning, stacklevel=level)
+
+
+def _normset(
+    entries: Iterable[str], field_name: str, warn: bool = True,
+) -> frozenset[str]:
     # Reject a bare str before iterating: iterating "dr" would silently
     # yield the single characters {'d', 'r'} -- the set(str) footgun on
     # the primary customization surface.
@@ -159,6 +181,25 @@ def _normset(entries: Iterable[str], field_name: str) -> frozenset[str]:
                 f"Lexicon.{field_name} entry {w!r} normalizes to empty "
                 f"(lowercase + strip periods/whitespace leaves nothing)"
             )
+        # Every field but given_name_titles is matched one word at a
+        # time, so a multi-word entry can never match -- the library
+        # itself shipped eight such dead entries for years (repaired
+        # 2026-07-26). Warn, never raise: an inert entry produces
+        # nothing, and the given_name_titles precedent says a raise
+        # here costs working configurations (see __post_init__).
+        # warn=False is _edit()'s pass (both ops): add() warns via the
+        # new instance's __post_init__; remove() stores nothing, so
+        # warning there would name entries the caller is trying to get
+        # RID of, with "split it" advice that makes no sense for a
+        # no-op.
+        if (warn and field_name != "given_name_titles"
+                # interior whitespace test; split() covers all Unicode
+                # whitespace
+                and n != "".join(n.split())):
+            _warn_dead_entry(
+                f"Lexicon.{field_name} entries are matched one word at "
+                f"a time; multi-word entry {w!r} can never match. "
+                f"Split it into separate entries")
         normalized.add(n)
     return frozenset(normalized)
 
@@ -214,6 +255,14 @@ def _normpairs(
                 f"empty (lowercase + strip periods/whitespace leaves "
                 f"nothing)"
             )
+        # capitalized() looks words up one at a time (the _WORD regex
+        # never yields spaces), so a multi-word key is unreachable.
+        # interior whitespace test; split() covers all Unicode whitespace
+        if normalized_key != "".join(normalized_key.split()):
+            _warn_dead_entry(
+                f"capitalization_exceptions keys are matched one word "
+                f"at a time; multi-word key {k!r} can never match. "
+                f"Split it into per-word entries")
         deduped[normalized_key] = v
     return tuple(sorted(deduped.items()))
 
@@ -226,9 +275,12 @@ class Lexicon:
     :meth:`empty`, derive variants with :meth:`add` / :meth:`remove` /
     ``|`` (union), and pass the result to ``Parser(lexicon=...)``.
     Entries are normalized at construction -- lowercased, edge periods
-    stripped -- so matching is case-insensitive. Field docs below show
-    examples, not full contents; inspect any field's shipped vocabulary
-    directly, e.g. ``Lexicon.default().conjunctions``."""
+    stripped -- so matching is case-insensitive. Vocabulary entries are
+    single words -- a multi-word entry warns at construction and can
+    never match (``given_name_titles``, matched as a space-joined run,
+    is the one exception). Field docs below show examples, not full
+    contents; inspect any field's shipped vocabulary directly, e.g.
+    ``Lexicon.default().conjunctions``."""
 
     #: Pre-nominal titles ("dr", "sir", "capt", ...). Full default
     #: list: :data:`~nameparser.config.titles.TITLES`.
@@ -256,7 +308,8 @@ class Lexicon:
     particles: frozenset[str] = frozenset()
     #: Subset of particles that can also BE a given name: a leading
     #: one reads as given and records a particle-or-given ambiguity
-    #: ("Van Johnson"). No constant of its own -- the default derives
+    #: ("Van Johnson", but also "Van Buren"). No constant of its own
+    #: -- the default derives
     #: as particles minus
     #: :data:`~nameparser.config.prefixes.NON_FIRST_NAME_PREFIXES`
     #: (which marks the opposite, never-given subset).
@@ -479,7 +532,17 @@ class Lexicon:
                     f"{', '.join(_VOCAB_FIELDS)}"
                 )
             current: frozenset[str] = getattr(self, name)
-            normalized = _normset(words, name)
+            # warn=False: this pass only computes the new set membership,
+            # never stores it directly. add() still warns exactly once,
+            # from the replaced instance's own __post_init__ -> _normset;
+            # remove() never reaches __post_init__ with the dead entry
+            # (it is subtracted out here), so it stays silent -- correct,
+            # since a removal stores nothing a warning could be about.
+            # That silence covers the entry BEING REMOVED only: a
+            # different multi-word entry still stored re-warns from the
+            # derived instance's __post_init__, since the warning is
+            # per-construction by design.
+            normalized = _normset(words, name, warn=False)
             updates[name] = (current | normalized if op == "add"
                              else current - normalized)
         # mypy's dataclasses.replace() typing checks a **dict's single

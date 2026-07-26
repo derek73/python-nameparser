@@ -60,7 +60,8 @@ When these titles appear with a single other name, that name is a first name, e.
 #: recognition titles like "Deputy Secretary of State".
 TITLES = FIRST_NAME_TITLES | {
     "attaché",
-    "chargé d'affaires",
+    "chargé",
+    "d'affaires",
     "king's",
     "marchioness",
     "marquess",
@@ -189,6 +190,7 @@ TITLES = FIRST_NAME_TITLES | {
     'chairs',
     'chancellor',
     'chaplain',
+    'charge',  # unaccented 'chargé', like attaché/'attache'
     'chef',
     'chemist',
     'chief',

@@ -188,6 +188,11 @@ Fixing case
     >>> str(parse("juan de la vega").capitalized())
     'Juan de la Vega'
 
+The no-argument form above uses the DEFAULT lexicon; for a name parsed
+with a custom :class:`~nameparser.Parser`, call
+:meth:`Parser.capitalized() <nameparser.Parser.capitalized>` so the
+parser's own vocabulary decides the exceptions.
+
 Nicknames and maiden names
 ----------------------------
 
@@ -297,7 +302,10 @@ Comparing names
 ``==`` is strict value equality — two :class:`~nameparser.ParsedName`
 instances are equal only if every field matches exactly. For "is this
 the same name, allowing for order and case?" use ``matches()`` or
-``comparison_key()`` instead.
+``comparison_key()`` instead. ``matches()`` parses a str argument with
+the DEFAULT parser; to compare against a string using a custom
+:class:`~nameparser.Parser`'s vocabulary, call
+:meth:`Parser.matches() <nameparser.Parser.matches>`.
 
 .. doctest::
 
@@ -309,16 +317,18 @@ the same name, allowing for order and case?" use ``matches()`` or
 When the parser had to guess
 -----------------------------
 
-Some names have no single correct reading. ``"Van Johnson"`` could be
-the given name ``Van``, or the family-name particle ``van``. 2.0 takes
-the more likely reading and *records* the choice on ``ambiguities``
-rather than deciding silently:
+Some names have no single correct reading. A leading ``Van`` could be
+a given name — it really is for the actor Van Johnson — or the start
+of a family name, as it is for President Van Buren. Both are the same
+shape, so no rule can tell them apart. 2.0 takes the more likely
+reading and *records* the choice on ``ambiguities`` rather than
+deciding silently:
 
 .. doctest::
 
-    >>> name = parse("Van Johnson")
+    >>> name = parse("Van Buren")
     >>> name.given, name.family
-    ('Van', 'Johnson')
+    ('Van', 'Buren')
     >>> for a in name.ambiguities:
     ...     print(a.kind.value, "-", a.detail)
     particle-or-given - leading 'Van' may be a family-name particle; read as a given name
@@ -385,12 +395,17 @@ so you can always get back to the text a field came from:
     >>> [t.text for t in name.tokens_for(Role.FAMILY)]
     ['de', 'la', 'Vega']
 
+A role's string name works too: ``name.tokens_for("family")``.
+
 Correcting a parse
 --------------------
 
 :class:`~nameparser.ParsedName` is immutable, so a correction is a new
-value: ``replace()`` returns a copy with the given fields changed and
-everything else carried over.
+value: ``replace()`` returns a copy with the given fields changed.
+Untouched fields keep their tokens (and ``original`` is preserved),
+with one deliberate exception: an ambiguity that pointed into a
+replaced field is dropped — correcting the field that was flagged
+clears the flag, while correcting an unrelated field keeps it.
 
 .. doctest::
 
@@ -400,6 +415,50 @@ everything else carried over.
     'Dr. Juan de la Vega'
     >>> name.title
     ''
+    >>> flagged = parse("Van Buren")
+    >>> flagged.replace(given="Martin").ambiguities
+    ()
+    >>> [a.kind.value for a in flagged.replace(family="Harrison").ambiguities]
+    ['particle-or-given']
+
+``replace()`` splits values on whitespace into plain, untagged
+tokens — the vocabulary knowledge a parse would have about the new
+text is not there. The views that depend on tags degrade: the parser
+no longer knows ``de la`` are particles, so ``family_particles``
+empties and the particles start contributing initials.
+
+.. doctest::
+
+    >>> name.family_particles
+    'de la'
+    >>> replaced = name.replace(family="de la Vega Smith")
+    >>> replaced.family_particles
+    ''
+    >>> replaced.initials()
+    'J. d. l. V. S.'
+
+:meth:`Parser.revise() <nameparser.Parser.revise>` is the same
+operation with each value classified by the parser's vocabulary, so
+the correction behaves like a fresh parse of the corrected name
+(which also means delimiters and marker words in the value are
+consumed as they would be in a parse):
+
+.. doctest::
+
+    >>> from nameparser import Parser
+    >>> parser = Parser()
+    >>> revised = parser.revise(name, family="de la Vega Smith")
+    >>> revised.family_particles
+    'de la'
+    >>> revised.initials()
+    'J. V. S.'
+
+``revise()`` has two siblings on :class:`~nameparser.Parser`:
+:meth:`Parser.matches() <nameparser.Parser.matches>` and
+:meth:`Parser.capitalized() <nameparser.Parser.capitalized>`. Those
+two matter when you have built a custom parser — the
+:class:`~nameparser.ParsedName` methods of the same names fall back
+to the *default* configuration for str or omitted arguments.
 
 Command line
 ------------

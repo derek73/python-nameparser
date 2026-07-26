@@ -1,11 +1,14 @@
 import dataclasses
 import pickle
+import warnings
 from collections.abc import Callable
 
 import pytest
 
 from nameparser import Parser
-from nameparser._lexicon import Lexicon, _normalize, _title_key
+from nameparser._lexicon import (
+    Lexicon, _VOCAB_FIELDS, _default_lexicon, _normalize, _title_key,
+)
 
 
 def test_entries_are_normalized_at_construction() -> None:
@@ -463,3 +466,93 @@ def test_every_lexicon_entry_point_rejects_a_buffer_with_a_decode_hint(
     # single most repeated defect on this branch.
     with pytest.raises(TypeError, match="decode"):
         build(value)
+
+
+_PER_WORD_FIELDS = [f for f in _VOCAB_FIELDS if f != "given_name_titles"]
+
+
+@pytest.mark.parametrize("field", _PER_WORD_FIELDS)
+def test_multiword_entry_warns_per_field(field: str) -> None:
+    # Guard the whole family: every per-word field warns, not one.
+    with pytest.warns(UserWarning, match="matched one word at a time"):
+        if field in ("particles_ambiguous", "suffix_acronyms_ambiguous"):
+            # subset fields need their base populated to construct
+            base = {"particles_ambiguous": "particles",
+                    "suffix_acronyms_ambiguous": "suffix_acronyms"}[field]
+            Lexicon.empty().add(**{base: ["zqx zqy"], field: ["zqx zqy"]})
+        else:
+            Lexicon.empty().add(**{field: ["zqx zqy"]})
+
+
+def test_multiword_given_name_title_does_not_warn() -> None:
+    # given_name_titles matches space-joined runs -- multi-word entries
+    # are the point (see the __post_init__ note in _lexicon.py).
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        Lexicon.empty().add(given_name_titles=["lt col"])
+
+
+def test_multiword_capitalization_key_warns() -> None:
+    with pytest.warns(UserWarning, match="matched one word at a time"):
+        dataclasses.replace(
+            Lexicon.empty(),
+            capitalization_exceptions=(("zqx zqy", "ZqXZqY"),))
+
+
+def test_default_lexicon_builds_warning_free() -> None:
+    # Would have caught the eight dead entries the previous commit
+    # repaired.
+    _default_lexicon.cache_clear()
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            Lexicon.default()
+    finally:
+        _default_lexicon.cache_clear()
+
+
+def test_multiword_entry_warns_from_constructor_and_unpickle() -> None:
+    with pytest.warns(UserWarning, match="matched one word at a time"):
+        lex = Lexicon(titles=frozenset({"zqx zqy"}))
+    with pytest.warns(UserWarning, match="matched one word at a time"):
+        pickle.loads(pickle.dumps(lex))
+
+
+def test_remove_does_not_warn() -> None:
+    # remove() stores nothing; a dead-entry warning there would be a
+    # false positive with wrong advice.
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        Lexicon.default().remove(titles=["zqx zqy"])
+
+
+def test_multiword_warning_points_at_caller_line() -> None:
+    # the frame walk is the feature: both entry depths must attribute
+    # the warning to THIS file, not library internals
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        Lexicon(titles=frozenset({"zqx zqy"}))
+        Lexicon.empty().add(titles=["zqx zqy"])
+    assert len(w) >= 2
+    assert all(x.filename == __file__ for x in w)
+
+
+def test_add_warns_exactly_once() -> None:
+    # the warn=False plumbing exists to prevent the double warning
+    # (_edit's pass + the new instance's __post_init__); count it
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        Lexicon.empty().add(titles=["zqx zqy"])
+    assert len([x for x in w if "matched one word" in str(x.message)]) == 1
+
+
+def test_remove_of_a_stored_dead_entry_is_silent() -> None:
+    # the scenario the design argues for: user got the warning, now
+    # removes the dead entry -- silently. (An UNRELATED edit on a
+    # lexicon still holding one re-warns; that is per-construction
+    # warning, by design.)
+    with pytest.warns(UserWarning):
+        dirty = Lexicon.empty().add(titles=["zqx zqy"])
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        dirty.remove(titles=["zqx zqy"])

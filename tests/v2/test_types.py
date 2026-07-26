@@ -2,6 +2,7 @@ from collections.abc import Iterable
 
 import pytest
 
+from nameparser import parse
 from nameparser._types import (
     STABLE_TAGS, Ambiguity, AmbiguityKind, ParsedName, Role, Span, Token,
 )
@@ -11,6 +12,18 @@ def test_role_declaration_order_is_canonical_field_order() -> None:
     assert [r.value for r in Role] == [
         "title", "given", "middle", "family", "suffix", "nickname", "maiden",
     ]
+
+
+def test_role_members_are_their_string_values() -> None:
+    # Role is a StrEnum, like AmbiguityKind: members compare, hash,
+    # and stringify as their field names.
+    assert Role.GIVEN == "given"
+    assert str(Role.FAMILY) == "family"
+    d: dict[str, int] = {Role.GIVEN: 1}
+    assert d["given"] == 1
+    assert isinstance(Role.GIVEN, str)
+    assert repr(Role.GIVEN) == "<Role.GIVEN: 'given'>"  # repr keeps .name form
+    assert Role("maiden") is Role.MAIDEN
 
 
 def test_token_construction_and_span_coercion() -> None:
@@ -386,3 +399,56 @@ def test_setstate_rejects_layout_skew_on_frozen_types() -> None:
     bad_pn["zq_future"] = ()
     with pytest.raises(ValueError, match="zq_future"):
         ParsedName.__new__(ParsedName).__setstate__(bad_pn)
+
+
+def test_tokens_for_accepts_role_string() -> None:
+    name = parse("Juan de la Vega")
+    assert name.tokens_for("family") == name.tokens_for(Role.FAMILY)
+    assert name.tokens_for("given") == name.tokens_for(Role.GIVEN)
+
+
+def test_tokens_for_unknown_role_raises_listing_roles() -> None:
+    with pytest.raises(ValueError, match=r"unknown Role 'last'.*valid roles: title, given, middle"):
+        parse("John Smith").tokens_for("last")
+
+
+def test_tokens_for_non_coercible_raises() -> None:
+    with pytest.raises(ValueError, match="unknown Role 3"):
+        parse("John Smith").tokens_for(3)  # type: ignore[arg-type]
+
+
+def test_stable_tags_is_public_api() -> None:
+    import nameparser
+    assert "STABLE_TAGS" in nameparser.__all__
+    # the documented stable tag vocabulary -- these four values are API
+    assert nameparser.STABLE_TAGS == frozenset(
+        {"particle", "conjunction", "initial", "joined"})
+
+
+def test_as_dict_include_empty_is_keyword_only() -> None:
+    with pytest.raises(TypeError):
+        parse("John Smith").as_dict(False)  # type: ignore[misc]
+
+
+def test_particle_tag_marks_vocabulary_membership_not_role() -> None:
+    # the tag follows the WORD, not the field: a leading ambiguous
+    # particle read as a given name still carries it (STABLE_TAGS docs)
+    tok = parse("Van Johnson").tokens_for(Role.GIVEN)[0]
+    assert "particle" in tok.tags
+
+
+def test_str_enum_value_sets_are_pairwise_disjoint() -> None:
+    # three StrEnums cross-compare by value; a future collision would
+    # make unrelated members equal
+    from nameparser import AmbiguityKind, PatronymicRule
+    role = {m.value for m in Role}
+    kind = {m.value for m in AmbiguityKind}
+    rule = {m.value for m in PatronymicRule}
+    assert not (role & kind) and not (role & rule) and not (kind & rule)
+
+
+def test_with_field_tokens_rejects_mismatched_roles() -> None:
+    name = parse("John Smith")
+    with pytest.raises(ValueError, match="has role family, not given"):
+        name._with_field_tokens(
+            {Role.GIVEN: (Token("x", None, Role.FAMILY),)})

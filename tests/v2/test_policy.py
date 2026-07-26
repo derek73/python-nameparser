@@ -52,6 +52,13 @@ def test_name_order_rejects_non_role_elements_with_type_error() -> None:
         Policy(name_order=(1, 2, 3))  # type: ignore[arg-type]
 
 
+def test_name_order_rejects_plain_string_tuples() -> None:
+    # Role is a StrEnum, so ("given", ...) == GIVEN_FIRST -- the
+    # isinstance loop is the only guard rejecting string elements.
+    with pytest.raises(TypeError, match="must be Role members"):
+        Policy(name_order=("given", "middle", "family"))  # type: ignore[arg-type]
+
+
 def test_patronymic_rules_coerce_and_reject() -> None:
     p = Policy(patronymic_rules=frozenset({"east-slavic"}))  # type: ignore[arg-type]
     assert p.patronymic_rules == frozenset({PatronymicRule.EAST_SLAVIC})
@@ -406,3 +413,36 @@ def test_every_field_rejects_a_buffer_with_a_decode_hint(
     # field the first pass missed.
     with pytest.raises(TypeError, match="decode"):
         cls(**{field: value})
+
+
+def test_patched_unions_set_valued_fields() -> None:
+    base = Policy(extra_suffix_delimiters={"|"})  # type: ignore[arg-type]
+    out = base.patched(
+        PolicyPatch(extra_suffix_delimiters={"/"}))  # type: ignore[arg-type]
+    assert out.extra_suffix_delimiters == frozenset({"|", "/"})
+
+
+def test_patched_overrides_scalars_and_leaves_unset_alone() -> None:
+    base = Policy(middle_as_family=True, lenient_comma_suffixes=False)
+    out = base.patched(PolicyPatch(strip_emoji=False))
+    assert out.strip_emoji is False
+    assert out.middle_as_family is True
+    assert out.lenient_comma_suffixes is False
+
+
+def test_patched_with_empty_patch_returns_same_policy() -> None:
+    base = Policy(middle_as_family=True)
+    assert base.patched(PolicyPatch()) is base
+
+
+def test_patched_validates_patch_values_at_apply_time() -> None:
+    # PolicyPatch scalars validate lazily by design; the error surfaces
+    # when the patch is applied.
+    patch = PolicyPatch(strip_emoji="off")  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="strip_emoji must be a bool"):
+        Policy().patched(patch)
+
+
+def test_patched_rejects_non_patch() -> None:
+    with pytest.raises(TypeError, match="takes a PolicyPatch"):
+        Policy().patched({"strip_emoji": False})  # type: ignore[arg-type]

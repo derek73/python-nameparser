@@ -357,6 +357,23 @@ def test_v14_constants_blob_unpickles_into_shim() -> None:
     assert loaded.string_format == "{title} {first} {middle} {last} {suffix} ({nickname})"
 
 
+def test_v14_pickle_restores_and_parses_warning_free() -> None:
+    # A 1.4 pickle froze the then-shipped vocabulary, including the
+    # eight dead multi-word entries 2.0 removed; restoring it must not
+    # spray warnings about entries the user never added. A multi-word
+    # entry the user DID add still warns (second half) -- at PARSE
+    # time, not add() time, since the shim's Lexicon snapshot is built
+    # lazily on the first parse after a mutation.
+    with open(_DATA_DIR / "constants_v14.pickle", "rb") as f:
+        c = pickle.load(f)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        HumanName("John Smith", constants=c)
+    c.titles.add("grand moff")
+    with pytest.warns(UserWarning, match="matched one word at a time"):
+        HumanName("Jane Roe", constants=c)
+
+
 def test_snapshot_keeps_a_multi_word_first_name_title() -> None:
     # v1 looks first_name_titles up on the joined title string, so a
     # multi-word entry is reachable with only its WORDS in titles.
@@ -775,3 +792,25 @@ def test_constants_shared_flag_is_read_only() -> None:
     with pytest.raises(AttributeError, match="read-only"):
         CONSTANTS._shared = False
     assert CONSTANTS._shared is True and c._shared is False
+
+
+def test_multiword_warning_through_shim_points_at_caller() -> None:
+    c = Constants()
+    c.titles.add("zqx zqy")
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        HumanName("John Smith", constants=c)   # snapshot builds lazily here
+    multi = [x for x in w if "matched one word at a time" in str(x.message)]
+    assert multi and all(x.filename == __file__ for x in multi)
+
+
+def test_2x_pickle_roundtrip_keeps_a_readded_dead_entry() -> None:
+    # the all-eight gate: a 2.0 user's deliberate re-add of ONE legacy
+    # string survives a round-trip (only a full pre-2.0 blob, which
+    # froze all eight, is subtracted)
+    c = Constants()
+    with pytest.warns(UserWarning):
+        c.suffix_acronyms.add("leed ap")
+        HumanName("John Smith", constants=c)   # snapshot builds lazily here
+    c2 = pickle.loads(pickle.dumps(c))
+    assert "leed ap" in c2.suffix_acronyms

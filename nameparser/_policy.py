@@ -45,7 +45,32 @@ FAMILY_FIRST = (Role.FAMILY, Role.GIVEN, Role.MIDDLE)
 #: ``Policy(name_order=...)`` values.
 FAMILY_FIRST_GIVEN_LAST = (Role.FAMILY, Role.MIDDLE, Role.GIVEN)
 
-_NAME_ROLES = frozenset({Role.GIVEN, Role.MIDDLE, Role.FAMILY})
+_ORDER_CONSTANT_NAMES: dict[tuple[Role, ...], str] = {
+    GIVEN_FIRST: "GIVEN_FIRST",
+    FAMILY_FIRST: "FAMILY_FIRST",
+    FAMILY_FIRST_GIVEN_LAST: "FAMILY_FIRST_GIVEN_LAST",
+}
+
+
+def _order_repr(value: tuple[Role, ...]) -> str:
+    # Unreachable via Policy's constructor (its __post_init__ restricts
+    # name_order to the three named orders) but REACHABLE via
+    # PolicyPatch, which defers name_order validation to apply time by
+    # design -- value may hold non-Role, even unhashable, elements. A
+    # value smuggled in through __setstate__ (which validates layout,
+    # not values) can also be a non-tuple container or not iterable at
+    # all. repr must never raise, so the named-lookup path is taken
+    # only for a TUPLE whose every element is confirmed a Role;
+    # everything else renders via repr(value). (The annotation states
+    # the Policy-side truth; the PolicyPatch call site passes
+    # getattr-Any.)
+    if isinstance(value, tuple) and all(isinstance(r, Role) for r in value):
+        named = _ORDER_CONSTANT_NAMES.get(value)
+        if named is not None:
+            return named
+        return "(" + ", ".join(r.name for r in value) + ")"
+    return repr(value)
+
 
 # Single source for the migration hint raised by both Policy and
 # PolicyPatch when patronymic_rules gets a non-iterable (True is the
@@ -225,6 +250,10 @@ class Policy:
     def __post_init__(self) -> None:
         _reject_bare_string_order(self.name_order)
         order = tuple(_require_iterable(self.name_order, "name_order"))
+        # Sole rejection point for plain-string tuples: Role is a StrEnum,
+        # so the named-order membership check below compares EQUAL for
+        # ("given", "middle", "family") -- do not remove this loop as
+        # redundant.
         for element in order:
             if not isinstance(element, Role):
                 raise TypeError(
@@ -326,27 +355,31 @@ class Policy:
     def __repr__(self) -> str:
         # Bounded: only fields that deviate from the default are shown
         # (design rule, see nameparser._types module docstring).
-        constant_names = {
-            GIVEN_FIRST: "GIVEN_FIRST",
-            FAMILY_FIRST: "FAMILY_FIRST",
-            FAMILY_FIRST_GIVEN_LAST: "FAMILY_FIRST_GIVEN_LAST",
-        }
         parts = []
         for f in dataclasses.fields(self):
             value = getattr(self, f.name)
             if value == f.default:
                 continue
             if f.name == "name_order":
-                # __post_init__ restricts to the three named orders, so
-                # the fallback is unreachable via the constructor; kept
-                # because repr must never raise (e.g. a smuggled
-                # __setstate__ value -- layout is validated, values not).
-                order_repr = constant_names.get(
-                    value, "(" + ", ".join(r.name for r in value) + ")")
-                parts.append(f"name_order={order_repr}")
+                parts.append(f"name_order={_order_repr(value)}")
             else:
                 parts.append(f"{f.name}={value!r}")
         return f"Policy({', '.join(parts)})"
+
+    # -- editing ------------------------------------------------------
+
+    def patched(self, patch: PolicyPatch) -> Policy:
+        """Fold a :class:`PolicyPatch` onto this Policy and return the
+        combined Policy. Set-valued fields union with the patch's;
+        scalar fields are overridden by the patch; UNSET fields are
+        left alone. Patch VALUES are validated here (Policy's
+        constructor re-runs on the result), not at patch construction
+        -- see PolicyPatch. The maiden-wins canonicalization applies
+        to the combined result exactly as if it had been constructed
+        directly."""
+        if not isinstance(patch, PolicyPatch):
+            raise TypeError(f"patched() takes a PolicyPatch, got {patch!r}")
+        return apply_patch(self, patch)
 
 
 class _Unset(Enum):
@@ -431,6 +464,21 @@ class PolicyPatch:
         # module's eager-validation ethos doesn't apply -- see the
         # class docstring ("Values are validated when the patch is
         # applied... not at patch construction").
+
+    def __repr__(self) -> str:
+        # Bounded: only fields the patch actually sets are shown; UNSET
+        # fields are omitted (design rule, see nameparser._types module
+        # docstring -- the sibling of Policy's deviation-only repr).
+        parts = []
+        for f in dataclasses.fields(self):
+            value = getattr(self, f.name)
+            if value is UNSET:
+                continue
+            if f.name == "name_order":
+                parts.append(f"name_order={_order_repr(value)}")
+            else:
+                parts.append(f"{f.name}={value!r}")
+        return f"PolicyPatch({', '.join(parts)})"
 
 
 def apply_patch(policy: Policy, patch: PolicyPatch) -> Policy:

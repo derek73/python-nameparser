@@ -30,9 +30,13 @@ Release Log
     - Add ``name_order`` and the constants ``GIVEN_FIRST``, ``FAMILY_FIRST`` and ``FAMILY_FIRST_GIVEN_LAST``, so a family-first name can be parsed as written rather than reordered by hand (closes the configuration half of #270)
     - Add ``PatronymicRule`` with the members ``EAST_SLAVIC`` and ``TURKIC``. v1's single ``patronymic_name_order`` flag enabled both detectors at once; ``Policy(patronymic_rules=...)`` lets you enable either one alone
     - Add ``PolicyPatch`` and the ``UNSET`` sentinel for partial policy deltas that compose -- set-valued fields union, scalar fields override with later winning. This is the mechanism locale packs are built from, and ``UNSET`` is only needed when you must distinguish "not set" from a real ``False`` or ``None``
-    - Add ``Token``, ``Span`` and ``Role``: every field is backed by tokens carrying exact ``(start, end)`` offsets into the original string, reachable with ``tokens_for(Role.GIVEN)``. This replaces v1's ``*_list`` attributes and makes it possible to highlight or re-slice the input the parse came from
+    - Add ``Token``, ``Span`` and ``Role``: every field is backed by tokens carrying exact ``(start, end)`` offsets into the original string, reachable with ``tokens_for(Role.GIVEN)``. This replaces v1's ``*_list`` attributes and makes it possible to highlight or re-slice the input the parse came from. ``Role`` is a ``StrEnum``, so members compare and stringify as their field names (``Role.GIVEN == "given"``), matching ``AmbiguityKind``; ``tokens_for()`` accepts a role's string name too, and raises ``ValueError`` for an unknown role
+    - Add ``STABLE_TAGS`` to the public API: the four documented ``Token.tags`` values (``particle``, ``conjunction``, ``initial``, ``joined``)
+    - Add ``Policy.patched(patch)``, applying a ``PolicyPatch`` directly without wrapping it in a locale pack
+    - Add ``Parser.matches(a, b)`` and ``Parser.capitalized(name)``: the ``ParsedName`` methods of the same names fall back to the default configuration for str/omitted arguments, which is silently wrong for names parsed with a custom ``Parser``
+    - Add ``Parser.revise(name, **fields)``: ``ParsedName.replace()`` with the replacement text classified by the parser's vocabulary, so particle/initial/suffix-join behavior survives the edit
     - Add ``Ambiguity`` and the ``AmbiguityKind`` enum, so a parse reports what it had to guess at instead of guessing silently. The kinds emitted today are ``particle-or-given``, ``suffix-or-name``, ``suffix-or-nickname``, ``unbalanced-delimiter`` and ``comma-structure``; ``order`` is reserved and not yet emitted. The two suffix kinds cover the post-nominals that are also ordinary words: ``"John Smith MA"`` reports that ``MA`` was read as a credential rather than a surname, and ``"JEFFREY (JD) BRICKEN"`` that the delimited ``JD`` was read as a nickname rather than a suffix. A reading the vocabulary settles on its own — ``"John Smith M.A."``, ``"Andrew Perkins (MBA)"`` — is not a guess and reports nothing
-    - Add ``ParsedName`` output and comparison methods: ``render(spec)``, ``initials()``, ``capitalized()`` (which returns a new value rather than mutating in place), ``as_dict()``, ``replace(**fields)``, ``matches()`` and ``comparison_key()``
+    - Add ``ParsedName`` output and comparison methods: ``render(spec)``, ``initials()``, ``capitalized()`` (which returns a new value rather than mutating in place), ``as_dict()`` (whose ``include_empty`` flag is keyword-only, unlike ``HumanName.as_dict()``'s), ``replace(**fields)``, ``matches()`` and ``comparison_key()``
     - Add ``Locale``, the public pack type. Writing your own needs no registration -- construct a ``Locale`` and pass it to ``parser_for()``
     - Ship a fully typed public API (PEP 561): the core modules are checked under strict mypy settings, and nameparser 2.0 has no runtime dependencies
 
@@ -60,6 +64,9 @@ Release Log
     - Fix the pre-comma piece being routed to ``first`` when everything after the comma is a suffix or title: ``"Andrews, M.D."`` now reads family ``Andrews`` / suffix ``M.D.`` where 1.x read given ``M.D.`` / family ``Andrews``, and ``"Smith, Dr."`` moves ``Smith`` from ``first`` to ``family`` (the title was already correct in 1.x). The piece before a comma is definitionally the family name
     - Fix a lone recognized trailing suffix with no comma being routed to ``first``/``last``: ``"Johnson PhD"`` and ``"Mr. Johnson PhD"`` now keep the suffix in ``suffix``
     - Fix a split ``"Ph. D."`` credential being read as two tokens; it now classifies as one suffix, replacing v1's ``fix_phd`` hook. This now holds wherever the credential sits: 1.x healed the pair only when it trailed, so ``"Ph. D. John Smith"`` parsed as title ``Ph.`` / given ``D.`` with the real given name pushed to ``middle``; it now reads given ``John``, family ``Smith``, suffix ``Ph. D.``
+    - Fix ``chargé d'affaires``: shipped as one unmatchable ``TITLES`` entry since it was added, it is now two chainable entries (``chargé``, ``d'affaires``), so the title is recognized; the unaccented spelling ``charge`` ships too, like ``attaché``/``attache``
+    - Remove seven multi-word ``SUFFIX_ACRONYMS`` entries (``leed ap``, ``nicet i``–``nicet iv``, ``psm i``, ``psm ii``) that could never match in any release; splitting them would swallow real names ("John Leed", "Smith, A.P."), so they are dropped instead
+    - Add a ``UserWarning`` when a multi-word entry is stored in a per-word ``Lexicon`` field or as a ``capitalization_exceptions`` key -- such entries can never match
     - Parse an input with no alphanumeric character to an empty name in both APIs. 1.x kept pure punctuation as a name part, so ``"."`` gave ``first="."`` and ``bool()`` was ``True``; 2.0 empties it, keeping ``bool(parse(x))`` an honest "did I get a name?" test. The check is Unicode-aware, so names in any script are unaffected; only inputs that are entirely punctuation or symbols (``"."``, ``"- -"``) change. Junk embedded in a name with real content -- the stray dot in ``"John . Smith"`` -- is still kept, since that parse is already truthy
     - Fold a leading never-given particle into the family name. Note that ``Lexicon.particles_ambiguous`` is the **complement** of v1's ``non_first_name_prefixes``, not a rename -- it lists the particles that *may* double as a given name, where v1 listed the ones that may not. Copying a v1 customization across without inverting it silently reverses the behavior; see :doc:`migrate`
     - Add ``ma`` and ``do`` to ``suffix_acronyms_ambiguous``, the set of post-nominals that are also ordinary surnames. An entry there is read as a credential when the name can spare it — written with periods (``"John Smith M.A."``), or when removing it still leaves a given *and* a family name (``"John Smith MA"`` → suffix ``MA``). With only two pieces to go around, the surname reading wins instead: ``"Jack Ma"`` and ``"Anh Do"`` keep their family names. As a side effect, a parenthesized or quoted ``"(MA)"``/``"(DO)"`` now falls through to nickname parsing rather than escaping to ``suffix``, since inside delimiters the nickname reading is the plausible one
@@ -81,6 +88,7 @@ Release Log
 
     - Reimplement ``HumanName`` as a facade over the 2.0 pipeline, and ``Constants`` as a shim resolving to a ``(Lexicon, Policy)`` snapshot with a shared parser cache. Fields, aggregates, mutation through ``name.C.titles.add(...)``, rendering defaults, ``capitalize()``, ``matches()``, ``comparison_key()``, iteration, ``as_dict()`` and pickling are all preserved, and ``nameparser.parser`` and ``nameparser.config`` remain importable. The compatibility layer ships through 2.x and is removed in 3.0
     - Note that ``CONSTANTS.capitalize_name`` and ``force_mixed_case_capitalization`` are still honored through the facade, but the 2.0 API never capitalizes during ``parse()`` -- call ``capitalized()`` when you want it
+    - Add ``Role`` members (and their string values ``given``/``family``) as valid ``HumanName`` subscript keys: ``hn[Role.GIVEN]`` returns ``hn.first``
 
     **Command line**
 
@@ -97,6 +105,16 @@ Release Log
     ``tools/differential/`` in the source repository (it is development
     tooling, not part of the installed package) -- see its README to
     reproduce the comparison against your own names.
+
+    **Changed since 2.0.0rc1** (for anyone who tested the release candidate)
+
+    - ``Role`` became a ``StrEnum``; ``str(Role.GIVEN)`` is now ``"given"``
+    - ``ParsedName.tokens_for()`` raises ``ValueError`` for unknown roles instead of returning no tokens; it also accepts role-name strings
+    - ``ParsedName.as_dict()``'s ``include_empty`` is keyword-only
+    - ``HumanName`` subscripting accepts ``Role`` members
+    - The eight multi-word vocabulary entries that could never match were repaired (``chargé d'affaires`` split; seven credential acronyms removed), and storing a new multi-word entry now warns; those eight are dropped silently, not warned about, when a restored ``Constants`` pickle carries all eight of them (the pre-2.0 signature)
+    - ``PolicyPatch``'s repr shows only the fields a patch sets, instead of all nine with UNSET sentinels
+    - New since rc1: ``STABLE_TAGS``, ``Policy.patched()``, ``Parser.matches()``, ``Parser.capitalized()``, and ``Parser.revise()`` -- see the API section above
 
 * 1.4.0 - July 12, 2026
 

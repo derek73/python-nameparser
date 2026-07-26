@@ -38,7 +38,9 @@ relatives); a position cannot be confused with a look-alike.
 assignment, ever. If a parse is almost right and you want to fix one
 field, you call ``.replace()``, which returns a new
 :class:`~nameparser.ParsedName` with that field changed and everything
-else — tokens, spans, the rest of the roles — carried over unchanged.
+else — tokens, spans, the rest of the roles — carried over unchanged
+(``replace()`` tokens carry no vocabulary tags; :meth:`Parser.revise
+<nameparser.Parser.revise>` is the tag-preserving form).
 ``str()`` renders the default view; nothing about calling it mutates
 the value you called it on.
 
@@ -148,10 +150,10 @@ Some calls are irreducibly ambiguous — both readings are legitimate,
 and no amount of rule-tuning resolves them without breaking some other
 name. Those surface as entries on ``ParsedName.ambiguities`` instead
 of being silently guessed away. The canonical example: a leading "Van"
-in "Van Johnson" reads as a given name (that's the common case for
-that shape), but "Van" is also a family-name particle in plenty of
-other names, so the parse records a ``particle-or-given`` ambiguity
-alongside its answer. You can inspect ``ambiguities`` to decide, case
+reads as a given name — the right call for the actor Van Johnson, the
+wrong one for a bare "Van Buren", and nothing in the two-word shape
+distinguishes them — so the parse records a ``particle-or-given``
+ambiguity alongside its answer. You can inspect ``ambiguities`` to decide, case
 by case, whether your data needs a second look.
 
 An ambiguity records a *decision*, not a word. The same token in a
@@ -174,7 +176,8 @@ signal to act on; do not read an empty one as a guarantee.
 :class:`Tokens <nameparser.Token>` also carry tags — a second, independent label alongside their
 role, recording how a token was classified rather than what part of
 the name it belongs to — but only a handful of them are part of the
-stable API: ``particle``, ``conjunction``, ``initial``, and ``joined``.
+stable API, collected in :data:`~nameparser.STABLE_TAGS`: ``particle``,
+``conjunction``, ``initial``, and ``joined``.
 Any tag written with a namespace prefix, like ``vocab:...``, is
 provenance information for debugging how a token got classified — it
 can change shape between releases and isn't something to match against
