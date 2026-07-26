@@ -403,6 +403,14 @@ everything else carried over.
     >>> name.title
     ''
 
+``replace()`` splits values on whitespace and its tokens carry no
+vocabulary tags, so tag-driven views degrade (``family_particles``
+empties, particles regain their initials). When that matters, use
+:meth:`Parser.revise() <nameparser.Parser.revise>` — the same
+operation, with each value classified by the parser's vocabulary,
+which also means delimiters and marker words in the value are consumed
+as they would be in a parse.
+
 Command line
 ------------
 

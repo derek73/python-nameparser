@@ -321,12 +321,31 @@ class Ambiguity:
         return f"Ambiguity({self.kind.value!r}: {texts})"
 
 
+def _validated_field_strings(fields: dict[str, str]) -> dict[Role, str]:
+    """Shared by ParsedName.replace and Parser.revise: validate a
+    **fields mapping of role names to replacement strings and key it
+    by Role. TypeErrors match replace()'s historical wording."""
+    by_value = {role.value: role for role in Role}
+    for key, value in fields.items():
+        if key not in by_value:
+            raise TypeError(
+                f"unknown field {key!r}; expected one of "
+                f"{', '.join(by_value)}"
+            )
+        if not isinstance(value, str):
+            raise TypeError(
+                f"field {key!r} must be a str, got {value!r}"
+            )
+    return {by_value[k]: v for k, v in fields.items()}
+
+
 @dataclass(frozen=True, slots=True)
 class ParsedName:
     """The immutable result of parsing one name string. Read the seven
     fields as strings (``.given``, ``.family``, ...); inspect structure
     through :attr:`tokens` / :meth:`tokens_for`; correct a parse with
-    :meth:`replace` (returns a new value); produce output with
+    :meth:`replace` (returns a new value; Parser.revise is the
+    tag-preserving form); produce output with
     :meth:`render`, :meth:`initials`, :meth:`capitalized`, or ``str()``.
 
     Constructor-enforced invariants: spans ascending, non-overlapping,
@@ -517,35 +536,38 @@ class ParsedName:
         synthetic tokens (span=None). Whitespace-splits each value; an
         empty value clears the field. original is unchanged (provenance).
         Ambiguities referencing replaced tokens are dropped.
+
+        Replacement tokens carry NO tags, so tag-driven views degrade:
+        family_particles empties, particles regain their initials, and
+        a multi-word suffix is comma-joined. Parser.revise() is the
+        tag-preserving alternative.
         """
-        by_value = {role.value: role for role in Role}
-        for key, value in fields.items():
-            if key not in by_value:
-                raise TypeError(
-                    f"unknown field {key!r}; expected one of "
-                    f"{', '.join(by_value)}"
-                )
-            if not isinstance(value, str):
-                raise TypeError(
-                    f"field {key!r} must be a str, got {value!r}"
-                )
+        replaced = _validated_field_strings(fields)
+        synthetic = {
+            role: tuple(Token(word, None, role) for word in value.split())
+            for role, value in replaced.items()
+        }
+        return self._with_field_tokens(synthetic)
 
-        def synthetic(value: str, role: Role) -> list[Token]:
-            return [Token(word, None, role) for word in value.split()]
-
-        replaced = {by_value[k]: v for k, v in fields.items()}
+    def _with_field_tokens(
+        self, replaced: Mapping[Role, tuple[Token, ...]],
+    ) -> ParsedName:
+        """Shared tail of replace()/Parser.revise(): splice each role's
+        replacement tokens in at the role's first position (appended in
+        canonical order when the role had no tokens); drop ambiguities
+        whose referents were replaced."""
         new_tokens: list[Token] = []
         emitted: set[Role] = set()
         for tok in self.tokens:
             if tok.role in replaced:
                 if tok.role not in emitted:
-                    new_tokens.extend(synthetic(replaced[tok.role], tok.role))
+                    new_tokens.extend(replaced[tok.role])
                     emitted.add(tok.role)
                 continue
             new_tokens.append(tok)
         for role in Role:
             if role in replaced and role not in emitted:
-                new_tokens.extend(synthetic(replaced[role], role))
+                new_tokens.extend(replaced[role])
         kept = tuple(
             amb for amb in self.ambiguities
             if all(t in new_tokens for t in amb.tokens)

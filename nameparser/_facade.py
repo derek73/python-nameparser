@@ -335,6 +335,8 @@ class HumanName:
         else:
             raise TypeError(
                 f"{member} must be a str, list, or None, got {value!r}")
+        # v1 setters stay on replace(): revise()'s vocabulary tags would
+        # change v1 parity
         self._parsed = self._parsed.replace(
             **{_V2_FIELD.get(member, member): joined})
 

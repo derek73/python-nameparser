@@ -356,3 +356,72 @@ def test_parser_capitalized_uses_its_own_lexicon() -> None:
 def test_parser_capitalized_rejects_non_parsed_name() -> None:
     with pytest.raises(TypeError, match="takes a ParsedName"):
         Parser().capitalized("john smith")  # type: ignore[arg-type]
+
+
+def test_revise_preserves_particle_tags() -> None:
+    p = Parser()
+    n = p.parse("Juan de la Vega")
+    r = p.revise(n, family="de la Vega Smith")
+    assert r.family == "de la Vega Smith"
+    assert r.family_particles == "de la"
+    assert r.initials() == "J. V. S."   # particles contribute no initial
+
+
+def test_revise_keeps_multiword_suffix_one_credential() -> None:
+    p = Parser()
+    n = p.parse("John Smith Ph.D.")
+    r = p.revise(n, suffix="Ph. D.")
+    assert r.suffix == "Ph. D."         # replace() would render "Ph., D."
+
+
+def test_revise_views_match_a_fresh_parse() -> None:
+    p = Parser()
+    r = p.revise(p.parse("John Smith"), family="de la Vega")
+    f = p.parse("John de la Vega")
+    for view in ("given", "family", "family_particles", "family_base"):
+        assert getattr(r, view) == getattr(f, view)
+    assert r.initials() == f.initials()
+
+
+def test_revise_replace_shared_semantics() -> None:
+    p = Parser()
+    n = p.parse("Dr. Juan de la Vega Jr.")
+    r = p.revise(n, given="José", suffix="")
+    assert r.given == "José"
+    assert r.suffix == ""               # empty value clears the field
+    assert r.original == n.original     # provenance unchanged
+    assert all(t.span is None for t in r.tokens_for("given"))
+    assert r.title == "Dr."             # untouched fields keep spans
+
+
+def test_revise_validation_matches_replace() -> None:
+    p = Parser()
+    n = p.parse("John Smith")
+    with pytest.raises(TypeError, match="takes a ParsedName"):
+        p.revise("John Smith", family="Doe")  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="unknown field 'last'"):
+        p.revise(n, last="Doe")
+    with pytest.raises(TypeError, match="must be a str"):
+        p.revise(n, family=None)  # type: ignore[arg-type]
+
+
+def test_revise_strips_the_fold_marker() -> None:
+    # middle_as_family's fold tag must not survive the harvest: a
+    # carried tag would make the family view reorder the value.
+    p = Parser(policy=Policy(middle_as_family=True))
+    r = p.revise(p.parse("Juan Perez"), family="Gabriel García Márquez")
+    assert r.family == "Gabriel García Márquez"
+
+
+def test_revise_sub_parse_structural_behavior() -> None:
+    # the docstring's three structural promises, pinned: delimiters
+    # never become tokens, marker words are consumed as in parsing,
+    # and the sub-parse's ambiguities are discarded.
+    p = Parser()
+    n = p.parse("John Smith")
+    assert p.revise(n, family="Smith (Jones)").family == "Smith Jones"
+    revised = p.revise(n, family="Mary née Smith")
+    assert revised.family == "Mary Smith"
+    assert revised.maiden == ""
+    assert p.revise(n, given="J.R. 'Bob'").given == "J.R. Bob"
+    assert p.revise(n, family="Smith (Jones").ambiguities == ()
