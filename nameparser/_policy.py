@@ -225,6 +225,10 @@ class Policy:
     def __post_init__(self) -> None:
         _reject_bare_string_order(self.name_order)
         order = tuple(_require_iterable(self.name_order, "name_order"))
+        # Sole rejection point for plain-string tuples: Role is a StrEnum,
+        # so the named-order membership check below compares EQUAL for
+        # ("given", "middle", "family") -- do not remove this loop as
+        # redundant.
         for element in order:
             if not isinstance(element, Role):
                 raise TypeError(

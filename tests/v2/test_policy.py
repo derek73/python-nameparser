@@ -52,6 +52,13 @@ def test_name_order_rejects_non_role_elements_with_type_error() -> None:
         Policy(name_order=(1, 2, 3))  # type: ignore[arg-type]
 
 
+def test_name_order_rejects_plain_string_tuples() -> None:
+    # Role is a StrEnum, so ("given", ...) == GIVEN_FIRST -- the
+    # isinstance loop is the only guard rejecting string elements.
+    with pytest.raises(TypeError, match="must be Role members"):
+        Policy(name_order=("given", "middle", "family"))  # type: ignore[arg-type]
+
+
 def test_patronymic_rules_coerce_and_reject() -> None:
     p = Policy(patronymic_rules=frozenset({"east-slavic"}))  # type: ignore[arg-type]
     assert p.patronymic_rules == frozenset({PatronymicRule.EAST_SLAVIC})

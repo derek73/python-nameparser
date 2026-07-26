@@ -24,12 +24,13 @@ if TYPE_CHECKING:
     from nameparser._parser import Parser
 
 
-class Role(Enum):
+class Role(StrEnum):
     """The seven fields of a parsed name, one per :class:`Token`.
     Declaration order is the canonical field order everywhere
-    (``as_dict()``, ``comparison_key()``, rendering). Pass a member to
-    :meth:`ParsedName.tokens_for`; a member's ``.value`` is the field's
-    string name (``Role.GIVEN.value == "given"``)."""
+    (``as_dict()``, ``comparison_key()``, rendering). A StrEnum, like
+    :class:`AmbiguityKind`: members ARE their string values, so
+    ``token.role == "given"`` compares directly and
+    ``str(Role.GIVEN) == "given"``."""
 
     # Declaration order IS the canonical field order (conventions §3):
     # every listing of the seven fields anywhere derives from this.

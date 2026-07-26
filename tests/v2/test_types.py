@@ -13,6 +13,18 @@ def test_role_declaration_order_is_canonical_field_order() -> None:
     ]
 
 
+def test_role_members_are_their_string_values() -> None:
+    # Role is a StrEnum, like AmbiguityKind: members compare, hash,
+    # and stringify as their field names.
+    assert Role.GIVEN == "given"
+    assert str(Role.FAMILY) == "family"
+    d: dict[str, int] = {Role.GIVEN: 1}
+    assert d["given"] == 1
+    assert isinstance(Role.GIVEN, str)
+    assert repr(Role.GIVEN) == "<Role.GIVEN: 'given'>"  # repr keeps .name form
+    assert Role("maiden") is Role.MAIDEN
+
+
 def test_token_construction_and_span_coercion() -> None:
     t = Token("Juan", (0, 4), Role.GIVEN)  # type: ignore[arg-type]
     assert t.span == Span(0, 4)
