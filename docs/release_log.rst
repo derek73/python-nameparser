@@ -2,7 +2,8 @@ Release Log
 ===========
 * 2.0.0 - unreleased
 
-    **2.0.0rc1 released 2026-07-23** for testing ahead of the final
+    **2.0.0rc2 released 2026-07-26** (rc1 on 2026-07-23) for testing
+    ahead of the final
     2.0.0. Install it with ``pip install --pre nameparser`` (a
     pre-release is not selected by a plain ``pip install``); please
     report anything the migration missed on `issue #284
