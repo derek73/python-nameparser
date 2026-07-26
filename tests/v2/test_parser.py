@@ -1,3 +1,4 @@
+import dataclasses
 import pickle
 
 import pytest
@@ -315,3 +316,43 @@ def test_each_suffix_or_name_branch_describes_itself() -> None:
     numeral = parse("John Smith V").ambiguities[0].detail
     assert "periods" not in numeral
     assert "numeral" in numeral and "initial" in numeral
+
+
+def test_parser_matches_uses_its_own_config() -> None:
+    p = Parser(lexicon=Lexicon.default().add(titles=["moff"]))
+    a = p.parse("Moff Tarkin")
+    # ParsedName.matches falls back to the DEFAULT parser for the str
+    # argument, which reads "Moff" as a given name -- mismatch.
+    assert not a.matches("Moff Tarkin")
+    # Parser.matches parses the str with the same config -- match.
+    assert p.matches(a, "Moff Tarkin")
+    assert p.matches("Moff Tarkin", "MOFF TARKIN")
+
+
+def test_parser_matches_rejects_wrong_types() -> None:
+    p = Parser()
+    with pytest.raises(TypeError, match="takes str or ParsedName"):
+        p.matches(42, "John Smith")  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="takes str or ParsedName"):
+        p.matches("John Smith", 42)  # type: ignore[arg-type]
+
+
+def test_parser_capitalized_uses_its_own_lexicon() -> None:
+    # pair-tuples, not a dict: the field is tuple-annotated and typed
+    # call sites pass canonical pairs (see _default_lexicon's note)
+    exceptions = dict(
+        Lexicon.default().capitalization_exceptions_map) | {"zqx": "ZqX"}
+    lex = dataclasses.replace(
+        Lexicon.default(),
+        capitalization_exceptions=tuple(sorted(exceptions.items())))
+    p = Parser(lexicon=lex)
+    n = p.parse("john zqx")
+    assert p.capitalized(n).family == "ZqX"
+    # ParsedName.capitalized() with no argument uses the DEFAULT
+    # lexicon, which has no such exception.
+    assert n.capitalized().family == "Zqx"
+
+
+def test_parser_capitalized_rejects_non_parsed_name() -> None:
+    with pytest.raises(TypeError, match="takes a ParsedName"):
+        Parser().capitalized("john smith")  # type: ignore[arg-type]

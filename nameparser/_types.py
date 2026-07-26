@@ -565,7 +565,10 @@ class ParsedName:
                 parser: Parser | None = None) -> bool:
         """Component-wise case-insensitive comparison (the semantic
         layer; __eq__ stays strict). A str argument is parsed with
-        `parser`, or the default parser when None."""
+        `parser`, or with the DEFAULT parser when None -- if this name
+        came from a custom Parser, pass that parser (or use
+        Parser.matches); otherwise the comparison silently runs under
+        the wrong configuration."""
         if isinstance(other, str):
             import nameparser._parser as _parser
             active = parser if parser is not None else _parser._default_parser()
@@ -608,7 +611,9 @@ class ParsedName:
                     force: bool = False) -> ParsedName:
         """Case-fixing transform -> new ParsedName, same spans, new
         token texts. Needs a lexicon for capitalization_exceptions and
-        particle rules; None uses the default lexicon. force=False
-        preserves mixed-case input (v1 parity). Idempotent."""
+        particle rules; None uses the DEFAULT lexicon -- if this name
+        came from a custom Parser, pass its lexicon or use
+        Parser.capitalized. force=False preserves mixed-case input
+        (v1 parity). Idempotent."""
         import nameparser._render as _render
         return _render.capitalized(self, lexicon, force=force)
