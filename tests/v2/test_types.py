@@ -415,3 +415,11 @@ def test_tokens_for_unknown_role_raises_listing_roles() -> None:
 def test_tokens_for_non_coercible_raises() -> None:
     with pytest.raises(ValueError, match="unknown Role 3"):
         parse("John Smith").tokens_for(3)  # type: ignore[arg-type]
+
+
+def test_stable_tags_is_public_api() -> None:
+    import nameparser
+    assert "STABLE_TAGS" in nameparser.__all__
+    # the documented stable tag vocabulary -- these four values are API
+    assert nameparser.STABLE_TAGS == frozenset(
+        {"particle", "conjunction", "initial", "joined"})

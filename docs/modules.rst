@@ -23,6 +23,17 @@ Results
 .. autoclass:: nameparser.Token
    :members:
 
+.. py:data:: nameparser.STABLE_TAGS
+   :value: frozenset({"particle", "conjunction", "initial", "joined"})
+
+   The four :attr:`Token.tags <nameparser.Token.tags>` values that are
+   stable API: ``particle`` (a family-name particle, "de"/"van"),
+   ``conjunction`` (a joining word, "and"/"y"), ``initial`` (an
+   initial-shaped word, "J."), and ``joined`` (a continuation of the
+   previous token within one merged piece, so the suffix view renders
+   "Ph. D." as one credential). Every other tag is namespaced
+   (``vocab:...``) and unstable — never match against those.
+
 .. autoclass:: nameparser.Span
    :members:
 

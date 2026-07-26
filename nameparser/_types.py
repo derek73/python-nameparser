@@ -75,10 +75,13 @@ class Span(NamedTuple):
         )
 
 
-#: Stable, documented tag vocabulary (API). All other tags are
-#: namespaced ("vocab:...", "patronymic:...") and unstable. "joined"
-#: marks a continuation token of a merged piece (the ph-d merge) and
-#: drives the suffix view's space-vs-comma join.
+#: The four :attr:`Token.tags` values that are stable API. "particle"
+#: marks a family-name particle ("de", "van"); "conjunction" a joining
+#: word ("and", "y"); "initial" an initial-shaped word ("J.", "Q");
+#: "joined" a continuation of the previous token within one merged
+#: piece ("Ph." + "D."), which the suffix view joins with a space
+#: instead of ", ". Every other tag is namespaced ("vocab:...") and is
+#: unstable debugging provenance -- never match against those.
 STABLE_TAGS = frozenset({"particle", "conjunction", "initial", "joined"})
 
 #: The one sanctioned view-reorder marker (namespaced = unstable API).
@@ -155,10 +158,10 @@ class Token:
     span: Span | None
     #: The field this token belongs to.
     role: Role
-    #: Classification labels. Exactly the four in STABLE_TAGS
-    #: ("particle", "conjunction", "initial", "joined") are API;
-    #: namespaced tags like "vocab:..." are unstable debugging
-    #: provenance -- never match against them.
+    #: Classification labels. Exactly the four members of
+    #: :data:`~nameparser.STABLE_TAGS` ("particle", "conjunction",
+    #: "initial", "joined") are API; namespaced tags like "vocab:..."
+    #: are unstable debugging provenance -- never match against them.
     tags: frozenset[str] = frozenset()
 
     # in the class body so @dataclass(slots=True) keeps them
