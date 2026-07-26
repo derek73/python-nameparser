@@ -7,7 +7,7 @@ from nameparser import Lexicon, Locale, Parser, Policy, PolicyPatch, parse, pars
 from nameparser._policy import (
     FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, PatronymicRule,
 )
-from nameparser._types import AmbiguityKind
+from nameparser._types import AmbiguityKind, Role
 
 
 def test_parser_defaults_and_properties() -> None:
@@ -389,6 +389,7 @@ def test_revise_replace_shared_semantics() -> None:
     r = p.revise(n, given="José", suffix="")
     assert r.given == "José"
     assert r.suffix == ""               # empty value clears the field
+    assert p.revise(n, suffix="()").suffix == ""   # punctuation-only too
     assert r.original == n.original     # provenance unchanged
     assert all(t.span is None for t in r.tokens_for("given"))
     assert r.title == "Dr."             # untouched fields keep spans
@@ -425,3 +426,13 @@ def test_revise_sub_parse_structural_behavior() -> None:
     assert revised.maiden == ""
     assert p.revise(n, given="J.R. 'Bob'").given == "J.R. Bob"
     assert p.revise(n, family="Smith (Jones").ambiguities == ()
+
+
+def test_revise_forces_the_named_role_on_every_harvested_token() -> None:
+    # the sub-parse reads "Dr." as a title and "Jr." as a suffix; the
+    # named field's role must win for every token or the family view
+    # silently drops them
+    p = Parser()
+    r = p.revise(p.parse("John Smith"), family="Dr. Vega Jr.")
+    assert r.family == "Dr. Vega Jr."
+    assert all(t.role is Role.FAMILY for t in r.tokens_for(Role.FAMILY))

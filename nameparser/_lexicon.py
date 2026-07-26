@@ -537,6 +537,10 @@ class Lexicon:
             # remove() never reaches __post_init__ with the dead entry
             # (it is subtracted out here), so it stays silent -- correct,
             # since a removal stores nothing a warning could be about.
+            # That silence covers the entry BEING REMOVED only: a
+            # different multi-word entry still stored re-warns from the
+            # derived instance's __post_init__, since the warning is
+            # per-construction by design.
             normalized = _normset(words, name, warn=False)
             updates[name] = (current | normalized if op == "add"
                              else current - normalized)

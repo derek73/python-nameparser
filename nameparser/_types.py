@@ -30,7 +30,9 @@ class Role(StrEnum):
     (``as_dict()``, ``comparison_key()``, rendering). A StrEnum, like
     :class:`AmbiguityKind`: members ARE their string values, so
     ``token.role == "given"`` compares directly and
-    ``str(Role.GIVEN) == "given"``."""
+    ``str(Role.GIVEN) == "given"``. Members order as strings, so
+    ``sorted()`` yields alphabetical order -- iterate ``Role`` itself
+    for the canonical order."""
 
     # Declaration order IS the canonical field order (conventions §3):
     # every listing of the seven fields anywhere derives from this.
@@ -559,6 +561,17 @@ class ParsedName:
         replacement tokens in at the role's first position (appended in
         canonical order when the role had no tokens); drop ambiguities
         whose referents were replaced."""
+        # Private contract, made self-enforcing: a token filed under a
+        # key that is not its own role is the one way this shared tail
+        # could build a semantically wrong ParsedName (the splice keys
+        # on the mapping, the views key on the token).
+        for role, toks in replaced.items():
+            for tok in toks:
+                if tok.role is not role:
+                    raise ValueError(
+                        f"replacement token {tok.text!r} has role "
+                        f"{tok.role.value}, not {role.value}"
+                    )
         new_tokens: list[Token] = []
         emitted: set[Role] = set()
         for tok in self.tokens:

@@ -535,3 +535,24 @@ def test_multiword_warning_points_at_caller_line() -> None:
         Lexicon.empty().add(titles=["zqx zqy"])
     assert len(w) >= 2
     assert all(x.filename == __file__ for x in w)
+
+
+def test_add_warns_exactly_once() -> None:
+    # the warn=False plumbing exists to prevent the double warning
+    # (_edit's pass + the new instance's __post_init__); count it
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        Lexicon.empty().add(titles=["zqx zqy"])
+    assert len([x for x in w if "matched one word" in str(x.message)]) == 1
+
+
+def test_remove_of_a_stored_dead_entry_is_silent() -> None:
+    # the scenario the design argues for: user got the warning, now
+    # removes the dead entry -- silently. (An UNRELATED edit on a
+    # lexicon still holding one re-warns; that is per-construction
+    # warning, by design.)
+    with pytest.warns(UserWarning):
+        dirty = Lexicon.empty().add(titles=["zqx zqy"])
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        dirty.remove(titles=["zqx zqy"])

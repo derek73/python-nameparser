@@ -435,3 +435,20 @@ def test_particle_tag_marks_vocabulary_membership_not_role() -> None:
     # particle read as a given name still carries it (STABLE_TAGS docs)
     tok = parse("Van Johnson").tokens_for(Role.GIVEN)[0]
     assert "particle" in tok.tags
+
+
+def test_str_enum_value_sets_are_pairwise_disjoint() -> None:
+    # three StrEnums cross-compare by value; a future collision would
+    # make unrelated members equal
+    from nameparser import AmbiguityKind, PatronymicRule
+    role = {m.value for m in Role}
+    kind = {m.value for m in AmbiguityKind}
+    rule = {m.value for m in PatronymicRule}
+    assert not (role & kind) and not (role & rule) and not (kind & rule)
+
+
+def test_with_field_tokens_rejects_mismatched_roles() -> None:
+    name = parse("John Smith")
+    with pytest.raises(ValueError, match="has role family, not given"):
+        name._with_field_tokens(
+            {Role.GIVEN: (Token("x", None, Role.FAMILY),)})
