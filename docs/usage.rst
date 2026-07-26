@@ -443,6 +443,13 @@ consumed as they would be in a parse):
     >>> revised.initials()
     'J. V. S.'
 
+``revise()`` has two siblings on :class:`~nameparser.Parser`:
+:meth:`Parser.matches() <nameparser.Parser.matches>` and
+:meth:`Parser.capitalized() <nameparser.Parser.capitalized>`. Those
+two matter when you have built a custom parser — the
+:class:`~nameparser.ParsedName` methods of the same names fall back
+to the *default* configuration for str or omitted arguments.
+
 Command line
 ------------
 
