@@ -85,6 +85,8 @@ def test_policy_patch_repr_shows_only_set_fields() -> None:
     PolicyPatch(strip_emoji=False),
     Locale("xx", Lexicon.empty()),
     Locale("xx", Lexicon.empty(), PolicyPatch(middle_as_family=True)),
+    Lexicon.default(),
+    Lexicon.empty(),
     Parser(),
 ])
 def test_config_reprs_never_leak_the_unset_sentinel(obj: object) -> None:

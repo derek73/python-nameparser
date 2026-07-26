@@ -176,7 +176,8 @@ signal to act on; do not read an empty one as a guarantee.
 :class:`Tokens <nameparser.Token>` also carry tags — a second, independent label alongside their
 role, recording how a token was classified rather than what part of
 the name it belongs to — but only a handful of them are part of the
-stable API: ``particle``, ``conjunction``, ``initial``, and ``joined``.
+stable API, collected in :data:`~nameparser.STABLE_TAGS`: ``particle``,
+``conjunction``, ``initial``, and ``joined``.
 Any tag written with a namespace prefix, like ``vocab:...``, is
 provenance information for debugging how a token got classified — it
 can change shape between releases and isn't something to match against

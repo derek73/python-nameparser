@@ -113,6 +113,8 @@ Release Log
     - ``ParsedName.as_dict()``'s ``include_empty`` is keyword-only
     - ``HumanName`` subscripting accepts ``Role`` members
     - The eight multi-word vocabulary entries that could never match were repaired (``chargé d'affaires`` split; seven credential acronyms removed), and storing a new multi-word entry now warns; those eight are dropped silently, not warned about, when a pre-2.0 ``Constants`` pickle that froze them is restored
+    - ``PolicyPatch``'s repr shows only the fields a patch sets, instead of all nine with UNSET sentinels
+    - New since rc1: ``STABLE_TAGS``, ``Policy.patched()``, ``Parser.matches()``, ``Parser.capitalized()``, and ``Parser.revise()`` -- see the API section above
 
 * 1.4.0 - July 12, 2026
 
