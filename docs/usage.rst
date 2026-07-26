@@ -411,13 +411,37 @@ everything else carried over.
     >>> name.title
     ''
 
-``replace()`` splits values on whitespace and its tokens carry no
-vocabulary tags, so tag-driven views degrade (``family_particles``
-empties, particles regain their initials). When that matters, use
-:meth:`Parser.revise() <nameparser.Parser.revise>` — the same
-operation, with each value classified by the parser's vocabulary,
-which also means delimiters and marker words in the value are consumed
-as they would be in a parse.
+``replace()`` splits values on whitespace into plain, untagged
+tokens — the vocabulary knowledge a parse would have about the new
+text is not there. The views that depend on tags degrade: the parser
+no longer knows ``de la`` are particles, so ``family_particles``
+empties and the particles start contributing initials.
+
+.. doctest::
+
+    >>> name.family_particles
+    'de la'
+    >>> replaced = name.replace(family="de la Vega Smith")
+    >>> replaced.family_particles
+    ''
+    >>> replaced.initials()
+    'J. d. l. V. S.'
+
+:meth:`Parser.revise() <nameparser.Parser.revise>` is the same
+operation with each value classified by the parser's vocabulary, so
+the correction behaves like a fresh parse of the corrected name
+(which also means delimiters and marker words in the value are
+consumed as they would be in a parse):
+
+.. doctest::
+
+    >>> from nameparser import Parser
+    >>> parser = Parser()
+    >>> revised = parser.revise(name, family="de la Vega Smith")
+    >>> revised.family_particles
+    'de la'
+    >>> revised.initials()
+    'J. V. S.'
 
 Command line
 ------------

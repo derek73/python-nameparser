@@ -269,7 +269,12 @@ listed below.
 To apply a :class:`PolicyPatch <nameparser.PolicyPatch>` directly --
 without going through a locale pack -- call :meth:`Policy.patched()
 <nameparser.Policy.patched>`:
-``Policy().patched(PolicyPatch(middle_as_family=True))``.
+
+.. doctest::
+
+    >>> from nameparser import Policy, PolicyPatch
+    >>> Policy().patched(PolicyPatch(middle_as_family=True))
+    Policy(middle_as_family=True)
 
 Family-first name order
 ~~~~~~~~~~~~~~~~~~~~~~~~
