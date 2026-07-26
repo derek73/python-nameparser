@@ -493,7 +493,11 @@ class ParsedName:
 
     # -- structured access ----------------------------------------------
 
-    def tokens_for(self, role: Role) -> tuple[Token, ...]:
+    def tokens_for(self, role: Role | str) -> tuple[Token, ...]:
+        """The tokens of one field, in document order. Takes a Role
+        member or its string value; anything else raises ValueError
+        naming the valid roles."""
+        role = _coerce_enum(role, Role, "Role", "roles")
         return tuple(t for t in self.tokens if t.role is role)
 
     def as_dict(self, include_empty: bool = True) -> dict[str, str]:

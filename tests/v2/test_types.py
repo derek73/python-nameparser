@@ -2,6 +2,7 @@ from collections.abc import Iterable
 
 import pytest
 
+from nameparser import parse
 from nameparser._types import (
     STABLE_TAGS, Ambiguity, AmbiguityKind, ParsedName, Role, Span, Token,
 )
@@ -398,3 +399,19 @@ def test_setstate_rejects_layout_skew_on_frozen_types() -> None:
     bad_pn["zq_future"] = ()
     with pytest.raises(ValueError, match="zq_future"):
         ParsedName.__new__(ParsedName).__setstate__(bad_pn)
+
+
+def test_tokens_for_accepts_role_string() -> None:
+    name = parse("Juan de la Vega")
+    assert name.tokens_for("family") == name.tokens_for(Role.FAMILY)
+    assert name.tokens_for("given") == name.tokens_for(Role.GIVEN)
+
+
+def test_tokens_for_unknown_role_raises_listing_roles() -> None:
+    with pytest.raises(ValueError, match=r"unknown Role 'last'.*valid roles: title, given, middle"):
+        parse("John Smith").tokens_for("last")
+
+
+def test_tokens_for_non_coercible_raises() -> None:
+    with pytest.raises(ValueError, match="unknown Role 3"):
+        parse("John Smith").tokens_for(3)  # type: ignore[arg-type]

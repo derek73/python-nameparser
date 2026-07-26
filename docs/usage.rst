@@ -385,6 +385,8 @@ so you can always get back to the text a field came from:
     >>> [t.text for t in name.tokens_for(Role.FAMILY)]
     ['de', 'la', 'Vega']
 
+A role's string name works too: ``name.tokens_for("family")``.
+
 Correcting a parse
 --------------------
 
