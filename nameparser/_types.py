@@ -503,7 +503,7 @@ class ParsedName:
         role = _coerce_enum(role, Role, "Role", "roles")
         return tuple(t for t in self.tokens if t.role is role)
 
-    def as_dict(self, include_empty: bool = True) -> dict[str, str]:
+    def as_dict(self, *, include_empty: bool = True) -> dict[str, str]:
         # _text_for handles the suffix ", "-join (single-role SUFFIX call)
         d = {role.value: self._text_for(role) for role in Role}
         if not include_empty:

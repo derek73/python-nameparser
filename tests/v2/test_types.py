@@ -423,3 +423,8 @@ def test_stable_tags_is_public_api() -> None:
     # the documented stable tag vocabulary -- these four values are API
     assert nameparser.STABLE_TAGS == frozenset(
         {"particle", "conjunction", "initial", "joined"})
+
+
+def test_as_dict_include_empty_is_keyword_only() -> None:
+    with pytest.raises(TypeError):
+        parse("John Smith").as_dict(False)  # type: ignore[misc]
