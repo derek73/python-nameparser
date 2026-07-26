@@ -83,6 +83,15 @@ python_classes = ["*Tests", "*TestCase"]
 # Fail if an xfail-marked test unexpectedly passes, so a fixed/regressed
 # expectation surfaces instead of silently turning into an xpass.
 xfail_strict = true
+# Unexpected warnings are failures: warnings are load-bearing API in 2.0
+# (the multi-word-entry UserWarning, the facade deprecation warnings), and
+# without this a warning regression is invisible to the suite -- a real
+# bug (eight spurious warnings on restoring a 1.4 Constants pickle)
+# shipped to review this way. Tests that EXPECT a warning assert it with
+# pytest.warns; targeted ignores below need a comment justifying each.
+filterwarnings = [
+    "error",
+]
 
 [tool.ruff.lint]
 extend-select = [
