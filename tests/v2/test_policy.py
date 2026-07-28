@@ -1,4 +1,5 @@
 import dataclasses
+from collections.abc import Iterator
 
 import pytest
 
@@ -559,3 +560,87 @@ def test_segment_scripts_patch_unions() -> None:
     stringly = apply_patch(
         Policy(), PolicyPatch(segment_scripts={"han"}))  # type: ignore[arg-type]
     assert all(isinstance(s, Script) for s in stringly.segment_scripts)
+
+
+# One item per field, used to build a bad_iter() below that yields a
+# legitimate first entry, then raises -- forcing consumption past the
+# iter()-probe stage so a rewrite-vs-propagate bug can only be caught
+# by actually running the generator.
+_PROPAGATION_FIELD_VALUES = {
+    "segment_scripts": Script.HAN,
+    "patronymic_rules": PatronymicRule.TURKIC,
+    "script_orders": (Script.HAN, FAMILY_FIRST),
+    "nickname_delimiters": ("<", ">"),
+    "maiden_delimiters": ("[", "]"),
+    "extra_suffix_delimiters": "/",
+}
+
+
+@pytest.mark.parametrize("cls,field", [
+    (Policy, "segment_scripts"),
+    (Policy, "patronymic_rules"),
+    (Policy, "script_orders"),
+    (Policy, "nickname_delimiters"),
+    (Policy, "maiden_delimiters"),
+    (Policy, "extra_suffix_delimiters"),
+    (PolicyPatch, "segment_scripts"),
+    (PolicyPatch, "patronymic_rules"),
+    (PolicyPatch, "script_orders"),
+    (PolicyPatch, "nickname_delimiters"),
+    (PolicyPatch, "maiden_delimiters"),
+    (PolicyPatch, "extra_suffix_delimiters"),
+])
+def test_caller_generator_errors_propagate_untouched(
+        cls: type, field: str) -> None:
+    """A TypeError raised INSIDE a caller's generator, after it has
+    already yielded a legitimate value, must reach the caller with its
+    own message -- not be rewritten as "not an iterable" by whichever
+    guard happens to consume the generator to check its shape.
+
+    Probe-only-in-try is what makes this true: iter() succeeds (so the
+    guard doesn't fire), and only the SEPARATE, unguarded consumption
+    step sees the generator's own exception. PolicyPatch.script_orders
+    is the scalar (non-union) field with its own canonicalization
+    block, distinct from the shared union loop the other fields go
+    through below -- it needs the identical probe/consume split, since
+    deferring a caller-generator error to apply time is impossible
+    once the generator is already exhausted (verified: the error would
+    otherwise be lost for good, not merely delayed)."""
+    def bad_iter() -> Iterator[object]:
+        yield _PROPAGATION_FIELD_VALUES[field]
+        raise TypeError("boom")
+
+    with pytest.raises(TypeError, match="boom"):
+        cls(**{field: bad_iter()})
+
+
+def test_policy_patch_script_orders_non_iterable_still_defers_to_apply() -> None:
+    # The deferral contract this fix must NOT break: a genuinely
+    # non-iterable script_orders value is not a caller-generator error
+    # -- it fails the iter() probe itself, so PolicyPatch construction
+    # stays lazy (and hashable) and Policy's own guard raises the
+    # curated message once the patch is actually applied.
+    patch = PolicyPatch(script_orders=5)  # type: ignore[arg-type]
+    assert isinstance(hash(patch), int)
+    with pytest.raises(TypeError, match="script_orders must be a mapping"):
+        apply_patch(Policy(), patch)
+
+
+def test_policy_patch_one_shot_bad_tail_defers_without_silent_drop() -> None:
+    # The silent-drop repro: a ONE-SHOT generator whose first item is a
+    # good pair and whose second is a bad shape (not caller-generator
+    # code raising -- just a malformed entry). PolicyPatch construction
+    # must not raise (this is a shape problem, deferred to apply time,
+    # like the bytes case), but the exhausted-generator hole meant
+    # apply_patch used to silently store () -- "opt out of per-script
+    # ordering" -- with NO error anywhere, dropping the Han/Hangul
+    # family-first defaults. The list form of the identical input
+    # already raised correctly; only the one-shot form leaked.
+    gen = (x for x in [(Script.HAN, FAMILY_FIRST), 5])
+    patch = PolicyPatch(script_orders=gen)  # type: ignore[arg-type]
+    # Materialized into a re-iterable tuple, not left as the exhausted
+    # generator -- Policy can still quote the caller's bad entry (5).
+    assert patch.script_orders == ((Script.HAN, FAMILY_FIRST), 5)
+    with pytest.raises(TypeError,
+                       match=r"script_orders entries must be .* got 5"):
+        apply_patch(Policy(), patch)

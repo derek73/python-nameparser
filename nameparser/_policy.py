@@ -285,13 +285,19 @@ def _validated_script_orders(
         )
     raw = value.items() if isinstance(value, Mapping) else value
     try:
-        # a non-iterable raises TypeError, caught below
-        entries: tuple[Any, ...] = tuple(raw)  # type: ignore[arg-type]
+        # Probe with iter() only (mirrors the patronymic_rules probe in
+        # Policy.__post_init__, and _validated_segment_scripts below):
+        # a genuine non-iterable is caught here and gets the curated
+        # message below, while an exception raised INSIDE a caller's
+        # generator during consumption (the tuple() below) must
+        # propagate untouched, not be rewritten as "not a mapping".
+        raw_iter = _require_iterable(raw, "script_orders")  # type: ignore[arg-type]
     except TypeError:
         raise TypeError(
             f"script_orders must be a mapping of Script to order, "
             f"got {value!r}"
         ) from None
+    entries: tuple[Any, ...] = tuple(raw_iter)
     canonical: dict[Script, tuple[Role, Role, Role]] = {}
     for entry in entries:
         try:
@@ -631,13 +637,80 @@ class PolicyPatch:
         if self.script_orders is not UNSET and not isinstance(
                 self.script_orders, str):
             raw = self.script_orders
+            # Mapping.items() is always iterable, so it needs no probe;
+            # only the non-Mapping branch can fail the iter() check below.
             pairs = raw.items() if isinstance(raw, Mapping) else raw
+            # Four outcomes share this block, and only one of them
+            # should propagate immediately:
+            #  1. raw itself isn't iterable at all (script_orders=5) --
+            #     caught by the iter() probe. Shape problem, defers to
+            #     apply time, where Policy's own guard raises the
+            #     curated message ("Policy validates ... at apply").
+            #  2. an already-yielded PAIR has a bad shape (a bare int
+            #     from a shredded bytes buffer, e.g. b"han" iterating
+            #     to 104) -- caught around _canonical_script_pair
+            #     below. Also a shape problem: abort the whole
+            #     conversion and leave script_orders as a RE-ITERABLE
+            #     value (see case 4) Policy's curated message (e.g. the
+            #     decode-first bytes hint, or the bad-pair message) can
+            #     still quote at apply time.
+            #  3. the caller's OWN exception, raised by their
+            #     generator while it is being consumed -- this is not
+            #     a shape problem this guard exists to catch, and
+            #     deferral is impossible anyway: by the time
+            #     apply_patch reaches Policy.__post_init__, the same
+            #     generator is already exhausted, so catching this
+            #     here would lose the error for good rather than
+            #     merely delay it. Consuming a one-shot iterator
+            #     therefore runs UNGUARDED (case 4), so this
+            #     propagates on its own terms.
+            #  4. a ONE-SHOT iterator (iter(x) is x -- generators,
+            #     map/zip/filter objects, ...) cannot be safely
+            #     re-iterated once consumed. Deferring case 2 by
+            #     leaving it as originally written -- fine for
+            #     re-iterable inputs (bytes, list, dict, tuple) -- would
+            #     leave Policy re-validating an EXHAUSTED generator at
+            #     apply time: iterating it again silently yields
+            #     nothing, storing () ("opt out of per-script
+            #     ordering") and dropping the Han/Hangul family-first
+            #     defaults with NO error anywhere. So a one-shot input
+            #     is eagerly materialized into a tuple first (case 3's
+            #     unguarded consumption), and case 2's deferral stores
+            #     THAT re-iterable tuple instead of the original,
+            #     exhausted generator.
             try:
-                object.__setattr__(
-                    self, "script_orders",
-                    tuple(_canonical_script_pair(p) for p in pairs))
+                pairs_iter = iter(pairs)
             except TypeError:
-                pass  # Policy validates (and raises properly) at apply
+                pairs_iter = None  # non-iterable: deferred, case 1
+            if pairs_iter is not None:
+                # mypy sees pairs' declared type (tuple[...] | ItemsView)
+                # as never identical to iter(pairs)'s Iterator type, but
+                # at runtime pairs can be anything iterable a caller
+                # wrote (a generator especially) -- the whole point of
+                # this check.
+                one_shot = pairs_iter is pairs  # type: ignore[comparison-overlap]
+                items: Iterable[Any] = tuple(pairs_iter) if one_shot else pairs
+                canonical = []
+                deferred = False
+                for item in items:
+                    try:
+                        canonical.append(_canonical_script_pair(item))
+                    except TypeError:
+                        deferred = True  # bad pair shape: case 2
+                        break
+                if not deferred:
+                    object.__setattr__(
+                        self, "script_orders", tuple(canonical))
+                elif one_shot:
+                    # items is already the materialized (re-iterable)
+                    # tuple built above -- store it so Policy can
+                    # re-examine and quote it at apply time, instead of
+                    # the original, now-exhausted generator.
+                    object.__setattr__(self, "script_orders", items)
+                # else: re-iterable input (bytes/list/dict/tuple/...) is
+                # left exactly as originally written; Policy can freely
+                # re-iterate it at apply time and quote the caller's
+                # value there -- unchanged from the prior behavior.
         for f in dataclasses.fields(self):
             if f.metadata.get("compose") != "union":
                 continue
