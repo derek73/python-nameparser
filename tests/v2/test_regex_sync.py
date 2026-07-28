@@ -8,8 +8,16 @@ hand" comment. Nothing previously enforced that promise: if
 config/regexes.py changed, the copies would silently diverge with no
 CI signal. Tests may legally import both sides (test_layering.py's own
 convention), so this module is where the promise gets checked.
+
+Layering is the usual reason for a copy but not the only one, so this
+module's scope is the PROMISE rather than that one pair of packages:
+the comma-set pin below reads _pipeline._state instead of config, and
+the last test reaches outside the package altogether, to a TOML file
+that could not import a Python constant if it wanted to.
 """
 import re
+import tomllib
+from pathlib import Path
 
 import pytest
 
@@ -149,3 +157,42 @@ def test_comma_char_matches_the_pipeline_comma_set() -> None:
     from nameparser._pipeline._state import COMMA_CHARS
 
     assert set(_render._COMMA_CHAR.pattern.strip("[]")) == set(COMMA_CHARS)
+
+
+def test_differential_cjk_rule_matches_the_script_ranges() -> None:
+    """The #271 rule in tools/differential/expected_changes.toml hand-
+    copies the CJK spans from _vocab._SCRIPT_RANGES into a character
+    class. A TOML file cannot import the constant, so this is the one
+    copy with no possible alternative -- and the one whose divergence
+    is quietest, because the harness is run by hand rather than in CI.
+
+    Both failure directions matter, which is why this compares sets
+    rather than checking coverage. A span MISSING from the class turns
+    an intended #271 change into an UNEXPLAINED diff (a release
+    blocker for the wrong reason); a span that should not be there
+    silently classifies a real regression as intended, which is the
+    failure the whole harness exists to prevent.
+
+    Han's astral block is out of scope on both sides. The rule omits
+    it deliberately -- no corpus name reaches it, see the comment
+    there -- so the comparison runs over the BMP spans only, and a new
+    BMP script added to _SCRIPT_RANGES still fails here until the rule
+    covers it.
+    """
+    toml_path = (Path(__file__).parents[2] / "tools" / "differential"
+                 / "expected_changes.toml")
+    rules = tomllib.loads(toml_path.read_text())["change"]
+    matched = [r for r in rules if "#271" in r["issue"]]
+    assert len(matched) == 1, (
+        f"expected exactly one #271 rule in {toml_path.name}, "
+        f"found {len(matched)}")
+    declared = {
+        (int(lo, 16), int(hi, 16))
+        for lo, hi in re.findall(r"\\u([0-9A-Fa-f]{4})-\\u([0-9A-Fa-f]{4})",
+                                 matched[0]["name_regex"])}
+    expected = {span
+                for spans in _vocab._SCRIPT_RANGES.values()
+                for span in spans if span[1] <= 0xFFFF}
+    assert declared == expected, (
+        f"{toml_path.name}'s #271 name_regex declares {sorted(declared)}; "
+        f"_SCRIPT_RANGES' BMP spans are {sorted(expected)}")

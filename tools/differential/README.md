@@ -116,6 +116,15 @@ matches only if the observed diff fields are a subset of this list).
 Keep both as tight as the actual diff allows -- a loose rule can mask
 a real regression.
 
+Rules are tried in file order and the first match wins, so a rule
+narrowed by `name_regex` has to sit **above** any rule narrowed only
+by `fields`. The `fields`-only rules are broad by construction: a
+`fields = ["first", "last", "suffix"]` rule claims every diff confined
+to those three columns, whatever the name looked like. Adding the
+`fix(#271)` CJK rule at the end of the file was enough to make it dead
+on arrival -- `fix(suffix-routing)` claimed all of its diffs first, and
+labelled them as something else.
+
 Some entries in the seed list are for behavior families that this
 particular corpus (pre-M12 v1 test strings) happens not to contain any
 example of (e.g. custom suffix-delimiter rendering, which only fires

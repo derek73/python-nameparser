@@ -3,6 +3,40 @@
 # S5). Rules are seeded from docs/superpowers/plans/notes-m12-diffs.md
 # and the `classification="fix(...)"` rows in tests/v2/cases.py; keep
 # each entry's `name_regex`/`fields` as tight as the diff allows.
+# ORDER MATTERS: classify() takes the FIRST matching rule, so a rule
+# narrowed by `name_regex` must sit ahead of any rule narrowed only by
+# `fields`, or the broad one silently claims its diffs under the wrong
+# label. See the #271 entry immediately below for a case that did.
+
+[[change]]
+issue = "fix(#271) native-script CJK: family-first order + hangul segmentation"
+# '毛 泽东', '김민준': script_orders flips first/last for a name written
+# wholly in Han or Hangul, and the Korean surnames that now ship as
+# default vocabulary additionally split an unspaced hangul token into
+# last + first. Seeded from the fix(#271) rows in tests/v2/cases.py.
+#
+# Scoped by script, which is exactly the scope of the behavior --
+# neither change can touch a name with no CJK character in it. Han's
+# astral block (U+20000-U+323AF) is deliberately left out of the class:
+# no name in either corpus reaches it, and a rule should be no wider
+# than the diffs it has to explain. Extend it -- and the sync pin in
+# tests/v2/test_regex_sync.py, which fails if the two disagree -- if
+# one ever does.
+#
+# FIRST on purpose, and this position is load-bearing. classify()
+# returns the first matching rule, and 'fix(suffix-routing)' below
+# declares no name_regex at all -- so with this rule anywhere after it,
+# every CJK diff was classified as a suffix-routing change instead
+# (verified: all four names of a synthetic CJK corpus landed there).
+# The label would have been wrong and this rule dead. A rule narrowed
+# by name_regex belongs ahead of every rule narrowed only by `fields`.
+#
+# Expected to match nothing against the current corpora, which contain
+# no CJK at all: build_issues_corpus.py requires an internal space, and
+# unspaced names are the shape this classifies. Kept for the reason the
+# suffix-delimiter rule below is kept -- ready the moment a name lands.
+name_regex = "[\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3]"
+fields = ["first", "middle", "last"]
 
 [[change]]
 issue = "fix(#274) maiden markers consumed"
