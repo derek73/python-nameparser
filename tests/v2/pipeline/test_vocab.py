@@ -1,5 +1,8 @@
 from nameparser._lexicon import Lexicon
-from nameparser._pipeline._vocab import is_initial, is_suffix_lenient, is_suffix_strict
+from nameparser._pipeline._vocab import (
+    is_initial, is_suffix_lenient, is_suffix_strict, single_script,
+)
+from nameparser._policy import Script
 
 _LEX = Lexicon(
     suffix_acronyms=frozenset({"phd", "ma"}),
@@ -38,3 +41,29 @@ def test_strict_excludes_bare_ambiguous_even_when_in_acronyms() -> None:
     # mirrors the real data shape: ambiguous is a SUBSET of acronyms
     assert not is_suffix_strict("Ma", _LEX)
     assert is_suffix_strict("M.A.", _LEX)
+
+
+def test_single_script_requires_every_char_in_one_script() -> None:
+    assert single_script("毛泽东") is Script.HAN
+    assert single_script("諸葛") is Script.HAN          # traditional
+    assert single_script("김민준") is Script.HANGUL
+    assert single_script("Smith") is None
+    assert single_script("毛zedong") is None            # mixed
+    assert single_script("毛김") is None                 # mixed CJK
+    assert single_script("イチロー") is None             # kana: not HAN
+
+
+def test_single_script_range_edges() -> None:
+    # one char at each declared bound, and a neighbour outside
+    assert single_script("㐀") is Script.HAN    # Ext A first
+    assert single_script("䶿") is Script.HAN    # Ext A last
+    assert single_script("䷀") is None          # hexagram, not Han
+    # U+F900 is a COMPATIBILITY ideograph; it renders identically to
+    # the URO 豈 (U+8C48) it decomposes to, so spell it as an escape
+    # or this assertion silently tests the URO range instead
+    assert single_script("\uf900") is Script.HAN
+    assert single_script("\U00020bb7") is Script.HAN  # Ext B (𠮷)
+    assert single_script("가") is Script.HANGUL
+    assert single_script("힣") is Script.HANGUL  # last ASSIGNED syllable
+    assert single_script("ힰ") is None          # jungseong, not a syllable
+    assert single_script("ㄱ") is None          # bare jamo

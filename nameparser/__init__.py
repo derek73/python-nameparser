@@ -18,6 +18,7 @@ from nameparser._policy import (
     PatronymicRule,
     Policy,
     PolicyPatch,
+    Script,
 )
 from nameparser._types import (
     STABLE_TAGS,
@@ -35,7 +36,7 @@ __all__ = [
     # v2 core
     "Span", "Role", "Token", "Ambiguity", "AmbiguityKind", "ParsedName",
     "STABLE_TAGS",
-    "Lexicon", "Policy", "PolicyPatch", "PatronymicRule", "UNSET",
+    "Lexicon", "Policy", "PolicyPatch", "PatronymicRule", "Script", "UNSET",
     "GIVEN_FIRST", "FAMILY_FIRST", "FAMILY_FIRST_GIVEN_LAST",
     "DEFAULT_NICKNAME_DELIMITERS", "Locale",
     "Parser", "parse", "parser_for",

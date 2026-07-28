@@ -29,6 +29,24 @@ class PatronymicRule(StrEnum):
     TURKIC = "turkic"
 
 
+class Script(StrEnum):
+    """Writing systems the parser can key SCRIPT-CONDITIONAL behavior
+    on: per-script name order (``Policy.script_orders``) and
+    unspaced-name segmentation (``Policy.segment_scripts``). The rule
+    that admits these (amendment 2026-07-27): script-conditional
+    behavior only where the script itself determines the convention --
+    Latin-script input is never affected. Character tables live in
+    nameparser/_pipeline/_vocab.py, not here."""
+
+    #: Chinese Hanzi -- and Japanese Kanji: a pure-Han string cannot
+    #: say which language it is, which is fine for ORDER (both write
+    #: family-first natively) and exactly why Han SEGMENTATION is
+    #: opt-in (locales.ZH; Japanese is #272's pluggable segmenter).
+    HAN = "han"
+    #: Korean Hangul (precomposed syllables). Unambiguously Korean.
+    HANGUL = "hangul"
+
+
 # Order-spec constants (#270). Each reads as its contents because roles
 # are named given/family, not first/last.
 
