@@ -241,8 +241,8 @@ by ``tests/v2/test_locales.py``:
    the default must be one your ``DEVIATES`` predicate flags — no
    silent, undeclared side effects on names outside the pack's stated
    scope.
-#. Sort the vocabulary before shipping it, if the pack carries any.
-   Vocabulary that is *self-selecting* — able to match only text of
+#. Decide which layer the vocabulary belongs in, if the pack carries
+   any. Vocabulary that is *self-selecting* — able to match only text of
    the tradition it came from, the way a hangul surname can only ever
    match hangul — is default-safe, and belongs in the default lexicon
    (``nameparser/config/``) rather than in a pack: a pack nobody knows

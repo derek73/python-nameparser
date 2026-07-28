@@ -352,11 +352,29 @@ given name.
     >>> HumanName("김민준").last, HumanName("김민준").first
     ('김', '민준')
 
-1.4 read the first as ``first="毛"``/``last="泽东"`` and left the
-second whole in ``last``. ``Constants`` has no switch for either — the
-v1 configuration surface is frozen for 2.x — so the way out is the 2.0
-API: ``Parser(policy=Policy(script_orders={}, segment_scripts=()))``
-restores the old reading of both. Unspaced *Chinese* is unaffected
-either way, because splitting Han text is opt-in through a locale pack
-and ``HumanName`` cannot apply one: ``HumanName("毛泽东")`` still
-returns the whole string as ``last``.
+1.4 read the first as ``first="毛"``/``last="泽东"``, and left the
+second whole in ``first``.
+
+A third shape changes even though nothing splits it. 1.4 routed a lone
+token to ``first`` whatever it was, so an unspaced Chinese or Japanese
+name landed there entire; 2.1 reads it as native-script CJK and puts it
+in ``last`` instead. Nothing is segmented — Han splitting is opt-in
+through a locale pack and ``HumanName`` cannot apply one — but the
+field the whole string arrives in is different:
+
+.. doctest::
+
+    >>> HumanName("毛泽东").last, HumanName("毛泽东").first
+    ('毛泽东', '')
+    >>> HumanName("山田太郎").last, HumanName("山田太郎").first
+    ('山田太郎', '')
+
+Both were ``first`` under 1.4. If you feed unspaced CJK through
+``HumanName`` and read ``first``, that is the change most likely to
+reach you, and it is silent — the string is intact, just in the other
+field.
+
+``Constants`` has no switch for any of this — the v1 configuration
+surface is frozen for 2.x — so the way out is the 2.0 API:
+``Parser(policy=Policy(script_orders={}, segment_scripts=()))``
+restores 1.4's reading of all three shapes.
