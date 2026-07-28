@@ -140,8 +140,7 @@ merging two, and is covered next.
 East Asian names
 -----------------
 
-How these names are built, first, because the parsing rules follow
-from it. A Chinese, Japanese, or Korean name written in its own script
+A Chinese, Japanese, or Korean name written in its own script
 puts the family name first: 毛泽东 is MAO Zedong, 山田太郎 is YAMADA
 Taro, 김민준 is KIM Minjun. The family name is short — one Han
 character or one hangul syllable, occasionally two — and comes from a

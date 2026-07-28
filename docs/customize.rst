@@ -307,11 +307,12 @@ East Asian defaults, and turning them off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Two defaults key on the *script* a name is written in rather than on
-anything you set: a name written wholly in Han or Hangul reads
+anything you set: a name written wholly in Han or Hangul is assigned
 family-first (``script_orders``), and an unspaced hangul name is split
 into surname and given name against the shipped Korean census list
-(``segment_scripts``). :ref:`east-asian-names` shows what they do —
-this is how to switch them off, which you can do separately:
+(``segment_scripts``). :ref:`east-asian-names` explains the naming
+conventions both rest on — this section is how to switch them off,
+which you can do separately:
 
 .. doctest::
 
@@ -324,10 +325,12 @@ this is how to switch them off, which you can do separately:
     >>> unsplit.parse("김민준").family            # one token, not split
     '김민준'
 
-The middle line is the one to read twice: emptying ``script_orders``
-restores the purely positional reading but leaves the token split, so
-the surname lands in ``given`` instead. Clear both fields to get
-nameparser 2.0's behavior back exactly.
+The two switches interact, and clearing only ``script_orders``
+produces a third behavior rather than the old one: the split still
+runs, so ``김민준`` still becomes two tokens, and the positional
+default then assigns them given-first — the surname lands in
+``given``. To restore nameparser 2.0's reading exactly, clear both
+fields.
 
 To teach the splitter a surname it doesn't ship with, add it to the
 ``surnames`` vocabulary like any other word:

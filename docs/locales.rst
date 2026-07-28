@@ -56,16 +56,22 @@ isn't read as a family name. Listing it in ``given_name_titles`` alone
 raises ``ValueError`` rather than quietly doing nothing.
 
 Two East Asian behaviors are on by default for the same reason, except
-that what selects them is the *script* rather than the word: a name
-written wholly in Han or Hangul reads family-first, and an unspaced
-Korean name is split into surname and given name. Chinese and Japanese
-both write family-first natively, so reading the order takes no guess
-about which language it is; hangul is written by nothing but Korean,
-whose surnames are a closed census set, so splitting is safe too. See
-:ref:`east-asian-names` in :doc:`usage` for what that looks like and
-how to turn either half off. Splitting an unspaced *Han* name is the
-one piece that does need to know the language — a Chinese surname list
-mangles Japanese kanji names — so that half waits for the ``zh`` pack.
+that what selects them is the *script* rather than the word. The
+background (covered fully under :ref:`east-asian-names` in
+:doc:`usage`): Chinese, Japanese, and Korean names put the family name
+first in native script and are usually written with no space between
+the parts. Both defaults follow from facts the script alone
+establishes. A name written wholly in Han or Hangul is assigned
+family-first, because every language written in those scripts orders
+names that way — no language guess is involved. An unspaced hangul
+name is additionally split into surname and given name, because hangul
+is written by nothing but Korean and Korean surnames are a closed
+census set that ships as default vocabulary. Splitting an unspaced
+*Han* name is the one behavior the script cannot license — the same
+characters could be a Chinese or a Japanese name, and a Chinese
+surname list splits Japanese names in the wrong place — so it is not a
+default: the ``zh`` pack below turns it on when you can declare the
+data Chinese.
 
 A pack is for something different: a *structural* rule, like reordering
 a patronymic, that vocabulary alone can't express.
