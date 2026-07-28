@@ -165,9 +165,9 @@ knowledge of which language the name is in:
 
 Splitting an unspaced name is also automatic, but only for Korean.
 Hangul is written by exactly one language, and Korean family names are
-a closed set small enough to ship: the census surname list is part of
-the default vocabulary, and the longest listed surname at the start of
-an unspaced hangul token becomes the family name:
+limited to a small closed set: the census surname list is part of the
+default vocabulary, and the longest listed surname at the start of an
+unspaced hangul token becomes the family name:
 
 .. doctest::
 
