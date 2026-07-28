@@ -73,6 +73,9 @@ Configuration
 .. autoclass:: nameparser.PatronymicRule
    :members:
 
+.. autoclass:: nameparser.Script
+   :members:
+
 .. _name-order-constants:
 
 Name-order constants
@@ -101,6 +104,19 @@ because only these three orders have defined assignment semantics.
 
    Family name first, given name *last*, the words between middle —
    e.g. Vietnamese full-name order.
+
+.. py:data:: nameparser.DEFAULT_SCRIPT_ORDERS
+   :value: ((Script.HAN, FAMILY_FIRST), (Script.HANGUL, FAMILY_FIRST))
+
+   The default :attr:`~nameparser.Policy.script_orders` table: a name
+   written wholly in Han or Hangul reads family-first, whatever
+   ``name_order`` says. The values are drawn from the same three
+   constants above, and the same restriction applies. Build on it for
+   additive customization —
+   ``script_orders=dict(DEFAULT_SCRIPT_ORDERS) | {Script.HAN:
+   GIVEN_FIRST}`` — and pass ``script_orders={}`` to opt out entirely
+   and get the purely positional read back. Latin-script and
+   mixed-script names are never affected either way.
 
 Delimiter defaults
 ^^^^^^^^^^^^^^^^^^
@@ -170,6 +186,8 @@ HumanName.config Defaults
 .. automodule:: nameparser.config.conjunctions
    :members:
 .. automodule:: nameparser.config.maiden_markers
+   :members:
+.. automodule:: nameparser.config.surnames
    :members:
 .. automodule:: nameparser.config.capitalization
    :members:

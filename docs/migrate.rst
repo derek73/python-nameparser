@@ -339,3 +339,24 @@ into ``middle``/``last`` (``"Jane Smith née Jones"``), and with a
 custom suffix delimiter configured, a no-space delimiter group renders
 whole (``"RN/CRNA"``) where 1.x split it (``"RN, CRNA"``) — the role
 assignment is identical, only the rendered string differs.
+
+2.1 adds two more, and unlike most of the 2.0 API these do reach
+``HumanName``: a name written wholly in Han or Hangul is read
+family-first, and an unspaced Korean name is split into surname and
+given name.
+
+.. doctest::
+
+    >>> HumanName("毛 泽东").last
+    '毛'
+    >>> HumanName("김민준").last, HumanName("김민준").first
+    ('김', '민준')
+
+1.4 read the first as ``first="毛"``/``last="泽东"`` and left the
+second whole in ``last``. ``Constants`` has no switch for either — the
+v1 configuration surface is frozen for 2.x — so the way out is the 2.0
+API: ``Parser(policy=Policy(script_orders={}, segment_scripts=()))``
+restores the old reading of both. Unspaced *Chinese* is unaffected
+either way, because splitting Han text is opt-in through a locale pack
+and ``HumanName`` cannot apply one: ``HumanName("毛泽东")`` still
+returns the whole string as ``last``.

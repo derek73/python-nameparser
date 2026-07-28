@@ -303,6 +303,55 @@ family-then-given regardless of the configured order:
     >>> family_first.parse("Thomas, John").family
     'Thomas'
 
+East Asian defaults, and turning them off
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Two defaults key on the *script* a name is written in rather than on
+anything you set: a name written wholly in Han or Hangul reads
+family-first (``script_orders``), and an unspaced hangul name is split
+into surname and given name against the shipped Korean census list
+(``segment_scripts``). :ref:`east-asian-names` shows what they do —
+this is how to switch them off, which you can do separately:
+
+.. doctest::
+
+    >>> parse("김민준").family                    # both defaults on
+    '김'
+    >>> positional = Parser(policy=Policy(script_orders={}))
+    >>> positional.parse("김민준").family         # still split
+    '민준'
+    >>> unsplit = Parser(policy=Policy(segment_scripts=()))
+    >>> unsplit.parse("김민준").family            # one token, not split
+    '김민준'
+
+The middle line is the one to read twice: emptying ``script_orders``
+restores the purely positional reading but leaves the token split, so
+the surname lands in ``given`` instead. Clear both fields to get
+nameparser 2.0's behavior back exactly.
+
+To teach the splitter a surname it doesn't ship with, add it to the
+``surnames`` vocabulary like any other word:
+
+.. doctest::
+
+    >>> lex = Lexicon.default().add(surnames={"김민"})
+    >>> Parser(lexicon=lex).parse("김민준").family
+    '김민'
+
+Chinese surnames are deliberately absent from that default set,
+because splitting Han text requires knowing Chinese from Japanese;
+:doc:`locales` covers the opt-in ``zh`` pack that supplies them.
+
+.. note::
+
+   Both fields are annotated with their canonical *storage* type
+   rather than with everything the constructor accepts — the same as
+   ``capitalization_exceptions``. Under mypy the readable spellings
+   above (``script_orders={...}``, ``segment_scripts=(...)``) need a
+   ``# type: ignore[arg-type]``; ``script_orders=()`` and
+   ``segment_scripts=frozenset(...)`` check clean and mean the same
+   thing.
+
 Nicknames, maiden names, and brackets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

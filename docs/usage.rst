@@ -52,7 +52,9 @@ given-then-family:
     'Doe'
 
 For family-first input *without* a comma — common outside Europe — set
-``name_order``; see :doc:`customize`.
+``name_order``; see :doc:`customize`. Names written in Han or Hangul
+are the exception that needs no setting at all: see `East Asian
+names`_ below.
 
 Words that attach to their neighbors
 --------------------------------------
@@ -128,7 +130,63 @@ one that can double as a given name:
     'de Mesnil'
 
 :doc:`customize` covers how to change which words are in each of these
-sets, including which particles may double as given names.
+sets, including which particles may double as given names. One shipped
+vocabulary works the other way round and so is not in the table above:
+:mod:`surnames <nameparser.config.surnames>` *splits* a word instead of
+merging two, and is covered next.
+
+.. _east-asian-names:
+
+East Asian names
+-----------------
+
+A name written wholly in Han (Chinese and Japanese characters) or
+Hangul needs no configuration to come out right: the script settles the
+convention by itself, so those names read family-first by default.
+Chinese and Japanese differ in most things but not this one — both put
+the family name first in native script — so nothing has to guess which
+language it is looking at.
+
+.. doctest::
+
+    >>> parse("毛 泽东").family
+    '毛'
+    >>> parse("山田 太郎").family
+    '山田'
+
+Korean names go a step further, because they are usually written with
+no space in them at all. The census surname list ships as default
+vocabulary, so an unspaced hangul name is split into its two parts:
+
+.. doctest::
+
+    >>> minjun = parse("김민준")
+    >>> minjun.family, minjun.given
+    ('김', '민준')
+
+That works out of the box because nothing but Korean is written in
+hangul. The same trick on Han characters would have to know Chinese
+from Japanese first — a Chinese surname list splits ``高橋一郎`` after
+``高``, wrecking an ordinary Japanese name — so unspaced *Chinese* is
+opt-in through the ``zh`` locale pack, and Japanese waits on a
+segmenter of its own (`#272
+<https://github.com/derek73/python-nameparser/issues/272>`_):
+
+.. doctest::
+
+    >>> from nameparser import locales, parser_for
+    >>> parser_for(locales.ZH).parse("毛泽东").family
+    '毛'
+
+A comma switches both behaviors off, on the reasoning ``name_order``
+already follows: someone who wrote one has said where the family name
+ends. When the vocabulary supported more than one split — ``남궁민수``
+is 남궁 + 민수 by the compound surname but 남 + 궁민수 by the
+single-syllable one — the longest match wins and the parse reports the
+choice as an ``AmbiguityKind.SEGMENTATION``, described under `When the
+parser had to guess`_; a name with only one possible split decided
+nothing and reports nothing. :doc:`customize` covers turning either
+behavior off.
 
 Aggregate views
 ----------------

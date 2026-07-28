@@ -1,5 +1,19 @@
 Release Log
 ===========
+* 2.1.0 - Unreleased
+
+    **East Asian names**
+
+    - Fix names written wholly in Han or Hangul parsing given-first: native-script CJK now reads family-first by default, through the new ``Policy.script_orders`` table, so ``"毛 泽东"`` gives family ``毛`` where 2.0 gave family ``泽东``. No language detection is involved — Chinese and Japanese both write the family name first in native script, so the script settles the order without anyone having to know which language it is. Latin-script and mixed-script names are never affected, and an explicit comma still wins. **Default-on: changes parse output for wholly-CJK names**, through ``HumanName`` as well as the 2.0 API (closes #271)
+    - Fix unspaced Korean names not splitting: the census surname list now ships as default vocabulary (``Lexicon.surnames``) with hangul segmentation on by default (``Policy.segment_scripts``), so ``"김민준"`` parses family ``김``, given ``민준`` instead of landing whole in the family name. Nothing but Korean is written in hangul and its surnames are a closed census set, which is what makes the split safe as a default rather than a pack. **Default-on**, and it reaches ``HumanName`` too. ``Policy(segment_scripts=())`` turns the split off; ``Policy(script_orders={})`` separately restores the positional reading; clearing both restores 2.0 behavior exactly (#271)
+    - Add the Chinese locale pack ``locales.ZH`` — opt-in Han segmentation for unspaced names like ``毛泽东``, with the surname vocabulary it needs. A pack rather than a default because a Chinese surname list corrupts the Japanese names written in the same characters (``高橋一郎`` would split ``高`` + ``橋一郎``); Japanese needs the pluggable segmenter staged in #272. It sets no name order, since native-script Han already reads family-first without it. ``locales.available()`` is now ``('ru', 'tr_az', 'zh')`` (#271)
+    - Add ``Lexicon.surnames``, ``Policy.script_orders``, ``Policy.segment_scripts``, the ``Script`` enum and the ``DEFAULT_SCRIPT_ORDERS`` constant to the public API. This is the first behavior nameparser keys on the script a name is written in; it is allowed only where the script itself settles a convention, never as a proxy for guessing the language (#271)
+    - Add ``AmbiguityKind.SEGMENTATION``, reported when a surname split had a vocabulary-supported alternative: ``"남궁민수"`` is 남궁 + 민수 by the compound surname but 남 + 궁민수 by the single-syllable one, and longest-match had to pick. A name with only one possible split decided nothing and reports nothing (#271)
+
+    **Breaking Changes**
+
+    - Change the pickle compatibility of the 2.0 API's ``Policy`` and ``Lexicon``: the new fields change the field layout their guarded ``__setstate__`` checks, so a pickle written by 2.0.0 raises ``ValueError`` naming the missing fields instead of loading. Re-pickle after upgrading. ``HumanName`` pickles are unaffected — the facade pickles v1-shaped component state, not these objects
+
 * 2.0.0 - July 27, 2026
 
     Two release candidates preceded this release (rc1 on 2026-07-23,

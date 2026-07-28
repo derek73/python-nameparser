@@ -55,6 +55,18 @@ precedes the *given* name — as Arabic ones do — so the word after it
 isn't read as a family name. Listing it in ``given_name_titles`` alone
 raises ``ValueError`` rather than quietly doing nothing.
 
+Two East Asian behaviors are on by default for the same reason, except
+that what selects them is the *script* rather than the word: a name
+written wholly in Han or Hangul reads family-first, and an unspaced
+Korean name is split into surname and given name. Chinese and Japanese
+both write family-first natively, so reading the order takes no guess
+about which language it is; hangul is written by nothing but Korean,
+whose surnames are a closed census set, so splitting is safe too. See
+:ref:`east-asian-names` in :doc:`usage` for what that looks like and
+how to turn either half off. Splitting an unspaced *Han* name is the
+one piece that does need to know the language — a Chinese surname list
+mangles Japanese kanji names — so that half waits for the ``zh`` pack.
+
 A pack is for something different: a *structural* rule, like reordering
 a patronymic, that vocabulary alone can't express.
 
@@ -114,10 +126,19 @@ parsing, equivalent to ``parser_for(locales.get("ru"))``.
        (``oglu``, ``qizi``, ``uulu``, and their Latin- and
        Cyrillic-script variants) and reads the name around it as
        given/middle/family.
+   * - ``zh``
+     - Chinese surname segmentation — splits an unspaced Han name into
+       surname and given name (``毛泽东`` → family ``毛``, given
+       ``泽东``) against the surname list the pack ships. It sets no
+       name order: native-script Han already reads family-first
+       without a pack.
 
-Both shipped packs are policy-only — they carry no vocabulary of their
-own; see :doc:`concepts` for why that split (language vocabulary vs.
-behavior) is drawn where it is.
+``ru`` and ``tr_az`` are policy-only — they carry no vocabulary of
+their own. ``zh`` is both halves at once: a surname list, plus the one
+policy field that turns segmentation on for the script it covers. See
+:doc:`concepts` for how that split (language vocabulary vs. behavior)
+is drawn, and `Contributing a pack to nameparser`_ for which half a
+new naming rule belongs in.
 
 .. warning::
 
@@ -158,7 +179,9 @@ right and is validated on its own, before it is unioned onto the base
 — so a fragment that marks a word must also carry the word it marks.
 To make an existing base title precede the given name, restate the
 title in the fragment rather than listing it in ``given_name_titles``
-alone. Both shipped packs are policy-only, so neither hits this.
+alone. ``zh`` is the shipped worked example: its
+``Lexicon(surnames=...)`` has to satisfy every ``Lexicon`` rule
+standing alone, before anything unions it onto the base.
 
 .. doctest::
 
@@ -202,24 +225,41 @@ by ``tests/v2/test_locales.py``:
    string, return whether *this pack alone* might parse it differently
    from the default parser. Over-declaring is safe; under-declaring is
    not — when in doubt, ``DEVIATES`` should say yes.
-#. Add a rotator list to ``tests/v2/test_locales.py`` with at least one
-   name exercising every alternation branch of every marker regex the
-   pack defines — ``test_rotators_cover_every_marker_branch`` fails
-   until each branch is hit.
+#. Add a rotator list to ``tests/v2/test_locales.py``. Every pack needs
+   one, but what it has to contain follows from how the pack declares
+   its scope. A pack declaring by *marker regex* (``ru``, ``tr_az``)
+   needs at least one name exercising every alternation branch of every
+   regex it defines — ``test_rotators_cover_every_marker_branch`` fails
+   until each branch is hit. A pack declaring by *codepoint range*
+   (``zh``) has no branches to sweep and drops out of that test, so its
+   rotators have to carry the same weight by hand: the unspaced names
+   the pack must split, one per shape of the vocabulary it ships —
+   single surname, compound surname, and any spelling variant it means
+   to cover.
 #. Keep the non-interference gate green over the shared corpus plus
    your rotators: every name the packed parser parses differently from
    the default must be one your ``DEVIATES`` predicate flags — no
    silent, undeclared side effects on names outside the pack's stated
    scope.
-#. Keep the pack policy-only in 2.0 — ``ru`` and ``tr_az`` both ship
-   an empty :class:`~nameparser.Lexicon`; a pack that wants to carry
-   its own vocabulary is a later conversation.
+#. Sort the vocabulary before shipping it, if the pack carries any.
+   Vocabulary that is *self-selecting* — able to match only text of
+   the tradition it came from, the way a hangul surname can only ever
+   match hangul — is default-safe, and belongs in the default lexicon
+   (``nameparser/config/``) rather than in a pack: a pack nobody knows
+   to ask for is vocabulary nobody gets. Vocabulary that *declares a
+   language its script does not* — a Chinese surname list, which
+   silently mangles the Japanese names written in the same characters
+   — belongs in the pack, where asking for it is the declaration.
+   ``ru`` and ``tr_az`` need no vocabulary at all and ship an empty
+   :class:`~nameparser.Lexicon`; ``nameparser/locales/zh.py`` is the
+   template for one that does.
 #. Curate vocabulary conservatively, the same rule as
    :doc:`customize`: when you're unsure whether a word or a marker
    belongs, leave it out.
 
-``nameparser/locales/ru.py`` is the reference implementation to copy
-from. Staged packs in progress are tracked in issues `#271
-<https://github.com/derek73/python-nameparser/issues/271>`_, `#272
-<https://github.com/derek73/python-nameparser/issues/272>`_, and `#146
-<https://github.com/derek73/python-nameparser/issues/146>`_.
+``nameparser/locales/ru.py`` is the reference implementation for a
+policy-only pack, ``nameparser/locales/zh.py`` for one that carries
+vocabulary. Packs still in progress are tracked in issues `#272
+<https://github.com/derek73/python-nameparser/issues/272>`_ (Japanese)
+and `#146 <https://github.com/derek73/python-nameparser/issues/146>`_
+(Vietnamese).
