@@ -7,6 +7,13 @@ nameparser parses human names into seven fields — title, given, middle,
 family, suffix, nickname, maiden. Results are immutable, configuration is
 composable, and locale packs are opt-in.
 
+📣 **nameparser 2.0 is out.** Existing ``HumanName`` code keeps working
+through 2.x — most 1.x code needs no changes. The `migration guide
+<https://nameparser.readthedocs.io/en/latest/migrate.html>`__ has the
+field-by-field map, and anything the migration missed can be reported
+on `the discussion issue
+<https://github.com/derek73/python-nameparser/issues/284>`__.
+
 Installation
 ------------
 
