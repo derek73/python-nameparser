@@ -187,10 +187,17 @@ def test_particle_fork_is_never_double_reported(text: str) -> None:
 # multi-word phrase: every field below except given_name_titles is
 # matched one word at a time, so a multi-word draw in a per-word field
 # would be a dead entry that trips Lexicon's multi-word warning.
+# The CJK tail (#271) is what lets a drawn `surnames` set activate
+# script_segment at all: hangul is the script segmented by default, so
+# "김"/"남궁" are what make the stage fire (see _names_using, which
+# supplies the unspaced token to fire it ON), and the Han rows ride
+# along for script_orders -- Han segmentation is opt-in via
+# locales.ZH, which these policies do not draw.
 _VOCAB = st.sampled_from([
     "van", "de", "la", "bin", "abdul", "abu", "dr", "sir", "prof",
     "md", "jr", "iii", "esq", "ma", "do", "and", "y", "née", "geb",
     "a", "b", "ph.d", "عبد", "фон", "μεγα",
+    "김", "남궁", "毛", "欧阳",
 ])
 
 # given_name_titles is the one field matched as a space-joined run, so
@@ -271,10 +278,24 @@ def _names_using(draw: st.DrawFn, lexicon: Lexicon) -> str:
     """
     vocab = sorted({w for name in _SET_FIELDS
                     for w in getattr(lexicon, name)})
+    # script_segment (#271) is the one stage a space-joined name can
+    # never reach: it splits an UNSPACED token whose PREFIX is a drawn
+    # surname, so every drawn surname is also offered concatenated with
+    # a given name. Waiting instead for a drawn surname and a matching
+    # literal to coincide left the stage unexercised on all 250
+    # examples (measured); deriving the token from the draw itself
+    # reaches it on a handful. A Latin surname makes a mixed-script
+    # token the stage correctly declines -- useful input in its own
+    # right.
+    # sorted for the same reason `vocab` above is: frozenset iteration
+    # order is not stable across runs, and an unsorted pool shifts
+    # every index sampled_from draws -- which would defeat
+    # derandomize=True on the whole strategy, not just this slice.
+    unspaced = sorted(w + "민준" for w in lexicon.surnames)
     # plain names and structure characters are always available, so the
     # pool is never empty even for an empty lexicon
     pieces = st.sampled_from(
-        vocab + ["John", "Smith", "Q.", ",", "(", "'"])
+        vocab + unspaced + ["John", "Smith", "Q.", ",", "(", "'"])
     return " ".join(draw(st.lists(pieces, min_size=1, max_size=8)))
 
 

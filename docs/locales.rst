@@ -91,7 +91,7 @@ takes:
 .. doctest::
 
     >>> locales.available()
-    ('ru', 'tr_az')
+    ('ru', 'tr_az', 'zh')
     >>> locales.get("ru") is locales.RU
     True
 

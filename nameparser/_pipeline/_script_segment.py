@@ -47,6 +47,7 @@ an ordinary word, not a surname site.
 from __future__ import annotations
 
 import dataclasses
+import functools
 
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure,
@@ -66,6 +67,22 @@ def _remap(run: tuple[int, ...], split_at: int) -> tuple[int, ...]:
         else:
             out.append(j + 1 if j > split_at else j)
     return tuple(out)
+
+
+@functools.lru_cache(maxsize=8)
+def _longest_entry(surnames: frozenset[str]) -> int:
+    """The longest surname in a vocabulary, cached per-vocabulary
+    rather than recomputed per parse (Lexicon is frozen and slotted,
+    so it cannot carry a cached_property of its own). The frozenset is
+    hashable and a process holds only a handful of distinct
+    vocabularies -- the default one, plus one per constructed pack
+    parser -- so maxsize=8 bounds pathological many-lexicon churn
+    without ever evicting in normal use.
+
+    Callers must pass a NON-EMPTY vocabulary: max() of an empty set
+    raises, and the stage's own emptiness guard (`not surnames`) runs
+    first, so the only call site cannot reach it."""
+    return max(map(len, surnames))
 
 
 def script_segment(state: ParseState) -> ParseState:
@@ -96,7 +113,7 @@ def script_segment(state: ParseState) -> ParseState:
     # so the remainder is never empty. Direct membership, no
     # _normalize: the script gate admits only CJK text, which the
     # storage fold stores unchanged.
-    cap = min(max(map(len, surnames)), len(text) - 1)
+    cap = min(_longest_entry(surnames), len(text) - 1)
     matches = [length for length in range(cap, 0, -1)
                if text[:length] in surnames]
     if not matches:
