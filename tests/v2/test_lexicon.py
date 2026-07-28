@@ -556,3 +556,11 @@ def test_remove_of_a_stored_dead_entry_is_silent() -> None:
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         dirty.remove(titles=["zqx zqy"])
+
+
+def test_surnames_is_a_vocab_field() -> None:
+    lex = Lexicon.empty().add(surnames={"毛", "欧阳"})
+    assert lex.surnames == frozenset({"毛", "欧阳"})
+    assert lex.remove(surnames={"毛"}).surnames == frozenset({"欧阳"})
+    merged = Lexicon(surnames=frozenset({"김"})) | Lexicon(surnames=frozenset({"박"}))
+    assert merged.surnames == frozenset({"김", "박"})

@@ -285,6 +285,7 @@ def _validated_script_orders(
         )
     raw = value.items() if isinstance(value, Mapping) else value
     try:
+        # a non-iterable raises TypeError, caught below
         entries: tuple[Any, ...] = tuple(raw)  # type: ignore[arg-type]
     except TypeError:
         raise TypeError(
@@ -306,6 +307,26 @@ def _validated_script_orders(
     # differently-written but equivalent tables must converge (the
     # capitalization_exceptions precedent).
     return tuple(sorted(canonical.items()))
+
+
+def _validated_segment_scripts(value: object) -> frozenset[Script]:
+    """segment_scripts' check: an iterable of Script members (or
+    their string values), coerced via _validated_script so the
+    unknown-script wording stays single-sourced."""
+    _reject_str_and_mapping(value, "segment_scripts")
+    # Probe with iter() only (mirrors the patronymic_rules probe in
+    # Policy.__post_init__): a genuine non-iterable is caught here and
+    # gets the curated message below, while an exception raised INSIDE
+    # a caller's generator during consumption (the frozenset() below)
+    # must propagate untouched, not be rewritten as "not an iterable".
+    try:
+        script_iter = _require_iterable(value, "segment_scripts")  # type: ignore[arg-type]
+    except TypeError:
+        raise TypeError(
+            f"segment_scripts must be an iterable of Script members, "
+            f"got {value!r}"
+        ) from None
+    return frozenset(_validated_script(s) for s in script_iter)
 
 
 def _canonical_script_pair(pair: Iterable[Any]) -> tuple[Any, ...]:
@@ -361,6 +382,18 @@ class Policy:
     #: decides the family name.
     script_orders: tuple[tuple[Script, tuple[Role, Role, Role]], ...] = (
         DEFAULT_SCRIPT_ORDERS)
+    #: Scripts for which the unspaced-name segmentation stage is
+    #: active (#271): the first token written wholly in an activated
+    #: script is split by longest surname match against
+    #: :attr:`Lexicon.surnames <nameparser.Lexicon.surnames>`.
+    #: Default: {Script.HANGUL} -- hangul is unambiguously Korean and
+    #: Korean surnames are a closed default-shipped set. Han is NOT
+    #: default: a zh surname list corrupts Japanese names (高橋一郎
+    #: must not split as 高+橋一郎), so it's opt-in via locales.ZH.
+    #: Opt out with ``segment_scripts=()``; note a PolicyPatch unions
+    #: rather than replaces, so a pack can only add scripts, never
+    #: disable one.
+    segment_scripts: frozenset[Script] = frozenset({Script.HANGUL})
     #: Opt-in detectors that reorder patronymic-shaped names
     #: (EAST_SLAVIC, TURKIC); usually set via a locale pack.
     patronymic_rules: frozenset[PatronymicRule] = frozenset()
@@ -413,6 +446,9 @@ class Policy:
         object.__setattr__(
             self, "script_orders",
             _validated_script_orders(self.script_orders))
+        object.__setattr__(
+            self, "segment_scripts",
+            _validated_segment_scripts(self.segment_scripts))
         _reject_str_and_mapping(self.patronymic_rules, "patronymic_rules")
         # Probe with iter() rather than wrapping tuple(): non-iterables
         # (True especially -- v1's patronymic_name_order was a bool flag,
@@ -553,6 +589,8 @@ class PolicyPatch:
     #: without restating the rest.
     script_orders: tuple[
         tuple[Script, tuple[Role, Role, Role]], ...] | _Unset = UNSET
+    segment_scripts: frozenset[Script] | _Unset = field(
+        default=UNSET, metadata=_UNION)
     patronymic_rules: frozenset[PatronymicRule] | _Unset = field(
         default=UNSET, metadata=_UNION)
     middle_as_family: bool | _Unset = UNSET

@@ -341,7 +341,7 @@ def test_all_set_valued_patch_fields_declare_union_composition() -> None:
     }
     assert union_fields == {
         "patronymic_rules", "nickname_delimiters",
-        "maiden_delimiters", "extra_suffix_delimiters",
+        "maiden_delimiters", "extra_suffix_delimiters", "segment_scripts",
     }
 
 
@@ -389,7 +389,7 @@ def test_name_order_rejects_bare_string() -> None:
 # ships, and its frozenset() coercion destroys the evidence before
 # Policy could catch it at apply time.
 _GUARDED = ["nickname_delimiters", "maiden_delimiters",
-            "extra_suffix_delimiters", "patronymic_rules"]
+            "extra_suffix_delimiters", "patronymic_rules", "segment_scripts"]
 
 
 @pytest.mark.parametrize("cls", [Policy, PolicyPatch])
@@ -420,6 +420,7 @@ def test_collection_fields_reject_a_bare_string(
     ("maiden_delimiters", [("[", "]")], frozenset({("[", "]")})),
     ("extra_suffix_delimiters", ["/"], frozenset({"/"})),
     ("patronymic_rules", ["turkic"], frozenset({PatronymicRule.TURKIC})),
+    ("segment_scripts", [Script.HAN], frozenset({Script.HAN})),
 ])
 def test_legitimate_iterables_are_accepted_and_stored_intact(
         cls: type, field: str, items: list, expected: frozenset) -> None:
@@ -457,7 +458,8 @@ def test_a_pair_mapping_is_accepted_through_items(cls: type) -> None:
 @pytest.mark.parametrize("value", [b" - ", bytearray(b" - "), memoryview(b" - ")])
 @pytest.mark.parametrize(
     "field", ["extra_suffix_delimiters", "nickname_delimiters",
-              "maiden_delimiters", "patronymic_rules", "name_order"])
+              "maiden_delimiters", "patronymic_rules", "name_order",
+              "segment_scripts"])
 def test_every_field_rejects_a_buffer_with_a_decode_hint(
         cls: type, field: str, value: object) -> None:
     # Same cryptic int message Lexicon had, and name_order was the one
@@ -520,3 +522,40 @@ def test_script_orders_validates_keys_and_values() -> None:
                                            Role.FAMILY)})
     with pytest.raises(TypeError, match="bare string"):
         Policy(script_orders="han")  # type: ignore[arg-type]
+
+
+def test_segment_scripts_defaults_to_hangul_and_coerces() -> None:
+    # hangul segmentation is default-on (amendment 2026-07-27):
+    # hangul is unambiguously Korean and the surname set is closed
+    assert Policy().segment_scripts == frozenset({Script.HANGUL})
+    p = Policy(segment_scripts=["han", Script.HANGUL])  # type: ignore[arg-type]
+    assert p.segment_scripts == frozenset({Script.HAN, Script.HANGUL})
+    assert Policy(segment_scripts=()).segment_scripts == frozenset()  # type: ignore[arg-type]
+
+
+def test_segment_scripts_rejects_unknown_script() -> None:
+    # bare-string/mapping rejection is covered by the _GUARDED family
+    # sweep (test_collection_fields_reject_a_bare_string /
+    # test_collection_fields_reject_a_mapping); this pins the one
+    # check unique to segment_scripts -- the unknown-script message.
+    with pytest.raises(ValueError, match="han, hangul"):
+        Policy(segment_scripts={"klingon"})  # type: ignore[arg-type]
+
+
+def test_segment_scripts_rejects_non_iterable_with_curated_message() -> None:
+    # parallel to patronymic_rules: name the expected shape rather than
+    # surfacing _require_iterable's generic "must be an iterable" text
+    with pytest.raises(TypeError,
+                       match="segment_scripts must be an iterable of "
+                             "Script members, got True"):
+        Policy(segment_scripts=True)  # type: ignore[arg-type]
+
+
+def test_segment_scripts_patch_unions() -> None:
+    patched = apply_patch(
+        Policy(), PolicyPatch(segment_scripts={Script.HAN}))  # type: ignore[arg-type]
+    assert patched.segment_scripts == frozenset(
+        {Script.HAN, Script.HANGUL})
+    stringly = apply_patch(
+        Policy(), PolicyPatch(segment_scripts={"han"}))  # type: ignore[arg-type]
+    assert all(isinstance(s, Script) for s in stringly.segment_scripts)

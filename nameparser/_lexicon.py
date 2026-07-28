@@ -23,7 +23,7 @@ from typing import cast
 _VOCAB_FIELDS = (
     "titles", "given_name_titles", "suffix_acronyms", "suffix_words",
     "suffix_acronyms_ambiguous", "particles", "particles_ambiguous",
-    "conjunctions", "bound_given_names", "maiden_markers",
+    "conjunctions", "bound_given_names", "maiden_markers", "surnames",
 )
 
 #: (marker, base, why) triples. Each marker narrows how entries of its
@@ -327,6 +327,15 @@ class Lexicon:
     #: field ("née", "geb.", "roz.", ...). Full default list:
     #: :data:`~nameparser.config.maiden_markers.MAIDEN_MARKERS`.
     maiden_markers: frozenset[str] = frozenset()
+    #: Family names for the unspaced-name segmentation stage (#271),
+    #: matched longest-first against the start of the FIRST token
+    #: written wholly in a script :attr:`Policy.segment_scripts
+    #: <nameparser.Policy.segment_scripts>` activates. The default
+    #: carries the Korean census list
+    #: (:data:`~nameparser.config.surnames.KOREAN_SURNAMES`, wired in
+    #: a later task); Chinese surnames ship in locales.ZH because Han
+    #: segmentation is opt-in.
+    surnames: frozenset[str] = frozenset()
     #: Lowercase word -> exact-cased replacement used by capitalized()
     #: ("phd" -> "Ph.D."). Pair-valued: change it with
     #: dataclasses.replace(), not add()/remove(); read it as a mapping
