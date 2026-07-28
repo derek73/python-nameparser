@@ -291,9 +291,11 @@ class LastNamePrefixSplitTestCase(HumanNameTestBase):
         # 'Gunny' is NOT a default title -> genuinely exercises the custom-title
         # path. Title is consumed first (first_list == ['']), so the fold does
         # not fire and the surname is already correct; asserts we don't corrupt
-        # the title case.
-        CONSTANTS.titles.add('gunny')
-        hn = HumanName("Gunny de Mesnil")
+        # the title case. Runs on a private Constants (2.0 deprecates shared-
+        # CONSTANTS mutation; the custom-title path under test is identical).
+        c = Constants()
+        c.titles.add('gunny')
+        hn = HumanName("Gunny de Mesnil", constants=c)
         self.m(hn.title, "Gunny", hn)
         self.m(hn.first, "", hn)
         self.m(hn.last, "de Mesnil", hn)

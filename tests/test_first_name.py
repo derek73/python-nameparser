@@ -15,11 +15,11 @@ class FirstNameHandlingTests(HumanNameTestBase):
         self.m(hn.title, "Rev", hn)
         self.m(hn.last, "Andrews", hn)
 
-    # TODO: Seems "Andrews, M.D.", Andrews should be treated as a last name
-    # but other suffixes like "George Jr." should be first names. Might be
-    # related to https://github.com/derek73/python-nameparser/issues/2
-    @pytest.mark.xfail
     def test_assume_suffix_title_and_one_other_name_is_last_name(self) -> None:
+        # xfail in v1 (which parsed first='M.D.'); 2.0's family-comma
+        # suffix peel routes the post-comma suffix piece to suffix and
+        # keeps the pre-comma piece in last, so the long-desired
+        # expectation now holds. 2.0: fix(comma-family/suffix-routing).
         hn = HumanName("Andrews, M.D.")
         self.m(hn.suffix, "M.D.", hn)
         self.m(hn.last, "Andrews", hn)

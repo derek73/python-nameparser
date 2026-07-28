@@ -2,7 +2,7 @@
 name = "nameparser"
 description = "A simple Python module for parsing human names into their individual components."
 readme = "README.rst"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = {text = "LGPL"}
 authors = [{name = "Derek Gulbranson", email = "derek73@gmail.com"}]
 dynamic = ["version"]
@@ -13,7 +13,6 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
@@ -23,9 +22,7 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Topic :: Text Processing :: Linguistic",
 ]
-dependencies = [
-  "typing_extensions (>=4.5.0); python_version < '3.11'"
-]
+dependencies = []
 
 [build-system]
 requires = ["setuptools (>=82.0.1)"]
@@ -47,6 +44,7 @@ dev = [
   "ruff (>=0.15)",
   "pytest-timeout>=2.4.0",
   "pytest-cov>=6",
+  "hypothesis",
 ]
 
 [tool.mypy]
@@ -58,6 +56,26 @@ module = [
 ]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = [
+  "nameparser._types",
+  "nameparser._lexicon",
+  "nameparser._policy",
+  "nameparser._render",
+  "nameparser._locale",
+  "nameparser._pipeline.*",
+  "nameparser._parser",
+]
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_any_generics = true
+warn_return_any = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = ["tests.v2.*"]
+check_untyped_defs = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests", "nameparser"]
 addopts = "--doctest-modules"
@@ -65,6 +83,15 @@ python_classes = ["*Tests", "*TestCase"]
 # Fail if an xfail-marked test unexpectedly passes, so a fixed/regressed
 # expectation surfaces instead of silently turning into an xpass.
 xfail_strict = true
+# Unexpected warnings are failures: warnings are load-bearing API in 2.0
+# (the multi-word-entry UserWarning, the facade deprecation warnings), and
+# without this a warning regression is invisible to the suite -- a real
+# bug (eight spurious warnings on restoring a 1.4 Constants pickle)
+# shipped to review this way. Tests that EXPECT a warning assert it with
+# pytest.warns; targeted ignores below need a comment justifying each.
+filterwarnings = [
+    "error",
+]
 
 [tool.ruff.lint]
 extend-select = [

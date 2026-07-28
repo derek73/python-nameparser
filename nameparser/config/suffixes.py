@@ -1,4 +1,11 @@
+from nameparser.config._invariants import assert_normalized
+
 SUFFIX_NOT_ACRONYMS = {
+    # #269: Cyrillic мл/ст (junior/senior, the jr/sr analogs) deferred
+    # pending the within-script collision vetting the issue asks for;
+    # 'ст' especially is a plausible false-positive risk (many two-
+    # letter Cyrillic abbreviations exist), and both are short enough
+    # to worry about. Not shipped in this pass.
     'dr',
     'esq',
     'esquire',
@@ -21,6 +28,14 @@ SUFFIX_NOT_ACRONYMS = {
     # literally instead of going through nickname/suffix disambiguation).
     'ret',
     'vet',
+
+    # #269 follow-up: Hebrew post-nominals, both gershayim spellings
+    # (ASCII '"' and U+05F4); the mid-word quote is inert in
+    # extraction, like the ד"ר title. Neither is ever a name.
+    'ז"ל',      # "of blessed memory" (deceased), ASCII quote
+    'ז״ל',      # same, U+05F4 gershayim
+    'שליט"א',   # honorific for a living rabbi, ASCII quote
+    'שליט״א',   # same, U+05F4 gershayim
 }
 """
 
@@ -37,11 +52,17 @@ SUFFIX_ACRONYMS_AMBIGUOUS = {
     # in ambiguous, delimiter-only context.
     #
     # When adding a new entry to SUFFIX_ACRONYMS, also add it here only if
-    # the exact letter sequence could plausibly be someone's given name or
-    # common nickname on its own (e.g. 'jd', 'ed'). Unambiguous
-    # certifications/degrees (e.g. 'mba', 'cpa', 'phd') don't need an entry.
+    # the exact letter sequence could plausibly be someone's name on its
+    # own -- a given name or nickname (e.g. 'jd', 'ed') or a common
+    # surname (e.g. 'ma', 'do'). Unambiguous certifications/degrees
+    # (e.g. 'mba', 'cpa', 'phd') don't need an entry. In 2.0 this set
+    # also gates bare recognition: an ambiguous acronym counts as a
+    # suffix only when written with periods ('M.A.' yes, 'Ma' no), so
+    # 'Jack Ma' keeps its family name.
+    'do',
     'ed',
     'jd',
+    'ma',
 }
 """
 
@@ -372,6 +393,10 @@ SUFFIX_ACRONYMS = {
     'emt-p',
     'enp',
     'erd',
+    # Also in SUFFIX_NOT_ACRONYMS, and NOT redundant: the word test
+    # strips only edge periods while the acronym test strips all of
+    # them, so the multi-dot spelling "E.S.Q." matches only here while
+    # bare "Esq" matches only there.
     'esq',
     'evp',
     'faafp',
@@ -471,7 +496,6 @@ SUFFIX_ACRONYMS = {
     'lcmt',
     'lcpc',
     'lcsw',
-    'leed ap',
     'lg',
     'litk',
     'litl',
@@ -560,10 +584,6 @@ SUFFIX_ACRONYMS = {
     'ncto',
     'nd',
     'ndtr',
-    'nicet i',
-    'nicet ii',
-    'nicet iii',
-    'nicet iv',
     'nmd',
     'np',
     'np[18]',
@@ -601,8 +621,6 @@ SUFFIX_ACRONYMS = {
     'pp',
     'pps',
     'prm',
-    'psm i',
-    'psm ii',
     'psm',
     'psp',
     'psyd',
@@ -691,3 +709,25 @@ that may or may not have periods between the letters. The parser removes periods
 when matching against these pieces.
 
 """
+
+
+# Guard the invariants the docstrings above promise, so a future edit that
+# breaks them fails at import time instead of silently drifting until a test
+# happens to catch it (same rationale as prefixes.py). Note `assert` is
+# stripped under `python -O`; Lexicon re-checks the relationships at
+# construction, which is what protects a caller's own vocabulary.
+assert SUFFIX_ACRONYMS_AMBIGUOUS <= SUFFIX_ACRONYMS, \
+    "SUFFIX_ACRONYMS_AMBIGUOUS must stay a subset of SUFFIX_ACRONYMS"
+# NOT asserted: disjointness of SUFFIX_ACRONYMS and SUFFIX_NOT_ACRONYMS.
+# The two sets are matched with different normalization -- the word test
+# strips only edge periods, the acronym test strips all of them -- so an
+# entry in both is covering two spellings, not duplicated. 'esq' matches
+# "Esq" only as a word and "E.S.Q." only as an acronym.
+# DO assert that an ambiguous acronym is not also a plain suffix word:
+# suffix_as_written ORs the two branches, so the word membership would
+# bypass the period gate the ambiguous set exists to impose.
+assert not (SUFFIX_ACRONYMS_AMBIGUOUS & SUFFIX_NOT_ACRONYMS), \
+    "an ambiguous acronym must not also be a suffix word (the word " \
+    "branch bypasses its period gate): " \
+    f"{sorted(SUFFIX_ACRONYMS_AMBIGUOUS & SUFFIX_NOT_ACRONYMS)}"
+assert_normalized("suffix", SUFFIX_ACRONYMS | SUFFIX_NOT_ACRONYMS)

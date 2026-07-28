@@ -56,7 +56,11 @@ class TitleTestCase(HumanNameTestBase):
         hn = HumanName("Coach")
         self.m(hn.title, "Coach", hn)
 
-    # TODO: fix handling of U.S.
+    # TODO: fix handling of U.S. -- 2.0 matches v1 here: lc()-style
+    # normalization keeps 'u.s' out of the titles vocabulary, so the
+    # chain never starts (an interim 2.0 build that stripped interior
+    # periods made this pass, but that normalization wrongly turned
+    # 'J.R.' into the title 'jr'; v1 parity won)
     @pytest.mark.xfail
     def test_chained_title_first_name_title_is_initials(self) -> None:
         hn = HumanName("U.S. District Judge Marc Thomas Treadwell")
@@ -370,3 +374,16 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.title, "Xyz.", hn)
         self.m(hn.first, "Smith", hn)
         self.m(hn.nickname, "Bud", hn)
+
+    def test_charge_daffaires_chains_as_title(self) -> None:
+        hn = HumanName("Chargé d'Affaires John Smith")
+        self.m(hn.title, "Chargé d'Affaires", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_unaccented_charge_daffaires_chains_as_title(self) -> None:
+        # both spellings ship, like attaché/attache
+        hn = HumanName("Charge d'Affaires John Smith")
+        self.m(hn.title, "Charge d'Affaires", hn)
+        self.m(hn.first, "John", hn)
+        self.m(hn.last, "Smith", hn)

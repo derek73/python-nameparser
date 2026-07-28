@@ -16,8 +16,14 @@ class HumanNameTestBase(Generic[T]):
     """
 
     def m(self, actual: T, expected: T, hn: HumanName) -> None:
-        """assertEqual with a better message and awareness of hn.C.empty_attribute_default"""
-        expected_ = expected or hn.C.empty_attribute_default
+        """assertEqual with a better message.
+
+        ``expected or ''`` used to fall back to ``hn.C.empty_attribute_default``,
+        which could be '' or None depending on which of the (formerly dual-run)
+        settings a test ran under. That setting was removed in 2.0 (#255):
+        empty attributes are always ''.
+        """
+        expected_ = expected or ''
         try:
             assert actual == expected_, f"{actual!r} != {expected!r} for {hn.original!r}\n{hn!r}"
         except UnicodeDecodeError:

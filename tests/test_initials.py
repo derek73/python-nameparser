@@ -1,5 +1,3 @@
-import pytest
-
 from nameparser import HumanName
 from nameparser.config import Constants
 
@@ -23,31 +21,12 @@ class InitialsTestCase(HumanNameTestBase):
         hn = HumanName("John Doe", initials_format="{middle}")
         self.m(hn.initials(), "", hn)
 
-    def test_initials_empty_part_with_none_default_not_literal_none(self) -> None:
-        # Regression: when empty_attribute_default is None, an empty name part
-        # used to be interpolated by str.format as the literal "None" (e.g.
-        # "John Doe" -> "J. None D."). Empty parts must render as ''.
-        hn = HumanName("John Doe", constants=Constants())
-        # empty_attribute_default has no explicit annotation (mypy infers str
-        # from the '' default), but None is documented/supported here -- see
-        # the doctest on the attribute's docstring in config/__init__.py. Not
-        # widened to str | None like string_format/suffix_delimiter because
-        # it cascades into every public str-typed name accessor (title,
-        # first, middle, last, suffix, nickname, maiden, surnames,
-        # given_names, last_base, last_prefixes, initials()).
-        with pytest.deprecated_call():
-            hn.C.empty_attribute_default = None  # type: ignore[assignment]
-        self.assertEqual(hn.initials(), "J. D.")
-        self.assertTrue("None" not in hn.initials())
-
-    def test_initials_all_empty_returns_empty_attribute_default(self) -> None:
-        # Regression: a fully-empty result must fall back to
-        # empty_attribute_default (here None), matching the first/last accessors,
-        # rather than rendering the literal "None None None".
+    def test_initials_all_empty_renders_empty_string(self) -> None:
+        # The v1 None display mode (and its literal-"None" interpolation
+        # regressions) died with #255: a fully-empty result is now always
+        # '', matching the first/last accessors.
         hn = HumanName("", constants=Constants())
-        with pytest.deprecated_call():
-            hn.C.empty_attribute_default = None  # type: ignore[assignment]  # see test above
-        self.assertEqual(hn.initials(), None)
+        self.assertEqual(hn.initials(), "")
 
     def test_initials_middle_name_all_prefixes(self) -> None:
         # "Vega, Juan de la" parses with middle name "de la", which contains
@@ -73,13 +52,18 @@ class InitialsTestCase(HumanNameTestBase):
         hn = HumanName("Doe, John A. Kenneth, Jr.", initials_format="{first}, {last}")
         self.m(hn.initials(), "J., D.", hn)
 
+    # The *_constants tests below ran on the shared CONSTANTS singleton in
+    # v1; 2.0 deprecates shared mutation, so they use a private Constants
+    # passed as constants= (the migration-guide idiom) -- the config
+    # attribute under test is the same either way.
+
     def test_initials_format_constants(self) -> None:
-        from nameparser.config import CONSTANTS
-        CONSTANTS.initials_format = "{first} {last}"
-        hn = HumanName("Doe, John A. Kenneth, Jr.")
+        c = Constants()
+        c.initials_format = "{first} {last}"
+        hn = HumanName("Doe, John A. Kenneth, Jr.", constants=c)
         self.m(hn.initials(), "J. D.", hn)
-        CONSTANTS.initials_format = "{first}  {last}"
-        hn = HumanName("Doe, John A. Kenneth, Jr.")
+        c.initials_format = "{first}  {last}"
+        hn = HumanName("Doe, John A. Kenneth, Jr.", constants=c)
         self.m(hn.initials(), "J. D.", hn)
 
     def test_initials_delimiter(self) -> None:
@@ -87,9 +71,9 @@ class InitialsTestCase(HumanNameTestBase):
         self.m(hn.initials(), "J; A; K; D;", hn)
 
     def test_initials_delimiter_constants(self) -> None:
-        from nameparser.config import CONSTANTS
-        CONSTANTS.initials_delimiter = ";"
-        hn = HumanName("Doe, John A. Kenneth, Jr.")
+        c = Constants()
+        c.initials_delimiter = ";"
+        hn = HumanName("Doe, John A. Kenneth, Jr.", constants=c)
         self.m(hn.initials(), "J; A; K; D;", hn)
 
     def test_initials_list(self) -> None:
@@ -147,13 +131,16 @@ class InitialsTestCase(HumanNameTestBase):
         self.assertEqual(str(hn), "John Doe")
 
     def test_initials_with_doubled_space_in_list_element(self) -> None:
-        # direct *_list assignment bypasses parse_pieces whitespace
-        # normalization, so initials must tolerate unnormalized elements
-        # instead of raising IndexError (#232)
+        # v1's #232 hole -- direct *_list assignment injecting unnormalized
+        # elements that made initials raise IndexError -- is unreachable in
+        # 2.0: *_list attributes are read-only snapshots (spec section 2
+        # exc. 1) and the field setter normalizes whitespace, splitting a
+        # doubled-space element into clean members.
         hn = HumanName(first="John")
-        hn.middle_list = ["Q  R"]
-        self.assertEqual(hn.initials_list(), ["J", "Q R"])
-        self.assertEqual(hn.initials(), "J. Q R.")
+        hn.middle = ["Q  R"]
+        self.assertEqual(hn.middle_list, ["Q", "R"])
+        self.assertEqual(hn.initials_list(), ["J", "Q", "R"])
+        self.assertEqual(hn.initials(), "J. Q. R.")
 
     def test_constructor_first(self) -> None:
         hn = HumanName(first="TheName")
@@ -210,16 +197,16 @@ class InitialsTestCase(HumanNameTestBase):
         self.m(hn.initials(), "JAKD", hn)
 
     def test_initials_separator_constants_multi_part_middle(self) -> None:
-        from nameparser.config import CONSTANTS
-        CONSTANTS.initials_delimiter = ""
-        CONSTANTS.initials_separator = ""
-        CONSTANTS.initials_format = "{first}{middle}{last}"
-        hn = HumanName("Doe, John A. Kenneth")
+        c = Constants()
+        c.initials_delimiter = ""
+        c.initials_separator = ""
+        c.initials_format = "{first}{middle}{last}"
+        hn = HumanName("Doe, John A. Kenneth", constants=c)
         self.m(hn.initials(), "JAKD", hn)
 
     def test_initials_separator_default_on_constants(self) -> None:
-        # Runs after test_initials_separator_constants_multi_part_middle so that,
-        # in file/definition order, it verifies the autouse fixture restored
-        # CONSTANTS.initials_separator rather than leaking the "" set above.
+        # The shared singleton's default must be untouched by the private-
+        # Constants tests above (and, in file order, by anything the autouse
+        # fixture restores).
         from nameparser.config import CONSTANTS
         self.assertEqual(CONSTANTS.initials_separator, " ")

@@ -1,5 +1,3 @@
-import warnings
-
 from nameparser import HumanName
 
 from tests.base import HumanNameTestBase
@@ -205,11 +203,9 @@ class HumanNameVariationTests(HumanNameTestBase):
             if len(hn.suffix_list) > 1:
                 d = SimpleNamespace(**hn.as_dict())
                 hn = HumanName(f"{d.title} {d.first} {d.middle} {d.last} {d.suffix}".split(',')[0])
-            with warnings.catch_warnings():
-                # format strings below require empty string; #255 deprecation
-                # noise isn't the point of this broad parsing-variation test
-                warnings.simplefilter("ignore", DeprecationWarning)
-                hn.C.empty_attribute_default = ''
+            # v1 forced empty_attribute_default='' here so the format
+            # strings below got '' for empty parts; 2.0 removed the setting
+            # (#255) and empty attributes are always '' -- nothing to force.
             d = SimpleNamespace(**hn.as_dict())
             nocomma = HumanName(f"{d.title} {d.first} {d.middle} {d.last} {d.suffix}")
             lastnamecomma = HumanName(f"{d.last}, {d.title} {d.first} {d.middle} {d.suffix}")
@@ -220,7 +216,9 @@ class HumanNameVariationTests(HumanNameTestBase):
                 lastnamecomma = HumanName(f"{d.last}, {d.title} {d.first} {d.middle} {d.suffix} ({d.nickname})")
                 if d.suffix:
                     suffixcomma = HumanName(f"{d.title} {d.first} {d.middle} {d.last}, {d.suffix} ({d.nickname})")
-            for attr in hn._members:
+            # v1 iterated the private hn._members; 2.0's public equivalent
+            # is the as_dict() key set (same seven fields)
+            for attr in hn.as_dict():
                 self.m(getattr(hn, attr), getattr(nocomma, attr), hn)
                 self.m(getattr(hn, attr), getattr(lastnamecomma, attr), hn)
                 if hn.suffix:

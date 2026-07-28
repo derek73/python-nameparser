@@ -13,30 +13,35 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
                        string_format="TEST1")
         self.assertEqual(str(hn), "TEST1")
 
+    # The four *_constants_attribute tests below ran on the shared CONSTANTS
+    # singleton in v1; 2.0 deprecates shared mutation, so they use a private
+    # Constants passed as constants= (the migration-guide idiom) -- the
+    # config attribute under test is the same either way.
+
     def test_formatting_constants_attribute(self) -> None:
-        from nameparser.config import CONSTANTS
-        CONSTANTS.string_format = "TEST2"
-        hn = HumanName("Rev John A. Kenneth Doe III (Kenny)")
+        c = Constants()
+        c.string_format = "TEST2"
+        hn = HumanName("Rev John A. Kenneth Doe III (Kenny)", constants=c)
         self.assertEqual(str(hn), "TEST2")
 
     def test_capitalize_name_constants_attribute(self) -> None:
-        from nameparser.config import CONSTANTS
-        CONSTANTS.capitalize_name = True
-        hn = HumanName("bob v. de la macdole-eisenhower phd")
+        c = Constants()
+        c.capitalize_name = True
+        hn = HumanName("bob v. de la macdole-eisenhower phd", constants=c)
         self.assertEqual(str(hn), "Bob V. de la MacDole-Eisenhower Ph.D.")
 
     def test_force_mixed_case_capitalization_constants_attribute(self) -> None:
-        from nameparser.config import CONSTANTS
-        CONSTANTS.force_mixed_case_capitalization = True
-        hn = HumanName('Shirley Maclaine')
+        c = Constants()
+        c.force_mixed_case_capitalization = True
+        hn = HumanName('Shirley Maclaine', constants=c)
         hn.capitalize()
         self.assertEqual(str(hn), "Shirley MacLaine")
 
     def test_capitalize_name_and_force_mixed_case_capitalization_constants_attributes(self) -> None:
-        from nameparser.config import CONSTANTS
-        CONSTANTS.capitalize_name = True
-        CONSTANTS.force_mixed_case_capitalization = True
-        hn = HumanName('Shirley Maclaine')
+        c = Constants()
+        c.capitalize_name = True
+        c.force_mixed_case_capitalization = True
+        hn = HumanName('Shirley Maclaine', constants=c)
         self.assertEqual(str(hn), "Shirley MacLaine")
 
     def test_quote_nickname_formating(self) -> None:
@@ -102,22 +107,13 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         hn.nickname = ''
         self.assertEqual(str(hn), "Rev John A. Kenneth Doe III")
 
-    def test_name_containing_none_substring_with_none_empty_attribute_default(self) -> None:
-        # Regression for #254: with empty_attribute_default = None, __str__
-        # scrubbed the literal string 'None' from the formatted output,
-        # corrupting real name text containing that substring.
-        hn = HumanName("Nonez Smith", Constants())
-        with pytest.deprecated_call():
-            hn.C.empty_attribute_default = None  # type: ignore[assignment]  # see test_constants.test_empty_attribute_default
-        self.assertEqual(str(hn), "Nonez Smith")
-
-    def test_name_none_as_literal_name_with_none_empty_attribute_default(self) -> None:
-        # Companion to the #254 regression: a name piece that is exactly
-        # 'None' must survive formatting in None-mode.
-        hn = HumanName("None Smith", Constants())
-        with pytest.deprecated_call():
-            hn.C.empty_attribute_default = None  # type: ignore[assignment]  # see test_constants.test_empty_attribute_default
-        self.assertEqual(str(hn), "None Smith")
+    def test_name_containing_none_substring_survives_formatting(self) -> None:
+        # Residue of the #254 regression: v1's None-mode __str__ once
+        # scrubbed the literal string 'None' from formatted output. The
+        # None mode is gone in 2.0 (#255), but real name text spelled
+        # 'None'/'Nonez' must still never be scrubbed by formatting.
+        self.assertEqual(str(HumanName("Nonez Smith")), "Nonez Smith")
+        self.assertEqual(str(HumanName("None Smith")), "None Smith")
 
     def test_empty_field_drops_surrounding_whitespace(self) -> None:
         # issue #139: adjacent whitespace/punctuation should be dropped when a field is empty
@@ -147,15 +143,14 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         self.m(hn.last, "Smith", hn)
         self.assertEqual(str(hn), "∫≜⩕ Smith")
 
-    def test_keep_emojis(self) -> None:
-        from nameparser.config import Constants
+    def test_keep_emojis_opt_out_moved_to_policy(self) -> None:
+        # v1's regexes.emoji = False opt-out is not supported in 2.0
+        # (deliberate divergence, migration spec section 3 uniform rule):
+        # the assignment raises, and the error names the replacement,
+        # Policy(strip_emoji=False).
         constants = Constants()
-        constants.regexes.emoji = False  # type: ignore[assignment]
-        hn = HumanName("∫≜⩕ Smith😊", constants)
-        self.m(hn.first, "∫≜⩕", hn)
-        self.m(hn.last, "Smith😊", hn)
-        self.assertEqual(str(hn), "∫≜⩕ Smith😊")
-        # test cleanup
+        with pytest.raises(TypeError, match="strip_emoji"):
+            constants.regexes.emoji = False  # type: ignore[assignment]
 
     def test_remove_bidi_control_chars(self) -> None:
         # LRM/RLM and friends ride along with copy-pasted names and stick to
@@ -173,10 +168,11 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         hn = HumanName("\u200fمحمد بن سلمان\u200f")
         self.assertEqual(hn.first, "محمد")
 
-    def test_keep_bidi_control_chars(self) -> None:
-        from nameparser.config import Constants
+    def test_keep_bidi_opt_out_moved_to_policy(self) -> None:
+        # v1's regexes.bidi = False opt-out is not supported in 2.0
+        # (deliberate divergence, migration spec section 3 uniform rule):
+        # the assignment raises, and the error names the replacement,
+        # Policy(strip_bidi=False).
         constants = Constants()
-        constants.regexes.bidi = False  # type: ignore[assignment]
-        hn = HumanName("\u200fJohn\u200f Smith", constants)
-        self.m(hn.first, "\u200fJohn\u200f", hn)
-        self.m(hn.last, "Smith", hn)
+        with pytest.raises(TypeError, match="strip_bidi"):
+            constants.regexes.bidi = False  # type: ignore[assignment]

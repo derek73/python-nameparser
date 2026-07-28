@@ -1,0 +1,121 @@
+# Every rule needs `issue`; optional `name_regex` and `fields` narrow
+# it. An unexplained diff is a release blocker until classified (spec
+# S5). Rules are seeded from docs/superpowers/plans/notes-m12-diffs.md
+# and the `classification="fix(...)"` rows in tests/v2/cases.py; keep
+# each entry's `name_regex`/`fields` as tight as the diff allows.
+
+[[change]]
+issue = "fix(#274) maiden markers consumed"
+name_regex = "(?i)\\b(n[ée]e|born|geb\\.?|roz\\.?)\\b"
+fields = ["maiden", "middle", "last"]
+
+[[change]]
+issue = "fix(comma-family) lone post-comma piece routes to suffix/title, not first"
+# 'Smith, Dr.' / 'Andrews, M.D.': v1 put the lone strict-suffix-or-title
+# post-comma piece in `first`; 2.0 routes it to `suffix`/`title` instead
+# (family/`last` is unchanged either way -- "pre-comma is definitionally
+# family").
+name_regex = ","
+fields = ["first", "title", "suffix"]
+
+[[change]]
+issue = "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix"
+# 'Johnson PhD' / 'Mr. Johnson PhD': v1 routed a lone trailing suffix
+# to family/first (no comma present); 2.0 keeps recognized suffixes in
+# `suffix`.
+fields = ["first", "last", "suffix"]
+
+[[change]]
+issue = "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole"
+# Only fires when a custom suffix delimiter is configured (Policy /
+# Constants.suffix_delimiters); the corpus runs with default policy, so
+# this rule is expected to match nothing here. Kept for documentation
+# parity with tests/v2/cases.py's 'suffix_delimiter_no_space_core' row
+# (anti-#100, migration plan deviation 5).
+name_regex = "/"
+fields = ["suffix"]
+
+[[change]]
+issue = "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname"
+# suffix_acronyms_ambiguous gained 'ma'/'do' so bare 'Jack Ma' keeps its
+# surname (v1 parity restored); side effect: parenthesized/quoted "MA"
+# or "DO" no longer escape to suffix (v1 did, since v1 treated them as
+# unambiguous there) -- they now fall through to nickname parsing.
+# Not expected to fire against this corpus (no such strings survived
+# into the v1 banks); kept for documentation completeness.
+name_regex = "(?i)[(\"'](m\\.?a\\.?|d\\.?o\\.?)[)\"']"
+fields = ["suffix", "nickname"]
+
+[[change]]
+issue = "feat(#269) Arabic بن prefix chains onto family (non-Latin new-recognition)"
+# '‏محمد بن سلمان‏': #269 adds the native-script Arabic
+# patronymic particle بن ("bin"/"son of") to PREFIXES/
+# NON_FIRST_NAME_PREFIXES. v1 had no such entry, so it left بن a plain
+# middle-name token ('سلمان' alone as last); 2.0 now chains it onto the
+# family the same way 'von'/'bin' (Latin) do, giving family 'بن سلمان'.
+# This is new-recognition on non-Latin input -- the exact behavior
+# #269 exists to add -- not a Latin-corpus regression, so it is
+# classified rather than reverted.
+# Word-bounded: a bare "بن" would also match the substring inside e.g.
+# لبنان ("Lebanon") and silently absorb unrelated middle/last diffs.
+name_regex = "\\bبن\\b"
+fields = ["middle", "last"]
+
+[[change]]
+issue = "feat(#273) typographic nickname delimiters recognized by default"
+# 'John “Jack” Kennedy', 'Hans „Hansi“ Müller', 'Jean «Petit» Dupont':
+# v1 knew only straight quotes and parentheses, so a smart-quoted or
+# guillemet-wrapped nickname leaked into `middle` as literal text.
+# Matches only when such a delimiter is actually present -- the ASCII
+# pairs stay unclassified, since a diff there would be a regression.
+name_regex = "[“”„«»「」『』（）]"
+fields = ["middle", "nickname"]
+
+[[change]]
+issue = "feat(#269) non-Latin titles/conjunctions recognized"
+# 'г-н Иван Петров' (Cyrillic title), 'Хосе И Мария Сантос' (Cyrillic
+# conjunction И joining two given names). v1 shipped Latin-only
+# vocabulary, so these were plain name tokens and everything shifted
+# one position. New recognition on non-Latin input -- the point of
+# #269 -- not a Latin-corpus regression.
+#
+# Cyrillic only, and only the three fields the shift can touch. The
+# first draft allowed five fields across four scripts, which put every
+# Arabic name in the corpus -- including ones that are currently
+# PARITY -- into its shadow, and pre-excused Greek and Hebrew, against
+# which nothing has ever been compared. A leading title or an absorbed
+# conjunction moves a word from `first` to `title`, or from `middle`
+# into `first`; it cannot reach `last` or `suffix`. Widen this only
+# with a name that demonstrates the need, and prefer a new rule per
+# script over loosening this one -- the \bبن\b rule below is the
+# model.
+name_regex = "[\\u0400-\\u04FF]"
+fields = ["title", "first", "middle"]
+
+[[change]]
+issue = "fix(leading-credential) a split 'Ph. D.' before the name stays one unit"
+# 'Ph. D. John Smith'. v1 healed the adjacent 'Ph.'/'D.' pair only when
+# it TRAILED; leading, it split them -- title 'Ph.', given 'D.', and
+# the real given name pushed to middle. 2.0 keeps the credential whole
+# and routes it to `suffix`, which is the post-nominal field, so a
+# leading credential lands there rather than in `title`. Slightly odd
+# positionally, and still strictly better than manufacturing a given
+# name out of 'D.'.
+#
+# Anchored to the START on purpose. Trailing 'Ph. D.' is PARITY and
+# stays unclassified below; widening this regex would mask a
+# regression in the shape that is the whole reason fix_phd exists.
+name_regex = "^Ph\\. ?D\\."
+fields = ["title", "first", "middle", "suffix"]
+
+# Deliberately NOT a [[change]] rule: TRAILING 'Ph. D.' split-token
+# healing ('John Ph. D.', 'John Smith, Ph. D.') is PARITY, not a 2.0
+# behavior change -- v1's fix_phd healing of the adjacent 'Ph.'/'D.'
+# pair into one suffix unit is replicated exactly by 2.0's 'joined'
+# vocab tag (tests/v2/cases.py classification="parity" on both
+# 'phd_split' and 'suffix_comma_split_phd'; verified empirically, zero
+# diff against the 1.4 worker). Adding a suppression rule for it would
+# risk masking a real regression in this exact shape, so it is
+# intentionally left unclassified: if it ever starts diffing, the
+# harness must fail. (The leading case above is a separate shape, which
+# is why it needed its own anchored rule rather than a widened one.)

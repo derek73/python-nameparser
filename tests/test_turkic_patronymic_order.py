@@ -1,6 +1,17 @@
+import re
+from typing import cast
+
 from nameparser import HumanName
 from nameparser.config import Constants
 from tests.base import FlaggedConstantsTestBase, HumanNameTestBase
+
+# The 2.0 regexes proxy types its attributes as ``object`` (reads are
+# informational); the pattern-inspection tests below cast once here.
+_R = Constants().regexes
+_TURKIC = cast('re.Pattern[str]', _R.turkic_patronymic_marker)
+_TURKIC_CYR = cast('re.Pattern[str]', _R.turkic_patronymic_marker_cyrillic)
+_EAST_SLAVIC = cast('re.Pattern[str]', _R.east_slavic_patronymic)
+_EAST_SLAVIC_CYR = cast('re.Pattern[str]', _R.east_slavic_patronymic_cyrillic)
 
 
 def test_marker_is_whole_word_not_substring() -> None:
@@ -8,11 +19,10 @@ def test_marker_is_whole_word_not_substring() -> None:
     # not suffix .search() (unlike is_east_slavic_patronymic()) — pin this
     # so a future .match()->.search() slip doesn't silently start matching
     # surnames/given-names that merely contain a marker as a substring.
-    C = Constants()
-    assert not C.regexes.turkic_patronymic_marker.match("ogluu")
-    assert not C.regexes.turkic_patronymic_marker.match("Bogluchik")
-    assert not C.regexes.turkic_patronymic_marker_cyrillic.match("оглуш")
-    assert not C.regexes.turkic_patronymic_marker_cyrillic.match("Оглуев")
+    assert not _TURKIC.match("ogluu")
+    assert not _TURKIC.match("Bogluchik")
+    assert not _TURKIC_CYR.match("оглуш")
+    assert not _TURKIC_CYR.match("Оглуев")
 
 
 class TurkicPatronymicNameOrderReorderTests(FlaggedConstantsTestBase):
@@ -264,7 +274,6 @@ class PatronymicHandlerInteractionTests(FlaggedConstantsTestBase):
         assert n.last == "Aliyev"
 
     def test_no_regex_collision_latin(self) -> None:
-        C = Constants()
         east_slavic_examples = [
             "Ivanovich", "Ivanovna", "Sergeevich", "Sergeevna",
             "Nikitichna", "Ilyich", "Kuzmich", "Lukich", "Fomich", "Fokich",
@@ -276,14 +285,13 @@ class PatronymicHandlerInteractionTests(FlaggedConstantsTestBase):
         for word in east_slavic_examples:
             # Sanity check: each word actually matches its own family's
             # regex, so the non-collision assertion below is non-vacuous.
-            assert C.regexes.east_slavic_patronymic.search(word), word
-            assert not C.regexes.turkic_patronymic_marker.match(word), word
+            assert _EAST_SLAVIC.search(word), word
+            assert not _TURKIC.match(word), word
         for word in turkic_examples:
-            assert C.regexes.turkic_patronymic_marker.match(word), word
-            assert not C.regexes.east_slavic_patronymic.search(word), word
+            assert _TURKIC.match(word), word
+            assert not _EAST_SLAVIC.search(word), word
 
     def test_no_regex_collision_cyrillic(self) -> None:
-        C = Constants()
         east_slavic_examples = [
             "Иванович", "Ивановна", "Сергеевич", "Сергеевна",
             "Никитична", "Ильич", "Кузьмич", "Лукич", "Фомич", "Фокич",
@@ -295,8 +303,8 @@ class PatronymicHandlerInteractionTests(FlaggedConstantsTestBase):
         for word in east_slavic_examples:
             # Sanity check: each word actually matches its own family's
             # regex, so the non-collision assertion below is non-vacuous.
-            assert C.regexes.east_slavic_patronymic_cyrillic.search(word), word
-            assert not C.regexes.turkic_patronymic_marker_cyrillic.match(word), word
+            assert _EAST_SLAVIC_CYR.search(word), word
+            assert not _TURKIC_CYR.match(word), word
         for word in turkic_examples:
-            assert C.regexes.turkic_patronymic_marker_cyrillic.match(word), word
-            assert not C.regexes.east_slavic_patronymic_cyrillic.search(word), word
+            assert _TURKIC_CYR.match(word), word
+            assert not _EAST_SLAVIC_CYR.search(word), word

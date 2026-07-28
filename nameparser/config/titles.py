@@ -1,3 +1,5 @@
+from nameparser.config._invariants import assert_normalized
+
 FIRST_NAME_TITLES = {
     'aunt',
     'auntie',
@@ -21,6 +23,31 @@ FIRST_NAME_TITLES = {
     'shaikh',
     'cheikh',
     'shekh',
+    # #269: Arabic -- "الشيخ" ("the sheikh") is the native-script form of
+    # the transliterated sheikh/sheik/... cluster above; same
+    # single-first-name-follows convention ("Sheikh Mohammed").
+    'الشيخ',
+    # #269 follow-up: Arabic honorifics precede the GIVEN name, so all
+    # belong here rather than in plain TITLES. Article forms are never
+    # given names; the bare doctor/professor/engineer forms are not
+    # used as given names either. Deferred under the collision rule
+    # (like мл/ст in suffixes.py): bare سيد (Sayyid is a common given
+    # name), bare شيخ (Shaikha is a common female given name), أمير
+    # and سلطان (Amir/Sultan, common given names), and the 'د.'
+    # abbreviation -- edge-period normalization would leave bare 'د',
+    # which swallows single-letter initials (the bare-κ trap above).
+    'الدكتور',     # "the doctor" (m)
+    'الدكتورة',    # "the doctor" (f)
+    'دكتور',       # doctor (m), article-less
+    'دكتورة',      # doctor (f), article-less
+    'الأستاذ',     # "the professor"/Mr. honorific (m)
+    'الأستاذة',    # professor/Mrs. honorific (f)
+    'أستاذ',       # professor (m), article-less
+    'أستاذة',      # professor (f), article-less
+    'الحاج',       # hajj honorific (m)
+    'الحاجة',      # hajj honorific (f)
+    'الشيخة',      # female counterpart of الشيخ
+    'مهندس',       # engineer (a genuine title in Egyptian usage)
 }
 """
 When these titles appear with a single other name, that name is a first name, e.g.
@@ -33,7 +60,8 @@ When these titles appear with a single other name, that name is a first name, e.
 #: recognition titles like "Deputy Secretary of State".
 TITLES = FIRST_NAME_TITLES | {
     "attaché",
-    "chargé d'affaires",
+    "chargé",
+    "d'affaires",
     "king's",
     "marchioness",
     "marquess",
@@ -64,7 +92,7 @@ TITLES = FIRST_NAME_TITLES | {
     'academic',
     'acolyte',
     'activist',
-    'actor ',
+    'actor',
     'actress',
     'adept',
     'adjutant',
@@ -162,6 +190,7 @@ TITLES = FIRST_NAME_TITLES | {
     'chairs',
     'chancellor',
     'chaplain',
+    'charge',  # unaccented 'chargé', like attaché/'attache'
     'chef',
     'chemist',
     'chief',
@@ -639,7 +668,7 @@ TITLES = FIRST_NAME_TITLES | {
     'teacher',
     'technical',
     'technologist',
-    'television ',
+    'television',
     'tenor',
     'theater',
     'theatre',
@@ -683,4 +712,77 @@ TITLES = FIRST_NAME_TITLES | {
     'woodman',
     'writer',
     'zoologist',
+
+    # #269: Cyrillic (ru/uk) -- mr/mrs/dr/prof/academician/pan(i)
+    # honorifics, same title-then-family convention as 'mr'/'dr'/'prof'
+    # above (not FIRST_NAME_TITLES: "г-н Петров" families the surname
+    # just like "Mr. Smith" does).
+    'г-н',
+    'г-жа',
+    'д-р',
+    'проф',
+    'акад',
+    'пан',
+    'пані',
+
+    # #269: Greek -- kyria/kyrios(abbr)/doctor/professor abbreviations;
+    # same plain-title convention as above.
+    # #269: bare κ deferred -- collides with the initial+surname shape
+    # ('Κ. Παπαδόπουλος' would parse as title 'Κ.' with an empty given;
+    # _normalize strips the edge period, so the entry matches the
+    # initial). Latin TITLES deliberately has no bare single-letter
+    # entries for the same reason.
+    'κα',
+    'κος',
+    'δρ',
+    'καθ',
+
+    # #269: Hebrew -- "מר" ("Mr."), plain title like its Latin analog.
+    # Geresh/gershayim forms of "doctor"/"Mrs." -- both the ASCII-quote
+    # spelling ('ד"ר', "גב'") and the typographic Unicode spelling
+    # ('ד״ר' U+05F4 gershayim, 'גב׳' U+05F3 geresh) ship: probed live
+    # against extract_delimited's _open_ok/_close_ok boundary rules
+    # (2026-07-17) -- the quote chars sit mid-word (no preceding
+    # whitespace before the internal quote and, for the closing "'" one,
+    # no following boundary), so both fail the open/close boundary test
+    # and are left untouched as literal text. Extraction is provably
+    # inert on these two ASCII spellings; no delimiter-interaction risk.
+    'מר',
+    'ד"ר',
+    "גב'",
+    'ד״ר',
+    'גב׳',
+    # #269 follow-up: the rest of the common Israeli honorifics, same
+    # plain-title bucket (family follows) and the same dual geresh/
+    # gershayim spelling rule as above. Deferred under the collision
+    # rule: bare 'רב' (also the ordinary word "many"). The 'בר'
+    # particle deferral is recorded in prefixes.py with the other
+    # particle decisions.
+    'גברת',       # Mrs./Ms., full form
+    "פרופ'",      # professor abbreviation, ASCII apostrophe
+    'פרופ׳',      # professor abbreviation, U+05F3 geresh
+    'פרופסור',    # professor, full form
+    'עו"ד',       # advocate/lawyer, ASCII quote
+    'עו״ד',       # advocate/lawyer, U+05F4 gershayim
+    'הרב',        # "the rabbi" (article form; bare רב deferred)
+
+    # #269 follow-up: Devanagari (hi/mr). NO Latin twins on purpose:
+    # transliterated sri/shri collide with real given names (Sri
+    # Mulyani); the native-script forms cannot. "डॉ." matches via the
+    # edge-period normalization, like Latin "Dr.".
+    'श्री',        # Shri (Mr.)
+    'श्रीमती',     # Shrimati (Mrs.)
+    'डॉ',         # Dr. abbreviation
 }
+
+
+# Guard the invariants at import time, so a bad edit fails here instead of
+# drifting silently until a test happens to catch it (see prefixes.py).
+# The subset rule holds by construction today -- TITLES is defined as
+# FIRST_NAME_TITLES | {...} -- so this pins it against a future edit that
+# makes TITLES a standalone set. Lexicon enforces the same rule on
+# caller-supplied vocabulary; `assert` is stripped under `python -O`.
+assert FIRST_NAME_TITLES <= TITLES, \
+    "FIRST_NAME_TITLES must stay a subset of TITLES"
+# TITLES covers FIRST_NAME_TITLES, by the subset assert above.
+assert_normalized("TITLES", TITLES)

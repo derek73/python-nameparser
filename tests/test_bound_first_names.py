@@ -3,14 +3,9 @@ from tests.base import HumanNameTestBase
 
 
 class BoundFirstNamesTestCase(HumanNameTestBase):
-
-    def test_is_bound_first_name_true(self) -> None:
-        hn = HumanName("test")
-        assert hn.is_bound_first_name("Abdul")
-
-    def test_is_bound_first_name_false(self) -> None:
-        hn = HumanName("test")
-        assert not hn.is_bound_first_name("Ahmed")
+    # The v1 is_bound_first_name predicate is gone with the other v1 parsing
+    # hooks (#280); the vocabulary's behavior is pinned through the parsing
+    # tests below.
 
     # --- no-comma: basic joining ---
     def test_no_comma_basic_join(self) -> None:

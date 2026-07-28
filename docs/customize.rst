@@ -1,610 +1,439 @@
-Customizing the Parser with Your Own Configuration
-==================================================
+Customizing the parser
+=======================
 
-:py:class:`~nameparser.config.Constants` is for application-level
-configuration, set once at startup: the shared module-level ``CONSTANTS``
-instance is the only channel that reaches parses happening in code you don't
-own -- helpers, pipelines, a third-party library using nameparser internally
--- the same role ``logging`` and ``locale`` play elsewhere. For anything
-scoped to one dataset, one library, or one test, pass your own ``Constants``
-instance instead -- see the three explicit forms under "Module-level Shared
-Configuration Instance" below.
+Every piece of nameparser configuration sorts into one of three places
+by asking what it varies with: vocabulary varies by **language**
+(:class:`~nameparser.Lexicon`), behavior varies by **data source or
+application** (:class:`~nameparser.Policy`), and presentation varies by
+**output destination** (a rendering argument). See :doc:`concepts` for
+why the split is drawn there.
 
-Recognition of titles, prefixes, suffixes and conjunctions is handled by
-matching the lower case characters of a name piece with pre-defined sets
-of strings located in :py:mod:`nameparser.config`. You can adjust
-these predefined sets to help fine tune the parser for your dataset.
+Vocabulary: Lexicon
+--------------------
 
-Changing the Parser Constants
------------------------------
-
-There are a few ways to adjust the parser configuration depending on your
-needs. The config is available in two places.
-
-The first is via ``from nameparser.config import CONSTANTS``.
-
-.. doctest::
-
-    >>> from nameparser.config import CONSTANTS
-    >>> CONSTANTS  # doctest: +ELLIPSIS
-    <Constants : [
-        prefixes: ...
-    ]>
-
-The other is the ``C`` attribute of a ``HumanName`` instance, e.g.
-``hn.C``.
-
-.. doctest::
-
-    >>> from nameparser import HumanName
-    >>> hn = HumanName("Dean Robert Johns")
-    >>> hn.C  # doctest: +ELLIPSIS
-    <Constants : [
-        prefixes: ...
-    ]>
-
-Both places are usually a reference to the same shared module-level
-:py:class:`~nameparser.config.CONSTANTS` instance, depending on how you
-instantiate the :py:class:`~nameparser.parser.HumanName` class (see below).
-
-
-
-Editable attributes of nameparser.config.CONSTANTS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* :py:data:`~nameparser.config.TITLES` - Pieces that come before the name. Includes all `first_name_titles`. Cannot include things that may be first names.
-* :py:data:`~nameparser.config.FIRST_NAME_TITLES` - Titles that, when followed by a single name, that name is a first name, e.g. "King David".
-* :py:data:`~nameparser.config.SUFFIX_ACRONYMS` - Pieces that come at the end of the name that may or may not have periods separating the letters, e.g. "m.d.".
-* :py:data:`~nameparser.config.SUFFIX_NOT_ACRONYMS` - Pieces that come at the end of the name that never have periods separating the letters, e.g. "Jr.".
-* :py:data:`~nameparser.config.SUFFIX_ACRONYMS_AMBIGUOUS` - Acronym suffixes from ``SUFFIX_ACRONYMS`` that also plausibly work as a given-name nickname on their own, e.g. "JD", "Ed". When one of these appears alone in parenthesis or quotes (e.g. ``'JEFFREY (JD) BRICKEN'``), it's kept as a nickname rather than reclassified as a suffix, since that's the more common reading in ambiguous, delimiter-only context (see the "Nickname Handling" section in the usage guide).
-* :py:data:`~nameparser.config.CONJUNCTIONS` - Connectors like "and" that join the preceding piece to the following piece.
-* :py:data:`~nameparser.config.PREFIXES` - Connectors like "del" and "bin" that join to the following piece but not the preceding, similar to titles but can appear anywhere in the name.
-* :py:data:`~nameparser.config.CAPITALIZATION_EXCEPTIONS` - Dictionary of pieces that do not capitalize the first letter, e.g. "Ph.D".
-* :py:data:`~nameparser.config.REGEXES` - Regular expressions used to find words, initials, nicknames, etc.
-
-Each set-valued constant comes with :py:func:`~nameparser.config.SetManager.add`, :py:func:`~nameparser.config.SetManager.remove`, and :py:func:`~nameparser.config.SetManager.discard` methods for tuning
-the constants for your project. These methods automatically lower case and
-remove punctuation to normalize them for comparison. The two dict-valued
-constants (``CAPITALIZATION_EXCEPTIONS`` and ``REGEXES``) are edited with
-normal dict operations.
-
-Adding Custom Nickname Delimiters
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-:py:meth:`~nameparser.parser.HumanName.parse_nicknames` recognizes delimiters
-through two per-bucket collections:
-:py:obj:`~nameparser.config.Constants.nickname_delimiters` (default: the
-three built-ins -- ``quoted_word``, ``double_quotes`` and ``parenthesis``,
-each resolved live from :py:attr:`~nameparser.config.Constants.regexes`, so
-overriding e.g. ``CONSTANTS.regexes.parenthesis`` still works exactly as
-before) and :py:obj:`~nameparser.config.Constants.maiden_delimiters` (empty
-by default -- see "Routing to Maiden Name" below).
-
-To recognize an *additional* delimiter, add a compiled pattern to
-``nickname_delimiters`` under any key, then re-run
-:py:meth:`~nameparser.parser.HumanName.parse_full_name` to pick it up:
-
-.. doctest::
-
-    >>> import re
-    >>> from nameparser import HumanName
-    >>> from nameparser.config import Constants
-    >>> hn = HumanName("Benjamin {Ben} Franklin", constants=Constants())
-    >>> hn.nickname
-    ''
-    >>> hn.C.nickname_delimiters['curly_braces'] = re.compile(r'\{(.*?)\}', re.U)
-    >>> hn.parse_full_name()
-    >>> hn.nickname
-    'Ben'
-
-Routing to Maiden Name
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Parenthesized (or otherwise delimited) alternate/maiden surnames --
-``"Baker (Johnson), Jenny"`` -- go to ``nickname`` by default, same as any
-other delimited content. To route a delimiter to the first-class ``maiden``
-field instead, move its key from ``nickname_delimiters`` to
-``maiden_delimiters`` on a ``Constants`` instance (a plain ``dict.pop()`` +
-assign -- this preserves the live link back to ``regexes`` for the three
-built-ins) *before* parsing a name with it, the same way you'd configure
-``patronymic_name_order`` or ``middle_name_as_last``:
-
-.. doctest::
-
-    >>> from nameparser import HumanName
-    >>> from nameparser.config import Constants
-    >>> C = Constants()
-    >>> C.maiden_delimiters['parenthesis'] = C.nickname_delimiters.pop('parenthesis')
-    >>> hn = HumanName("Baker (Johnson), Jenny", constants=C)
-    >>> hn.first, hn.last, hn.maiden
-    ('Jenny', 'Baker', 'Johnson')
-
-This also strips the parenthesized maiden name from the no-comma written
-form, since routing happens before positional parsing:
-
-.. doctest::
-
-    >>> hn = HumanName("Jenny Baker (Johnson)", constants=C)
-    >>> hn.first, hn.last, hn.maiden
-    ('Jenny', 'Baker', 'Johnson')
-
-Routing an already-active built-in delimiter on an *existing* ``HumanName``
-instance and calling ``parse_full_name()`` again will not work: only the
-``full_name`` setter resets the working copy of the name string back to the
-original input, so re-parsing in place has nothing left for the moved
-delimiter to match if it already matched during the first parse. Configure
-the ``Constants`` first, as above.
-
-``maiden`` is not included in the default :py:obj:`~nameparser.config.Constants.string_format`,
-so ``str(hn)`` is unaffected unless you add ``{maiden}`` to your own format.
-
-Other editable attributes
+Adding and removing words
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* :py:obj:`~nameparser.config.Constants.string_format` - controls output from `str()`
-* :py:obj:`~nameparser.config.Constants.empty_attribute_default` - value returned by empty attributes, defaults to empty string
-* :py:obj:`~nameparser.config.Constants.capitalize_name` - If set, applies :py:meth:`~nameparser.parser.HumanName.capitalize` to :py:class:`~nameparser.parser.HumanName` instance.
-* :py:obj:`~nameparser.config.Constants.force_mixed_case_capitalization` - If set, forces the capitalization of mixed case strings when :py:meth:`~nameparser.parser.HumanName.capitalize` is called.
-* :py:obj:`~nameparser.config.Constants.suffix_delimiter` - additional delimiter used to split suffix groups after comma-splitting, e.g. ``" - "`` for names like ``"Jane Smith, RN - CRNA"``. Defaults to ``None`` (disabled).
-* :py:obj:`~nameparser.config.Constants.initials_separator` - string placed between consecutive initials within the same name group (after the delimiter). Defaults to ``" "``, so ``"A. K."``; set to ``""`` for compact ``"A.K."``.
-* :py:obj:`~nameparser.config.Constants.patronymic_name_order` - If set, detects Russian formal-order names (``Surname GivenName Patronymic``) via a trailing East-Slavic patronymic suffix and rotates the parts to Western order (``first=GivenName``, ``middle=Patronymic``, ``last=Surname``). Also detects reversed-order Azerbaijani/Central-Asian Turkic patronymics (``Surname GivenName PatronymicRoot Marker``, e.g. ``oglu``/``qizi``). Opt-in; see subsections below.
-* :py:obj:`~nameparser.config.Constants.middle_name_as_last` - If set, folds middle names into the last name (``.last`` becomes what ``.surnames`` already was, ``.middle`` becomes empty). Opt-in; see subsection below.
-
-
-Russian Formal Name Order
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-By default the parser treats all three-part names as ``First Middle Last``. For
-Russian data in formal order (``Surname GivenName Patronymic``), enable
-``patronymic_name_order``::
-
-    >>> from nameparser import HumanName
-    >>> from nameparser.config import Constants
-    >>> C = Constants(patronymic_name_order=True)
-    >>> hn = HumanName("Ivanov Ivan Ivanovich", constants=C)
-    >>> hn.first, hn.middle, hn.last
-    ('Ivan', 'Ivanovich', 'Ivanov')
-
-Detection is anchored on a recognised East-Slavic patronymic suffix
-(``-ovich``, ``-ovna``, ``-evich``, ``-evna``, ``-ichna``, and the irregular
-forms ``-ilyich``, ``-kuzmich``, ``-lukich``, ``-fomich``, ``-fokich``; same
-patterns in Cyrillic). A comma activates the parser's standard
-Last, First Middle path, which already handles Russian formal order —
-reordering is suppressed to avoid a double-transformation.
-
-**Opt-in tradeoff:** when the flag is on, any name whose last token happens to
-end in a patronymic suffix is reordered — including Western names with
-patronymic-form surnames such as ``"David Michael Abramovich"``. Enable this
-flag only when your data is predominantly Russian formal-order names.
-
-
-Turkic Patronymics
-~~~~~~~~~~~~~~~~~~
-
-Azerbaijani and Central-Asian formal names follow a different shape: a
-4-word ``[Given] [Father's given name] [Marker] [Family]``, where the
-marker is a standalone word (``oglu``/``oğlu`` "son of",
-``qizi``/``qızı`` "daughter of", and further variants — see below), not a
-bound suffix. The same ``patronymic_name_order`` flag also detects and
-rotates the reversed, no-comma form of this shape::
-
-    >>> from nameparser import HumanName
-    >>> from nameparser.config import Constants
-    >>> C = Constants(patronymic_name_order=True)
-    >>> hn = HumanName("Aliyev Vusal Said oglu", constants=C)
-    >>> hn.first, hn.middle, hn.last
-    ('Vusal', 'Said oglu', 'Aliyev')
-
-Natural order (``"Vusal Said oglu Aliyev"``) and comma order
-(``"Aliyev, Vusal Said oglu"``) already parse correctly without this flag
-and are left unchanged.
-
-Detection is scoped strictly to the 4-token shape (single-token first/last,
-exactly two middle tokens, last token a recognised marker) — matching the
-East-Slavic guard's token-count strictness above. Unlike that guard, there's
-no additional check on the given-name token, since Turkic markers are a
-small, closed set unlikely to coincide with an ordinary given name (whereas
-East-Slavic patronymic suffixes can coincide with real Western surnames).
-Recognised markers cover common transliterations and native orthographies:
-Latin ``oglu``, ``oğlu``, ``ogly``, ``ogli``, ``o'g'li`` (and its Uzbek
-modifier-apostrophe and right-single-quote variants), ``qizi``, ``qızı``,
-``kizi``, ``kyzy``, ``gyzy``, ``uly``, ``uulu``; and Cyrillic ``оглу``,
-``оглы``, ``оғлу``, ``ўғли``, ``угли``, ``кызы``, ``гызы``, ``қызы``,
-``қизи``, ``улы``, ``ұлы``, ``уулу``. Matching is case-insensitive.
-
-
-Suppressing Middle Names
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Some naming systems have no middle-name concept — everything after the given
-name is lineage or family (e.g. Arabic patronymic chaining: given + father +
-grandfather + family). Enable ``middle_name_as_last`` to fold the middle name
-into the last name instead of splitting them::
-
-    >>> from nameparser import HumanName
-    >>> from nameparser.config import Constants
-    >>> C = Constants(middle_name_as_last=True)
-    >>> hn = HumanName("Mohamad Ahmad Ali Hassan", constants=C)
-    >>> hn.first, hn.middle, hn.last
-    ('Mohamad', '', 'Ahmad Ali Hassan')
-
-The fold applies uniformly to comma input too, so both written forms of a name
-converge on the same result::
-
-    >>> hn2 = HumanName("Hassan, Mohamad Ahmad Ali", constants=C)
-    >>> hn2.first, hn2.last
-    ('Mohamad', 'Ahmad Ali Hassan')
-
-
-Splitting last-name prefix particles
--------------------------------------
-
-The :py:attr:`~nameparser.parser.HumanName.last_base` and
-:py:attr:`~nameparser.parser.HumanName.last_prefixes` properties split the last
-name at the boundary between leading prefix particles and the core surname.  They
-use the same ``PREFIXES`` set, so adding a particle makes the split pick it up
-automatically::
-
-    >>> from nameparser import HumanName
-    >>> from nameparser.config import CONSTANTS
-    >>> CONSTANTS.prefixes.add('op')  # doctest: +ELLIPSIS
-    SetManager({...})
-    >>> HumanName("Jan op den Berg").last_base
-    'Berg'
-    >>> HumanName("Jan op den Berg").last_prefixes
-    'op den'
-    >>> CONSTANTS.prefixes.remove('op')  # doctest: +ELLIPSIS
-    SetManager({...})
-
-Note the ``remove`` call at the end — ``customize.rst`` examples share global
-``CONSTANTS``, so mutations must be reversed to avoid affecting later examples.
-
-Because ``last_base`` is a plain string property, sorting a list of names by
-core surname (ignoring prefix particles like *van*, *de la*) is just a key
-function::
-
-    names = [
-        HumanName("Vincent van Gogh"),
-        HumanName("Juan de la Vega"),
-        HumanName("John Smith"),
-    ]
-    sorted_names = sorted(names, key=lambda n: n.last_base.lower())
-    # sort keys: 'gogh', 'smith', 'vega'  →  van Gogh, Smith, de la Vega
-
-To sort by first name when two people share the same ``last_base``, add it as
-a secondary key::
-
-    sorted_names = sorted(names, key=lambda n: (n.last_base.lower(), n.first.lower()))
-
-Bound First Names
-------------------
-
-``CONSTANTS.bound_first_names`` controls bound given-name prefixes that attach
-to the following word to form one first name. By default it contains
-``{'abdul', 'abdel', 'abdal', 'abu', 'abou', 'umm'}``.
-
-Example::
-
-    >>> from nameparser import HumanName
-    >>> hn = HumanName("abdul salam ahmed salem")
-    >>> hn.first, hn.middle, hn.last
-    ('abdul salam', 'ahmed', 'salem')
-
-To **disable** the feature entirely::
-
-    >>> from nameparser.config import CONSTANTS
-    >>> CONSTANTS.bound_first_names.clear()
-
-To **add** a word (e.g. if your data uses ``mohamad`` as a bound prefix)::
-
-    >>> CONSTANTS.bound_first_names.add('mohamad')
-
-To **remove** a single entry::
-
-    >>> CONSTANTS.bound_first_names.remove('umm')
-
-You can also pass a custom set per ``Constants`` instance::
-
-    >>> from nameparser.config import Constants
-    >>> c = Constants(bound_first_names={'abu', 'umm'})
-    >>> hn2 = HumanName("abu bakr al saud", constants=c)
-    >>> hn2.first, hn2.last
-    ('abu bakr', 'al saud')
-
-Non-First-Name Prefixes
------------------------
-
-``CONSTANTS.non_first_name_prefixes`` is the subset of prefixes that are *never*
-a standalone first name (``de``, ``dos``, ``ibn``, ...). When a name **starts**
-with one of these, there is no first name -- the whole thing is a surname.
-
-Example::
-
-    >>> from nameparser import HumanName
-    >>> hn = HumanName("de Mesnil")
-    >>> hn.first, hn.last
-    ('', 'de Mesnil')
-
-A member must be a prefix that is never a given name in any culture, and the set
-must stay **disjoint** from ``bound_first_names`` (a word cannot both join to
-the first name and never be a first name). Ambiguous particles that *can* be
-given names (``van``, ``von``, ``della``, ``di``, ``del``, ...) are intentionally
-excluded; add them yourself if your data warrants it::
-
-    >>> from nameparser.config import CONSTANTS
-    >>> CONSTANTS.non_first_name_prefixes.add('von')  # doctest: +SKIP
-
-To **disable** the feature entirely::
-
-    >>> CONSTANTS.non_first_name_prefixes.clear()  # doctest: +SKIP
-
-Parser Customization Examples
------------------------------
-
-Removing a Title
-~~~~~~~~~~~~~~~~
-
-Take a look at the :py:mod:`nameparser.config` documentation to see what's
-in the constants. Here's a quick walk through of some examples where you
-might want to adjust them.
-
-"Hon" is a common abbreviation for "Honorable", a title used when
-addressing judges, and is included in the default tiles constants. This
-means it will never be considered a first name, because titles are the
-pieces before first names.
-
-But "Hon" is also sometimes a first name. If your dataset contains more
-"Hon"s than "Honorable"s, you may wish to remove it from the titles
-constant so that "Hon" can be parsed as a first name.
-
 .. doctest::
-    :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
-    >>> from nameparser import HumanName
-    >>> from nameparser.config import Constants
-    >>> constants = Constants()
-    >>> hn = HumanName("Hon Solo", constants=constants)
-    >>> hn
-    <HumanName : [
-        title: 'Hon'
-        first: ''
-        middle: ''
-        last: 'Solo'
-        suffix: ''
-        nickname: ''
-        maiden: ''
-    ]>
-    >>> constants.titles.remove('hon')
-    SetManager({'10th', ..., 'zoologist'})
-    >>> hn = HumanName("Hon Solo", constants=constants)
-    >>> hn
-    <HumanName : [
-        title: ''
-        first: 'Hon'
-        middle: ''
-        last: 'Solo'
-        suffix: ''
-        nickname: ''
-        maiden: ''
-    ]>
+    >>> from nameparser import Lexicon, Parser
+    >>> lex = Lexicon.default().add(titles={"dean"})
+    >>> Parser(lexicon=lex).parse("Dean Robert Johns").title
+    'Dean'
 
+:meth:`~nameparser.Lexicon.add` and :meth:`~nameparser.Lexicon.remove`
+both return a new :class:`~nameparser.Lexicon` — the one you started
+from (here, ``Lexicon.default()``) is never mutated. Every field
+accepts a plain set of lowercase words, keyword by field name (``titles``
+above; ``particles``, ``suffix_words``, and the rest work the same
+way) — see :doc:`modules` for the full field list.
 
-If you don't want to detect any titles at all, you can remove all of them:
+Vocabulary entries are matched one word at a time (``given_name_titles``
+excepted), so a multi-word entry like ``titles={"grand moff"}`` can
+never match; the constructor warns when it sees one
+(``capitalization_exceptions`` keys included — they are looked up per
+word too).
 
-.. doctest::
-    :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
-
-    >>> constants.titles.clear()
-    SetManager(set())
-
-
-Adding a Title
-~~~~~~~~~~~~~~~~
-
-You can also pass a ``Constants`` instance to ``HumanName`` on instantiation.
-
-"Dean" is a common first name so it is not included in the default titles
-constant. But in some contexts it is more common as a title. If you would
-like "Dean" to be parsed as a title, simply add it to the titles constant.
-
-You can pass multiple strings to both the :py:func:`~nameparser.config.SetManager.add`
-and :py:func:`~nameparser.config.SetManager.remove`
-methods and each string will be added or removed. Both functions
-automatically normalize the strings for the parser's comparison method by
-making them lower case and removing periods.
-
-.. doctest::
-    :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
-
-    >>> from nameparser import HumanName
-    >>> from nameparser.config import Constants
-    >>> constants = Constants()
-    >>> constants.titles.add('dean', 'Chemistry')
-    SetManager({'10th', ..., 'zoologist'})
-    >>> hn = HumanName("Assoc Dean of Chemistry Robert Johns", constants=constants)
-    >>> hn
-    <HumanName : [
-        title: 'Assoc Dean of Chemistry'
-        first: 'Robert'
-        middle: ''
-        last: 'Johns'
-        suffix: ''
-        nickname: ''
-        maiden: ''
-    ]>
-
-
-Module-level Shared Configuration Instance
-------------------------------------------
-
-As established above, ``CONSTANTS`` is shared by every ``HumanName`` created
-without its own config -- that's what makes it the right place for
-application-level setup, and also the source of the one gotcha it carries:
-changing the config on one instance changes the behavior of every other
-instance that shares it, which can be surprising if you only meant to
-configure the one you're holding. Parsing itself never modifies the
-configuration — only your own ``add`` and ``remove`` calls do — so the shared
-instance is safe to read concurrently, e.g. parsing names on multiple threads.
-
-.. doctest:: module config
-    :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
-
-    >>> from nameparser import HumanName
-    >>> instance = HumanName("")
-    >>> instance.C.titles.add('dean')
-    SetManager({'10th', ..., 'zoologist'})
-    >>> other_instance = HumanName("Dean Robert Johns")
-    >>> other_instance # Dean parses as title
-    <HumanName : [
-        title: 'Dean'
-        first: 'Robert'
-        middle: ''
-        last: 'Johns'
-        suffix: ''
-        nickname: ''
-        maiden: ''
-    ]>
-
-
-If you'd prefer new instances to have their own config values, pass your own
-:py:class:`~nameparser.config.Constants` instance as the ``constants``
-argument when instantiating ``HumanName``. There are three spellings,
-depending on which config you want the new instance to start from:
-
-.. code-block::
-
-    HumanName(name)                              # shared CONSTANTS (unchanged)
-    HumanName(name, constants=Constants())       # private, fresh library defaults
-    HumanName(name, constants=CONSTANTS.copy())  # private, snapshot of the current shared config
-
-The middle and last forms both give the instance an independent config that
-further changes to ``CONSTANTS`` won't reach, but they answer different
-questions: ``Constants()`` ignores any customization already made to
-``CONSTANTS`` and starts clean, while ``CONSTANTS.copy()`` carries those
-customizations over into the private copy. Each instance always has a ``C``
-attribute, but if you didn't pass one of the private forms to the
-``constants`` argument then it's a reference to the module-level config
-values with the behavior described above.
-
-.. doctest:: module config
-    :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
-
-    >>> from nameparser import HumanName
-    >>> from nameparser.config import Constants
-    >>> instance = HumanName("Dean Robert Johns")
-    >>> instance.has_own_config
-    False
-    >>> instance.C.titles.add('dean')
-    SetManager({'10th', ..., 'zoologist'})
-    >>> other_instance = HumanName("Dean Robert Johns", Constants()) # <-- fresh, private config
-    >>> other_instance
-    <HumanName : [
-        title: ''
-        first: 'Dean'
-        middle: 'Robert'
-        last: 'Johns'
-        suffix: ''
-        nickname: ''
-        maiden: ''
-    ]>
-    >>> other_instance.has_own_config
-    True
-
-.. deprecated:: 1.4.0
-    Passing ``None`` as the ``constants`` argument also builds a fresh
-    ``Constants()``, but is deprecated: ``None`` conventionally means "use
-    the default," which here is the *shared* ``CONSTANTS`` -- the opposite of
-    what passing ``None`` actually does. It emits a ``DeprecationWarning``
-    and will raise ``TypeError`` in 2.0 (issue #260); use one of the two
-    explicit forms above instead.
-
-Don't Remove Emojis
-~~~~~~~~~~~~~~~~~~~
-
-By default, all emojis are removed from the input string before the name is parsed.
-You can turn this off by setting the ``emoji`` regex to ``False``.
+Removing works the same way, and drops the word from recognition:
 
 .. doctest::
 
-    >>> from nameparser import HumanName
-    >>> from nameparser.config import Constants
-    >>> constants = Constants()
-    >>> constants.regexes.emoji = False
-    >>> hn = HumanName("Sam 😊 Smith", constants=constants)
-    >>> str(hn)
-    'Sam 😊 Smith'
+    >>> lean = Lexicon.default().remove(titles={"professor"})
+    >>> Parser(lexicon=lean).parse("Professor Robert Johns").title
+    ''
 
-Don't Remove Bidi Control Characters
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+A few fields mark a subset of another — ``given_name_titles`` over
+``titles``, ``particles_ambiguous`` over ``particles``,
+``suffix_acronyms_ambiguous`` over ``suffix_acronyms``. Entries must
+appear in the base field too, so add to both and remove from the marker
+first; anything else raises ``ValueError`` naming the orphans rather
+than leaving a marker entry that no rule will ever consult.
 
-By default, invisible bidirectional control characters (the left-to-right and
-right-to-left marks and friends, common in copy-pasted right-to-left names) are
-removed from the input string before the name is parsed. You can turn this off
-by setting the ``bidi`` regex to ``False``.
+Turning title detection off
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The subset rule matters most when clearing a field wholesale. Emptying
+``titles`` alone orphans every ``given_name_titles`` entry, so the two
+go together:
 
 .. doctest::
 
-    >>> from nameparser import HumanName
-    >>> from nameparser.config import Constants
-    >>> constants = Constants()
-    >>> constants.regexes.bidi = False
-    >>> hn = HumanName("\u200fJohn\u200f Smith", constants=constants)
-    >>> hn.first == "\u200fJohn\u200f"
-    True
+    >>> d = Lexicon.default()
+    >>> lean = d.remove(titles=set(d.titles),
+    ...                 given_name_titles=set(d.given_name_titles))
+    >>> Parser(lexicon=lean).parse("Hon Solo").given
+    'Hon'
 
-Config Changes May Need Parse Refresh
+Emptying the vocabulary does not switch titles off entirely, though. A
+leading word that ends in a period is read as a title structurally,
+without consulting ``titles`` at all — that is what lets unfamiliar
+ranks and abbreviations work (see :ref:`abbreviated-titles`):
+
+.. doctest::
+
+    >>> bare = Parser(lexicon=Lexicon.empty())
+    >>> bare.parse("Professor John Smith").title      # vocabulary gone
+    ''
+    >>> bare.parse("Dr. John Smith").title            # structural, stays
+    'Dr.'
+
+Combining two lexicons
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Whole lexicons compose with ``|``, which unions field by field — handy
+for keeping a shared house vocabulary separate from a per-source one
+and combining them at parser construction:
+
+.. doctest::
+
+    >>> house = Lexicon.empty().add(titles={"dean"})
+    >>> per_source = Lexicon.empty().add(titles={"provost"})
+    >>> sorted((house | per_source).titles)
+    ['dean', 'provost']
+
+Fixing the case of a particular word
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The full name is parsed upon assignment to the ``full_name`` attribute or
-instantiation. Sometimes after making changes to configuration or other inner
-data after assigning the full name, the name will need to be re-parsed with the
-:py:func:`~nameparser.parser.HumanName.parse_full_name()` method before you see
-those changes with ``repr()``.
+``capitalization_exceptions`` is the one pair-valued field — each entry
+maps a lowercase key to its exact-cased replacement (``"phd"`` →
+``"PhD"``), so it isn't a fit for ``add()``/``remove()``. Change it with
+``dataclasses.replace()`` instead, and pass the result to
+``capitalized()``:
 
+.. doctest::
 
-Adjusting names after parsing them
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    >>> import dataclasses
+    >>> from nameparser import parse
+    >>> str(parse("jane smith dds").capitalized())
+    'Jane Smith Dds'
+    >>> default = Lexicon.default()
+    >>> lex = dataclasses.replace(
+    ...     default,
+    ...     capitalization_exceptions=tuple(default.capitalization_exceptions)
+    ...     + (("dds", "DDS"),))
+    >>> str(parse("jane smith dds").capitalized(lex))
+    'Jane Smith DDS'
 
-Each attribute has a corresponding ordered list of name pieces. If you're doing
-pre- or post-processing you may wish to manipulate these lists directly.
-The strings returned by the attribute names just join these lists with spaces.
+Note the ``tuple(...) + ...``: assigning a bare ``(("dds", "DDS"),)``
+would *replace* the default exceptions rather than extend them, so
+``"phd"`` and the rest would stop being fixed.
 
-* o.title_list
-* o.first_list
-* o.middle_list
-* o.last_list
-* o.suffix_list
-* o.nickname_list
-* o.maiden_list
+The key is matched against the token with punctuation normalized away,
+not against the raw text, so one ``"phd"`` entry covers ``"phd"``,
+``"Phd"``, and ``"Ph.D."`` alike — you don't need a separate key for
+each way a source might punctuate it.
 
-::
+Words that are also ordinary names
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  >>> hn = HumanName("Juan Q. Xavier Velasquez y Garcia, Jr.")
-  >>> hn.middle_list
-  ['Q.', 'Xavier']
-  >>> hn.middle_list += ["Ricardo"]
-  >>> hn.middle_list
-  ['Q.', 'Xavier', 'Ricardo']
+Two fields — ``suffix_acronyms_ambiguous`` and ``particles_ambiguous``
+— mark entries from ``suffix_acronyms`` and ``particles`` that are also
+plausible as ordinary name words on their own (an acronym suffix that
+doubles as a nickname, a particle that doubles as a given name). They
+don't add new vocabulary by themselves; they narrow how an existing
+entry is read when it appears alone. If you're not sure whether a word
+you're adding is one of these ambiguous cases, leave it out — an
+unrecognized word usually still parses reasonably, while a wrongly
+disambiguated one silently picks the less likely reading. (That
+conservatism is why ``dean`` above isn't in the default vocabulary in
+the first place: "Dean" is also a common given name, and a default
+that swallowed it as a title would misparse "Dean Martin" for
+everyone.)
 
+``ma`` is a shipped example. It is both a credential and a common
+surname, so it is listed in ``suffix_acronyms_ambiguous`` and counts as
+a suffix only when written with periods:
 
-You can also replace any name bucket's contents by assigning a string or a list
-directly to the attribute.
+.. doctest::
 
-::
+    >>> parse("Jack Ma").family
+    'Ma'
+    >>> parse("Jack M.A.").suffix
+    'M.A.'
 
-  >>> hn = HumanName("Dr. John A. Kenneth Doe")
-  >>> hn.title = ["Associate","Professor"]
-  >>> hn.suffix = "Md."
-  >>> hn
-  <HumanName : [
-      title: 'Associate Professor'
-      first: 'John'
-      middle: 'A. Kenneth'
-      last: 'Doe'
-      suffix: 'Md.'
-      nickname: ''
-      maiden: ''
-  ]>
+``particles_ambiguous`` is the same idea for surname particles. A
+particle listed there may also be a given name, so a name that starts
+with one keeps its given name; a particle *not* listed there is never a
+given name, so a name starting with it has no given name at all — the
+whole thing is the surname:
 
+.. doctest::
 
+    >>> parse("van Gogh").given          # 'van' may be a given name
+    'van'
+    >>> parse("de Mesnil").given         # 'de' may not
+    ''
+    >>> parse("de Mesnil").family
+    'de Mesnil'
 
+If your data never uses ``Van`` as a given name, take it out of the
+ambiguous set and leading ``van`` becomes part of the surname:
+
+.. doctest::
+
+    >>> lex = Lexicon.default().remove(particles_ambiguous={"van"})
+    >>> Parser(lexicon=lex).parse("van Gogh").family
+    'van Gogh'
+
+Bound given names
+~~~~~~~~~~~~~~~~~~
+
+``bound_given_names`` holds given-name prefixes that attach to the
+following word to form one given name — ``abdul``, ``abu``, ``umm`` and
+their Arabic-script spellings (``عبد``, ``أبو``, ``أم``) among them:
+
+.. doctest::
+
+    >>> parse("abdul salam ahmed salem").given
+    'abdul salam'
+
+Add your own, or empty the set to switch the behavior off entirely:
+
+.. doctest::
+
+    >>> lex = Lexicon.default().add(bound_given_names={"mohamad"})
+    >>> Parser(lexicon=lex).parse("mohamad salam ahmed salem").given
+    'mohamad salam'
+    >>> d = Lexicon.default()
+    >>> off = d.remove(bound_given_names=set(d.bound_given_names))
+    >>> Parser(lexicon=off).parse("abdul salam ahmed salem").given
+    'abdul'
+
+Behavior: Policy
+-----------------
+
+When your data source or application needs different parsing behavior
+— a different name order, stricter suffix rules, extra delimiters —
+set it on :class:`~nameparser.Policy`, a small, closed set of fields,
+listed below.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 22 28 50
+
+   * - Field
+     - Type
+     - Effect
+   * - ``name_order``
+     - one of the three exported order constants
+     - Assigns positional (no-comma) input to given/middle/family in
+       this order. Use the exported ``GIVEN_FIRST`` (default),
+       ``FAMILY_FIRST``, or ``FAMILY_FIRST_GIVEN_LAST`` constants.
+       Ignored when a comma separates family from given ("Thomas,
+       John" puts the family name first); a comma that only sets off
+       suffixes ("John Smith, Jr.") leaves it governing the name part.
+   * - ``patronymic_rules``
+     - ``frozenset[PatronymicRule]``
+     - Reorders patronymic-shaped names via opt-in detectors — East
+       Slavic formal order (``EAST_SLAVIC``) or Turkic reversed order
+       (``TURKIC``). Defaults to empty.
+   * - ``middle_as_family``
+     - ``bool``
+     - Folds ``middle`` into ``family`` instead of splitting them —
+       for naming systems with no middle-name concept. Defaults to
+       ``False``.
+   * - ``nickname_delimiters``
+     - ``frozenset[tuple[str, str]]``
+     - Routes content enclosed by these delimiter pairs to
+       ``nickname``. Defaults to
+       :data:`~nameparser.DEFAULT_NICKNAME_DELIMITERS` — straight
+       quotes and parentheses plus the typographic conventions (smart
+       quotes, guillemets, CJK brackets, ...).
+   * - ``maiden_delimiters``
+     - ``frozenset[tuple[str, str]]``
+     - Routes content enclosed by these delimiter pairs to ``maiden``
+       instead, and drops them from the effective nickname set.
+       Defaults to empty — see the routing example below.
+   * - ``extra_suffix_delimiters``
+     - ``frozenset[str]``
+     - Adds separators that split suffix groups, e.g. ``" - "`` for
+       ``"Jane Smith, RN - CRNA"``. Additions only — the comma always
+       splits suffix groups and cannot be replaced.
+   * - ``lenient_comma_suffixes``
+     - ``bool``
+     - Reads an initial-shaped suffix word after a comma as a suffix:
+       ``"John Smith, V"`` is John Smith the fifth when ``True``
+       (default); ``False`` reads ``V`` as a given-name initial
+       instead. Multi-letter suffixes (``III``, ``MD``) are
+       unaffected.
+   * - ``strip_emoji``
+     - ``bool``
+     - Excludes emoji from tokenization — they appear in no field or
+       rendered view, though ``original`` keeps them. Defaults to
+       ``True``.
+   * - ``strip_bidi``
+     - ``bool``
+     - Excludes bidirectional control characters the same way.
+       Defaults to ``True``.
+
+To apply a :class:`PolicyPatch <nameparser.PolicyPatch>` directly --
+without going through a locale pack -- call :meth:`Policy.patched()
+<nameparser.Policy.patched>`:
+
+.. doctest::
+
+    >>> from nameparser import Policy, PolicyPatch
+    >>> Policy().patched(PolicyPatch(middle_as_family=True))
+    Policy(middle_as_family=True)
+
+Family-first name order
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+``name_order`` is the one most likely to matter for non-Western data.
+Positional input is assigned in the order you declare, so a
+family-first name parses as written instead of needing to be
+rearranged afterwards:
+
+.. doctest::
+
+    >>> from nameparser import Parser, Policy, FAMILY_FIRST, parse
+    >>> parse("Nguyen Van Minh").family              # default GIVEN_FIRST
+    'Van Minh'
+    >>> family_first = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    >>> name = family_first.parse("Nguyen Van Minh")
+    >>> name.family, name.given
+    ('Nguyen', 'Van Minh')
+
+An explicit comma still wins, on the reasoning that someone who wrote
+one meant it — so the same parser reads ``"Thomas, John"`` as
+family-then-given regardless of the configured order:
+
+.. doctest::
+
+    >>> family_first.parse("Thomas, John").family
+    'Thomas'
+
+Nicknames, maiden names, and brackets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A delimiter pair routes to exactly one field, and ``maiden_delimiters``
+states the more specific intent — so listing a pair there drops it from
+the effective ``nickname_delimiters`` set automatically, and the
+one-liner is the whole recipe:
+
+.. doctest::
+
+    >>> policy = Policy(maiden_delimiters={("(", ")")})
+    >>> Parser(policy=policy).parse("Jane (Jones) Smith").maiden
+    'Jones'
+
+To *add* a delimiter pair rather than reroute one, build on the
+exported default — assigning a bare set replaces the built-in pairs
+instead of extending them, the same trap as ``capitalization_exceptions``:
+
+.. doctest::
+
+    >>> from nameparser import DEFAULT_NICKNAME_DELIMITERS
+    >>> parse("Benjamin {Ben} Franklin").middle        # not a pair by default
+    '{Ben}'
+    >>> policy = Policy(
+    ...     nickname_delimiters=DEFAULT_NICKNAME_DELIMITERS | {("{", "}")})
+    >>> Parser(policy=policy).parse("Benjamin {Ben} Franklin").nickname
+    'Ben'
+
+Suffixes not separated by commas
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``extra_suffix_delimiters`` handles sources that separate post-nominals
+with something other than a comma. The default reading of such a name
+is bad enough to be the reason you'd go looking:
+
+.. doctest::
+
+    >>> name = parse("Jane Smith, RN - CRNA")
+    >>> name.given, name.family, name.suffix
+    ('RN', 'Jane Smith', 'CRNA')
+    >>> policy = Policy(extra_suffix_delimiters={" - "})
+    >>> name = Parser(policy=policy).parse("Jane Smith, RN - CRNA")
+    >>> name.given, name.family, name.suffix
+    ('Jane', 'Smith', 'RN, CRNA')
+
+Keeping emoji and control characters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The strip flags keep characters the parser removes by default. Note
+what happens to an emoji you keep — it becomes a token like any other,
+and lands in the middle name:
+
+.. doctest::
+
+    >>> str(parse("Sam 😊 Smith"))                      # stripped by default
+    'Sam Smith'
+    >>> kept = Parser(policy=Policy(strip_emoji=False)).parse("Sam 😊 Smith")
+    >>> str(kept), kept.middle
+    ('Sam 😊 Smith', '😊')
+
+``strip_bidi=False`` does the same for invisible bidirectional control
+characters, which is occasionally what you want when round-tripping
+right-to-left text verbatim.
+
+.. _rendering-arguments:
+
+Presentation: rendering arguments
+----------------------------------
+
+Once a name is parsed, how it's displayed is a separate decision made
+at the point of output, not baked into the parse. Three methods on
+:class:`~nameparser.ParsedName` cover it — see :doc:`modules` for full
+signatures:
+
+* :meth:`~nameparser.ParsedName.render` fills a format spec from the
+  seven role fields.
+* :meth:`~nameparser.ParsedName.initials` is the same idea narrowed to
+  first letters, with its own ``delimiter``/``separator`` arguments.
+* :meth:`~nameparser.ParsedName.capitalized` returns a new, case-fixed
+  :class:`~nameparser.ParsedName` instead of a string. It only touches
+  input that's already single-case (all lower, all upper) unless you
+  pass ``force=True`` — mixed case is left alone by default on the
+  assumption that someone already capitalized it on purpose.
+
+.. doctest::
+
+    >>> from nameparser import parse
+    >>> name = parse("Dr. Juan Q. Xavier de la Vega III")
+    >>> name.render("{family}, {given} {middle}")
+    'de la Vega, Juan Q. Xavier'
+    >>> name.initials(spec="{given}{middle}{family}", delimiter="", separator="")
+    'JQXV'
+    >>> str(parse("DR. JUAN DE LA VEGA").capitalized())
+    'Dr. Juan de la Vega'
+    >>> str(parse("JuAn DE LA vEGA").capitalized())
+    'JuAn DE LA vEGA'
+    >>> str(parse("JuAn DE LA vEGA").capitalized(force=True))
+    'Juan de la Vega'
+
+Looking for v1's ``string_format``? It's the ``render(spec)`` argument
+now — pass your own format string per call instead of setting it once
+on a shared config object.
+
+A spec chooses what the output is *for*. The default is written for
+display and does not survive a reparse — it parenthesizes the maiden
+name, which reads back as a nickname. When the rendered string will be
+parsed again, spell the marker out (``née {maiden}``) so the field
+round-trips; see :ref:`the round-trip note in the tour <maiden-roundtrip>`.
+
+Sharing a configured parser
+----------------------------
+
+A :class:`~nameparser.Parser` is a frozen value, so the way to share
+one configuration across a codebase is the same way you'd share any
+other constant: build it once at module level and import it wherever
+you parse.
+
+.. code-block:: python
+
+    # myapp/names.py
+    from nameparser import Lexicon, Parser, Policy
+
+    lex = Lexicon.default().add(titles={"dean"})
+    policy = Policy(strip_emoji=False)
+    parser = Parser(lexicon=lex, policy=policy)
+
+    # elsewhere
+    from myapp.names import parser
+    name = parser.parse(raw_name)
+
+Because :class:`~nameparser.Parser` and its ``lexicon``/``policy`` are
+immutable and hashable, ``parser`` is safe to import and call from
+multiple threads with no locking — there is no shared mutable state to
+protect, unlike v1's module-level ``CONSTANTS``.
