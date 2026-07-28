@@ -66,15 +66,20 @@ class ParseState:
     """Carried through the stage fold. Frozen; stages return copies via
     dataclasses.replace. Fields are filled progressively:
     extract_delimited -> extracted/masked; tokenize -> tokens (span-
-    sorted)/comma_offsets; segment -> segments/structure; classify ->
-    token tags; group -> pieces/piece_tags/dropped AND maiden token
-    roles; assign/post_rules -> the remaining token roles. Ambiguities
-    are recorded by every stage that DECIDES one -- extract (resolved to
-    a token index by tokenize), segment, classify, group, and assign --
-    since a fork whose branches are taken in different stages needs an
-    emitter in each. Post-group, segments may retain indices of dropped
-    tokens -- assign iterates pieces, never segments. This ownership map
-    is pinned by tests/v2/pipeline/test_state.py."""
+    sorted)/comma_offsets; segment -> segments/structure;
+    script_segment -> tokens and segments again (the one stage that
+    changes the token COUNT: an unspaced CJK token splits in two,
+    still as sub-slices of the original, and every later index in the
+    segment runs shifts); classify -> token tags; group ->
+    pieces/piece_tags/dropped AND maiden token roles;
+    assign/post_rules -> the remaining token roles. Ambiguities are
+    recorded by every stage that DECIDES one -- extract (resolved to a
+    token index by tokenize), segment, script_segment, classify,
+    group, and assign -- since a fork whose branches are taken in
+    different stages needs an emitter in each. Post-group, segments
+    may retain indices of dropped tokens -- assign iterates pieces,
+    never segments. This ownership map is pinned by
+    tests/v2/pipeline/test_state.py."""
 
     original: str
     lexicon: Lexicon

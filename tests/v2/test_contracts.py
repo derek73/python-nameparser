@@ -15,12 +15,19 @@ _AMBIGUITY_TRIGGERS: dict[AmbiguityKind, str | None] = {
     AmbiguityKind.SUFFIX_OR_NAME: "John Smith MA",
     # no emitter yet -- arrives with locale-pack order detection (2.x)
     AmbiguityKind.ORDER: None,
+    # the emitter exists (script_segment), but nothing the DEFAULT
+    # parser sees can reach it: the default surname vocabulary is
+    # still empty, so no input splits at all. A trigger lands with
+    # the Korean census list.
+    AmbiguityKind.SEGMENTATION: None,
 }
 
 
 @pytest.mark.parametrize("kind", [
+    # the per-entry comment above says WHY each None is None (no
+    # emitter yet, or an emitter no default parse can reach)
     pytest.param(k, marks=pytest.mark.xfail(
-        strict=True, reason=f"{k.value}: emitter not yet implemented"))
+        strict=True, reason=f"{k.value}: no trigger registered yet"))
     if k in _AMBIGUITY_TRIGGERS and _AMBIGUITY_TRIGGERS[k] is None else k
     for k in AmbiguityKind
 ])
