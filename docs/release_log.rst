@@ -1,12 +1,10 @@
 Release Log
 ===========
-* 2.0.0 - unreleased
+* 2.0.0 - July 27, 2026
 
-    **2.0.0rc2 released 2026-07-26** (rc1 on 2026-07-23) for testing
-    ahead of the final
-    2.0.0. Install it with ``pip install --pre nameparser`` (a
-    pre-release is not selected by a plain ``pip install``); please
-    report anything the migration missed on `issue #284
+    Two release candidates preceded this release (rc1 on 2026-07-23,
+    rc2 on 2026-07-26). Please report anything the migration missed on
+    `issue #284
     <https://github.com/derek73/python-nameparser/issues/284>`_. The
     notes below describe 2.0.0 as a whole.
 
