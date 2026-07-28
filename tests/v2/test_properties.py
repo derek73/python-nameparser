@@ -13,8 +13,8 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from nameparser import (
-    FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST, Lexicon, Parser,
-    PatronymicRule, Policy, parse,
+    DEFAULT_SCRIPT_ORDERS, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
+    GIVEN_FIRST, Lexicon, Parser, PatronymicRule, Policy, Script, parse,
 )
 from nameparser._lexicon import _VOCAB_FIELDS
 from nameparser._pipeline import run
@@ -243,6 +243,22 @@ def _lexicons(draw: st.DrawFn) -> Lexicon:
                    **_fix_invariants(**fields))
 
 
+# script_orders' legal values are as restricted as name_order's (only
+# the three exported orders, keyed by Script), so they are sampled
+# rather than generated. The four cover the axes that matter: the
+# shipped default, the full opt-out, one script alone, and an order
+# that disagrees with the default -- FAMILY_FIRST_GIVEN_LAST on hangul
+# reads "김민준 수" differently from every other entry here, which is
+# what makes a script table that is merely PRESENT distinguishable
+# from one that is actually consulted.
+_SCRIPT_ORDER_TABLES = [
+    DEFAULT_SCRIPT_ORDERS,
+    (),
+    ((Script.HAN, FAMILY_FIRST),),
+    ((Script.HANGUL, FAMILY_FIRST_GIVEN_LAST),),
+]
+
+
 @st.composite
 def _policies(draw: st.DrawFn) -> Policy:
     pairs = st.sampled_from([("(", ")"), ('"', '"'), ("'", "'"),
@@ -254,6 +270,13 @@ def _policies(draw: st.DrawFn) -> Policy:
     return Policy(
         name_order=draw(st.sampled_from(
             [GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])),
+        script_orders=draw(st.sampled_from(_SCRIPT_ORDER_TABLES)),
+        # no max_size: Script has two members, so the unbounded draw
+        # already reaches every subset -- including the empty one,
+        # which is the documented segmentation opt-out, and the full
+        # one, which turns on the Han segmentation that only
+        # locales.ZH turns on in shipped configuration
+        segment_scripts=draw(st.frozensets(st.sampled_from(list(Script)))),
         patronymic_rules=draw(st.frozensets(
             st.sampled_from(list(PatronymicRule)), max_size=2)),
         middle_as_family=draw(st.booleans()),
