@@ -353,7 +353,10 @@ given name.
     ('김', '민준')
 
 1.4 read the first as ``first="毛"``/``last="泽东"``, and left the
-second whole in ``first``.
+second whole in ``first``. The Korean one also changes what the name
+*renders* as — ``str(HumanName("김민준"))`` was ``"김민준"`` and is now
+``"민준 김"``, because the split inserts a token boundary that the
+default format then writes given-name-first.
 
 A third shape changes even though nothing splits it. 1.4 routed a lone
 token to ``first`` whatever it was, so an unspaced Chinese or Japanese

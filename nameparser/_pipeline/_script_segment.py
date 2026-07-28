@@ -12,7 +12,7 @@ Unspaced CJK names give tokenize no separator to find, so this stage
 inserts the missing token boundary by vocabulary: the first token
 written wholly in an activated script is matched longest-first against
 Lexicon.surnames, and a hit splits it in two. Compound-before-single
-("欧阳明" is 欧阳 + 明, though 欧 is itself a surname) falls out of
+("夏侯惇" is 夏侯 + 惇, though 夏 is itself a surname) falls out of
 longest-first. The split makes two sub-slices of the one token,
 rewriting nothing -- spans still index the original exactly, so the
 anti-#100 invariant holds by construction.
