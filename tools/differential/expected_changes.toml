@@ -3,10 +3,8 @@
 # S5). Rules are seeded from docs/superpowers/plans/notes-m12-diffs.md
 # and the `classification="fix(...)"` rows in tests/v2/cases.py; keep
 # each entry's `name_regex`/`fields` as tight as the diff allows.
-# ORDER MATTERS: classify() takes the FIRST matching rule, so a rule
-# narrowed by `name_regex` must sit ahead of any rule narrowed only by
-# `fields`, or the broad one silently claims its diffs under the wrong
-# label. See the #271 entry immediately below for a case that did.
+# File order is not load-bearing: compare.py sorts `name_regex` rules
+# ahead of `fields`-only ones before matching.
 
 [[change]]
 issue = "fix(#271) native-script CJK: family-first order + hangul segmentation"
@@ -22,14 +20,6 @@ issue = "fix(#271) native-script CJK: family-first order + hangul segmentation"
 # than the diffs it has to explain. Extend it -- and the sync pin in
 # tests/v2/test_regex_sync.py, which fails if the two disagree -- if
 # one ever does.
-#
-# FIRST on purpose, and this position is load-bearing. classify()
-# returns the first matching rule, and 'fix(suffix-routing)' below
-# declares no name_regex at all -- so with this rule anywhere after it,
-# every CJK diff was classified as a suffix-routing change instead
-# (verified: all four names of a synthetic CJK corpus landed there).
-# The label would have been wrong and this rule dead. A rule narrowed
-# by name_regex belongs ahead of every rule narrowed only by `fields`.
 #
 # Expected to match nothing against the current corpora, which contain
 # no CJK at all: build_issues_corpus.py requires an internal space, and

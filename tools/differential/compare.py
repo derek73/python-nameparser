@@ -62,6 +62,11 @@ def main() -> int:
     rules = tomllib.loads(
         (HERE / "expected_changes.toml").read_text()).get("change", [])
     validate_rules(rules)
+    # Most-specific-first: a name_regex rule outranks a fields-only rule
+    # wherever both match, so file order stops being load-bearing. The
+    # sort is stable, so rules within a tier keep the order they were
+    # written in.
+    rules.sort(key=lambda r: not isinstance(r.get("name_regex"), str))
     # A glob that matches nothing must not read as "everything passed".
     # Comparing zero names would print 0 unexplained and exit 0 -- the
     # harness's own stated nightmare (see validate_rules), and a
