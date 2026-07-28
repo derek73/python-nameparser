@@ -564,3 +564,13 @@ def test_surnames_is_a_vocab_field() -> None:
     assert lex.remove(surnames={"毛"}).surnames == frozenset({"欧阳"})
     merged = Lexicon(surnames=frozenset({"김"})) | Lexicon(surnames=frozenset({"박"}))
     assert merged.surnames == frozenset({"김", "박"})
+
+
+def test_default_lexicon_ships_korean_surnames_only() -> None:
+    lex = Lexicon.default()
+    assert "김" in lex.surnames and "남궁" in lex.surnames
+    # Han surnames are locales.ZH's cargo (segmentation opt-in), so
+    # the DEFAULT set is wholly hangul -- structural check, not
+    # content-pinning
+    assert all(all(0xAC00 <= ord(c) <= 0xD7A3 for c in s)
+               and 1 <= len(s) <= 2 for s in lex.surnames)

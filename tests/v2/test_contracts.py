@@ -15,11 +15,9 @@ _AMBIGUITY_TRIGGERS: dict[AmbiguityKind, str | None] = {
     AmbiguityKind.SUFFIX_OR_NAME: "John Smith MA",
     # no emitter yet -- arrives with locale-pack order detection (2.x)
     AmbiguityKind.ORDER: None,
-    # the emitter exists (script_segment), but nothing the DEFAULT
-    # parser sees can reach it: the default surname vocabulary is
-    # still empty, so no input splits at all. A trigger lands with
-    # the Korean census list.
-    AmbiguityKind.SEGMENTATION: None,
+    # 남 and 남궁 are both shipped surnames, so longest-first picks
+    # between two vocabulary-supported splits
+    AmbiguityKind.SEGMENTATION: "남궁민수",
 }
 
 
@@ -78,14 +76,29 @@ def test_every_stable_tag_has_a_trigger(tag: str) -> None:
 def test_every_guarded_config_module_is_imported() -> None:
     """Import-time asserts only run if the module is imported.
 
-    Five of the seven guarded config modules are pulled in by ``import
-    nameparser``, but ``maiden_markers`` is lazy (imported inside
-    ``_snapshot``/``_default_lexicon``), so its guard fired only
-    incidentally, whenever some other test happened to build a default
+    ``maiden_markers`` and ``surnames`` are lazy (imported inside
+    ``_snapshot``/``_default_lexicon``), so their guards fire only
+    incidentally, whenever some other test happens to build a default
     Lexicon. Importing them all here makes every guard unconditional.
+
+    The roster is DERIVED from the source tree, not listed: a
+    hand-written tuple fails open, silently skipping the next guarded
+    module nobody remembers to add.
     """
     import importlib
+    import pathlib
 
-    for name in ("titles", "suffixes", "prefixes", "bound_first_names",
-                 "conjunctions", "maiden_markers", "capitalization"):
+    import nameparser.config
+
+    config_dir = pathlib.Path(nameparser.config.__file__).parent
+    # private modules excluded: _invariants DEFINES the guard (the
+    # substring hits its own def) and holds no vocabulary of its own
+    guarded = sorted(
+        p.stem for p in config_dir.glob("*.py")
+        if not p.stem.startswith("_")
+        and "assert_normalized(" in p.read_text(encoding="utf-8"))
+    assert guarded, (
+        f"no guarded config module found in {config_dir} -- the "
+        f"derivation broke, and an empty roster asserts nothing")
+    for name in guarded:
         importlib.import_module(f"nameparser.config.{name}")

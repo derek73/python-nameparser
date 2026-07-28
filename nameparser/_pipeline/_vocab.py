@@ -154,6 +154,11 @@ def single_script(text: str) -> Script | None:
     the caller falls back to the positional default)."""
     if not text:
         return None  # all() is vacuously true; "" belongs to no script
+    if text.isascii():
+        # every _SCRIPT_RANGES entry is non-ASCII (lowest today is
+        # U+3400): skip the range sweep for the overwhelmingly common
+        # Latin token (the _tokenize._ignorable ASCII-floor precedent)
+        return None
     for script, ranges in _SCRIPT_RANGES.items():
         if all(any(lo <= ord(c) <= hi for lo, hi in ranges)
                for c in text):

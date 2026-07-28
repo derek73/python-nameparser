@@ -508,3 +508,12 @@ def test_script_order_beats_explicit_global_name_order() -> None:
     p = Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST))
     n = p.parse("김 민준")
     assert (n.family, n.given) == ("김", "민준")
+
+
+def test_unspaced_korean_names_parse_by_default() -> None:
+    # the whole point of shipping the census list as default
+    # vocabulary (#271): no pack, no config
+    n = parse("김민준")
+    assert (n.family, n.given) == ("김", "민준")
+    n = parse("남궁민수")     # two-syllable surname beats single 남
+    assert (n.family, n.given) == ("남궁", "민수")

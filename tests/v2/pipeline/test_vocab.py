@@ -1,6 +1,7 @@
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
-    is_initial, is_suffix_lenient, is_suffix_strict, single_script,
+    _SCRIPT_RANGES, is_initial, is_suffix_lenient, is_suffix_strict,
+    single_script,
 )
 from nameparser._policy import Script
 
@@ -71,3 +72,13 @@ def test_single_script_range_edges() -> None:
 
 def test_single_script_empty_string_is_no_script() -> None:
     assert single_script("") is None
+
+
+def test_no_script_range_reaches_ascii() -> None:
+    # single_script short-circuits on an ASCII token instead of
+    # sweeping the ranges (the hot path: every Latin name). The
+    # classifications above stay pinned either way; what the shortcut
+    # rests on is this floor, so a future script entry that dips below
+    # it fails here rather than silently going unclassified.
+    assert all(lo >= 0x80
+               for ranges in _SCRIPT_RANGES.values() for lo, _ in ranges)
