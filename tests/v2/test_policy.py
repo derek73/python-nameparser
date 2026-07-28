@@ -545,7 +545,7 @@ def test_segment_scripts_rejects_unknown_script() -> None:
 
 def test_segment_scripts_rejects_non_iterable_with_curated_message() -> None:
     # parallel to patronymic_rules: name the expected shape rather than
-    # surfacing _require_iterable's generic "must be an iterable" text
+    # letting _require_iterable's default "an iterable" phrasing stand
     with pytest.raises(TypeError,
                        match="segment_scripts must be an iterable of "
                              "Script members, got True"):

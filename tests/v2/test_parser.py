@@ -445,9 +445,10 @@ def test_wholly_cjk_names_read_family_first_by_default() -> None:
     assert (n.family, n.given) == ("毛", "泽东")
     n = parse("김 민준")
     assert (n.family, n.given) == ("김", "민준")
-    # a lone wholly-CJK token takes the script order's first role
-    assert parse("毛泽东").family == "毛泽东"  # unspaced: split arrives
-                                              # with Task 4's stage
+    # a lone wholly-CJK token takes the script order's first role: Han
+    # segmentation is opt-in (locales.ZH), so the default parser leaves
+    # this one token whole and reads it as the family name
+    assert parse("毛泽东").family == "毛泽东"
 
 
 def test_latin_names_are_untouched_by_script_orders() -> None:

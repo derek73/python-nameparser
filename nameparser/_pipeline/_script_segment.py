@@ -86,6 +86,11 @@ def _longest_entry(surnames: frozenset[str]) -> int:
 
 
 def script_segment(state: ParseState) -> ParseState:
+    if state.original.isascii():
+        # spans index the original exactly (the anti-#100 invariant),
+        # so an ASCII original has only ASCII tokens: nothing here is
+        # in any script's ranges
+        return state
     scripts = state.policy.segment_scripts
     surnames = state.lexicon.surnames
     if not scripts or not surnames or not state.segments:

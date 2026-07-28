@@ -203,17 +203,28 @@ def _reject_str_and_mapping(value: object, field_name: str) -> None:
         )
 
 
-def _require_iterable(value: Iterable[Any], field_name: str) -> Iterable[Any]:
-    # Probe with iter() so a non-iterable value (an int, a bool, ...)
-    # raises a message naming the field, matching the treatment
-    # patronymic_rules already gets, instead of a bare "'int' object is
-    # not iterable" surfacing from whatever tuple()/frozenset() call
-    # happens to run first.
+def _require_iterable(value: Iterable[Any], field_name: str,
+                      expected: str = "an iterable") -> Iterable[Any]:
+    """Probe a value's iterability and return its iterator, raising a
+    TypeError naming the field if it has none. `expected` carries the
+    field's own phrasing ("a mapping of Script to order"); the default
+    suits every plain iterable field.
+
+    Probing with iter() is what makes the message possible: a
+    non-iterable (an int, a bool, ...) is named here, matching the
+    treatment patronymic_rules already gets, instead of a bare "'int'
+    object is not iterable" surfacing from whatever tuple()/frozenset()
+    happens to run first. It is ALSO the reason callers consume the
+    returned iterator OUTSIDE any try of their own: an exception raised
+    inside a caller's generator while it is being consumed is the
+    caller's own error, and must propagate untouched rather than be
+    rewritten as a shape complaint about the field.
+    """
     try:
         return iter(value)
     except TypeError:
         raise TypeError(
-            f"{field_name} must be an iterable, got {value!r}"
+            f"{field_name} must be {expected}, got {value!r}"
         ) from None
 
 
@@ -284,22 +295,11 @@ def _validated_script_orders(
             f"e.g. raw.decode('utf-8')"
         )
     raw = value.items() if isinstance(value, Mapping) else value
-    try:
-        # Probe with iter() only (mirrors the patronymic_rules probe in
-        # Policy.__post_init__, and _validated_segment_scripts below):
-        # a genuine non-iterable is caught here and gets the curated
-        # message below, while an exception raised INSIDE a caller's
-        # generator during consumption (the tuple() below) must
-        # propagate untouched, not be rewritten as "not a mapping".
-        raw_iter = _require_iterable(raw, "script_orders")  # type: ignore[arg-type]
-    except TypeError:
-        raise TypeError(
-            f"script_orders must be a mapping of Script to order, "
-            f"got {value!r}"
-        ) from None
-    entries: tuple[Any, ...] = tuple(raw_iter)
+    raw_iter = _require_iterable(
+        raw, "script_orders",  # type: ignore[arg-type]
+        "a mapping of Script to order")
     canonical: dict[Script, tuple[Role, Role, Role]] = {}
-    for entry in entries:
+    for entry in raw_iter:
         try:
             key, order = entry
         except (TypeError, ValueError):
@@ -320,18 +320,9 @@ def _validated_segment_scripts(value: object) -> frozenset[Script]:
     their string values), coerced via _validated_script so the
     unknown-script wording stays single-sourced."""
     _reject_str_and_mapping(value, "segment_scripts")
-    # Probe with iter() only (mirrors the patronymic_rules probe in
-    # Policy.__post_init__): a genuine non-iterable is caught here and
-    # gets the curated message below, while an exception raised INSIDE
-    # a caller's generator during consumption (the frozenset() below)
-    # must propagate untouched, not be rewritten as "not an iterable".
-    try:
-        script_iter = _require_iterable(value, "segment_scripts")  # type: ignore[arg-type]
-    except TypeError:
-        raise TypeError(
-            f"segment_scripts must be an iterable of Script members, "
-            f"got {value!r}"
-        ) from None
+    script_iter = _require_iterable(
+        value, "segment_scripts",  # type: ignore[arg-type]
+        "an iterable of Script members")
     return frozenset(_validated_script(s) for s in script_iter)
 
 
@@ -357,6 +348,35 @@ def _canonical_script_pair(pair: Iterable[Any]) -> tuple[Any, ...]:
         return (key, tuple(value))
     except TypeError:
         return out                          # non-iterable order value
+
+
+def _canonical_patch_script_orders(value: object) -> object:
+    """Canonicalize a PolicyPatch.script_orders value for hashability
+    without validating it: malformed shapes are stored so Policy can
+    quote them at apply time; a caller-generator's own exception
+    propagates from the UNGUARDED materialization below (deferring is
+    impossible once a one-shot iterator is consumed)."""
+    # Excluded HERE rather than delegated: a string's elements are
+    # themselves tuple-izable, so no TypeError ever fires to signal
+    # "leave this alone" -- "han" would shred to (("h",), ("a",),
+    # ("n",)) and Policy's bare-string message would have nothing left
+    # to quote. bytes shred the same way, into ints.
+    if isinstance(value, (str, bytes, bytearray, memoryview)):
+        return value                  # deferred whole: Policy's guards quote it
+    # Any, not object: a patch defers validation, so anything a caller
+    # wrote can arrive here, and the probe below is precisely the
+    # runtime question mypy has no way to answer statically.
+    pairs: Any = value.items() if isinstance(value, Mapping) else value
+    try:
+        pairs_iter = iter(pairs)      # probe only
+    except TypeError:
+        return value                  # non-iterable: defer to apply
+    items = tuple(pairs_iter)         # UNGUARDED: caller errors propagate
+    try:
+        return tuple(map(_canonical_script_pair, items))
+    except TypeError:
+        return items                  # malformed entry: materialized, so
+                                      # Policy can still re-iterate + quote
 
 
 @dataclass(frozen=True, slots=True)
@@ -627,90 +647,13 @@ class PolicyPatch:
         # from a {Script: order} dict (or a list of pairs) must already
         # be hashable, since a Locale holds it -- and hashable all the
         # way down, hence _canonical_script_pair. Validation still
-        # belongs to Policy at apply time, so a shape tuple() cannot
-        # digest is left exactly as written for it to report.
-        # The str case must be excluded HERE rather than delegated to
-        # _canonical_script_pair: a string's elements are themselves
-        # tuple-izable, so no TypeError ever fires to signal "leave this
-        # alone" -- "han" would shred to (("h",), ("a",), ("n",)) and
-        # Policy's bare-string message would have nothing left to quote.
-        if self.script_orders is not UNSET and not isinstance(
-                self.script_orders, str):
-            raw = self.script_orders
-            # Mapping.items() is always iterable, so it needs no probe;
-            # only the non-Mapping branch can fail the iter() check below.
-            pairs = raw.items() if isinstance(raw, Mapping) else raw
-            # Four outcomes share this block, and only one of them
-            # should propagate immediately:
-            #  1. raw itself isn't iterable at all (script_orders=5) --
-            #     caught by the iter() probe. Shape problem, defers to
-            #     apply time, where Policy's own guard raises the
-            #     curated message ("Policy validates ... at apply").
-            #  2. an already-yielded PAIR has a bad shape (a bare int
-            #     from a shredded bytes buffer, e.g. b"han" iterating
-            #     to 104) -- caught around _canonical_script_pair
-            #     below. Also a shape problem: abort the whole
-            #     conversion and leave script_orders as a RE-ITERABLE
-            #     value (see case 4) Policy's curated message (e.g. the
-            #     decode-first bytes hint, or the bad-pair message) can
-            #     still quote at apply time.
-            #  3. the caller's OWN exception, raised by their
-            #     generator while it is being consumed -- this is not
-            #     a shape problem this guard exists to catch, and
-            #     deferral is impossible anyway: by the time
-            #     apply_patch reaches Policy.__post_init__, the same
-            #     generator is already exhausted, so catching this
-            #     here would lose the error for good rather than
-            #     merely delay it. Consuming a one-shot iterator
-            #     therefore runs UNGUARDED (case 4), so this
-            #     propagates on its own terms.
-            #  4. a ONE-SHOT iterator (iter(x) is x -- generators,
-            #     map/zip/filter objects, ...) cannot be safely
-            #     re-iterated once consumed. Deferring case 2 by
-            #     leaving it as originally written -- fine for
-            #     re-iterable inputs (bytes, list, dict, tuple) -- would
-            #     leave Policy re-validating an EXHAUSTED generator at
-            #     apply time: iterating it again silently yields
-            #     nothing, storing () ("opt out of per-script
-            #     ordering") and dropping the Han/Hangul family-first
-            #     defaults with NO error anywhere. So a one-shot input
-            #     is eagerly materialized into a tuple first (case 3's
-            #     unguarded consumption), and case 2's deferral stores
-            #     THAT re-iterable tuple instead of the original,
-            #     exhausted generator.
-            try:
-                pairs_iter = iter(pairs)
-            except TypeError:
-                pairs_iter = None  # non-iterable: deferred, case 1
-            if pairs_iter is not None:
-                # mypy sees pairs' declared type (tuple[...] | ItemsView)
-                # as never identical to iter(pairs)'s Iterator type, but
-                # at runtime pairs can be anything iterable a caller
-                # wrote (a generator especially) -- the whole point of
-                # this check.
-                one_shot = pairs_iter is pairs  # type: ignore[comparison-overlap]
-                items: Iterable[Any] = tuple(pairs_iter) if one_shot else pairs
-                canonical = []
-                deferred = False
-                for item in items:
-                    try:
-                        canonical.append(_canonical_script_pair(item))
-                    except TypeError:
-                        deferred = True  # bad pair shape: case 2
-                        break
-                if not deferred:
-                    object.__setattr__(
-                        self, "script_orders", tuple(canonical))
-                elif one_shot:
-                    # items is already the materialized (re-iterable)
-                    # tuple built above -- store it so Policy can
-                    # re-examine and quote it at apply time, instead of
-                    # the original, now-exhausted generator.
-                    object.__setattr__(self, "script_orders", items)
-                # else: re-iterable input (bytes/list/dict/tuple/...) is
-                # left exactly as originally written; Policy can freely
-                # re-iterate it at apply time and quote the caller's
-                # value there -- unchanged from the prior behavior.
+        # belongs to Policy at apply time, so a shape the canonicalizer
+        # cannot digest is left for it to report; the one-shot and
+        # malformed-entry cases are _canonical_patch_script_orders'.
+        if self.script_orders is not UNSET:
+            object.__setattr__(
+                self, "script_orders",
+                _canonical_patch_script_orders(self.script_orders))
         for f in dataclasses.fields(self):
             if f.metadata.get("compose") != "union":
                 continue

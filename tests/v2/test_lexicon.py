@@ -9,6 +9,8 @@ from nameparser import Parser
 from nameparser._lexicon import (
     Lexicon, _VOCAB_FIELDS, _default_lexicon, _normalize, _title_key,
 )
+from nameparser._pipeline._vocab import _SCRIPT_RANGES
+from nameparser._policy import Script
 
 
 def test_entries_are_normalized_at_construction() -> None:
@@ -571,6 +573,8 @@ def test_default_lexicon_ships_korean_surnames_only() -> None:
     assert "김" in lex.surnames and "남궁" in lex.surnames
     # Han surnames are locales.ZH's cargo (segmentation opt-in), so
     # the DEFAULT set is wholly hangul -- structural check, not
-    # content-pinning
-    assert all(all(0xAC00 <= ord(c) <= 0xD7A3 for c in s)
+    # content-pinning. The spans come from the shared table rather than
+    # a second hand-copy of 0xAC00/0xD7A3 (test_locales.py's precedent).
+    hangul = _SCRIPT_RANGES[Script.HANGUL]
+    assert all(all(any(lo <= ord(c) <= hi for lo, hi in hangul) for c in s)
                and 1 <= len(s) <= 2 for s in lex.surnames)

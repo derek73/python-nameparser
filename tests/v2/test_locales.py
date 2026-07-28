@@ -131,11 +131,14 @@ def test_zh_longest_match_prefers_compound_over_single_surname() -> None:
     assert p.parse("夏雨").ambiguities == ()
 
 
-# 毛泽东/欧阳修/夏侯惇/萧红 appear in _ROTATORS["zh"] below as well.
-# Not deduplicated on purpose: the rotator tests assert only THAT the
-# packed parse differs from the default and that DEVIATES declares it
-# -- they never look at a field value, so the readings above are
-# pinned nowhere else.
+# 毛泽东/欧阳修/夏侯惇/萧红 appear in _ROTATORS["zh"] below, and 毛泽东/
+# 夏侯惇 in cases.py's zh rows, as well. Not deduplicated in either
+# direction, on purpose: the rotator tests assert only THAT the packed
+# parse differs from the default and that DEVIATES declares it -- they
+# never look at a field value -- and the case rows reach the same
+# packed parser only through the shared-table runners
+# (test_cases.py/test_facade_cases.py). These tests are where the zh
+# readings are pinned at unit level, against the stage directly.
 
 
 def test_zh_composes_with_korean_defaults() -> None:

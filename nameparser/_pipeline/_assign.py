@@ -36,7 +36,7 @@ from nameparser._pipeline._group import (
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
 )
-from nameparser._policy import Policy
+from nameparser._policy import Policy, Script
 from nameparser._types import AmbiguityKind, Role
 
 # Ported verbatim from v1 (nameparser/config/regexes.py
@@ -90,15 +90,22 @@ def _effective_order(policy: Policy,
         return policy.name_order
     # ONE script for the whole name, not "the entries all agree": two
     # scripts that both read family-first still fall back, because a
-    # Han+Hangul name is not written in either tradition.
-    found = {single_script("".join(tokens[i].text for i in piece))
-             for piece in pieces}
-    if len(found) == 1:
-        script = found.pop()          # None (no single script) matches
-        for entry_script, order in policy.script_orders:   # no entry
-            if entry_script is script:
-                return order
-    return policy.name_order
+    # Han+Hangul name is not written in either tradition. Per token
+    # rather than per joined piece -- WorkToken text is never empty, so
+    # "the piece is wholly one script" is "every token in it is".
+    found: Script | None = None
+    for piece in pieces:
+        for i in piece:
+            script = single_script(tokens[i].text)
+            if script is None:
+                # Latin, mixed, or a script with no entry: never a key
+                return policy.name_order
+            if found is None:
+                found = script
+            elif script is not found:
+                return policy.name_order
+    return next((order for s, order in policy.script_orders if s is found),
+                policy.name_order)
 
 
 def _name_positions(order: tuple[Role, Role, Role],
