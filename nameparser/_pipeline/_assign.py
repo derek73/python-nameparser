@@ -2,8 +2,10 @@
 
 Consumes: pieces + piece_tags (grouped), segments, structure, tokens.
 Produces: tokens with roles set on every main-stream token.
-Reads: Policy.name_order (#270); token/piece tags; Lexicon only through
-tags already applied by classify (plus the leading-title period rule).
+Reads: Policy.name_order (#270) and Policy.script_orders (#271, which
+overrides it when every name piece is written wholly in one script);
+token/piece tags; Lexicon only through tags already applied by classify
+(plus the leading-title period rule).
 
 Ports v1's assignment loops. NO_COMMA (per name_order):
 leading title pieces chain while no given-position name has been seen
@@ -27,13 +29,14 @@ from __future__ import annotations
 import dataclasses
 import re
 
-from nameparser._pipeline._vocab import is_suffix_lenient
+from nameparser._pipeline._vocab import is_suffix_lenient, single_script
 from nameparser._pipeline._group import (
     _is_suffix_piece, _is_title_piece,
 )
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
 )
+from nameparser._policy import Policy
 from nameparser._types import AmbiguityKind, Role
 
 # Ported verbatim from v1 (nameparser/config/regexes.py
@@ -72,6 +75,30 @@ def _peel_leading_titles(pieces: tuple[tuple[int, ...], ...],
             continue
         break
     return n
+
+
+def _effective_order(policy: Policy,
+                     pieces: list[tuple[int, ...]],
+                     tokens: list[WorkToken]) -> tuple[Role, Role, Role]:
+    """script_orders resolution (#271): when every name piece is
+    written wholly in ONE script that has an entry, that script's
+    order governs the positional read; anything else -- Latin, mixed
+    scripts, no entry -- falls back to name_order. Piece-level, after
+    title/suffix peeling: 'Dr. 毛泽东' is a wholly-Han NAME under a
+    Latin title."""
+    if not policy.script_orders:
+        return policy.name_order
+    # ONE script for the whole name, not "the entries all agree": two
+    # scripts that both read family-first still fall back, because a
+    # Han+Hangul name is not written in either tradition.
+    found = {single_script("".join(tokens[i].text for i in piece))
+             for piece in pieces}
+    if len(found) == 1:
+        script = found.pop()          # None (no single script) matches
+        for entry_script, order in policy.script_orders:   # no entry
+            if entry_script is script:
+                return order
+    return policy.name_order
 
 
 def _name_positions(order: tuple[Role, Role, Role],
@@ -175,7 +202,12 @@ def _assign_main(seg_idx: int, state: ParseState,
     if not name_pieces and suffix_pieces:
         # everything suffix-shaped after titles: first one is the name
         name_pieces, suffix_pieces = suffix_pieces[:1], suffix_pieces[1:]
-    roles = _name_positions(state.policy.name_order, len(name_pieces))
+    # AFTER both peels, and load-bearing: the script test sees the NAME
+    # pieces only, so a Latin title or suffix ('Dr. 毛 泽东', '毛 泽东,
+    # PhD') cannot make a wholly-CJK name look mixed-script.
+    order = _effective_order(state.policy,
+                             [pieces[i] for i in name_pieces], tokens)
+    roles = _name_positions(order, len(name_pieces))
     for pos, piece_idx in enumerate(name_pieces):
         _set_roles(tokens, pieces[piece_idx], roles[pos])
     for piece_idx in suffix_pieces:
@@ -219,7 +251,9 @@ def assign(state: ParseState) -> ParseState:
     else:  # FAMILY_COMMA
         # PARTICLE_OR_GIVEN is deliberately not emitted here: after a
         # comma the family is already fixed, so a leading given-position
-        # particle is not meaningfully ambiguous.
+        # particle is not meaningfully ambiguous. script_orders is not
+        # consulted here for the parallel reason -- the comma already
+        # fixed the family, so there is no positional read to override.
         # v1: "lastname part may have suffixes in it" -- the first
         # piece is always the family even if suffix-shaped; any later
         # strict-suffix piece goes to SUFFIX per piece ('Smith Jr.,

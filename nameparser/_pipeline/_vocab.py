@@ -152,6 +152,8 @@ def single_script(text: str) -> Script | None:
     """The one Script whose ranges cover EVERY char of `text`, else
     None (mixed-script text has no well-defined convention to apply;
     the caller falls back to the positional default)."""
+    if not text:
+        return None  # all() is vacuously true; "" belongs to no script
     for script, ranges in _SCRIPT_RANGES.items():
         if all(any(lo <= ord(c) <= hi for lo, hi in ranges)
                for c in text):

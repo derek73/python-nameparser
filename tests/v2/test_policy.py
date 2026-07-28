@@ -3,8 +3,9 @@ import dataclasses
 import pytest
 
 from nameparser._policy import (
-    FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
-    PatronymicRule, Policy, PolicyPatch, Script, UNSET, apply_patch,
+    DEFAULT_SCRIPT_ORDERS, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
+    GIVEN_FIRST, PatronymicRule, Policy, PolicyPatch, Script, UNSET,
+    apply_patch,
 )
 from nameparser._types import Role
 
@@ -274,6 +275,52 @@ def test_policy_patch_canonicalizes_scalar_name_order() -> None:
     assert isinstance(hash(p), int)
 
 
+def test_policy_patch_canonicalizes_script_orders_all_the_way_down() -> None:
+    # Same failure as name_order above, one level deeper: tuple-izing
+    # only the (Script, order) pair left the ORDER a list, so the patch
+    # -- and any Locale holding it -- was still unhashable.
+    p = PolicyPatch(script_orders={Script.HAN: [Role.FAMILY, Role.GIVEN,  # type: ignore[arg-type]
+                                                Role.MIDDLE]})
+    assert p.script_orders == ((Script.HAN, FAMILY_FIRST),)
+    assert isinstance(hash(p), int)
+
+
+def test_apply_patch_overrides_script_orders_as_a_scalar() -> None:
+    # script_orders composes as a SCALAR: a patch REPLACES the table
+    # rather than merging into it, so an empty one is how a pack turns
+    # the default off. An UNSET patch must leave the default alone --
+    # the distinction a union field would blur.
+    cleared = apply_patch(Policy(), PolicyPatch(script_orders={}))  # type: ignore[arg-type]
+    assert cleared.script_orders == ()
+    untouched = apply_patch(Policy(), PolicyPatch())
+    assert untouched.script_orders == DEFAULT_SCRIPT_ORDERS
+    replaced = apply_patch(
+        Policy(), PolicyPatch(script_orders={Script.HANGUL: GIVEN_FIRST}))  # type: ignore[arg-type]
+    assert replaced.script_orders == ((Script.HANGUL, GIVEN_FIRST),)
+
+
+def test_apply_patch_revalidates_deferred_script_orders() -> None:
+    # The value half defers exactly like name_order's, and the error
+    # must name script_orders -- not name_order, whose message the
+    # check is shared with.
+    bad = PolicyPatch(script_orders={Script.HAN: (Role.MIDDLE, Role.GIVEN,  # type: ignore[arg-type]
+                                                  Role.FAMILY)})
+    with pytest.raises(ValueError, match="script_orders must be one of"):
+        apply_patch(Policy(), bad)
+
+
+def test_policy_patch_defers_malformed_script_orders_verbatim() -> None:
+    # The canonicalization must not eat the evidence: a bare string
+    # would shred to character tuples (its elements are themselves
+    # tuple-izable, so nothing raises to stop it) and bytes to ints,
+    # leaving Policy's curated messages nothing of the caller's to
+    # quote. Both shapes must survive the patch and raise at APPLY.
+    with pytest.raises(TypeError, match="bare string"):
+        apply_patch(Policy(), PolicyPatch(script_orders="han"))  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="decode first"):
+        apply_patch(Policy(), PolicyPatch(script_orders=b"han"))  # type: ignore[arg-type]
+
+
 def test_apply_patch_revalidates_deferred_values() -> None:
     # PolicyPatch documents lazy validation: invalid values sit latent in
     # the patch and must fail when applied, not silently flow into Policy.
@@ -450,3 +497,26 @@ def test_patched_validates_patch_values_at_apply_time() -> None:
 def test_patched_rejects_non_patch() -> None:
     with pytest.raises(TypeError, match="takes a PolicyPatch"):
         Policy().patched({"strip_emoji": False})  # type: ignore[arg-type]
+
+
+def test_script_orders_default_and_canonical_storage() -> None:
+    p = Policy()
+    assert p.script_orders == DEFAULT_SCRIPT_ORDERS
+    # constructor tolerates a Mapping; storage is the sorted pair
+    # tuple (hashability, the capitalization_exceptions precedent --
+    # which is also why the mapping spelling needs the ignore: the
+    # field is annotated with what it STORES)
+    q = Policy(script_orders={Script.HANGUL: FAMILY_FIRST,  # type: ignore[arg-type]
+                              Script.HAN: FAMILY_FIRST})
+    assert q == p and hash(q) == hash(p)
+    assert Policy(script_orders={}).script_orders == ()  # type: ignore[arg-type]
+
+
+def test_script_orders_validates_keys_and_values() -> None:
+    with pytest.raises(ValueError, match="han, hangul"):
+        Policy(script_orders={"klingon": FAMILY_FIRST})  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="exported orders"):
+        Policy(script_orders={Script.HAN: (Role.MIDDLE, Role.GIVEN,  # type: ignore[arg-type]
+                                           Role.FAMILY)})
+    with pytest.raises(TypeError, match="bare string"):
+        Policy(script_orders="han")  # type: ignore[arg-type]

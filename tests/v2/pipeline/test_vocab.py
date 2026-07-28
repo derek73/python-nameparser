@@ -67,3 +67,7 @@ def test_single_script_range_edges() -> None:
     assert single_script("힣") is Script.HANGUL  # last ASSIGNED syllable
     assert single_script("ힰ") is None          # jungseong, not a syllable
     assert single_script("ㄱ") is None          # bare jamo
+
+
+def test_single_script_empty_string_is_no_script() -> None:
+    assert single_script("") is None

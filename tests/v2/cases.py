@@ -208,13 +208,16 @@ CASES: tuple[Case, ...] = (
          {"given": "Anna", "family": "Larsson", "nickname": "Ann"},
          classification="feat(#273)"),
     Case("cjk_corner_bracket_nickname", '山田「タロ」太郎',
-         {"given": "山田", "family": "太郎", "nickname": "タロ"},
-         classification="feat(#273)",
+         {"family": "山田", "given": "太郎", "nickname": "タロ"},
+         classification="feat(#273) + fix(#271)",
          notes="extraction also splits the unspaced remainder -- the "
-               "masked region acts as a token boundary"),
+               "masked region acts as a token boundary. Both name "
+               "pieces are then wholly Han, so script_orders reads "
+               "them family-first; the nickname's kana is outside the "
+               "name pieces and does not enter that test"),
     Case("cjk_white_corner_bracket_nickname", '田中『ハナ』花子',
-         {"given": "田中", "family": "花子", "nickname": "ハナ"},
-         classification="feat(#273)"),
+         {"family": "田中", "given": "花子", "nickname": "ハナ"},
+         classification="feat(#273) + fix(#271)"),
     Case("fullwidth_paren_nickname", 'John （Jack） Kennedy',
          {"given": "John", "family": "Kennedy", "nickname": "Jack"},
          classification="feat(#273)"),

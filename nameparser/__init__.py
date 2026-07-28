@@ -11,6 +11,7 @@ from nameparser._locale import Locale
 from nameparser._parser import Parser, parse, parser_for
 from nameparser._policy import (
     DEFAULT_NICKNAME_DELIMITERS,
+    DEFAULT_SCRIPT_ORDERS,
     FAMILY_FIRST,
     FAMILY_FIRST_GIVEN_LAST,
     GIVEN_FIRST,
@@ -38,6 +39,6 @@ __all__ = [
     "STABLE_TAGS",
     "Lexicon", "Policy", "PolicyPatch", "PatronymicRule", "Script", "UNSET",
     "GIVEN_FIRST", "FAMILY_FIRST", "FAMILY_FIRST_GIVEN_LAST",
-    "DEFAULT_NICKNAME_DELIMITERS", "Locale",
+    "DEFAULT_NICKNAME_DELIMITERS", "DEFAULT_SCRIPT_ORDERS", "Locale",
     "Parser", "parse", "parser_for",
 ]

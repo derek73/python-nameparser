@@ -436,3 +436,75 @@ def test_revise_forces_the_named_role_on_every_harvested_token() -> None:
     r = p.revise(p.parse("John Smith"), family="Dr. Vega Jr.")
     assert r.family == "Dr. Vega Jr."
     assert all(t.role is Role.FAMILY for t in r.tokens_for(Role.FAMILY))
+
+
+def test_wholly_cjk_names_read_family_first_by_default() -> None:
+    # the 2026-07-27 amendment: script determines the convention, so
+    # no pack is needed -- release-log-classified fix (#271)
+    n = parse("毛 泽东")
+    assert (n.family, n.given) == ("毛", "泽东")
+    n = parse("김 민준")
+    assert (n.family, n.given) == ("김", "민준")
+    # a lone wholly-CJK token takes the script order's first role
+    assert parse("毛泽东").family == "毛泽东"  # unspaced: split arrives
+                                              # with Task 4's stage
+
+
+def test_latin_names_are_untouched_by_script_orders() -> None:
+    n = parse("John Smith")
+    assert (n.given, n.family) == ("John", "Smith")
+    # mixed-script names fall back to name_order too
+    n = parse("John 王")
+    assert (n.given, n.family) == ("John", "王")
+
+
+def test_script_order_survives_latin_titles_and_suffixes() -> None:
+    # The script test runs on the NAME pieces, after both peels, so a
+    # Latin title or post-nominal cannot make the name look mixed.
+    n = parse("Dr. 毛 泽东")
+    assert (n.title, n.family, n.given) == ("Dr.", "毛", "泽东")
+    n = parse("毛 泽东, PhD")
+    assert (n.family, n.given, n.suffix) == ("毛", "泽东", "PhD")
+
+
+def test_a_comma_still_decides_the_family_name_for_cjk() -> None:
+    # The family-comma structure fixes the family before any positional
+    # read, so the table is never consulted -- same rule name_order has.
+    n = parse("泽东, 毛")
+    assert (n.family, n.given) == ("泽东", "毛")
+
+
+def test_three_cjk_pieces_take_the_script_order_middles() -> None:
+    n = parse("毛 泽东 泽民")
+    assert (n.family, n.given, n.middle) == ("毛", "泽东", "泽民")
+
+
+def test_two_cjk_scripts_fall_back_even_though_both_read_family_first() -> None:
+    # The rule is ONE script for the whole name, not "the entries
+    # agree": a Han+Hangul name is written in neither tradition, so it
+    # takes the positional default.
+    n = parse("毛 김")
+    assert (n.given, n.family) == ("毛", "김")
+
+
+def test_a_hyphen_in_a_name_piece_declines_the_script_order() -> None:
+    # Documenting the conservative direction, not proposing it: ANY
+    # non-CJK character in a name piece (here the hyphen) puts that
+    # piece in no script, so the piece set has two members and
+    # script_orders declines in favour of the positional default.
+    n = parse("毛 泽东-泽民")
+    assert (n.given, n.family) == ("毛", "泽东-泽民")
+
+
+def test_script_orders_opt_out_restores_positional_reading() -> None:
+    p = Parser(policy=Policy(script_orders={}))  # type: ignore[arg-type]
+    n = p.parse("毛 泽东")
+    assert (n.given, n.family) == ("毛", "泽东")
+
+
+def test_script_order_beats_explicit_global_name_order() -> None:
+    # the script entry is the more specific rule; opting out means
+    # script_orders={}, not a different name_order
+    p = Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST))
+    n = p.parse("김 민준")
+    assert (n.family, n.given) == ("김", "민준")

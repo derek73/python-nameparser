@@ -559,3 +559,15 @@ def test_cold_import_order_config_first() -> None:
             capture_output=True, text=True)
         assert proc.returncode == 0, (first, proc.stderr)
         assert proc.stdout.strip() == "Smith"
+
+
+def test_facade_reads_wholly_han_names_family_first() -> None:
+    # classified fix(#271): script_orders reaches the v1 surface.
+    # Constants has no opt-out knob (v1 surface is frozen); the
+    # migration path is v2 Policy(script_orders={}).
+    n = HumanName("毛 泽东")
+    assert (n.last, n.first) == ("毛", "泽东")
+    # unsplit (Han segmentation is locales.ZH, v2-only), but the lone
+    # wholly-Han token now takes the family role, not first
+    assert HumanName("毛泽东").last == "毛泽东"
+    assert HumanName("毛泽东").first == ""

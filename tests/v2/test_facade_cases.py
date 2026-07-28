@@ -30,6 +30,10 @@ def _constants_for(case: Case) -> Constants | None:
     )
     unexpressible = (
         policy.name_order != default.name_order
+        # script_orders has no v1 Constants spelling at all (the v1
+        # surface is frozen), so a row opting out must SKIP here rather
+        # than fail against the facade's inherited default.
+        or policy.script_orders != default.script_orders
         or policy.lenient_comma_suffixes != default.lenient_comma_suffixes
         or policy.strip_emoji != default.strip_emoji
         or policy.strip_bidi != default.strip_bidi
