@@ -626,6 +626,26 @@ def test_policy_patch_script_orders_non_iterable_still_defers_to_apply() -> None
         apply_patch(Policy(), patch)
 
 
+def test_canonical_script_pair_defers_each_malformed_shape() -> None:
+    # _canonical_script_pair's three per-pair deferral branches, each
+    # constructible (hashable) and each quoted by Policy's own guard at
+    # apply time: a pair of the wrong arity; a str order value (which
+    # tuple() would shred to characters); a non-iterable order value.
+    arity = PolicyPatch(
+        script_orders=[(Script.HAN, FAMILY_FIRST, "extra")])  # type: ignore[arg-type]
+    assert isinstance(hash(arity), int)
+    with pytest.raises(TypeError, match=r"\(Script, order\) pairs"):
+        apply_patch(Policy(), arity)
+    stringly = PolicyPatch(script_orders={Script.HAN: "gmf"})  # type: ignore[arg-type]
+    assert isinstance(hash(stringly), int)
+    with pytest.raises(TypeError, match="bare string"):
+        apply_patch(Policy(), stringly)
+    lone = PolicyPatch(script_orders={Script.HAN: 5})  # type: ignore[arg-type]
+    assert isinstance(hash(lone), int)
+    with pytest.raises(TypeError, match="must be an iterable, got 5"):
+        apply_patch(Policy(), lone)
+
+
 def test_policy_patch_one_shot_bad_tail_defers_without_silent_drop() -> None:
     # The silent-drop repro: a ONE-SHOT generator whose first item is a
     # good pair and whose second is a bad shape (not caller-generator
