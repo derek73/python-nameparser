@@ -109,9 +109,11 @@ because only these three orders have defined assignment semantics.
    :value: ((Script.HAN, FAMILY_FIRST), (Script.HANGUL, FAMILY_FIRST))
 
    The default :attr:`~nameparser.Policy.script_orders` table: a name
-   written wholly in Han or Hangul reads family-first, whatever
-   ``name_order`` says. The values are drawn from the same three
-   constants above, and the same restriction applies. Build on it for
+   written wholly in Han or Hangul reads family-first. A matching
+   entry in this table takes precedence over ``name_order``, including
+   a ``name_order`` you set explicitly — ``name_order`` governs only
+   the names no entry matches. The values are drawn from the same
+   three constants above, and the same restriction applies. Build on it for
    additive customization —
    ``script_orders=dict(DEFAULT_SCRIPT_ORDERS) | {Script.HAN:
    GIVEN_FIRST}`` — and pass ``script_orders={}`` to opt out entirely
