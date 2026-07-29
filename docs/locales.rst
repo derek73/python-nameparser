@@ -109,7 +109,7 @@ takes:
 .. doctest::
 
     >>> locales.available()
-    ('ru', 'tr_az', 'zh')
+    ('ja', 'ru', 'tr_az', 'zh')
     >>> locales.get("ru") is locales.RU
     True
 
@@ -123,6 +123,14 @@ parsing, equivalent to ``parser_for(locales.get("ru"))``.
 
    * - Code
      - Turns on
+   * - ``ja``
+     - Japanese segmentation — activates division for unspaced
+       Japanese names, which needs a segmenter to act: install
+       ``nameparser[ja]`` and pass
+       ``parser_for(locales.JA, segmenter=locales.ja_segmenter())``
+       (``山田太郎`` → family ``山田``, given ``太郎``). The pack ships
+       no surname list, because no list divides a kanji name, and no
+       order: a Japanese name already reads family-first by default.
    * - ``ru``
      - East Slavic patronymic order — detects a formal
        given/patronymic/family shape (Cyrillic and transliterated
@@ -139,9 +147,9 @@ parsing, equivalent to ``parser_for(locales.get("ru"))``.
        name order: native-script Han already reads family-first
        without a pack.
 
-``ru`` and ``tr_az`` are policy-only — they carry no vocabulary of
-their own. ``zh`` is both halves at once: a surname list, plus the one
-policy field that turns segmentation on for the script it covers. See
+``ja``, ``ru`` and ``tr_az`` are policy-only — they carry no vocabulary
+of their own. ``zh`` is both halves at once: a surname list, plus the
+one policy field that turns segmentation on for the script it covers. See
 :doc:`concepts` for how that split (language vocabulary vs. behavior)
 is drawn, and `Contributing a pack to nameparser`_ for which half a
 new naming rule belongs in.

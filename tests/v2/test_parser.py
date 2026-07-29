@@ -615,8 +615,29 @@ def test_parser_segmenter_is_keyword_only_and_validated() -> None:
 def test_parser_for_carries_the_base_segmenter() -> None:
     def seg(text: str) -> Segmentation | None:
         return None
+    # not given: the base's carries through unchanged
     p = parser_for(locales.get("zh"), base=Parser(segmenter=seg))
     assert p.segmenter is seg
+
+
+def test_parser_for_takes_a_segmenter_keyword() -> None:
+    def seg(text: str) -> Segmentation | None:
+        return None
+    p = parser_for(locales.get("zh"), segmenter=seg)
+    assert p.segmenter is seg
+    assert parser_for(locales.get("zh")).segmenter is None
+
+
+def test_parser_for_segmenter_keyword_overrides_the_base() -> None:
+    # later wins, the same rule scalar policy fields follow
+    def from_base(text: str) -> Segmentation | None:
+        return None
+
+    def explicit(text: str) -> Segmentation | None:
+        return None
+    p = parser_for(locales.get("zh"), base=Parser(segmenter=from_base),
+                   segmenter=explicit)
+    assert p.segmenter is explicit
 
 
 def test_parser_picklability_is_conditional_on_the_segmenter() -> None:
@@ -640,6 +661,22 @@ def test_segmenter_exceptions_propagate() -> None:
     with pytest.raises(RuntimeError, match="segmenter bug"):
         p.parse("阿明")   # zh pack active, 阿 unmatched by vocabulary ->
                           # the stage consults the segmenter
+
+
+def test_the_segmenter_sees_only_an_undivided_name() -> None:
+    # its precondition (#272 Task 5): a segmenter answers where an
+    # UNDIVIDED name divides, so a name part carrying a second
+    # script-written token is already divided and the segmenter is not
+    # consulted -- otherwise "山田 太郎" would have its family divided
+    # again. A Latin title/suffix is not such a boundary.
+    def always(text: str) -> Segmentation | None:
+        return Segmentation((1,), confidence=1.0)
+
+    p = parser_for(locales.get("zh"), base=Parser(segmenter=always))
+    assert p.parse("阿明").family == "阿"          # one token: consulted
+    n = p.parse("阿明 日月")                        # already divided
+    assert (n.family, n.given) == ("阿明", "日月")
+    assert p.parse("Dr 阿明").family == "阿"       # a title is not a split
 
 
 def test_a_segmenter_split_reaches_the_fields() -> None:

@@ -24,6 +24,13 @@ classifiers = [
 ]
 dependencies = []
 
+[project.optional-dependencies]
+# Japanese kanji-name segmentation (#272), wrapped by
+# locales.ja_segmenter(). Optional and never bundled: the core stays
+# zero-dependency. 0.4 is the floor its BasicNameDivider/DividedName
+# API dates from.
+ja = ["namedivider-python>=0.4"]
+
 [build-system]
 requires = ["setuptools (>=82.0.1)"]
 build-backend = "setuptools.build_meta"
@@ -53,6 +60,9 @@ packages = ["nameparser", "tests"]
 [[tool.mypy.overrides]]
 module = [
   "dill.*",
+  # optional extras, unstubbed and absent from the dev environment:
+  # the ja pack imports namedivider lazily, inside the factory
+  "namedivider.*",
 ]
 ignore_missing_imports = true
 

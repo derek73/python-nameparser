@@ -24,7 +24,12 @@ segmenter=...) composes: a listed surname is a dictionary certainty
 and wins, and the segmenter takes what is left. Its Segmentation may
 cut anywhere and any number of times, which is why the split path
 below is written for n cuts and the vocabulary hit is simply its
-one-cut case. A segmenter's own exceptions PROPAGATE -- the single
+one-cut case. One precondition guards it that the vocabulary has no
+twin of: a segmenter answers where an UNDIVIDED name divides, so it is
+consulted only when the gated token is the name part's ONLY
+script-written one -- "山田 太郎" was divided by its writer and must
+not have its family divided again (a Latin title or suffix draws no
+such boundary). A segmenter's own exceptions PROPAGATE -- the single
 declared exception to parse totality (locales spec section 4): a
 user-supplied callable's error is a user-code error, not a content
 error.
@@ -76,9 +81,25 @@ from nameparser._pipeline._vocab import effective_script
 from nameparser._types import AmbiguityKind, Segmentation, Span
 
 #: Segmenter answers scoring below this attach a SEGMENTATION report
-#: (amendment 2026-07-29 section 3). Placeholder pending the Task-5
-#: measurement against namedivider's real score distribution -- revisit
-#: there, not here. Not configurable in 2.x (YAGNI).
+#: (amendment 2026-07-29 section 3). Kept at the drafted 0.9 after
+#: measuring namedivider 0.4.1 over 112 names (#272 Task 5), which
+#: found a distribution the amendment did not anticipate: the scores
+#: are BIMODAL, not clustered near 1. A rule-based division (the kana
+#: boundary in 高橋みなみ, a two-character name) scores exactly 1.0;
+#: a kanji-statistics division scores a softmax over the candidate cut
+#: positions, observed in 0.23-0.68 and driven more by name LENGTH
+#: (median 0.61 at three characters, 0.37 at five -- the softmax is
+#: over len-1 candidates) than by correctness: the wrong answers in
+#: the sample scored 0.32/0.60/0.60/0.61, straddling the correct
+#: median of 0.52. So no floor INSIDE that band separates error from
+#: success, and the only cut the data supports is between a stated
+#: certainty and a statistical guess -- which is what section 3's
+#: epistemic argument asks for anyway. 0.9 sits in the empty gap
+#: (0.68 to 1.0), far from both modes, and reads as "confident" for a
+#: third-party segmenter with a calibrated score too. Consequence,
+#: pinned by tests: a kanji-only Japanese name always carries a
+#: SEGMENTATION report, a kana-divided one never does.
+#: Not configurable in 2.x (YAGNI).
 _SEGMENTER_CONFIDENCE_FLOOR = 0.9
 
 
@@ -227,6 +248,26 @@ def script_segment(state: ParseState) -> ParseState:
         return _split(state, i, (take,), detail)
     if state.segmenter is None:
         return state    # the first activated-script token decides
+    # The segmenter's precondition, which the vocabulary has no twin of:
+    # it is asked where an UNDIVIDED name divides, so it may only be
+    # shown a token that is the whole name. Where the name part carries
+    # a second script-written token the writer already drew this
+    # stage's missing boundary -- "山田 太郎" is divided, and dividing
+    # its family again yields 山 + 田 + 太郎 (namedivider answers for
+    # any string, and scores a two-character one 1.0 by rule, so no
+    # confidence check would catch it). The neighbour counts whatever
+    # script it is written in, ACTIVATED or not -- effective_script is
+    # merely non-None -- because a katakana or hangul neighbour is a
+    # boundary its writer drew just as deliberately as a Han one: under
+    # the JA pack "山田太郎 マイケル" declines, though katakana is in no
+    # activation set. A Latin title or suffix is NOT such a boundary:
+    # it says nothing about where the CJK name splits, so "Dr 阿明日,
+    # Jr." still reaches the segmenter. Vocabulary keeps its own rule
+    # -- a listed surname is a certainty about that exact string,
+    # whoever else stands beside it.
+    if any(j != i and effective_script(state.tokens[j].text) is not None
+           for j in state.segments[0]):
+        return state
     # No try/except around the call: the module docstring's totality
     # exception. The check below is that same doctrine, curated -- a
     # duck-typed answer carrying a .splits of its own would otherwise

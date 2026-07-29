@@ -12,12 +12,17 @@ _lexicon/_policy only (enforced by tests/v2/test_layering.py).
 from __future__ import annotations
 
 import importlib
+from typing import TYPE_CHECKING
 
 from nameparser._locale import Locale
+
+if TYPE_CHECKING:
+    from nameparser._types import Segmenter
 
 #: attribute name -> (module name, module attribute). Codes are the
 #: lowercase module names; attribute constants are uppercase (spec §2).
 _REGISTRY = {
+    "JA": ("nameparser.locales.ja", "JA"),
     "RU": ("nameparser.locales.ru", "RU"),
     "TR_AZ": ("nameparser.locales.tr_az", "TR_AZ"),
     "ZH": ("nameparser.locales.zh", "ZH"),
@@ -49,6 +54,22 @@ def __dir__() -> list[str]:
 def available() -> tuple[str, ...]:
     """The registered locale codes, lowercase, sorted."""
     return tuple(sorted(attr.lower() for attr in _REGISTRY))
+
+
+def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
+    """The Japanese segmenter factory (#272), needing the optional
+    ``pip install nameparser[ja]``; see :mod:`nameparser.locales.ja` for
+    what it wraps, what it declines, and its licensing.
+
+    A real function rather than a _REGISTRY entry, because the registry
+    resolves LOCALES: __getattr__ is annotated to return one, so routing
+    a callable through it would type every pack access as "Locale or
+    Segmenter" for no gain. Laziness is preserved here instead -- the
+    pack module (and with it the optional dependency) loads on the
+    call, not on importing this package."""
+    from nameparser.locales.ja import ja_segmenter as factory
+
+    return factory(gbdt=gbdt)
 
 
 def get(code: str) -> Locale:

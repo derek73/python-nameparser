@@ -186,17 +186,22 @@ def parse(text: str) -> ParsedName:
     return _default_parser().parse(text)
 
 
-def parser_for(*locales: Locale, base: Parser | None = None) -> Parser:
+def parser_for(*locales: Locale, base: Parser | None = None,
+               segmenter: Segmenter | None = None) -> Parser:
     """Lexicon fragments unioned left-to-right onto base's; policy
     patches applied left-to-right (later wins; set-valued fields union
     per the patch metadata). Validation errors raised while applying a
     pack are wrapped with that pack's identity (spec §4 amendment) --
     PolicyPatch validates lazily, so with stacked packs the raw error
     would otherwise point at nothing. Two packs setting the same SCALAR
-    field is a declared conflict: UserWarning, later wins. base's
-    ``segmenter`` carries through unchanged -- packs are pure data and
-    cannot supply one, so ``base=Parser(segmenter=...)`` is how a pack
-    and a segmenter combine."""
+    field is a declared conflict: UserWarning, later wins.
+
+    A ``segmenter`` is passed straight through to the built Parser --
+    ``parser_for(locales.JA, segmenter=locales.ja_segmenter())`` is how
+    a pack and a segmenter combine, since packs are pure data and
+    cannot supply one. Given explicitly it OVERRIDES base's (later
+    wins, the rule scalar policy fields follow); omitted, base's
+    carries through unchanged."""
     if base is not None and not isinstance(base, Parser):
         raise TypeError(f"base must be a Parser or None, got {base!r}")
     for loc in locales:
@@ -206,9 +211,11 @@ def parser_for(*locales: Locale, base: Parser | None = None) -> Parser:
     policy = base.policy if base is not None else Policy()
     # Unpacked here with its siblings because the return builds a FRESH
     # Parser: any field not listed there silently takes its default, and
-    # a dropped segmenter would be invisible (packs are pure data and
-    # cannot supply one, so base is its only source).
-    segmenter = base.segmenter if base is not None else None
+    # a dropped segmenter would be invisible. None reads as "not given"
+    # rather than "clear it" (the escape hatch is a plain Parser:
+    # Parser(lexicon=p.lexicon, policy=p.policy)).
+    if segmenter is None and base is not None:
+        segmenter = base.segmenter
     scalar_setters: dict[str, str] = {}
     for loc in locales:
         for f in dataclasses.fields(PolicyPatch):
