@@ -3,6 +3,8 @@ packs, composition, and the non-interference gate."""
 import functools
 import importlib.util
 import re
+import sys
+import types
 from collections.abc import Callable, Iterable
 from types import ModuleType
 
@@ -213,6 +215,79 @@ def test_ja_segmenter_without_extra_raises_helpfully() -> None:
         pytest.skip("namedivider installed; the error path is untestable")
     with pytest.raises(ImportError, match=r"nameparser\[ja\]"):
         locales.ja_segmenter()
+
+
+class _FakeDivided:
+    """The shape of namedivider's DividedName, minus namedivider —
+    lets the adapter's guard stack run in the plain (no-extra) suite,
+    including the two defensive branches the real 0.4.x library can
+    never reach (reconstruction failure, an empty side)."""
+
+    def __init__(self, family: str, given: str, score: float) -> None:
+        self.family, self.given, self.score = family, given, score
+
+
+def _fake_namedivider(monkeypatch: pytest.MonkeyPatch,
+                      divide: "Callable[[str], _FakeDivided]") -> list[str]:
+    """Install a stub namedivider module and return the gbdt-call log
+    (empty unless GBDTNameDivider was constructed)."""
+    constructed: list[str] = []
+
+    class _Basic:
+        def __init__(self) -> None:
+            constructed.append("basic")
+
+        def divide_name(self, text: str) -> _FakeDivided:
+            return divide(text)
+
+    class _GBDT(_Basic):
+        def __init__(self) -> None:
+            constructed.append("gbdt")
+
+    stub = types.ModuleType("namedivider")
+    stub.BasicNameDivider = _Basic  # type: ignore[attr-defined]
+    stub.GBDTNameDivider = _GBDT  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "namedivider", stub)
+    return constructed
+
+
+def test_ja_adapter_guard_stack_against_a_stub(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # The adapter's whole contract without the extra: this is what the
+    # coverage-bearing CI job sees, so the guards are pinned here and
+    # not only behind the nameparser[ja] integration tests.
+    divide = _fake_namedivider(
+        monkeypatch, lambda text: _FakeDivided(text[:2], text[2:], 0.5))
+    seg = locales.ja_segmenter()
+    assert divide == ["basic"]
+    answer = seg("山田太郎")
+    assert answer is not None
+    assert answer.splits == (2,) and answer.confidence == 0.5
+    assert seg("김민준") is None            # outside the repertoire
+    assert seg("林") is None                # namedivider raises below 2
+
+
+def test_ja_adapter_defensive_branches_against_a_stub(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # reconstruction failure -> decline; an empty side -> the stated
+    # "confidently undivided" opinion; an out-of-range score -> clamped
+    # so Segmentation's [0, 1] validation cannot raise mid-parse
+    _fake_namedivider(
+        monkeypatch, lambda text: _FakeDivided("外", "れ", 0.5))
+    assert locales.ja_segmenter()("山田太郎") is None
+    _fake_namedivider(
+        monkeypatch, lambda text: _FakeDivided(text, "", 1.0000001))
+    whole = locales.ja_segmenter()("山田太郎")
+    assert whole is not None
+    assert whole.splits == () and whole.confidence == 1.0
+
+
+def test_ja_adapter_gbdt_flag_selects_the_gbdt_divider(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    divide = _fake_namedivider(
+        monkeypatch, lambda text: _FakeDivided(text[:1], text[1:], 1.0))
+    locales.ja_segmenter(gbdt=True)
+    assert divide == ["gbdt"]
 
 
 def test_ja_ranges_stay_in_sync_with_vocab() -> None:

@@ -87,6 +87,9 @@ def test_segmentation_validates_splits() -> None:
         Segmentation(("2",))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="confidence"):
         Segmentation((2,), confidence=1.5)
+    # wrong TYPE is the TypeError branch, distinct from the range check
+    with pytest.raises(TypeError, match="confidence"):
+        Segmentation((2,), confidence="high")  # type: ignore[arg-type]
 
 
 def test_segmentation_rejects_mappings_and_non_iterables() -> None:

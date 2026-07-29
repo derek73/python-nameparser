@@ -634,6 +634,11 @@ def test_parser_for_carries_the_base_segmenter() -> None:
     assert p.segmenter is seg
 
 
+def test_parser_for_rejects_a_non_parser_base() -> None:
+    with pytest.raises(TypeError, match="base must be a Parser"):
+        parser_for(locales.get("zh"), base=5)  # type: ignore[arg-type]
+
+
 def test_parser_for_takes_a_segmenter_keyword() -> None:
     def seg(text: str) -> Segmentation | None:
         return None
