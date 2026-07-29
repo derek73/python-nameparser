@@ -483,6 +483,20 @@ def test_kana_licensed_names_read_family_first_by_default() -> None:
     assert parse("高橋みなみ").family == "高橋みなみ"
 
 
+def test_iteration_mark_counts_as_han() -> None:
+    # 々 (U+3005) repeats the preceding kanji and is Script=Common
+    # under UAX #24, so classifying by the Script property would put a
+    # 佐々木 token in no script at all: the name reversed, and the
+    # token never reached the segmentation gate. It is in the HAN
+    # ranges by BLOCK-style reasoning, the same call U+30FB gets.
+    n = parse("佐々木 太郎")
+    assert (n.family, n.given) == ("佐々木", "太郎")
+    n = parse("野々村 真")
+    assert (n.family, n.given) == ("野々村", "真")
+    # and a lone one takes the family role like any other Han token
+    assert parse("奈々").family == "奈々"
+
+
 def test_pure_katakana_stays_positional() -> None:
     # transcribed foreign names keep their original (usually Western)
     # order; katakana alone licenses nothing

@@ -52,9 +52,9 @@ given-then-family:
     'Doe'
 
 For family-first input *without* a comma — common outside Europe — set
-``name_order``; see :doc:`customize`. Names written in Han or Hangul
-are the exception that needs no setting at all: see `East Asian
-names`_ below.
+``name_order``; see :doc:`customize`. Names written in Han or Hangul,
+and Japanese names written in kanji and kana, are the exception that
+needs no setting at all: see `East Asian names`_ below.
 
 Words that attach to their neighbors
 --------------------------------------

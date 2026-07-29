@@ -81,7 +81,7 @@ JA = Locale(
 # kana-licensed composite the pack acts on (山田エミ) -- DEVIATES must
 # declare it, and the adapter must not decline it. A pure-katakana
 # token never reaches either: the stage's own gate stops it.
-_JA_RANGES = ((0x3040, 0x309F), (0x30A0, 0x30FF),
+_JA_RANGES = ((0x3005, 0x3005), (0x3040, 0x309F), (0x30A0, 0x30FF),
               (0x3400, 0x4DBF), (0x4E00, 0x9FFF), (0xF900, 0xFAFF),
               (0x20000, 0x323AF))
 

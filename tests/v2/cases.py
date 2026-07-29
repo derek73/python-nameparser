@@ -613,6 +613,14 @@ CASES: tuple[Case, ...] = (
          notes="parity: katakana deliberately has no entry, so the "
                "positional default holds -- transcribed foreign names "
                "keep source order"),
+    Case("ja_iteration_mark_is_han", "佐々木 太郎",
+         {"family": "佐々木", "given": "太郎"},
+         classification="fix(#272)",
+         notes="々 (U+3005, the ideographic iteration mark) repeats "
+               "the preceding kanji and is Script=Common under UAX "
+               "#24; it counts as Han here, or 佐々木 -- a top-20 "
+               "Japanese surname -- would be a mixed-script token and "
+               "reverse"),
     Case("ja_nakaguro_inside_a_nickname",
          "山田 太郎 (マイケル・ジャクソン)",
          {"family": "山田", "given": "太郎",

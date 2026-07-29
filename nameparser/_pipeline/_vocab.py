@@ -37,14 +37,21 @@ D = re.compile(r"^d\.?$", re.IGNORECASE)
 # per-char on the _EMOJI_RANGES precedent in _tokenize.py, on the
 # theory that a range test needs no regex; measured at token scale the
 # compiled regex wins by 3-9x, and by 89x on long tokens.)
-# HAN: the URO plus Extension A, the compatibility block,
-# and the supplementary-plane block (Ext B-I + CJK Compat Ideographs
-# Supplement, 0x20000-0x323AF) -- rare surnames are the biggest real
-# source of supplementary-plane hanzi in personal names (e.g. 𠮷田's
-# 𠮷, U+20BB7), so leaving them out silently mis-orders those names;
-# unassigned gaps inside the span are harmless, since no real name
-# contains an unassigned codepoint. HANGUL: precomposed syllables
-# only -- modern Korean text never writes names as bare jamo.
+# HAN: the ideographic iteration mark U+3005, the URO plus Extension
+# A, the compatibility block, and the supplementary-plane block
+# (Ext B-I + CJK Compat Ideographs Supplement, 0x20000-0x323AF) --
+# rare surnames are the biggest real source of supplementary-plane
+# hanzi in personal names (e.g. 𠮷田's 𠮷, U+20BB7), so leaving them
+# out silently mis-orders those names; unassigned gaps inside the span
+# are harmless, since no real name contains an unassigned codepoint.
+# U+3005 々 is the block-vs-Script case again (it is Script=Common
+# under UAX #24, like U+30FB below): it REPEATS the preceding kanji
+# and appears only inside Han-written names -- 佐々木 (Sasaki, a
+# top-20 Japanese surname), 野々村, 奈々 -- so a token carrying it is
+# as Han as the character it iterates. Omitting it made 佐々木 a
+# mixed-script token: the name reversed and never gated into
+# segmentation. HANGUL: precomposed syllables only -- modern Korean
+# text never writes names as bare jamo.
 # HIRAGANA/KATAKANA (#272): the two kana blocks, each in full. There
 # IS a supplementary-plane kana repertoire (Kana Supplement, Kana
 # Extended-A/B, Small Kana Extension, U+1AFF0-U+1B16F, 311 assigned
@@ -75,8 +82,8 @@ D = re.compile(r"^d\.?$", re.IGNORECASE)
 # (dict iteration order), so an overlapping future script would make
 # the result order-dependent instead of well-defined.
 _SCRIPT_RANGES: dict[Script, tuple[tuple[int, int], ...]] = {
-    Script.HAN: ((0x3400, 0x4DBF), (0x4E00, 0x9FFF), (0xF900, 0xFAFF),
-                 (0x20000, 0x323AF)),
+    Script.HAN: ((0x3005, 0x3005), (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
+                 (0xF900, 0xFAFF), (0x20000, 0x323AF)),
     Script.HANGUL: ((0xAC00, 0xD7A3),),
     Script.HIRAGANA: ((0x3040, 0x309F),),
     Script.KATAKANA: ((0x30A0, 0x30FF),),

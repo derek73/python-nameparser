@@ -32,6 +32,18 @@ issue = "fix(#271/#272) native-script CJK: family-first order, hangul segmentati
 # supplementary-plane kana is hentaigana and other archaic forms no
 # modern name uses, so _SCRIPT_RANGES does not list it either.
 #
+# U+FF65 is the one span here that _SCRIPT_RANGES does NOT have, and
+# it is deliberate: the halfwidth middle dot separates tokens like its
+# fullwidth twin, so 'ﾏｲｹﾙ･ｼﾞｬｸｿﾝ' splits where 1.4 left one token,
+# but halfwidth kana is excluded from CLASSIFICATION on purpose (a
+# separate normalization problem). The rest of the halfwidth block
+# (U+FF66-U+FF9F) is left out for the usual tightness reason, and it
+# was measured rather than assumed: a dotless halfwidth name such as
+# 'ﾏｲｹﾙ ｼﾞｬｸｿﾝ' is byte-identical on both sides, so covering the
+# block would pre-excuse a future regression on a shape that is
+# parity today. The dot is the whole mechanism; the dot is the whole
+# span.
+#
 # Expected to match nothing against the current corpora, which contain
 # no CJK at all -- build_issues_corpus.py requires an internal space,
 # and unspaced names are the shape this classifies. That blind spot is
@@ -40,7 +52,7 @@ issue = "fix(#271/#272) native-script CJK: family-first order, hangul segmentati
 # behavioral guarantee lives in the fix(#271)/fix(#272) rows of
 # tests/v2/cases.py, and this rule is kept ready for the moment a CJK
 # name lands in a corpus.
-name_regex = "[\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3]"
+name_regex = "[\\u3005-\\u3005\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65]"
 fields = ["first", "middle", "last"]
 
 [[change]]

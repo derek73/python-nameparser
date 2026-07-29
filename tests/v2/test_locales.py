@@ -246,6 +246,12 @@ def test_ja_end_to_end() -> None:
     # kana-licensed composite: gated in through the HIRAGANA entry
     n = p.parse("高橋みなみ")
     assert (n.family, n.given) == ("高橋", "みなみ")
+    # the iteration mark 々 gates in as Han and namedivider reads the
+    # repeated character correctly -- verified against 0.4.1 rather
+    # than assumed, since 々 is Script=Common and a divider could
+    # plausibly have choked on it or cut beside it
+    n = p.parse("佐々木健")
+    assert (n.family, n.given) == ("佐々木", "健")
 
 
 @_needs_ja
@@ -576,6 +582,7 @@ _ROTATORS["ja"] = [
     "高橋みなみ",    # kanji + hiragana: the kana license's carrier case
     "山田エミ",      # kanji + katakana: licensed as a MIXED token, where
                      # pure katakana (マイケル) is deliberately not
+    "佐々木健",      # the iteration mark 々 inside a top-20 surname
 ]
 
 

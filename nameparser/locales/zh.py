@@ -101,8 +101,8 @@ ZH = Locale(
 # _pipeline/_vocab.py's _SCRIPT_RANGES[Script.HAN] (layering forbids
 # a pack importing the pipeline; the sync test in
 # tests/v2/test_locales.py pins the equality).
-_HAN_RANGES = ((0x3400, 0x4DBF), (0x4E00, 0x9FFF), (0xF900, 0xFAFF),
-               (0x20000, 0x323AF))
+_HAN_RANGES = ((0x3005, 0x3005), (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
+               (0xF900, 0xFAFF), (0x20000, 0x323AF))
 
 
 def DEVIATES(name: str) -> bool:

@@ -44,9 +44,13 @@ _BIDI = re.compile('[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]+')
 # The katakana middle dot and its halfwidth twin divide the parts of
 # a foreign name transcribed into katakana (マイケル・ジャクソン) --
 # native names never contain them, so they separate unconditionally,
-# like whitespace (amendment 2026-07-29 section 1b). U+00B7 is
-# deliberately NOT here: it is also the Catalan punt volat, interior
-# to real names (Gal·la) -- a follow-up issue owns that decision.
+# like whitespace (amendment 2026-07-29 section 1b). The Chinese
+# interpunct U+00B7 (威廉·莎士比亚) is deliberately NOT here: it is
+# also the Catalan punt volat, which sits INSIDE a single name piece
+# (Gal·la), so separating on it unconditionally would break names it
+# has no business touching. Admitting it would need a flanked-by-CJK
+# guard, which is a different rule from this set's "these codepoints
+# are always separators".
 _NAME_DOT_SEPARATORS = frozenset({"\u30FB", "\uFF65"})
 
 
