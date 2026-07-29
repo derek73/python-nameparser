@@ -14,7 +14,7 @@ contents.
 from __future__ import annotations
 
 import dataclasses
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 from typing import TYPE_CHECKING, NamedTuple, NoReturn, TypeVar
@@ -228,6 +228,78 @@ class Token:
                  if self.span is not None else "@synthetic")
         tags = f" {{{', '.join(sorted(self.tags))}}}" if self.tags else ""
         return f"Token({self.text!r} {where} {self.role.name}{tags})"
+
+
+@dataclass(frozen=True, slots=True)
+class Segmentation:
+    """A segmenter's answer for one unspaced token: the interior offsets
+    to split at (each offset begins a new piece, so
+    ``Segmentation((2,))`` cuts a three-character token into
+    ``token[:2]`` and ``token[2:]``; strictly ascending, each >= 1 -- an
+    index protocol, so a segmenter physically cannot invent, drop, or
+    rewrite characters) and an optional confidence in [0, 1].
+    ``Segmentation(())`` means "confidently one token" -- distinct from
+    returning None, which DECLINES ("I don't know"). The upper bound
+    (< len(token)) is validated by the consuming stage, which knows the
+    text."""
+
+    #: Interior character offsets to split at, ascending.
+    splits: tuple[int, ...]
+    #: How sure the segmenter is, or None for "no opinion".
+    confidence: float | None = None
+
+    # in the class body so @dataclass(slots=True) keeps them
+    __getstate__ = _guarded_getstate
+    __setstate__ = _guarded_setstate
+
+    def __post_init__(self) -> None:
+        # The same guard Token.tags carries: a mapping would silently
+        # contribute only its keys, and a bare int would surface as an
+        # uncurated "not iterable" from the tuple() below.
+        if isinstance(self.splits, Mapping):
+            raise TypeError(
+                "Segmentation.splits must be an iterable of integers, "
+                "not a mapping"
+            )
+        try:
+            splits = tuple(self.splits)
+        except TypeError:
+            raise TypeError(
+                f"Segmentation.splits must be an iterable of integers, "
+                f"got {self.splits!r}"
+            ) from None
+        for offset in splits:
+            # bool is an int subclass: True as an offset is a comparison
+            # result leaking into an index slot, not a split point
+            if isinstance(offset, bool) or not isinstance(offset, int):
+                raise TypeError(
+                    f"Segmentation.splits must be integers, got {offset!r}")
+            if offset < 1:
+                raise ValueError(
+                    f"Segmentation.splits must be interior offsets "
+                    f"(each >= 1), got {offset}")
+        if any(b <= a for a, b in zip(splits, splits[1:])):
+            raise ValueError(
+                f"Segmentation.splits must be strictly ascending, "
+                f"got {splits!r}")
+        object.__setattr__(self, "splits", splits)
+        conf = self.confidence
+        if conf is not None:
+            if isinstance(conf, bool) or not isinstance(conf, (int, float)):
+                raise TypeError(
+                    f"Segmentation.confidence must be a float or None, "
+                    f"got {conf!r}")
+            # stored as given, not coerced to float: an int 1 is a valid
+            # confidence and the range check is what the callers rely on
+            if not 0.0 <= conf <= 1.0:
+                raise ValueError(
+                    f"Segmentation.confidence must be within [0, 1], "
+                    f"got {conf!r}")
+
+
+#: The segmenter hook's shape: token text in, :class:`Segmentation` out,
+#: None to decline. Plug one in via ``Parser(segmenter=...)``.
+Segmenter = Callable[[str], Segmentation | None]
 
 
 class AmbiguityKind(StrEnum):

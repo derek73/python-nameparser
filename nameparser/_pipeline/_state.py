@@ -15,7 +15,7 @@ from enum import Enum, auto
 
 from nameparser._lexicon import Lexicon
 from nameparser._policy import Policy
-from nameparser._types import AmbiguityKind, Role, Span
+from nameparser._types import AmbiguityKind, Role, Segmenter, Span
 
 
 # The comma characters (ASCII/Arabic/fullwidth, #265). Shared here so
@@ -79,11 +79,17 @@ class ParseState:
     different stages needs an emitter in each. Post-group, segments
     may retain indices of dropped tokens -- assign iterates pieces,
     never segments. This ownership map is pinned by
-    tests/v2/pipeline/test_state.py."""
+    tests/v2/pipeline/test_state.py.
+
+    segmenter belongs to no stage: like original/lexicon/policy it is
+    passed in at construction by Parser.parse and only ever READ (by
+    script_segment, for a token the vocabulary declined)."""
 
     original: str
     lexicon: Lexicon
     policy: Policy
+    #: The optional Parser(segmenter=...) hook; None = not configured.
+    segmenter: Segmenter | None = None
     extracted: tuple[tuple[Role, Span], ...] = ()
     masked: tuple[Span, ...] = ()
     tokens: tuple[WorkToken, ...] = ()

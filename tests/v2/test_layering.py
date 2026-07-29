@@ -167,6 +167,7 @@ def test_lexicon_never_imports_config_package_root_or_parser() -> None:
 def test_public_exports() -> None:
     expected = {
         "Span", "Role", "Token", "Ambiguity", "AmbiguityKind", "ParsedName",
+        "Segmentation", "Segmenter",
         "Lexicon", "Policy", "PolicyPatch", "PatronymicRule", "Script", "UNSET",
         "GIVEN_FIRST", "FAMILY_FIRST", "FAMILY_FIRST_GIVEN_LAST",
         "DEFAULT_NICKNAME_DELIMITERS", "DEFAULT_SCRIPT_ORDERS", "Locale",

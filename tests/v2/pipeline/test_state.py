@@ -16,6 +16,7 @@ def test_state_defaults_are_empty() -> None:
     assert s.structure is Structure.NO_COMMA
     assert s.ambiguities == () and s.extracted == () and s.masked == ()
     assert s.comma_offsets == () and s.dropped == () and s.piece_tags == ()
+    assert s.segmenter is None
 
 
 def test_state_is_frozen_and_replace_works() -> None:

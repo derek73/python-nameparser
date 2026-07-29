@@ -4,11 +4,13 @@ import unicodedata
 
 import pytest
 
-from nameparser import Lexicon, Locale, Parser, Policy, PolicyPatch, parse, parser_for
+from nameparser import (
+    Lexicon, Locale, Parser, Policy, PolicyPatch, locales, parse, parser_for,
+)
 from nameparser._policy import (
     FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, PatronymicRule,
 )
-from nameparser._types import AmbiguityKind, Role
+from nameparser._types import AmbiguityKind, Role, Segmentation
 
 
 def test_parser_defaults_and_properties() -> None:
@@ -593,3 +595,50 @@ def test_unspaced_korean_names_parse_by_default() -> None:
     assert (n.family, n.given) == ("김", "민준")
     n = parse("남궁민수")     # two-syllable surname beats single 남
     assert (n.family, n.given) == ("남궁", "민수")
+
+
+# -- the segmenter hook (#272) ------------------------------------------
+
+
+def _module_level_decline(text: str) -> Segmentation | None:
+    return None   # module-level so pickle can find it
+
+
+def test_parser_segmenter_is_keyword_only_and_validated() -> None:
+    assert Parser().segmenter is None
+    with pytest.raises(TypeError, match="callable"):
+        Parser(segmenter=5)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="positional"):
+        Parser(Lexicon.default(), Policy(), None)  # type: ignore[misc]  # positional: rejected
+
+
+def test_parser_for_carries_the_base_segmenter() -> None:
+    def seg(text: str) -> Segmentation | None:
+        return None
+    p = parser_for(locales.get("zh"), base=Parser(segmenter=seg))
+    assert p.segmenter is seg
+
+
+def test_parser_picklability_is_conditional_on_the_segmenter() -> None:
+    # declared contract (locales spec section 4): Parser pickles iff
+    # its segmenter does -- like any callable-holding object
+    p = pickle.loads(pickle.dumps(Parser(segmenter=_module_level_decline)))
+    assert p.segmenter is _module_level_decline
+    unpicklable = Parser(segmenter=lambda t: None)  # constructs fine
+    with pytest.raises(Exception):   # pickle's exception type varies
+        pickle.dumps(unpicklable)    # only pickling fails
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="the stage consults the segmenter in the next commit")
+def test_segmenter_exceptions_propagate() -> None:
+    # the ONE exception to parse-totality (locales spec section 4,
+    # declared 2026-07-11): a user-supplied callable's own error is a
+    # user-code error, not a content error, and must not be swallowed
+    def boom(text: str) -> Segmentation | None:
+        raise RuntimeError("segmenter bug")
+
+    p = parser_for(locales.get("zh"), base=Parser(segmenter=boom))
+    with pytest.raises(RuntimeError, match="segmenter bug"):
+        p.parse("阿明")   # zh pack active, 阿 unmatched by vocabulary ->
+                          # the segmenter will be consulted once Task 4 lands

@@ -27,6 +27,8 @@ from nameparser._types import (
     AmbiguityKind,
     ParsedName,
     Role,
+    Segmentation,
+    Segmenter,
     Span,
     Token,
 )
@@ -36,7 +38,7 @@ __all__ = [
     "HumanName",
     # v2 core
     "Span", "Role", "Token", "Ambiguity", "AmbiguityKind", "ParsedName",
-    "STABLE_TAGS",
+    "STABLE_TAGS", "Segmentation", "Segmenter",
     "Lexicon", "Policy", "PolicyPatch", "PatronymicRule", "Script", "UNSET",
     "GIVEN_FIRST", "FAMILY_FIRST", "FAMILY_FIRST_GIVEN_LAST",
     "DEFAULT_NICKNAME_DELIMITERS", "DEFAULT_SCRIPT_ORDERS", "Locale",

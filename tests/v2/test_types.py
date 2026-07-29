@@ -1,10 +1,12 @@
+import dataclasses
 from collections.abc import Iterable
 
 import pytest
 
 from nameparser import parse
 from nameparser._types import (
-    STABLE_TAGS, Ambiguity, AmbiguityKind, ParsedName, Role, Span, Token,
+    STABLE_TAGS, Ambiguity, AmbiguityKind, ParsedName, Role, Segmentation,
+    Span, Token,
 )
 
 
@@ -71,6 +73,37 @@ def test_token_is_frozen_and_hashable() -> None:
     with pytest.raises(AttributeError):
         t.text = "X"  # type: ignore[misc]
     assert hash(t) == hash(Token("Juan", Span(0, 4), Role.GIVEN))
+
+
+def test_segmentation_validates_splits() -> None:
+    s = Segmentation((2,), confidence=0.97)
+    assert s.splits == (2,) and s.confidence == 0.97
+    assert Segmentation(()).confidence is None
+    with pytest.raises(ValueError, match="ascending"):
+        Segmentation((3, 2))
+    with pytest.raises(ValueError, match="interior"):
+        Segmentation((0,))
+    with pytest.raises(TypeError, match="integers"):
+        Segmentation(("2",))  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="confidence"):
+        Segmentation((2,), confidence=1.5)
+
+
+def test_segmentation_rejects_mappings_and_non_iterables() -> None:
+    # Token.tags' guards, on the other collection field: a mapping
+    # would silently contribute only its keys, and a bare int would
+    # surface as an uncurated "not iterable" naming nothing
+    with pytest.raises(TypeError, match="Segmentation.splits"):
+        Segmentation({2: "a", 3: "b"})  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="Segmentation.splits"):
+        Segmentation(5)  # type: ignore[arg-type]
+
+
+def test_segmentation_is_frozen_and_hashable() -> None:
+    s = Segmentation((2,))
+    assert isinstance(hash(s), int)
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        s.splits = (3,)  # type: ignore[misc]
 
 
 def test_ambiguity_kind_members_are_their_string_values() -> None:
@@ -452,3 +485,5 @@ def test_with_field_tokens_rejects_mismatched_roles() -> None:
     with pytest.raises(ValueError, match="has role family, not given"):
         name._with_field_tokens(
             {Role.GIVEN: (Token("x", None, Role.FAMILY),)})
+
+
