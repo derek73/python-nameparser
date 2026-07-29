@@ -465,6 +465,27 @@ def test_nfd_korean_input_still_reads_family_first() -> None:
     # the point under test is the ORDER (family first), not encoding
     assert (unicodedata.normalize("NFC", n.family),
             unicodedata.normalize("NFC", n.given)) == ("김", "민준")
+    # pinned, not just stated: a future tokenize-level normalize (the
+    # tempting over-fix, and an anti-#100 violation) must fail here
+    assert n.family == unicodedata.normalize("NFD", "김")
+
+
+def test_kana_licensed_names_read_family_first_by_default() -> None:
+    # the #272 amendment: hiragana identifies Japanese as certainly
+    # as hangul identifies Korean -- release-log-classified fix
+    n = parse("高橋 みなみ")
+    assert (n.family, n.given) == ("高橋", "みなみ")
+    n = parse("山田 エミ")    # kanji piece + katakana piece: native
+    assert (n.family, n.given) == ("山田", "エミ")
+    # lone kana-licensed token takes the family role, unsplit
+    assert parse("高橋みなみ").family == "高橋みなみ"
+
+
+def test_pure_katakana_stays_positional() -> None:
+    # transcribed foreign names keep their original (usually Western)
+    # order; katakana alone licenses nothing
+    n = parse("マイケル ジャクソン")
+    assert (n.given, n.family) == ("マイケル", "ジャクソン")
 
 
 def test_latin_names_are_untouched_by_script_orders() -> None:
@@ -497,9 +518,9 @@ def test_three_cjk_pieces_take_the_script_order_middles() -> None:
 
 
 def test_two_cjk_scripts_fall_back_even_though_both_read_family_first() -> None:
-    # The rule is ONE script for the whole name, not "the entries
-    # agree": a Han+Hangul name is written in neither tradition, so it
-    # takes the positional default.
+    # The rule is one script, or the Han/kana repertoire the #272
+    # license covers -- not "the entries agree": Han+Hangul is written
+    # in neither tradition, so it takes the positional default.
     n = parse("毛 김")
     assert (n.given, n.family) == ("毛", "김")
 

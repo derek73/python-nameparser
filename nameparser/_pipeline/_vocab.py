@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from collections.abc import Iterable
 
 from nameparser._lexicon import Lexicon, _normalize
 from nameparser._policy import Script
@@ -50,19 +51,22 @@ D = re.compile(r"^d\.?$", re.IGNORECASE)
 # codepoints) but none of it is WORTH chasing the way Han's astral
 # block is: those codepoints are hentaigana and other archaic/
 # phonetic-extension forms no modern Japanese name uses, unlike
-# supplementary Han, which real surnames genuinely need. Halfwidth
-# kana (U+FF65-U+FF9D) is likewise deliberately excluded -- legacy
-# bank/CSV data uses it, but it is a separate normalization problem;
-# Task 2b's separator handling only touches the halfwidth DOT
-# (U+FF65), not the rest of that block. This table classifies by
-# Unicode BLOCK, not the UAX #24 Script property: U+30A0, U+30FB
-# (the middle dot), and U+30FC (the prolonged sound mark) all carry
-# Script=Common under UAX #24, and the combining kana voicing marks
-# U+3099-U+309C are Common/Inherited -- yet every one of them is
-# needed here, and block membership, not the Script property, is
-# what puts them in range. The katakana block's upper end (U+30FF)
-# including the middle dot U+30FB is load-bearing for
-# effective_script's kana license below (see its docstring) -- a
+# supplementary Han, which real surnames genuinely need. The Katakana
+# Phonetic Extensions block (U+31F0-U+31FF, 16 small katakana for Ainu
+# transcription) is excluded for the same reason -- no modern Japanese
+# personal name uses them. Halfwidth kana (U+FF65-U+FF9F, including
+# the voiced/semi-voiced sound marks U+FF9E/U+FF9F) is likewise
+# deliberately excluded -- legacy bank/CSV data uses it, but it is a
+# separate normalization problem; Task 2b's separator handling only
+# touches the halfwidth DOT (U+FF65), not the rest of that block.
+# This table classifies by Unicode BLOCK, not the UAX #24 Script
+# property: U+30A0, U+30FB (the middle dot), and U+30FC (the
+# prolonged sound mark) all carry Script=Common under UAX #24, and the
+# combining kana voicing marks U+3099-U+309C are Common/Inherited --
+# yet every one of them is needed here, and block membership, not the
+# Script property, is what puts them in range. The katakana block's
+# upper end (U+30FF) including the middle dot U+30FB is load-bearing
+# for effective_script's kana license below (see its docstring) -- a
 # later task turns U+30FB into a tokenize-level separator, but until
 # then it classifies as ordinary katakana. The ranges below must stay
 # mutually disjoint: single_script returns the FIRST covering entry
@@ -87,13 +91,14 @@ _SCRIPT_PATTERNS: dict[Script, re.Pattern[str]] = {
 }
 
 #: The Japanese repertoire: the union effective_script's kana license
-#: quantifies over. A tuple in the table's own order (HAN, then
-#: HIRAGANA, then KATAKANA -- HANGUL simply omitted, the relative
-#: order of the rest is unchanged), not a frozenset: nothing consults
-#: membership today, only iterates to build the pattern below, so
-#: there is nothing set-ness would buy; a later task that needs
-#: membership can convert it then.
-_JA_SCRIPTS = (Script.HAN, Script.HIRAGANA, Script.KATAKANA)
+#: quantifies over -- HAN, HIRAGANA, KATAKANA (HANGUL simply omitted).
+#: A frozenset, not the tuple this started as: resolve_script_set
+#: below is the "later task that needs membership" the tuple's
+#: original comment anticipated. Membership doesn't care about order,
+#: and the pattern built below doesn't either (a regex character
+#: class matches the same set regardless of the order its ranges are
+#: written in).
+_JA_SCRIPTS = frozenset({Script.HAN, Script.HIRAGANA, Script.KATAKANA})
 _JA_PATTERN = re.compile(
     "["
     + "".join(f"\\U{lo:08x}-\\U{hi:08x}"
@@ -257,6 +262,15 @@ def effective_script(text: str) -> Script | None:
     script = single_script(text)
     if script is not None:
         return script
+    # Renormalizes text that single_script (above) already normalized
+    # once: deliberately NOT hoisted into a shared `_classify(normalized)`
+    # helper. The second call only runs on the fall-through path (a
+    # token single_script could not classify at all, i.e. genuinely
+    # mixed-script or empty/ASCII), never on the common single-script
+    # hit above, so it is a quick re-check on already-NFC text, not
+    # measured work -- the per-char-vs-regex history in this module's
+    # header is what a real cost here would look like, and this isn't
+    # it.
     # normalized is None for both shapes _JA_PATTERN could never match
     # anyway (empty text, or the all-ASCII text single_script's fast
     # path already ruled out) -- real work, not a leftover "if text"
@@ -265,5 +279,34 @@ def effective_script(text: str) -> Script | None:
     # not.
     normalized = _normalized_for_script(text)
     if normalized is not None and _JA_PATTERN.fullmatch(normalized):
+        return Script.HIRAGANA
+    return None
+
+
+def resolve_script_set(scripts: Iterable[Script]) -> Script | None:
+    """Generalizes effective_script's kana license from one token's
+    CHARACTERS to a whole name's PIECES (#272): `scripts` is the
+    effective_script of every name token, already resolved
+    individually -- '高橋' (Han) and 'みなみ' (Hiragana) are two
+    separately single-script pieces (split by a space, not mixed
+    within one token), but together are exactly the repertoire
+    effective_script licenses inside a single token (高橋みなみ). A
+    single distinct script is returned as-is (the ordinary case,
+    including a lone wholly-katakana name, which callers key with no
+    table entry); more than one collapses to the HIRAGANA carrier
+    when confined to Han/Hiragana/Katakana, the same set
+    effective_script's license tests; any other mix (Han+Hangul, or
+    no scripts at all -- an empty `scripts`) returns None -- the
+    caller's cue to fall back to the positional default, exactly like
+    effective_script's own None. A non-None result reports what was
+    FOUND, not that a license fired: callers wanting to know whether
+    the kana license specifically was the reason must compare the
+    result against a specific Script (e.g. `is Script.HIRAGANA`), not
+    just its truthiness -- a lone wholly-Han name also returns
+    non-None here, licensing nothing."""
+    found = frozenset(scripts)
+    if len(found) <= 1:
+        return next(iter(found), None)
+    if found <= _JA_SCRIPTS:
         return Script.HIRAGANA
     return None

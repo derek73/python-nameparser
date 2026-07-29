@@ -3,7 +3,7 @@ import unicodedata
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
     _SCRIPT_RANGES, effective_script, is_initial, is_suffix_lenient,
-    is_suffix_strict, single_script,
+    is_suffix_strict, resolve_script_set, single_script,
 )
 from nameparser._policy import Script
 
@@ -118,6 +118,30 @@ def test_effective_script_kana_license() -> None:
     # at effective_script as two tokens instead of one.
     assert effective_script("マイケル・ジャクソン") is Script.KATAKANA
     assert effective_script("") is None
+
+
+def test_resolve_script_set_generalizes_the_license_across_pieces() -> None:
+    # a single script passes through as-is, including a script with no
+    # order-default entry (KATAKANA): the caller decides what to do
+    # with that, this function only reports what was found
+    assert resolve_script_set([Script.HAN]) is Script.HAN
+    assert resolve_script_set([Script.HAN, Script.HAN]) is Script.HAN
+    assert resolve_script_set([Script.KATAKANA]) is Script.KATAKANA
+    # the license, generalized: Han + Hiragana across two SEPARATE,
+    # individually single-script pieces (never mixed within one
+    # token) is exactly the repertoire effective_script licenses
+    # inside a single token, so it collapses to the carrier key
+    assert resolve_script_set([Script.HAN, Script.HIRAGANA]) \
+        is Script.HIRAGANA
+    assert resolve_script_set([Script.HAN, Script.KATAKANA]) \
+        is Script.HIRAGANA
+    assert resolve_script_set([Script.HIRAGANA, Script.KATAKANA]) \
+        is Script.HIRAGANA
+    # outside the license: Han+Hangul is two real scripts, neither
+    # kana -- no single tradition, so this declines like the caller's
+    # own None (Latin, mixed, empty)
+    assert resolve_script_set([Script.HAN, Script.HANGUL]) is None
+    assert resolve_script_set([]) is None
 
 
 def test_nfd_katakana_still_classifies_and_declines_the_license() -> None:

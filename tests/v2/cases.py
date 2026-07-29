@@ -522,12 +522,12 @@ CASES: tuple[Case, ...] = (
                "role = family"),
     Case("mixed_script_untouched_by_script_orders", "John 王",
          {"given": "John", "family": "王"},
-         notes="single_script is None for a mixed name: script_orders "
+         notes="effective_script is None for a mixed name: script_orders "
                "declines and the positional default governs"),
     Case("two_han_scripts_untouched_by_script_orders", "毛 김",
          {"given": "毛", "family": "김"},
-         notes="two scripts also decline -- ONE script for the whole "
-               "name"),
+         notes="two scripts also decline -- the rule is one script, or "
+               "the Han/kana repertoire the #272 license covers"),
 
     Case("zh_unspaced", "毛泽东",
          {"family": "毛", "given": "泽东"},

@@ -506,12 +506,20 @@ def test_patched_rejects_non_patch() -> None:
 def test_script_orders_default_and_canonical_storage() -> None:
     p = Policy()
     assert p.script_orders == DEFAULT_SCRIPT_ORDERS
+    # three entries now (#272 adds HIRAGANA), sorted by Script value:
+    # "han" < "hangul" < "hiragana"
+    assert p.script_orders == (
+        (Script.HAN, FAMILY_FIRST),
+        (Script.HANGUL, FAMILY_FIRST),
+        (Script.HIRAGANA, FAMILY_FIRST),
+    )
     # constructor tolerates a Mapping; storage is the sorted pair
     # tuple (hashability, the capitalization_exceptions precedent --
     # which is also why the mapping spelling needs the ignore: the
     # field is annotated with what it STORES)
     q = Policy(script_orders={Script.HANGUL: FAMILY_FIRST,  # type: ignore[arg-type]
-                              Script.HAN: FAMILY_FIRST})
+                              Script.HAN: FAMILY_FIRST,
+                              Script.HIRAGANA: FAMILY_FIRST})
     assert q == p and hash(q) == hash(p)
     assert Policy(script_orders={}).script_orders == ()  # type: ignore[arg-type]
 

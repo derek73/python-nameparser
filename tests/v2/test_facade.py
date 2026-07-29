@@ -573,6 +573,11 @@ def test_facade_reads_wholly_han_names_family_first() -> None:
     assert HumanName("毛泽东").first == ""
 
 
+def test_facade_reads_kana_licensed_names_family_first() -> None:
+    n = HumanName("高橋 みなみ")
+    assert (n.last, n.first) == ("高橋", "みなみ")
+
+
 def test_facade_parses_unspaced_korean_by_default() -> None:
     # the default-behavior fix flows through the v1 facade (its
     # lexicon mirrors Lexicon.default() via the shim snapshot)

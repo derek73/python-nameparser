@@ -109,17 +109,27 @@ _PATRONYMIC_MIGRATION_HINT = (
     "parser_for(locales.RU) / locales.TR_AZ)"
 )
 
-#: Policy.script_orders' default: wholly-Han and wholly-Hangul names
-#: read family-first. Public and named so opting out or extending
-#: reads against a documented value (the DEFAULT_NICKNAME_DELIMITERS
-#: precedent). The HAN entry is safe WITHOUT knowing Chinese from
-#: Japanese: both write family-first in native script -- the
-#: languages differ, the convention doesn't. Canonical form: sorted
-#: (Script, order) pairs, matching the field's storage.
+#: Policy.script_orders' default: wholly-Han, wholly-Hangul, and
+#: kana-licensed names read family-first. Public and named so opting
+#: out or extending reads against a documented value (the
+#: DEFAULT_NICKNAME_DELIMITERS precedent). The HAN entry is safe
+#: WITHOUT knowing Chinese from Japanese: both write family-first in
+#: native script -- the languages differ, the convention doesn't.
+#: HIRAGANA joins by the same rule as HANGUL (the kana license,
+#: amendment 2026-07-29): a mixed Han-and-kana token cannot be
+#: Chinese (it contains kana) and is not a foreign transcription
+#: (transcriptions are katakana-only), so it is Japanese, written
+#: family-first -- another default change in a minor, release-log-
+#: classified fix, #294's mechanism. KATAKANA is deliberately absent:
+#: a PURE-katakana token is predominantly a transcribed foreign name
+#: kept in its source (usually given-first) order, so nothing should
+#: default on it. Canonical form: sorted (Script, order) pairs,
+#: matching the field's storage.
 DEFAULT_SCRIPT_ORDERS: tuple[
     tuple[Script, tuple[Role, Role, Role]], ...] = (
     (Script.HAN, FAMILY_FIRST),
     (Script.HANGUL, FAMILY_FIRST),
+    (Script.HIRAGANA, FAMILY_FIRST),
 )
 
 #: Policy.nickname_delimiters' default. Public and named so
@@ -408,9 +418,11 @@ class Policy:
     #: ("John Smith, Jr.") leaves name_order governing the name part.
     name_order: tuple[Role, Role, Role] = GIVEN_FIRST
     #: Per-script overrides of name_order (#271), consulted when every
-    #: name piece is written wholly in one script: {Script: order}
-    #: (constructor accepts a mapping; stored as sorted pairs). The
-    #: default reads wholly-Han/Hangul names family-first -- see
+    #: name piece is written wholly in one script, or in the
+    #: Han/Hiragana/Katakana repertoire the #272 kana license shares
+    #: across pieces: {Script: order} (constructor accepts a mapping;
+    #: stored as sorted pairs). The default reads wholly-Han/Hangul
+    #: names, and kana-licensed Japanese names, family-first -- see
     #: :data:`~nameparser.DEFAULT_SCRIPT_ORDERS`. Opt out with
     #: ``script_orders={}``. Latin-script and mixed-script input is
     #: never affected. Like name_order, ignored where a comma already
