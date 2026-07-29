@@ -63,6 +63,7 @@ def test_name_order_rejects_plain_string_tuples() -> None:
 
 def test_script_values_are_the_public_names() -> None:
     assert Script.HAN == "han" and Script.HANGUL == "hangul"
+    assert Script.HIRAGANA == "hiragana" and Script.KATAKANA == "katakana"
 
 
 def test_patronymic_rules_coerce_and_reject() -> None:

@@ -45,6 +45,15 @@ class Script(StrEnum):
     HAN = "han"
     #: Korean Hangul (precomposed syllables). Unambiguously Korean.
     HANGUL = "hangul"
+    #: Japanese hiragana. Never transcribes foreign names, so a mixed
+    #: kanji+kana token (高橋みなみ) is Japanese and resolves HERE --
+    #: this member is the carrier key in script_orders/segment_scripts.
+    HIRAGANA = "hiragana"
+    #: Japanese katakana. A PURE-katakana token is predominantly a
+    #: transcribed foreign name in its original order (マイケル), so
+    #: no default behavior keys on this member; it exists so the
+    #: classifier can name what it deliberately declines.
+    KATAKANA = "katakana"
 
 
 # Order-spec constants (#270). Each reads as its contents because roles

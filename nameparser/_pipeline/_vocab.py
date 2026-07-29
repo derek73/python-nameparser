@@ -9,6 +9,7 @@ Layering: imports _lexicon, _types, and _policy only.
 from __future__ import annotations
 
 import re
+import unicodedata
 
 from nameparser._lexicon import Lexicon, _normalize
 from nameparser._policy import Script
@@ -42,17 +43,37 @@ D = re.compile(r"^d\.?$", re.IGNORECASE)
 # 𠮷, U+20BB7), so leaving them out silently mis-orders those names;
 # unassigned gaps inside the span are harmless, since no real name
 # contains an unassigned codepoint. HANGUL: precomposed syllables
-# only -- modern Korean text never writes names as bare jamo. Kana is
-# DELIBERATELY absent: a kana token identifies Japanese, whose
-# conventions are #272's segmenter, not this table's. The ranges
-# below must stay mutually disjoint: single_script returns the FIRST
-# covering entry (dict iteration order), so an overlapping future
-# script (e.g. a ja entry that also covers Han) would make the result
-# order-dependent instead of well-defined.
+# only -- modern Korean text never writes names as bare jamo.
+# HIRAGANA/KATAKANA (#272): the two kana blocks, each in full. There
+# IS a supplementary-plane kana repertoire (Kana Supplement, Kana
+# Extended-A/B, Small Kana Extension, U+1AFF0-U+1B16F, 311 assigned
+# codepoints) but none of it is WORTH chasing the way Han's astral
+# block is: those codepoints are hentaigana and other archaic/
+# phonetic-extension forms no modern Japanese name uses, unlike
+# supplementary Han, which real surnames genuinely need. Halfwidth
+# kana (U+FF65-U+FF9D) is likewise deliberately excluded -- legacy
+# bank/CSV data uses it, but it is a separate normalization problem;
+# Task 2b's separator handling only touches the halfwidth DOT
+# (U+FF65), not the rest of that block. This table classifies by
+# Unicode BLOCK, not the UAX #24 Script property: U+30A0, U+30FB
+# (the middle dot), and U+30FC (the prolonged sound mark) all carry
+# Script=Common under UAX #24, and the combining kana voicing marks
+# U+3099-U+309C are Common/Inherited -- yet every one of them is
+# needed here, and block membership, not the Script property, is
+# what puts them in range. The katakana block's upper end (U+30FF)
+# including the middle dot U+30FB is load-bearing for
+# effective_script's kana license below (see its docstring) -- a
+# later task turns U+30FB into a tokenize-level separator, but until
+# then it classifies as ordinary katakana. The ranges below must stay
+# mutually disjoint: single_script returns the FIRST covering entry
+# (dict iteration order), so an overlapping future script would make
+# the result order-dependent instead of well-defined.
 _SCRIPT_RANGES: dict[Script, tuple[tuple[int, int], ...]] = {
     Script.HAN: ((0x3400, 0x4DBF), (0x4E00, 0x9FFF), (0xF900, 0xFAFF),
                  (0x20000, 0x323AF)),
     Script.HANGUL: ((0xAC00, 0xD7A3),),
+    Script.HIRAGANA: ((0x3040, 0x309F),),
+    Script.KATAKANA: ((0x30A0, 0x30FF),),
 }
 
 # Derived, never hand-written: one character class per script, in the
@@ -64,6 +85,21 @@ _SCRIPT_PATTERNS: dict[Script, re.Pattern[str]] = {
         + "]+")
     for script, ranges in _SCRIPT_RANGES.items()
 }
+
+#: The Japanese repertoire: the union effective_script's kana license
+#: quantifies over. A tuple in the table's own order (HAN, then
+#: HIRAGANA, then KATAKANA -- HANGUL simply omitted, the relative
+#: order of the rest is unchanged), not a frozenset: nothing consults
+#: membership today, only iterates to build the pattern below, so
+#: there is nothing set-ness would buy; a later task that needs
+#: membership can convert it then.
+_JA_SCRIPTS = (Script.HAN, Script.HIRAGANA, Script.KATAKANA)
+_JA_PATTERN = re.compile(
+    "["
+    + "".join(f"\\U{lo:08x}-\\U{hi:08x}"
+              for s in _JA_SCRIPTS
+              for lo, hi in _SCRIPT_RANGES[s])
+    + "]+")
 
 
 def is_initial(text: str) -> bool:
@@ -162,18 +198,72 @@ def period_joined_vocab(text: str, lexicon: Lexicon) -> str | None:
     return None
 
 
+def _normalized_for_script(text: str) -> str | None:
+    """The guard AND the NFC normalization single_script and
+    effective_script's license path both need, single-sourced so they
+    cannot drift: None for the two shapes neither ever classifies
+    (empty, and the common all-ASCII Latin token -- skipped before
+    normalizing, since ASCII is already NFC and every _SCRIPT_RANGES
+    entry is non-ASCII regardless), else an NFC-normalized copy.
+
+    NFC, not raw: NFD input decomposes precomposed katakana onto a
+    base character plus a COMBINING mark (U+3099/U+309A, which sit in
+    the HIRAGANA block, not katakana's), so classifying raw NFD text
+    can hand a pure-katakana token the kana license by accident; NFD
+    also decomposes Hangul syllables onto bare jamo (U+1100-U+11FF),
+    entirely outside the HANGUL range, so raw NFD Korean input misses
+    the shipped family-first order rule rather than merely misfiring.
+    Normalizing first fixes both. This is classification-only and
+    read-only: the returned copy is never what gets tokenized, so
+    token text and spans stay exactly what the caller wrote.
+
+    MATCHING (is_initial, suffix lookups, etc.) deliberately stays on
+    raw text elsewhere in this module -- unlike script classification,
+    NFD only ever costs a match there (a suffix word written NFD fails
+    to match its NFC vocabulary entry), never wrong-matches, so the
+    asymmetry is safe: one direction needs a fix, the other doesn't.
+    """
+    if not text or text.isascii():
+        return None
+    return unicodedata.normalize("NFC", text)
+
+
 def single_script(text: str) -> Script | None:
     """The one Script whose ranges cover EVERY char of `text`, else
     None (mixed-script text has no well-defined convention to apply;
-    the caller falls back to the positional default)."""
-    if not text:
-        return None  # the + below needs one char; "" belongs to no script
-    if text.isascii():
-        # every _SCRIPT_RANGES entry is non-ASCII (lowest today is
-        # U+3400): skip the patterns for the overwhelmingly common
-        # Latin token (the _tokenize._ignorable ASCII-floor precedent)
+    the caller falls back to the positional default). Classifies an
+    NFC-normalized copy of `text` -- see _normalized_for_script.
+    Callers wanting the kana-mixed license (a kanji+kana composite
+    resolving to HIRAGANA) want effective_script, not this function."""
+    normalized = _normalized_for_script(text)
+    if normalized is None:
         return None
     for script, pattern in _SCRIPT_PATTERNS.items():
-        if pattern.fullmatch(text):
+        if pattern.fullmatch(normalized):
             return script
+    return None
+
+
+def effective_script(text: str) -> Script | None:
+    """single_script, extended by the kana license (#272 amendment):
+    a MIXED token wholly within Han∪hiragana∪katakana is Japanese --
+    it necessarily contains kana (pure Han is not mixed), cannot be
+    Chinese, and is not a foreign transcription (those are
+    katakana-only: マイケル has no kanji, but さくらエミ -- hiragana
+    plus katakana -- is kana-only AND licensed) -- and resolves to the
+    HIRAGANA carrier entry. Pure-katakana stays KATAKANA
+    (single_script's answer): a lone katakana token is predominantly a
+    transcribed foreign name, so nothing defaults on it."""
+    script = single_script(text)
+    if script is not None:
+        return script
+    # normalized is None for both shapes _JA_PATTERN could never match
+    # anyway (empty text, or the all-ASCII text single_script's fast
+    # path already ruled out) -- real work, not a leftover "if text"
+    # guard: unlike the pre-NFC version, None here also covers the
+    # ASCII case, which single_script's own empty check alone would
+    # not.
+    normalized = _normalized_for_script(text)
+    if normalized is not None and _JA_PATTERN.fullmatch(normalized):
+        return Script.HIRAGANA
     return None

@@ -23,6 +23,7 @@ import pytest
 
 from nameparser.config import regexes as _config
 from nameparser._pipeline import _assign, _post_rules, _tokenize, _vocab
+from nameparser._policy import Script
 from nameparser import _render
 
 
@@ -114,6 +115,9 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     ("_tokenize", "_BIDI"): None,       # re_bidi, not a REGEXES key
     # Mirrors _pipeline._state.COMMA_CHARS, not nameparser.config
     ("_render", "_COMMA_CHAR"): None,
+    # #272: derived from _SCRIPT_RANGES itself (like _SCRIPT_PATTERNS),
+    # not hand-copied from anywhere -- no config counterpart to pin.
+    ("_vocab", "_JA_PATTERN"): None,
 }
 
 _MODULES = {"_assign": _assign, "_post_rules": _post_rules,
@@ -176,8 +180,17 @@ def test_differential_cjk_rule_matches_the_script_ranges() -> None:
     Han's astral block is out of scope on both sides. The rule omits
     it deliberately -- no corpus name reaches it, see the comment
     there -- so the comparison runs over the BMP spans only, and a new
-    BMP script added to _SCRIPT_RANGES still fails here until the rule
-    covers it.
+    BMP script added to _SCRIPT_RANGES for the SAME #271 behavior
+    (family-first order / hangul segmentation) still fails here until
+    the rule covers it.
+
+    #272 added HIRAGANA/KATAKANA to _SCRIPT_RANGES for an unrelated
+    reason (kana classification for effective_script's license, not
+    the order-flip or segmentation #271's diff rule explains -- no
+    default keys on either kana member), so the comparison is scoped
+    to the #271 scripts by name rather than every table entry; a
+    future script added for #271's own reason still must extend both
+    sides, same as before.
     """
     toml_path = (Path(__file__).parents[2] / "tools" / "differential"
                  / "expected_changes.toml")
@@ -191,8 +204,9 @@ def test_differential_cjk_rule_matches_the_script_ranges() -> None:
         for lo, hi in re.findall(r"\\u([0-9A-Fa-f]{4})-\\u([0-9A-Fa-f]{4})",
                                  matched[0]["name_regex"])}
     expected = {span
-                for spans in _vocab._SCRIPT_RANGES.values()
-                for span in spans if span[1] <= 0xFFFF}
+                for script in (Script.HAN, Script.HANGUL)
+                for span in _vocab._SCRIPT_RANGES[script]
+                if span[1] <= 0xFFFF}
     assert declared == expected, (
         f"{toml_path.name}'s #271 name_regex declares {sorted(declared)}; "
         f"_SCRIPT_RANGES' BMP spans are {sorted(expected)}")

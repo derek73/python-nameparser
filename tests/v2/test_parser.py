@@ -1,5 +1,6 @@
 import dataclasses
 import pickle
+import unicodedata
 
 import pytest
 
@@ -449,6 +450,21 @@ def test_wholly_cjk_names_read_family_first_by_default() -> None:
     # segmentation is opt-in (locales.ZH), so the default parser leaves
     # this one token whole and reads it as the family name
     assert parse("毛泽东").family == "毛泽东"
+
+
+def test_nfd_korean_input_still_reads_family_first() -> None:
+    # fix(#271) classification, landed via the #272 NFC-classification
+    # amendment: NFD decomposes each Hangul syllable onto bare jamo,
+    # entirely outside the HANGUL range, so raw NFD input used to miss
+    # script_orders' family-first rule and fall back to the positional
+    # default -- a live gap in #294's shipped behavior until
+    # single_script started classifying an NFC-normalized copy.
+    n = parse(unicodedata.normalize("NFD", "김 민준"))
+    # classification-only: the rendered text is exactly what was
+    # typed (still NFD, spans untouched), so compare NFC-normalized --
+    # the point under test is the ORDER (family first), not encoding
+    assert (unicodedata.normalize("NFC", n.family),
+            unicodedata.normalize("NFC", n.given)) == ("김", "민준")
 
 
 def test_latin_names_are_untouched_by_script_orders() -> None:

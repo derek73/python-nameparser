@@ -1,7 +1,9 @@
+import unicodedata
+
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
-    _SCRIPT_RANGES, is_initial, is_suffix_lenient, is_suffix_strict,
-    single_script,
+    _SCRIPT_RANGES, effective_script, is_initial, is_suffix_lenient,
+    is_suffix_strict, single_script,
 )
 from nameparser._policy import Script
 
@@ -51,7 +53,10 @@ def test_single_script_requires_every_char_in_one_script() -> None:
     assert single_script("Smith") is None
     assert single_script("毛zedong") is None            # mixed
     assert single_script("毛김") is None                 # mixed CJK
-    assert single_script("イチロー") is None             # kana: not HAN
+    # kana classifies as its own script (#272), not HAN -- was None
+    # before kana had a table entry; single_script's job is telling
+    # kana apart from Han, not lumping the two together
+    assert single_script("イチロー") is Script.KATAKANA
 
 
 def test_single_script_range_edges() -> None:
@@ -82,3 +87,62 @@ def test_no_script_range_reaches_ascii() -> None:
     # it fails here rather than silently going unclassified.
     assert all(lo >= 0x80
                for ranges in _SCRIPT_RANGES.values() for lo, _ in ranges)
+
+
+def test_kana_singles_classify() -> None:
+    assert single_script("みなみ") is Script.HIRAGANA
+    assert single_script("エミ") is Script.KATAKANA
+    assert single_script("ー") is Script.KATAKANA   # prolonged mark, in-block
+
+
+def test_effective_script_kana_license() -> None:
+    # pure single-script tokens pass through unchanged
+    assert effective_script("山田") is Script.HAN
+    assert effective_script("みなみ") is Script.HIRAGANA
+    assert effective_script("マイケル") is Script.KATAKANA
+    # the license: a MIXED token wholly in Han∪kana is Japanese and
+    # resolves to the HIRAGANA carrier entry
+    assert effective_script("高橋みなみ") is Script.HIRAGANA  # kanji+hira
+    assert effective_script("山田エミ") is Script.HIRAGANA    # kanji+kata
+    assert effective_script("さくらエミ") is Script.HIRAGANA  # hira+kata
+    # outside the license: anything beyond the JA repertoire
+    assert effective_script("毛김") is None
+    assert effective_script("山田x") is None
+    # NOT None: U+30FB sits INSIDE the katakana block (verified by
+    # codepoint), so this stays a PURE-katakana token, same as
+    # "マイケル" above -- the license only ever fires on a MIXED
+    # token, and this one isn't mixed. It has no order-default entry
+    # (DEFAULT_SCRIPT_ORDERS carries no KATAKANA key), which is where
+    # "declines the license" actually shows up. A later task turns
+    # U+30FB into a tokenize-level separator, so this string arrives
+    # at effective_script as two tokens instead of one.
+    assert effective_script("マイケル・ジャクソン") is Script.KATAKANA
+    assert effective_script("") is None
+
+
+def test_nfd_katakana_still_classifies_and_declines_the_license() -> None:
+    # Built via normalize(), never pasted as decomposed literals --
+    # NFD "ガガ" is base katakana カ + COMBINING VOICED SOUND MARK
+    # (U+3099) twice; U+3099 sits in the HIRAGANA block, not
+    # katakana's, so classifying raw NFD text would see one char from
+    # each block and either call it mixed (single_script: None) or
+    # wrongly grant the kana license (effective_script: HIRAGANA) for
+    # what is really one pure-katakana token. NFC-normalizing first
+    # (the #272 amendment's NFC decision) recomposes it back to ガガ,
+    # which reads as ordinary katakana either way -- the license
+    # still correctly declines, because this token isn't mixed.
+    nfd = unicodedata.normalize("NFD", "ガガ")
+    assert nfd != "ガガ"  # sanity: confirms the decomposition actually ran
+    assert single_script(nfd) is Script.KATAKANA
+    assert effective_script(nfd) is Script.KATAKANA
+
+
+def test_nfd_hangul_still_classifies() -> None:
+    # NFD decomposes each precomposed syllable onto 2-3 jamo
+    # (U+1100-U+11FF), entirely outside the HANGUL range -- raw NFD
+    # input would silently miss the shipped family-first order rule
+    # rather than merely misclassify. Built via normalize(), not
+    # pasted decomposed literals, same reason as above.
+    nfd = unicodedata.normalize("NFD", "김민준")
+    assert nfd != "김민준"  # sanity: confirms the decomposition actually ran
+    assert single_script(nfd) is Script.HANGUL
