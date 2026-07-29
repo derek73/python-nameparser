@@ -20,6 +20,7 @@ from nameparser._locale import Locale
 _REGISTRY = {
     "RU": ("nameparser.locales.ru", "RU"),
     "TR_AZ": ("nameparser.locales.tr_az", "TR_AZ"),
+    "ZH": ("nameparser.locales.zh", "ZH"),
 }
 
 

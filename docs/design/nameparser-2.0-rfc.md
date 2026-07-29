@@ -201,12 +201,21 @@ parser_for(locales.RU).parse("Ivanova Anna Sergeevna").given   # "Anna"
 
 A locale pack is pure data: a vocabulary fragment plus a partial policy
 patch, folded in at parser construction. 2.0.0 ships `RU` and `TR_AZ`
-(formalizing the patronymic support added in 1.3.0); Chinese/Korean
-(bundled surname lists + segmentation of unspaced input), Vietnamese,
-and Japanese (via a `nameparser[ja]` extra with a pluggable segmenter)
-are designed and staged for 2.x minors. Vocabulary that cannot misfire
-on other languages' names (e.g. Cyrillic honorifics) goes in the
-default lexicon instead of packs.
+(formalizing the patronymic support added in 1.3.0); Vietnamese and
+Japanese (via a `nameparser[ja]` extra with a pluggable segmenter) are
+designed and staged for later 2.x minors. Vocabulary that cannot
+misfire on other languages' names (e.g. Cyrillic honorifics) goes in
+the default lexicon instead of packs.
+
+*Amended for 2.1 (#271):* the Chinese/Korean work landed, and split
+along that last line rather than shipping as one pack. Korean surnames
+and family-first order for native-script CJK cannot misfire on other
+languages' names, so both became defaults; only the Chinese surname
+list needed a pack (`ZH`), because it would corrupt the Japanese names
+written in the same characters. The never-auto-detect rule holds as
+written for a name's *language*; its **script** is a different signal,
+and where the script alone settles a convention, behavior may key on
+it.
 
 ## Migration: what actually happens to existing code
 

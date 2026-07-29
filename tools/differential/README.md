@@ -116,6 +116,11 @@ matches only if the observed diff fields are a subset of this list).
 Keep both as tight as the actual diff allows -- a loose rule can mask
 a real regression.
 
+Rules are sorted most-specific-first before matching -- a `name_regex`
+rule outranks a `fields`-only one (which is broad by construction)
+wherever both match -- so file order does not decide which rule claims
+a diff.
+
 Some entries in the seed list are for behavior families that this
 particular corpus (pre-M12 v1 test strings) happens not to contain any
 example of (e.g. custom suffix-delimiter rendering, which only fires

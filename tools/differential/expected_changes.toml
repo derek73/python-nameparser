@@ -3,6 +3,30 @@
 # S5). Rules are seeded from docs/superpowers/plans/notes-m12-diffs.md
 # and the `classification="fix(...)"` rows in tests/v2/cases.py; keep
 # each entry's `name_regex`/`fields` as tight as the diff allows.
+# File order is not load-bearing: compare.py sorts `name_regex` rules
+# ahead of `fields`-only ones before matching.
+
+[[change]]
+issue = "fix(#271) native-script CJK: family-first order + hangul segmentation"
+# '毛 泽东', '김민준': script_orders flips first/last for a name written
+# wholly in Han or Hangul, and the Korean surnames that now ship as
+# default vocabulary additionally split an unspaced hangul token into
+# last + first. Seeded from the fix(#271) rows in tests/v2/cases.py.
+#
+# Scoped by script, which is exactly the scope of the behavior --
+# neither change can touch a name with no CJK character in it. Han's
+# astral block (U+20000-U+323AF) is deliberately left out of the class:
+# no name in either corpus reaches it, and a rule should be no wider
+# than the diffs it has to explain. Extend it -- and the sync pin in
+# tests/v2/test_regex_sync.py, which fails if the two disagree -- if
+# one ever does.
+#
+# Expected to match nothing against the current corpora, which contain
+# no CJK at all: build_issues_corpus.py requires an internal space, and
+# unspaced names are the shape this classifies. Kept for the reason the
+# suffix-delimiter rule below is kept -- ready the moment a name lands.
+name_regex = "[\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3]"
+fields = ["first", "middle", "last"]
 
 [[change]]
 issue = "fix(#274) maiden markers consumed"

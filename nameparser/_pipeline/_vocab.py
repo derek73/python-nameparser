@@ -4,13 +4,14 @@ Text-level tests used by more than one stage; token/piece-level
 predicates live with their stage. All take normalized-or-raw text
 explicitly -- no state.
 
-Layering: imports _lexicon and _types only.
+Layering: imports _lexicon, _types, and _policy only.
 """
 from __future__ import annotations
 
 import re
 
 from nameparser._lexicon import Lexicon, _normalize
+from nameparser._policy import Script
 
 # Ported verbatim from v1 (nameparser/config/regexes.py "initial") minus
 # its empty-string alternative -- WorkToken text is never empty. Kept in
@@ -27,6 +28,42 @@ _PERIOD_NOT_AT_END = re.compile(r".*\..+$", re.I)
 # the credential pre-parse; the two stages must agree on the pattern).
 PH = re.compile(r"^ph\.?$", re.IGNORECASE)
 D = re.compile(r"^d\.?$", re.IGNORECASE)
+
+# Codepoint ranges per Script (#271). This integer table is the single
+# source of truth for what a script covers; _SCRIPT_PATTERNS below
+# DERIVES the match engine from it. (The sweep here was first written
+# per-char on the _EMOJI_RANGES precedent in _tokenize.py, on the
+# theory that a range test needs no regex; measured at token scale the
+# compiled regex wins by 3-9x, and by 89x on long tokens.)
+# HAN: the URO plus Extension A, the compatibility block,
+# and the supplementary-plane block (Ext B-I + CJK Compat Ideographs
+# Supplement, 0x20000-0x323AF) -- rare surnames are the biggest real
+# source of supplementary-plane hanzi in personal names (e.g. 𠮷田's
+# 𠮷, U+20BB7), so leaving them out silently mis-orders those names;
+# unassigned gaps inside the span are harmless, since no real name
+# contains an unassigned codepoint. HANGUL: precomposed syllables
+# only -- modern Korean text never writes names as bare jamo. Kana is
+# DELIBERATELY absent: a kana token identifies Japanese, whose
+# conventions are #272's segmenter, not this table's. The ranges
+# below must stay mutually disjoint: single_script returns the FIRST
+# covering entry (dict iteration order), so an overlapping future
+# script (e.g. a ja entry that also covers Han) would make the result
+# order-dependent instead of well-defined.
+_SCRIPT_RANGES: dict[Script, tuple[tuple[int, int], ...]] = {
+    Script.HAN: ((0x3400, 0x4DBF), (0x4E00, 0x9FFF), (0xF900, 0xFAFF),
+                 (0x20000, 0x323AF)),
+    Script.HANGUL: ((0xAC00, 0xD7A3),),
+}
+
+# Derived, never hand-written: one character class per script, in the
+# table's own key order (so the FIRST-covering-entry rule above still
+# describes what single_script does).
+_SCRIPT_PATTERNS: dict[Script, re.Pattern[str]] = {
+    script: re.compile(
+        "[" + "".join(f"\\U{lo:08x}-\\U{hi:08x}" for lo, hi in ranges)
+        + "]+")
+    for script, ranges in _SCRIPT_RANGES.items()
+}
 
 
 def is_initial(text: str) -> bool:
@@ -124,3 +161,19 @@ def period_joined_vocab(text: str, lexicon: Lexicon) -> str | None:
         return "suffix"
     return None
 
+
+def single_script(text: str) -> Script | None:
+    """The one Script whose ranges cover EVERY char of `text`, else
+    None (mixed-script text has no well-defined convention to apply;
+    the caller falls back to the positional default)."""
+    if not text:
+        return None  # the + below needs one char; "" belongs to no script
+    if text.isascii():
+        # every _SCRIPT_RANGES entry is non-ASCII (lowest today is
+        # U+3400): skip the patterns for the overwhelmingly common
+        # Latin token (the _tokenize._ignorable ASCII-floor precedent)
+        return None
+    for script, pattern in _SCRIPT_PATTERNS.items():
+        if pattern.fullmatch(text):
+            return script
+    return None

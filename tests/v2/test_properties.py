@@ -13,8 +13,8 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from nameparser import (
-    FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST, Lexicon, Parser,
-    PatronymicRule, Policy, parse,
+    DEFAULT_SCRIPT_ORDERS, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
+    GIVEN_FIRST, Lexicon, Parser, PatronymicRule, Policy, Script, parse,
 )
 from nameparser._lexicon import _VOCAB_FIELDS
 from nameparser._pipeline import run
@@ -187,10 +187,17 @@ def test_particle_fork_is_never_double_reported(text: str) -> None:
 # multi-word phrase: every field below except given_name_titles is
 # matched one word at a time, so a multi-word draw in a per-word field
 # would be a dead entry that trips Lexicon's multi-word warning.
+# The CJK tail (#271) is what lets a drawn `surnames` set activate
+# script_segment at all: hangul is the script segmented by default, so
+# "김"/"남궁" are what make the stage fire (see _names_using, which
+# supplies the unspaced token to fire it ON), and the Han rows ride
+# along for script_orders -- Han segmentation is opt-in via
+# locales.ZH, which these policies do not draw.
 _VOCAB = st.sampled_from([
     "van", "de", "la", "bin", "abdul", "abu", "dr", "sir", "prof",
     "md", "jr", "iii", "esq", "ma", "do", "and", "y", "née", "geb",
     "a", "b", "ph.d", "عبد", "фон", "μεγα",
+    "김", "남궁", "毛", "欧阳",
 ])
 
 # given_name_titles is the one field matched as a space-joined run, so
@@ -236,6 +243,22 @@ def _lexicons(draw: st.DrawFn) -> Lexicon:
                    **_fix_invariants(**fields))
 
 
+# script_orders' legal values are as restricted as name_order's (only
+# the three exported orders, keyed by Script), so they are sampled
+# rather than generated. The four cover the axes that matter: the
+# shipped default, the full opt-out, one script alone, and an order
+# that disagrees with the default -- FAMILY_FIRST_GIVEN_LAST on hangul
+# reads "김민준 수" differently from every other entry here, which is
+# what makes a script table that is merely PRESENT distinguishable
+# from one that is actually consulted.
+_SCRIPT_ORDER_TABLES = [
+    DEFAULT_SCRIPT_ORDERS,
+    (),
+    ((Script.HAN, FAMILY_FIRST),),
+    ((Script.HANGUL, FAMILY_FIRST_GIVEN_LAST),),
+]
+
+
 @st.composite
 def _policies(draw: st.DrawFn) -> Policy:
     pairs = st.sampled_from([("(", ")"), ('"', '"'), ("'", "'"),
@@ -247,6 +270,13 @@ def _policies(draw: st.DrawFn) -> Policy:
     return Policy(
         name_order=draw(st.sampled_from(
             [GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])),
+        script_orders=draw(st.sampled_from(_SCRIPT_ORDER_TABLES)),
+        # no max_size: Script has two members, so the unbounded draw
+        # already reaches every subset -- including the empty one,
+        # which is the documented segmentation opt-out, and the full
+        # one, which turns on the Han segmentation that only
+        # locales.ZH turns on in shipped configuration
+        segment_scripts=draw(st.frozensets(st.sampled_from(list(Script)))),
         patronymic_rules=draw(st.frozensets(
             st.sampled_from(list(PatronymicRule)), max_size=2)),
         middle_as_family=draw(st.booleans()),
@@ -271,10 +301,24 @@ def _names_using(draw: st.DrawFn, lexicon: Lexicon) -> str:
     """
     vocab = sorted({w for name in _SET_FIELDS
                     for w in getattr(lexicon, name)})
+    # script_segment (#271) is the one stage a space-joined name can
+    # never reach: it splits an UNSPACED token whose PREFIX is a drawn
+    # surname, so every drawn surname is also offered concatenated with
+    # a given name. Waiting instead for a drawn surname and a matching
+    # literal to coincide left the stage unexercised on all 250
+    # examples (measured); deriving the token from the draw itself
+    # reaches it on a handful. A Latin surname makes a mixed-script
+    # token the stage correctly declines -- useful input in its own
+    # right.
+    # sorted for the same reason `vocab` above is: frozenset iteration
+    # order is not stable across runs, and an unsorted pool shifts
+    # every index sampled_from draws -- which would defeat
+    # derandomize=True on the whole strategy, not just this slice.
+    unspaced = sorted(w + "민준" for w in lexicon.surnames)
     # plain names and structure characters are always available, so the
     # pool is never empty even for an empty lexicon
     pieces = st.sampled_from(
-        vocab + ["John", "Smith", "Q.", ",", "(", "'"])
+        vocab + unspaced + ["John", "Smith", "Q.", ",", "(", "'"])
     return " ".join(draw(st.lists(pieces, min_size=1, max_size=8)))
 
 

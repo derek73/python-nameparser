@@ -339,3 +339,45 @@ into ``middle``/``last`` (``"Jane Smith née Jones"``), and with a
 custom suffix delimiter configured, a no-space delimiter group renders
 whole (``"RN/CRNA"``) where 1.x split it (``"RN, CRNA"``) — the role
 assignment is identical, only the rendered string differs.
+
+2.1 adds two more, and unlike most of the 2.0 API these do reach
+``HumanName``: a name written wholly in Han or Hangul is read
+family-first, and an unspaced Korean name is split into surname and
+given name.
+
+.. doctest::
+
+    >>> HumanName("毛 泽东").last
+    '毛'
+    >>> HumanName("김민준").last, HumanName("김민준").first
+    ('김', '민준')
+
+1.4 read the first as ``first="毛"``/``last="泽东"``, and left the
+second whole in ``first``. The Korean one also changes what the name
+*renders* as — ``str(HumanName("김민준"))`` was ``"김민준"`` and is now
+``"민준 김"``, because the split inserts a token boundary that the
+default format then writes given-name-first.
+
+A third shape changes even though nothing splits it. 1.4 routed a lone
+token to ``first`` whatever it was, so an unspaced Chinese or Japanese
+name landed there entire; 2.1 reads it as native-script CJK and puts it
+in ``last`` instead. Nothing is segmented — Han splitting is opt-in
+through a locale pack and ``HumanName`` cannot apply one — but the
+field the whole string arrives in is different:
+
+.. doctest::
+
+    >>> HumanName("毛泽东").last, HumanName("毛泽东").first
+    ('毛泽东', '')
+    >>> HumanName("山田太郎").last, HumanName("山田太郎").first
+    ('山田太郎', '')
+
+Both were ``first`` under 1.4. If you feed unspaced CJK through
+``HumanName`` and read ``first``, that is the change most likely to
+reach you, and it is silent — the string is intact, just in the other
+field.
+
+``Constants`` has no switch for any of this — the v1 configuration
+surface is frozen for 2.x — so the way out is the 2.0 API:
+``Parser(policy=Policy(script_orders={}, segment_scripts=()))``
+restores 1.4's reading of all three shapes.

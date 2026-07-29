@@ -16,14 +16,15 @@ from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._group import group
 from nameparser._pipeline._post_rules import post_rules
+from nameparser._pipeline._script_segment import script_segment
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import ParseState
 from nameparser._pipeline._tokenize import tokenize
 
-#: The full seven-stage fold.
+#: The full eight-stage fold.
 STAGES: tuple[Callable[[ParseState], ParseState], ...] = (
-    extract_delimited, tokenize, segment, classify, group, assign,
-    post_rules,
+    extract_delimited, tokenize, segment, script_segment, classify,
+    group, assign, post_rules,
 )
 
 

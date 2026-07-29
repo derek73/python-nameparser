@@ -1,10 +1,12 @@
 import dataclasses
+from collections.abc import Iterator
 
 import pytest
 
 from nameparser._policy import (
-    FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
-    PatronymicRule, Policy, PolicyPatch, UNSET, apply_patch,
+    DEFAULT_SCRIPT_ORDERS, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
+    GIVEN_FIRST, PatronymicRule, Policy, PolicyPatch, Script, UNSET,
+    apply_patch,
 )
 from nameparser._types import Role
 
@@ -57,6 +59,10 @@ def test_name_order_rejects_plain_string_tuples() -> None:
     # isinstance loop is the only guard rejecting string elements.
     with pytest.raises(TypeError, match="must be Role members"):
         Policy(name_order=("given", "middle", "family"))  # type: ignore[arg-type]
+
+
+def test_script_values_are_the_public_names() -> None:
+    assert Script.HAN == "han" and Script.HANGUL == "hangul"
 
 
 def test_patronymic_rules_coerce_and_reject() -> None:
@@ -270,6 +276,52 @@ def test_policy_patch_canonicalizes_scalar_name_order() -> None:
     assert isinstance(hash(p), int)
 
 
+def test_policy_patch_canonicalizes_script_orders_all_the_way_down() -> None:
+    # Same failure as name_order above, one level deeper: tuple-izing
+    # only the (Script, order) pair left the ORDER a list, so the patch
+    # -- and any Locale holding it -- was still unhashable.
+    p = PolicyPatch(script_orders={Script.HAN: [Role.FAMILY, Role.GIVEN,  # type: ignore[arg-type]
+                                                Role.MIDDLE]})
+    assert p.script_orders == ((Script.HAN, FAMILY_FIRST),)
+    assert isinstance(hash(p), int)
+
+
+def test_apply_patch_overrides_script_orders_as_a_scalar() -> None:
+    # script_orders composes as a SCALAR: a patch REPLACES the table
+    # rather than merging into it, so an empty one is how a pack turns
+    # the default off. An UNSET patch must leave the default alone --
+    # the distinction a union field would blur.
+    cleared = apply_patch(Policy(), PolicyPatch(script_orders={}))  # type: ignore[arg-type]
+    assert cleared.script_orders == ()
+    untouched = apply_patch(Policy(), PolicyPatch())
+    assert untouched.script_orders == DEFAULT_SCRIPT_ORDERS
+    replaced = apply_patch(
+        Policy(), PolicyPatch(script_orders={Script.HANGUL: GIVEN_FIRST}))  # type: ignore[arg-type]
+    assert replaced.script_orders == ((Script.HANGUL, GIVEN_FIRST),)
+
+
+def test_apply_patch_revalidates_deferred_script_orders() -> None:
+    # The value half defers exactly like name_order's, and the error
+    # must name script_orders -- not name_order, whose message the
+    # check is shared with.
+    bad = PolicyPatch(script_orders={Script.HAN: (Role.MIDDLE, Role.GIVEN,  # type: ignore[arg-type]
+                                                  Role.FAMILY)})
+    with pytest.raises(ValueError, match="script_orders must be one of"):
+        apply_patch(Policy(), bad)
+
+
+def test_policy_patch_defers_malformed_script_orders_verbatim() -> None:
+    # The canonicalization must not eat the evidence: a bare string
+    # would shred to character tuples (its elements are themselves
+    # tuple-izable, so nothing raises to stop it) and bytes to ints,
+    # leaving Policy's curated messages nothing of the caller's to
+    # quote. Both shapes must survive the patch and raise at APPLY.
+    with pytest.raises(TypeError, match="bare string"):
+        apply_patch(Policy(), PolicyPatch(script_orders="han"))  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="decode first"):
+        apply_patch(Policy(), PolicyPatch(script_orders=b"han"))  # type: ignore[arg-type]
+
+
 def test_apply_patch_revalidates_deferred_values() -> None:
     # PolicyPatch documents lazy validation: invalid values sit latent in
     # the patch and must fail when applied, not silently flow into Policy.
@@ -290,7 +342,7 @@ def test_all_set_valued_patch_fields_declare_union_composition() -> None:
     }
     assert union_fields == {
         "patronymic_rules", "nickname_delimiters",
-        "maiden_delimiters", "extra_suffix_delimiters",
+        "maiden_delimiters", "extra_suffix_delimiters", "segment_scripts",
     }
 
 
@@ -338,7 +390,7 @@ def test_name_order_rejects_bare_string() -> None:
 # ships, and its frozenset() coercion destroys the evidence before
 # Policy could catch it at apply time.
 _GUARDED = ["nickname_delimiters", "maiden_delimiters",
-            "extra_suffix_delimiters", "patronymic_rules"]
+            "extra_suffix_delimiters", "patronymic_rules", "segment_scripts"]
 
 
 @pytest.mark.parametrize("cls", [Policy, PolicyPatch])
@@ -369,6 +421,7 @@ def test_collection_fields_reject_a_bare_string(
     ("maiden_delimiters", [("[", "]")], frozenset({("[", "]")})),
     ("extra_suffix_delimiters", ["/"], frozenset({"/"})),
     ("patronymic_rules", ["turkic"], frozenset({PatronymicRule.TURKIC})),
+    ("segment_scripts", [Script.HAN], frozenset({Script.HAN})),
 ])
 def test_legitimate_iterables_are_accepted_and_stored_intact(
         cls: type, field: str, items: list, expected: frozenset) -> None:
@@ -406,7 +459,8 @@ def test_a_pair_mapping_is_accepted_through_items(cls: type) -> None:
 @pytest.mark.parametrize("value", [b" - ", bytearray(b" - "), memoryview(b" - ")])
 @pytest.mark.parametrize(
     "field", ["extra_suffix_delimiters", "nickname_delimiters",
-              "maiden_delimiters", "patronymic_rules", "name_order"])
+              "maiden_delimiters", "patronymic_rules", "name_order",
+              "segment_scripts"])
 def test_every_field_rejects_a_buffer_with_a_decode_hint(
         cls: type, field: str, value: object) -> None:
     # Same cryptic int message Lexicon had, and name_order was the one
@@ -446,3 +500,167 @@ def test_patched_validates_patch_values_at_apply_time() -> None:
 def test_patched_rejects_non_patch() -> None:
     with pytest.raises(TypeError, match="takes a PolicyPatch"):
         Policy().patched({"strip_emoji": False})  # type: ignore[arg-type]
+
+
+def test_script_orders_default_and_canonical_storage() -> None:
+    p = Policy()
+    assert p.script_orders == DEFAULT_SCRIPT_ORDERS
+    # constructor tolerates a Mapping; storage is the sorted pair
+    # tuple (hashability, the capitalization_exceptions precedent --
+    # which is also why the mapping spelling needs the ignore: the
+    # field is annotated with what it STORES)
+    q = Policy(script_orders={Script.HANGUL: FAMILY_FIRST,  # type: ignore[arg-type]
+                              Script.HAN: FAMILY_FIRST})
+    assert q == p and hash(q) == hash(p)
+    assert Policy(script_orders={}).script_orders == ()  # type: ignore[arg-type]
+
+
+def test_script_orders_validates_keys_and_values() -> None:
+    with pytest.raises(ValueError, match="han, hangul"):
+        Policy(script_orders={"klingon": FAMILY_FIRST})  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="exported orders"):
+        Policy(script_orders={Script.HAN: (Role.MIDDLE, Role.GIVEN,  # type: ignore[arg-type]
+                                           Role.FAMILY)})
+    with pytest.raises(TypeError, match="bare string"):
+        Policy(script_orders="han")  # type: ignore[arg-type]
+
+
+def test_segment_scripts_defaults_to_hangul_and_coerces() -> None:
+    # hangul segmentation is default-on (amendment 2026-07-27):
+    # hangul is unambiguously Korean and the surname set is closed
+    assert Policy().segment_scripts == frozenset({Script.HANGUL})
+    p = Policy(segment_scripts=["han", Script.HANGUL])  # type: ignore[arg-type]
+    assert p.segment_scripts == frozenset({Script.HAN, Script.HANGUL})
+    assert Policy(segment_scripts=()).segment_scripts == frozenset()  # type: ignore[arg-type]
+
+
+def test_segment_scripts_rejects_unknown_script() -> None:
+    # bare-string/mapping rejection is covered by the _GUARDED family
+    # sweep (test_collection_fields_reject_a_bare_string /
+    # test_collection_fields_reject_a_mapping); this pins the one
+    # check unique to segment_scripts -- the unknown-script message.
+    with pytest.raises(ValueError, match="han, hangul"):
+        Policy(segment_scripts={"klingon"})  # type: ignore[arg-type]
+
+
+def test_segment_scripts_rejects_non_iterable_with_curated_message() -> None:
+    # parallel to patronymic_rules: name the expected shape rather than
+    # letting _require_iterable's default "an iterable" phrasing stand
+    with pytest.raises(TypeError,
+                       match="segment_scripts must be an iterable of "
+                             "Script members, got True"):
+        Policy(segment_scripts=True)  # type: ignore[arg-type]
+
+
+def test_segment_scripts_patch_unions() -> None:
+    patched = apply_patch(
+        Policy(), PolicyPatch(segment_scripts={Script.HAN}))  # type: ignore[arg-type]
+    assert patched.segment_scripts == frozenset(
+        {Script.HAN, Script.HANGUL})
+    stringly = apply_patch(
+        Policy(), PolicyPatch(segment_scripts={"han"}))  # type: ignore[arg-type]
+    assert all(isinstance(s, Script) for s in stringly.segment_scripts)
+
+
+# One item per field, used to build a bad_iter() below that yields a
+# legitimate first entry, then raises -- forcing consumption past the
+# iter()-probe stage so a rewrite-vs-propagate bug can only be caught
+# by actually running the generator.
+_PROPAGATION_FIELD_VALUES = {
+    "segment_scripts": Script.HAN,
+    "patronymic_rules": PatronymicRule.TURKIC,
+    "script_orders": (Script.HAN, FAMILY_FIRST),
+    "nickname_delimiters": ("<", ">"),
+    "maiden_delimiters": ("[", "]"),
+    "extra_suffix_delimiters": "/",
+}
+
+
+@pytest.mark.parametrize("cls,field", [
+    (Policy, "segment_scripts"),
+    (Policy, "patronymic_rules"),
+    (Policy, "script_orders"),
+    (Policy, "nickname_delimiters"),
+    (Policy, "maiden_delimiters"),
+    (Policy, "extra_suffix_delimiters"),
+    (PolicyPatch, "segment_scripts"),
+    (PolicyPatch, "patronymic_rules"),
+    (PolicyPatch, "script_orders"),
+    (PolicyPatch, "nickname_delimiters"),
+    (PolicyPatch, "maiden_delimiters"),
+    (PolicyPatch, "extra_suffix_delimiters"),
+])
+def test_caller_generator_errors_propagate_untouched(
+        cls: type, field: str) -> None:
+    """A TypeError raised INSIDE a caller's generator, after it has
+    already yielded a legitimate value, must reach the caller with its
+    own message -- not be rewritten as "not an iterable" by whichever
+    guard happens to consume the generator to check its shape.
+
+    Probe-only-in-try is what makes this true: iter() succeeds (so the
+    guard doesn't fire), and only the SEPARATE, unguarded consumption
+    step sees the generator's own exception. PolicyPatch.script_orders
+    is the scalar (non-union) field with its own canonicalization
+    block, distinct from the shared union loop the other fields go
+    through below -- it needs the identical probe/consume split, since
+    deferring a caller-generator error to apply time is impossible
+    once the generator is already exhausted (verified: the error would
+    otherwise be lost for good, not merely delayed)."""
+    def bad_iter() -> Iterator[object]:
+        yield _PROPAGATION_FIELD_VALUES[field]
+        raise TypeError("boom")
+
+    with pytest.raises(TypeError, match="boom"):
+        cls(**{field: bad_iter()})
+
+
+def test_policy_patch_script_orders_non_iterable_still_defers_to_apply() -> None:
+    # The deferral contract this fix must NOT break: a genuinely
+    # non-iterable script_orders value is not a caller-generator error
+    # -- it fails the iter() probe itself, so PolicyPatch construction
+    # stays lazy (and hashable) and Policy's own guard raises the
+    # curated message once the patch is actually applied.
+    patch = PolicyPatch(script_orders=5)  # type: ignore[arg-type]
+    assert isinstance(hash(patch), int)
+    with pytest.raises(TypeError, match="script_orders must be a mapping"):
+        apply_patch(Policy(), patch)
+
+
+def test_canonical_script_pair_defers_each_malformed_shape() -> None:
+    # _canonical_script_pair's three per-pair deferral branches, each
+    # constructible (hashable) and each quoted by Policy's own guard at
+    # apply time: a pair of the wrong arity; a str order value (which
+    # tuple() would shred to characters); a non-iterable order value.
+    arity = PolicyPatch(
+        script_orders=[(Script.HAN, FAMILY_FIRST, "extra")])  # type: ignore[arg-type]
+    assert isinstance(hash(arity), int)
+    with pytest.raises(TypeError, match=r"\(Script, order\) pairs"):
+        apply_patch(Policy(), arity)
+    stringly = PolicyPatch(script_orders={Script.HAN: "gmf"})  # type: ignore[arg-type]
+    assert isinstance(hash(stringly), int)
+    with pytest.raises(TypeError, match="bare string"):
+        apply_patch(Policy(), stringly)
+    lone = PolicyPatch(script_orders={Script.HAN: 5})  # type: ignore[arg-type]
+    assert isinstance(hash(lone), int)
+    with pytest.raises(TypeError, match="must be an iterable, got 5"):
+        apply_patch(Policy(), lone)
+
+
+def test_policy_patch_one_shot_bad_tail_defers_without_silent_drop() -> None:
+    # The silent-drop repro: a ONE-SHOT generator whose first item is a
+    # good pair and whose second is a bad shape (not caller-generator
+    # code raising -- just a malformed entry). PolicyPatch construction
+    # must not raise (this is a shape problem, deferred to apply time,
+    # like the bytes case), but the exhausted-generator hole meant
+    # apply_patch used to silently store () -- "opt out of per-script
+    # ordering" -- with NO error anywhere, dropping the Han/Hangul
+    # family-first defaults. The list form of the identical input
+    # already raised correctly; only the one-shot form leaked.
+    gen = (x for x in [(Script.HAN, FAMILY_FIRST), 5])
+    patch = PolicyPatch(script_orders=gen)  # type: ignore[arg-type]
+    # Materialized into a re-iterable tuple, not left as the exhausted
+    # generator -- Policy can still quote the caller's bad entry (5).
+    assert patch.script_orders == ((Script.HAN, FAMILY_FIRST), 5)
+    with pytest.raises(TypeError,
+                       match=r"script_orders entries must be .* got 5"):
+        apply_patch(Policy(), patch)

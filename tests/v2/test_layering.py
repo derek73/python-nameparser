@@ -14,7 +14,8 @@ PKG = pathlib.Path(nameparser.__file__).parent
 _MUST_EXIST = {"_types.py", "_lexicon.py", "_policy.py", "_locale.py",
                "_render.py", "_pipeline/_state.py", "_pipeline/__init__.py",
                "_pipeline/_extract.py", "_pipeline/_tokenize.py",
-               "_pipeline/_vocab.py", "_pipeline/_segment.py",
+               "_pipeline/_vocab.py", "_pipeline/_script_segment.py",
+               "_pipeline/_segment.py",
                "_pipeline/_classify.py", "_pipeline/_group.py",
                "_pipeline/_assign.py", "_pipeline/_post_rules.py",
                "_pipeline/_assemble.py", "_parser.py", "_facade.py",
@@ -59,6 +60,7 @@ ALLOWED = {
     "_pipeline/_vocab.py": _PIPELINE_STAGE_ALLOWED,
     "_pipeline/_extract.py": _PIPELINE_STAGE_ALLOWED,
     "_pipeline/_tokenize.py": _PIPELINE_STAGE_ALLOWED,
+    "_pipeline/_script_segment.py": _PIPELINE_STAGE_ALLOWED,
     "_pipeline/_segment.py": _PIPELINE_STAGE_ALLOWED,
     "_pipeline/_classify.py": _PIPELINE_STAGE_ALLOWED,
     "_pipeline/_group.py": _PIPELINE_STAGE_ALLOWED,
@@ -165,9 +167,9 @@ def test_lexicon_never_imports_config_package_root_or_parser() -> None:
 def test_public_exports() -> None:
     expected = {
         "Span", "Role", "Token", "Ambiguity", "AmbiguityKind", "ParsedName",
-        "Lexicon", "Policy", "PolicyPatch", "PatronymicRule", "UNSET",
+        "Lexicon", "Policy", "PolicyPatch", "PatronymicRule", "Script", "UNSET",
         "GIVEN_FIRST", "FAMILY_FIRST", "FAMILY_FIRST_GIVEN_LAST",
-        "DEFAULT_NICKNAME_DELIMITERS", "Locale",
+        "DEFAULT_NICKNAME_DELIMITERS", "DEFAULT_SCRIPT_ORDERS", "Locale",
         "Parser", "parse", "parser_for",
     }
     assert expected <= set(nameparser.__all__)

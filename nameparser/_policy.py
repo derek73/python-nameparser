@@ -29,6 +29,24 @@ class PatronymicRule(StrEnum):
     TURKIC = "turkic"
 
 
+class Script(StrEnum):
+    """Writing systems the parser can key SCRIPT-CONDITIONAL behavior
+    on: per-script name order (``Policy.script_orders``) and
+    unspaced-name segmentation (``Policy.segment_scripts``). The rule
+    that admits these (amendment 2026-07-27): script-conditional
+    behavior only where the script itself determines the convention --
+    Latin-script input is never affected. Character tables live in
+    nameparser/_pipeline/_vocab.py, not here."""
+
+    #: Chinese Hanzi -- and Japanese Kanji: a pure-Han string cannot
+    #: say which language it is, which is fine for ORDER (both write
+    #: family-first natively) and exactly why Han SEGMENTATION is
+    #: opt-in (locales.ZH; Japanese is #272's pluggable segmenter).
+    HAN = "han"
+    #: Korean Hangul (precomposed syllables). Unambiguously Korean.
+    HANGUL = "hangul"
+
+
 # Order-spec constants (#270). Each reads as its contents because roles
 # are named given/family, not first/last.
 
@@ -82,6 +100,19 @@ _PATRONYMIC_MIGRATION_HINT = (
     "parser_for(locales.RU) / locales.TR_AZ)"
 )
 
+#: Policy.script_orders' default: wholly-Han and wholly-Hangul names
+#: read family-first. Public and named so opting out or extending
+#: reads against a documented value (the DEFAULT_NICKNAME_DELIMITERS
+#: precedent). The HAN entry is safe WITHOUT knowing Chinese from
+#: Japanese: both write family-first in native script -- the
+#: languages differ, the convention doesn't. Canonical form: sorted
+#: (Script, order) pairs, matching the field's storage.
+DEFAULT_SCRIPT_ORDERS: tuple[
+    tuple[Script, tuple[Role, Role, Role]], ...] = (
+    (Script.HAN, FAMILY_FIRST),
+    (Script.HANGUL, FAMILY_FIRST),
+)
+
 #: Policy.nickname_delimiters' default. Public and named so
 #: customizations read as set math against a documented value -- e.g.
 #: ``DEFAULT_NICKNAME_DELIMITERS | {("｟", "｠")}`` -- instead of a
@@ -103,13 +134,16 @@ DEFAULT_NICKNAME_DELIMITERS = frozenset({
 })
 
 
-def _reject_bare_string_order(value: object) -> None:
+def _reject_bare_string_order(value: object, field_name: str) -> None:
     # tuple("gmf") would be ("g", "m", "f") -- catch the bare string
     # with the same TypeError every other iterable field raises.
     # Single-sourced: called from Policy AND PolicyPatch __post_init__.
+    # field_name is REQUIRED, with no name_order default: script_orders'
+    # values obey the same rule (via _validated_order), and a defaulted
+    # caller that forgot to pass it would silently name the wrong field.
     if isinstance(value, str):
         raise TypeError(
-            f"name_order must be an iterable of three Roles, "
+            f"{field_name} must be an iterable of three Roles, "
             f"not a bare string: {value!r}"
         )
     # A {Role: position} dict iterates to the right three Roles in the
@@ -120,12 +154,12 @@ def _reject_bare_string_order(value: object) -> None:
     # out of it is how the PolicyPatch hole happened.
     if isinstance(value, Mapping):
         raise TypeError(
-            f"name_order must be an iterable of three Roles, not a "
+            f"{field_name} must be an iterable of three Roles, not a "
             f"mapping: {value!r}"
         )
     if isinstance(value, (bytes, bytearray, memoryview)):
         raise TypeError(
-            f"name_order must be an iterable of three Roles, not "
+            f"{field_name} must be an iterable of three Roles, not "
             f"{type(value).__name__} -- decode first, e.g. "
             f"raw.decode('utf-8')"
         )
@@ -169,18 +203,180 @@ def _reject_str_and_mapping(value: object, field_name: str) -> None:
         )
 
 
-def _require_iterable(value: Iterable[Any], field_name: str) -> Iterable[Any]:
-    # Probe with iter() so a non-iterable value (an int, a bool, ...)
-    # raises a message naming the field, matching the treatment
-    # patronymic_rules already gets, instead of a bare "'int' object is
-    # not iterable" surfacing from whatever tuple()/frozenset() call
-    # happens to run first.
+def _require_iterable(value: Iterable[Any], field_name: str,
+                      expected: str = "an iterable") -> Iterable[Any]:
+    """Probe a value's iterability and return its iterator, raising a
+    TypeError naming the field if it has none. `expected` carries the
+    field's own phrasing ("a mapping of Script to order"); the default
+    suits every plain iterable field.
+
+    Probing with iter() is what makes the message possible: a
+    non-iterable (an int, a bool, ...) is named here, matching the
+    treatment patronymic_rules already gets, instead of a bare "'int'
+    object is not iterable" surfacing from whatever tuple()/frozenset()
+    happens to run first. It is ALSO the reason callers consume the
+    returned iterator OUTSIDE any try of their own: an exception raised
+    inside a caller's generator while it is being consumed is the
+    caller's own error, and must propagate untouched rather than be
+    rewritten as a shape complaint about the field.
+    """
     try:
         return iter(value)
     except TypeError:
         raise TypeError(
-            f"{field_name} must be an iterable, got {value!r}"
+            f"{field_name} must be {expected}, got {value!r}"
         ) from None
+
+
+def _validated_order(value: Iterable[Any],
+                     field_name: str) -> tuple[Role, Role, Role]:
+    """name_order's element/permutation check, single-sourced so
+    script_orders values obey the identical rule (only the three
+    exported orders have implemented assignment semantics)."""
+    _reject_bare_string_order(value, field_name)
+    order = tuple(_require_iterable(value, field_name))
+    # Sole rejection point for plain-string tuples: Role is a StrEnum,
+    # so the named-order membership check below compares EQUAL for
+    # ("given", "middle", "family") -- do not remove this loop as
+    # redundant.
+    for element in order:
+        if not isinstance(element, Role):
+            raise TypeError(
+                f"{field_name} elements must be Role members, "
+                f"got {element!r}"
+            )
+    # Only the three exported orders have implemented assignment
+    # semantics; the unnamed permutations would silently misassign.
+    # Pre-2.0 strictness is free -- relaxing later is compatible.
+    if order not in (GIVEN_FIRST, FAMILY_FIRST,
+                     FAMILY_FIRST_GIVEN_LAST):
+        raise ValueError(
+            f"{field_name} must be one of the exported orders, got "
+            f"{order!r}; use GIVEN_FIRST, FAMILY_FIRST, or "
+            f"FAMILY_FIRST_GIVEN_LAST"
+        )
+    return order  # type: ignore[return-value]  # length checked above
+
+
+def _validated_script(key: object) -> Script:
+    """Coerce one Script key, with the message every script-keyed field
+    shares. Single-sourced deliberately: script_orders and the
+    script-keyed fields that follow it must not each grow their own
+    wording for the same lookup."""
+    try:
+        # Enum lookup accepts ANY value at runtime and answers a
+        # non-member with ValueError -- which is the contract here, and
+        # the taxonomy's rule for a failed enum lookup whatever the
+        # input type was (stdlib EnumType precedent).
+        return Script(key)  # type: ignore[arg-type]
+    except ValueError:
+        valid = ", ".join(v.value for v in Script)
+        raise ValueError(
+            f"unknown script {key!r}; valid scripts: {valid}"
+        ) from None
+
+
+def _validated_script_orders(
+        value: object) -> tuple[tuple[Script, tuple[Role, Role, Role]], ...]:
+    """Policy.script_orders' whole check, from raw input to canonical
+    storage. script_orders is the one MAPPING-shaped field, so the
+    guards read inverted from every other one here: a Mapping is what
+    the caller SHOULD pass, and a bare string is the shape that would
+    otherwise iterate into plausible-looking garbage."""
+    if isinstance(value, str):
+        raise TypeError(
+            f"script_orders must be a mapping of Script to order, "
+            f"not a bare string: {value!r}"
+        )
+    if isinstance(value, (bytes, bytearray, memoryview)):
+        raise TypeError(
+            f"script_orders must be a mapping of Script to order, "
+            f"not {type(value).__name__} -- decode first, "
+            f"e.g. raw.decode('utf-8')"
+        )
+    raw = value.items() if isinstance(value, Mapping) else value
+    raw_iter = _require_iterable(
+        raw, "script_orders",  # type: ignore[arg-type]
+        "a mapping of Script to order")
+    canonical: dict[Script, tuple[Role, Role, Role]] = {}
+    for entry in raw_iter:
+        try:
+            key, order = entry
+        except (TypeError, ValueError):
+            raise TypeError(
+                f"script_orders entries must be (Script, order) "
+                f"pairs, got {entry!r}"
+            ) from None
+        canonical[_validated_script(key)] = _validated_order(
+            order, "script_orders")
+    # Sorted pairs, not a dict: Policy is hashable, and two
+    # differently-written but equivalent tables must converge (the
+    # capitalization_exceptions precedent).
+    return tuple(sorted(canonical.items()))
+
+
+def _validated_segment_scripts(value: object) -> frozenset[Script]:
+    """segment_scripts' check: an iterable of Script members (or
+    their string values), coerced via _validated_script so the
+    unknown-script wording stays single-sourced."""
+    _reject_str_and_mapping(value, "segment_scripts")
+    script_iter = _require_iterable(
+        value, "segment_scripts",  # type: ignore[arg-type]
+        "an iterable of Script members")
+    return frozenset(_validated_script(s) for s in script_iter)
+
+
+def _canonical_script_pair(pair: Iterable[Any]) -> tuple[Any, ...]:
+    """Hashability-only canonicalization of one PolicyPatch
+    script_orders entry: tuple-ize the pair AND the order value inside
+    it. Shallow was not enough -- a {Script: [Role, ...]} patch stored
+    the list, and hash() then raised far from the construction site,
+    the same failure name_order's canonicalization exists to prevent.
+    A malformed entry is still tuple-ized (that is the hashability
+    floor); its CONTENTS are left exactly as written so Policy quotes
+    the caller's own value when it raises at apply time."""
+    out = tuple(pair)
+    if len(out) != 2:
+        return out                          # not a (Script, order) pair
+    key, value = out
+    # str/bytes are iterable, so tuple() would shred exactly the two
+    # values whose deferred errors ("not a bare string", the decode
+    # hint) need to quote what the caller wrote.
+    if isinstance(value, (str, bytes, bytearray, memoryview)):
+        return out
+    try:
+        return (key, tuple(value))
+    except TypeError:
+        return out                          # non-iterable order value
+
+
+def _canonical_patch_script_orders(value: object) -> object:
+    """Canonicalize a PolicyPatch.script_orders value for hashability
+    without validating it: malformed shapes are stored so Policy can
+    quote them at apply time; a caller-generator's own exception
+    propagates from the UNGUARDED materialization below (deferring is
+    impossible once a one-shot iterator is consumed)."""
+    # Excluded HERE rather than delegated: a string's elements are
+    # themselves tuple-izable, so no TypeError ever fires to signal
+    # "leave this alone" -- "han" would shred to (("h",), ("a",),
+    # ("n",)) and Policy's bare-string message would have nothing left
+    # to quote. bytes shred the same way, into ints.
+    if isinstance(value, (str, bytes, bytearray, memoryview)):
+        return value                  # deferred whole: Policy's guards quote it
+    # Any, not object: a patch defers validation, so anything a caller
+    # wrote can arrive here, and the probe below is precisely the
+    # runtime question mypy has no way to answer statically.
+    pairs: Any = value.items() if isinstance(value, Mapping) else value
+    try:
+        pairs_iter = iter(pairs)      # probe only
+    except TypeError:
+        return value                  # non-iterable: defer to apply
+    items = tuple(pairs_iter)         # UNGUARDED: caller errors propagate
+    try:
+        return tuple(map(_canonical_script_pair, items))
+    except TypeError:
+        return items                  # malformed entry: materialized, so
+                                      # Policy can still re-iterate + quote
 
 
 @dataclass(frozen=True, slots=True)
@@ -202,6 +398,28 @@ class Policy:
     #: given or family names). A comma that only sets off suffixes
     #: ("John Smith, Jr.") leaves name_order governing the name part.
     name_order: tuple[Role, Role, Role] = GIVEN_FIRST
+    #: Per-script overrides of name_order (#271), consulted when every
+    #: name piece is written wholly in one script: {Script: order}
+    #: (constructor accepts a mapping; stored as sorted pairs). The
+    #: default reads wholly-Han/Hangul names family-first -- see
+    #: :data:`~nameparser.DEFAULT_SCRIPT_ORDERS`. Opt out with
+    #: ``script_orders={}``. Latin-script and mixed-script input is
+    #: never affected. Like name_order, ignored where a comma already
+    #: decides the family name.
+    script_orders: tuple[tuple[Script, tuple[Role, Role, Role]], ...] = (
+        DEFAULT_SCRIPT_ORDERS)
+    #: Scripts for which the unspaced-name segmentation stage is
+    #: active (#271): the first token written wholly in an activated
+    #: script is split by longest surname match against
+    #: :attr:`Lexicon.surnames <nameparser.Lexicon.surnames>`.
+    #: Default: {Script.HANGUL} -- hangul is unambiguously Korean and
+    #: Korean surnames are a closed default-shipped set. Han is NOT
+    #: default: a zh surname list corrupts Japanese names (高橋一郎
+    #: must not split as 高+橋一郎), so it's opt-in via locales.ZH.
+    #: Opt out with ``segment_scripts=()``; note a PolicyPatch unions
+    #: rather than replaces, so a pack can only add scripts, never
+    #: disable one.
+    segment_scripts: frozenset[Script] = frozenset({Script.HANGUL})
     #: Opt-in detectors that reorder patronymic-shaped names
     #: (EAST_SLAVIC, TURKIC); usually set via a locale pack.
     patronymic_rules: frozenset[PatronymicRule] = frozenset()
@@ -248,29 +466,15 @@ class Policy:
     __setstate__ = _guarded_setstate
 
     def __post_init__(self) -> None:
-        _reject_bare_string_order(self.name_order)
-        order = tuple(_require_iterable(self.name_order, "name_order"))
-        # Sole rejection point for plain-string tuples: Role is a StrEnum,
-        # so the named-order membership check below compares EQUAL for
-        # ("given", "middle", "family") -- do not remove this loop as
-        # redundant.
-        for element in order:
-            if not isinstance(element, Role):
-                raise TypeError(
-                    f"name_order elements must be Role members, "
-                    f"got {element!r}"
-                )
-        # Only the three exported orders have implemented assignment
-        # semantics; the unnamed permutations would silently misassign.
-        # Pre-2.0 strictness is free -- relaxing later is compatible.
-        if order not in (GIVEN_FIRST, FAMILY_FIRST,
-                         FAMILY_FIRST_GIVEN_LAST):
-            raise ValueError(
-                f"name_order must be one of the exported orders, got "
-                f"{order!r}; use GIVEN_FIRST, FAMILY_FIRST, or "
-                f"FAMILY_FIRST_GIVEN_LAST"
-            )
-        object.__setattr__(self, "name_order", order)
+        object.__setattr__(
+            self, "name_order", _validated_order(self.name_order,
+                                                 "name_order"))
+        object.__setattr__(
+            self, "script_orders",
+            _validated_script_orders(self.script_orders))
+        object.__setattr__(
+            self, "segment_scripts",
+            _validated_segment_scripts(self.segment_scripts))
         _reject_str_and_mapping(self.patronymic_rules, "patronymic_rules")
         # Probe with iter() rather than wrapping tuple(): non-iterables
         # (True especially -- v1's patronymic_name_order was a bool flag,
@@ -405,6 +609,14 @@ class PolicyPatch:
     """
 
     name_order: tuple[Role, Role, Role] | _Unset = UNSET
+    #: Composes as a SCALAR (override, not merge) -- deliberate: nothing
+    #: shipped patches it today, so the simpler rule is the one to
+    #: defend; revisit if a pack ever needs to add one script's entry
+    #: without restating the rest.
+    script_orders: tuple[
+        tuple[Script, tuple[Role, Role, Role]], ...] | _Unset = UNSET
+    segment_scripts: frozenset[Script] | _Unset = field(
+        default=UNSET, metadata=_UNION)
     patronymic_rules: frozenset[PatronymicRule] | _Unset = field(
         default=UNSET, metadata=_UNION)
     middle_as_family: bool | _Unset = UNSET
@@ -429,8 +641,19 @@ class PolicyPatch:
         # coerce a list at apply time, but the patch itself (and any
         # Locale holding it) must already be hashable.
         if self.name_order is not UNSET:
-            _reject_bare_string_order(self.name_order)
+            _reject_bare_string_order(self.name_order, "name_order")
             object.__setattr__(self, "name_order", tuple(self.name_order))
+        # Same reason for script_orders, one level deeper: a patch built
+        # from a {Script: order} dict (or a list of pairs) must already
+        # be hashable, since a Locale holds it -- and hashable all the
+        # way down, hence _canonical_script_pair. Validation still
+        # belongs to Policy at apply time, so a shape the canonicalizer
+        # cannot digest is left for it to report; the one-shot and
+        # malformed-entry cases are _canonical_patch_script_orders'.
+        if self.script_orders is not UNSET:
+            object.__setattr__(
+                self, "script_orders",
+                _canonical_patch_script_orders(self.script_orders))
         for f in dataclasses.fields(self):
             if f.metadata.get("compose") != "union":
                 continue

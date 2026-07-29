@@ -986,6 +986,7 @@ class Constants:
         removal path.
         """
         from nameparser.config.maiden_markers import MAIDEN_MARKERS
+        from nameparser.config.surnames import KOREAN_SURNAMES
         acronyms = frozenset(self.suffix_acronyms)
         particles = frozenset(self.prefixes)
         bound = frozenset(self.bound_first_names)
@@ -1061,6 +1062,12 @@ class Constants:
             # v1 Constants has no manager for these (#274 is 2.0
             # behavior); the data module is the only source
             maiden_markers=frozenset(MAIDEN_MARKERS),
+            # likewise no v1 manager: the unspaced-name segmentation
+            # vocabulary is 2.0 behavior (#271), so it rides in the
+            # snapshot only -- v1's Constants surface stays frozen.
+            # Unwrapped where maiden_markers above is wrapped: this
+            # module is born frozen (#293), so no wrap
+            surnames=KOREAN_SURNAMES,
             # TupleManager is dict[str, object] (v1 parity: values were
             # never statically str-typed); every real entry is a str,
             # same assumption _DelimiterManager's sentinel lookup makes

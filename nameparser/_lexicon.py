@@ -23,7 +23,7 @@ from typing import cast
 _VOCAB_FIELDS = (
     "titles", "given_name_titles", "suffix_acronyms", "suffix_words",
     "suffix_acronyms_ambiguous", "particles", "particles_ambiguous",
-    "conjunctions", "bound_given_names", "maiden_markers",
+    "conjunctions", "bound_given_names", "maiden_markers", "surnames",
 )
 
 #: (marker, base, why) triples. Each marker narrows how entries of its
@@ -327,6 +327,14 @@ class Lexicon:
     #: field ("née", "geb.", "roz.", ...). Full default list:
     #: :data:`~nameparser.config.maiden_markers.MAIDEN_MARKERS`.
     maiden_markers: frozenset[str] = frozenset()
+    #: Family names for the unspaced-name segmentation stage (#271),
+    #: matched longest-first against the start of the FIRST token
+    #: written wholly in a script :attr:`Policy.segment_scripts
+    #: <nameparser.Policy.segment_scripts>` activates. The default
+    #: carries the Korean census list
+    #: (:data:`~nameparser.config.surnames.KOREAN_SURNAMES`); Chinese
+    #: surnames ship in locales.ZH because Han segmentation is opt-in.
+    surnames: frozenset[str] = frozenset()
     #: Lowercase word -> exact-cased replacement used by capitalized()
     #: ("phd" -> "Ph.D."). Pair-valued: change it with
     #: dataclasses.replace(), not add()/remove(); read it as a mapping
@@ -571,6 +579,7 @@ def _default_lexicon() -> Lexicon:
     from nameparser.config.suffixes import (
         SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_NOT_ACRONYMS,
     )
+    from nameparser.config.surnames import KOREAN_SURNAMES
     from nameparser.config.titles import FIRST_NAME_TITLES, TITLES
 
     # v1 data modules export plain `set[str]`; wrap each at this call site
@@ -590,6 +599,9 @@ def _default_lexicon() -> Lexicon:
         conjunctions=frozenset(CONJUNCTIONS),
         bound_given_names=frozenset(BOUND_FIRST_NAMES),
         maiden_markers=frozenset(MAIDEN_MARKERS),
+        # surnames.py is born frozen (#293) -- no call-site wrap needed,
+        # unlike the v1 modules above (their wraps drop when #293 lands)
+        surnames=KOREAN_SURNAMES,
         # pass canonical pair-tuples so this strictly-typed call site never
         # feeds a Mapping to the tuple-annotated field; __post_init__
         # still tolerates a Mapping at runtime for interactive use

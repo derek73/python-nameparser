@@ -1,5 +1,5 @@
-"""The locale pack layer (locales spec §2-3): lazy access, the two
-2.0.0 packs, composition, and the non-interference gate."""
+"""The locale pack layer (locales spec §2-3): lazy access, the shipped
+packs, composition, and the non-interference gate."""
 import functools
 import importlib
 import re
@@ -10,9 +10,12 @@ import pytest
 
 from nameparser import Locale, Parser, locales, parse, parser_for
 from nameparser._lexicon import _VOCAB_FIELDS, Lexicon
-from nameparser._policy import PatronymicRule, Policy
+from nameparser._pipeline._vocab import _SCRIPT_RANGES
+from nameparser._policy import UNSET, PatronymicRule, Policy, Script
+from nameparser._types import AmbiguityKind
 from nameparser.locales import ru as _ru
 from nameparser.locales import tr_az as _tr_az
+from nameparser.locales import zh as _zh
 
 from .conftest import differential_corpus
 
@@ -55,8 +58,8 @@ def test_locales_module_attribute_access() -> None:
 
 def test_locales_get_and_available() -> None:
     assert locales.get("ru") is locales.RU
-    assert set(locales.available()) == {"ru", "tr_az"}
-    with pytest.raises(KeyError, match="ru, tr_az"):
+    assert set(locales.available()) == {"ru", "tr_az", "zh"}
+    with pytest.raises(KeyError, match="ru, tr_az, zh"):
         locales.get("xx")
 
 
@@ -65,6 +68,92 @@ def test_tr_az_pack_contents() -> None:
     assert locales.TR_AZ.policy.patronymic_rules == frozenset(
         {PatronymicRule.TURKIC})
     assert locales.TR_AZ.lexicon == Lexicon.empty()
+
+
+def test_zh_pack_contents() -> None:
+    assert locales.ZH.code == "zh"
+    # the pack activates Han segmentation and ships vocabulary --
+    # and does NOT touch order: script_orders already reads Han
+    # family-first by default (amendment 2026-07-27)
+    assert locales.ZH.policy.segment_scripts == frozenset({Script.HAN})
+    assert locales.ZH.policy.name_order is UNSET
+    assert locales.ZH.policy.script_orders is UNSET
+    assert "王" in locales.ZH.lexicon.surnames
+    assert "欧阳" in locales.ZH.lexicon.surnames       # compound
+    assert "歐陽" in locales.ZH.lexicon.surnames       # traditional
+
+
+def test_zh_surname_entries_are_wellformed() -> None:
+    # structural integrity, not content-pinning: 1-2 chars each,
+    # every char in the stage's own Han ranges (catches a stray
+    # Latin char, a pasted full name, or a hangul entry)
+    ranges = _SCRIPT_RANGES[Script.HAN]
+    for entry in locales.ZH.lexicon.surnames:
+        assert 1 <= len(entry) <= 2, entry
+        assert all(any(lo <= ord(c) <= hi for lo, hi in ranges)
+                   for c in entry), entry
+
+
+def test_zh_parses_unspaced_names() -> None:
+    p = _PACKED["zh"]
+    n = p.parse("毛泽东")
+    assert (n.family, n.given) == ("毛", "泽东")
+    n = p.parse("欧阳修")                      # compound + 1-char given
+    assert (n.family, n.given) == ("欧阳", "修")
+    n = p.parse("司马相如")                    # compound + 2-char given
+    assert (n.family, n.given) == ("司马", "相如")
+    # the 肖/萧 census merger ships both simplified spellings
+    n = p.parse("萧红")
+    assert (n.family, n.given) == ("萧", "红")
+
+
+def test_zh_longest_match_prefers_compound_over_single_surname() -> None:
+    # The longest-first tie-break, exercised by the PACK's own data
+    # rather than by the synthetic lexicon the stage tests use. Most
+    # compounds here begin with a character that is not itself a listed
+    # surname (欧, 司, 诸 are all outside the top-100), so they would
+    # split the same way under shortest-first and prove nothing. 夏侯 is
+    # one of only three compounds that would not -- 夏 is rank 65 -- so
+    # this is the pair that shows the shipped data actually reaches the
+    # tie-break.
+    p = _PACKED["zh"]
+    n = p.parse("夏侯惇")
+    assert (n.family, n.given) == ("夏侯", "惇")
+    n = p.parse("夏雨")                        # the single-surname foil
+    assert (n.family, n.given) == ("夏", "雨")
+    # ...and the ambiguity contract on that same data: a decided fork
+    # is REPORTED (first Han coverage of the SEGMENTATION emitter --
+    # the stage tests reach it through a synthetic lexicon, and the
+    # default lexicon can only reach it through hangul), while the
+    # foil, where only one split was ever possible, stays silent.
+    assert [a.kind for a in p.parse("夏侯惇").ambiguities] == [
+        AmbiguityKind.SEGMENTATION]
+    assert p.parse("夏雨").ambiguities == ()
+
+
+# 毛泽东/欧阳修/夏侯惇/萧红 appear in _ROTATORS["zh"] below, and 毛泽东/
+# 夏侯惇 in cases.py's zh rows, as well. Not deduplicated in either
+# direction, on purpose: the rotator tests assert only THAT the packed
+# parse differs from the default and that DEVIATES declares it -- they
+# never look at a field value -- and the case rows reach the same
+# packed parser only through the shared-table runners
+# (test_cases.py/test_facade_cases.py). These tests are where the zh
+# readings are pinned at unit level, against the stage directly.
+
+
+def test_zh_composes_with_korean_defaults() -> None:
+    # the pack only ADDS (vocabulary + one union field): Korean
+    # segmentation keeps working through a zh parser
+    n = _PACKED["zh"].parse("김민준")
+    assert (n.family, n.given) == ("김", "민준")
+
+
+def test_zh_han_ranges_stay_in_sync_with_vocab() -> None:
+    # zh.py hand-copies the Han spans from _pipeline/_vocab.py for its
+    # DEVIATES predicate (layering forbids a pack importing the
+    # pipeline -- see the module docstring); pin the equality here, the
+    # codepoint-range twin of the marker-regex sync test above.
+    assert _zh._HAN_RANGES == _SCRIPT_RANGES[Script.HAN]
 
 
 def test_pack_vocabulary_entries_are_single_words() -> None:
@@ -79,10 +168,10 @@ def test_pack_vocabulary_entries_are_single_words() -> None:
     # this file may already have forced the import, which would make a
     # warning-capture version of this test pass even on a regression.
     # Iterates every registered pack, not just ru/tr_az by name, so a
-    # future pack is covered automatically. The field loop is dormant
-    # until a pack actually ships vocabulary -- both current packs build
-    # on Lexicon.empty() -- so the registry-non-empty assert below is
-    # what keeps the test from passing vacuously today.
+    # future pack is covered automatically. zh is the pack that gives
+    # the field loop something to chew on (ru/tr_az build on
+    # Lexicon.empty()); the registry-non-empty assert below keeps the
+    # test from passing vacuously if that ever stops being true.
     assert locales.available()
     for code in locales.available():
         lexicon = locales.get(code).lexicon
@@ -290,6 +379,34 @@ _ROTATORS["tr_az"] = [
     "Токаев Касым Кемел ұлы",            # ұлы
     "Жээнбеков Сооронбай Шарип уулу",    # уулу
 ]
+# zh has no marker regexes to rotate through: its rotators cover the
+# SEGMENTATION shapes instead (single/compound surname, simplified/
+# traditional, 1- and 2-character given names). No spaced entry --
+# spaced Han already parses family-first by default, so a spaced name
+# would not deviate from the default parser at all.
+_ROTATORS["zh"] = [
+    "毛泽东",        # 1-char surname, unspaced
+    "张伟",          # 2-char name: 1-char surname + 1-char given
+    "欧阳修",        # compound surname (欧 is NOT itself listed)
+    "夏侯惇",        # compound beats single: 夏 IS listed too
+    "司马相如",      # compound + 2-char given
+    "王力宏",        # 1-char surname + 2-char given
+    "諸葛亮",        # traditional-script compound
+    "萧红",          # the 肖/萧 merger's second simplified spelling
+]
+
+
+def _marker_regexes(module: ModuleType) -> list[re.Pattern]:
+    return [v for v in vars(module).values() if isinstance(v, re.Pattern)]
+
+
+# Packs whose DEVIATES surface is defined by marker REGEXES -- derived,
+# never listed, same rule as the registry itself: a pack qualifies by
+# having any module-level re.Pattern, so zh (which declares by Han
+# codepoint range, pinned by its own sync test) drops out on its own
+# and a future marker-regex pack cannot silently miss branch coverage.
+_MARKER_REGEX_PACKS = tuple(code for code in sorted(_PACKS)
+                            if _marker_regexes(_PACKS[code]))
 
 
 def test_registry_is_the_pack_contract() -> None:
@@ -302,8 +419,23 @@ def test_registry_is_the_pack_contract() -> None:
     for code, module in _PACKS.items():
         assert callable(getattr(module, "DEVIATES", None)), (
             f"pack {code!r} does not declare DEVIATES")
+        # _MARKER_REGEX_PACKS selects on module-level patterns, so a
+        # pack that declares by regex but keeps its patterns inside a
+        # function would drop out of the branch-coverage sweep in
+        # silence. Importing `re` is the tell. The tradeoff is
+        # deliberate: a range-declaring pack that imports re for some
+        # unrelated reason trips this loudly, which beats a silent
+        # coverage gap -- and the fix is to expose the pattern.
+        if "re" in vars(module):
+            assert _marker_regexes(module), (
+                f"pack {code!r} imports re but exposes no module-level "
+                f"pattern")
     assert set(_ROTATORS) == set(_PACKS), (
         "every pack needs a rotator list (and only registered packs)")
+    # the derivation is code, not a list, so an empty result would make
+    # the branch-coverage test vanish into zero parametrizations rather
+    # than fail. Assert it found something.
+    assert _MARKER_REGEX_PACKS, "no pack declares marker regexes"
 
 
 def _alternation_branches(pattern: str) -> list[str]:
@@ -317,7 +449,7 @@ def _alternation_branches(pattern: str) -> list[str]:
     return inner[1:-1].split("|")
 
 
-@pytest.mark.parametrize("code", sorted(_PACKS))
+@pytest.mark.parametrize("code", _MARKER_REGEX_PACKS)
 def test_rotators_cover_every_marker_branch(code: str) -> None:
     # The rotator lists' per-row branch comments are a human convention;
     # this enforces them mechanically: every alternation branch of every
@@ -328,10 +460,9 @@ def test_rotators_cover_every_marker_branch(code: str) -> None:
     # pattern's own shape: '^(...)$' = whole-token marker, '(...)$' =
     # token ending.
     tokens = [tok for name in _ROTATORS[code] for tok in name.split()]
-    patterns = [v for v in vars(_PACKS[code]).values()
-                if isinstance(v, re.Pattern)]
-    assert patterns, f"pack {code!r} defines no marker regexes"
-    for regex in patterns:
+    # non-empty by construction: having marker regexes is what put this
+    # pack in _MARKER_REGEX_PACKS in the first place
+    for regex in _marker_regexes(_PACKS[code]):
         for branch in _alternation_branches(regex.pattern):
             anchored = regex.pattern.startswith("^")
             branch_re = re.compile(

@@ -9,6 +9,8 @@ from nameparser import Parser
 from nameparser._lexicon import (
     Lexicon, _VOCAB_FIELDS, _default_lexicon, _normalize, _title_key,
 )
+from nameparser._pipeline._vocab import _SCRIPT_RANGES
+from nameparser._policy import Script
 
 
 def test_entries_are_normalized_at_construction() -> None:
@@ -556,3 +558,23 @@ def test_remove_of_a_stored_dead_entry_is_silent() -> None:
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         dirty.remove(titles=["zqx zqy"])
+
+
+def test_surnames_is_a_vocab_field() -> None:
+    lex = Lexicon.empty().add(surnames={"毛", "欧阳"})
+    assert lex.surnames == frozenset({"毛", "欧阳"})
+    assert lex.remove(surnames={"毛"}).surnames == frozenset({"欧阳"})
+    merged = Lexicon(surnames=frozenset({"김"})) | Lexicon(surnames=frozenset({"박"}))
+    assert merged.surnames == frozenset({"김", "박"})
+
+
+def test_default_lexicon_ships_korean_surnames_only() -> None:
+    lex = Lexicon.default()
+    assert "김" in lex.surnames and "남궁" in lex.surnames
+    # Han surnames are locales.ZH's cargo (segmentation opt-in), so
+    # the DEFAULT set is wholly hangul -- structural check, not
+    # content-pinning. The spans come from the shared table rather than
+    # a second hand-copy of 0xAC00/0xD7A3 (test_locales.py's precedent).
+    hangul = _SCRIPT_RANGES[Script.HANGUL]
+    assert all(all(any(lo <= ord(c) <= hi for lo, hi in hangul) for c in s)
+               and 1 <= len(s) <= 2 for s in lex.surnames)

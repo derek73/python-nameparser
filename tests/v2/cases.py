@@ -208,13 +208,16 @@ CASES: tuple[Case, ...] = (
          {"given": "Anna", "family": "Larsson", "nickname": "Ann"},
          classification="feat(#273)"),
     Case("cjk_corner_bracket_nickname", '山田「タロ」太郎',
-         {"given": "山田", "family": "太郎", "nickname": "タロ"},
-         classification="feat(#273)",
+         {"family": "山田", "given": "太郎", "nickname": "タロ"},
+         classification="feat(#273) + fix(#271)",
          notes="extraction also splits the unspaced remainder -- the "
-               "masked region acts as a token boundary"),
+               "masked region acts as a token boundary. Both name "
+               "pieces are then wholly Han, so script_orders reads "
+               "them family-first; the nickname's kana is outside the "
+               "name pieces and does not enter that test"),
     Case("cjk_white_corner_bracket_nickname", '田中『ハナ』花子',
-         {"given": "田中", "family": "花子", "nickname": "ハナ"},
-         classification="feat(#273)"),
+         {"family": "田中", "given": "花子", "nickname": "ハナ"},
+         classification="feat(#273) + fix(#271)"),
     Case("fullwidth_paren_nickname", 'John （Jack） Kennedy',
          {"given": "John", "family": "Kennedy", "nickname": "Jack"},
          classification="feat(#273)"),
@@ -466,4 +469,97 @@ CASES: tuple[Case, ...] = (
          {"title": "Dr.", "family": "Smith"},
          classification="fix(comma-family)",
          notes="pre-comma is definitionally family; v1 put it in first"),
+
+    # -- #271: script-scoped order + segmentation (amendment 2026-07-27)
+    Case("ko_unspaced_default", "김민준",
+         {"family": "김", "given": "민준"},
+         classification="fix(#271)",
+         notes="hangul is unambiguously Korean: census surnames ship "
+               "as default vocabulary and HANGUL segmentation is "
+               "default-on"),
+    Case("ko_two_syllable_surname_default", "남궁민수",
+         {"family": "남궁", "given": "민수"},
+         classification="fix(#271)",
+         ambiguities=("segmentation",),
+         notes="남 is itself a shipped surname; longest-first takes "
+               "남궁 and records the decided fork"),
+    Case("ko_bare_two_syllable_surname", "남궁",
+         {"family": "남궁"},
+         classification="fix(#271)",
+         notes="a token that IS a surname never splits by its "
+               "shorter prefix (남+궁); whole token takes the script "
+               "order's first role; nothing was split, so no fork is "
+               "recorded"),
+    Case("ko_family_comma_stays_whole", "남궁민수, 지훈",
+         {"family": "남궁민수", "given": "지훈"},
+         classification="fix(#271)",
+         notes="the comma already decided the family: segmentation "
+               "is inert under FAMILY_COMMA (comma doctrine -- see "
+               "the script_segment stage docstring, which uses this "
+               "exact example)"),
+    Case("ko_suffix_comma_name_part_splits", "Dr 김민준, Jr.",
+         {"title": "Dr", "family": "김", "given": "민준", "suffix": "Jr."},
+         classification="fix(#271)",
+         notes="the one comma structure where segmentation still "
+               "fires: a second word before the comma makes it "
+               "SUFFIX_COMMA, and the name part is a full positional "
+               "name"),
+    Case("ko_spaced_family_first_default", "김 민준",
+         {"family": "김", "given": "민준"},
+         classification="fix(#271)",
+         notes="script_orders, no segmentation involved"),
+    Case("han_spaced_family_first_default", "毛 泽东",
+         {"family": "毛", "given": "泽东"},
+         classification="fix(#271)",
+         notes="Han ORDER is default-safe without knowing zh from ja "
+               "(both write family-first natively); only "
+               "SEGMENTATION needs the zh opt-in"),
+    Case("han_unspaced_unsegmented_default", "毛泽东",
+         {"family": "毛泽东"},
+         classification="fix(#271)",
+         notes="no default Han segmentation: one token, and a lone "
+               "wholly-Han token takes the script order's first "
+               "role = family"),
+    Case("mixed_script_untouched_by_script_orders", "John 王",
+         {"given": "John", "family": "王"},
+         notes="single_script is None for a mixed name: script_orders "
+               "declines and the positional default governs"),
+    Case("two_han_scripts_untouched_by_script_orders", "毛 김",
+         {"given": "毛", "family": "김"},
+         notes="two scripts also decline -- ONE script for the whole "
+               "name"),
+
+    Case("zh_unspaced", "毛泽东",
+         {"family": "毛", "given": "泽东"},
+         locale="zh", classification="fix(#271)"),
+    Case("zh_unspaced_two_char", "张伟",
+         {"family": "张", "given": "伟"},
+         locale="zh", classification="fix(#271)"),
+    Case("zh_compound_tie_break", "夏侯惇",
+         {"family": "夏侯", "given": "惇"},
+         locale="zh", classification="fix(#271)",
+         ambiguities=("segmentation",),
+         notes="夏 (rank 65) is itself listed, so longest-first "
+               "decides a real fork here and records it; most "
+               "compounds' first chars are NOT listed"),
+    Case("zh_compound_two_char_given", "司马相如",
+         {"family": "司马", "given": "相如"},
+         locale="zh", classification="fix(#271)"),
+    Case("zh_traditional_compound", "諸葛亮",
+         {"family": "諸葛", "given": "亮"},
+         locale="zh", classification="fix(#271)"),
+    Case("zh_no_surname_match", "阿明",
+         {"family": "阿明"},
+         locale="zh", classification="fix(#271)",
+         notes="no surname prefix in the vocabulary: the token stays "
+               "whole and takes the script order's first role"),
+    Case("zh_japanese_kanji_tradeoff", "高橋一郎",
+         {"family": "高", "given": "橋一郎"},
+         locale="zh", classification="fix(#271)",
+         notes="the RECORDED tradeoff, not a bug: applying the zh "
+               "pack declares the data Chinese, so Japanese kanji "
+               "names mis-split (高橋 is the real surname). This is "
+               "why Han segmentation is opt-in and why the gate "
+               "cannot guard it (DEVIATES declares all Han); "
+               "Japanese is #272's pluggable segmenter"),
 )

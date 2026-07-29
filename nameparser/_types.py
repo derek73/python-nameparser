@@ -280,6 +280,11 @@ class AmbiguityKind(StrEnum):
     #: More comma-separated segments than any recognized name shape;
     #: the parse is best-effort over the extra segments.
     COMMA_STRUCTURE = "comma-structure"
+    #: An unspaced CJK token had more than one vocabulary-supported
+    #: surname split ("夏侯惇": 夏侯 + 惇 was taken, 夏 + 侯惇 also
+    #: matched); the longest surname won, and ``detail`` names both
+    #: readings. Points at the two tokens the split produced. (#271)
+    SEGMENTATION = "segmentation"
 
 
 @dataclass(frozen=True, slots=True)
