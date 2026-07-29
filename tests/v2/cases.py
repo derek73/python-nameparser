@@ -562,4 +562,62 @@ CASES: tuple[Case, ...] = (
                "why Han segmentation is opt-in and why the gate "
                "cannot guard it (DEVIATES declares all Han); "
                "Japanese is #272's pluggable segmenter"),
+
+    # -- #272: the kana license + nakaguro (amendment 2026-07-29).
+    # Segmenter-dependent divisions cannot live here (Case has no
+    # segmenter field); they are pinned in test_locales.py's
+    # integration tests instead.
+    Case("ja_kana_spaced_family_first", "高橋 みなみ",
+         {"family": "高橋", "given": "みなみ"},
+         classification="fix(#272)",
+         notes="hiragana identifies Japanese as certainly as hangul "
+               "identifies Korean; kana-licensed names read "
+               "family-first by default"),
+    Case("ja_kanji_katakana_pieces", "山田 エミ",
+         {"family": "山田", "given": "エミ"},
+         classification="fix(#272)",
+         notes="a kanji piece + a katakana piece cannot be a foreign "
+               "transcription (those are katakana-only): native, "
+               "licensed"),
+    Case("ja_unspaced_unsegmented_default", "高橋みなみ",
+         {"family": "高橋みなみ"},
+         classification="fix(#272)",
+         notes="no segmenter by default: one token, family role via "
+               "the kana license"),
+    Case("ja_pure_katakana_positional", "マイケル ジャクソン",
+         {"given": "マイケル", "family": "ジャクソン"},
+         notes="parity row guarding the license's boundary: "
+               "pure-katakana is predominantly transcribed foreign "
+               "names in original order -- never licensed"),
+    Case("ja_nakaguro_divides_the_transcription", "マイケル・ジャクソン",
+         {"given": "マイケル", "family": "ジャクソン"},
+         classification="fix(#272)",
+         notes="the katakana middle dot is the transcription's own "
+               "part divider: it separates like whitespace, the "
+               "license declines each katakana token, and the "
+               "positional default keeps the source-language order"),
+    Case("ja_nakaguro_han_takes_the_han_order", "高橋・一郎",
+         {"family": "高橋", "given": "一郎"},
+         classification="fix(#272)",
+         notes="the dot splits; both tokens are pure Han, so the HAN "
+               "family-first entry fires -- the katakana row's sibling "
+               "through the other outcome"),
+    Case("ja_lone_hiragana_takes_family", "みなみ",
+         {"family": "みなみ"},
+         classification="fix(#272)",
+         notes="hiragana earns a script_orders entry in its own right: "
+               "a lone token takes the entry's first role"),
+    Case("ja_lone_katakana_stays_given", "マイケル",
+         {"given": "マイケル"},
+         notes="parity: katakana deliberately has no entry, so the "
+               "positional default holds -- transcribed foreign names "
+               "keep source order"),
+    Case("ja_nakaguro_inside_a_nickname",
+         "山田 太郎 (マイケル・ジャクソン)",
+         {"family": "山田", "given": "太郎",
+          "nickname": "マイケル ジャクソン"},
+         classification="fix(#272)",
+         notes="delimited content tokenizes under the same separator "
+               "rules: the dot renders back as a space in the nickname "
+               "join -- a decision, not an accident"),
 )
