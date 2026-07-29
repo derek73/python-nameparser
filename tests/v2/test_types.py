@@ -1,5 +1,5 @@
 import dataclasses
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 
 import pytest
 
@@ -97,6 +97,23 @@ def test_segmentation_rejects_mappings_and_non_iterables() -> None:
         Segmentation({2: "a", 3: "b"})  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="Segmentation.splits"):
         Segmentation(5)  # type: ignore[arg-type]
+
+
+def test_segmentation_lets_a_generator_raise_its_own_error() -> None:
+    # the non-iterable guard probes iter(), which cannot run a
+    # generator's body; wrapping the tuple() call instead would catch a
+    # TypeError raised INSIDE the user's generator and relabel it as
+    # "splits must be an iterable", pointing the reader at the wrong bug
+    def boom() -> Iterator[int]:
+        yield 1
+        raise TypeError("boom")
+
+    with pytest.raises(TypeError) as caught:
+        Segmentation(boom())  # type: ignore[arg-type]
+    # the message is the generator's own, whole -- a `match=` would
+    # pass on the relabeled text too, since the generator's repr names
+    # the function
+    assert str(caught.value) == "boom"
 
 
 def test_segmentation_is_frozen_and_hashable() -> None:

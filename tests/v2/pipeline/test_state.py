@@ -52,12 +52,15 @@ def test_stage_field_ownership() -> None:
         # a character offset that tokenize resolves to a token index
         "tokenize": {"tokens", "comma_offsets", "ambiguities"},
         "segment": {"segments", "structure", "ambiguities"},
-        # script_segment splits one unspaced CJK token in two, so it
+        # script_segment splits one unspaced CJK token into n+1 pieces
+        # (n = 1 from the vocabulary, any n from a segmenter), so it
         # rewrites tokens and shifts every later index the earlier
         # stages recorded -- the segment runs included. It is
         # deliberately absent from token_ownership below, whose
         # token-count assert is the one contract this stage is exempt
-        # from. structure it only READS (the FAMILY_COMMA opt-out).
+        # from. structure and segmenter it only READS (the
+        # FAMILY_COMMA opt-out, and the hook it consults on a
+        # vocabulary decline).
         "script_segment": {"tokens", "segments", "ambiguities"},
         # classify also emits SUFFIX_OR_NICKNAME: the delimiter escape
         # that decides it lives in extract_delimited, which has no token

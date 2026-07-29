@@ -262,12 +262,17 @@ class Segmentation:
                 "not a mapping"
             )
         try:
-            splits = tuple(self.splits)
+            iter(self.splits)
         except TypeError:
             raise TypeError(
                 f"Segmentation.splits must be an iterable of integers, "
                 f"got {self.splits!r}"
             ) from None
+        # OUTSIDE the try on purpose: iter() cannot run a generator's
+        # body, but tuple() can, and a TypeError raised in there is the
+        # caller's own bug -- relabeling it "must be an iterable" would
+        # send the reader to the wrong place entirely.
+        splits = tuple(self.splits)
         for offset in splits:
             # bool is an int subclass: True as an offset is a comparison
             # result leaking into an index slot, not a split point

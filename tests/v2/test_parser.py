@@ -629,8 +629,6 @@ def test_parser_picklability_is_conditional_on_the_segmenter() -> None:
         pickle.dumps(unpicklable)    # only pickling fails
 
 
-@pytest.mark.xfail(strict=True,
-                   reason="the stage consults the segmenter in the next commit")
 def test_segmenter_exceptions_propagate() -> None:
     # the ONE exception to parse-totality (locales spec section 4,
     # declared 2026-07-11): a user-supplied callable's own error is a
@@ -641,4 +639,27 @@ def test_segmenter_exceptions_propagate() -> None:
     p = parser_for(locales.get("zh"), base=Parser(segmenter=boom))
     with pytest.raises(RuntimeError, match="segmenter bug"):
         p.parse("阿明")   # zh pack active, 阿 unmatched by vocabulary ->
-                          # the segmenter will be consulted once Task 4 lands
+                          # the stage consults the segmenter
+
+
+def test_a_segmenter_split_reaches_the_fields() -> None:
+    # end to end: the sub-slices the stage makes are ordinary tokens
+    # from there on, so the pack's family-first order reads them like
+    # any vocabulary split, and a low-confidence answer surfaces
+    def two(text: str) -> Segmentation | None:
+        return Segmentation((1,), confidence=0.5)
+
+    p = parser_for(locales.get("zh"), base=Parser(segmenter=two))
+    n = p.parse("阿明")
+    assert (n.family, n.given) == ("阿", "明")
+    assert [a.kind for a in n.ambiguities] == [AmbiguityKind.SEGMENTATION]
+
+    # two cuts, three pieces -- and the token indices the comma
+    # structure recorded still name the right words afterwards
+    def three(text: str) -> Segmentation | None:
+        return Segmentation((1, 2))
+
+    q = parser_for(locales.get("zh"), base=Parser(segmenter=three))
+    n3 = q.parse("Dr 阿明日, Jr.")
+    assert (n3.title, n3.family, n3.given, n3.middle, n3.suffix) == (
+        "Dr", "阿", "明", "日", "Jr.")

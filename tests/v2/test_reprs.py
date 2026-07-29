@@ -8,7 +8,9 @@ from nameparser._lexicon import Lexicon
 from nameparser._locale import Locale
 from nameparser._parser import Parser
 from nameparser._policy import FAMILY_FIRST, PatronymicRule, Policy, PolicyPatch
-from nameparser._types import Ambiguity, AmbiguityKind, ParsedName, Role, Span, Token
+from nameparser._types import (
+    Ambiguity, AmbiguityKind, ParsedName, Role, Segmentation, Span, Token,
+)
 
 
 def _decline(text: str, blob: str = "") -> None:
@@ -116,6 +118,13 @@ def test_parser_repr_names_the_segmenter_without_its_contents() -> None:
                                                       blob="x" * 500)))
     assert "segmenter=partial" in partial
     assert "xxx" not in partial and len(partial) < len(plain) + 20
+
+    class Div:      # a callable INSTANCE: no __qualname__, so the type
+        def __call__(self, text: str) -> Segmentation | None:
+            return None
+
+    instance = repr(Parser(segmenter=Div()))
+    assert "segmenter=Div" in instance and "0x" not in instance
 
 
 def test_policy_patch_repr_survives_unvalidated_name_order() -> None:

@@ -1,29 +1,44 @@
-"""Stage: script_segment (#271).
+"""Stage: script_segment (#271, #272).
 
-Consumes: tokens, segments, structure.
+Consumes: tokens, segments, structure, segmenter.
 Produces: tokens (the first activated-script token of the name
-segment split in two), segments (index runs remapped past the
-insertion), ambiguities (indices likewise remapped, plus a
-SEGMENTATION report when more than one split was
-vocabulary-supported).
-Reads: Policy.segment_scripts, Lexicon.surnames.
+segment split into n+1 sub-slices), segments (index runs remapped past
+the insertions), ambiguities (indices likewise remapped, plus a
+SEGMENTATION report when more than one split was vocabulary-supported,
+or when a segmenter's answer scored under the confidence floor).
+Reads: Policy.segment_scripts, Lexicon.surnames, ParseState.segmenter.
 
 Unspaced CJK names give tokenize no separator to find, so this stage
 inserts the missing token boundary by vocabulary: the first token
-written wholly in an activated script is matched longest-first against
+written in an activated script is matched longest-first against
 Lexicon.surnames, and a hit splits it in two. Compound-before-single
 ("夏侯惇" is 夏侯 + 惇, though 夏 is itself a surname) falls out of
-longest-first. The split makes two sub-slices of the one token,
-rewriting nothing -- spans still index the original exactly, so the
-anti-#100 invariant holds by construction.
+longest-first. The split makes sub-slices of the one token, rewriting
+nothing -- spans still index the original exactly, so the anti-#100
+invariant holds by construction.
+
+Where the VOCABULARY declines -- no prefix matched -- an optional
+Parser(segmenter=...) gets the token (#272 amendment 2026-07-29).
+Vocabulary first, segmenter on decline, so parser_for(ZH, JA,
+segmenter=...) composes: a listed surname is a dictionary certainty
+and wins, and the segmenter takes what is left. Its Segmentation may
+cut anywhere and any number of times, which is why the split path
+below is written for n cuts and the vocabulary hit is simply its
+one-cut case. A segmenter's own exceptions PROPAGATE -- the single
+declared exception to parse totality (locales spec section 4): a
+user-supplied callable's error is a user-code error, not a content
+error.
 
 Placed AFTER segment, on the comma doctrine that script-conditional
 behavior is ignored where a comma already decides the family (the
 rule script_orders follows): under FAMILY_COMMA the pre-comma text IS
 the family by declaration, and splitting it would invent a boundary
 the writer explicitly did not draw -- "남궁민수, 지훈" must render
-family "남궁민수", not "남궁 민수". The post-comma side is given-name
-text, no surname site either, so that structure opts out whole.
+family "남궁민수", not "남궁 민수". That doctrine is about the input's
+structure, not the split's source, so it covers the segmenter
+identically: the opt-out runs before either is consulted. The
+post-comma side is given-name text, no surname site either, so that
+structure opts out whole.
 NO_COMMA and SUFFIX_COMMA still split, within segments[0] (the name
 part) only. Running after segment costs the index remaps below;
 running BEFORE it would have made the comma structure itself depend
@@ -39,6 +54,11 @@ unambiguously Korean, and its surname set is closed and
 default-shipped), while HAN is opt-in via locales.ZH -- a Chinese
 surname list corrupts Japanese names ("高橋一郎" must not split as
 高 + 橋一郎), which is #272's pluggable segmenter, not this table's.
+The gate resolves each token through effective_script, the same
+function order resolution uses, so kana-licensed composites (高橋みなみ
+-> HIRAGANA) gate in under the JA pack's HIRAGANA entry while
+pure-katakana tokens (-> KATAKANA, in no activation set by design --
+they are predominantly transcribed foreign names) never do.
 Only the FIRST activated-script token is considered, match or no
 match: family-first traditions put the surname at the front of the
 name, and a match deeper in the token stream would be a given name or
@@ -50,23 +70,84 @@ import dataclasses
 import functools
 
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, Structure,
+    ParseState, PendingAmbiguity, Structure, WorkToken,
 )
-from nameparser._pipeline._vocab import single_script
-from nameparser._types import AmbiguityKind, Span
+from nameparser._pipeline._vocab import effective_script
+from nameparser._types import AmbiguityKind, Segmentation, Span
+
+#: Segmenter answers scoring below this attach a SEGMENTATION report
+#: (amendment 2026-07-29 section 3). Placeholder pending the Task-5
+#: measurement against namedivider's real score distribution -- revisit
+#: there, not here. Not configurable in 2.x (YAGNI).
+_SEGMENTER_CONFIDENCE_FLOOR = 0.9
 
 
-def _remap(run: tuple[int, ...], split_at: int) -> tuple[int, ...]:
-    """One segment run after token `split_at` split in two: the second
-    half joins the run immediately after it, and every later index
-    shifts."""
+def _remap(run: tuple[int, ...], split_at: int,
+           added: int) -> tuple[int, ...]:
+    """One segment run after token `split_at` split into `added` + 1
+    pieces: the extra pieces join the run immediately after it, and
+    every later index shifts by as many."""
     out: list[int] = []
     for j in run:
         if j == split_at:
-            out.extend((split_at, split_at + 1))
+            out.extend(range(split_at, split_at + added + 1))
         else:
-            out.append(j + 1 if j > split_at else j)
+            out.append(j + added if j > split_at else j)
     return tuple(out)
+
+
+def _pieces(text: str, splits: tuple[int, ...]) -> tuple[str, ...]:
+    """`text` cut at every offset in `splits`: n offsets, n+1 pieces.
+    One idiom for both callers -- the split itself and the report that
+    describes it must never disagree about what the cuts produce."""
+    cuts = (0, *splits, len(text))
+    return tuple(text[a:b] for a, b in zip(cuts, cuts[1:]))
+
+
+def _split(state: ParseState, i: int, splits: tuple[int, ...],
+           detail: str | None) -> ParseState:
+    """Cut token `i` at every offset in `splits`, recording `detail` as
+    a SEGMENTATION report when there is one.
+
+    The offsets arrive non-empty, ascending and interior whatever chose
+    them. From a segmenter: non-empty is the caller's own check, and
+    strictly ascending with each >= 1 is Segmentation.__post_init__'s,
+    while the last offset being < len(text) is the caller's bounds
+    check -- that half cannot live in Segmentation, which never sees
+    the text. From the vocabulary: the single offset is >= 1 and
+    < len(text) by the range(cap, 0, -1) construction and its len-1
+    cap.
+
+    The ONE split path: the vocabulary hit is the single-offset case
+    and the segmenter's answer the general one, so neither can drift
+    from the other's index arithmetic."""
+    token = state.tokens[i]
+    base = token.span.start
+    parts: list[WorkToken] = []
+    start = 0
+    for piece in _pieces(token.text, splits):
+        end = start + len(piece)
+        parts.append(dataclasses.replace(
+            token, text=piece, span=Span(base + start, base + end)))
+        start = end
+    added = len(splits)
+    tokens = state.tokens[:i] + tuple(parts) + state.tokens[i + 1:]
+    # Every index the earlier stages recorded is now stale past the
+    # split point: the segment runs group's own iteration rests on, and
+    # the ambiguities from extract_delimited (resolved to indices by
+    # tokenize) and segment. An ambiguity ON the split token keeps
+    # pointing at the head.
+    segments = tuple(_remap(run, i, added) for run in state.segments)
+    ambiguities = tuple(
+        dataclasses.replace(a, indices=tuple(
+            j + added if j > i else j for j in a.indices))
+        for a in state.ambiguities)
+    if detail is not None:
+        ambiguities += (PendingAmbiguity(
+            AmbiguityKind.SEGMENTATION, detail,
+            tuple(range(i, i + added + 1))),)
+    return dataclasses.replace(state, tokens=tokens, segments=segments,
+                               ambiguities=ambiguities)
 
 
 @functools.lru_cache(maxsize=8)
@@ -80,8 +161,8 @@ def _longest_entry(surnames: frozenset[str]) -> int:
     without ever evicting in normal use.
 
     Callers must pass a NON-EMPTY vocabulary: max() of an empty set
-    raises, and the stage's own emptiness guard (`not surnames`) runs
-    first, so the only call site cannot reach it."""
+    raises, and the only call site sits under the stage's `if surnames`
+    match guard, so it cannot reach that."""
     return max(map(len, surnames))
 
 
@@ -92,8 +173,8 @@ def script_segment(state: ParseState) -> ParseState:
         # in any script's ranges
         return state
     scripts = state.policy.segment_scripts
-    surnames = state.lexicon.surnames
-    if not scripts or not surnames or not state.segments:
+    # an empty VOCABULARY deliberately does not bail here -- see below
+    if not scripts or not state.segments:
         return state
     if state.structure is Structure.FAMILY_COMMA:
         return state            # the comma already drew the boundary
@@ -103,11 +184,12 @@ def script_segment(state: ParseState) -> ParseState:
     # extracted nickname/maiden content is unreachable from here --
     # no input can produce it, so no test pins it.
     i = next((i for i in state.segments[0]
-              if single_script(state.tokens[i].text) in scripts), None)
+              if effective_script(state.tokens[i].text) in scripts), None)
     if i is None:
         return state
     token = state.tokens[i]
     text = token.text
+    surnames = state.lexicon.surnames
     # A token that IS a surname never splits: a bare "남궁" must not
     # become 남 + 궁 just because the single-syllable surname also
     # matches -- there is nothing to split off, and a lone token's
@@ -117,39 +199,59 @@ def script_segment(state: ParseState) -> ParseState:
     # Longest-first (compound-before-single falls out of it), capped
     # so the remainder is never empty. Direct membership, no
     # _normalize: the script gate admits only CJK text, which the
-    # storage fold stores unchanged.
-    cap = min(_longest_entry(surnames), len(text) - 1)
-    matches = [length for length in range(cap, 0, -1)
-               if text[:length] in surnames]
-    if not matches:
+    # storage fold stores unchanged. An empty vocabulary skips the
+    # match rather than bailing the stage (_longest_entry's max() has
+    # nothing to take): a surname-less lexicon declines every token,
+    # which is exactly the condition the segmenter is consulted on, so
+    # an early bail would make a configured segmenter silently inert
+    # under Lexicon.empty() -- the JA pack's own shape.
+    matches: list[int] = []
+    if surnames:
+        cap = min(_longest_entry(surnames), len(text) - 1)
+        matches = [length for length in range(cap, 0, -1)
+                   if text[:length] in surnames]
+    if matches:
+        take = matches[0]
+        detail = None
+        if len(matches) > 1:
+            # more than one vocabulary-supported split: longest-first
+            # DECIDED a fork, and the deciding stage records it. A
+            # single-match split chose nothing, so it stays silent --
+            # a dictionary certainty and the statistical guess below
+            # are different epistemic states, and these two emission
+            # rules say so.
+            chosen = " + ".join(map(repr, _pieces(text, (take,))))
+            other = " + ".join(map(repr, _pieces(text, (matches[1],))))
+            detail = (f"{text!r} splits as {chosen} on the longest "
+                      f"surname; {other} also reads")
+        return _split(state, i, (take,), detail)
+    if state.segmenter is None:
         return state    # the first activated-script token decides
-    take = matches[0]
-    cut = token.span.start + take
-    head = dataclasses.replace(token, text=text[:take],
-                               span=Span(token.span.start, cut))
-    tail = dataclasses.replace(token, text=text[take:],
-                               span=Span(cut, token.span.end))
-    tokens = state.tokens[:i] + (head, tail) + state.tokens[i + 1:]
-    # Every index the earlier stages recorded is now stale past the
-    # split point: the segment runs group's own iteration rests on,
-    # and the ambiguities from extract_delimited (resolved to indices
-    # by tokenize) and segment. An ambiguity ON the split token keeps
-    # pointing at the head.
-    segments = tuple(_remap(run, i) for run in state.segments)
-    ambiguities = tuple(
-        dataclasses.replace(a, indices=tuple(
-            j + 1 if j > i else j for j in a.indices))
-        for a in state.ambiguities)
-    if len(matches) > 1:
-        # more than one vocabulary-supported split: longest-first
-        # DECIDED a fork, and the deciding stage records it. A
-        # single-match split chose nothing, so it stays silent.
-        alt = matches[1]
-        ambiguities += (PendingAmbiguity(
-            AmbiguityKind.SEGMENTATION,
-            f"{text!r} splits as {text[:take]!r} + {text[take:]!r} "
-            f"on the longest surname; {text[:alt]!r} + "
-            f"{text[alt:]!r} also reads",
-            (i, i + 1)),)
-    return dataclasses.replace(state, tokens=tokens, segments=segments,
-                               ambiguities=ambiguities)
+    # No try/except around the call: the module docstring's totality
+    # exception. The check below is that same doctrine, curated -- a
+    # duck-typed answer carrying a .splits of its own would otherwise
+    # wander into the split path and surface as a ValueError naming
+    # Token, pointing the reader at nameparser's insides instead of at
+    # their segmenter. Bounded like every message here: the type's
+    # NAME, never its contents.
+    answer = state.segmenter(text)
+    if answer is not None and not isinstance(answer, Segmentation):
+        raise TypeError(
+            f"segmenter must return Segmentation or None, got "
+            f"{type(answer).__name__}")
+    if answer is None or not answer.splits:
+        return state            # declined, or confidently one token
+    # splits[-1] is the max -- Segmentation enforced ascending
+    if answer.splits[-1] >= len(text):
+        # the upper bound is ours to check (Segmentation never sees the
+        # text, so it cannot); a violating answer is a buggy segmenter,
+        # treated as a decline -- never a crash
+        return state
+    conf = answer.confidence
+    detail = None
+    if conf is not None and conf < _SEGMENTER_CONFIDENCE_FLOOR:
+        reading = " + ".join(map(repr, _pieces(text, answer.splits)))
+        detail = (f"{text!r} splits as {reading} on a segmenter answer "
+                  f"scoring {conf:.2f}, under the "
+                  f"{_SEGMENTER_CONFIDENCE_FLOOR} confidence floor")
+    return _split(state, i, answer.splits, detail)

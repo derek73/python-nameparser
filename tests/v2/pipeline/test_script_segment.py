@@ -1,5 +1,8 @@
-"""Stage: script_segment (#271) -- unspaced CJK surname splitting."""
+"""Stage: script_segment (#271, #272) -- unspaced CJK splitting, by
+vocabulary and by the pluggable segmenter behind it."""
 import dataclasses
+
+import pytest
 
 from nameparser import Parser
 from nameparser._lexicon import Lexicon
@@ -10,10 +13,14 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._tokenize import tokenize
 from nameparser._policy import Policy, Script
-from nameparser._types import AmbiguityKind
+from nameparser._types import AmbiguityKind, Segmentation, Segmenter
 
 _HAN = Policy(segment_scripts=frozenset({Script.HAN}))
 _HANGUL = Policy()      # HANGUL is the default activation
+# the JA pack's own activation (amendment 2026-07-29): HIRAGANA is the
+# kana license's carrier key, so a kanji+kana composite gates in
+# through it; KATAKANA is deliberately absent from every set.
+_JA = Policy(segment_scripts=frozenset({Script.HAN, Script.HIRAGANA}))
 # 欧 AND 欧阳 both present on purpose: compound-before-single must
 # pick 欧阳 (the issue's own acceptance example); same for 남/남궁.
 # "jr" so the comma cases can reach SUFFIX_COMMA.
@@ -21,14 +28,29 @@ _LEX = Lexicon(surnames=frozenset({"毛", "欧", "欧阳", "김", "남", "남궁
                suffix_words=frozenset({"jr"}))
 
 
-def _run(text: str, policy: Policy = _HAN,
-         lexicon: Lexicon = _LEX) -> ParseState:
-    state = ParseState(original=text, lexicon=lexicon, policy=policy)
+def _run(text: str, policy: Policy = _HAN, lexicon: Lexicon = _LEX,
+         segmenter: Segmenter | None = None) -> ParseState:
+    state = ParseState(original=text, lexicon=lexicon, policy=policy,
+                       segmenter=segmenter)
     return script_segment(segment(tokenize(state)))
 
 
 def _texts(state: ParseState) -> list[str]:
     return [t.text for t in state.tokens]
+
+
+def _fake(splits: tuple[int, ...],
+          confidence: float | None = None) -> Segmenter:
+    """A segmenter that gives the same answer whatever it is handed:
+    every case below pins what the STAGE does with an answer, not how a
+    real segmenter arrives at one (no external dependency here)."""
+    def segmenter(text: str) -> Segmentation | None:
+        return Segmentation(splits, confidence=confidence)
+    return segmenter
+
+
+def _declines(text: str) -> Segmentation | None:
+    return None
 
 
 def test_splits_leading_surname_and_spans_index_the_original() -> None:
@@ -187,3 +209,161 @@ def test_delimited_only_input_reaches_the_empty_segments_guard() -> None:
     # at all -- the guard the stage-level helper above cannot reach
     nick = Parser(lexicon=_LEX, policy=_HANGUL).parse("(민준)")
     assert nick.nickname == "민준"
+
+
+# -- the pluggable segmenter, consulted on decline (#272) ---------------
+
+
+def test_segmenter_splits_on_vocabulary_decline() -> None:
+    # the baseline: with no segmenter configured a declined token is
+    # simply left whole, so every split below is the hook's doing
+    assert _texts(_run("山田太郎", policy=_JA)) == ["山田太郎"]
+    # 山田太郎 has no vocabulary surname prefix at all, so the
+    # vocabulary declines and the token reaches the segmenter
+    state = _run("山田太郎", policy=_JA, segmenter=_fake((2,)))
+    assert _texts(state) == ["山田", "太郎"]
+    assert [(t.span.start, t.span.end) for t in state.tokens] == [
+        (0, 2), (2, 4)]
+    assert all(state.original[t.span.start:t.span.end] == t.text
+               for t in state.tokens)
+
+
+def test_vocabulary_wins_over_the_segmenter() -> None:
+    # precedence, and the reason parser_for(ZH, JA, segmenter=...)
+    # composes: a matched surname is a dictionary certainty, so the
+    # segmenter is not even asked
+    asked: list[str] = []
+
+    def seg(text: str) -> Segmentation | None:
+        asked.append(text)
+        return Segmentation((2,))
+
+    state = _run("毛泽东", policy=_JA, segmenter=seg)
+    assert _texts(state) == ["毛", "泽东"]
+    assert asked == []
+
+
+def test_segmenter_decline_and_confident_whole_are_distinct() -> None:
+    # two different ANSWERS -- None is "I don't know", () is
+    # "confidently one token" -- with the same effect on the tokens:
+    # the difference is the protocol's to carry, not this stage's
+    for seg in (_declines, _fake(())):
+        assert _texts(_run("山田太郎", policy=_JA, segmenter=seg)) == \
+            ["山田太郎"]
+
+
+def test_kana_licensed_token_gates_in_for_the_segmenter() -> None:
+    # the gate reads effective_script, not single_script: 高橋みなみ is
+    # mixed Han+hiragana, which the kana license resolves to the
+    # HIRAGANA carrier entry -- and HIRAGANA is in the JA activation
+    state = _run("高橋みなみ", policy=_JA, segmenter=_fake((2,)))
+    assert _texts(state) == ["高橋", "みなみ"]
+
+
+def test_pure_katakana_never_gates_in() -> None:
+    # the license's other half: a lone katakana token is predominantly
+    # a transcribed foreign name, so KATAKANA sits in no activation set
+    # and no segmenter is consulted for one
+    assert _texts(_run("マイケル", policy=_JA, segmenter=_fake((2,)))) \
+        == ["マイケル"]
+
+
+def test_kana_licensed_token_stays_whole_under_default_policy() -> None:
+    # the pack IS the language declaration: without it the default
+    # activation is HANGUL alone, so nothing gates in and the
+    # configured segmenter is inert
+    assert _texts(_run("高橋みなみ", segmenter=_fake((2,)))) == \
+        ["高橋みなみ"]
+
+
+def test_segmenter_multi_split_produces_n_plus_one_tokens() -> None:
+    # n cuts make n+1 sub-slices, and every index the earlier stages
+    # recorded shifts by n rather than by one
+    state = segment(tokenize(ParseState(
+        original="山田太 X", lexicon=_LEX, policy=_JA,
+        segmenter=_fake((1, 2)))))
+    state = dataclasses.replace(state, ambiguities=(
+        PendingAmbiguity(AmbiguityKind.UNBALANCED_DELIMITER,
+                         "synthetic", indices=(1,)),))
+    out = script_segment(state)
+    assert _texts(out) == ["山", "田", "太", "X"]
+    assert [(t.span.start, t.span.end) for t in out.tokens] == [
+        (0, 1), (1, 2), (2, 3), (4, 5)]
+    assert all(out.original[t.span.start:t.span.end] == t.text
+               for t in out.tokens)
+    assert out.segments == ((0, 1, 2, 3),)
+    assert out.ambiguities[0].indices == (3,)
+
+
+def test_low_confidence_emits_segmentation_ambiguity() -> None:
+    # a statistical guess is a fork the stage decided, so a score under
+    # _SEGMENTER_CONFIDENCE_FLOOR is reported -- unlike a vocabulary
+    # split, which reports only when a SECOND surname also matched
+    state = _run("山田太郎", policy=_JA,
+                 segmenter=_fake((2,), confidence=0.42))
+    assert [a.kind for a in state.ambiguities] == [
+        AmbiguityKind.SEGMENTATION]
+    assert "0.42" in state.ambiguities[0].detail
+    assert state.ambiguities[0].indices == (0, 1)
+
+
+def test_high_confidence_and_no_confidence_emit_nothing() -> None:
+    # a confident answer is not a fork, and an opinionless one gives
+    # the stage nothing to judge -- neither is worth a report
+    # 0.9 is the floor itself: the comparison is strict, so an answer
+    # AT the floor is not under it
+    for conf in (0.99, 0.9, None):
+        state = _run("山田太郎", policy=_JA,
+                     segmenter=_fake((2,), confidence=conf))
+        assert _texts(state) == ["山田", "太郎"]
+        assert state.ambiguities == ()
+
+
+def test_out_of_bounds_split_is_a_decline() -> None:
+    # Segmentation cannot check the upper bound (it never sees the
+    # text), so the stage does -- a violating answer is a buggy
+    # segmenter, and a buggy segmenter must not crash a parse
+    assert _texts(_run("山田", policy=_JA, segmenter=_fake((5,)))) == \
+        ["山田"]
+    # 2 on a two-character token is the boundary itself: the check is
+    # >=, not >, since a cut at len(text) would leave an empty piece
+    assert _texts(_run("山田", policy=_JA, segmenter=_fake((2,)))) == \
+        ["山田"]
+
+
+def test_family_comma_gates_the_segmenter_too() -> None:
+    # the comma doctrine is about the input's structure, not the
+    # split's source: the structural opt-out runs before any consult
+    out = _run("山田太郎, 花子", policy=_JA, segmenter=_fake((2,)))
+    assert out.structure is Structure.FAMILY_COMMA
+    assert _texts(out) == ["山田太郎", "花子"]
+    assert out.ambiguities == ()
+
+
+def test_empty_vocabulary_still_consults_the_segmenter() -> None:
+    # "consult on vocabulary decline" has no unstated exception for a
+    # lexicon that declines EVERYTHING: a surname-less vocabulary is
+    # the JA pack's own shape (the segmenter is its whole mechanism),
+    # so an emptiness bail here would make it silently inert
+    state = _run("山田太郎", policy=_JA, lexicon=Lexicon.empty(),
+                 segmenter=_fake((2,)))
+    assert _texts(state) == ["山田", "太郎"]
+
+
+def test_a_wrong_answer_type_raises_a_curated_error() -> None:
+    # a duck-typed lookalike would otherwise wander into the split
+    # path and surface as a ValueError naming Token -- the reader's
+    # bug is in their segmenter, and the message must say so
+    class NotASegmentation:
+        splits = (2,)
+        confidence = None
+
+    def seg(text: str) -> Segmentation | None:
+        return NotASegmentation()   # type: ignore[return-value]
+
+    with pytest.raises(TypeError,
+                       match="segmenter must return Segmentation or None, "
+                             "got NotASegmentation"):
+        _run("山田太郎", policy=_JA, segmenter=seg)
+
+
