@@ -340,10 +340,11 @@ custom suffix delimiter configured, a no-space delimiter group renders
 whole (``"RN/CRNA"``) where 1.x split it (``"RN, CRNA"``) — the role
 assignment is identical, only the rendered string differs.
 
-2.1 adds two more, and unlike most of the 2.0 API these do reach
-``HumanName``: a name written wholly in Han or Hangul is read
-family-first, and an unspaced Korean name is split into surname and
-given name.
+2.1 adds three more, and unlike most of the 2.0 API these do reach
+``HumanName``: a name written in East Asian script is read
+family-first, an unspaced Korean name is split into surname and given
+name, and the katakana middle dot separates tokens the way a space
+does.
 
 .. doctest::
 
@@ -377,7 +378,58 @@ Both were ``first`` under 1.4. If you feed unspaced CJK through
 reach you, and it is silent — the string is intact, just in the other
 field.
 
+Japanese kana carries the same order rule, which widens both shapes
+past the wholly-Han text described above. A name that mixes kanji with
+hiragana or katakana is read family-first, and a lone kana-bearing
+token moves from ``first`` to ``last`` exactly as ``毛泽东`` does:
+
+.. doctest::
+
+    >>> HumanName("高橋 みなみ").last, HumanName("高橋 みなみ").first
+    ('高橋', 'みなみ')
+    >>> HumanName("山田 エミ").last
+    '山田'
+    >>> HumanName("高橋みなみ").last, HumanName("高橋みなみ").first
+    ('高橋みなみ', '')
+
+1.4 read the spaced ones as ``first="高橋"``/``last="みなみ"`` and
+``first="山田"``/``last="エミ"``, and put the unspaced one whole in
+``first``. The spaced shapes change what the name renders as too:
+``str(HumanName("高橋 みなみ"))`` was ``"高橋 みなみ"`` and is now
+``"みなみ 高橋"``. A name written *wholly* in katakana is deliberately
+left alone — it is usually a transcribed foreign name already in
+given-first order — so ``HumanName("マイケル ジャクソン")`` reads
+``first="マイケル"``/``last="ジャクソン"`` on both versions.
+
+One more shape changes for a different reason: the katakana middle dot
+``・``, which divides the parts of such a transcription, is now a token
+separator rather than an ordinary character. 1.4 saw one token and put
+it in ``first``; 2.1 sees two:
+
+.. doctest::
+
+    >>> HumanName("マイケル・ジャクソン").first
+    'マイケル'
+    >>> HumanName("マイケル・ジャクソン").last
+    'ジャクソン'
+    >>> HumanName("高橋・一郎").last, HumanName("高橋・一郎").first
+    ('高橋', '一郎')
+
+The two divide the same way and land in opposite fields, because the
+katakana pair keeps its source order while the kanji pair takes the
+family-first rule. Separating also changes the rendered string, the
+same way the Korean split does: the dot comes back as a space, so
+``str(HumanName("マイケル・ジャクソン"))`` was ``"マイケル・ジャクソン"``
+and is now ``"マイケル ジャクソン"``. That reaches delimited content
+too — the nickname in ``"山田 太郎 (マイケル・ジャクソン)"`` was
+``"マイケル・ジャクソン"`` under 1.4 and is ``"マイケル ジャクソン"``
+now.
+
 ``Constants`` has no switch for any of this — the v1 configuration
 surface is frozen for 2.x — so the way out is the 2.0 API:
 ``Parser(policy=Policy(script_orders={}, segment_scripts=()))``
-restores 1.4's reading of all three shapes.
+restores 1.4's reading of every shape above that turns on order or
+splitting. The middle dot is the one exception: it is decided in
+tokenization rather than by policy, so a name written with one still
+divides at the dot, and still renders with a space, whatever those two
+fields are set to.

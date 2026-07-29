@@ -61,17 +61,18 @@ background (covered fully under :ref:`east-asian-names` in
 :doc:`usage`): Chinese, Japanese, and Korean names put the family name
 first in native script and are usually written with no space between
 the parts. Both defaults follow from facts the script alone
-establishes. A name written wholly in Han or Hangul is assigned
+establishes. A name written wholly in Han or Hangul — or one mixing
+kanji with kana, a combination only Japanese produces — is assigned
 family-first, because every language written in those scripts orders
-names that way — no language guess is involved. An unspaced hangul
+names that way; no language guess is involved. An unspaced hangul
 name is additionally split into surname and given name, because hangul
 is written by nothing but Korean and Korean surnames are a closed
 census set that ships as default vocabulary. Splitting an unspaced
 *Han* name is the one behavior the script cannot license — the same
 characters could be a Chinese or a Japanese name, and a Chinese
 surname list splits Japanese names in the wrong place — so it is not a
-default: the ``zh`` pack below turns it on when you can declare the
-data Chinese.
+default: the ``zh`` and ``ja`` packs below turn it on for data whose
+language you can declare.
 
 A pack is for something different: a *structural* rule, like reordering
 a patronymic, that vocabulary alone can't express.
@@ -175,6 +176,47 @@ new naming rule belongs in.
    mixes traditions, parse the subsets separately with different
    parsers rather than enabling a pack over all of it.
 
+.. _segmenter-contract:
+
+Segmenters
+-----------
+
+``ja`` is policy-only in a second sense: it turns division on for
+Japanese text without supplying anything to divide with. That job goes
+to a **segmenter**, which is passed to
+:func:`~nameparser.parser_for` rather than carried by the pack — a
+:class:`~nameparser.Locale` is pure data, and a third-party callable is
+neither pure nor data. :func:`~nameparser.locales.ja_segmenter` is the
+shipped one; writing your own is worth it for any script whose
+divisions you know better than a surname list does.
+
+A :data:`~nameparser.Segmenter` is any callable taking a token's text
+and returning a :class:`~nameparser.Segmentation` — the interior
+offsets to cut at, plus how confident you are — or ``None`` to decline,
+leaving the token whole. Declining is the load-bearing half of the
+contract, because ``segment_scripts`` unions across packs: your
+segmenter is offered every token of every activated script, not only
+the ones its own pack turned on. Recognize the text you can actually
+read and return ``None`` for the rest, rather than answering for a
+script you never meant to handle. Exceptions are the one thing that
+does not stay inside the parse — a segmenter is your code, so its
+errors propagate out of ``parse()`` instead of being absorbed as
+content errors.
+
+The pack half of that arrangement carries no words at all, which makes
+it the shortest kind of pack there is:
+
+.. doctest::
+
+    >>> from nameparser import Lexicon, Locale, PolicyPatch, Script
+    >>> mine = Locale(code="myscript", lexicon=Lexicon.empty(),
+    ...               policy=PolicyPatch(
+    ...                   segment_scripts=frozenset({Script.HAN})))
+
+``nameparser/locales/ja.py`` is the shipped example of exactly that
+shape: activation is the pack's entire contribution, and a pack
+applied without a segmenter simply divides nothing.
+
 Creating your own Locale
 -------------------------
 
@@ -245,11 +287,14 @@ by ``tests/v2/test_locales.py``:
    needs at least one name exercising every alternation branch of every
    regex it defines — ``test_rotators_cover_every_marker_branch`` fails
    until each branch is hit. A pack declaring by *codepoint range*
-   (``zh``) has no branches to sweep and drops out of that test, so its
-   rotators have to carry the same weight by hand: the unspaced names
-   the pack must split, one per shape of the vocabulary it ships —
-   single surname, compound surname, and any spelling variant it means
-   to cover.
+   (``zh``, ``ja``) has no branches to sweep and drops out of that
+   test, so its rotators have to carry the same weight by hand: the
+   unspaced names the pack must split, one per shape of the vocabulary
+   it ships — single surname, compound surname, and any spelling
+   variant it means to cover. A pack that ships no vocabulary lists
+   the shapes its *segmenter* must divide instead, and marks the
+   rotator tests to skip when the optional dependency is absent, so
+   the contract tests still run everywhere.
 #. Keep the non-interference gate green over the shared corpus plus
    your rotators: every name the packed parser parses differently from
    the default must be one your ``DEVIATES`` predicate flags — no
@@ -264,16 +309,17 @@ by ``tests/v2/test_locales.py``:
    language its script does not* — a Chinese surname list, which
    silently mangles the Japanese names written in the same characters
    — belongs in the pack, where asking for it is the declaration.
-   ``ru`` and ``tr_az`` need no vocabulary at all and ship an empty
-   :class:`~nameparser.Lexicon`; ``nameparser/locales/zh.py`` is the
-   template for one that does.
+   ``ja``, ``ru`` and ``tr_az`` need no vocabulary at all and ship an
+   empty :class:`~nameparser.Lexicon`; ``nameparser/locales/zh.py`` is
+   the template for one that does.
 #. Curate vocabulary conservatively, the same rule as
    :doc:`customize`: when you're unsure whether a word or a marker
    belongs, leave it out.
 
 ``nameparser/locales/ru.py`` is the reference implementation for a
 policy-only pack, ``nameparser/locales/zh.py`` for one that carries
-vocabulary. Packs still in progress are tracked in issues `#272
-<https://github.com/derek73/python-nameparser/issues/272>`_ (Japanese)
-and `#146 <https://github.com/derek73/python-nameparser/issues/146>`_
+vocabulary, and ``nameparser/locales/ja.py`` for one whose whole
+contribution is turning a stage on. Packs still in progress are
+tracked in issue `#146
+<https://github.com/derek73/python-nameparser/issues/146>`_
 (Vietnamese).

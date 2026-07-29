@@ -180,11 +180,7 @@ does not identify the language: 高橋一郎 is a Japanese name whose
 family name is 高橋, but 高 alone is a common Chinese surname, so a
 Chinese surname list would split it in the wrong place. Declaring the
 language is up to you. When you know the data is Chinese, apply the
-``zh`` locale pack; Japanese needs a dictionary-backed segmenter and
-is tracked as `#272
-<https://github.com/derek73/python-nameparser/issues/272>`_ — until
-then an unspaced Japanese name stays whole, in the family field per
-the assignment rule above:
+``zh`` locale pack, which carries the surname list the split needs:
 
 .. doctest::
 
@@ -192,18 +188,124 @@ the assignment rule above:
     >>> parser_for(locales.ZH).parse("毛泽东").family
     '毛'
 
-Three boundaries on all of the above. Romanized names ("Kim Min-jun")
-are Latin script and follow the ordinary positional rules — order
-genuinely varies in romanized data, so nothing script-based applies.
-A comma disables both behaviors, on the reasoning ``name_order``
-already follows: whoever wrote the comma has already said where the
-family name ends. And when an unspaced name has more than one
-vocabulary-supported split — ``남궁민수`` is 남궁 + 민수 by the
-two-syllable surname but 남 + 궁민수 by the single-syllable one — the
-longest surname wins and the parse records the decision as an
-``AmbiguityKind.SEGMENTATION``, described under `When the parser had
-to guess`_; a name with only one possible split reports nothing.
-:doc:`customize` covers turning either behavior off.
+Japanese
+~~~~~~~~~
+
+Japanese writes a name in three scripts at once. Family names and most
+given names are kanji — the same characters Chinese uses — but a given
+name is often written in one of the two kana syllabaries instead:
+hiragana (高橋みなみ) or katakana (山田エミ). The two syllabaries carry
+different information about whose name it is. Hiragana never
+transcribes a foreign name, so a name that mixes kanji and kana is a
+Japanese person's name, written in Japanese order. Katakana is
+ambiguous: native given names use it, but katakana is also how
+Japanese text writes a *foreign* name — マイケル・ジャクソン is Michael
+Jackson — and a transcription keeps the source language's order, given
+name first, its parts divided by the middle dot ・ (the nakaguro,
+U+30FB) rather than by a space.
+
+Two behaviors follow from that without any configuration. A name whose
+characters stay within kanji and kana and carry at least one kana is
+assigned family-first, like any other native-script East Asian name: it
+cannot be Chinese, and it is not a transcription, because a
+transcription would have been kana alone.
+
+.. doctest::
+
+    >>> minami = parse("高橋 みなみ")
+    >>> minami.family, minami.given
+    ('高橋', 'みなみ')
+    >>> parse("山田 エミ").family
+    '山田'
+
+And the middle dot separates tokens the way a space does, so a
+transcribed foreign name divides into its parts — which, being wholly
+katakana, keep the order they were written in:
+
+.. doctest::
+
+    >>> michael = parse("マイケル・ジャクソン")
+    >>> michael.given, michael.family
+    ('マイケル', 'ジャクソン')
+
+Dividing an *unspaced* Japanese name is a separate matter, and one no
+surname list can settle: family and given names draw on the same
+kanji, both sides run one to four characters, and the reading rather
+than the spelling decides most divisions. nameparser therefore takes a
+**segmenter** — a callable from token text to a division — and ships a
+factory wrapping `namedivider-python
+<https://pypi.org/project/namedivider-python/>`_, an optional
+dependency installed with the ``ja`` extra:
+
+.. code-block:: console
+
+    $ pip install "nameparser[ja]"
+
+.. code-block:: python
+
+    from nameparser import locales, parser_for
+
+    parser = parser_for(locales.JA, segmenter=locales.ja_segmenter())
+    parser.parse("山田太郎").family        # '山田'
+
+Both halves are required, and they do different jobs: the ``ja`` pack
+activates division for Japanese text, and the segmenter performs it.
+``ja_segmenter()`` wraps namedivider's ``BasicNameDivider``, which
+reads data bundled in the installed package;
+``ja_segmenter(gbdt=True)`` selects its gradient-boosted divider
+instead, which is more accurate and downloads its model and surname
+files from the network on first use — worth knowing before deploying
+it somewhere sandboxed or air-gapped.
+
+Boundaries
+~~~~~~~~~~~
+
+Several boundaries apply to all of the above. Romanized names ("Kim
+Min-jun", "Yamada Taro") are Latin script and follow the ordinary
+positional rules — order genuinely varies in romanized data, so
+nothing script-based applies. A name written wholly in katakana stays
+positional for the reason given above, pack or no pack: it is
+predominantly a transcription, and a transcription is already in the
+order it should be read in. And a comma disables the script behaviors
+entirely, on the reasoning ``name_order`` already follows: whoever
+wrote the comma has already said where the family name ends.
+
+A division the parser had to choose is reported rather than hidden.
+When an unspaced name has more than one vocabulary-supported split —
+``남궁민수`` is 남궁 + 민수 by the two-syllable surname but 남 + 궁민수
+by the single-syllable one — the longest surname wins and the parse
+records the decision as an ``AmbiguityKind.SEGMENTATION``, described
+under `When the parser had to guess`_; a name with only one possible
+split reports nothing. A segmenter's answer is reported on the same
+kind whenever its confidence falls below the stage's floor, naming the
+division and the score in the report's ``detail``::
+
+    "'山田太郎' splits as '山田' + '太郎' on a segmenter answer scoring 0.44, under the 0.9 confidence floor"
+
+With namedivider that line separates its two kinds of answer. A
+division it states as a rule — the kanji-to-kana boundary in 高橋みなみ
+— scores 1.0 and reports nothing; a division read off kanji statistics
+scores far below the floor and always reports. Read the report as a
+statement about the *kind* of answer, not as a measure of how likely
+this particular one is to be wrong.
+
+A lone two-character kanji name divides one character to each side, on
+namedivider's rule for that length. A name that short carries no
+evidence of where its own boundary falls, and one character each way is
+the presumption Japanese practice makes; that is an accepted
+presumption, not a measurement, so a two-character token is the shape
+to check first if a division looks wrong.
+
+A segmenter that answers outside the token it was given — a cut past
+the end of the text, or pieces that do not reconstruct the input — is
+declined silently and the token is left whole. Exceptions are the one
+thing that does *not* stay inside the parse: a segmenter is your code,
+so its errors propagate rather than being absorbed as content errors.
+
+The command line takes the pack but not the segmenter: ``python -m
+nameparser --locale ja`` has no way to attach one, so it activates
+nothing by itself. :doc:`customize` covers turning any of these
+behaviors off.
 
 Aggregate views
 ----------------

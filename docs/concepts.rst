@@ -146,7 +146,11 @@ Honest ambiguity
 Parsing never raises. Pass in a string that doesn't look like a name
 at all, and you get back a :class:`~nameparser.ParsedName` with empty
 fields, not an exception. The parser's job is to make a reasonable
-call on real-world text, not to reject it.
+call on real-world text, not to reject it. The single exception is
+code you supplied yourself: a :data:`~nameparser.Segmenter` passed to
+``Parser(segmenter=...)`` runs inside the parse, and its own
+exceptions propagate rather than being swallowed — a failure there is
+a bug in your callable, not a fact about the name.
 
 Some calls are irreducibly ambiguous — both readings are legitimate,
 and no amount of rule-tuning resolves them without breaking some other
