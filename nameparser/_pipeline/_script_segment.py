@@ -20,8 +20,15 @@ invariant holds by construction.
 Where the VOCABULARY declines -- no prefix matched -- an optional
 Parser(segmenter=...) gets the token (#272 amendment 2026-07-29).
 Vocabulary first, segmenter on decline, so parser_for(ZH, JA,
-segmenter=...) composes: a listed surname is a dictionary certainty
-and wins, and the segmenter takes what is left. Its Segmentation may
+segmenter=...) composes MECHANICALLY: a listed surname is a
+dictionary certainty and wins, and the segmenter takes what is left.
+Composing is not a free lunch, and the docs qualify it where they
+show the stack: the zh pack's own mis-split warning survives
+unchanged, because a Japanese kanji name opening on a listed Chinese
+surname never reaches the segmenter at all -- 高橋一郎 still splits
+高 + 橋一郎 under ZH+JA, exactly as it does under ZH alone. The two
+packs are corpus ALTERNATIVES, one per corpus; stacking them is for
+genuinely mixed data that accepts that trade. Its Segmentation may
 cut anywhere and any number of times, which is why the split path
 below is written for n cuts and the vocabulary hit is simply its
 one-cut case. One precondition guards it that the vocabulary has no
@@ -86,7 +93,7 @@ from nameparser._types import AmbiguityKind, Segmentation, Span
 #: measuring namedivider 0.4.1 over 112 names (#272 Task 5), which
 #: found a distribution the amendment did not anticipate: the scores
 #: are BIMODAL, not clustered near 1. A rule-based division (the kana
-#: boundary in 高橋みなみ, a two-character name) scores exactly 1.0;
+#: boundary in 高橋みなみ, or a two-character name) scores exactly 1.0;
 #: a kanji-statistics division scores a softmax over the candidate cut
 #: positions, observed in 0.23-0.68 and driven more by name LENGTH
 #: (median 0.61 at three characters, 0.37 at five -- the softmax is
@@ -98,8 +105,18 @@ from nameparser._types import AmbiguityKind, Segmentation, Span
 #: epistemic argument asks for anyway. 0.9 sits in the empty gap
 #: (0.68 to 1.0), far from both modes, and reads as "confident" for a
 #: third-party segmenter with a calibrated score too. Consequence,
-#: pinned by tests: a kanji-only Japanese name always carries a
-#: SEGMENTATION report, a kana-divided one never does.
+#: pinned by tests and stated so it can be checked: every
+#: STATISTICALLY divided name carries a SEGMENTATION report, and every
+#: RULE-divided one -- the kana boundary, a two-character name,
+#: namedivider's specific-name rules -- carries none.
+#: One case is worth writing down rather than rediscovering: the
+#: two-character division is a PRESUMPTION, not a measurement (usage.rst
+#: says exactly that), yet namedivider scores it 1.0 and this floor
+#: therefore keeps it silent. That is the divider's own stated
+#: certainty, accepted here as-is rather than second-guessed by a
+#: length rule of ours. If presumption-reporting is ever wanted, the
+#: hook is namedivider's DividedName.algorithm, which names WHICH rule
+#: answered -- not the score, which cannot tell the two apart.
 #: Not configurable in 2.x (YAGNI).
 _SEGMENTER_CONFIDENCE_FLOOR = 0.9
 
@@ -270,25 +287,41 @@ def script_segment(state: ParseState) -> ParseState:
            for j in state.segments[0]):
         return state
     # No try/except around the call: the module docstring's totality
-    # exception. The check below is that same doctrine, curated -- a
-    # duck-typed answer carrying a .splits of its own would otherwise
-    # wander into the split path and surface as a ValueError naming
-    # Token, pointing the reader at nameparser's insides instead of at
-    # their segmenter. Bounded like every message here: the type's
-    # NAME, never its contents.
+    # exception. The two checks below are that same doctrine, curated,
+    # and they are where the line this module draws is easiest to state:
+    # a PROTOCOL VIOLATION BY THE SEGMENTER AUTHOR RAISES, while an
+    # ADAPTER'S DEFENSE AGAINST ITS LIBRARY DECLINES. Both checks here
+    # are the first kind -- a wrong answer TYPE and an answer indexing
+    # past the token it was handed are stage-detectable bugs in
+    # user-supplied code, inside the declared totality exception, so
+    # they get the same treatment the callable's own exceptions get.
+    # locales/ja.py is the second kind: its repertoire, length,
+    # reconstruction and score guards all return None, because what
+    # they defend against is namedivider answering a question nobody
+    # asked it, which is a fact about the CONTENT, not a broken
+    # protocol. Bounded like every message here: the type's NAME, never
+    # its contents.
     answer = state.segmenter(text)
     if answer is not None and not isinstance(answer, Segmentation):
+        # a duck-typed answer carrying a .splits of its own would
+        # otherwise wander into the split path and surface as a
+        # ValueError naming Token, pointing the reader at nameparser's
+        # insides instead of at their segmenter
         raise TypeError(
             f"segmenter must return Segmentation or None, got "
             f"{type(answer).__name__}")
     if answer is None or not answer.splits:
         return state            # declined, or confidently one token
-    # splits[-1] is the max -- Segmentation enforced ascending
+    # splits[-1] is the max -- Segmentation enforced ascending. The
+    # upper bound is the half Segmentation cannot check, since it never
+    # sees the text; an offset at or past the end would make an empty
+    # piece. Declining silently here (as this did before the review)
+    # made an off-by-one segmenter undebuggable: every answer it gave
+    # vanished, and the parse merely looked unsegmented.
     if answer.splits[-1] >= len(text):
-        # the upper bound is ours to check (Segmentation never sees the
-        # text, so it cannot); a violating answer is a buggy segmenter,
-        # treated as a decline -- never a crash
-        return state
+        raise ValueError(
+            f"segmenter returned splits beyond the token: last offset "
+            f"{answer.splits[-1]}, token length {len(text)}")
     conf = answer.confidence
     detail = None
     if conf is not None and conf < _SEGMENTER_CONFIDENCE_FLOOR:

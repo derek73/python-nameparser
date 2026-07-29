@@ -240,8 +240,11 @@ class Segmentation:
     rewrite characters) and an optional confidence in [0, 1].
     ``Segmentation(())`` means "confidently one token" -- distinct from
     returning None, which DECLINES ("I don't know"). The upper bound
-    (< len(token)) is validated by the consuming stage, which knows the
-    text."""
+    (< len(token)) is the half this class cannot check, never having
+    seen the text; the consuming stage checks it and RAISES
+    ``ValueError`` on a violation, the same call it makes on an answer
+    of the wrong type -- both are protocol bugs in the segmenter, not
+    facts about the name."""
 
     #: Interior character offsets to split at, ascending.
     splits: tuple[int, ...]
@@ -253,9 +256,19 @@ class Segmentation:
     __setstate__ = _guarded_setstate
 
     def __post_init__(self) -> None:
-        # The same guard Token.tags carries: a mapping would silently
-        # contribute only its keys, and a bare int would surface as an
-        # uncurated "not iterable" from the tuple() below.
+        # Both guards Token.tags carries, for the same two reasons and
+        # a third of this field's own: a bare string is iterable, so
+        # Segmentation("") would sail through as "confidently one
+        # token" -- an opinion nobody stated -- and Segmentation("23")
+        # would fail one character deep naming '2' rather than the
+        # argument. A mapping would silently contribute only its keys,
+        # and a bare int would surface as an uncurated "not iterable"
+        # from the tuple() below.
+        if isinstance(self.splits, str):
+            raise TypeError(
+                "Segmentation.splits must be an iterable of integers, "
+                "not a bare string"
+            )
         if isinstance(self.splits, Mapping):
             raise TypeError(
                 "Segmentation.splits must be an iterable of integers, "
@@ -357,10 +370,18 @@ class AmbiguityKind(StrEnum):
     #: More comma-separated segments than any recognized name shape;
     #: the parse is best-effort over the extra segments.
     COMMA_STRUCTURE = "comma-structure"
-    #: An unspaced CJK token had more than one vocabulary-supported
-    #: surname split ("夏侯惇": 夏侯 + 惇 was taken, 夏 + 侯惇 also
-    #: matched); the longest surname won, and ``detail`` names both
-    #: readings. Points at the two tokens the split produced. (#271)
+    #: A division of an unspaced CJK token that the parse had to
+    #: choose, from either of the two things that can divide one.
+    #: A VOCABULARY fork: more than one surname-supported split
+    #: existed ("夏侯惇" was taken as 夏侯 + 惇, while 夏 + 侯惇 also
+    #: matched), longest-match picked, and ``detail`` names both
+    #: readings (#271). Or a SEGMENTER answer scoring under the
+    #: stage's confidence floor: only one reading was offered, but the
+    #: score says it was a statistical guess rather than a stated
+    #: certainty, and ``detail`` names the pieces and the score
+    #: (#272). Either way it points at ALL the tokens the division
+    #: produced -- two for a vocabulary split, n+1 for a segmenter
+    #: answer cutting n times.
     SEGMENTATION = "segmentation"
 
 

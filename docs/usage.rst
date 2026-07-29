@@ -296,11 +296,19 @@ the presumption Japanese practice makes; that is an accepted
 presumption, not a measurement, so a two-character token is the shape
 to check first if a division looks wrong.
 
-A segmenter that answers outside the token it was given — a cut past
-the end of the text, or pieces that do not reconstruct the input — is
-declined silently and the token is left whole. Exceptions are the one
-thing that does *not* stay inside the parse: a segmenter is your code,
-so its errors propagate rather than being absorbed as content errors.
+A segmenter that answers outside the token it was given — a cut at or
+past the end of the text — has violated the protocol, and the parse
+says so rather than hiding it: it raises ``ValueError`` naming the
+offending offset and the token's length, the way an answer of the
+wrong type raises ``TypeError``. Declining silently would leave an
+off-by-one segmenter invisible; every answer it gave would vanish and
+the name would merely look undivided. The shipped ``ja_segmenter()``
+does decline — returns ``None``, token left whole — for the cases that
+are *not* protocol violations: text outside the Japanese repertoire,
+text too short to divide, an answer that fails to reconstruct its
+input, and a score outside [0, 1]. Exceptions are the one thing that
+does *not* stay inside the parse: a segmenter is your code, so its
+errors propagate rather than being absorbed as content errors.
 
 The command line takes the pack but not the segmenter: ``python -m
 nameparser --locale ja`` has no way to attach one, so it activates

@@ -100,6 +100,24 @@ def test_segmentation_rejects_mappings_and_non_iterables() -> None:
         Segmentation({2: "a", 3: "b"})  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="Segmentation.splits"):
         Segmentation(5)  # type: ignore[arg-type]
+    # ...and the bare string, the third member of that family and the
+    # one with teeth: "" is iterable and empty, so without the guard
+    # Segmentation("") became "confidently one token" -- an opinion
+    # nobody stated -- while "23" failed one character deep naming '2'
+    # instead of the argument. Both must name the field.
+    for bad in ("", "23"):
+        with pytest.raises(TypeError, match="Segmentation.splits"):
+            Segmentation(bad)  # type: ignore[arg-type]
+
+
+def test_segmentation_rejects_bools_in_both_fields() -> None:
+    # bool is an int subclass in both slots: True as an offset is a
+    # comparison result leaking into an index, True as a confidence one
+    # leaking into a score. Behavioral twin of Token's span guard.
+    with pytest.raises(TypeError, match="Segmentation.splits"):
+        Segmentation((True,))  # type: ignore[list-item]
+    with pytest.raises(TypeError, match="Segmentation.confidence"):
+        Segmentation((2,), confidence=True)  # type: ignore[arg-type]
 
 
 def test_segmentation_lets_a_generator_raise_its_own_error() -> None:
@@ -419,6 +437,11 @@ def test_types_pickle_round_trip() -> None:
     assert pickle.loads(pickle.dumps(amb)) == amb
     tok = Token("de", Span(9, 11), Role.FAMILY, frozenset({"particle"}))
     assert pickle.loads(pickle.dumps(tok)) == tok
+    # the family sweep is the point of this test, so a frozen type
+    # added later belongs in it -- Segmentation (#272) carries the same
+    # guarded __getstate__/__setstate__ pair as its three siblings
+    seg = Segmentation((2,), confidence=0.42)
+    assert pickle.loads(pickle.dumps(seg)) == seg
 
 
 def test_span_add_is_blocked() -> None:

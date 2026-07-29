@@ -44,18 +44,23 @@ D = re.compile(r"^d\.?$", re.IGNORECASE)
 # hanzi in personal names (e.g. 𠮷田's 𠮷, U+20BB7), so leaving them
 # out silently mis-orders those names; unassigned gaps inside the span
 # are harmless, since no real name contains an unassigned codepoint.
-# U+3005 々 is the block-vs-Script case again (it is Script=Common
-# under UAX #24, like U+30FB below): it REPEATS the preceding kanji
-# and appears only inside Han-written names -- 佐々木 (Sasaki, a
-# top-20 Japanese surname), 野々村, 奈々 -- so a token carrying it is
-# as Han as the character it iterates. Omitting it made 佐々木 a
-# mixed-script token: the name reversed and never gated into
-# segmentation. HANGUL: precomposed syllables only -- modern Korean
+# U+3005 々 is the block-vs-Script case, running the OPPOSITE way to
+# U+30FB below: 々 already IS Script=Han under UAX #24 (Scripts.txt
+# reads `3005 ; Han`), but it sits in CJK Symbols and Punctuation,
+# outside every CJK ideograph block this table spans -- so the
+# singleton entry is what a BLOCK table needs to reach a character the
+# Script property would have classified correctly for free. It earns
+# the reach: 々 repeats the preceding kanji and appears only inside
+# Han-written names -- 佐々木 (Sasaki, a top-20 Japanese surname),
+# 野々村, 奈々. Omitting it made 佐々木 a mixed-script token: the name
+# reversed and never gated into segmentation.
+# HANGUL: precomposed syllables only -- modern Korean
 # text never writes names as bare jamo.
 # HIRAGANA/KATAKANA (#272): the two kana blocks, each in full. There
 # IS a supplementary-plane kana repertoire (Kana Supplement, Kana
-# Extended-A/B, Small Kana Extension, U+1AFF0-U+1B16F, 311 assigned
-# codepoints) but none of it is WORTH chasing the way Han's astral
+# Extended-A/B, Small Kana Extension, U+1AFF0-U+1B16F, a few hundred
+# assigned codepoints -- no exact count here, it moves with the
+# Unicode version) but none of it is WORTH chasing the way Han's astral
 # block is: those codepoints are hentaigana and other archaic/
 # phonetic-extension forms no modern Japanese name uses, unlike
 # supplementary Han, which real surnames genuinely need. The Katakana
@@ -69,15 +74,17 @@ D = re.compile(r"^d\.?$", re.IGNORECASE)
 # This table classifies by Unicode BLOCK, not the UAX #24 Script
 # property: U+30A0, U+30FB (the middle dot), and U+30FC (the
 # prolonged sound mark) all carry Script=Common under UAX #24, and the
-# combining kana voicing marks U+3099-U+309C are Common/Inherited --
-# yet every one of them is needed here, and block membership, not the
-# Script property, is what puts them in range. The katakana block's
-# upper end (U+30FF) including the middle dot U+30FB is load-bearing
-# for effective_script's kana license below (see its docstring) --
-# tokenize (#272 Task 2b) now turns U+30FB into a token separator
-# before this classifier ever sees a split string, but effective_script
-# is also called directly on whole strings (e.g. in tests), where the
-# dot still classifies as ordinary katakana. The ranges below must stay
+# four kana voicing marks U+3099-U+309C split two and two -- U+3099
+# and U+309A are the COMBINING forms (Script=Inherited), U+309B and
+# U+309C the spacing ones (Script=Common) -- yet every one of them is
+# needed here, and block membership, not the Script property, is what
+# puts them in range. The katakana block's upper end (U+30FF) takes in
+# the middle dot U+30FB, kept rather than carved out for a smaller
+# reason than it looks: tokenize (#272 Task 2b) turns U+30FB into a
+# token separator, so no real parse shows this classifier a string
+# containing one. It is kept so that a DIRECT whole-string call --
+# effective_script("マイケル・ジャクソン"), which the unit tests make --
+# still classifies instead of returning None. The ranges below must stay
 # mutually disjoint: single_script returns the FIRST covering entry
 # (dict iteration order), so an overlapping future script would make
 # the result order-dependent instead of well-defined.

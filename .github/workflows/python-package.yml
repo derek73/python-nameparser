@@ -89,4 +89,12 @@ jobs:
     - name: Install dependencies
       run: uv sync --group dev --extra ja
     - name: Run Tests
-      run: uv run pytest tests/v2/ -q
+      # The import check first: every test the extra adds is guarded by
+      # a find_spec("namedivider") skipif, so a job where the extra
+      # silently failed to install is a job where all of them SKIP and
+      # the step still passes green. This line is what makes that
+      # failure loud -- without it the job proves nothing on the day it
+      # matters.
+      run: |
+        uv run python -c "import namedivider"
+        uv run pytest tests/v2/ -q

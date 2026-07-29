@@ -270,7 +270,7 @@ def test_ja_adapter_guard_stack_against_a_stub(
 def test_ja_adapter_defensive_branches_against_a_stub(
         monkeypatch: pytest.MonkeyPatch) -> None:
     # reconstruction failure -> decline; an empty side -> the stated
-    # "confidently undivided" opinion; an out-of-range score -> clamped
+    # "confidently undivided" opinion; a score a hair over 1 -> clamped,
     # so Segmentation's [0, 1] validation cannot raise mid-parse
     _fake_namedivider(
         monkeypatch, lambda text: _FakeDivided("外", "れ", 0.5))
@@ -280,6 +280,39 @@ def test_ja_adapter_defensive_branches_against_a_stub(
     whole = locales.ja_segmenter()("山田太郎")
     assert whole is not None
     assert whole.splits == () and whole.confidence == 1.0
+
+
+def test_ja_adapter_declines_a_garbage_score(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # The other half of the score handling, and the half the old
+    # unconditional clamp got wrong: float noise at the edge of a
+    # softmax is arithmetic around a real answer and clamps (above),
+    # but 87.0 is not noise -- a divider scoring that is broken, and
+    # its DIVISION is worth no more than its score. Clamping mapped it
+    # to 1.0, i.e. "certain", which silenced the SEGMENTATION report at
+    # exactly the point of maximum brokenness. Declining leaves the
+    # token whole: safe, and observable by the report's absence.
+    _fake_namedivider(
+        monkeypatch, lambda text: _FakeDivided(text[:2], text[2:], 87.0))
+    assert locales.ja_segmenter()("山田太郎") is None
+    _fake_namedivider(
+        monkeypatch, lambda text: _FakeDivided(text[:2], text[2:], -0.5))
+    assert locales.ja_segmenter()("山田太郎") is None
+
+
+def test_ja_adapter_declines_a_nan_score(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # NaN takes the garbage-score exit for free rather than needing one
+    # of its own: every comparison against NaN is False, so it fails
+    # BOTH bounds of the epsilon band. Worth a test precisely because
+    # it is a property of the comparison rather than a written branch
+    # -- under the old clamp, min/max propagated it straight into
+    # Segmentation, whose own range check would then have raised
+    # mid-parse.
+    _fake_namedivider(
+        monkeypatch,
+        lambda text: _FakeDivided(text[:2], text[2:], float("nan")))
+    assert locales.ja_segmenter()("山田太郎") is None
 
 
 def test_ja_adapter_gbdt_flag_selects_the_gbdt_divider(
@@ -321,10 +354,12 @@ def test_ja_end_to_end() -> None:
     # kana-licensed composite: gated in through the HIRAGANA entry
     n = p.parse("高橋みなみ")
     assert (n.family, n.given) == ("高橋", "みなみ")
-    # the iteration mark 々 gates in as Han and namedivider reads the
+    # the iteration mark 々 gates in as Han (Script=Han under UAX #24,
+    # but outside the ideograph blocks the classifier spans, so it
+    # rides in on a singleton range entry) and namedivider reads the
     # repeated character correctly -- verified against 0.4.1 rather
-    # than assumed, since 々 is Script=Common and a divider could
-    # plausibly have choked on it or cut beside it
+    # than assumed, since a divider could plausibly have choked on it
+    # or cut beside it
     n = p.parse("佐々木健")
     assert (n.family, n.given) == ("佐々木", "健")
 
@@ -404,6 +439,57 @@ def test_ja_reports_statistical_divisions_and_not_rule_based_ones() -> None:
         AmbiguityKind.SEGMENTATION]
     assert p.parse("高橋みなみ").ambiguities == ()     # kana boundary rule
     assert p.parse("原恵").ambiguities == ()          # two-character rule
+
+
+@_needs_ja
+def test_ja_divides_a_lone_hiragana_token() -> None:
+    # The whole-name presumption, applied to hiragana: at token level a
+    # bare given name is indistinguishable from a full name, so the
+    # stage gates みなみ in and namedivider divides it -- み + なみ,
+    # which is wrong if the writer meant the given name alone and right
+    # if they meant a (rare) all-kana full name. Exactly the acceptance
+    # 田中 -> 田 + 中 already carries for kanji, pinned here so the kana
+    # path's version is a recorded consequence rather than a surprise.
+    # The statistical score puts a SEGMENTATION report on it, which is
+    # the caller's handle for routing it to review.
+    n = _PACKED["ja"].parse("みなみ")
+    assert (n.family, n.given) == ("み", "なみ")
+    assert [a.kind for a in n.ambiguities] == [AmbiguityKind.SEGMENTATION]
+
+
+@_needs_ja
+def test_ja_divides_an_astral_kanji_name() -> None:
+    # 𠮷 (U+20BB7, the "tsuchiyoshi" 吉) is a real surname character in
+    # the supplementary plane -- the reason _SCRIPT_RANGES carries the
+    # astral Han span at all. It has to survive the whole chain as one
+    # character and not two: the script gate, the adapter's repertoire
+    # scan, namedivider itself, and the offset arithmetic that turns
+    # the answer into spans (Python indexes by codepoint, so an offset
+    # of 2 here spans four UTF-16 units -- a surrogate-pair bug would
+    # land the split in the middle of the character).
+    n = _PACKED["ja"].parse("𠮷田太郎")
+    assert (n.family, n.given) == ("𠮷田", "太郎")
+    assert [a.kind for a in n.ambiguities] == [AmbiguityKind.SEGMENTATION]
+
+
+@_needs_ja
+def test_ja_stacked_on_zh_pays_the_zh_packs_documented_cost() -> None:
+    # Stacking composes MECHANICALLY (the test above) but not for free,
+    # and this pins the cost so it stays a documented trade rather than
+    # a bug report. Vocabulary runs first, so a Japanese kanji name
+    # opening on a listed CHINESE surname never reaches the segmenter:
+    # 高 is a common Chinese surname, so 高橋一郎 splits 高 + 橋一郎
+    # under ZH+JA exactly as it does under ZH alone -- the same reading
+    # cases.py's zh_japanese_kanji_tradeoff row records, and the reason
+    # the docs call the two packs corpus alternatives and qualify the
+    # stack (see _script_segment.py's module docstring, usage.rst and
+    # the release log). JA alone reads it correctly (test_ja_end_to_end).
+    p = parser_for(locales.ZH, locales.JA, segmenter=locales.ja_segmenter())
+    n = p.parse("高橋一郎")
+    assert (n.family, n.given) == ("高", "橋一郎")
+    # and silently: one vocabulary match is not a fork, so nothing here
+    # flags the mis-split -- the pack choice is what has to be right
+    assert n.ambiguities == ()
 
 
 def test_pack_vocabulary_entries_are_single_words() -> None:

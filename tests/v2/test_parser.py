@@ -484,11 +484,13 @@ def test_kana_licensed_names_read_family_first_by_default() -> None:
 
 
 def test_iteration_mark_counts_as_han() -> None:
-    # 々 (U+3005) repeats the preceding kanji and is Script=Common
-    # under UAX #24, so classifying by the Script property would put a
-    # 佐々木 token in no script at all: the name reversed, and the
-    # token never reached the segmentation gate. It is in the HAN
-    # ranges by BLOCK-style reasoning, the same call U+30FB gets.
+    # 々 (U+3005) repeats the preceding kanji. It is Script=Han under
+    # UAX #24 already, but it lives outside every CJK ideograph BLOCK,
+    # and the classifier is a block table -- so without its singleton
+    # entry a 佐々木 token was in no script at all: the name reversed,
+    # and the token never reached the segmentation gate. The Script
+    # property would have got this one right unaided; the block table
+    # is what needed the special case.
     n = parse("佐々木 太郎")
     assert (n.family, n.given) == ("佐々木", "太郎")
     n = parse("野々村 真")
@@ -657,6 +659,23 @@ def test_parser_for_segmenter_keyword_overrides_the_base() -> None:
     p = parser_for(locales.get("zh"), base=Parser(segmenter=from_base),
                    segmenter=explicit)
     assert p.segmenter is explicit
+
+
+def test_parser_for_segmenter_none_clears_the_base() -> None:
+    # the third state UNSET buys (#272 review): None is a VALUE here,
+    # not an absence, so passing it explicitly drops the base's
+    # segmenter instead of inheriting the very thing it was asked to
+    # remove. Omitting the keyword is what carries the base's through
+    # (the test above), and this is how you derive an unsegmented
+    # parser from a segmented one without rebuilding its lexicon and
+    # policy by hand.
+    def seg(text: str) -> Segmentation | None:
+        return None
+    base = Parser(segmenter=seg)
+    pack = locales.get("zh")
+    assert parser_for(pack, base=base, segmenter=None).segmenter is None
+    # ...and the base is untouched: parser_for builds a fresh Parser
+    assert base.segmenter is seg
 
 
 def test_parser_picklability_is_conditional_on_the_segmenter() -> None:

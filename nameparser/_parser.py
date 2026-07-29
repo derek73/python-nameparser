@@ -18,7 +18,7 @@ from nameparser._locale import Locale
 from nameparser._pipeline import run
 from nameparser._pipeline._assemble import assemble
 from nameparser._pipeline._state import ParseState
-from nameparser._policy import UNSET, Policy, PolicyPatch, apply_patch
+from nameparser._policy import UNSET, Policy, PolicyPatch, _Unset, apply_patch
 from nameparser._types import (
     FOLDED_TAG, ParsedName, Segmenter, Token, _guarded_getstate,
     _guarded_setstate, _validated_field_strings,
@@ -187,7 +187,7 @@ def parse(text: str) -> ParsedName:
 
 
 def parser_for(*locales: Locale, base: Parser | None = None,
-               segmenter: Segmenter | None = None) -> Parser:
+               segmenter: Segmenter | None | _Unset = UNSET) -> Parser:
     """Lexicon fragments unioned left-to-right onto base's; policy
     patches applied left-to-right (later wins; set-valued fields union
     per the patch metadata). Validation errors raised while applying a
@@ -199,9 +199,14 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     A ``segmenter`` is passed straight through to the built Parser --
     ``parser_for(locales.JA, segmenter=locales.ja_segmenter())`` is how
     a pack and a segmenter combine, since packs are pure data and
-    cannot supply one. Given explicitly it OVERRIDES base's (later
-    wins, the rule scalar policy fields follow); omitted, base's
-    carries through unchanged."""
+    cannot supply one. The argument has THREE states, the same
+    :data:`~nameparser.UNSET` spelling a PolicyPatch field uses, because
+    None is a meaningful value here and not an absence: omitted (UNSET)
+    carries base's segmenter through unchanged; a callable OVERRIDES
+    base's (later wins, the rule scalar policy fields follow); and an
+    explicit ``None`` CLEARS base's, which is how you derive an
+    unsegmented parser from a segmented one without rebuilding its
+    lexicon and policy by hand."""
     if base is not None and not isinstance(base, Parser):
         raise TypeError(f"base must be a Parser or None, got {base!r}")
     for loc in locales:
@@ -209,13 +214,15 @@ def parser_for(*locales: Locale, base: Parser | None = None,
             raise TypeError(f"parser_for() takes Locale packs, got {loc!r}")
     lexicon = base.lexicon if base is not None else Lexicon.default()
     policy = base.policy if base is not None else Policy()
-    # Unpacked here with its siblings because the return builds a FRESH
-    # Parser: any field not listed there silently takes its default, and
-    # a dropped segmenter would be invisible. None reads as "not given"
-    # rather than "clear it" (the escape hatch is a plain Parser:
-    # Parser(lexicon=p.lexicon, policy=p.policy)).
-    if segmenter is None and base is not None:
-        segmenter = base.segmenter
+    # Resolved here rather than at the return because the return builds
+    # a FRESH Parser: any field not listed there silently takes its
+    # default, and a dropped segmenter would be invisible. UNSET, not
+    # None, is what "not given" means -- None is the CLEAR request, and
+    # collapsing the two would make an explicit
+    # parser_for(..., segmenter=None) silently inherit the very
+    # segmenter it was asked to drop.
+    if segmenter is UNSET:
+        segmenter = base.segmenter if base is not None else None
     scalar_setters: dict[str, str] = {}
     for loc in locales:
         for f in dataclasses.fields(PolicyPatch):

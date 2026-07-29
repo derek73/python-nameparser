@@ -80,10 +80,20 @@ JA = Locale(
 # repertoire, because a katakana-bearing token can still be a
 # kana-licensed composite the pack acts on (山田エミ) -- DEVIATES must
 # declare it, and the adapter must not decline it. A pure-katakana
-# token never reaches either: the stage's own gate stops it.
+# token never reaches THE ADAPTER: KATAKANA is in no activation set, so
+# the stage's own gate stops it before the segmenter is consulted.
+# DEVIATES still declares one, and must: it is a predicate over any
+# name at all, called before any gate runs, and over-declaring is its
+# safe direction by design.
 _JA_RANGES = ((0x3005, 0x3005), (0x3040, 0x309F), (0x30A0, 0x30FF),
               (0x3400, 0x4DBF), (0x4E00, 0x9FFF), (0xF900, 0xFAFF),
               (0x20000, 0x323AF))
+
+
+#: How far outside [0, 1] a namedivider score may stray and still count
+#: as float noise around a real answer rather than a broken divider --
+#: see the adapter's own comment for why it is float32-sized.
+_SCORE_EPSILON = 1e-6
 
 
 def _in_repertoire(char: str) -> bool:
@@ -118,7 +128,10 @@ def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
 
     The adapter declines -- returns None, leaving the token whole --
     for text outside the Japanese repertoire, for text too short to
-    divide, and for any answer that fails to reconstruct its input. An
+    divide, for any answer that fails to reconstruct its input, and for
+    any score outside [0, 1] by more than float noise (a divider
+    scoring 87.0 is broken, and its division is worth no more than its
+    score). An
     answer that puts the whole token on one side comes back as
     "confidently one token" rather than a decline: the divider read it
     and found nothing to cut, which is not the same as having no
@@ -126,10 +139,16 @@ def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
     Answers arrive with namedivider's own confidence, which the parsing
     stage compares against its floor to decide whether to report a
     SEGMENTATION ambiguity: namedivider scores a rule-based division
-    (the kana boundary in 高橋みなみ, a two-character name) 1.0 and a
-    kanji-statistics division well below that, so in practice every
-    statistically-divided name carries the report and every
-    rule-divided one does not.
+    (the kana boundary in 高橋みなみ, or a two-character name) 1.0 and
+    a kanji-statistics division well below that, so every
+    statistically divided name carries the report and every
+    rule-divided one carries none. The two-character rule is the case
+    to know about: dividing 原恵 one character each way is a
+    presumption Japanese practice makes, not a measurement (usage.rst
+    says so), yet the 1.0 keeps it silent. That is namedivider's own
+    stated certainty, taken as given here; ``DividedName.algorithm``
+    names which rule answered and is the hook if presumption-reporting
+    is ever wanted.
     """
     try:
         import namedivider
@@ -158,11 +177,33 @@ def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
         result = divider.divide_name(text)
         if result.family + result.given != text:
             return None          # defensive: never trust reconstruction
-        # float(): the score is a numpy scalar on the statistical path,
-        # and clamping guards the [0, 1] range Segmentation enforces
-        # against float error at the edge of namedivider's softmax (a
-        # violation would raise mid-parse).
-        confidence = min(1.0, max(0.0, float(result.score)))
+        # float(): the score is a numpy scalar on the statistical path.
+        # Two different failures wear the same shape here, and they get
+        # different answers. Float error at the edge of namedivider's
+        # softmax is arithmetic noise around a real answer, so an
+        # epsilon either side of [0, 1] is tolerated and clamped --
+        # Segmentation enforces the range and would otherwise raise
+        # mid-parse. A score OUTSIDE that epsilon is not noise: a
+        # divider reporting 87.0 confidence is broken, and its division
+        # is worth nothing either. Declining keeps the parse safe AND
+        # observable by absence -- an unconditional clamp mapped 87.0
+        # to 1.0, i.e. "certain", silencing the SEGMENTATION report at
+        # exactly the point of maximum brokenness. NaN takes the same
+        # exit for free: every comparison against it is False, so it
+        # fails both bounds below and declines.
+        #
+        # _SCORE_EPSILON is sized for FLOAT32, not float64: numpy
+        # softmax output is commonly float32, whose eps is ~1.2e-7, and
+        # namedivider's rule-based answers score exactly 1.0 -- so a
+        # float64-sized 1e-9 band would decline a correct rule-based
+        # division that came back a single ulp high (1.0000001 is
+        # exactly that). A few float32 ulps is still five orders of
+        # magnitude below any score a broken divider would produce, so
+        # nothing is bought by tightening it.
+        score = float(result.score)
+        if not -_SCORE_EPSILON <= score <= 1.0 + _SCORE_EPSILON:
+            return None
+        confidence = min(1.0, max(0.0, score))
         # Defensive, the reconstruction check's twin: no namedivider
         # 0.4.x path can return an empty side (every answer, rule or
         # statistical, is built by slicing the input at an interior

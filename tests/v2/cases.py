@@ -617,8 +617,10 @@ CASES: tuple[Case, ...] = (
          {"family": "佐々木", "given": "太郎"},
          classification="fix(#272)",
          notes="々 (U+3005, the ideographic iteration mark) repeats "
-               "the preceding kanji and is Script=Common under UAX "
-               "#24; it counts as Han here, or 佐々木 -- a top-20 "
+               "the preceding kanji and is Script=Han under UAX #24, "
+               "but sits outside every CJK ideograph BLOCK -- and the "
+               "classifier is a block table, so it needs a singleton "
+               "entry to count as Han; without one 佐々木 -- a top-20 "
                "Japanese surname -- would be a mixed-script token and "
                "reverse"),
     Case("ja_nakaguro_inside_a_nickname",

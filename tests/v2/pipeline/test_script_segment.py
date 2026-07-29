@@ -248,8 +248,9 @@ def test_segmenter_decline_and_confident_whole_are_distinct() -> None:
     # "confidently one token" -- with the same effect on the tokens:
     # the difference is the protocol's to carry, not this stage's
     for seg in (_declines, _fake(())):
-        assert _texts(_run("山田太郎", policy=_JA, segmenter=seg)) == \
-            ["山田太郎"]
+        out = _run("山田太郎", policy=_JA, segmenter=seg)
+        assert _texts(out) == ["山田太郎"]
+        assert out.ambiguities == ()   # nothing decided, nothing to report
 
 
 def test_kana_licensed_token_gates_in_for_the_segmenter() -> None:
@@ -264,16 +265,18 @@ def test_pure_katakana_never_gates_in() -> None:
     # the license's other half: a lone katakana token is predominantly
     # a transcribed foreign name, so KATAKANA sits in no activation set
     # and no segmenter is consulted for one
-    assert _texts(_run("マイケル", policy=_JA, segmenter=_fake((2,)))) \
-        == ["マイケル"]
+    out = _run("マイケル", policy=_JA, segmenter=_fake((2,)))
+    assert _texts(out) == ["マイケル"]
+    assert out.ambiguities == ()
 
 
 def test_kana_licensed_token_stays_whole_under_default_policy() -> None:
     # the pack IS the language declaration: without it the default
     # activation is HANGUL alone, so nothing gates in and the
     # configured segmenter is inert
-    assert _texts(_run("高橋みなみ", segmenter=_fake((2,)))) == \
-        ["高橋みなみ"]
+    out = _run("高橋みなみ", segmenter=_fake((2,)))
+    assert _texts(out) == ["高橋みなみ"]
+    assert out.ambiguities == ()
 
 
 def test_segmenter_multi_split_produces_n_plus_one_tokens() -> None:
@@ -319,16 +322,22 @@ def test_high_confidence_and_no_confidence_emit_nothing() -> None:
         assert state.ambiguities == ()
 
 
-def test_out_of_bounds_split_is_a_decline() -> None:
+def test_out_of_bounds_split_raises() -> None:
     # Segmentation cannot check the upper bound (it never sees the
-    # text), so the stage does -- a violating answer is a buggy
-    # segmenter, and a buggy segmenter must not crash a parse
-    assert _texts(_run("山田", policy=_JA, segmenter=_fake((5,)))) == \
-        ["山田"]
+    # text), so the stage does -- and it RAISES, the same call the
+    # wrong-answer-type check beside it makes: both are protocol
+    # violations by the segmenter's author, inside the declared
+    # totality exception. Declining silently instead (as this did
+    # before the review) made an off-by-one segmenter undebuggable --
+    # every answer vanished and the name merely looked undivided.
+    with pytest.raises(ValueError,
+                       match=r"segmenter returned splits beyond the "
+                             r"token: last offset 5, token length 2"):
+        _run("山田", policy=_JA, segmenter=_fake((5,)))
     # 2 on a two-character token is the boundary itself: the check is
     # >=, not >, since a cut at len(text) would leave an empty piece
-    assert _texts(_run("山田", policy=_JA, segmenter=_fake((2,)))) == \
-        ["山田"]
+    with pytest.raises(ValueError, match="last offset 2, token length 2"):
+        _run("山田", policy=_JA, segmenter=_fake((2,)))
 
 
 def test_family_comma_gates_the_segmenter_too() -> None:
@@ -365,5 +374,38 @@ def test_a_wrong_answer_type_raises_a_curated_error() -> None:
                        match="segmenter must return Segmentation or None, "
                              "got NotASegmentation"):
         _run("山田太郎", policy=_JA, segmenter=seg)
+
+
+def test_a_neighbour_in_an_UNACTIVATED_script_still_blocks_the_consult() -> None:
+    # The precondition counts a second script-written token whatever
+    # script it is written in -- effective_script merely non-None, NOT
+    # membership in the activation set. A katakana or hangul neighbour
+    # is a boundary its writer drew just as deliberately as a Han one,
+    # so the name is already divided and the segmenter must not be
+    # asked. Narrowing the check to `in scripts` would make both of
+    # these split 山 + 田太郎 while the writer's own boundary sat one
+    # token to the right.
+    for name in ("山田太郎 マイケル", "山田太郎 김민준"):
+        out = _run(name, policy=_JA, segmenter=_fake((1,)))
+        assert _texts(out) == name.split(), name
+        assert out.ambiguities == (), name
+
+
+def test_the_segmenter_is_handed_the_gated_token_only() -> None:
+    # It is asked where ONE token divides, so it gets that token's text
+    # and nothing else -- not the original, not the name part joined
+    # back together. A leading Latin title is the case that can tell
+    # the difference: it is skipped by the gate (no script) and is not
+    # a neighbour for the precondition either, so the consult happens
+    # and the argument is observable.
+    asked: list[str] = []
+
+    def seg(text: str) -> Segmentation | None:
+        asked.append(text)
+        return Segmentation((2,))
+
+    out = _run("Dr 山田太郎", policy=_JA, segmenter=seg)
+    assert asked == ["山田太郎"]
+    assert _texts(out) == ["Dr", "山田", "太郎"]
 
 

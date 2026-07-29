@@ -173,3 +173,25 @@ def test_nfd_hangul_still_classifies() -> None:
     nfd = unicodedata.normalize("NFD", "김민준")
     assert nfd != "김민준"  # sanity: confirms the decomposition actually ran
     assert single_script(nfd) is Script.HANGUL
+
+
+def test_script_ranges_are_pairwise_disjoint() -> None:
+    # The table's own comment states this invariant and nothing
+    # checked it: single_script returns the FIRST covering entry (dict
+    # iteration order), so any overlap would make the answer depend on
+    # declaration order instead of being well-defined. Compared over
+    # every entry of every script rather than script by script,
+    # because the adjacent blocks are exactly where a future edit
+    # would go wrong -- HIRAGANA ends at U+309F and KATAKANA opens at
+    # U+30A0 with no gap at all, and HAN's singleton U+3005 sits just
+    # below both.
+    spans = [(lo, hi, script)
+             for script, ranges in _SCRIPT_RANGES.items()
+             for lo, hi in ranges]
+    assert len(spans) > 1        # never passes vacuously
+    for i, (lo, hi, script) in enumerate(spans):
+        assert lo <= hi, f"{script} range ({lo:#x}, {hi:#x}) is inverted"
+        for other_lo, other_hi, other in spans[i + 1:]:
+            assert hi < other_lo or other_hi < lo, (
+                f"{script} range ({lo:#x}, {hi:#x}) overlaps {other} "
+                f"range ({other_lo:#x}, {other_hi:#x})")
