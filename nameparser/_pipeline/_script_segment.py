@@ -58,7 +58,8 @@ Activation is per script because the AMBIGUITY is per script
 unambiguously Korean, and its surname set is closed and
 default-shipped), while HAN is opt-in via locales.ZH -- a Chinese
 surname list corrupts Japanese names ("高橋一郎" must not split as
-高 + 橋一郎), which is #272's pluggable segmenter, not this table's.
+高 + 橋一郎). Japanese divides through the segmenter path below under
+locales.JA, not through this table's vocabulary.
 The gate resolves each token through effective_script, the same
 function order resolution uses, so kana-licensed composites (高橋みなみ
 -> HIRAGANA) gate in under the JA pack's HIRAGANA entry while

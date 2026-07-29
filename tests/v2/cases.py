@@ -561,7 +561,8 @@ CASES: tuple[Case, ...] = (
                "names mis-split (高橋 is the real surname). This is "
                "why Han segmentation is opt-in and why the gate "
                "cannot guard it (DEVIATES declares all Han); "
-               "Japanese is #272's pluggable segmenter"),
+               "Japanese data belongs under locales.JA and its "
+               "segmenter instead"),
 
     # -- #272: the kana license + nakaguro (amendment 2026-07-29).
     # Segmenter-dependent divisions cannot live here (Case has no

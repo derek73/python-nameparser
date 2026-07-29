@@ -41,7 +41,9 @@ class Script(StrEnum):
     #: Chinese Hanzi -- and Japanese Kanji: a pure-Han string cannot
     #: say which language it is, which is fine for ORDER (both write
     #: family-first natively) and exactly why Han SEGMENTATION is
-    #: opt-in (locales.ZH; Japanese is #272's pluggable segmenter).
+    #: opt-in, per language: locales.ZH brings the Chinese surname
+    #: list, locales.JA activates the same stage for a pluggable
+    #: segmenter to divide kanji names with.
     HAN = "han"
     #: Korean Hangul (precomposed syllables). Unambiguously Korean.
     HANGUL = "hangul"
@@ -432,11 +434,16 @@ class Policy:
     #: Scripts for which the unspaced-name segmentation stage is
     #: active (#271): the first token written wholly in an activated
     #: script is split by longest surname match against
-    #: :attr:`Lexicon.surnames <nameparser.Lexicon.surnames>`.
-    #: Default: {Script.HANGUL} -- hangul is unambiguously Korean and
-    #: Korean surnames are a closed default-shipped set. Han is NOT
-    #: default: a zh surname list corrupts Japanese names (高橋一郎
-    #: must not split as 高+橋一郎), so it's opt-in via locales.ZH.
+    #: :attr:`Lexicon.surnames <nameparser.Lexicon.surnames>`, and,
+    #: where that vocabulary declines, by a
+    #: :data:`~nameparser.Segmenter` if one was given to the parser
+    #: (#272). Default: {Script.HANGUL} -- hangul is unambiguously
+    #: Korean and Korean surnames are a closed default-shipped set.
+    #: Han is NOT default: a zh surname list corrupts Japanese names
+    #: (高橋一郎 must not split as 高+橋一郎), so it's opt-in via
+    #: locales.ZH for Chinese and locales.JA -- which activates
+    #: Script.HIRAGANA alongside it, the kana license's carrier key --
+    #: for Japanese.
     #: Opt out with ``segment_scripts=()``; note a PolicyPatch unions
     #: rather than replaces, so a pack can only add scripts, never
     #: disable one.
