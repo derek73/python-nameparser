@@ -113,9 +113,12 @@ def test_effective_script_kana_license() -> None:
     # "マイケル" above -- the license only ever fires on a MIXED
     # token, and this one isn't mixed. It has no order-default entry
     # (DEFAULT_SCRIPT_ORDERS carries no KATAKANA key), which is where
-    # "declines the license" actually shows up. A later task turns
-    # U+30FB into a tokenize-level separator, so this string arrives
-    # at effective_script as two tokens instead of one.
+    # "declines the license" actually shows up. tokenize (#272 Task 2b)
+    # now turns U+30FB into a token separator, so this exact string
+    # arrives at effective_script as two tokens during a real parse --
+    # this unit test calls effective_script directly on the whole
+    # string, bypassing tokenize, so it still sees the dot and must
+    # keep passing unchanged.
     assert effective_script("マイケル・ジャクソン") is Script.KATAKANA
     assert effective_script("") is None
 

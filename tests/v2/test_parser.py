@@ -488,6 +488,44 @@ def test_pure_katakana_stays_positional() -> None:
     assert (n.given, n.family) == ("マイケル", "ジャクソン")
 
 
+def test_katakana_transcription_parses_by_its_divider() -> None:
+    # the dot tells us where the parts meet; transcriptions keep the
+    # source language's order, which the positional default provides
+    n = parse("マイケル・ジャクソン")
+    assert (n.given, n.family) == ("マイケル", "ジャクソン")
+
+
+def test_nakaguro_split_han_tokens_take_the_han_order() -> None:
+    # different code path from the katakana case above: splitting on
+    # the dot here produces two PURE-HAN tokens (no kana involved), so
+    # script_orders' family-first HAN entry fires, same as any other
+    # two-token Han name -- the dot only decides where the split falls
+    n = parse("高橋・一郎")
+    assert (n.family, n.given) == ("高橋", "一郎")
+
+
+def test_halfwidth_nakaguro_splits_at_parse_level_too() -> None:
+    # decision, not accident: halfwidth kana classify as no script at
+    # all (_SCRIPT_RANGES only covers the fullwidth blocks), so this
+    # is order-agnostic positional fallback, not a script-order rule --
+    # the dot still divides the tokens regardless
+    text = "ﾏｲｹﾙ･ｼﾞｬｸｿﾝ"
+    n = parse(text)
+    assert (n.given, n.family) == (
+        "ﾏｲｹﾙ", "ｼﾞｬｸｿﾝ")
+
+
+def test_nakaguro_inside_a_nickname_still_splits() -> None:
+    # decision, not accident: delimited content tokenizes under the
+    # same separator rules as the main stream, so a dot inside a
+    # nickname still divides it -- and re-rendering a token stream
+    # necessarily uses the render join, so the dot comes back as a
+    # space, same as any other separator
+    n = parse("山田 太郎 (マイケル・ジャクソン)")
+    assert n.nickname == "マイケル ジャクソン"
+    assert (n.family, n.given) == ("山田", "太郎")
+
+
 def test_latin_names_are_untouched_by_script_orders() -> None:
     n = parse("John Smith")
     assert (n.given, n.family) == ("John", "Smith")

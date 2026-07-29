@@ -66,9 +66,11 @@ D = re.compile(r"^d\.?$", re.IGNORECASE)
 # yet every one of them is needed here, and block membership, not the
 # Script property, is what puts them in range. The katakana block's
 # upper end (U+30FF) including the middle dot U+30FB is load-bearing
-# for effective_script's kana license below (see its docstring) -- a
-# later task turns U+30FB into a tokenize-level separator, but until
-# then it classifies as ordinary katakana. The ranges below must stay
+# for effective_script's kana license below (see its docstring) --
+# tokenize (#272 Task 2b) now turns U+30FB into a token separator
+# before this classifier ever sees a split string, but effective_script
+# is also called directly on whole strings (e.g. in tests), where the
+# dot still classifies as ordinary katakana. The ranges below must stay
 # mutually disjoint: single_script returns the FIRST covering entry
 # (dict iteration order), so an overlapping future script would make
 # the result order-dependent instead of well-defined.
