@@ -164,49 +164,56 @@ def test_comma_char_matches_the_pipeline_comma_set() -> None:
 
 
 def test_differential_cjk_rule_matches_the_script_ranges() -> None:
-    """The #271 rule in tools/differential/expected_changes.toml hand-
-    copies the CJK spans from _vocab._SCRIPT_RANGES into a character
+    """The CJK rule in tools/differential/expected_changes.toml hand-
+    copies the script spans from _vocab._SCRIPT_RANGES into a character
     class. A TOML file cannot import the constant, so this is the one
     copy with no possible alternative -- and the one whose divergence
     is quietest, because the harness is run by hand rather than in CI.
 
     Both failure directions matter, which is why this compares sets
     rather than checking coverage. A span MISSING from the class turns
-    an intended #271 change into an UNEXPLAINED diff (a release
+    an intended #271/#272 change into an UNEXPLAINED diff (a release
     blocker for the wrong reason); a span that should not be there
     silently classifies a real regression as intended, which is the
     failure the whole harness exists to prevent.
 
-    Han's astral block is out of scope on both sides. The rule omits
-    it deliberately -- no corpus name reaches it, see the comment
-    there -- so the comparison runs over the BMP spans only, and a new
-    BMP script added to _SCRIPT_RANGES for the SAME #271 behavior
-    (family-first order / hangul segmentation) still fails here until
-    the rule covers it.
+    Every table entry is in scope. The rule covered HAN and HANGUL
+    alone while the kana members existed only for classification, but
+    #272 gave HIRAGANA a default order entry and made the kana blocks
+    part of the same first/middle/last diff shape the rule explains,
+    so scoping it by issue no longer draws a real line. Comparing
+    against the whole table is also the stronger promise: a script
+    added to _SCRIPT_RANGES for ANY reason fails here until someone
+    decides, in writing, whether the rule should cover it.
 
-    #272 added HIRAGANA/KATAKANA to _SCRIPT_RANGES for an unrelated
-    reason (kana classification for effective_script's license, not
-    the order-flip or segmentation #271's diff rule explains -- no
-    default keys on either kana member), so the comparison is scoped
-    to the #271 scripts by name rather than every table entry; a
-    future script added for #271's own reason still must extend both
-    sides, same as before.
+    Han's astral block is the single exception, out of scope on both
+    sides. The rule omits it deliberately -- no corpus name reaches
+    it, see the comment there -- so the comparison runs over the BMP
+    spans only.
     """
     toml_path = (Path(__file__).parents[2] / "tools" / "differential"
                  / "expected_changes.toml")
     rules = tomllib.loads(toml_path.read_text())["change"]
-    matched = [r for r in rules if "#271" in r["issue"]]
+    matched = [r for r in rules
+               if "#271" in r["issue"] or "#272" in r["issue"]]
     assert len(matched) == 1, (
-        f"expected exactly one #271 rule in {toml_path.name}, "
+        f"expected exactly one CJK rule in {toml_path.name}, "
         f"found {len(matched)}")
+    # A new table entry must force an explicit decision rather than
+    # quietly widening (or failing to widen) the rule above.
+    assert set(_vocab._SCRIPT_RANGES) == {
+        Script.HAN, Script.HANGUL, Script.HIRAGANA, Script.KATAKANA}, (
+        "a Script joined _SCRIPT_RANGES: decide whether the "
+        f"differential rule in {toml_path.name} should cover it, then "
+        "update this assertion")
     declared = {
         (int(lo, 16), int(hi, 16))
         for lo, hi in re.findall(r"\\u([0-9A-Fa-f]{4})-\\u([0-9A-Fa-f]{4})",
                                  matched[0]["name_regex"])}
     expected = {span
-                for script in (Script.HAN, Script.HANGUL)
-                for span in _vocab._SCRIPT_RANGES[script]
+                for spans in _vocab._SCRIPT_RANGES.values()
+                for span in spans
                 if span[1] <= 0xFFFF}
     assert declared == expected, (
-        f"{toml_path.name}'s #271 name_regex declares {sorted(declared)}; "
+        f"{toml_path.name}'s CJK name_regex declares {sorted(declared)}; "
         f"_SCRIPT_RANGES' BMP spans are {sorted(expected)}")
