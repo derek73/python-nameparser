@@ -45,12 +45,13 @@ issue = "fix(#271/#272) native-script CJK: family-first order, hangul segmentati
 # span.
 #
 # corpus_cjk.jsonl (#295) exists so this rule fires in every real
-# run: it derives from the fix(#271)/fix(#272)/fix(shime-mark) rows of
-# tests/v2/cases.py (build_cjk_corpus.py; the 〆 span rides in on the
-# same HAN entry), closing the blind spot the other two corpora have
-# by construction -- v1's banks had no reason to test CJK, and
-# build_issues_corpus.py requires an internal space, which unspaced
-# names never have.
+# run: build_cjk_corpus.py harvests every CJK-bearing text in
+# tests/v2/cases.py -- the fix(#271)/fix(#272)/fix(shime-mark) rows
+# AND the parity rows, whose value here is pinning NON-diffs (マイケル
+# must not change against 1.4) -- closing the blind spot the other
+# two corpora have by construction: v1's banks had no reason to test
+# CJK, and build_issues_corpus.py requires an internal space, which
+# unspaced names never have.
 name_regex = "[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65]"
 fields = ["first", "middle", "last"]
 
@@ -131,14 +132,25 @@ issue = "fix(cjk-delimited-nickname) delimiter recognition compounds with the CJ
 # first/last. Neither single-change rule may claim the union (the
 # delimiter rule's fields exclude first/last, the CJK rule's exclude
 # nickname -- each on purpose, so a lone regression in the other's
-# fields stays loud). Scoped to the CJK-typographic delimiters and
-# the nakaguro only: a name containing 「」『』 or ・ is CJK-adjacent by
-# construction, so this cannot absorb a Latin delimiter diff. The
-# issue slug deliberately avoids the literal #271/#272 strings --
-# test_regex_sync's differential pin selects THE CJK rule by those
-# substrings and asserts it is unique.
-name_regex = "[「」『』・･]"
-fields = ["first", "middle", "last", "nickname"]
+# fields stays loud). Both lookaheads are required: the delimiters
+# alone would match 'John 「Jack」 Kennedy' -- the brackets sit in CJK
+# Symbols and Punctuation, OUTSIDE every classified span, so a Latin
+# name can carry them -- and would then absorb a bare first/last
+# regression on it. Requiring a classified codepoint too confines the
+# rule to names the order flip can actually reach. The second
+# lookahead's class is the same hand copy of _SCRIPT_RANGES the rule
+# above carries, pinned by the same sync test. One absorption is
+# inherent and accepted: a nickname-ONLY diff on a nakaguro name
+# ('マイケル・ジャクソン') classifies here, because subset-matching
+# cannot REQUIRE a field to have changed. Positional note: this rule
+# overlaps the CJK rule above and the delimiter rule below; within
+# the name_regex tier file order decides which label a diff reports
+# under, so it sits after the tighter single-change rules on purpose.
+# The issue slug deliberately avoids the literal #271/#272 strings --
+# test_regex_sync's differential pin selects the canonical CJK rule
+# by those substrings and asserts it is unique.
+name_regex = "(?s)(?=.*[「」『』・･])(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
+fields = ["first", "last", "nickname"]
 
 [[change]]
 issue = "feat(#269) non-Latin titles/conjunctions recognized"

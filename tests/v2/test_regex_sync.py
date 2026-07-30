@@ -12,8 +12,9 @@ convention), so this module is where the promise gets checked.
 Layering is the usual reason for a copy but not the only one, so this
 module's scope is the PROMISE rather than that one pair of packages:
 the comma-set pin below reads _pipeline._state instead of config, and
-the last test reaches outside the package altogether, to a TOML file
-that could not import a Python constant if it wanted to.
+the last three tests reach outside the package altogether -- two to a
+TOML file that could not import a Python constant if it wanted to,
+one to a generated corpus whose generator can, and must stay run.
 """
 import importlib.util
 import json
@@ -233,6 +234,42 @@ def test_differential_cjk_rule_matches_the_script_ranges() -> None:
                 if span[1] <= 0xFFFF} | {halfwidth_dot}
     assert declared == expected, (
         f"{toml_path.name}'s CJK name_regex declares {sorted(declared)}; "
+        f"_SCRIPT_RANGES' BMP spans are {sorted(expected)}")
+
+
+def test_differential_compound_rule_matches_the_script_ranges() -> None:
+    """The fix(cjk-delimited-nickname) rule (#295) carries the SECOND
+    hand copy of the script spans in the toml: its require-a-classified-
+    codepoint lookahead exists so the delimiter set alone cannot claim a
+    Latin name's first/last regression ('John 「Jack」 Kennedy' -- the
+    corner brackets sit outside every classified span). Pin that copy to
+    the table exactly as the canonical CJK rule's is, and pin the
+    delimiter set itself, so widening either (to ASCII quotes, say) is
+    an explicit decision here rather than a silent absorption change.
+
+    Selection note for future rule authors: the canonical-CJK-rule pin
+    above selects by the literal '#271'/'#272' substrings and asserts
+    uniqueness -- this rule's slug avoids them on purpose, and any new
+    rule's must too.
+    """
+    toml_path = (Path(__file__).parents[2] / "tools" / "differential"
+                 / "expected_changes.toml")
+    rules = tomllib.loads(toml_path.read_text())["change"]
+    matched = [r for r in rules if "cjk-delimited-nickname" in r["issue"]]
+    assert len(matched) == 1
+    regex = matched[0]["name_regex"]
+    assert "[「」『』・･]" in regex, (
+        "the compound rule's delimiter set changed; decide deliberately")
+    declared = {
+        (int(lo, 16), int(hi, 16))
+        for lo, hi in re.findall(r"\\u([0-9A-Fa-f]{4})-\\u([0-9A-Fa-f]{4})",
+                                 regex)}
+    expected = {span
+                for spans in _policy._SCRIPT_RANGES.values()
+                for span in spans
+                if span[1] <= 0xFFFF} | {(0xFF65, 0xFF65)}
+    assert declared == expected, (
+        f"compound rule's codepoint lookahead declares {sorted(declared)}; "
         f"_SCRIPT_RANGES' BMP spans are {sorted(expected)}")
 
 

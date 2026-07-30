@@ -51,10 +51,10 @@ that stops being run. Pass `--corpus PATH` (repeatable) to narrow it.
 | `corpus_cjk.jsonl` | the CJK-bearing rows of `tests/v2/cases.py`, via `build_cjk_corpus.py` (#295) | anything the case table itself missed — it re-witnesses reviewed expectations at the 1.4 boundary rather than discovering new shapes |
 
 They are deliberately separate rather than merged: `corpus.jsonl` is
-reproducible forever from an immutable git ref, the issue tracker is
-mutable, so regenerating `corpus_issues.jsonl` is an explicit,
-reviewable act that can only add names — and the CJK corpus exists
-because BOTH of those are structurally blind to unspaced CJK (v1's
+reproducible forever from an immutable git ref, while the issue
+tracker is mutable, so regenerating `corpus_issues.jsonl` is an
+explicit, reviewable act that can only add names — and the CJK corpus
+exists because BOTH of those are structurally blind to unspaced CJK (v1's
 banks never tested it; `build_issues_corpus.py` requires an internal
 space, which unspaced names never have). It regenerates from the case
 table, and `tests/v2/test_regex_sync.py` pins the checked-in file
