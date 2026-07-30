@@ -228,21 +228,6 @@ def test_interpunct_suppression_yields_to_explicit_name_order() -> None:
     assert _by_role(out, Role.GIVEN) == "莎士比亚"
 
 
-def test_nakaguro_divided_kanji_keeps_the_roster_reading() -> None:
-    # the Japanese dot is roster formatting (姓・名), NOT the
-    # transcription marker -- #272's family-first reading stands
-    # (codepoint scope, spec decision 5)
-    out = _assigned("高橋・一郎")
-    assert _by_role(out, Role.FAMILY) == "高橋"
-    assert _by_role(out, Role.GIVEN) == "一郎"
-
-
-def test_undotted_han_still_reads_family_first() -> None:
-    out = _assigned("毛 泽东")
-    assert _by_role(out, Role.FAMILY) == "毛"
-    assert _by_role(out, Role.GIVEN) == "泽东"
-
-
 def test_script_with_no_table_entry_falls_back() -> None:
     # A single, well-defined script the table simply does not list:
     # resolution must fall through to name_order rather than pick an

@@ -13,10 +13,8 @@ character-classification rules here -- ignorable characters act as
 separators and never enter a token, so spans always index the
 original exactly as given. Whitespace and the name-dot are
 unconditional; emoji/bidi stripping alone is policy-gated
-(Policy.strip_emoji/strip_bidi). The Chinese interpunct U+00B7 is the
-one context-sensitive separator: it divides (and records) only
-between classified-script neighbors, so its rule lives in
-_tokenize_region, which has the index _ignorable lacks.
+(Policy.strip_emoji/strip_bidi). The Chinese interpunct U+00B7 is
+context-sensitive -- see _INTERPUNCT below.
 
 v1's squash_emoji/squash_bidi REMOVED the char and joined neighbors
 ('A\U0001f600B' -> 'AB'); here an ignorable char is a SEPARATOR
@@ -32,7 +30,7 @@ import re
 from nameparser._pipeline._state import (
     COMMA_CHARS, ParseState, WorkToken,
 )
-from nameparser._policy import _SCRIPT_RANGES, _script_matcher
+from nameparser._policy import Policy, _SCRIPT_RANGES, _script_matcher
 from nameparser._types import Role, Span
 
 # Ported from v1 (nameparser/config/regexes.py, "emoji" and "bidi") --
@@ -49,9 +47,11 @@ _BIDI = re.compile('[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]+')
 # The katakana middle dot and its halfwidth twin divide the parts of
 # a foreign name transcribed into katakana (マイケル・ジャクソン) --
 # native names never contain them, so they separate unconditionally,
-# like whitespace (amendment 2026-07-29 section 1b). The Chinese
-# interpunct U+00B7 is context-sensitive instead -- see _INTERPUNCT
-# below.
+# like whitespace (amendment 2026-07-29 section 1b). They record no
+# offset: the nakaguro also divides kanji roster pairs (高橋・一郎,
+# 姓・名 -- read family-first by the script license, #272), so it is
+# not a transcription marker. Only the Chinese 间隔号 is (#298), and
+# it is context-sensitive -- see _INTERPUNCT below.
 _NAME_DOT_SEPARATORS = frozenset({"\u30FB", "\uFF65"})
 
 _INTERPUNCT = "\u00B7"
@@ -70,21 +70,28 @@ def _is_emoji(ch: str) -> bool:
     return any(lo <= cp <= hi for lo, hi in _EMOJI_RANGES)
 
 
-def _flank(text: str, i: int, step: int, limit: int,
-           state: ParseState) -> str | None:
+def _stripped(ch: str, policy: Policy) -> bool:
+    """True when the strip policy removes `ch` from the token stream.
+    The ONE definition of that set, shared by _ignorable and _flank: a
+    character that vanishes from tokens must not occupy a flank
+    position either, so a new strip class added here stays transparent
+    to the interpunct guard by construction."""
+    if policy.strip_bidi and _BIDI.match(ch):
+        return True
+    return bool(policy.strip_emoji and _is_emoji(ch))
+
+
+def _flank(text: str, indices: range, policy: Policy) -> str | None:
     """The nearest flank character the strip policy would keep, or
-    None at the region bound. Stripped invisibles (bidi, emoji) are
-    TRANSPARENT here: they vanish from the token stream, so they must
-    not occupy a flank position either -- an RTL document quoting a
-    transcription puts U+200F beside the dot in visually identical
-    text. Whitespace and the other separators stay guard-defeating:
-    a dot beside a space is not between characters."""
-    while i != limit:
+    None if the range exhausts. Stripped invisibles are TRANSPARENT
+    here: an RTL document quoting a transcription puts U+200F beside
+    the dot in visually identical text. Whitespace and the other
+    separators stay guard-defeating: a dot beside a space is not
+    between characters."""
+    for i in indices:
         ch = text[i]
-        if not (state.policy.strip_bidi and _BIDI.match(ch)) \
-                and not (state.policy.strip_emoji and _is_emoji(ch)):
+        if not _stripped(ch, policy):
             return ch
-        i += step
     return None
 
 
@@ -97,24 +104,14 @@ def _ignorable(ch: str, state: ParseState) -> bool:
         # skip the checks below for every ASCII letter
         return False
     # unconditional, like whitespace -- not policy-gated, so this sits
-    # ahead of the policy checks rather than in _tokenize_region beside
-    # COMMA_CHARS (commas RECORD an offset; these dots must not: the
-    # nakaguro is Japanese roster/divider typography whose pieces the
-    # script license already reads correctly -- #272, 高橋・一郎
-    # family-first, マイケル・ジャクソン positional -- while only the
-    # Chinese 间隔号 carries the transcription meaning and records,
-    # #298, handled in _tokenize_region). The only load-bearing
-    # constraint is "after the isascii fast path" (both dots are
-    # non-ASCII); being ahead of the bidi/emoji checks below is NOT
-    # load-bearing -- the three sets are disjoint, so a future edit is
-    # free to reorder them.
+    # ahead of the policy check rather than in _tokenize_region beside
+    # COMMA_CHARS (commas RECORD an offset; these dots must not --
+    # only the 间隔号 marks a transcription and records, #298, see
+    # _NAME_DOT_SEPARATORS above). The only load-bearing constraint is
+    # "after the isascii fast path" (both dots are non-ASCII).
     if ch in _NAME_DOT_SEPARATORS:
         return True
-    if state.policy.strip_bidi and _BIDI.match(ch):
-        return True
-    if state.policy.strip_emoji:
-        return _is_emoji(ch)
-    return False
+    return _stripped(ch, state.policy)
 
 
 def _tokenize_region(state: ParseState, start: int, end: int,
@@ -126,24 +123,20 @@ def _tokenize_region(state: ParseState, start: int, end: int,
     for i in range(start, end):
         ch = text[i]
         is_separator = ch in COMMA_CHARS or _ignorable(ch, state)
-        if not is_separator and ch == _INTERPUNCT:
-            # flanks are region-local (the _flank walks stop at the
-            # region bounds): a B7 at a region edge has a masked or
-            # absent neighbor and stays token text. Region-local on
-            # purpose and defensively: under the default delimiters a
-            # masked span's edge character is never classified, so
-            # the two bounds are indistinguishable -- but a custom
-            # delimiter ending in a classified character would
-            # otherwise let a B7 split and record across a mask seam.
-            # The flank scan reads raw text like segmentation matching
-            # does (#272's stance): NFD hangul degrades to no-split,
-            # never wrong-split -- classification NFC-normalizes but
-            # the guard does not.
-            left = _flank(text, i - 1, -1, start - 1, state)
-            right = _flank(text, i + 1, +1, end, state)
-            is_separator = (left is not None and right is not None
-                            and _classified_char(left)
-                            and _classified_char(right))
+        if ch == _INTERPUNCT:
+            # Region-local flanks: a B7 at a region edge stays token
+            # text, and the bound also stops a custom delimiter's
+            # classified edge character from acting as a flank across
+            # a mask seam. The scan reads raw text like segmentation
+            # matching does (#272's stance): NFD hangul degrades to
+            # no-split, never wrong-split -- classification
+            # NFC-normalizes but the guard does not.
+            left = _flank(text, range(i - 1, start - 1, -1),
+                          state.policy)
+            if left is not None and _classified_char(left):
+                right = _flank(text, range(i + 1, end), state.policy)
+                is_separator = (right is not None
+                                and _classified_char(right))
         if is_separator:
             if tok_start is not None:
                 tokens.append(WorkToken(text[tok_start:i],

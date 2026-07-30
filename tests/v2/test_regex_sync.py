@@ -164,6 +164,33 @@ def test_comma_char_matches_the_pipeline_comma_set() -> None:
     assert set(_render._COMMA_CHAR.pattern.strip("[]")) == set(COMMA_CHARS)
 
 
+# The one sanctioned divergence between the differential rules'
+# character classes and _SCRIPT_RANGES: the halfwidth middle dot
+# separates tokens without being classified (halfwidth kana stays out
+# of the table on purpose). U+00B7 is deliberately NOT here -- its
+# flank guard means every name it can change matches through a
+# classified flanking character already. Single-sourced: both span
+# pins below read this set.
+_SANCTIONED_EXTRAS = frozenset({(0xFF65, 0xFF65)})
+
+
+def _declared_spans(name_regex: str) -> set[tuple[int, int]]:
+    """The \\uXXXX-\\uXXXX span pairs a rule's character class declares."""
+    return {
+        (int(lo, 16), int(hi, 16))
+        for lo, hi in re.findall(r"\\u([0-9A-Fa-f]{4})-\\u([0-9A-Fa-f]{4})",
+                                 name_regex)}
+
+
+def _expected_bmp_spans() -> set[tuple[int, int]]:
+    """What a full CJK character class in the toml must declare: the
+    table's BMP spans plus the sanctioned extras."""
+    return {span
+            for spans in _policy._SCRIPT_RANGES.values()
+            for span in spans
+            if span[1] <= 0xFFFF} | set(_SANCTIONED_EXTRAS)
+
+
 def test_differential_cjk_rule_matches_the_script_ranges() -> None:
     """The CJK rule in tools/differential/expected_changes.toml hand-
     copies the script spans from _policy._SCRIPT_RANGES into a character
@@ -224,67 +251,64 @@ def test_differential_cjk_rule_matches_the_script_ranges() -> None:
         "a Script joined _SCRIPT_RANGES: decide whether the "
         f"differential rule in {toml_path.name} should cover it, then "
         "update this assertion")
-    declared = {
-        (int(lo, 16), int(hi, 16))
-        for lo, hi in re.findall(r"\\u([0-9A-Fa-f]{4})-\\u([0-9A-Fa-f]{4})",
-                                 matched[0]["name_regex"])}
-    # the two spans the rule carries that no Script claims (see above)
-    sanctioned_extras = {(0xFF65, 0xFF65)}
-    for xlo, xhi in sanctioned_extras:
+    declared = _declared_spans(matched[0]["name_regex"])
+    # the extras must stay UNclassified, or they belong in the table
+    for xlo, xhi in _SANCTIONED_EXTRAS:
         assert not any(lo <= xhi and xlo <= hi
                        for spans in _policy._SCRIPT_RANGES.values()
                        for lo, hi in spans), (
             f"U+{xlo:04X}-U+{xhi:04X} is classified now; drop it "
-            "from the sanctioned extras")
-    expected = {span
-                for spans in _policy._SCRIPT_RANGES.values()
-                for span in spans
-                if span[1] <= 0xFFFF} | sanctioned_extras
+            "from _SANCTIONED_EXTRAS")
+    expected = _expected_bmp_spans()
     assert declared == expected, (
         f"{toml_path.name}'s CJK name_regex declares {sorted(declared)}; "
         f"_SCRIPT_RANGES' BMP spans are {sorted(expected)}")
 
 
-@pytest.mark.parametrize("slug", ["cjk-delimited-nickname",
-                                  "cjk-comma-compound"])
-def test_differential_compound_rules_match_the_script_ranges(
-        slug: str) -> None:
-    """The compound rules carry FURTHER hand copies of the script
-    spans in the toml: each one's require-a-classified-codepoint
-    lookahead exists so its trigger set alone (delimiters; a comma)
-    cannot claim a Latin name's regression ('John 「Jack」 Kennedy',
-    'Smith, Jr.' -- neither contains a classified character). Pin each
-    copy to the table exactly as the canonical CJK rule's is, plus the
-    nickname rule's delimiter set itself, so widening either is an
-    explicit decision here rather than a silent absorption change.
+def test_every_span_bearing_rule_matches_the_script_ranges() -> None:
+    """Auto-discovered pin for every FURTHER hand copy of the script
+    spans in the toml: any rule whose character class declares spans
+    intersecting _SCRIPT_RANGES must declare the whole expected class
+    (table BMP spans + sanctioned extras). The compound rules'
+    require-a-classified-codepoint lookaheads exist so their trigger
+    sets alone (delimiters; a comma) cannot claim a Latin name's
+    regression -- and each such lookahead is a copy nothing else
+    checks. Discovery replaces a hand-maintained slug roster: a new
+    compound rule's copy is pinned by existing here, not by an author
+    remembering to enroll it. Rules whose spans touch OTHER scripts
+    (Cyrillic, say) are out of scope and skipped by the intersection
+    test.
 
-    Selection note for future rule authors: the canonical-CJK-rule pin
+    Selection note for future rule authors: the canonical-rule pin
     above selects by the literal '#271'/'#272' substrings and asserts
-    uniqueness -- the compound slugs avoid them on purpose, and any
-    new rule's must too (and its slug joins this parametrize list, or
-    its span copy goes unpinned).
+    uniqueness -- compound slugs must avoid them.
     """
     toml_path = (Path(__file__).parents[2] / "tools" / "differential"
                  / "expected_changes.toml")
     rules = tomllib.loads(toml_path.read_text())["change"]
-    matched = [r for r in rules if slug in r["issue"]]
-    assert len(matched) == 1
-    regex = matched[0]["name_regex"]
-    if slug == "cjk-delimited-nickname":
-        assert "[「」『』・･]" in regex, (
-            "the compound rule's delimiter set changed; decide "
-            "deliberately")
-    declared = {
-        (int(lo, 16), int(hi, 16))
-        for lo, hi in re.findall(r"\\u([0-9A-Fa-f]{4})-\\u([0-9A-Fa-f]{4})",
-                                 regex)}
-    expected = {span
-                for spans in _policy._SCRIPT_RANGES.values()
-                for span in spans
-                if span[1] <= 0xFFFF} | {(0xFF65, 0xFF65)}
-    assert declared == expected, (
-        f"{slug}'s codepoint lookahead declares {sorted(declared)}; "
-        f"_SCRIPT_RANGES' BMP spans are {sorted(expected)}")
+    table_spans = _expected_bmp_spans()
+    checked = []
+    for rule in rules:
+        regex = rule.get("name_regex")
+        if not isinstance(regex, str):
+            continue
+        declared = _declared_spans(regex)
+        if not declared & table_spans:
+            continue
+        checked.append(rule["issue"])
+        assert declared == table_spans, (
+            f"{rule['issue']!r} declares {sorted(declared)}; expected "
+            f"{sorted(table_spans)}")
+    # the canonical rule plus both compound rules, today -- if this
+    # count drops, a hand copy fell out of discovery's reach
+    assert len(checked) >= 3, checked
+    # the delimiter compound's trigger set is its own decision surface
+    nickname = [r for r in rules
+                if "cjk-delimited-nickname" in r["issue"]]
+    assert len(nickname) == 1
+    assert "[\u300C\u300D\u300E\u300F\u30FB\uFF65]" in nickname[0][
+        "name_regex"] or "[「」『』・･]" in nickname[0]["name_regex"], (
+        "the compound rule's delimiter set changed; decide deliberately")
 
 
 def test_cjk_corpus_matches_the_case_table() -> None:

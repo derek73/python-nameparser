@@ -89,7 +89,9 @@ def _effective_order(policy: Policy,
     order governs the positional read; anything else -- Latin, mixed
     scripts, no entry -- falls back to name_order. A 间隔号-divided
     name (`dot_divided`, #298) suppresses the whole lookup first: the
-    dot marks a transcription, which keeps name_order. Piece-level, after
+    dot marks a transcription -- playing the role pure katakana plays
+    in the kana license, orthography naming the convention -- so the
+    license yields to name_order. Piece-level, after
     title/suffix peeling: 'Dr. 毛泽东' is a wholly-Han NAME under a
     Latin title. Kana-licensed tokens (高橋みなみ, #272) resolve to
     HIRAGANA the same way a wholly-Han or wholly-Hangul token resolves
@@ -107,13 +109,8 @@ def _effective_order(policy: Policy,
     resolves the SCRIPT for a single token. This function calls that
     one per token below.
     """
-    # #298: a 间隔号-divided name is a transcription -- the B7 plays
-    # for Han exactly the role pure katakana plays in the kana license
-    # (orthography naming the convention), so the family-first license
-    # yields to the positional read. Checked before the script_orders
-    # lookup: the suppression outranks the license. Codepoint-scoped:
-    # only U+00B7 records (spec 2026-07-30 decision 5) -- the nakaguro
-    # is roster typography whose pieces the license reads correctly.
+    # #298 transcription marker -- see the docstring; codepoint-scoped
+    # (only U+00B7 records, spec 2026-07-30 decision 5)
     if dot_divided:
         return policy.name_order
     if not policy.script_orders:
