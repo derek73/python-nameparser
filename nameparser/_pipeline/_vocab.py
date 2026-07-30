@@ -10,10 +10,10 @@ from __future__ import annotations
 
 import re
 import unicodedata
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 
 from nameparser._lexicon import Lexicon, _normalize
-from nameparser._policy import Script, _SCRIPT_RANGES
+from nameparser._policy import Script, _SCRIPT_RANGES, _script_matcher
 
 # Ported verbatim from v1 (nameparser/config/regexes.py "initial") minus
 # its empty-string alternative -- WorkToken text is never empty. Kept in
@@ -36,16 +36,16 @@ D = re.compile(r"^d\.?$", re.IGNORECASE)
 # here DERIVES from it. (single_script's sweep was first written
 # per-char on the _EMOJI_RANGES precedent in _tokenize.py, on the
 # theory that a range test needs no regex; measured at token scale the
-# compiled regex wins by 3-9x, and by 89x on long tokens.)
-# Derived, never hand-written: one character class per script, in the
-# table's own key order (so single_script's FIRST-covering-entry rule
-# still describes what it does; the disjointness requirement that
-# makes that well-defined is stated with the table in _policy).
-_SCRIPT_PATTERNS: dict[Script, re.Pattern[str]] = {
-    script: re.compile(
-        "[" + "".join(f"\\U{lo:08x}-\\U{hi:08x}" for lo, hi in ranges)
-        + "]+")
-    for script, ranges in _SCRIPT_RANGES.items()
+# compiled regex wins by 3-9x, and by roughly 70x on long tokens.)
+# Derived, never hand-written -- even the class construction goes
+# through the shared factory: one wholly-of predicate per script, in
+# the table's own key order (a dict comprehension over _SCRIPT_RANGES
+# preserves it, so single_script's FIRST-covering-entry rule still
+# describes what it does; the disjointness requirement that makes
+# that well-defined is stated with the table in _policy).
+_SCRIPT_MATCHERS: dict[Script, Callable[[str], bool]] = {
+    script: _script_matcher(script, whole=True)
+    for script in _SCRIPT_RANGES
 }
 
 #: The Japanese repertoire: the union effective_script's kana license
@@ -53,16 +53,13 @@ _SCRIPT_PATTERNS: dict[Script, re.Pattern[str]] = {
 #: A frozenset, not the tuple this started as: resolve_script_set
 #: below is the "later task that needs membership" the tuple's
 #: original comment anticipated. Membership doesn't care about order,
-#: and the pattern built below doesn't either (a regex character
+#: and the matcher built below doesn't either (a regex character
 #: class matches the same set regardless of the order its ranges are
 #: written in).
 _JA_SCRIPTS = frozenset({Script.HAN, Script.HIRAGANA, Script.KATAKANA})
-_JA_PATTERN = re.compile(
-    "["
-    + "".join(f"\\U{lo:08x}-\\U{hi:08x}"
-              for s in _JA_SCRIPTS
-              for lo, hi in _SCRIPT_RANGES[s])
-    + "]+")
+# Not _wholly_japanese: that name belongs to the ja pack's own
+# predicate over the same union (nameparser/locales/ja.py).
+_wholly_ja = _script_matcher(*_JA_SCRIPTS, whole=True)
 
 
 def is_initial(text: str) -> bool:
@@ -192,11 +189,11 @@ def _normalized_for_script(text: str) -> str | None:
 
 
 def _classify(normalized: str) -> Script | None:
-    """The FIRST _SCRIPT_PATTERNS entry covering all of `normalized`
+    """The FIRST _SCRIPT_MATCHERS entry covering all of `normalized`
     (already NFC, via _normalized_for_script), else None. Shared by
     both public classifiers so each of them normalizes exactly once."""
-    for script, pattern in _SCRIPT_PATTERNS.items():
-        if pattern.fullmatch(normalized):
+    for script, matcher in _SCRIPT_MATCHERS.items():
+        if matcher(normalized):
             return script
     return None
 
@@ -224,7 +221,7 @@ def effective_script(text: str) -> Script | None:
     HIRAGANA carrier entry. Pure-katakana stays KATAKANA
     (single_script's answer): a lone katakana token is predominantly a
     transcribed foreign name, so nothing defaults on it."""
-    # None for both shapes _JA_PATTERN could never match anyway (empty
+    # None for both shapes _wholly_ja could never match anyway (empty
     # text, or all-ASCII text): real work, not a leftover "if text"
     # guard, since the ASCII case is one a bare emptiness check would
     # let through. The single normalized copy then serves both the
@@ -235,7 +232,7 @@ def effective_script(text: str) -> Script | None:
     script = _classify(normalized)
     if script is not None:
         return script
-    if _JA_PATTERN.fullmatch(normalized):
+    if _wholly_ja(normalized):
         return Script.HIRAGANA
     return None
 

@@ -116,9 +116,6 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     ("_tokenize", "_BIDI"): None,       # re_bidi, not a REGEXES key
     # Mirrors _pipeline._state.COMMA_CHARS, not nameparser.config
     ("_render", "_COMMA_CHAR"): None,
-    # #272: derived from _SCRIPT_RANGES itself (like _SCRIPT_PATTERNS),
-    # not hand-copied from anywhere -- no config counterpart to pin.
-    ("_vocab", "_JA_PATTERN"): None,
 }
 
 _MODULES = {"_assign": _assign, "_post_rules": _post_rules,

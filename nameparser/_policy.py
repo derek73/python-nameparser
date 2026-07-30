@@ -135,7 +135,8 @@ def _script_matcher(*scripts: Script,
     string CONTAINS any such character -- DEVIATES' contract, where
     over-declaring is the gate's safe direction. whole=True: True when
     the string is non-empty and consists WHOLLY of such characters --
-    the ja adapter's repertoire guard. Meant to be called at MODULE
+    the ja adapter's repertoire guard and _vocab's script
+    classifiers. Meant to be called at MODULE
     scope: "compiled once" is per matcher, and each call compiles a
     fresh pattern. The compiled pattern lives in the closure ON
     PURPOSE, and the compilation lives HERE rather than in a pack-
@@ -145,7 +146,9 @@ def _script_matcher(*scripts: Script,
     so much as IMPORTS re without exposing such a pattern fails
     "imports re but exposes no module-level pattern" -- so a pack must
     not import re at all; predicates built here keep the packs
-    invisible to that sweep by construction."""
+    invisible to that sweep by construction (and keep derived
+    matchers out of tests/v2/test_regex_sync.py's hand-copy
+    completeness sweep, which scans for module-level patterns)."""
     if not scripts:
         raise ValueError("_script_matcher needs at least one Script")
     cls = "".join(f"\\U{lo:08x}-\\U{hi:08x}"
