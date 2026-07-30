@@ -6,7 +6,8 @@ tests/v2/test_layering.py).
 from __future__ import annotations
 
 import dataclasses
-from collections.abc import Iterable, Mapping
+import re
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum, StrEnum, auto
 from typing import Any
@@ -125,6 +126,42 @@ _SCRIPT_RANGES: dict[Script, tuple[tuple[int, int], ...]] = {
     Script.HIRAGANA: ((0x3040, 0x309F),),
     Script.KATAKANA: ((0x30A0, 0x30FF),),
 }
+
+
+def _script_matcher(*scripts: Script,
+                    whole: bool = False) -> Callable[[str], bool]:
+    """A predicate over strings, compiled once from the union of the
+    named scripts' spans in _SCRIPT_RANGES. whole=False: True when the
+    string CONTAINS any such character -- DEVIATES' contract, where
+    over-declaring is the gate's safe direction. whole=True: True when
+    the string is non-empty and consists WHOLLY of such characters --
+    the ja adapter's repertoire guard. Meant to be called at MODULE
+    scope: "compiled once" is per matcher, and each call compiles a
+    fresh pattern. The compiled pattern lives in the closure ON
+    PURPOSE, and the compilation lives HERE rather than in a pack-
+    local closure: tests/v2/test_locales.py classifies any pack module
+    holding a module-level re.Pattern as a marker pack needing rotator
+    branch coverage, and its registry gate goes further -- a pack that
+    so much as IMPORTS re without exposing such a pattern fails
+    "imports re but exposes no module-level pattern" -- so a pack must
+    not import re at all; predicates built here keep the packs
+    invisible to that sweep by construction."""
+    if not scripts:
+        raise ValueError("_script_matcher needs at least one Script")
+    cls = "".join(f"\\U{lo:08x}-\\U{hi:08x}"
+                  for script in scripts
+                  for lo, hi in _SCRIPT_RANGES[script])
+    if whole:
+        pattern = re.compile(f"[{cls}]+")
+
+        def wholly(text: str) -> bool:
+            return pattern.fullmatch(text) is not None
+        return wholly
+    single = re.compile(f"[{cls}]")
+
+    def contains(text: str) -> bool:
+        return single.search(text) is not None
+    return contains
 
 
 # Order-spec constants (#270). Each reads as its contents because roles

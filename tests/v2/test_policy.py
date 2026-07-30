@@ -6,7 +6,7 @@ import pytest
 from nameparser._policy import (
     DEFAULT_SCRIPT_ORDERS, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
     GIVEN_FIRST, PatronymicRule, Policy, PolicyPatch, Script, UNSET,
-    apply_patch,
+    _script_matcher, apply_patch,
 )
 from nameparser._types import Role
 
@@ -64,6 +64,40 @@ def test_name_order_rejects_plain_string_tuples() -> None:
 def test_script_values_are_the_public_names() -> None:
     assert Script.HAN == "han" and Script.HANGUL == "hangul"
     assert Script.HIRAGANA == "hiragana" and Script.KATAKANA == "katakana"
+
+
+def test_script_matcher_contains_any() -> None:
+    has_han = _script_matcher(Script.HAN)
+    assert has_han("毛泽东")
+    assert has_han("Bruce 李")     # mixed input: CONTAINS is enough
+    assert not has_han("Bruce Lee")
+    assert not has_han("")
+
+
+def test_script_matcher_whole() -> None:
+    wholly_ja = _script_matcher(
+        Script.HAN, Script.HIRAGANA, Script.KATAKANA, whole=True)
+    assert wholly_ja("高橋みなみ")
+    assert wholly_ja("マイケル")        # katakana is in this union
+    assert not wholly_ja("高橋 みなみ")  # the space is outside it
+    assert not wholly_ja("")  # empty is not WHOLLY anything
+    # the same union in contains mode accepts what wholly rejects
+    assert _script_matcher(
+        Script.HAN, Script.HIRAGANA, Script.KATAKANA)("高橋 みなみ")
+
+
+def test_script_matcher_rejects_zero_scripts() -> None:
+    # an empty union would compile "[]" and raise a cryptic pattern
+    # error far from the mistake
+    with pytest.raises(ValueError, match="at least one Script"):
+        _script_matcher()
+
+
+def test_script_matcher_reaches_astral_han() -> None:
+    # the supplementary-plane span must survive the class compilation
+    # (\U escapes, not \u): 𠮷 is U+20BB7
+    assert _script_matcher(Script.HAN)("𠮷田")
+    assert _script_matcher(Script.HAN, whole=True)("𠮷田")
 
 
 def test_patronymic_rules_coerce_and_reject() -> None:
