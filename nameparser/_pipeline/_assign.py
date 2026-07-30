@@ -82,11 +82,14 @@ def _peel_leading_titles(pieces: tuple[tuple[int, ...], ...],
 
 def _effective_order(policy: Policy,
                      pieces: list[tuple[int, ...]],
-                     tokens: list[WorkToken]) -> tuple[Role, Role, Role]:
+                     tokens: list[WorkToken],
+                     *, dot_divided: bool) -> tuple[Role, Role, Role]:
     """script_orders resolution (#271): when every name piece is
     written wholly in ONE script that has an entry, that script's
     order governs the positional read; anything else -- Latin, mixed
-    scripts, no entry -- falls back to name_order. Piece-level, after
+    scripts, no entry -- falls back to name_order. A 间隔号-divided
+    name (`dot_divided`, #298) suppresses the whole lookup first: the
+    dot marks a transcription, which keeps name_order. Piece-level, after
     title/suffix peeling: 'Dr. 毛泽东' is a wholly-Han NAME under a
     Latin title. Kana-licensed tokens (高橋みなみ, #272) resolve to
     HIRAGANA the same way a wholly-Han or wholly-Hangul token resolves
@@ -104,6 +107,15 @@ def _effective_order(policy: Policy,
     resolves the SCRIPT for a single token. This function calls that
     one per token below.
     """
+    # #298: a 间隔号-divided name is a transcription -- the B7 plays
+    # for Han exactly the role pure katakana plays in the kana license
+    # (orthography naming the convention), so the family-first license
+    # yields to the positional read. Checked before the script_orders
+    # lookup: the suppression outranks the license. Codepoint-scoped:
+    # only U+00B7 records (spec 2026-07-30 decision 5) -- the nakaguro
+    # is roster typography whose pieces the license reads correctly.
+    if dot_divided:
+        return policy.name_order
     if not policy.script_orders:
         return policy.name_order
     # Collect every token's script rather than comparing pairwise as
@@ -232,7 +244,8 @@ def _assign_main(seg_idx: int, state: ParseState,
     # pieces only, so a Latin title or suffix ('Dr. 毛 泽东', '毛 泽东,
     # PhD') cannot make a wholly-CJK name look mixed-script.
     order = _effective_order(state.policy,
-                             [pieces[i] for i in name_pieces], tokens)
+                             [pieces[i] for i in name_pieces], tokens,
+                             dot_divided=bool(state.interpunct_offsets))
     roles = _name_positions(order, len(name_pieces))
     for pos, piece_idx in enumerate(name_pieces):
         _set_roles(tokens, pieces[piece_idx], roles[pos])
