@@ -746,12 +746,23 @@ def _marker_regexes(module: ModuleType) -> list[re.Pattern]:
 
 # Packs whose DEVIATES surface is defined by marker REGEXES -- derived,
 # never listed, same rule as the registry itself: a pack qualifies by
-# having any module-level re.Pattern, so zh (which declares by Han
+# having any module-level re.Pattern, so zh and ja (which declare by
 # codepoint range, derived from the shared table via _script_matcher,
-# so it holds no pattern of its own) drops out on its own and a future
-# marker-regex pack cannot silently miss branch coverage.
+# so they hold no pattern of their own) drop out on their own and a
+# future marker-regex pack cannot silently miss branch coverage.
 _MARKER_REGEX_PACKS = tuple(code for code in sorted(_PACKS)
                             if _marker_regexes(_PACKS[code]))
+
+
+def test_range_declaring_packs_stay_out_of_marker_classification() -> None:
+    # Load-bearing since the packs derive from the shared table: zh/ja
+    # hold no module-level re.Pattern because _script_matcher's closure
+    # hides the compiled class. A pack author who "simplifies" one back
+    # to a module-level pattern flips its classification into the
+    # rotator branch-coverage sweep, which a codepoint-range predicate
+    # cannot satisfy.
+    assert "zh" not in _MARKER_REGEX_PACKS
+    assert "ja" not in _MARKER_REGEX_PACKS
 
 
 def test_registry_is_the_pack_contract() -> None:
