@@ -66,7 +66,8 @@ class Script(StrEnum):
 # so the packs' predicates build on it too, through _script_matcher
 # below (the hand-copies this replaced dated from when the table
 # lived in the pipeline, which packs must not import).
-# HAN: the ideographic iteration mark U+3005, the URO plus Extension
+# HAN: the ideographic iteration mark U+3005 and the shime mark
+# U+3006, the URO plus Extension
 # A, the compatibility block, and the supplementary-plane block
 # (Ext B-I + CJK Compat Ideographs Supplement, 0x20000-0x323AF) --
 # rare surnames are the biggest real source of supplementary-plane
@@ -76,13 +77,21 @@ class Script(StrEnum):
 # U+3005 々 is the block-vs-Script case, running the OPPOSITE way to
 # U+30FB below: 々 already IS Script=Han under UAX #24 (Scripts.txt
 # reads `3005 ; Han`), but it sits in CJK Symbols and Punctuation,
-# outside every CJK ideograph block this table spans -- so the
-# singleton entry is what a BLOCK table needs to reach a character the
-# Script property would have classified correctly for free. It earns
-# the reach: 々 repeats the preceding kanji and appears only inside
-# Han-written names -- 佐々木 (Sasaki, a top-20 Japanese surname),
-# 野々村, 奈々. Omitting it made 佐々木 a mixed-script token: the name
-# reversed and never gated into segmentation.
+# outside every CJK ideograph block this table spans -- so a
+# singleton entry was what a BLOCK table needed to reach a character
+# the Script property would have classified correctly for free. It
+# earns the reach: 々 repeats the preceding kanji and appears only
+# inside Han-written names -- 佐々木 (Sasaki, a top-20 Japanese
+# surname), 野々村, 奈々. Omitting it made 佐々木 a mixed-script token:
+# the name reversed and never gated into segmentation.
+# U+3006 〆 (the shime mark) extends that singleton to a two-codepoint
+# span on a DIFFERENT justification: unlike 々, 〆 is Script=Common
+# under UAX #24, so this is the table deliberately reaching PAST the
+# Script property, not around a block boundary -- justified because 〆
+# functions solely as a component of Japanese surnames (〆木 Shimeki,
+# 〆谷 Shimetani, 〆野) and appears in no other script's names.
+# Leaving it out made 〆木 a mixed-script token: the name reversed and
+# never gated into segmentation.
 # HANGUL: precomposed syllables only -- modern Korean
 # text never writes names as bare jamo.
 # HIRAGANA/KATAKANA (#272): the two kana blocks, each in full. There
@@ -120,7 +129,7 @@ class Script(StrEnum):
 # future script would make the result order-dependent instead of
 # well-defined.
 _SCRIPT_RANGES: dict[Script, tuple[tuple[int, int], ...]] = {
-    Script.HAN: ((0x3005, 0x3005), (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
+    Script.HAN: ((0x3005, 0x3006), (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
                  (0xF900, 0xFAFF), (0x20000, 0x323AF)),
     Script.HANGUL: ((0xAC00, 0xD7A3),),
     Script.HIRAGANA: ((0x3040, 0x309F),),

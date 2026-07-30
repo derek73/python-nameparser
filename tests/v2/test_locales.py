@@ -269,6 +269,26 @@ def test_ja_adapter_guard_stack_against_a_stub(
     assert seg("林") is None                # namedivider raises below 2
 
 
+def test_ja_adapter_declines_shime_tokens(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # Since U+3006 classifies as Han, 〆木太郎 is wholly Japanese and
+    # reaches the adapter -- but namedivider 0.4.x has no knowledge of
+    # the shime mark: measured, its rule path cuts every attested 〆
+    # surname at offset 1 (〆木太郎 -> 〆 | 木太郎, score 1.0,
+    # algorithm='rule'), a wrong family arriving with NO SEGMENTATION
+    # report because 1.0 clears the floor. The adapter declines these
+    # tokens before the divider is ever consulted.
+    calls: list[str] = []
+
+    def divide(text: str) -> _FakeDivided:
+        calls.append(text)
+        return _FakeDivided(text[:1], text[1:], 1.0)
+
+    _fake_namedivider(monkeypatch, divide)
+    assert locales.ja_segmenter()("〆木太郎") is None
+    assert calls == []          # the decline sits before divide_name
+
+
 def test_ja_adapter_defensive_branches_against_a_stub(
         monkeypatch: pytest.MonkeyPatch) -> None:
     # reconstruction failure -> decline; an empty side -> the stated

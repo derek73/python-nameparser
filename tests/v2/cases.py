@@ -619,10 +619,25 @@ CASES: tuple[Case, ...] = (
          notes="々 (U+3005, the ideographic iteration mark) repeats "
                "the preceding kanji and is Script=Han under UAX #24, "
                "but sits outside every CJK ideograph BLOCK -- and the "
-               "classifier is a block table, so it needs a singleton "
+               "classifier is a block table, so it needs its own "
                "entry to count as Han; without one 佐々木 -- a top-20 "
                "Japanese surname -- would be a mixed-script token and "
                "reverse"),
+    Case("ja_shime_mark_is_han", "〆木 太郎",
+         {"family": "〆木", "given": "太郎"},
+         classification="fix(shime-mark)",
+         notes="〆 (U+3006, the shime mark) opens real Japanese "
+               "surnames -- 〆木 Shimeki, 〆谷 Shimetani, 〆野 -- but "
+               "carries Script=Common under UAX #24; the table counts "
+               "it as Han anyway (a deliberate step PAST the Script "
+               "property, unlike 々's), else 〆木 is a mixed-script "
+               "token and the name reverses"),
+    Case("ja_shime_lone_token_takes_family", "〆木太郎",
+         {"family": "〆木太郎"},
+         classification="fix(shime-mark)",
+         notes="wholly-Han lone token under the family-first entry: "
+               "the whole token lands in family, unsegmented by "
+               "default"),
     Case("ja_nakaguro_inside_a_nickname",
          "山田 太郎 (マイケル・ジャクソン)",
          {"family": "山田", "given": "太郎",

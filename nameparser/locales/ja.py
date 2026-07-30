@@ -127,8 +127,10 @@ def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
     matters for offline, sandboxed or air-gapped deployments.
 
     The adapter declines -- returns None, leaving the token whole --
-    for text outside the Japanese repertoire, for text too short to
-    divide, for any answer that fails to reconstruct its input, and for
+    for text outside the Japanese repertoire, for text bearing the
+    shime mark 〆 (namedivider 0.4.x's rule path cuts it in the wrong
+    place), for text too short to divide, for any answer that fails to
+    reconstruct its input, and for
     any score outside [0, 1] by more than float noise (a divider
     scoring 87.0 is broken, and its division is worth no more than its
     score). An
@@ -167,6 +169,15 @@ def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
         # repertoire rather than hand it to namedivider, which would
         # answer for it regardless -- the same union DEVIATES declares.
         if not _wholly_japanese(text):
+            return None
+        # namedivider 0.4.x has no knowledge of the shime mark: its
+        # rule path cuts 〆木太郎 to 〆 | 木太郎 at confidence 1.0
+        # (measured -- wrong for every attested 〆 surname: 〆木, 〆谷,
+        # 〆野), so a wrong family would arrive with no SEGMENTATION
+        # report. Decline instead: the family-first ORDER fix for 〆
+        # stands regardless, and division can return when a divider
+        # knows the mark.
+        if "〆" in text:
             return None
         # namedivider RAISES below two characters ("Name length needs
         # at least 2 chars"), and a segmenter's exceptions propagate by
