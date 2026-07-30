@@ -620,6 +620,17 @@ def _module_level_decline(text: str) -> Segmentation | None:
     return None   # module-level so pickle can find it
 
 
+# Inert sentinels for the plumbing tests below, which only ever compare
+# identity. Two of them, because the override test needs the loser and
+# the winner to be DISTINCT objects or its assertion is vacuous.
+def _decline_a(text: str) -> Segmentation | None:
+    return None
+
+
+def _decline_b(text: str) -> Segmentation | None:
+    return None
+
+
 def test_parser_segmenter_is_keyword_only_and_validated() -> None:
     assert Parser().segmenter is None
     with pytest.raises(TypeError, match="callable"):
@@ -629,11 +640,9 @@ def test_parser_segmenter_is_keyword_only_and_validated() -> None:
 
 
 def test_parser_for_carries_the_base_segmenter() -> None:
-    def seg(text: str) -> Segmentation | None:
-        return None
     # not given: the base's carries through unchanged
-    p = parser_for(locales.get("zh"), base=Parser(segmenter=seg))
-    assert p.segmenter is seg
+    p = parser_for(locales.get("zh"), base=Parser(segmenter=_decline_a))
+    assert p.segmenter is _decline_a
 
 
 def test_parser_for_rejects_a_non_parser_base() -> None:
@@ -642,23 +651,16 @@ def test_parser_for_rejects_a_non_parser_base() -> None:
 
 
 def test_parser_for_takes_a_segmenter_keyword() -> None:
-    def seg(text: str) -> Segmentation | None:
-        return None
-    p = parser_for(locales.get("zh"), segmenter=seg)
-    assert p.segmenter is seg
+    p = parser_for(locales.get("zh"), segmenter=_decline_a)
+    assert p.segmenter is _decline_a
     assert parser_for(locales.get("zh")).segmenter is None
 
 
 def test_parser_for_segmenter_keyword_overrides_the_base() -> None:
     # later wins, the same rule scalar policy fields follow
-    def from_base(text: str) -> Segmentation | None:
-        return None
-
-    def explicit(text: str) -> Segmentation | None:
-        return None
-    p = parser_for(locales.get("zh"), base=Parser(segmenter=from_base),
-                   segmenter=explicit)
-    assert p.segmenter is explicit
+    p = parser_for(locales.get("zh"), base=Parser(segmenter=_decline_a),
+                   segmenter=_decline_b)
+    assert p.segmenter is _decline_b
 
 
 def test_parser_for_segmenter_none_clears_the_base() -> None:
@@ -669,13 +671,11 @@ def test_parser_for_segmenter_none_clears_the_base() -> None:
     # (the test above), and this is how you derive an unsegmented
     # parser from a segmented one without rebuilding its lexicon and
     # policy by hand.
-    def seg(text: str) -> Segmentation | None:
-        return None
-    base = Parser(segmenter=seg)
+    base = Parser(segmenter=_decline_a)
     pack = locales.get("zh")
     assert parser_for(pack, base=base, segmenter=None).segmenter is None
     # ...and the base is untouched: parser_for builds a fresh Parser
-    assert base.segmenter is seg
+    assert base.segmenter is _decline_a
 
 
 def test_parser_picklability_is_conditional_on_the_segmenter() -> None:

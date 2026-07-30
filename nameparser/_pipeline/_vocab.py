@@ -249,6 +249,16 @@ def _normalized_for_script(text: str) -> str | None:
     return unicodedata.normalize("NFC", text)
 
 
+def _classify(normalized: str) -> Script | None:
+    """The FIRST _SCRIPT_PATTERNS entry covering all of `normalized`
+    (already NFC, via _normalized_for_script), else None. Shared by
+    both public classifiers so each of them normalizes exactly once."""
+    for script, pattern in _SCRIPT_PATTERNS.items():
+        if pattern.fullmatch(normalized):
+            return script
+    return None
+
+
 def single_script(text: str) -> Script | None:
     """The one Script whose ranges cover EVERY char of `text`, else
     None (mixed-script text has no well-defined convention to apply;
@@ -259,10 +269,7 @@ def single_script(text: str) -> Script | None:
     normalized = _normalized_for_script(text)
     if normalized is None:
         return None
-    for script, pattern in _SCRIPT_PATTERNS.items():
-        if pattern.fullmatch(normalized):
-            return script
-    return None
+    return _classify(normalized)
 
 
 def effective_script(text: str) -> Script | None:
@@ -275,26 +282,18 @@ def effective_script(text: str) -> Script | None:
     HIRAGANA carrier entry. Pure-katakana stays KATAKANA
     (single_script's answer): a lone katakana token is predominantly a
     transcribed foreign name, so nothing defaults on it."""
-    script = single_script(text)
+    # None for both shapes _JA_PATTERN could never match anyway (empty
+    # text, or all-ASCII text): real work, not a leftover "if text"
+    # guard, since the ASCII case is one a bare emptiness check would
+    # let through. The single normalized copy then serves both the
+    # single-script answer and the license below.
+    normalized = _normalized_for_script(text)
+    if normalized is None:
+        return None
+    script = _classify(normalized)
     if script is not None:
         return script
-    # Renormalizes text that single_script (above) already normalized
-    # once: deliberately NOT hoisted into a shared `_classify(normalized)`
-    # helper. The second call only runs on the fall-through path (a
-    # token single_script could not classify at all, i.e. genuinely
-    # mixed-script or empty/ASCII), never on the common single-script
-    # hit above, so it is a quick re-check on already-NFC text, not
-    # measured work -- the per-char-vs-regex history in this module's
-    # header is what a real cost here would look like, and this isn't
-    # it.
-    # normalized is None for both shapes _JA_PATTERN could never match
-    # anyway (empty text, or the all-ASCII text single_script's fast
-    # path already ruled out) -- real work, not a leftover "if text"
-    # guard: unlike the pre-NFC version, None here also covers the
-    # ASCII case, which single_script's own empty check alone would
-    # not.
-    normalized = _normalized_for_script(text)
-    if normalized is not None and _JA_PATTERN.fullmatch(normalized):
+    if _JA_PATTERN.fullmatch(normalized):
         return Script.HIRAGANA
     return None
 

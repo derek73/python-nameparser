@@ -49,6 +49,19 @@ def _fake(splits: tuple[int, ...],
     return segmenter
 
 
+def _capture(
+        splits: tuple[int, ...] = (2,)) -> tuple[list[str], Segmenter]:
+    """_fake, plus the list of texts it was handed: the two cases below
+    that pin WHETHER and WITH WHAT the stage consults a segmenter need
+    the same closure."""
+    asked: list[str] = []
+
+    def segmenter(text: str) -> Segmentation | None:
+        asked.append(text)
+        return Segmentation(splits)
+    return asked, segmenter
+
+
 def _declines(text: str) -> Segmentation | None:
     return None
 
@@ -232,12 +245,7 @@ def test_vocabulary_wins_over_the_segmenter() -> None:
     # precedence, and the reason parser_for(ZH, JA, segmenter=...)
     # composes: a matched surname is a dictionary certainty, so the
     # segmenter is not even asked
-    asked: list[str] = []
-
-    def seg(text: str) -> Segmentation | None:
-        asked.append(text)
-        return Segmentation((2,))
-
+    asked, seg = _capture()
     state = _run("毛泽东", policy=_JA, segmenter=seg)
     assert _texts(state) == ["毛", "泽东"]
     assert asked == []
@@ -398,14 +406,7 @@ def test_the_segmenter_is_handed_the_gated_token_only() -> None:
     # the difference: it is skipped by the gate (no script) and is not
     # a neighbour for the precondition either, so the consult happens
     # and the argument is observable.
-    asked: list[str] = []
-
-    def seg(text: str) -> Segmentation | None:
-        asked.append(text)
-        return Segmentation((2,))
-
+    asked, seg = _capture()
     out = _run("Dr 山田太郎", policy=_JA, segmenter=seg)
     assert asked == ["山田太郎"]
     assert _texts(out) == ["Dr", "山田", "太郎"]
-
-

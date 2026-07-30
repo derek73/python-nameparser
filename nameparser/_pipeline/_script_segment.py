@@ -30,10 +30,9 @@ surname never reaches the segmenter at all -- 高橋一郎 still splits
 packs are corpus ALTERNATIVES, one per corpus; stacking them is for
 genuinely mixed data that accepts that trade. Its Segmentation may
 cut anywhere and any number of times, which is why the split path
-below is written for n cuts and the vocabulary hit is simply its
-one-cut case. One precondition guards it that the vocabulary has no
-twin of: a segmenter answers where an UNDIVIDED name divides, so it is
-consulted only when the gated token is the name part's ONLY
+below takes n cuts. One precondition guards it that the vocabulary
+has no twin of: a segmenter answers where an UNDIVIDED name divides,
+so it is consulted only when the gated token is the name part's ONLY
 script-written one -- "山田 太郎" was divided by its writer and must
 not have its family divided again (a Latin title or suffix draws no
 such boundary). A segmenter's own exceptions PROPAGATE -- the single
@@ -109,14 +108,9 @@ from nameparser._types import AmbiguityKind, Segmentation, Span
 #: STATISTICALLY divided name carries a SEGMENTATION report, and every
 #: RULE-divided one -- the kana boundary, a two-character name,
 #: namedivider's specific-name rules -- carries none.
-#: One case is worth writing down rather than rediscovering: the
-#: two-character division is a PRESUMPTION, not a measurement (usage.rst
-#: says exactly that), yet namedivider scores it 1.0 and this floor
-#: therefore keeps it silent. That is the divider's own stated
-#: certainty, accepted here as-is rather than second-guessed by a
-#: length rule of ours. If presumption-reporting is ever wanted, the
-#: hook is namedivider's DividedName.algorithm, which names WHICH rule
-#: answered -- not the score, which cannot tell the two apart.
+#: namedivider scores its own two-character rule 1.0, so this floor
+#: keeps that division silent -- see locales/ja.py for why the
+#: presumption is accepted as stated.
 #: Not configurable in 2.x (YAGNI).
 _SEGMENTER_CONFIDENCE_FLOOR = 0.9
 
@@ -136,9 +130,7 @@ def _remap(run: tuple[int, ...], split_at: int,
 
 
 def _pieces(text: str, splits: tuple[int, ...]) -> tuple[str, ...]:
-    """`text` cut at every offset in `splits`: n offsets, n+1 pieces.
-    One idiom for both callers -- the split itself and the report that
-    describes it must never disagree about what the cuts produce."""
+    """`text` cut at every offset in `splits`: n offsets, n+1 pieces."""
     cuts = (0, *splits, len(text))
     return tuple(text[a:b] for a, b in zip(cuts, cuts[1:]))
 
@@ -149,13 +141,11 @@ def _split(state: ParseState, i: int, splits: tuple[int, ...],
     a SEGMENTATION report when there is one.
 
     The offsets arrive non-empty, ascending and interior whatever chose
-    them. From a segmenter: non-empty is the caller's own check, and
+    them. From a segmenter: non-empty is the caller's own check,
     strictly ascending with each >= 1 is Segmentation.__post_init__'s,
-    while the last offset being < len(text) is the caller's bounds
-    check -- that half cannot live in Segmentation, which never sees
-    the text. From the vocabulary: the single offset is >= 1 and
-    < len(text) by the range(cap, 0, -1) construction and its len-1
-    cap.
+    and the last offset is < len(text) -- checked by the caller. From
+    the vocabulary: the single offset is >= 1 and < len(text) by the
+    range(cap, 0, -1) construction and its len-1 cap.
 
     The ONE split path: the vocabulary hit is the single-offset case
     and the segmenter's answer the general one, so neither can drift

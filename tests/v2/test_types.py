@@ -528,5 +528,3 @@ def test_with_field_tokens_rejects_mismatched_roles() -> None:
     with pytest.raises(ValueError, match="has role family, not given"):
         name._with_field_tokens(
             {Role.GIVEN: (Token("x", None, Role.FAMILY),)})
-
-
