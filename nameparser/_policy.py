@@ -67,8 +67,8 @@ class Script(StrEnum):
 # below (the table lives here rather than in the pipeline because
 # packs must not import the pipeline).
 # HAN: the ideographic iteration mark U+3005 and the shime mark
-# U+3006, the URO plus Extension
-# A, the compatibility block, and the supplementary-plane block
+# U+3006, the URO plus Extension A, the compatibility block, and the
+# supplementary-plane block
 # (Ext B-I + CJK Compat Ideographs Supplement, 0x20000-0x323AF) --
 # rare surnames are the biggest real source of supplementary-plane
 # hanzi in personal names (e.g. 𠮷田's 𠮷, U+20BB7), so leaving them
@@ -92,8 +92,6 @@ class Script(StrEnum):
 # Shimeki, 〆谷 Shimetani, 〆野) -- its other uses (the envelope
 # closing mark, 〆切) never reach a name parser -- and it appears in
 # no other script's names.
-# Leaving it out made 〆木 a mixed-script token: the name reversed and
-# never gated into segmentation.
 # HANGUL: precomposed syllables only -- modern Korean
 # text never writes names as bare jamo.
 # HIRAGANA/KATAKANA (#272): the two kana blocks, each in full. There
@@ -138,6 +136,12 @@ _SCRIPT_RANGES: dict[Script, tuple[tuple[int, int], ...]] = {
     Script.KATAKANA: ((0x30A0, 0x30FF),),
 }
 
+#: The Japanese repertoire: the three scripts Japanese names draw on.
+#: The kana license (_pipeline/_vocab.py's effective_script), the ja
+#: pack's DEVIATES, and the segmenter adapter's repertoire guard all
+#: quantify over this one union (HANGUL simply omitted).
+_JA_SCRIPTS = (Script.HAN, Script.HIRAGANA, Script.KATAKANA)
+
 
 def _script_matcher(*scripts: Script,
                     whole: bool = False) -> Callable[[str], bool]:
@@ -167,17 +171,14 @@ def _script_matcher(*scripts: Script,
     cls = "".join(f"\\U{lo:08x}-\\U{hi:08x}"
                   for script in scripts
                   for lo, hi in _SCRIPT_RANGES[script])
-    if whole:
-        pattern = re.compile(f"[{cls}]+")
+    # one pattern serves both modes: fullmatch of [cls]+ is wholly-of,
+    # and search over [cls]+ is exactly contains-any
+    pattern = re.compile(f"[{cls}]+")
+    match = pattern.fullmatch if whole else pattern.search
 
-        def wholly(text: str) -> bool:
-            return pattern.fullmatch(text) is not None
-        return wholly
-    single = re.compile(f"[{cls}]")
-
-    def contains(text: str) -> bool:
-        return single.search(text) is not None
-    return contains
+    def matcher(text: str) -> bool:
+        return match(text) is not None
+    return matcher
 
 
 # Order-spec constants (#270). Each reads as its contents because roles

@@ -59,7 +59,8 @@ from typing import TYPE_CHECKING
 
 from nameparser._lexicon import Lexicon
 from nameparser._locale import Locale
-from nameparser._policy import PolicyPatch, Script, _script_matcher
+from nameparser._policy import (PolicyPatch, Script, _JA_SCRIPTS,
+                                _script_matcher)
 from nameparser._types import Segmentation
 
 if TYPE_CHECKING:
@@ -72,21 +73,18 @@ JA = Locale(
         segment_scripts=frozenset({Script.HAN, Script.HIRAGANA})),
 )
 
-#: The scripts DEVIATES and the adapter quantify over. KATAKANA is
-#: here even though the pack never ACTIVATES it: a katakana-bearing
-#: token can still be a kana-licensed composite the pack acts on
-#: (山田エミ) -- DEVIATES must declare it, and the adapter must not
-#: decline it. A pure-katakana token never reaches THE ADAPTER:
-#: KATAKANA is in no activation set, so the stage's own gate stops it
-#: before the segmenter is consulted. DEVIATES still declares one,
-#: and must: it is a predicate over any name at all, called before
-#: any gate runs, and over-declaring is its safe direction by design.
-_JA_SCRIPTS = (Script.HAN, Script.HIRAGANA, Script.KATAKANA)
-
-# Both compiled by _policy's factory from the shared codepoint table,
-# so the pack carries no spans of its own to drift out of sync: the
-# contains-any form backs DEVIATES, the whole-token form is the
-# adapter's repertoire guard.
+# Both compiled by _policy's factory from the shared codepoint table
+# and its _JA_SCRIPTS union, so the pack carries no spans of its own
+# to drift out of sync: the contains-any form backs DEVIATES, the
+# whole-token form is the adapter's repertoire guard. Both match
+# KATAKANA even though the pack never ACTIVATES it: a katakana-bearing
+# token can still be a kana-licensed composite the pack acts on
+# (山田エミ) -- DEVIATES must declare it, and the adapter must not
+# decline it. A pure-katakana token never reaches THE ADAPTER:
+# KATAKANA is in no activation set, so the stage's own gate stops it
+# before the segmenter is consulted. DEVIATES still declares one,
+# and must: it is a predicate over any name at all, called before
+# any gate runs, and over-declaring is its safe direction by design.
 _has_japanese = _script_matcher(*_JA_SCRIPTS)
 _wholly_japanese = _script_matcher(*_JA_SCRIPTS, whole=True)
 
@@ -160,6 +158,12 @@ def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
                else namedivider.BasicNameDivider())
 
     def segment(text: str) -> Segmentation | None:
+        # namedivider RAISES below two characters ("Name length needs
+        # at least 2 chars"), and a segmenter's exceptions propagate by
+        # contract, so a one-character token -- routine in spaced input
+        # like "林 太郎" -- must be declined here, not passed on.
+        if len(text) < 2:
+            return None
         # segment_scripts UNIONS under pack composition, so this can
         # receive tokens of any other activated script (hangul, under
         # the default policy). Decline anything outside the Japanese
@@ -180,12 +184,6 @@ def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
         # a SEGMENTATION report -- swept in anyway, because decline is
         # the safe direction and mid-token 〆 is vanishingly rare.
         if "〆" in text:
-            return None
-        # namedivider RAISES below two characters ("Name length needs
-        # at least 2 chars"), and a segmenter's exceptions propagate by
-        # contract, so a one-character token -- routine in spaced input
-        # like "林 太郎" -- must be declined here, not passed on.
-        if len(text) < 2:
             return None
         result = divider.divide_name(text)
         if result.family + result.given != text:

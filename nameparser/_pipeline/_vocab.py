@@ -13,7 +13,8 @@ import unicodedata
 from collections.abc import Callable, Iterable
 
 from nameparser._lexicon import Lexicon, _normalize
-from nameparser._policy import Script, _SCRIPT_RANGES, _script_matcher
+from nameparser._policy import (Script, _JA_SCRIPTS, _SCRIPT_RANGES,
+                                _script_matcher)
 
 # Ported verbatim from v1 (nameparser/config/regexes.py "initial") minus
 # its empty-string alternative -- WorkToken text is never empty. Kept in
@@ -39,26 +40,15 @@ D = re.compile(r"^d\.?$", re.IGNORECASE)
 # compiled regex wins by 3-9x, and by roughly 70x on long tokens.)
 # Derived, never hand-written -- even the class construction goes
 # through the shared factory: one wholly-of predicate per script, in
-# the table's own key order (a dict comprehension over _SCRIPT_RANGES
-# preserves it, so single_script's FIRST-covering-entry rule still
-# describes what it does; the disjointness requirement that makes
-# that well-defined is stated with the table in _policy).
+# the table's key order -- the FIRST-covering-entry rule _classify
+# documents.
 _SCRIPT_MATCHERS: dict[Script, Callable[[str], bool]] = {
     script: _script_matcher(script, whole=True)
     for script in _SCRIPT_RANGES
 }
 
-#: The Japanese repertoire: the union effective_script's kana license
-#: quantifies over -- HAN, HIRAGANA, KATAKANA (HANGUL simply omitted).
-#: A frozenset, not the tuple this started as: resolve_script_set
-#: below is the "later task that needs membership" the tuple's
-#: original comment anticipated. Membership doesn't care about order,
-#: and the matcher built below doesn't either (a regex character
-#: class matches the same set regardless of the order its ranges are
-#: written in).
-_JA_SCRIPTS = frozenset({Script.HAN, Script.HIRAGANA, Script.KATAKANA})
-# Not _wholly_japanese: that name belongs to the ja pack's own
-# predicate over the same union (nameparser/locales/ja.py).
+# The whole-token matcher over _policy's _JA_SCRIPTS union, backing
+# effective_script's kana license.
 _wholly_ja = _script_matcher(*_JA_SCRIPTS, whole=True)
 
 
@@ -261,6 +251,6 @@ def resolve_script_set(scripts: Iterable[Script]) -> Script | None:
     found = frozenset(scripts)
     if len(found) <= 1:
         return next(iter(found), None)
-    if found <= _JA_SCRIPTS:
+    if found.issubset(_JA_SCRIPTS):
         return Script.HIRAGANA
     return None

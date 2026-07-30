@@ -276,12 +276,9 @@ def test_ja_adapter_guard_stack_against_a_stub(
 def test_ja_adapter_declines_shime_tokens(
         monkeypatch: pytest.MonkeyPatch) -> None:
     # Since U+3006 classifies as Han, 〆木太郎 is wholly Japanese and
-    # reaches the adapter -- but namedivider 0.4.x has no knowledge of
-    # the shime mark: measured, its rule path cuts every attested 〆
-    # surname at offset 1 (〆木太郎 -> 〆 | 木太郎, score 1.0,
-    # algorithm='rule'), a wrong family arriving with NO SEGMENTATION
-    # report because 1.0 clears the floor. The adapter declines these
-    # tokens before the divider is ever consulted.
+    # reaches the adapter, but the divider is never consulted for 〆
+    # tokens -- see the decline comment in ja.py for the measured
+    # mis-cut it prevents.
     calls: list[str] = []
 
     def divide(text: str) -> _FakeDivided:
@@ -491,10 +488,9 @@ def test_ja_divides_an_astral_kanji_name() -> None:
 
 @_needs_ja
 def test_namedivider_still_miscuts_shime_names() -> None:
-    # The canary behind the adapter's 〆 decline: namedivider 0.4.x's
-    # rule path cuts every attested 〆 surname at offset 1 with
-    # confidence 1.0. When this fails, namedivider learned the mark --
-    # revisit the decline in ja.py rather than deleting this test.
+    # The canary behind the adapter's 〆 decline: when this fails,
+    # namedivider learned the mark -- revisit the decline in ja.py
+    # rather than deleting this test.
     import namedivider
     result = namedivider.BasicNameDivider().divide_name("〆木太郎")
     assert (result.family, result.given) == ("〆", "木太郎")
