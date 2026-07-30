@@ -6,7 +6,7 @@ import pytest
 from nameparser._policy import (
     DEFAULT_SCRIPT_ORDERS, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
     GIVEN_FIRST, PatronymicRule, Policy, PolicyPatch, Script, UNSET,
-    _script_matcher, apply_patch,
+    _SCRIPT_RANGES, _script_matcher, apply_patch,
 )
 from nameparser._types import Role
 
@@ -98,6 +98,13 @@ def test_script_matcher_reaches_astral_han() -> None:
     # (\U escapes, not \u): 𠮷 is U+20BB7
     assert _script_matcher(Script.HAN)("𠮷田")
     assert _script_matcher(Script.HAN, whole=True)("𠮷田")
+
+
+def test_every_script_member_has_a_range_entry() -> None:
+    # a member added to the enum alone would be accepted by
+    # Policy(segment_scripts=...) yet never classified by
+    # single_script -- a silent no-op until this fails
+    assert set(_SCRIPT_RANGES) == set(Script)
 
 
 def test_patronymic_rules_coerce_and_reject() -> None:

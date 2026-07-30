@@ -76,12 +76,11 @@ JA = Locale(
 #: here even though the pack never ACTIVATES it: a katakana-bearing
 #: token can still be a kana-licensed composite the pack acts on
 #: (山田エミ) -- DEVIATES must declare it, and the adapter must not
-#: decline it. A
-#: pure-katakana token never reaches THE ADAPTER: KATAKANA is in no
-#: activation set, so the stage's own gate stops it before the
-#: segmenter is consulted. DEVIATES still declares one, and must: it
-#: is a predicate over any name at all, called before any gate runs,
-#: and over-declaring is its safe direction by design.
+#: decline it. A pure-katakana token never reaches THE ADAPTER:
+#: KATAKANA is in no activation set, so the stage's own gate stops it
+#: before the segmenter is consulted. DEVIATES still declares one,
+#: and must: it is a predicate over any name at all, called before
+#: any gate runs, and over-declaring is its safe direction by design.
 _JA_SCRIPTS = (Script.HAN, Script.HIRAGANA, Script.KATAKANA)
 
 # Both compiled by _policy's factory from the shared codepoint table,
@@ -129,15 +128,13 @@ def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
     The adapter declines -- returns None, leaving the token whole --
     for text outside the Japanese repertoire, for text bearing the
     shime mark 〆 (namedivider 0.4.x's rule path cuts it in the wrong
-    place), for text too short to divide, for any answer that fails to
-    reconstruct its input, and for
-    any score outside [0, 1] by more than float noise (a divider
-    scoring 87.0 is broken, and its division is worth no more than its
-    score). An
-    answer that puts the whole token on one side comes back as
-    "confidently one token" rather than a decline: the divider read it
-    and found nothing to cut, which is not the same as having no
-    opinion.
+    place), for text too short to divide, for any answer that fails
+    to reconstruct its input, and for any score outside [0, 1] by
+    more than float noise (a divider scoring 87.0 is broken, and its
+    division is worth no more than its score). An answer that puts
+    the whole token on one side comes back as "confidently one token"
+    rather than a decline: the divider read it and found nothing to
+    cut, which is not the same as having no opinion.
     Answers arrive with namedivider's own confidence, which the parsing
     stage compares against its floor to decide whether to report a
     SEGMENTATION ambiguity: namedivider scores a rule-based division
@@ -176,7 +173,12 @@ def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
         # 〆野), so a wrong family would arrive with no SEGMENTATION
         # report. Decline instead: the family-first ORDER fix for 〆
         # stands regardless, and division can return when a divider
-        # knows the mark.
+        # knows the mark. The blanket check is deliberately broader
+        # than that rule-path failure: mid-token 〆 (山〆太郎) comes
+        # back 山 | 〆太郎 at 0.375 on the kanji_feature path
+        # (measured), a low-confidence answer that WOULD have carried
+        # a SEGMENTATION report -- swept in anyway, because decline is
+        # the safe direction and mid-token 〆 is vanishingly rare.
         if "〆" in text:
             return None
         # namedivider RAISES below two characters ("Name length needs

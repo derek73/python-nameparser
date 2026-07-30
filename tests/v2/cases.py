@@ -638,6 +638,11 @@ CASES: tuple[Case, ...] = (
          notes="wholly-Han lone token under the family-first entry: "
                "the whole token lands in family, unsegmented by "
                "default"),
+    Case("ja_shime_with_kana_given", "〆木 ひろ",
+         {"family": "〆木", "given": "ひろ"},
+         classification="fix(shime-mark)",
+         notes="the kana license composes with the widened Han span: "
+               "〆木 reads as kanji beside a kana given name"),
     Case("ja_nakaguro_inside_a_nickname",
          "山田 太郎 (マイケル・ジャクソン)",
          {"family": "山田", "given": "太郎",

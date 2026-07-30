@@ -64,8 +64,8 @@ class Script(StrEnum):
 # it -- _pipeline/_vocab.py compiles its per-script patterns from it,
 # and it is importable from the pipeline and the locale packs alike,
 # so the packs' predicates build on it too, through _script_matcher
-# below (the hand-copies this replaced dated from when the table
-# lived in the pipeline, which packs must not import).
+# below (the table lives here rather than in the pipeline because
+# packs must not import the pipeline).
 # HAN: the ideographic iteration mark U+3005 and the shime mark
 # U+3006, the URO plus Extension
 # A, the compatibility block, and the supplementary-plane block
@@ -87,9 +87,11 @@ class Script(StrEnum):
 # U+3006 〆 (the shime mark) extends that singleton to a two-codepoint
 # span on a DIFFERENT justification: unlike 々, 〆 is Script=Common
 # under UAX #24, so this is the table deliberately reaching PAST the
-# Script property, not around a block boundary -- justified because 〆
-# functions solely as a component of Japanese surnames (〆木 Shimeki,
-# 〆谷 Shimetani, 〆野) and appears in no other script's names.
+# Script property, not around a block boundary -- justified because
+# within personal names 〆 appears solely in Japanese surnames (〆木
+# Shimeki, 〆谷 Shimetani, 〆野) -- its other uses (the envelope
+# closing mark, 〆切) never reach a name parser -- and it appears in
+# no other script's names.
 # Leaving it out made 〆木 a mixed-script token: the name reversed and
 # never gated into segmentation.
 # HANGUL: precomposed syllables only -- modern Korean
@@ -153,12 +155,13 @@ def _script_matcher(*scripts: Script,
     holding a module-level re.Pattern as a marker pack needing rotator
     branch coverage, and its registry gate goes further -- a pack that
     so much as IMPORTS re without exposing such a pattern fails
-    "imports re but exposes no module-level pattern" -- so a pack must
-    not import re at all; predicates built here keep the packs
-    invisible to that sweep by construction (and spare _vocab's
-    derived matchers a declaration row in tests/v2/test_regex_sync.py's
-    completeness sweep, which scans the pipeline modules for
-    module-level patterns)."""
+    "imports re but exposes no module-level pattern" -- so a
+    range-declaring pack must not import re at all; predicates built
+    here keep the packs invisible to that sweep by construction (and
+    spare _vocab's derived matchers a declaration row in
+    tests/v2/test_regex_sync.py's completeness sweep, which scans the
+    pipeline modules (plus _render) for private module-level
+    patterns)."""
     if not scripts:
         raise ValueError("_script_matcher needs at least one Script")
     cls = "".join(f"\\U{lo:08x}-\\U{hi:08x}"

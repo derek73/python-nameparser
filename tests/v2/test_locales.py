@@ -125,6 +125,7 @@ def test_zh_pack_contents() -> None:
     assert "欧阳" in locales.ZH.lexicon.surnames       # compound
     assert "歐陽" in locales.ZH.lexicon.surnames       # traditional
     assert _zh.DEVIATES("毛泽东")
+    assert _zh.DEVIATES("𠮷田")   # astral Han declared
     assert not _zh.DEVIATES("John Smith")
     assert not _zh.DEVIATES("김민준")   # HAN alone, not a wider union
 
@@ -205,6 +206,7 @@ def test_ja_pack_contents() -> None:
     assert locales.JA.policy.script_orders is UNSET
     assert locales.JA.lexicon == Lexicon.empty()
     assert _ja.DEVIATES("山田太郎")
+    assert _ja.DEVIATES("𠮷田")   # astral Han declared
     # katakana declared (see the pack's repertoire note)
     assert _ja.DEVIATES("マイケル")
     assert _ja.DEVIATES("みなみ")   # hiragana declared
@@ -266,6 +268,8 @@ def test_ja_adapter_guard_stack_against_a_stub(
     assert answer is not None
     assert answer.splits == (2,) and answer.confidence == 0.5
     assert seg("김민준") is None            # outside the repertoire
+    # contains JA chars but is not WHOLLY JA
+    assert seg("Yamada太郎") is None
     assert seg("林") is None                # namedivider raises below 2
 
 
@@ -483,6 +487,18 @@ def test_ja_divides_an_astral_kanji_name() -> None:
     n = _PACKED["ja"].parse("𠮷田太郎")
     assert (n.family, n.given) == ("𠮷田", "太郎")
     assert [a.kind for a in n.ambiguities] == [AmbiguityKind.SEGMENTATION]
+
+
+@_needs_ja
+def test_namedivider_still_miscuts_shime_names() -> None:
+    # The canary behind the adapter's 〆 decline: namedivider 0.4.x's
+    # rule path cuts every attested 〆 surname at offset 1 with
+    # confidence 1.0. When this fails, namedivider learned the mark --
+    # revisit the decline in ja.py rather than deleting this test.
+    import namedivider
+    result = namedivider.BasicNameDivider().divide_name("〆木太郎")
+    assert (result.family, result.given) == ("〆", "木太郎")
+    assert float(result.score) == 1.0
 
 
 @_needs_ja
