@@ -431,8 +431,9 @@ surface is frozen for 2.x — so the way out is the 2.0 API:
 restores 1.4's reading of every shape above that turns on order or
 splitting. The middle dots are the exception: both the katakana dot
 and the Chinese interpunct ``·`` (U+00B7, dividing a transcription
-like ``威廉·莎士比亚``, and a separator only between characters of a
-classified script where the katakana dot is unconditional) are decided
+like ``威廉·莎士比亚``, and a separator only between classified-script
+characters — each side judged on its own — where the katakana dot is
+unconditional) are decided
 in tokenization rather than by policy, so a name written with either
 still divides at the dot, and still renders with a space, whatever
 those two fields are set to.

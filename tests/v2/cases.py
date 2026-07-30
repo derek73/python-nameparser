@@ -688,4 +688,23 @@ CASES: tuple[Case, ...] = (
          notes="马 is a listed zh surname, but a 间隔号-divided name "
                "is a transcription: the dot gates segmentation off, "
                "so 马丁 stays whole and the positional read stands"),
+    Case("ko_interpunct_transcription_source_order", "마이클·잭슨",
+         {"given": "마이클", "family": "잭슨"},
+         classification="fix(#298)",
+         notes="Korean writes transcribed foreign names with the "
+               "interpunct too: the dot suppresses the hangul "
+               "family-first entry AND the default segmentation -- 마 "
+               "is a listed census surname, and the spaced form "
+               "마이클 잭슨 really does mis-split 마|이클 today, so "
+               "the dot is what rescues the ko transcription"),
+    Case("zh_interpunct_with_suffix_comma", "威廉·莎士比亚, PhD",
+         {"given": "威廉", "family": "莎士比亚", "suffix": "PhD"},
+         classification="fix(#298)",
+         notes="the transcription reading composes with a suffix "
+               "comma: the marker is structure-independent"),
+    Case("zh_interpunct_half_flanked_stays", "王·Smith",
+         {"given": "王·Smith"},
+         notes="one classified neighbor is not enough: the guard "
+               "requires both, so the undivided dot remains part of "
+               "the word -- declining, not deciding"),
 )

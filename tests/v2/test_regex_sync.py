@@ -192,20 +192,22 @@ def test_differential_cjk_rule_matches_the_script_ranges() -> None:
     it, see the comment there -- so the comparison runs over the BMP
     spans only.
 
-    The rule is also WIDER than the table by exactly two spans, which
+    The rule is also WIDER than the table by exactly one span, which
     the equality has to know about or it would just fail forever. The
     halfwidth middle dot U+FF65 changes parses without being
     classified as anything: tokenize separates on it, so a halfwidth
     transcription splits where 1.4 kept one token, while halfwidth
     kana stays out of _SCRIPT_RANGES on purpose. U+00B7 -- the
-    context-sensitive 间隔号 (#298) -- is the same situation: it
-    divides between classified characters and pins source order,
-    changing parses, yet doubles as Catalan's punt volat and so can
-    never itself be classified. Naming those spans here rather than
-    relaxing the comparison to a subset check is what keeps the pin
-    honest in both directions: an unsanctioned source of divergence
-    still fails, and each sanctioned difference has to be written
-    down to exist.
+    context-sensitive 间隔号 (#298) -- also changes parses yet is
+    deliberately NOT an extra: its flank guard means every name it
+    can change matches the class through a flanking character
+    already, and a B7 span's only actual effect would be letting the
+    rule claim diffs on punt-volat Latin names (Gal·la), pre-excusing
+    a regression on exactly the guarded class. Naming the sanctioned
+    span here rather than relaxing the comparison to a subset check
+    is what keeps the pin honest in both directions: an unsanctioned
+    source of divergence still fails, and each sanctioned difference
+    has to be written down to exist.
     """
     toml_path = (Path(__file__).parents[2] / "tools" / "differential"
                  / "expected_changes.toml")
@@ -227,13 +229,13 @@ def test_differential_cjk_rule_matches_the_script_ranges() -> None:
         for lo, hi in re.findall(r"\\u([0-9A-Fa-f]{4})-\\u([0-9A-Fa-f]{4})",
                                  matched[0]["name_regex"])}
     # the two spans the rule carries that no Script claims (see above)
-    sanctioned_extras = {(0xFF65, 0xFF65), (0xB7, 0xB7)}
-    for extra, _ in sorted(sanctioned_extras):
-        assert not any(lo <= extra <= hi
+    sanctioned_extras = {(0xFF65, 0xFF65)}
+    for xlo, xhi in sanctioned_extras:
+        assert not any(lo <= xhi and xlo <= hi
                        for spans in _policy._SCRIPT_RANGES.values()
                        for lo, hi in spans), (
-            f"U+{extra:04X} is classified now; drop it from the "
-            "sanctioned extras")
+            f"U+{xlo:04X}-U+{xhi:04X} is classified now; drop it "
+            "from the sanctioned extras")
     expected = {span
                 for spans in _policy._SCRIPT_RANGES.values()
                 for span in spans
@@ -243,29 +245,35 @@ def test_differential_cjk_rule_matches_the_script_ranges() -> None:
         f"_SCRIPT_RANGES' BMP spans are {sorted(expected)}")
 
 
-def test_differential_compound_rule_matches_the_script_ranges() -> None:
-    """The fix(cjk-delimited-nickname) rule (#295) carries the SECOND
-    hand copy of the script spans in the toml: its require-a-classified-
-    codepoint lookahead exists so the delimiter set alone cannot claim a
-    Latin name's first/last regression ('John 「Jack」 Kennedy' -- the
-    corner brackets sit outside every classified span). Pin that copy to
-    the table exactly as the canonical CJK rule's is, and pin the
-    delimiter set itself, so widening either (to ASCII quotes, say) is
-    an explicit decision here rather than a silent absorption change.
+@pytest.mark.parametrize("slug", ["cjk-delimited-nickname",
+                                  "cjk-comma-compound"])
+def test_differential_compound_rules_match_the_script_ranges(
+        slug: str) -> None:
+    """The compound rules carry FURTHER hand copies of the script
+    spans in the toml: each one's require-a-classified-codepoint
+    lookahead exists so its trigger set alone (delimiters; a comma)
+    cannot claim a Latin name's regression ('John 「Jack」 Kennedy',
+    'Smith, Jr.' -- neither contains a classified character). Pin each
+    copy to the table exactly as the canonical CJK rule's is, plus the
+    nickname rule's delimiter set itself, so widening either is an
+    explicit decision here rather than a silent absorption change.
 
     Selection note for future rule authors: the canonical-CJK-rule pin
     above selects by the literal '#271'/'#272' substrings and asserts
-    uniqueness -- this rule's slug avoids them on purpose, and any new
-    rule's must too.
+    uniqueness -- the compound slugs avoid them on purpose, and any
+    new rule's must too (and its slug joins this parametrize list, or
+    its span copy goes unpinned).
     """
     toml_path = (Path(__file__).parents[2] / "tools" / "differential"
                  / "expected_changes.toml")
     rules = tomllib.loads(toml_path.read_text())["change"]
-    matched = [r for r in rules if "cjk-delimited-nickname" in r["issue"]]
+    matched = [r for r in rules if slug in r["issue"]]
     assert len(matched) == 1
     regex = matched[0]["name_regex"]
-    assert "[「」『』・･]" in regex, (
-        "the compound rule's delimiter set changed; decide deliberately")
+    if slug == "cjk-delimited-nickname":
+        assert "[「」『』・･]" in regex, (
+            "the compound rule's delimiter set changed; decide "
+            "deliberately")
     declared = {
         (int(lo, 16), int(hi, 16))
         for lo, hi in re.findall(r"\\u([0-9A-Fa-f]{4})-\\u([0-9A-Fa-f]{4})",
@@ -275,7 +283,7 @@ def test_differential_compound_rule_matches_the_script_ranges() -> None:
                 for span in spans
                 if span[1] <= 0xFFFF} | {(0xFF65, 0xFF65)}
     assert declared == expected, (
-        f"compound rule's codepoint lookahead declares {sorted(declared)}; "
+        f"{slug}'s codepoint lookahead declares {sorted(declared)}; "
         f"_SCRIPT_RANGES' BMP spans are {sorted(expected)}")
 
 

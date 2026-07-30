@@ -193,15 +193,18 @@ punctuation: a foreign name transcribed into Han characters keeps its
 source order and divides its parts with the 间隔号, the interpunct
 ``·`` (U+00B7) — 威廉·莎士比亚 is William Shakespeare, given name
 first. The dot itself is the marker, so nameparser reads U+00B7 as a
-token separator when it sits between characters of a classified
-script, and a name it divides keeps the order it was written in and is
+token separator when it sits between classified-script characters
+(each side judged on its own — a hangul character beside a Han one
+qualifies), and a dot anywhere in the name reads the whole name as a
+transcription listing: it keeps the order it was written in and is
 never segmented — the role pure katakana plays for Japanese
 transcriptions, played here by the divider instead of the script.
-Because only a classified script on both sides makes it a divider, the
-same codepoint interior to a Latin-script name — the Catalan punt
-volat in ``Gal·la`` — is untouched. The Japanese middle dot ・
-(covered next) is a different mark carrying a different convention,
-and keeps its own reading.
+Because only classified characters on both sides make it a divider,
+the same codepoint interior to a Latin-script name — the Catalan punt
+volat in ``Gal·la`` — is untouched, and a dot with a classified
+character on just one side (``王·Smith``) stays part of the word
+undivided. The Japanese middle dot ・ (covered next) is a different
+mark carrying a different convention, and keeps its own reading.
 
 Japanese
 ~~~~~~~~~
