@@ -15,6 +15,8 @@ the comma-set pin below reads _pipeline._state instead of config, and
 the last test reaches outside the package altogether, to a TOML file
 that could not import a Python constant if it wanted to.
 """
+import importlib.util
+import json
 import re
 import tomllib
 from pathlib import Path
@@ -232,3 +234,28 @@ def test_differential_cjk_rule_matches_the_script_ranges() -> None:
     assert declared == expected, (
         f"{toml_path.name}'s CJK name_regex declares {sorted(declared)}; "
         f"_SCRIPT_RANGES' BMP spans are {sorted(expected)}")
+
+
+def test_cjk_corpus_matches_the_case_table() -> None:
+    """corpus_cjk.jsonl is GENERATED, not curated (#295): every
+    distinct case-table text bearing a codepoint the script table
+    classifies, sorted -- see build_cjk_corpus.py for why the other
+    two corpora cannot carry these names. The checked-in file must
+    equal what the generator would write, so a CJK case row added
+    without regenerating fails HERE instead of silently narrowing
+    the differential gate back toward the blind spot #295 closed.
+    Same promise as the toml pin above, aimed at a generated artifact
+    instead of a hand copy.
+    """
+    tools = Path(__file__).parents[2] / "tools" / "differential"
+    spec = importlib.util.spec_from_file_location(
+        "build_cjk_corpus", tools / "build_cjk_corpus.py")
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    checked_in = [json.loads(line) for line in
+                  (tools / "corpus_cjk.jsonl")
+                  .read_text(encoding="utf-8").splitlines()]
+    assert checked_in == module.selected_names(), (
+        "corpus_cjk.jsonl is stale: regenerate with "
+        "`uv run python tools/differential/build_cjk_corpus.py`")
