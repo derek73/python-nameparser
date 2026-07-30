@@ -56,7 +56,7 @@ jobs:
         uv run python -m doctest README.rst
     - name: Upload coverage to Codecov
       if: matrix.python-version == '3.13'
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@v7
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./coverage.xml
