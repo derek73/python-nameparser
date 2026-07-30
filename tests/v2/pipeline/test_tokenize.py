@@ -113,6 +113,50 @@ def test_nakaguro_next_to_a_real_comma_still_only_the_comma_offsets() -> None:
     assert state.comma_offsets == (5,)
 
 
+def test_interpunct_splits_between_classified_characters() -> None:
+    state = _tokenized("威廉·莎士比亚")
+    assert [t.text for t in state.tokens] == ["威廉", "莎士比亚"]
+    assert state.interpunct_offsets == (2,)
+
+
+def test_interpunct_stays_in_latin_names() -> None:
+    # the Catalan punt volat is INTERIOR to names; Latin neighbors
+    # never qualify
+    state = _tokenized("Gal·la Marcet")
+    assert [t.text for t in state.tokens] == ["Gal·la", "Marcet"]
+    assert state.interpunct_offsets == ()
+
+
+def test_interpunct_between_kana_splits() -> None:
+    # sloppy-IME katakana transcription
+    state = _tokenized("マイケル·ジャクソン")
+    assert [t.text for t in state.tokens] == ["マイケル", "ジャクソン"]
+
+
+def test_interpunct_at_edges_stays() -> None:
+    # no classified neighbor on one side: not a divider position
+    state = _tokenized("·威廉")
+    assert [t.text for t in state.tokens] == ["·威廉"]
+
+
+def test_interpunct_in_delimited_regions_splits_but_does_not_record() -> None:
+    # a B7 inside a nickname must not mark the OUTER name as a
+    # transcription -- same flag that keeps nickname commas out of
+    # comma_offsets
+    state = _tokenized("山田 太郎 (マイケル·ジャクソン)")
+    assert state.interpunct_offsets == ()
+    assert "マイケル" in [t.text for t in state.tokens]
+
+
+def test_nakaguro_never_records() -> None:
+    # the Japanese dot is roster/divider typography, not the
+    # transcription marker: it separates (#272) and records nothing --
+    # 高橋・一郎 keeps its family-first roster reading downstream
+    state = _tokenized("威廉・莎士比亚")
+    assert [t.text for t in state.tokens] == ["威廉", "莎士比亚"]
+    assert state.interpunct_offsets == ()
+
+
 def test_halfwidth_nakaguro_separates_too() -> None:
     # U+FF65 between halfwidth katakana -- build the string from
     # escapes and VERIFY the codepoints (the U+F900 homoglyph lesson):
