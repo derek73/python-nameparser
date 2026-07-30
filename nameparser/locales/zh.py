@@ -25,15 +25,17 @@ lexicon that no parser is holding.)
 Declared deviations (spec §2 authoring requirement 3): the pack adds
 vocabulary and one union policy field, both self-selecting by script,
 so it can only change names containing Han characters -- DEVIATES
-below declares exactly that (over-declaring within the script: a Han
-name needs an unspaced surname match to actually change, but
-per-character scanning is the safe direction).
+below declares exactly that (over-declaring within the script: only
+segmentation can actually change a parse -- an unspaced surname
+match, or a ``Parser(segmenter=...)`` answer where the vocabulary
+declines -- but declaring every Han-bearing name is the safe
+direction).
 """
 from __future__ import annotations
 
 from nameparser._lexicon import Lexicon
 from nameparser._locale import Locale
-from nameparser._policy import PolicyPatch, Script
+from nameparser._policy import PolicyPatch, Script, _script_matcher
 
 # 2020 census top-100 plus the annotated additions below, simplified
 # forms, census rank order, 10 per row -- append new entries at the
@@ -97,17 +99,15 @@ ZH = Locale(
     policy=PolicyPatch(segment_scripts=frozenset({Script.HAN})),
 )
 
-# Han codepoint spans, kept in sync BY HAND with _policy.py's
-# _SCRIPT_RANGES[Script.HAN] (a hold-over from when that table lived
-# in the pipeline, which packs must not import; the sync test in
-# tests/v2/test_locales.py pins the equality until the copy goes).
-_HAN_RANGES = ((0x3005, 0x3005), (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
-               (0xF900, 0xFAFF), (0x20000, 0x323AF))
+# Compiled by _policy's factory from the shared codepoint table, so
+# the pack carries no Han spans of its own to drift out of sync.
+_has_han = _script_matcher(Script.HAN)
 
 
 def DEVIATES(name: str) -> bool:
     """True when this pack may parse `name` differently from the
     default parser (the declared-deviation predicate the
-    non-interference gate consumes)."""
-    return any(any(lo <= ord(c) <= hi for lo, hi in _HAN_RANGES)
-               for c in name)
+    non-interference gate consumes): any Han-bearing name -- see the
+    module docstring's declared-deviations note for why over-declaring
+    is safe."""
+    return _has_han(name)

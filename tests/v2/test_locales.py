@@ -124,6 +124,9 @@ def test_zh_pack_contents() -> None:
     assert "王" in locales.ZH.lexicon.surnames
     assert "欧阳" in locales.ZH.lexicon.surnames       # compound
     assert "歐陽" in locales.ZH.lexicon.surnames       # traditional
+    assert _zh.DEVIATES("毛泽东")
+    assert not _zh.DEVIATES("John Smith")
+    assert not _zh.DEVIATES("김민준")   # HAN alone, not a wider union
 
 
 def test_zh_surname_entries_are_wellformed() -> None:
@@ -189,14 +192,6 @@ def test_zh_composes_with_korean_defaults() -> None:
     # segmentation keeps working through a zh parser
     n = _PACKED["zh"].parse("김민준")
     assert (n.family, n.given) == ("김", "민준")
-
-
-def test_zh_han_ranges_stay_in_sync_with_vocab() -> None:
-    # zh.py hand-copies the Han spans from _pipeline/_vocab.py for its
-    # DEVIATES predicate (layering forbids a pack importing the
-    # pipeline -- see the module docstring); pin the equality here, the
-    # codepoint-range twin of the marker-regex sync test above.
-    assert _zh._HAN_RANGES == _SCRIPT_RANGES[Script.HAN]
 
 
 def test_ja_pack_contents() -> None:
@@ -325,9 +320,9 @@ def test_ja_adapter_gbdt_flag_selects_the_gbdt_divider(
 
 
 def test_ja_ranges_stay_in_sync_with_vocab() -> None:
-    # the twin of the zh pin above: ja.py hand-copies the three
-    # Japanese-repertoire scripts' spans for DEVIATES and for the
-    # adapter's own repertoire check
+    # ja.py hand-copies the three Japanese-repertoire scripts' spans
+    # for DEVIATES and for the adapter's own repertoire check; pinned
+    # here until the pack derives from the shared table
     assert set(_ja._JA_RANGES) == {
         span for script in (Script.HAN, Script.HIRAGANA, Script.KATAKANA)
         for span in _SCRIPT_RANGES[script]}
@@ -755,8 +750,9 @@ def _marker_regexes(module: ModuleType) -> list[re.Pattern]:
 # Packs whose DEVIATES surface is defined by marker REGEXES -- derived,
 # never listed, same rule as the registry itself: a pack qualifies by
 # having any module-level re.Pattern, so zh (which declares by Han
-# codepoint range, pinned by its own sync test) drops out on its own
-# and a future marker-regex pack cannot silently miss branch coverage.
+# codepoint range, derived from the shared table via _script_matcher,
+# so it holds no pattern of its own) drops out on its own and a future
+# marker-regex pack cannot silently miss branch coverage.
 _MARKER_REGEX_PACKS = tuple(code for code in sorted(_PACKS)
                             if _marker_regexes(_PACKS[code]))
 
