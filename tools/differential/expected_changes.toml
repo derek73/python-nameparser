@@ -7,7 +7,7 @@
 # ahead of `fields`-only ones before matching.
 
 [[change]]
-issue = "fix(#271/#272) native-script CJK: family-first order, hangul segmentation, the kana license and the nakaguro"
+issue = "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots"
 # '毛 泽东', '김민준': script_orders flips first/last for a name written
 # wholly in Han or Hangul, and the Korean surnames that now ship as
 # default vocabulary additionally split an unspaced hangul token into
