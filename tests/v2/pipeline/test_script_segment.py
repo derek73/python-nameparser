@@ -399,6 +399,52 @@ def test_a_neighbour_in_an_UNACTIVATED_script_still_blocks_the_consult() -> None
         assert out.ambiguities == (), name
 
 
+# -- the 间隔号 gate: a divided name is a transcription (#298) ----------
+
+
+def test_interpunct_divided_name_never_segments() -> None:
+    # 马丁·路德·金 (Martin Luther King): 马 is a listed surname, but a
+    # 间隔号-divided name is a transcription -- its pieces are syllable
+    # groups, not surname+given, so the dot gates the stage off
+    # entirely, vocabulary AND segmenter (spec 2026-07-30). Built
+    # through the real tokenize so interpunct_offsets is the field's
+    # own producer's, not hand-set.
+    state = segment(tokenize(ParseState(
+        original="马丁·路德·金",
+        lexicon=Lexicon(surnames=frozenset({"马"})), policy=_HAN)))
+    assert state.interpunct_offsets     # tokenize recorded the dots
+    out = script_segment(state)
+    assert out.tokens == state.tokens   # nothing split: no 马 + 丁
+    assert out.ambiguities == ()
+
+
+def test_interpunct_divided_name_never_consults_the_segmenter() -> None:
+    # the gate's other consumer, pinned separately: today the
+    # second-script-token precondition would decline this consult
+    # anyway, but the transcription doctrine must not depend on it --
+    # the dot gates BEFORE either mechanism is reached
+    asked, seg = _capture()
+    state = segment(tokenize(ParseState(
+        original="马丁·路德·金", lexicon=Lexicon.empty(), policy=_HAN,
+        segmenter=seg)))
+    out = script_segment(state)
+    assert out.tokens == state.tokens
+    assert asked == []
+
+
+def test_interpunct_gates_the_whole_name_not_just_dotted_tokens() -> None:
+    # state-global on purpose: the marker reads the WHOLE name as a
+    # transcription listing, so the un-dotted hangul token stays whole
+    # too -- the baseline shows it segments without the B7 elsewhere
+    assert _texts(_run("김민준 马丁 路德", policy=_HANGUL)) == [
+        "김", "민준", "马丁", "路德"]
+    state = segment(tokenize(ParseState(
+        original="김민준 马丁·路德", lexicon=_LEX, policy=_HANGUL)))
+    assert state.interpunct_offsets
+    out = script_segment(state)
+    assert out.tokens == state.tokens
+
+
 def test_the_segmenter_is_handed_the_gated_token_only() -> None:
     # It is asked where ONE token divides, so it gets that token's text
     # and nothing else -- not the original, not the name part joined
