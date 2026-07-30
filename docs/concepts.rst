@@ -58,7 +58,9 @@ layer, which assigns purely by where a word sits: the first unclaimed
 word is the given name, the last is the family name, and anything
 between them is the middle name. ``name_order``, an explicit comma,
 and — for a name written wholly in one East Asian script —
-``script_orders`` change what "first" and "last" mean here; nothing
+``script_orders`` change what "first" and "last" mean here; the
+Chinese interpunct ``·`` dividing such a name walks the last of those
+back, marking a transcription that keeps its source order; nothing
 else does.
 
 This is the whole parser in two sentences, and it explains its
