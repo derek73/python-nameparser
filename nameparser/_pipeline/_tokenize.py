@@ -65,6 +65,29 @@ _INTERPUNCT = "\u00B7"
 _classified_char = _script_matcher(*_SCRIPT_RANGES, whole=True)
 
 
+def _is_emoji(ch: str) -> bool:
+    cp = ord(ch)
+    return any(lo <= cp <= hi for lo, hi in _EMOJI_RANGES)
+
+
+def _flank(text: str, i: int, step: int, limit: int,
+           state: ParseState) -> str | None:
+    """The nearest flank character the strip policy would keep, or
+    None at the region bound. Stripped invisibles (bidi, emoji) are
+    TRANSPARENT here: they vanish from the token stream, so they must
+    not occupy a flank position either -- an RTL document quoting a
+    transcription puts U+200F beside the dot in visually identical
+    text. Whitespace and the other separators stay guard-defeating:
+    a dot beside a space is not between characters."""
+    while i != limit:
+        ch = text[i]
+        if not (state.policy.strip_bidi and _BIDI.match(ch)) \
+                and not (state.policy.strip_emoji and _is_emoji(ch)):
+            return ch
+        i += step
+    return None
+
+
 def _ignorable(ch: str, state: ParseState) -> bool:
     if ch.isspace():
         return True
@@ -90,8 +113,7 @@ def _ignorable(ch: str, state: ParseState) -> bool:
     if state.policy.strip_bidi and _BIDI.match(ch):
         return True
     if state.policy.strip_emoji:
-        cp = ord(ch)
-        return any(lo <= cp <= hi for lo, hi in _EMOJI_RANGES)
+        return _is_emoji(ch)
     return False
 
 
@@ -105,17 +127,23 @@ def _tokenize_region(state: ParseState, start: int, end: int,
         ch = text[i]
         is_separator = ch in COMMA_CHARS or _ignorable(ch, state)
         if not is_separator and ch == _INTERPUNCT:
-            # flanks are region-local: a B7 at a region edge has a
-            # masked or absent neighbor and stays token text.
-            # Region-local on purpose and defensively: under the
-            # default delimiters a masked span's edge character is
-            # never classified, so the two bounds are indistinguishable
-            # -- but a custom delimiter ending in a classified
-            # character would otherwise let a B7 split and record
-            # across a mask seam.
-            is_separator = (start < i < end - 1
-                            and _classified_char(text[i - 1])
-                            and _classified_char(text[i + 1]))
+            # flanks are region-local (the _flank walks stop at the
+            # region bounds): a B7 at a region edge has a masked or
+            # absent neighbor and stays token text. Region-local on
+            # purpose and defensively: under the default delimiters a
+            # masked span's edge character is never classified, so
+            # the two bounds are indistinguishable -- but a custom
+            # delimiter ending in a classified character would
+            # otherwise let a B7 split and record across a mask seam.
+            # The flank scan reads raw text like segmentation matching
+            # does (#272's stance): NFD hangul degrades to no-split,
+            # never wrong-split -- classification NFC-normalizes but
+            # the guard does not.
+            left = _flank(text, i - 1, -1, start - 1, state)
+            right = _flank(text, i + 1, +1, end, state)
+            is_separator = (left is not None and right is not None
+                            and _classified_char(left)
+                            and _classified_char(right))
         if is_separator:
             if tok_start is not None:
                 tokens.append(WorkToken(text[tok_start:i],
