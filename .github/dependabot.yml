@@ -4,3 +4,14 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+  # nameparser has no runtime dependencies; this watches the one optional-extra
+  # dependency, namedivider-python (the [ja] segmenter). pyproject floats >=0.4 so
+  # fresh installs always get the newest release, but CI's ja-extra job installs
+  # from uv.lock — without these bumps, CI keeps proving an old version while
+  # users install a newer one.
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    allow:
+      - dependency-name: "namedivider-python"

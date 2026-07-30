@@ -49,6 +49,9 @@ uv run sphinx-build -b html docs dist/docs
 # 0. Review docs/ for anything stale — especially usage.rst (examples, API surface)
 #    and any .rst files that reference config constants or HumanName kwargs
 #    Also review AGENTS.md for stale commands, architecture notes, or gotchas
+#    And check for open Dependabot PRs on uv.lock (namedivider-python) and merge them
+#    first — pyproject floats >=0.4 so fresh installs get the newest namedivider, but
+#    CI's ja-extra job installs from uv.lock and only tests what the lock pins
 # 1. Bump VERSION in nameparser/_version.py (and the `version:` field in CITATION.cff to match)
 #    For a pre-release, set PRE_RELEASE = 'rc1' (etc.) — __version__ joins it without a dot ('2.0.0rc1'); '' means final
 # 2. Stamp "Unreleased" → "X.Y.Z - Month DD, YYYY" in docs/release_log.rst
