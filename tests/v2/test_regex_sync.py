@@ -23,6 +23,7 @@ import pytest
 
 from nameparser.config import regexes as _config
 from nameparser._pipeline import _assign, _post_rules, _tokenize, _vocab
+from nameparser import _policy
 from nameparser._policy import Script
 from nameparser import _render
 
@@ -115,9 +116,6 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     ("_tokenize", "_BIDI"): None,       # re_bidi, not a REGEXES key
     # Mirrors _pipeline._state.COMMA_CHARS, not nameparser.config
     ("_render", "_COMMA_CHAR"): None,
-    # #272: derived from _SCRIPT_RANGES itself (like _SCRIPT_PATTERNS),
-    # not hand-copied from anywhere -- no config counterpart to pin.
-    ("_vocab", "_JA_PATTERN"): None,
 }
 
 _MODULES = {"_assign": _assign, "_post_rules": _post_rules,
@@ -165,7 +163,7 @@ def test_comma_char_matches_the_pipeline_comma_set() -> None:
 
 def test_differential_cjk_rule_matches_the_script_ranges() -> None:
     """The CJK rule in tools/differential/expected_changes.toml hand-
-    copies the script spans from _vocab._SCRIPT_RANGES into a character
+    copies the script spans from _policy._SCRIPT_RANGES into a character
     class. A TOML file cannot import the constant, so this is the one
     copy with no possible alternative -- and the one whose divergence
     is quietest, because the harness is run by hand rather than in CI.
@@ -212,7 +210,7 @@ def test_differential_cjk_rule_matches_the_script_ranges() -> None:
         f"found {len(matched)}")
     # A new table entry must force an explicit decision rather than
     # quietly widening (or failing to widen) the rule above.
-    assert set(_vocab._SCRIPT_RANGES) == {
+    assert set(_policy._SCRIPT_RANGES) == {
         Script.HAN, Script.HANGUL, Script.HIRAGANA, Script.KATAKANA}, (
         "a Script joined _SCRIPT_RANGES: decide whether the "
         f"differential rule in {toml_path.name} should cover it, then "
@@ -224,11 +222,11 @@ def test_differential_cjk_rule_matches_the_script_ranges() -> None:
     # the one span the rule carries that no Script claims (see above)
     halfwidth_dot = (0xFF65, 0xFF65)
     assert not any(lo <= halfwidth_dot[0] <= hi
-                   for spans in _vocab._SCRIPT_RANGES.values()
+                   for spans in _policy._SCRIPT_RANGES.values()
                    for lo, hi in spans), (
         "U+FF65 is classified now; drop it from the sanctioned extras")
     expected = {span
-                for spans in _vocab._SCRIPT_RANGES.values()
+                for spans in _policy._SCRIPT_RANGES.values()
                 for span in spans
                 if span[1] <= 0xFFFF} | {halfwidth_dot}
     assert declared == expected, (

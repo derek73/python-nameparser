@@ -12,8 +12,9 @@ import pytest
 
 from nameparser import Locale, Parser, locales, parse, parser_for
 from nameparser._lexicon import _VOCAB_FIELDS, Lexicon
-from nameparser._pipeline._vocab import _SCRIPT_RANGES
-from nameparser._policy import UNSET, PatronymicRule, Policy, Script
+from nameparser._policy import (
+    UNSET, PatronymicRule, Policy, Script, _SCRIPT_RANGES,
+)
 from nameparser._types import AmbiguityKind
 from nameparser.locales import ja as _ja
 from nameparser.locales import ru as _ru
@@ -123,6 +124,10 @@ def test_zh_pack_contents() -> None:
     assert "王" in locales.ZH.lexicon.surnames
     assert "欧阳" in locales.ZH.lexicon.surnames       # compound
     assert "歐陽" in locales.ZH.lexicon.surnames       # traditional
+    assert _zh.DEVIATES("毛泽东")
+    assert _zh.DEVIATES("𠮷田")   # astral Han declared
+    assert not _zh.DEVIATES("John Smith")
+    assert not _zh.DEVIATES("김민준")   # HAN alone, not a wider union
 
 
 def test_zh_surname_entries_are_wellformed() -> None:
@@ -190,14 +195,6 @@ def test_zh_composes_with_korean_defaults() -> None:
     assert (n.family, n.given) == ("김", "민준")
 
 
-def test_zh_han_ranges_stay_in_sync_with_vocab() -> None:
-    # zh.py hand-copies the Han spans from _pipeline/_vocab.py for its
-    # DEVIATES predicate (layering forbids a pack importing the
-    # pipeline -- see the module docstring); pin the equality here, the
-    # codepoint-range twin of the marker-regex sync test above.
-    assert _zh._HAN_RANGES == _SCRIPT_RANGES[Script.HAN]
-
-
 def test_ja_pack_contents() -> None:
     assert locales.JA.code == "ja"
     # segmentation activation ONLY: no vocabulary (no list settles a
@@ -208,6 +205,13 @@ def test_ja_pack_contents() -> None:
     assert locales.JA.policy.name_order is UNSET
     assert locales.JA.policy.script_orders is UNSET
     assert locales.JA.lexicon == Lexicon.empty()
+    assert _ja.DEVIATES("山田太郎")
+    assert _ja.DEVIATES("𠮷田")   # astral Han declared
+    # katakana declared (see the pack's repertoire note)
+    assert _ja.DEVIATES("マイケル")
+    assert _ja.DEVIATES("みなみ")   # hiragana declared
+    assert not _ja.DEVIATES("John Smith")
+    assert not _ja.DEVIATES("김민준")   # the three JA scripts, not a wider union
 
 
 def test_ja_segmenter_without_extra_raises_helpfully() -> None:
@@ -264,7 +268,26 @@ def test_ja_adapter_guard_stack_against_a_stub(
     assert answer is not None
     assert answer.splits == (2,) and answer.confidence == 0.5
     assert seg("김민준") is None            # outside the repertoire
+    # contains JA chars but is not WHOLLY JA
+    assert seg("Yamada太郎") is None
     assert seg("林") is None                # namedivider raises below 2
+
+
+def test_ja_adapter_declines_shime_tokens(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # Since U+3006 classifies as Han, 〆木太郎 is wholly Japanese and
+    # reaches the adapter, but the divider is never consulted for 〆
+    # tokens -- see the decline comment in ja.py for the measured
+    # mis-cut it prevents.
+    calls: list[str] = []
+
+    def divide(text: str) -> _FakeDivided:
+        calls.append(text)
+        return _FakeDivided(text[:1], text[1:], 1.0)
+
+    _fake_namedivider(monkeypatch, divide)
+    assert locales.ja_segmenter()("〆木太郎") is None
+    assert calls == []          # the decline sits before divide_name
 
 
 def test_ja_adapter_defensive_branches_against_a_stub(
@@ -321,15 +344,6 @@ def test_ja_adapter_gbdt_flag_selects_the_gbdt_divider(
         monkeypatch, lambda text: _FakeDivided(text[:1], text[1:], 1.0))
     locales.ja_segmenter(gbdt=True)
     assert divide == ["gbdt"]
-
-
-def test_ja_ranges_stay_in_sync_with_vocab() -> None:
-    # the twin of the zh pin above: ja.py hand-copies the three
-    # Japanese-repertoire scripts' spans for DEVIATES and for the
-    # adapter's own repertoire check
-    assert set(_ja._JA_RANGES) == {
-        span for script in (Script.HAN, Script.HIRAGANA, Script.KATAKANA)
-        for span in _SCRIPT_RANGES[script]}
 
 
 def test_ja_pack_alone_is_inert() -> None:
@@ -463,13 +477,24 @@ def test_ja_divides_an_astral_kanji_name() -> None:
     # the supplementary plane -- the reason _SCRIPT_RANGES carries the
     # astral Han span at all. It has to survive the whole chain as one
     # character and not two: the script gate, the adapter's repertoire
-    # scan, namedivider itself, and the offset arithmetic that turns
+    # guard, namedivider itself, and the offset arithmetic that turns
     # the answer into spans (Python indexes by codepoint, so an offset
     # of 2 here spans four UTF-16 units -- a surrogate-pair bug would
     # land the split in the middle of the character).
     n = _PACKED["ja"].parse("𠮷田太郎")
     assert (n.family, n.given) == ("𠮷田", "太郎")
     assert [a.kind for a in n.ambiguities] == [AmbiguityKind.SEGMENTATION]
+
+
+@_needs_ja
+def test_namedivider_still_miscuts_shime_names() -> None:
+    # The canary behind the adapter's 〆 decline: when this fails,
+    # namedivider learned the mark -- revisit the decline in ja.py
+    # rather than deleting this test.
+    import namedivider
+    result = namedivider.BasicNameDivider().divide_name("〆木太郎")
+    assert (result.family, result.given) == ("〆", "木太郎")
+    assert float(result.score) == 1.0
 
 
 @_needs_ja
@@ -753,11 +778,23 @@ def _marker_regexes(module: ModuleType) -> list[re.Pattern]:
 
 # Packs whose DEVIATES surface is defined by marker REGEXES -- derived,
 # never listed, same rule as the registry itself: a pack qualifies by
-# having any module-level re.Pattern, so zh (which declares by Han
-# codepoint range, pinned by its own sync test) drops out on its own
-# and a future marker-regex pack cannot silently miss branch coverage.
+# having any module-level re.Pattern, so zh and ja (which declare by
+# codepoint range, derived from the shared table via _script_matcher,
+# so they hold no pattern of their own) drop out on their own and a
+# future marker-regex pack cannot silently miss branch coverage.
 _MARKER_REGEX_PACKS = tuple(code for code in sorted(_PACKS)
                             if _marker_regexes(_PACKS[code]))
+
+
+def test_range_declaring_packs_stay_out_of_marker_classification() -> None:
+    # Load-bearing since the packs derive from the shared table: zh/ja
+    # hold no module-level re.Pattern because _script_matcher's closure
+    # hides the compiled class. A pack author who "simplifies" one back
+    # to a module-level pattern flips its classification into the
+    # rotator branch-coverage sweep, which a codepoint-range predicate
+    # cannot satisfy.
+    assert "zh" not in _MARKER_REGEX_PACKS
+    assert "ja" not in _MARKER_REGEX_PACKS
 
 
 def test_registry_is_the_pack_contract() -> None:

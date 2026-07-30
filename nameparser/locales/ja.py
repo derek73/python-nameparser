@@ -50,7 +50,8 @@ one union policy field, self-selecting by script, so it can only change
 names containing characters of the Japanese repertoire -- DEVIATES
 below declares exactly that, over-declaring within the repertoire (a
 name also needs an unspaced token and a segmenter to actually change,
-but per-character scanning is the safe direction, zh's precedent).
+but declaring every repertoire-bearing name is the safe direction,
+zh's precedent).
 """
 from __future__ import annotations
 
@@ -58,7 +59,8 @@ from typing import TYPE_CHECKING
 
 from nameparser._lexicon import Lexicon
 from nameparser._locale import Locale
-from nameparser._policy import PolicyPatch, Script
+from nameparser._policy import (PolicyPatch, Script, _JA_SCRIPTS,
+                                _script_matcher)
 from nameparser._types import Segmentation
 
 if TYPE_CHECKING:
@@ -71,23 +73,20 @@ JA = Locale(
         segment_scripts=frozenset({Script.HAN, Script.HIRAGANA})),
 )
 
-# The Japanese repertoire's codepoint spans -- hiragana, katakana and
-# Han -- kept in sync BY HAND with _pipeline/_vocab.py's _SCRIPT_RANGES
-# entries for those three scripts (layering forbids a pack importing
-# the pipeline; the sync test in tests/v2/test_locales.py pins the
-# equality). Katakana is in the table even though the pack never
-# ACTIVATES it: both consumers below quantify over the whole
-# repertoire, because a katakana-bearing token can still be a
-# kana-licensed composite the pack acts on (山田エミ) -- DEVIATES must
-# declare it, and the adapter must not decline it. A pure-katakana
-# token never reaches THE ADAPTER: KATAKANA is in no activation set, so
-# the stage's own gate stops it before the segmenter is consulted.
-# DEVIATES still declares one, and must: it is a predicate over any
-# name at all, called before any gate runs, and over-declaring is its
-# safe direction by design.
-_JA_RANGES = ((0x3005, 0x3005), (0x3040, 0x309F), (0x30A0, 0x30FF),
-              (0x3400, 0x4DBF), (0x4E00, 0x9FFF), (0xF900, 0xFAFF),
-              (0x20000, 0x323AF))
+# Both compiled by _policy's factory from the shared codepoint table
+# and its _JA_SCRIPTS union, so the pack carries no spans of its own
+# to drift out of sync: the contains-any form backs DEVIATES, the
+# whole-token form is the adapter's repertoire guard. Both match
+# KATAKANA even though the pack never ACTIVATES it: a katakana-bearing
+# token can still be a kana-licensed composite the pack acts on
+# (山田エミ) -- DEVIATES must declare it, and the adapter must not
+# decline it. A pure-katakana token never reaches THE ADAPTER:
+# KATAKANA is in no activation set, so the stage's own gate stops it
+# before the segmenter is consulted. DEVIATES still declares one,
+# and must: it is a predicate over any name at all, called before
+# any gate runs, and over-declaring is its safe direction by design.
+_has_japanese = _script_matcher(*_JA_SCRIPTS)
+_wholly_japanese = _script_matcher(*_JA_SCRIPTS, whole=True)
 
 
 #: How far outside [0, 1] a namedivider score may stray and still count
@@ -96,15 +95,13 @@ _JA_RANGES = ((0x3005, 0x3005), (0x3040, 0x309F), (0x30A0, 0x30FF),
 _SCORE_EPSILON = 1e-6
 
 
-def _in_repertoire(char: str) -> bool:
-    return any(lo <= ord(char) <= hi for lo, hi in _JA_RANGES)
-
-
 def DEVIATES(name: str) -> bool:
     """True when this pack may parse `name` differently from the
     default parser (the declared-deviation predicate the
-    non-interference gate consumes)."""
-    return any(_in_repertoire(c) for c in name)
+    non-interference gate consumes): any name bearing a repertoire
+    character -- see the repertoire note above for why katakana is
+    declared and why over-declaring is safe."""
+    return _has_japanese(name)
 
 
 def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
@@ -127,15 +124,15 @@ def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
     matters for offline, sandboxed or air-gapped deployments.
 
     The adapter declines -- returns None, leaving the token whole --
-    for text outside the Japanese repertoire, for text too short to
-    divide, for any answer that fails to reconstruct its input, and for
-    any score outside [0, 1] by more than float noise (a divider
-    scoring 87.0 is broken, and its division is worth no more than its
-    score). An
-    answer that puts the whole token on one side comes back as
-    "confidently one token" rather than a decline: the divider read it
-    and found nothing to cut, which is not the same as having no
-    opinion.
+    for text outside the Japanese repertoire, for text bearing the
+    shime mark 〆 (namedivider 0.4.x's rule path cuts it in the wrong
+    place), for text too short to divide, for any answer that fails
+    to reconstruct its input, and for any score outside [0, 1] by
+    more than float noise (a divider scoring 87.0 is broken, and its
+    division is worth no more than its score). An answer that puts
+    the whole token on one side comes back as "confidently one token"
+    rather than a decline: the divider read it and found nothing to
+    cut, which is not the same as having no opinion.
     Answers arrive with namedivider's own confidence, which the parsing
     stage compares against its floor to decide whether to report a
     SEGMENTATION ambiguity: namedivider scores a rule-based division
@@ -161,18 +158,32 @@ def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
                else namedivider.BasicNameDivider())
 
     def segment(text: str) -> Segmentation | None:
-        # segment_scripts UNIONS under pack composition, so this can
-        # receive tokens of any other activated script (hangul, under
-        # the default policy). Decline anything outside the Japanese
-        # repertoire rather than hand it to namedivider, which would
-        # answer for it regardless -- the same table DEVIATES scans.
-        if not all(map(_in_repertoire, text)):
-            return None
         # namedivider RAISES below two characters ("Name length needs
         # at least 2 chars"), and a segmenter's exceptions propagate by
         # contract, so a one-character token -- routine in spaced input
         # like "林 太郎" -- must be declined here, not passed on.
         if len(text) < 2:
+            return None
+        # segment_scripts UNIONS under pack composition, so this can
+        # receive tokens of any other activated script (hangul, under
+        # the default policy). Decline anything outside the Japanese
+        # repertoire rather than hand it to namedivider, which would
+        # answer for it regardless -- the same union DEVIATES declares.
+        if not _wholly_japanese(text):
+            return None
+        # namedivider 0.4.x has no knowledge of the shime mark: its
+        # rule path cuts 〆木太郎 to 〆 | 木太郎 at confidence 1.0
+        # (measured -- wrong for every attested 〆 surname: 〆木, 〆谷,
+        # 〆野), so a wrong family would arrive with no SEGMENTATION
+        # report. Decline instead: the family-first ORDER fix for 〆
+        # stands regardless, and division can return when a divider
+        # knows the mark. The blanket check is deliberately broader
+        # than that rule-path failure: mid-token 〆 (山〆太郎) comes
+        # back 山 | 〆太郎 at 0.375 on the kanji_feature path
+        # (measured), a low-confidence answer that WOULD have carried
+        # a SEGMENTATION report -- swept in anyway, because decline is
+        # the safe direction and mid-token 〆 is vanishingly rare.
+        if "〆" in text:
             return None
         result = divider.divide_name(text)
         if result.family + result.given != text:

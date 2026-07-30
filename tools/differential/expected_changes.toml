@@ -50,9 +50,10 @@ issue = "fix(#271/#272) native-script CJK: family-first order, hangul segmentati
 # tracked as #272's and #271's shared gap in issue #295, which also
 # records the provenance decision a fix needs; until it is closed the
 # behavioral guarantee lives in the fix(#271)/fix(#272) rows of
-# tests/v2/cases.py, and this rule is kept ready for the moment a CJK
-# name lands in a corpus.
-name_regex = "[\\u3005-\\u3005\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65]"
+# tests/v2/cases.py and the fix(shime-mark) rows, whose 〆 span rides
+# in on the same HAN entry, and this rule is kept ready for the moment
+# a CJK name lands in a corpus.
+name_regex = "[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65]"
 fields = ["first", "middle", "last"]
 
 [[change]]

@@ -2,10 +2,10 @@ import unicodedata
 
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
-    _SCRIPT_RANGES, effective_script, is_initial, is_suffix_lenient,
+    effective_script, is_initial, is_suffix_lenient,
     is_suffix_strict, resolve_script_set, single_script,
 )
-from nameparser._policy import Script
+from nameparser._policy import Script, _SCRIPT_RANGES
 
 _LEX = Lexicon(
     suffix_acronyms=frozenset({"phd", "ma"}),
@@ -183,7 +183,7 @@ def test_script_ranges_are_pairwise_disjoint() -> None:
     # every entry of every script rather than script by script,
     # because the adjacent blocks are exactly where a future edit
     # would go wrong -- HIRAGANA ends at U+309F and KATAKANA opens at
-    # U+30A0 with no gap at all, and HAN's singleton U+3005 sits just
+    # U+30A0 with no gap at all, and HAN's U+3005-U+3006 span sits just
     # below both.
     spans = [(lo, hi, script)
              for script, ranges in _SCRIPT_RANGES.items()

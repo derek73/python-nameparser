@@ -6,7 +6,8 @@ tests/v2/test_layering.py).
 from __future__ import annotations
 
 import dataclasses
-from collections.abc import Iterable, Mapping
+import re
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum, StrEnum, auto
 from typing import Any
@@ -35,8 +36,8 @@ class Script(StrEnum):
     unspaced-name segmentation (``Policy.segment_scripts``). The rule
     that admits these (amendment 2026-07-27): script-conditional
     behavior only where the script itself determines the convention --
-    Latin-script input is never affected. Character tables live in
-    nameparser/_pipeline/_vocab.py, not here."""
+    Latin-script input is never affected. The codepoint table backing
+    these members is internal."""
 
     #: Chinese Hanzi -- and Japanese Kanji: a pure-Han string cannot
     #: say which language it is, which is fine for ORDER (both write
@@ -56,6 +57,128 @@ class Script(StrEnum):
     #: no default behavior keys on this member; it exists so the
     #: classifier can name what it deliberately declines.
     KATAKANA = "katakana"
+
+
+# Codepoint ranges per Script (#271). This integer table is the single
+# source of truth for what a script covers; every matcher DERIVES from
+# it -- _pipeline/_vocab.py compiles its per-script patterns from it,
+# and it is importable from the pipeline and the locale packs alike,
+# so the packs' predicates build on it too, through _script_matcher
+# below (the table lives here rather than in the pipeline because
+# packs must not import the pipeline).
+# HAN: the ideographic iteration mark U+3005 and the shime mark
+# U+3006, the URO plus Extension A, the compatibility block, and the
+# supplementary-plane block
+# (Ext B-I + CJK Compat Ideographs Supplement, 0x20000-0x323AF) --
+# rare surnames are the biggest real source of supplementary-plane
+# hanzi in personal names (e.g. 𠮷田's 𠮷, U+20BB7), so leaving them
+# out silently mis-orders those names; unassigned gaps inside the span
+# are harmless, since no real name contains an unassigned codepoint.
+# U+3005 々 is the block-vs-Script case, running the OPPOSITE way to
+# U+30FB below: 々 already IS Script=Han under UAX #24 (Scripts.txt
+# reads `3005 ; Han`), but it sits in CJK Symbols and Punctuation,
+# outside every CJK ideograph block this table spans -- so a
+# singleton entry was what a BLOCK table needed to reach a character
+# the Script property would have classified correctly for free. It
+# earns the reach: 々 repeats the preceding kanji and appears only
+# inside Han-written names -- 佐々木 (Sasaki, a top-20 Japanese
+# surname), 野々村, 奈々. Omitting it made 佐々木 a mixed-script token:
+# the name reversed and never gated into segmentation.
+# U+3006 〆 (the shime mark) extends that singleton to a two-codepoint
+# span on a DIFFERENT justification: unlike 々, 〆 is Script=Common
+# under UAX #24, so this is the table deliberately reaching PAST the
+# Script property, not around a block boundary -- justified because
+# within personal names 〆 appears solely in Japanese surnames (〆木
+# Shimeki, 〆谷 Shimetani, 〆野) -- its other uses (the envelope
+# closing mark, 〆切) never reach a name parser -- and it appears in
+# no other script's names.
+# HANGUL: precomposed syllables only -- modern Korean
+# text never writes names as bare jamo.
+# HIRAGANA/KATAKANA (#272): the two kana blocks, each in full. There
+# IS a supplementary-plane kana repertoire (Kana Supplement, Kana
+# Extended-A/B, Small Kana Extension, U+1AFF0-U+1B16F, a few hundred
+# assigned codepoints -- no exact count here, it moves with the
+# Unicode version) but none of it is WORTH chasing the way Han's astral
+# block is: those codepoints are hentaigana and other archaic/
+# phonetic-extension forms no modern Japanese name uses, unlike
+# supplementary Han, which real surnames genuinely need. The Katakana
+# Phonetic Extensions block (U+31F0-U+31FF, 16 small katakana for Ainu
+# transcription) is excluded for the same reason -- no modern Japanese
+# personal name uses them. Halfwidth kana (U+FF65-U+FF9F, including
+# the voiced/semi-voiced sound marks U+FF9E/U+FF9F) is likewise
+# deliberately excluded -- legacy bank/CSV data uses it, but it is a
+# separate normalization problem; #272 Task 2b's separator handling
+# only touches the halfwidth DOT (U+FF65), not the rest of that block.
+# This table classifies by Unicode BLOCK, not the UAX #24 Script
+# property: U+30A0, U+30FB (the middle dot), and U+30FC (the
+# prolonged sound mark) all carry Script=Common under UAX #24, and the
+# four kana voicing marks U+3099-U+309C split two and two -- U+3099
+# and U+309A are the COMBINING forms (Script=Inherited), U+309B and
+# U+309C the spacing ones (Script=Common) -- yet every one of them is
+# needed here, and block membership, not the Script property, is what
+# puts them in range. The katakana block's upper end (U+30FF) takes in
+# the middle dot U+30FB, kept rather than carved out for a smaller
+# reason than it looks: tokenize (#272 Task 2b) turns U+30FB into a
+# token separator, so no real parse shows the classifier a string
+# containing one. It is kept so that a DIRECT whole-string call --
+# effective_script (_pipeline/_vocab.py) on "マイケル・ジャクソン", which
+# the unit tests (tests/v2/pipeline/test_vocab.py) make -- still
+# classifies instead of returning None. The ranges below must
+# stay mutually disjoint: single_script (_pipeline/_vocab.py) returns
+# the FIRST covering entry (dict iteration order), so an overlapping
+# future script would make the result order-dependent instead of
+# well-defined.
+_SCRIPT_RANGES: dict[Script, tuple[tuple[int, int], ...]] = {
+    Script.HAN: ((0x3005, 0x3006), (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
+                 (0xF900, 0xFAFF), (0x20000, 0x323AF)),
+    Script.HANGUL: ((0xAC00, 0xD7A3),),
+    Script.HIRAGANA: ((0x3040, 0x309F),),
+    Script.KATAKANA: ((0x30A0, 0x30FF),),
+}
+
+#: The Japanese repertoire: the three scripts Japanese names draw on.
+#: The kana license (_pipeline/_vocab.py's effective_script), the ja
+#: pack's DEVIATES, and the segmenter adapter's repertoire guard all
+#: quantify over this one union (HANGUL simply omitted).
+_JA_SCRIPTS = (Script.HAN, Script.HIRAGANA, Script.KATAKANA)
+
+
+def _script_matcher(*scripts: Script,
+                    whole: bool = False) -> Callable[[str], bool]:
+    """A predicate over strings, compiled once from the union of the
+    named scripts' spans in _SCRIPT_RANGES. whole=False: True when the
+    string CONTAINS any such character -- DEVIATES' contract, where
+    over-declaring is the gate's safe direction. whole=True: True when
+    the string is non-empty and consists WHOLLY of such characters --
+    the ja adapter's repertoire guard and _vocab's script
+    classifiers. Meant to be called at MODULE
+    scope: "compiled once" is per matcher, and each call compiles a
+    fresh pattern. The compiled pattern lives in the closure ON
+    PURPOSE, and the compilation lives HERE rather than in a pack-
+    local closure: tests/v2/test_locales.py classifies any pack module
+    holding a module-level re.Pattern as a marker pack needing rotator
+    branch coverage, and its registry gate goes further -- a pack that
+    so much as IMPORTS re without exposing such a pattern fails
+    "imports re but exposes no module-level pattern" -- so a
+    range-declaring pack must not import re at all; predicates built
+    here keep the packs invisible to that sweep by construction (and
+    spare _vocab's derived matchers a declaration row in
+    tests/v2/test_regex_sync.py's completeness sweep, which scans the
+    pipeline modules (plus _render) for private module-level
+    patterns)."""
+    if not scripts:
+        raise ValueError("_script_matcher needs at least one Script")
+    cls = "".join(f"\\U{lo:08x}-\\U{hi:08x}"
+                  for script in scripts
+                  for lo, hi in _SCRIPT_RANGES[script])
+    # one pattern serves both modes: fullmatch of [cls]+ is wholly-of,
+    # and search over [cls]+ is exactly contains-any
+    pattern = re.compile(f"[{cls}]+")
+    match = pattern.fullmatch if whole else pattern.search
+
+    def matcher(text: str) -> bool:
+        return match(text) is not None
+    return matcher
 
 
 # Order-spec constants (#270). Each reads as its contents because roles

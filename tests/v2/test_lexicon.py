@@ -9,8 +9,7 @@ from nameparser import Parser
 from nameparser._lexicon import (
     Lexicon, _VOCAB_FIELDS, _default_lexicon, _normalize, _title_key,
 )
-from nameparser._pipeline._vocab import _SCRIPT_RANGES
-from nameparser._policy import Script
+from nameparser._policy import Script, _SCRIPT_RANGES
 
 
 def test_entries_are_normalized_at_construction() -> None:
