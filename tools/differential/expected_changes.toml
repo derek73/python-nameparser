@@ -32,17 +32,22 @@ issue = "fix(#271/#272) native-script CJK: family-first order, hangul segmentati
 # supplementary-plane kana is hentaigana and other archaic forms no
 # modern name uses, so _SCRIPT_RANGES does not list it either.
 #
-# U+FF65 is the one span here that _SCRIPT_RANGES does NOT have, and
-# it is deliberate: the halfwidth middle dot separates tokens like its
-# fullwidth twin, so 'ﾏｲｹﾙ･ｼﾞｬｸｿﾝ' splits where 1.4 left one token,
-# but halfwidth kana is excluded from CLASSIFICATION on purpose (a
-# separate normalization problem). The rest of the halfwidth block
-# (U+FF66-U+FF9F) is left out for the usual tightness reason, and it
-# was measured rather than assumed: a dotless halfwidth name such as
-# 'ﾏｲｹﾙ ｼﾞｬｸｿﾝ' is byte-identical on both sides, so covering the
-# block would pre-excuse a future regression on a shape that is
-# parity today. The dot is the whole mechanism; the dot is the whole
-# span.
+# U+FF65 and U+00B7 are the two spans here that _SCRIPT_RANGES does
+# NOT have, and both are deliberate. The halfwidth middle dot
+# separates tokens like its fullwidth twin, so 'ﾏｲｹﾙ･ｼﾞｬｸｿﾝ' splits
+# where 1.4 left one token, but halfwidth kana is excluded from
+# CLASSIFICATION on purpose (a separate normalization problem). The
+# rest of the halfwidth block (U+FF66-U+FF9F) is left out for the
+# usual tightness reason, and it was measured rather than assumed: a
+# dotless halfwidth name such as 'ﾏｲｹﾙ ｼﾞｬｸｿﾝ' is byte-identical on
+# both sides, so covering the block would pre-excuse a future
+# regression on a shape that is parity today. U+00B7, the
+# context-sensitive 间隔号 (#298), is FF65's situation again: it
+# divides only between classified-script characters and pins source
+# order, so '威廉·莎士比亚' splits where 1.4 kept one token -- but a
+# codepoint that doubles as Catalan's punt volat can never itself be
+# classified as a CJK script. The dots are the whole mechanism; the
+# dots are the whole spans.
 #
 # corpus_cjk.jsonl (#295) exists so this rule fires in every real
 # run: build_cjk_corpus.py harvests every CJK-bearing text in
@@ -52,7 +57,7 @@ issue = "fix(#271/#272) native-script CJK: family-first order, hangul segmentati
 # two corpora have by construction: v1's banks had no reason to test
 # CJK, and build_issues_corpus.py requires an internal space, which
 # unspaced names never have.
-name_regex = "[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65]"
+name_regex = "[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65\\u00B7-\\u00B7]"
 fields = ["first", "middle", "last"]
 
 [[change]]

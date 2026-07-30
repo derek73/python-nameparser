@@ -651,4 +651,41 @@ CASES: tuple[Case, ...] = (
          notes="delimited content tokenizes under the same separator "
                "rules: the dot renders back as a space in the nickname "
                "join -- a decision, not an accident"),
+    Case("zh_interpunct_transcription_source_order", "威廉·莎士比亚",
+         {"given": "威廉", "family": "莎士比亚"},
+         classification="fix(#298)",
+         notes="间隔号-divided Han is a transcribed foreign name and "
+               "keeps source order -- the B7 is the transcription "
+               "marker, playing the role pure katakana plays in the "
+               "kana license; it divides only between classified "
+               "characters"),
+    Case("zh_interpunct_nakaguro_typed_stays_roster", "威廉・莎士比亚",
+         {"given": "莎士比亚", "family": "威廉"},
+         classification="fix(#272)",
+         notes="the SAME transcription typed with the Japanese "
+               "nakaguro reads as the dot's own typography says -- a "
+               "姓・名 roster pair, family-first (#272) -- because the "
+               "nakaguro records nothing (spec 2026-07-30 decision 5: "
+               "codepoint-scoped; only the Chinese B7 marks a "
+               "transcription). A limitation row: chosen, not "
+               "accidental -- cross-convention input reads by the "
+               "convention of the codepoint it was typed with"),
+    Case("ja_interpunct_b7_katakana", "マイケル·ジャクソン",
+         {"given": "マイケル", "family": "ジャクソン"},
+         classification="fix(#298)",
+         notes="sloppy-IME B7 between katakana divides like the "
+               "nakaguro; katakana was never licensed, so order was "
+               "already positional -- the split is the fix"),
+    Case("latin_punt_volat_is_name_interior", "Gal·la Marcet",
+         {"given": "Gal·la", "family": "Marcet"},
+         notes="the Catalan punt volat: U+00B7 with Latin neighbors "
+               "is interior to the name, never a divider -- the flank "
+               "guard's whole reason"),
+    Case("zh_interpunct_suppresses_segmentation", "马丁·路德·金",
+         {"given": "马丁", "middle": "路德", "family": "金"},
+         locale="zh",
+         classification="fix(#298)",
+         notes="马 is a listed zh surname, but a 间隔号-divided name "
+               "is a transcription: the dot gates segmentation off, "
+               "so 马丁 stays whole and the positional read stands"),
 )

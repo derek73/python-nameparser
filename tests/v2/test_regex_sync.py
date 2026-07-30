@@ -192,16 +192,20 @@ def test_differential_cjk_rule_matches_the_script_ranges() -> None:
     it, see the comment there -- so the comparison runs over the BMP
     spans only.
 
-    The rule is also WIDER than the table by exactly one span, which
+    The rule is also WIDER than the table by exactly two spans, which
     the equality has to know about or it would just fail forever. The
     halfwidth middle dot U+FF65 changes parses without being
     classified as anything: tokenize separates on it, so a halfwidth
     transcription splits where 1.4 kept one token, while halfwidth
-    kana stays out of _SCRIPT_RANGES on purpose. Naming that span here
-    rather than relaxing the comparison to a subset check is what
-    keeps the pin honest in both directions: a THIRD source of
-    divergence still fails, and the one sanctioned difference has to
-    be written down to exist.
+    kana stays out of _SCRIPT_RANGES on purpose. U+00B7 -- the
+    context-sensitive 间隔号 (#298) -- is the same situation: it
+    divides between classified characters and pins source order,
+    changing parses, yet doubles as Catalan's punt volat and so can
+    never itself be classified. Naming those spans here rather than
+    relaxing the comparison to a subset check is what keeps the pin
+    honest in both directions: an unsanctioned source of divergence
+    still fails, and each sanctioned difference has to be written
+    down to exist.
     """
     toml_path = (Path(__file__).parents[2] / "tools" / "differential"
                  / "expected_changes.toml")
@@ -222,16 +226,18 @@ def test_differential_cjk_rule_matches_the_script_ranges() -> None:
         (int(lo, 16), int(hi, 16))
         for lo, hi in re.findall(r"\\u([0-9A-Fa-f]{4})-\\u([0-9A-Fa-f]{4})",
                                  matched[0]["name_regex"])}
-    # the one span the rule carries that no Script claims (see above)
-    halfwidth_dot = (0xFF65, 0xFF65)
-    assert not any(lo <= halfwidth_dot[0] <= hi
-                   for spans in _policy._SCRIPT_RANGES.values()
-                   for lo, hi in spans), (
-        "U+FF65 is classified now; drop it from the sanctioned extras")
+    # the two spans the rule carries that no Script claims (see above)
+    sanctioned_extras = {(0xFF65, 0xFF65), (0xB7, 0xB7)}
+    for extra, _ in sorted(sanctioned_extras):
+        assert not any(lo <= extra <= hi
+                       for spans in _policy._SCRIPT_RANGES.values()
+                       for lo, hi in spans), (
+            f"U+{extra:04X} is classified now; drop it from the "
+            "sanctioned extras")
     expected = {span
                 for spans in _policy._SCRIPT_RANGES.values()
                 for span in spans
-                if span[1] <= 0xFFFF} | {halfwidth_dot}
+                if span[1] <= 0xFFFF} | sanctioned_extras
     assert declared == expected, (
         f"{toml_path.name}'s CJK name_regex declares {sorted(declared)}; "
         f"_SCRIPT_RANGES' BMP spans are {sorted(expected)}")
