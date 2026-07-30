@@ -204,6 +204,12 @@ def test_ja_pack_contents() -> None:
     assert locales.JA.policy.name_order is UNSET
     assert locales.JA.policy.script_orders is UNSET
     assert locales.JA.lexicon == Lexicon.empty()
+    assert _ja.DEVIATES("山田太郎")
+    # katakana declared (see the pack's repertoire note)
+    assert _ja.DEVIATES("マイケル")
+    assert _ja.DEVIATES("みなみ")   # hiragana declared
+    assert not _ja.DEVIATES("John Smith")
+    assert not _ja.DEVIATES("김민준")   # the three JA scripts, not a wider union
 
 
 def test_ja_segmenter_without_extra_raises_helpfully() -> None:
@@ -317,15 +323,6 @@ def test_ja_adapter_gbdt_flag_selects_the_gbdt_divider(
         monkeypatch, lambda text: _FakeDivided(text[:1], text[1:], 1.0))
     locales.ja_segmenter(gbdt=True)
     assert divide == ["gbdt"]
-
-
-def test_ja_ranges_stay_in_sync_with_vocab() -> None:
-    # ja.py hand-copies the three Japanese-repertoire scripts' spans
-    # for DEVIATES and for the adapter's own repertoire check; pinned
-    # here until the pack derives from the shared table
-    assert set(_ja._JA_RANGES) == {
-        span for script in (Script.HAN, Script.HIRAGANA, Script.KATAKANA)
-        for span in _SCRIPT_RANGES[script]}
 
 
 def test_ja_pack_alone_is_inert() -> None:
@@ -459,7 +456,7 @@ def test_ja_divides_an_astral_kanji_name() -> None:
     # the supplementary plane -- the reason _SCRIPT_RANGES carries the
     # astral Han span at all. It has to survive the whole chain as one
     # character and not two: the script gate, the adapter's repertoire
-    # scan, namedivider itself, and the offset arithmetic that turns
+    # guard, namedivider itself, and the offset arithmetic that turns
     # the answer into spans (Python indexes by codepoint, so an offset
     # of 2 here spans four UTF-16 units -- a surrogate-pair bug would
     # land the split in the middle of the character).

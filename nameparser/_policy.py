@@ -63,9 +63,9 @@ class Script(StrEnum):
 # source of truth for what a script covers; every matcher DERIVES from
 # it -- _pipeline/_vocab.py compiles its per-script patterns from it,
 # and it is importable from the pipeline and the locale packs alike,
-# so the packs' predicates can build on it too (their hand-copies
-# date from when this table lived in the pipeline, which packs must
-# not import).
+# so the packs' predicates build on it too, through _script_matcher
+# below (the hand-copies this replaced dated from when the table
+# lived in the pipeline, which packs must not import).
 # HAN: the ideographic iteration mark U+3005, the URO plus Extension
 # A, the compatibility block, and the supplementary-plane block
 # (Ext B-I + CJK Compat Ideographs Supplement, 0x20000-0x323AF) --

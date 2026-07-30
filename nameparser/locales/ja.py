@@ -50,7 +50,8 @@ one union policy field, self-selecting by script, so it can only change
 names containing characters of the Japanese repertoire -- DEVIATES
 below declares exactly that, over-declaring within the repertoire (a
 name also needs an unspaced token and a segmenter to actually change,
-but per-character scanning is the safe direction, zh's precedent).
+but declaring every repertoire-bearing name is the safe direction,
+zh's precedent).
 """
 from __future__ import annotations
 
@@ -58,7 +59,7 @@ from typing import TYPE_CHECKING
 
 from nameparser._lexicon import Lexicon
 from nameparser._locale import Locale
-from nameparser._policy import PolicyPatch, Script
+from nameparser._policy import PolicyPatch, Script, _script_matcher
 from nameparser._types import Segmentation
 
 if TYPE_CHECKING:
@@ -71,24 +72,24 @@ JA = Locale(
         segment_scripts=frozenset({Script.HAN, Script.HIRAGANA})),
 )
 
-# The Japanese repertoire's codepoint spans -- hiragana, katakana and
-# Han -- kept in sync BY HAND with _policy.py's _SCRIPT_RANGES entries
-# for those three scripts (a hold-over from when that table lived in
-# the pipeline, which packs must not import; the sync test in
-# tests/v2/test_locales.py pins the equality until the copy goes).
-# Katakana is in the table even though the pack never
-# ACTIVATES it: both consumers below quantify over the whole
-# repertoire, because a katakana-bearing token can still be a
-# kana-licensed composite the pack acts on (山田エミ) -- DEVIATES must
-# declare it, and the adapter must not decline it. A pure-katakana
-# token never reaches THE ADAPTER: KATAKANA is in no activation set, so
-# the stage's own gate stops it before the segmenter is consulted.
-# DEVIATES still declares one, and must: it is a predicate over any
-# name at all, called before any gate runs, and over-declaring is its
-# safe direction by design.
-_JA_RANGES = ((0x3005, 0x3005), (0x3040, 0x309F), (0x30A0, 0x30FF),
-              (0x3400, 0x4DBF), (0x4E00, 0x9FFF), (0xF900, 0xFAFF),
-              (0x20000, 0x323AF))
+#: The scripts DEVIATES and the adapter quantify over. KATAKANA is
+#: here even though the pack never ACTIVATES it: a katakana-bearing
+#: token can still be a kana-licensed composite the pack acts on
+#: (山田エミ) -- DEVIATES must declare it, and the adapter must not
+#: decline it. A
+#: pure-katakana token never reaches THE ADAPTER: KATAKANA is in no
+#: activation set, so the stage's own gate stops it before the
+#: segmenter is consulted. DEVIATES still declares one, and must: it
+#: is a predicate over any name at all, called before any gate runs,
+#: and over-declaring is its safe direction by design.
+_JA_SCRIPTS = (Script.HAN, Script.HIRAGANA, Script.KATAKANA)
+
+# Both compiled by _policy's factory from the shared codepoint table,
+# so the pack carries no spans of its own to drift out of sync: the
+# contains-any form backs DEVIATES, the whole-token form is the
+# adapter's repertoire guard.
+_has_japanese = _script_matcher(*_JA_SCRIPTS)
+_wholly_japanese = _script_matcher(*_JA_SCRIPTS, whole=True)
 
 
 #: How far outside [0, 1] a namedivider score may stray and still count
@@ -97,15 +98,13 @@ _JA_RANGES = ((0x3005, 0x3005), (0x3040, 0x309F), (0x30A0, 0x30FF),
 _SCORE_EPSILON = 1e-6
 
 
-def _in_repertoire(char: str) -> bool:
-    return any(lo <= ord(char) <= hi for lo, hi in _JA_RANGES)
-
-
 def DEVIATES(name: str) -> bool:
     """True when this pack may parse `name` differently from the
     default parser (the declared-deviation predicate the
-    non-interference gate consumes)."""
-    return any(_in_repertoire(c) for c in name)
+    non-interference gate consumes): any name bearing a repertoire
+    character -- see the repertoire note above for why katakana is
+    declared and why over-declaring is safe."""
+    return _has_japanese(name)
 
 
 def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
@@ -166,8 +165,8 @@ def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
         # receive tokens of any other activated script (hangul, under
         # the default policy). Decline anything outside the Japanese
         # repertoire rather than hand it to namedivider, which would
-        # answer for it regardless -- the same table DEVIATES scans.
-        if not all(map(_in_repertoire, text)):
+        # answer for it regardless -- the same union DEVIATES declares.
+        if not _wholly_japanese(text):
             return None
         # namedivider RAISES below two characters ("Name length needs
         # at least 2 chars"), and a segmenter's exceptions propagate by
