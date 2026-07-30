@@ -38,7 +38,7 @@ needs widening. The run must exit 0 before a 2.0 release; the classified
 summary it prints is the source for the "Behavior Changes" section of
 `docs/release_log.rst`.
 
-## The two corpora
+## The three corpora
 
 `compare.py` reads **every** `corpus*.jsonl` beside it by default
 (deduped), because a corpus you have to ask for by name is a corpus
@@ -48,11 +48,18 @@ that stops being run. Pass `--corpus PATH` (repeatable) to narrow it.
 |---|---|---|
 | `corpus.jsonl` | v1's own test suite at a pinned ref | anything 2.0 added — v1's authors had no reason to test a typographic nickname delimiter or a Cyrillic title |
 | `corpus_issues.jsonl` | name-like strings harvested from the GitHub issue tracker | anything nobody ever reported |
+| `corpus_cjk.jsonl` | the CJK-bearing rows of `tests/v2/cases.py`, via `build_cjk_corpus.py` (#295) | anything the case table itself missed — it re-witnesses reviewed expectations at the 1.4 boundary rather than discovering new shapes |
 
 They are deliberately separate rather than merged: `corpus.jsonl` is
 reproducible forever from an immutable git ref, while the issue
-tracker is mutable, so regenerating the second one is an explicit,
-reviewable act that can only add names.
+tracker is mutable, so regenerating `corpus_issues.jsonl` is an
+explicit, reviewable act that can only add names — and the CJK corpus
+exists because BOTH of those are structurally blind to unspaced CJK (v1's
+banks never tested it; `build_issues_corpus.py` requires an internal
+space, which unspaced names never have). It regenerates from the case
+table, and `tests/v2/test_regex_sync.py` pins the checked-in file
+against the generator's selection, so a CJK case row added without
+regenerating fails the suite instead of silently narrowing this gate.
 
 The issue corpus earned its place on the first run — 166 of its 198
 names were not in `corpus.jsonl`, and it immediately surfaced five

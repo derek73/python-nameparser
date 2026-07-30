@@ -12,9 +12,12 @@ convention), so this module is where the promise gets checked.
 Layering is the usual reason for a copy but not the only one, so this
 module's scope is the PROMISE rather than that one pair of packages:
 the comma-set pin below reads _pipeline._state instead of config, and
-the last test reaches outside the package altogether, to a TOML file
-that could not import a Python constant if it wanted to.
+the last three tests reach outside the package altogether -- two to a
+TOML file that could not import a Python constant if it wanted to,
+one to a generated corpus whose generator can, and must stay run.
 """
+import importlib.util
+import json
 import re
 import tomllib
 from pathlib import Path
@@ -232,3 +235,64 @@ def test_differential_cjk_rule_matches_the_script_ranges() -> None:
     assert declared == expected, (
         f"{toml_path.name}'s CJK name_regex declares {sorted(declared)}; "
         f"_SCRIPT_RANGES' BMP spans are {sorted(expected)}")
+
+
+def test_differential_compound_rule_matches_the_script_ranges() -> None:
+    """The fix(cjk-delimited-nickname) rule (#295) carries the SECOND
+    hand copy of the script spans in the toml: its require-a-classified-
+    codepoint lookahead exists so the delimiter set alone cannot claim a
+    Latin name's first/last regression ('John 「Jack」 Kennedy' -- the
+    corner brackets sit outside every classified span). Pin that copy to
+    the table exactly as the canonical CJK rule's is, and pin the
+    delimiter set itself, so widening either (to ASCII quotes, say) is
+    an explicit decision here rather than a silent absorption change.
+
+    Selection note for future rule authors: the canonical-CJK-rule pin
+    above selects by the literal '#271'/'#272' substrings and asserts
+    uniqueness -- this rule's slug avoids them on purpose, and any new
+    rule's must too.
+    """
+    toml_path = (Path(__file__).parents[2] / "tools" / "differential"
+                 / "expected_changes.toml")
+    rules = tomllib.loads(toml_path.read_text())["change"]
+    matched = [r for r in rules if "cjk-delimited-nickname" in r["issue"]]
+    assert len(matched) == 1
+    regex = matched[0]["name_regex"]
+    assert "[「」『』・･]" in regex, (
+        "the compound rule's delimiter set changed; decide deliberately")
+    declared = {
+        (int(lo, 16), int(hi, 16))
+        for lo, hi in re.findall(r"\\u([0-9A-Fa-f]{4})-\\u([0-9A-Fa-f]{4})",
+                                 regex)}
+    expected = {span
+                for spans in _policy._SCRIPT_RANGES.values()
+                for span in spans
+                if span[1] <= 0xFFFF} | {(0xFF65, 0xFF65)}
+    assert declared == expected, (
+        f"compound rule's codepoint lookahead declares {sorted(declared)}; "
+        f"_SCRIPT_RANGES' BMP spans are {sorted(expected)}")
+
+
+def test_cjk_corpus_matches_the_case_table() -> None:
+    """corpus_cjk.jsonl is GENERATED, not curated (#295): every
+    distinct case-table text bearing a codepoint the script table
+    classifies, sorted -- see build_cjk_corpus.py for why the other
+    two corpora cannot carry these names. The checked-in file must
+    equal what the generator would write, so a CJK case row added
+    without regenerating fails HERE instead of silently narrowing
+    the differential gate back toward the blind spot #295 closed.
+    Same promise as the toml pin above, aimed at a generated artifact
+    instead of a hand copy.
+    """
+    tools = Path(__file__).parents[2] / "tools" / "differential"
+    spec = importlib.util.spec_from_file_location(
+        "build_cjk_corpus", tools / "build_cjk_corpus.py")
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    checked_in = [json.loads(line) for line in
+                  (tools / "corpus_cjk.jsonl")
+                  .read_text(encoding="utf-8").splitlines()]
+    assert checked_in == module.selected_names(), (
+        "corpus_cjk.jsonl is stale: regenerate with "
+        "`uv run python tools/differential/build_cjk_corpus.py`")
