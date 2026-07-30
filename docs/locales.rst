@@ -280,7 +280,14 @@ by ``tests/v2/test_locales.py``:
 #. Declare a module-level ``DEVIATES(name)`` predicate: given a name
    string, return whether *this pack alone* might parse it differently
    from the default parser. Over-declaring is safe; under-declaring is
-   not — when in doubt, ``DEVIATES`` should say yes.
+   not — when in doubt, ``DEVIATES`` should say yes. A pack whose
+   scope is a *script* builds the predicate with ``_script_matcher``
+   from ``nameparser/_policy.py``, the way ``zh`` and ``ja`` do —
+   never by compiling its own character ranges: the table in
+   ``_policy.py`` is the single source for script codepoint spans, and
+   the contract test reads any module-level ``re.Pattern`` in a pack
+   as a marker regex needing branch coverage (a pack that imports
+   ``re`` without exposing one fails outright).
 #. Add a rotator list to ``tests/v2/test_locales.py``. Every pack needs
    one, but what it has to contain follows from how the pack declares
    its scope. A pack declaring by *marker regex* (``ru``, ``tr_az``)

@@ -155,9 +155,10 @@ def _script_matcher(*scripts: Script,
     so much as IMPORTS re without exposing such a pattern fails
     "imports re but exposes no module-level pattern" -- so a pack must
     not import re at all; predicates built here keep the packs
-    invisible to that sweep by construction (and keep derived
-    matchers out of tests/v2/test_regex_sync.py's hand-copy
-    completeness sweep, which scans for module-level patterns)."""
+    invisible to that sweep by construction (and spare _vocab's
+    derived matchers a declaration row in tests/v2/test_regex_sync.py's
+    completeness sweep, which scans the pipeline modules for
+    module-level patterns)."""
     if not scripts:
         raise ValueError("_script_matcher needs at least one Script")
     cls = "".join(f"\\U{lo:08x}-\\U{hi:08x}"
