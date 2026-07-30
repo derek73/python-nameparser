@@ -72,10 +72,11 @@ JA = Locale(
 )
 
 # The Japanese repertoire's codepoint spans -- hiragana, katakana and
-# Han -- kept in sync BY HAND with _pipeline/_vocab.py's _SCRIPT_RANGES
-# entries for those three scripts (layering forbids a pack importing
-# the pipeline; the sync test in tests/v2/test_locales.py pins the
-# equality). Katakana is in the table even though the pack never
+# Han -- kept in sync BY HAND with _policy.py's _SCRIPT_RANGES entries
+# for those three scripts (a hold-over from when that table lived in
+# the pipeline, which packs must not import; the sync test in
+# tests/v2/test_locales.py pins the equality until the copy goes).
+# Katakana is in the table even though the pack never
 # ACTIVATES it: both consumers below quantify over the whole
 # repertoire, because a katakana-bearing token can still be a
 # kana-licensed composite the pack acts on (山田エミ) -- DEVIATES must

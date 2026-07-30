@@ -2,10 +2,10 @@ import unicodedata
 
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
-    _SCRIPT_RANGES, effective_script, is_initial, is_suffix_lenient,
+    effective_script, is_initial, is_suffix_lenient,
     is_suffix_strict, resolve_script_set, single_script,
 )
-from nameparser._policy import Script
+from nameparser._policy import Script, _SCRIPT_RANGES
 
 _LEX = Lexicon(
     suffix_acronyms=frozenset({"phd", "ma"}),

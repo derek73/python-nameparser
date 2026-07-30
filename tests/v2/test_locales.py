@@ -12,8 +12,9 @@ import pytest
 
 from nameparser import Locale, Parser, locales, parse, parser_for
 from nameparser._lexicon import _VOCAB_FIELDS, Lexicon
-from nameparser._pipeline._vocab import _SCRIPT_RANGES
-from nameparser._policy import UNSET, PatronymicRule, Policy, Script
+from nameparser._policy import (
+    UNSET, PatronymicRule, Policy, Script, _SCRIPT_RANGES,
+)
 from nameparser._types import AmbiguityKind
 from nameparser.locales import ja as _ja
 from nameparser.locales import ru as _ru

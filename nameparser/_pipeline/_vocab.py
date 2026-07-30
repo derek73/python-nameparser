@@ -13,7 +13,7 @@ import unicodedata
 from collections.abc import Iterable
 
 from nameparser._lexicon import Lexicon, _normalize
-from nameparser._policy import Script
+from nameparser._policy import Script, _SCRIPT_RANGES
 
 # Ported verbatim from v1 (nameparser/config/regexes.py "initial") minus
 # its empty-string alternative -- WorkToken text is never empty. Kept in
@@ -31,74 +31,16 @@ _PERIOD_NOT_AT_END = re.compile(r".*\..+$", re.I)
 PH = re.compile(r"^ph\.?$", re.IGNORECASE)
 D = re.compile(r"^d\.?$", re.IGNORECASE)
 
-# Codepoint ranges per Script (#271). This integer table is the single
-# source of truth for what a script covers; _SCRIPT_PATTERNS below
-# DERIVES the match engine from it. (The sweep here was first written
+# The codepoint table lives in _policy beside Script -- one copy
+# importable from the pipeline and the locale packs alike; everything
+# here DERIVES from it. (single_script's sweep was first written
 # per-char on the _EMOJI_RANGES precedent in _tokenize.py, on the
 # theory that a range test needs no regex; measured at token scale the
 # compiled regex wins by 3-9x, and by 89x on long tokens.)
-# HAN: the ideographic iteration mark U+3005, the URO plus Extension
-# A, the compatibility block, and the supplementary-plane block
-# (Ext B-I + CJK Compat Ideographs Supplement, 0x20000-0x323AF) --
-# rare surnames are the biggest real source of supplementary-plane
-# hanzi in personal names (e.g. 𠮷田's 𠮷, U+20BB7), so leaving them
-# out silently mis-orders those names; unassigned gaps inside the span
-# are harmless, since no real name contains an unassigned codepoint.
-# U+3005 々 is the block-vs-Script case, running the OPPOSITE way to
-# U+30FB below: 々 already IS Script=Han under UAX #24 (Scripts.txt
-# reads `3005 ; Han`), but it sits in CJK Symbols and Punctuation,
-# outside every CJK ideograph block this table spans -- so the
-# singleton entry is what a BLOCK table needs to reach a character the
-# Script property would have classified correctly for free. It earns
-# the reach: 々 repeats the preceding kanji and appears only inside
-# Han-written names -- 佐々木 (Sasaki, a top-20 Japanese surname),
-# 野々村, 奈々. Omitting it made 佐々木 a mixed-script token: the name
-# reversed and never gated into segmentation.
-# HANGUL: precomposed syllables only -- modern Korean
-# text never writes names as bare jamo.
-# HIRAGANA/KATAKANA (#272): the two kana blocks, each in full. There
-# IS a supplementary-plane kana repertoire (Kana Supplement, Kana
-# Extended-A/B, Small Kana Extension, U+1AFF0-U+1B16F, a few hundred
-# assigned codepoints -- no exact count here, it moves with the
-# Unicode version) but none of it is WORTH chasing the way Han's astral
-# block is: those codepoints are hentaigana and other archaic/
-# phonetic-extension forms no modern Japanese name uses, unlike
-# supplementary Han, which real surnames genuinely need. The Katakana
-# Phonetic Extensions block (U+31F0-U+31FF, 16 small katakana for Ainu
-# transcription) is excluded for the same reason -- no modern Japanese
-# personal name uses them. Halfwidth kana (U+FF65-U+FF9F, including
-# the voiced/semi-voiced sound marks U+FF9E/U+FF9F) is likewise
-# deliberately excluded -- legacy bank/CSV data uses it, but it is a
-# separate normalization problem; Task 2b's separator handling only
-# touches the halfwidth DOT (U+FF65), not the rest of that block.
-# This table classifies by Unicode BLOCK, not the UAX #24 Script
-# property: U+30A0, U+30FB (the middle dot), and U+30FC (the
-# prolonged sound mark) all carry Script=Common under UAX #24, and the
-# four kana voicing marks U+3099-U+309C split two and two -- U+3099
-# and U+309A are the COMBINING forms (Script=Inherited), U+309B and
-# U+309C the spacing ones (Script=Common) -- yet every one of them is
-# needed here, and block membership, not the Script property, is what
-# puts them in range. The katakana block's upper end (U+30FF) takes in
-# the middle dot U+30FB, kept rather than carved out for a smaller
-# reason than it looks: tokenize (#272 Task 2b) turns U+30FB into a
-# token separator, so no real parse shows this classifier a string
-# containing one. It is kept so that a DIRECT whole-string call --
-# effective_script("マイケル・ジャクソン"), which the unit tests make --
-# still classifies instead of returning None. The ranges below must stay
-# mutually disjoint: single_script returns the FIRST covering entry
-# (dict iteration order), so an overlapping future script would make
-# the result order-dependent instead of well-defined.
-_SCRIPT_RANGES: dict[Script, tuple[tuple[int, int], ...]] = {
-    Script.HAN: ((0x3005, 0x3005), (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
-                 (0xF900, 0xFAFF), (0x20000, 0x323AF)),
-    Script.HANGUL: ((0xAC00, 0xD7A3),),
-    Script.HIRAGANA: ((0x3040, 0x309F),),
-    Script.KATAKANA: ((0x30A0, 0x30FF),),
-}
-
 # Derived, never hand-written: one character class per script, in the
-# table's own key order (so the FIRST-covering-entry rule above still
-# describes what single_script does).
+# table's own key order (so single_script's FIRST-covering-entry rule
+# still describes what it does; the disjointness requirement that
+# makes that well-defined is stated with the table in _policy).
 _SCRIPT_PATTERNS: dict[Script, re.Pattern[str]] = {
     script: re.compile(
         "[" + "".join(f"\\U{lo:08x}-\\U{hi:08x}" for lo, hi in ranges)

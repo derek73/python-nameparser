@@ -97,10 +97,10 @@ ZH = Locale(
     policy=PolicyPatch(segment_scripts=frozenset({Script.HAN})),
 )
 
-# Han codepoint spans, kept in sync BY HAND with
-# _pipeline/_vocab.py's _SCRIPT_RANGES[Script.HAN] (layering forbids
-# a pack importing the pipeline; the sync test in
-# tests/v2/test_locales.py pins the equality).
+# Han codepoint spans, kept in sync BY HAND with _policy.py's
+# _SCRIPT_RANGES[Script.HAN] (a hold-over from when that table lived
+# in the pipeline, which packs must not import; the sync test in
+# tests/v2/test_locales.py pins the equality until the copy goes).
 _HAN_RANGES = ((0x3005, 0x3005), (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
                (0xF900, 0xFAFF), (0x20000, 0x323AF))
 
