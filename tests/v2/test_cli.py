@@ -60,3 +60,16 @@ def test_cli_locale_empty_string_errors_not_silent_default() -> None:
     proc = _run("John Smith", "--locale", "")
     assert proc.returncode != 0
     assert "ru" in proc.stderr and "tr_az" in proc.stderr
+
+
+def test_cli_locale_ja_activates_nothing_by_itself() -> None:
+    # usage.rst's claim, pinned at the layer it is about: the CLI takes
+    # the pack but has no way to attach a segmenter, and the ja pack
+    # ships no vocabulary -- so --locale ja is byte-identical to the
+    # default parser on the very name the pack exists to divide. A
+    # future --segmenter flag, or a pack that grew a surname list,
+    # would land here first.
+    packed = _run("山田太郎", "--locale", "ja")
+    default = _run("山田太郎")
+    assert packed.returncode == 0
+    assert packed.stdout == default.stdout

@@ -1,4 +1,5 @@
 import dataclasses
+import functools
 from typing import cast
 
 import pytest
@@ -7,7 +8,13 @@ from nameparser._lexicon import Lexicon
 from nameparser._locale import Locale
 from nameparser._parser import Parser
 from nameparser._policy import FAMILY_FIRST, PatronymicRule, Policy, PolicyPatch
-from nameparser._types import Ambiguity, AmbiguityKind, ParsedName, Role, Span, Token
+from nameparser._types import (
+    Ambiguity, AmbiguityKind, ParsedName, Role, Segmentation, Span, Token,
+)
+
+
+def _decline(text: str, blob: str = "") -> None:
+    return None   # a stand-in segmenter for the Parser repr cases
 
 
 def test_token_repr_is_compact() -> None:
@@ -91,12 +98,33 @@ def test_policy_patch_repr_shows_only_set_fields() -> None:
     Lexicon.default(),
     Lexicon.empty(),
     Parser(),
+    Parser(segmenter=functools.partial(_decline, blob="x" * 500)),
 ])
 def test_config_reprs_never_leak_the_unset_sentinel(obj: object) -> None:
     # Guard the whole family: every config type's repr is bounded and
     # deviation-only; the UNSET sentinel must never appear.
     assert "UNSET" not in repr(obj)
     assert "_Unset" not in repr(obj)
+
+
+def test_parser_repr_names_the_segmenter_without_its_contents() -> None:
+    # A callable is the one component whose own repr is unbounded: a
+    # partial spells out its bound arguments, a callable instance its
+    # memory address. Neither may reach Parser's repr, so the name comes
+    # from __qualname__ when there is one and the TYPE otherwise.
+    plain = repr(Parser(segmenter=_decline))
+    assert "segmenter=_decline" in plain
+    partial = repr(Parser(segmenter=functools.partial(_decline,
+                                                      blob="x" * 500)))
+    assert "segmenter=partial" in partial
+    assert "xxx" not in partial and len(partial) < len(plain) + 20
+
+    class Div:      # a callable INSTANCE: no __qualname__, so the type
+        def __call__(self, text: str) -> Segmentation | None:
+            return None
+
+    instance = repr(Parser(segmenter=Div()))
+    assert "segmenter=Div" in instance and "0x" not in instance
 
 
 def test_policy_patch_repr_survives_unvalidated_name_order() -> None:

@@ -245,17 +245,23 @@ def _lexicons(draw: st.DrawFn) -> Lexicon:
 
 # script_orders' legal values are as restricted as name_order's (only
 # the three exported orders, keyed by Script), so they are sampled
-# rather than generated. The four cover the axes that matter: the
-# shipped default, the full opt-out, one script alone, and an order
-# that disagrees with the default -- FAMILY_FIRST_GIVEN_LAST on hangul
+# rather than generated. The five cover the axes that matter: the
+# shipped default, the full opt-out, one script alone, an order that
+# disagrees with the default -- FAMILY_FIRST_GIVEN_LAST on hangul
 # reads "김민준 수" differently from every other entry here, which is
 # what makes a script table that is merely PRESENT distinguishable
-# from one that is actually consulted.
+# from one that is actually consulted -- and a table keyed on the kana
+# license's carrier (#272). That last row is the only one whose key is
+# reached INDIRECTLY: a mixed kanji+kana name resolves to HIRAGANA
+# rather than to any script it is literally written in, and pointing
+# the carrier back at GIVEN_FIRST makes a consulted table visibly
+# different from the default it would otherwise agree with.
 _SCRIPT_ORDER_TABLES = [
     DEFAULT_SCRIPT_ORDERS,
     (),
     ((Script.HAN, FAMILY_FIRST),),
     ((Script.HANGUL, FAMILY_FIRST_GIVEN_LAST),),
+    ((Script.HIRAGANA, GIVEN_FIRST),),
 ]
 
 
@@ -271,11 +277,11 @@ def _policies(draw: st.DrawFn) -> Policy:
         name_order=draw(st.sampled_from(
             [GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])),
         script_orders=draw(st.sampled_from(_SCRIPT_ORDER_TABLES)),
-        # no max_size: Script has two members, so the unbounded draw
-        # already reaches every subset -- including the empty one,
-        # which is the documented segmentation opt-out, and the full
-        # one, which turns on the Han segmentation that only
-        # locales.ZH turns on in shipped configuration
+        # no max_size: Script has four members, so the unbounded draw
+        # still reaches every subset -- including the empty one, which
+        # is the documented segmentation opt-out, and the full one,
+        # which turns on the Han and kana activation that only
+        # locales.ZH and locales.JA turn on in shipped configuration
         segment_scripts=draw(st.frozensets(st.sampled_from(list(Script)))),
         patronymic_rules=draw(st.frozensets(
             st.sampled_from(list(PatronymicRule)), max_size=2)),

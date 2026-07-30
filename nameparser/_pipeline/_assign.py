@@ -3,9 +3,10 @@
 Consumes: pieces + piece_tags (grouped), segments, structure, tokens.
 Produces: tokens with roles set on every main-stream token.
 Reads: Policy.name_order (#270) and Policy.script_orders (#271, which
-overrides it when every name piece is written wholly in one script);
-token/piece tags; Lexicon only through tags already applied by classify
-(plus the leading-title period rule).
+overrides it when every name piece is written wholly in one script, or
+in the Han/Hiragana/Katakana repertoire the #272 kana license shares
+across pieces); token/piece tags; Lexicon only through tags already
+applied by classify (plus the leading-title period rule).
 
 Ports v1's assignment loops. NO_COMMA (per name_order):
 leading title pieces chain while no given-position name has been seen
@@ -29,7 +30,9 @@ from __future__ import annotations
 import dataclasses
 import re
 
-from nameparser._pipeline._vocab import is_suffix_lenient, single_script
+from nameparser._pipeline._vocab import (
+    effective_script, is_suffix_lenient, resolve_script_set,
+)
 from nameparser._pipeline._group import (
     _is_suffix_piece, _is_title_piece,
 )
@@ -85,27 +88,43 @@ def _effective_order(policy: Policy,
     order governs the positional read; anything else -- Latin, mixed
     scripts, no entry -- falls back to name_order. Piece-level, after
     title/suffix peeling: 'Dr. 毛泽东' is a wholly-Han NAME under a
-    Latin title."""
+    Latin title. Kana-licensed tokens (高橋みなみ, #272) resolve to
+    HIRAGANA the same way a wholly-Han or wholly-Hangul token resolves
+    to its own script -- and so does a kana-licensed NAME split across
+    separately single-script PIECES ('高橋 みなみ', Han piece plus
+    Hiragana piece): resolve_script_set generalizes the license from
+    one token's characters to the whole found-script set below, which
+    is why Han+Hangul ('毛 김') still declines even though both
+    individually read family-first -- the license is specific to the
+    Han/Hiragana/Katakana repertoire, not "the entries happen to
+    agree".
+
+    Naming note, since the two are easy to conflate: THIS function
+    resolves the ORDER for a whole name; `_vocab.effective_script`
+    resolves the SCRIPT for a single token. This function calls that
+    one per token below.
+    """
     if not policy.script_orders:
         return policy.name_order
-    # ONE script for the whole name, not "the entries all agree": two
-    # scripts that both read family-first still fall back, because a
-    # Han+Hangul name is not written in either tradition. Per token
-    # rather than per joined piece -- WorkToken text is never empty, so
-    # "the piece is wholly one script" is "every token in it is".
-    found: Script | None = None
+    # Collect every token's script rather than comparing pairwise as
+    # tokens are seen: the kana license needs the WHOLE set (a Han
+    # piece and a Hiragana piece only license together, never one at a
+    # time), so resolution is deferred to resolve_script_set below.
+    found: set[Script] = set()
     for piece in pieces:
         for i in piece:
-            script = single_script(tokens[i].text)
+            script = effective_script(tokens[i].text)
             if script is None:
                 # Latin, mixed, or a script with no entry: never a key
                 return policy.name_order
-            if found is None:
-                found = script
-            elif script is not found:
-                return policy.name_order
-    return next((order for s, order in policy.script_orders if s is found),
-                policy.name_order)
+            found.add(script)
+    resolved = resolve_script_set(found)
+    if resolved is None:
+        # e.g. Han+Hangul: two scripts, neither the kana license's
+        # Han/Hiragana/Katakana repertoire -- no single tradition
+        return policy.name_order
+    return next((order for s, order in policy.script_orders
+                 if s is resolved), policy.name_order)
 
 
 def _name_positions(order: tuple[Role, Role, Role],

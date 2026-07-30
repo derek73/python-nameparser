@@ -7,25 +7,52 @@
 # ahead of `fields`-only ones before matching.
 
 [[change]]
-issue = "fix(#271) native-script CJK: family-first order + hangul segmentation"
+issue = "fix(#271/#272) native-script CJK: family-first order, hangul segmentation, the kana license and the nakaguro"
 # '毛 泽东', '김민준': script_orders flips first/last for a name written
 # wholly in Han or Hangul, and the Korean surnames that now ship as
 # default vocabulary additionally split an unspaced hangul token into
-# last + first. Seeded from the fix(#271) rows in tests/v2/cases.py.
+# last + first. '高橋 みなみ', 'マイケル・ジャクソン': #272 extends the
+# same order table to kana-bearing Japanese names and makes the
+# katakana middle dot a token separator, which moves pieces between the
+# same three fields. Seeded from the fix(#271) and fix(#272) rows in
+# tests/v2/cases.py.
+#
+# One rule, not two, because it is one diff shape: both issues move
+# name pieces between first/middle/last on native-script CJK input, and
+# splitting the class by issue would need a rule per script with no
+# gain in tightness (the fields list is already the narrow half).
 #
 # Scoped by script, which is exactly the scope of the behavior --
-# neither change can touch a name with no CJK character in it. Han's
+# nothing here can touch a name with no CJK character in it. Han's
 # astral block (U+20000-U+323AF) is deliberately left out of the class:
 # no name in either corpus reaches it, and a rule should be no wider
 # than the diffs it has to explain. Extend it -- and the sync pin in
 # tests/v2/test_regex_sync.py, which fails if the two disagree -- if
-# one ever does.
+# one ever does. The kana spans are BMP-only for a different reason:
+# supplementary-plane kana is hentaigana and other archaic forms no
+# modern name uses, so _SCRIPT_RANGES does not list it either.
+#
+# U+FF65 is the one span here that _SCRIPT_RANGES does NOT have, and
+# it is deliberate: the halfwidth middle dot separates tokens like its
+# fullwidth twin, so 'ﾏｲｹﾙ･ｼﾞｬｸｿﾝ' splits where 1.4 left one token,
+# but halfwidth kana is excluded from CLASSIFICATION on purpose (a
+# separate normalization problem). The rest of the halfwidth block
+# (U+FF66-U+FF9F) is left out for the usual tightness reason, and it
+# was measured rather than assumed: a dotless halfwidth name such as
+# 'ﾏｲｹﾙ ｼﾞｬｸｿﾝ' is byte-identical on both sides, so covering the
+# block would pre-excuse a future regression on a shape that is
+# parity today. The dot is the whole mechanism; the dot is the whole
+# span.
 #
 # Expected to match nothing against the current corpora, which contain
-# no CJK at all: build_issues_corpus.py requires an internal space, and
-# unspaced names are the shape this classifies. Kept for the reason the
-# suffix-delimiter rule below is kept -- ready the moment a name lands.
-name_regex = "[\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3]"
+# no CJK at all -- build_issues_corpus.py requires an internal space,
+# and unspaced names are the shape this classifies. That blind spot is
+# tracked as #272's and #271's shared gap in issue #295, which also
+# records the provenance decision a fix needs; until it is closed the
+# behavioral guarantee lives in the fix(#271)/fix(#272) rows of
+# tests/v2/cases.py, and this rule is kept ready for the moment a CJK
+# name lands in a corpus.
+name_regex = "[\\u3005-\\u3005\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65]"
 fields = ["first", "middle", "last"]
 
 [[change]]

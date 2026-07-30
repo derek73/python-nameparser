@@ -1,10 +1,12 @@
-from collections.abc import Iterable
+import dataclasses
+from collections.abc import Iterable, Iterator
 
 import pytest
 
 from nameparser import parse
 from nameparser._types import (
-    STABLE_TAGS, Ambiguity, AmbiguityKind, ParsedName, Role, Span, Token,
+    STABLE_TAGS, Ambiguity, AmbiguityKind, ParsedName, Role, Segmentation,
+    Span, Token,
 )
 
 
@@ -71,6 +73,75 @@ def test_token_is_frozen_and_hashable() -> None:
     with pytest.raises(AttributeError):
         t.text = "X"  # type: ignore[misc]
     assert hash(t) == hash(Token("Juan", Span(0, 4), Role.GIVEN))
+
+
+def test_segmentation_validates_splits() -> None:
+    s = Segmentation((2,), confidence=0.97)
+    assert s.splits == (2,) and s.confidence == 0.97
+    assert Segmentation(()).confidence is None
+    with pytest.raises(ValueError, match="ascending"):
+        Segmentation((3, 2))
+    with pytest.raises(ValueError, match="interior"):
+        Segmentation((0,))
+    with pytest.raises(TypeError, match="integers"):
+        Segmentation(("2",))  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="confidence"):
+        Segmentation((2,), confidence=1.5)
+    # wrong TYPE is the TypeError branch, distinct from the range check
+    with pytest.raises(TypeError, match="confidence"):
+        Segmentation((2,), confidence="high")  # type: ignore[arg-type]
+
+
+def test_segmentation_rejects_mappings_and_non_iterables() -> None:
+    # Token.tags' guards, on the other collection field: a mapping
+    # would silently contribute only its keys, and a bare int would
+    # surface as an uncurated "not iterable" naming nothing
+    with pytest.raises(TypeError, match="Segmentation.splits"):
+        Segmentation({2: "a", 3: "b"})  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="Segmentation.splits"):
+        Segmentation(5)  # type: ignore[arg-type]
+    # ...and the bare string, the third member of that family and the
+    # one with teeth: "" is iterable and empty, so without the guard
+    # Segmentation("") became "confidently one token" -- an opinion
+    # nobody stated -- while "23" failed one character deep naming '2'
+    # instead of the argument. Both must name the field.
+    for bad in ("", "23"):
+        with pytest.raises(TypeError, match="Segmentation.splits"):
+            Segmentation(bad)  # type: ignore[arg-type]
+
+
+def test_segmentation_rejects_bools_in_both_fields() -> None:
+    # bool is an int subclass in both slots: True as an offset is a
+    # comparison result leaking into an index, True as a confidence one
+    # leaking into a score. Behavioral twin of Token's span guard.
+    with pytest.raises(TypeError, match="Segmentation.splits"):
+        Segmentation((True,))  # type: ignore[list-item]
+    with pytest.raises(TypeError, match="Segmentation.confidence"):
+        Segmentation((2,), confidence=True)  # type: ignore[arg-type]
+
+
+def test_segmentation_lets_a_generator_raise_its_own_error() -> None:
+    # the non-iterable guard probes iter(), which cannot run a
+    # generator's body; wrapping the tuple() call instead would catch a
+    # TypeError raised INSIDE the user's generator and relabel it as
+    # "splits must be an iterable", pointing the reader at the wrong bug
+    def boom() -> Iterator[int]:
+        yield 1
+        raise TypeError("boom")
+
+    with pytest.raises(TypeError) as caught:
+        Segmentation(boom())  # type: ignore[arg-type]
+    # the message is the generator's own, whole -- a `match=` would
+    # pass on the relabeled text too, since the generator's repr names
+    # the function
+    assert str(caught.value) == "boom"
+
+
+def test_segmentation_is_frozen_and_hashable() -> None:
+    s = Segmentation((2,))
+    assert isinstance(hash(s), int)
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        s.splits = (3,)  # type: ignore[misc]
 
 
 def test_ambiguity_kind_members_are_their_string_values() -> None:
@@ -366,6 +437,11 @@ def test_types_pickle_round_trip() -> None:
     assert pickle.loads(pickle.dumps(amb)) == amb
     tok = Token("de", Span(9, 11), Role.FAMILY, frozenset({"particle"}))
     assert pickle.loads(pickle.dumps(tok)) == tok
+    # the family sweep is the point of this test, so a frozen type
+    # added later belongs in it -- Segmentation (#272) carries the same
+    # guarded __getstate__/__setstate__ pair as its three siblings
+    seg = Segmentation((2,), confidence=0.42)
+    assert pickle.loads(pickle.dumps(seg)) == seg
 
 
 def test_span_add_is_blocked() -> None:

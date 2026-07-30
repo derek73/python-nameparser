@@ -6,7 +6,10 @@ one Han behavior that must stay opt-in, because a pure-Han string
 cannot say whether it is Chinese or Japanese (林 is Lin or Hayashi)
 and a zh surname list corrupts Japanese names (高橋一郎 would split
 高 + 橋一郎). Applying this pack IS the "my data is Chinese"
-declaration. Japanese is #272's pluggable segmenter.
+declaration. Japanese segmentation is locales.JA's job instead: that
+pack activates the same stage for the Japanese repertoire and defers
+the division itself to a pluggable segmenter, since no surname list
+divides a kanji name.
 
 Data sources: single-character surnames are the top-100 of the 2020
 PRC census; traditional-script variant forms are included for names
@@ -98,8 +101,8 @@ ZH = Locale(
 # _pipeline/_vocab.py's _SCRIPT_RANGES[Script.HAN] (layering forbids
 # a pack importing the pipeline; the sync test in
 # tests/v2/test_locales.py pins the equality).
-_HAN_RANGES = ((0x3400, 0x4DBF), (0x4E00, 0x9FFF), (0xF900, 0xFAFF),
-               (0x20000, 0x323AF))
+_HAN_RANGES = ((0x3005, 0x3005), (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
+               (0xF900, 0xFAFF), (0x20000, 0x323AF))
 
 
 def DEVIATES(name: str) -> bool:

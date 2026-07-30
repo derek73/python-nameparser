@@ -15,7 +15,7 @@ from enum import Enum, auto
 
 from nameparser._lexicon import Lexicon
 from nameparser._policy import Policy
-from nameparser._types import AmbiguityKind, Role, Span
+from nameparser._types import AmbiguityKind, Role, Segmenter, Span
 
 
 # The comma characters (ASCII/Arabic/fullwidth, #265). Shared here so
@@ -68,9 +68,9 @@ class ParseState:
     extract_delimited -> extracted/masked; tokenize -> tokens (span-
     sorted)/comma_offsets; segment -> segments/structure;
     script_segment -> tokens and segments again (the one stage that
-    changes the token COUNT: an unspaced CJK token splits in two,
-    still as sub-slices of the original, and every later index in the
-    segment runs shifts); classify -> token tags; group ->
+    changes the token COUNT: an unspaced CJK token splits into n+1
+    pieces, still as sub-slices of the original, and every later index
+    in the segment runs shifts by n); classify -> token tags; group ->
     pieces/piece_tags/dropped AND maiden token roles;
     assign/post_rules -> the remaining token roles. Ambiguities are
     recorded by every stage that DECIDES one -- extract (resolved to a
@@ -79,11 +79,17 @@ class ParseState:
     different stages needs an emitter in each. Post-group, segments
     may retain indices of dropped tokens -- assign iterates pieces,
     never segments. This ownership map is pinned by
-    tests/v2/pipeline/test_state.py."""
+    tests/v2/pipeline/test_state.py.
+
+    segmenter belongs to no stage: like original/lexicon/policy it is
+    passed in at construction by Parser.parse and only ever READ (by
+    script_segment, for a token the vocabulary declined)."""
 
     original: str
     lexicon: Lexicon
     policy: Policy
+    #: The optional Parser(segmenter=...) hook; None = not configured.
+    segmenter: Segmenter | None = None
     extracted: tuple[tuple[Role, Span], ...] = ()
     masked: tuple[Span, ...] = ()
     tokens: tuple[WorkToken, ...] = ()

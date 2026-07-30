@@ -307,12 +307,12 @@ East Asian defaults, and turning them off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Two defaults key on the *script* a name is written in rather than on
-anything you set: a name written wholly in Han or Hangul is assigned
-family-first (``script_orders``), and an unspaced hangul name is split
-into surname and given name against the shipped Korean census list
-(``segment_scripts``). :ref:`east-asian-names` explains the naming
-conventions both rest on — this section is how to switch them off,
-which you can do separately:
+anything you set: a name written wholly in Han or Hangul — or one
+mixing kanji with kana — is assigned family-first (``script_orders``),
+and an unspaced hangul name is split into surname and given name
+against the shipped Korean census list (``segment_scripts``).
+:ref:`east-asian-names` explains the naming conventions both rest on —
+this section is how to switch them off, which you can do separately:
 
 .. doctest::
 
@@ -344,6 +344,18 @@ To teach the splitter a surname it doesn't ship with, add it to the
 Chinese surnames are deliberately absent from that default set,
 because splitting Han text requires knowing Chinese from Japanese;
 :doc:`locales` covers the opt-in ``zh`` pack that supplies them.
+
+The Japanese behaviors ride these same two fields, so they need no
+switches of their own: ``script_orders={}`` clears the kana-licensed
+entry along with the Han and Hangul ones, and ``segment_scripts=()``
+deactivates every script at once, which also stops a parser consulting
+whatever segmenter it was given. The segmenter has an off-switch as
+well — ``Parser(segmenter=None)``, which is the default; see
+:ref:`segmenter-contract` for what one is expected to do with text it
+does not handle. One Japanese behavior is not a policy field at all:
+the katakana middle dot ・ separates tokens the way a space does,
+decided in tokenization, so it applies however these two fields are
+set.
 
 .. note::
 

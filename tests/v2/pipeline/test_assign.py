@@ -194,6 +194,22 @@ def test_script_order_declines_when_no_piece_has_a_script() -> None:
     assert _by_role(out, Role.FAMILY) == "Smith"
 
 
+def test_kana_licensed_piece_resolves_via_hiragana_entry() -> None:
+    # a kanji+hiragana mixed piece set takes the license (#272) and
+    # resolves through the HIRAGANA table entry, family-first
+    out = _assigned("高橋 みなみ")
+    assert _by_role(out, Role.FAMILY) == "高橋"
+    assert _by_role(out, Role.GIVEN) == "みなみ"
+
+
+def test_pure_katakana_piece_falls_back_to_name_order() -> None:
+    # katakana alone is not in the table (transcription ambiguity), so
+    # a pure-katakana piece set falls back to the positional default
+    out = _assigned("マイケル ジャクソン")
+    assert _by_role(out, Role.GIVEN) == "マイケル"
+    assert _by_role(out, Role.FAMILY) == "ジャクソン"
+
+
 def test_script_with_no_table_entry_falls_back() -> None:
     # A single, well-defined script the table simply does not list:
     # resolution must fall through to name_order rather than pick an

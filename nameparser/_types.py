@@ -14,7 +14,7 @@ contents.
 from __future__ import annotations
 
 import dataclasses
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 from typing import TYPE_CHECKING, NamedTuple, NoReturn, TypeVar
@@ -230,6 +230,96 @@ class Token:
         return f"Token({self.text!r} {where} {self.role.name}{tags})"
 
 
+@dataclass(frozen=True, slots=True)
+class Segmentation:
+    """A segmenter's answer for one unspaced token: the interior offsets
+    to split at (each offset begins a new piece, so
+    ``Segmentation((2,))`` cuts a three-character token into
+    ``token[:2]`` and ``token[2:]``; strictly ascending, each >= 1 -- an
+    index protocol, so a segmenter physically cannot invent, drop, or
+    rewrite characters) and an optional confidence in [0, 1].
+    ``Segmentation(())`` means "confidently one token" -- distinct from
+    returning None, which DECLINES ("I don't know"). The upper bound
+    (< len(token)) is the half this class cannot check, never having
+    seen the text; the consuming stage checks it and RAISES
+    ``ValueError`` on a violation, the same call it makes on an answer
+    of the wrong type -- both are protocol bugs in the segmenter, not
+    facts about the name."""
+
+    #: Interior character offsets to split at, ascending.
+    splits: tuple[int, ...]
+    #: How sure the segmenter is, or None for "no opinion".
+    confidence: float | None = None
+
+    # in the class body so @dataclass(slots=True) keeps them
+    __getstate__ = _guarded_getstate
+    __setstate__ = _guarded_setstate
+
+    def __post_init__(self) -> None:
+        # Both guards Token.tags carries, for the same two reasons and
+        # a third of this field's own: a bare string is iterable, so
+        # Segmentation("") would sail through as "confidently one
+        # token" -- an opinion nobody stated -- and Segmentation("23")
+        # would fail one character deep naming '2' rather than the
+        # argument. A mapping would silently contribute only its keys,
+        # and a bare int would surface as an uncurated "not iterable"
+        # from the tuple() below.
+        if isinstance(self.splits, str):
+            raise TypeError(
+                "Segmentation.splits must be an iterable of integers, "
+                "not a bare string"
+            )
+        if isinstance(self.splits, Mapping):
+            raise TypeError(
+                "Segmentation.splits must be an iterable of integers, "
+                "not a mapping"
+            )
+        try:
+            iter(self.splits)
+        except TypeError:
+            raise TypeError(
+                f"Segmentation.splits must be an iterable of integers, "
+                f"got {self.splits!r}"
+            ) from None
+        # OUTSIDE the try on purpose: iter() cannot run a generator's
+        # body, but tuple() can, and a TypeError raised in there is the
+        # caller's own bug -- relabeling it "must be an iterable" would
+        # send the reader to the wrong place entirely.
+        splits = tuple(self.splits)
+        for offset in splits:
+            # bool is an int subclass: True as an offset is a comparison
+            # result leaking into an index slot, not a split point
+            if isinstance(offset, bool) or not isinstance(offset, int):
+                raise TypeError(
+                    f"Segmentation.splits must be integers, got {offset!r}")
+            if offset < 1:
+                raise ValueError(
+                    f"Segmentation.splits must be interior offsets "
+                    f"(each >= 1), got {offset}")
+        if any(b <= a for a, b in zip(splits, splits[1:])):
+            raise ValueError(
+                f"Segmentation.splits must be strictly ascending, "
+                f"got {splits!r}")
+        object.__setattr__(self, "splits", splits)
+        conf = self.confidence
+        if conf is not None:
+            if isinstance(conf, bool) or not isinstance(conf, (int, float)):
+                raise TypeError(
+                    f"Segmentation.confidence must be a float or None, "
+                    f"got {conf!r}")
+            # stored as given, not coerced to float: an int 1 is a valid
+            # confidence and the range check is what the callers rely on
+            if not 0.0 <= conf <= 1.0:
+                raise ValueError(
+                    f"Segmentation.confidence must be within [0, 1], "
+                    f"got {conf!r}")
+
+
+#: The segmenter hook's shape: token text in, :class:`Segmentation` out,
+#: None to decline. Plug one in via ``Parser(segmenter=...)``.
+Segmenter = Callable[[str], Segmentation | None]
+
+
 class AmbiguityKind(StrEnum):
     """The stable vocabulary of :class:`Ambiguity` kinds. A StrEnum:
     members ARE their string values, so ``kind == "particle-or-given"``
@@ -280,10 +370,18 @@ class AmbiguityKind(StrEnum):
     #: More comma-separated segments than any recognized name shape;
     #: the parse is best-effort over the extra segments.
     COMMA_STRUCTURE = "comma-structure"
-    #: An unspaced CJK token had more than one vocabulary-supported
-    #: surname split ("夏侯惇": 夏侯 + 惇 was taken, 夏 + 侯惇 also
-    #: matched); the longest surname won, and ``detail`` names both
-    #: readings. Points at the two tokens the split produced. (#271)
+    #: A division of an unspaced CJK token that the parse had to
+    #: choose, from either of the two things that can divide one.
+    #: A VOCABULARY fork: more than one surname-supported split
+    #: existed ("夏侯惇" was taken as 夏侯 + 惇, while 夏 + 侯惇 also
+    #: matched), longest-match picked, and ``detail`` names both
+    #: readings (#271). Or a SEGMENTER answer scoring under the
+    #: stage's confidence floor: only one reading was offered, but the
+    #: score says it was a statistical guess rather than a stated
+    #: certainty, and ``detail`` names the pieces and the score
+    #: (#272). Either way it points at ALL the tokens the division
+    #: produced -- two for a vocabulary split, n+1 for a segmenter
+    #: answer cutting n times.
     SEGMENTATION = "segmentation"
 
 

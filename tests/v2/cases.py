@@ -522,12 +522,12 @@ CASES: tuple[Case, ...] = (
                "role = family"),
     Case("mixed_script_untouched_by_script_orders", "John 王",
          {"given": "John", "family": "王"},
-         notes="single_script is None for a mixed name: script_orders "
+         notes="effective_script is None for a mixed name: script_orders "
                "declines and the positional default governs"),
     Case("two_han_scripts_untouched_by_script_orders", "毛 김",
          {"given": "毛", "family": "김"},
-         notes="two scripts also decline -- ONE script for the whole "
-               "name"),
+         notes="two scripts also decline -- the rule is one script, or "
+               "the Han/kana repertoire the #272 license covers"),
 
     Case("zh_unspaced", "毛泽东",
          {"family": "毛", "given": "泽东"},
@@ -561,5 +561,74 @@ CASES: tuple[Case, ...] = (
                "names mis-split (高橋 is the real surname). This is "
                "why Han segmentation is opt-in and why the gate "
                "cannot guard it (DEVIATES declares all Han); "
-               "Japanese is #272's pluggable segmenter"),
+               "Japanese data belongs under locales.JA and its "
+               "segmenter instead"),
+
+    # -- #272: the kana license + nakaguro (amendment 2026-07-29).
+    # Segmenter-dependent divisions cannot live here (Case has no
+    # segmenter field); they are pinned in test_locales.py's
+    # integration tests instead.
+    Case("ja_kana_spaced_family_first", "高橋 みなみ",
+         {"family": "高橋", "given": "みなみ"},
+         classification="fix(#272)",
+         notes="hiragana identifies Japanese as certainly as hangul "
+               "identifies Korean; kana-licensed names read "
+               "family-first by default"),
+    Case("ja_kanji_katakana_pieces", "山田 エミ",
+         {"family": "山田", "given": "エミ"},
+         classification="fix(#272)",
+         notes="a kanji piece + a katakana piece cannot be a foreign "
+               "transcription (those are katakana-only): native, "
+               "licensed"),
+    Case("ja_unspaced_unsegmented_default", "高橋みなみ",
+         {"family": "高橋みなみ"},
+         classification="fix(#272)",
+         notes="no segmenter by default: one token, family role via "
+               "the kana license"),
+    Case("ja_pure_katakana_positional", "マイケル ジャクソン",
+         {"given": "マイケル", "family": "ジャクソン"},
+         notes="parity row guarding the license's boundary: "
+               "pure-katakana is predominantly transcribed foreign "
+               "names in original order -- never licensed"),
+    Case("ja_nakaguro_divides_the_transcription", "マイケル・ジャクソン",
+         {"given": "マイケル", "family": "ジャクソン"},
+         classification="fix(#272)",
+         notes="the katakana middle dot is the transcription's own "
+               "part divider: it separates like whitespace, the "
+               "license declines each katakana token, and the "
+               "positional default keeps the source-language order"),
+    Case("ja_nakaguro_han_takes_the_han_order", "高橋・一郎",
+         {"family": "高橋", "given": "一郎"},
+         classification="fix(#272)",
+         notes="the dot splits; both tokens are pure Han, so the HAN "
+               "family-first entry fires -- the katakana row's sibling "
+               "through the other outcome"),
+    Case("ja_lone_hiragana_takes_family", "みなみ",
+         {"family": "みなみ"},
+         classification="fix(#272)",
+         notes="hiragana earns a script_orders entry in its own right: "
+               "a lone token takes the entry's first role"),
+    Case("ja_lone_katakana_stays_given", "マイケル",
+         {"given": "マイケル"},
+         notes="parity: katakana deliberately has no entry, so the "
+               "positional default holds -- transcribed foreign names "
+               "keep source order"),
+    Case("ja_iteration_mark_is_han", "佐々木 太郎",
+         {"family": "佐々木", "given": "太郎"},
+         classification="fix(#272)",
+         notes="々 (U+3005, the ideographic iteration mark) repeats "
+               "the preceding kanji and is Script=Han under UAX #24, "
+               "but sits outside every CJK ideograph BLOCK -- and the "
+               "classifier is a block table, so it needs a singleton "
+               "entry to count as Han; without one 佐々木 -- a top-20 "
+               "Japanese surname -- would be a mixed-script token and "
+               "reverse"),
+    Case("ja_nakaguro_inside_a_nickname",
+         "山田 太郎 (マイケル・ジャクソン)",
+         {"family": "山田", "given": "太郎",
+          "nickname": "マイケル ジャクソン"},
+         classification="fix(#272)",
+         notes="delimited content tokenizes under the same separator "
+               "rules: the dot renders back as a space in the nickname "
+               "join -- a decision, not an accident"),
 )

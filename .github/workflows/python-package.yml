@@ -61,3 +61,40 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./coverage.xml
         fail_ci_if_error: false
+
+  # The optional nameparser[ja] segmenter (#272). Its own job, not a
+  # matrix entry: the matrix above must keep proving that the package
+  # installs and passes with NO third-party dependency at all, which is
+  # the promise the extra is carved out of. Everything the extra adds
+  # is under tests/v2/ (the ja pack's integration tests, which skip
+  # without it).
+  ja-extra:
+    runs-on: ubuntu-latest
+    # 3.14, not the matrix's newest: namedivider-python pulls lightgbm,
+    # which pulls scipy/numpy, and those have no 3.15 wheels yet (the
+    # sdist build fails). 3.15 is pre-release and this matrix is ahead
+    # of the ecosystem; revisit when it goes final.
+    env:
+      UV_PYTHON: "3.14"
+    steps:
+    - uses: actions/checkout@v7
+    - name: Set up Python 3.14
+      uses: actions/setup-python@v6
+      with:
+        python-version: "3.14"
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+    - name: Install dependencies
+      run: uv sync --group dev --extra ja
+    - name: Run Tests
+      # The import check first: every test the extra adds is guarded by
+      # a find_spec("namedivider") skipif, so a job where the extra
+      # silently failed to install is a job where all of them SKIP and
+      # the step still passes green. This line is what makes that
+      # failure loud -- without it the job proves nothing on the day it
+      # matters.
+      run: |
+        uv run python -c "import namedivider"
+        uv run pytest tests/v2/ -q

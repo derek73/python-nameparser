@@ -23,6 +23,7 @@ import pytest
 
 from nameparser.config import regexes as _config
 from nameparser._pipeline import _assign, _post_rules, _tokenize, _vocab
+from nameparser._policy import Script
 from nameparser import _render
 
 
@@ -114,6 +115,9 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     ("_tokenize", "_BIDI"): None,       # re_bidi, not a REGEXES key
     # Mirrors _pipeline._state.COMMA_CHARS, not nameparser.config
     ("_render", "_COMMA_CHAR"): None,
+    # #272: derived from _SCRIPT_RANGES itself (like _SCRIPT_PATTERNS),
+    # not hand-copied from anywhere -- no config counterpart to pin.
+    ("_vocab", "_JA_PATTERN"): None,
 }
 
 _MODULES = {"_assign": _assign, "_post_rules": _post_rules,
@@ -160,39 +164,73 @@ def test_comma_char_matches_the_pipeline_comma_set() -> None:
 
 
 def test_differential_cjk_rule_matches_the_script_ranges() -> None:
-    """The #271 rule in tools/differential/expected_changes.toml hand-
-    copies the CJK spans from _vocab._SCRIPT_RANGES into a character
+    """The CJK rule in tools/differential/expected_changes.toml hand-
+    copies the script spans from _vocab._SCRIPT_RANGES into a character
     class. A TOML file cannot import the constant, so this is the one
     copy with no possible alternative -- and the one whose divergence
     is quietest, because the harness is run by hand rather than in CI.
 
     Both failure directions matter, which is why this compares sets
     rather than checking coverage. A span MISSING from the class turns
-    an intended #271 change into an UNEXPLAINED diff (a release
+    an intended #271/#272 change into an UNEXPLAINED diff (a release
     blocker for the wrong reason); a span that should not be there
     silently classifies a real regression as intended, which is the
     failure the whole harness exists to prevent.
 
-    Han's astral block is out of scope on both sides. The rule omits
-    it deliberately -- no corpus name reaches it, see the comment
-    there -- so the comparison runs over the BMP spans only, and a new
-    BMP script added to _SCRIPT_RANGES still fails here until the rule
-    covers it.
+    Every table entry is in scope. The rule covered HAN and HANGUL
+    alone while the kana members existed only for classification, but
+    #272 gave HIRAGANA a default order entry and made the kana blocks
+    part of the same first/middle/last diff shape the rule explains,
+    so scoping it by issue no longer draws a real line. Comparing
+    against the whole table is also the stronger promise: a script
+    added to _SCRIPT_RANGES for ANY reason fails here until someone
+    decides, in writing, whether the rule should cover it.
+
+    Han's astral block is the single exception, out of scope on both
+    sides. The rule omits it deliberately -- no corpus name reaches
+    it, see the comment there -- so the comparison runs over the BMP
+    spans only.
+
+    The rule is also WIDER than the table by exactly one span, which
+    the equality has to know about or it would just fail forever. The
+    halfwidth middle dot U+FF65 changes parses without being
+    classified as anything: tokenize separates on it, so a halfwidth
+    transcription splits where 1.4 kept one token, while halfwidth
+    kana stays out of _SCRIPT_RANGES on purpose. Naming that span here
+    rather than relaxing the comparison to a subset check is what
+    keeps the pin honest in both directions: a THIRD source of
+    divergence still fails, and the one sanctioned difference has to
+    be written down to exist.
     """
     toml_path = (Path(__file__).parents[2] / "tools" / "differential"
                  / "expected_changes.toml")
     rules = tomllib.loads(toml_path.read_text())["change"]
-    matched = [r for r in rules if "#271" in r["issue"]]
+    matched = [r for r in rules
+               if "#271" in r["issue"] or "#272" in r["issue"]]
     assert len(matched) == 1, (
-        f"expected exactly one #271 rule in {toml_path.name}, "
+        f"expected exactly one CJK rule in {toml_path.name}, "
         f"found {len(matched)}")
+    # A new table entry must force an explicit decision rather than
+    # quietly widening (or failing to widen) the rule above.
+    assert set(_vocab._SCRIPT_RANGES) == {
+        Script.HAN, Script.HANGUL, Script.HIRAGANA, Script.KATAKANA}, (
+        "a Script joined _SCRIPT_RANGES: decide whether the "
+        f"differential rule in {toml_path.name} should cover it, then "
+        "update this assertion")
     declared = {
         (int(lo, 16), int(hi, 16))
         for lo, hi in re.findall(r"\\u([0-9A-Fa-f]{4})-\\u([0-9A-Fa-f]{4})",
                                  matched[0]["name_regex"])}
+    # the one span the rule carries that no Script claims (see above)
+    halfwidth_dot = (0xFF65, 0xFF65)
+    assert not any(lo <= halfwidth_dot[0] <= hi
+                   for spans in _vocab._SCRIPT_RANGES.values()
+                   for lo, hi in spans), (
+        "U+FF65 is classified now; drop it from the sanctioned extras")
     expected = {span
                 for spans in _vocab._SCRIPT_RANGES.values()
-                for span in spans if span[1] <= 0xFFFF}
+                for span in spans
+                if span[1] <= 0xFFFF} | {halfwidth_dot}
     assert declared == expected, (
-        f"{toml_path.name}'s #271 name_regex declares {sorted(declared)}; "
+        f"{toml_path.name}'s CJK name_regex declares {sorted(declared)}; "
         f"_SCRIPT_RANGES' BMP spans are {sorted(expected)}")

@@ -14,6 +14,25 @@ Parsing
 
 .. autofunction:: nameparser.parser_for
 
+.. autoclass:: nameparser.Segmentation
+   :members:
+
+.. py:data:: nameparser.Segmenter
+   :value: Callable[[str], Segmentation | None]
+
+   The type of the optional ``Parser(segmenter=...)`` hook: a callable
+   given one token's text, returning a
+   :class:`~nameparser.Segmentation` that divides it, or ``None`` to
+   decline and leave it whole. An alias, not a class — any callable of
+   that shape qualifies, and nothing needs to be subclassed or
+   registered. It is consulted only for tokens whose script is listed
+   in :attr:`Policy.segment_scripts
+   <nameparser.Policy.segment_scripts>`, and only where the surname
+   vocabulary declined first; see :ref:`segmenter-contract` for what a
+   segmenter owes its caller.
+   :func:`~nameparser.locales.ja_segmenter` is the shipped
+   implementation.
+
 Results
 ~~~~~~~
 
@@ -106,10 +125,15 @@ because only these three orders have defined assignment semantics.
    e.g. Vietnamese full-name order.
 
 .. py:data:: nameparser.DEFAULT_SCRIPT_ORDERS
-   :value: ((Script.HAN, FAMILY_FIRST), (Script.HANGUL, FAMILY_FIRST))
+   :value: ((Script.HAN, FAMILY_FIRST), (Script.HANGUL, FAMILY_FIRST), (Script.HIRAGANA, FAMILY_FIRST))
 
    The default :attr:`~nameparser.Policy.script_orders` table: a name
-   written wholly in Han or Hangul reads family-first. A matching
+   written wholly in Han or Hangul reads family-first, and so does a
+   Japanese name mixing kanji with kana, which resolves to the
+   ``HIRAGANA`` entry whichever of the two syllabaries it actually
+   uses — that member is the license's carrier key, not a claim about
+   the characters present. A name written wholly in katakana has no
+   entry on purpose and stays positional. A matching
    entry in this table takes precedence over ``name_order``, including
    a ``name_order`` you set explicitly — ``name_order`` governs only
    the names no entry matches. The values are drawn from the same
@@ -146,6 +170,8 @@ Locales
 
 .. automodule:: nameparser.locales
    :members: get, available
+
+.. autofunction:: nameparser.locales.ja_segmenter
 
 1.x compatibility layer
 ------------------------

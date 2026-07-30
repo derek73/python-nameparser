@@ -41,10 +41,21 @@ class Script(StrEnum):
     #: Chinese Hanzi -- and Japanese Kanji: a pure-Han string cannot
     #: say which language it is, which is fine for ORDER (both write
     #: family-first natively) and exactly why Han SEGMENTATION is
-    #: opt-in (locales.ZH; Japanese is #272's pluggable segmenter).
+    #: opt-in, per language: locales.ZH brings the Chinese surname
+    #: list, locales.JA activates the same stage for a pluggable
+    #: segmenter to divide kanji names with.
     HAN = "han"
     #: Korean Hangul (precomposed syllables). Unambiguously Korean.
     HANGUL = "hangul"
+    #: Japanese hiragana. Never transcribes foreign names, so a mixed
+    #: kanji+kana token (高橋みなみ) is Japanese and resolves HERE --
+    #: this member is the carrier key in script_orders/segment_scripts.
+    HIRAGANA = "hiragana"
+    #: Japanese katakana. A PURE-katakana token is predominantly a
+    #: transcribed foreign name in its original order (マイケル), so
+    #: no default behavior keys on this member; it exists so the
+    #: classifier can name what it deliberately declines.
+    KATAKANA = "katakana"
 
 
 # Order-spec constants (#270). Each reads as its contents because roles
@@ -100,17 +111,27 @@ _PATRONYMIC_MIGRATION_HINT = (
     "parser_for(locales.RU) / locales.TR_AZ)"
 )
 
-#: Policy.script_orders' default: wholly-Han and wholly-Hangul names
-#: read family-first. Public and named so opting out or extending
-#: reads against a documented value (the DEFAULT_NICKNAME_DELIMITERS
-#: precedent). The HAN entry is safe WITHOUT knowing Chinese from
-#: Japanese: both write family-first in native script -- the
-#: languages differ, the convention doesn't. Canonical form: sorted
-#: (Script, order) pairs, matching the field's storage.
+#: Policy.script_orders' default: wholly-Han, wholly-Hangul, and
+#: kana-licensed names read family-first. Public and named so opting
+#: out or extending reads against a documented value (the
+#: DEFAULT_NICKNAME_DELIMITERS precedent). The HAN entry is safe
+#: WITHOUT knowing Chinese from Japanese: both write family-first in
+#: native script -- the languages differ, the convention doesn't.
+#: HIRAGANA joins by the same rule as HANGUL (the kana license,
+#: amendment 2026-07-29): a mixed Han-and-kana token cannot be
+#: Chinese (it contains kana) and is not a foreign transcription
+#: (transcriptions are katakana-only), so it is Japanese, written
+#: family-first -- another default change in a minor, release-log-
+#: classified fix, #294's mechanism. KATAKANA is deliberately absent:
+#: a PURE-katakana token is predominantly a transcribed foreign name
+#: kept in its source (usually given-first) order, so nothing should
+#: default on it. Canonical form: sorted (Script, order) pairs,
+#: matching the field's storage.
 DEFAULT_SCRIPT_ORDERS: tuple[
     tuple[Script, tuple[Role, Role, Role]], ...] = (
     (Script.HAN, FAMILY_FIRST),
     (Script.HANGUL, FAMILY_FIRST),
+    (Script.HIRAGANA, FAMILY_FIRST),
 )
 
 #: Policy.nickname_delimiters' default. Public and named so
@@ -399,9 +420,11 @@ class Policy:
     #: ("John Smith, Jr.") leaves name_order governing the name part.
     name_order: tuple[Role, Role, Role] = GIVEN_FIRST
     #: Per-script overrides of name_order (#271), consulted when every
-    #: name piece is written wholly in one script: {Script: order}
-    #: (constructor accepts a mapping; stored as sorted pairs). The
-    #: default reads wholly-Han/Hangul names family-first -- see
+    #: name piece is written wholly in one script, or in the
+    #: Han/Hiragana/Katakana repertoire the #272 kana license shares
+    #: across pieces: {Script: order} (constructor accepts a mapping;
+    #: stored as sorted pairs). The default reads wholly-Han/Hangul
+    #: names, and kana-licensed Japanese names, family-first -- see
     #: :data:`~nameparser.DEFAULT_SCRIPT_ORDERS`. Opt out with
     #: ``script_orders={}``. Latin-script and mixed-script input is
     #: never affected. Like name_order, ignored where a comma already
@@ -411,11 +434,16 @@ class Policy:
     #: Scripts for which the unspaced-name segmentation stage is
     #: active (#271): the first token written wholly in an activated
     #: script is split by longest surname match against
-    #: :attr:`Lexicon.surnames <nameparser.Lexicon.surnames>`.
-    #: Default: {Script.HANGUL} -- hangul is unambiguously Korean and
-    #: Korean surnames are a closed default-shipped set. Han is NOT
-    #: default: a zh surname list corrupts Japanese names (高橋一郎
-    #: must not split as 高+橋一郎), so it's opt-in via locales.ZH.
+    #: :attr:`Lexicon.surnames <nameparser.Lexicon.surnames>`, and,
+    #: where that vocabulary declines, by a
+    #: :data:`~nameparser.Segmenter` if one was given to the parser
+    #: (#272). Default: {Script.HANGUL} -- hangul is unambiguously
+    #: Korean and Korean surnames are a closed default-shipped set.
+    #: Han is NOT default: a zh surname list corrupts Japanese names
+    #: (高橋一郎 must not split as 高+橋一郎), so it's opt-in via
+    #: locales.ZH for Chinese and locales.JA -- which activates
+    #: Script.HIRAGANA alongside it, the kana license's carrier key --
+    #: for Japanese.
     #: Opt out with ``segment_scripts=()``; note a PolicyPatch unions
     #: rather than replaces, so a pack can only add scripts, never
     #: disable one.
