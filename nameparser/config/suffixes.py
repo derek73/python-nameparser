@@ -145,7 +145,7 @@ lean on -- these entries are recognized in the SPACED position only:
   family name in two. Spaced 殿 is safe for the reason 양/군 are: a
   殿-surnamed person's name LEADS, and the suffix gate is trailing-only.
 
-Two more are in NEITHER set, so neither spelling is recognized. 君: 王君 is
+Three more are in NEITHER set, so neither spelling is recognized. 君: 王君 is
 a complete Chinese name (君 is a common given-name final), so the honorific
 reading never gets the benefit of the doubt -- while its kana spelling くん
 ships glued, above. Bare 선생 and 교수: they read as common nouns as readily

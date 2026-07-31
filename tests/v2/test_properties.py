@@ -332,7 +332,17 @@ def _names_using(draw: st.DrawFn, lexicon: Lexicon) -> str:
     # words, and a bare drawn surname standing earlier in the name takes
     # the surname site before the unspaced token can. Instrument before
     # concluding either half is exercised -- the counts above are what
-    # that costs to find out.
+    # that costs to find out, and the two halves are NOT in the same
+    # state. Measured over this test's 250 examples: the peel fires
+    # twice, the surname half ZERO times -- currently inert. Structural,
+    # not luck: `w + "민준"` on a non-hangul surname is a MIXED-script
+    # token, whose effective_script is None, so it can never be an
+    # activated surname site at all; only a drawn HANGUL surname makes
+    # one, and across the run exactly one such token was sampled
+    # ('남궁민준'), into an example whose drawn policy had HANGUL out of
+    # segment_scripts. Deriving the token was still the right move --
+    # it took the half off structurally-unreachable -- but a fix worth
+    # having would derive it in the script the policy activated.
     # sorted for the same reason `vocab` above is: frozenset iteration
     # order is not stable across runs, and an unsorted pool shifts
     # every index sampled_from draws -- which would defeat

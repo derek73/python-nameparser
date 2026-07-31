@@ -3,13 +3,16 @@
 Consumes: tokens, segments, structure, interpunct_offsets, segmenter.
 Produces: tokens, by two independent splits into sub-slices -- a
 listed honorific peeled off the END of the name part's last
-non-post-nominal token, and the first activated-script token of the
-name segment split into n+1 -- segments (index runs remapped past the
-insertions), ambiguities (indices likewise remapped, plus a
-SEGMENTATION report when more than one split was vocabulary-supported,
-or when a segmenter's answer scored under the confidence floor).
+non-post-nominal token (whose tail token also carries this module's
+_PEELED_TAG), and the first activated-script token of the name segment
+split into n+1 -- segments (index runs remapped past the insertions),
+ambiguities (indices likewise remapped, plus a SEGMENTATION report
+when more than one split was vocabulary-supported, or when a
+segmenter's answer scored under the confidence floor).
 Reads: Policy.segment_scripts, Lexicon.surnames,
-Lexicon.honorific_tails, ParseState.segmenter.
+Lexicon.honorific_tails, ParseState.segmenter, and Lexicon suffix
+vocabulary (via _vocab.is_suffix_strict) -- both the peel's scan-back
+and the surname site ask whether a token is a post-nominal.
 
 Unspaced CJK names give tokenize no separator to find, so this stage
 inserts the missing token boundary by vocabulary: the first token
@@ -25,11 +28,15 @@ glued to the END of the name part's last non-post-nominal token is
 peeled off as its own token -- 田中さん -> 田中 + さん -- so that
 suffix classification can claim it and the surname match or segmenter
 consult below sees the name rather than the name plus an honorific. It
-is gated by the FAMILY comma and by 间隔号 but NOT by segment_scripts:
-the vocabulary of tails is licensed by the entries themselves, each of
-which can never end a name, so no per-script trust question arises. A
-suffix comma does not gate it -- "Dr 김민준씨, Jr." peels within its
-name part like any other.
+is gated by the stage's own ASCII bail, by the FAMILY comma and by
+间隔号, but NOT by segment_scripts: the vocabulary of tails is licensed
+by the entries themselves, each of which can never end a name, so no
+per-script trust question arises. The ASCII bail is the gate a caller
+adding a LATIN tail meets -- it sits above everything here, so such a
+tail fires only on a name carrying at least one non-ASCII character
+(see the bail's own comment, and honorific_tails' field note). A
+suffix comma gates nothing -- "Dr 김민준씨, Jr." peels within its name
+part like any other.
 
 Where the VOCABULARY declines -- no prefix matched -- an optional
 Parser(segmenter=...) gets the token (#272 amendment 2026-07-29).
