@@ -311,24 +311,38 @@ def _names_using(draw: st.DrawFn, lexicon: Lexicon) -> str:
     """
     vocab = sorted({w for name in _SET_FIELDS
                     for w in getattr(lexicon, name)})
-    # script_segment (#271) is the one stage a space-joined name can
-    # never reach: it splits an UNSPACED token whose PREFIX is a drawn
-    # surname, so every drawn surname is also offered concatenated with
-    # a given name. Waiting instead for a drawn surname and a matching
-    # literal to coincide left the stage unexercised on all 250
-    # examples (measured); deriving the token from the draw itself
-    # reaches it on a handful. A Latin surname makes a mixed-script
-    # token the stage correctly declines -- useful input in its own
-    # right.
+    # script_segment (#271, #308) holds the two halves a space-joined
+    # name can never reach, and BOTH need their token derived from the
+    # draw: waiting for a drawn entry and a matching literal to
+    # coincide leaves the stage unexercised. The surname half splits an
+    # unspaced token whose PREFIX is a drawn surname; the peel splits a
+    # listed tail off the END of one. The peel's line was added after a
+    # mutation pass asked the same question of it and instrumentation
+    # answered: 14 fires across this file, every one under the DEFAULT
+    # lexicon and none under a drawn one, because no generated token
+    # ended in a drawn tail. Deriving it moves that off zero.
+    # A Latin entry is useful input in its own right: it makes a
+    # mixed-script token the surname half correctly declines, and for
+    # the peel it is the one shape that reaches an ASCII tail at all --
+    # the stage bails on a wholly-ASCII original, so the non-Latin stem
+    # is what admits '민준jr'. Both fires observed under drawn lexicons
+    # are of exactly that shape.
+    # Neither derivation guarantees a fire on any given run: the piece
+    # is one of ~30 in the pool, so it competes with the bare vocabulary
+    # words, and a bare drawn surname standing earlier in the name takes
+    # the surname site before the unspaced token can. Instrument before
+    # concluding either half is exercised -- the counts above are what
+    # that costs to find out.
     # sorted for the same reason `vocab` above is: frozenset iteration
     # order is not stable across runs, and an unsorted pool shifts
     # every index sampled_from draws -- which would defeat
     # derandomize=True on the whole strategy, not just this slice.
     unspaced = sorted(w + "민준" for w in lexicon.surnames)
+    glued = sorted("민준" + w for w in lexicon.honorific_tails)
     # plain names and structure characters are always available, so the
     # pool is never empty even for an empty lexicon
     pieces = st.sampled_from(
-        vocab + unspaced + ["John", "Smith", "Q.", ",", "(", "'"])
+        vocab + unspaced + glued + ["John", "Smith", "Q.", ",", "(", "'"])
     return " ".join(draw(st.lists(pieces, min_size=1, max_size=8)))
 
 
