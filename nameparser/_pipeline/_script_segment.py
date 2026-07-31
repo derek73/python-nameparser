@@ -319,11 +319,17 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     and it could not be done here anyway: classify has not run, so the
     marker tokens carry no tag this stage could read.
 
-    Longest-first. ONE peel, never recursive: 김민준박사님 gives up
-    its 님 and keeps its glued 박사, though 박사 is itself a listed
-    tail, which is accepted rather than chased. No script precondition
-    on the remainder either, since the tail alone is the license:
-    Andersonさん peels.
+    Longest-first, and ONE peel: a remainder that itself ends in a
+    listed tail is accepted rather than chased. No SHIPPED input
+    witnesses that any more -- 박사님 was the last one, and adding it
+    is what removed the case: 김민준박사님 now gives up 박사님 entire,
+    since longest-first reaches the whole honorific. The pin needs a
+    tail whose remainder ends in a DIFFERENT tail, the two not
+    themselves a listed entry, and no pair in the shipped vocabulary
+    has that shape; the stage test test_one_peel_never_a_stack carries
+    it on a synthetic lexicon, which is now its only witness. No
+    script precondition on the remainder either, since the tail alone
+    is the license: Andersonさん peels.
 
     Emits no ambiguity, unlike the surname fork below, though
     longest-first does CHOOSE here too -- 김선생님 gives 선생님 where
