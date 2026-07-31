@@ -203,7 +203,7 @@ issue = "fix(cjk-honorific-suffix) postnominal honorifics recognized, compoundin
 # {first, last, suffix} shape (v1 held the whole token in first, so
 # last moves too), which is field-honest even though that rule's
 # prose describes the two-token Latin case.
-name_regex = "(?:^| )(?:씨|박사|선생님|교수님|군|양|先生|女士|小姐|博士|教授|様|氏)$"
+name_regex = "(?:^| )(?:씨|박사|선생님|교수님|군|양|님|先生|女士|小姐|博士|教授|様|氏|殿|さん|さま|くん|ちゃん)$"
 fields = ["first", "middle", "last", "suffix"]
 
 [[change]]

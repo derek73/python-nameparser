@@ -733,6 +733,22 @@ CASES: tuple[Case, ...] = (
          notes="the spaced 様 of forms and databases; the glued "
                "mail-addressing form 山田太郎様 is #308's mechanism, "
                "out of reach of whole-token matching"),
+    Case("ja_san_spaced", "田中 さん",
+         {"family": "田中", "suffix": "さん"},
+         classification="fix(#308)",
+         notes="the kana honorifics ship as suffix vocabulary so the "
+               "glued peel has somewhere to hand its tail; spaced "
+               "recognition falls out of the same entry -- until this "
+               "change さん read as the given name under the "
+               "family-first default"),
+    Case("ko_honorific_nim_spaced", "김민준 님",
+         {"family": "김", "given": "민준", "suffix": "님"},
+         classification="fix(#308)",
+         notes="님 is new in both sets -- #307 shipped only the -님 "
+               "compounds 선생님/교수님. Standardly glued in online "
+               "address, spaced too, and never the end of a Korean "
+               "given name, which is what qualifies it for the "
+               "harsher glued vetting as well"),
     Case("ko_honorific_glued_via_segmentation", "김씨",
          {"family": "김", "suffix": "씨"},
          classification="fix(#307)",

@@ -37,17 +37,19 @@ SUFFIX_NOT_ACRONYMS = {
     'שליט"א',   # honorific for a living rabbi, ASCII quote
     'שליט״א',   # same, U+05F4 gershayim
 
-    # #307: CJK postnominal honorifics and degrees, whole-token
-    # matched. That reaches the spaced forms directly, and glued
-    # forms in exactly ONE shape: surname+honorific (김씨; 王先生
-    # under the zh pack), where segmentation splits off the surname
-    # before suffix classification and the honorific is what remains.
-    # A glued honorific after a GIVEN name (김민준씨, 王小明先生) and
-    # glued kana (山田太郎様; 田中さん additionally ships no さん
-    # entry at all) stay out of reach, tracked as #308.
-    # Self-selecting like the Korean surnames: a Han or hangul entry
-    # can only ever match CJK text. Vetting per the мл/ст standard
-    # above -- three entries worth naming:
+    # #307/#308: CJK postnominal honorifics and degrees. Matched
+    # whole-token here, which reaches the SPACED forms; the GLUED
+    # forms (田中さん, 김민준씨) are reached by the peel in
+    # _pipeline/_script_segment.py, which splits a listed tail off the
+    # last name token and hands the piece back to this vocabulary --
+    # so every GLUED_HONORIFICS entry below is also an entry here,
+    # asserted at the foot of this module.
+    # Self-selecting like the Korean surnames: a Han, kana or hangul
+    # entry can only ever match CJK text. Vetting per the мл/ст
+    # standard above, and note the two bars are different -- an entry
+    # can be safe in the spaced position and unsafe glued, never the
+    # other way round, because the spaced position is a token boundary
+    # its writer drew:
     # - 氏: a rare Japanese surname reading exists, but a bare
     #   trailing 氏 after a name is the news-style honorific, and a
     #   氏-surnamed person writes it FIRST.
@@ -57,17 +59,18 @@ SUFFIX_NOT_ACRONYMS = {
     #   final position both are vanishingly rare in practice.
     # - 博士: an attested Japanese given name (ひろし, Hiroshi) --
     #   the doctorate reading vastly dominates the spaced trailing
-    #   position this set matches, and a glued 田中博士 is untouched.
+    #   position this set matches.
     # Bare hangul 선생/교수 are deliberately absent (only the -님
     # honorific forms ship): the bare forms read as common nouns as
-    # readily as address terms. Further candidates (여사, 太太, 殿)
-    # wait on the same case-by-case argument.
+    # readily as address terms. Further candidates (여사, 太太) wait on
+    # the same case-by-case argument.
     '씨',        # ko Mr./Ms. -- standardly spaced in Korean orthography
     '박사',      # ko doctorate holder ("Dr.")
     '선생님',    # ko teacher/respected elder
     '교수님',    # ko professor (honorific form)
     '군',        # ko young man ("Master")
     '양',        # ko young woman ("Miss")
+    '님',        # ko -- the bare honorific of online/formal address
     '先生',      # zh Mr. / ja teacher-master -- honorific in both
     '女士',      # zh Ms./Madam
     '小姐',      # zh Miss
@@ -75,11 +78,46 @@ SUFFIX_NOT_ACRONYMS = {
     '教授',      # zh+ja professor, shared Han
     '様',        # ja formal Mr./Ms. (the mail-addressing honorific)
     '氏',        # ja news-style Mr. (田中氏)
+    '殿',        # ja formal, official/rank-flavored
+    'さん',      # ja the everyday honorific, kana
+    'さま',      # ja the kana spelling of 様
+    'くん',      # ja the kana spelling of 君
+    'ちゃん',    # ja familiar/diminutive
 }
 """
 
 Post-nominal pieces that are not acronyms. The parser does not remove periods
 when matching against these pieces.
+
+"""
+GLUED_HONORIFICS = {
+    # #308: the entries above that may also be peeled off the END of a
+    # name token -- 田中さん, 山田太郎様, 김민준씨. A separate set, not
+    # SUFFIX_NOT_ACRONYMS reused, because the glued position has no
+    # token boundary to lean on: the vetting question is not "is this
+    # a name?" but "can this END a name?", and only entries that can
+    # never end one belong here.
+    # kana -- name-final never, in any of the four:
+    'さん', 'さま', 'くん', 'ちゃん',
+    # kanji:
+    '様', '先生', '殿', '教授',
+    # hangul (the -님 compounds too: longest-first peels 선생님 off
+    # 김선생님 whole, rather than leaving 김선생 to segment into a
+    # family 김 and a given 선생):
+    '씨', '님', '선생님', '교수님',
+}
+"""
+
+The subset of :data:`SUFFIX_NOT_ACRONYMS` a name token may end WITH, peeled
+off as its own token before segmentation (#308). Deliberately harsher than
+the spaced set, entry by entry:
+
+* 양, 군 -- 김지양 and 김지군 are given names ending in these syllables, and
+  양 is a top-tier surname besides. Spaced entries stay.
+* 君 -- 王君 is a complete Chinese name (君 is a common given-name final).
+* 氏 -- 王氏 is a historical name form ("the Wang woman").
+* 博士 -- glued 田中博士 IS Tanaka Hiroshi, an attested given name.
+* bare 선생, 교수 -- read as common nouns; only the -님 forms ship at all.
 
 """
 SUFFIX_ACRONYMS_AMBIGUOUS = {
@@ -769,4 +807,10 @@ assert not (SUFFIX_ACRONYMS_AMBIGUOUS & SUFFIX_NOT_ACRONYMS), \
     "an ambiguous acronym must not also be a suffix word (the word " \
     "branch bypasses its period gate): " \
     f"{sorted(SUFFIX_ACRONYMS_AMBIGUOUS & SUFFIX_NOT_ACRONYMS)}"
+# The peel splits its tail off as a TOKEN and suffix classification is
+# what claims it downstream, so a tail that is not also a suffix word
+# would split the name and then leave the piece sitting in it.
+assert GLUED_HONORIFICS <= SUFFIX_NOT_ACRONYMS, \
+    "GLUED_HONORIFICS must stay a subset of SUFFIX_NOT_ACRONYMS: " \
+    f"{sorted(GLUED_HONORIFICS - SUFFIX_NOT_ACRONYMS)}"
 assert_normalized("suffix", SUFFIX_ACRONYMS | SUFFIX_NOT_ACRONYMS)
