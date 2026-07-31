@@ -36,6 +36,45 @@ SUFFIX_NOT_ACRONYMS = {
     'ז״ל',      # same, U+05F4 gershayim
     'שליט"א',   # honorific for a living rabbi, ASCII quote
     'שליט״א',   # same, U+05F4 gershayim
+
+    # #307: CJK postnominal honorifics and degrees, whole-token
+    # matched. That reaches the spaced forms directly, and glued
+    # forms in exactly ONE shape: surname+honorific (김씨; 王先生
+    # under the zh pack), where segmentation splits off the surname
+    # before suffix classification and the honorific is what remains.
+    # A glued honorific after a GIVEN name (김민준씨, 王小明先生) and
+    # glued kana (山田太郎様; 田中さん additionally ships no さん
+    # entry at all) stay out of reach, tracked as #308.
+    # Self-selecting like the Korean surnames: a Han or hangul entry
+    # can only ever match CJK text. Vetting per the мл/ст standard
+    # above -- three entries worth naming:
+    # - 氏: a rare Japanese surname reading exists, but a bare
+    #   trailing 氏 after a name is the news-style honorific, and a
+    #   氏-surnamed person writes it FIRST.
+    # - 양/군: 양 is also a top-tier surname (Yang) -- but a surname
+    #   LEADS, so the trailing-only suffix gate never sees it there
+    #   (양 미선 keeps family 양); as single-syllable GIVEN names in
+    #   final position both are vanishingly rare in practice.
+    # - 博士: an attested Japanese given name (ひろし, Hiroshi) --
+    #   the doctorate reading vastly dominates the spaced trailing
+    #   position this set matches, and a glued 田中博士 is untouched.
+    # Bare hangul 선생/교수 are deliberately absent (only the -님
+    # honorific forms ship): the bare forms read as common nouns as
+    # readily as address terms. Further candidates (여사, 太太, 殿)
+    # wait on the same case-by-case argument.
+    '씨',        # ko Mr./Ms. -- standardly spaced in Korean orthography
+    '박사',      # ko doctorate holder ("Dr.")
+    '선생님',    # ko teacher/respected elder
+    '교수님',    # ko professor (honorific form)
+    '군',        # ko young man ("Master")
+    '양',        # ko young woman ("Miss")
+    '先生',      # zh Mr. / ja teacher-master -- honorific in both
+    '女士',      # zh Ms./Madam
+    '小姐',      # zh Miss
+    '博士',      # zh+ja doctorate holder, shared Han
+    '教授',      # zh+ja professor, shared Han
+    '様',        # ja formal Mr./Ms. (the mail-addressing honorific)
+    '氏',        # ja news-style Mr. (田中氏)
 }
 """
 

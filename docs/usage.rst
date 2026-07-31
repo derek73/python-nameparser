@@ -295,6 +295,16 @@ Chinese dot rescues the source order. And a comma disables the script
 behaviors entirely, on the reasoning ``name_order`` already follows: whoever
 wrote the comma has already said where the family name ends.
 
+Honorifics and degrees follow a CJK name, and the spaced forms are
+recognized as suffixes — ``王小明 先生`` reads family 王小明 with 先生
+in ``suffix``, and Korean's standardly-spaced 씨 routes the same way.
+A glued honorific is reached in exactly one shape — surname +
+honorific, where segmentation splits off the surname and the
+honorific is what remains: 김씨 reads family 김 with suffix 씨, and
+王先生 the same way under the zh pack. A glued honorific after a
+given name (김민준씨, 王小明先生) and glued kana (山田太郎様, 田中さん)
+stay part of the name.
+
 A division the parser had to choose is reported rather than hidden.
 When an unspaced name has more than one vocabulary-supported split —
 ``남궁민수`` is 남궁 + 민수 by the two-syllable surname but 남 + 궁민수

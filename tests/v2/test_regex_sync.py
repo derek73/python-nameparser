@@ -334,3 +334,33 @@ def test_cjk_corpus_matches_the_case_table() -> None:
     assert checked_in == module.selected_names(), (
         "corpus_cjk.jsonl is stale: regenerate with "
         "`uv run python tools/differential/build_cjk_corpus.py`")
+
+
+def test_differential_honorific_rule_matches_the_suffix_vocabulary() -> None:
+    """The fix(cjk-honorific-suffix) rule's alternation is a hand copy
+    of SUFFIX_NOT_ACRONYMS' CJK entries (#307) -- the toml cannot
+    import them. The expected set is DERIVED from the config by script
+    membership (a classified codepoint anywhere in the entry), so
+    adding a CJK honorific without widening the rule -- or widening
+    the rule with something the vocabulary does not ship -- fails
+    here. The span-bearing pins above skip this rule on purpose: its
+    trigger is the alternation, not a character class.
+    """
+    from nameparser.config.suffixes import SUFFIX_NOT_ACRONYMS
+
+    toml_path = (Path(__file__).parents[2] / "tools" / "differential"
+                 / "expected_changes.toml")
+    rules = tomllib.loads(toml_path.read_text())["change"]
+    matched = [r for r in rules if "cjk-honorific-suffix" in r["issue"]]
+    assert len(matched) == 1
+    regex = matched[0]["name_regex"]
+    prefix = "(?:^| )(?:"
+    assert regex.startswith(prefix) and regex.endswith(")$"), (
+        "the honorific rule's shape changed; update this parser")
+    declared = set(regex[len(prefix):-2].split("|"))
+    has_classified = _policy._script_matcher(*_policy._SCRIPT_RANGES)
+    expected = {entry for entry in SUFFIX_NOT_ACRONYMS
+                if has_classified(entry)}
+    assert declared == expected, (
+        f"rule declares {sorted(declared)}; the config's CJK suffix "
+        f"entries are {sorted(expected)}")

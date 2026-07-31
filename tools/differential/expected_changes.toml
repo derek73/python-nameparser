@@ -178,6 +178,35 @@ name_regex = "(?s)(?=.*,)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3
 fields = ["first", "middle", "last", "title", "suffix"]
 
 [[change]]
+issue = "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip"
+# '王小明 先生', '김민준 씨', '田中 太郎 様': #307 ships the spaced CJK
+# honorifics as suffix vocabulary, so a trailing 先生/씨/様 moves to
+# `suffix` where 1.4 read it as a name part -- and the remaining
+# wholly-CJK name simultaneously takes the family-first flip, so a
+# three-token name moves `middle` too, past the fields-only
+# suffix-routing rule. Keyed on the honorific alternation itself
+# (the maiden-marker rule's pattern): the trigger tokens are wholly
+# CJK characters, so the rule matches only a name whose TRAILING
+# token is a listed honorific -- a mostly-Latin name with one
+# ('Wang Xiaoming 先生') is inside its shadow, accepted because the
+# recognized honorific is the diff's cause there too, and the
+# alternation is a hand copy of SUFFIX_NOT_ACRONYMS' CJK entries --
+# pinned by tests/v2/test_regex_sync.py, which derives the expected
+# set from the config by script membership. Anchored to a WHOLE
+# trailing token ((?:^| )...$), judged on the NAME STRING: without
+# it, any name string merely ENDING in 양/군 -- the glued given name
+# 김지양, the spaced 김 지양 -- would match and could have a real
+# regression absorbed as intentional (the case table pins the
+# parser-side twin: suffix matching is whole-token, never endswith).
+# Glued surname+honorific diffs (김씨 -- reached via segmentation)
+# fall to the fields-only suffix-routing rule by their
+# {first, last, suffix} shape (v1 held the whole token in first, so
+# last moves too), which is field-honest even though that rule's
+# prose describes the two-token Latin case.
+name_regex = "(?:^| )(?:씨|박사|선생님|교수님|군|양|先生|女士|小姐|博士|教授|様|氏)$"
+fields = ["first", "middle", "last", "suffix"]
+
+[[change]]
 issue = "feat(#269) non-Latin titles/conjunctions recognized"
 # 'г-н Иван Петров' (Cyrillic title), 'Хосе И Мария Сантос' (Cyrillic
 # conjunction И joining two given names). v1 shipped Latin-only
