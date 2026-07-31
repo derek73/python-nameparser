@@ -408,30 +408,36 @@ def test_a_neighbour_in_an_UNACTIVATED_script_still_blocks_the_consult() -> None
         assert out.ambiguities == (), name
 
 
-def test_a_recognized_suffix_neighbour_does_not_block_the_consult() -> None:
-    # The carve-out the docstring already makes for a Latin title or
-    # suffix, asked of the VOCABULARY instead of the script: an
-    # honorific is not a boundary its writer drew between family and
-    # given, whatever script it is written in. Both spellings reach
-    # the segmenter with the NAME alone -- the glued one after the
-    # #308 peel manufactured the neighbour, the spaced one because its
-    # writer wrote it that way.
-    for name in ("山田太郎様", "山田太郎 様"):
-        asked, seg = _capture()
-        out = _run(name, policy=_JA, lexicon=_LEX_TAILS, segmenter=seg)
-        assert asked == ["山田太郎"], name
-        assert _texts(out) == ["山田", "太郎", "様"], name
+def test_only_a_manufactured_tail_does_not_block_the_consult() -> None:
+    # The exemption is PROVENANCE, not vocabulary. A tail the peel
+    # manufactured is a boundary nobody drew -- glued 山田太郎様 was
+    # written as one token -- so the segmenter is asked, and asked
+    # about the name alone. The SPACED spelling of the same honorific
+    # is the opposite case: its writer drew that boundary and wrote
+    # 山田太郎 as a unit beside it, so the consult is declined and the
+    # unit stays whole. Asking the suffix VOCABULARY instead cannot
+    # tell these apart -- same word, same place -- and answering both
+    # the first way divided 佐藤 氏 into 佐 + 藤.
+    asked, seg = _capture()
+    out = _run("山田太郎様", policy=_JA, lexicon=_LEX_TAILS, segmenter=seg)
+    assert asked == ["山田太郎"]
+    assert _texts(out) == ["山田", "太郎", "様"]
+
+    asked, seg = _capture()
+    out = _run("山田太郎 様", policy=_JA, lexicon=_LEX_TAILS, segmenter=seg)
+    assert asked == []
+    assert _texts(out) == ["山田太郎", "様"]
 
 
-def test_an_honorific_does_not_excuse_a_real_boundary() -> None:
-    # The honorific stops counting, and nothing else does: 太郎 is
-    # still a boundary its writer drew, so the name is already
-    # divided and the segmenter must not be asked. Without this the
-    # rule reads as "a post-nominal anywhere disables the neighbour
+def test_a_manufactured_tail_does_not_excuse_a_real_boundary() -> None:
+    # The peeled tail stops counting, and nothing else does: 太郎 is
+    # still a boundary its writer drew, so the name is already divided
+    # and the segmenter must not be asked. Without the narrowing the
+    # rule reads as "an exempt token anywhere disables the neighbour
     # test", which passes every other test in this file and divides
     # 山田 into 山 + 田.
     asked, seg = _capture()
-    out = _run("山田 太郎 様", policy=_JA, lexicon=_LEX_TAILS,
+    out = _run("山田 太郎様", policy=_JA, lexicon=_LEX_TAILS,
                segmenter=seg)
     assert asked == []
     assert _texts(out) == ["山田", "太郎", "様"]

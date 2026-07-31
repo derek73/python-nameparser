@@ -48,10 +48,15 @@ below takes n cuts. One precondition guards it that the vocabulary
 has no twin of: a segmenter answers where an UNDIVIDED name divides,
 so it is consulted only when the gated token is the name part's ONLY
 script-written one -- "山田 太郎" was divided by its writer and must
-not have its family divided again (a title or post-nominal draws no
-such boundary, whatever script it is in). The neighbour test reads
-effective_script -- merely non-None -- with a post-nominal excluded by
-vocabulary rather than by script (#308). A segmenter's own exceptions
+not have its family divided again (a Latin title or suffix draws no
+such boundary either, and effective_script gates those out before the
+test is reached). The neighbour test reads effective_script -- merely
+non-None -- and exempts exactly one token: the tail the peel above
+MANUFACTURED (#308), which is a boundary nobody drew. A SPACED
+honorific is not exempt, and the distinction is provenance rather
+than vocabulary: glued 山田太郎様 was written undivided, while whoever
+wrote "佐藤 氏" drew that boundary and wrote 佐藤 as a unit beside it,
+so 佐藤 stays whole. A segmenter's own exceptions
 PROPAGATE -- the single declared exception to parse totality (locales
 spec section 4): a user-supplied callable's error is a user-code
 error, not a content error.
@@ -112,6 +117,16 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import effective_script, is_suffix_strict
 from nameparser._types import AmbiguityKind, Segmentation, Span
+
+#: Marks the tail token the peel below MANUFACTURED, so the segmenter's
+#: neighbour test can tell it from a token somebody wrote. Namespaced,
+#: therefore unstable provenance rather than API (_types.STABLE_TAGS is
+#: the whole stable set, and FOLDED_TAG is the precedent for a
+#: structural marker carrying this prefix); it is vocabulary-derived
+#: besides, since honorific_tails is what licensed the split. Emitter
+#: and reader are both in this module, so unlike FOLDED_TAG it needs no
+#: home in _types.
+_PEELED_TAG = "vocab:peeled-honorific"
 
 #: Segmenter answers scoring below this attach a SEGMENTATION report
 #: (amendment 2026-07-29 section 3). Kept at the drafted 0.9 after
@@ -223,27 +238,24 @@ def _longest_entry(entries: frozenset[str]) -> int:
 
 
 def _is_post_nominal(state: ParseState, i: int) -> bool:
-    """Whether token `i` is post-nominal VOCABULARY. Three of this
-    stage's decisions ask it and none of them is about script: an
-    honorific is neither a surname SITE, nor the token a glued
-    honorific hangs off, nor a boundary its writer drew between family
-    and given (#308).
+    """Whether token `i` is post-nominal VOCABULARY. Two of this
+    stage's decisions ask it and neither is about script: an honorific
+    is neither a surname SITE nor the token a glued honorific hangs off
+    (#308).
 
-    It answers a VOCABULARY question, not a positional one, and the
-    three callers do not spend the answer the same way. In TRAILING
-    position vocabulary and position agree, so the peel site and the
-    neighbour test step over a True and go on scanning. In LEADING
-    position they disagree -- 양 is the family name there, whatever
-    the suffix set says -- so the surname site reads a True as an
-    ANSWER and declines, rather than as a token to step past.
+    It answers a VOCABULARY question, not a positional one, and the two
+    callers do not spend the answer the same way. In TRAILING position
+    vocabulary and position agree, so the peel site steps over a True
+    and goes on scanning. In LEADING position they disagree -- 양 is
+    the family name there, whatever the suffix set says -- so the
+    surname site reads a True as an ANSWER and declines, rather than as
+    a token to step past.
 
-    Suffixes only, deliberately. The neighbour rule's prose covers "a
-    Latin title or suffix", but a Latin title needs no test here --
-    effective_script gates it out first. Should a CJK entry ever join
-    titles, the surname site and the neighbour test would both want it
-    excluded while the peel site must not: a title never trails, so
-    widening the peel's scan-back would move it off the real last name
-    token. Split the predicate then, not before."""
+    Suffixes only, deliberately. Should a CJK entry ever join titles,
+    the surname site would want it excluded while the peel site must
+    not: a title never trails, so widening the peel's scan-back would
+    move it off the real last name token. Split the predicate then, not
+    before."""
     return is_suffix_strict(state.tokens[i].text, state.lexicon)
 
 
@@ -305,7 +317,18 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     cap = min(_longest_entry(tails), len(text) - 1)
     for length in range(cap, 0, -1):
         if text[-length:] in tails:
-            return _split(state, i, (len(text) - length,), None)
+            state = _split(state, i, (len(text) - length,), None)
+            # Tag the tail this stage just MANUFACTURED. The segmenter's
+            # neighbour test below needs to tell it from a token
+            # somebody wrote, and no vocabulary question can: the two
+            # spellings put the same word in the same place, and only
+            # the provenance differs.
+            tail = state.tokens[i + 1]
+            tokens = (state.tokens[:i + 1]
+                      + (dataclasses.replace(
+                          tail, tags=tail.tags | {_PEELED_TAG}),)
+                      + state.tokens[i + 2:])
+            return dataclasses.replace(state, tokens=tokens)
     return state
 
 
@@ -418,16 +441,18 @@ def script_segment(state: ParseState) -> ParseState:
     # Jr." still reaches the segmenter. Vocabulary keeps its own rule
     # -- a listed surname is a certainty about that exact string,
     # whoever else stands beside it.
-    # The Latin carve-out is about being VOCABULARY, not about being
-    # Latin, and it was written in terms of script only because every
-    # suffix WAS Latin when it was written. #307 shipped CJK honorifics
-    # and #308's peel manufactures one, so the test asks the
-    # vocabulary: 様 beside 山田太郎 -- glued or spaced -- says nothing
-    # about where the kanji name divides, and reading it as the
-    # writer's own boundary left the commonest addressed form
-    # undivided.
+    # The one neighbour that does not count is the one this stage
+    # MANUFACTURED (#308): a glued 山田太郎様 has no writer-drawn
+    # boundary anywhere, so the 様 the peel just cut off cannot be read
+    # as one -- the precondition must see what the writer wrote, which
+    # was a single undivided token. A SPACED 様 is the opposite case
+    # and does count: its writer drew that boundary and chose to write
+    # 山田太郎 as a unit, so "佐藤 氏" leaves 佐藤 whole rather than
+    # dividing it into 佐 + 藤. Provenance, not vocabulary: the two
+    # spellings put the same word in the same place, and asking the
+    # suffix set instead cannot separate them.
     if any(j != i and effective_script(state.tokens[j].text) is not None
-           and not _is_post_nominal(state, j)
+           and _PEELED_TAG not in state.tokens[j].tags
            for j in state.segments[0]):
         return state
     # No try/except around the call: the module docstring's totality

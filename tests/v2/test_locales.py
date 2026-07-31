@@ -444,36 +444,59 @@ def test_ja_leaves_spaced_names_to_the_default_order() -> None:
 
 
 @_needs_ja
-def test_ja_divides_a_name_carrying_an_honorific() -> None:
+def test_ja_divides_a_glued_name_carrying_an_honorific() -> None:
     # #308 end to end, with the real divider: the honorific peels off
     # first, so namedivider is handed 山田太郎 rather than 山田太郎様
     # -- which it would have divided somewhere wrong, answering for
-    # any string it is given. The spaced spelling composes the same
-    # way: a recognized honorific is not a boundary its writer drew.
+    # any string it is given. GLUED only: the writer of 山田太郎様 drew
+    # no boundary anywhere, so the tail the peel manufactured is none
+    # either and the consult goes ahead.
     p = _PACKED["ja"]
-    for name in ("山田太郎様", "山田太郎 様"):
-        n = p.parse(name)
-        assert (n.family, n.given, n.suffix) == ("山田", "太郎", "様"), name
+    n = p.parse("山田太郎様")
+    assert (n.family, n.given, n.suffix) == ("山田", "太郎", "様")
     # the kana-licensed composite too, whose division is rule-based
     n = p.parse("高橋みなみ様")
     assert (n.family, n.given, n.suffix) == ("高橋", "みなみ", "様")
+    # and the spaced spelling is left alone, honorific and all: its
+    # writer wrote 山田太郎 as a unit, which the pack respects the way
+    # it respects "山田 太郎"
+    n = p.parse("山田太郎 様")
+    assert (n.family, n.given, n.suffix) == ("山田太郎", "", "様")
 
 
 @_needs_ja
-def test_ja_divides_a_two_character_name_under_an_honorific() -> None:
+def test_ja_does_not_divide_a_spaced_surname_under_an_honorific() -> None:
+    # The writer drew this boundary: 佐藤 is a unit, and the
+    # honorific beside it says nothing about where 佐藤 divides.
+    # Only a tail this stage MANUFACTURED is exempt from the
+    # neighbour test -- a glued honorific means no boundary was
+    # drawn anywhere, a spaced one means one was.
+    p = _PACKED["ja"]
+    for name, family in (("佐藤 氏", "佐藤"), ("田中 様", "田中"),
+                         ("鈴木 先生", "鈴木")):
+        n = p.parse(name)
+        assert (n.family, n.given) == (family, ""), name
+
+
+@_needs_ja
+def test_ja_divides_a_two_character_name_under_a_glued_honorific() -> None:
     # The consequence of the rule above on the commonest addressed
     # form, pinned so it is a recorded decision rather than a side
-    # effect: with the honorific no longer blocking the consult, a
+    # effect: with the peeled tail not blocking the consult, a
     # two-character remainder reaches namedivider, which divides it
     # one character each way BY RULE (score 1.0, so no SEGMENTATION
     # report). That is the same presumption locales/ja.py already
     # documents and test_ja_reports_statistical_divisions... pins for
     # 原恵 -- 田中さん is simply the shortest route to it. A caller
     # who wants 田中 kept whole is asking not to have unspaced names
-    # divided, which is what declining the pack means.
+    # divided, which is what declining the pack means -- or can write
+    # the honorific spaced, which the test above pins.
     n = _PACKED["ja"].parse("田中さん")
     assert (n.family, n.given, n.suffix) == ("田", "中", "さん")
     assert n.ambiguities == ()      # rule-based, so nothing to report
+    # the spaced twin, for the contrast in one place
+    n = _PACKED["ja"].parse("田中 さん")
+    assert (n.family, n.given, n.suffix) == ("田中", "", "さん")
 
 
 @_needs_ja
