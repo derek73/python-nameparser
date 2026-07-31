@@ -786,14 +786,27 @@ CASES: tuple[Case, ...] = (
                "peeled 선생님 would otherwise be split into 선 + 생님 "
                "-- the stage dissecting the honorific it had just "
                "manufactured"),
-    Case("ko_glued_stack_peels_once", "김민준박사님",
-         {"family": "김", "given": "민준박사", "suffix": "님"},
+    Case("ko_honorific_glued_doctor", "김민준박사님",
+         {"family": "김", "given": "민준", "suffix": "박사님"},
          classification="fix(#308)",
-         notes="one peel, no recursion -- and the remainder 김민준박사 "
-               "ends in a listed tail of its own, so this is the "
-               "shape that would recurse if anything did. 님 comes "
-               "off, the glued 박사 stays in the given name. Accepted "
-               "and pinned rather than chased"),
+         notes="박사님 is one honorific, not 박사 plus 님, and ships "
+               "as one entry: 선생님, 교수님 and 박사님 are the three "
+               "standard -님 professional honorifics and the first two "
+               "shipped without it, which stranded 박사 in the given "
+               "name here and rendered the spaced 김민준 박사님 as two "
+               "suffixes. This row USED to pin the one-peel rule "
+               "(named ko_glued_stack_peels_once) on the reading that "
+               "left 박사 behind; no shipped vocabulary now has that "
+               "shape, so the pin lives at stage level with a "
+               "synthetic lexicon -- test_script_segment.py's "
+               "test_one_peel_never_a_stack"),
+    Case("ko_honorific_glued_doctor_spaced", "김민준 박사님",
+         {"family": "김", "given": "민준", "suffix": "박사님"},
+         classification="fix(#308)",
+         notes="the spaced twin, and the second half of the same gap: "
+               "without a 박사님 entry the peel cut this token too -- "
+               "it is not a whole-token suffix word, so 박사 + 님 came "
+               "back as two suffixes for one honorific"),
     Case("ko_glued_tail_alone_never_peels", "씨",
          {"family": "씨"},
          classification="fix(#271)",

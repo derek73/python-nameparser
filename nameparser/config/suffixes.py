@@ -68,10 +68,15 @@ SUFFIX_NOT_ACRONYMS = {
     #   Sino-Korean given name.
     # Bare hangul 선생/교수 are deliberately absent (only the -님
     # honorific forms ship): the bare forms read as common nouns as
-    # readily as address terms. Further candidates (여사, 太太) wait on
-    # the same case-by-case argument.
+    # readily as address terms. 박사 is the exception among the three,
+    # shipping bare as well as with -님, because it names a degree
+    # rather than a role -- but all three -님 forms ship together
+    # (선생님, 교수님, 박사님 are the standard professional honorifics,
+    # and shipping two of the three was an oversight). Further
+    # candidates (여사, 太太) wait on the same case-by-case argument.
     '씨',        # ko Mr./Ms. -- standardly spaced in Korean orthography
     '박사',      # ko doctorate holder ("Dr.")
+    '박사님',    # ko the same, honorific form
     '선생님',    # ko teacher/respected elder
     '교수님',    # ko professor (honorific form)
     '군',        # ko young man ("Master")
@@ -114,10 +119,11 @@ GLUED_HONORIFICS = {
     '様', '先生', '教授', '女士', '小姐',
     # hangul -- the -님 compounds too: longest-first peels 선생님 off
     # 김선생님 whole, rather than leaving 김선생 to segment into a
-    # family 김 and a given 선생. 박사 is safe glued where its Han twin
-    # 博士 is not: that collision is Japanese (博士 = ひろし) and the
-    # hangul spelling carries none of it.
-    '씨', '님', '선생님', '교수님', '박사',
+    # family 김 and a given 선생, and 박사님 off 김민준박사님 rather
+    # than stranding 박사 in the given name. 박사 is safe glued where
+    # its Han twin 博士 is not: that collision is Japanese (博士 =
+    # ひろし) and the hangul spelling carries none of it.
+    '씨', '님', '선생님', '교수님', '박사', '박사님',
 }
 """
 

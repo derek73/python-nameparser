@@ -208,7 +208,7 @@ issue = "fix(cjk-honorific-suffix) postnominal honorifics recognized, compoundin
 # 2026-07-30 run, not assumed: #308's peel put a dozen glued names
 # in the corpus (Latin+glued like Andersonさん included) and every
 # one classified there -- none carried a middle-field diff.
-name_regex = "(?:^| )(?:씨|박사|선생님|교수님|군|양|님|先生|女士|小姐|博士|教授|様|氏|殿|さん|さま|くん|ちゃん)$"
+name_regex = "(?:^| )(?:씨|박사|박사님|선생님|교수님|군|양|님|先生|女士|小姐|博士|教授|様|氏|殿|さん|さま|くん|ちゃん)$"
 fields = ["first", "middle", "last", "suffix"]
 
 [[change]]

@@ -488,7 +488,14 @@ def test_longest_tail_wins() -> None:
 def test_one_peel_never_a_stack() -> None:
     # The remainder here ENDS in another listed tail (박사) and is
     # still not peeled again: one peel, then the stage moves on to
-    # segmentation, which splits the surname off what is left
+    # segmentation, which splits the surname off what is left.
+    # The SOLE home of this pin, and it needs the synthetic lexicon:
+    # _TAILS deliberately omits 박사님, which the shipped vocabulary
+    # carries, so 김민준박사님 gives up the whole honorific there (the
+    # ko_honorific_glued_doctor case row). No shipped entry pair has
+    # the shape this needs -- a tail whose remainder ends in a
+    # DIFFERENT tail, the two not forming a listed entry themselves --
+    # so no realistic name can carry the pin end to end.
     assert _texts(_run("김민준박사님", policy=_HANGUL,
                        lexicon=_LEX_TAILS)) == ["김", "민준박사", "님"]
 

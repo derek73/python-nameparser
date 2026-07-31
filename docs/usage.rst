@@ -310,16 +310,17 @@ family and given, so ``山田太郎 様`` divides too.
 The glued reading is deliberately narrower than the spaced one. A
 spaced honorific sits behind a boundary its writer drew; a glued one
 has only itself to go on, so a word peels off the end of a name only
-if it could never BE the end of a name. 씨, 님, 박사, 선생님, 교수님,
-さん, さま, くん, ちゃん, 様, 先生, 教授, 女士 and 小姐 qualify; 양,
-군, 氏, 博士 and 殿 do not, because 김지양 is a given name, 田中博士
-is Tanaka Hiroshi as readily as Doctor Tanaka, and some ninety
-Japanese surnames end in 殿 (鵜殿, 真殿). Those stay recognized in
-their spaced form, where position settles what the glued form leaves
-ambiguous. 君 is recognized in neither form, since 王君 is a complete
-Chinese name — though its kana spelling くん peels. One honorific
-peels, not a stack: ``김민준박사님`` gives up its 님 and keeps its
-glued 박사.
+if it could never BE the end of a name. 씨, 님, 박사, 박사님, 선생님,
+교수님, さん, さま, くん, ちゃん, 様, 先生, 教授, 女士 and 小姐
+qualify; 양, 군, 氏, 博士 and 殿 do not, because 김지양 is a given
+name, 田中博士 is Tanaka Hiroshi as readily as Doctor Tanaka, and some
+ninety Japanese surnames end in 殿 (鵜殿, 真殿). Those stay recognized
+in their spaced form, where position settles what the glued form
+leaves ambiguous. 君 is recognized in neither form, since 王君 is a
+complete Chinese name — though its kana spelling くん peels. Exactly
+one honorific peels off a token, and the entries are whole
+honorifics rather than parts: ``김민준박사님`` gives up 박사님 entire,
+not 님 with 박사 left behind.
 
 A division the parser had to choose is reported rather than hidden.
 When an unspaced name has more than one vocabulary-supported split —
