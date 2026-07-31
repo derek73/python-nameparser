@@ -516,7 +516,7 @@ def test_a_trailing_post_nominal_does_not_hide_the_peel_site() -> None:
                        lexicon=_LEX_TAILS)) == ["김", "민준", "씨", "jr"]
 
 
-def test_the_peel_only_looks_at_the_last_name_token() -> None:
+def test_the_peel_only_looks_at_the_last_non_post_nominal_token() -> None:
     # a tail anywhere but the end is somebody's name, not an
     # honorific: only the trailing position is an honorific site, the
     # same reasoning the trailing-only suffix gate follows

@@ -878,6 +878,16 @@ CASES: tuple[Case, ...] = (
                "hide it -- this now agrees with the comma-written "
                "'Dr 김민준씨, Jr.', where the suffix comma had "
                "already put 씨 within reach"),
+    Case("ko_honorific_glued_given_suffix_comma", "Dr 김민준씨, Jr.",
+         {"title": "Dr", "family": "김", "given": "민준",
+          "suffix": "씨, Jr."},
+         classification="fix(#308)",
+         notes="the peel indexes the NAME part, not the token stream: "
+               "under a suffix comma segments[0] is a strict subset, "
+               "and the peel site is found within it. Pairs with "
+               "ko_honorific_glued_given_trailing_suffix, whose "
+               "comma-less spelling of the same name reaches the same "
+               "answer by the scan-back instead"),
     Case("zh_honorific_glued_surname", "王先生",
          {"family": "王", "suffix": "先生"},
          locale="zh",

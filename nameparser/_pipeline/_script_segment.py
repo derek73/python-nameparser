@@ -250,6 +250,15 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     that returns None where the outright index would raise removes an
     unpinned reliance on the FAMILY_COMMA gate landing first.
 
+    That last token is the last of the NAME PART, which under NO_COMMA
+    reaches into a maiden clause: maiden tokens are still main-stream
+    here (extract_delimited has masked only bracketed content), so
+    "김민준 née 박씨" peels 씨 off the MAIDEN name 박씨 and hands it to
+    the person's suffix list -- "née Ms. Park". Intended rather than
+    incidental: the honorific is the reader's regardless of which of
+    her names it was glued to, and a name-part-final honorific is
+    exactly what this peels.
+
     Longest-first. ONE peel, never recursive: 김민준박사님 gives up
     its 님 and keeps its glued 박사, though 박사 is itself a listed
     tail, which is accepted rather than chased. No script precondition
