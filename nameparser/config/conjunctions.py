@@ -9,9 +9,13 @@ CONJUNCTIONS = {
     'the',
     'und',
     'y',
-    # #269: Cyrillic (ru/uk/bg) "and": и, і, та.
+    # #269: Cyrillic (ru/uk/bg) "and": и, і, та. Ukrainian writes і and
+    # й for the same conjunction, alternating on the surrounding
+    # vowel/consonant for euphony ("Олесь і Олена", "Марія й Петро"),
+    # so real data carries both spellings and neither alone suffices.
     'и',
     'і',
+    'й',
     'та',
     # #269: Greek "and": και.
     'και',
