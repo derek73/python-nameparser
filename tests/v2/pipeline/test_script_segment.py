@@ -433,21 +433,21 @@ def test_peel_then_segmentation_compose() -> None:
 
 
 def test_a_token_that_is_a_tail_never_peels() -> None:
-    # nothing to split off: the empty-remainder guard, the analogue of
-    # the whole-token surname guard above
+    # nothing to split off, and the guard is the peel site's scan past
+    # post-nominals, not the length cap: 선생님 ENDS in the shorter
+    # tail 님, so a cap-based guard would peel it to 선생 + 님
     assert _texts(_run("씨", policy=_HANGUL, lexicon=_LEX_TAILS)) == ["씨"]
     assert _texts(_run("さん", policy=_HANGUL,
                        lexicon=_LEX_TAILS)) == ["さん"]
+    assert _texts(_run("선생님", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["선생님"]
 
 
 def test_longest_tail_wins() -> None:
-    # 님 and 선생님 both match by endswith; peeling the shorter one
-    # would leave 김선생 for the vocabulary to split into a family 김
-    # and a given 선생. Same longest-first discipline as the surname
-    # match, and 김 is itself a listed surname, so the remainder then
-    # declines to split further (the whole-token guard).
-    assert _texts(_run("김선생님", policy=_HANGUL,
-                       lexicon=_LEX_TAILS)) == ["김", "선생님"]
+    # 님 and 선생님 both match by endswith, and only the longer one
+    # leaves a remainder that is a name (박선생 is not one)
+    assert _texts(_run("박선생님", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["박", "선생님"]
 
 
 def test_one_peel_never_a_stack() -> None:
@@ -484,6 +484,26 @@ def test_interpunct_divided_name_never_peels() -> None:
         original="威廉·莎士比亚先生", lexicon=_LEX_TAILS, policy=_HAN)))
     assert state.interpunct_offsets
     assert script_segment(state).tokens == state.tokens
+
+
+def test_a_peeled_tail_is_not_a_surname_site() -> None:
+    # The peel manufactures a token, and the site scan below must not
+    # then treat it as a name: 남궁 opens with the listed surname 남,
+    # so without the post-nominal guard the stage would split the
+    # honorific it had just created.
+    lex = Lexicon(surnames=frozenset({"남"}),
+                  suffix_words=frozenset({"남궁"}),
+                  honorific_tails=frozenset({"남궁"}))
+    assert _texts(_run("Anderson남궁", policy=_HANGUL,
+                       lexicon=lex)) == ["Anderson", "남궁"]
+
+
+def test_a_trailing_post_nominal_does_not_hide_the_peel_site() -> None:
+    # the site is the last token that is not ITSELF a post-nominal, so
+    # an unrelated trailing suffix cannot put the glued one out of
+    # reach -- "김민준씨 jr" must answer as "Dr 김민준씨, Jr." does
+    assert _texts(_run("김민준씨 jr", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["김", "민준", "씨", "jr"]
 
 
 def test_the_peel_only_looks_at_the_last_name_token() -> None:

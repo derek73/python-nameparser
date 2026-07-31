@@ -777,6 +777,15 @@ CASES: tuple[Case, ...] = (
          notes="no script precondition on the remainder -- the tail "
                "is the license. Japanese text about a foreigner, and "
                "the Latin remainder keeps the positional default"),
+    Case("latin_stem_glued_hangul_honorific", "Anderson선생님",
+         {"given": "Anderson", "suffix": "선생님"},
+         classification="fix(#308)",
+         notes="the hangul twin of latin_stem_glued_kana_honorific, "
+               "and the one that shows why a post-nominal is not a "
+               "surname site: 선 is a listed census surname, so the "
+               "peeled 선생님 would otherwise be split into 선 + 생님 "
+               "-- the stage dissecting the honorific it had just "
+               "manufactured"),
     Case("ko_glued_stack_peels_once", "김민준박사님",
          {"family": "김", "given": "민준박사", "suffix": "님"},
          classification="fix(#308)",
@@ -792,6 +801,14 @@ CASES: tuple[Case, ...] = (
                "nothing to peel off. Classified to #271 because that "
                "is what moves the lone token from first to family; "
                "the row exists for the guard"),
+    Case("ko_honorific_token_alone_stays_whole", "선생님",
+         {"family": "선생님"},
+         classification="fix(#308)",
+         notes="a lone honorific is not a name to be taken apart: it "
+               "is not a peel site (every tail is a suffix word) and "
+               "not a surname site, though 선 is listed and the "
+               "default segmentation split it 선 + 생님 before this "
+               "change"),
     Case("ja_glued_tail_alone_never_peels", "さん",
          {"family": "さん"},
          classification="fix(#272)",
@@ -853,6 +870,14 @@ CASES: tuple[Case, ...] = (
                "old boundary: 씨 peels off the last token first, and "
                "the remainder 김민준 then segments as usual -- peel "
                "and split compose, in that order"),
+    Case("ko_honorific_glued_given_trailing_suffix", "김민준씨 Jr.",
+         {"family": "김", "given": "민준", "suffix": "씨, Jr."},
+         classification="fix(#308)",
+         notes="the peel site is the last token that is not itself a "
+               "post-nominal, so an unrelated trailing suffix cannot "
+               "hide it -- this now agrees with the comma-written "
+               "'Dr 김민준씨, Jr.', where the suffix comma had "
+               "already put 씨 within reach"),
     Case("zh_honorific_glued_surname", "王先生",
          {"family": "王", "suffix": "先生"},
          locale="zh",

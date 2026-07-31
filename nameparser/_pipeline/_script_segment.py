@@ -18,13 +18,15 @@ nothing -- spans still index the original exactly, so the anti-#100
 invariant holds by construction.
 
 A second, independent split runs first (#308): a listed honorific
-glued to the END of the name part's last token is peeled off as its
-own token -- 田中さん -> 田中 + さん -- so that suffix classification
-can claim it and the surname match or segmenter consult below sees the
-name rather than the name plus an honorific. It is gated by the
-structural opt-outs (comma, 间隔号) but NOT by segment_scripts: the
-vocabulary of tails is licensed by the entries themselves, each of
-which can never end a name, so no per-script trust question arises.
+glued to the END of the name part's last non-post-nominal token is
+peeled off as its own token -- 田中さん -> 田中 + さん -- so that
+suffix classification can claim it and the surname match or segmenter
+consult below sees the name rather than the name plus an honorific. It
+is gated by the FAMILY comma and by 间隔号 but NOT by segment_scripts:
+the vocabulary of tails is licensed by the entries themselves, each of
+which can never end a name, so no per-script trust question arises. A
+suffix comma does not gate it -- "Dr 김민준씨, Jr." peels within its
+name part like any other.
 
 Where the VOCABULARY declines -- no prefix matched -- an optional
 Parser(segmenter=...) gets the token (#272 amendment 2026-07-29).
@@ -83,7 +85,13 @@ they are predominantly transcribed foreign names) never do.
 Only the FIRST activated-script token is considered, match or no
 match: family-first traditions put the surname at the front of the
 name, and a match deeper in the token stream would be a given name or
-an ordinary word, not a surname site.
+an ordinary word, not a surname site. A token the vocabulary reads as
+a POST-NOMINAL is passed over rather than taken as that site, whoever
+wrote it: an honorific is not part of the name, so it cannot be the
+name's front. The peel above manufactures such a token and would
+otherwise have its own product dissected -- the 선생님 of Anderson선생님
+opens on the listed surname 선 -- and a spaced one was mis-split the
+same way before the peel existed ("Anderson 선생님").
 """
 from __future__ import annotations
 
@@ -93,7 +101,7 @@ import functools
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
 )
-from nameparser._pipeline._vocab import effective_script
+from nameparser._pipeline._vocab import effective_script, is_suffix_strict
 from nameparser._types import AmbiguityKind, Segmentation, Span
 
 #: Segmenter answers scoring below this attach a SEGMENTATION report
@@ -205,30 +213,58 @@ def _longest_entry(entries: frozenset[str]) -> int:
     return max(map(len, entries))
 
 
+def _is_post_nominal(state: ParseState, i: int) -> bool:
+    """Whether token `i` is vocabulary the parse will read as a
+    post-nominal. Two of this stage's decisions ask it and neither is
+    about script: an honorific is not part of the name, so it is
+    neither a surname SITE nor the token a glued honorific hangs off.
+    (#308; the segmenter's neighbour test joins them in the next
+    change, for the same reason.)"""
+    return is_suffix_strict(state.tokens[i].text, state.lexicon)
+
+
 def _peel_honorific_tail(state: ParseState) -> ParseState:
     """#308: split a listed honorific off the END of the name part's
-    last token -- 田中さん -> 田中 + さん -- and let the existing
-    machinery do the rest. Suffix classification claims the tail
-    downstream (every honorific_tails entry is a suffix word too,
-    enforced by Lexicon), and the segmentation half below then sees
-    the remainder rather than the glued whole, so 김민준씨 splits
+    last NON-POST-NOMINAL token -- 田中さん -> 田中 + さん -- and let
+    the existing machinery do the rest. Suffix classification claims
+    the tail downstream (every honorific_tails entry is a suffix word
+    too, enforced by Lexicon), and the segmentation half below then
+    sees the remainder rather than the glued whole, so 김민준씨 splits
     김 + 민준 and a configured segmenter is handed 山田太郎 rather
     than 山田太郎様.
 
-    Longest-first, and capped so the remainder is never empty: a token
-    that IS a tail (씨, さん) has nothing to peel off and stays whole
-    -- the analogue of the `text in surnames` guard below. ONE peel,
-    never recursive: 김민준박사님 gives up its 님 and keeps its glued
-    박사, though 박사 is itself a listed tail, which is accepted
-    rather than chased. No script precondition on the remainder
-    either, since the tail alone is the license: Andersonさん peels.
+    Scanning back over post-nominals rather than taking the last token
+    outright does three things at once. An unrelated trailing suffix
+    cannot hide the peel site, so "김민준씨 Jr." answers as the
+    comma-written "Dr 김민준씨, Jr." does -- one name, two spellings,
+    one parse. A token that IS a tail (씨, さん, and the nested 선생님,
+    which the cap alone would peel to 선생 + 님) is skipped as a site
+    and stays whole: every tail is a suffix word by the Lexicon
+    invariant, which is what makes that guard hold, and the cap below
+    only keeps the offset interior for _split. And segments[0] is
+    reachable while empty -- a leading comma yields one -- so the scan
+    that returns None where the outright index would raise removes an
+    unpinned reliance on the FAMILY_COMMA gate landing first.
 
-    Emits no ambiguity, on the 〆 and 间隔号 rule -- vocabulary plus
-    orthography decided this, nothing was chosen between."""
+    Longest-first. ONE peel, never recursive: 김민준박사님 gives up
+    its 님 and keeps its glued 박사, though 박사 is itself a listed
+    tail, which is accepted rather than chased. No script precondition
+    on the remainder either, since the tail alone is the license:
+    Andersonさん peels.
+
+    Emits no ambiguity, unlike the surname fork below, though
+    longest-first does CHOOSE here too -- 김선생님 gives 선생님 where
+    님 also matches. The difference is what the runner-up is: a second
+    matching surname is a competing READING of the name, which a
+    caller may prefer, while a shorter tail leaves a remainder that is
+    not a name at all (김선생), so there is nothing to adjudicate."""
     tails = state.lexicon.honorific_tails
     if not tails:
         return state
-    i = state.segments[0][-1]
+    i = next((j for j in reversed(state.segments[0])
+              if not _is_post_nominal(state, j)), None)
+    if i is None:
+        return state
     text = state.tokens[i].text
     # range/cap construction identical to the surname match below, and
     # for the same two reasons: longest-first, and a len-1 cap that
@@ -261,10 +297,11 @@ def script_segment(state: ParseState) -> ParseState:
         # one stays whole.
         return state
     # #308: the honorific peel runs after the structural gates above
-    # (a comma-divided or dot-divided name opts out of this stage
-    # whole) but BEFORE the activation gate below, and independently
-    # of it -- 田中さん must peel under the DEFAULT policy, where HAN
-    # is in no activation set. The activation gate is about which
+    # (a FAMILY-comma or dot-divided name opts out of this stage
+    # whole; a suffix comma does not -- its name part still peels)
+    # but BEFORE the activation gate below, and independently of it --
+    # 田中さん must peel under the DEFAULT policy, where HAN is in no
+    # activation set. The activation gate is about which
     # scripts a SURNAME VOCABULARY may be trusted to divide; the peel
     # asks nothing of the remainder, only whether the token ends in a
     # word that can never end a name.
@@ -279,7 +316,8 @@ def script_segment(state: ParseState) -> ParseState:
     # extracted nickname/maiden content is unreachable from here --
     # no input can produce it, so no test pins it.
     i = next((i for i in state.segments[0]
-              if effective_script(state.tokens[i].text) in scripts), None)
+              if effective_script(state.tokens[i].text) in scripts
+              and not _is_post_nominal(state, i)), None)
     if i is None:
         return state
     token = state.tokens[i]
