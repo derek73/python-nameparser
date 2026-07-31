@@ -485,16 +485,27 @@ def test_ja_divides_a_glued_name_carrying_an_honorific() -> None:
 
 @_needs_ja
 def test_ja_does_not_divide_a_spaced_surname_under_an_honorific() -> None:
-    # The writer drew this boundary: 佐藤 is a unit, and the
-    # honorific beside it says nothing about where 佐藤 divides.
-    # Only a tail this stage MANUFACTURED is exempt from the
-    # neighbour test -- a glued honorific means no boundary was
-    # drawn anywhere, a spaced one means one was.
+    # A spaced honorific is a neighbour, and the segmenter is asked
+    # only where an UNDIVIDED name divides, so it is never consulted
+    # here. Only a tail this stage MANUFACTURED is exempt -- a glued
+    # honorific means no boundary was typed anywhere, a spaced one
+    # means one was, and by position a spaced honorific cannot be told
+    # apart from a spaced name element besides.
+    # The bare control is what makes any of that load-bearing: without
+    # it the assertions pass vacuously, for any reason at all that the
+    # segmenter went unconsulted. Each family name here DOES divide
+    # standing alone, so the honorific is what stopped it -- and these
+    # four are the measured price of counting spaced honorifics, paid
+    # to decline the one division 山田太郎 様 (the test above).
     p = _PACKED["ja"]
-    for name, family in (("佐藤 氏", "佐藤"), ("田中 様", "田中"),
-                         ("鈴木 先生", "鈴木")):
+    for name, family, divided in (("佐藤 氏", "佐藤", ("佐", "藤")),
+                                  ("田中 様", "田中", ("田", "中")),
+                                  ("鈴木 先生", "鈴木", ("鈴", "木")),
+                                  ("中村 教授", "中村", ("中", "村"))):
         n = p.parse(name)
         assert (n.family, n.given) == (family, ""), name
+        bare = p.parse(family)
+        assert (bare.family, bare.given) == divided, family
 
 
 @_needs_ja
