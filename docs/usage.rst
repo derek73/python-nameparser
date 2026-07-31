@@ -308,11 +308,17 @@ has already said where the family name ends, so nothing is peeled and
 the family name is the whole ``田中さん``. A 间隔号-divided
 transcription opts out for its own reason, the same way.
 
-Splitting a name is where the two spellings part company. A spaced
-honorific stands beside a name its writer chose to write as one unit,
-and that unit is left alone: under the Japanese pack ``佐藤 氏`` keeps
-family 佐藤, where bare ``佐藤`` would have been divided 佐 + 藤. A
-glued honorific says nothing of the kind — its writer drew no boundary
+Where a segmenter divides the name, the two spellings part company. A
+spaced honorific is a token boundary the writer typed, and the
+segmenter is asked only where an undivided name divides — so anything
+standing beside the name calls it off, honorific or not: under the
+Japanese pack ``佐藤 氏`` keeps family 佐藤, where bare ``佐藤`` would
+have been divided 佐 + 藤. That is a conservative reading rather than
+a principled one; a spaced honorific cannot be told apart from a
+spaced given name by position, and treating it as one keeps four real
+surnames whole (``佐藤 氏``, ``田中 様``, ``鈴木 先生``, ``中村 教授``)
+at the price of one division it declines to make (``山田太郎 様``). A
+glued honorific carries no boundary at all — its writer drew none
 anywhere — so ``田中さん`` divides the way bare ``田中`` does, into
 family 田 and given 中, with さん in ``suffix``. Writing the honorific
 spaced is therefore also how you ask for a family name to be kept

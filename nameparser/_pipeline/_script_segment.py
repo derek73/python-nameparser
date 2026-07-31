@@ -54,9 +54,15 @@ test is reached). The neighbour test reads effective_script -- merely
 non-None -- and exempts exactly one token: the tail the peel above
 MANUFACTURED (#308), which is a boundary nobody drew. A SPACED
 honorific is not exempt, and the distinction is provenance rather
-than vocabulary: glued 山田太郎様 was written undivided, while whoever
-wrote "佐藤 氏" drew that boundary and wrote 佐藤 as a unit beside it,
-so 佐藤 stays whole. A segmenter's own exceptions
+than vocabulary: glued 山田太郎様 was written undivided, while "佐藤
+氏" carries a boundary its writer typed. Not that the writer thereby
+declared 佐藤 a unit -- in "山田太郎 様" the unit they drew is the
+whole name -- but that at this position a spaced honorific cannot be
+told apart from a spaced name ELEMENT, so the precondition counts it
+rather than guess. The trade that buys is measured: counting spaced
+honorifics keeps four real surnames whole (佐藤 氏, 田中 様, 鈴木
+先生, 中村 教授, all four divided bare under the JA pack) and costs
+the one division 山田太郎 様. A segmenter's own exceptions
 PROPAGATE -- the single declared exception to parse totality (locales
 spec section 4): a user-supplied callable's error is a user-code
 error, not a content error.
@@ -491,12 +497,20 @@ def script_segment(state: ParseState) -> ParseState:
     # MANUFACTURED (#308): a glued 山田太郎様 has no writer-drawn
     # boundary anywhere, so the 様 the peel just cut off cannot be read
     # as one -- the precondition must see what the writer wrote, which
-    # was a single undivided token. A SPACED 様 is the opposite case
-    # and does count: its writer drew that boundary and chose to write
-    # 山田太郎 as a unit, so "佐藤 氏" leaves 佐藤 whole rather than
-    # dividing it into 佐 + 藤. Provenance, not vocabulary: the two
-    # spellings put the same word in the same place, and asking the
-    # suffix set instead cannot separate them.
+    # was a single undivided token. A SPACED 様 does count, and the
+    # reason is weaker than "its writer drew that boundary and chose
+    # to write 山田太郎 as a unit": in "山田太郎 様" the unit the writer
+    # drew is the WHOLE NAME, honorific and all, so that story is false
+    # for the very input it describes. What the code relies on is that
+    # by POSITION a spaced honorific is indistinguishable from a spaced
+    # name element, so the test conservatively counts it. Measured, the
+    # trade is worth it: counting them keeps 佐藤 氏, 田中 様, 鈴木 先生
+    # and 中村 教授 whole -- all four divide bare under the JA pack (佐
+    # + 藤, 田 + 中, 鈴 + 木, 中 + 村) -- and costs the single division
+    # 山田太郎 様. Four real surnames against one.
+    # Provenance, not vocabulary: the two spellings put the same word
+    # in the same place, and asking the suffix set instead cannot
+    # separate them.
     if any(j != i and effective_script(state.tokens[j].text) is not None
            and _PEELED_TAG not in state.tokens[j].tags
            for j in state.segments[0]):
