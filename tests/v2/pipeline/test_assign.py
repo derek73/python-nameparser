@@ -210,6 +210,24 @@ def test_pure_katakana_piece_falls_back_to_name_order() -> None:
     assert _by_role(out, Role.FAMILY) == "ジャクソン"
 
 
+def test_interpunct_divided_name_reads_positionally() -> None:
+    # 威廉·莎士比亚 is William Shakespeare: a 间隔号-divided name is a
+    # transcription and keeps source order (spec 2026-07-30) -- the
+    # B7 is the marker, playing the role pure katakana plays in the
+    # kana license
+    out = _assigned("威廉·莎士比亚")
+    assert _by_role(out, Role.GIVEN) == "威廉"
+    assert _by_role(out, Role.FAMILY) == "莎士比亚"
+
+
+def test_interpunct_suppression_yields_to_explicit_name_order() -> None:
+    # the suppression falls back to name_order, it does not force
+    # given-first: an explicit FAMILY_FIRST governs the transcription
+    out = _assigned("威廉·莎士比亚", Policy(name_order=FAMILY_FIRST))
+    assert _by_role(out, Role.FAMILY) == "威廉"
+    assert _by_role(out, Role.GIVEN) == "莎士比亚"
+
+
 def test_script_with_no_table_entry_falls_back() -> None:
     # A single, well-defined script the table simply does not list:
     # resolution must fall through to name_order rather than pick an

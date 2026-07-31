@@ -7,7 +7,7 @@
 # ahead of `fields`-only ones before matching.
 
 [[change]]
-issue = "fix(#271/#272) native-script CJK: family-first order, hangul segmentation, the kana license and the nakaguro"
+issue = "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots"
 # '毛 泽东', '김민준': script_orders flips first/last for a name written
 # wholly in Han or Hangul, and the Korean surnames that now ship as
 # default vocabulary additionally split an unspaced hangul token into
@@ -33,16 +33,22 @@ issue = "fix(#271/#272) native-script CJK: family-first order, hangul segmentati
 # modern name uses, so _SCRIPT_RANGES does not list it either.
 #
 # U+FF65 is the one span here that _SCRIPT_RANGES does NOT have, and
-# it is deliberate: the halfwidth middle dot separates tokens like its
-# fullwidth twin, so 'ﾏｲｹﾙ･ｼﾞｬｸｿﾝ' splits where 1.4 left one token,
-# but halfwidth kana is excluded from CLASSIFICATION on purpose (a
-# separate normalization problem). The rest of the halfwidth block
-# (U+FF66-U+FF9F) is left out for the usual tightness reason, and it
-# was measured rather than assumed: a dotless halfwidth name such as
-# 'ﾏｲｹﾙ ｼﾞｬｸｿﾝ' is byte-identical on both sides, so covering the
-# block would pre-excuse a future regression on a shape that is
-# parity today. The dot is the whole mechanism; the dot is the whole
-# span.
+# it is deliberate. The halfwidth middle dot separates tokens like
+# its fullwidth twin, so 'ﾏｲｹﾙ･ｼﾞｬｸｿﾝ' splits where 1.4 left one
+# token, but halfwidth kana is excluded from CLASSIFICATION on
+# purpose (a separate normalization problem). The rest of the
+# halfwidth block (U+FF66-U+FF9F) is left out for the usual tightness
+# reason, and it was measured rather than assumed: a dotless
+# halfwidth name such as 'ﾏｲｹﾙ ｼﾞｬｸｿﾝ' is byte-identical on both
+# sides, so covering the block would pre-excuse a future regression
+# on a shape that is parity today. U+00B7, the context-sensitive
+# 间隔号 (#298), deliberately gets NO span even though it too changes
+# parses: its flank guard divides only between classified-script
+# characters, so every name it can change already matches this class
+# through a flanking character -- and a B7 span's only actual effect
+# would be letting this rule claim first/middle/last diffs on
+# punt-volat Latin names ('Gal·la Marcet'), pre-excusing a regression
+# on exactly the input class the guard exists to protect.
 #
 # corpus_cjk.jsonl (#295) exists so this rule fires in every real
 # run: build_cjk_corpus.py harvests every CJK-bearing text in
@@ -151,6 +157,25 @@ issue = "fix(cjk-delimited-nickname) delimiter recognition compounds with the CJ
 # by those substrings and asserts it is unique.
 name_regex = "(?s)(?=.*[「」『』・･])(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
 fields = ["first", "last", "nickname"]
+
+[[change]]
+issue = "fix(cjk-comma-compound) comma routing compounds with the CJK order flip"
+# '威廉·莎士比亚, PhD': one name, two intended changes at once -- the
+# post-comma lone-piece routing (fix(comma-family): v1 read PhD as
+# title; 2.x routes it to suffix) and the CJK source-order/family-
+# first movement in first/middle/last on the pre-comma name. Neither
+# single-change rule may claim the union: comma-family's fields
+# exclude last, the CJK rule's exclude title/suffix -- each on
+# purpose, so a lone regression in the other's fields stays loud.
+# Both lookaheads are required, by the same reasoning as the
+# delimiter compound above: a comma alone matches every Latin
+# 'Smith, Jr.' in the corpus, and the classified-codepoint lookahead
+# confines the rule to names the CJK behaviors can actually reach.
+# The class is the same hand copy of _SCRIPT_RANGES the rules above
+# carry, pinned by the same sync test. The slug avoids the literal
+# #271/#272 substrings the canonical-rule pin selects by.
+name_regex = "(?s)(?=.*,)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
+fields = ["first", "middle", "last", "title", "suffix"]
 
 [[change]]
 issue = "feat(#269) non-Latin titles/conjunctions recognized"

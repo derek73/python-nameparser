@@ -3,7 +3,8 @@
 Consumes: original, masked (regions to skip), extracted (regions that
 tokenize with a pre-set role).
 Produces: tokens (span-sorted WorkTokens; text always == original
-slice), comma_offsets (segmentation points; never tokens).
+slice), comma_offsets (segmentation points; never tokens),
+interpunct_offsets (间隔号 transcription markers, #298; never tokens).
 Reads: Policy.strip_emoji, Policy.strip_bidi.
 
 There is NO text-rewriting normalize stage: whitespace collapsing,
@@ -12,7 +13,8 @@ character-classification rules here -- ignorable characters act as
 separators and never enter a token, so spans always index the
 original exactly as given. Whitespace and the name-dot are
 unconditional; emoji/bidi stripping alone is policy-gated
-(Policy.strip_emoji/strip_bidi).
+(Policy.strip_emoji/strip_bidi). The Chinese interpunct U+00B7 is
+context-sensitive -- see _INTERPUNCT below.
 
 v1's squash_emoji/squash_bidi REMOVED the char and joined neighbors
 ('A\U0001f600B' -> 'AB'); here an ignorable char is a SEPARATOR
@@ -28,6 +30,7 @@ import re
 from nameparser._pipeline._state import (
     COMMA_CHARS, ParseState, WorkToken,
 )
+from nameparser._policy import Policy, _SCRIPT_RANGES, _script_matcher
 from nameparser._types import Role, Span
 
 # Ported from v1 (nameparser/config/regexes.py, "emoji" and "bidi") --
@@ -44,14 +47,52 @@ _BIDI = re.compile('[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]+')
 # The katakana middle dot and its halfwidth twin divide the parts of
 # a foreign name transcribed into katakana (マイケル・ジャクソン) --
 # native names never contain them, so they separate unconditionally,
-# like whitespace (amendment 2026-07-29 section 1b). The Chinese
-# interpunct U+00B7 (威廉·莎士比亚) is deliberately NOT here: it is
-# also the Catalan punt volat, which sits INSIDE a single name piece
-# (Gal·la), so separating on it unconditionally would break names it
-# has no business touching. Admitting it would need a flanked-by-CJK
-# guard, which is a different rule from this set's "these codepoints
-# are always separators".
+# like whitespace (amendment 2026-07-29 section 1b). They record no
+# offset: the nakaguro also divides kanji roster pairs (高橋・一郎,
+# 姓・名 -- read family-first by the script license, #272), so it is
+# not a transcription marker. Only the Chinese 间隔号 is (#298), and
+# it is context-sensitive -- see _INTERPUNCT below.
 _NAME_DOT_SEPARATORS = frozenset({"\u30FB", "\uFF65"})
+
+_INTERPUNCT = "\u00B7"
+# Per-CHAR classifier for the interpunct's flank guard: a one-char
+# string is wholly-classified iff the character is. U+00B7 cannot be
+# an unconditional separator like the name dots above -- it is also
+# the Catalan punt volat, INTERIOR to legitimate names (Gal\u00B7la) -- so
+# it divides only between classified-script characters: the first
+# context-sensitive separator rule, which is why it lives in
+# _tokenize_region (where the index exists) and not in _ignorable.
+_classified_char = _script_matcher(*_SCRIPT_RANGES, whole=True)
+
+
+def _is_emoji(ch: str) -> bool:
+    cp = ord(ch)
+    return any(lo <= cp <= hi for lo, hi in _EMOJI_RANGES)
+
+
+def _stripped(ch: str, policy: Policy) -> bool:
+    """True when the strip policy removes `ch` from the token stream.
+    The ONE definition of that set, shared by _ignorable and _flank: a
+    character that vanishes from tokens must not occupy a flank
+    position either, so a new strip class added here stays transparent
+    to the interpunct guard by construction."""
+    if policy.strip_bidi and _BIDI.match(ch):
+        return True
+    return bool(policy.strip_emoji and _is_emoji(ch))
+
+
+def _flank(text: str, indices: range, policy: Policy) -> str | None:
+    """The nearest flank character the strip policy would keep, or
+    None if the range exhausts. Stripped invisibles are TRANSPARENT
+    here: an RTL document quoting a transcription puts U+200F beside
+    the dot in visually identical text. Whitespace and the other
+    separators stay guard-defeating: a dot beside a space is not
+    between characters."""
+    for i in indices:
+        ch = text[i]
+        if not _stripped(ch, policy):
+            return ch
+    return None
 
 
 def _ignorable(ch: str, state: ParseState) -> bool:
@@ -63,36 +104,49 @@ def _ignorable(ch: str, state: ParseState) -> bool:
         # skip the checks below for every ASCII letter
         return False
     # unconditional, like whitespace -- not policy-gated, so this sits
-    # ahead of the policy checks rather than in _tokenize_region beside
-    # COMMA_CHARS (commas RECORD an offset; these dots must not). The
-    # only load-bearing constraint is "after the isascii fast path"
-    # (both dots are non-ASCII); being ahead of the bidi/emoji checks
-    # below is NOT load-bearing -- the three sets are disjoint, so a
-    # future edit is free to reorder them.
+    # ahead of the policy check rather than in _tokenize_region beside
+    # COMMA_CHARS (commas RECORD an offset; these dots must not --
+    # only the 间隔号 marks a transcription and records, #298, see
+    # _NAME_DOT_SEPARATORS above). The only load-bearing constraint is
+    # "after the isascii fast path" (both dots are non-ASCII).
     if ch in _NAME_DOT_SEPARATORS:
         return True
-    if state.policy.strip_bidi and _BIDI.match(ch):
-        return True
-    if state.policy.strip_emoji:
-        cp = ord(ch)
-        return any(lo <= cp <= hi for lo, hi in _EMOJI_RANGES)
-    return False
+    return _stripped(ch, state.policy)
 
 
 def _tokenize_region(state: ParseState, start: int, end: int,
-                     role: Role | None, record_commas: bool,
-                     tokens: list[WorkToken], commas: list[int]) -> None:
+                     role: Role | None, record_offsets: bool,
+                     tokens: list[WorkToken], commas: list[int],
+                     interpuncts: list[int]) -> None:
     text = state.original
     tok_start: int | None = None
     for i in range(start, end):
         ch = text[i]
-        if ch in COMMA_CHARS or _ignorable(ch, state):
+        is_separator = ch in COMMA_CHARS or _ignorable(ch, state)
+        if ch == _INTERPUNCT:
+            # Region-local flanks: a B7 at a region edge stays token
+            # text, and the bound also stops a custom delimiter's
+            # classified edge character from acting as a flank across
+            # a mask seam. The scan reads raw text like segmentation
+            # matching does (#272's stance): NFD hangul degrades to
+            # no-split, never wrong-split -- classification
+            # NFC-normalizes but the guard does not.
+            left = _flank(text, range(i - 1, start - 1, -1),
+                          state.policy)
+            if left is not None and _classified_char(left):
+                right = _flank(text, range(i + 1, end), state.policy)
+                is_separator = (right is not None
+                                and _classified_char(right))
+        if is_separator:
             if tok_start is not None:
                 tokens.append(WorkToken(text[tok_start:i],
                                         Span(tok_start, i), role=role))
                 tok_start = None
-            if ch in COMMA_CHARS and record_commas:
-                commas.append(i)
+            if record_offsets:
+                if ch in COMMA_CHARS:
+                    commas.append(i)
+                elif ch == _INTERPUNCT:
+                    interpuncts.append(i)
             continue
         if tok_start is None:
             tok_start = i
@@ -104,17 +158,20 @@ def _tokenize_region(state: ParseState, start: int, end: int,
 def tokenize(state: ParseState) -> ParseState:
     tokens: list[WorkToken] = []
     commas: list[int] = []
+    interpuncts: list[int] = []
     # main stream: everything outside masked regions
     boundaries = [0]
     for m in state.masked:
         boundaries.extend((m.start, m.end))
     boundaries.append(len(state.original))
     for start, end in zip(boundaries[::2], boundaries[1::2]):
-        _tokenize_region(state, start, end, None, True, tokens, commas)
-    # extracted regions: pre-set role, commas are mere separators
+        _tokenize_region(state, start, end, None, True, tokens, commas,
+                         interpuncts)
+    # extracted regions: pre-set role, commas and interpuncts are mere
+    # separators
     for role, inner in state.extracted:
         _tokenize_region(state, inner.start, inner.end, role, False,
-                         tokens, commas)
+                         tokens, commas, interpuncts)
     tokens.sort(key=lambda t: t.span)
     # extract_delimited runs before tokens exist, so its ambiguities
     # carry a character offset instead of an index. Resolve them now
@@ -147,4 +204,5 @@ def tokenize(state: ParseState) -> ParseState:
             for a in ambiguities)
     return dataclasses.replace(state, tokens=tuple(tokens),
                                comma_offsets=tuple(sorted(commas)),
+                               interpunct_offsets=tuple(sorted(interpuncts)),
                                ambiguities=ambiguities)

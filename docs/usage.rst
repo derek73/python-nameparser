@@ -188,6 +188,24 @@ language is up to you. When you know the data is Chinese, apply the
     >>> parser_for(locales.ZH).parse("毛泽东").family
     '毛'
 
+Chinese also has a transcription convention, and it is written in the
+punctuation: a foreign name transcribed into Han characters keeps its
+source order and divides its parts with the 间隔号, the interpunct
+``·`` (U+00B7) — 威廉·莎士比亚 is William Shakespeare, given name
+first. The dot itself is the marker, so nameparser reads U+00B7 as a
+token separator when it sits between classified-script characters
+(each side judged on its own — a hangul character beside a Han one
+qualifies), and a dot anywhere in the name reads the whole name as a
+transcription listing: it keeps the order it was written in and is
+never segmented — the role pure katakana plays for Japanese
+transcriptions, played here by the divider instead of the script.
+Because only classified characters on both sides make it a divider,
+the same codepoint interior to a Latin-script name — the Catalan punt
+volat in ``Gal·la`` — is untouched, and a dot with a classified
+character on just one side (``王·Smith``) stays part of the word
+undivided. The Japanese middle dot ・ (covered next) is a different
+mark carrying a different convention, and keeps its own reading.
+
 Japanese
 ~~~~~~~~~
 
@@ -266,8 +284,15 @@ positional rules — order genuinely varies in romanized data, so
 nothing script-based applies. A name written wholly in katakana stays
 positional for the reason given above, pack or no pack: it is
 predominantly a transcription, and a transcription is already in the
-order it should be read in. And a comma disables the script behaviors
-entirely, on the reasoning ``name_order`` already follows: whoever
+order it should be read in. A Han transcription written with a space
+instead of the 间隔号 (威廉 莎士比亚) carries nothing to distinguish it
+from a native two-token name and keeps the family-first reading — the
+dot is the marker, and without it there is no signal. The same holds
+for a transcription typed with the Japanese middle dot (威廉・莎士比亚):
+each dot carries its own script's convention, the nakaguro's is
+Japanese roster formatting rather than transcription, so only the
+Chinese dot rescues the source order. And a comma disables the script
+behaviors entirely, on the reasoning ``name_order`` already follows: whoever
 wrote the comma has already said where the family name ends.
 
 A division the parser had to choose is reported rather than hidden.

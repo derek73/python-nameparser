@@ -1,6 +1,6 @@
 """Stage: script_segment (#271, #272).
 
-Consumes: tokens, segments, structure, segmenter.
+Consumes: tokens, segments, structure, interpunct_offsets, segmenter.
 Produces: tokens (the first activated-script token of the name
 segment split into n+1 sub-slices), segments (index runs remapped past
 the insertions), ambiguities (indices likewise remapped, plus a
@@ -207,6 +207,16 @@ def script_segment(state: ParseState) -> ParseState:
         return state
     if state.structure is Structure.FAMILY_COMMA:
         return state            # the comma already drew the boundary
+    if state.interpunct_offsets:
+        # #298: a 间隔号-divided name is a transcription -- its pieces
+        # are syllable groups, not surname+given, so neither the
+        # vocabulary nor the segmenter applies (codepoint-scoped: the
+        # nakaguro records nothing and gates nothing, spec decision 5).
+        # State-global like the FAMILY_COMMA gate above: a marker
+        # anywhere in the name reads the WHOLE name as a transcription
+        # listing, so even an un-dotted hangul token beside a dotted
+        # one stays whole.
+        return state
     # segments[0] is the NAME part under both remaining structures
     # (everything, under NO_COMMA); later segments are suffixes. Its
     # members are main-stream token indices by construction, so

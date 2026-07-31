@@ -66,7 +66,9 @@ class ParseState:
     """Carried through the stage fold. Frozen; stages return copies via
     dataclasses.replace. Fields are filled progressively:
     extract_delimited -> extracted/masked; tokenize -> tokens (span-
-    sorted)/comma_offsets; segment -> segments/structure;
+    sorted)/comma_offsets/interpunct_offsets (the 间隔号 offsets the
+    order and segmentation decisions consult, #298; the nakaguro
+    separators record NOTHING); segment -> segments/structure;
     script_segment -> tokens and segments again (the one stage that
     changes the token COUNT: an unspaced CJK token splits into n+1
     pieces, still as sub-slices of the original, and every later index
@@ -94,6 +96,7 @@ class ParseState:
     masked: tuple[Span, ...] = ()
     tokens: tuple[WorkToken, ...] = ()
     comma_offsets: tuple[int, ...] = ()
+    interpunct_offsets: tuple[int, ...] = ()
     segments: tuple[tuple[int, ...], ...] = ()
     structure: Structure = Structure.NO_COMMA
     # pieces[s][p] = run of token indices: piece p of segment s.

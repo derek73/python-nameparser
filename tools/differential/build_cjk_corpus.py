@@ -15,8 +15,9 @@ a zh-scoped row is simply one more CJK name to diff.
 Selection is by the shipped table (nameparser._policy._SCRIPT_RANGES,
 through the same _script_matcher the parser uses), so a script added
 to the table widens the harvest on the next regeneration, and a case
-row added for future CJK work (#298's 间隔号 forms, say) enters the
-corpus by being written down in the table everyone already reviews.
+row added for new CJK work enters the corpus by being written down in
+the table everyone already reviews (#298's 间隔号 forms arrived
+exactly this way).
 
 Regenerate after editing CJK case rows:
 
