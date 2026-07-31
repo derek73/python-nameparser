@@ -369,7 +369,11 @@ vocabulary is also the peel's off-switch —
 ``Lexicon.default().remove(honorific_tails={"さん"})`` leaves
 ``田中さん`` unsplit while the spaced ``田中 さん`` still reads ``さん``
 as a suffix. Dropping a word from a marker field alone orphans
-nothing, so that one needs no matching ``suffix_words`` edit.
+nothing, so that one needs no matching ``suffix_words`` edit. Emptying
+the field is also the way to opt out of what the peel *costs* a
+non-ASCII parse — an empty ``honorific_tails`` stops it at its first
+guard, whereas ``segment_scripts`` never gated it and so cannot turn it
+off.
 
 .. note::
 
