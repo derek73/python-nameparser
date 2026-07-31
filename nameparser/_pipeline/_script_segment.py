@@ -1,12 +1,15 @@
-"""Stage: script_segment (#271, #272).
+"""Stage: script_segment (#271, #272, #308).
 
 Consumes: tokens, segments, structure, interpunct_offsets, segmenter.
-Produces: tokens (the first activated-script token of the name
-segment split into n+1 sub-slices), segments (index runs remapped past
-the insertions), ambiguities (indices likewise remapped, plus a
+Produces: tokens, by two independent splits into sub-slices -- a
+listed honorific peeled off the END of the name part's last
+non-post-nominal token, and the first activated-script token of the
+name segment split into n+1 -- segments (index runs remapped past the
+insertions), ambiguities (indices likewise remapped, plus a
 SEGMENTATION report when more than one split was vocabulary-supported,
 or when a segmenter's answer scored under the confidence floor).
-Reads: Policy.segment_scripts, Lexicon.surnames, ParseState.segmenter.
+Reads: Policy.segment_scripts, Lexicon.surnames,
+Lexicon.honorific_tails, ParseState.segmenter.
 
 Unspaced CJK names give tokenize no separator to find, so this stage
 inserts the missing token boundary by vocabulary: the first token

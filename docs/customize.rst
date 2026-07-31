@@ -45,10 +45,14 @@ Removing works the same way, and drops the word from recognition:
 A few fields mark a subset of another — ``given_name_titles`` over
 ``titles``, ``particles_ambiguous`` over ``particles``,
 ``suffix_acronyms_ambiguous`` over ``suffix_acronyms``, and
-``honorific_tails`` over ``suffix_words``. Entries must
-appear in the base field too, so add to both and remove from the marker
-first; anything else raises ``ValueError`` naming the orphans rather
-than leaving a marker entry that no rule will ever consult.
+``honorific_tails`` over ``suffix_words``. Entries belong in the base
+field too, so add to both and remove from the marker first. The last
+three enforce that: anything else raises ``ValueError`` naming the
+orphans rather than leaving a marker entry that no rule will ever
+consult. ``given_name_titles`` is deliberately unchecked — a title run
+is matched as one space-joined string, so a legitimate entry like
+``"sir and dame"`` is no single word in ``titles`` — and an orphan
+there is inert rather than harmful.
 
 Turning title detection off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -353,10 +357,14 @@ deactivates every script at once, which also stops a parser consulting
 whatever segmenter it was given. The segmenter has an off-switch as
 well — ``Parser(segmenter=None)``, which is the default; see
 :ref:`segmenter-contract` for what one is expected to do with text it
-does not handle. One Japanese behavior is not a policy field at all:
-the katakana middle dot ・ separates tokens the way a space does,
-decided in tokenization, so it applies however these two fields are
-set.
+does not handle. Two behaviors are not policy fields at all, and apply
+however these two fields are set. The katakana middle dot ・ separates
+tokens the way a space does, decided in tokenization. And a listed CJK
+honorific glued to the end of a name token is split off it — ``田中さん``
+reads family ``田中`` with ``さん`` in ``suffix`` — because the tail
+vocabulary carries its own license rather than borrowing a script's:
+every entry is a word that can never end a name, so there is no
+per-script trust question for ``segment_scripts`` to answer.
 
 .. note::
 

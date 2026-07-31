@@ -853,12 +853,15 @@ CASES: tuple[Case, ...] = (
     Case("ko_honorific_glued_via_segmentation", "김씨",
          {"family": "김", "suffix": "씨"},
          classification="fix(#307)",
-         notes="glued hangul is reached ONLY in the surname+honorific "
-               "shape: default segmentation splits off the surname, "
-               "and the honorific is what remains -- a partial "
-               "delivery of #308 that falls out of stage order. A "
-               "glued honorific after a GIVEN name (김민준씨, the row "
-               "below) stays out of reach"),
+         notes="the one glued shape that was already reachable before "
+               "#308, which is why this row stays fix(#307) where its "
+               "neighbours are fix(#308): stage order alone delivered "
+               "it, since segmentation split 김 off the front and the "
+               "honorific was whatever remained. The peel now takes 씨 "
+               "off the END before segmentation is consulted, so the "
+               "route changed and these fields did not. The glued "
+               "shapes that needed the peel to be reached at all are "
+               "the rows around it (김민준씨 below)"),
     Case("ko_honorific_after_comma", "김민준, 씨",
          {"family": "김민준", "suffix": "씨"},
          classification="fix(#307)",
