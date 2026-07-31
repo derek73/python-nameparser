@@ -254,6 +254,15 @@ def _is_post_nominal(state: ParseState, i: int) -> bool:
     surname site reads a True as an ANSWER and declines, rather than as
     a token to step past.
 
+    STRICT, not lenient: the initial veto applies, so "V." is not a
+    post-nominal here though bare "v" is a suffix word. That agrees
+    with what classify does with the same token downstream -- "V." is
+    a middle initial -- and the difference is reachable under the
+    default lexicon: "田中さん V." stops its scan-back at the initial
+    and does not peel, while "田中さん II" steps over II and does.
+    Swapping in is_suffix_lenient fails no test; this clause is the
+    record instead.
+
     Suffixes only, deliberately. Should a CJK entry ever join titles,
     the surname site would want it excluded while the peel site must
     not: a title never trails, so widening the peel's scan-back would
@@ -284,6 +293,13 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     reachable while empty -- a leading comma yields one -- so the scan
     that returns None where the outright index would raise removes an
     unpinned reliance on the FAMILY_COMMA gate landing first.
+
+    WHICH run is scanned is a separate decision, and the one a reader
+    is likeliest to undo: segments[0], never state.tokens. The two
+    agree under NO_COMMA except where extract_delimited has already
+    claimed a token, which is still in the stream here with only its
+    role set -- so "김민준씨 (Jimmy)" is the input that tells them
+    apart. See the note above the segment lookup in script_segment.
 
     That last token is the last of the NAME PART, which under NO_COMMA
     reaches into a maiden clause: maiden tokens are still main-stream
@@ -386,8 +402,15 @@ def script_segment(state: ParseState) -> ParseState:
     # segments[0] is the NAME part under both remaining structures
     # (everything, under NO_COMMA); later segments are suffixes. Its
     # members are main-stream token indices by construction, so
-    # extracted nickname/maiden content is unreachable from here --
-    # no input can produce it, so no test pins it.
+    # extracted nickname/maiden content is unreachable from here.
+    # For the surname site that is merely tidy -- the first
+    # script-written token is the same either way. For the PEEL above
+    # it is load-bearing, and iterating state.tokens instead is a
+    # silent regression rather than a refactor: extracted content is
+    # still IN the token stream at this stage (only its role is set),
+    # so "김민준씨 (Jimmy)" would give the scan-back Jimmy as its site,
+    # which is no post-nominal to step over and ends in no tail, and
+    # the peel would be lost. Pinned by the case row of that name.
     i = next((i for i in state.segments[0]
               if effective_script(state.tokens[i].text) in scripts), None)
     # A post-nominal in the surname's own position is not a site to

@@ -608,3 +608,23 @@ def test_default_lexicon_honorific_tails_are_all_suffix_words() -> None:
     # not a content pin.
     d = Lexicon.default()
     assert d.honorific_tails <= d.suffix_words
+
+
+def test_removing_a_honorific_tail_is_the_peels_off_switch() -> None:
+    # The off-switch docs/customize.rst documents, at parse level:
+    # dropping a tail leaves the glued name unsplit while the SPACED
+    # spelling still routes the honorific, since suffix_words is a
+    # separate field and only the peel consults honorific_tails.
+    # honorific_tails is the one marker field a caller can empty
+    # without a matching base edit -- an orphan is what raises, and a
+    # removal cannot make one.
+    lex = Lexicon.default().remove(honorific_tails={"さん"})
+    p = Parser(lexicon=lex)
+    glued = p.parse("田中さん")
+    assert (glued.family, glued.suffix) == ("田中さん", "")
+    spaced = p.parse("田中 さん")
+    assert (spaced.family, spaced.suffix) == ("田中", "さん")
+    # the baseline the removal is against, so the test cannot pass by
+    # the peel being broken outright
+    on = Parser().parse("田中さん")
+    assert (on.family, on.suffix) == ("田中", "さん")

@@ -914,6 +914,32 @@ CASES: tuple[Case, ...] = (
                "ko_honorific_glued_given_trailing_suffix, whose "
                "comma-less spelling of the same name reaches the same "
                "answer by the scan-back instead"),
+    Case("ko_honorific_glued_given_nickname", "김민준씨 (Jimmy)",
+         {"family": "김", "given": "민준", "suffix": "씨",
+          "nickname": "Jimmy"},
+         classification="fix(#308)",
+         notes="the other half of indexing the NAME part: extracted "
+               "content is still in the token stream at this stage but "
+               "NOT in segments[0], so the scan-back never reaches "
+               "Jimmy. Scanning the tokens instead would take Jimmy as "
+               "the site -- it is no post-nominal -- and lose the peel "
+               "entirely, with 씨 back in the given name. Nothing else "
+               "pins that choice: under NO_COMMA the two are otherwise "
+               "the same run"),
+    Case("ko_honorific_glued_family_comma", "田中さん, PhD",
+         {"family": "田中さん", "title": "PhD"},
+         classification="fix(#271)",
+         notes="the comma doctrine outranks the peel, and this is "
+               "where a reader meets that boundary: a one-word name "
+               "part before a comma is FAMILY_COMMA, which opts the "
+               "whole stage out, so 田中さん stays whole where the "
+               "comma-less 田中さん PhD gives family 田中 and suffix "
+               "'さん, PhD'. Deliberate -- whoever wrote the comma "
+               "already said where the family name ends -- and the "
+               "one spelling disagreement #308 does not remove, unlike "
+               "the 김민준씨 Jr. pair above. Classified to #271, not "
+               "#308: the fields here are the CJK order flip's, and "
+               "the peel never fires on this input"),
     Case("zh_honorific_glued_surname", "王先生",
          {"family": "王", "suffix": "先生"},
          locale="zh",
