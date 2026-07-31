@@ -227,9 +227,12 @@ def _longest_entry(entries: frozenset[str]) -> int:
     cannot carry a cached_property of its own). The frozenset is
     hashable and a process holds only a handful of distinct
     vocabularies -- the default one, plus one per constructed pack
-    parser, times the two FIELDS that call this (surnames and
-    honorific_tails) -- so maxsize=16 bounds pathological many-lexicon
-    churn without ever evicting in normal use.
+    parser -- so maxsize=16 bounds pathological many-lexicon churn
+    without ever evicting in normal use. Keyed by the frozenset VALUE,
+    not by (lexicon, field): the two callers pass surnames and
+    honorific_tails, but every lexicon that leaves KOREAN_SURNAMES
+    alone shares one entry, so the count is distinct SETS rather than
+    lexicons times fields.
 
     Callers must pass a NON-EMPTY vocabulary: max() of an empty set
     raises, and both call sites sit under a match guard that cannot
@@ -287,9 +290,18 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     here (extract_delimited has masked only bracketed content), so
     "김민준 née 박씨" peels 씨 off the MAIDEN name 박씨 and hands it to
     the person's suffix list -- "née Ms. Park". Intended rather than
-    incidental: the honorific is the reader's regardless of which of
-    her names it was glued to, and a name-part-final honorific is
-    exactly what this peels.
+    incidental in that direction: the honorific is the reader's
+    regardless of which of her names it was glued to, and a
+    name-part-final honorific is exactly what this peels.
+
+    The other direction is a LIMIT, stated rather than fixed: a maiden
+    clause pushes the site off the person's own name, so "김민준씨 née
+    박" does NOT peel and gives given "민준씨" -- the original bug,
+    intact behind a marker. "김민준씨 née 박씨" shows both at once, two
+    identical honorifics of which only the maiden's is routed. Chasing
+    the marker into the site scan is scope creep for an uncommon input,
+    and it could not be done here anyway: classify has not run, so the
+    marker tokens carry no tag this stage could read.
 
     Longest-first. ONE peel, never recursive: 김민준박사님 gives up
     its 님 and keeps its glued 박사, though 박사 is itself a listed
@@ -336,7 +348,12 @@ def script_segment(state: ParseState) -> ParseState:
     if state.original.isascii():
         # spans index the original exactly (the anti-#100 invariant),
         # so an ASCII original has only ASCII tokens: nothing here is
-        # in any script's ranges
+        # in any script's ranges. It also short-circuits the PEEL,
+        # which has no script gate of its own -- so a caller-configured
+        # ASCII tail never fires, and one non-ASCII character anywhere
+        # in the name switches it on. Correct for the CJK vocabulary
+        # that ships, stated because honorific_tails is public: see
+        # that field's own note.
         return state
     if not state.segments:
         return state

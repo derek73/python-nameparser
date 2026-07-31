@@ -110,8 +110,12 @@ GLUED_HONORIFICS = {
     # never end one belong here.
     # kana -- name-final never, in any of the four, and the kana/kanji
     # split is itself a vetting result: くん ships where 君 cannot,
-    # since 王君 is a complete Chinese name while hiragana spells no
-    # name character at all.
+    # since 王君 is a complete Chinese name while the hiragana spelling
+    # is unavailable to Chinese at all. Scoped to Chinese on purpose --
+    # hiragana of course spells Japanese GIVEN names (高橋みなみ is one,
+    # pinned in the case table), which is why the four entries above
+    # are vetted one at a time as never name-FINAL rather than waved
+    # through as kana.
     'さん', 'さま', 'くん', 'ちゃん',
     # Han -- two-character honorifics with no name-final reading in
     # either language, plus 様. 殿 is deliberately absent though it
@@ -130,7 +134,7 @@ GLUED_HONORIFICS = {
 The subset of :data:`SUFFIX_NOT_ACRONYMS` a name token may end WITH, peeled
 off as its own token before segmentation (#308). Deliberately harsher than
 the spaced set, because a glued tail has no writer-drawn token boundary to
-lean on -- these entries ship spaced only:
+lean on -- these entries are recognized in the SPACED position only:
 
 * 양, 군 -- 김지양 and 김지군 are given names ending in these syllables, and
   양 is a top-tier surname besides.
@@ -140,11 +144,12 @@ lean on -- these entries ship spaced only:
   (Madono) with four-figure populations, so peeling it would cut a real
   family name in two. Spaced 殿 is safe for the reason 양/군 are: a
   殿-surnamed person's name LEADS, and the suffix gate is trailing-only.
-* bare 선생, 교수 -- read as common nouns; only the -님 forms ship at all.
 
-君 is in NEITHER set: 王君 is a complete Chinese name (君 is a common
-given-name final), so the honorific reading never gets the benefit of the
-doubt -- while its kana spelling くん ships glued, above.
+Two more are in NEITHER set, so neither spelling is recognized. 君: 王君 is
+a complete Chinese name (君 is a common given-name final), so the honorific
+reading never gets the benefit of the doubt -- while its kana spelling くん
+ships glued, above. Bare 선생 and 교수: they read as common nouns as readily
+as address terms, and only their -님 forms ship.
 
 """
 SUFFIX_ACRONYMS_AMBIGUOUS = {
