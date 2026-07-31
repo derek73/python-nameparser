@@ -36,6 +36,36 @@ SUFFIX_NOT_ACRONYMS = {
     'ז״ל',      # same, U+05F4 gershayim
     'שליט"א',   # honorific for a living rabbi, ASCII quote
     'שליט״א',   # same, U+05F4 gershayim
+
+    # #307: CJK postnominal honorifics and degrees, whole-token
+    # matched. That reaches the spaced forms directly -- and glued
+    # HANGUL forms too (김씨), because default segmentation splits the
+    # token before suffix classification runs; glued Han forms need
+    # the zh pack's segmentation the same way (王先生), and glued kana
+    # (山田太郎様, 田中さん) stays out of reach, tracked as #308.
+    # Self-selecting like the Korean
+    # surnames: a Han or hangul entry can only ever match CJK text.
+    # Vetting per the мл/ст standard above: none of these is a given
+    # name or surname in trailing whole-token position -- the two
+    # worth naming are 氏 (a rare Japanese surname reading exists, but
+    # a bare trailing 氏 after a name is the news-style honorific, and
+    # a 氏-surnamed person writes it FIRST) and the single-syllable
+    # ko pair 군/양, which trail a name only as honorifics (a
+    # single-syllable GIVEN name in final position is already
+    # vanishingly rare, and neither 군 nor 양 is one in practice).
+    '씨',        # ko Mr./Ms. -- standardly spaced in Korean orthography
+    '박사',      # ko doctorate holder ("Dr.")
+    '선생님',    # ko teacher/respected elder
+    '교수님',    # ko professor (honorific form)
+    '군',        # ko young man ("Master")
+    '양',        # ko young woman ("Miss")
+    '先生',      # zh Mr. / ja teacher-master -- honorific in both
+    '女士',      # zh Ms./Madam
+    '小姐',      # zh Miss
+    '博士',      # zh+ja doctorate holder, shared Han
+    '教授',      # zh+ja professor, shared Han
+    '様',        # ja formal Mr./Ms. (the mail-addressing honorific)
+    '氏',        # ja news-style Mr. (田中氏)
 }
 """
 

@@ -707,4 +707,45 @@ CASES: tuple[Case, ...] = (
          notes="one classified neighbor is not enough: the guard "
                "requires both, so the undivided dot remains part of "
                "the word -- declining, not deciding"),
+    Case("zh_honorific_suffix_spaced", "王小明 先生",
+         {"family": "王小明", "suffix": "先生"},
+         classification="fix(#307)",
+         notes="CJK honorifics FOLLOW the name; a spaced 先生 (Mr.) is "
+               "a suffix, and recognizing it must come before the "
+               "family-first order hands it a role -- unrecognized it "
+               "read as the GIVEN name under the 2.1 defaults"),
+    Case("ko_honorific_ssi", "김민준 씨",
+         {"family": "김", "given": "민준", "suffix": "씨"},
+         classification="fix(#307)",
+         notes="Korean orthography standardly SPACES 씨, so the "
+               "whole-token suffix machinery reaches it; the name "
+               "still segments (suffix classification runs after the "
+               "script_segment stage, which only ever saw 김민준)"),
+    Case("ko_degree_baksa", "김민준 박사",
+         {"family": "김", "given": "민준", "suffix": "박사"},
+         classification="fix(#307)",
+         notes="박사 (doctorate) is the ko analogue of a trailing "
+               "PhD: fix(suffix-routing)'s two-token shape, one "
+               "script over"),
+    Case("ja_sama_spaced", "田中 太郎 様",
+         {"family": "田中", "given": "太郎", "suffix": "様"},
+         classification="fix(#307)",
+         notes="the spaced 様 of forms and databases; the glued "
+               "mail-addressing form 山田太郎様 is #308's mechanism, "
+               "out of reach of whole-token matching"),
+    Case("ko_honorific_glued_via_segmentation", "김씨",
+         {"family": "김", "suffix": "씨"},
+         classification="fix(#307)",
+         notes="glued HANGUL honorifics are reached after all: "
+               "default segmentation splits 김씨 into 김 + 씨 BEFORE "
+               "suffix classification, manufacturing the trailing "
+               "whole token -- a partial delivery of #308 that falls "
+               "out of stage order, hangul-only (glued Han needs the "
+               "zh pack; glued kana stays #308)"),
+    Case("ko_honorific_after_comma", "김민준, 씨",
+         {"family": "김민준", "suffix": "씨"},
+         classification="fix(#307)",
+         notes="the post-comma lenient gate admits the honorific too; "
+               "the comma disables segmentation per the comma "
+               "doctrine, so 김민준 stays whole"),
 )
