@@ -741,6 +741,14 @@ CASES: tuple[Case, ...] = (
                "recognition falls out of the same entry -- until this "
                "change さん read as the given name under the "
                "family-first default"),
+    Case("ja_dono_spaced", "田中 殿",
+         {"family": "田中", "suffix": "殿"},
+         classification="fix(#308)",
+         notes="殿 waited on an argument in #307 and gets one here: "
+               "spaced it is safe for the reason 양/군 are -- a "
+               "殿-surnamed person's name LEADS, and the suffix gate "
+               "is trailing-only -- while glued it would cut 鵜殿 and "
+               "真殿 in two, so it ships spaced only"),
     Case("ko_honorific_nim_spaced", "김민준 님",
          {"family": "김", "given": "민준", "suffix": "님"},
          classification="fix(#308)",

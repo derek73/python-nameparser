@@ -39,8 +39,8 @@ SUFFIX_NOT_ACRONYMS = {
 
     # #307/#308: CJK postnominal honorifics and degrees. Matched
     # whole-token here, which reaches the SPACED forms; the GLUED
-    # forms (田中さん, 김민준씨) are reached by the peel in
-    # _pipeline/_script_segment.py, which splits a listed tail off the
+    # forms (田中さん, 김민준씨) are reached by the peel #308 adds to
+    # _pipeline/_script_segment.py: it splits a listed tail off the
     # last name token and hands the piece back to this vocabulary --
     # so every GLUED_HONORIFICS entry below is also an entry here,
     # asserted at the foot of this module.
@@ -60,6 +60,12 @@ SUFFIX_NOT_ACRONYMS = {
     # - 博士: an attested Japanese given name (ひろし, Hiroshi) --
     #   the doctorate reading vastly dominates the spaced trailing
     #   position this set matches.
+    # - 殿: some ninety Japanese surnames end in it (鵜殿, 真殿), which
+    #   is what keeps it out of GLUED_HONORIFICS below -- but the
+    #   surname-LEADS argument that clears 양/군 clears it here too.
+    # - 님: a single hangul syllable, the risk class 양/군 are in, but
+    #   it has no hanja reading at all, so it cannot sit inside a
+    #   Sino-Korean given name.
     # Bare hangul 선생/교수 are deliberately absent (only the -님
     # honorific forms ship): the bare forms read as common nouns as
     # readily as address terms. Further candidates (여사, 太太) wait on
@@ -97,27 +103,42 @@ GLUED_HONORIFICS = {
     # token boundary to lean on: the vetting question is not "is this
     # a name?" but "can this END a name?", and only entries that can
     # never end one belong here.
-    # kana -- name-final never, in any of the four:
+    # kana -- name-final never, in any of the four, and the kana/kanji
+    # split is itself a vetting result: くん ships where 君 cannot,
+    # since 王君 is a complete Chinese name while hiragana spells no
+    # name character at all.
     'さん', 'さま', 'くん', 'ちゃん',
-    # kanji:
-    '様', '先生', '殿', '教授',
-    # hangul (the -님 compounds too: longest-first peels 선생님 off
+    # Han -- two-character honorifics with no name-final reading in
+    # either language, plus 様. 殿 is deliberately absent though it
+    # ships spaced above; see the exclusions below.
+    '様', '先生', '教授', '女士', '小姐',
+    # hangul -- the -님 compounds too: longest-first peels 선생님 off
     # 김선생님 whole, rather than leaving 김선생 to segment into a
-    # family 김 and a given 선생):
-    '씨', '님', '선생님', '교수님',
+    # family 김 and a given 선생. 박사 is safe glued where its Han twin
+    # 博士 is not: that collision is Japanese (博士 = ひろし) and the
+    # hangul spelling carries none of it.
+    '씨', '님', '선생님', '교수님', '박사',
 }
 """
 
 The subset of :data:`SUFFIX_NOT_ACRONYMS` a name token may end WITH, peeled
 off as its own token before segmentation (#308). Deliberately harsher than
-the spaced set, entry by entry:
+the spaced set, because a glued tail has no writer-drawn token boundary to
+lean on -- these entries ship spaced only:
 
 * 양, 군 -- 김지양 and 김지군 are given names ending in these syllables, and
-  양 is a top-tier surname besides. Spaced entries stay.
-* 君 -- 王君 is a complete Chinese name (君 is a common given-name final).
+  양 is a top-tier surname besides.
 * 氏 -- 王氏 is a historical name form ("the Wang woman").
 * 博士 -- glued 田中博士 IS Tanaka Hiroshi, an attested given name.
+* 殿 -- some ninety Japanese surnames END in it, 鵜殿 (Udono) and 真殿
+  (Madono) with four-figure populations, so peeling it would cut a real
+  family name in two. Spaced 殿 is safe for the reason 양/군 are: a
+  殿-surnamed person's name LEADS, and the suffix gate is trailing-only.
 * bare 선생, 교수 -- read as common nouns; only the -님 forms ship at all.
+
+君 is in NEITHER set: 王君 is a complete Chinese name (君 is a common
+given-name final), so the honorific reading never gets the benefit of the
+doubt -- while its kana spelling くん ships glued, above.
 
 """
 SUFFIX_ACRONYMS_AMBIGUOUS = {
@@ -809,7 +830,10 @@ assert not (SUFFIX_ACRONYMS_AMBIGUOUS & SUFFIX_NOT_ACRONYMS), \
     f"{sorted(SUFFIX_ACRONYMS_AMBIGUOUS & SUFFIX_NOT_ACRONYMS)}"
 # The peel splits its tail off as a TOKEN and suffix classification is
 # what claims it downstream, so a tail that is not also a suffix word
-# would split the name and then leave the piece sitting in it.
+# would split the name and then leave the piece sitting in it. The
+# reverse direction is deliberately unguarded: a suffix word that is
+# not a tail is the ordinary case, and an empty tail set is inert
+# rather than wrong.
 assert GLUED_HONORIFICS <= SUFFIX_NOT_ACRONYMS, \
     "GLUED_HONORIFICS must stay a subset of SUFFIX_NOT_ACRONYMS: " \
     f"{sorted(GLUED_HONORIFICS - SUFFIX_NOT_ACRONYMS)}"
