@@ -17,6 +17,15 @@ longest-first. The split makes sub-slices of the one token, rewriting
 nothing -- spans still index the original exactly, so the anti-#100
 invariant holds by construction.
 
+A second, independent split runs first (#308): a listed honorific
+glued to the END of the name part's last token is peeled off as its
+own token -- 田中さん -> 田中 + さん -- so that suffix classification
+can claim it and the surname match or segmenter consult below sees the
+name rather than the name plus an honorific. It is gated by the
+structural opt-outs (comma, 间隔号) but NOT by segment_scripts: the
+vocabulary of tails is licensed by the entries themselves, each of
+which can never end a name, so no per-script trust question arises.
+
 Where the VOCABULARY declines -- no prefix matched -- an optional
 Parser(segmenter=...) gets the token (#272 amendment 2026-07-29).
 Vocabulary first, segmenter on decline, so parser_for(ZH, JA,
@@ -179,20 +188,56 @@ def _split(state: ParseState, i: int, splits: tuple[int, ...],
                                ambiguities=ambiguities)
 
 
-@functools.lru_cache(maxsize=8)
-def _longest_entry(surnames: frozenset[str]) -> int:
-    """The longest surname in a vocabulary, cached per-vocabulary
-    rather than recomputed per parse (Lexicon is frozen and slotted,
-    so it cannot carry a cached_property of its own). The frozenset is
+@functools.lru_cache(maxsize=16)
+def _longest_entry(entries: frozenset[str]) -> int:
+    """The longest entry in a vocabulary, cached per-vocabulary rather
+    than recomputed per parse (Lexicon is frozen and slotted, so it
+    cannot carry a cached_property of its own). The frozenset is
     hashable and a process holds only a handful of distinct
     vocabularies -- the default one, plus one per constructed pack
-    parser -- so maxsize=8 bounds pathological many-lexicon churn
-    without ever evicting in normal use.
+    parser, times the two FIELDS that call this (surnames and
+    honorific_tails) -- so maxsize=16 bounds pathological many-lexicon
+    churn without ever evicting in normal use.
 
     Callers must pass a NON-EMPTY vocabulary: max() of an empty set
-    raises, and the only call site sits under the stage's `if surnames`
-    match guard, so it cannot reach that."""
-    return max(map(len, surnames))
+    raises, and both call sites sit under a match guard that cannot
+    reach it with one."""
+    return max(map(len, entries))
+
+
+def _peel_honorific_tail(state: ParseState) -> ParseState:
+    """#308: split a listed honorific off the END of the name part's
+    last token -- 田中さん -> 田中 + さん -- and let the existing
+    machinery do the rest. Suffix classification claims the tail
+    downstream (every honorific_tails entry is a suffix word too,
+    enforced by Lexicon), and the segmentation half below then sees
+    the remainder rather than the glued whole, so 김민준씨 splits
+    김 + 민준 and a configured segmenter is handed 山田太郎 rather
+    than 山田太郎様.
+
+    Longest-first, and capped so the remainder is never empty: a token
+    that IS a tail (씨, さん) has nothing to peel off and stays whole
+    -- the analogue of the `text in surnames` guard below. ONE peel,
+    never recursive: 김민준박사님 gives up its 님 and keeps its glued
+    박사, though 박사 is itself a listed tail, which is accepted
+    rather than chased. No script precondition on the remainder
+    either, since the tail alone is the license: Andersonさん peels.
+
+    Emits no ambiguity, on the 〆 and 间隔号 rule -- vocabulary plus
+    orthography decided this, nothing was chosen between."""
+    tails = state.lexicon.honorific_tails
+    if not tails:
+        return state
+    i = state.segments[0][-1]
+    text = state.tokens[i].text
+    # range/cap construction identical to the surname match below, and
+    # for the same two reasons: longest-first, and a len-1 cap that
+    # makes the offset interior by construction (_split's contract).
+    cap = min(_longest_entry(tails), len(text) - 1)
+    for length in range(cap, 0, -1):
+        if text[-length:] in tails:
+            return _split(state, i, (len(text) - length,), None)
+    return state
 
 
 def script_segment(state: ParseState) -> ParseState:
@@ -201,9 +246,7 @@ def script_segment(state: ParseState) -> ParseState:
         # so an ASCII original has only ASCII tokens: nothing here is
         # in any script's ranges
         return state
-    scripts = state.policy.segment_scripts
-    # an empty VOCABULARY deliberately does not bail here -- see below
-    if not scripts or not state.segments:
+    if not state.segments:
         return state
     if state.structure is Structure.FAMILY_COMMA:
         return state            # the comma already drew the boundary
@@ -216,6 +259,19 @@ def script_segment(state: ParseState) -> ParseState:
         # anywhere in the name reads the WHOLE name as a transcription
         # listing, so even an un-dotted hangul token beside a dotted
         # one stays whole.
+        return state
+    # #308: the honorific peel runs after the structural gates above
+    # (a comma-divided or dot-divided name opts out of this stage
+    # whole) but BEFORE the activation gate below, and independently
+    # of it -- 田中さん must peel under the DEFAULT policy, where HAN
+    # is in no activation set. The activation gate is about which
+    # scripts a SURNAME VOCABULARY may be trusted to divide; the peel
+    # asks nothing of the remainder, only whether the token ends in a
+    # word that can never end a name.
+    state = _peel_honorific_tail(state)
+    scripts = state.policy.segment_scripts
+    # an empty VOCABULARY deliberately does not bail here -- see below
+    if not scripts:
         return state
     # segments[0] is the NAME part under both remaining structures
     # (everything, under NO_COMMA); later segments are suffixes. Its

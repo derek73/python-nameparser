@@ -26,6 +26,15 @@ _JA = Policy(segment_scripts=frozenset({Script.HAN, Script.HIRAGANA}))
 # "jr" so the comma cases can reach SUFFIX_COMMA.
 _LEX = Lexicon(surnames=frozenset({"毛", "欧", "欧阳", "김", "남", "남궁"}),
                suffix_words=frozenset({"jr"}))
+# The peel's own vocabulary (#308). Tails are also suffix words here,
+# as the shipped config asserts they are: the neighbour rule in the
+# segmenter tests below reads that membership, so a stage lexicon that
+# omitted it would pin a shape no real configuration can have.
+_TAILS = frozenset({"씨", "님", "선생님", "박사", "さん", "先生"})
+_LEX_TAILS = Lexicon(
+    surnames=frozenset({"毛", "欧", "欧阳", "김", "남", "남궁"}),
+    suffix_words=frozenset({"jr"}) | _TAILS,
+    honorific_tails=_TAILS)
 
 
 def _run(text: str, policy: Policy = _HAN, lexicon: Lexicon = _LEX,
@@ -397,6 +406,92 @@ def test_a_neighbour_in_an_UNACTIVATED_script_still_blocks_the_consult() -> None
         out = _run(name, policy=_JA, segmenter=_fake((1,)))
         assert _texts(out) == name.split(), name
         assert out.ambiguities == (), name
+
+
+# -- the glued honorific peel (#308) -----------------------------------
+
+
+def test_peels_a_listed_tail_without_any_activation() -> None:
+    # The peel is licensed by the TAIL, not by the script, so it runs
+    # under a policy that activates nothing -- 田中さん must peel under
+    # the DEFAULT policy, where HAN is in no activation set. Spans stay
+    # sub-slices of the original (anti-#100), like every split here.
+    off = Policy(segment_scripts=())    # type: ignore[arg-type]
+    out = _run("田中さん", policy=off, lexicon=_LEX_TAILS)
+    assert _texts(out) == ["田中", "さん"]
+    assert [(t.span.start, t.span.end) for t in out.tokens] == [
+        (0, 2), (2, 4)]
+    assert all(out.original[t.span.start:t.span.end] == t.text
+               for t in out.tokens)
+    assert out.ambiguities == ()        # decisive vocabulary, no fork
+
+
+def test_peel_then_segmentation_compose() -> None:
+    # the peel runs first, so the segmentation half sees the REMAINDER
+    assert _texts(_run("김민준씨", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["김", "민준", "씨"]
+
+
+def test_a_token_that_is_a_tail_never_peels() -> None:
+    # nothing to split off: the empty-remainder guard, the analogue of
+    # the whole-token surname guard above
+    assert _texts(_run("씨", policy=_HANGUL, lexicon=_LEX_TAILS)) == ["씨"]
+    assert _texts(_run("さん", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["さん"]
+
+
+def test_longest_tail_wins() -> None:
+    # 님 and 선생님 both match by endswith; peeling the shorter one
+    # would leave 김선생 for the vocabulary to split into a family 김
+    # and a given 선생. Same longest-first discipline as the surname
+    # match, and 김 is itself a listed surname, so the remainder then
+    # declines to split further (the whole-token guard).
+    assert _texts(_run("김선생님", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["김", "선생님"]
+
+
+def test_one_peel_never_a_stack() -> None:
+    # The remainder here ENDS in another listed tail (박사) and is
+    # still not peeled again: one peel, then the stage moves on to
+    # segmentation, which splits the surname off what is left
+    assert _texts(_run("김민준박사님", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["김", "민준박사", "님"]
+
+
+def test_peel_needs_no_script_on_the_remainder() -> None:
+    # the tail is the license: Japanese text about a foreigner
+    assert _texts(_run("Andersonさん", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["Anderson", "さん"]
+
+
+def test_an_unlisted_tail_never_peels() -> None:
+    # endswith against the vocabulary, never against a shape: 지양 ends
+    # in a shipped SPACED honorific that is deliberately not a tail
+    assert _texts(_run("김지양", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["김", "지양"]
+
+
+def test_family_comma_skips_the_peel() -> None:
+    # the comma doctrine covers the peel with the rest of the stage:
+    # the writer already said where the family name ends
+    assert _texts(_run("田中さん, 太郎", lexicon=_LEX_TAILS)) == [
+        "田中さん", "太郎"]
+
+
+def test_interpunct_divided_name_never_peels() -> None:
+    # the transcription gate likewise: its pieces are syllable groups
+    state = segment(tokenize(ParseState(
+        original="威廉·莎士比亚先生", lexicon=_LEX_TAILS, policy=_HAN)))
+    assert state.interpunct_offsets
+    assert script_segment(state).tokens == state.tokens
+
+
+def test_the_peel_only_looks_at_the_last_name_token() -> None:
+    # a tail anywhere but the end is somebody's name, not an
+    # honorific: only the trailing position is an honorific site, the
+    # same reasoning the trailing-only suffix gate follows
+    assert _texts(_run("田中さん 太郎", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["田中さん", "太郎"]
 
 
 # -- the 间隔号 gate: a divided name is a transcription (#298) ----------
