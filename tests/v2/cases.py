@@ -824,8 +824,11 @@ CASES: tuple[Case, ...] = (
     Case("zh_glued_jun_stays", "王君",
          {"family": "王君"},
          classification="fix(#271)",
-         notes="likewise: 君 is a common Chinese given-name final, so "
-               "王君 is a complete name, not Mr. Wang"),
+         notes="likewise unpeeled: 君 is a common Chinese given-name "
+               "final, so 王君 is a complete name, not Mr. Wang. "
+               "Unlike its neighbours here, 君 is in NEITHER set -- "
+               "there is no spaced entry to fall back on either, and "
+               "only its kana spelling くん peels"),
     Case("zh_glued_shi_stays", "王氏",
          {"family": "王氏"},
          classification="fix(#271)",
