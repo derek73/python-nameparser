@@ -423,6 +423,20 @@ def test_a_recognized_suffix_neighbour_does_not_block_the_consult() -> None:
         assert _texts(out) == ["山田", "太郎", "様"], name
 
 
+def test_an_honorific_does_not_excuse_a_real_boundary() -> None:
+    # The honorific stops counting, and nothing else does: 太郎 is
+    # still a boundary its writer drew, so the name is already
+    # divided and the segmenter must not be asked. Without this the
+    # rule reads as "a post-nominal anywhere disables the neighbour
+    # test", which passes every other test in this file and divides
+    # 山田 into 山 + 田.
+    asked, seg = _capture()
+    out = _run("山田 太郎 様", policy=_JA, lexicon=_LEX_TAILS,
+               segmenter=seg)
+    assert asked == []
+    assert _texts(out) == ["山田", "太郎", "様"]
+
+
 # -- the glued honorific peel (#308) -----------------------------------
 
 

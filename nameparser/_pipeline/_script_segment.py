@@ -45,11 +45,10 @@ below takes n cuts. One precondition guards it that the vocabulary
 has no twin of: a segmenter answers where an UNDIVIDED name divides,
 so it is consulted only when the gated token is the name part's ONLY
 script-written one -- "山田 太郎" was divided by its writer and must
-not have its family divided again (a Latin title or suffix draws no
-such boundary). The neighbour counts whatever script it is written
-in, ACTIVATED or not -- effective_script is merely non-None -- unless
-the vocabulary already knows it is a post-nominal, which no writer
-draws a name boundary with (#308). A segmenter's own exceptions
+not have its family divided again (a title or post-nominal draws no
+such boundary, whatever script it is in). The neighbour test reads
+effective_script -- merely non-None -- with a post-nominal excluded by
+vocabulary rather than by script (#308). A segmenter's own exceptions
 PROPAGATE -- the single declared exception to parse totality (locales
 spec section 4): a user-supplied callable's error is a user-code
 error, not a content error.
@@ -222,11 +221,18 @@ def _longest_entry(entries: frozenset[str]) -> int:
 
 def _is_post_nominal(state: ParseState, i: int) -> bool:
     """Whether token `i` is vocabulary the parse will read as a
-    post-nominal. Two of this stage's decisions ask it and neither is
-    about script: an honorific is not part of the name, so it is
-    neither a surname SITE nor the token a glued honorific hangs off.
-    (#308; the segmenter's neighbour test joins them in the next
-    change, for the same reason.)"""
+    post-nominal. Three of this stage's decisions ask it and none of
+    them is about script: an honorific is neither a surname SITE, nor
+    the token a glued honorific hangs off, nor a boundary its writer
+    drew between family and given (#308).
+
+    Suffixes only, deliberately. The neighbour rule's prose covers "a
+    Latin title or suffix", but a Latin title needs no test here --
+    effective_script gates it out first. Should a CJK entry ever join
+    titles, the surname site and the neighbour test would both want it
+    excluded while the peel site must not: a title never trails, so
+    widening the peel's scan-back would move it off the real last name
+    token. Split the predicate then, not before."""
     return is_suffix_strict(state.tokens[i].text, state.lexicon)
 
 
@@ -401,13 +407,14 @@ def script_segment(state: ParseState) -> ParseState:
     # Jr." still reaches the segmenter. Vocabulary keeps its own rule
     # -- a listed surname is a certainty about that exact string,
     # whoever else stands beside it.
-    # That carve-out is about being VOCABULARY, not about being Latin,
-    # and it was written in terms of script only because every suffix
-    # WAS Latin when it was written. #307 shipped CJK honorifics and
-    # #308's peel manufactures one, so the test asks the vocabulary:
-    # 様 beside 山田太郎 -- glued or spaced -- says nothing about where
-    # the kanji name divides, and reading it as the writer's own
-    # boundary left the commonest addressed form undivided.
+    # The Latin carve-out is about being VOCABULARY, not about being
+    # Latin, and it was written in terms of script only because every
+    # suffix WAS Latin when it was written. #307 shipped CJK honorifics
+    # and #308's peel manufactures one, so the test asks the
+    # vocabulary: 様 beside 山田太郎 -- glued or spaced -- says nothing
+    # about where the kanji name divides, and reading it as the
+    # writer's own boundary left the commonest addressed form
+    # undivided.
     if any(j != i and effective_script(state.tokens[j].text) is not None
            and not _is_post_nominal(state, j)
            for j in state.segments[0]):

@@ -437,7 +437,8 @@ def test_ja_leaves_spaced_names_to_the_default_order() -> None:
     # would wreck the commonest written form -- 山田 + 太郎 divided
     # again into 山 + 田 + 太郎.
     p = _PACKED["ja"]
-    for name in ("山田 太郎", "高橋 みなみ", "高橋 エミ", "山田 太郎 Jr."):
+    for name in ("山田 太郎", "高橋 みなみ", "高橋 エミ", "山田 太郎 Jr.",
+                 "山田 太郎 様"):
         assert p.parse(name).as_dict() == _default_parse(name), name
     assert p.parse("山田 太郎").family == "山田"
 
