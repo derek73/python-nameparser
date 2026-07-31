@@ -295,15 +295,57 @@ Chinese dot rescues the source order. And a comma disables the script
 behaviors entirely, on the reasoning ``name_order`` already follows: whoever
 wrote the comma has already said where the family name ends.
 
-Honorifics and degrees follow a CJK name, and the spaced forms are
-recognized as suffixes — ``王小明 先生`` reads family 王小明 with 先生
-in ``suffix``, and Korean's standardly-spaced 씨 routes the same way.
-A glued honorific is reached in exactly one shape — surname +
-honorific, where segmentation splits off the surname and the
-honorific is what remains: 김씨 reads family 김 with suffix 씨, and
-王先生 the same way under the zh pack. A glued honorific after a
-given name (김민준씨, 王小明先生) and glued kana (山田太郎様, 田中さん)
-stay part of the name.
+Honorifics and degrees follow a CJK name, and both the spaced and the
+glued forms are recognized as suffixes: ``王小明 先生`` reads family
+王小明 with 先生 in ``suffix``, and so do glued ``田中さん``,
+``山田太郎様`` and ``김민준씨``. The honorific is split off the end of
+the last name token before the name is split or ordered, so those
+rules see the name without it — which is why ``김민준씨`` still divides
+into family 김 and given 민준, and why a configured Japanese segmenter
+is handed 山田太郎 rather than 山田太郎様. The comma rule above comes
+first, though, and covers this too: in ``田中さん, 太郎`` the writer
+has already said where the family name ends, so nothing is peeled and
+the family name is the whole ``田中さん``. A 间隔号-divided
+transcription opts out for its own reason, the same way.
+
+Where a segmenter divides the name, the two spellings part company. A
+spaced honorific is a token boundary the writer typed, and the
+segmenter is asked only where an undivided name divides — so anything
+standing beside the name calls it off, honorific or not: under the
+Japanese pack ``佐藤 氏`` keeps family 佐藤, where bare ``佐藤`` would
+have been divided 佐 + 藤. That is a conservative reading rather than
+a principled one; a spaced honorific cannot be told apart from a
+spaced given name by position, and treating it as one keeps four real
+surnames whole (``佐藤 氏``, ``田中 様``, ``鈴木 先生``, ``中村 教授``)
+at the price of one division it declines to make (``山田太郎 様``). A
+glued honorific carries no boundary at all — its writer drew none
+anywhere — so ``田中さん`` divides the way bare ``田中`` does, into
+family 田 and given 中, with さん in ``suffix``. Writing the honorific
+spaced is therefore also how you ask for a family name to be kept
+whole on this path, short of declining the pack.
+
+Where the VOCABULARY divides the name the two spellings never part
+company, because the peel hands the same remainder to the same surname
+match either way: ``김민준 씨`` and ``김민준씨`` both give family 김,
+given 민준 and suffix 씨, and under the Chinese pack ``王小明 先生``
+and ``王小明先生`` both give family 王, given 小明 and suffix 先生.
+Spacing the honorific is no lever there, and for Korean data there is
+no pack to decline either — hangul segmentation is on by default.
+
+The glued reading is deliberately narrower than the spaced one. A
+spaced honorific sits behind a boundary its writer drew; a glued one
+has only itself to go on, so a word peels off the end of a name only
+if it could never BE the end of a name. 씨, 님, 박사, 박사님, 선생님,
+교수님, さん, さま, くん, ちゃん, 様, 先生, 教授, 女士 and 小姐
+qualify; 양, 군, 氏, 博士 and 殿 do not, because 김지양 is a given
+name, 田中博士 is Tanaka Hiroshi as readily as Doctor Tanaka, and some
+ninety Japanese surnames end in 殿 (鵜殿, 真殿). Those stay recognized
+in their spaced form, where position settles what the glued form
+leaves ambiguous. 君 is recognized in neither form, since 王君 is a
+complete Chinese name — though its kana spelling くん peels. Exactly
+one honorific peels off a token, and the entries are whole
+honorifics rather than parts: ``김민준박사님`` gives up 박사님 entire,
+not 님 with 박사 left behind.
 
 A division the parser had to choose is reported rather than hidden.
 When an unspaced name has more than one vocabulary-supported split —

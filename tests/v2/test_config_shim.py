@@ -476,6 +476,26 @@ def test_snapshot_keeps_a_bound_never_given_prefix_parseable() -> None:
     assert (name.first, name.last) == ("dos Santos", "Silva")
 
 
+def test_snapshot_removing_a_honorific_word_turns_the_peel_off() -> None:
+    # The deciding case for honorific_tails, which has no v1 manager of
+    # its own: the snapshot intersects GLUED_HONORIFICS with the WORD
+    # set, so deleting 씨 from suffix_not_acronyms -- the only v1 knob
+    # that reaches it -- must make the tail stop mattering rather than
+    # raise the subset error or leave 씨 peeling into a suffix field
+    # that no longer recognizes it. With the default config the
+    # intersection is a no-op, so the equality test above pins nothing
+    # here.
+    c = Constants()
+    assert HumanName("김민준씨", constants=c).suffix == "씨"    # baseline
+    c.suffix_not_acronyms.remove("씨")
+    lexicon, _, _ = c._snapshot()                              # must not raise
+    assert "씨" not in lexicon.honorific_tails
+    # the peel is off: the glued honorific goes back into the name,
+    # which is 2.0's answer for this input
+    name = HumanName("김민준씨", constants=c)
+    assert (name.first, name.last, name.suffix) == ("민준씨", "김", "")
+
+
 def test_snapshot_field_translation() -> None:
     c = Constants()
     lexicon, policy, defaults = c._snapshot()

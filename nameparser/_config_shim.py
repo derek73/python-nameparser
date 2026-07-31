@@ -986,11 +986,23 @@ class Constants:
         removal path.
         """
         from nameparser.config.maiden_markers import MAIDEN_MARKERS
+        from nameparser.config.suffixes import GLUED_HONORIFICS
         from nameparser.config.surnames import KOREAN_SURNAMES
         acronyms = frozenset(self.suffix_acronyms)
         particles = frozenset(self.prefixes)
         bound = frozenset(self.bound_first_names)
         ambiguous_acronyms = frozenset(self.suffix_acronyms_ambiguous) & acronyms
+        # Drop any ambiguous acronym from the word set rather than the
+        # other way round. Lexicon forbids the overlap because the word
+        # branch bypasses the period gate, and adding an ambiguous
+        # acronym to suffix_not_acronyms is INERT in v1 anyway:
+        # is_suffix already accepts it via the acronym branch, and
+        # reserve_last keeps it as the surname. So ignoring the
+        # addition reproduces v1 ("Jack Ma" keeps last='Ma'), where
+        # dropping it from the AMBIGUOUS set instead ungated the word
+        # and lost the family name -- a silent misparse worse than the
+        # raise it avoided.
+        suffix_words = frozenset(self.suffix_not_acronyms) - ambiguous_acronyms
         # keep in sync with _lexicon._default_lexicon() (pinned by
         # tests/v2/test_config_shim.py::test_snapshot_field_translation)
         lexicon = Lexicon(
@@ -1017,18 +1029,7 @@ class Constants:
                     if e == " ".join(e.split())
                 ) if t),
             suffix_acronyms=acronyms,
-            # Drop any ambiguous acronym from the word set rather than
-            # the other way round. Lexicon forbids the overlap because
-            # the word branch bypasses the period gate, and adding an
-            # ambiguous acronym to suffix_not_acronyms is INERT in v1
-            # anyway: is_suffix already accepts it via the acronym
-            # branch, and reserve_last keeps it as the surname. So
-            # ignoring the addition reproduces v1 ("Jack Ma" keeps
-            # last='Ma'), where dropping it from the AMBIGUOUS set
-            # instead ungated the word and lost the family name --
-            # a silent misparse worse than the raise it avoided.
-            suffix_words=frozenset(
-                self.suffix_not_acronyms) - ambiguous_acronyms,
+            suffix_words=suffix_words,
             # Intersect with acronyms: Lexicon enforces ambiguous <=
             # acronyms; v1 behaves the same when an acronym is deleted
             # but its ambiguous entry lingers (the entry stops
@@ -1068,6 +1069,16 @@ class Constants:
             # Unwrapped where maiden_markers above is wrapped: this
             # module is born frozen (#293), so no wrap
             surnames=KOREAN_SURNAMES,
+            # likewise no v1 manager: the glued-honorific tail set is
+            # 2.1 behavior (#308), so it rides in the snapshot only.
+            # Wrapped, unlike surnames above: suffixes.py is still a
+            # mutable v1 module, not born-frozen like surnames.py
+            # (#293). Intersect with the word set: Lexicon enforces
+            # tails <= suffix_words, and v1 semantics are that deleting
+            # a suffix word turns the behavior off -- a lingering tail
+            # simply stops mattering, the same rule ambiguous_acronyms
+            # gets against suffix_acronyms above.
+            honorific_tails=frozenset(GLUED_HONORIFICS) & suffix_words,
             # TupleManager is dict[str, object] (v1 parity: values were
             # never statically str-typed); every real entry is a str,
             # same assumption _DelimiterManager's sentinel lookup makes

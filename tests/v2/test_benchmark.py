@@ -50,7 +50,7 @@ def test_facade_thousand_names_under_a_second() -> None:
 # before pruning one that looks redundant:
 #
 #   dimension                 covered by
-#   token count               all nine
+#   token count               all ten
 #   piece count               unmatched_*, plain_tokens, commas, titles
 #   SEGMENT count             commas ONLY -- deleting it leaves every
 #                             segment-keyed regression unguarded
@@ -58,6 +58,14 @@ def test_facade_thousand_names_under_a_second() -> None:
 #                             conjunctions (800) -- the merge() quadratic
 #   masked-span count         delimiter_pairs, quote_pairs (0 pieces:
 #                             everything is consumed as a delimited run)
+#   NON-ASCII input           honorifics ONLY -- every other unit here is
+#                             pure ASCII, so script_segment returns at
+#                             its isascii() bail and neither the #308
+#                             peel nor the #271 surname site is measured
+#                             at all. A repeated 씨 is what walks the
+#                             peel's site scan: every token is a
+#                             post-nominal, so the scan-back crosses the
+#                             whole run before declining
 _SHAPES = {
     "delimiter_pairs": "(a) ",      # extract: matched pairs -> masked spans
     "quote_pairs": '"a" ',          # extract: the open==close path
@@ -68,6 +76,7 @@ _SHAPES = {
     "titles": "Dr. ",               # group: one long title chain
     "particles": "van ",            # group: the prefix-chain inner loop
     "conjunctions": "and ",         # group: merge() accumulating one piece
+    "honorifics": "씨 ",             # script_segment: the peel's site scan
 }
 
 _BASE = 800
@@ -95,6 +104,9 @@ _FACTOR = 4
 # a gap that is not there: at 800 the bound has ~1.4x over the worst
 # clean run (noise headroom on a shared runner) and ~1.3x under the
 # weakest quadratic. Re-derive BOTH numbers when adding a shape.
+# The tenth shape (honorifics) was measured into the clean column when
+# it arrived: 4.0-4.3 at base 800 across repeated runs, inside the range
+# the ASCII shapes already occupy, so neither number moved.
 _MAX_RATIO = 6.0
 
 

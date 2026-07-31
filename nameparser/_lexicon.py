@@ -24,19 +24,43 @@ _VOCAB_FIELDS = (
     "titles", "given_name_titles", "suffix_acronyms", "suffix_words",
     "suffix_acronyms_ambiguous", "particles", "particles_ambiguous",
     "conjunctions", "bound_given_names", "maiden_markers", "surnames",
+    "honorific_tails",
 )
 
-#: (marker, base, why) triples. Each marker narrows how entries of its
-#: base vocabulary are read and carries no vocabulary of its own, so an
-#: entry outside the base is a configuration mistake -- but the mistake
-#: differs per pair, and the reason is recorded here rather than
-#: generalized, because an orphan is NOT simply inert:
+#: (marker, base, why) triples. Each marker QUALIFIES how entries of
+#: its base vocabulary are read and carries no vocabulary of its own,
+#: so an entry outside the base is a configuration mistake -- but the
+#: mistake differs per pair, and the reason is recorded here rather
+#: than generalized, because an orphan is NOT simply inert. Nor is the
+#: qualification one-directional: the first two NARROW their base (an
+#: entry is read as vocabulary in fewer places), while honorific_tails
+#: WIDENS it, granting a suffix word the glued position on top of the
+#: whole-token match every suffix word already gets.
 #:
 #: * particles_ambiguous: _assign keys on the tag alone, so an orphan
 #:   makes the parse emit a spurious particle-or-given ambiguity.
 #: * suffix_acronyms_ambiguous: _vocab returns True on the ambiguous
 #:   set before testing suffix_acronyms, so an orphan silently turns a
 #:   word into a period-gated suffix.
+#: * honorific_tails: script_segment peels the tail into its own token
+#:   before classify ever runs, so an orphan splits the name and leaves
+#:   the fragment stranded inside it -- worse than not peeling at all.
+#:   Its base is deliberately NARROWER than what actually claims the
+#:   peeled piece: suffix_as_written ORs suffix_words with the
+#:   non-ambiguous suffix_acronyms, so a tail listed only as an acronym
+#:   would classify fine yet is rejected here. Accepted, and a decision
+#:   rather than an oversight -- the three-term predicate is easy to
+#:   get wrong in the dangerous direction (an ambiguous acronym admitted
+#:   as a tail would peel a period-gated word off a real name), and
+#:   nothing needs the acronym half: the shipped tails are CJK
+#:   honorifics, which are words.
+#:   The same relation is asserted a second time in config/suffixes.py,
+#:   over the raw GLUED_HONORIFICS/SUFFIX_NOT_ACRONYMS constants at
+#:   import. The two are not redundant in the way they look: that one
+#:   is an `assert`, stripped under `python -O`, while the check here
+#:   raises unconditionally -- so under -O this is what still holds the
+#:   SHIPPED vocabulary to the invariant, as it is the only thing that
+#:   ever held a caller's own.
 #:
 #: given_name_titles is deliberately NOT here and has no check of its
 #: own -- see the note in __post_init__ for why every attempt at one
@@ -46,6 +70,8 @@ _SUBSET_FIELDS = (
      "an orphan emits a spurious particle-or-given ambiguity"),
     ("suffix_acronyms_ambiguous", "suffix_acronyms",
      "an orphan silently becomes a period-gated suffix"),
+    ("honorific_tails", "suffix_words",
+     "an orphan splits the name and leaves the tail inside it"),
 )
 
 
@@ -335,6 +361,23 @@ class Lexicon:
     #: (:data:`~nameparser.config.surnames.KOREAN_SURNAMES`); Chinese
     #: surnames ship in locales.ZH because Han segmentation is opt-in.
     surnames: frozenset[str] = frozenset()
+    #: Honorifics that may be peeled off the END of a name token
+    #: (#308), matched longest-first: 田中さん splits into 田中 and さん
+    #: before the tokens are classified. Every entry must also be a
+    #: :attr:`suffix_words` entry -- the peeled tail is claimed by
+    #: suffix classification like any other post-nominal. Deliberately
+    #: NOT gated on :attr:`Policy.segment_scripts
+    #: <nameparser.Policy.segment_scripts>` (unlike :attr:`surnames`
+    #: above): 田中さん peels under the default policy, where HAN is in
+    #: no activation set, because a tail entry carries its own license
+    #: to fire. Entries are matched against the RAW token text, and
+    #: only within a name containing a non-ASCII character, so an ASCII
+    #: or mixed-case entry is at best conditionally active -- a ``"Jr"``
+    #: entry is stored ``"jr"`` and matches only lowercase text. The
+    #: field is effectively CJK-scoped in 2.1, which is what the shipped
+    #: vocabulary is. Full default list:
+    #: :data:`~nameparser.config.suffixes.GLUED_HONORIFICS`.
+    honorific_tails: frozenset[str] = frozenset()
     #: Lowercase word -> exact-cased replacement used by capitalized()
     #: ("phd" -> "Ph.D."). Pair-valued: change it with
     #: dataclasses.replace(), not add()/remove(); read it as a mapping
@@ -577,7 +620,8 @@ def _default_lexicon() -> Lexicon:
     from nameparser.config.maiden_markers import MAIDEN_MARKERS
     from nameparser.config.prefixes import NON_FIRST_NAME_PREFIXES, PREFIXES
     from nameparser.config.suffixes import (
-        SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_NOT_ACRONYMS,
+        GLUED_HONORIFICS, SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS,
+        SUFFIX_NOT_ACRONYMS,
     )
     from nameparser.config.surnames import KOREAN_SURNAMES
     from nameparser.config.titles import FIRST_NAME_TITLES, TITLES
@@ -602,6 +646,7 @@ def _default_lexicon() -> Lexicon:
         # surnames.py is born frozen (#293) -- no call-site wrap needed,
         # unlike the v1 modules above (their wraps drop when #293 lands)
         surnames=KOREAN_SURNAMES,
+        honorific_tails=frozenset(GLUED_HONORIFICS),
         # pass canonical pair-tuples so this strictly-typed call site never
         # feeds a Mapping to the tuple-annotated field; __post_init__
         # still tolerates a Mapping at runtime for interactive use

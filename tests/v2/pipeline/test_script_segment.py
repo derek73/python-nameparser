@@ -26,6 +26,12 @@ _JA = Policy(segment_scripts=frozenset({Script.HAN, Script.HIRAGANA}))
 # "jr" so the comma cases can reach SUFFIX_COMMA.
 _LEX = Lexicon(surnames=frozenset({"毛", "欧", "欧阳", "김", "남", "남궁"}),
                suffix_words=frozenset({"jr"}))
+# The peel's own vocabulary (#308). Tails are also suffix words here,
+# as the shipped config asserts they are: the neighbour rule in the
+# segmenter tests below reads that membership, so a stage lexicon that
+# omitted it would pin a shape no real configuration can have.
+_TAILS = frozenset({"씨", "님", "선생님", "박사", "さん", "先生", "様"})
+_LEX_TAILS = _LEX.add(suffix_words=_TAILS, honorific_tails=_TAILS)
 
 
 def _run(text: str, policy: Policy = _HAN, lexicon: Lexicon = _LEX,
@@ -397,6 +403,164 @@ def test_a_neighbour_in_an_UNACTIVATED_script_still_blocks_the_consult() -> None
         out = _run(name, policy=_JA, segmenter=_fake((1,)))
         assert _texts(out) == name.split(), name
         assert out.ambiguities == (), name
+
+
+def test_only_a_manufactured_tail_does_not_block_the_consult() -> None:
+    # The exemption is PROVENANCE, not vocabulary. A tail the peel
+    # manufactured is a boundary nobody drew -- glued 山田太郎様 was
+    # written as one token -- so the segmenter is asked, and asked
+    # about the name alone. The SPACED spelling of the same honorific
+    # is the opposite case: its writer drew that boundary and wrote
+    # 山田太郎 as a unit beside it, so the consult is declined and the
+    # unit stays whole. Asking the suffix VOCABULARY instead cannot
+    # tell these apart -- same word, same place -- and answering both
+    # the first way divided 佐藤 氏 into 佐 + 藤.
+    asked, seg = _capture()
+    out = _run("山田太郎様", policy=_JA, lexicon=_LEX_TAILS, segmenter=seg)
+    assert asked == ["山田太郎"]
+    assert _texts(out) == ["山田", "太郎", "様"]
+
+    asked, seg = _capture()
+    out = _run("山田太郎 様", policy=_JA, lexicon=_LEX_TAILS, segmenter=seg)
+    assert asked == []
+    assert _texts(out) == ["山田太郎", "様"]
+
+
+def test_a_manufactured_tail_does_not_excuse_a_real_boundary() -> None:
+    # The peeled tail stops counting, and nothing else does: 太郎 is
+    # still a boundary its writer drew, so the name is already divided
+    # and the segmenter must not be asked. Without the narrowing the
+    # rule reads as "an exempt token anywhere disables the neighbour
+    # test", which passes every other test in this file and divides
+    # 山田 into 山 + 田.
+    asked, seg = _capture()
+    out = _run("山田 太郎様", policy=_JA, lexicon=_LEX_TAILS,
+               segmenter=seg)
+    assert asked == []
+    assert _texts(out) == ["山田", "太郎", "様"]
+
+
+# -- the glued honorific peel (#308) -----------------------------------
+
+
+def test_peels_a_listed_tail_without_any_activation() -> None:
+    # The peel is licensed by the TAIL, not by the script, so it runs
+    # under a policy that activates nothing -- 田中さん must peel under
+    # the DEFAULT policy, where HAN is in no activation set. Spans stay
+    # sub-slices of the original (anti-#100), like every split here.
+    off = Policy(segment_scripts=())    # type: ignore[arg-type]
+    out = _run("田中さん", policy=off, lexicon=_LEX_TAILS)
+    assert _texts(out) == ["田中", "さん"]
+    assert [(t.span.start, t.span.end) for t in out.tokens] == [
+        (0, 2), (2, 4)]
+    assert all(out.original[t.span.start:t.span.end] == t.text
+               for t in out.tokens)
+    assert out.ambiguities == ()        # decisive vocabulary, no fork
+
+
+def test_peel_then_segmentation_compose() -> None:
+    # the peel runs first, so the segmentation half sees the REMAINDER
+    assert _texts(_run("김민준씨", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["김", "민준", "씨"]
+
+
+def test_a_token_that_is_a_tail_never_peels() -> None:
+    # nothing to split off, and the guard is the peel site's scan past
+    # post-nominals, not the length cap: 선생님 ENDS in the shorter
+    # tail 님, so a cap-based guard would peel it to 선생 + 님
+    assert _texts(_run("씨", policy=_HANGUL, lexicon=_LEX_TAILS)) == ["씨"]
+    assert _texts(_run("さん", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["さん"]
+    assert _texts(_run("선생님", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["선생님"]
+
+
+def test_longest_tail_wins() -> None:
+    # 님 and 선생님 both match by endswith, and only the longer one
+    # leaves a remainder that is a name (박선생 is not one)
+    assert _texts(_run("박선생님", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["박", "선생님"]
+
+
+def test_one_peel_never_a_stack() -> None:
+    # The remainder here ENDS in another listed tail (박사) and is
+    # still not peeled again: one peel, then the stage moves on to
+    # segmentation, which splits the surname off what is left.
+    # The SOLE home of this pin, and it needs the synthetic lexicon:
+    # _TAILS deliberately omits 박사님, which the shipped vocabulary
+    # carries, so 김민준박사님 gives up the whole honorific there (the
+    # ko_honorific_glued_doctor case row). No shipped entry pair has
+    # the shape this needs -- a tail whose remainder ends in a
+    # DIFFERENT tail, the two not forming a listed entry themselves --
+    # so no realistic name can carry the pin end to end.
+    assert _texts(_run("김민준박사님", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["김", "민준박사", "님"]
+
+
+def test_peel_needs_no_script_on_the_remainder() -> None:
+    # the tail is the license: Japanese text about a foreigner
+    assert _texts(_run("Andersonさん", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["Anderson", "さん"]
+
+
+def test_an_unlisted_tail_never_peels() -> None:
+    # endswith against the vocabulary, never against a shape: 지양 ends
+    # in a shipped SPACED honorific that is deliberately not a tail
+    assert _texts(_run("김지양", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["김", "지양"]
+
+
+def test_family_comma_skips_the_peel() -> None:
+    # the comma doctrine covers the peel with the rest of the stage:
+    # the writer already said where the family name ends
+    assert _texts(_run("田中さん, 太郎", lexicon=_LEX_TAILS)) == [
+        "田中さん", "太郎"]
+
+
+def test_interpunct_divided_name_never_peels() -> None:
+    # the transcription gate likewise: its pieces are syllable groups
+    state = segment(tokenize(ParseState(
+        original="威廉·莎士比亚先生", lexicon=_LEX_TAILS, policy=_HAN)))
+    assert state.interpunct_offsets
+    assert script_segment(state).tokens == state.tokens
+
+
+def test_a_peeled_tail_is_not_a_surname_site() -> None:
+    # The peel manufactures a token, and the site scan below must not
+    # then treat it as a name: 남궁 opens with the listed surname 남,
+    # so without the post-nominal guard the stage would split the
+    # honorific it had just created.
+    lex = Lexicon(surnames=frozenset({"남"}),
+                  suffix_words=frozenset({"남궁"}),
+                  honorific_tails=frozenset({"남궁"}))
+    assert _texts(_run("Anderson남궁", policy=_HANGUL,
+                       lexicon=lex)) == ["Anderson", "남궁"]
+
+
+def test_a_leading_post_nominal_is_not_a_surname_site() -> None:
+    # A surname LEADS, so an honorific in the surname's own position
+    # means there is no surname to find -- decline rather than scan
+    # on. Scanning on would reach the given name, which is what the
+    # first-token rule above exists to prevent: 지 is a listed
+    # surname, so 양 지훈 would split its own given name in half.
+    assert _texts(_run("씨 김민준", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["씨", "김민준"]
+
+
+def test_a_trailing_post_nominal_does_not_hide_the_peel_site() -> None:
+    # the site is the last token that is not ITSELF a post-nominal, so
+    # an unrelated trailing suffix cannot put the glued one out of
+    # reach -- "김민준씨 jr" must answer as "Dr 김민준씨, Jr." does
+    assert _texts(_run("김민준씨 jr", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["김", "민준", "씨", "jr"]
+
+
+def test_the_peel_only_looks_at_the_last_non_post_nominal_token() -> None:
+    # a tail anywhere but the end is somebody's name, not an
+    # honorific: only the trailing position is an honorific site, the
+    # same reasoning the trailing-only suffix gate follows
+    assert _texts(_run("田中さん 太郎", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["田中さん", "太郎"]
 
 
 # -- the 间隔号 gate: a divided name is a transcription (#298) ----------
