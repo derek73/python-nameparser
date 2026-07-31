@@ -44,7 +44,8 @@ Removing works the same way, and drops the word from recognition:
 
 A few fields mark a subset of another — ``given_name_titles`` over
 ``titles``, ``particles_ambiguous`` over ``particles``,
-``suffix_acronyms_ambiguous`` over ``suffix_acronyms``. Entries must
+``suffix_acronyms_ambiguous`` over ``suffix_acronyms``, and
+``honorific_tails`` over ``suffix_words``. Entries must
 appear in the base field too, so add to both and remove from the marker
 first; anything else raises ``ValueError`` naming the orphans rather
 than leaving a marker entry that no rule will ever consult.

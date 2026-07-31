@@ -911,17 +911,25 @@ CASES: tuple[Case, ...] = (
                "so the undivided 王小明 stays one family name"),
     Case("ko_suffix_matching_is_whole_token", "김지양",
          {"family": "김", "given": "지양"},
+         classification="fix(#271)",
          notes="지양 ENDS with the honorific 양 but is a given name: "
                "suffix matching is whole-token, never endswith -- the "
                "pin the differential rule's anchor mirrors at the "
                "name-string level. #308 leaves it alone too: 양 is "
                "excluded from the glued tail set for exactly this "
-               "name"),
+               "name. Classified to #271, not parity: 1.4 gave first "
+               "김지양 and no last, and it is #271's hangul "
+               "segmentation plus the CJK order flip that produces "
+               "these two fields"),
     Case("ko_surname_yang_leads", "양 미선",
          {"family": "양", "given": "미선"},
+         classification="fix(#271)",
          notes="양 is both a top-tier surname (Yang) and a shipped "
                "honorific: position decides, and a surname LEADS -- "
-               "the trailing-only suffix gate never sees it here"),
+               "the trailing-only suffix gate never sees it here. "
+               "Classified to #271, not parity: 1.4 gave first 양, "
+               "last 미선, and it is the CJK order flip that swaps "
+               "them"),
     Case("ko_surname_yang_leads_a_segmentable_given", "양 지훈",
          {"family": "양", "given": "지훈"},
          classification="fix(#271)",
