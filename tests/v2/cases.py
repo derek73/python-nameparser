@@ -926,9 +926,9 @@ CASES: tuple[Case, ...] = (
                "entirely, with 씨 back in the given name. Nothing else "
                "pins that choice: under NO_COMMA the two are otherwise "
                "the same run"),
-    Case("ko_honorific_glued_family_comma", "田中さん, PhD",
+    Case("ja_honorific_glued_family_comma", "田中さん, PhD",
          {"family": "田中さん", "title": "PhD"},
-         classification="fix(#271)",
+         classification="fix(comma-family)",
          notes="the comma doctrine outranks the peel, and this is "
                "where a reader meets that boundary: a one-word name "
                "part before a comma is FAMILY_COMMA, which opts the "
@@ -937,9 +937,13 @@ CASES: tuple[Case, ...] = (
                "'さん, PhD'. Deliberate -- whoever wrote the comma "
                "already said where the family name ends -- and the "
                "one spelling disagreement #308 does not remove, unlike "
-               "the 김민준씨 Jr. pair above. Classified to #271, not "
-               "#308: the fields here are the CJK order flip's, and "
-               "the peel never fires on this input"),
+               "the 김민준씨 Jr. pair above. Classified to "
+               "comma-family, not #308 or #271: the peel never fires "
+               "on this input, and the only deviation from 1.4.0 is "
+               "first -> family, which the pure-Latin 'Smith, PhD' "
+               "makes identically (1.4.0 first Smith, here family "
+               "Smith) -- so no script-conditional rule can be "
+               "reaching it. Same move as family_comma_lone_title"),
     Case("zh_honorific_glued_surname", "王先生",
          {"family": "王", "suffix": "先生"},
          locale="zh",
