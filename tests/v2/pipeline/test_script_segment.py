@@ -31,10 +31,7 @@ _LEX = Lexicon(surnames=frozenset({"毛", "欧", "欧阳", "김", "남", "남궁
 # segmenter tests below reads that membership, so a stage lexicon that
 # omitted it would pin a shape no real configuration can have.
 _TAILS = frozenset({"씨", "님", "선생님", "박사", "さん", "先生", "様"})
-_LEX_TAILS = Lexicon(
-    surnames=frozenset({"毛", "欧", "欧阳", "김", "남", "남궁"}),
-    suffix_words=frozenset({"jr"}) | _TAILS,
-    honorific_tails=_TAILS)
+_LEX_TAILS = _LEX.add(suffix_words=_TAILS, honorific_tails=_TAILS)
 
 
 def _run(text: str, policy: Policy = _HAN, lexicon: Lexicon = _LEX,
