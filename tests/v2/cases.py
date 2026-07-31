@@ -736,16 +736,51 @@ CASES: tuple[Case, ...] = (
     Case("ko_honorific_glued_via_segmentation", "김씨",
          {"family": "김", "suffix": "씨"},
          classification="fix(#307)",
-         notes="glued HANGUL honorifics are reached after all: "
-               "default segmentation splits 김씨 into 김 + 씨 BEFORE "
-               "suffix classification, manufacturing the trailing "
-               "whole token -- a partial delivery of #308 that falls "
-               "out of stage order, hangul-only (glued Han needs the "
-               "zh pack; glued kana stays #308)"),
+         notes="glued hangul is reached ONLY in the surname+honorific "
+               "shape: default segmentation splits off the surname, "
+               "and the honorific is what remains -- a partial "
+               "delivery of #308 that falls out of stage order. A "
+               "glued honorific after a GIVEN name (김민준씨, the row "
+               "below) stays out of reach"),
     Case("ko_honorific_after_comma", "김민준, 씨",
          {"family": "김민준", "suffix": "씨"},
          classification="fix(#307)",
          notes="the post-comma lenient gate admits the honorific too; "
                "the comma disables segmentation per the comma "
-               "doctrine, so 김민준 stays whole"),
+               "doctrine, so 김민준 stays whole"),    Case("ko_honorific_glued_given_stays", "김민준씨",
+         {"family": "김", "given": "민준씨"},
+         notes="the boundary of the glued reach: segmentation splits "
+               "off 김 and the REMAINDER is 민준씨, not a listed "
+               "honorific token -- the common full-name glued shape "
+               "is #308's mechanism, pinned here so the docs' scoped "
+               "claim stays true"),
+    Case("zh_honorific_glued_surname", "王先生",
+         {"family": "王", "suffix": "先生"},
+         locale="zh",
+         classification="fix(#307)",
+         notes="the Han twin of 김씨: the zh pack's segmentation "
+               "splits off the surname and the remaining 先生 is the "
+               "honorific token"),
+    Case("zh_honorific_glued_given_stays", "王小明先生",
+         {"family": "王", "given": "小明先生"},
+         locale="zh",
+         notes="the Han boundary twin: 小明先生 is the remainder, not "
+               "an honorific token -- glued full names stay #308"),
+    Case("ko_suffix_matching_is_whole_token", "김지양",
+         {"family": "김", "given": "지양"},
+         notes="지양 ENDS with the honorific 양 but is a given name: "
+               "suffix matching is whole-token, never endswith -- the "
+               "pin the differential rule's anchor mirrors at the "
+               "name-string level"),
+    Case("ko_surname_yang_leads", "양 미선",
+         {"family": "양", "given": "미선"},
+         notes="양 is both a top-tier surname (Yang) and a shipped "
+               "honorific: position decides, and a surname LEADS -- "
+               "the trailing-only suffix gate never sees it here"),
+    Case("ko_honorific_stack", "김민준 박사 씨",
+         {"family": "김", "given": "민준", "suffix": "박사, 씨"},
+         classification="fix(#307)",
+         notes="a trailing RUN of honorifics peels whole, like "
+               "'Smith PhD MD' -- the multi-suffix loop the peel "
+               "shares with Latin suffixes"),
 )

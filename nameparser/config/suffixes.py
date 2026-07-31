@@ -38,21 +38,30 @@ SUFFIX_NOT_ACRONYMS = {
     'שליט״א',   # same, U+05F4 gershayim
 
     # #307: CJK postnominal honorifics and degrees, whole-token
-    # matched. That reaches the spaced forms directly -- and glued
-    # HANGUL forms too (김씨), because default segmentation splits the
-    # token before suffix classification runs; glued Han forms need
-    # the zh pack's segmentation the same way (王先生), and glued kana
-    # (山田太郎様, 田中さん) stays out of reach, tracked as #308.
-    # Self-selecting like the Korean
-    # surnames: a Han or hangul entry can only ever match CJK text.
-    # Vetting per the мл/ст standard above: none of these is a given
-    # name or surname in trailing whole-token position -- the two
-    # worth naming are 氏 (a rare Japanese surname reading exists, but
-    # a bare trailing 氏 after a name is the news-style honorific, and
-    # a 氏-surnamed person writes it FIRST) and the single-syllable
-    # ko pair 군/양, which trail a name only as honorifics (a
-    # single-syllable GIVEN name in final position is already
-    # vanishingly rare, and neither 군 nor 양 is one in practice).
+    # matched. That reaches the spaced forms directly, and glued
+    # forms in exactly ONE shape: surname+honorific (김씨; 王先生
+    # under the zh pack), where segmentation splits off the surname
+    # before suffix classification and the honorific is what remains.
+    # A glued honorific after a GIVEN name (김민준씨, 王小明先生) and
+    # glued kana (山田太郎様; 田中さん additionally ships no さん
+    # entry at all) stay out of reach, tracked as #308.
+    # Self-selecting like the Korean surnames: a Han or hangul entry
+    # can only ever match CJK text. Vetting per the мл/ст standard
+    # above -- three entries worth naming:
+    # - 氏: a rare Japanese surname reading exists, but a bare
+    #   trailing 氏 after a name is the news-style honorific, and a
+    #   氏-surnamed person writes it FIRST.
+    # - 양/군: 양 is also a top-tier surname (Yang) -- but a surname
+    #   LEADS, so the trailing-only suffix gate never sees it there
+    #   (양 미선 keeps family 양); as single-syllable GIVEN names in
+    #   final position both are vanishingly rare in practice.
+    # - 博士: an attested Japanese given name (ひろし, Hiroshi) --
+    #   the doctorate reading vastly dominates the spaced trailing
+    #   position this set matches, and a glued 田中博士 is untouched.
+    # Bare hangul 선생/교수 are deliberately absent (only the -님
+    # honorific forms ship): the bare forms read as common nouns as
+    # readily as address terms. Further candidates (여사, 太太, 殿)
+    # wait on the same case-by-case argument.
     '씨',        # ko Mr./Ms. -- standardly spaced in Korean orthography
     '박사',      # ko doctorate holder ("Dr.")
     '선생님',    # ko teacher/respected elder
