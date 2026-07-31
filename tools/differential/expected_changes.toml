@@ -198,11 +198,16 @@ issue = "fix(cjk-honorific-suffix) postnominal honorifics recognized, compoundin
 # 김지양, the spaced 김 지양 -- would match and could have a real
 # regression absorbed as intentional (the case table pins the
 # parser-side twin: suffix matching is whole-token, never endswith).
-# Glued surname+honorific diffs (김씨 -- reached via segmentation)
-# fall to the fields-only suffix-routing rule by their
-# {first, last, suffix} shape (v1 held the whole token in first, so
-# last moves too), which is field-honest even though that rule's
-# prose describes the two-token Latin case.
+# GLUED diffs (田中さん, 김민준씨, and the 김씨 that segmentation
+# already reached) never match this rule -- the anchor is judged on
+# the name STRING, and a glued form has no space before its
+# honorific. They fall to the fields-only suffix-routing rule by
+# their {first, last, suffix} shape (v1 held the whole token in
+# first, so last moves too), which is field-honest even though that
+# rule's prose describes the two-token Latin case. Verified by the
+# 2026-07-30 run, not assumed: #308's peel put a dozen glued names
+# in the corpus (Latin+glued like Andersonさん included) and every
+# one classified there -- none carried a middle-field diff.
 name_regex = "(?:^| )(?:씨|박사|선생님|교수님|군|양|님|先生|女士|小姐|博士|教授|様|氏|殿|さん|さま|くん|ちゃん)$"
 fields = ["first", "middle", "last", "suffix"]
 
