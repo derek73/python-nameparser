@@ -223,11 +223,19 @@ def _longest_entry(entries: frozenset[str]) -> int:
 
 
 def _is_post_nominal(state: ParseState, i: int) -> bool:
-    """Whether token `i` is vocabulary the parse will read as a
-    post-nominal. Three of this stage's decisions ask it and none of
-    them is about script: an honorific is neither a surname SITE, nor
-    the token a glued honorific hangs off, nor a boundary its writer
-    drew between family and given (#308).
+    """Whether token `i` is post-nominal VOCABULARY. Three of this
+    stage's decisions ask it and none of them is about script: an
+    honorific is neither a surname SITE, nor the token a glued
+    honorific hangs off, nor a boundary its writer drew between family
+    and given (#308).
+
+    It answers a VOCABULARY question, not a positional one, and the
+    three callers do not spend the answer the same way. In TRAILING
+    position vocabulary and position agree, so the peel site and the
+    neighbour test step over a True and go on scanning. In LEADING
+    position they disagree -- 양 is the family name there, whatever
+    the suffix set says -- so the surname site reads a True as an
+    ANSWER and declines, rather than as a token to step past.
 
     Suffixes only, deliberately. The neighbour rule's prose covers "a
     Latin title or suffix", but a Latin title needs no test here --

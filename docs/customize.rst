@@ -364,7 +364,12 @@ honorific glued to the end of a name token is split off it — ``田中さん``
 reads family ``田中`` with ``さん`` in ``suffix`` — because the tail
 vocabulary carries its own license rather than borrowing a script's:
 every entry is a word that can never end a name, so there is no
-per-script trust question for ``segment_scripts`` to answer.
+per-script trust question for ``segment_scripts`` to answer. That
+vocabulary is also the peel's off-switch —
+``Lexicon.default().remove(honorific_tails={"さん"})`` leaves
+``田中さん`` unsplit while the spaced ``田中 さん`` still reads ``さん``
+as a suffix. Dropping a word from a marker field alone orphans
+nothing, so that one needs no matching ``suffix_words`` edit.
 
 .. note::
 
