@@ -598,18 +598,6 @@ def test_honorific_tails_is_a_vocab_field() -> None:
     assert merged.honorific_tails == frozenset({"씨", "様"})
 
 
-def test_default_lexicon_honorific_tails_are_all_suffix_words() -> None:
-    # Not redundant with suffixes.py's GLUED_HONORIFICS <= SUFFIX_NOT_
-    # ACRONYMS assert: that one relates the raw constants at import
-    # time (and is gone under python -O); this one relates the
-    # normalized fields of a constructed Lexicon, and survives -O.
-    # (No ambiguous subtraction here -- that lives in the v1 shim's
-    # _build_snapshot, which this never touches.) Structural check,
-    # not a content pin.
-    d = Lexicon.default()
-    assert d.honorific_tails <= d.suffix_words
-
-
 def test_removing_a_honorific_tail_is_the_peels_off_switch() -> None:
     # The off-switch docs/customize.rst documents, at parse level:
     # dropping a tail leaves the glued name unsplit while the SPACED

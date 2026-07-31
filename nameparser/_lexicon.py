@@ -54,6 +54,13 @@ _VOCAB_FIELDS = (
 #:   as a tail would peel a period-gated word off a real name), and
 #:   nothing needs the acronym half: the shipped tails are CJK
 #:   honorifics, which are words.
+#:   The same relation is asserted a second time in config/suffixes.py,
+#:   over the raw GLUED_HONORIFICS/SUFFIX_NOT_ACRONYMS constants at
+#:   import. The two are not redundant in the way they look: that one
+#:   is an `assert`, stripped under `python -O`, while the check here
+#:   raises unconditionally -- so under -O this is what still holds the
+#:   SHIPPED vocabulary to the invariant, as it is the only thing that
+#:   ever held a caller's own.
 #:
 #: given_name_titles is deliberately NOT here and has no check of its
 #: own -- see the note in __post_init__ for why every attempt at one
