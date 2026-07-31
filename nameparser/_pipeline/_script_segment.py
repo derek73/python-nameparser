@@ -190,9 +190,10 @@ def _pieces(text: str, splits: tuple[int, ...]) -> tuple[str, ...]:
 
 
 def _split(state: ParseState, i: int, splits: tuple[int, ...],
-           detail: str | None) -> ParseState:
+           detail: str | None, tail_tag: str | None = None) -> ParseState:
     """Cut token `i` at every offset in `splits`, recording `detail` as
-    a SEGMENTATION report when there is one.
+    a SEGMENTATION report when there is one, and adding `tail_tag` to
+    the LAST piece when there is one of those.
 
     The offsets arrive non-empty, ascending and interior whatever chose
     them. From a segmenter: non-empty is the caller's own check,
@@ -203,7 +204,13 @@ def _split(state: ParseState, i: int, splits: tuple[int, ...],
 
     The ONE split path: the vocabulary hit is the single-offset case
     and the segmenter's answer the general one, so neither can drift
-    from the other's index arithmetic."""
+    from the other's index arithmetic. `tail_tag` is part of keeping it
+    one path: the piece is tagged HERE, where it is built, rather than
+    by the caller, which would have to re-derive where its own tail
+    landed after handing the index arithmetic off. Only the peel passes
+    one, and the piece it wants is the last by construction -- the
+    honorific it cut off the end; the surname path passes nothing and
+    the default leaves it exactly as it was."""
     token = state.tokens[i]
     base = token.span.start
     parts: list[WorkToken] = []
@@ -213,6 +220,9 @@ def _split(state: ParseState, i: int, splits: tuple[int, ...],
         parts.append(dataclasses.replace(
             token, text=piece, span=Span(base + start, base + end)))
         start = end
+    if tail_tag is not None:
+        parts[-1] = dataclasses.replace(
+            parts[-1], tags=parts[-1].tags | {tail_tag})
     added = len(splits)
     tokens = state.tokens[:i] + tuple(parts) + state.tokens[i + 1:]
     # Every index the earlier stages recorded is now stale past the
@@ -367,18 +377,13 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     cap = min(_longest_entry(tails), len(text) - 1)
     for length in range(cap, 0, -1):
         if text[-length:] in tails:
-            state = _split(state, i, (len(text) - length,), None)
-            # Tag the tail this stage just MANUFACTURED. The segmenter's
-            # neighbour test below needs to tell it from a token
-            # somebody wrote, and no vocabulary question can: the two
-            # spellings put the same word in the same place, and only
-            # the provenance differs.
-            tail = state.tokens[i + 1]
-            tokens = (state.tokens[:i + 1]
-                      + (dataclasses.replace(
-                          tail, tags=tail.tags | {_PEELED_TAG}),)
-                      + state.tokens[i + 2:])
-            return dataclasses.replace(state, tokens=tokens)
+            # The tail carries a tag because this stage MANUFACTURED
+            # it. The segmenter's neighbour test below needs to tell it
+            # from a token somebody wrote, and no vocabulary question
+            # can: the two spellings put the same word in the same
+            # place, and only the provenance differs.
+            return _split(state, i, (len(text) - length,), None,
+                          tail_tag=_PEELED_TAG)
     return state
 
 
