@@ -195,6 +195,25 @@ def test_zh_composes_with_korean_defaults() -> None:
     assert (n.family, n.given) == ("김", "민준")
 
 
+def test_honorific_spellings_agree_where_the_vocabulary_divides() -> None:
+    # usage.rst says a SPACED honorific is how you keep a family name
+    # whole. That holds only where a SEGMENTER divides it -- the ja
+    # tests below pin that half -- because the segmenter's precondition
+    # counts any neighbour and a spaced honorific is one. The
+    # VOCABULARY has no such precondition: the peel (#308) hands it the
+    # same remainder whichever way the honorific was written, so the
+    # two spellings agree exactly. Pinned in both scripts because the
+    # reader's escape hatch differs -- the zh pack can be declined,
+    # hangul segmentation is a DEFAULT and cannot, so a Korean-data
+    # reader has no lever at all here.
+    ko = _DEFAULT_PARSER.parse("김민준 씨")
+    assert (ko.family, ko.given, ko.suffix) == ("김", "민준", "씨")
+    assert _DEFAULT_PARSER.parse("김민준씨").as_dict() == ko.as_dict()
+    zh = _PACKED["zh"].parse("王小明 先生")
+    assert (zh.family, zh.given, zh.suffix) == ("王", "小明", "先生")
+    assert _PACKED["zh"].parse("王小明先生").as_dict() == zh.as_dict()
+
+
 def test_ja_pack_contents() -> None:
     assert locales.JA.code == "ja"
     # segmentation activation ONLY: no vocabulary (no list settles a

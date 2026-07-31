@@ -322,7 +322,15 @@ glued honorific carries no boundary at all — its writer drew none
 anywhere — so ``田中さん`` divides the way bare ``田中`` does, into
 family 田 and given 中, with さん in ``suffix``. Writing the honorific
 spaced is therefore also how you ask for a family name to be kept
-whole, short of declining the pack.
+whole on this path, short of declining the pack.
+
+Where the VOCABULARY divides the name the two spellings never part
+company, because the peel hands the same remainder to the same surname
+match either way: ``김민준 씨`` and ``김민준씨`` both give family 김,
+given 민준 and suffix 씨, and under the Chinese pack ``王小明 先生``
+and ``王小明先生`` both give family 王, given 小明 and suffix 先生.
+Spacing the honorific is no lever there, and for Korean data there is
+no pack to decline either — hangul segmentation is on by default.
 
 The glued reading is deliberately narrower than the spaced one. A
 spaced honorific sits behind a boundary its writer drew; a glued one
