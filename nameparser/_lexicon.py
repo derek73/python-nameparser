@@ -38,6 +38,9 @@ _VOCAB_FIELDS = (
 #: * suffix_acronyms_ambiguous: _vocab returns True on the ambiguous
 #:   set before testing suffix_acronyms, so an orphan silently turns a
 #:   word into a period-gated suffix.
+#: * honorific_tails: script_segment peels the tail into its own token
+#:   before classify ever runs, so an orphan splits the name and leaves
+#:   the fragment stranded inside it -- worse than not peeling at all.
 #:
 #: given_name_titles is deliberately NOT here and has no check of its
 #: own -- see the note in __post_init__ for why every attempt at one
@@ -47,6 +50,8 @@ _SUBSET_FIELDS = (
      "an orphan emits a spurious particle-or-given ambiguity"),
     ("suffix_acronyms_ambiguous", "suffix_acronyms",
      "an orphan silently becomes a period-gated suffix"),
+    ("honorific_tails", "suffix_words",
+     "an orphan splits the name and leaves the tail inside it"),
 )
 
 
@@ -338,11 +343,14 @@ class Lexicon:
     surnames: frozenset[str] = frozenset()
     #: Honorifics that may be peeled off the END of a name token
     #: (#308), matched longest-first: 田中さん splits into 田中 and さん
-    #: before anything else reads the name. Every entry must also be a
+    #: before the tokens are classified. Every entry must also be a
     #: :attr:`suffix_words` entry -- the peeled tail is claimed by
-    #: suffix classification like any other post-nominal. Strictly
-    #: narrower than the spaced honorific vocabulary, since a glued
-    #: tail has no token boundary to lean on. Full default list:
+    #: suffix classification like any other post-nominal. Deliberately
+    #: NOT gated on :attr:`Policy.segment_scripts
+    #: <nameparser.Policy.segment_scripts>` (unlike :attr:`surnames`
+    #: above): 田中さん peels under the default policy, where HAN is in
+    #: no activation set, because a tail entry carries its own license
+    #: to fire. Full default list:
     #: :data:`~nameparser.config.suffixes.GLUED_HONORIFICS`.
     honorific_tails: frozenset[str] = frozenset()
     #: Lowercase word -> exact-cased replacement used by capitalized()

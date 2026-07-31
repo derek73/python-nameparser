@@ -325,7 +325,9 @@ def test_given_name_titles_is_not_constrained_against_titles() -> None:
      "particles_ambiguous", "particles"),
     (lambda w: Lexicon(suffix_acronyms_ambiguous=w),
      "suffix_acronyms_ambiguous", "suffix_acronyms"),
-], ids=["particles_ambiguous", "suffix_acronyms_ambiguous"])
+    (lambda w: Lexicon(honorific_tails=w),
+     "honorific_tails", "suffix_words"),
+], ids=["particles_ambiguous", "suffix_acronyms_ambiguous", "honorific_tails"])
 def test_subset_error_names_the_fix(
     make: Callable[[frozenset[str]], Lexicon], marker: str, base: str
 ) -> None:
@@ -476,10 +478,12 @@ _PER_WORD_FIELDS = [f for f in _VOCAB_FIELDS if f != "given_name_titles"]
 def test_multiword_entry_warns_per_field(field: str) -> None:
     # Guard the whole family: every per-word field warns, not one.
     with pytest.warns(UserWarning, match="matched one word at a time"):
-        if field in ("particles_ambiguous", "suffix_acronyms_ambiguous"):
+        if field in ("particles_ambiguous", "suffix_acronyms_ambiguous",
+                     "honorific_tails"):
             # subset fields need their base populated to construct
             base = {"particles_ambiguous": "particles",
-                    "suffix_acronyms_ambiguous": "suffix_acronyms"}[field]
+                    "suffix_acronyms_ambiguous": "suffix_acronyms",
+                    "honorific_tails": "suffix_words"}[field]
             Lexicon.empty().add(**{base: ["zqx zqy"], field: ["zqx zqy"]})
         else:
             Lexicon.empty().add(**{field: ["zqx zqy"]})
@@ -580,10 +584,25 @@ def test_default_lexicon_ships_korean_surnames_only() -> None:
 
 
 def test_honorific_tails_is_a_vocab_field() -> None:
-    lex = Lexicon.empty().add(honorific_tails={"씨", "さん"})
+    # every tail is also a suffix word -- the peeled piece is claimed
+    # by suffix classification -- so each construction carries both
+    lex = Lexicon.empty().add(honorific_tails={"씨", "さん"},
+                              suffix_words={"씨", "さん"})
     assert lex.honorific_tails == frozenset({"씨", "さん"})
     assert lex.remove(honorific_tails={"씨"}).honorific_tails == \
         frozenset({"さん"})
-    merged = (Lexicon(honorific_tails=frozenset({"씨"}))
-              | Lexicon(honorific_tails=frozenset({"様"})))
+    merged = (Lexicon(honorific_tails=frozenset({"씨"}),
+                      suffix_words=frozenset({"씨"}))
+              | Lexicon(honorific_tails=frozenset({"様"}),
+                        suffix_words=frozenset({"様"})))
     assert merged.honorific_tails == frozenset({"씨", "様"})
+
+
+def test_default_lexicon_honorific_tails_are_all_suffix_words() -> None:
+    # Not redundant with suffixes.py's GLUED_HONORIFICS <= SUFFIX_NOT_
+    # ACRONYMS assert: that one relates the raw constants at import
+    # time (and is gone under python -O); this one relates the
+    # normalized, post-ambiguous-subtraction Lexicon fields, and
+    # survives -O. Structural check, not a content pin.
+    d = Lexicon.default()
+    assert d.honorific_tails <= d.suffix_words

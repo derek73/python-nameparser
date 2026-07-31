@@ -214,13 +214,17 @@ def _fix_invariants(**fields: frozenset[str]) -> dict[str, frozenset[str]]:
     Drawing dependent subsets directly (particles_ambiguous from
     whatever particles happened to be drawn) makes the strategy tree
     deep and mostly rejects; intersecting after the fact keeps every
-    draw usable and still reaches every shape. The four rules are
+    draw usable and still reaches every shape. The five rules are
     Lexicon's own, restated here on purpose -- if one changes, this
     fails loudly rather than silently fuzzing a narrower space.
     """
     fields["particles_ambiguous"] &= fields["particles"]
     fields["suffix_acronyms_ambiguous"] &= fields["suffix_acronyms"]
     fields["suffix_words"] -= fields["suffix_acronyms_ambiguous"]
+    # order matters: must run AFTER the suffix_words subtraction above,
+    # or that later subtraction could re-orphan a tail this repair just
+    # fixed
+    fields["honorific_tails"] &= fields["suffix_words"]
     fields["bound_given_names"] -= (
         fields["particles"] - fields["particles_ambiguous"])
     return fields
