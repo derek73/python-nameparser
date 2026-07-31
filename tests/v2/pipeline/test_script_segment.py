@@ -30,7 +30,7 @@ _LEX = Lexicon(surnames=frozenset({"毛", "欧", "欧阳", "김", "남", "남궁
 # as the shipped config asserts they are: the neighbour rule in the
 # segmenter tests below reads that membership, so a stage lexicon that
 # omitted it would pin a shape no real configuration can have.
-_TAILS = frozenset({"씨", "님", "선생님", "박사", "さん", "先生"})
+_TAILS = frozenset({"씨", "님", "선생님", "박사", "さん", "先生", "様"})
 _LEX_TAILS = Lexicon(
     surnames=frozenset({"毛", "欧", "欧阳", "김", "남", "남궁"}),
     suffix_words=frozenset({"jr"}) | _TAILS,
@@ -406,6 +406,21 @@ def test_a_neighbour_in_an_UNACTIVATED_script_still_blocks_the_consult() -> None
         out = _run(name, policy=_JA, segmenter=_fake((1,)))
         assert _texts(out) == name.split(), name
         assert out.ambiguities == (), name
+
+
+def test_a_recognized_suffix_neighbour_does_not_block_the_consult() -> None:
+    # The carve-out the docstring already makes for a Latin title or
+    # suffix, asked of the VOCABULARY instead of the script: an
+    # honorific is not a boundary its writer drew between family and
+    # given, whatever script it is written in. Both spellings reach
+    # the segmenter with the NAME alone -- the glued one after the
+    # #308 peel manufactured the neighbour, the spaced one because its
+    # writer wrote it that way.
+    for name in ("山田太郎様", "山田太郎 様"):
+        asked, seg = _capture()
+        out = _run(name, policy=_JA, lexicon=_LEX_TAILS, segmenter=seg)
+        assert asked == ["山田太郎"], name
+        assert _texts(out) == ["山田", "太郎", "様"], name
 
 
 # -- the glued honorific peel (#308) -----------------------------------

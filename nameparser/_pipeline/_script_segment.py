@@ -46,10 +46,13 @@ has no twin of: a segmenter answers where an UNDIVIDED name divides,
 so it is consulted only when the gated token is the name part's ONLY
 script-written one -- "山田 太郎" was divided by its writer and must
 not have its family divided again (a Latin title or suffix draws no
-such boundary). A segmenter's own exceptions PROPAGATE -- the single
-declared exception to parse totality (locales spec section 4): a
-user-supplied callable's error is a user-code error, not a content
-error.
+such boundary). The neighbour counts whatever script it is written
+in, ACTIVATED or not -- effective_script is merely non-None -- unless
+the vocabulary already knows it is a post-nominal, which no writer
+draws a name boundary with (#308). A segmenter's own exceptions
+PROPAGATE -- the single declared exception to parse totality (locales
+spec section 4): a user-supplied callable's error is a user-code
+error, not a content error.
 
 Placed AFTER segment, on the comma doctrine that script-conditional
 behavior is ignored where a comma already decides the family (the
@@ -398,7 +401,15 @@ def script_segment(state: ParseState) -> ParseState:
     # Jr." still reaches the segmenter. Vocabulary keeps its own rule
     # -- a listed surname is a certainty about that exact string,
     # whoever else stands beside it.
+    # That carve-out is about being VOCABULARY, not about being Latin,
+    # and it was written in terms of script only because every suffix
+    # WAS Latin when it was written. #307 shipped CJK honorifics and
+    # #308's peel manufactures one, so the test asks the vocabulary:
+    # 様 beside 山田太郎 -- glued or spaced -- says nothing about where
+    # the kanji name divides, and reading it as the writer's own
+    # boundary left the commonest addressed form undivided.
     if any(j != i and effective_script(state.tokens[j].text) is not None
+           and not _is_post_nominal(state, j)
            for j in state.segments[0]):
         return state
     # No try/except around the call: the module docstring's totality

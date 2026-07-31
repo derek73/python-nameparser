@@ -443,6 +443,39 @@ def test_ja_leaves_spaced_names_to_the_default_order() -> None:
 
 
 @_needs_ja
+def test_ja_divides_a_name_carrying_an_honorific() -> None:
+    # #308 end to end, with the real divider: the honorific peels off
+    # first, so namedivider is handed 山田太郎 rather than 山田太郎様
+    # -- which it would have divided somewhere wrong, answering for
+    # any string it is given. The spaced spelling composes the same
+    # way: a recognized honorific is not a boundary its writer drew.
+    p = _PACKED["ja"]
+    for name in ("山田太郎様", "山田太郎 様"):
+        n = p.parse(name)
+        assert (n.family, n.given, n.suffix) == ("山田", "太郎", "様"), name
+    # the kana-licensed composite too, whose division is rule-based
+    n = p.parse("高橋みなみ様")
+    assert (n.family, n.given, n.suffix) == ("高橋", "みなみ", "様")
+
+
+@_needs_ja
+def test_ja_divides_a_two_character_name_under_an_honorific() -> None:
+    # The consequence of the rule above on the commonest addressed
+    # form, pinned so it is a recorded decision rather than a side
+    # effect: with the honorific no longer blocking the consult, a
+    # two-character remainder reaches namedivider, which divides it
+    # one character each way BY RULE (score 1.0, so no SEGMENTATION
+    # report). That is the same presumption locales/ja.py already
+    # documents and test_ja_reports_statistical_divisions... pins for
+    # 原恵 -- 田中さん is simply the shortest route to it. A caller
+    # who wants 田中 kept whole is asking not to have unspaced names
+    # divided, which is what declining the pack means.
+    n = _PACKED["ja"].parse("田中さん")
+    assert (n.family, n.given, n.suffix) == ("田", "中", "さん")
+    assert n.ambiguities == ()      # rule-based, so nothing to report
+
+
+@_needs_ja
 def test_ja_reports_statistical_divisions_and_not_rule_based_ones() -> None:
     # the confidence floor's measured consequence (_script_segment.py's
     # constant): namedivider scores a rule-based division 1.0 and a
