@@ -730,9 +730,10 @@ CASES: tuple[Case, ...] = (
     Case("ja_sama_spaced", "田中 太郎 様",
          {"family": "田中", "given": "太郎", "suffix": "様"},
          classification="fix(#307)",
-         notes="the spaced 様 of forms and databases; the glued "
-               "mail-addressing form 山田太郎様 is #308's mechanism, "
-               "out of reach of whole-token matching"),
+         notes="the spaced 様 of forms and databases, which whole-token "
+               "matching reaches on its own; the glued "
+               "mail-addressing form is ja_sama_glued below, reached "
+               "by #308's peel instead"),
     Case("ja_san_spaced", "田中 さん",
          {"family": "田中", "suffix": "さん"},
          classification="fix(#308)",
@@ -810,10 +811,12 @@ CASES: tuple[Case, ...] = (
     Case("ko_glued_tail_alone_never_peels", "씨",
          {"family": "씨"},
          classification="fix(#271)",
-         notes="the empty-remainder guard: a token that IS a tail has "
-               "nothing to peel off. Classified to #271 because that "
-               "is what moves the lone token from first to family; "
-               "the row exists for the guard"),
+         notes="a token that IS a tail is not a peel site at all -- "
+               "every tail is a suffix word, so the site scan steps "
+               "past it and finds nothing else. NOT the length cap, "
+               "which is never reached here. Classified to #271 "
+               "because that is what moves the lone token from first "
+               "to family; the row exists for the guard"),
     Case("ko_honorific_token_alone_stays_whole", "선생님",
          {"family": "선생님"},
          classification="fix(#308)",
@@ -825,8 +828,12 @@ CASES: tuple[Case, ...] = (
     Case("ja_glued_tail_alone_never_peels", "さん",
          {"family": "さん"},
          classification="fix(#272)",
-         notes="the kana twin of the row above; the field placement "
-               "is the kana-licensed order default, not the peel"),
+         notes="the kana twin of ko_glued_tail_alone_never_peels, and "
+               "of that row only: a lone さん carries none of "
+               "ko_honorific_token_alone_stays_whole's risk, since no "
+               "surname vocabulary is written in kana. The field "
+               "placement is the kana-licensed order default, not the "
+               "peel"),
     Case("ja_glued_degree_stays", "田中博士",
          {"family": "田中博士"},
          classification="fix(#271)",

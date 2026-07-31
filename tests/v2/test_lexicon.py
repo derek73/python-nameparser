@@ -602,7 +602,9 @@ def test_default_lexicon_honorific_tails_are_all_suffix_words() -> None:
     # Not redundant with suffixes.py's GLUED_HONORIFICS <= SUFFIX_NOT_
     # ACRONYMS assert: that one relates the raw constants at import
     # time (and is gone under python -O); this one relates the
-    # normalized, post-ambiguous-subtraction Lexicon fields, and
-    # survives -O. Structural check, not a content pin.
+    # normalized fields of a constructed Lexicon, and survives -O.
+    # (No ambiguous subtraction here -- that lives in the v1 shim's
+    # _build_snapshot, which this never touches.) Structural check,
+    # not a content pin.
     d = Lexicon.default()
     assert d.honorific_tails <= d.suffix_words
