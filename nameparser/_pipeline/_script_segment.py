@@ -85,13 +85,17 @@ they are predominantly transcribed foreign names) never do.
 Only the FIRST activated-script token is considered, match or no
 match: family-first traditions put the surname at the front of the
 name, and a match deeper in the token stream would be a given name or
-an ordinary word, not a surname site. A token the vocabulary reads as
-a POST-NOMINAL is passed over rather than taken as that site, whoever
-wrote it: an honorific is not part of the name, so it cannot be the
-name's front. The peel above manufactures such a token and would
-otherwise have its own product dissected -- the 선생님 of Anderson선생님
-opens on the listed surname 선 -- and a spaced one was mis-split the
-same way before the peel existed ("Anderson 선생님").
+an ordinary word, not a surname site. Where that first token is one
+the vocabulary reads as a POST-NOMINAL, the stage DECLINES rather than
+looking further along: an honorific is not part of the name, and a
+surname leads, so an honorific in the surname's own position means
+there is no surname here to find. Deciding includes deciding that.
+Looking further would reach the given name the rule already refuses to
+touch -- "양 지훈" would split its own given name, 지 being listed too
+-- while declining leaves the peel's manufactured tail intact, since
+in "Anderson선생님" that tail is the first and only script-written
+token (선생님 opens on the listed surname 선, and a spaced
+"Anderson 선생님" was mis-split that way before the peel existed).
 """
 from __future__ import annotations
 
@@ -316,9 +320,17 @@ def script_segment(state: ParseState) -> ParseState:
     # extracted nickname/maiden content is unreachable from here --
     # no input can produce it, so no test pins it.
     i = next((i for i in state.segments[0]
-              if effective_script(state.tokens[i].text) in scripts
-              and not _is_post_nominal(state, i)), None)
-    if i is None:
+              if effective_script(state.tokens[i].text) in scripts), None)
+    # A post-nominal in the surname's own position is not a site to
+    # skip past but an answer: a surname LEADS, so if the leading
+    # script-written token is an honorific there is no surname here to
+    # find. Scanning ON would reach the given name, which is exactly
+    # what the first-token rule exists to prevent -- 지 is a listed
+    # surname, so "양 지훈" (양 is a surname AND a shipped honorific)
+    # would have its own given name split in half. Declining also
+    # covers the token the peel above manufactures, which is the first
+    # and only script-written one in "Anderson선생님".
+    if i is None or _is_post_nominal(state, i):
         return state
     token = state.tokens[i]
     text = token.text

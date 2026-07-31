@@ -912,6 +912,18 @@ CASES: tuple[Case, ...] = (
          notes="양 is both a top-tier surname (Yang) and a shipped "
                "honorific: position decides, and a surname LEADS -- "
                "the trailing-only suffix gate never sees it here"),
+    Case("ko_surname_yang_leads_a_segmentable_given", "양 지훈",
+         {"family": "양", "given": "지훈"},
+         classification="fix(#271)",
+         notes="양 is a surname AND a shipped honorific, and 지 is a "
+               "listed surname too -- so this is the name that "
+               "catches a segmentation site scanning PAST the "
+               "honorific reading of 양 into the given name. The "
+               "first script-written token decides, and deciding "
+               "includes deciding there is no surname site. "
+               "Classified to #271, not parity: 1.4 gave first 양, "
+               "last 지훈, and it is the CJK order flip that puts 양 "
+               "in family -- nothing in #308 moves these fields"),
     Case("ko_honorific_stack", "김민준 박사 씨",
          {"family": "김", "given": "민준", "suffix": "박사, 씨"},
          classification="fix(#307)",

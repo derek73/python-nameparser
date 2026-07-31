@@ -498,6 +498,16 @@ def test_a_peeled_tail_is_not_a_surname_site() -> None:
                        lexicon=lex)) == ["Anderson", "남궁"]
 
 
+def test_a_leading_post_nominal_is_not_a_surname_site() -> None:
+    # A surname LEADS, so an honorific in the surname's own position
+    # means there is no surname to find -- decline rather than scan
+    # on. Scanning on would reach the given name, which is what the
+    # first-token rule above exists to prevent: 지 is a listed
+    # surname, so 양 지훈 would split its own given name in half.
+    assert _texts(_run("씨 김민준", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["씨", "김민준"]
+
+
 def test_a_trailing_post_nominal_does_not_hide_the_peel_site() -> None:
     # the site is the last token that is not ITSELF a post-nominal, so
     # an unrelated trailing suffix cannot put the glued one out of
