@@ -265,9 +265,12 @@ def _is_post_nominal(state: ParseState, i: int) -> bool:
     with what classify does with the same token downstream -- "V." is
     a middle initial -- and the difference is reachable under the
     default lexicon: "田中さん V." stops its scan-back at the initial
-    and does not peel, while "田中さん II" steps over II and does.
-    Swapping in is_suffix_lenient fails no test; this clause is the
-    record instead.
+    and does not peel, while "田中さん II" steps over II and does. That
+    pair is the case table's ja_honorific_glued_before_an_initial and
+    ja_honorific_glued_before_a_roman_suffix, added because the clause
+    could NAME the discriminating input while swapping in
+    is_suffix_lenient still failed no test -- the shape a "unify the
+    two suffix predicates" refactor would have walked straight past.
 
     Suffixes only, deliberately. Should a CJK entry ever join titles,
     the surname site would want it excluded while the peel site must

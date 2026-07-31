@@ -750,6 +750,29 @@ CASES: tuple[Case, ...] = (
                "hiragana, so the kana license read the whole string "
                "as a Japanese name. The peel runs before the license "
                "is consulted, so it now sees 田中 alone"),
+    Case("ja_honorific_glued_before_a_roman_suffix", "田中さん II",
+         {"family": "田中", "suffix": "さん, II"},
+         classification="fix(#308)",
+         notes="an unrelated trailing suffix does not hide the peel "
+               "site: the scan-back steps over II and peels さん off "
+               "the token behind it. Half of the pair that pins "
+               "_is_post_nominal's use of is_suffix_STRICT -- the "
+               "other half is the row below, and swapping in "
+               "is_suffix_lenient changes that one and not this one"),
+    Case("ja_honorific_glued_before_an_initial", "田中さん V.",
+         {"given": "田中さん", "family": "V."},
+         notes="the strict/lenient discriminator, and the reason "
+               "_is_post_nominal reads is_suffix_strict. Bare 'v' is "
+               "a suffix word, but 'V.' is an initial and the strict "
+               "test vetoes it -- so the scan-back stops HERE rather "
+               "than stepping over it, finds no tail on 'V.', and "
+               "does not peel. Under is_suffix_lenient it would step "
+               "over and give given 田中, middle さん, family 'V.'. "
+               "Parity besides: 1.4.0 read this first 田中さん / last "
+               "'V.', which is these fields under the 2.0 names. "
+               "Classification agrees with what classify does with "
+               "the same token downstream -- 'V.' is a middle "
+               "initial, not a post-nominal"),
     Case("ja_sama_glued", "山田太郎様",
          {"family": "山田太郎", "suffix": "様"},
          classification="fix(#308)",
