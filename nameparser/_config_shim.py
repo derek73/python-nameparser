@@ -986,6 +986,7 @@ class Constants:
         removal path.
         """
         from nameparser.config.maiden_markers import MAIDEN_MARKERS
+        from nameparser.config.suffixes import GLUED_HONORIFICS
         from nameparser.config.surnames import KOREAN_SURNAMES
         acronyms = frozenset(self.suffix_acronyms)
         particles = frozenset(self.prefixes)
@@ -1068,6 +1069,9 @@ class Constants:
             # Unwrapped where maiden_markers above is wrapped: this
             # module is born frozen (#293), so no wrap
             surnames=KOREAN_SURNAMES,
+            # likewise no v1 manager: the glued-honorific tail set is
+            # 2.1 behavior (#308), so it rides in the snapshot only
+            honorific_tails=frozenset(GLUED_HONORIFICS),
             # TupleManager is dict[str, object] (v1 parity: values were
             # never statically str-typed); every real entry is a str,
             # same assumption _DelimiterManager's sentinel lookup makes

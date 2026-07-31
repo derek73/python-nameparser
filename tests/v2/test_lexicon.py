@@ -577,3 +577,13 @@ def test_default_lexicon_ships_korean_surnames_only() -> None:
     hangul = _SCRIPT_RANGES[Script.HANGUL]
     assert all(all(any(lo <= ord(c) <= hi for lo, hi in hangul) for c in s)
                and 1 <= len(s) <= 2 for s in lex.surnames)
+
+
+def test_honorific_tails_is_a_vocab_field() -> None:
+    lex = Lexicon.empty().add(honorific_tails={"씨", "さん"})
+    assert lex.honorific_tails == frozenset({"씨", "さん"})
+    assert lex.remove(honorific_tails={"씨"}).honorific_tails == \
+        frozenset({"さん"})
+    merged = (Lexicon(honorific_tails=frozenset({"씨"}))
+              | Lexicon(honorific_tails=frozenset({"様"})))
+    assert merged.honorific_tails == frozenset({"씨", "様"})

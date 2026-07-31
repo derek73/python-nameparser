@@ -24,6 +24,7 @@ _VOCAB_FIELDS = (
     "titles", "given_name_titles", "suffix_acronyms", "suffix_words",
     "suffix_acronyms_ambiguous", "particles", "particles_ambiguous",
     "conjunctions", "bound_given_names", "maiden_markers", "surnames",
+    "honorific_tails",
 )
 
 #: (marker, base, why) triples. Each marker narrows how entries of its
@@ -335,6 +336,15 @@ class Lexicon:
     #: (:data:`~nameparser.config.surnames.KOREAN_SURNAMES`); Chinese
     #: surnames ship in locales.ZH because Han segmentation is opt-in.
     surnames: frozenset[str] = frozenset()
+    #: Honorifics that may be peeled off the END of a name token
+    #: (#308), matched longest-first: 田中さん splits into 田中 and さん
+    #: before anything else reads the name. Every entry must also be a
+    #: :attr:`suffix_words` entry -- the peeled tail is claimed by
+    #: suffix classification like any other post-nominal. Strictly
+    #: narrower than the spaced honorific vocabulary, since a glued
+    #: tail has no token boundary to lean on. Full default list:
+    #: :data:`~nameparser.config.suffixes.GLUED_HONORIFICS`.
+    honorific_tails: frozenset[str] = frozenset()
     #: Lowercase word -> exact-cased replacement used by capitalized()
     #: ("phd" -> "Ph.D."). Pair-valued: change it with
     #: dataclasses.replace(), not add()/remove(); read it as a mapping
@@ -577,7 +587,8 @@ def _default_lexicon() -> Lexicon:
     from nameparser.config.maiden_markers import MAIDEN_MARKERS
     from nameparser.config.prefixes import NON_FIRST_NAME_PREFIXES, PREFIXES
     from nameparser.config.suffixes import (
-        SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_NOT_ACRONYMS,
+        GLUED_HONORIFICS, SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS,
+        SUFFIX_NOT_ACRONYMS,
     )
     from nameparser.config.surnames import KOREAN_SURNAMES
     from nameparser.config.titles import FIRST_NAME_TITLES, TITLES
@@ -602,6 +613,7 @@ def _default_lexicon() -> Lexicon:
         # surnames.py is born frozen (#293) -- no call-site wrap needed,
         # unlike the v1 modules above (their wraps drop when #293 lands)
         surnames=KOREAN_SURNAMES,
+        honorific_tails=frozenset(GLUED_HONORIFICS),
         # pass canonical pair-tuples so this strictly-typed call site never
         # feeds a Mapping to the tuple-annotated field; __post_init__
         # still tolerates a Mapping at runtime for interactive use
