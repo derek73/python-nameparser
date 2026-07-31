@@ -931,6 +931,16 @@ def test_non_interference_all_packs_combined() -> None:
     # Ukrainian "і" is single-character like "и", so the same
     # single-letter carve-out applies: pinned with a 5-piece name.
     ("проф і акад Тарас Григорович Шевченко", "title", "проф і акад"),
+    # Ukrainian "й" is the euphonic alternate of "і" (the two swap by
+    # surrounding vowel/consonant, so real data carries both) -- same
+    # single-letter carve-out, pinned with the same 5-piece shape.
+    ("проф й акад Тарас Григорович Шевченко", "title", "проф й акад"),
+    # ...and joining two given names, the shape #267's reporter raised:
+    # a bare Cyrillic letter between given names reads as the
+    # conjunction, not an initial (Cyrillic typography writes initials
+    # with periods -- see
+    # test_267_dotted_cyrillic_initial_wins_over_conjunction).
+    ("Олесь й Олена Коваленки", "given", "Олесь й Олена"),
     # Greek titles + conjunction (και has 3 letters, so the single-char
     # initial carve-out above never applies to it). Bare κ is NOT
     # shipped -- it collides with the initial+surname shape (see the
@@ -1075,3 +1085,18 @@ def test_269_bare_greek_kappa_not_a_title() -> None:
     assert n.title == ""
     assert n.given == "Κ."
     assert n.family == "Παπαδόπουλος"
+
+
+def test_267_dotted_cyrillic_initial_wins_over_conjunction() -> None:
+    # Blast-radius guard for the single-letter Cyrillic conjunctions
+    # (и/і/й): each is also the first letter of real given names
+    # (Игорь, Ірина, Йосип), so the shipped entries would be a trap if
+    # membership could outrank a punctuated initial. It cannot -- the
+    # initial regex's dotted branch is Unicode-aware -- and #267 settled
+    # the BARE letter in the conjunction's favor precisely because
+    # Cyrillic typography writes initials with the period.
+    for dotted, family in (("И.", "Иванов"), ("І.", "Франко"),
+                           ("Й.", "Сліпий")):
+        n = parse(f"{dotted} {family}")
+        assert n.given == dotted
+        assert n.family == family
