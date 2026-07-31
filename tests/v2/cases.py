@@ -877,6 +877,21 @@ CASES: tuple[Case, ...] = (
          classification="fix(#271)",
          notes="likewise: 王氏 is a historical name form ('the Wang "
                "woman'). The spaced 田中氏 keeps its entry"),
+    Case("ja_glued_dono_stays", "鵜殿",
+         {"family": "鵜殿"},
+         classification="fix(#271)",
+         notes="the exclusion with the longest argument behind it and, "
+               "until this row, the only one nothing held: adding 殿 "
+               "back to GLUED_HONORIFICS passed the whole suite. 鵜殿 "
+               "(Udono) is a real surname, one of roughly ninety "
+               "Japanese surnames ending in 殿 (真殿, 大殿, ...), and a "
+               "peeled 殿 would give family 鵜 with 殿 in suffix. It "
+               "has to be the BARE surname: in a two-token 真殿 太郎 "
+               "the site scan lands on 太郎 and the exclusion is never "
+               "consulted, so only a lone surname discriminates. "
+               "Classified to #271 like its neighbours, not parity: "
+               "1.4 gave first 鵜殿 and no last, and it is the CJK "
+               "order flip that makes the one token a family name"),
     Case("ja_dono_spaced", "田中 殿",
          {"family": "田中", "suffix": "殿"},
          classification="fix(#308)",
