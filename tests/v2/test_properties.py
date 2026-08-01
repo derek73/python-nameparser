@@ -19,6 +19,7 @@ from nameparser import (
 from nameparser._lexicon import _VOCAB_FIELDS
 from nameparser._pipeline import run
 from nameparser._pipeline._state import ParseState
+from nameparser._pipeline._vocab import effective_script
 from nameparser._types import AmbiguityKind, Role
 
 from .conftest import differential_corpus
@@ -189,15 +190,29 @@ def test_particle_fork_is_never_double_reported(text: str) -> None:
 # would be a dead entry that trips Lexicon's multi-word warning.
 # The CJK tail (#271) is what lets a drawn `surnames` set activate
 # script_segment at all: hangul is the script segmented by default, so
-# "김"/"남궁" are what make the stage fire (see _names_using, which
-# supplies the unspaced token to fire it ON), and the Han rows ride
-# along for script_orders -- Han segmentation is opt-in via
-# locales.ZH, which these policies do not draw.
+# "김"/"남궁"/"남" are what make the stage fire (see _names_using, which
+# supplies the unspaced token to fire it ON -- and, since the drawn
+# policy picks its own segment_scripts, only when that policy
+# activates hangul too). "남" is there for the stage's multi-match
+# FORK, which nothing else in this pool can reach: it is a proper
+# PREFIX of "남궁", so a lexicon drawn with both makes "남궁민준" match
+# twice, and longest-first then has to choose and report the reading
+# it passed over. Reachable is all it is -- both entries have to land
+# in the same drawn `surnames`, 0.8% of draws, so the fork fires
+# roughly once in 900 examples (42 over 36000 measured) and the
+# committed 250-example seed does not reach it at all; a randomized
+# run is what sees it. The Han rows ride along for script_orders, and
+# are not inert here either -- `_policies` draws segment_scripts
+# freely, so HAN is activated in 37.7% of drawn policies (measured
+# over 20000 draws), and an activated Han token STANDING EARLIER takes
+# the surname site: "欧阳 김민준" does not split, where "김민준 欧阳"
+# does. What these policies never draw is a locale PACK, which is the
+# only way shipped configuration turns Han segmentation on.
 _VOCAB = st.sampled_from([
     "van", "de", "la", "bin", "abdul", "abu", "dr", "sir", "prof",
     "md", "jr", "iii", "esq", "ma", "do", "and", "y", "née", "geb",
     "a", "b", "ph.d", "عبد", "фон", "μεγα",
-    "김", "남궁", "毛", "欧阳",
+    "김", "남궁", "남", "毛", "欧阳",
 ])
 
 # given_name_titles is the one field matched as a space-joined run, so
@@ -301,13 +316,18 @@ def _policies(draw: st.DrawFn) -> Policy:
 
 
 @st.composite
-def _names_using(draw: st.DrawFn, lexicon: Lexicon) -> str:
+def _names_using(draw: st.DrawFn, lexicon: Lexicon,
+                 policy: Policy) -> str:
     """Build the input out of the lexicon's OWN words.
 
     Fuzzing configuration while feeding unrelated text tests almost
     nothing: a randomly generated string essentially never contains a
     randomly generated vocabulary entry, so every configured set would
     sit unused and the parse would take the same path every time.
+
+    Takes the POLICY as well as the lexicon because one of the shapes
+    below is only reachable when the two agree -- see the segmentation
+    note.
     """
     vocab = sorted({w for name in _SET_FIELDS
                     for w in getattr(lexicon, name)})
@@ -325,24 +345,83 @@ def _names_using(draw: st.DrawFn, lexicon: Lexicon) -> str:
     # mixed-script token the surname half correctly declines, and for
     # the peel it is the one shape that reaches an ASCII tail at all --
     # the stage bails on a wholly-ASCII original, so the non-Latin stem
-    # is what admits '민준jr'. Both fires observed under drawn lexicons
-    # are of exactly that shape.
-    # Neither derivation guarantees a fire on any given run: the piece
-    # is one of ~30 in the pool, so it competes with the bare vocabulary
-    # words, and a bare drawn surname standing earlier in the name takes
-    # the surname site before the unspaced token can. Instrument before
-    # concluding either half is exercised -- the counts above are what
-    # that costs to find out, and the two halves are NOT in the same
-    # state. Measured over this test's 250 examples: the peel fires
-    # twice, the surname half ZERO times -- currently inert. Structural,
-    # not luck: `w + "민준"` on a non-hangul surname is a MIXED-script
-    # token, whose effective_script is None, so it can never be an
-    # activated surname site at all; only a drawn HANGUL surname makes
-    # one, and across the run exactly one such token was sampled
-    # ('남궁민준'), into an example whose drawn policy had HANGUL out of
-    # segment_scripts. Deriving the token was still the right move --
-    # it took the half off structurally-unreachable -- but a fix worth
-    # having would derive it in the script the policy activated.
+    # is what admits '민준jr'. Every peel fire observed under a drawn
+    # lexicon is of exactly that shape -- the committed run's is
+    # '민준de'.
+    # What the forced insertion below is worth, in the one number that
+    # cannot rot: instrument _split under this test's committed
+    # derandomize=True seed -- peel and surname split are told apart by
+    # its tail_tag argument -- and origin/master's version of this
+    # strategy counts ZERO surname splits against two peels, while this
+    # one counts 23 against one. That figure is reproducible by anyone
+    # in one command and moves only when these strategies do.
+    # Being in the POOL is not the same as being in the NAME, and for
+    # the surname half that gap was the whole story. Two things must
+    # coincide before the shape is legal at all -- a HANGUL surname
+    # drawn AND a policy that activates hangul, together 5.5% of draws
+    # over 20000 -- and the token then has to win a place in a 1-8
+    # piece name against a pool of median size 23. Merely offered, it
+    # reached the name a couple of times per 250. The shortfall was
+    # sampling, never the stage.
+    # What that buys is COVERAGE, not detection, and the two are worth
+    # separating because the first is the easier to oversell. This
+    # layer asserts totality and span-exactness only, so every
+    # BEHAVIORAL mutant in the stage -- the site's last-token scan,
+    # shortest-first, the whole-token guard, the activation gate, the
+    # post-nominal decline, the prefix cap, the segment remap -- passes
+    # here with the insertion and without it, and is killed by
+    # tests/v2/pipeline/test_script_segment.py instead. The one defect
+    # class this layer CAN catch is span arithmetic inside _split, and
+    # the peel already reached that path. Writing `base + end` as
+    # `base + end + 1` and giving each tree ten randomized runs of 250:
+    # origin/master finds it in 8 runs of 10, at a median 1561 shrink
+    # calls and 14.6 seconds; this tree finds it in 10 of 10, at 346
+    # calls and 3.6 seconds, and shrinks to '김민준 김' where master
+    # shrinks to the peel's '민준van'. st.integers shrinks the
+    # insertion index toward 0, which walks the token into the position
+    # likeliest to fire instead of away from it.
+    # Alignment is still not a guarantee: with the token forced in the
+    # split fires in about four aligned examples in five (350 of 450,
+    # over 24 randomized runs of 250). Every decline is the stage
+    # deciding, not waste. A FAMILY_COMMA opts the stage out whole -- a
+    # ',' piece is in the pool. Otherwise an EARLIER script-written
+    # token takes the surname site: a bare drawn surname ('김 김민준'
+    # leaves 김민준 unsplit -- the whole-token guard), a drawn hangul
+    # post-nominal (the leading post-nominal decline), or a Han token
+    # under a policy that activated HAN. A LATIN word never takes it --
+    # 'John 김민준' still splits, zero occurrences in 1082 aligned
+    # examples -- which is why the insertion index is drawn rather than
+    # pinned to 0.
+    # Two earlier versions of this comment overstated this half from
+    # small samples -- one calling it "structurally inert, not luck" on
+    # a single derandomize=True run reporting zero, one putting the
+    # conversion above at 100%. So: a derandomize=True run is one
+    # sample and cannot disagree with itself, and every randomized
+    # figure quoted here was taken under derandomize=False instead,
+    # which is how to re-measure them. The structural claim is real but
+    # narrower than it was made: `w + "민준"` on a NON-hangul surname is
+    # a mixed-script token whose effective_script is None, so those
+    # candidates can never be a site whatever the policy says. Only a
+    # drawn hangul surname makes a usable one, which is what
+    # `activatable` selects.
+    # Two shapes the insertion costs, both small, neither zero. It is
+    # unconditional once lexicon and policy align, so the stage's
+    # i-is-None early return under a LIVE configuration fell from 1.3%
+    # of examples to 0.1%: it survives only where a drawn quote pair
+    # carries the token off into a nickname, leaving segments[0] with
+    # nothing in an activated script ("prof ' Smith 남민준 '"). And the
+    # inserted token can SUPPRESS a peel, the peel site being the last
+    # non-post-nominal token and this token being no post-nominal:
+    # '김민준씨 김민준' leaves 씨 glued where '김민준 김민준씨' peels
+    # it.
+    # The peel gets no forced piece of its own -- it is saturated by
+    # case rows and stage tests, so a second one was not worth the
+    # distribution shift -- and its count here is a lottery either way
+    # (0-7 per randomized run of 250). On net the insertion nudges it
+    # UP, by a route worth knowing: a hangul token makes the original
+    # non-ASCII, which lifts the stage's ASCII bail off Latin tails
+    # that are otherwise unreachable -- under honorific_tails={'a'},
+    # 'John la' does not peel and '김민준 la' does.
     # sorted for the same reason `vocab` above is: frozenset iteration
     # order is not stable across runs, and an unsorted pool shifts
     # every index sampled_from draws -- which would defeat
@@ -353,7 +432,24 @@ def _names_using(draw: st.DrawFn, lexicon: Lexicon) -> str:
     # pool is never empty even for an empty lexicon
     pieces = st.sampled_from(
         vocab + unspaced + glued + ["John", "Smith", "Q.", ",", "(", "'"])
-    return " ".join(draw(st.lists(pieces, min_size=1, max_size=8)))
+    drawn = draw(st.lists(pieces, min_size=1, max_size=8))
+    # The one shape the pool does not deliver RELIABLY -- it is in
+    # there, it just loses the draw. Inserted at a drawn position
+    # rather than the front: the stage takes the first ACTIVATED-script
+    # token, not the first token, so a leading Latin word cannot hide
+    # it -- and both placements are worth covering.
+    activatable = sorted(
+        w + "민준" for w in lexicon.surnames
+        if effective_script(w + "민준") in policy.segment_scripts)
+    if activatable:
+        # rebuilt rather than list.insert()d: st.lists hands back a
+        # fresh list today, so mutating it is safe today, and a
+        # strategy that ever memoized one would make this a bug in the
+        # fuzzer rather than in the code under test
+        at = draw(st.integers(0, len(drawn)))
+        token = draw(st.sampled_from(activatable))
+        drawn = [*drawn[:at], token, *drawn[at:]]
+    return " ".join(drawn)
 
 
 @given(_lexicons(), _policies(), st.data())
@@ -363,7 +459,7 @@ def test_any_valid_config_still_parses_totally(
     # Building the parser is part of the contract: a Lexicon and Policy
     # that each constructed must also combine.
     parser = Parser(lexicon=lexicon, policy=policy)
-    text = data.draw(_names_using(lexicon))
+    text = data.draw(_names_using(lexicon, policy))
     parsed = parser.parse(text)          # must not raise, ever
     # the anti-#100 invariant, under configuration rather than under
     # the default vocabulary: spans index the original exactly
