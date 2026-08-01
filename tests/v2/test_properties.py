@@ -193,9 +193,13 @@ def test_particle_fork_is_never_double_reported(text: str) -> None:
 # "김"/"남궁" are what make the stage fire (see _names_using, which
 # supplies the unspaced token to fire it ON -- and, since the drawn
 # policy picks its own segment_scripts, only when that policy
-# activates hangul too), and the Han rows ride
-# along for script_orders -- Han segmentation is opt-in via
-# locales.ZH, which these policies do not draw.
+# activates hangul too). The Han rows ride along for script_orders,
+# and are not inert here either -- `_policies` draws segment_scripts
+# freely, so HAN is activated in 37.7% of drawn policies (measured
+# over 20000 draws), and an activated Han token STANDING EARLIER takes
+# the surname site: "欧阳 김민준" does not split, where "김민준 欧阳"
+# does. What these policies never draw is a locale PACK, which is the
+# only way shipped configuration turns Han segmentation on.
 _VOCAB = st.sampled_from([
     "van", "de", "la", "bin", "abdul", "abu", "dr", "sir", "prof",
     "md", "jr", "iii", "esq", "ma", "do", "and", "y", "née", "geb",
