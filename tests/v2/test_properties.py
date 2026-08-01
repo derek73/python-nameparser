@@ -392,16 +392,22 @@ def _names_using(draw: st.DrawFn, lexicon: Lexicon,
     pieces = st.sampled_from(
         vocab + unspaced + glued + ["John", "Smith", "Q.", ",", "(", "'"])
     drawn = draw(st.lists(pieces, min_size=1, max_size=8))
-    # The one shape the pool cannot deliver on its own. Inserted at a
-    # drawn position rather than the front: the stage takes the first
-    # ACTIVATED-script token, not the first token, so a leading Latin
-    # word must not hide it -- and both placements are worth covering.
+    # The one shape the pool does not deliver RELIABLY -- it is in
+    # there, it just loses the draw. Inserted at a drawn position
+    # rather than the front: the stage takes the first ACTIVATED-script
+    # token, not the first token, so a leading Latin word cannot hide
+    # it -- and both placements are worth covering.
     activatable = sorted(
         w + "민준" for w in lexicon.surnames
         if effective_script(w + "민준") in policy.segment_scripts)
     if activatable:
-        drawn.insert(draw(st.integers(0, len(drawn))),
-                     draw(st.sampled_from(activatable)))
+        # rebuilt rather than list.insert()d: st.lists hands back a
+        # fresh list today, so mutating it is safe today, and a
+        # strategy that ever memoized one would make this a bug in the
+        # fuzzer rather than in the code under test
+        at = draw(st.integers(0, len(drawn)))
+        token = draw(st.sampled_from(activatable))
+        drawn = [*drawn[:at], token, *drawn[at:]]
     return " ".join(drawn)
 
 
