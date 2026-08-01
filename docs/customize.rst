@@ -70,9 +70,10 @@ go together:
     'Hon'
 
 Emptying the vocabulary does not switch titles off entirely, though. A
-leading word that ends in a period is read as a title structurally,
-without consulting ``titles`` at all — that is what lets unfamiliar
-ranks and abbreviations work (see :ref:`abbreviated-titles`):
+word ending in a period, standing at the front of the part that carries
+the given name, is read as a title structurally, without consulting
+``titles`` at all — that is what lets unfamiliar ranks and
+abbreviations work (see :ref:`abbreviated-titles`):
 
 .. doctest::
 
