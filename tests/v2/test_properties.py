@@ -190,10 +190,18 @@ def test_particle_fork_is_never_double_reported(text: str) -> None:
 # would be a dead entry that trips Lexicon's multi-word warning.
 # The CJK tail (#271) is what lets a drawn `surnames` set activate
 # script_segment at all: hangul is the script segmented by default, so
-# "김"/"남궁" are what make the stage fire (see _names_using, which
+# "김"/"남궁"/"남" are what make the stage fire (see _names_using, which
 # supplies the unspaced token to fire it ON -- and, since the drawn
 # policy picks its own segment_scripts, only when that policy
-# activates hangul too). The Han rows ride along for script_orders,
+# activates hangul too). "남" is there for the stage's multi-match
+# FORK, which nothing else in this pool can reach: it is a proper
+# PREFIX of "남궁", so a lexicon drawn with both makes "남궁민준" match
+# twice, and longest-first then has to choose and report the reading
+# it passed over. Reachable is all it is -- both entries have to land
+# in the same drawn `surnames`, 0.8% of draws, so the fork fires
+# roughly once in 900 examples (42 over 36000 measured) and the
+# committed 250-example seed does not reach it at all; a randomized
+# run is what sees it. The Han rows ride along for script_orders,
 # and are not inert here either -- `_policies` draws segment_scripts
 # freely, so HAN is activated in 37.7% of drawn policies (measured
 # over 20000 draws), and an activated Han token STANDING EARLIER takes
@@ -204,7 +212,7 @@ _VOCAB = st.sampled_from([
     "van", "de", "la", "bin", "abdul", "abu", "dr", "sir", "prof",
     "md", "jr", "iii", "esq", "ma", "do", "and", "y", "née", "geb",
     "a", "b", "ph.d", "عبد", "фон", "μεγα",
-    "김", "남궁", "毛", "欧阳",
+    "김", "남궁", "남", "毛", "欧阳",
 ])
 
 # given_name_titles is the one field matched as a space-joined run, so
