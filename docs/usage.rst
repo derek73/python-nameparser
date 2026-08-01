@@ -530,21 +530,37 @@ what that field marks and how to add to it.
 Titles you didn't configure
 -----------------------------
 
-A leading word that ends in a period is read as a title even when it is
-in no vocabulary list, which is what lets unfamiliar ranks, honorifics
-and abbreviations work without configuring anything:
+A trailing period marks an abbreviation, and the parts of a name that
+get abbreviated are the ones standing outside it — titles and
+post-nominals. So a word ending in a period, in no vocabulary list at
+all, is read as a title when it stands where a title stands: at the
+front of the part that carries the given name. That is what lets
+unfamiliar ranks, honorifics and abbreviations work without configuring
+anything:
 
 .. doctest::
 
-    >>> parse("Major. Dona Smith").title
-    'Major.'
-    >>> parse("Foo. Xyz. John Smith").title      # chains
-    'Foo. Xyz.'
+    >>> parse("Insp. Jane Morse").title
+    'Insp.'
+    >>> parse("Det. Insp. Jane Morse").title     # chains
+    'Det. Insp.'
+
+Neither ``det`` nor ``insp`` is in the shipped vocabulary; the periods
+are doing all the work.
+
+The part that carries the given name is not always the front of the
+string. After a family comma it is the part *after* the comma, and the
+rule applies there in exactly the same way:
+
+.. doctest::
+
+    >>> parse("Morse, Det. Insp. Jane").title
+    'Det. Insp.'
 
 The rule is bounded in three ways, so it doesn't swallow ordinary
 names. Single initials are left alone, so are abbreviations with
-interior periods, and the rule only applies to the leading run — the
-same word after the given name is a middle name:
+interior periods, and it applies only to that leading run — the same
+word after the given name is a middle name:
 
 .. doctest::
 
@@ -552,11 +568,16 @@ same word after the given name is a middle name:
     'J.'
     >>> parse("E.T. Jones").given
     'E.T.'
-    >>> parse("John Major. Smith").middle
-    'Major.'
+    >>> parse("Jane Insp. Morse").middle
+    'Insp.'
 
 Because this is structural rather than vocabulary-driven, emptying
 ``titles`` does not switch it off; see :doc:`customize`.
+
+Only the title direction is inferred this way. A *trailing*
+abbreviation is matched against the suffix vocabulary and nothing more,
+so an abbreviated post-nominal is recognized only if it is a word the
+parser already knows.
 
 Comparing names
 ----------------

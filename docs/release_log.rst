@@ -31,6 +31,10 @@ Release Log
     - Fix NFD-decomposed input missing the East Asian defaults entirely: script classification now normalizes to NFC before deciding, so a Korean or Japanese name typed on macOS — where decomposed text is routine — gets the same order rule as its composed twin, which it silently did not before. Segmentation MATCHING deliberately stays raw, so an unspaced NFD hangul name is ordered correctly but not split, rather than being split in the wrong place. One gotcha worth stating plainly: parse output preserves the encoding it was given, so for NFD input ``name.family == "김"`` is ``False`` even though it is the same name — compare NFC-normalized text when comparing across encodings (#272)
     - Fix the Ukrainian conjunction ``й`` not joining the pieces around it: it is the euphonic alternate of ``і``, the two chosen by the surrounding vowel and consonant rather than by meaning (``"Олесь і Олена"`` but ``"Марія й Петро"``), so real Ukrainian data carries both spellings and shipping only ``і`` recognized just one of them. ``"Олесь й Олена Коваленки"`` now gives given ``"Олесь й Олена"`` where the ``й`` previously landed in ``middle``. Same treatment as the ``и``/``і`` entries added in 2.0.0, single-letter carve-out included: the conjunction joins only once the name has enough pieces, and a punctuated initial still wins, so ``"Й. Сліпий"`` is unaffected. Raised in a comment on #267
 
+    **Documentation**
+
+    - Correct the documented scope of the period-abbreviation title rule. It was described as applying to "a leading word", which was never true of any comma form: the rule runs at the front of the part that carries the given name, which after a family comma is the part *after* the comma — so ``"Morse, Det. Insp. Jane"`` gives title ``Det. Insp.``. Behavior is unchanged and matches 1.4.0; only the description was wrong. The examples now use real abbreviations absent from the shipped vocabulary (``Det. Insp.``) rather than whole words carrying a stray period, so they demonstrate the structural inference instead of merely surviving it
+
 * 2.0.0 - July 27, 2026
 
     Two release candidates preceded this release (rc1 on 2026-07-23,
