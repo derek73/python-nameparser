@@ -8,6 +8,12 @@ optional Policy/Locale context, and a mandatory classification --
 issue or a design-decision slug). No silent expectation edits:
 changing a row means changing its classification.
 
+"UNDETERMINED" is a fourth value and a TEMPORARY one: a row added
+before anyone has run its input against 1.4.0 carries it until the
+comparison is made and it resolves to one of the three above. It is
+not a standing category, and nothing enforces its removal -- a row
+still wearing it is a row whose parity is simply unknown.
+
 The v1 suite's full corpus is extracted into this table by the
 migration plan (facade runner consumes the same rows); this file seeds
 it with the pinned battery.
@@ -781,30 +787,50 @@ CASES: tuple[Case, ...] = (
                "the comma row below, reached without a comma: the peel "
                "scans segment 0 either way, and with '様.' no longer "
                "vetoed the scan-back steps over it onto 田中さん and "
-               "peels さん. Worth its own row because the comma form "
-               "arrives through a different branch -- FAMILY_COMMA "
-               "flattens TWO runs before scanning, this one has a "
-               "single run -- so the comma row can stay green through "
-               "a change that breaks this one. 1.4.0 read this first "
+               "peels さん. Worth its own row because it is the only "
+               "one of the pair where the SCAN-BACK is what #320 "
+               "fixes: here '様.' shares the run with 田中さん and has "
+               "to be stepped over, while since #319 the comma form "
+               "declines its post-comma run and never looks at '様.' "
+               "in the peel at all -- so that row now exercises the "
+               "same veto through is_wholly_suffix instead, and the "
+               "two can come apart under a change to either predicate. "
+               "(Before #319 the distinction was structural -- "
+               "FAMILY_COMMA flattened TWO runs before scanning where "
+               "this has one -- which is no longer what separates "
+               "them.) 1.4.0 read this first "
                "田中さん / last '様.', which is what 2.0 produced until "
                "#320: parity before, a classified change after"),
     Case("ja_honorific_period_does_not_stop_the_peel", "田中さん, 様.",
          {"family": "田中", "suffix": "さん, 様."},
          classification="fix(#320)",
          notes="#320's real cost: the veto did not merely misfile "
-               "'様.' -- it made _is_post_nominal say no, so the #312 "
-               "peel's scan-back stopped AT '様.' as the site instead "
-               "of stepping over it, found no listed tail there, and "
-               "abandoned the peel. One period and さん stayed glued "
-               "to 田中. Exactly the shape of "
+               "'様.' -- it made the suffix tests say no, and the peel "
+               "abandoned on it, leaving さん glued to 田中 over one "
+               "period. WHICH test asks has moved since: at #320 it "
+               "was _is_post_nominal, so the #312 peel's scan-back "
+               "stopped AT '様.' as the site instead of stepping over "
+               "it and found no listed tail there; since #319 the peel "
+               "never reaches '様.', and the veto would instead make "
+               "is_wholly_suffix False on the post-comma run, putting "
+               "the run back in scope and landing the scan on '様.' "
+               "the same way. Same veto, same abandoned peel, a "
+               "different predicate carrying it -- verified by "
+               "simulating the veto, which still strands さん here. So "
+               "the classification stands on the fields while the "
+               "mechanism above it has been rewritten once. Was the "
+               "shape of "
                "ja_honorific_glued_before_an_initial above, except "
                "that here the token stopping the scan is a real "
                "honorific rather than an initial, which is what makes "
                "it a bug rather than the intended veto. The structure "
-               "is FAMILY_COMMA before and after -- SUFFIX_COMMA needs "
-               "more than one word ahead of the comma and 田中さん is "
-               "one -- so the two runs were always in the peel's "
-               "reach; only the strict test's answer moved. 1.4.0 read "
+               "is FAMILY_COMMA throughout -- SUFFIX_COMMA needs more "
+               "than one word ahead of the comma and 田中さん is one -- "
+               "so at #320 both runs were in the peel's reach and only "
+               "the strict test's answer moved. #319 then took the "
+               "second run back OUT of reach, which is why the "
+               "predicate carrying the veto had to change with it. "
+               "1.4.0 read "
                "this first '様.' / last 田中さん, which is exactly what "
                "2.0 produced before this change -- the row sat at "
                "parity until #320 moved it"),
@@ -841,7 +867,9 @@ CASES: tuple[Case, ...] = (
          policy=Policy(lenient_comma_suffixes=False),
          classification="fix(#320)",
          notes="the row above under the knob that governs exactly this "
-               "shape, and the table's only exercise of it. "
+               "shape, and one of the table's two exercises of it "
+               "(ja_honorific_glued_family_comma_strict_knob is the "
+               "other, on the initial-shaped side of the same gap). "
                "lenient_comma_suffixes=False drops segment's post-comma "
                "test to the strict one, so a 'Family, Suffix' input "
                "whose suffix is INITIAL-SHAPED reads as a given-name "
@@ -1075,10 +1103,20 @@ CASES: tuple[Case, ...] = (
     Case("ja_honorific_glued_family_comma", "田中さん, PhD",
          {"title": "PhD", "family": "田中", "suffix": "さん"},
          classification="fix(#312)",
-         notes="the peel crosses the comma: PhD is a post-nominal, so "
-               "the site scan steps over it and reaches 田中さん. "
-               "Agrees with the spaced 田中さん PhD, which peels for "
-               "the same reason. Where PhD itself lands still differs "
+         notes="the peel reaches 田中さん across the comma, though no "
+               "longer by crossing it: since #319 is_wholly_suffix "
+               "declines the post-comma run outright (PhD is suffix "
+               "vocabulary and it is the whole run), so the scan never "
+               "leaves segments[0] and never examines PhD at all. It "
+               "did cross before, stepping OVER PhD because that "
+               "spelling satisfies _is_post_nominal's strict test -- "
+               "the same fields by the older route. The spaced "
+               "田中さん PhD still peels that way, its single run "
+               "holding both tokens, so the two spellings now agree on "
+               "the outcome through DIFFERENT mechanisms; "
+               "ja_honorific_glued_family_comma_suffixy_second_run "
+               "cites this row for the outcome, not the route. Where "
+               "PhD itself lands still differs "
                "between the two spellings -- suffix spaced, title "
                "post-comma -- and that is fix(comma-family)'s, not "
                "the peel's. The expectation bakes in TWO deviations "
@@ -1089,25 +1127,86 @@ CASES: tuple[Case, ...] = (
                "rule is reaching that half"),
     Case("ja_honorific_glued_family_comma_suffixy_second_run",
          "田中さん, V.",
+         {"given": "V.", "family": "田中", "suffix": "さん"},
+         classification="fix(#319)",
+         notes="under a family comma the peel scanned both runs on "
+               "the premise that segments[1] is name text, and here it "
+               "is not: segment picks FAMILY_COMMA when the pre-comma "
+               "part is a single word, even where the post-comma part "
+               "is entirely suffix-shaped, so the scan reached 'V.' -- "
+               "which is_suffix_strict rejects as an initial where "
+               "segment admitted the run on is_suffix_lenient. 'V.' "
+               "was therefore the site, ended in no tail, and the peel "
+               "was abandoned with さん still in the family name. #319 "
+               "asks segment's own predicate (_vocab.is_wholly_suffix) "
+               "instead of inferring name text from the structure: the "
+               "run is declined, the scan stays inside segments[0], "
+               "and さん peels off 田中さん as it always did without a "
+               "second run. Same credential, three spellings, ONE "
+               "answer FROM THE PEEL now -- this, '田中さん, PhD' "
+               "above and '田中さん, Ph. D.' in "
+               "ja_honorific_glued_family_comma_credential_pair below "
+               "all reach 田中さん. Where the credential itself LANDS "
+               "still differs by spelling (title 'PhD', given 'V.', "
+               "suffix 'さん, Ph. D.'); that is assign's question, not the "
+               "peel's, and this row is not a claim about it. Nor does "
+               "the comma form now agree with its SPACED twin: "
+               "ja_honorific_glued_before_an_initial ('田中さん V.') "
+               "still does not peel, because under NO_COMMA there is "
+               "one run and 'V.' is inside the name's own tokens where "
+               "the scan-back legitimately stops -- declining a "
+               "post-comma run does not reach it. Parity with 1.4.0 "
+               "(first V., last 田中さん) until this change, which is "
+               "what moves it; the 1.4.0 fields are still reachable "
+               "through Policy(lenient_comma_suffixes=False), pinned "
+               "by ja_honorific_glued_family_comma_strict_knob below"),
+    Case("ja_honorific_glued_family_comma_credential_pair",
+         "田中さん, Ph. D.",
+         {"family": "田中", "suffix": "さん, Ph. D."},
+         classification="UNDETERMINED",
+         notes="the third of the three spellings #319 named, and the "
+               "only one the Ph./D. merge reaches: is_wholly_suffix "
+               "folds the adjacent pair into the single unit 'phd' "
+               "(v1's fix_phd extracted the credential pre-parse), so "
+               "the run counts as wholly suffix, the peel declines it, "
+               "and さん comes off 田中さん exactly as in "
+               "ja_honorific_glued_family_comma_suffixy_second_run "
+               "above. The merge is also why this spelling is NOT the "
+               "one to reach for when exercising "
+               "Policy(lenient_comma_suffixes=False): 'phd' satisfies "
+               "is_suffix_strict as readily as is_suffix_lenient, so "
+               "the run is declined under EITHER setting and this row "
+               "would be identical under the knob -- "
+               "ja_honorific_glued_family_comma_strict_knob below uses "
+               "'V.' because the initial-shaped words are where the "
+               "two predicates actually part. Where the credential "
+               "lands is a separate question and answers differently "
+               "again: suffix here, title for 'PhD', given for 'V.'"),
+    Case("ja_honorific_glued_family_comma_strict_knob", "田中さん, V.",
          {"family": "田中さん", "given": "V."},
-         notes="a KNOWN LIMIT, recorded as it behaves rather than "
-               "fixed. Under a family comma the peel scans both runs "
-               "on the premise that segments[1] is name text, and here "
-               "it is not: segment picks FAMILY_COMMA when the "
-               "pre-comma part is a single word, even where the "
-               "post-comma part is entirely suffix-shaped, so the scan "
-               "reaches 'V.' -- which is_suffix_strict rejects as an "
-               "initial where segment admitted the run on "
-               "is_suffix_lenient. 'V.' is therefore the site, ends in "
-               "no tail, and the peel is abandoned with さん still in "
-               "the family name. Same credential, three spellings, two "
-               "answers: '田中さん, PhD' peels (above) while this and "
-               "'田中さん, Ph. D.' do not. Parity with 1.4.0 (first "
-               "V., last 田中さん) and unchanged by #312 -- the "
-               "strict/lenient gap predates it, and closing it wants "
-               "segment's own suffixy test extracted into a shared "
-               "predicate, which is why the limit is stated here "
-               "instead of fixed"),
+         policy=Policy(lenient_comma_suffixes=False),
+         classification="UNDETERMINED",
+         notes="the same input as "
+               "ja_honorific_glued_family_comma_suffixy_second_run "
+               "above under the knob that keeps the pre-#319 answer, "
+               "and the second of the table's two exercises of it "
+               "(ko_honorific_period_under_strict_comma_suffixes is "
+               "the other). The knob drops is_wholly_suffix to the "
+               "strict predicate, which rejects 'V.' as an initial, so "
+               "the post-comma run reads as name text after all, the "
+               "scan crosses into it, 'V.' is the site, it ends in no "
+               "listed tail and the peel is abandoned -- さん stays in "
+               "the family name. Not a blanket freeze of pre-#319 "
+               "behavior, and the row must not be read as one: it "
+               "holds for the INITIAL-shaped suffix words ('V.', 'V', "
+               "'I'), which is the whole of where the strict/lenient "
+               "gap lives. The counterexample is the row above, "
+               "ja_honorific_glued_family_comma_credential_pair: its "
+               "Ph./D. pair merges to a form strict accepts too, so "
+               "that run is "
+               "declined and the peel fires under this setting as "
+               "well. No v1 spelling exists for the knob, so the "
+               "facade runner skips this row"),
     Case("ko_honorific_glued_given_after_family_comma", "김, 민준씨",
          {"family": "김", "given": "민준", "suffix": "씨"},
          classification="fix(#312)",
@@ -1148,7 +1247,17 @@ CASES: tuple[Case, ...] = (
                "while the site scan asks is_suffix_strict and an "
                "initial fails it. 'V.' then ends in no tail, the peel "
                "is abandoned, and 씨 is back in the given name -- the "
-               "original bug, and no other row in this table notices. "
+               "original bug. It was the table's only witness to that "
+               "widening until #319; ja_honorific_glued_family_comma_"
+               "suffixy_second_run and "
+               "ja_honorific_glued_family_comma_credential_pair notice "
+               "it as well now, but from the FAMILY_COMMA side, where "
+               "the guard is is_wholly_suffix rather than this "
+               "structural scoping. Their strict-knob sibling does NOT "
+               "join them: under the knob is_wholly_suffix is False on "
+               "the same run, so the scan was already crossing into "
+               "segments[1] and widening past it changes nothing. This "
+               "row is still the only SUFFIX comma among the three. "
                "Its comma-less twin ja_honorific_glued_before_an_initial "
                "shows the same veto from the other side, where 'V.' is "
                "in the name's own run and so IS the site"),
