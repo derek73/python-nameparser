@@ -622,13 +622,13 @@ def test_an_empty_first_run_still_reaches_the_second() -> None:
 
 
 def test_the_peel_crosses_a_comma_and_a_dot_at_once() -> None:
-    # The two gates #312 made siblings, composed: the 间隔号 gates the
-    # surname split (威廉 stays whole -- 威 is a listed surname here,
-    # so without the dot it would divide) and the family comma gates
-    # it too, while the peel crosses both and reaches 太郎さん on the
-    # far side of the comma. Neither gate alone pins this: keying the
-    # cross-comma reach on interpunct-free input passes every other
-    # case in this file.
+    # The two gates #312 made siblings, composed. Both stand over the
+    # surname split here -- 威 is a listed surname in this lexicon, so
+    # bare 威廉 would divide 威 + 廉, and either gate alone stops that
+    # (the family comma reaches its return first) -- while the peel
+    # crosses both and reaches 太郎さん on the far side of the comma.
+    # Neither gate alone pins this: keying the cross-comma reach on
+    # interpunct-free input passes every other case in this file.
     lex = _LEX_TAILS.add(surnames={"威"})
     state = segment(tokenize(ParseState(
         original="威廉·莎士比亚, 太郎さん", lexicon=lex, policy=_HAN)))

@@ -349,8 +349,9 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     regardless of which of her names it was glued to, and a
     name-final honorific is exactly what this peels. Since #312 that
     reach extends to FAMILY_COMMA along with the rest of the crossing
-    -- "김, 민준 née 박씨" now routes 씨 to suffix where on the
-    unscoped segments[0] it stayed in maiden "박씨".
+    -- "김, 민준 née 박씨" now routes 씨 to suffix, where before #312
+    the stage returned at the family-comma gate above the peel and
+    left it in maiden "박씨".
 
     The other direction is a LIMIT, stated rather than fixed: a maiden
     clause pushes the site off the person's own name, so "김민준씨 née
