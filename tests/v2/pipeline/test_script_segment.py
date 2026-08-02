@@ -601,10 +601,14 @@ def test_the_peel_crosses_a_family_comma_and_stops_there() -> None:
     # two segments, so the slice is otherwise only ever exercised as
     # "more than one run": widening it to three passes them all.
     # Both shapes above, re-spelled with the name split across a family
-    # comma. "Jr." is the strict/lenient gap again -- reached as a site
-    # it ends in no tail and abandons the peel, leaving 씨 in the given
-    # name -- and 박씨 is the junk tail, whose 씨 a wider scan peels
-    # instead of the person's own.
+    # comma -- but only the SECOND of the two pins the slice, and the
+    # measurement says so: widen this scan to three runs and 박씨 is
+    # the junk tail whose 씨 gets peeled instead of the person's own,
+    # while "Jr." is a post-nominal by the STRICT test as well, so a
+    # wider scan steps over it onto 민준씨 and peels correctly anyway.
+    # It is the initial-shaped words ("V." in the test above) that fall
+    # in the strict/lenient gap, not "Jr."; this input keeps 씨's
+    # placement pinned against a third run of ordinary post-nominals.
     assert _texts(_run("김, 민준씨, Jr.", policy=_HANGUL,
                        lexicon=_LEX_TAILS)) == ["김", "민준", "씨", "Jr."]
     assert _texts(_run("김, 민준씨, 박씨", policy=_HANGUL,
