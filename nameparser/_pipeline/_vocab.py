@@ -19,6 +19,16 @@ from nameparser._policy import (Script, _JA_SCRIPTS, _NO_INITIALS,
 # Ported verbatim from v1 (nameparser/config/regexes.py "initial") minus
 # its empty-string alternative -- WorkToken text is never empty. Kept in
 # sync by hand; layering forbids importing the config package here.
+# "Verbatim" is a promise about the PATTERN, not about the predicate:
+# since #320 is_initial is this SHAPE test ANDed with a repertoire test
+# (_in_initialless_script, below), so _INITIAL.fullmatch(text) and
+# is_initial(text) are no longer the same question -- '씨.' answers yes
+# to the first and no to the second. Call is_initial; the bare pattern
+# is not the thing to ask. The narrowing lives in the predicate
+# precisely so this copy can stay exactly as verbatim as it ever was
+# -- REGEXES["initial"] is public v1 API and cannot narrow, and the
+# only difference between the two remains the empty alternative noted
+# above (config's `?`), which test_regex_sync splices back in.
 _INITIAL = re.compile(r"^(\w\.|[A-Z])$")
 
 # Ported verbatim from v1 (nameparser/config/regexes.py

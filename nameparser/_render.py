@@ -38,6 +38,18 @@ _SKIP_TAGS = frozenset({"particle", "conjunction"})
 # Ported verbatim from v1 (nameparser/config/regexes.py "initial",
 # minus the empty alternative) -- layering forbids importing the
 # pipeline here; keep in sync with _pipeline/_vocab.py by hand.
+# Deliberately NOT composed with that module's repertoire test (#320):
+# layering forbids the import, and nothing here needs it. The only use
+# is v1's conjunction carve-out in _cap_word below, which this pattern
+# can only reach once `normalized in lex.conjunctions` already holds --
+# and no CJK token reaches that, the shipped vocabulary carrying no CJK
+# conjunction or particle in the default lexicon or in any locale pack.
+# That is a property of the shipped DATA, not an invariant -- conjunctions
+# is public, configurable API -- but the divergence stays harmless if a
+# user adds one: CJK is caseless, so the carve-out's word.lower() and the
+# fall-through's word.capitalize() return the same string either way.
+# So the two copies keep identical PATTERNS and divergent PREDICATES;
+# test_regex_sync pins the patterns, which is the promise being kept.
 _INITIAL = re.compile(r"^(\w\.|[A-Z])$")
 
 
