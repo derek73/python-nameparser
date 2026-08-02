@@ -13,8 +13,8 @@ import unicodedata
 from collections.abc import Callable, Iterable
 
 from nameparser._lexicon import Lexicon, _normalize
-from nameparser._policy import (Script, _JA_SCRIPTS, _SCRIPT_RANGES,
-                                _script_matcher)
+from nameparser._policy import (Script, _JA_SCRIPTS, _NO_INITIALS,
+                                _SCRIPT_RANGES, _script_matcher)
 
 # Ported verbatim from v1 (nameparser/config/regexes.py "initial") minus
 # its empty-string alternative -- WorkToken text is never empty. Kept in
@@ -51,10 +51,24 @@ _SCRIPT_MATCHERS: dict[Script, Callable[[str], bool]] = {
 # effective_script's kana license.
 _wholly_ja = _script_matcher(*_JA_SCRIPTS, whole=True)
 
+# The repertoire half of is_initial (_policy._NO_INITIALS), kept apart
+# from _INITIAL's SHAPE half so the pattern itself stays v1-verbatim
+# and its three copies stay pinned by tests/v2/test_regex_sync.py.
+# contains-any, not whole=True: the shape half has already admitted the
+# trailing period, so the text reaching here is '씨.' rather than '씨'
+# and a wholly-of match would be False for every case this exists for.
+_in_initialless_script = _script_matcher(*_NO_INITIALS, whole=False)
+
 
 def is_initial(text: str) -> bool:
-    """'A.' / 'j.' / bare capital -- v1's is_an_initial."""
-    return bool(_INITIAL.fullmatch(text))
+    """'A.' / 'j.' / bare capital -- v1's is_an_initial, narrowed to
+    scripts that HAVE initials (#320). v1's \\w is Unicode-aware and
+    matched CJK too, which vetoed period-written CJK honorifics ('씨.')
+    out of the suffix vocabulary -- and, downstream of that, left the
+    glued honorific in a name carrying such a token unpeeled
+    ('田中さん 様.')."""
+    return bool(_INITIAL.fullmatch(text)) \
+        and not _in_initialless_script(text)
 
 
 def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:

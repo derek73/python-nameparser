@@ -22,6 +22,39 @@ def test_is_initial() -> None:
     assert not is_initial("b")  # bare lowercase letter is not an initial
 
 
+def test_is_initial_script_repertoire() -> None:
+    # An initial is a single LETTER standing in for a name. Alphabets
+    # have letters, so these are real initials ("А. С. Пушкин").
+    assert is_initial("А.")    # Cyrillic
+    assert is_initial("Α.")    # Greek
+    assert is_initial("م.")    # Arabic
+    assert is_initial("ה.")    # Hebrew
+    assert is_initial("र.")    # Devanagari
+    assert is_initial("Ա.")    # Armenian
+    # Han ideographs, hangul syllables and kana are morphemes or
+    # syllables -- a single one never stands in for a name (#320).
+    assert not is_initial("씨.")
+    assert not is_initial("様.")
+    assert not is_initial("김.")
+    assert not is_initial("さ.")
+    assert not is_initial("ラ.")
+    # unchanged: a digit is the visible edge of \w's reach, and the
+    # shape half still owns it -- only the repertoire narrowed
+    assert is_initial("2.")
+    # unchanged: the SHAPE half still requires a single character
+    assert not is_initial("राम.")
+
+
+def test_strict_suffix_veto_skips_cjk() -> None:
+    """#320: the initial veto is what stopped a period-written CJK
+    honorific being recognized. _normalize strips the trailing period,
+    so '씨.' reaches the vocabulary as '씨' -- the veto was the only
+    thing rejecting it."""
+    lex = Lexicon(suffix_words=frozenset({"씨", "様"}))
+    assert is_suffix_strict("씨.", lex)
+    assert is_suffix_strict("様.", lex)
+
+
 def test_strict_suffix_initial_veto() -> None:
     assert is_suffix_strict("PhD", _LEX)
     assert not is_suffix_strict("V.", _LEX)   # initial veto

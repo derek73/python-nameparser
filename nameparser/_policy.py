@@ -142,6 +142,23 @@ _SCRIPT_RANGES: dict[Script, tuple[tuple[int, int], ...]] = {
 #: quantify over this one union (HANGUL simply omitted).
 _JA_SCRIPTS = (Script.HAN, Script.HIRAGANA, Script.KATAKANA)
 
+#: Scripts whose characters cannot BE an initial. A Han ideograph, a
+#: hangul syllable and a kana are each a morpheme or a syllable rather
+#: than a letter, so a single one never stands in for a name the way
+#: "J." stands in for "John". Membership is not "non-Latin": should a
+#: Script.CYRILLIC or Script.DEVANAGARI ever be added, it does NOT
+#: belong here -- those are alphabets, they have letters, and their
+#: initials are real ("А. С. Пушкин", "م. الفارسي").
+#:
+#: Enumerated rather than spelled *_SCRIPT_RANGES: the table admits a
+#: script that DETERMINES A CONVENTION (see Script), which is a
+#: different question from whether that script has initials. The four
+#: members coinciding today is what has been implemented, not a
+#: property of the enum -- a Thai entry (#317) must not inherit this
+#: answer without someone deciding it.
+_NO_INITIALS = (Script.HAN, Script.HANGUL, Script.HIRAGANA,
+                Script.KATAKANA)
+
 
 def _script_matcher(*scripts: Script,
                     whole: bool = False) -> Callable[[str], bool]:
