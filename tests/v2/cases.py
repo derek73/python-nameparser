@@ -946,9 +946,11 @@ CASES: tuple[Case, ...] = (
          {"title": "Dr", "family": "김", "given": "민준",
           "suffix": "씨, Jr."},
          classification="fix(#308)",
-         notes="the peel indexes the NAME part, not the token stream: "
-               "under a suffix comma segments[0] is a strict subset, "
-               "and the peel site is found within it. Pairs with "
+         notes="the peel scans the NAME's runs, not the token stream: "
+               "under a suffix comma that is segments[0] alone, a "
+               "strict subset, and the peel site is found within it "
+               "(a FAMILY comma is the one structure that splits the "
+               "name across two runs, #312). Pairs with "
                "ko_honorific_glued_given_trailing_suffix, whose "
                "comma-less spelling of the same name reaches the same "
                "answer by the scan-back instead"),
@@ -956,9 +958,9 @@ CASES: tuple[Case, ...] = (
          {"family": "김", "given": "민준", "suffix": "씨",
           "nickname": "Jimmy"},
          classification="fix(#308)",
-         notes="the other half of indexing the NAME part: extracted "
+         notes="the other half of scanning the NAME's runs: extracted "
                "content is still in the token stream at this stage but "
-               "NOT in segments[0], so the scan-back never reaches "
+               "in NO segment, so the scan-back never reaches "
                "Jimmy. Scanning the tokens instead would take Jimmy as "
                "the site -- it is no post-nominal -- and lose the peel "
                "entirely, with 씨 back in the given name. Nothing else "
