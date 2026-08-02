@@ -987,7 +987,12 @@ CASES: tuple[Case, ...] = (
                "the same reason. Where PhD itself lands still differs "
                "between the two spellings -- suffix spaced, title "
                "post-comma -- and that is fix(comma-family)'s, not "
-               "the peel's"),
+               "the peel's. The expectation bakes in TWO deviations "
+               "from 1.4.0 and only one of them is #312's: the peel "
+               "is, while first -> family is comma-family's, witnessed "
+               "on pure Latin by family_comma_lone_title (1.4.0 first "
+               "Smith, here family Smith) -- so no script-conditional "
+               "rule is reaching that half"),
     Case("ko_honorific_glued_given_after_family_comma", "김, 민준씨",
          {"family": "김", "given": "민준", "suffix": "씨"},
          classification="fix(#312)",
