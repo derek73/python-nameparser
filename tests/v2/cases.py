@@ -775,7 +775,7 @@ CASES: tuple[Case, ...] = (
                "initial, not a post-nominal"),
     Case("ja_honorific_period_does_not_stop_the_peel", "田中さん, 様.",
          {"family": "田中", "suffix": "さん, 様."},
-         classification="UNDETERMINED",
+         classification="fix(#320)",
          notes="#320's real cost: the veto did not merely misfile "
                "'様.' -- it made _is_post_nominal say no, so the #312 "
                "peel's scan-back stopped AT '様.' as the site instead "
@@ -789,7 +789,10 @@ CASES: tuple[Case, ...] = (
                "is FAMILY_COMMA before and after -- SUFFIX_COMMA needs "
                "more than one word ahead of the comma and 田中さん is "
                "one -- so the two runs were always in the peel's "
-               "reach; only the strict test's answer moved"),
+               "reach; only the strict test's answer moved. 1.4.0 read "
+               "this first '様.' / last 田中さん, which is exactly what "
+               "2.0 produced before this change -- the row sat at "
+               "parity until #320 moved it"),
     Case("ja_sama_glued", "山田太郎様",
          {"family": "山田太郎", "suffix": "様"},
          classification="fix(#308)",
@@ -804,7 +807,7 @@ CASES: tuple[Case, ...] = (
          notes="the online/formal glued address form, 씨's twin"),
     Case("ko_honorific_written_with_a_period", "김민준, 씨.",
          {"family": "김민준", "suffix": "씨."},
-         classification="UNDETERMINED",
+         classification="fix(#320)",
          notes="the period-written form of ko_honorific_after_comma "
                "('김민준, 씨'), whose fields it must match and before "
                "#320 did not. _normalize strips the trailing period, "
@@ -813,10 +816,12 @@ CASES: tuple[Case, ...] = (
                "and literally the veto: _is_suffix_piece is "
                "'vocab:suffix' in tags and 'initial' not in tags, and "
                "'씨.' carried both, so the suffix-shaped piece went to "
-               "the given"),
+               "the given. 1.4.0 read this first '씨.' / last 김민준 -- "
+               "the same fields 2.0 gave before this change, so the row "
+               "was at parity and #320 is what moves it"),
     Case("ko_honorific_with_a_period_no_comma", "김민준 씨.",
          {"given": "민준", "family": "김", "suffix": "씨."},
-         classification="UNDETERMINED",
+         classification="fix(#320)",
          notes="the period-written ko_honorific_ssi ('김민준 씨'), and "
                "#320 by a different route than the row above: the veto "
                "left '씨.' a NAME piece, and effective_script('씨.') is "
@@ -826,7 +831,14 @@ CASES: tuple[Case, ...] = (
                "name_order -- given 김, middle 민준, family '씨.'. "
                "Hangul segmentation is NOT what moves: it divides "
                "김민준 identically either way, and only the order the "
-               "pieces are read in changes"),
+               "pieces are read in changes. 1.4.0 read this first "
+               "김민준 / last '씨.' -- undivided, no suffix. The only "
+               "row of the three that already differed from 1.4.0 "
+               "before this change, but it differed as given 김 / "
+               "middle 민준 / family '씨.'; the fields above are #320's, "
+               "not the segmenter's, so the row is classified to it -- "
+               "as ko_honorific_ssi is classified to #307 without "
+               "naming the same segmentation it also depends on"),
     Case("ko_honorific_glued_teacher", "김선생님",
          {"family": "김", "suffix": "선생님"},
          classification="fix(#307)",
