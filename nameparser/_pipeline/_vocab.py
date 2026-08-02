@@ -78,11 +78,8 @@ def is_initial_shaped(text: str) -> bool:
     run want this; callers asking whether it can really stand in for a
     name want is_initial (#320). The two answers differ only inside
     _NO_INITIALS scripts, where '씨.' is initial-SHAPED but is not an
-    initial. assign's roman-numeral fork is the shape caller: "the
-    piece before this trailing single roman letter looks like an
-    initial, so we are mid-run and the letter is a name part" was
-    always a question about layout, and narrowing it to real initials
-    dropped the family name out of 'John 씨. V'."""
+    initial -- see assign's roman-numeral fork, the shape caller, for
+    what picking the wrong one costs."""
     return bool(_INITIAL.fullmatch(text))
 
 
