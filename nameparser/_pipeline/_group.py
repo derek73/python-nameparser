@@ -31,7 +31,8 @@ from nameparser._pipeline._vocab import PH as _PH
 from nameparser._pipeline._vocab import delimiter_cores
 from nameparser._types import AmbiguityKind, Role
 
-# the credential-pair regexes live in _vocab (shared with segment)
+# the credential-pair regexes live in _vocab, whose own
+# is_wholly_suffix (segment's suffix-comma test) merges the same pair
 
 Piece = list[int]
 

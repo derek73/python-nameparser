@@ -4,16 +4,27 @@ Text-level tests used by more than one stage; token/piece-level
 predicates live with their stage. All take normalized-or-raw text
 explicitly -- no state.
 
+is_wholly_suffix departs from that shape twice, deliberately. It is
+RUN-level rather than text-level, because the question it answers is
+genuinely about a run: the Ph./D. merge spans two tokens, so no
+per-token predicate composed with all() can express it. And it takes
+the Policy OBJECT, where delimiter_cores takes a pre-extracted
+frozenset so its caller hands in one field rather than the config --
+is_wholly_suffix needs TWO policy fields (lenient_comma_suffixes and
+extra_suffix_delimiters), and threading both past every caller costs
+more than the config parameter saves. Still no state: Policy is frozen
+config, not pipeline state.
+
 Layering: imports _lexicon, _types, and _policy only.
 """
 from __future__ import annotations
 
 import re
 import unicodedata
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Sequence
 
 from nameparser._lexicon import Lexicon, _normalize
-from nameparser._policy import (Script, _JA_SCRIPTS, _NO_INITIALS,
+from nameparser._policy import (Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
                                 _SCRIPT_RANGES, _script_matcher)
 
 # Ported verbatim from v1 (nameparser/config/regexes.py "initial") minus
@@ -37,8 +48,9 @@ _INITIAL = re.compile(r"^(\w\.|[A-Z])$")
 _PERIOD_NOT_AT_END = re.compile(r".*\..+$", re.I)
 
 # The fix_phd credential pair ('Ph.' + 'D.' as adjacent tokens), shared
-# by segment's suffix-comma detection and group's merge (v1 extracted
-# the credential pre-parse; the two stages must agree on the pattern).
+# by is_wholly_suffix below and group's merge (v1 extracted the
+# credential pre-parse; the predicate and the stage must agree on the
+# pattern).
 PH = re.compile(r"^ph\.?$", re.IGNORECASE)
 D = re.compile(r"^d\.?$", re.IGNORECASE)
 
@@ -166,7 +178,6 @@ def splits_into_suffixes(text: str, cores: frozenset[str],
     return False
 
 
-
 def period_joined_vocab(text: str, lexicon: Lexicon) -> str | None:
     """v1's parse_pieces derivation for interior-period tokens
     ('Lt.Gov.', 'Msc.Ed.', and by the ANY rule 'Mr.Smith'): ANY title
@@ -184,6 +195,57 @@ def period_joined_vocab(text: str, lexicon: Lexicon) -> str | None:
            for c in chunks):
         return "suffix"
     return None
+
+
+def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
+                     policy: Policy) -> bool:
+    """Every token in a RUN counts as a suffix -- segment's
+    suffix-comma test, lifted out of it so the peel can ask the same
+    question (#319).
+
+    NOT the plural of _script_segment._is_post_nominal, which asks
+    is_suffix_strict per token. This asks the POLICY-selected predicate
+    (lenient by default), plus period_joined_vocab, delimiter
+    transparency and the Ph./D. merge. 'V.' is the input that tells
+    them apart: it satisfies this predicate but is not a post-nominal
+    -- and reading one for the other IS the #319 bug.
+
+    An EMPTY run is False, not vacuously True: v1's suffix-comma
+    detection fails on an empty parts[1] ('John Smith,, MD' is a
+    family-comma parse). The 'wholly' idiom agrees -- _script_matcher's
+    whole=True requires non-empty too -- which is why the name is that
+    one rather than all_suffixes, where Python's all([]) would promise
+    the opposite.
+
+    An adjacent Ph./D. pair counts as ONE unit (v1's fix_phd extracted
+    the credential pre-parse, so 'Smith, Ph. D.' read as suffix-comma);
+    keep in sync with group's _PH/_D merge.
+    """
+    if not texts:
+        return False
+    predicate = (is_suffix_lenient if policy.lenient_comma_suffixes
+                 else is_suffix_strict)
+    # v1 expand_suffix_delimiter parity (#191): a configured delimiter
+    # is TRANSPARENT in the all-suffix tests -- v1 split the part string
+    # on the delimiter before checking, so the delimiter never counted
+    cores = delimiter_cores(policy.extra_suffix_delimiters)
+
+    def counts_as_suffix(text: str) -> bool:
+        if text in cores:
+            return True
+        return (predicate(text, lexicon)
+                or period_joined_vocab(text, lexicon) == "suffix"
+                or (bool(cores)
+                    and splits_into_suffixes(text, cores, lexicon)))
+
+    merged = list(texts)
+    k = 0
+    while k < len(merged) - 1:
+        if PH.fullmatch(merged[k]) and D.fullmatch(merged[k + 1]):
+            merged[k:k + 2] = ["phd"]
+        else:
+            k += 1
+    return all(counts_as_suffix(t) for t in merged)
 
 
 def _normalized_for_script(text: str) -> str | None:
