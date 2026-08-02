@@ -108,7 +108,9 @@ issue = "fix(comma-family) lone post-comma piece routes to suffix/title, not fir
 # The coverage pass that followed added one more row here, '김, 민준씨
 # (Jimmy)': same {first, suffix} diff as '김, 민준씨' -- the extracted
 # nickname matches on both sides and so is not part of the diff -- and
-# it lands on this rule for the same reason.
+# it lands on this rule for the same reason. The limit row recorded
+# next to it, '田中さん, V.', appears under no rule at all: it is
+# parity with 1.4.0, so it never reaches classify().
 name_regex = ","
 fields = ["first", "title", "suffix"]
 

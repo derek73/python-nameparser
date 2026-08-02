@@ -993,6 +993,27 @@ CASES: tuple[Case, ...] = (
                "on pure Latin by family_comma_lone_title (1.4.0 first "
                "Smith, here family Smith) -- so no script-conditional "
                "rule is reaching that half"),
+    Case("ja_honorific_glued_family_comma_suffixy_second_run",
+         "田中さん, V.",
+         {"family": "田中さん", "given": "V."},
+         notes="a KNOWN LIMIT, recorded as it behaves rather than "
+               "fixed. Under a family comma the peel scans both runs "
+               "on the premise that segments[1] is name text, and here "
+               "it is not: segment picks FAMILY_COMMA when the "
+               "pre-comma part is a single word, even where the "
+               "post-comma part is entirely suffix-shaped, so the scan "
+               "reaches 'V.' -- which is_suffix_strict rejects as an "
+               "initial where segment admitted the run on "
+               "is_suffix_lenient. 'V.' is therefore the site, ends in "
+               "no tail, and the peel is abandoned with さん still in "
+               "the family name. Same credential, three spellings, two "
+               "answers: '田中さん, PhD' peels (above) while this and "
+               "'田中さん, Ph. D.' do not. Parity with 1.4.0 (first "
+               "V., last 田中さん) and unchanged by #312 -- the "
+               "strict/lenient gap predates it, and closing it wants "
+               "segment's own suffixy test extracted into a shared "
+               "predicate, which is why the limit is stated here "
+               "instead of fixed"),
     Case("ko_honorific_glued_given_after_family_comma", "김, 민준씨",
          {"family": "김", "given": "민준", "suffix": "씨"},
          classification="fix(#312)",
