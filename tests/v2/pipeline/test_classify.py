@@ -14,7 +14,10 @@ _LEX = Lexicon(
     suffix_acronyms_ambiguous=frozenset({"ma"}),
     particles=frozenset({"de", "la", "van"}),
     particles_ambiguous=frozenset({"van"}),
-    conjunctions=frozenset({"and", "y"}),
+    # й is a REAL default conjunction (Ukrainian, #267), carried here so
+    # test_cyrillic_initial_outranks_the_conjunction pins a live
+    # collision rather than a hypothetical one
+    conjunctions=frozenset({"and", "y", "й"}),
     bound_given_names=frozenset({"abdul"}),
     maiden_markers=frozenset({"née"}),
 )
@@ -53,6 +56,20 @@ def test_initial_tag() -> None:
     assert "initial" in _tags(out, "A.")
     assert "initial" in _tags(out, "B")
     assert "initial" not in _tags(out, "John")
+
+
+def test_cyrillic_initial_outranks_the_conjunction() -> None:
+    """#320 regression. 'й' is the Ukrainian conjunction (#267); 'Й.'
+    is an initial and must not be read as it. Narrowing is_initial to
+    [A-Za-z] -- the fix #320 originally proposed -- flips this token to
+    'conjunction' and strips 'initial' off every Cyrillic, Greek,
+    Arabic and Hebrew initial. Neither moves field output on a short
+    name, so this asserts the TAG. _LEX carries й for this: the
+    collision is with SHIPPED vocabulary, so a lexicon built here
+    would keep passing if й were dropped from the defaults."""
+    out = _classified("Й. Сліпий")
+    assert "initial" in _tags(out, "Й.")
+    assert "conjunction" not in _tags(out, "Й.")
 
 
 def test_ambiguous_suffix_acronym_needs_periods() -> None:

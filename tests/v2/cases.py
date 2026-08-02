@@ -773,6 +773,23 @@ CASES: tuple[Case, ...] = (
                "Classification agrees with what classify does with "
                "the same token downstream -- 'V.' is a middle "
                "initial, not a post-nominal"),
+    Case("ja_honorific_period_does_not_stop_the_peel", "田中さん, 様.",
+         {"family": "田中", "suffix": "さん, 様."},
+         classification="UNDETERMINED",
+         notes="#320's real cost: the veto did not merely misfile "
+               "'様.' -- it made _is_post_nominal say no, so the #312 "
+               "peel's scan-back stopped AT '様.' as the site instead "
+               "of stepping over it, found no listed tail there, and "
+               "abandoned the peel. One period and さん stayed glued "
+               "to 田中. Exactly the shape of "
+               "ja_honorific_glued_before_an_initial above, except "
+               "that here the token stopping the scan is a real "
+               "honorific rather than an initial, which is what makes "
+               "it a bug rather than the intended veto. The structure "
+               "is FAMILY_COMMA before and after -- SUFFIX_COMMA needs "
+               "more than one word ahead of the comma and 田中さん is "
+               "one -- so the two runs were always in the peel's "
+               "reach; only the strict test's answer moved"),
     Case("ja_sama_glued", "山田太郎様",
          {"family": "山田太郎", "suffix": "様"},
          classification="fix(#308)",
@@ -785,6 +802,31 @@ CASES: tuple[Case, ...] = (
          {"family": "김", "given": "민준", "suffix": "님"},
          classification="fix(#308)",
          notes="the online/formal glued address form, 씨's twin"),
+    Case("ko_honorific_written_with_a_period", "김민준, 씨.",
+         {"family": "김민준", "suffix": "씨."},
+         classification="UNDETERMINED",
+         notes="the period-written form of ko_honorific_after_comma "
+               "('김민준, 씨'), whose fields it must match and before "
+               "#320 did not. _normalize strips the trailing period, "
+               "so the vocabulary sees 씨 either way -- the initial "
+               "veto was the only thing rejecting the written form, "
+               "and literally the veto: _is_suffix_piece is "
+               "'vocab:suffix' in tags and 'initial' not in tags, and "
+               "'씨.' carried both, so the suffix-shaped piece went to "
+               "the given"),
+    Case("ko_honorific_with_a_period_no_comma", "김민준 씨.",
+         {"given": "민준", "family": "김", "suffix": "씨."},
+         classification="UNDETERMINED",
+         notes="the period-written ko_honorific_ssi ('김민준 씨'), and "
+               "#320 by a different route than the row above: the veto "
+               "left '씨.' a NAME piece, and effective_script('씨.') is "
+               "None because the trailing period defeats the "
+               "wholly-one-script test, so script_orders declined for "
+               "the whole name and the three pieces fell back to "
+               "name_order -- given 김, middle 민준, family '씨.'. "
+               "Hangul segmentation is NOT what moves: it divides "
+               "김민준 identically either way, and only the order the "
+               "pieces are read in changes"),
     Case("ko_honorific_glued_teacher", "김선생님",
          {"family": "김", "suffix": "선생님"},
          classification="fix(#307)",
