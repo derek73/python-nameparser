@@ -773,6 +773,21 @@ CASES: tuple[Case, ...] = (
                "Classification agrees with what classify does with "
                "the same token downstream -- 'V.' is a middle "
                "initial, not a post-nominal"),
+    Case("ja_honorific_with_a_period_no_comma", "田中さん 様.",
+         {"family": "田中", "suffix": "さん, 様."},
+         classification="fix(#320)",
+         notes="the SPACED form, and the example _vocab.is_initial's "
+               "own docstring cites as what #320 cost. Same fields as "
+               "the comma row below, reached without a comma: the peel "
+               "scans segment 0 either way, and with '様.' no longer "
+               "vetoed the scan-back steps over it onto 田中さん and "
+               "peels さん. Worth its own row because the comma form "
+               "arrives through a different branch -- FAMILY_COMMA "
+               "flattens TWO runs before scanning, this one has a "
+               "single run -- so the comma row can stay green through "
+               "a change that breaks this one. 1.4.0 read this first "
+               "田中さん / last '様.', which is what 2.0 produced until "
+               "#320: parity before, a classified change after"),
     Case("ja_honorific_period_does_not_stop_the_peel", "田中さん, 様.",
          {"family": "田中", "suffix": "さん, 様."},
          classification="fix(#320)",
@@ -819,6 +834,29 @@ CASES: tuple[Case, ...] = (
                "the given. 1.4.0 read this first '씨.' / last 김민준 -- "
                "the same fields 2.0 gave before this change, so the row "
                "was at parity and #320 is what moves it"),
+    Case("ko_honorific_period_under_strict_comma_suffixes", "김민준, 씨.",
+         {"family": "김민준", "suffix": "씨."},
+         policy=Policy(lenient_comma_suffixes=False),
+         classification="fix(#320)",
+         notes="the row above under the knob that governs exactly this "
+               "shape, and the table's only exercise of it. "
+               "lenient_comma_suffixes=False drops segment's post-comma "
+               "test to the strict one, so a 'Family, Suffix' input "
+               "whose suffix is INITIAL-SHAPED reads as a given-name "
+               "initial instead ('John Smith, V' -> given 'V'). '씨.' "
+               "is a single character plus a period, so it was in that "
+               "class by shape, and before #320 the knob decided it: "
+               "given '씨.' / family 김민준. It is out of the class now, "
+               "and the honorific parses identically under both "
+               "settings -- which is the claim this row exists to "
+               "hold, since the knob's own documentation scopes it to "
+               "the roman numerals 'I' and 'V' and _script_segment "
+               "names it as the setting that strands 씨 in a "
+               "neighbouring shape. No v1 spelling exists for the knob "
+               "(the facade runner skips this row), so the "
+               "classification compares against 1.4.0's single "
+               "reading, first '씨.' / last 김민준 -- the same fields "
+               "2.0 gave under EITHER setting before this change"),
     Case("ko_honorific_with_a_period_no_comma", "김민준 씨.",
          {"given": "민준", "family": "김", "suffix": "씨."},
          classification="fix(#320)",
@@ -1154,6 +1192,37 @@ CASES: tuple[Case, ...] = (
                "Classified to #271, not parity: 1.4 gave first 양, "
                "last 미선, and it is the CJK order flip that swaps "
                "them"),
+    Case("ko_honorific_yang_trails", "김민준 양",
+         {"family": "김", "given": "민준", "suffix": "양"},
+         classification="fix(#307)",
+         notes="the other side of ko_surname_yang_leads: the same "
+               "token trailing a name is 'Miss', and that is the whole "
+               "argument shipping it -- suffixes.py singles 양 out "
+               "(with 군) as the risk class it takes, a top-tier "
+               "surname admitted to the vocabulary on the strength of "
+               "position alone. Nothing pinned the trailing reading "
+               "before this row, so the leading rows carried the pair "
+               "by themselves. Classified to #307 like ko_honorific_ssi "
+               "(1.4 gave first 김민준, last 양; the recognition and "
+               "the order flip both move it) -- the point of the row "
+               "is the twin below"),
+    Case("ko_honorific_yang_written_with_a_period", "김민준 양.",
+         {"family": "김", "given": "민준", "suffix": "양."},
+         classification="fix(#320)",
+         notes="the period-written twin, whose fields must equal the "
+               "row above and before #320 did not (given 김, middle "
+               "민준, family '양.' -- the veto kept '양.' a name piece, "
+               "exactly ko_honorific_with_a_period_no_comma's route). "
+               "The pair is the point: 양 is the shipped vocabulary's "
+               "acknowledged risk, so if the 양/군 policy is ever "
+               "tightened or withdrawn, both spellings have to move "
+               "together and neither row can be adjusted alone. 군 "
+               "gets no pair of its own -- it parses identically and "
+               "is the SAFER half (no surname reading), so it would "
+               "pin nothing these two do not. Classified to #320 like "
+               "its 씨 counterpart: 1.4.0 read this first 김민준 / last "
+               "'양.', and the fields above are the ones this change "
+               "produced, not the segmenter's"),
     Case("ko_surname_yang_leads_a_segmentable_given", "양 지훈",
          {"family": "양", "given": "지훈"},
          classification="fix(#271)",
