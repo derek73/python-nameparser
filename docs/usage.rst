@@ -303,15 +303,22 @@ glued forms are recognized as suffixes: ``王小明 先生`` reads family
 the last token of the name before the name is split or ordered, so
 those rules see the name without it — which is why ``김민준씨`` still
 divides into family 김 and given 민준, and why a configured Japanese
-segmenter is handed 山田太郎 rather than 山田太郎様. A comma and a 间隔号
-both leave the peel alone. Both say where a name divides — the comma
-that the writer has already given the family name, the dot that the
-pieces are a transcription's syllable groups — and an honorific is not
-part of the name in any of those readings. So ``김, 민준씨`` reads the
-same as ``김 민준씨``. What those marks do stop is the *split*, which
-is a different question and still theirs to answer. ``田中さん, 太郎`` is
-unchanged, and not because of its comma: the honorific there is not at
-the end of the name, 太郎 is.
+segmenter is handed 山田太郎 rather than 山田太郎様. Neither a comma nor
+a 间隔号 switches the peel off. Both say where a name divides — the
+comma that the writer has already given the family name, the dot that
+the pieces are a transcription's syllable groups — and an honorific is
+not part of the name in either reading. So ``김, 민준씨`` reads the
+same as ``김 민준씨``. What a comma does instead is say which runs are
+the name: the two around a family comma, an honorific being as often
+glued to the given name as to the family. Nothing past those two is in
+reach — ``김, 민준 지훈씨`` peels, ``김, 민준, 지훈씨`` does not — and
+the reach rests on the second run being name text, so where it is not
+the peel is abandoned: in ``田中さん, V.`` the scan lands on ``V.``,
+which is neither a name nor an honorific, and さん stays in the family
+name where ``田中さん, PhD`` gives it up. What those marks do stop is
+the *split*, which is a different question and still theirs to answer.
+``田中さん, 太郎`` is unchanged, and not because of its comma: the
+honorific there is not at the end of the name, 太郎 is.
 
 Where a segmenter divides the name, the two spellings part company. A
 spaced honorific is a token boundary the writer typed, and the
