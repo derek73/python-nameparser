@@ -340,14 +340,17 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     -- so "김민준씨 (Jimmy)" and "Dr 김민준씨, V." are the inputs that
     tell the three apart. See the note at the scan itself.
 
-    That last token is the last of the NAME, which under NO_COMMA
-    reaches into a maiden clause: maiden tokens are still main-stream
-    here (extract_delimited has masked only bracketed content), so
+    That last token is the last of the NAME, which reaches into a
+    maiden clause: maiden tokens are still main-stream here
+    (extract_delimited has masked only bracketed content), so
     "김민준 née 박씨" peels 씨 off the MAIDEN name 박씨 and hands it to
     the person's suffix list -- "née Ms. Park". Intended rather than
     incidental in that direction: the honorific is the reader's
     regardless of which of her names it was glued to, and a
-    name-final honorific is exactly what this peels.
+    name-final honorific is exactly what this peels. Since #312 that
+    reach extends to FAMILY_COMMA along with the rest of the crossing
+    -- "김, 민준 née 박씨" now routes 씨 to suffix where on the
+    unscoped segments[0] it stayed in maiden "박씨".
 
     The other direction is a LIMIT, stated rather than fixed: a maiden
     clause pushes the site off the person's own name, so "김민준씨 née
@@ -400,7 +403,15 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     # such a token ends in no tail and silently abandons the peel, so
     # "Dr 김민준씨, V." would strand 씨 in the given name. A junk tail
     # is worse: "Dr 김민준씨, Jr., 박씨" would peel the 씨 off 박씨 and
-    # leave the person's own glued.
+    # leave the person's own glued. Not only a counterfactual, either:
+    # Policy(lenient_comma_suffixes=False) drops segment's post-comma
+    # test to the strict one, which reads that same input as
+    # FAMILY_COMMA -- so the scan reaches "V." through the sanctioned
+    # two-run crossing and strands 씨 for real, in family
+    # "Dr 김민준씨". Same gap, reached by a documented knob rather
+    # than by widening this line; see the case row
+    # ja_honorific_glued_family_comma_suffixy_second_run, which is the
+    # DEFAULT-policy shape of it.
     # Flattening the SEGMENTS rather than state.tokens is load-bearing
     # too: extracted nickname and maiden content is in tokens but in NO
     # segment, and scanning tokens would put the peel site on a
