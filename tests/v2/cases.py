@@ -966,6 +966,18 @@ CASES: tuple[Case, ...] = (
                "entirely, with 씨 back in the given name. Nothing else "
                "pins that choice: under NO_COMMA the two are otherwise "
                "the same run"),
+    Case("ko_honorific_glued_given_nickname_family_comma",
+         "김, 민준씨 (Jimmy)",
+         {"family": "김", "given": "민준", "suffix": "씨",
+          "nickname": "Jimmy"},
+         classification="fix(#312)",
+         notes="the family-comma half of the same argument, which the "
+               "row above cannot make: there the two runs are one, so "
+               "'flatten the name's segments' and 'take segments[0]' "
+               "agree. Here the peel has to cross the comma AND still "
+               "not reach Jimmy, so declining to cross whenever "
+               "extract_delimited claimed something passes the row "
+               "above and fails only here"),
     Case("ja_honorific_glued_family_comma", "田中さん, PhD",
          {"title": "PhD", "family": "田中", "suffix": "さん"},
          classification="fix(#312)",

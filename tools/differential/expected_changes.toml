@@ -105,6 +105,10 @@ issue = "fix(comma-family) lone post-comma piece routes to suffix/title, not fir
 # order, returning the first rule whose regex (if any) matches the
 # string and whose fields are a superset of the diff. No rule here
 # inspects the honorific token itself -- the field shape alone decides.
+# The coverage pass that followed added one more row here, '김, 민준씨
+# (Jimmy)': same {first, suffix} diff as '김, 민준씨' -- the extracted
+# nickname matches on both sides and so is not part of the diff -- and
+# it lands on this rule for the same reason.
 name_regex = ","
 fields = ["first", "title", "suffix"]
 

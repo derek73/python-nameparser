@@ -157,9 +157,12 @@ def test_single_possible_split_emits_no_ambiguity() -> None:
     assert _run("김민준", policy=_HANGUL).ambiguities == ()
 
 
-def test_family_comma_is_inert() -> None:
+def test_a_family_comma_stands_the_surname_split_down() -> None:
     # the comma declared the family: splitting it would invent a
-    # boundary the writer did not draw ("남궁 민수" with a space)
+    # boundary the writer did not draw ("남궁 민수" with a space).
+    # The SPLIT only -- the stage as a whole is not inert under a
+    # family comma since #312, and would not be on a lexicon carrying
+    # honorific_tails (_LEX does not; see the peel's own cases below).
     out = _run("남궁민수, 지훈", policy=_HANGUL)
     assert out.structure is Structure.FAMILY_COMMA
     assert _texts(out) == ["남궁민수", "지훈"]
@@ -589,6 +592,50 @@ def test_the_peel_scans_the_name_runs_and_no_further() -> None:
     assert _texts(_run("Dr 김민준씨, Jr., 박씨", policy=_HANGUL,
                        lexicon=lex)) == [
         "Dr", "김", "민준", "씨", "Jr.", "박씨"]
+
+
+def test_the_peel_crosses_a_family_comma_and_stops_there() -> None:
+    # The family-comma mirror of the test above, and the only input
+    # that pins the SECOND half of segments[:2] -- that it is two runs
+    # and not three. Every other family-comma case here has exactly
+    # two segments, so the slice is otherwise only ever exercised as
+    # "more than one run": widening it to three passes them all.
+    # Both shapes above, re-spelled with the name split across a family
+    # comma. "Jr." is the strict/lenient gap again -- reached as a site
+    # it ends in no tail and abandons the peel, leaving 씨 in the given
+    # name -- and 박씨 is the junk tail, whose 씨 a wider scan peels
+    # instead of the person's own.
+    assert _texts(_run("김, 민준씨, Jr.", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["김", "민준", "씨", "Jr."]
+    assert _texts(_run("김, 민준씨, 박씨", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["김", "민준", "씨", "박씨"]
+
+
+def test_an_empty_first_run_still_reaches_the_second() -> None:
+    # A leading comma empties segments[0] without emptying the name:
+    # the scan flattens both runs, so an empty first one is nothing to
+    # stop at. Guarding the crossing on a non-empty segments[0] passes
+    # the ", , 씨" test below, where BOTH runs are empty, and fails
+    # only here.
+    assert _texts(_run(", 민준씨", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["민준", "씨"]
+
+
+def test_the_peel_crosses_a_comma_and_a_dot_at_once() -> None:
+    # The two gates #312 made siblings, composed: the 间隔号 gates the
+    # surname split (威廉 stays whole -- 威 is a listed surname here,
+    # so without the dot it would divide) and the family comma gates
+    # it too, while the peel crosses both and reaches 太郎さん on the
+    # far side of the comma. Neither gate alone pins this: keying the
+    # cross-comma reach on interpunct-free input passes every other
+    # case in this file.
+    lex = _LEX_TAILS.add(surnames={"威"})
+    state = segment(tokenize(ParseState(
+        original="威廉·莎士比亚, 太郎さん", lexicon=lex, policy=_HAN)))
+    assert state.interpunct_offsets
+    assert state.structure is Structure.FAMILY_COMMA
+    assert _texts(script_segment(state)) == [
+        "威廉", "莎士比亚", "太郎", "さん"]
 
 
 def test_the_peel_survives_a_name_with_no_name_tokens() -> None:
