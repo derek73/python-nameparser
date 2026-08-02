@@ -16,7 +16,9 @@ vocabulary through TWO predicates. _vocab.is_suffix_strict asks whether
 a single token is a post-nominal (the peel's scan-back and the surname
 site). _vocab.is_wholly_suffix asks whether a whole post-comma RUN is,
 which is segment's own suffix-comma question and is how the peel
-declines a run that is not name text (#319); that one owns two further
+declines a run that is not name text (#319) -- but only where the
+name's own run offers a site, since a glued honorific is itself part of
+what makes a run read as suffix-shaped; that one owns two further
 Policy fields (lenient_comma_suffixes picks the strict or lenient token
 test -- it flips "田中さん, V." -- and extra_suffix_delimiters makes a
 delimiter-core token transparent, flipping "田中さん, Jr./V.").
@@ -140,6 +142,7 @@ from __future__ import annotations
 
 import dataclasses
 import functools
+from collections.abc import Sequence
 
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
@@ -315,6 +318,44 @@ def _is_post_nominal(state: ParseState, i: int) -> bool:
     return is_suffix_strict(state.tokens[i].text, state.lexicon)
 
 
+def _peel_site(state: ParseState, flat: Sequence[int],
+               tails: frozenset[str]) -> tuple[int, int] | None:
+    """Where a peel would land in the token run `flat`: the index of the
+    token to cut and the LENGTH of the listed tail to take off it, or
+    None where that run offers no peel.
+
+    Two callers, one answer, which is the point of naming it. The peel
+    itself asks it once, of the runs it decided to scan. The gate above
+    that decision asks it of segments[0] ALONE, to find out whether
+    declining the second run would cost the only site. Sharing the scan
+    with the peel rather than approximating it there is what makes the
+    gate's answer mean what it says: a gate that merely looked for a
+    token ENDING in a listed tail would count a token that is a tail
+    entire, which the scan-back skips as a site -- "선생님, J.씨" would
+    decline on a site the peel then cannot use, and lose the peel in
+    exactly the way the gate exists to prevent. (Only the lone-token
+    shape of that divergence is reachable from the gate: segment gives
+    SUFFIX_COMMA whenever more than one word precedes the comma, so a
+    segments[0] the gate ever sees holds at most one token.)
+
+    Callers must pass a NON-EMPTY `tails` -- _longest_entry's
+    precondition, which the stage's own early return supplies."""
+    i = next((j for j in reversed(flat)
+              if not _is_post_nominal(state, j)), None)
+    if i is None:
+        # nothing but post-nominals, or no tokens at all
+        return None
+    text = state.tokens[i].text
+    # range/cap construction identical to the surname match below, and
+    # for the same two reasons: longest-first, and a len-1 cap that
+    # makes the offset interior by construction (_split's contract).
+    cap = min(_longest_entry(tails), len(text) - 1)
+    for length in range(cap, 0, -1):
+        if text[-length:] in tails:
+            return i, length
+    return None
+
+
 def _peel_honorific_tail(state: ParseState) -> ParseState:
     """#308: split a listed honorific off the END of the name's last
     NON-POST-NOMINAL token -- 田中さん -> 田中 + さん -- and let
@@ -442,31 +483,40 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     # segment, and scanning tokens would put the peel site on a
     # nickname ("김민준씨 (Jimmy)" -> the site becomes Jimmy and
     # nothing peels). ko_honorific_glued_given_nickname pins that.
+    # And declining takes a SECOND condition: segments[0] must hold a
+    # peel site of its own. is_wholly_suffix reaches period_joined_vocab,
+    # which calls a run suffix-shaped when ANY period-chunk is suffix
+    # VOCABULARY -- and every honorific tail is a suffix word by the
+    # Lexicon invariant, so a glued honorific is itself the evidence.
+    # The predicate is circular at THIS call site alone (segment asks it
+    # of a run nothing has peeled yet): "이, J.씨" reads as wholly suffix
+    # only because of the 씨 the peel exists to remove, and declining a
+    # run that holds the only site does not fall back to some other
+    # site -- it loses the peel outright, and with it the given name,
+    # which lands in suffix as "J.씨". Asking for a site in segments[0]
+    # keeps the #319 answer wherever the peel has somewhere else to go
+    # ("田中さん, V." still declines, さん is right there) and gives the
+    # circular case back to master's reading. The two-honorific input
+    # "김민준씨, J.씨" is where the choice is visible and deliberate:
+    # both runs offer a site, so the decline stands and the person's own
+    # 씨 is peeled rather than the junk one behind the comma.
     runs = state.segments[:1]
     if state.structure is Structure.FAMILY_COMMA:
         second = [state.tokens[j].text for j in state.segments[1]]
-        if not is_wholly_suffix(second, state.lexicon, state.policy):
+        if not (is_wholly_suffix(second, state.lexicon, state.policy)
+                and _peel_site(state, state.segments[0], tails)):
             runs = state.segments[:2]
-    flat = [j for seg in runs for j in seg]
-    i = next((j for j in reversed(flat)
-              if not _is_post_nominal(state, j)), None)
-    if i is None:
+    site = _peel_site(state, [j for seg in runs for j in seg], tails)
+    if site is None:
         return state
-    text = state.tokens[i].text
-    # range/cap construction identical to the surname match below, and
-    # for the same two reasons: longest-first, and a len-1 cap that
-    # makes the offset interior by construction (_split's contract).
-    cap = min(_longest_entry(tails), len(text) - 1)
-    for length in range(cap, 0, -1):
-        if text[-length:] in tails:
-            # The tail carries a tag because this stage MANUFACTURED
-            # it. The segmenter's neighbour test below needs to tell it
-            # from a token somebody wrote, and no vocabulary question
-            # can: the two spellings put the same word in the same
-            # place, and only the provenance differs.
-            return _split(state, i, (len(text) - length,), None,
-                          tail_tag=_PEELED_TAG)
-    return state
+    i, length = site
+    # The tail carries a tag because this stage MANUFACTURED it. The
+    # segmenter's neighbour test below needs to tell it from a token
+    # somebody wrote, and no vocabulary question can: the two spellings
+    # put the same word in the same place, and only the provenance
+    # differs.
+    return _split(state, i, (len(state.tokens[i].text) - length,), None,
+                  tail_tag=_PEELED_TAG)
 
 
 def _split_surname_site(state: ParseState) -> ParseState:

@@ -1219,6 +1219,72 @@ CASES: tuple[Case, ...] = (
                "does: measured, 1.4.0 gave first 'V.' / last "
                "田中さん, which is field for field what the knob holds "
                "here -- parity, and the point of the knob"),
+    Case("ko_honorific_glued_family_comma_site_only_beyond_the_comma",
+         "이, J.씨",
+         {"given": "J.", "family": "이", "suffix": "씨"},
+         classification="fix(#312)",
+         notes="the limit of #319's decline, and the row that says why "
+               "it carries a second condition. is_wholly_suffix reaches "
+               "period_joined_vocab, which calls an interior-period "
+               "token a suffix when ANY chunk is suffix vocabulary -- "
+               "and every honorific tail is a suffix WORD by the "
+               "Lexicon invariant, so 'J.씨' reads as suffix-shaped "
+               "BECAUSE of the 씨 the peel exists to remove. Declining "
+               "on that evidence does not move the peel elsewhere the "
+               "way 田中さん, V. does: segments[0] is the lone 이, which "
+               "ends in no tail, so the scan finds no site at all, "
+               "nothing peels, and the given name goes to suffix "
+               "glued to its honorific ('J.씨'). So the gate declines "
+               "only where segments[0] holds a peel site of its own, "
+               "and this input reaches the pre-#319 fields by having "
+               "none. Not rescued by "
+               "Policy(lenient_comma_suffixes=False) either, unlike the "
+               "strict-knob row above: the knob picks between "
+               "is_suffix_lenient and is_suffix_strict per token and "
+               "period_joined_vocab is downstream of neither, so both "
+               "settings call this run wholly suffix. 1.4.0 gave first "
+               "'J.씨' / last 이 -- it peels nothing, so the deviation "
+               "here is #312's crossing, which is what puts the site on "
+               "'J.씨' in the first place"),
+    Case("ko_honorific_glued_family_comma_site_in_both_runs",
+         "김민준씨, J.씨",
+         {"family": "김민준", "suffix": "씨, J.씨"},
+         classification="fix(#319)",
+         notes="the two-honorific input, where both runs hold a site "
+               "and the decline therefore stands -- a deliberate choice "
+               "between two readings rather than a fallout. Pre-#319 "
+               "the scan crossed and took the LAST site, peeling the 씨 "
+               "off the junk 'J.씨' and leaving the person's own "
+               "honorific glued in the family name (given 'J.', family "
+               "김민준씨, suffix 씨); now 씨 comes off 김민준씨 and "
+               "'J.씨' is consumed whole as a suffix. It is also the "
+               "row that rules out the narrower gate: declining only "
+               "where the SECOND run has no peel site fixes "
+               "ko_honorific_glued_family_comma_site_only_beyond_the_"
+               "comma above and reverts this input to the pre-#319 "
+               "reading, which is the worse of the two -- the same "
+               "junk-tail reach "
+               "ko_honorific_glued_given_suffix_comma_initial's note "
+               "names under a suffix comma. 1.4.0 gave first 'J.씨' / "
+               "last 김민준씨, peeling neither"),
+    Case("ko_honorific_glued_family_comma_lone_post_nominal_before_it",
+         "선생님, J.씨",
+         {"given": "J.", "family": "선생님", "suffix": "씨"},
+         classification="fix(#312)",
+         notes="segments[0] is a single token that IS a listed tail "
+               "entire, which the site scan skips as a post-nominal "
+               "(the same guard that keeps 선생님 from being peeled to "
+               "선생 + 님) -- so there is no site before the comma, the "
+               "run beyond it is scanned after all, and the fields are "
+               "the pre-#319 ones as in the 이 row above. Pinned "
+               "because it separates asking for the site with the "
+               "peel's own scan-back from asking the cheaper question, "
+               "whether any token ENDS in a tail: the cheaper one "
+               "counts 선생님, declines, and then finds nothing to cut "
+               "-- 씨 lost into suffix 'J.씨'. Only the lone-token "
+               "shape of that divergence is reachable, since segment "
+               "gives SUFFIX_COMMA whenever more than one word precedes "
+               "the comma. 1.4.0 gave first 'J.씨' / last 선생님"),
     Case("ko_honorific_glued_given_after_family_comma", "김, 민준씨",
          {"family": "김", "given": "민준", "suffix": "씨"},
          classification="fix(#312)",
