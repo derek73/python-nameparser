@@ -385,8 +385,14 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     # 민준씨" is (0,) and (1,)), and the honorific is as often glued to
     # the given name as to the family, so the peel has to cross that
     # boundary (#312). Every OTHER structure keeps the whole name in
-    # segments[0] and puts post-nominals after it -- which is why the
-    # asymmetry is the point rather than an accident of two cases.
+    # segments[0], so no boundary has to be crossed to find the site
+    # there -- which is why the asymmetry is the point rather than an
+    # accident of two cases. Note that "the rest is post-nominals" is
+    # true of the SUFFIX comma only: under NO_COMMA segment returns
+    # exactly one run and any trailing post-nominal is INSIDE it
+    # ("김민준씨 Jr." is one run of two tokens), which is why the
+    # scan-back above steps over such a token rather than simply never
+    # reaching it.
     # Reaching past the name's own runs is a live bug, not tidiness:
     # segment admits a post-comma run on is_suffix_lenient while
     # _is_post_nominal asks is_suffix_strict, and the initial-shaped
@@ -604,10 +610,14 @@ def script_segment(state: ParseState) -> ParseState:
         # glue is PREnominal and period-joined (Mr.Smith, Lt.Gov.),
         # which _vocab.period_joined_vocab classifies as one token
         # rather than splitting -- a different mechanism, and no peel
-        # site either way. A glued Latin post-nominal gets neither
-        # treatment and simply stays in the name ("John Smith.Jr." ->
-        # family "Smith.Jr."), which the ASCII bail here is what makes
-        # moot rather than anything downstream.
+        # site either way. A glued Latin POST-nominal is spelled the
+        # same way, so it reaches that same mechanism rather than
+        # nothing: period_joined_vocab reads "Smith.Jr." as a title
+        # ('jr' is title vocabulary as well as suffix vocabulary), and
+        # where position allows, that wins -- "Smith.Jr. Anderson"
+        # gives title "Smith.Jr.", family "Anderson". Whatever it
+        # decides, this bail is what settles the question here: it
+        # returns above all of it, so no ASCII input reaches the peel.
         return state
     if not state.segments:
         return state
