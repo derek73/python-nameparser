@@ -12,8 +12,14 @@ one split was vocabulary-supported, or when a segmenter's answer
 scored under the confidence floor).
 Reads: Policy.segment_scripts, Lexicon.surnames,
 Lexicon.honorific_tails, ParseState.segmenter, and Lexicon suffix
-vocabulary (via _vocab.is_suffix_strict) -- both the peel's scan-back
-and the surname site ask whether a token is a post-nominal.
+vocabulary through TWO predicates. _vocab.is_suffix_strict asks whether
+a single token is a post-nominal (the peel's scan-back and the surname
+site). _vocab.is_wholly_suffix asks whether a whole post-comma RUN is,
+which is segment's own suffix-comma question and is how the peel
+declines a run that is not name text (#319); that one owns two further
+Policy fields (lenient_comma_suffixes picks the strict or lenient token
+test -- it flips "田中さん, V." -- and extra_suffix_delimiters makes a
+delimiter-core token transparent, flipping "田中さん, Jr./V.").
 
 Unspaced CJK names give tokenize no separator to find, so this stage
 inserts the missing token boundary by vocabulary: the first token
@@ -138,7 +144,9 @@ import functools
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
 )
-from nameparser._pipeline._vocab import effective_script, is_suffix_strict
+from nameparser._pipeline._vocab import (
+    effective_script, is_suffix_strict, is_wholly_suffix,
+)
 from nameparser._types import AmbiguityKind, Segmentation, Span
 
 #: Marks the tail token the peel below MANUFACTURED, so the segmenter's
@@ -397,29 +405,48 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     # ("김민준씨 Jr." is one run of two tokens), which is why the
     # scan-back above steps over such a token rather than simply never
     # reaching it.
-    # Reaching past the name's own runs is a live bug, not tidiness:
-    # segment admits a post-comma run on is_suffix_lenient while
-    # _is_post_nominal asks is_suffix_strict, and the initial-shaped
-    # suffix words ("V.", "V", "I") fall in that gap -- as a peel site
-    # such a token ends in no tail and silently abandons the peel, so
-    # "Dr 김민준씨, V." would strand 씨 in the given name. A junk tail
-    # is worse: "Dr 김민준씨, Jr., 박씨" would peel the 씨 off 박씨 and
-    # leave the person's own glued. Not only a counterfactual, either:
-    # Policy(lenient_comma_suffixes=False) drops segment's post-comma
-    # test to the strict one, which reads that same input as
-    # FAMILY_COMMA -- so the scan reaches "V." through the sanctioned
-    # two-run crossing and strands 씨 for real, in family
-    # "Dr 김민준씨". Same gap, reached by a documented knob rather
-    # than by widening this line; see the case row
-    # ja_honorific_glued_family_comma_suffixy_second_run, which is the
-    # DEFAULT-policy shape of it.
+    # The second run is only NAME text when segment read it as one,
+    # which the structure alone does not say: SUFFIX_COMMA also wants
+    # more than one word before the comma, so a one-word part turns a
+    # wholly suffix-shaped remainder into FAMILY_COMMA anyway ("田中さん,
+    # V." is that input). So ask segment's own predicate instead of
+    # inferring the answer from the structure it produced (#319).
+    # is_wholly_suffix, NOT the plural of _is_post_nominal: the two
+    # disagree on exactly the initial-shaped suffix words ("V.", "V",
+    # "I"), and that disagreement IS the defect. Reaching into such a
+    # run put the site on "V.", which ends in no listed tail, so the
+    # peel silently abandoned and さん stayed glued to the family --
+    # while "田中さん, PhD" peeled all along, because "PhD" satisfies
+    # the strict test and the scan-back stepped over it. One credential,
+    # two spellings, two answers FROM THE PEEL -- where the peeled
+    # remainder then lands is assign's question, and it still differs by
+    # spelling. A junk tail is the worse
+    # shape of the same reach: "Dr 김민준씨, Jr., 박씨" would peel the
+    # 씨 off 박씨 and leave the person's own glued.
+    # An EMPTY second run stays in scope and contributes nothing:
+    # is_wholly_suffix is False on it by its own contract (v1 read
+    # "Doe,, Jr." as a family comma), which is the reading this line
+    # wants anyway -- flattening an empty run adds no site.
+    # Policy(lenient_comma_suffixes=False) keeps the old answer for the
+    # INITIAL-shaped suffixes specifically, which is where the
+    # strict/lenient gap lives: the knob drops this call to the strict
+    # predicate too, so is_wholly_suffix(["V."]) is False, the run reads
+    # as name text, it IS scanned, and the peel is abandoned on "V." as
+    # before -- family "田中さん", given "V.". It is not a blanket
+    # freeze of the old behavior, and "田中さん, Ph. D." is the input
+    # that shows the difference: the Ph./D. merge folds that pair to a
+    # form is_suffix_strict accepts, so the run is declined and the peel
+    # fires under the strict knob as well.
     # Flattening the SEGMENTS rather than state.tokens is load-bearing
     # too: extracted nickname and maiden content is in tokens but in NO
     # segment, and scanning tokens would put the peel site on a
     # nickname ("김민준씨 (Jimmy)" -> the site becomes Jimmy and
     # nothing peels). ko_honorific_glued_given_nickname pins that.
-    runs = (state.segments[:2] if state.structure is Structure.FAMILY_COMMA
-            else state.segments[:1])
+    runs = state.segments[:1]
+    if state.structure is Structure.FAMILY_COMMA:
+        second = [state.tokens[j].text for j in state.segments[1]]
+        if not is_wholly_suffix(second, state.lexicon, state.policy):
+            runs = state.segments[:2]
     flat = [j for seg in runs for j in seg]
     i = next((j for j in reversed(flat)
               if not _is_post_nominal(state, j)), None)
