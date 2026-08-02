@@ -5,7 +5,7 @@ from nameparser._pipeline._vocab import (
     effective_script, is_initial, is_suffix_lenient,
     is_suffix_strict, resolve_script_set, single_script,
 )
-from nameparser._policy import Script, _SCRIPT_RANGES
+from nameparser._policy import Script, _NO_INITIALS, _SCRIPT_RANGES
 
 _LEX = Lexicon(
     suffix_acronyms=frozenset({"phd", "ma"}),
@@ -53,6 +53,36 @@ def test_strict_suffix_veto_skips_cjk() -> None:
     lex = Lexicon(suffix_words=frozenset({"씨", "様"}))
     assert is_suffix_strict("씨.", lex)
     assert is_suffix_strict("様.", lex)
+
+
+def test_every_script_is_classified_for_initials() -> None:
+    """A member joining Script must be classified here on purpose;
+    _policy._NO_INITIALS carries the reasoning.
+
+    The classification lives in this table rather than the assertion
+    being `set(Script) == set(_NO_INITIALS)`: that passes trivially
+    today, since all four current members are CJK, and the only way to
+    green it again after adding a script would be to declare that
+    script initial-less. That prejudges the answer. The point is to
+    force a decision, not a particular one.
+    """
+    has_initials = {
+        Script.HAN: False,       # ideographs are morphemes
+        Script.HANGUL: False,    # syllable blocks
+        Script.HIRAGANA: False,  # syllables
+        Script.KATAKANA: False,  # syllables
+    }
+    assert set(has_initials) == set(Script), (
+        "a Script member is unclassified for initials: decide whether "
+        "a single character of it can stand in for a name, add the row, "
+        "and put it in _policy._NO_INITIALS if it cannot")
+    assert {s for s, yes in has_initials.items() if not yes} \
+        == set(_NO_INITIALS), (
+        "this table and _policy._NO_INITIALS disagree about which "
+        "scripts have initials: a row here saying False is what puts a "
+        "script in the constant, so add the missing member to "
+        "_NO_INITIALS -- or, if the constant is the one that's right, "
+        "flip the row")
 
 
 def test_strict_suffix_initial_veto() -> None:
