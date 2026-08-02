@@ -161,8 +161,19 @@ _JA_SCRIPTS = (Script.HAN, Script.HIRAGANA, Script.KATAKANA)
 #: DEFAULT_SCRIPT_ORDERS nor segment_scripts' default mentions it.
 #: Membership therefore settles nothing about abbreviation: the four
 #: coinciding today is what has been implemented, not a property of
-#: the enum -- and Thai (#317) is an abugida too, so it must not
-#: inherit this answer without someone deciding it.
+#: the enum, and a new member must not inherit this answer.
+#:
+#: Decide it from CLDR rather than from the script's typology: count
+#: the LOCALE-AUTHORED namePattern entries in common/main/<locale>.xml's
+#: personNames block that produce an initial. ja and ko author 29 and
+#: 32 patterns and use one in none of them; ru uses initials in 7 of 39
+#: ("{given-initial} {given2-initial} {surname}"); zh abbreviates but
+#: overrides initialPattern to "{0}", no period, which is why the
+#: period is part of the test above. Do NOT read initialPattern alone
+#: -- root defaults it to "{0}." and nearly every locale inherits it,
+#: so it reports a period convention for locales that have none.
+#: Measured 2026-08-02: th is 0 of 20, so Thai (#317) belongs here
+#: once it earns a member.
 _NO_INITIALS = (Script.HAN, Script.HANGUL, Script.HIRAGANA,
                 Script.KATAKANA)
 
