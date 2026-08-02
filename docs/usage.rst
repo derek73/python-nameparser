@@ -294,19 +294,31 @@ Japanese roster formatting rather than transcription, so only the
 Chinese dot rescues the source order. And a comma disables the script
 behaviors entirely, on the reasoning ``name_order`` already follows: whoever
 wrote the comma has already said where the family name ends.
+The honorific peel is the exception, and for the reason the rest of
+the sentence gives: a comma says where the family name *ends*, which
+is a claim about where the name divides — and an honorific is not part
+of the name under either spelling. So ``김, 민준씨`` reads the same as
+``김 민준씨``, honorific in ``suffix`` either way, while the surname
+split still stands down. The 间隔号 works the same way: it marks a
+transcription, so it still stops the split, but an honorific glued to
+a transcribed name is still an honorific.
 
 Honorifics and degrees follow a CJK name, and both the spaced and the
 glued forms are recognized as suffixes: ``王小明 先生`` reads family
 王小明 with 先生 in ``suffix``, and so do glued ``田中さん``,
 ``山田太郎様`` and ``김민준씨``. The honorific is split off the end of
-the last name token before the name is split or ordered, so those
-rules see the name without it — which is why ``김민준씨`` still divides
-into family 김 and given 민준, and why a configured Japanese segmenter
-is handed 山田太郎 rather than 山田太郎様. The comma rule above comes
-first, though, and covers this too: in ``田中さん, 太郎`` the writer
-has already said where the family name ends, so nothing is peeled and
-the family name is the whole ``田中さん``. A 间隔号-divided
-transcription opts out for its own reason, the same way.
+the last token of the name before the name is split or ordered, so
+those rules see the name without it — which is why ``김민준씨`` still
+divides into family 김 and given 민준, and why a configured Japanese
+segmenter is handed 山田太郎 rather than 山田太郎様. Neither a comma nor
+a 间隔号 stops the peel. Both say where a name divides — the comma that
+the writer has already given the family name, the dot that the pieces
+are a transcription's syllable groups — and an honorific is not part
+of the name in any of those readings. So ``김, 민준씨`` reads the same
+as ``김 민준씨``. What those marks do stop is the *split*, which is a
+different question and still theirs to answer. ``田中さん, 太郎`` is
+unchanged, and not because of its comma: the honorific there is not at
+the end of the name, 太郎 is.
 
 Where a segmenter divides the name, the two spellings part company. A
 spaced honorific is a token boundary the writer typed, and the
