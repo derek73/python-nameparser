@@ -1,14 +1,15 @@
-"""Stage: script_segment (#271, #272, #308).
+"""Stage: script_segment (#271, #272, #308, #312).
 
 Consumes: tokens, segments, structure, interpunct_offsets, segmenter.
 Produces: tokens, by two independent splits into sub-slices -- a
-listed honorific peeled off the END of the name part's last
-non-post-nominal token (whose tail token also carries this module's
-_PEELED_TAG), and the first activated-script token of the name segment
-split into n+1 -- segments (index runs remapped past the insertions),
-ambiguities (indices likewise remapped, plus a SEGMENTATION report
-when more than one split was vocabulary-supported, or when a
-segmenter's answer scored under the confidence floor).
+listed honorific peeled off the END of the name's last
+non-post-nominal token, in whichever of the name's runs that falls
+(the tail token also carries this module's _PEELED_TAG), and the
+first activated-script token of the name segment split into n+1 --
+segments (index runs remapped past the insertions), ambiguities
+(indices likewise remapped, plus a SEGMENTATION report when more than
+one split was vocabulary-supported, or when a segmenter's answer
+scored under the confidence floor).
 Reads: Policy.segment_scripts, Lexicon.surnames,
 Lexicon.honorific_tails, ParseState.segmenter, and Lexicon suffix
 vocabulary (via _vocab.is_suffix_strict) -- both the peel's scan-back
@@ -24,18 +25,23 @@ nothing -- spans still index the original exactly, so the anti-#100
 invariant holds by construction.
 
 A second, independent split runs first (#308): a listed honorific
-glued to the END of the name part's last non-post-nominal token is
-peeled off as its own token -- 田中さん -> 田中 + さん -- so that
-suffix classification can claim it and the surname match or segmenter
-consult below sees the name rather than the name plus an honorific. It
-is gated by the stage's own ASCII bail, by the FAMILY comma and by
-间隔号, but NOT by segment_scripts: the vocabulary of tails is licensed
-by the entries themselves, each of which can never end a name, so no
-per-script trust question arises. The ASCII bail is the gate a caller
-adding a LATIN tail meets -- it sits above everything here, so such a
-tail fires only on a name carrying at least one non-ASCII character
-(see the bail's own comment, and honorific_tails' field note). A
-suffix comma gates nothing -- "Dr 김민준씨, Jr." peels within its name
+glued to the END of the name's last non-post-nominal token is peeled
+off as its own token -- 田中さん -> 田中 + さん -- so that suffix
+classification can claim it and the surname match or segmenter consult
+below sees the name rather than the name plus an honorific. No
+STRUCTURAL gate stands over it -- the only things above it are the
+stage's own two preconditions, the ASCII bail and non-empty segments.
+Not segment_scripts either: the vocabulary of tails is licensed by the
+entries themselves, each of which can never end a name, so no
+per-script trust question arises. And since #312 not the FAMILY comma
+or the 间隔号 either -- both of those answer where a name divides into
+surname and given, which the peel never asks, so a comma or a dot
+elsewhere in the string cannot change whether a token ends in a word
+that can never end a name. The ASCII bail is the gate a caller adding
+a LATIN tail meets -- it sits above everything here, so such a tail
+fires only on a name carrying at least one non-ASCII character (see
+the bail's own comment, and honorific_tails' field note). A suffix
+comma gates nothing either -- "Dr 김민준씨, Jr." peels within its name
 part like any other.
 
 Where the VOCABULARY declines -- no prefix matched -- an optional
@@ -75,15 +81,19 @@ spec section 4): a user-supplied callable's error is a user-code
 error, not a content error.
 
 Placed AFTER segment, on the comma doctrine that script-conditional
-behavior is ignored where a comma already decides the family (the
-rule script_orders follows): under FAMILY_COMMA the pre-comma text IS
+behavior DECIDING WHERE A NAME DIVIDES is ignored where a comma
+already decides the family (the rule script_orders follows -- and the
+qualifier is load-bearing since #312, which is what the peel crosses
+the comma on): under FAMILY_COMMA the pre-comma text IS
 the family by declaration, and splitting it would invent a boundary
 the writer explicitly did not draw -- "남궁민수, 지훈" must render
 family "남궁민수", not "남궁 민수". That doctrine is about the input's
 structure, not the split's source, so it covers the segmenter
 identically: the opt-out runs before either is consulted. The
 post-comma side is given-name text, no surname site either, so that
-structure opts out whole.
+structure opts out of the SURNAME SPLIT whole -- of the stage entire
+until #312 moved the peel in front of the gate, an honorific being no
+part of the name whichever side of the comma it was glued to.
 NO_COMMA and SUFFIX_COMMA still split, within segments[0] (the name
 part) only. Running after segment costs the index remaps below;
 running BEFORE it would have made the comma structure itself depend
@@ -298,8 +308,8 @@ def _is_post_nominal(state: ParseState, i: int) -> bool:
 
 
 def _peel_honorific_tail(state: ParseState) -> ParseState:
-    """#308: split a listed honorific off the END of the name part's
-    last NON-POST-NOMINAL token -- 田中さん -> 田中 + さん -- and let
+    """#308: split a listed honorific off the END of the name's last
+    NON-POST-NOMINAL token -- 田中さん -> 田中 + さん -- and let
     the existing machinery do the rest. Suffix classification claims
     the tail downstream (every honorific_tails entry is a suffix word
     too, enforced by Lexicon), and the segmentation half below then
@@ -315,26 +325,33 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     which the cap alone would peel to 선생 + 님) is skipped as a site
     and stays whole: every tail is a suffix word by the Lexicon
     invariant, which is what makes that guard hold, and the cap below
-    only keeps the offset interior for _split. And segments[0] is
-    reachable while empty -- a leading comma yields one -- so the scan
-    that returns None where the outright index would raise removes an
-    unpinned reliance on the FAMILY_COMMA gate landing first.
+    only keeps the offset interior for _split. And the scan answers
+    None rather than indexing anything, which two reachable inputs
+    need: a name that is nothing but post-nominals ("씨"), and one
+    whose name runs are empty (", , 씨" scopes to two empty ones).
+    Nothing here rests on a structural gate landing first, then, which
+    is what let #312 move both of the stage's gates below it.
 
-    WHICH run is scanned is a separate decision, and the one a reader
-    is likeliest to undo: segments[0], never state.tokens. The two
-    agree under NO_COMMA except where extract_delimited has already
-    claimed a token, which is still in the stream here with only its
-    role set -- so "김민준씨 (Jimmy)" is the input that tells them
-    apart. See the note above the segment lookup in script_segment.
+    WHICH tokens are scanned is a separate decision, and the one a
+    reader is likeliest to undo: the NAME's segment runs, flattened,
+    and never state.tokens or every segment. The alternatives agree
+    except where extract_delimited has already claimed a token or a
+    comma has closed the name, both of which this stage can still see
+    -- so "김민준씨 (Jimmy)" and "Dr 김민준씨, V." are the inputs that
+    tell the three apart. See the note at the scan itself.
 
-    That last token is the last of the NAME PART, which under NO_COMMA
-    reaches into a maiden clause: maiden tokens are still main-stream
-    here (extract_delimited has masked only bracketed content), so
+    That last token is the last of the NAME, which reaches into a
+    maiden clause: maiden tokens are still main-stream here
+    (extract_delimited has masked only bracketed content), so
     "김민준 née 박씨" peels 씨 off the MAIDEN name 박씨 and hands it to
     the person's suffix list -- "née Ms. Park". Intended rather than
     incidental in that direction: the honorific is the reader's
     regardless of which of her names it was glued to, and a
-    name-part-final honorific is exactly what this peels.
+    name-final honorific is exactly what this peels. Since #312 that
+    reach extends to FAMILY_COMMA along with the rest of the crossing
+    -- "김, 민준 née 박씨" now routes 씨 to suffix, where before #312
+    the stage returned at the family-comma gate above the peel and
+    left it in maiden "박씨".
 
     The other direction is a LIMIT, stated rather than fixed: a maiden
     clause pushes the site off the person's own name, so "김민준씨 née
@@ -366,7 +383,45 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     tails = state.lexicon.honorific_tails
     if not tails:
         return state
-    i = next((j for j in reversed(state.segments[0])
+    # The NAME's runs, which is more than segments[0] but never every
+    # segment. A comma is how a writer says which runs are the name: a
+    # FAMILY comma splits the name itself across two of them ("김,
+    # 민준씨" is (0,) and (1,)), and the honorific is as often glued to
+    # the given name as to the family, so the peel has to cross that
+    # boundary (#312). Every OTHER structure keeps the whole name in
+    # segments[0], so no boundary has to be crossed to find the site
+    # there -- which is why the asymmetry is the point rather than an
+    # accident of two cases. Note that "the rest is post-nominals" is
+    # true of the SUFFIX comma only: under NO_COMMA segment returns
+    # exactly one run and any trailing post-nominal is INSIDE it
+    # ("김민준씨 Jr." is one run of two tokens), which is why the
+    # scan-back above steps over such a token rather than simply never
+    # reaching it.
+    # Reaching past the name's own runs is a live bug, not tidiness:
+    # segment admits a post-comma run on is_suffix_lenient while
+    # _is_post_nominal asks is_suffix_strict, and the initial-shaped
+    # suffix words ("V.", "V", "I") fall in that gap -- as a peel site
+    # such a token ends in no tail and silently abandons the peel, so
+    # "Dr 김민준씨, V." would strand 씨 in the given name. A junk tail
+    # is worse: "Dr 김민준씨, Jr., 박씨" would peel the 씨 off 박씨 and
+    # leave the person's own glued. Not only a counterfactual, either:
+    # Policy(lenient_comma_suffixes=False) drops segment's post-comma
+    # test to the strict one, which reads that same input as
+    # FAMILY_COMMA -- so the scan reaches "V." through the sanctioned
+    # two-run crossing and strands 씨 for real, in family
+    # "Dr 김민준씨". Same gap, reached by a documented knob rather
+    # than by widening this line; see the case row
+    # ja_honorific_glued_family_comma_suffixy_second_run, which is the
+    # DEFAULT-policy shape of it.
+    # Flattening the SEGMENTS rather than state.tokens is load-bearing
+    # too: extracted nickname and maiden content is in tokens but in NO
+    # segment, and scanning tokens would put the peel site on a
+    # nickname ("김민준씨 (Jimmy)" -> the site becomes Jimmy and
+    # nothing peels). ko_honorific_glued_given_nickname pins that.
+    runs = (state.segments[:2] if state.structure is Structure.FAMILY_COMMA
+            else state.segments[:1])
+    flat = [j for seg in runs for j in seg]
+    i = next((j for j in reversed(flat)
               if not _is_post_nominal(state, j)), None)
     if i is None:
         return state
@@ -387,41 +442,20 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     return state
 
 
-def script_segment(state: ParseState) -> ParseState:
-    if state.original.isascii():
-        # spans index the original exactly (the anti-#100 invariant),
-        # so an ASCII original has only ASCII tokens: nothing here is
-        # in any script's ranges. It also short-circuits the PEEL,
-        # which has no script gate of its own -- so a caller-configured
-        # ASCII tail never fires, and one non-ASCII character anywhere
-        # in the name switches it on. Correct for the CJK vocabulary
-        # that ships, stated because honorific_tails is public: see
-        # that field's own note.
-        return state
-    if not state.segments:
-        return state
-    if state.structure is Structure.FAMILY_COMMA:
-        return state            # the comma already drew the boundary
-    if state.interpunct_offsets:
-        # #298: a 间隔号-divided name is a transcription -- its pieces
-        # are syllable groups, not surname+given, so neither the
-        # vocabulary nor the segmenter applies (codepoint-scoped: the
-        # nakaguro records nothing and gates nothing, spec decision 5).
-        # State-global like the FAMILY_COMMA gate above: a marker
-        # anywhere in the name reads the WHOLE name as a transcription
-        # listing, so even an un-dotted hangul token beside a dotted
-        # one stays whole.
-        return state
-    # #308: the honorific peel runs after the structural gates above
-    # (a FAMILY-comma or dot-divided name opts out of this stage
-    # whole; a suffix comma does not -- its name part still peels)
-    # but BEFORE the activation gate below, and independently of it --
-    # 田中さん must peel under the DEFAULT policy, where HAN is in no
-    # activation set. The activation gate is about which
-    # scripts a SURNAME VOCABULARY may be trusted to divide; the peel
-    # asks nothing of the remainder, only whether the token ends in a
-    # word that can never end a name.
-    state = _peel_honorific_tail(state)
+def _split_surname_site(state: ParseState) -> ParseState:
+    """The stage's other split: the first activated-script token of the
+    name part is matched longest-first against Lexicon.surnames, and a
+    hit splits it in two; where the vocabulary declines, an optional
+    Parser(segmenter=...) is consulted instead.
+
+    A sibling of _peel_honorific_tail rather than a continuation of it.
+    The two answer different questions -- this one asks where a name
+    divides into surname and given, the peel asks whether a token ends
+    in a word that can never end a name -- which is why they carry
+    different gates: the FAMILY comma and the 间隔号 gate this half
+    alone (#312), and segment_scripts below gates it alone too. That
+    is also why the stage entry below interleaves gates with its two
+    calls rather than running one cascade."""
     scripts = state.policy.segment_scripts
     # an empty VOCABULARY deliberately does not bail here -- see below
     if not scripts:
@@ -429,15 +463,12 @@ def script_segment(state: ParseState) -> ParseState:
     # segments[0] is the NAME part under both remaining structures
     # (everything, under NO_COMMA); later segments are suffixes. Its
     # members are main-stream token indices by construction, so
-    # extracted nickname/maiden content is unreachable from here.
-    # For the surname site that is merely tidy -- the first
-    # script-written token is the same either way. For the PEEL above
-    # it is load-bearing, and iterating state.tokens instead is a
-    # silent regression rather than a refactor: extracted content is
-    # still IN the token stream at this stage (only its role is set),
-    # so "김민준씨 (Jimmy)" would give the scan-back Jimmy as its site,
-    # which is no post-nominal to step over and ends in no tail, and
-    # the peel would be lost. Pinned by the case row of that name.
+    # extracted nickname/maiden content is unreachable from here. For
+    # this site that is merely tidy -- the first script-written token
+    # is the same either way. It is the PEEL above that reads this run
+    # load-bearingly, and in the two structures that reach here it
+    # reads exactly this one, only backwards; the argument lives at
+    # that scan.
     i = next((i for i in state.segments[0]
               if effective_script(state.tokens[i].text) in scripts), None)
     # A post-nominal in the surname's own position is not a site to
@@ -574,3 +605,53 @@ def script_segment(state: ParseState) -> ParseState:
                   f"scoring {conf:.2f}, under the "
                   f"{_SEGMENTER_CONFIDENCE_FLOOR} confidence floor")
     return _split(state, i, answer.splits, detail)
+
+
+def script_segment(state: ParseState) -> ParseState:
+    if state.original.isascii():
+        # spans index the original exactly (the anti-#100 invariant),
+        # so an ASCII original has only ASCII tokens: nothing here is
+        # in any script's ranges. It also short-circuits the PEEL,
+        # which has no script gate of its own -- so a caller-configured
+        # ASCII tail never fires, and one non-ASCII character anywhere
+        # in the name switches it on. Correct for the CJK vocabulary
+        # that ships, stated because honorific_tails is public: see
+        # that field's own note. Latin orthography SPACES its
+        # post-nominals ("John Smith PhD"), so the glued position this
+        # peel exists for is a CJK one to begin with. What Latin does
+        # glue is PREnominal and period-joined (Mr.Smith, Lt.Gov.),
+        # which _vocab.period_joined_vocab classifies as one token
+        # rather than splitting -- a different mechanism, and no peel
+        # site either way. A glued Latin POST-nominal is spelled the
+        # same way, so it reaches that same mechanism rather than
+        # nothing: period_joined_vocab reads "Smith.Jr." as a title
+        # ('jr' is title vocabulary as well as suffix vocabulary), and
+        # where position allows, that wins -- "Smith.Jr. Anderson"
+        # gives title "Smith.Jr.", family "Anderson". Whatever it
+        # decides, this bail is what settles the question here: it
+        # returns above all of it, so no ASCII input reaches the peel.
+        return state
+    if not state.segments:
+        return state
+    # #312: the peel runs in front of both gates below, because both
+    # answer where a name divides into surname and given, and the peel
+    # does not ask that. It asks whether a token ends in a word that
+    # can never end a name, and a comma or a dot elsewhere in the
+    # string does not change the answer. Placing it above the block
+    # also keeps a future segmentation gate from silently capturing
+    # it: a new gate lands with its siblings, below.
+    state = _peel_honorific_tail(state)
+    if state.structure is Structure.FAMILY_COMMA:
+        return state    # the comma already drew the SURNAME boundary
+    if state.interpunct_offsets:
+        # #298: a 间隔号-divided name is a transcription -- its pieces
+        # are syllable groups, not surname+given, so neither the
+        # vocabulary nor the segmenter applies (codepoint-scoped: the
+        # nakaguro records nothing and gates nothing, spec decision 5).
+        # State-global like the FAMILY_COMMA gate above: a marker
+        # anywhere in the name reads the WHOLE name as a transcription
+        # listing, so even an un-dotted hangul token beside a dotted
+        # one stays whole. Scoped to the surname split since #312: an
+        # honorific glued to a transcription is still an honorific.
+        return state
+    return _split_surname_site(state)

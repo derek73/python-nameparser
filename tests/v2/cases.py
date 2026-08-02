@@ -946,9 +946,11 @@ CASES: tuple[Case, ...] = (
          {"title": "Dr", "family": "김", "given": "민준",
           "suffix": "씨, Jr."},
          classification="fix(#308)",
-         notes="the peel indexes the NAME part, not the token stream: "
-               "under a suffix comma segments[0] is a strict subset, "
-               "and the peel site is found within it. Pairs with "
+         notes="the peel scans the NAME's runs, not the token stream: "
+               "under a suffix comma that is segments[0] alone, a "
+               "strict subset, and the peel site is found within it "
+               "(a FAMILY comma is the one structure that splits the "
+               "name across two runs, #312). Pairs with "
                "ko_honorific_glued_given_trailing_suffix, whose "
                "comma-less spelling of the same name reaches the same "
                "answer by the scan-back instead"),
@@ -956,32 +958,106 @@ CASES: tuple[Case, ...] = (
          {"family": "김", "given": "민준", "suffix": "씨",
           "nickname": "Jimmy"},
          classification="fix(#308)",
-         notes="the other half of indexing the NAME part: extracted "
+         notes="the other half of scanning the NAME's runs: extracted "
                "content is still in the token stream at this stage but "
-               "NOT in segments[0], so the scan-back never reaches "
+               "in NO segment, so the scan-back never reaches "
                "Jimmy. Scanning the tokens instead would take Jimmy as "
                "the site -- it is no post-nominal -- and lose the peel "
                "entirely, with 씨 back in the given name. Nothing else "
                "pins that choice: under NO_COMMA the two are otherwise "
                "the same run"),
+    Case("ko_honorific_glued_given_nickname_family_comma",
+         "김, 민준씨 (Jimmy)",
+         {"family": "김", "given": "민준", "suffix": "씨",
+          "nickname": "Jimmy"},
+         classification="fix(#312)",
+         notes="the family-comma half of the same argument, which the "
+               "row above cannot make: there the two runs are one, so "
+               "'flatten the name's segments' and 'take segments[0]' "
+               "agree. Here the peel has to cross the comma AND still "
+               "not reach Jimmy, so declining to cross whenever "
+               "extract_delimited claimed something passes the row "
+               "above and fails only here"),
     Case("ja_honorific_glued_family_comma", "田中さん, PhD",
-         {"family": "田中さん", "title": "PhD"},
-         classification="fix(comma-family)",
-         notes="the comma doctrine outranks the peel, and this is "
-               "where a reader meets that boundary: a one-word name "
-               "part before a comma is FAMILY_COMMA, which opts the "
-               "whole stage out, so 田中さん stays whole where the "
-               "comma-less 田中さん PhD gives family 田中 and suffix "
-               "'さん, PhD'. Deliberate -- whoever wrote the comma "
-               "already said where the family name ends -- and the "
-               "one spelling disagreement #308 does not remove, unlike "
-               "the 김민준씨 Jr. pair above. Classified to "
-               "comma-family, not #308 or #271: the peel never fires "
-               "on this input, and the only deviation from 1.4.0 is "
-               "first -> family, which the pure-Latin 'Smith, PhD' "
-               "makes identically (1.4.0 first Smith, here family "
-               "Smith) -- so no script-conditional rule can be "
-               "reaching it. Same move as family_comma_lone_title"),
+         {"title": "PhD", "family": "田中", "suffix": "さん"},
+         classification="fix(#312)",
+         notes="the peel crosses the comma: PhD is a post-nominal, so "
+               "the site scan steps over it and reaches 田中さん. "
+               "Agrees with the spaced 田中さん PhD, which peels for "
+               "the same reason. Where PhD itself lands still differs "
+               "between the two spellings -- suffix spaced, title "
+               "post-comma -- and that is fix(comma-family)'s, not "
+               "the peel's. The expectation bakes in TWO deviations "
+               "from 1.4.0 and only one of them is #312's: the peel "
+               "is, while first -> family is comma-family's, witnessed "
+               "on pure Latin by family_comma_lone_title (1.4.0 first "
+               "Smith, here family Smith) -- so no script-conditional "
+               "rule is reaching that half"),
+    Case("ja_honorific_glued_family_comma_suffixy_second_run",
+         "田中さん, V.",
+         {"family": "田中さん", "given": "V."},
+         notes="a KNOWN LIMIT, recorded as it behaves rather than "
+               "fixed. Under a family comma the peel scans both runs "
+               "on the premise that segments[1] is name text, and here "
+               "it is not: segment picks FAMILY_COMMA when the "
+               "pre-comma part is a single word, even where the "
+               "post-comma part is entirely suffix-shaped, so the scan "
+               "reaches 'V.' -- which is_suffix_strict rejects as an "
+               "initial where segment admitted the run on "
+               "is_suffix_lenient. 'V.' is therefore the site, ends in "
+               "no tail, and the peel is abandoned with さん still in "
+               "the family name. Same credential, three spellings, two "
+               "answers: '田中さん, PhD' peels (above) while this and "
+               "'田中さん, Ph. D.' do not. Parity with 1.4.0 (first "
+               "V., last 田中さん) and unchanged by #312 -- the "
+               "strict/lenient gap predates it, and closing it wants "
+               "segment's own suffixy test extracted into a shared "
+               "predicate, which is why the limit is stated here "
+               "instead of fixed"),
+    Case("ko_honorific_glued_given_after_family_comma", "김, 민준씨",
+         {"family": "김", "given": "민준", "suffix": "씨"},
+         classification="fix(#312)",
+         notes="under a family comma the name spans both segments and "
+               "the honorific is on the GIVEN side, where the peel "
+               "never looked before #312. Agrees with the spaced "
+               "김 민준씨"),
+    Case("ja_honorific_glued_given_after_family_comma", "田中, 太郎さん",
+         {"family": "田中", "given": "太郎", "suffix": "さん"},
+         classification="fix(#312)",
+         notes="the Han twin of the row above"),
+    Case("zh_interpunct_transcription_glued_honorific", "威廉·莎士比亚さん",
+         {"given": "威廉", "family": "莎士比亚", "suffix": "さん"},
+         classification="fix(#312)",
+         notes="the dot still gates the surname split -- a "
+               "transcription's pieces are syllable groups -- but an "
+               "honorific glued to a transcribed name is still an "
+               "honorific, so the peel crosses it. Agrees with the "
+               "spaced 威廉·莎士比亚 さん"),
+    Case("ja_honorific_glued_family_comma_no_site", "田中さん, 太郎",
+         {"family": "田中さん", "given": "太郎"},
+         notes="unchanged, and pinned because a naive fix breaks it: "
+               "the site is the last NON-POST-NOMINAL token, which is "
+               "太郎, so nothing peels -- exactly as in the spaced "
+               "田中さん 太郎. #312 was originally filed naming this "
+               "pair as a disagreement; it never was one"),
+    Case("ko_honorific_glued_given_suffix_comma_initial", "Dr 김민준씨, V.",
+         {"title": "Dr", "family": "김", "given": "민준",
+          "suffix": "씨, V."},
+         classification="fix(#308)",
+         notes="fix(#308) rather than fix(#312) because the fields do "
+               "not move in this change -- a SUFFIX comma keeps the "
+               "whole name in segments[0], which is what the peel "
+               "already scanned. The row is here as the end-to-end "
+               "guard for the scoping #312 introduced: widen the scan "
+               "to every segment and 'V.' becomes the site, since "
+               "segment admits a post-comma run on is_suffix_lenient "
+               "while the site scan asks is_suffix_strict and an "
+               "initial fails it. 'V.' then ends in no tail, the peel "
+               "is abandoned, and 씨 is back in the given name -- the "
+               "original bug, and no other row in this table notices. "
+               "Its comma-less twin ja_honorific_glued_before_an_initial "
+               "shows the same veto from the other side, where 'V.' is "
+               "in the name's own run and so IS the site"),
     Case("zh_honorific_glued_surname", "王先生",
          {"family": "王", "suffix": "先生"},
          locale="zh",

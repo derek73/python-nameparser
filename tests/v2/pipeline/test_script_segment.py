@@ -157,9 +157,12 @@ def test_single_possible_split_emits_no_ambiguity() -> None:
     assert _run("김민준", policy=_HANGUL).ambiguities == ()
 
 
-def test_family_comma_is_inert() -> None:
+def test_a_family_comma_stands_the_surname_split_down() -> None:
     # the comma declared the family: splitting it would invent a
-    # boundary the writer did not draw ("남궁 민수" with a space)
+    # boundary the writer did not draw ("남궁 민수" with a space).
+    # The SPLIT only -- the stage as a whole is not inert under a
+    # family comma since #312, and would not be on a lexicon carrying
+    # honorific_tails (_LEX does not; see the peel's own cases below).
     out = _run("남궁민수, 지훈", policy=_HANGUL)
     assert out.structure is Structure.FAMILY_COMMA
     assert _texts(out) == ["남궁민수", "지훈"]
@@ -510,19 +513,19 @@ def test_an_unlisted_tail_never_peels() -> None:
                        lexicon=_LEX_TAILS)) == ["김", "지양"]
 
 
-def test_family_comma_skips_the_peel() -> None:
-    # the comma doctrine covers the peel with the rest of the stage:
-    # the writer already said where the family name ends
-    assert _texts(_run("田中さん, 太郎", lexicon=_LEX_TAILS)) == [
-        "田中さん", "太郎"]
-
-
-def test_interpunct_divided_name_never_peels() -> None:
-    # the transcription gate likewise: its pieces are syllable groups
+def test_an_interpunct_gates_the_split_but_not_the_peel() -> None:
+    # The dot marks a transcription, which is a claim about where the
+    # name divides into syllable groups -- so it still gates the
+    # surname split. An honorific glued to a transcribed name is
+    # still an honorific, so the peel crosses it (#312). 威 is a
+    # surname in this lexicon precisely so the first clause bites:
+    # without the gate 威廉 would divide 威 + 廉.
+    lex = _LEX_TAILS.add(surnames={"威"})
     state = segment(tokenize(ParseState(
-        original="威廉·莎士比亚先生", lexicon=_LEX_TAILS, policy=_HAN)))
+        original="威廉·莎士比亚先生", lexicon=lex, policy=_HAN)))
     assert state.interpunct_offsets
-    assert script_segment(state).tokens == state.tokens
+    out = script_segment(state)
+    assert _texts(out) == ["威廉", "莎士比亚", "先生"]
 
 
 def test_a_peeled_tail_is_not_a_surname_site() -> None:
@@ -561,6 +564,101 @@ def test_the_peel_only_looks_at_the_last_non_post_nominal_token() -> None:
     # same reasoning the trailing-only suffix gate follows
     assert _texts(_run("田中さん 太郎", policy=_HANGUL,
                        lexicon=_LEX_TAILS)) == ["田中さん", "太郎"]
+
+
+def test_the_peel_reaches_past_a_family_comma() -> None:
+    # A comma says where the FAMILY name ends. It says nothing about
+    # whether a trailing honorific is part of the name, so the peel
+    # does not inherit the gate that stops the surname split -- and
+    # under FAMILY_COMMA the name spans both segments, so the site
+    # scan has to cross the boundary to find 민준씨 at all.
+    assert _texts(_run("김, 민준씨", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["김", "민준", "씨"]
+
+
+def test_the_peel_scans_the_name_runs_and_no_further() -> None:
+    # Crossing a FAMILY comma is not crossing every comma: past the
+    # name's own runs lie post-nominals, and taking one as the site
+    # abandons the peel. Two shapes, both silently broken by a scan
+    # over ALL segments. segment admits a post-comma run on
+    # is_suffix_lenient while the site scan asks is_suffix_strict, so
+    # an initial-shaped suffix word is a site rather than a token to
+    # step over -- "V." ends in no tail, and 씨 would stay glued. And
+    # a later junk segment would take the peel off the person's own
+    # name onto 박씨, peeling the wrong 씨 of two.
+    lex = _LEX_TAILS.add(suffix_words={"v"})
+    assert _texts(_run("Dr 김민준씨, V.", policy=_HANGUL,
+                       lexicon=lex)) == ["Dr", "김", "민준", "씨", "V."]
+    assert _texts(_run("Dr 김민준씨, Jr., 박씨", policy=_HANGUL,
+                       lexicon=lex)) == [
+        "Dr", "김", "민준", "씨", "Jr.", "박씨"]
+
+
+def test_the_peel_crosses_a_family_comma_and_stops_there() -> None:
+    # The family-comma mirror of the test above, and the only input
+    # that pins the SECOND half of segments[:2] -- that it is two runs
+    # and not three. Every other family-comma case here has exactly
+    # two segments, so the slice is otherwise only ever exercised as
+    # "more than one run": widening it to three passes them all.
+    # Both shapes above, re-spelled with the name split across a family
+    # comma. "Jr." is the strict/lenient gap again -- reached as a site
+    # it ends in no tail and abandons the peel, leaving 씨 in the given
+    # name -- and 박씨 is the junk tail, whose 씨 a wider scan peels
+    # instead of the person's own.
+    assert _texts(_run("김, 민준씨, Jr.", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["김", "민준", "씨", "Jr."]
+    assert _texts(_run("김, 민준씨, 박씨", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["김", "민준", "씨", "박씨"]
+
+
+def test_an_empty_first_run_still_reaches_the_second() -> None:
+    # A leading comma empties segments[0] without emptying the name:
+    # the scan flattens both runs, so an empty first one is nothing to
+    # stop at. Guarding the crossing on a non-empty segments[0] passes
+    # the ", , 씨" test below, where BOTH runs are empty, and fails
+    # only here.
+    assert _texts(_run(", 민준씨", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["민준", "씨"]
+
+
+def test_the_peel_crosses_a_comma_and_a_dot_at_once() -> None:
+    # The two gates #312 made siblings, composed. Both stand over the
+    # surname split here -- 威 is a listed surname in this lexicon, so
+    # bare 威廉 would divide 威 + 廉, and either gate alone stops that
+    # (the family comma reaches its return first) -- while the peel
+    # crosses both and reaches 太郎さん on the far side of the comma.
+    # Neither gate alone pins this: keying the cross-comma reach on
+    # interpunct-free input passes every other case in this file.
+    lex = _LEX_TAILS.add(surnames={"威"})
+    state = segment(tokenize(ParseState(
+        original="威廉·莎士比亚, 太郎さん", lexicon=lex, policy=_HAN)))
+    assert state.interpunct_offsets
+    assert state.structure is Structure.FAMILY_COMMA
+    assert _texts(script_segment(state)) == [
+        "威廉", "莎士比亚", "太郎", "さん"]
+
+
+def test_the_peel_survives_a_name_with_no_name_tokens() -> None:
+    # The name's runs are EMPTY -- a leading comma yields an empty one
+    # per comma -- so the scan has nothing to look at and answers None
+    # rather than indexing. Reachable, so taking the last token
+    # outright would raise here. The scan's other way to answer None,
+    # a name that is nothing but post-nominals, is not what this
+    # exercises: next() short-circuits on the empty runs and never
+    # asks. test_a_token_that_is_a_tail_never_peels pins that one.
+    assert _texts(_run(", , 씨", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["씨"]
+
+
+def test_a_comma_does_not_by_itself_change_the_peel() -> None:
+    # The counterpart, and the shape #312 was originally filed about:
+    # the site is the last NON-POST-NOMINAL token, which is 太郎 here
+    # whichever spelling is used, so neither peels. Crossing the comma
+    # must not turn this into a peel.
+    for name in ("田中さん 太郎", "田中さん, 太郎"):
+        expected = name.replace(",", "").split()
+        assert _texts(_run(name, policy=_HANGUL,
+                           lexicon=_LEX_TAILS)) == expected, name
 
 
 # -- the 间隔号 gate: a divided name is a transcription (#298) ----------

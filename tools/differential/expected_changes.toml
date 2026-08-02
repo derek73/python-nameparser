@@ -72,6 +72,45 @@ issue = "fix(comma-family) lone post-comma piece routes to suffix/title, not fir
 # post-comma piece in `first`; 2.0 routes it to `suffix`/`title` instead
 # (family/`last` is unchanged either way -- "pre-comma is definitionally
 # family").
+#
+# #312 (the glued-honorific peel site move) sent two of its five
+# DIFFING corpus rows here instead of the CJK-comma rule below, and it
+# is worth recording why, since this rule's prose has nothing to do
+# with CJK. Diffing, not new: four of the five are rows #312 added,
+# while '田中さん, PhD' was already in the corpus and #312 changed only
+# what it parses to. #312 added a fifth row that does NOT appear here,
+# '田中さん, 太郎' -- it agrees with 1.4.0, so it never reaches
+# classify() at all; it is the pinned guard for the case a naive fix
+# breaks (the peel site there is 太郎, so nothing peels).
+# '김, 민준씨' and '田中, 太郎さん' diff as {first, suffix}: the glued
+# honorific peels off the post-comma given name into `suffix`
+# (민준씨->민준/씨, 太郎さん->太郎/さん), and that field pair happens to
+# be a subset of this rule's [first, title, suffix]. No title moved and
+# the peeled token is CJK, not a Latin credential -- this rule doesn't
+# know or care, because compare.py's classify() matches purely on
+# regex-then-field-superset, first rule to satisfy both wins, and this
+# rule sits earlier in file order (name_regex tier, written-order tie-
+# break) than fix(cjk-comma-compound) below. The other two comma rows,
+# 'Dr 김민준씨, V.' and '田中さん, PhD', diff with `last` in the mix
+# (v1 read the whole pre-comma run as `first`; 2.0 splits family into
+# `last`), which is outside this rule's fields, so they correctly fall
+# through to fix(cjk-comma-compound). The fifth row, '威廉·莎士比亚さん',
+# has no comma at all -- its dot is U+00B7 (间隔号), not a comma -- so
+# it skips every comma-keyed rule and the honorific-suffix rule too (no
+# space precedes its glued さん), landing on the fields-only
+# fix(suffix-routing) tier by its plain {first, last, suffix} shape,
+# same as any glued Latin honorific. Verified by the 2026-08-01 run,
+# not assumed: traced through compare.py's classify(), which tries
+# name_regex rules before fields-only ones and, within a tier, file
+# order, returning the first rule whose regex (if any) matches the
+# string and whose fields are a superset of the diff. No rule here
+# inspects the honorific token itself -- the field shape alone decides.
+# The coverage pass that followed added one more row here, '김, 민준씨
+# (Jimmy)': same {first, suffix} diff as '김, 민준씨' -- the extracted
+# nickname matches on both sides and so is not part of the diff -- and
+# it lands on this rule for the same reason. The limit row recorded
+# next to it, '田中さん, V.', appears under no rule at all: it is
+# parity with 1.4.0, so it never reaches classify().
 name_regex = ","
 fields = ["first", "title", "suffix"]
 
@@ -80,6 +119,11 @@ issue = "fix(suffix-routing) two-token name with unambiguous trailing suffix sta
 # 'Johnson PhD' / 'Mr. Johnson PhD': v1 routed a lone trailing suffix
 # to family/first (no comma present); 2.0 keeps recognized suffixes in
 # `suffix`.
+# #312: also claims comma-less glued-honorific names like
+# '威廉·莎士比亚さん' by the same {first, last, suffix} shape as any
+# glued Latin honorific -- see the note on fix(comma-family) above for
+# why its four comma-bearing siblings split between that rule and
+# fix(cjk-comma-compound) instead.
 fields = ["first", "last", "suffix"]
 
 [[change]]
@@ -174,6 +218,12 @@ issue = "fix(cjk-comma-compound) comma routing compounds with the CJK order flip
 # The class is the same hand copy of _SCRIPT_RANGES the rules above
 # carry, pinned by the same sync test. The slug avoids the literal
 # #271/#272 substrings the canonical-rule pin selects by.
+#
+# #312 sends only the two glued-honorific comma rows whose diff
+# includes `last` here ('Dr 김민준씨, V.', '田中さん, PhD'); the two
+# whose diff is only {first, suffix} ('김, 민준씨', '田中, 太郎さん')
+# match fix(comma-family) first instead, purely on file order -- see
+# the note there for why.
 name_regex = "(?s)(?=.*,)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
 fields = ["first", "middle", "last", "title", "suffix"]
 
