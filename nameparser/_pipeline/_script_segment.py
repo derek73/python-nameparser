@@ -81,8 +81,10 @@ spec section 4): a user-supplied callable's error is a user-code
 error, not a content error.
 
 Placed AFTER segment, on the comma doctrine that script-conditional
-behavior is ignored where a comma already decides the family (the
-rule script_orders follows): under FAMILY_COMMA the pre-comma text IS
+behavior DECIDING WHERE A NAME DIVIDES is ignored where a comma
+already decides the family (the rule script_orders follows -- and the
+qualifier is load-bearing since #312, which is what the peel crosses
+the comma on): under FAMILY_COMMA the pre-comma text IS
 the family by declaration, and splitting it would invent a boundary
 the writer explicitly did not draw -- "남궁민수, 지훈" must render
 family "남궁민수", not "남궁 민수". That doctrine is about the input's
@@ -596,10 +598,16 @@ def script_segment(state: ParseState) -> ParseState:
         # ASCII tail never fires, and one non-ASCII character anywhere
         # in the name switches it on. Correct for the CJK vocabulary
         # that ships, stated because honorific_tails is public: see
-        # that field's own note. Latin does not glue post-nominals to
-        # names anyway, and where it does glue (Mr.Smith, Lt.Gov.)
-        # _vocab.period_joined_vocab classifies the token instead of
-        # splitting it.
+        # that field's own note. Latin orthography SPACES its
+        # post-nominals ("John Smith PhD"), so the glued position this
+        # peel exists for is a CJK one to begin with. What Latin does
+        # glue is PREnominal and period-joined (Mr.Smith, Lt.Gov.),
+        # which _vocab.period_joined_vocab classifies as one token
+        # rather than splitting -- a different mechanism, and no peel
+        # site either way. A glued Latin post-nominal gets neither
+        # treatment and simply stays in the name ("John Smith.Jr." ->
+        # family "Smith.Jr."), which the ASCII bail here is what makes
+        # moot rather than anything downstream.
         return state
     if not state.segments:
         return state

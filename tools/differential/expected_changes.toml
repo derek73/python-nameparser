@@ -73,9 +73,15 @@ issue = "fix(comma-family) lone post-comma piece routes to suffix/title, not fir
 # (family/`last` is unchanged either way -- "pre-comma is definitionally
 # family").
 #
-# #312 (the glued-honorific peel site move) sent two of its five new
-# corpus rows here instead of the CJK-comma rule below, and it is worth
-# recording why, since this rule's prose has nothing to do with CJK.
+# #312 (the glued-honorific peel site move) sent two of its five
+# DIFFING corpus rows here instead of the CJK-comma rule below, and it
+# is worth recording why, since this rule's prose has nothing to do
+# with CJK. Diffing, not new: four of the five are rows #312 added,
+# while '田中さん, PhD' was already in the corpus and #312 changed only
+# what it parses to. #312 added a fifth row that does NOT appear here,
+# '田中さん, 太郎' -- it agrees with 1.4.0, so it never reaches
+# classify() at all; it is the pinned guard for the case a naive fix
+# breaks (the peel site there is 太郎, so nothing peels).
 # '김, 민준씨' and '田中, 太郎さん' diff as {first, suffix}: the glued
 # honorific peels off the post-comma given name into `suffix`
 # (민준씨->민준/씨, 太郎さん->太郎/さん), and that field pair happens to

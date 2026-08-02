@@ -292,16 +292,9 @@ for a transcription typed with the Japanese middle dot (威廉・莎士比亚):
 each dot carries its own script's convention, the nakaguro's is
 Japanese roster formatting rather than transcription, so only the
 Chinese dot rescues the source order. And a comma disables the script
-behaviors entirely, on the reasoning ``name_order`` already follows: whoever
-wrote the comma has already said where the family name ends.
-The honorific peel is the exception, and for the reason the rest of
-the sentence gives: a comma says where the family name *ends*, which
-is a claim about where the name divides — and an honorific is not part
-of the name under either spelling. So ``김, 민준씨`` reads the same as
-``김 민준씨``, honorific in ``suffix`` either way, while the surname
-split still stands down. The 间隔号 works the same way: it marks a
-transcription, so it still stops the split, but an honorific glued to
-a transcribed name is still an honorific.
+behaviors that decide where a name divides, on the reasoning
+``name_order`` already follows: whoever wrote the comma has already
+said where the family name ends.
 
 Honorifics and degrees follow a CJK name, and both the spaced and the
 glued forms are recognized as suffixes: ``王小明 先生`` reads family
@@ -310,13 +303,13 @@ glued forms are recognized as suffixes: ``王小明 先生`` reads family
 the last token of the name before the name is split or ordered, so
 those rules see the name without it — which is why ``김민준씨`` still
 divides into family 김 and given 민준, and why a configured Japanese
-segmenter is handed 山田太郎 rather than 山田太郎様. Neither a comma nor
-a 间隔号 stops the peel. Both say where a name divides — the comma that
-the writer has already given the family name, the dot that the pieces
-are a transcription's syllable groups — and an honorific is not part
-of the name in any of those readings. So ``김, 민준씨`` reads the same
-as ``김 민준씨``. What those marks do stop is the *split*, which is a
-different question and still theirs to answer. ``田中さん, 太郎`` is
+segmenter is handed 山田太郎 rather than 山田太郎様. A comma and a 间隔号
+both leave the peel alone. Both say where a name divides — the comma
+that the writer has already given the family name, the dot that the
+pieces are a transcription's syllable groups — and an honorific is not
+part of the name in any of those readings. So ``김, 민준씨`` reads the
+same as ``김 민준씨``. What those marks do stop is the *split*, which
+is a different question and still theirs to answer. ``田中さん, 太郎`` is
 unchanged, and not because of its comma: the honorific there is not at
 the end of the name, 太郎 is.
 
