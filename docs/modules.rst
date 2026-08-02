@@ -50,7 +50,8 @@ Results
    "de"/"van", wherever it lands — combine with ``Role.FAMILY`` for
    actual family particles),
    ``conjunction`` (a joining word, "and"/"y"), ``initial`` (an
-   initial-shaped word, "J."), and ``joined`` (a continuation of the
+   initial-shaped word in a script that HAS initials — "J." or "А.",
+   never "씨."), and ``joined`` (a continuation of the
    previous token within one merged piece, so the suffix view renders
    "Ph. D." as one credential). Every other tag is namespaced
    (``vocab:...``) and unstable — never match against those.

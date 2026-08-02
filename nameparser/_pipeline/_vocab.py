@@ -13,12 +13,22 @@ import unicodedata
 from collections.abc import Callable, Iterable
 
 from nameparser._lexicon import Lexicon, _normalize
-from nameparser._policy import (Script, _JA_SCRIPTS, _SCRIPT_RANGES,
-                                _script_matcher)
+from nameparser._policy import (Script, _JA_SCRIPTS, _NO_INITIALS,
+                                _SCRIPT_RANGES, _script_matcher)
 
 # Ported verbatim from v1 (nameparser/config/regexes.py "initial") minus
 # its empty-string alternative -- WorkToken text is never empty. Kept in
 # sync by hand; layering forbids importing the config package here.
+# "Verbatim" is a promise about the PATTERN, not about the predicate:
+# since #320 is_initial is this SHAPE test ANDed with a repertoire test
+# (_in_initialless_script, below), so _INITIAL.fullmatch(text) and
+# is_initial(text) are no longer the same question -- '씨.' answers yes
+# to the first and no to the second. Call is_initial; the bare pattern
+# is not the thing to ask. The narrowing lives in the predicate
+# precisely so this copy can stay exactly as verbatim as it ever was
+# -- REGEXES["initial"] is public v1 API and cannot narrow, and the
+# only difference between the two remains the empty alternative noted
+# above (config's `?`), which test_regex_sync splices back in.
 _INITIAL = re.compile(r"^(\w\.|[A-Z])$")
 
 # Ported verbatim from v1 (nameparser/config/regexes.py
@@ -51,10 +61,38 @@ _SCRIPT_MATCHERS: dict[Script, Callable[[str], bool]] = {
 # effective_script's kana license.
 _wholly_ja = _script_matcher(*_JA_SCRIPTS, whole=True)
 
+# The repertoire half of is_initial (_policy._NO_INITIALS), kept apart
+# from _INITIAL's SHAPE half so the pattern itself stays v1-verbatim
+# and its three copies stay pinned by tests/v2/test_regex_sync.py.
+# contains-any, not whole=True: the shape half has already admitted the
+# trailing period, so the text reaching here is '씨.' rather than '씨'
+# and a wholly-of match would be False for every case this exists for.
+_in_initialless_script = _script_matcher(*_NO_INITIALS, whole=False)
+
+
+def is_initial_shaped(text: str) -> bool:
+    """v1's is_an_initial verbatim: the SHAPE half alone -- one word
+    character plus a period, or a bare ASCII capital.
+
+    Callers asking whether a token is STRUCTURALLY part of an initial
+    run want this; callers asking whether it can really stand in for a
+    name want is_initial (#320). The two answers differ only inside
+    _NO_INITIALS scripts, where '씨.' is initial-SHAPED but is not an
+    initial -- see assign's roman-numeral fork, the shape caller, for
+    what picking the wrong one costs."""
+    return bool(_INITIAL.fullmatch(text))
+
 
 def is_initial(text: str) -> bool:
-    """'A.' / 'j.' / bare capital -- v1's is_an_initial."""
-    return bool(_INITIAL.fullmatch(text))
+    """'A.' / 'j.' / bare capital -- v1's is_an_initial, narrowed to
+    scripts that HAVE initials (#320). v1's \\w is Unicode-aware and
+    matched CJK too, which made period-written CJK honorifics ('씨.')
+    fail is_suffix_strict -- the veto in _is_suffix_strict_n, NOT the
+    vocabulary: suffix_as_written has no veto, so classify tagged '씨.'
+    'vocab:suffix' either way, and is_suffix_lenient took it either way
+    too. Downstream of that one strict-test No, the glued honorific in
+    a name carrying such a token went unpeeled ('田中さん 様.')."""
+    return is_initial_shaped(text) and not _in_initialless_script(text)
 
 
 def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:

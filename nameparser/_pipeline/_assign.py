@@ -31,7 +31,8 @@ import dataclasses
 import re
 
 from nameparser._pipeline._vocab import (
-    effective_script, is_suffix_lenient, resolve_script_set,
+    effective_script, is_initial_shaped, is_suffix_lenient,
+    resolve_script_set,
 )
 from nameparser._pipeline._group import (
     _is_suffix_piece, _is_title_piece,
@@ -200,9 +201,16 @@ def _assign_main(seg_idx: int, state: ParseState,
         if _is_suffix_piece(piece, tags, tokens):
             k -= 1
             continue
+        # is_initial_shaped, not the "initial" tag: this asks whether
+        # the preceding piece looks like part of an initial run, which
+        # is a question about layout, and #320 narrowed the tag to
+        # initials that can really stand in for a name. Reading the tag
+        # here made '씨.' stop suppressing the fork and cost 'John 씨. V'
+        # its family name.
         if (k == len(rest) and k >= 2 and len(piece) == 1
                 and _ROMAN.match(tokens[piece[0]].text)
-                and "initial" not in tokens[pieces[rest[k - 2]][0]].tags):
+                and not is_initial_shaped(
+                    tokens[pieces[rest[k - 2]][0]].text)):
             # a trailing single letter is a name part unless it happens
             # to be a roman numeral -- and V/X/I are ordinary middle
             # initials, so taking it as a suffix is a call, not a fact

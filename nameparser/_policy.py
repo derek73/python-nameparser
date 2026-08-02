@@ -142,6 +142,30 @@ _SCRIPT_RANGES: dict[Script, tuple[tuple[int, int], ...]] = {
 #: quantify over this one union (HANGUL simply omitted).
 _JA_SCRIPTS = (Script.HAN, Script.HIRAGANA, Script.KATAKANA)
 
+#: Scripts whose characters cannot BE an initial. The criterion is
+#: orthographic CONVENTION, not what a character is: does the writing
+#: tradition abbreviate a given name to ONE character plus a period,
+#: the way "J." stands in for "John"? Han, hangul and kana have no
+#: such convention, so a lone punctuated 씨/様/김 is not a shortened
+#: name and the veto has nothing to veto there. Do not restate that
+#: phonologically ("letters, not syllables") -- Devanagari is an
+#: abugida and Arabic an abjad, neither has letters in that sense, and
+#: both abbreviate, so should Script.CYRILLIC or Script.DEVANAGARI
+#: ever be added neither belongs here; their initials are real and
+#: pinned as such ("А. С. Пушкин", "م. الفارسي").
+#:
+#: Enumerated rather than derived from _SCRIPT_RANGES' keys: the
+#: Script enum admits a member so that SOME behavior may key on it
+#: (see Script), on assorted grounds -- KATAKANA is in it so the
+#: classifier can name what it deliberately declines, and neither
+#: DEFAULT_SCRIPT_ORDERS nor segment_scripts' default mentions it.
+#: Membership therefore settles nothing about abbreviation: the four
+#: coinciding today is what has been implemented, not a property of
+#: the enum -- and Thai (#317) is an abugida too, so it must not
+#: inherit this answer without someone deciding it.
+_NO_INITIALS = (Script.HAN, Script.HANGUL, Script.HIRAGANA,
+                Script.KATAKANA)
+
 
 def _script_matcher(*scripts: Script,
                     whole: bool = False) -> Callable[[str], bool]:

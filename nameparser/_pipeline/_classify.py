@@ -2,7 +2,9 @@
 
 Consumes: tokens.
 Produces: tokens with vocabulary tags added (text/span/role unchanged).
-Reads: every Lexicon vocabulary field; Policy is not consulted.
+Reads: every Lexicon vocabulary field; no Policy FIELD is consulted
+(is_initial does consult the _policy module's _NO_INITIALS constant,
+which is not configuration -- nothing here varies by Policy value).
 
 Tags emitted -- stable (API): "particle", "conjunction", "initial";
 namespaced (unstable): "vocab:title", "vocab:given-title",

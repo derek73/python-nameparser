@@ -38,6 +38,58 @@ needs widening. The run must exit 0 before a 2.0 release; the classified
 summary it prints is the source for the "Behavior Changes" section of
 `docs/release_log.rst`.
 
+## Do not put `python` in front of the worker
+
+`compare.py` spawns the worker by **script path**:
+
+```
+uv run --no-project tools/differential/worker_v1.py
+```
+
+Inserting `python` before the path --
+`uv run --no-project python tools/differential/worker_v1.py` -- makes
+`python` the command and the script a mere argument, so `uv` never
+reads the script's PEP 723 inline metadata and the `nameparser==1.4.*`
+pin is never installed. With nothing to satisfy, `uv` runs the script
+in the project's own `.venv`, where the working tree is installed
+editable (`__editable__.nameparser-2.0.0.pth`) -- so the import
+resolves to the checkout and **2.x answers every query while the
+output is labelled 1.4.0**. Reproduced twice while working on #320.
+
+It is the same editable working tree that the missing-`--no-project`
+case above lands on, by a different road. **`PYTHONSAFEPATH=1` does
+not rescue it** -- that is the fix for the sibling CWD trap
+(`AGENTS.md`, "Comparing against v1"), and reaching for it here is the
+natural wrong turn, since a `.pth`-installed package is on `sys.path`
+proper and safe-path never touches it. Measured: safe path on, still
+2.0.0. `sys.path[0]` is the SCRIPT's directory
+(`tools/differential/`), which contains no `nameparser` at all, so the
+CWD is not the route either. Running the same command with an absolute
+script path from a directory outside the project is the one variant
+that does not lie: it raises `ModuleNotFoundError` instead.
+
+That is worse than an ordinary mistake, because of what the corrupted
+output looks like. It is not garbage and it does not crash: it is
+exactly the 2.x expected values, which is exactly what someone asking
+"did 1.4.0 agree?" is hoping to see. Every diff vanishes, the run
+comes out as parity, and the conclusion drawn is the precise opposite
+of the truth. Same outcome as the missing `--no-project` above, and
+the same reason both are written down here rather than left to the
+reader to rediscover.
+
+So do not trust a 1.4 version number you did not make the worker
+report. Establishing which library actually answered is cheap -- print
+`nameparser.__version__` from **inside** the worker and check it
+against the pin before comparing anything. Under this trap it prints
+the checkout's version, which is the whole tell.
+
+One shell note while you are here: `compare.py | tail` swallows the
+exit code under zsh. `$?` after a pipeline is `tail`'s status, and
+`PIPESTATUS` is a bash array zsh does not define at all -- zsh's own
+is the 1-indexed `pipestatus`, so `${PIPESTATUS[0]}` is the empty
+string and a failing run reads as a passing one. Redirect to a file
+and read the file instead of piping.
+
 ## The three corpora
 
 `compare.py` reads **every** `corpus*.jsonl` beside it by default
