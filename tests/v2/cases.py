@@ -1163,7 +1163,7 @@ CASES: tuple[Case, ...] = (
     Case("ja_honorific_glued_family_comma_credential_pair",
          "田中さん, Ph. D.",
          {"family": "田中", "suffix": "さん, Ph. D."},
-         classification="UNDETERMINED",
+         classification="fix(#319)",
          notes="the third of the three spellings #319 named, and the "
                "only one the Ph./D. merge reaches: is_wholly_suffix "
                "folds the adjacent pair into the single unit 'phd' "
@@ -1181,11 +1181,18 @@ CASES: tuple[Case, ...] = (
                "'V.' because the initial-shaped words are where the "
                "two predicates actually part. Where the credential "
                "lands is a separate question and answers differently "
-               "again: suffix here, title for 'PhD', given for 'V.'"),
+               "again: suffix here, title for 'PhD', given for 'V.' "
+               "Measured: 1.4.0 gave first 田中さん / suffix 'Ph. D.' "
+               "(fix_phd lifted the credential pre-parse, leaving a "
+               "lone pre-comma word), so like "
+               "ja_honorific_glued_family_comma above the expectation "
+               "carries TWO deviations -- the peel is #319's, first -> "
+               "family is comma-family's, which 2.0 already had before "
+               "this change (family 田中さん / suffix 'Ph. D.')"),
     Case("ja_honorific_glued_family_comma_strict_knob", "田中さん, V.",
          {"family": "田中さん", "given": "V."},
          policy=Policy(lenient_comma_suffixes=False),
-         classification="UNDETERMINED",
+         classification="parity",
          notes="the same input as "
                "ja_honorific_glued_family_comma_suffixy_second_run "
                "above under the knob that keeps the pre-#319 answer, "
@@ -1206,7 +1213,12 @@ CASES: tuple[Case, ...] = (
                "that run is "
                "declined and the peel fires under this setting as "
                "well. No v1 spelling exists for the knob, so the "
-               "facade runner skips this row"),
+               "facade runner skips this row and the classification "
+               "compares against 1.4.0's single reading of the same "
+               "text, as the other exercise of the knob named above "
+               "does: measured, 1.4.0 gave first 'V.' / last "
+               "田中さん, which is field for field what the knob holds "
+               "here -- parity, and the point of the knob"),
     Case("ko_honorific_glued_given_after_family_comma", "김, 민준씨",
          {"family": "김", "given": "민준", "suffix": "씨"},
          classification="fix(#312)",
