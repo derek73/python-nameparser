@@ -70,6 +70,22 @@ _wholly_ja = _script_matcher(*_JA_SCRIPTS, whole=True)
 _in_initialless_script = _script_matcher(*_NO_INITIALS, whole=False)
 
 
+def is_initial_shaped(text: str) -> bool:
+    """v1's is_an_initial verbatim: the SHAPE half alone -- one word
+    character plus a period, or a bare ASCII capital.
+
+    Callers asking whether a token is STRUCTURALLY part of an initial
+    run want this; callers asking whether it can really stand in for a
+    name want is_initial (#320). The two answers differ only inside
+    _NO_INITIALS scripts, where '씨.' is initial-SHAPED but is not an
+    initial. assign's roman-numeral fork is the shape caller: "the
+    piece before this trailing single roman letter looks like an
+    initial, so we are mid-run and the letter is a name part" was
+    always a question about layout, and narrowing it to real initials
+    dropped the family name out of 'John 씨. V'."""
+    return bool(_INITIAL.fullmatch(text))
+
+
 def is_initial(text: str) -> bool:
     """'A.' / 'j.' / bare capital -- v1's is_an_initial, narrowed to
     scripts that HAVE initials (#320). v1's \\w is Unicode-aware and
@@ -77,8 +93,7 @@ def is_initial(text: str) -> bool:
     out of the suffix vocabulary -- and, downstream of that, left the
     glued honorific in a name carrying such a token unpeeled
     ('田中さん 様.')."""
-    return bool(_INITIAL.fullmatch(text)) \
-        and not _in_initialless_script(text)
+    return is_initial_shaped(text) and not _in_initialless_script(text)
 
 
 def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:

@@ -2,7 +2,7 @@ import unicodedata
 
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
-    effective_script, is_initial, is_suffix_lenient,
+    effective_script, is_initial, is_initial_shaped, is_suffix_lenient,
     is_suffix_strict, resolve_script_set, single_script,
 )
 from nameparser._policy import Script, _NO_INITIALS, _SCRIPT_RANGES
@@ -45,6 +45,20 @@ def test_is_initial_script_repertoire() -> None:
     assert not is_initial("राम.")
 
 
+def test_is_initial_shaped_keeps_the_shape_half_reachable() -> None:
+    """The two halves are separately askable (#320): assign's
+    roman-numeral fork asks the SHAPE question about the piece before a
+    trailing 'V', and answering it with the narrowed predicate dropped
+    the family name out of 'John 씨. V' entirely."""
+    for text in ("A.", "j.", "B", "2."):
+        assert is_initial_shaped(text) is is_initial(text) is True
+    for text in ("Jo", "b", "raam."):
+        assert is_initial_shaped(text) is is_initial(text) is False
+    # the whole difference between them, in both directions
+    for text in ("씨.", "様.", "김.", "さ.", "ラ."):
+        assert is_initial_shaped(text) and not is_initial(text)
+
+
 def test_strict_suffix_veto_skips_cjk() -> None:
     """#320: the initial veto is what stopped a period-written CJK
     honorific being recognized. _normalize strips the trailing period,
@@ -53,6 +67,27 @@ def test_strict_suffix_veto_skips_cjk() -> None:
     lex = Lexicon(suffix_words=frozenset({"씨", "様"}))
     assert is_suffix_strict("씨.", lex)
     assert is_suffix_strict("様.", lex)
+
+
+def _representative(script: Script) -> str:
+    """The first codepoint of `script`'s _SCRIPT_RANGES spans that the
+    SHAPE half admits as an initial. Shape-admitted, not simply the
+    first codepoint: a range's first codepoint is often unassigned or
+    punctuation (KATAKANA's 0x30A0 is a hyphen, HIRAGANA's 0x3040 is
+    unassigned), which \\w does not match -- and testing is_initial on
+    such a character answers False for the SHAPE's reason, making the
+    repertoire assertion below vacuously green. Raising when no span
+    holds one is the point rather than a corner: a script whose
+    declared ranges contain no initial-shaped character at all has
+    ranges that do not describe it."""
+    for lo, hi in _SCRIPT_RANGES[script]:
+        for cp in range(lo, hi + 1):
+            if is_initial_shaped(chr(cp) + "."):
+                return chr(cp)
+    raise AssertionError(
+        f"no character in _SCRIPT_RANGES[{script}] is initial-SHAPED, "
+        f"so this script's declaration cannot be tested against "
+        f"is_initial -- check that the ranges are that script's")
 
 
 def test_every_script_is_classified_for_initials() -> None:
@@ -65,6 +100,14 @@ def test_every_script_is_classified_for_initials() -> None:
     green it again after adding a script would be to declare that
     script initial-less. That prejudges the answer. The point is to
     force a decision, not a particular one.
+
+    Three bindings, not two: the table covers Script, the table's
+    False rows are _NO_INITIALS, and -- the one that makes this a
+    behavioral test rather than a comparison of two constants -- each
+    row is checked against is_initial on a character DERIVED from that
+    script's own _SCRIPT_RANGES entry. Without the third, a script
+    declared initial-less under ranges that are not its own passes all
+    the way through while is_initial still says yes to its characters.
     """
     has_initials = {
         Script.HAN: False,       # ideographs are morphemes
@@ -83,6 +126,15 @@ def test_every_script_is_classified_for_initials() -> None:
         "script in the constant, so add the missing member to "
         "_NO_INITIALS -- or, if the constant is the one that's right, "
         "flip the row")
+    for script, yes in has_initials.items():
+        char = _representative(script)
+        assert is_initial(char + ".") is yes, (
+            f"the declaration for {script} does not reach is_initial: "
+            f"the row says has_initials={yes}, but is_initial("
+            f"{char + '.'!r}) -- on a character taken from "
+            f"_SCRIPT_RANGES[{script}] -- says {not yes}. Either the "
+            f"ranges are not this script's, or _NO_INITIALS and the "
+            f"repertoire predicate have come apart")
 
 
 def test_strict_suffix_initial_veto() -> None:
