@@ -89,10 +89,12 @@ def is_initial_shaped(text: str) -> bool:
 def is_initial(text: str) -> bool:
     """'A.' / 'j.' / bare capital -- v1's is_an_initial, narrowed to
     scripts that HAVE initials (#320). v1's \\w is Unicode-aware and
-    matched CJK too, which vetoed period-written CJK honorifics ('씨.')
-    out of the suffix vocabulary -- and, downstream of that, left the
-    glued honorific in a name carrying such a token unpeeled
-    ('田中さん 様.')."""
+    matched CJK too, which made period-written CJK honorifics ('씨.')
+    fail is_suffix_strict -- the veto in _is_suffix_strict_n, NOT the
+    vocabulary: suffix_as_written has no veto, so classify tagged '씨.'
+    'vocab:suffix' either way, and is_suffix_lenient took it either way
+    too. Downstream of that one strict-test No, the glued honorific in
+    a name carrying such a token went unpeeled ('田中さん 様.')."""
     return is_initial_shaped(text) and not _in_initialless_script(text)
 
 

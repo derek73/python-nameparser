@@ -82,11 +82,15 @@ class Span(NamedTuple):
 #: wherever it lands -- including a given-name "Van" -- so combine it
 #: with Role.FAMILY (as family_particles does) to get actual family
 #: particles; "conjunction" a joining word ("and", "y"); "initial" an
-#: initial-shaped word ("J.", "Q");
+#: initial-shaped word in a script that HAS initials -- "J." or "А.",
+#: never "씨." (#320);
 #: "joined" a continuation of the previous token within one merged
 #: piece ("Ph." + "D."), which the suffix view joins with a space
 #: instead of ", ". Every other tag is namespaced ("vocab:...") and is
 #: unstable debugging provenance -- never match against those.
+#: This prose is the hand-maintained twin of docs/modules.rst's
+#: STABLE_TAGS block; nothing pins the two against each other (the
+#: test only compares the frozenset), so edit both or neither.
 STABLE_TAGS = frozenset({"particle", "conjunction", "initial", "joined"})
 
 #: The one sanctioned view-reorder marker (namespaced = unstable API).

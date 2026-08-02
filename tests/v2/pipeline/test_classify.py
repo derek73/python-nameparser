@@ -14,9 +14,10 @@ _LEX = Lexicon(
     suffix_acronyms_ambiguous=frozenset({"ma"}),
     particles=frozenset({"de", "la", "van"}),
     particles_ambiguous=frozenset({"van"}),
-    # й is a REAL default conjunction (Ukrainian, #267), carried here so
-    # test_cyrillic_initial_outranks_the_conjunction pins a live
-    # collision rather than a hypothetical one
+    # й is COPIED from the shipped conjunctions (Ukrainian, #267) so the
+    # collision test_cyrillic_initial_outranks_the_conjunction pins is
+    # one that really ships and the reader can check against the
+    # defaults. The copy is local: this file never reads the shipped set
     conjunctions=frozenset({"and", "y", "й"}),
     bound_given_names=frozenset({"abdul"}),
     maiden_markers=frozenset({"née"}),
@@ -63,10 +64,12 @@ def test_cyrillic_initial_outranks_the_conjunction() -> None:
     is an initial and must not be read as it. Narrowing is_initial to
     [A-Za-z] -- the fix #320 originally proposed -- flips this token to
     'conjunction' and strips 'initial' off every Cyrillic, Greek,
-    Arabic and Hebrew initial. Neither moves field output on a short
-    name, so this asserts the TAG. _LEX carries й for this: the
-    collision is with SHIPPED vocabulary, so a lexicon built here
-    would keep passing if й were dropped from the defaults."""
+    Arabic, Hebrew, Devanagari and Armenian initial (the six
+    test_vocab.test_is_initial_script_repertoire asserts). Neither
+    moves field output on a short name, so this asserts the TAG. _LEX
+    copies й from the SHIPPED conjunctions so the collision is a real
+    one -- but the copy is local, so this test would keep passing if й
+    were dropped from the defaults."""
     out = _classified("Й. Сліпий")
     assert "initial" in _tags(out, "Й.")
     assert "conjunction" not in _tags(out, "Й.")

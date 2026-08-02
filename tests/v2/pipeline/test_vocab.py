@@ -38,9 +38,10 @@ def test_is_initial_script_repertoire() -> None:
     assert not is_initial("김.")
     assert not is_initial("さ.")
     assert not is_initial("ラ.")
-    # unchanged: a digit is the visible edge of \w's reach, and the
-    # shape half still owns it -- only the repertoire narrowed
+    # unchanged: a digit is ONE edge of \w's reach and '_' is another,
+    # and the shape half still owns both -- only the repertoire narrowed
     assert is_initial("2.")
+    assert is_initial("_.")
     # unchanged: the SHAPE half still requires a single character
     assert not is_initial("राम.")
 

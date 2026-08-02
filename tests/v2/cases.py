@@ -824,8 +824,10 @@ CASES: tuple[Case, ...] = (
          {"family": "김민준", "suffix": "씨."},
          classification="fix(#320)",
          notes="the period-written form of ko_honorific_after_comma "
-               "('김민준, 씨'), whose fields it must match and before "
-               "#320 did not. _normalize strips the trailing period, "
+               "('김민준, 씨'), whose field ASSIGNMENT it must match "
+               "and before #320 did not -- same roles, the suffix "
+               "VALUE differing by the period it was written with. "
+               "_normalize strips the trailing period, "
                "so the vocabulary sees 씨 either way -- the initial "
                "veto was the only thing rejecting the written form, "
                "and literally the veto: _is_suffix_piece is "
