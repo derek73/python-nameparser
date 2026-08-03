@@ -53,10 +53,13 @@ def test_empty_parse_is_falsy() -> None:
 
 
 def test_content_free_input_parses_to_empty() -> None:
-    # An input with no alphanumeric character anywhere is not a name.
-    # v1 kept it (parse('.') -> first='.'); 2.0 empties it so bool()
-    # stays an honest "did I get a name?" check. isalnum is
-    # Unicode-aware, so this only fires on pure punctuation/symbols.
+    # An input with no alphanumeric character is not a name. v1 kept
+    # it (parse('.') -> first='.'); 2.0 empties it so bool() stays an
+    # honest "did I get a name?" check. isalnum is Unicode-aware, so
+    # this only fires on pure punctuation/symbols. The test is over the
+    # SURVIVING tokens, which since #329 is not the same as over the
+    # input -- see cases.py's maiden_marker_delimited_content_free,
+    # where dropping a marker is what leaves nothing behind.
     for junk in [".", ".,", "- -", ". .", "'", "∫≜⩕", "()", "-"]:
         pn = _parse(junk)
         assert not pn, f"{junk!r} should be falsy"

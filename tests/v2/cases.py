@@ -465,14 +465,18 @@ CASES: tuple[Case, ...] = (
          classification="fix(#329)",
          notes="#329: the bracketed form now agrees with the bare "
                "maiden_marker row above -- both give maiden 'Jones'. "
-               "Before, extract assigned the whole clause Role.MAIDEN "
-               "and the marker rode along, because group's #274 "
-               "consuming rule walks pieces and a role-bearing token "
-               "is not in pieces; the fix drops the marker inside the "
-               "CLAUSE instead. The facade cannot express this policy "
-               "(the shim's pre-subtraction trips maiden_via_sentinel, "
-               "so its runner skips the row, as it does "
-               "maiden_delimiters_win_when_shared), but 1.4.0 CAN: "
+               "Before, the marker rode along inside the value: "
+               "extract records the clause as a span (it makes no "
+               "tokens at all), tokenize gives the tokens it cuts "
+               "there Role.MAIDEN, and group's #274 consuming rule "
+               "walks pieces, which hold no role-bearing token; the "
+               "fix drops the marker inside the CLAUSE instead. The "
+               "facade cannot express this policy -- Policy's "
+               "maiden-wins canonicalization subtracts the pair from "
+               "nickname_delimiters at construction, so the row's "
+               "policy no longer matches the v1-expressible shape and "
+               "its runner skips the row, as it does "
+               "maiden_delimiters_win_when_shared -- but 1.4.0 CAN: "
                "measured 2026-08-02 through the bucket-move idiom "
                "maiden_delimiters['parenthesis'] = "
                "nickname_delimiters.pop('parenthesis'), it gave first "
@@ -500,6 +504,36 @@ CASES: tuple[Case, ...] = (
                "so the two clauses joined with a space on that side "
                "too -- the classification the facade runner would have "
                "checked had the shim let it express the policy"),
+    Case("maiden_marker_delimited_content_free", "(née —)",
+         {},
+         policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
+         classification="fix(#329)",
+         notes="the drop can empty the WHOLE parse, and that is a "
+               "decision rather than fallout. assemble's content test "
+               "runs over the SURVIVING tokens, so once the marker "
+               "goes structural the em dash is the only one left, no "
+               "alnum character remains and every field clears -- "
+               "bool() False. Reachable only where a maiden clause is "
+               "the entire input and its non-marker tokens are pure "
+               "punctuation; 'Jane Smith (née —)' keeps given Jane / "
+               "family Smith / maiden '—'. Coherent with the model 2.0 "
+               "already had: a dropped marker is structural like a "
+               "delimiter character, and '(-)' empties on both sides "
+               "of this change. Structurally unreachable on the bare "
+               "#274 path, whose scan starts at piece 1, so a token "
+               "always survives ahead of the marker ('née —' gives "
+               "given 'née', family '—'). Do NOT restore the old value "
+               "with a guard on what else the clause holds: that is a "
+               "different rule, and it would leave maiden holding "
+               "marker-plus-punctuation. fix rather than parity "
+               "because 1.4.0 CAN express this policy and disagrees: "
+               "measured 2026-08-03 through the bucket-move idiom "
+               "maiden_delimiters['parenthesis'] = "
+               "nickname_delimiters.pop('parenthesis'), it gave maiden "
+               "'née —' and a truthy name, as pre-#329 did. The 2.0 "
+               "content rule already deviated from 1.4.0 here ('(-)' "
+               "is maiden '-' in 1.4.0); this change moves one more "
+               "input into its reach"),
     Case("maiden_marker_kyusei_delimited", "山田 花子（旧姓 佐藤）",
          {"given": "花子", "family": "山田", "maiden": "佐藤"},
          policy=Policy(

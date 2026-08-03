@@ -250,9 +250,10 @@ listed below.
      - Routes content enclosed by these delimiter pairs to ``maiden``
        instead, and drops them from the effective nickname set. A
        marker word opening the enclosed content is dropped from the
-       value, as in the unbracketed form — ``"Jane Smith (née Jones)"``
-       gives maiden ``Jones``. Defaults to empty — see the routing
-       example below.
+       value, so ``"Jane Smith (née Jones)"`` gives maiden ``Jones``
+       — but only where that content holds more than one word, since
+       a lone ``"(Nee)"`` is a maiden name rather than a marker.
+       Defaults to empty — see the routing example below.
    * - ``extra_suffix_delimiters``
      - ``frozenset[str]``
      - Adds separators that split suffix groups, e.g. ``" - "`` for

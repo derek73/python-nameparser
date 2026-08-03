@@ -624,7 +624,8 @@ class Policy:
     #: nickname set (maiden wins, see __post_init__), so
     #: maiden_delimiters={("(", ")")} is the whole recipe (#274).
     #: A maiden_markers word opening the enclosed content is dropped
-    #: from the value, as in the undelimited form (#329).
+    #: from the value, but only where that content holds more than one
+    #: token: a lone "(Nee)" is a maiden NAME, not a marker (#329).
     maiden_delimiters: frozenset[tuple[str, str]] = frozenset()
     #: Additional separators that split suffix groups (e.g. " - " for
     #: "Jane Smith, RN - CRNA"). Additive only: the comma always

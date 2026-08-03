@@ -30,13 +30,28 @@ def assemble(state: ParseState) -> ParsedName:
             continue
         role = t.role if t.role is not None else Role.GIVEN
         final[i] = Token(t.text, t.span, role, t.tags)
-    # No alphanumeric character anywhere means no name: a bare '.' or
-    # '- -' is not a person. v1 kept such input (parse('.') -> first
-    # '.'); 2.0 empties it so bool() stays an honest "did I get a name?"
-    # check. isalnum() is Unicode-aware, so every real name in any
-    # script has content and only pure punctuation/symbols empty out.
-    # (Embedded junk in a name with content -- 'John . Smith' -- is left
-    # alone: that parse is truthy, so bool() is not misled.)
+    # No alphanumeric character among the SURVIVING tokens means no
+    # name: a bare '.' or '- -' is not a person. v1 kept such input
+    # (parse('.') -> first '.'); 2.0 empties it so bool() stays an
+    # honest "did I get a name?" check. isalnum() is Unicode-aware, so
+    # every real name in any script has content and only pure
+    # punctuation/symbols empty out. (Embedded junk in a name with
+    # content -- 'John . Smith' -- is left alone: that parse is truthy,
+    # so bool() is not misled.)
+    #
+    # This read "anywhere" until #329, and the two said the same thing
+    # for as long as nothing could take a content-bearing token away.
+    # Dropping a maiden marker inside a delimited clause can, and
+    # "(née —)" under Policy(maiden_delimiters=...) is the input where
+    # the readings part: the marker is the clause's only alnum token,
+    # so once it goes structural the em dash is all that survives and
+    # the whole parse empties -- where 1.4.0 and pre-#329 both gave
+    # maiden 'née —'. Deliberate, not fallout: a dropped marker is
+    # structural like a delimiter character, and brackets plus a marker
+    # plus a dash name no one, exactly as "(-)" already named no one.
+    # A guard keyed on what ELSE is in the clause would be a different
+    # rule, and would leave maiden holding marker-plus-punctuation.
+    # Pinned by cases.py's maiden_marker_delimited_content_free.
     #
     # The TOKENS go, not the diagnostics: this drops the name, and
     # "was the input malformed?" is the one question still worth

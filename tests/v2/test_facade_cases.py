@@ -10,11 +10,26 @@ from .cases import CASES, Case
 
 _V1_KEY = {"given": "first", "family": "last"}  # identity for the rest
 
-#: the one non-default maiden_delimiters shape the table exercises
-#: ("nickname_bucket_wins_when_shared"): expressible in v1 Constants via
-#: the delimiter-manager's parenthesis sentinel added to the maiden
-#: bucket, leaving the nickname bucket at its (also-parenthesis-holding)
-#: default -- see _config_shim._DelimiterManager.
+#: The parenthesis maiden shape, and a v1-expressibility test that
+#: never fires. Five rows carry a non-default maiden_delimiters
+#: (maiden_delimiters_win_when_shared, maiden_marker_delimited,
+#: maiden_marker_delimited_two_clauses,
+#: maiden_marker_delimited_content_free, maiden_marker_kyusei_delimited)
+#: and all five skip: Policy's maiden-wins canonicalization subtracts
+#: the pair from nickname_delimiters at CONSTRUCTION, so a row routing
+#: parens to maiden can never also carry the default nickname set, and
+#: maiden_via_sentinel below is therefore always False.
+#:
+#: The v1 spelling it names is real (the delimiter-manager's parenthesis
+#: sentinel added to the maiden bucket while the nickname bucket keeps
+#: its also-parenthesis-holding default -- see
+#: _config_shim._DelimiterManager); what it is NOT is equivalent to
+#: these rows. v1 gives a shared pair to the NICKNAME bucket, so that
+#: spelling parses "Baker (Johnson), Jenny" with nickname Johnson and
+#: an empty maiden, which is the opposite of what
+#: maiden_delimiters_win_when_shared asserts. So the branch below is
+#: unreachable AND would fail its row if reached -- reviving it means
+#: choosing a different v1 spelling, not loosening the guard.
 _MAIDEN_PARENS = frozenset({("(", ")")})
 
 

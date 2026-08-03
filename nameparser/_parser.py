@@ -127,7 +127,11 @@ class Parser:
         role choices and ambiguities are discarded -- every harvested
         token takes the named field's role -- and its structural
         behavior applies: delimiter characters do not become tokens,
-        and a mid-value maiden marker is consumed as in parsing.
+        and a maiden marker is consumed as in parsing -- mid-value
+        always, and leading a DELIMITED value under a policy routing
+        that pair to maiden, where "(née Jones)" revises to "Jones"
+        while the bare "née Jones" keeps its marker, a leading marker
+        in an undelimited value being no marker at all (#329).
         Tokens are synthetic (span=None); original is unchanged; a
         value with no name content (empty, whitespace, or punctuation
         only) clears the field; ambiguities referencing replaced
