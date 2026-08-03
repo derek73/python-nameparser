@@ -67,6 +67,19 @@ name_regex = "(?i)\\b(n[ée]e|born|geb\\.?|roz\\.?)\\b"
 fields = ["maiden", "middle", "last"]
 
 [[change]]
+issue = "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip"
+# Its own rule rather than a widening of fix(#274) above: that rule's
+# fields stop at maiden/middle/last because a Latin marker moves only
+# those, while a Han one also flips `first` -- the name left after the
+# marker is consumed is wholly Han, so it reads family-first (#271).
+# Adding `first` to #274's list would make that rule broader than its
+# prose and let it absorb diffs that have nothing to do with markers
+# (#328). The regex is the marker itself, so this rule can claim
+# nothing else.
+name_regex = "旧姓"
+fields = ["first", "middle", "last", "maiden"]
+
+[[change]]
 issue = "fix(comma-family) lone post-comma piece routes to suffix/title, not first"
 # 'Smith, Dr.' / 'Andrews, M.D.': v1 put the lone strict-suffix-or-title
 # post-comma piece in `first`; 2.0 routes it to `suffix`/`title` instead

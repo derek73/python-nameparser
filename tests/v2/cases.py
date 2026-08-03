@@ -428,6 +428,31 @@ CASES: tuple[Case, ...] = (
          {"given": "Jane", "family": "Smith", "maiden": "Jones"},
          classification="fix(#274)",
          notes="v1 mangles to middle='Smith née'"),
+    Case("maiden_marker_kyusei", "山田花子 旧姓 佐藤",
+         {"family": "山田花子", "maiden": "佐藤"},
+         classification="fix(#309)",
+         notes="旧姓 is default vocabulary, not pack data: a "
+               "native-script marker cannot collide with a Latin-script "
+               "name and matching is whole-token, the same rule that "
+               "admitted урожд. Reaches the SPACED form only -- Japanese "
+               "more often brackets the marker, and '山田（旧姓：佐藤）' "
+               "under maiden_delimiters still gives maiden '旧姓：佐藤', "
+               "marker and colon attached, because extract claims "
+               "delimited content before classify tags anything inside "
+               "it. Not a Japanese problem: 'Jane Smith (née Jones)' "
+               "keeps its marker the same way (#329). 1.4.0 read this "
+               "first 山田花子 / middle 旧姓 / last 佐藤 -- the marker "
+               "sat in the name"),
+    Case("maiden_marker_kyusei_segmented", "山田 花子 旧姓 佐藤",
+         {"given": "花子", "family": "山田", "maiden": "佐藤"},
+         classification="fix(#309)",
+         notes="the row above with the family name spaced, so the "
+               "marker is consumed from a name that already has a "
+               "given side -- pinned because #274's consuming rule "
+               "takes the marker plus the piece after it, and the "
+               "pieces before it are what could have gone wrong. "
+               "1.4.0 read this first 山田 / middle '花子 旧姓' / "
+               "last 佐藤"),
     Case("east_slavic", "Сидоров Иван Петрович",
          {"given": "Иван", "middle": "Петрович", "family": "Сидоров"},
          policy=_ES),
