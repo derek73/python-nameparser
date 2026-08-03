@@ -18,10 +18,14 @@ token is a post-nominal, initial veto included (the peel's scan-back
 and the surname site). _vocab.is_wholly_suffix asks segment's own
 suffix-comma question of a whole RUN, through the POLICY-selected
 token test plus period_joined_vocab, delimiter handling and the
-Ph./D. merge -- so the two disagree on exactly the initial-shaped
-suffix words ("V.", "V", "I"), and that disagreement is what #319 is
-about (test_is_wholly_suffix_is_not_the_plural_of_is_post_nominal
-pins it). The run predicate is how the peel declines a run that is
+Ph./D. merge -- so the run predicate says yes both to tokens the
+token predicate VETOES ("V.", "V", "I") and to tokens it never sees
+as suffixes at all ("Msc.Ed.", "J.씨", which reach it through
+period_joined_vocab). The initial-shaped words are the class #319 was
+ABOUT, not the whole of the disagreement, and the extra routes listed
+above are where the rest of it comes from;
+test_is_wholly_suffix_is_not_the_plural_of_is_post_nominal pins the
+"V." half. The run predicate is how the peel declines a run that is
 not name text (#319), but only where the name's own run offers a
 site, since a glued honorific is itself part of what makes a run read
 as suffix-shaped; it owns two further Policy fields
@@ -342,9 +346,14 @@ def _peel_site(state: ParseState, flat: Sequence[int],
     entire, which the scan-back skips as a site -- "선생님, J.씨" would
     decline on a site the peel then cannot use, and lose the peel in
     exactly the way the gate exists to prevent. (Only the lone-token
-    shape of that divergence is reachable from the gate: segment gives
-    SUFFIX_COMMA whenever more than one word precedes the comma, so a
-    segments[0] the gate ever sees holds at most one token.)
+    shape of that divergence is reachable from the gate, and the gate's
+    own other conjunct is what makes that so: SUFFIX_COMMA wants BOTH
+    a suffix-shaped second run and more than one word before the
+    comma, and the gate is asked only where the first of those is
+    already true -- so a run this call ever sees under FAMILY_COMMA
+    failed on the second, and segments[0] holds at most one token. The
+    word-count alone would not say that: "Dr 김민준, 지훈" has two
+    words before the comma and is FAMILY_COMMA.)
 
     Callers must pass a NON-EMPTY `tails` -- _longest_entry's
     precondition, which the stage's own early return supplies."""
@@ -461,8 +470,11 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     # V." is that input). So ask segment's own predicate instead of
     # inferring the answer from the structure it produced (#319).
     # is_wholly_suffix, NOT the plural of _is_post_nominal: the two
-    # disagree on exactly the initial-shaped suffix words ("V.", "V",
-    # "I"), and that disagreement IS the defect. Reaching into such a
+    # disagree on the initial-shaped suffix words ("V.", "V", "I"),
+    # which is the class #319 was reported about, and on everything
+    # the run predicate's extra routes reach and the token predicate
+    # does not ("Msc.Ed." and "J.씨" by period_joined_vocab, both of
+    # which this change also moves). Reaching into such a
     # run put the site on "V.", which ends in no listed tail, so the
     # peel silently abandoned and さん stayed glued to the family --
     # while "田中さん, PhD" peeled all along, because "PhD" satisfies
@@ -505,8 +517,12 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     # which calls a run suffix-shaped when ANY period-chunk is suffix
     # VOCABULARY -- and every honorific tail is a suffix word by the
     # Lexicon invariant, so a glued honorific is itself the evidence.
-    # The predicate is circular at THIS call site alone (segment asks it
-    # of a run nothing has peeled yet): "이, J.씨" reads as wholly suffix
+    # The predicate is circular at THIS call site alone -- not because
+    # segment asks it any earlier (nothing has peeled at either call)
+    # but because segment SPENDS the answer differently: it reads the
+    # run's shape and stops, the answer being the structure, while the
+    # peel reads the same shape and then decides whether to go strip
+    # the very honorific that produced it. "이, J.씨" reads as wholly suffix
     # only because of the 씨 the peel exists to remove, and declining a
     # run that holds the only site does not fall back to some other
     # site -- it loses the peel outright, and with it the given name,

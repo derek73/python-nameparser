@@ -1362,9 +1362,14 @@ CASES: tuple[Case, ...] = (
                "whether any token ENDS in a tail: the cheaper one "
                "counts 선생님, declines, and then finds nothing to cut "
                "-- 씨 lost into suffix 'J.씨'. Only the lone-token "
-               "shape of that divergence is reachable, since segment "
-               "gives SUFFIX_COMMA whenever more than one word precedes "
-               "the comma. 1.4.0 gave first 'J.씨' / last 선생님"),
+               "shape of that divergence is reachable, because the "
+               "gate is asked only where the second run is ALREADY "
+               "suffix-shaped, and SUFFIX_COMMA wants that plus more "
+               "than one word before the comma -- so a FAMILY_COMMA "
+               "reaching the gate failed on the word count. The count "
+               "alone would not say it ('Dr 김민준, 지훈' has two words "
+               "before the comma and is FAMILY_COMMA). "
+               "1.4.0 gave first 'J.씨' / last 선생님"),
     Case("ko_honorific_glued_given_after_family_comma", "김, 민준씨",
          {"family": "김", "given": "민준", "suffix": "씨"},
          classification="fix(#312)",

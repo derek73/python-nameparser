@@ -15,8 +15,10 @@ Decision (v1 parity): >=1 comma and the SECOND segment entirely
 suffix AND >1 word before the first comma -> SUFFIX_COMMA; otherwise
 FAMILY_COMMA ("Family, Given ..."). Only the second segment decides
 (v1 parser.py:1318) -- segments beyond it are consumed as suffixes
-either way, and one that is not entirely suffix is flagged
-COMMA_STRUCTURE rather than vetoing the structure (they are still
+either way, and a NON-EMPTY one that is not entirely suffix is
+flagged COMMA_STRUCTURE rather than vetoing the structure (an empty
+one is consumed silently, as v1 consumed it, so "John Smith, MD,, Jr."
+reports nothing where "John Smith, MD, Bart" does; they are still
 best-effort consumed as suffixes by assign, since parse must stay
 total over str input and never raise on content). "Entirely suffix"
 is is_wholly_suffix's question, so the token test inside it is

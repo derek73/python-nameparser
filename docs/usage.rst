@@ -315,8 +315,14 @@ reach — ``김, 민준 지훈씨`` peels, ``김, 민준, 지훈씨`` does not �
 the second of those runs counts only where it is name text. A run that
 is nothing but credentials is not, whatever the comma looked like, and
 the same test that decides the comma structure decides this too: the
-run is left alone and the honorific is found in the name. So
-``田中さん, V.`` and ``田中さん, Ph. D.`` give さん up exactly as
+run is left alone and the honorific is found in the name. Being
+credentials is necessary but not enough, because the test cannot help
+counting the honorific itself — a glued honorific is a suffix word,
+so it is part of what makes its own run read as credentials. The run
+is passed over only when the part *before* the comma has an honorific
+of its own to give up; otherwise passing it over would discard the
+only one there is. So ``田中さん, V.`` and ``田中さん, Ph. D.``
+give さん up exactly as
 ``田中さん, PhD`` does — though where the credential itself lands is
 the comma's business rather than the peel's, and still differs by
 spelling (``title`` for ``PhD``, ``given`` for ``V.``, and ``Ph. D.``
