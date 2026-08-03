@@ -167,7 +167,14 @@ def test_marker_in_the_bare_form_is_left_to_the_piece_rule() -> None:
     is NOT proof that extract produced it. Keying this pass on
     state.extracted spans is what keeps it off the bare path -- a
     neighbour test would eat the `Nee` here, the very surname the guard
-    above exists to protect."""
+    above exists to protect.
+
+    Reads inert and is not: deleting the #329 pass outright leaves this
+    green, because the value comes from #274's piece rule and the pass
+    never touches the bare path. What it kills is a SPELLING of the
+    pass -- drop a maiden marker whose next token is also maiden, the
+    form this fix originally took -- and nothing else here covers the
+    bare path against it. Checked both ways 2026-08-03."""
     out = _grouped("Jane Smith nee Nee Jones", lexicon=_NEE_LEX)
     kept = [t.text for i, t in enumerate(out.tokens)
             if t.role is Role.MAIDEN and i not in out.dropped]

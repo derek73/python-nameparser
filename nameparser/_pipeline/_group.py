@@ -371,9 +371,14 @@ def group(state: ParseState) -> ParseState:
     # sub-slices, so containment stays exact.
     #
     # Bisect rather than scan the token list per clause: that is
-    # quadratic in the number of delimited pairs, and "(a) " * 3200
-    # measured a 14.1x cost per doubling against the 4.1x the same
-    # shape holds under a policy with no maiden_delimiters. Same idiom,
+    # quadratic in the number of delimited pairs, and "(a) " * 3200 --
+    # 4x test_benchmark's base, NOT a doubling -- measured a 14.1x cost
+    # against the 4.1x the same shape holds under a policy with no
+    # maiden_delimiters. The control is what says which unit a ratio is
+    # in: linear is ~4 for 4x the input and ~2 for a doubling, so a 4.1x
+    # control cannot be per doubling. Re-measured 2026-08-03 at 11.2x
+    # against 4.2x (3.2x against 2.1x per doubling) -- the separation
+    # replicates, the exact ratio moves with the runner. Same idiom,
     # and the same reason, as _extract._overlaps and _tokenize's origin
     # resolution. test_benchmark's maiden_pairs shape is the guard.
     if any(role is Role.MAIDEN for role, _ in state.extracted):

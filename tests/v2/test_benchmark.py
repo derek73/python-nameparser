@@ -160,7 +160,9 @@ def test_parse_cost_grows_no_worse_than_linearly(unit: str) -> None:
 # Calibrated like the others, per the note above: the #329 clause scan
 # measured 14.1x at base 800 (against a 4.1x bare-policy control), and
 # 4.3x once bisected -- inside the clean column, so _MAX_RATIO did not
-# move.
+# move. Every ratio in this file is for _FACTOR x the input, never per
+# doubling; re-measuring the scan on another runner gave 11.2x against
+# the same 4.2x control, which is the spread to expect here.
 #
 # Third element: a REACHABILITY probe, run before the measurement.
 # "the shape must reach the code" is the whole premise of this table,
