@@ -183,6 +183,21 @@ def test_is_wholly_suffix() -> None:
     assert is_wholly_suffix(["Ph.", "D."], lex, pol)
     assert not is_wholly_suffix(["Ph."], lex, pol)
     assert is_wholly_suffix(["Ph.", "D.", "Jr."], lex, pol)
+    # and the pair is found wherever it sits, not only at the head of
+    # the run: the merge walks the whole list. 'John Smith, Jr. Ph. D.'
+    # is the reachable input -- restricted to position 0 the pair never
+    # merges, 'D.' fails alone, and segment reads a FAMILY comma where
+    # it should read a suffix comma.
+    assert is_wholly_suffix(["Jr.", "Ph.", "D."], lex, pol)
+    # the two routes that are neither the policy-selected predicate nor
+    # the merge, each with the input that reaches ONLY it. Both die in
+    # the v1 banks and the case table today, so a break here is
+    # diagnosed a long way from its cause.
+    assert is_wholly_suffix(["Lt.Jr."], lex, pol)        # period-joined
+    assert not is_wholly_suffix(["Lt.Smith"], lex, pol)  # no suffix chunk
+    delim = Policy(extra_suffix_delimiters=frozenset({"/"}))
+    assert is_wholly_suffix(["PhD/MD"], lex, delim)      # delimiter split
+    assert not is_wholly_suffix(["PhD/MD"], lex, pol)
 
 
 def test_is_wholly_suffix_empty_run_is_false() -> None:

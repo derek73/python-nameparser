@@ -867,9 +867,12 @@ CASES: tuple[Case, ...] = (
          policy=Policy(lenient_comma_suffixes=False),
          classification="fix(#320)",
          notes="the row above under the knob that governs exactly this "
-               "shape, and one of the table's two exercises of it "
+               "shape, and one of the table's three exercises of it "
                "(ja_honorific_glued_family_comma_strict_knob is the "
-               "other, on the initial-shaped side of the same gap). "
+               "second, on the initial-shaped side of the same gap; "
+               "ja_honorific_glued_family_comma_credential_pair_strict_"
+               "knob is the third, showing where the knob changes "
+               "nothing). "
                "lenient_comma_suffixes=False drops segment's post-comma "
                "test to the strict one, so a 'Family, Suffix' input "
                "whose suffix is INITIAL-SHAPED reads as a given-name "
@@ -1176,7 +1179,9 @@ CASES: tuple[Case, ...] = (
                "Policy(lenient_comma_suffixes=False): 'phd' satisfies "
                "is_suffix_strict as readily as is_suffix_lenient, so "
                "the run is declined under EITHER setting and this row "
-               "would be identical under the knob -- "
+               "is identical under the knob, which "
+               "ja_honorific_glued_family_comma_credential_pair_strict_"
+               "knob below holds rather than leaving to the claim -- "
                "ja_honorific_glued_family_comma_strict_knob below uses "
                "'V.' because the initial-shaped words are where the "
                "two predicates actually part. Where the credential "
@@ -1196,9 +1201,11 @@ CASES: tuple[Case, ...] = (
          notes="the same input as "
                "ja_honorific_glued_family_comma_suffixy_second_run "
                "above under the knob that keeps the pre-#319 answer, "
-               "and the second of the table's two exercises of it "
-               "(ko_honorific_period_under_strict_comma_suffixes is "
-               "the other). The knob drops is_wholly_suffix to the "
+               "and one of the table's three exercises of it "
+               "(ko_honorific_period_under_strict_comma_suffixes and "
+               "ja_honorific_glued_family_comma_credential_pair_strict_"
+               "knob are the others). The knob drops is_wholly_suffix "
+               "to the "
                "strict predicate, which rejects 'V.' as an initial, so "
                "the post-comma run reads as name text after all, the "
                "scan crosses into it, 'V.' is the site, it ends in no "
@@ -1212,13 +1219,67 @@ CASES: tuple[Case, ...] = (
                "Ph./D. pair merges to a form strict accepts too, so "
                "that run is "
                "declined and the peel fires under this setting as "
-               "well. No v1 spelling exists for the knob, so the "
+               "well -- pinned, not merely stated, by "
+               "ja_honorific_glued_family_comma_credential_pair_strict_"
+               "knob above. No v1 spelling exists for the knob, so the "
                "facade runner skips this row and the classification "
                "compares against 1.4.0's single reading of the same "
                "text, as the other exercise of the knob named above "
                "does: measured, 1.4.0 gave first 'V.' / last "
                "田中さん, which is field for field what the knob holds "
                "here -- parity, and the point of the knob"),
+    Case("ja_honorific_glued_family_comma_credential_pair_strict_knob",
+         "田中さん, Ph. D.",
+         {"family": "田中", "suffix": "さん, Ph. D."},
+         policy=Policy(lenient_comma_suffixes=False),
+         classification="fix(#319)",
+         notes="the counterexample the two rows above assert and "
+               "neither measured: the knob does NOT freeze the "
+               "pre-#319 reading in general, only for the "
+               "initial-shaped suffix words. Here the Ph./D. merge "
+               "folds the run into 'phd', which is_suffix_strict "
+               "accepts as readily as is_suffix_lenient, so the run is "
+               "declined and さん peels under this setting exactly as "
+               "under the default -- field for field the same "
+               "expectation as "
+               "ja_honorific_glued_family_comma_credential_pair, which "
+               "is the whole claim. Cheap to hold and worth holding "
+               "separately, because the two rows differ only in the "
+               "policy and a knob that started gating the decline "
+               "wholesale would move this one alone. Same "
+               "classification and the same two deviations as its "
+               "default-policy twin (1.4.0: first 田中さん / suffix "
+               "'Ph. D.'), which is also why the knob cannot be judged "
+               "against a v1 spelling here -- there is none, so the "
+               "facade runner skips this row as it does the other two "
+               "knob rows"),
+    Case("ko_honorific_glued_family_comma_suffixy_second_run",
+         "김민준씨, V.",
+         {"given": "V.", "family": "김민준", "suffix": "씨"},
+         classification="fix(#319)",
+         notes="ja_honorific_glued_family_comma_suffixy_second_run in "
+               "hangul, and pinned because the decline reads no script "
+               "at all: it asks is_wholly_suffix about the post-comma "
+               "run and the peel's own scan-back about segments[0], "
+               "both vocabulary questions, so a script-conditional "
+               "regression would be invisible in a table whose every "
+               "other witness to #319 is written in kana. The family "
+               "stays 김민준 undivided -- the FAMILY comma gates the "
+               "surname split off, so hangul segmentation never runs "
+               "here and only the peel acts. 1.4.0 gave first 'V.' / "
+               "last 김민준씨, peeling nothing"),
+    Case("zh_honorific_glued_family_comma_suffixy_second_run",
+         "王先生, V.",
+         {"given": "V.", "family": "王", "suffix": "先生"},
+         classification="fix(#319)",
+         notes="the Han spelling of the row above, and the third "
+               "script. 先生 is a shipped tail, so the peel fires with "
+               "no locale opted in -- honorific_tails is licensed by "
+               "the entries themselves rather than by "
+               "Policy.segment_scripts, and HAN is not activated here "
+               "(the family is what the peel left behind, not a "
+               "vocabulary split). 1.4.0 gave first 'V.' / last "
+               "王先生"),
     Case("ko_honorific_glued_family_comma_site_only_beyond_the_comma",
          "이, J.씨",
          {"given": "J.", "family": "이", "suffix": "씨"},
