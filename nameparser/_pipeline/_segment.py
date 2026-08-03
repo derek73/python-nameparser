@@ -11,12 +11,17 @@ owns the rest (Policy.lenient_comma_suffixes picks the lenient or
 strict token test; Policy.extra_suffix_delimiters gives v1
 suffix_delimiter parity, a delimiter-core token being transparent).
 
-Decision (v1 parity): >=1 comma and every post-first segment entirely
-lenient-suffix AND >1 word before the first comma -> SUFFIX_COMMA;
-otherwise FAMILY_COMMA ("Family, Given ..."), with segments beyond the
-second that are not lenient-suffix flagged COMMA_STRUCTURE (they are
-still best-effort consumed as suffixes by assign, since parse must
-stay total over str input and never raise on content).
+Decision (v1 parity): >=1 comma and the SECOND segment entirely
+suffix AND >1 word before the first comma -> SUFFIX_COMMA; otherwise
+FAMILY_COMMA ("Family, Given ..."). Only the second segment decides
+(v1 parser.py:1318) -- segments beyond it are consumed as suffixes
+either way, and one that is not entirely suffix is flagged
+COMMA_STRUCTURE rather than vetoing the structure (they are still
+best-effort consumed as suffixes by assign, since parse must stay
+total over str input and never raise on content). "Entirely suffix"
+is is_wholly_suffix's question, so the token test inside it is
+lenient by default and strict under
+Policy(lenient_comma_suffixes=False).
 """
 from __future__ import annotations
 

@@ -12,16 +12,24 @@ one split was vocabulary-supported, or when a segmenter's answer
 scored under the confidence floor).
 Reads: Policy.segment_scripts, Lexicon.surnames,
 Lexicon.honorific_tails, ParseState.segmenter, and Lexicon suffix
-vocabulary through TWO predicates. _vocab.is_suffix_strict asks whether
-a single token is a post-nominal (the peel's scan-back and the surname
-site). _vocab.is_wholly_suffix asks whether a whole post-comma RUN is,
-which is segment's own suffix-comma question and is how the peel
-declines a run that is not name text (#319) -- but only where the
-name's own run offers a site, since a glued honorific is itself part of
-what makes a run read as suffix-shaped; that one owns two further
-Policy fields (lenient_comma_suffixes picks the strict or lenient token
-test -- it flips "田中さん, V." -- and extra_suffix_delimiters makes a
-delimiter-core token transparent, flipping "田中さん, Jr./V.").
+vocabulary through TWO predicates, which are NOT one another's
+singular and plural. _vocab.is_suffix_strict asks whether a single
+token is a post-nominal, initial veto included (the peel's scan-back
+and the surname site). _vocab.is_wholly_suffix asks segment's own
+suffix-comma question of a whole RUN, through the POLICY-selected
+token test plus period_joined_vocab, delimiter handling and the
+Ph./D. merge -- so the two disagree on exactly the initial-shaped
+suffix words ("V.", "V", "I"), and that disagreement is what #319 is
+about (test_is_wholly_suffix_is_not_the_plural_of_is_post_nominal
+pins it). The run predicate is how the peel declines a run that is
+not name text (#319), but only where the name's own run offers a
+site, since a glued honorific is itself part of what makes a run read
+as suffix-shaped; it owns two further Policy fields
+(lenient_comma_suffixes picks the strict or lenient token test -- it
+flips "田中さん, V." -- and extra_suffix_delimiters both counts a bare
+delimiter-core token as a suffix and splits a token on a core, the
+split being the half that flips "田中さん, Jr./V." under {"/"} and the
+bare core the half that flips "田中さん, /").
 
 Unspaced CJK names give tokenize no separator to find, so this stage
 inserts the missing token boundary by vocabulary: the first token
@@ -459,11 +467,20 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     # peel silently abandoned and さん stayed glued to the family --
     # while "田中さん, PhD" peeled all along, because "PhD" satisfies
     # the strict test and the scan-back stepped over it. One credential,
-    # two spellings, two answers FROM THE PEEL -- where the peeled
-    # remainder then lands is assign's question, and it still differs by
-    # spelling. A junk tail is the worse
-    # shape of the same reach: "Dr 김민준씨, Jr., 박씨" would peel the
-    # 씨 off 박씨 and leave the person's own glued.
+    # two spellings, two answers FROM THE PEEL -- and the peel's answer
+    # is the only one that moved: the peeled remainder is 田中 and lands
+    # in family under every spelling, while where the CREDENTIAL lands
+    # is assign's question and still differs ("PhD" a title, "V." a
+    # given, "Ph. D." a suffix beside さん).
+    # A junk tail is the worse shape of the same reach: in
+    # "김민준씨, J.씨" the site lands on the junk "J.씨", so master
+    # peeled THAT 씨 and left the person's own glued inside family
+    # "김민준씨". Reachable only where the run is genuinely
+    # suffix-shaped, which "J.씨" is by period_joined_vocab; a run of
+    # ordinary name text is scanned on purpose, and a junk tail further
+    # out than the second run is held off by the scope rule instead
+    # ("Dr 김민준씨, Jr., 박씨" is SUFFIX_COMMA with 박씨 in a third
+    # run, so it never reaches here at all).
     # An EMPTY second run stays in scope and contributes nothing:
     # is_wholly_suffix is False on it by its own contract (v1 read
     # "Doe,, Jr." as a family comma), which is the reading this line
