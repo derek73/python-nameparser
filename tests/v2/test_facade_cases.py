@@ -13,6 +13,7 @@ _V1_KEY = {"given": "first", "family": "last"}  # identity for the rest
 #: The parenthesis maiden shape, and a v1-expressibility test that
 #: never fires. Every row carrying a non-default maiden_delimiters
 #: (maiden_delimiters_win_when_shared, maiden_marker_delimited,
+#: maiden_marker_delimited_unaccented,
 #: maiden_marker_delimited_unmarked_content,
 #: maiden_marker_delimited_trailing_marker,
 #: maiden_marker_delimited_beside_a_nickname_clause,

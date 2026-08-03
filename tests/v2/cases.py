@@ -483,6 +483,23 @@ CASES: tuple[Case, ...] = (
                "Jane / last Smith / maiden 'née Jones' -- same name "
                "fields, marker still inside the value, which is the "
                "single field this change moves"),
+    Case("maiden_marker_delimited_unaccented", "Jane Smith (nee Jones)",
+         {"given": "Jane", "family": "Smith", "maiden": "Jones"},
+         policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
+         classification="fix(#329)",
+         notes="the row above with the marker spelled unaccented, and "
+               "it is the ONLY test in the suite whose value depends "
+               "on 'nee' being in the default MAIDEN_MARKERS: "
+               "everything else reaches the marker branch through "
+               "'née', 'geb' or '旧姓', or through a stage lexicon of "
+               "its own. Removing the entry left the whole suite green "
+               "(measured 2026-08-03) before this row existed, so the "
+               "shipped spelling English writes most often was one "
+               "vocabulary edit from silence. 1.4.0 under the "
+               "bucket-move idiom gave first Jane / last Smith / "
+               "maiden 'nee Jones' (2026-08-03) -- the same diff the "
+               "accented row records, which is the point: the two "
+               "spellings behave alike on both sides"),
     Case("maiden_marker_delimited_unmarked_content",
          "Jane Smith (Mary Jones)",
          {"given": "Jane", "family": "Smith", "maiden": "Mary Jones"},
@@ -551,9 +568,15 @@ CASES: tuple[Case, ...] = (
                "drop a marker whose successor is also maiden -- gives "
                "'Jones' here, eating a real surname (Irish Ní/Nee, and "
                "a Chinese romanization). Unaccented 'nee' is in the "
-               "default MAIDEN_MARKERS, so this row genuinely exercises "
-               "the marker branch; the local lexicon in "
-               "tests/v2/pipeline/test_group.py does not carry it. "
+               "default MAIDEN_MARKERS, so the 'Nee' token really is "
+               "tagged and the CLAUSE bound is the only thing keeping "
+               "it -- which is what makes this row kill a rule that "
+               "drops the bound. The VALUE does not depend on that "
+               "vocabulary entry, though: the clause test is checked "
+               "before the tag test, so 'nee' leaving MAIDEN_MARKERS "
+               "would leave this expectation green. "
+               "maiden_marker_delimited_unaccented above is the row "
+               "that fails when it goes. "
                "Parity is measured, not inferred from the row being "
                "untouched: 1.4.0 under the same bucket move gave first "
                "Jane / last Smith / maiden 'Nee Jones' (2026-08-02), "
