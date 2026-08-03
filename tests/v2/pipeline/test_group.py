@@ -123,6 +123,66 @@ def test_leading_marker_is_not_consumed() -> None:
     assert _piece_texts(out) == [["née", "Jones"]]
 
 
+_MAIDEN_PARENS = Policy(maiden_delimiters=frozenset({("(", ")")}))
+#: `nee` a marker AND `Nee` a surname in one vocabulary -- the collision
+#: the clause-size guard exists for. _LEX alone leaves `Nee` untagged,
+#: which would let the guard tests pass under every mutant.
+_NEE_LEX = _LEX.add(maiden_markers=frozenset({"nee"}))
+
+
+def test_delimited_marker_is_dropped() -> None:
+    """#329: extract assigns the whole delimited run Role.MAIDEN before
+    classify runs, so the marker IS tagged but never enters `pieces` --
+    the #274 rule above walks pieces and cannot reach it."""
+    out = _grouped("Jane Smith (née Jones)", policy=_MAIDEN_PARENS)
+    maiden = [t.text for i, t in enumerate(out.tokens)
+              if t.role is Role.MAIDEN and i not in out.dropped]
+    assert maiden == ["Jones"]
+    née_idx = next(i for i, t in enumerate(out.tokens) if t.text == "née")
+    assert née_idx in out.dropped
+
+
+def test_lone_delimited_marker_is_kept_when_a_clause_follows() -> None:
+    """The clause-size guard, and it is load-bearing rather than
+    defensive: `Nee` is a real surname (Irish Ni/Nee, and a Chinese
+    romanization), so a one-token clause is a maiden NAME, not a marker.
+
+    The trailing "(Jones)" is what makes this pin the guard. With
+    "(Nee)" alone the marker is also the last token in the string, so a
+    rule that merely checked for a following token would keep it too
+    and the mutant would live. Here a token does follow -- only the
+    CLAUSE bound distinguishes them."""
+    out = _grouped("Jane Smith (Nee) (Jones)", policy=_MAIDEN_PARENS,
+                   lexicon=_NEE_LEX)
+    kept = [t.text for i, t in enumerate(out.tokens)
+            if t.role is Role.MAIDEN and i not in out.dropped]
+    assert kept == ["Nee", "Jones"]
+
+
+def test_marker_in_the_bare_form_is_left_to_the_piece_rule() -> None:
+    """#274 sets Role.MAIDEN on consumed tokens itself, so a maiden role
+    is NOT proof that extract produced it. Keying this pass on
+    state.extracted spans is what keeps it off the bare path -- a
+    neighbour test would eat the `Nee` here, the very surname the guard
+    above exists to protect."""
+    out = _grouped("Jane Smith nee Nee Jones", lexicon=_NEE_LEX)
+    kept = [t.text for i, t in enumerate(out.tokens)
+            if t.role is Role.MAIDEN and i not in out.dropped]
+    assert kept == ["Nee", "Jones"]
+
+
+def test_every_delimited_marker_is_dropped_not_only_the_first() -> None:
+    """Two maiden clauses land as ONE contiguous run of maiden-role
+    tokens, so a rule keyed on the run would strip the first marker and
+    keep the second. Each clause is scoped separately, so each loses its
+    own leading marker."""
+    out = _grouped("Jane Smith (née Jones) (geb Braun)",
+                   policy=_MAIDEN_PARENS)
+    kept = [t.text for i, t in enumerate(out.tokens)
+            if t.role is Role.MAIDEN and i not in out.dropped]
+    assert kept == ["Jones", "Braun"]
+
+
 def test_initials_do_not_count_as_rootnames_for_conjunction_carveout() -> None:
     # v1 parity: 'J.' is an initial, so total rootnames stay under 4 and
     # the single-letter conjunction 'y' is treated as an initial, not joined
