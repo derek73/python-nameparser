@@ -161,16 +161,40 @@ def test_parse_cost_grows_no_worse_than_linearly(unit: str) -> None:
 # measured 14.1x at base 800 (against a 4.1x bare-policy control), and
 # 4.3x once bisected -- inside the clean column, so _MAX_RATIO did not
 # move.
-_POLICY_SHAPES: dict[str, tuple[str, Parser]] = {
+#
+# Third element: a REACHABILITY probe, run before the measurement.
+# "the shape must reach the code" is the whole premise of this table,
+# and it is a premise about precedence, which moves -- route ( ) back
+# to nickname and the parse below stops producing a maiden clause,
+# leaving this test measuring a no-op at a comfortable 4.2x forever.
+# That is the module docstring's failure mode one level up: a guard
+# whose subject has quietly left the building. The probe is per shape
+# because what "reached" means is per shape.
+_POLICY_SHAPES: dict[str, tuple[str, Parser, Callable[[Parser], bool]]] = {
     "maiden_pairs": (
         "(a) ",
         Parser(policy=Policy(maiden_delimiters=frozenset({("(", ")")}))),
+        # a maiden clause whose marker the #329 pass consumes: the
+        # parenthesis pair must route to maiden AND the clause loop
+        # must run for this to read "b" rather than "" or "née b"
+        lambda p: p.parse("a (née b)").maiden == "b",
     ),
 }
 
 
-@pytest.mark.parametrize("unit,parser", _POLICY_SHAPES.values(),
+def test_shape_tables_are_not_empty() -> None:
+    # pytest turns an EMPTY parametrize into a SKIP, not a failure, so
+    # deleting the last entry of either table would retire its guard
+    # into the skip count with nothing going red. _POLICY_SHAPES has
+    # one entry and is the live risk.
+    assert _SHAPES
+    assert _POLICY_SHAPES
+
+
+@pytest.mark.parametrize("unit,parser,reaches", _POLICY_SHAPES.values(),
                          ids=list(_POLICY_SHAPES))
 def test_policy_gated_cost_grows_no_worse_than_linearly(
-        unit: str, parser: Parser) -> None:
+        unit: str, parser: Parser,
+        reaches: Callable[[Parser], bool]) -> None:
+    assert reaches(parser), "shape no longer reaches the gated stage"
     _assert_grows_linearly(unit, parser.parse)
