@@ -3,9 +3,10 @@ import unicodedata
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
     effective_script, is_initial, is_initial_shaped, is_suffix_lenient,
-    is_suffix_strict, resolve_script_set, single_script,
+    is_suffix_strict, is_wholly_suffix, resolve_script_set, single_script,
 )
-from nameparser._policy import Script, _NO_INITIALS, _SCRIPT_RANGES
+from nameparser._policy import (Policy, Script, _NO_INITIALS,
+                                _SCRIPT_RANGES)
 
 _LEX = Lexicon(
     suffix_acronyms=frozenset({"phd", "ma"}),
@@ -160,6 +161,65 @@ def test_strict_excludes_bare_ambiguous_even_when_in_acronyms() -> None:
     # mirrors the real data shape: ambiguous is a SUBSET of acronyms
     assert not is_suffix_strict("Ma", _LEX)
     assert is_suffix_strict("M.A.", _LEX)
+
+
+_SUFFIX_LEX = Lexicon(
+    suffix_acronyms=frozenset({"phd", "md"}),
+    suffix_words=frozenset({"jr", "v"}),
+)
+
+
+def test_is_wholly_suffix() -> None:
+    lex, pol = _SUFFIX_LEX, Policy()
+    assert is_wholly_suffix(["Jr."], lex, pol)
+    assert is_wholly_suffix(["PhD", "Jr."], lex, pol)
+    assert not is_wholly_suffix(["Smith"], lex, pol)
+    assert not is_wholly_suffix(["PhD", "Smith"], lex, pol)
+    # an adjacent Ph./D. pair is ONE unit. 'D.' is what makes the merge
+    # load-bearing: it is not suffix vocabulary in ANY lexicon, so the
+    # pair fails without the merge. ('Ph.' happens to fail alone here
+    # too, but only because _SUFFIX_LEX is synthetic -- under
+    # Lexicon.default(), 'ph' IS in suffix_acronyms.)
+    assert is_wholly_suffix(["Ph.", "D."], lex, pol)
+    assert not is_wholly_suffix(["Ph."], lex, pol)
+    assert is_wholly_suffix(["Ph.", "D.", "Jr."], lex, pol)
+    # and the pair is found wherever it sits, not only at the head of
+    # the run: the merge walks the whole list. 'John Smith, Jr. Ph. D.'
+    # is the reachable input -- restricted to position 0 the pair never
+    # merges, 'D.' fails alone, and segment reads a FAMILY comma where
+    # it should read a suffix comma.
+    assert is_wholly_suffix(["Jr.", "Ph.", "D."], lex, pol)
+    # the two routes that are neither the policy-selected predicate nor
+    # the merge, each with the input that reaches ONLY it. Both die in
+    # the v1 banks and the case table today, so a break here is
+    # diagnosed a long way from its cause.
+    assert is_wholly_suffix(["Lt.Jr."], lex, pol)        # period-joined
+    assert not is_wholly_suffix(["Lt.Smith"], lex, pol)  # no suffix chunk
+    delim = Policy(extra_suffix_delimiters=frozenset({"/"}))
+    assert is_wholly_suffix(["PhD/MD"], lex, delim)      # delimiter split
+    assert not is_wholly_suffix(["PhD/MD"], lex, pol)
+
+
+def test_is_wholly_suffix_empty_run_is_false() -> None:
+    """NOT vacuous truth, unlike Python's all() and unlike v1's
+    are_suffixes. v1's suffix-comma detection fails on an empty
+    parts[1] -- 'John Smith,, MD' is a family-comma parse -- and the
+    'wholly' idiom agrees (_script_matcher(whole=True) requires
+    non-empty too)."""
+    assert not is_wholly_suffix([], _SUFFIX_LEX, Policy())
+
+
+def test_is_wholly_suffix_is_not_the_plural_of_is_post_nominal() -> None:
+    """The #319 bug in one assertion. _script_segment._is_post_nominal
+    asks is_suffix_strict per token; this asks the POLICY-selected
+    predicate over a run. 'V.' is the input that tells them apart: a
+    suffix run, but not a post-nominal."""
+    lex, pol = _SUFFIX_LEX, Policy()
+    assert is_wholly_suffix(["V."], lex, pol)
+    assert not is_suffix_strict("V.", lex)
+    # and the knob moves it: under strict, 'V.' is name text
+    assert not is_wholly_suffix(
+        ["V."], lex, Policy(lenient_comma_suffixes=False))
 
 
 def test_single_script_requires_every_char_in_one_script() -> None:

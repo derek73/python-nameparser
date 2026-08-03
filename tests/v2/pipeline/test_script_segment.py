@@ -594,6 +594,21 @@ def test_the_peel_scans_the_name_runs_and_no_further() -> None:
         "Dr", "김", "민준", "씨", "Jr.", "박씨"]
 
 
+def test_a_suffix_comma_keeps_the_peel_inside_the_name() -> None:
+    # The test above shows a suffix comma not being crossed while the
+    # name HOLDS a site, which is the easy half: segments[0] answers
+    # the scan either way, so a gate that had stopped keying on
+    # FAMILY_COMMA -- on "there is a second run at all", say -- would
+    # still land the peel on 민준씨 and pass. This is the twin that can
+    # see it: two words before the comma so the structure is
+    # SUFFIX_COMMA, NO site among them, and a token beyond the comma
+    # that ends in a listed tail. The peel must answer None, not reach
+    # past the name for the junk one -- "J.씨" is a stray post-nominal,
+    # and its 씨 is nobody's honorific.
+    assert _texts(_run("John Smith, J.씨", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["John", "Smith", "J.씨"]
+
+
 def test_the_peel_crosses_a_family_comma_and_stops_there() -> None:
     # The family-comma mirror of the test above, and the only input
     # that pins the SECOND half of segments[:2] -- that it is two runs
@@ -601,14 +616,94 @@ def test_the_peel_crosses_a_family_comma_and_stops_there() -> None:
     # two segments, so the slice is otherwise only ever exercised as
     # "more than one run": widening it to three passes them all.
     # Both shapes above, re-spelled with the name split across a family
-    # comma. "Jr." is the strict/lenient gap again -- reached as a site
-    # it ends in no tail and abandons the peel, leaving 씨 in the given
-    # name -- and 박씨 is the junk tail, whose 씨 a wider scan peels
-    # instead of the person's own.
+    # comma -- but only the SECOND of the two pins the slice, and the
+    # measurement says so: widen this scan to three runs and 박씨 is
+    # the junk tail whose 씨 gets peeled instead of the person's own,
+    # while "Jr." is a post-nominal by the STRICT test as well, so a
+    # wider scan steps over it onto 민준씨 and peels correctly anyway.
+    # It is the initial-shaped words ("V." in the test above) that fall
+    # in the strict/lenient gap, not "Jr."; this input keeps 씨's
+    # placement pinned against a third run of ordinary post-nominals.
     assert _texts(_run("김, 민준씨, Jr.", policy=_HANGUL,
                        lexicon=_LEX_TAILS)) == ["김", "민준", "씨", "Jr."]
     assert _texts(_run("김, 민준씨, 박씨", policy=_HANGUL,
                        lexicon=_LEX_TAILS)) == ["김", "민준", "씨", "박씨"]
+
+
+def test_a_wholly_suffix_run_after_a_family_comma_is_declined() -> None:
+    # The two tests above pin HOW FAR the crossing reaches; this pins
+    # WHETHER it happens, which the structure alone does not decide.
+    # segment answers FAMILY_COMMA whenever a single word precedes the
+    # comma, even where the part after it is entirely suffix-shaped, so
+    # "the second run is name text" is an inference and a wrong one
+    # here. Scanning it lands the site on "V." -- admitted to the run by
+    # segment's is_suffix_lenient, rejected as an initial by the scan's
+    # is_suffix_strict -- which ends in no listed tail, so the peel is
+    # abandoned and さん stays glued to 田中 (#319). The peel asks
+    # is_wholly_suffix, segment's own predicate, and declines the run.
+    lex = _LEX_TAILS.add(suffix_words={"v"})
+    assert _texts(_run("田中さん, V.", policy=_HANGUL,
+                       lexicon=lex)) == ["田中", "さん", "V."]
+
+
+def test_a_long_wholly_suffix_post_comma_run_is_declined_too() -> None:
+    # The decline is a question about the run's VOCABULARY and not its
+    # LENGTH, and no other input here says so: every case pinning the
+    # decline has a one- or two-token run, so a gate that declined only
+    # short runs passes all of them and this one alone catches it.
+    # Three post-nominals, with the initial-shaped one LEFTMOST on
+    # purpose -- a scan that reached this run would step over PhD and
+    # MD (both post-nominals by the strict test) and stop on "V.",
+    # which ends in no tail, abandoning the peel exactly as above.
+    lex = _LEX_TAILS.add(suffix_words={"v"},
+                         suffix_acronyms={"md", "phd"})
+    assert _texts(_run("田中さん, V. MD PhD", policy=_HANGUL,
+                       lexicon=lex)) == ["田中", "さん", "V.", "MD", "PhD"]
+
+
+def test_a_third_segment_does_not_reopen_the_declined_run() -> None:
+    # WHICH run the decline reads, and how many there may be, are two
+    # more axes no other input here moves: every case pinning the
+    # decline has exactly two segments, so reading segments[-1] instead
+    # of segments[1], or requiring exactly two segments before
+    # declining at all, passes all of them. Both mistakes give the same
+    # visible loss on this input -- the run consulted is 太郎, or none
+    # is, so the scan crosses, "V." is the site, it ends in no tail and
+    # the peel is abandoned. The third segment is junk beyond the name
+    # either way (segment flags it, and the peel already refuses to
+    # scan it -- test_the_peel_crosses_a_family_comma_and_stops_there
+    # above); the question here is only whether its presence changes
+    # the answer about the SECOND.
+    lex = _LEX_TAILS.add(suffix_words={"v"})
+    assert _texts(_run("田中さん, V., 太郎", policy=_HANGUL,
+                       lexicon=lex)) == ["田中", "さん", "V.", "太郎"]
+
+
+def test_a_configured_suffix_delimiter_reaches_the_peel() -> None:
+    # is_wholly_suffix is handed the CALLER's policy, so
+    # extra_suffix_delimiters decides what counts as a suffix run here
+    # exactly as it does inside segment -- a peel that passed a default
+    # policy instead would answer differently from the stage whose
+    # question it is borrowing. Two routes into that answer, neither
+    # reachable from the other's input, so both are pinned: a
+    # delimiter WITHOUT whitespace leaves one token no core equals
+    # ("PhD/MD"), admitted by splits_into_suffixes, while a
+    # whitespace-padded one surfaces as a standalone token ("-"),
+    # admitted by plain core membership. Each peels only with its
+    # delimiter configured; the bare-policy line under each is the
+    # baseline that says so.
+    lex = _LEX_TAILS.add(suffix_words={"v"},
+                         suffix_acronyms={"md", "phd"})
+    slash = Policy(extra_suffix_delimiters=frozenset({"/"}))
+    assert _texts(_run("田中さん, PhD/MD", policy=slash,
+                       lexicon=lex)) == ["田中", "さん", "PhD/MD"]
+    assert _texts(_run("田中さん, PhD/MD", policy=_HANGUL,
+                       lexicon=lex)) == ["田中さん", "PhD/MD"]
+    dash = Policy(extra_suffix_delimiters=frozenset({" - "}))
+    assert _texts(_run("田中さん, Jr. - V.", policy=dash,
+                       lexicon=lex)) == ["田中", "さん", "Jr.", "-", "V."]
+    assert _texts(_run("田中さん, Jr. - V.", policy=_HANGUL,
+                       lexicon=lex)) == ["田中さん", "Jr.", "-", "V."]
 
 
 def test_an_empty_first_run_still_reaches_the_second() -> None:

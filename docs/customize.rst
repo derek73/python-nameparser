@@ -261,7 +261,11 @@ listed below.
        ``"John Smith, V"`` is John Smith the fifth when ``True``
        (default); ``False`` reads ``V`` as a given-name initial
        instead. Multi-letter suffixes (``III``, ``MD``) are
-       unaffected.
+       unaffected. The same test is also one of the two the
+       glued-honorific peel asks before crossing a family comma
+       (#319), so the setting reaches CJK names too: ``"田中さん,
+       V."`` gives family ``田中``, suffix ``さん`` when ``True``, and
+       family ``田中さん``, given ``V.`` when ``False``.
    * - ``strip_emoji``
      - ``bool``
      - Excludes emoji from tokenization — they appear in no field or

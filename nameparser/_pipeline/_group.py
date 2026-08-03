@@ -31,7 +31,11 @@ from nameparser._pipeline._vocab import PH as _PH
 from nameparser._pipeline._vocab import delimiter_cores
 from nameparser._types import AmbiguityKind, Role
 
-# the credential-pair regexes live in _vocab (shared with segment)
+# the credential-pair regexes live in _vocab, whose own
+# is_wholly_suffix merges the same pair -- and since #319 that
+# predicate has TWO callers to stay in sync with, segment's
+# suffix-comma structure test and script_segment's decline of a
+# wholly-suffix post-comma run, both of which see the merged reading
 
 Piece = list[int]
 

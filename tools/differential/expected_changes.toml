@@ -309,3 +309,24 @@ fields = ["title", "first", "middle", "suffix"]
 # intentionally left unclassified: if it ever starts diffing, the
 # harness must fail. (The leading case above is a separate shape, which
 # is why it needed its own anchored rule rather than a widened one.)
+#
+# That last sentence does NOT hold today, and the scope of what is
+# parity has to be read narrowly because of it. Parity is the two
+# inputs named above, where the pair LEADS its run. A trailing pair
+# after another suffix diffs on ORDER -- 'John Smith, Jr. Ph. D.' is
+# 1.4.0 suffix 'Ph. D., Jr.' against 2.0's 'Jr. Ph. D.', because
+# fix_phd extracted the credential pre-parse and re-appended it while
+# 2.0 renders the tail as written (tests/v2/cases.py
+# 'suffix_comma_split_phd_after_another_suffix',
+# classification="fix(credential-pair-order)"). Measured on a probe
+# corpus: the run comes out unexplained 0, absorbed by
+# fix(comma-family) below, whose name_regex is a bare comma and whose
+# `fields` list contains `suffix`. So the shape is guarded by the case
+# table and not by this file. Left that way deliberately rather than
+# fixed in passing: classify() takes the FIRST matching rule and the
+# sort has only two tiers (name_regex before fields-only, stable
+# within a tier), so a narrower rule for this shape could only win by
+# being written earlier in the file -- making file order load-bearing
+# again, which is the thing the sort exists to prevent. Giving
+# classify() a real specificity order is the fix, and it is a change
+# to the harness rather than to a rule.

@@ -49,6 +49,20 @@ def test_suffix_comma_lenient_accepts_initial_shaped_suffix_word() -> None:
     assert out.structure is Structure.SUFFIX_COMMA
 
 
+def test_the_credential_pair_merges_anywhere_in_the_run() -> None:
+    # v1's fix_phd healed a split 'Ph. D.' wherever it fell, and the
+    # suffix-comma test inherits that: the pair counts as ONE unit at
+    # any position, not just at the head of the run. Nothing else
+    # reaches past position 0 -- 'John Smith, Ph. D.' above puts the
+    # pair first -- and the flip is silent, because 'D.' alone is
+    # suffix vocabulary in no lexicon, so the run stops being wholly
+    # suffix and this reads as a FAMILY comma instead.
+    out = _segmented("John Smith, Jr. Ph. D.")
+    assert out.structure is Structure.SUFFIX_COMMA
+    assert [_texts(out, s) for s in out.segments] == [
+        ["John", "Smith"], ["Jr.", "Ph.", "D."]]
+
+
 def test_family_comma_with_trailing_suffix_segment() -> None:
     out = _segmented("Smith, John, Jr.")
     assert out.structure is Structure.FAMILY_COMMA

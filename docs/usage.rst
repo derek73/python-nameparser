@@ -312,10 +312,21 @@ same as ``김 민준씨``. What a comma does instead is say which runs are
 the name: the two around a family comma, an honorific being as often
 glued to the given name as to the family. Nothing past those two is in
 reach — ``김, 민준 지훈씨`` peels, ``김, 민준, 지훈씨`` does not — and
-the reach rests on the second run being name text, so where it is not
-the peel is abandoned: in ``田中さん, V.`` the scan lands on ``V.``,
-which is neither a name nor an honorific, and さん stays in the family
-name where ``田中さん, PhD`` gives it up. What those marks do stop is
+the second of those runs counts only where it is name text. A run that
+is nothing but credentials is not, whatever the comma looked like, and
+the same test that decides the comma structure decides this too: the
+run is left alone and the honorific is found in the name. Being
+credentials is necessary but not enough, because the test cannot help
+counting the honorific itself — a glued honorific is a suffix word,
+so it is part of what makes its own run read as credentials. The run
+is passed over only when the part *before* the comma has an honorific
+of its own to give up; otherwise passing it over would discard the
+only one there is. So ``田中さん, V.`` and ``田中さん, Ph. D.``
+give さん up exactly as
+``田中さん, PhD`` does — though where the credential itself lands is
+the comma's business rather than the peel's, and still differs by
+spelling (``title`` for ``PhD``, ``given`` for ``V.``, and ``Ph. D.``
+in ``suffix`` beside さん). What those marks do stop is
 the *split*, which is a different question and still theirs to answer.
 ``田中さん, 太郎`` is unchanged, and not because of its comma: the
 honorific there is not at the end of the name, 太郎 is.
