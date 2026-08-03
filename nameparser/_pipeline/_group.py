@@ -344,11 +344,13 @@ def group(state: ParseState) -> ParseState:
                 ptags[m:j] = []
         all_pieces.append(tuple(tuple(p) for p in pieces))
         all_ptags.append(tuple(frozenset(t) for t in ptags))
-    # A marker inside EXTRACTED maiden content (#329). extract claims a
-    # delimited clause and assigns it Role.MAIDEN wholesale, before
-    # classify tags anything inside it, so the marker never enters
-    # `pieces` -- and the #274 rule above walks pieces, so it cannot
-    # reach it.
+    # A marker inside EXTRACTED maiden content (#329). classify tags
+    # such a marker like any other token -- what the #274 rule above
+    # lacks is not the TAG but the token: extract claims a delimited
+    # clause and tokenize gives its tokens Role.MAIDEN up front, so
+    # segment (main stream = role is None) leaves them out of every
+    # segment, they never enter `pieces`, and a rule that walks pieces
+    # cannot reach them.
     #
     # Scoped to the CLAUSE, via state.extracted (one role + inner span
     # per delimited region), rather than to a maiden token's

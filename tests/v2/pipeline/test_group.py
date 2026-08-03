@@ -131,9 +131,11 @@ _NEE_LEX = _LEX.add(maiden_markers=frozenset({"nee"}))
 
 
 def test_delimited_marker_is_dropped() -> None:
-    """#329: extract assigns the whole delimited run Role.MAIDEN before
-    classify runs, so the marker IS tagged but never enters `pieces` --
-    the #274 rule above walks pieces and cannot reach it."""
+    """#329: the marker IS tagged -- classify reaches it like any other
+    token. What it never enters is `pieces`: extract claims the clause
+    and its tokens carry Role.MAIDEN from tokenize, so segment keeps
+    them out of the main stream. The #274 rule above walks pieces, so
+    the tag alone does it no good."""
     out = _grouped("Jane Smith (née Jones)", policy=_MAIDEN_PARENS)
     maiden = [t.text for i, t in enumerate(out.tokens)
               if t.role is Role.MAIDEN and i not in out.dropped]

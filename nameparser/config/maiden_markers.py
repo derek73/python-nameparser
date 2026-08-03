@@ -39,14 +39,18 @@ is for what needs the my-data-is-Japanese declaration -- segmentation,
 where a pure-Han string cannot say which language wrote it -- and this
 needs none, since it can only ever match Han text.
 
-It reaches the SPACED form only ("山田花子 旧姓 佐藤" gives maiden
-佐藤). Japanese more often writes the marker inside brackets, and
-"山田（旧姓：佐藤）" under Policy(maiden_delimiters=...) still yields
-maiden "旧姓：佐藤" with the marker and its colon attached: extract
-claims delimited content whole, before classify has tagged anything
-inside it, so group's marker-consuming rule never sees it. That
-asymmetry is not Japanese -- "Jane Smith (née Jones)" keeps its marker
-the same way -- and closing it is #329.
+Matching being whole-token, the marker has to BE a token, which for
+Japanese means written with a space on each side. Both the bare
+"山田花子 旧姓 佐藤" and -- since #329 -- the bracketed
+"山田 花子（旧姓 佐藤）" under Policy(maiden_delimiters=...) give maiden
+佐藤. What stays out of reach is the form Japanese more often writes,
+a fullwidth colon after the marker: "山田（旧姓：佐藤）" still yields
+maiden "旧姓：佐藤" with the marker and its colon attached. Not because
+delimited content escapes classification -- classify tags a marker
+wherever it is a token -- but because the colon glues marker and name
+into ONE token, so there is nothing to drop. The wholly unspaced
+"山田花子（旧姓佐藤）" glues the same way. Peeling a marker off the head
+of a token is #317's job.
 
 Consumed by the 2.0 parser's default lexicon. The 1.x parser does not
 read this module.

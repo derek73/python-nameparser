@@ -623,6 +623,8 @@ class Policy:
     #: field instead; a pair listed here is dropped from the effective
     #: nickname set (maiden wins, see __post_init__), so
     #: maiden_delimiters={("(", ")")} is the whole recipe (#274).
+    #: A maiden_markers word opening the enclosed content is dropped
+    #: from the value, as in the undelimited form (#329).
     maiden_delimiters: frozenset[tuple[str, str]] = frozenset()
     #: Additional separators that split suffix groups (e.g. " - " for
     #: "Jane Smith, RN - CRNA"). Additive only: the comma always

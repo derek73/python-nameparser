@@ -4,6 +4,9 @@ Consumes: ParseState.original.
 Produces: extracted (role + inner span per delimited region), masked
 (full regions incl. delimiter chars, skipped by tokenize),
 UNBALANCED_DELIMITER ambiguities for opens with no close.
+A Role.MAIDEN region is the WHOLE inner span, marker word included --
+nothing here strips one. classify tags a marker inside it like any
+other token, and group drops it from a multi-token clause (#329).
 Reads: Policy.nickname_delimiters, Policy.maiden_delimiters.
 
 Matching rules (the #273 mechanism): one left-to-right scan over the
