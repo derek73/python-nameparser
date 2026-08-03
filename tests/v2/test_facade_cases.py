@@ -11,11 +11,14 @@ from .cases import CASES, Case
 _V1_KEY = {"given": "first", "family": "last"}  # identity for the rest
 
 #: The parenthesis maiden shape, and a v1-expressibility test that
-#: never fires. Five rows carry a non-default maiden_delimiters
+#: never fires. Every row carrying a non-default maiden_delimiters
 #: (maiden_delimiters_win_when_shared, maiden_marker_delimited,
+#: maiden_marker_delimited_unmarked_content,
+#: maiden_marker_delimited_trailing_marker,
+#: maiden_marker_delimited_beside_a_nickname_clause,
 #: maiden_marker_delimited_two_clauses,
 #: maiden_marker_delimited_content_free, maiden_marker_kyusei_delimited)
-#: and all five skip: Policy's maiden-wins canonicalization subtracts
+#: skips: Policy's maiden-wins canonicalization subtracts
 #: the pair from nickname_delimiters at CONSTRUCTION, so a row routing
 #: parens to maiden can never also carry the default nickname set, and
 #: maiden_via_sentinel below is therefore always False.
