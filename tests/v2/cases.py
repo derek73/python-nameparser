@@ -154,7 +154,34 @@ CASES: tuple[Case, ...] = (
     Case("suffix_comma_split_phd", "John Smith, Ph. D.",
          {"given": "John", "family": "Smith", "suffix": "Ph. D."},
          notes="the adjacent Ph./D. pair counts as one suffix unit in "
-               "the suffix-comma detection (v1 fix_phd parity)"),
+               "the suffix-comma detection (v1 fix_phd parity). The "
+               "pair leads the run here; the row below is where it does "
+               "not"),
+    Case("suffix_comma_split_phd_after_another_suffix",
+         "John Smith, Jr. Ph. D.",
+         {"given": "John", "family": "Smith", "suffix": "Jr. Ph. D."},
+         classification="fix(credential-pair-order)",
+         notes="the pair is merged wherever it sits in the run, not "
+               "only at its head, and the row above cannot say so -- "
+               "there the pair IS the head. Restricted to position 0 "
+               "the merge never fires, 'D.' is suffix vocabulary in no "
+               "lexicon, and the run stops being wholly suffix: this "
+               "reads as a FAMILY comma instead, family 'John Smith' / "
+               "title 'Jr.' / suffix 'Ph. D.'. Pinned at the segment "
+               "stage too (test_segment.test_the_credential_pair_"
+               "merges_anywhere_in_the_run), because the neighbouring "
+               "input 'John Smith, MD, Jr. Ph. D.' keeps every field "
+               "under that break and gains only a comma-structure "
+               "ambiguity, so fields alone do not catch it. Measured: "
+               "1.4.0 gave suffix 'Ph. D., Jr.' -- fix_phd EXTRACTED "
+               "the pair pre-parse and re-appended it, reordering the "
+               "tail, where 2.0 renders it as written. Same words, "
+               "same roles, different order, and the harness cannot "
+               "currently see it: expected_changes.toml states that a "
+               "diffing trailing 'Ph. D.' must fail the run, but this "
+               "input is absorbed by fix(comma-family), whose "
+               "name_regex is a bare comma -- measured on a probe "
+               "corpus, unexplained 0. See the note there"),
     Case("tail_segment_entry_space_joined", "John Smith, V MD",
          {"given": "John", "family": "Smith", "suffix": "V MD"},
          notes="v1 renders each tail comma segment as ONE suffix "

@@ -594,6 +594,21 @@ def test_the_peel_scans_the_name_runs_and_no_further() -> None:
         "Dr", "김", "민준", "씨", "Jr.", "박씨"]
 
 
+def test_a_suffix_comma_keeps_the_peel_inside_the_name() -> None:
+    # The test above shows a suffix comma not being crossed while the
+    # name HOLDS a site, which is the easy half: segments[0] answers
+    # the scan either way, so a gate that had stopped keying on
+    # FAMILY_COMMA -- on "there is a second run at all", say -- would
+    # still land the peel on 민준씨 and pass. This is the twin that can
+    # see it: two words before the comma so the structure is
+    # SUFFIX_COMMA, NO site among them, and a token beyond the comma
+    # that ends in a listed tail. The peel must answer None, not reach
+    # past the name for the junk one -- "J.씨" is a stray post-nominal,
+    # and its 씨 is nobody's honorific.
+    assert _texts(_run("John Smith, J.씨", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["John", "Smith", "J.씨"]
+
+
 def test_the_peel_crosses_a_family_comma_and_stops_there() -> None:
     # The family-comma mirror of the test above, and the only input
     # that pins the SECOND half of segments[:2] -- that it is two runs
@@ -615,7 +630,7 @@ def test_the_peel_crosses_a_family_comma_and_stops_there() -> None:
                        lexicon=_LEX_TAILS)) == ["김", "민준", "씨", "박씨"]
 
 
-def test_a_wholly_suffix_post_comma_run_is_not_scanned_at_all() -> None:
+def test_a_wholly_suffix_run_after_a_family_comma_is_declined() -> None:
     # The two tests above pin HOW FAR the crossing reaches; this pins
     # WHETHER it happens, which the structure alone does not decide.
     # segment answers FAMILY_COMMA whenever a single word precedes the
@@ -644,6 +659,24 @@ def test_a_long_wholly_suffix_post_comma_run_is_declined_too() -> None:
                          suffix_acronyms={"md", "phd"})
     assert _texts(_run("田中さん, V. MD PhD", policy=_HANGUL,
                        lexicon=lex)) == ["田中", "さん", "V.", "MD", "PhD"]
+
+
+def test_a_third_segment_does_not_reopen_the_declined_run() -> None:
+    # WHICH run the decline reads, and how many there may be, are two
+    # more axes no other input here moves: every case pinning the
+    # decline has exactly two segments, so reading segments[-1] instead
+    # of segments[1], or requiring exactly two segments before
+    # declining at all, passes all of them. Both mistakes give the same
+    # visible loss on this input -- the run consulted is 太郎, or none
+    # is, so the scan crosses, "V." is the site, it ends in no tail and
+    # the peel is abandoned. The third segment is junk beyond the name
+    # either way (segment flags it, and the peel already refuses to
+    # scan it -- test_the_peel_crosses_a_family_comma_and_stops_there
+    # above); the question here is only whether its presence changes
+    # the answer about the SECOND.
+    lex = _LEX_TAILS.add(suffix_words={"v"})
+    assert _texts(_run("田中さん, V., 太郎", policy=_HANGUL,
+                       lexicon=lex)) == ["田中", "さん", "V.", "太郎"]
 
 
 def test_a_configured_suffix_delimiter_reaches_the_peel() -> None:
