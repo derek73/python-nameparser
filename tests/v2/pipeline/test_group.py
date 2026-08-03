@@ -2,10 +2,11 @@ from nameparser._lexicon import Lexicon
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._group import group
+from nameparser._pipeline._script_segment import script_segment
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import ParseState
 from nameparser._pipeline._tokenize import tokenize
-from nameparser._policy import Policy
+from nameparser._policy import Policy, Script
 from nameparser._types import Role
 
 _LEX = Lexicon(
@@ -183,6 +184,27 @@ def test_every_delimited_marker_is_dropped_not_only_the_first() -> None:
     kept = [t.text for i, t in enumerate(out.tokens)
             if t.role is Role.MAIDEN and i not in out.dropped]
     assert kept == ["Jones", "Braun"]
+
+
+def test_clause_containment_survives_script_segmentation() -> None:
+    """The #329 pass finds the clause's first token by SPAN, and the
+    comment on it rests that on script_segment only ever cutting a
+    token into sub-slices. _grouped omits that stage, so this is the
+    one place the two meet: 王小明 becomes 王 + 小明 before group runs,
+    which shifts every token index after it while the spans stay
+    exact, and the marker is still the token the clause drops."""
+    lex = Lexicon(surnames=frozenset({"王"}),
+                  maiden_markers=frozenset({"旧姓"}))
+    policy = Policy(segment_scripts=frozenset({Script.HAN}),
+                    maiden_delimiters=frozenset({("（", "）")}))
+    state = ParseState(original="王小明（旧姓 李四）", lexicon=lex,
+                       policy=policy)
+    out = group(classify(script_segment(segment(
+        tokenize(extract_delimited(state))))))
+    assert [t.text for t in out.tokens] == ["王", "小明", "旧姓", "李四"]
+    kept = [t.text for i, t in enumerate(out.tokens)
+            if t.role is Role.MAIDEN and i not in out.dropped]
+    assert kept == ["李四"]
 
 
 def test_initials_do_not_count_as_rootnames_for_conjunction_carveout() -> None:
