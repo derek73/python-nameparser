@@ -248,13 +248,13 @@ class MaidenNameTestCase(HumanNameTestBase):
 
     def test_marker_inside_maiden_parenthesis_is_consumed(self) -> None:
         # #329 through the v1 API, which is where the release log
-        # promises it. The shared case table cannot reach this: its
-        # maiden_delimiters rows all skip the facade runner (Policy's
-        # maiden-wins canonicalization takes the pair away from
-        # nickname, so the row no longer matches the v1-expressible
-        # shape), and the bucket move below is the spelling that does
-        # express it. Same value as the bare "Jane Smith née Jones",
-        # which is the agreement #329 was about.
+        # promises it. The facade runner covers the same ground by
+        # translating the shared case table, but it decides for itself
+        # which rows it can express -- when that gate was wrong these
+        # rows silently skipped, so a test that spells the v1 idiom out
+        # directly is what keeps the promise pinned independently of it.
+        # Same value as the bare "Jane Smith née Jones", which is the
+        # agreement #329 was about.
         C = Constants()
         C.maiden_delimiters['parenthesis'] = C.nickname_delimiters.pop('parenthesis')
         hn = HumanName("Jane Smith (née Jones)", constants=C)

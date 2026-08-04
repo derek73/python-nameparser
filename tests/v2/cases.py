@@ -193,9 +193,12 @@ CASES: tuple[Case, ...] = (
          policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
          notes="listing a pair in maiden_delimiters drops it from the "
                "effective nickname set (maiden wins, 2026-07-19) -- the "
-               "one-liner replaces the bucket-move idiom; the v1 facade "
-               "keeps v1's nickname-wins precedence via the shim's "
-               "pre-subtraction (pinned in test_config_shim)"),
+               "one-liner replaces the bucket-move idiom. The facade "
+               "runner reaches this row by making that same move, so "
+               "it agrees. What v1 does NOT agree on is a pair left in "
+               "BOTH buckets, which it gives to nickname; that spelling "
+               "is a different config, not this row, and is pinned in "
+               "test_config_shim"),
     # #269 follow-up: Arabic-script bound given names, mirroring the
     # Latin transliterations' behavior (probed live 2026-07-19: bound
     # join fires only with 3+ tokens, eats the NEXT token into given;
@@ -471,12 +474,9 @@ CASES: tuple[Case, ...] = (
                "there Role.MAIDEN, and group's #274 consuming rule "
                "walks pieces, which hold no role-bearing token; the "
                "fix drops the marker inside the CLAUSE instead. The "
-               "facade cannot express this policy -- Policy's "
-               "maiden-wins canonicalization subtracts the pair from "
-               "nickname_delimiters at construction, so the row's "
-               "policy no longer matches the v1-expressible shape and "
-               "its runner skips the row, as it does "
-               "maiden_delimiters_win_when_shared -- but 1.4.0 CAN: "
+               "facade runner reaches this row by performing the "
+               "bucket move itself, so it is exercised twice. 1.4.0 "
+               "expresses the policy the same way: "
                "measured 2026-08-02 through the bucket-move idiom "
                "maiden_delimiters['parenthesis'] = "
                "nickname_delimiters.pop('parenthesis'), it gave first "
@@ -582,8 +582,9 @@ CASES: tuple[Case, ...] = (
                "untouched: 1.4.0 under the same bucket move gave first "
                "Jane / last Smith / maiden 'Nee Jones' (2026-08-02), "
                "so the two clauses joined with a space on that side "
-               "too -- the classification the facade runner would have "
-               "checked had the shim let it express the policy"),
+               "too -- the classification the facade runner checks "
+               "against, since it expresses this policy through the "
+               "same bucket move"),
     Case("maiden_marker_delimited_content_free", "(née —)",
          {},
          policy=Policy(maiden_delimiters=frozenset({("(", ")")})),

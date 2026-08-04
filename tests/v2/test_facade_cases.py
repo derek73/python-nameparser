@@ -10,30 +10,26 @@ from .cases import CASES, Case
 
 _V1_KEY = {"given": "first", "family": "last"}  # identity for the rest
 
-#: The parenthesis maiden shape, and a v1-expressibility test that
-#: never fires. Every row carrying a non-default maiden_delimiters
-#: (maiden_delimiters_win_when_shared, maiden_marker_delimited,
-#: maiden_marker_delimited_unaccented,
-#: maiden_marker_delimited_unmarked_content,
-#: maiden_marker_delimited_trailing_marker,
-#: maiden_marker_delimited_beside_a_nickname_clause,
-#: maiden_marker_delimited_two_clauses,
-#: maiden_marker_delimited_content_free, maiden_marker_kyusei_delimited)
-#: skips: Policy's maiden-wins canonicalization subtracts
-#: the pair from nickname_delimiters at CONSTRUCTION, so a row routing
-#: parens to maiden can never also carry the default nickname set, and
-#: maiden_via_sentinel below is therefore always False.
+#: The parenthesis maiden shape. A row routing parens to maiden does
+#: NOT carry the default nickname set: Policy's maiden-wins
+#: canonicalization subtracts the pair from nickname_delimiters at
+#: CONSTRUCTION, so the shape to match is the default MINUS the pair.
+#: Comparing against the unsubtracted default is what kept this gate
+#: false for every row until #329.
 #:
-#: The v1 spelling it names is real (the delimiter-manager's parenthesis
-#: sentinel added to the maiden bucket while the nickname bucket keeps
-#: its also-parenthesis-holding default -- see
-#: _config_shim._DelimiterManager); what it is NOT is equivalent to
-#: these rows. v1 gives a shared pair to the NICKNAME bucket, so that
-#: spelling parses "Baker (Johnson), Jenny" with nickname Johnson and
-#: an empty maiden, which is the opposite of what
-#: maiden_delimiters_win_when_shared asserts. So the branch below is
-#: unreachable AND would fail its row if reached -- reviving it means
-#: choosing a different v1 spelling, not loosening the guard.
+#: The v1 side has two spellings and only one of them is equivalent.
+#: ADDING parenthesis to the maiden bucket leaves the nickname bucket
+#: holding it too, and v1 gives a shared pair to nickname -- measured on
+#: "Baker (Johnson), Jenny", that spelling yields nickname Johnson and
+#: an empty maiden, the reverse of what maiden_delimiters_win_when_shared
+#: asserts. MOVING it (pop from nickname, assign to maiden) yields
+#: maiden Johnson and an empty nickname, matching. That is the idiom
+#: tests/test_nicknames.py already uses, and the one below.
+#:
+#: Two rows still skip, each needing a spelling of its own:
+#: maiden_marker_delimited_beside_a_nickname_clause routes braces, which
+#: v1 rejects with ValueError('references unknown regexes key'), and
+#: maiden_marker_kyusei_delimited adds fullwidth parens alongside ASCII.
 _MAIDEN_PARENS = frozenset({("(", ")")})
 
 
@@ -43,9 +39,10 @@ def _constants_for(case: Case) -> Constants | None:
     policy = case.policy or Policy()
     default = Policy()
     c = Constants()
-    maiden_via_sentinel = (
+    maiden_via_bucket_move = (
         policy.maiden_delimiters == _MAIDEN_PARENS
-        and policy.nickname_delimiters == default.nickname_delimiters
+        and policy.nickname_delimiters
+        == default.nickname_delimiters - _MAIDEN_PARENS
     )
     unexpressible = (
         policy.name_order != default.name_order
@@ -56,9 +53,14 @@ def _constants_for(case: Case) -> Constants | None:
         or policy.lenient_comma_suffixes != default.lenient_comma_suffixes
         or policy.strip_emoji != default.strip_emoji
         or policy.strip_bidi != default.strip_bidi
-        or policy.nickname_delimiters != default.nickname_delimiters
+        # Both delimiter clauses have to admit the bucket move: the
+        # canonicalization that routes the pair to maiden is the same
+        # step that takes it out of nickname, so a row expressible this
+        # way necessarily differs from the default on BOTH.
+        or (policy.nickname_delimiters != default.nickname_delimiters
+            and not maiden_via_bucket_move)
         or (policy.maiden_delimiters != default.maiden_delimiters
-            and not maiden_via_sentinel)
+            and not maiden_via_bucket_move)
     )
     if unexpressible:
         return None
@@ -68,16 +70,11 @@ def _constants_for(case: Case) -> Constants | None:
         c.middle_name_as_last = True
     if policy.extra_suffix_delimiters:
         c.suffix_delimiter = next(iter(policy.extra_suffix_delimiters))
-    if maiden_via_sentinel:
-        # Unreachable, and wrong if reached: this ADDS parenthesis to
-        # maiden while nickname keeps its also-parenthesis-holding
-        # default, and v1 gives a shared pair to nickname. Measured on
-        # "Baker (Johnson), Jenny": nickname Johnson, maiden empty --
-        # the opposite of the row. The bucket-MOVE spelling used in
-        # tests/test_nicknames.py does match (nickname empty, maiden
-        # Johnson), so reviving this branch means popping the pair out
-        # of nickname, not adding it to maiden.
-        c.maiden_delimiters["parenthesis"] = "parenthesis"
+    if maiden_via_bucket_move:
+        # pop, not assign: leaving parenthesis in the nickname bucket
+        # would give v1's shared-pair reading, which goes to nickname.
+        c.maiden_delimiters["parenthesis"] = c.nickname_delimiters.pop(
+            "parenthesis")
     return c
 
 
