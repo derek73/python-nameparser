@@ -1,6 +1,8 @@
 """Stage: group.
 
-Consumes: tokens (classified), segments, structure.
+Consumes: tokens (classified), segments, structure, extracted (the
+role + inner span per delimited region, for the #329 pass below --
+the only stage after tokenize that reads it).
 Produces: pieces + piece_tags per segment (runs of token indices --
 tokens are NEVER joined into strings: the anti-#100 invariant); maiden
 tail tokens get role=MAIDEN; marker tokens land in dropped.
@@ -12,13 +14,16 @@ for the same reason). Reads Policy.extra_suffix_delimiters: tail
 segments drop delimiter-core tokens (v1 suffix_delimiter parity).
 
 Ports v1's join_on_conjunctions + prefix chains + _join_bound_first_name
-plus two additions: the "Ph. D."-split merge (v1 fix_phd, recorded plan
-deviation #1) and the maiden-marker consuming rule (#274: marker plus
+plus three additions: the "Ph. D."-split merge (v1 fix_phd, recorded
+plan deviation #1), the maiden-marker consuming rule (#274: marker plus
 following pieces until a suffix become maiden; the marker itself is
-structural, like a delimiter char, and is dropped from assembly).
+structural, like a delimiter char, and is dropped from assembly), and
+the same marker dropped inside EXTRACTED maiden content (#329), which
+#274 cannot reach because extract's content never enters pieces.
 """
 from __future__ import annotations
 
+import bisect
 import dataclasses
 from collections.abc import Sequence, Set
 from enum import IntEnum
@@ -339,6 +344,64 @@ def group(state: ParseState) -> ParseState:
                 ptags[m:j] = []
         all_pieces.append(tuple(tuple(p) for p in pieces))
         all_ptags.append(tuple(frozenset(t) for t in ptags))
+    # A marker inside EXTRACTED maiden content (#329). classify tags
+    # such a marker like any other token -- what the #274 rule above
+    # lacks is not the TAG but the token: extract claims a delimited
+    # clause and tokenize gives its tokens Role.MAIDEN up front, so
+    # segment (main stream = role is None) leaves them out of every
+    # segment, they never enter `pieces`, and a rule that walks pieces
+    # cannot reach them.
+    #
+    # Scoped to the CLAUSE, via state.extracted (one role + inner span
+    # per delimited region), rather than to a maiden token's
+    # neighbours. Both reasons are load-bearing:
+    #   * Role.MAIDEN is not proof of extraction -- the #274 rule above
+    #     sets it too, on the bare form, earlier in this same function.
+    #     A neighbour test would fire there and eat the 'Nee' out of
+    #     "Jane Smith nee Nee Jones". Keying on extracted spans puts
+    #     the bare path out of reach by construction.
+    #   * Separate clauses are separate content. In "(Nee) (Jones)" the
+    #     two land as one contiguous run of maiden tokens, so only the
+    #     clause bound keeps the lone "(Nee)" intact.
+    # Drop the clause's FIRST token only when the clause holds more
+    # than one: `Nee` is a real surname (Irish Ni/Nee, and a Chinese
+    # romanization), so a one-token "(Nee)" is a maiden name, not a
+    # marker. FIRST token and no more, whatever the clause holds past
+    # it: cases.py's maiden_marker_delimited_three_token_clause is the
+    # row that bounds this in both directions, every other delimited
+    # row having a two-token clause where the two readings agree.
+    # Spans index the original string by the anti-#100
+    # invariant, and script_segment only ever splits a token into
+    # sub-slices, so containment stays exact.
+    #
+    # Bisect rather than scan the token list per clause: that is
+    # quadratic in the number of delimited pairs, and "(a) " * 3200 --
+    # 4x test_benchmark's base, NOT a doubling -- measured a 14.1x cost
+    # against the 4.1x the same shape holds under a policy with no
+    # maiden_delimiters. The control is what says which unit a ratio is
+    # in: linear is ~4 for 4x the input and ~2 for a doubling, so a 4.1x
+    # control cannot be per doubling. Re-measured 2026-08-03 at 11.2x
+    # against 4.2x (3.2x against 2.1x per doubling) -- the separation
+    # replicates, the exact ratio moves with the runner. Same idiom,
+    # and the same reason, as _extract._overlaps and _tokenize's origin
+    # resolution. test_benchmark's maiden_pairs shape is the guard.
+    if any(role is Role.MAIDEN for role, _ in state.extracted):
+        starts = [t.span.start for t in tokens]
+        for role, clause in state.extracted:
+            if role is not Role.MAIDEN:
+                continue
+            # first token starting at or after the clause opens; tokens
+            # are span-sorted and group never reorders or resizes them
+            first = bisect.bisect_left(starts, clause.start)
+            # Testing the SECOND token's end proves BOTH are inside:
+            # tokens do not overlap, so first.end <= second.start, and
+            # bisect already put first.start at or after clause.start.
+            # That is also the "more than one token" test, since the
+            # tokens inside a clause are contiguous in index order.
+            if (first + 1 < len(tokens)
+                    and tokens[first + 1].span.end <= clause.end
+                    and "vocab:maiden-marker" in tokens[first].tags):
+                dropped.append(first)
     return dataclasses.replace(
         state, tokens=tuple(tokens), pieces=tuple(all_pieces),
         piece_tags=tuple(all_ptags), dropped=tuple(dropped),

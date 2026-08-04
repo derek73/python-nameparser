@@ -216,6 +216,40 @@ name_regex = "(?s)(?=.*[「」『』・･])(?=.*[\\u3005-\\u3006\\u3040-\\u309F
 fields = ["first", "last", "nickname"]
 
 [[change]]
+issue = "fix(cjk-fullwidth-paren-nickname) fullwidth-parenthesis recognition compounds with the CJK order flip"
+# '山田 花子（旧姓 佐藤）', which reached the corpus from the #329 case
+# table via build_cjk_corpus.py. It is NOT a #329 diff: that change is
+# gated on a non-empty Policy.maiden_delimiters and the harness runs
+# the default policy, where （） is a #273 NICKNAME delimiter. So the
+# same two intended changes as the rule above, with a different
+# delimiter pair -- 1.4 knew no fullwidth pair and read the brackets as
+# name text (first 山田 / middle '花子（旧姓' / last '佐藤）'), while 2.0
+# extracts the clause to `nickname` and the wholly-Han remainder left
+# behind takes the family-first flip.
+#
+# Its own rule rather than a widening of fix(cjk-delimited-nickname),
+# on both halves. That rule's `fields` deliberately exclude `middle`,
+# and this diff has one: the fullwidth clause is written flush against
+# the token before it, so 1.4's tokenizer left '花子（旧姓' as a single
+# middle-name word -- a spaced corner-bracket name never does that.
+# Adding `middle` there would pre-excuse a bare middle regression on
+# '山田「タロ」太郎'. Its delimiter set is separately pinned in
+# tests/v2/test_regex_sync.py as "its own decision surface", so
+# widening it is a deliberate act with a test to update, and there is
+# nothing to gain by making it here.
+#
+# Both lookaheads are required for the reason given on the rule above:
+# （） lives in Halfwidth and Fullwidth Forms, outside every classified
+# span, so a Latin name can carry it ('John （Jack） Kennedy') and the
+# delimiter alone would let this rule absorb a first/last regression on
+# one. The span class is the same hand copy of _SCRIPT_RANGES the rules
+# above carry, pinned by the same auto-discovering test. The slug
+# avoids the literal #271/#272 substrings the canonical-rule pin
+# selects by.
+name_regex = "(?s)(?=.*[（）])(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
+fields = ["first", "middle", "last", "nickname"]
+
+[[change]]
 issue = "fix(cjk-comma-compound) comma routing compounds with the CJK order flip"
 # '威廉·莎士比亚, PhD': one name, two intended changes at once -- the
 # post-comma lone-piece routing (fix(comma-family): v1 read PhD as

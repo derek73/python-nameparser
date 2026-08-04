@@ -193,9 +193,12 @@ CASES: tuple[Case, ...] = (
          policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
          notes="listing a pair in maiden_delimiters drops it from the "
                "effective nickname set (maiden wins, 2026-07-19) -- the "
-               "one-liner replaces the bucket-move idiom; the v1 facade "
-               "keeps v1's nickname-wins precedence via the shim's "
-               "pre-subtraction (pinned in test_config_shim)"),
+               "one-liner replaces the bucket-move idiom. The facade "
+               "runner reaches this row by making that same move, so "
+               "it agrees. What v1 does NOT agree on is a pair left in "
+               "BOTH buckets, which it gives to nickname; that spelling "
+               "is a different config, not this row, and is pinned in "
+               "test_config_shim"),
     # #269 follow-up: Arabic-script bound given names, mirroring the
     # Latin transliterations' behavior (probed live 2026-07-19: bound
     # join fires only with 3+ tokens, eats the NEXT token into given;
@@ -434,13 +437,19 @@ CASES: tuple[Case, ...] = (
          notes="旧姓 is default vocabulary, not pack data: a "
                "native-script marker cannot collide with a Latin-script "
                "name and matching is whole-token, the same rule that "
-               "admitted урожд. Reaches the SPACED form only -- Japanese "
-               "more often brackets the marker, and '山田（旧姓：佐藤）' "
-               "under maiden_delimiters still gives maiden '旧姓：佐藤', "
-               "marker and colon attached, because extract claims "
-               "delimited content before classify tags anything inside "
-               "it. Not a Japanese problem: 'Jane Smith (née Jones)' "
-               "keeps its marker the same way (#329). 1.4.0 read this "
+               "admitted урожд. Reaches a marker that is its own TOKEN. "
+               "Japanese more often brackets the marker and writes a "
+               "fullwidth colon after it, and '山田（旧姓：佐藤）' under "
+               "maiden_delimiters still gives maiden '旧姓：佐藤', marker "
+               "and colon attached -- not because the marker escapes "
+               "tagging (classify tags it fine wherever it is a token; "
+               "what #329 fixed was the CONSUMING, since group's #274 "
+               "rule walks pieces and a role-bearing token is not in "
+               "pieces) but because ：glues marker to name into a "
+               "single token, leaving nothing to drop. The spaced "
+               "bracketed form is pinned by "
+               "maiden_marker_kyusei_delimited below; the glued one "
+               "wants the head-peel #317 tracks. 1.4.0 read this "
                "first 山田花子 / middle 旧姓 / last 佐藤 -- the marker "
                "sat in the name"),
     Case("maiden_marker_kyusei_segmented", "山田 花子 旧姓 佐藤",
@@ -453,6 +462,233 @@ CASES: tuple[Case, ...] = (
                "pieces before it are what could have gone wrong. "
                "1.4.0 read this first 山田 / middle '花子 旧姓' / "
                "last 佐藤"),
+    Case("maiden_marker_delimited", "Jane Smith (née Jones)",
+         {"given": "Jane", "family": "Smith", "maiden": "Jones"},
+         policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
+         classification="fix(#329)",
+         notes="#329: the bracketed form now agrees with the bare "
+               "maiden_marker row above -- both give maiden 'Jones'. "
+               "Before, the marker rode along inside the value: "
+               "extract records the clause as a span (it makes no "
+               "tokens at all), tokenize gives the tokens it cuts "
+               "there Role.MAIDEN, and group's #274 consuming rule "
+               "walks pieces, which hold no role-bearing token; the "
+               "fix drops the marker inside the CLAUSE instead. The "
+               "facade runner reaches this row by performing the "
+               "bucket move itself, so it is exercised twice. 1.4.0 "
+               "expresses the policy the same way: "
+               "measured 2026-08-02 through the bucket-move idiom "
+               "maiden_delimiters['parenthesis'] = "
+               "nickname_delimiters.pop('parenthesis'), it gave first "
+               "Jane / last Smith / maiden 'née Jones' -- same name "
+               "fields, marker still inside the value, which is the "
+               "single field this change moves"),
+    Case("maiden_marker_delimited_unaccented", "Jane Smith (nee Jones)",
+         {"given": "Jane", "family": "Smith", "maiden": "Jones"},
+         policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
+         classification="fix(#329)",
+         notes="the row above with the marker spelled unaccented, and "
+               "it is the ONLY row in the suite whose value depends "
+               "on 'nee' being in the default MAIDEN_MARKERS: "
+               "everything else reaches the marker branch through "
+               "'née', 'geb' or '旧姓', or through a stage lexicon of "
+               "its own. Removing the entry now fails exactly this "
+               "row's two tests, one per runner (measured 2026-08-03); "
+               "before this row existed it left the whole suite green, "
+               "so the shipped spelling English writes most often was "
+               "one vocabulary edit from silence. 1.4.0 under the "
+               "bucket-move idiom gave first Jane / last Smith / "
+               "maiden 'nee Jones' (2026-08-03) -- the same diff the "
+               "accented row records, which is the point: the two "
+               "spellings behave alike on both sides"),
+    Case("maiden_marker_delimited_unmarked_content",
+         "Jane Smith (Mary Jones)",
+         {"given": "Jane", "family": "Smith", "maiden": "Mary Jones"},
+         policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
+         classification="parity",
+         notes="the row the rest of the #329 battery leaves out: a "
+               "multi-token clause whose first token is NOT a marker, "
+               "which keeps every one of its tokens. The clause-size "
+               "test and the marker-tag test are separate conditions, "
+               "and this shape is one of the two that separates them "
+               "-- with the tag test removed the pass eats the opening "
+               "word of every delimited maiden name ('Jones' here), "
+               "and five tests go red across this row and "
+               "maiden_marker_delimited_trailing_marker (measured "
+               "2026-08-03). What is this row's alone is that NO token "
+               "in its clause is a marker; the trailing-marker row has "
+               "one, just not first. Measured against "
+               "1.4.0 2026-08-03 through the bucket-move idiom "
+               "maiden_delimiters['parenthesis'] = "
+               "nickname_delimiters.pop('parenthesis'): first Jane / "
+               "last Smith / maiden 'Mary Jones', so #329 leaves this "
+               "input exactly where v1 had it"),
+    Case("maiden_marker_delimited_three_token_clause",
+         "Jane Smith (née Mary Jones)",
+         {"given": "Jane", "family": "Smith", "maiden": "Mary Jones"},
+         policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
+         classification="fix(#329)",
+         notes="the only clause in the battery holding THREE tokens, "
+               "which is what bounds the drop in both directions: it "
+               "takes the marker and stops. Every other delimited row "
+               "has a two-token clause, where 'the first token' and "
+               "'all but the last token' agree, so two opposite "
+               "mistakes both survive them -- restricting the drop to "
+               "a clause of exactly two tokens gives maiden 'née Mary "
+               "Jones' here (marker never dropped), and letting it eat "
+               "the token after the marker gives maiden 'Jones' "
+               "(a name eaten). Both measured 2026-08-03. 1.4.0 under "
+               "the bucket-move idiom "
+               "maiden_delimiters['parenthesis'] = "
+               "nickname_delimiters.pop('parenthesis') gave first Jane "
+               "/ last Smith / maiden 'née Mary Jones' (2026-08-03) -- "
+               "marker inside the value, the single field #329 moves"),
+    Case("maiden_marker_delimited_trailing_marker",
+         "Jane Smith (Jones née)",
+         {"given": "Jane", "family": "Smith", "maiden": "Jones née"},
+         policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
+         classification="parity",
+         notes="the drop takes the clause's FIRST token or nothing: a "
+               "marker anywhere else in the clause is content. Pinned "
+               "because the cheap generalization -- drop every marker "
+               "in the clause -- passes the whole battery above and "
+               "gives maiden 'Jones' here, and because no marker the "
+               "shipped vocabulary carries is written after the name "
+               "it marks. Measured against 1.4.0 2026-08-03 "
+               "through the bucket-move idiom: first Jane / last "
+               "Smith / maiden 'Jones née'"),
+    Case("maiden_marker_delimited_beside_a_nickname_clause",
+         'Jane "née Janie" Smith {née Jones}',
+         {"given": "Jane", "family": "Smith", "nickname": "née Janie",
+          "maiden": "Jones"},
+         policy=Policy(maiden_delimiters=frozenset({("{", "}")})),
+         classification="fix(#329)",
+         notes="the pass is scoped to MAIDEN clauses, and this is the "
+               "row that says so: two extracted clauses, both opening "
+               "with a marker word, and only the maiden one loses it. "
+               "Braces route to maiden here precisely so the default "
+               "nickname set survives untouched -- the parenthesis "
+               "rows above cannot show this, since Policy's "
+               "maiden-wins canonicalization would take ( ) away from "
+               "nickname. Without the role filter the nickname reads "
+               "'Janie'. 1.4.0 cannot express a brace delimiter at "
+               "all (its buckets hold the NAMES of compiled regexes "
+               "and there is no brace one; measured 2026-08-03, "
+               "maiden_delimiters['brace'] = ('{', '}') is accepted "
+               "and then raises ValueError('references unknown "
+               "regexes key') at parse time), so the "
+               "classification compares against its single reading, "
+               "first Jane / middle 'Smith {née' / last 'Jones}' / "
+               "nickname 'née Janie' -- braces as name text, the same "
+               "convention maiden_marker_kyusei_delimited uses for a "
+               "knob with no v1 spelling. The nickname agreed even "
+               "there"),
+    Case("maiden_marker_delimited_two_clauses",
+         "Jane Smith (Nee) (Jones)",
+         {"given": "Jane", "family": "Smith", "maiden": "Nee Jones"},
+         policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
+         classification="parity",
+         notes="the scoping pin for #329, and the row a simplification "
+               "would break: the drop is CLAUSE-scoped, so a one-token "
+               "clause keeps its token even when the next clause could "
+               "read as the name it marks. A neighbour-scoped rule -- "
+               "drop a marker whose successor is also maiden -- gives "
+               "'Jones' here, eating a real surname (Irish Ní/Nee, and "
+               "a Chinese romanization). Unaccented 'nee' is in the "
+               "default MAIDEN_MARKERS, so the 'Nee' token really is "
+               "tagged and the CLAUSE bound is the only thing keeping "
+               "it -- which is what makes this row kill a rule that "
+               "drops the bound. The VALUE does not depend on that "
+               "vocabulary entry, though: the clause test is checked "
+               "before the tag test, so 'nee' leaving MAIDEN_MARKERS "
+               "would leave this expectation green. "
+               "maiden_marker_delimited_unaccented above is the row "
+               "that fails when it goes. "
+               "Parity is measured, not inferred from the row being "
+               "untouched: 1.4.0 under the same bucket move gave first "
+               "Jane / last Smith / maiden 'Nee Jones' (2026-08-02), "
+               "so the two clauses joined with a space on that side "
+               "too -- the classification the facade runner checks "
+               "against, since it expresses this policy through the "
+               "same bucket move"),
+    Case("maiden_marker_delimited_content_free", "(née —)",
+         {},
+         policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
+         classification="fix(#329)",
+         notes="the drop can empty the WHOLE parse, and that is a "
+               "decision rather than fallout. assemble's content test "
+               "runs over the SURVIVING tokens, so once the marker "
+               "goes structural the em dash is the only one left, no "
+               "alnum character remains and every field clears -- "
+               "bool() False. Reachable only where a maiden clause is "
+               "the entire input and its non-marker tokens are pure "
+               "punctuation -- the same clause inside a name is "
+               "maiden_marker_delimited_content_free_in_a_name below. "
+               "Coherent with the model 2.0 "
+               "already had: a dropped marker is structural like a "
+               "delimiter character, and '(-)' empties on both sides "
+               "of this change. Structurally unreachable on the bare "
+               "#274 path, whose scan starts at piece 1, so a token "
+               "always survives ahead of the marker ('née —' gives "
+               "given 'née', family '—'). Do NOT restore the old value "
+               "with a guard on what else the clause holds: that is a "
+               "different rule, and it would leave maiden holding "
+               "marker-plus-punctuation. fix rather than parity "
+               "because 1.4.0 CAN express this policy and disagrees: "
+               "measured 2026-08-03 through the bucket-move idiom "
+               "maiden_delimiters['parenthesis'] = "
+               "nickname_delimiters.pop('parenthesis'), it gave maiden "
+               "'née —' and a truthy name, as pre-#329 did. The 2.0 "
+               "content rule already deviated from 1.4.0 here ('(-)' "
+               "is maiden '-' in 1.4.0); this change moves one more "
+               "input into its reach"),
+    Case("maiden_marker_delimited_content_free_in_a_name",
+         "Jane Smith (née —)",
+         {"given": "Jane", "family": "Smith", "maiden": "—"},
+         policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
+         classification="fix(#329)",
+         notes="the row above with a name in front of the clause, "
+               "which is what bounds the emptying: assemble's content "
+               "test is about the WHOLE parse, so a clause of "
+               "marker-plus-punctuation empties only a name that is "
+               "nothing else. Here Jane Smith carries the alnum "
+               "content and maiden keeps the em dash. Pinned because "
+               "the drop could plausibly have been widened to take the "
+               "clause's punctuation with the marker -- that mutation "
+               "gives maiden '' here (measured 2026-08-03) and leaves "
+               "the row above green, since both readings empty a parse "
+               "that is only the clause. 1.4.0 under the bucket-move "
+               "idiom gave first Jane / last Smith / maiden 'née —' "
+               "(2026-08-03)"),
+    Case("maiden_marker_kyusei_delimited", "山田 花子（旧姓 佐藤）",
+         {"given": "花子", "family": "山田", "maiden": "佐藤"},
+         policy=Policy(
+             maiden_delimiters=frozenset({("(", ")"), ("（", "）")})),
+         classification="fix(#329)",
+         notes="the Japanese bracketed form that #329 reaches: the "
+               "marker is spaced off inside fullwidth brackets, so it "
+               "is a token of its own and the clause-scoped drop "
+               "applies. The form Japanese more often writes puts a "
+               "fullwidth colon after the marker instead, and "
+               "'山田（旧姓：佐藤）' is ONE token -- nothing reaches it, "
+               "and it wants the head-peel #317 tracks (see "
+               "maiden_marker_kyusei above). Unlike its two Latin "
+               "siblings, 1.4.0 cannot express this policy at all: v1's "
+               "delimiter buckets hold the NAMES of compiled regexes, "
+               "and no fullwidth pair is among them (#273 added it), so "
+               "maiden_delimiters['fullwidth_parenthesis'] = ('（', '）') "
+               "raises ValueError('references unknown regexes key') at "
+               "parse time. The classification therefore compares "
+               "against 1.4.0's single reading, first 山田 / middle "
+               "'花子（旧姓' / last '佐藤）' -- the brackets were name "
+               "text -- the same convention "
+               "ko_honorific_period_under_strict_comma_suffixes uses "
+               "for a knob with no v1 spelling. That reading is also "
+               "what the differential harness sees, since it runs the "
+               "corpus under the DEFAULT policy where （） is a #273 "
+               "NICKNAME delimiter and nothing in #329 is reachable; "
+               "the diff is classified there under "
+               "fix(cjk-fullwidth-paren-nickname)"),
     Case("east_slavic", "Сидоров Иван Петрович",
          {"given": "Иван", "middle": "Петрович", "family": "Сидоров"},
          policy=_ES),

@@ -246,6 +246,45 @@ class MaidenNameTestCase(HumanNameTestBase):
         self.m(hn.suffix, "Jr.", hn)
         self.m(hn.maiden, "", hn)
 
+    def test_marker_inside_maiden_parenthesis_is_consumed(self) -> None:
+        # #329 through the v1 API, which is where the release log
+        # promises it. The facade runner covers the same ground by
+        # translating the shared case table, but it decides for itself
+        # which rows it can express -- when that gate was wrong these
+        # rows silently skipped, so a test that spells the v1 idiom out
+        # directly is what keeps the promise pinned independently of it.
+        # Same value as the bare "Jane Smith née Jones", which is the
+        # agreement #329 was about.
+        C = Constants()
+        C.maiden_delimiters['parenthesis'] = C.nickname_delimiters.pop('parenthesis')
+        hn = HumanName("Jane Smith (née Jones)", constants=C)
+        self.m(hn.first, "Jane", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.maiden, "Jones", hn)
+
+    def test_unmarked_maiden_parenthesis_keeps_every_word(self) -> None:
+        # The other side of the same rule: the drop is conditioned on
+        # the first word being a marker, so ordinary two-word content
+        # arrives whole.
+        C = Constants()
+        C.maiden_delimiters['parenthesis'] = C.nickname_delimiters.pop('parenthesis')
+        hn = HumanName("Jane Smith (Mary Jones)", constants=C)
+        self.m(hn.first, "Jane", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.maiden, "Mary Jones", hn)
+
+    def test_lone_marker_word_in_its_own_parenthesis_is_a_name(self) -> None:
+        # `Nee` is a real surname (Irish Ní/Nee, and a Chinese
+        # romanization), so a one-word clause is content whatever it
+        # spells -- even with a second clause following that could read
+        # as the name it marks.
+        C = Constants()
+        C.maiden_delimiters['parenthesis'] = C.nickname_delimiters.pop('parenthesis')
+        hn = HumanName("Jane Smith (Nee) (Jones)", constants=C)
+        self.m(hn.first, "Jane", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.maiden, "Nee Jones", hn)
+
     def test_maiden_appears_in_as_dict_via_routing(self) -> None:
         C = Constants()
         C.maiden_delimiters['parenthesis'] = C.nickname_delimiters.pop('parenthesis')

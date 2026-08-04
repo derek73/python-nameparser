@@ -2,10 +2,11 @@ from nameparser._lexicon import Lexicon
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._group import group
+from nameparser._pipeline._script_segment import script_segment
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import ParseState
 from nameparser._pipeline._tokenize import tokenize
-from nameparser._policy import Policy
+from nameparser._policy import Policy, Script
 from nameparser._types import Role
 
 _LEX = Lexicon(
@@ -121,6 +122,96 @@ def test_leading_marker_is_not_consumed() -> None:
     # "née Jones" alone: marker at piece 0 has no name before it
     out = _grouped("née Jones")
     assert _piece_texts(out) == [["née", "Jones"]]
+
+
+_MAIDEN_PARENS = Policy(maiden_delimiters=frozenset({("(", ")")}))
+#: `nee` a marker AND `Nee` a surname in one vocabulary -- the collision
+#: the clause-size guard exists for. _LEX alone leaves `Nee` untagged,
+#: which would let the guard tests pass under every mutant.
+_NEE_LEX = _LEX.add(maiden_markers=frozenset({"nee"}))
+
+
+def test_delimited_marker_is_dropped() -> None:
+    """#329: the marker IS tagged -- classify reaches it like any other
+    token. What it never enters is `pieces`: extract claims the clause
+    and its tokens carry Role.MAIDEN from tokenize, so segment keeps
+    them out of the main stream. The #274 rule above walks pieces, so
+    the tag alone does it no good."""
+    out = _grouped("Jane Smith (née Jones)", policy=_MAIDEN_PARENS)
+    maiden = [t.text for i, t in enumerate(out.tokens)
+              if t.role is Role.MAIDEN and i not in out.dropped]
+    assert maiden == ["Jones"]
+    née_idx = next(i for i, t in enumerate(out.tokens) if t.text == "née")
+    assert née_idx in out.dropped
+
+
+def test_lone_delimited_marker_is_kept_when_a_clause_follows() -> None:
+    """The clause-size guard, and it is load-bearing rather than
+    defensive: `Nee` is a real surname (Irish Ni/Nee, and a Chinese
+    romanization), so a one-token clause is a maiden NAME, not a marker.
+
+    The trailing "(Jones)" is what makes this pin the guard. With
+    "(Nee)" alone the marker is also the last token in the string, so a
+    rule that merely checked for a following token would keep it too
+    and the mutant would live. Here a token does follow -- only the
+    CLAUSE bound distinguishes them."""
+    out = _grouped("Jane Smith (Nee) (Jones)", policy=_MAIDEN_PARENS,
+                   lexicon=_NEE_LEX)
+    kept = [t.text for i, t in enumerate(out.tokens)
+            if t.role is Role.MAIDEN and i not in out.dropped]
+    assert kept == ["Nee", "Jones"]
+
+
+def test_marker_in_the_bare_form_is_left_to_the_piece_rule() -> None:
+    """#274 sets Role.MAIDEN on consumed tokens itself, so a maiden role
+    is NOT proof that extract produced it. Keying this pass on
+    state.extracted spans is what keeps it off the bare path -- a
+    neighbour test would eat the `Nee` here, the very surname the guard
+    above exists to protect.
+
+    Reads inert and is not: deleting the #329 pass outright leaves this
+    green, because the value comes from #274's piece rule and the pass
+    never touches the bare path. What it kills is a SPELLING of the
+    pass -- drop a maiden marker whose next token is also maiden, the
+    form this fix originally took -- and nothing else here covers the
+    bare path against it. Checked both ways 2026-08-03."""
+    out = _grouped("Jane Smith nee Nee Jones", lexicon=_NEE_LEX)
+    kept = [t.text for i, t in enumerate(out.tokens)
+            if t.role is Role.MAIDEN and i not in out.dropped]
+    assert kept == ["Nee", "Jones"]
+
+
+def test_every_delimited_marker_is_dropped_not_only_the_first() -> None:
+    """Two maiden clauses land as ONE contiguous run of maiden-role
+    tokens, so a rule keyed on the run would strip the first marker and
+    keep the second. Each clause is scoped separately, so each loses its
+    own leading marker."""
+    out = _grouped("Jane Smith (née Jones) (geb Braun)",
+                   policy=_MAIDEN_PARENS)
+    kept = [t.text for i, t in enumerate(out.tokens)
+            if t.role is Role.MAIDEN and i not in out.dropped]
+    assert kept == ["Jones", "Braun"]
+
+
+def test_clause_containment_survives_script_segmentation() -> None:
+    """The #329 pass finds the clause's first token by SPAN, and the
+    comment on it rests that on script_segment only ever cutting a
+    token into sub-slices. _grouped omits that stage, so this is the
+    one place the two meet: 王小明 becomes 王 + 小明 before group runs,
+    which shifts every token index after it while the spans stay
+    exact, and the marker is still the token the clause drops."""
+    lex = Lexicon(surnames=frozenset({"王"}),
+                  maiden_markers=frozenset({"旧姓"}))
+    policy = Policy(segment_scripts=frozenset({Script.HAN}),
+                    maiden_delimiters=frozenset({("（", "）")}))
+    state = ParseState(original="王小明（旧姓 李四）", lexicon=lex,
+                       policy=policy)
+    out = group(classify(script_segment(segment(
+        tokenize(extract_delimited(state))))))
+    assert [t.text for t in out.tokens] == ["王", "小明", "旧姓", "李四"]
+    kept = [t.text for i, t in enumerate(out.tokens)
+            if t.role is Role.MAIDEN and i not in out.dropped]
+    assert kept == ["李四"]
 
 
 def test_initials_do_not_count_as_rootnames_for_conjunction_carveout() -> None:
