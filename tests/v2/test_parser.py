@@ -431,6 +431,22 @@ def test_revise_sub_parse_structural_behavior() -> None:
     assert p.revise(n, family="Smith (Jones").ambiguities == ()
 
 
+def test_revise_sub_parses_under_this_parsers_policy() -> None:
+    # the sub-parse runs on SELF, not on a default Parser: revise's
+    # docstring promises a marker LEADING a delimited value is
+    # consumed, and only a policy routing that pair to maiden makes
+    # the value delimited at all. Sub-parsing with Parser() instead
+    # leaves the rest of the suite green -- every other revise
+    # assertion uses a default parser, so nothing else can tell the
+    # two apart.
+    p = Parser(policy=Policy(maiden_delimiters=frozenset({("(", ")")})))
+    n = p.parse("John Smith")
+    assert p.revise(n, family="(née Jones)").family == "Jones"
+    # and the third leg: a leading marker in an UNDELIMITED value is
+    # no marker at all, so the same words keep it (#329)
+    assert p.revise(n, family="née Jones").family == "née Jones"
+
+
 def test_revise_forces_the_named_role_on_every_harvested_token() -> None:
     # the sub-parse reads "Dr." as a title and "Jr." as a suffix; the
     # named field's role must win for every token or the family view
