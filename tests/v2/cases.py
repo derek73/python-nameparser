@@ -434,13 +434,19 @@ CASES: tuple[Case, ...] = (
          notes="旧姓 is default vocabulary, not pack data: a "
                "native-script marker cannot collide with a Latin-script "
                "name and matching is whole-token, the same rule that "
-               "admitted урожд. Reaches the SPACED form only -- Japanese "
-               "more often brackets the marker, and '山田（旧姓：佐藤）' "
-               "under maiden_delimiters still gives maiden '旧姓：佐藤', "
-               "marker and colon attached, because extract claims "
-               "delimited content before classify tags anything inside "
-               "it. Not a Japanese problem: 'Jane Smith (née Jones)' "
-               "keeps its marker the same way (#329). 1.4.0 read this "
+               "admitted урожд. Reaches a marker that is its own TOKEN. "
+               "Japanese more often brackets the marker and writes a "
+               "fullwidth colon after it, and '山田（旧姓：佐藤）' under "
+               "maiden_delimiters still gives maiden '旧姓：佐藤', marker "
+               "and colon attached -- not because the marker escapes "
+               "tagging (classify tags it fine wherever it is a token; "
+               "what #329 fixed was the CONSUMING, since group's #274 "
+               "rule walks pieces and a role-bearing token is not in "
+               "pieces) but because ：glues marker to name into a "
+               "single token, leaving nothing to drop. The spaced "
+               "bracketed form is pinned by "
+               "maiden_marker_kyusei_delimited below; the glued one "
+               "wants the head-peel #317 tracks. 1.4.0 read this "
                "first 山田花子 / middle 旧姓 / last 佐藤 -- the marker "
                "sat in the name"),
     Case("maiden_marker_kyusei_segmented", "山田 花子 旧姓 佐藤",
@@ -453,6 +459,76 @@ CASES: tuple[Case, ...] = (
                "pieces before it are what could have gone wrong. "
                "1.4.0 read this first 山田 / middle '花子 旧姓' / "
                "last 佐藤"),
+    Case("maiden_marker_delimited", "Jane Smith (née Jones)",
+         {"given": "Jane", "family": "Smith", "maiden": "Jones"},
+         policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
+         classification="fix(#329)",
+         notes="#329: the bracketed form now agrees with the bare "
+               "maiden_marker row above -- both give maiden 'Jones'. "
+               "Before, extract assigned the whole clause Role.MAIDEN "
+               "and the marker rode along, because group's #274 "
+               "consuming rule walks pieces and a role-bearing token "
+               "is not in pieces; the fix drops the marker inside the "
+               "CLAUSE instead. The facade cannot express this policy "
+               "(the shim's pre-subtraction trips maiden_via_sentinel, "
+               "so its runner skips the row, as it does "
+               "maiden_delimiters_win_when_shared), but 1.4.0 CAN: "
+               "measured 2026-08-02 through the bucket-move idiom "
+               "maiden_delimiters['parenthesis'] = "
+               "nickname_delimiters.pop('parenthesis'), it gave first "
+               "Jane / last Smith / maiden 'née Jones' -- same name "
+               "fields, marker still inside the value, which is the "
+               "single field this change moves"),
+    Case("maiden_marker_delimited_two_clauses",
+         "Jane Smith (Nee) (Jones)",
+         {"given": "Jane", "family": "Smith", "maiden": "Nee Jones"},
+         policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
+         classification="parity",
+         notes="the scoping pin for #329, and the row a simplification "
+               "would break: the drop is CLAUSE-scoped, so a one-token "
+               "clause keeps its token even when the next clause could "
+               "read as the name it marks. A neighbour-scoped rule -- "
+               "drop a marker whose successor is also maiden -- gives "
+               "'Jones' here, eating a real surname (Irish Ní/Nee, and "
+               "a Chinese romanization). Unaccented 'nee' is in the "
+               "default MAIDEN_MARKERS, so this row genuinely exercises "
+               "the marker branch; the local lexicon in "
+               "tests/v2/pipeline/test_group.py does not carry it. "
+               "Parity is measured, not inferred from the row being "
+               "untouched: 1.4.0 under the same bucket move gave first "
+               "Jane / last Smith / maiden 'Nee Jones' (2026-08-02), "
+               "so the two clauses joined with a space on that side "
+               "too -- the classification the facade runner would have "
+               "checked had the shim let it express the policy"),
+    Case("maiden_marker_kyusei_delimited", "山田 花子（旧姓 佐藤）",
+         {"given": "花子", "family": "山田", "maiden": "佐藤"},
+         policy=Policy(
+             maiden_delimiters=frozenset({("(", ")"), ("（", "）")})),
+         classification="fix(#329)",
+         notes="the Japanese bracketed form that #329 reaches: the "
+               "marker is spaced off inside fullwidth brackets, so it "
+               "is a token of its own and the clause-scoped drop "
+               "applies. The form Japanese more often writes puts a "
+               "fullwidth colon after the marker instead, and "
+               "'山田（旧姓：佐藤）' is ONE token -- nothing reaches it, "
+               "and it wants the head-peel #317 tracks (see "
+               "maiden_marker_kyusei above). Unlike its two Latin "
+               "siblings, 1.4.0 cannot express this policy at all: v1's "
+               "delimiter buckets hold the NAMES of compiled regexes, "
+               "and no fullwidth pair is among them (#273 added it), so "
+               "maiden_delimiters['fullwidth_parenthesis'] = ('（', '）') "
+               "raises ValueError('references unknown regexes key') at "
+               "parse time. The classification therefore compares "
+               "against 1.4.0's single reading, first 山田 / middle "
+               "'花子（旧姓' / last '佐藤）' -- the brackets were name "
+               "text -- the same convention "
+               "ko_honorific_period_under_strict_comma_suffixes uses "
+               "for a knob with no v1 spelling. That reading is also "
+               "what the differential harness sees, since it runs the "
+               "corpus under the DEFAULT policy where （） is a #273 "
+               "NICKNAME delimiter and nothing in #329 is reachable; "
+               "the diff is classified there under "
+               "fix(cjk-fullwidth-paren-nickname)"),
     Case("east_slavic", "Сидоров Иван Петрович",
          {"given": "Иван", "middle": "Петрович", "family": "Сидоров"},
          policy=_ES),
