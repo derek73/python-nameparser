@@ -69,10 +69,14 @@ def _constants_for(case: Case) -> Constants | None:
     if policy.extra_suffix_delimiters:
         c.suffix_delimiter = next(iter(policy.extra_suffix_delimiters))
     if maiden_via_sentinel:
-        # bucket-move idiom (see _DelimiterManager docstring): adds
-        # parenthesis to maiden while nickname keeps its own default
-        # (which already includes parenthesis) -- the nickname reading
-        # still wins on a shared delimiter, matching the row's Policy.
+        # Unreachable, and wrong if reached: this ADDS parenthesis to
+        # maiden while nickname keeps its also-parenthesis-holding
+        # default, and v1 gives a shared pair to nickname. Measured on
+        # "Baker (Johnson), Jenny": nickname Johnson, maiden empty --
+        # the opposite of the row. The bucket-MOVE spelling used in
+        # tests/test_nicknames.py does match (nickname empty, maiden
+        # Johnson), so reviving this branch means popping the pair out
+        # of nickname, not adding it to maiden.
         c.maiden_delimiters["parenthesis"] = "parenthesis"
     return c
 
