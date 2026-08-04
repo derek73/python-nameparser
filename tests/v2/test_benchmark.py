@@ -187,8 +187,10 @@ _POLICY_SHAPES: dict[str, tuple[str, Parser, Callable[[Parser], bool]]] = {
 def test_shape_tables_are_not_empty() -> None:
     # pytest turns an EMPTY parametrize into a SKIP, not a failure, so
     # deleting the last entry of either table would retire its guard
-    # into the skip count with nothing going red. _POLICY_SHAPES has
-    # one entry and is the live risk.
+    # into the skip count with nothing going red. _POLICY_SHAPES is
+    # the nearer risk, holding only shapes whose stage a default parse
+    # cannot reach at all -- so it gains an entry only when an opt-in
+    # Policy field turns out to have a scaling cliff behind it.
     assert _SHAPES
     assert _POLICY_SHAPES
 

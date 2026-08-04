@@ -251,9 +251,12 @@ listed below.
        instead, and drops them from the effective nickname set. A
        marker word opening the enclosed content is dropped from the
        value, so ``"Jane Smith (née Jones)"`` gives maiden ``Jones``
-       — but only where that content holds more than one word, since
-       a lone ``"(Nee)"`` is a maiden name rather than a marker.
-       Defaults to empty — see the routing example below.
+       — but only where that content holds more than one *token*,
+       since a lone ``"(Nee)"`` is a maiden name rather than a
+       marker. Tokens, not words: a marker written against the name
+       it marks is one token with them, so ``"山田花子（旧姓佐藤）"``
+       keeps its ``旧姓``. Defaults to empty — see the routing
+       example below.
    * - ``extra_suffix_delimiters``
      - ``frozenset[str]``
      - Adds separators that split suffix groups, e.g. ``" - "`` for
