@@ -517,6 +517,26 @@ CASES: tuple[Case, ...] = (
                "nickname_delimiters.pop('parenthesis'): first Jane / "
                "last Smith / maiden 'Mary Jones', so #329 leaves this "
                "input exactly where v1 had it"),
+    Case("maiden_marker_delimited_three_token_clause",
+         "Jane Smith (née Mary Jones)",
+         {"given": "Jane", "family": "Smith", "maiden": "Mary Jones"},
+         policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
+         classification="fix(#329)",
+         notes="the only clause in the battery holding THREE tokens, "
+               "which is what bounds the drop in both directions: it "
+               "takes the marker and stops. Every other delimited row "
+               "has a two-token clause, where 'the first token' and "
+               "'all but the last token' agree, so two opposite "
+               "mistakes both survive them -- restricting the drop to "
+               "a clause of exactly two tokens gives maiden 'née Mary "
+               "Jones' here (marker never dropped), and letting it eat "
+               "the token after the marker gives maiden 'Jones' "
+               "(a name eaten). Both measured 2026-08-03. 1.4.0 under "
+               "the bucket-move idiom "
+               "maiden_delimiters['parenthesis'] = "
+               "nickname_delimiters.pop('parenthesis') gave first Jane "
+               "/ last Smith / maiden 'née Mary Jones' (2026-08-03) -- "
+               "marker inside the value, the single field #329 moves"),
     Case("maiden_marker_delimited_trailing_marker",
          "Jane Smith (Jones née)",
          {"given": "Jane", "family": "Smith", "maiden": "Jones née"},
@@ -596,8 +616,9 @@ CASES: tuple[Case, ...] = (
                "alnum character remains and every field clears -- "
                "bool() False. Reachable only where a maiden clause is "
                "the entire input and its non-marker tokens are pure "
-               "punctuation; 'Jane Smith (née —)' keeps given Jane / "
-               "family Smith / maiden '—'. Coherent with the model 2.0 "
+               "punctuation -- the same clause inside a name is "
+               "maiden_marker_delimited_content_free_in_a_name below. "
+               "Coherent with the model 2.0 "
                "already had: a dropped marker is structural like a "
                "delimiter character, and '(-)' empties on both sides "
                "of this change. Structurally unreachable on the bare "
@@ -615,6 +636,24 @@ CASES: tuple[Case, ...] = (
                "content rule already deviated from 1.4.0 here ('(-)' "
                "is maiden '-' in 1.4.0); this change moves one more "
                "input into its reach"),
+    Case("maiden_marker_delimited_content_free_in_a_name",
+         "Jane Smith (née —)",
+         {"given": "Jane", "family": "Smith", "maiden": "—"},
+         policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
+         classification="fix(#329)",
+         notes="the row above with a name in front of the clause, "
+               "which is what bounds the emptying: assemble's content "
+               "test is about the WHOLE parse, so a clause of "
+               "marker-plus-punctuation empties only a name that is "
+               "nothing else. Here Jane Smith carries the alnum "
+               "content and maiden keeps the em dash. Pinned because "
+               "the drop could plausibly have been widened to take the "
+               "clause's punctuation with the marker -- that mutation "
+               "gives maiden '' here (measured 2026-08-03) and leaves "
+               "the row above green, since both readings empty a parse "
+               "that is only the clause. 1.4.0 under the bucket-move "
+               "idiom gave first Jane / last Smith / maiden 'née —' "
+               "(2026-08-03)"),
     Case("maiden_marker_kyusei_delimited", "山田 花子（旧姓 佐藤）",
          {"given": "花子", "family": "山田", "maiden": "佐藤"},
          policy=Policy(
