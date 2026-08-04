@@ -366,7 +366,11 @@ def group(state: ParseState) -> ParseState:
     # Drop the clause's FIRST token only when the clause holds more
     # than one: `Nee` is a real surname (Irish Ni/Nee, and a Chinese
     # romanization), so a one-token "(Nee)" is a maiden name, not a
-    # marker. Spans index the original string by the anti-#100
+    # marker. FIRST token and no more, whatever the clause holds past
+    # it: cases.py's maiden_marker_delimited_three_token_clause is the
+    # row that bounds this in both directions, every other delimited
+    # row having a two-token clause where the two readings agree.
+    # Spans index the original string by the anti-#100
     # invariant, and script_segment only ever splits a token into
     # sub-slices, so containment stays exact.
     #

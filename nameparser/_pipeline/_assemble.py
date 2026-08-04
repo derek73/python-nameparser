@@ -51,7 +51,10 @@ def assemble(state: ParseState) -> ParsedName:
     # plus a dash name no one, exactly as "(-)" already named no one.
     # A guard keyed on what ELSE is in the clause would be a different
     # rule, and would leave maiden holding marker-plus-punctuation.
-    # Pinned by cases.py's maiden_marker_delimited_content_free.
+    # Pinned by cases.py's maiden_marker_delimited_content_free and,
+    # for the other side of it -- the same clause inside a name, where
+    # the em dash survives as the maiden value because Jane Smith
+    # carries the content -- ..._content_free_in_a_name beside it.
     #
     # The TOKENS go, not the diagnostics: this drops the name, and
     # "was the input malformed?" is the one question still worth
