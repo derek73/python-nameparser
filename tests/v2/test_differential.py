@@ -302,7 +302,7 @@ def test_ambiguities_is_a_legal_field_name() -> None:
         [{"issue": "x", "fields": ["_ambiguities"]}], "ledger.toml")
 
 
-def _run_main(tmp_path, monkeypatch, ledger_body: str,
+def _run_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ledger_body: str,
               baseline_facade: dict) -> tuple[int, str]:
     """Drive main() end to end with a faked baseline worker.
 
@@ -339,7 +339,7 @@ _DIFFERS = {"title": "", "first": "John", "middle": "", "last": "SMYTHE",
 
 
 def test_main_exits_1_and_reports_an_unclassified_diff(
-        tmp_path, monkeypatch) -> None:
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The gate's entire verdict. Nothing else pins it: mutating the
     return to a bare 0 leaves every other test in this file passing,
     and the harness would report unexplained diffs on stdout while
@@ -352,7 +352,7 @@ def test_main_exits_1_and_reports_an_unclassified_diff(
 
 
 def test_main_reports_the_unexplained_field_under_its_role_name(
-        tmp_path, monkeypatch) -> None:
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The block exists to be copy-pasted into a ledger rule, so the
     label it prints must be the label a rule needs. The facade calls
     this role `last`; a rule saying `last` never matches."""
@@ -363,7 +363,7 @@ def test_main_reports_the_unexplained_field_under_its_role_name(
 
 
 def test_main_exits_0_when_every_diff_is_claimed(
-        tmp_path, monkeypatch) -> None:
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     code, out = _run_main(
         tmp_path, monkeypatch,
         '[[change]]\nissue = "claimed"\nfields = ["family"]\n', _DIFFERS)
@@ -373,7 +373,7 @@ def test_main_exits_0_when_every_diff_is_claimed(
 
 
 def test_main_validates_the_ledger_before_running_anything(
-        tmp_path, monkeypatch) -> None:
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """validate_rules has its own tests; this pins that main CALLS it.
     Deleting the call leaves those tests passing while a match-anything
     rule shadows the ledger."""
@@ -383,7 +383,7 @@ def test_main_validates_the_ledger_before_running_anything(
 
 
 def test_main_sorts_rules_so_file_order_is_not_load_bearing(
-        tmp_path, monkeypatch) -> None:
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A broad fields-only rule written FIRST must not claim a diff the
     specific name_regex rule below it owns. Deleting main's
     _sorted_rules call leaves _sorted_rules' own test passing."""
@@ -395,7 +395,7 @@ def test_main_sorts_rules_so_file_order_is_not_load_bearing(
 
 
 def test_check_tree_accepts_the_checkout_and_rejects_anything_else(
-        tmp_path) -> None:
+        tmp_path: Path) -> None:
     """The tree side is the half that had no proof at all: the baseline
     gets a pinned wheel, a temp dir and a version tell, while the tree
     was a bare import trusted on sight."""
@@ -406,7 +406,7 @@ def test_check_tree_accepts_the_checkout_and_rejects_anything_else(
 
 
 def test_main_aborts_when_the_tree_side_is_not_the_checkout(
-        tmp_path, monkeypatch) -> None:
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Pins that main CALLS the tree check, not merely that the check
     works. Measured 2026-08-05: with a released 2.0.0 on PYTHONPATH,
     compare.py imported THAT and reported `intentional diffs: 0`,
@@ -424,7 +424,8 @@ def test_main_aborts_when_the_tree_side_is_not_the_checkout(
                   '[[change]]\nissue = "x"\nname_regex = "ZZZ"\n', _DIFFERS)
 
 
-def test_worker_env_strips_the_import_path_overrides(monkeypatch) -> None:
+def test_worker_env_strips_the_import_path_overrides(
+        monkeypatch: pytest.MonkeyPatch) -> None:
     """PEP 723 isolation does not survive PYTHONPATH -- it precedes
     site-packages, so a directory named there shadows the pinned wheel
     inside uv's own environment."""
