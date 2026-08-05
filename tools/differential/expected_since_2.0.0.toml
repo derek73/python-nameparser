@@ -29,8 +29,10 @@ issue = "fix(#271/#272/#298) native-script CJK: family-first order, hangul segme
 # where the one _ambiguities diff in the run comes from -- 남궁민수 now
 # reports SEGMENTATION, a kind 2.0 did not have. '高橋 みなみ' and
 # '山田 エミ' take the same order rule under the kana license (#272),
-# while wholly-katakana '마이클·잭슨'-shaped transcriptions stay
-# positional and merely divide. The two dots divide tokens: the
+# while a wholly-katakana transcription ('マイケル・ジャクソン') is
+# excluded from the kana license and stays positional. A hangul
+# transcription like '마이클·잭슨' is a different mechanism -- it
+# divides on the 间隔号 below and its pieces then read positionally. The two dots divide tokens: the
 # nakaguro ・/･ unconditionally (#272) and the 间隔号 · between
 # classified-script characters (#298), so 'マイケル・ジャクソン',
 # '威廉·莎士比亚' and '马丁·路德·金' come apart where 2.0 held one
@@ -98,12 +100,14 @@ issue = "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into s
 # one, and admitting it would pre-excuse a middle regression that the
 # spaced rule below legitimately has.
 #
-# Sits AHEAD of the spaced rule on purpose: '선생님, J.씨' opens with a
-# spaced honorific and ends with a glued one, and it is the glued 씨
-# that moves. File order is the only thing that decides which label it
-# reports under, both rules being in the name_regex tier. That
-# ordering also decides '田中さん 様.' and '田中さん, 様.', which carry
-# both shapes for real; the glued さん is the piece #308 moves.
+# Sits AHEAD of the spaced rule on purpose. Three names match BOTH
+# rules -- '田中さん 様.', '田中さん, 様.' and '김민준 박사님' -- and
+# both rules are in the name_regex tier, so file order is the only
+# thing deciding which label they report under (measured 2026-08-05).
+# The glued さん is the piece #308 moves, so this label is the true one.
+# ('선생님, J.씨' is NOT one of them: it opens with a spaced honorific
+# at index 0, which this file's spaced rule deliberately no longer
+# matches, so only this rule claims it and no ordering is involved.)
 #
 # One name lands here that is spaced, and it is left that way: the
 # SPACED '김민준 박사님' matches on its 님, which sits glued to 사
@@ -123,7 +127,9 @@ issue = "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix"
 # moves to `suffix` where the family-first default of 2.1 would
 # otherwise have made it the given name. #308 added さん, さま, くん,
 # ちゃん, 殿, 님 and 박사님 to that vocabulary, so their spaced forms
-# ('田中 さん', '김민준 박사님') move here too, and #320 lets a trailing
+# ('田中 さん') move here too -- though not '김민준 박사님', which the
+# glued rule above claims first on its 님; see the note there. #320
+# lets a trailing
 # ASCII period through ('김민준 씨.', '김민준 양.').
 #
 # Whole-token on the name STRING -- preceded by a space or comma,
@@ -132,8 +138,11 @@ issue = "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix"
 # explain: unanchored, any name ENDING in 양 or 군 would match, and a
 # real suffix regression on the glued given name '김지양' would be
 # absorbed as intentional. The alternation is the CJK half of
-# SUFFIX_NOT_ACRONYMS, written longest-first so '김민준 박사님' matches
-# 박사님 rather than stalling on 박사.
+# SUFFIX_NOT_ACRONYMS. It is written longest-first for readability,
+# not for correctness: the trailing `(?=$|[ ,])` forces backtracking
+# out of a short alternative, so '박사|박사님' matches '박사님' too
+# (measured 2026-08-05, and the 1.4 ledger's twin lists them in that
+# order and works).
 #
 # The leading `^` alternative this rule used to carry has been REMOVED,
 # because it reopened at the head exactly the hole the tail anchor

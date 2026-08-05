@@ -243,3 +243,194 @@ def test_v2_fields_matches_the_Role_enum() -> None:
     is invisible on the v2 surface -- silent under-coverage, exit 0."""
     from nameparser import Role
     assert compare.V2_FIELDS == tuple(str(r) for r in Role)
+
+
+# The malformed-rule family. Every row is a way a rule can silently
+# match MORE than its author meant, which is how a real regression
+# becomes a classified diff and a green run. Parametrized rather than
+# written one-by-one because a guard added to one member of this family
+# belongs on all of it.
+@pytest.mark.parametrize("rule,expect", [
+    ({}, "no string 'issue'"),
+    ({"issue": ""}, "no string 'issue'"),
+    ({"issue": "x"}, "neither 'name_regex' nor 'fields'"),
+    # a misspelled key is not ignored -- it deletes that half of the
+    # narrowing and the rule matches on the other half alone
+    ({"issue": "x", "name_regex": ",", "field": ["given"]}, "unknown key"),
+    # wrong types: classify skips them, so the rule silently widens
+    ({"issue": "x", "name_regex": ["a"], "fields": ["given"]},
+     "non-string 'name_regex'"),
+    ({"issue": "x", "name_regex": "a", "fields": "given"},
+     "not a list of strings"),
+    # an empty pattern matches every name, and name_regex rules sort
+    # FIRST, so it would shadow the whole ledger
+    ({"issue": "x", "name_regex": ""}, "matches the empty string"),
+    ({"issue": "x", "name_regex": "(?:)"}, "matches the empty string"),
+    # uncompilable: without this it raises mid-run, after the worker
+    ({"issue": "x", "name_regex": "Smith("}, "invalid 'name_regex'"),
+    ({"issue": "x", "fields": []}, "empty 'fields'"),
+    ({"issue": "x", "fields": ["famly"]}, "not roles"),
+    # facade vocabulary is not role vocabulary; it would never match
+    ({"issue": "x", "fields": ["first"]}, "not roles"),
+    ({"issue": "x", "fields": ["title", "given", "middle", "family",
+                               "suffix", "nickname", "maiden",
+                               "_ambiguities"]}, "every role"),
+])
+def test_validate_rules_rejects_a_rule_that_would_silently_widen(
+        rule: dict, expect: str) -> None:
+    with pytest.raises(SystemExit, match=expect):
+        compare.validate_rules([rule], "expected_since_2.0.0.toml")
+
+
+def test_validate_rules_accepts_the_shipped_ledgers() -> None:
+    """The guards above must not be so strict they reject real rules."""
+    import tomllib
+    ledgers = sorted(_TOOLS.glob("expected_since_*.toml"))
+    assert ledgers, "no ledgers found; this test would pass vacuously"
+    for ledger in ledgers:
+        rules = tomllib.loads(
+            ledger.read_text(encoding="utf-8")).get("change", [])
+        assert rules, f"{ledger.name} has no [[change]] rules"
+        compare.validate_rules(rules, ledger.name)
+
+
+def test_ambiguities_is_a_legal_field_name() -> None:
+    """A SEGMENTATION-only diff is facade-identical by construction, so
+    this pseudo-field is the only name that can classify it -- and the
+    2.0 ledger's first rule depends on it."""
+    compare.validate_rules(
+        [{"issue": "x", "fields": ["_ambiguities"]}], "ledger.toml")
+
+
+def _run_main(tmp_path, monkeypatch, ledger_body: str,
+              baseline_facade: dict) -> tuple[int, str]:
+    """Drive main() end to end with a faked baseline worker.
+
+    No uv, no network. The helper exists because every unit test above
+    proves a helper WORKS while none proves main() calls it -- and in a
+    gate, the composition is the part that can go silently permissive.
+    """
+    import sys
+    corpus = tmp_path / "corpus_x.jsonl"
+    corpus.write_text('"John Smith"\n', encoding="utf-8")
+    (tmp_path / "expected_since_1.4.0.toml").write_text(
+        ledger_body, encoding="utf-8")
+    monkeypatch.setattr(compare, "HERE", tmp_path)
+    monkeypatch.setattr(
+        compare, "_run_worker",
+        lambda v, w, n: ({"__version__": v,
+                          "__file__": "/wheel/nameparser/__init__.py"},
+                         [{"facade": baseline_facade}]))
+    monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", "1.4.0",
+                                      "--corpus", str(corpus)])
+    import io
+    import contextlib
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = compare.main()
+    return code, buf.getvalue()
+
+
+#: 'John Smith' with the family name altered, so the tree disagrees on
+#: exactly one role. The facade calls it `last`; the report and any rule
+#: must call it `family`.
+_DIFFERS = {"title": "", "first": "John", "middle": "", "last": "SMYTHE",
+            "suffix": "", "nickname": "", "maiden": ""}
+
+
+def test_main_exits_1_and_reports_an_unclassified_diff(
+        tmp_path, monkeypatch) -> None:
+    """The gate's entire verdict. Nothing else pins it: mutating the
+    return to a bare 0 leaves every other test in this file passing,
+    and the harness would report unexplained diffs on stdout while
+    exiting 0 forever -- read by exit code, that is silence."""
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\n', _DIFFERS)
+    assert code == 1
+    assert "UNEXPLAINED 'John Smith'" in out
+
+
+def test_main_reports_the_unexplained_field_under_its_role_name(
+        tmp_path, monkeypatch) -> None:
+    """The block exists to be copy-pasted into a ledger rule, so the
+    label it prints must be the label a rule needs. The facade calls
+    this role `last`; a rule saying `last` never matches."""
+    _, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\n', _DIFFERS)
+    assert "family:" in out and "last:" not in out
+
+
+def test_main_exits_0_when_every_diff_is_claimed(
+        tmp_path, monkeypatch) -> None:
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "claimed"\nfields = ["family"]\n', _DIFFERS)
+    assert code == 0
+    assert "UNEXPLAINED" not in out
+    assert "## claimed (1)" in out
+
+
+def test_main_validates_the_ledger_before_running_anything(
+        tmp_path, monkeypatch) -> None:
+    """validate_rules has its own tests; this pins that main CALLS it.
+    Deleting the call leaves those tests passing while a match-anything
+    rule shadows the ledger."""
+    with pytest.raises(SystemExit, match="matches the empty string"):
+        _run_main(tmp_path, monkeypatch,
+                  '[[change]]\nissue = "wide"\nname_regex = ""\n', _DIFFERS)
+
+
+def test_main_sorts_rules_so_file_order_is_not_load_bearing(
+        tmp_path, monkeypatch) -> None:
+    """A broad fields-only rule written FIRST must not claim a diff the
+    specific name_regex rule below it owns. Deleting main's
+    _sorted_rules call leaves _sorted_rules' own test passing."""
+    _, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "broad"\nfields = ["family"]\n'
+        '[[change]]\nissue = "specific"\nname_regex = "Smith"\n', _DIFFERS)
+    assert "## specific (1)" in out and "broad" not in out
+
+
+def test_check_tree_accepts_the_checkout_and_rejects_anything_else(
+        tmp_path) -> None:
+    """The tree side is the half that had no proof at all: the baseline
+    gets a pinned wheel, a temp dir and a version tell, while the tree
+    was a bare import trusted on sight."""
+    inside = _TOOLS.parents[1] / "nameparser" / "__init__.py"
+    assert compare._check_tree(str(inside)) == inside.resolve()
+    with pytest.raises(SystemExit, match="outside this checkout"):
+        compare._check_tree(str(tmp_path / "nameparser" / "__init__.py"))
+
+
+def test_main_aborts_when_the_tree_side_is_not_the_checkout(
+        tmp_path, monkeypatch) -> None:
+    """Pins that main CALLS the tree check, not merely that the check
+    works. Measured 2026-08-05: with a released 2.0.0 on PYTHONPATH,
+    compare.py imported THAT and reported `intentional diffs: 0`,
+    exit 0 -- both halves of the baseline tell passing. Run as a
+    script, sys.path[0] is tools/differential/, which holds no
+    nameparser, so PYTHONPATH outranks the editable install.
+
+    REPO_ROOT is moved rather than the module, because relocating the
+    import is what the trap does and this reproduces its EFFECT: the
+    tree's nameparser is no longer under the root it must be under.
+    """
+    monkeypatch.setattr(compare, "REPO_ROOT", tmp_path)
+    with pytest.raises(SystemExit, match="outside this checkout"):
+        _run_main(tmp_path, monkeypatch,
+                  '[[change]]\nissue = "x"\nname_regex = "ZZZ"\n', _DIFFERS)
+
+
+def test_worker_env_strips_the_import_path_overrides(monkeypatch) -> None:
+    """PEP 723 isolation does not survive PYTHONPATH -- it precedes
+    site-packages, so a directory named there shadows the pinned wheel
+    inside uv's own environment."""
+    monkeypatch.setenv("PYTHONPATH", "/somewhere/else")
+    monkeypatch.setenv("PYTHONHOME", "/elsewhere")
+    monkeypatch.setenv("PATH", "/usr/bin")
+    env = compare._worker_env()
+    assert "PYTHONPATH" not in env and "PYTHONHOME" not in env
+    assert env["PATH"] == "/usr/bin", "the rest of the env must survive"

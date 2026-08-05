@@ -57,9 +57,11 @@ directory outside the worktree. Its first output line is a version
 tell, and `compare.py` aborts before comparing anything if the wrong
 version answered or if the module resolved inside the checkout.
 
-A rule's `fields` names roles the way `Role` does — `title`, `given`,
-`middle`, `family`, `suffix`, `nickname`, `maiden` — whichever surface
-the diff came from. The facade reports `first`/`last`; those are
+A rule's `fields` names roles the way `Role` does, whichever surface
+the diff came from, plus the pseudo-field `_ambiguities` for a change
+in reported `AmbiguityKind`s. The roster is not restated here: it is
+`Role`'s members, `validate_rules` rejects anything outside them, and
+a copy in prose is a copy that goes stale when a role is added. The facade reports `first`/`last`; those are
 canonicalized on the way in, and the `UNEXPLAINED` block prints the
 canonical name so what you read is what you write.
 
@@ -215,10 +217,14 @@ matches only if the observed diff fields are a subset of this list).
 Keep both as tight as the actual diff allows -- a loose rule can mask
 a real regression.
 
-Rules are sorted most-specific-first before matching -- a `name_regex`
+Rules are sorted most-specific-first before matching: a `name_regex`
 rule outranks a `fields`-only one (which is broad by construction)
-wherever both match -- so file order does not decide which rule claims
-a diff.
+wherever both match. **Within a tier, file order decides.** That is
+not a detail -- every rule in `expected_since_2.0.0.toml` carries a
+`name_regex`, so they all sit in one tier and the order they are
+written in settles every tie between them. Append a rule to the bottom
+of a file only after checking that nothing above it already claims the
+diff you meant it for.
 
 Some entries in the seed list are for behavior families that a
 particular corpus happens not to contain any example of (e.g. custom
@@ -231,7 +237,12 @@ ready the moment a matching string is added to the corpus.
 
 The corpora run under the **default policy**, so any behavior gated
 behind a non-default `Policy` field is invisible here. Default
-*vocabulary*, by contrast, is fully exercised.
+*vocabulary* is a different matter: it is fully in EFFECT, never
+gated off the way a `Policy` field is, so a change to it can show up
+here. That is not the same as coverage -- only 3 of the 17 shipped
+`maiden_markers` and 8 of the 15 `honorific_tails` appear anywhere in
+the corpora (measured 2026-08-05), so an entry no corpus name
+exercises is as invisible as an opt-in policy.
 
 Two independent mechanisms put a birth surname in `maiden`, and only
 one is opt-in (measured 2026-08-05):

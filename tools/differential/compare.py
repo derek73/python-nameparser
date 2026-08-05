@@ -12,6 +12,7 @@ exit code with tail's, so a failing run reads as a passing one.
 """
 import argparse
 import json
+import os
 import re
 import subprocess
 import tempfile
@@ -199,6 +200,50 @@ def _check_tell(tell: dict[str, str], version: str) -> None:
             f"would read as parity. Comparison aborted.")
 
 
+def _worker_env() -> dict[str, str]:
+    """The child's environment, with the import-path overrides stripped.
+
+    PEP 723 isolation does NOT survive PYTHONPATH: it precedes
+    site-packages, so a directory named there shadows the pinned wheel
+    inside uv's own environment. Measured 2026-08-05 -- with a released
+    2.0.0 on PYTHONPATH the run reported `intentional diffs: 0` and
+    exited 0, both halves of the tell passing (the version matched, and
+    the path was outside REPO_ROOT because it was outside the repo).
+    That is the README's catastrophic failure by a third road, and it
+    needs no exotic setup: a stale PYTHONPATH entry or a sibling
+    checkout is enough.
+    """
+    return {k: v for k, v in os.environ.items()
+            if k not in ("PYTHONPATH", "PYTHONHOME")}
+
+
+def _check_tree(module_file: str) -> Path:
+    """Prove the OTHER side of the comparison is the working tree.
+
+    The baseline side gets a version tell, a pinned wheel and a temp
+    dir; the tree side was a bare import trusted on sight. It is
+    reachable by the same road: run as a script, sys.path[0] is
+    tools/differential/ -- which holds no nameparser -- so PYTHONPATH
+    outranks the editable install and compare.py imports a wheel while
+    believing it read the checkout. Two wheels agree on everything, so
+    the run reports parity.
+
+    (The reason this is easy to miss when probing by hand: `python -c`
+    puts the CWD on sys.path first, so the checkout wins there and the
+    trap does not reproduce. Only the script invocation shows it.)
+    """
+    at = Path(module_file).resolve()
+    if not at.is_relative_to(REPO_ROOT):
+        raise SystemExit(
+            f"the tree side imported nameparser from {at}, which is "
+            f"outside this checkout ({REPO_ROOT}) -- so this run would "
+            f"compare that module against the baseline instead of the "
+            f"working tree. Unset PYTHONPATH, or uninstall a "
+            f"non-editable nameparser from the active environment; "
+            f"comparison aborted.")
+    return at
+
+
 def _run_worker(version: str, want_v2: bool,
                 names: list[str]) -> tuple[dict[str, str], list[dict]]:
     """Run the baseline worker from a temp dir OUTSIDE the worktree.
@@ -217,7 +262,7 @@ def _run_worker(version: str, want_v2: bool,
         proc = subprocess.Popen(
             ["uv", "run", "--no-project", str(script)],
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True,
-            cwd=tmp)
+            cwd=tmp, env=_worker_env())
         payload = "".join(json.dumps(n, ensure_ascii=False) + "\n"
                           for n in names)
         out, _ = proc.communicate(payload)
@@ -260,28 +305,102 @@ def _is_latin_only(name: str) -> bool:
     return all(ord(ch) < 0x250 for ch in name)
 
 
+#: Every legal entry in a rule's `fields`: the seven roles under Role's
+#: names, plus the pseudo-field carrying reported AmbiguityKinds. The
+#: ambiguity entry is legal and load-bearing -- a SEGMENTATION-only diff
+#: is facade-identical, so this is the one name that can classify it.
+_RULE_FIELDS = frozenset((*V2_FIELDS, "_ambiguities"))
+_RULE_KEYS = frozenset(("issue", "name_regex", "fields"))
+
+
 def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
-    """Reject malformed allowlist rules LOUDLY at startup. A rule with
-    neither name_regex nor fields would match every diff and shadow
-    every later rule -- the harness would report false confidence,
-    the exact failure it exists to prevent.
+    """Reject malformed allowlist rules LOUDLY at startup.
+
+    The failure this exists to prevent is a rule that matches MORE than
+    its author meant, because that converts a real regression into a
+    classified diff and a green run -- the harness reporting false
+    confidence. Every check below is a way a rule can silently widen;
+    they are gathered here rather than spread out because a guard added
+    to one member of the family belongs on all of it.
+
+    Three of them are not about presence but about TYPE and VALUE, and
+    those are the quiet ones: `classify` skips a `name_regex` that is
+    not a str and a `fields` that is not a list, so a mistyped or
+    misspelled key does not fail -- it deletes that half of the rule's
+    narrowing and the rule matches on the other half alone.
+
+    Rules are also compiled here, not at match time. `classify` returns
+    on the first match, so an uncompilable pattern at position k only
+    raises once a diff gets past rules 1..k-1: a ledger can run green
+    for months and then explode mid-run, after the multi-minute worker
+    pass, in a traceback naming neither the file nor the rule.
 
     `ledger` is named rather than hardcoded because there is one per
     baseline now: a message naming the wrong file sends the reader to
     edit a rule that is not the broken one.
     """
     for i, rule in enumerate(rules):
+        where = f"{ledger} rule #{i + 1}"
         issue = rule.get("issue")
         if not isinstance(issue, str) or not issue:
             raise SystemExit(
-                f"{ledger} rule #{i + 1} has no string "
-                f"'issue': {rule!r}")
-        if not isinstance(rule.get("name_regex"), str) \
-                and not isinstance(rule.get("fields"), list):
+                f"{where} has no string 'issue': {rule!r}")
+        where = f"{where} ({issue!r})"
+        unknown = set(rule) - _RULE_KEYS
+        if unknown:
             raise SystemExit(
-                f"{ledger} rule #{i + 1} ({issue!r}) has "
-                f"neither 'name_regex' nor 'fields' -- it would match "
-                f"every diff and shadow every later rule")
+                f"{where} has unknown key(s) {sorted(unknown)}; expected "
+                f"only {sorted(_RULE_KEYS)}. A misspelled key is not "
+                f"ignored -- it drops that half of the rule's narrowing "
+                f"and the rule matches on the other half alone")
+        has_regex, has_fields = "name_regex" in rule, "fields" in rule
+        if not has_regex and not has_fields:
+            raise SystemExit(
+                f"{where} has neither 'name_regex' nor 'fields' -- it "
+                f"would match every diff and shadow every later rule")
+        if has_regex:
+            pattern = rule["name_regex"]
+            if not isinstance(pattern, str):
+                raise SystemExit(
+                    f"{where} has a non-string 'name_regex' "
+                    f"({pattern!r}); classify would skip it and the rule "
+                    f"would match on 'fields' alone")
+            try:
+                compiled = re.compile(pattern)
+            except re.error as exc:
+                raise SystemExit(
+                    f"{where} has an invalid 'name_regex' "
+                    f"({pattern!r}): {exc}") from None
+            if compiled.search(""):
+                raise SystemExit(
+                    f"{where} has a 'name_regex' ({pattern!r}) that "
+                    f"matches the empty string, so it matches every "
+                    f"name. name_regex rules sort FIRST, so this one "
+                    f"would shadow the whole ledger")
+        if has_fields:
+            fields = rule["fields"]
+            if not isinstance(fields, list) \
+                    or not all(isinstance(f, str) for f in fields):
+                raise SystemExit(
+                    f"{where} has a 'fields' that is not a list of "
+                    f"strings ({fields!r}); classify would skip it and "
+                    f"the rule would match on 'name_regex' alone")
+            if not fields:
+                raise SystemExit(
+                    f"{where} has an empty 'fields', which can never "
+                    f"match any diff -- a rule that does nothing")
+            bad = sorted(set(fields) - _RULE_FIELDS)
+            if bad:
+                raise SystemExit(
+                    f"{where} names {bad} in 'fields', which are not "
+                    f"roles; expected from {sorted(_RULE_FIELDS)}. A "
+                    f"name outside that set never matches, so the rule "
+                    f"is silently dead")
+            if _RULE_FIELDS <= set(fields):
+                raise SystemExit(
+                    f"{where} lists every role in 'fields', so the "
+                    f"subset test admits every diff -- the narrowing is "
+                    f"not narrowing anything")
 
 
 def classify(name: str, diff_fields: set[str],
@@ -348,7 +467,10 @@ def main() -> int:
     tell, old_rows = _run_worker(baseline, want_v2, corpus)
     print(f"baseline: nameparser {tell['__version__']} ({tell['__file__']})")
 
-    from nameparser import HumanName  # the working tree
+    import nameparser  # the working tree -- verified, not assumed
+    from nameparser import HumanName
+    tree_at = _check_tree(nameparser.__file__)
+    print(f"tree:     nameparser {nameparser.__version__} ({tree_at})")
     if want_v2:
         from nameparser import parse
     by_issue: dict[str, list[str]] = {}
