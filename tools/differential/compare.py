@@ -65,6 +65,33 @@ def _surfaces_for(version: str) -> frozenset[str]:
     return frozenset({"facade"})
 
 
+def _allowlist_for(version: str) -> Path:
+    """The ledger for a baseline, one file per baseline so each
+    release's classified changes stay as history.
+
+    A missing file is a hard error rather than an empty rule set: an
+    empty set classifies nothing, so every diff reports UNEXPLAINED and
+    the run reads as a catastrophic regression instead of as a missing
+    file.
+    """
+    path = HERE / f"expected_since_{version}.toml"
+    if not path.exists():
+        raise SystemExit(
+            f"no allowlist for baseline {version!r}: expected {path}. "
+            f"Create it before running this baseline -- an absent "
+            f"ledger cannot classify anything, so every diff would "
+            f"report as unexplained.")
+    return path
+
+
+def _sorted_rules(rules: list[dict[str, object]]) -> list[dict[str, object]]:
+    """Most-specific-first: a name_regex rule outranks a fields-only
+    rule wherever both match, so file order stops being load-bearing.
+    The sort is stable, so rules within a tier keep the order they were
+    written in."""
+    return sorted(rules, key=lambda r: not isinstance(r.get("name_regex"), str))
+
+
 def validate_rules(rules: list[dict[str, object]]) -> None:
     """Reject malformed allowlist rules LOUDLY at startup. A rule with
     neither name_regex nor fields would match every diff and shadow
