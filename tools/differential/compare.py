@@ -51,6 +51,20 @@ def _parse_version(text: str) -> tuple[int, int, int]:
     return (major, minor, micro)
 
 
+def _surfaces_for(version: str) -> frozenset[str]:
+    """Which output surfaces a baseline can be compared on.
+
+    1.4 has no v2 API, so a pre-2.0 baseline compares the facade
+    alone. From 2.0 on both are compared: the v2 API is the primary
+    surface for 2.x users, and its ambiguity kinds catch a change the
+    field diff cannot see -- a parse that starts or stops reporting
+    SEGMENTATION while every field stays byte-identical.
+    """
+    if _parse_version(version) >= (2, 0, 0):
+        return frozenset({"facade", "v2"})
+    return frozenset({"facade"})
+
+
 def validate_rules(rules: list[dict[str, object]]) -> None:
     """Reject malformed allowlist rules LOUDLY at startup. A rule with
     neither name_regex nor fields would match every diff and shadow
