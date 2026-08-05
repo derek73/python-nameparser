@@ -1355,9 +1355,14 @@ CASES: tuple[Case, ...] = (
     Case("ko_honorific_after_comma", "김민준, 씨",
          {"family": "김민준", "suffix": "씨"},
          classification="fix(#307)",
-         notes="the post-comma lenient gate admits the honorific too; "
-               "the comma disables segmentation per the comma "
-               "doctrine, so 김민준 stays whole"),
+         notes="the post-comma run is normally the given name -- "
+               "'김민준, 태호' gives given 태호 -- and group's "
+               "_is_suffix_piece diverts this one because 씨 is a "
+               "single-token piece carrying vocab:suffix. NOT the "
+               "lenient comma gate, which an earlier note named: "
+               "measured, lenient_comma_suffixes=False leaves this "
+               "row unchanged. The comma disables segmentation per "
+               "the comma doctrine, so 김민준 stays whole"),
     Case("ko_honorific_glued_given", "김민준씨",
          {"family": "김", "given": "민준", "suffix": "씨"},
          classification="fix(#308)",
