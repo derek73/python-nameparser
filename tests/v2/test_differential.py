@@ -179,6 +179,26 @@ def test_canonical_field_is_idempotent_on_role_names() -> None:
         assert compare._canonical_field(role) == role
 
 
+def test_every_ledger_rule_names_roles_canonically() -> None:
+    """The trap this guards: a rule written in facade vocabulary parses
+    fine, validates fine, and simply never matches -- the ledger grows
+    an entry that does nothing, classification silently loosens, and
+    nothing anywhere says so. Sweeps every ledger, so a new baseline's
+    file is covered the day it is added."""
+    import tomllib
+    ledgers = sorted(_TOOLS.glob("expected_since_*.toml"))
+    assert ledgers, "no ledgers found; this test would pass vacuously"
+    for ledger in ledgers:
+        rules = tomllib.loads(
+            ledger.read_text(encoding="utf-8")).get("change", [])
+        for rule in rules:
+            for field in rule.get("fields", []):
+                assert field == compare._canonical_field(field), (
+                    f"{ledger.name}: rule {rule['issue']!r} names "
+                    f"{field!r}; use "
+                    f"{compare._canonical_field(field)!r}")
+
+
 @pytest.mark.parametrize("name,latin", [
     ("John Smith", True),
     ("Anna Müller", True),

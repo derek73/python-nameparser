@@ -1,8 +1,14 @@
-"""Differential harness (migration spec S5): 1.4-on-PyPI vs the working
-tree over the corpus. Every diff must classify against
-expected_since_1.4.0.toml or the run fails.
+"""Differential harness (migration spec S5): a released baseline vs
+the working tree over the corpora. Every diff must classify against
+that baseline's ledger or the run fails.
 
-    uv run python tools/differential/compare.py [--corpus corpus.jsonl]
+    uv run python tools/differential/compare.py [--baseline VERSION]
+
+--baseline 1.4.0 answers the v1 compat contract; the default answers
+what changes for a user upgrading from the previous minor.
+
+Redirect to a file rather than piping: under zsh, `| tail` replaces the
+exit code with tail's, so a failing run reads as a passing one.
 """
 import argparse
 import json
@@ -287,17 +293,20 @@ def main() -> int:
     ap.add_argument("--corpus", action="append", metavar="PATH",
                     help="corpus file; repeatable. Defaults to every "
                          "corpus*.jsonl beside this script.")
+    ap.add_argument("--baseline", default=DEFAULT_BASELINE, metavar="VERSION",
+                    help=f"released version to compare the tree against "
+                         f"(default {DEFAULT_BASELINE}). Use 1.4.0 for the "
+                         f"v1 compat contract, the previous minor for a "
+                         f"release's blast radius.")
     args = ap.parse_args()
+    baseline = args.baseline
+    surfaces = _surfaces_for(baseline)
     paths = ([Path(p) for p in args.corpus] if args.corpus
              else sorted(HERE.glob("corpus*.jsonl")))
     rules = tomllib.loads(
-        (HERE / "expected_since_1.4.0.toml").read_text()).get("change", [])
+        _allowlist_for(baseline).read_text()).get("change", [])
     validate_rules(rules)
-    # Most-specific-first: a name_regex rule outranks a fields-only rule
-    # wherever both match, so file order stops being load-bearing. The
-    # sort is stable, so rules within a tier keep the order they were
-    # written in.
-    rules.sort(key=lambda r: not isinstance(r.get("name_regex"), str))
+    rules = _sorted_rules(rules)
     # A glob that matches nothing must not read as "everything passed".
     # Comparing zero names would print 0 unexplained and exit 0 -- the
     # harness's own stated nightmare (see validate_rules), and a
@@ -322,50 +331,63 @@ def main() -> int:
     print("corpora: " + ", ".join(f"{name} ({n})"
                                   for name, n in per_file.items()))
 
-    proc = subprocess.Popen(
-        ["uv", "run", "--no-project", str(HERE / "worker_v1.py")],
-        stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-    v1_input = "".join(json.dumps(n, ensure_ascii=False) + "\n"
-                        for n in corpus)
-    v1_lines, _ = proc.communicate(v1_input)
-    v1_results = [json.loads(line) for line in v1_lines.splitlines()]
-    # hard checks, not asserts: -O must not turn a crashed worker into
-    # a truncated-but-green comparison
-    if proc.returncode != 0:
-        raise SystemExit(
-            f"worker_v1.py exited {proc.returncode}; comparison aborted")
-    if len(v1_results) != len(corpus):
-        raise SystemExit(
-            f"worker returned {len(v1_results)} results for "
-            f"{len(corpus)} corpus names; comparison aborted")
+    want_v2 = "v2" in surfaces
+    tell, old_rows = _run_worker(baseline, want_v2, corpus)
+    print(f"baseline: nameparser {tell['__version__']} ({tell['__file__']})")
 
-    from nameparser import HumanName  # the working tree (2.0 facade)
+    from nameparser import HumanName  # the working tree
+    if want_v2:
+        from nameparser import parse
     by_issue: dict[str, list[str]] = {}
     unexplained: list[tuple[str, dict[str, str], dict[str, str]]] = []
-    for name, old in zip(corpus, v1_results):
-        new = {k: v or "" for k, v in HumanName(name).as_dict().items()}
-        diff = {f for f in FIELDS if old.get(f, "") != new.get(f, "")}
+    for name, old in zip(corpus, old_rows):
+        new = {k: v or "" for k, v in HumanName(name).as_dict().items()
+               if k in FIELDS}
+        # canonicalized on the way in: the ledger speaks Role's names,
+        # and the facade is the surface whose vocabulary differs
+        diff = {_canonical_field(f) for f in FIELDS
+                if old["facade"].get(f, "") != new.get(f, "")}
+        if want_v2:
+            p = parse(name)
+            new_v2 = {f: (getattr(p, f, "") or "") for f in V2_FIELDS}
+            new_v2["_ambiguities"] = sorted(
+                {a.kind.name for a in getattr(p, "ambiguities", ())})
+            diff |= {_canonical_field(f)
+                     for f in (*V2_FIELDS, "_ambiguities")
+                     if old["v2"].get(f, "") != new_v2.get(f, "")}
         if not diff:
             continue
         issue = classify(name, diff, rules)
         if issue is None:
-            unexplained.append((name, old, new))
+            unexplained.append((name, old["facade"], new))
         else:
             by_issue.setdefault(issue, []).append(name)
 
+    changed = [n for names in by_issue.values() for n in names] \
+        + [n for n, _, _ in unexplained]
+    latin = sum(1 for n in changed if _is_latin_only(n))
     print(f"corpus: {len(corpus)} names; "
           f"intentional diffs: {sum(map(len, by_issue.values()))}; "
-          f"unexplained: {len(unexplained)}\n")
+          f"unexplained: {len(unexplained)}; "
+          f"{latin} of {len(changed)} changed names are Latin-only\n")
     for issue, names in sorted(by_issue.items()):
         print(f"## {issue} ({len(names)})")
         for n in names[:10]:
             print(f"  {n!r}")
         print()
-    for name, old, new in unexplained:
+    if unexplained:
+        print("Field names below are Role's, matching what a ledger "
+              "`fields` rule must say.\n")
+    for name, old_facade, new in unexplained:
         print(f"UNEXPLAINED {name!r}")
         for f in FIELDS:
-            if old.get(f, "") != new.get(f, ""):
-                print(f"    {f}: {old.get(f, '')!r} -> {new.get(f, '')!r}")
+            if old_facade.get(f, "") != new.get(f, ""):
+                # Role's name, not the facade's: this block exists to
+                # be turned into a ledger rule, and a rule naming the
+                # facade's `first` would parse, validate, and never
+                # match -- with nothing to say so.
+                print(f"    {_canonical_field(f)}: "
+                      f"{old_facade.get(f, '')!r} -> {new.get(f, '')!r}")
     return 1 if unexplained else 0
 
 
