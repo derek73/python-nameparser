@@ -15,6 +15,41 @@ HERE = Path(__file__).resolve().parent
 FIELDS = ("title", "first", "middle", "last", "suffix", "nickname",
           "maiden")
 
+DEFAULT_BASELINE = "2.0.0"
+REPO_ROOT = HERE.parents[1]
+#: The v2 API's names for the same seven roles FIELDS names in v1
+#: vocabulary. Both are compared from baseline 2.0 on.
+V2_FIELDS = ("title", "given", "middle", "family", "suffix", "nickname",
+             "maiden")
+#: The two roles the FACADE names differently from Role. Diffs from
+#: both surfaces canonicalize to Role's names before classification, so
+#: a ledger rule names a role once -- and names it the way the codebase
+#: already does everywhere else (AGENTS.md, "canonical field order").
+#: The facade's vocabulary is the one that expires, at 3.0.
+_V1_TO_ROLE = {"first": "given", "last": "family"}
+
+
+def _parse_version(text: str) -> tuple[int, int, int]:
+    """The numeric release tuple, padded to three parts. Every version
+    comparison in this file goes through it.
+
+    Explicit because string comparison is wrong twice over here: it
+    orders '1.4.0' < '2.0.0' by luck and would misorder a future
+    '10.0.0', and it would call a requested '2.0' unequal to a wheel
+    reporting '2.0.0' -- turning a correct run into a spurious tell
+    mismatch, which is an abort on a run that was fine.
+
+    A prerelease segment is ignored: '2.0.0rc1' is release (2, 0, 0),
+    because what is being asked is which RELEASE answered.
+    """
+    m = re.match(r"\s*(\d+)(?:\.(\d+))?(?:\.(\d+))?", text)
+    if not m:
+        raise SystemExit(
+            f"cannot parse a version from {text!r}: expected a numeric "
+            f"release like '2.0.0'")
+    major, minor, micro = (int(p) if p else 0 for p in m.groups())
+    return (major, minor, micro)
+
 
 def validate_rules(rules: list[dict[str, object]]) -> None:
     """Reject malformed allowlist rules LOUDLY at startup. A rule with
