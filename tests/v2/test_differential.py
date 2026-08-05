@@ -124,3 +124,38 @@ def test_worker_source_gates_the_v2_import_on_the_baseline() -> None:
     the worker die on import rather than report a clean facade diff."""
     assert "WANT_V2 = False" in compare._worker_source("1.4.0", want_v2=False)
     assert "WANT_V2 = True" in compare._worker_source("2.0.0", want_v2=True)
+
+
+_WHEEL = "/Users/x/.cache/uv/environments-v2/w/lib/python3.11/" \
+         "site-packages/nameparser/__init__.py"
+
+
+def test_tell_accepts_a_matching_wheel() -> None:
+    compare._check_tell({"__version__": "2.0.0", "__file__": _WHEEL}, "2.0.0")
+
+
+def test_tell_accepts_an_equivalent_short_release() -> None:
+    compare._check_tell({"__version__": "2.0.0", "__file__": _WHEEL}, "2.0")
+
+
+def test_tell_rejects_a_version_mismatch() -> None:
+    with pytest.raises(SystemExit, match="not the requested"):
+        compare._check_tell(
+            {"__version__": "2.1.0", "__file__": _WHEEL}, "2.0.0")
+
+
+def test_tell_rejects_a_module_loaded_from_the_checkout() -> None:
+    """The failure the whole design exists to make impossible. An
+    editable install reports the TREE's version, so when the tree and
+    the baseline share a version the version half of the tell agrees
+    and only the path gives it away.
+    """
+    checkout = _TOOLS.parents[1] / "nameparser" / "__init__.py"
+    with pytest.raises(SystemExit, match="CHECKOUT"):
+        compare._check_tell(
+            {"__version__": "2.0.0", "__file__": str(checkout)}, "2.0.0")
+
+
+def test_tell_rejects_an_empty_tell() -> None:
+    with pytest.raises(SystemExit):
+        compare._check_tell({}, "2.0.0")

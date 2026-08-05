@@ -8,6 +8,7 @@ import argparse
 import json
 import re
 import subprocess
+import tempfile
 import tomllib
 from pathlib import Path
 
@@ -154,6 +155,77 @@ def _worker_source(version: str, want_v2: bool) -> str:
     return (_WORKER_TEMPLATE
             .replace("@@VERSION@@", version)
             .replace("@@WANT_V2@@", "True" if want_v2 else "False"))
+
+
+def _check_tell(tell: dict[str, str], version: str) -> None:
+    """Abort before comparing anything if the wrong library answered.
+
+    This is the check the README's trap sections exist for. Both halves
+    matter and neither implies the other: an editable install reports
+    the TREE's version, so version-only agreement proves nothing when
+    the tree and the baseline share a number, while a genuine wheel at
+    the wrong version passes any path check.
+    """
+    got = tell.get("__version__", "")
+    where = tell.get("__file__", "")
+    if not got or not where:
+        raise SystemExit(
+            f"baseline worker produced no usable version tell "
+            f"({tell!r}); comparison aborted")
+    if _parse_version(got) != _parse_version(version):
+        raise SystemExit(
+            f"baseline worker reports nameparser {got!r}, not the "
+            f"requested {version!r} (loaded from {where}). See the "
+            f"invocation traps in tools/differential/README.md; "
+            f"comparison aborted.")
+    if Path(where).resolve().is_relative_to(REPO_ROOT):
+        raise SystemExit(
+            f"baseline worker loaded nameparser from the CHECKOUT "
+            f"({where}), so it answers as the working tree while "
+            f"reporting {got!r} -- every diff would vanish and the run "
+            f"would read as parity. Comparison aborted.")
+
+
+def _run_worker(version: str, want_v2: bool,
+                names: list[str]) -> tuple[dict[str, str], list[dict]]:
+    """Run the baseline worker from a temp dir OUTSIDE the worktree.
+
+    The placement is the safety mechanism, not plumbing. uv reads
+    genuine PEP 723 metadata from a real script path, and sys.path[0]
+    is the script's directory -- a temp dir holding no nameparser -- so
+    the checkout cannot shadow the pinned wheel. The README notes that
+    an absolute script path from outside the project is the one
+    invocation variant that does not lie; this makes it the only one
+    reachable.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        script = Path(tmp) / "baseline_worker.py"
+        script.write_text(_worker_source(version, want_v2), encoding="utf-8")
+        proc = subprocess.Popen(
+            ["uv", "run", "--no-project", str(script)],
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True,
+            cwd=tmp)
+        payload = "".join(json.dumps(n, ensure_ascii=False) + "\n"
+                          for n in names)
+        out, _ = proc.communicate(payload)
+    # hard checks, not asserts: -O must not turn a crashed worker into
+    # a truncated-but-green comparison
+    if proc.returncode != 0:
+        raise SystemExit(
+            f"baseline worker exited {proc.returncode}; comparison aborted")
+    lines = out.splitlines()
+    if not lines:
+        raise SystemExit(
+            "baseline worker produced no output, not even a version "
+            "tell; comparison aborted")
+    tell = json.loads(lines[0])
+    _check_tell(tell, version)
+    results = [json.loads(x) for x in lines[1:]]
+    if len(results) != len(names):
+        raise SystemExit(
+            f"worker returned {len(results)} results for {len(names)} "
+            f"corpus names; comparison aborted")
+    return tell, results
 
 
 def validate_rules(rules: list[dict[str, object]]) -> None:
