@@ -1,0 +1,199 @@
+# Ledger for baseline 2.0.0 -- what changes for a user upgrading from
+# the previous minor. Same rule grammar as expected_since_1.4.0.toml:
+# every rule needs `issue`; optional `name_regex` and `fields` narrow
+# it, and compare.py sorts name_regex rules ahead of fields-only ones.
+#
+# `fields` names roles the way Role does -- title, given, middle,
+# family, suffix, nickname, maiden -- for BOTH compared surfaces. A
+# rule saying "first" or "last" parses and validates and then never
+# matches; the guard in tests/v2/test_differential.py catches it.
+#
+# Rules here are NOT a subset of the 1.4 ledger's. That one classifies
+# everything 2.x changed since 1.4, including what 2.0 itself changed;
+# this one classifies only what 2.1 changed on top of 2.0. A rule
+# copied across without checking will either over-match (hiding a real
+# 2.1 regression behind a 2.0-era label) or never fire.
+#
+# Every rule below carries a `name_regex`, so they all sit in one tier
+# and file order breaks ties between them. Where that matters it is
+# said on the rule; the ordering decision made twice here is that the
+# GLUED honorific rule precedes the SPACED one, because a name can
+# carry both shapes at once.
+
+[[change]]
+issue = "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots"
+# The 2.1 East Asian defaults, in the fields they move name pieces
+# between. '毛 泽东' and '毛泽东' read family-first through the new
+# Policy.script_orders (#271); '김민준' and '남궁민수' additionally
+# split, hangul segmentation being on by default (#271), which is also
+# where the one _ambiguities diff in the run comes from -- 남궁민수 now
+# reports SEGMENTATION, a kind 2.0 did not have. '高橋 みなみ' and
+# '山田 エミ' take the same order rule under the kana license (#272),
+# while wholly-katakana '마이클·잭슨'-shaped transcriptions stay
+# positional and merely divide. The two dots divide tokens: the
+# nakaguro ・/･ unconditionally (#272) and the 间隔号 · between
+# classified-script characters (#298), so 'マイケル・ジャクソン',
+# '威廉·莎士比亚' and '马丁·路德·金' come apart where 2.0 held one
+# token. '〆木 太郎' rides in this class too: #303 counts the shime
+# mark as Han, which is what puts the name in scope of the order rule
+# at all.
+#
+# One rule, not five, for the reason the 1.4 ledger gives its twin:
+# these are one diff shape -- pieces moving between given/middle/family
+# on a native-script CJK name -- and splitting by issue would need a
+# rule per script and per dot with no gain in tightness, the fields
+# list being the narrow half.
+#
+# `suffix` is deliberately absent, which is what keeps this rule from
+# swallowing the honorific work below; `maiden`, `nickname` and `title`
+# are absent for the same reason against the compound rules further
+# down. The class is copied verbatim from the same rule in
+# expected_since_1.4.0.toml rather than rewritten in literal
+# characters: tests/v2/test_regex_sync.py pins that spelling against
+# the script table, and a hand-rewritten twin drifts silently.
+name_regex = "[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65]"
+fields = ["given", "middle", "family", "_ambiguities"]
+
+[[change]]
+issue = "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into suffix"
+# '田中さん', '김민준씨', '王小明先生', 'Andersonさん': #308 splits an
+# honorific written against the name off the end of its token and
+# routes it to `suffix`, where 2.0 left it inside the name. #312 lets
+# the peel reach across a comma ('김, 민준씨', '田中, 太郎さん',
+# '威廉·莎士比亚さん'), #319 makes it survive an all-credential
+# post-comma run ('田中さん, V.', '田中さん, Ph. D.', '김민준씨, V.',
+# '김민준씨, J.씨'), and #320 stops an ASCII period vetoing the
+# honorific it finds there ('田中さん 様.', '田中さん, 様.'). Every one
+# of them is the same diff shape, so they share a rule; the peeled name
+# then goes through the ordinary machinery, which is why `given` and
+# `family` move alongside `suffix` (김민준씨 -> family 김, given 민준,
+# suffix 씨).
+#
+# Keyed on GLUED_HONORIFICS specifically -- the peelable subset -- and
+# not on the wider spaced vocabulary, because that subset is exactly
+# the vetting this rule needs. 양, 군, 氏, 博士, 殿 and 君 are excluded
+# from it precisely because they can END a name (김지양 is a given
+# name, 鵜殿 a surname), so keying on the wider set would let this rule
+# claim a suffix regression on '김지양' or '鵜殿' -- names that are in
+# this run for the order flip alone and must stay in the rule above.
+#
+# The lookbehind is the glued half: the honorific must sit against a
+# preceding non-space, non-comma character, so a SPACED honorific never
+# matches here and falls through to the rule below. The trailing
+# `\.?(?=$|[ ,])` is the whole-token half, judged on the name STRING:
+# without it any name merely CONTAINING one of these strings would
+# match, and the optional period is #320's shape. `middle` is
+# deliberately not in `fields` -- no glued diff in this run carries
+# one, and admitting it would pre-excuse a middle regression that the
+# spaced rule below legitimately has.
+#
+# Sits AHEAD of the spaced rule on purpose: '선생님, J.씨' opens with a
+# spaced honorific and ends with a glued one, and it is the glued 씨
+# that moves. File order is the only thing that decides which label it
+# reports under, both rules being in the name_regex tier. That
+# ordering also decides '田中さん 様.' and '田中さん, 様.', which carry
+# both shapes for real; the glued さん is the piece #308 moves.
+#
+# One name lands here that is spaced, and it is left that way: the
+# SPACED '김민준 박사님' matches on its 님, which sits glued to 사
+# inside 박사님 and ends the string. The label is still true of it --
+# #308 is the change that added 박사님 to the vocabulary at all, so its
+# spaced form routes to `suffix` because of #308 -- and closing the
+# overlap would take a lookbehind asserting the match is not interior
+# to a longer listed honorific, which is more machinery than a correct
+# label is worth here.
+name_regex = "(?<=[^\\s,])(?:박사님|선생님|교수님|박사|씨|님|先生|女士|小姐|教授|様|さん|さま|くん|ちゃん)\\.?(?=$|[ ,])"
+fields = ["given", "family", "suffix"]
+
+[[change]]
+issue = "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix"
+# '王小明 先生', '김민준 씨', '田中 太郎 様', '田中 殿': #307 ships the
+# spaced CJK honorifics as suffix vocabulary, so a trailing 先生/씨/様
+# moves to `suffix` where the family-first default of 2.1 would
+# otherwise have made it the given name. #308 added さん, さま, くん,
+# ちゃん, 殿, 님 and 박사님 to that vocabulary, so their spaced forms
+# ('田中 さん', '김민준 박사님') move here too, and #320 lets a trailing
+# ASCII period through ('김민준 씨.', '김민준 양.').
+#
+# Whole-token on the name STRING -- preceded by start, space or comma,
+# followed by end, space or comma, with #320's optional period between.
+# That anchor is what the 1.4 ledger's honorific rule exists to
+# explain: unanchored, any name ENDING in 양 or 군 would match, and a
+# real suffix regression on the glued given name '김지양' would be
+# absorbed as intentional. The alternation is the CJK half of
+# SUFFIX_NOT_ACRONYMS, written longest-first so '김민준 박사님' matches
+# 박사님 rather than stalling on 박사.
+#
+# `middle` is in `fields` here where the glued rule omits it, and the
+# reason is measured: a three-token spaced name loses its middle to the
+# order flip while the honorific leaves ('田中 太郎 様' -> given 太郎,
+# family 田中, suffix 様; '김민준 박사 씨' likewise).
+name_regex = "(?:^|[ ,])(?:박사님|선생님|교수님|박사|씨|님|군|양|先生|女士|小姐|博士|教授|様|氏|殿|さん|さま|くん|ちゃん)\\.?(?=$|[ ,])"
+fields = ["given", "middle", "family", "suffix"]
+
+[[change]]
+issue = "fix(#309) 旧姓 maiden marker consumed, compounding with the CJK order flip"
+# '山田 花子 旧姓 佐藤', '山田花子 旧姓 佐藤': #309 adds the Japanese
+# maiden-name marker to the default vocabulary, so the marker is
+# consumed and the name behind it routes to `maiden`, where 2.0 left
+# both as plain name text. `given`/`family` move in the same parse
+# because the remainder is wholly Han and takes the family-first
+# reading (#271), and `middle` empties because that is where 2.0 held
+# the marker.
+#
+# The regex is the marker itself, so the rule can claim nothing that
+# does not contain it. Note what is NOT here: '山田 花子（旧姓 佐藤）'
+# is in this run as a bare {given, family} order flip, classified by
+# the first rule. #329 is gated on a non-empty Policy.maiden_delimiters
+# and the harness runs the default policy, where （） is a #273
+# NICKNAME delimiter -- so no #329 diff can appear at all, and adding a
+# rule for one would be an allowlist entry covering nothing.
+name_regex = "旧姓"
+fields = ["given", "middle", "family", "maiden"]
+
+[[change]]
+issue = "fix(#272) nakaguro inside delimited content renders as a space, compounding with the CJK order flip"
+# '山田 太郎 (マイケル・ジャクソン)': the nakaguro is a token separator
+# now, and rendering follows it, so the extracted nickname comes back
+# 'マイケル ジャクソン' where 2.0 echoed the dot -- while the wholly-Han
+# remainder takes the family-first flip in given/family. Neither
+# single-change rule may claim the union: the first rule's fields
+# exclude `nickname` on purpose, so a lone nickname regression stays
+# loud.
+#
+# Both lookaheads are required. A delimiter alone matches every
+# parenthesized nickname in the Latin corpus and would let this rule
+# absorb a bare given/family regression on one; the nakaguro alone is
+# already in the first rule's territory. Requiring both confines the
+# rule to the one shape it explains. No `middle`: this diff has none,
+# and the 1.4 ledger's twin rule reserves that field for the fullwidth
+# pair, which under the default policy cannot produce a 2.1 diff.
+name_regex = "(?s)(?=.*[・･])(?=.*[(（「『])"
+fields = ["given", "family", "nickname"]
+
+[[change]]
+issue = "fix(#298) 间隔号 division changes the comma reading, sending the credential from title to suffix"
+# '威廉·莎士比亚, PhD': one name, two intended changes at once. #298
+# divides the transcription, so the pre-comma run is two words where
+# 2.0 saw one, and the comma structure that follows from the word count
+# re-reads the lone post-comma credential -- PhD moves out of `title`
+# and into `suffix` -- while given/family take #298's division itself.
+# Neither the first rule (whose fields exclude title/suffix, on
+# purpose) nor the honorific rules (which key on vocabulary this name
+# has none of) may claim the union.
+#
+# All three lookaheads are required. A comma alone matches every Latin
+# 'Smith, Jr.' in the corpus; the interpunct alone is the Catalan punt
+# volat too ('Gal·la Marcet'), which is exactly the input class #298's
+# flank guard exists to protect; the classified-codepoint lookahead is
+# what confines the rule to names #298 can actually reach, and its
+# class is the same pinned copy of _SCRIPT_RANGES the first rule
+# carries.
+#
+# The interpunct is written as an escape rather than as itself, alone among
+# the punctuation spelled literally in this file: · (U+00B7), ・
+# (U+30FB) and ･ (U+FF65) are three different separators with three
+# different rules in 2.1, and they are indistinguishable enough on
+# screen that a literal here would be unreviewable.
+name_regex = "(?s)(?=.*,)(?=.*\\u00B7)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
+fields = ["given", "middle", "family", "title", "suffix"]
