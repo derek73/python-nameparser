@@ -35,6 +35,13 @@ V2_FIELDS = ("title", "given", "middle", "family", "suffix", "nickname",
 #: The facade's vocabulary is the one that expires, at 3.0.
 _V1_TO_ROLE = {"first": "given", "last": "family"}
 
+#: An unclassified diff, carrying BOTH surfaces' before/after:
+#: (name, old_facade, new_facade, old_v2, new_v2). Both halves are kept
+#: because a diff can exist on the v2 surface alone, and a report that
+#: named such a diff without showing it would be unactionable.
+_Unexplained = tuple[str, dict[str, str], dict[str, str],
+                     dict[str, object], dict[str, object]]
+
 
 def _parse_version(text: str) -> tuple[int, int, int]:
     """The numeric release tuple, padded to three parts. Every version
@@ -345,7 +352,13 @@ def main() -> int:
     if want_v2:
         from nameparser import parse
     by_issue: dict[str, list[str]] = {}
-    unexplained: list[tuple[str, dict[str, str], dict[str, str]]] = []
+    # BOTH surfaces' old/new are retained, not just the facade's. A diff
+    # can exist on the v2 surface alone -- an _ambiguities-only change is
+    # facade-identical by construction, and is the case _surfaces_for
+    # names as the whole reason to compare v2 -- and keeping only the
+    # facade dicts would print such a name under UNEXPLAINED with no
+    # field lines under it at all: a failure nobody can act on.
+    unexplained: list[_Unexplained] = []
     for name, old in zip(corpus, old_rows):
         new = {k: v or "" for k, v in HumanName(name).as_dict().items()
                if k in FIELDS}
@@ -353,6 +366,7 @@ def main() -> int:
         # and the facade is the surface whose vocabulary differs
         diff = {_canonical_field(f) for f in FIELDS
                 if old["facade"].get(f, "") != new.get(f, "")}
+        new_v2: dict[str, object] = {}
         if want_v2:
             p = parse(name)
             new_v2 = {f: (getattr(p, f, "") or "") for f in V2_FIELDS}
@@ -365,12 +379,13 @@ def main() -> int:
             continue
         issue = classify(name, diff, rules)
         if issue is None:
-            unexplained.append((name, old["facade"], new))
+            unexplained.append(
+                (name, old["facade"], new, old.get("v2", {}), new_v2))
         else:
             by_issue.setdefault(issue, []).append(name)
 
     changed = [n for names in by_issue.values() for n in names] \
-        + [n for n, _, _ in unexplained]
+        + [row[0] for row in unexplained]
     latin = sum(1 for n in changed if _is_latin_only(n))
     print(f"corpus: {len(corpus)} names; "
           f"intentional diffs: {sum(map(len, by_issue.values()))}; "
@@ -384,16 +399,25 @@ def main() -> int:
     if unexplained:
         print("Field names below are Role's, matching what a ledger "
               "`fields` rule must say.\n")
-    for name, old_facade, new in unexplained:
+    for name, old_facade, new, old_v2, new_v2 in unexplained:
         print(f"UNEXPLAINED {name!r}")
+        # Role's names, not the facade's: this block exists to be turned
+        # into a ledger rule, and a rule naming the facade's `first`
+        # would parse, validate, and never match -- with nothing to say
+        # so. Both surfaces are walked, and a field is reported once
+        # even when both moved, since one rule entry covers it.
+        seen: set[str] = set()
         for f in FIELDS:
             if old_facade.get(f, "") != new.get(f, ""):
-                # Role's name, not the facade's: this block exists to
-                # be turned into a ledger rule, and a rule naming the
-                # facade's `first` would parse, validate, and never
-                # match -- with nothing to say so.
+                seen.add(_canonical_field(f))
                 print(f"    {_canonical_field(f)}: "
                       f"{old_facade.get(f, '')!r} -> {new.get(f, '')!r}")
+        for f in (*V2_FIELDS, "_ambiguities"):
+            if old_v2.get(f, "") != new_v2.get(f, "") \
+                    and _canonical_field(f) not in seen:
+                print(f"    {_canonical_field(f)}: "
+                      f"{old_v2.get(f, '')!r} -> {new_v2.get(f, '')!r}"
+                      f"   [v2 surface only]")
     return 1 if unexplained else 0
 
 

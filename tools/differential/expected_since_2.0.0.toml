@@ -49,8 +49,19 @@ issue = "fix(#271/#272/#298) native-script CJK: family-first order, hangul segme
 # are absent for the same reason against the compound rules further
 # down. The class is copied verbatim from the same rule in
 # expected_since_1.4.0.toml rather than rewritten in literal
-# characters: tests/v2/test_regex_sync.py pins that spelling against
-# the script table, and a hand-rewritten twin drifts silently.
+# characters, so the two ledgers spell the same class the same way.
+#
+# Be aware of what does NOT hold here: tests/v2/test_regex_sync.py pins
+# the 1.4 ledger's copy against _policy._SCRIPT_RANGES by hardcoded
+# filename, so THIS copy is unpinned. A span removed from the script
+# table forces the 1.4 rule to narrow, test-driven, while this twin
+# stays wide and starts classifying real regressions as intended. The
+# same gap covers the honorific alternations below, hand-copied from
+# SUFFIX_NOT_ACRONYMS and GLUED_HONORIFICS (both verified equal to
+# their sources 2026-08-05). Parametrizing those pins over every
+# expected_since_*.toml is the fix; it needs the #271/#272 selector
+# reworked first, since it asserts uniqueness and this file has two
+# such rules.
 name_regex = "[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65]"
 fields = ["given", "middle", "family", "_ambiguities"]
 
@@ -115,7 +126,7 @@ issue = "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix"
 # ('田中 さん', '김민준 박사님') move here too, and #320 lets a trailing
 # ASCII period through ('김민준 씨.', '김민준 양.').
 #
-# Whole-token on the name STRING -- preceded by start, space or comma,
+# Whole-token on the name STRING -- preceded by a space or comma,
 # followed by end, space or comma, with #320's optional period between.
 # That anchor is what the 1.4 ledger's honorific rule exists to
 # explain: unanchored, any name ENDING in 양 or 군 would match, and a
@@ -124,11 +135,26 @@ issue = "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix"
 # SUFFIX_NOT_ACRONYMS, written longest-first so '김민준 박사님' matches
 # 박사님 rather than stalling on 박사.
 #
+# The leading `^` alternative this rule used to carry has been REMOVED,
+# because it reopened at the head exactly the hole the tail anchor
+# closes. 양 and 군 are honorifics in trailing position and ordinary
+# SURNAMES in leading position -- Yang and Gun -- so '양 미선' matched
+# on its own surname. Today that name's diff is {given, family} and the
+# CJK order rule above claims it first, so nothing was misclassified;
+# but a future change routing the leading 양 to `suffix` would give
+# {given, family, suffix}, which is no longer a subset of that rule's
+# fields, and it would fall through to THIS rule -- whose fields do
+# include suffix -- and be reported as an intended honorific. A surname
+# silently reclassified as a suffix is the regression class this gate
+# exists to catch. A postnominal honorific is by definition not at the
+# start of the name, so nothing legitimate needs the head match:
+# dropping it leaves all 89 diffs classified (measured 2026-08-05).
+#
 # `middle` is in `fields` here where the glued rule omits it, and the
 # reason is measured: a three-token spaced name loses its middle to the
 # order flip while the honorific leaves ('田中 太郎 様' -> given 太郎,
 # family 田中, suffix 様; '김민준 박사 씨' likewise).
-name_regex = "(?:^|[ ,])(?:박사님|선생님|교수님|박사|씨|님|군|양|先生|女士|小姐|博士|教授|様|氏|殿|さん|さま|くん|ちゃん)\\.?(?=$|[ ,])"
+name_regex = "[ ,](?:박사님|선생님|교수님|박사|씨|님|군|양|先生|女士|小姐|博士|教授|様|氏|殿|さん|さま|くん|ちゃん)\\.?(?=$|[ ,])"
 fields = ["given", "middle", "family", "suffix"]
 
 [[change]]
@@ -196,4 +222,4 @@ issue = "fix(#298) 间隔号 division changes the comma reading, sending the cre
 # different rules in 2.1, and they are indistinguishable enough on
 # screen that a literal here would be unreviewable.
 name_regex = "(?s)(?=.*,)(?=.*\\u00B7)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
-fields = ["given", "middle", "family", "title", "suffix"]
+fields = ["given", "family", "title", "suffix"]

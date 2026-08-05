@@ -220,3 +220,26 @@ def test_malformed_rule_error_names_the_ledger_it_came_from() -> None:
         compare.validate_rules(bad, "expected_since_2.0.0.toml")
     with pytest.raises(SystemExit, match="expected_since_1.4.0.toml"):
         compare.validate_rules([{}], "expected_since_1.4.0.toml")
+
+
+def test_classify_declines_a_diff_touching_a_field_the_rule_omits() -> None:
+    """The subset check is the tightness mechanism of every `fields`
+    rule -- a rule claims a diff only when EVERY changed field is one it
+    listed. Nothing else pinned it: a rule and a diff that name the same
+    single field satisfy `<=`, `>=`, `==` and `&` alike, so the existing
+    tests pass with the comparison flipped, and every deliberate field
+    omission in both ledgers would quietly stop meaning anything."""
+    rules = [{"issue": "given-only", "fields": ["given"]}]
+    assert compare.classify("x", {"given"}, rules) == "given-only"
+    assert compare.classify("x", {"given", "suffix"}, rules) is None
+
+
+def test_v2_fields_matches_the_Role_enum() -> None:
+    """AGENTS.md: the seven roles are 'defined once and derived
+    everywhere'. compare.py cannot import Role into the WORKER (that
+    runs under the old wheel), but this copy reads the working tree's
+    ParsedName and must track Role. If a role were added and this tuple
+    not updated, getattr never asks for it and every change in that role
+    is invisible on the v2 surface -- silent under-coverage, exit 0."""
+    from nameparser import Role
+    assert compare.V2_FIELDS == tuple(str(r) for r in Role)
