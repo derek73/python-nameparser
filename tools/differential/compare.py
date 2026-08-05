@@ -1,6 +1,6 @@
 """Differential harness (migration spec S5): 1.4-on-PyPI vs the working
 tree over the corpus. Every diff must classify against
-expected_changes.toml or the run fails.
+expected_since_1.4.0.toml or the run fails.
 
     uv run python tools/differential/compare.py [--corpus corpus.jsonl]
 """
@@ -25,12 +25,12 @@ def validate_rules(rules: list[dict[str, object]]) -> None:
         issue = rule.get("issue")
         if not isinstance(issue, str) or not issue:
             raise SystemExit(
-                f"expected_changes.toml rule #{i + 1} has no string "
+                f"expected_since_1.4.0.toml rule #{i + 1} has no string "
                 f"'issue': {rule!r}")
         if not isinstance(rule.get("name_regex"), str) \
                 and not isinstance(rule.get("fields"), list):
             raise SystemExit(
-                f"expected_changes.toml rule #{i + 1} ({issue!r}) has "
+                f"expected_since_1.4.0.toml rule #{i + 1} ({issue!r}) has "
                 f"neither 'name_regex' nor 'fields' -- it would match "
                 f"every diff and shadow every later rule")
 
@@ -60,7 +60,7 @@ def main() -> int:
     paths = ([Path(p) for p in args.corpus] if args.corpus
              else sorted(HERE.glob("corpus*.jsonl")))
     rules = tomllib.loads(
-        (HERE / "expected_changes.toml").read_text()).get("change", [])
+        (HERE / "expected_since_1.4.0.toml").read_text()).get("change", [])
     validate_rules(rules)
     # Most-specific-first: a name_regex rule outranks a fields-only rule
     # wherever both match, so file order stops being load-bearing. The

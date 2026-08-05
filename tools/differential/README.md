@@ -27,13 +27,13 @@ uv run python tools/differential/compare.py
 name as a line of JSON, and diffs the two component dicts on the seven
 v1 field names (`title`, `first`, `middle`, `last`, `suffix`,
 `nickname`, `maiden` -- both sides use these keys, so no field mapping
-is needed). Every diff is checked against `expected_changes.toml`:
+is needed). Every diff is checked against `expected_since_1.4.0.toml`:
 
 - Matches a rule -> counted as an intentional, classified change.
 - Matches no rule -> printed under `UNEXPLAINED` and the run exits 1.
 
 An unexplained diff means either a real 2.0 parity bug (fix it, don't
-allowlist it) or a known change whose `expected_changes.toml` rule
+allowlist it) or a known change whose `expected_since_1.4.0.toml` rule
 needs widening. The run must exit 0 before a 2.0 release; the classified
 summary it prints is the source for the "Behavior Changes" section of
 `docs/release_log.rst`.
@@ -165,7 +165,7 @@ as new issues arrive. Over-collection is fine in both builders: the
 comparator just parses more names, and junk like `Bridge (1.4)` costs
 one parse and produces no diff.
 
-## `expected_changes.toml`
+## `expected_since_1.4.0.toml`
 
 Each `[[change]]` entry needs `issue` (a short label, ideally an
 issue number or `fix(<slug>)` matching a `tests/v2/cases.py`
