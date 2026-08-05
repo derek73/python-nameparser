@@ -210,3 +210,13 @@ def test_every_ledger_rule_names_roles_canonically() -> None:
 ])
 def test_latin_only_partition(name: str, latin: bool) -> None:
     assert compare._is_latin_only(name) is latin
+
+
+def test_malformed_rule_error_names_the_ledger_it_came_from() -> None:
+    """There is one ledger per baseline now, so a hardcoded filename
+    sends the reader to edit a rule that is not the broken one."""
+    bad = [{"issue": "x"}]  # neither name_regex nor fields
+    with pytest.raises(SystemExit, match="expected_since_2.0.0.toml"):
+        compare.validate_rules(bad, "expected_since_2.0.0.toml")
+    with pytest.raises(SystemExit, match="expected_since_1.4.0.toml"):
+        compare.validate_rules([{}], "expected_since_1.4.0.toml")

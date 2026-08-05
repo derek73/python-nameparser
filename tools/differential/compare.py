@@ -253,21 +253,26 @@ def _is_latin_only(name: str) -> bool:
     return all(ord(ch) < 0x250 for ch in name)
 
 
-def validate_rules(rules: list[dict[str, object]]) -> None:
+def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
     """Reject malformed allowlist rules LOUDLY at startup. A rule with
     neither name_regex nor fields would match every diff and shadow
     every later rule -- the harness would report false confidence,
-    the exact failure it exists to prevent."""
+    the exact failure it exists to prevent.
+
+    `ledger` is named rather than hardcoded because there is one per
+    baseline now: a message naming the wrong file sends the reader to
+    edit a rule that is not the broken one.
+    """
     for i, rule in enumerate(rules):
         issue = rule.get("issue")
         if not isinstance(issue, str) or not issue:
             raise SystemExit(
-                f"expected_since_1.4.0.toml rule #{i + 1} has no string "
+                f"{ledger} rule #{i + 1} has no string "
                 f"'issue': {rule!r}")
         if not isinstance(rule.get("name_regex"), str) \
                 and not isinstance(rule.get("fields"), list):
             raise SystemExit(
-                f"expected_since_1.4.0.toml rule #{i + 1} ({issue!r}) has "
+                f"{ledger} rule #{i + 1} ({issue!r}) has "
                 f"neither 'name_regex' nor 'fields' -- it would match "
                 f"every diff and shadow every later rule")
 
@@ -287,9 +292,10 @@ def classify(name: str, diff_fields: set[str],
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    # Both corpora by default: they have different blind spots (see
+    # Every corpus by default: they have different blind spots (see
     # build_issues_corpus.py), and one that has to be asked for by name
-    # is one that stops being run.
+    # is one that stops being run. Deliberately a glob rather than a
+    # list, so adding a corpus file is enough to put it in the gate.
     ap.add_argument("--corpus", action="append", metavar="PATH",
                     help="corpus file; repeatable. Defaults to every "
                          "corpus*.jsonl beside this script.")
@@ -303,9 +309,9 @@ def main() -> int:
     surfaces = _surfaces_for(baseline)
     paths = ([Path(p) for p in args.corpus] if args.corpus
              else sorted(HERE.glob("corpus*.jsonl")))
-    rules = tomllib.loads(
-        _allowlist_for(baseline).read_text()).get("change", [])
-    validate_rules(rules)
+    ledger = _allowlist_for(baseline)
+    rules = tomllib.loads(ledger.read_text()).get("change", [])
+    validate_rules(rules, ledger.name)
     rules = _sorted_rules(rules)
     # A glob that matches nothing must not read as "everything passed".
     # Comparing zero names would print 0 unexplained and exit 0 -- the
