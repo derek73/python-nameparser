@@ -159,3 +159,34 @@ def test_tell_rejects_a_module_loaded_from_the_checkout() -> None:
 def test_tell_rejects_an_empty_tell() -> None:
     with pytest.raises(SystemExit):
         compare._check_tell({}, "2.0.0")
+
+
+def test_facade_field_names_canonicalize_to_role_vocabulary() -> None:
+    """Both surfaces name the same seven roles with different words,
+    and Role's names win -- AGENTS.md already makes Role's declaration
+    order canonical "defined once and derived everywhere", and the
+    facade's vocabulary expires at 3.0."""
+    assert compare._canonical_field("first") == "given"
+    assert compare._canonical_field("last") == "family"
+    assert compare._canonical_field("middle") == "middle"
+    assert compare._canonical_field("_ambiguities") == "_ambiguities"
+
+
+def test_canonical_field_is_idempotent_on_role_names() -> None:
+    """Both surfaces' diffs pass through it, and the v2 surface's names
+    are already canonical, so applying it must be a no-op there."""
+    for role in compare.V2_FIELDS:
+        assert compare._canonical_field(role) == role
+
+
+@pytest.mark.parametrize("name,latin", [
+    ("John Smith", True),
+    ("Anna Müller", True),
+    ("Jane Smith (née Jones)", True),
+    ("田中さん", False),
+    ("김민준", False),
+    ("Хосе Сантос", False),
+    ("威廉·莎士比亚", False),
+])
+def test_latin_only_partition(name: str, latin: bool) -> None:
+    assert compare._is_latin_only(name) is latin

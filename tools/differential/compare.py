@@ -228,6 +228,25 @@ def _run_worker(version: str, want_v2: bool,
     return tell, results
 
 
+def _canonical_field(field: str) -> str:
+    """A role's canonical name: Role's, not the facade's. Applied to
+    diffs from BOTH surfaces, so it must be a no-op on names that are
+    already canonical."""
+    return _V1_TO_ROLE.get(field, field)
+
+
+def _is_latin_only(name: str) -> bool:
+    """Every character below U+0250 -- Latin, ASCII punctuation and
+    Latin-1 accents.
+
+    The partition is by SCRIPT OF THE INPUT, not by which issue claimed
+    the diff, because the question it answers is whether a user parsing
+    Western names sees any change at all. That number goes into the
+    release notes.
+    """
+    return all(ord(ch) < 0x250 for ch in name)
+
+
 def validate_rules(rules: list[dict[str, object]]) -> None:
     """Reject malformed allowlist rules LOUDLY at startup. A rule with
     neither name_regex nor fields would match every diff and shadow
