@@ -3,10 +3,11 @@
 # every rule needs `issue`; optional `name_regex` and `fields` narrow
 # it, and compare.py sorts name_regex rules ahead of fields-only ones.
 #
-# `fields` names roles the way Role does -- title, given, middle,
-# family, suffix, nickname, maiden -- for BOTH compared surfaces. A
-# rule saying "first" or "last" parses and validates and then never
-# matches; the guard in tests/v2/test_differential.py catches it.
+# `fields` names roles the way Role does, for BOTH compared surfaces,
+# plus the pseudo-field `_ambiguities`. The roster is deliberately not
+# restated here -- it is Role's members, validate_rules rejects
+# anything outside them, and a copy in prose goes stale the day a role
+# is added. A rule saying "first" or "last" is rejected at startup.
 #
 # Rules here are NOT a subset of the 1.4 ledger's. That one classifies
 # everything 2.x changed since 1.4, including what 2.0 itself changed;

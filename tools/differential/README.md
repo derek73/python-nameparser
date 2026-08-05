@@ -57,21 +57,28 @@ directory outside the worktree. Its first output line is a version
 tell, and `compare.py` aborts before comparing anything if the wrong
 version answered or if the module resolved inside the checkout.
 
+**Both** sides are proved, not just the baseline. `compare.py` also
+checks that its own `nameparser` is this checkout's source package and
+prints it on a `tree:` line — see the third trap below for why a bare
+import was not enough.
+
 A rule's `fields` names roles the way `Role` does, whichever surface
 the diff came from, plus the pseudo-field `_ambiguities` for a change
 in reported `AmbiguityKind`s. The roster is not restated here: it is
 `Role`'s members, `validate_rules` rejects anything outside them, and
-a copy in prose is a copy that goes stale when a role is added. The facade reports `first`/`last`; those are
-canonicalized on the way in, and the `UNEXPLAINED` block prints the
-canonical name so what you read is what you write.
+a copy in prose is a copy that goes stale when a role is added. The
+facade reports `first`/`last`; those are canonicalized on the way in,
+and the `UNEXPLAINED` block prints the canonical name so what you read
+is what you write.
 
-## The two invocation traps the temp dir closes
+## The three invocation traps
 
-Neither trap below is hypothetical -- the second was reproduced twice
-while working on #320 -- and they are recorded here because the
-generated worker's placement is the thing that disarms them. A later
-change that moves the worker back inside the worktree, or invokes it
-from a cwd inside the project, reopens both. The analysis is the
+None of the three below is hypothetical -- the second was reproduced
+twice while working on #320, and the third was demonstrated during
+review of this harness's own generalization. The first two are
+recorded here because the generated worker's cwd and script path are
+what disarm them: a later change that runs the worker from a cwd
+inside the project reopens both. The analysis is the
 reason for the design, so it outlives the bug.
 
 **Without `--no-project`,** `uv` installs the working tree as an
@@ -128,6 +135,43 @@ exit code under zsh. `$?` after a pipeline is `tail`'s status, and
 is the 1-indexed `pipestatus`, so `${PIPESTATUS[0]}` is the empty
 string and a failing run reads as a passing one. Redirect to a file
 and read the file instead of piping.
+
+### Trap 3: `PYTHONPATH` shadows BOTH sides, and the tell passes
+
+The first two traps are about which library answers as the *baseline*.
+This one is about the *tree*, and it defeats every guard aimed at the
+other side.
+
+Run as a script, `sys.path[0]` is `tools/differential/` -- which holds
+no `nameparser` -- so a `PYTHONPATH` entry outranks the editable
+install and `compare.py` imports a released wheel while believing it
+read the checkout. PEP 723 does not save the worker either:
+`PYTHONPATH` precedes site-packages *inside* uv's own environment.
+Measured 2026-08-05, with a released 2.0.0 on `PYTHONPATH`:
+
+```
+baseline: nameparser 2.0.0 (.../shadow/nameparser/__init__.py)
+corpus: 751 names; intentional diffs: 0; unexplained: 0
+```
+
+exit 0, with **both halves of the baseline tell passing** -- the
+version matched, and the path was outside the repo. 89 diffs became 0.
+
+Two things close it. `_worker_env()` strips `PYTHONPATH`/`PYTHONHOME`
+from the child, and `_check_tree()` requires `compare.py`'s own
+`nameparser` to be this checkout's **source package**.
+
+That second predicate was first written as "somewhere under the repo",
+which was wrong in a way worth recording: the checkout also contains
+`.venv/`, `build/lib/` and `dist/`, any of which can hold a released
+wheel, so `PYTHONPATH=<repo>/build/lib` was the same trap with the
+shadowing directory moved one level to the left -- and `uv` never
+touches `build/`, so nothing self-heals it.
+
+Why this is easy to miss when probing by hand: from the repo root,
+`python -c "import nameparser"` puts the CWD on `sys.path` first, so
+the checkout wins and the trap does not reproduce. Only the script
+invocation shows it.
 
 ## The three corpora
 

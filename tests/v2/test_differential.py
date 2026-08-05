@@ -82,7 +82,8 @@ def test_allowlist_for_a_baseline_with_no_ledger_is_a_hard_error() -> None:
 
 
 def test_name_regex_rules_sort_ahead_of_fields_only_rules() -> None:
-    """Most-specific-first, so file order stops being load-bearing."""
+    """Most-specific-first BETWEEN tiers. Within a tier the stable
+    sort leaves file order deciding, which the 2.0 ledger relies on."""
     rules = [{"issue": "broad", "fields": ["first"]},
              {"issue": "specific", "name_regex": "Smith"}]
     assert [r["issue"] for r in compare._sorted_rules(rules)] \
@@ -180,10 +181,11 @@ def test_canonical_field_is_idempotent_on_role_names() -> None:
 
 
 def test_every_ledger_rule_names_roles_canonically() -> None:
-    """The trap this guards: a rule written in facade vocabulary parses
-    fine, validates fine, and simply never matches -- the ledger grows
-    an entry that does nothing, classification silently loosens, and
-    nothing anywhere says so. Sweeps every ledger, so a new baseline's
+    """A rule written in facade vocabulary parses, and validate_rules
+    now rejects it at startup ("not roles"). Before that guard it
+    validated and then silently never matched -- the ledger growing an
+    entry that did nothing. This keeps a sharper message than the
+    generic role check, and sweeps every ledger, so a new baseline's
     file is covered the day it is added."""
     import tomllib
     ledgers = sorted(_TOOLS.glob("expected_since_*.toml"))
@@ -245,11 +247,14 @@ def test_v2_fields_matches_the_Role_enum() -> None:
     assert compare.V2_FIELDS == tuple(str(r) for r in Role)
 
 
-# The malformed-rule family. Every row is a way a rule can silently
+# The malformed-rule family. Most rows are a way a rule can silently
 # match MORE than its author meant, which is how a real regression
-# becomes a classified diff and a green run. Parametrized rather than
-# written one-by-one because a guard added to one member of this family
-# belongs on all of it.
+# becomes a classified diff and a green run. Three rows are the
+# opposite -- an empty `fields`, a non-role name, a facade name -- and
+# make a rule that can never match; those fail loudly (the diff
+# surfaces as UNEXPLAINED) so their rows buy a precise message rather
+# than safety. Parametrized rather than written one-by-one because a
+# guard added to one member of this family belongs on all of it.
 @pytest.mark.parametrize("rule,expect", [
     ({}, "no string 'issue'"),
     ({"issue": ""}, "no string 'issue'"),
@@ -264,8 +269,19 @@ def test_v2_fields_matches_the_Role_enum() -> None:
      "not a list of strings"),
     # an empty pattern matches every name, and name_regex rules sort
     # FIRST, so it would shadow the whole ledger
-    ({"issue": "x", "name_regex": ""}, "matches the empty string"),
-    ({"issue": "x", "name_regex": "(?:)"}, "matches the empty string"),
+    ({"issue": "x", "name_regex": ""}, "matches every one of"),
+    ({"issue": "x", "name_regex": "(?:)"}, "matches every one of"),
+    # the shapes the empty-string probe let through: each declines ""
+    # and still matches every name in every corpus
+    ({"issue": "x", "name_regex": "."}, "matches every one of"),
+    ({"issue": "x", "name_regex": ".+"}, "matches every one of"),
+    ({"issue": "x", "name_regex": r"\b"}, "matches every one of"),
+    ({"issue": "x", "name_regex": r"[\s\S]"}, "matches every one of"),
+    # seven roles without _ambiguities: below baseline 2.0 that IS the
+    # whole vocabulary, so it claims every diff
+    ({"issue": "x", "fields": ["title", "given", "middle", "family",
+                               "suffix", "nickname", "maiden"]},
+     "all seven roles"),
     # uncompilable: without this it raises mid-run, after the worker
     ({"issue": "x", "name_regex": "Smith("}, "invalid 'name_regex'"),
     ({"issue": "x", "fields": []}, "empty 'fields'"),
@@ -274,7 +290,7 @@ def test_v2_fields_matches_the_Role_enum() -> None:
     ({"issue": "x", "fields": ["first"]}, "not roles"),
     ({"issue": "x", "fields": ["title", "given", "middle", "family",
                                "suffix", "nickname", "maiden",
-                               "_ambiguities"]}, "every role"),
+                               "_ambiguities"]}, "all seven roles"),
 ])
 def test_validate_rules_rejects_a_rule_that_would_silently_widen(
         rule: dict, expect: str) -> None:
@@ -302,26 +318,42 @@ def test_ambiguities_is_a_legal_field_name() -> None:
         [{"issue": "x", "fields": ["_ambiguities"]}], "ledger.toml")
 
 
+#: What _run_worker was asked for, so a test can prove main forwarded
+#: the baseline and the corpus rather than defaults of its own.
+_WORKER_CALL: dict = {}
+
+
 def _run_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ledger_body: str,
-              baseline_facade: dict) -> tuple[int, str]:
+              baseline_facade: dict, baseline: str = "1.4.0",
+              baseline_v2: dict | None = None) -> tuple[int, str]:
     """Drive main() end to end with a faked baseline worker.
 
     No uv, no network. The helper exists because every unit test above
     proves a helper WORKS while none proves main() calls it -- and in a
     gate, the composition is the part that can go silently permissive.
+
+    `baseline` defaults to 1.4.0 (facade only). Pass 2.0.0 with
+    `baseline_v2` to exercise the v2 surface, including the
+    ambiguity-only diff that is the stated reason to compare it.
     """
     import sys
     corpus = tmp_path / "corpus_x.jsonl"
     corpus.write_text('"John Smith"\n', encoding="utf-8")
-    (tmp_path / "expected_since_1.4.0.toml").write_text(
+    (tmp_path / f"expected_since_{baseline}.toml").write_text(
         ledger_body, encoding="utf-8")
+    row: dict = {"facade": baseline_facade}
+    if baseline_v2 is not None:
+        row["v2"] = baseline_v2
+    _WORKER_CALL.clear()
+
+    def _fake(v: str, w: bool, n: list[str]) -> tuple[dict, list[dict]]:
+        _WORKER_CALL.update(version=v, want_v2=w, names=list(n))
+        return ({"__version__": v,
+                 "__file__": "/wheel/nameparser/__init__.py"}, [row])
+
     monkeypatch.setattr(compare, "HERE", tmp_path)
-    monkeypatch.setattr(
-        compare, "_run_worker",
-        lambda v, w, n: ({"__version__": v,
-                          "__file__": "/wheel/nameparser/__init__.py"},
-                         [{"facade": baseline_facade}]))
-    monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", "1.4.0",
+    monkeypatch.setattr(compare, "_run_worker", _fake)
+    monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", baseline,
                                       "--corpus", str(corpus)])
     import io
     import contextlib
@@ -377,12 +409,12 @@ def test_main_validates_the_ledger_before_running_anything(
     """validate_rules has its own tests; this pins that main CALLS it.
     Deleting the call leaves those tests passing while a match-anything
     rule shadows the ledger."""
-    with pytest.raises(SystemExit, match="matches the empty string"):
+    with pytest.raises(SystemExit, match="matches every one of"):
         _run_main(tmp_path, monkeypatch,
                   '[[change]]\nissue = "wide"\nname_regex = ""\n', _DIFFERS)
 
 
-def test_main_sorts_rules_so_file_order_is_not_load_bearing(
+def test_main_sorts_a_name_regex_rule_ahead_of_a_fields_only_one(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A broad fields-only rule written FIRST must not claim a diff the
     specific name_regex rule below it owns. Deleting main's
@@ -401,7 +433,7 @@ def test_check_tree_accepts_the_checkout_and_rejects_anything_else(
     was a bare import trusted on sight."""
     inside = _TOOLS.parents[1] / "nameparser" / "__init__.py"
     assert compare._check_tree(str(inside)) == inside.resolve()
-    with pytest.raises(SystemExit, match="outside this checkout"):
+    with pytest.raises(SystemExit, match="not from this checkout's source"):
         compare._check_tree(str(tmp_path / "nameparser" / "__init__.py"))
 
 
@@ -419,7 +451,7 @@ def test_main_aborts_when_the_tree_side_is_not_the_checkout(
     tree's nameparser is no longer under the root it must be under.
     """
     monkeypatch.setattr(compare, "REPO_ROOT", tmp_path)
-    with pytest.raises(SystemExit, match="outside this checkout"):
+    with pytest.raises(SystemExit, match="not from this checkout's source"):
         _run_main(tmp_path, monkeypatch,
                   '[[change]]\nissue = "x"\nname_regex = "ZZZ"\n', _DIFFERS)
 
@@ -435,3 +467,172 @@ def test_worker_env_strips_the_import_path_overrides(
     env = compare._worker_env()
     assert "PYTHONPATH" not in env and "PYTHONHOME" not in env
     assert env["PATH"] == "/usr/bin", "the rest of the env must survive"
+
+
+class _FakePopen:
+    """Records how _run_worker spawned the child, and replays a canned
+    stdout. Lets the subprocess-facing guards be tested without uv."""
+
+    last: dict = {}
+    out: str = ""
+    rc: int = 0
+
+    def __init__(self, argv: list[str], **kw: object) -> None:
+        _FakePopen.last = {"argv": argv, **kw}
+        self.returncode = _FakePopen.rc
+
+    def communicate(self, payload: str) -> tuple[str, str]:
+        _FakePopen.last["stdin"] = payload
+        return _FakePopen.out, ""
+
+
+def _fake_popen(monkeypatch: pytest.MonkeyPatch, out: str,
+                rc: int = 0) -> type[_FakePopen]:
+    _FakePopen.out, _FakePopen.rc = out, rc
+    monkeypatch.setattr(compare.subprocess, "Popen", _FakePopen)
+    return _FakePopen
+
+
+_TELL = ('{"__version__": "1.4.0", '
+         '"__file__": "/wheel/nameparser/__init__.py"}')
+_ROW = '{"facade": {"first": "John"}}'
+
+
+def test_run_worker_strips_the_import_path_overrides_from_the_child(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """_worker_env has its own test; this pins that _run_worker USES
+    it. Deleting `env=_worker_env()` left all 61 tests green -- the
+    same shape as the bug the previous review found, a proved helper
+    with an unproved call site."""
+    monkeypatch.setenv("PYTHONPATH", "/shadow")
+    _fake_popen(monkeypatch, f"{_TELL}\n{_ROW}\n")
+    compare._run_worker("1.4.0", False, ["John Smith"])
+    env = _FakePopen.last["env"]
+    assert "PYTHONPATH" not in env and "PYTHONHOME" not in env
+
+
+def test_run_worker_aborts_on_a_nonzero_exit(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    _fake_popen(monkeypatch, "", rc=3)
+    with pytest.raises(SystemExit, match="exited 3"):
+        compare._run_worker("1.4.0", False, ["John Smith"])
+
+
+def test_run_worker_aborts_on_empty_output(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    _fake_popen(monkeypatch, "")
+    with pytest.raises(SystemExit, match="not even a version tell"):
+        compare._run_worker("1.4.0", False, ["John Smith"])
+
+
+def test_run_worker_aborts_when_fewer_results_than_names(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The guard behind main's zip(), which truncates silently. This is
+    the comparing-fewer-names-than-you-think failure."""
+    _fake_popen(monkeypatch, f"{_TELL}\n{_ROW}\n")
+    with pytest.raises(SystemExit, match="1 results for 2 corpus names"):
+        compare._run_worker("1.4.0", False, ["John Smith", "Jane Doe"])
+
+
+def test_run_worker_checks_the_tell_before_returning_results(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    wrong = ('{"__version__": "9.9.9", '
+             '"__file__": "/wheel/nameparser/__init__.py"}')
+    _fake_popen(monkeypatch, f"{wrong}\n{_ROW}\n")
+    with pytest.raises(SystemExit, match="not the requested"):
+        compare._run_worker("1.4.0", False, ["John Smith"])
+
+
+@pytest.mark.parametrize("rel", [
+    ".venv/lib/python3.11/site-packages/nameparser/__init__.py",
+    "build/lib/nameparser/__init__.py",
+    "dist/unpacked/nameparser/__init__.py",
+])
+def test_check_tree_rejects_a_wheel_sitting_inside_the_checkout(
+        rel: str) -> None:
+    """The hole in the first version of this guard. It asked "is this
+    under the repo", but the repo contains .venv/, build/ and dist/,
+    any of which can hold a released wheel -- so
+    PYTHONPATH=<repo>/build/lib was the same trap one directory to the
+    left, and uv never touches build/ to self-heal it."""
+    with pytest.raises(SystemExit, match="not from this checkout's source"):
+        compare._check_tree(str(compare.REPO_ROOT / rel))
+
+
+def test_check_tree_resolves_before_comparing() -> None:
+    """Without .resolve(), a path escaping via .. reads as inside."""
+    escaped = compare.REPO_ROOT / "nameparser" / ".." / ".." / "x" \
+        / "nameparser" / "__init__.py"
+    with pytest.raises(SystemExit, match="not from this checkout's source"):
+        compare._check_tree(str(escaped))
+
+
+#: The tree's own reading of the fixture name, on both surfaces. A fake
+#: baseline row built from these differs from the tree in exactly the
+#: one field a test chooses to alter.
+_SAME_FACADE = {"title": "", "first": "John", "middle": "", "last": "Smith",
+                "suffix": "", "nickname": "", "maiden": ""}
+_SAME_V2 = {"title": "", "given": "John", "middle": "", "family": "Smith",
+            "suffix": "", "nickname": "", "maiden": "", "_ambiguities": []}
+
+
+def test_main_compares_the_v2_surface_from_baseline_2_0(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A SEGMENTATION-only diff is facade-identical by construction, so
+    it is invisible unless main actually unions the v2 surface into the
+    diff set. That diff shape is the whole stated reason _surfaces_for
+    compares v2 from 2.0 on -- and every mutation that disabled it
+    (want_v2 forced False, the v2 union deleted, `|=` changed to `=`)
+    passed the suite before this test existed.
+    """
+    v2 = {**_SAME_V2, "_ambiguities": ["SEGMENTATION"]}
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\n',
+        _SAME_FACADE, baseline="2.0.0", baseline_v2=v2)
+    assert code == 1, "an ambiguity-only regression must not exit 0"
+    assert "UNEXPLAINED 'John Smith'" in out
+    assert "_ambiguities:" in out
+    assert "[v2 surface only]" in out, (
+        "the tag distinguishes an ambiguity-kind change from a field "
+        "change; without it the row reads as a field diff")
+
+
+def test_main_claims_an_ambiguity_only_diff_when_a_rule_names_it(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    v2 = {**_SAME_V2, "_ambiguities": ["SEGMENTATION"]}
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "seg"\nfields = ["_ambiguities"]\n',
+        _SAME_FACADE, baseline="2.0.0", baseline_v2=v2)
+    assert code == 0 and "## seg (1)" in out
+
+
+def test_main_reports_a_role_once_when_both_surfaces_moved(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The `seen` set. Both surfaces name the same role, so a family
+    change shows on each; printing it twice would read as two findings."""
+    _, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\n',
+        {**_SAME_FACADE, "last": "SMYTHE"}, baseline="2.0.0",
+        baseline_v2={**_SAME_V2, "family": "SMYTHE"})
+    assert out.count("family:") == 1
+
+
+def test_main_forwards_the_baseline_and_corpus_to_the_worker(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Otherwise main could read the 2.0 ledger while comparing against
+    1.4, or compare a truncated corpus, and every other test would pass."""
+    _run_main(tmp_path, monkeypatch,
+              '[[change]]\nissue = "x"\nname_regex = "ZZZ"\n',
+              _SAME_FACADE, baseline="2.0.0", baseline_v2=_SAME_V2)
+    assert _WORKER_CALL == {"version": "2.0.0", "want_v2": True,
+                            "names": ["John Smith"]}
+
+
+def test_main_asks_for_the_facade_alone_below_2_0(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _run_main(tmp_path, monkeypatch,
+              '[[change]]\nissue = "x"\nname_regex = "ZZZ"\n', _SAME_FACADE)
+    assert _WORKER_CALL["want_v2"] is False

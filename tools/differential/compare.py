@@ -101,9 +101,16 @@ def _allowlist_for(version: str) -> Path:
 
 def _sorted_rules(rules: list[dict[str, object]]) -> list[dict[str, object]]:
     """Most-specific-first: a name_regex rule outranks a fields-only
-    rule wherever both match, so file order stops being load-bearing.
-    The sort is stable, so rules within a tier keep the order they were
-    written in."""
+    rule wherever both match, so file order does not decide BETWEEN THE
+    TIERS.
+
+    Within a tier it still decides everything, because the sort is
+    stable. That is not a footnote: every rule in
+    expected_since_2.0.0.toml carries a name_regex, so they all sit in
+    one tier and the order they are written in settles every tie among
+    them -- three names match both honorific rules and are labelled by
+    whichever comes first.
+    """
     return sorted(rules, key=lambda r: not isinstance(r.get("name_regex"), str))
 
 
@@ -228,19 +235,33 @@ def _check_tree(module_file: str) -> Path:
     believing it read the checkout. Two wheels agree on everything, so
     the run reports parity.
 
-    (The reason this is easy to miss when probing by hand: `python -c`
-    puts the CWD on sys.path first, so the checkout wins there and the
-    trap does not reproduce. Only the script invocation shows it.)
+    (The reason this is easy to miss when probing by hand: from the
+    repo root, `python -c` puts the CWD on sys.path first, so the
+    checkout wins there and the trap does not reproduce. Only the
+    script invocation shows it.)
+
+    The test is "is this the SOURCE PACKAGE", not "is this somewhere
+    under the repo". The weaker form was written first and was wrong:
+    the checkout also contains .venv/, build/lib/ and dist/, any of
+    which can hold a released wheel, so `PYTHONPATH=<repo>/build/lib`
+    is the same trap with the shadowing directory moved one level to
+    the left -- and uv never touches build/, so nothing self-heals it.
+    Note the asymmetry the weak form created: <repo>/.venv/.../
+    nameparser is REJECTED as a baseline by _check_tell and would have
+    been ACCEPTED as the tree here.
     """
     at = Path(module_file).resolve()
-    if not at.is_relative_to(REPO_ROOT):
+    source = REPO_ROOT / "nameparser"
+    if not at.is_relative_to(source):
         raise SystemExit(
-            f"the tree side imported nameparser from {at}, which is "
-            f"outside this checkout ({REPO_ROOT}) -- so this run would "
-            f"compare that module against the baseline instead of the "
-            f"working tree. Unset PYTHONPATH, or uninstall a "
-            f"non-editable nameparser from the active environment; "
-            f"comparison aborted.")
+            f"the tree side imported nameparser from {at}, not from "
+            f"this checkout's source package ({source}) -- so this run "
+            f"would compare that module against the baseline instead of "
+            f"the working tree. Unset PYTHONPATH; uninstall a "
+            f"non-editable nameparser from the active environment; or, "
+            f"in a git worktree, check that the editable install points "
+            f"at THIS worktree rather than the main checkout. "
+            f"Comparison aborted.")
     return at
 
 
@@ -311,23 +332,34 @@ def _is_latin_only(name: str) -> bool:
 #: is facade-identical, so this is the one name that can classify it.
 _RULE_FIELDS = frozenset((*V2_FIELDS, "_ambiguities"))
 _RULE_KEYS = frozenset(("issue", "name_regex", "fields"))
+#: Probe names for the over-match check, chosen to share no script, no
+#: vocabulary and no punctuation. A `name_regex` matching ALL of them is
+#: not targeting a behavior family, it is matching everything -- and
+#: since name_regex rules sort first, one such rule shadows the ledger.
+#: Probing the empty string instead (the first attempt) tested the wrong
+#: property: '.', '.+', r'\b' and '[\s\S]' all decline "" and still
+#: match every name in every corpus.
+_SENTINELS = ("John Smith", "田中さん", "Хосе Сантос", "x")
 
 
 def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
     """Reject malformed allowlist rules LOUDLY at startup.
 
-    The failure this exists to prevent is a rule that matches MORE than
-    its author meant, because that converts a real regression into a
-    classified diff and a green run -- the harness reporting false
-    confidence. Every check below is a way a rule can silently widen;
-    they are gathered here rather than spread out because a guard added
-    to one member of the family belongs on all of it.
+    Every check below is a way a rule can silently stop meaning what
+    its author wrote. Most of them catch a rule matching MORE than
+    intended, which is the dangerous direction: it converts a real
+    regression into a classified diff and a green run. Two catch the
+    opposite -- an empty `fields`, or one naming something that is not
+    a role, makes a rule that can never match, and its diff then
+    surfaces as UNEXPLAINED. That failure is loud, so those two checks
+    buy a precise message rather than safety; they are here because the
+    family is easier to reason about whole than split by direction.
 
-    Three of them are not about presence but about TYPE and VALUE, and
-    those are the quiet ones: `classify` skips a `name_regex` that is
-    not a str and a `fields` that is not a list, so a mistyped or
-    misspelled key does not fail -- it deletes that half of the rule's
-    narrowing and the rule matches on the other half alone.
+    The TYPE and VALUE checks are the quiet ones, not the presence
+    check: `classify` skips a `name_regex` that is not a str and a
+    `fields` that is not a list, so a mistyped or misspelled key does
+    not fail -- it deletes that half of the rule's narrowing and the
+    rule matches on the other half alone.
 
     Rules are also compiled here, not at match time. `classify` returns
     on the first match, so an uncompilable pattern at position k only
@@ -371,12 +403,14 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
                 raise SystemExit(
                     f"{where} has an invalid 'name_regex' "
                     f"({pattern!r}): {exc}") from None
-            if compiled.search(""):
+            if all(compiled.search(s) for s in _SENTINELS):
                 raise SystemExit(
                     f"{where} has a 'name_regex' ({pattern!r}) that "
-                    f"matches the empty string, so it matches every "
-                    f"name. name_regex rules sort FIRST, so this one "
-                    f"would shadow the whole ledger")
+                    f"matches every one of {list(_SENTINELS)} -- names "
+                    f"with no script, vocabulary or punctuation in "
+                    f"common, so a rule targeting one behavior family "
+                    f"cannot match them all. name_regex rules sort "
+                    f"FIRST, so this one would shadow the whole ledger")
         if has_fields:
             fields = rule["fields"]
             if not isinstance(fields, list) \
@@ -396,11 +430,16 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
                     f"roles; expected from {sorted(_RULE_FIELDS)}. A "
                     f"name outside that set never matches, so the rule "
                     f"is silently dead")
-            if _RULE_FIELDS <= set(fields):
+            if set(V2_FIELDS) <= set(fields):
                 raise SystemExit(
-                    f"{where} lists every role in 'fields', so the "
+                    f"{where} lists all seven roles in 'fields', so the "
                     f"subset test admits every diff -- the narrowing is "
-                    f"not narrowing anything")
+                    f"not narrowing anything. Checked against the seven "
+                    f"roles rather than against every legal entry, "
+                    f"because '_ambiguities' cannot enter a diff at all "
+                    f"below baseline 2.0: there the seven ARE the whole "
+                    f"vocabulary, and a rule listing them would have "
+                    f"claimed every diff in the 1.4 ledger")
 
 
 def classify(name: str, diff_fields: set[str],
@@ -463,16 +502,20 @@ def main() -> int:
     print("corpora: " + ", ".join(f"{name} ({n})"
                                   for name, n in per_file.items()))
 
-    want_v2 = "v2" in surfaces
-    tell, old_rows = _run_worker(baseline, want_v2, corpus)
-    print(f"baseline: nameparser {tell['__version__']} ({tell['__file__']})")
-
+    # The tree is checked BEFORE the worker runs. It depends on nothing
+    # the worker produces, and validate_rules' own reasoning applies: a
+    # misconfiguration that aborts after a full uv-install-plus-751-name
+    # pass costs minutes to learn what costs a second here.
     import nameparser  # the working tree -- verified, not assumed
     from nameparser import HumanName
     tree_at = _check_tree(nameparser.__file__)
     print(f"tree:     nameparser {nameparser.__version__} ({tree_at})")
+
+    want_v2 = "v2" in surfaces
     if want_v2:
         from nameparser import parse
+    tell, old_rows = _run_worker(baseline, want_v2, corpus)
+    print(f"baseline: nameparser {tell['__version__']} ({tell['__file__']})")
     by_issue: dict[str, list[str]] = {}
     # BOTH surfaces' old/new are retained, not just the facade's. A diff
     # can exist on the v2 surface alone -- an _ambiguities-only change is
@@ -525,9 +568,11 @@ def main() -> int:
         print(f"UNEXPLAINED {name!r}")
         # Role's names, not the facade's: this block exists to be turned
         # into a ledger rule, and a rule naming the facade's `first`
-        # would parse, validate, and never match -- with nothing to say
-        # so. Both surfaces are walked, and a field is reported once
-        # even when both moved, since one rule entry covers it.
+        # is rejected by validate_rules at startup. (Before that guard
+        # existed it parsed, validated and silently never matched --
+        # which is why the label printed here has to be the label a
+        # rule needs.) Both surfaces are walked, and a field is
+        # reported once even when both moved, since one rule covers it.
         seen: set[str] = set()
         for f in FIELDS:
             if old_facade.get(f, "") != new.get(f, ""):
