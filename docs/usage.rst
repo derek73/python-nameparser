@@ -268,20 +268,47 @@ dependency installed with the ``ja`` extra:
 
 Both halves are required, and they do different jobs: the ``ja`` pack
 activates division for Japanese text, and the segmenter performs it.
-Forgetting the segmenter is loud: building the parser emits a
-``UserWarning`` naming the scripts that could never divide and the
-call to pass, because the misconfigured parser would otherwise behave
-exactly like a working one minus the feature. The same check guards
-any configuration whose activated scripts nothing can serve — a
-from-scratch lexicon with no hangul surnames warns under the default
-policy, and ``Policy(segment_scripts=())`` is the deactivation the
-message offers.
 ``ja_segmenter()`` wraps namedivider's ``BasicNameDivider``, which
 reads data bundled in the installed package;
 ``ja_segmenter(gbdt=True)`` selects its gradient-boosted divider
 instead, which is more accurate and downloads its model and surname
-files from the network on first use — worth knowing before deploying
-it somewhere sandboxed or air-gapped.
+files from the network on first use, worth knowing before deploying it
+somewhere sandboxed or air-gapped.
+
+Forgetting the segmenter is loud: building the parser emits a
+``UserWarning`` naming the scripts that could never divide and the
+call to pass, because the misconfigured parser would otherwise behave
+exactly like a working one minus the feature. The same check guards
+any configuration whose activated scripts nothing can serve. A
+from-scratch lexicon with no hangul surnames warns under the default
+policy, and ``Policy(segment_scripts=())`` is the deactivation the
+message offers.
+
+Decomposed text
+^^^^^^^^^^^^^^^
+
+Korean and Japanese text is sometimes stored decomposed, with a
+syllable held as its separate jamo rather than as one codepoint. macOS
+filenames are the common source. Everything above works on decomposed
+input: script classification normalizes to NFC before deciding, so a
+decomposed name gets the same order rule as its composed twin.
+
+Splitting is the exception. An unspaced decomposed hangul name is
+ordered correctly but not split, because surname matching runs against
+the text as given and a decomposed name matches no entry in the census
+list. That is the deliberate choice: being unsplit is recoverable,
+whereas splitting in the wrong place is not.
+
+One consequence is worth stating outright, because it looks like a
+bug. Parse output preserves the encoding it was given, so a field from
+a decomposed name is decomposed too, and comparing it against a
+composed literal fails even where the parse was correct::
+
+    decomposed = unicodedata.normalize("NFD", "김 민준")
+    parse(decomposed).family == "김"                          # False
+    unicodedata.normalize("NFC", parse(decomposed).family)    # '김'
+
+Normalize both sides before comparing across encodings.
 
 Boundaries
 ~~~~~~~~~~~
