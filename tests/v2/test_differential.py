@@ -325,7 +325,8 @@ _WORKER_CALL: dict = {}
 
 def _run_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ledger_body: str,
               baseline_facade: dict, baseline: str = "1.4.0",
-              baseline_v2: dict | None = None) -> tuple[int, str]:
+              baseline_v2: dict | None = None,
+              floor: int | None = 1) -> tuple[int, str]:
     """Drive main() end to end with a faked baseline worker.
 
     No uv, no network. The helper exists because every unit test above
@@ -351,6 +352,11 @@ def _run_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ledger_body: str,
         return ({"__version__": v,
                  "__file__": "/wheel/nameparser/__init__.py"}, [row])
 
+    # The fixture corpus needs a floor like any other. `floor=None`
+    # leaves it unregistered, for the test that pins what happens when
+    # a corpus arrives without one.
+    if floor is not None:
+        monkeypatch.setitem(compare._CORPUS_FLOORS, corpus.name, floor)
     monkeypatch.setattr(compare, "HERE", tmp_path)
     monkeypatch.setattr(compare, "_run_worker", _fake)
     monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", baseline,
@@ -636,3 +642,55 @@ def test_main_asks_for_the_facade_alone_below_2_0(
     _run_main(tmp_path, monkeypatch,
               '[[change]]\nissue = "x"\nname_regex = "ZZZ"\n', _SAME_FACADE)
     assert _WORKER_CALL["want_v2"] is False
+
+
+def test_every_shipped_corpus_has_a_floor_and_clears_it() -> None:
+    """Two bindings, so neither half can rot alone: every corpus file
+    on disk must have a floor, and must be at or above it.
+
+    The floor exists because the empty-file guard only catches a corpus
+    that lost EVERY name. One truncated to a handful passes that guard,
+    and the run exits 0 having compared a fraction of what its summary
+    line reports -- the harness's own stated nightmare, reached by a
+    file that is merely short rather than absent.
+    """
+    import json
+    corpora = sorted(_TOOLS.glob("corpus*.jsonl"))
+    assert corpora, "no corpora found; this test would pass vacuously"
+    for path in corpora:
+        names = [json.loads(line) for line
+                 in path.read_text(encoding="utf-8").splitlines()
+                 if line.strip()]
+        floor = compare._CORPUS_FLOORS.get(path.name)
+        assert floor is not None, (
+            f"{path.name} has no _CORPUS_FLOORS entry; add one a little "
+            f"under its {len(names)} names")
+        assert len(names) >= floor, (
+            f"{path.name} holds {len(names)}, below its floor {floor}")
+
+
+def test_a_floor_names_a_corpus_that_exists() -> None:
+    """The other direction: a floor for a file nobody ships is a guard
+    that can never fire, and reads as coverage that is not there."""
+    on_disk = {p.name for p in _TOOLS.glob("corpus*.jsonl")}
+    assert set(compare._CORPUS_FLOORS) <= on_disk
+
+
+def test_main_aborts_on_a_truncated_corpus(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A corpus below its floor must stop the run, not shrink it."""
+    with pytest.raises(SystemExit, match="below its floor"):
+        _run_main(tmp_path, monkeypatch,
+                  '[[change]]\nissue = "x"\nname_regex = "ZZZ"\n',
+                  _SAME_FACADE, floor=50)
+
+
+def test_main_aborts_on_a_corpus_with_no_floor(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Adding a corpus without a floor must be a decision, not a
+    silent default -- the same force-a-decision shape the Script
+    tables use."""
+    with pytest.raises(SystemExit, match="no entry in _CORPUS_FLOORS"):
+        _run_main(tmp_path, monkeypatch,
+                  '[[change]]\nissue = "x"\nname_regex = "ZZZ"\n',
+                  _SAME_FACADE, floor=None)

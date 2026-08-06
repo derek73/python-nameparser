@@ -341,6 +341,23 @@ _RULE_KEYS = frozenset(("issue", "name_regex", "fields"))
 #: match every name in every corpus.
 _SENTINELS = ("John Smith", "田中さん", "Хосе Сантос", "x")
 
+#: Per-corpus size floors. The existing empty-file guard only catches a
+#: corpus that lost EVERY name; one truncated to a handful sails past
+#: it, and the run then exits 0 having compared a fraction of what its
+#: own summary line reports -- green, and quietly meaningless.
+#:
+#: Floors, not counts, because corpus_issues.jsonl grows whenever it is
+#: regenerated from the tracker and pinning it exactly would fail on
+#: every legitimate harvest. Set a little under the real size, and
+#: ratchet up only deliberately. A file with no entry here is a hard
+#: error rather than an unguarded default: the point is to force a
+#: decision when a corpus is added, the way the Script tables do.
+_CORPUS_FLOORS = {
+    "corpus.jsonl": 480,        # 486 today, from v1's banks at a pinned ref
+    "corpus_cjk.jsonl": 95,     # 97 today, generated from the case table
+    "corpus_issues.jsonl": 190,  # 200 today, harvested and append-only
+}
+
 
 def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
     """Reject malformed allowlist rules LOUDLY at startup.
@@ -493,6 +510,20 @@ def main() -> int:
                  for line in path.read_text().splitlines() if line.strip()]
         if not names:
             raise SystemExit(f"{path.name} is empty; comparison aborted")
+        floor = _CORPUS_FLOORS.get(path.name)
+        if floor is None:
+            raise SystemExit(
+                f"{path.name} has no entry in _CORPUS_FLOORS. Add one at "
+                f"a little under its size: without a floor a corpus can "
+                f"shrink to a handful of names and the run still exits "
+                f"0, having compared far less than it reports")
+        if len(names) < floor:
+            raise SystemExit(
+                f"{path.name} holds {len(names)} names, below its floor "
+                f"of {floor} -- it has shrunk or been truncated. The run "
+                f"would still exit 0 while comparing a fraction of what "
+                f"it claims. Restore the file, or lower the floor "
+                f"deliberately if names were removed on purpose")
         per_file[path.name] = len(names)
         corpus.extend(names)
     # dedupe across files, keeping first-seen order stable for output
