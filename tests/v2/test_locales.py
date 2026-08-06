@@ -981,9 +981,18 @@ def test_non_interference_all_packs_combined() -> None:
     all_rotators = [n for code in sorted(_ROTATORS) if code in _PACKED
                     for n in _ROTATORS[code]]
     corpus = _default_corpus() + all_rotators
-    packed = parser_for(
-        *(locales.get(code) for code in sorted(_PACKS)),
-        segmenter=locales.ja_segmenter() if _JA_AVAILABLE else None)
+    if _JA_AVAILABLE:
+        packed = parser_for(
+            *(locales.get(code) for code in sorted(_PACKS)),
+            segmenter=locales.ja_segmenter())
+    else:
+        # without the extra, the stack's hiragana activation is
+        # unservable -- which construction now SAYS (the segmenterless
+        # warning, pinned in test_parser.py); expected noise here, the
+        # gate below is what this test is about
+        with pytest.warns(UserWarning, match="ja_segmenter"):
+            packed = parser_for(
+                *(locales.get(code) for code in sorted(_PACKS)))
     declared = _assert_non_interference(
         packed,
         lambda n: any(m.DEVIATES(n) for m in _PACKS.values()),
