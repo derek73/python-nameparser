@@ -1,13 +1,21 @@
-"""Differential harness (migration spec S5): 1.4-on-PyPI vs the working
-tree over the corpus. Every diff must classify against
-expected_changes.toml or the run fails.
+"""Differential harness (migration spec S5): a released baseline vs
+the working tree over the corpora. Every diff must classify against
+that baseline's ledger or the run fails.
 
-    uv run python tools/differential/compare.py [--corpus corpus.jsonl]
+    uv run python tools/differential/compare.py [--baseline VERSION]
+
+--baseline 1.4.0 answers the v1 compat contract; the default answers
+what changes for a user upgrading from the previous minor.
+
+Redirect to a file rather than piping: under zsh, `| tail` replaces the
+exit code with tail's, so a failing run reads as a passing one.
 """
 import argparse
 import json
+import os
 import re
 import subprocess
+import tempfile
 import tomllib
 from pathlib import Path
 
@@ -15,24 +23,440 @@ HERE = Path(__file__).resolve().parent
 FIELDS = ("title", "first", "middle", "last", "suffix", "nickname",
           "maiden")
 
+DEFAULT_BASELINE = "2.0.0"
+REPO_ROOT = HERE.parents[1]
+#: The v2 API's names for the same seven roles FIELDS names in v1
+#: vocabulary. Both are compared from baseline 2.0 on.
+V2_FIELDS = ("title", "given", "middle", "family", "suffix", "nickname",
+             "maiden")
+#: The two roles the FACADE names differently from Role. Diffs from
+#: both surfaces canonicalize to Role's names before classification, so
+#: a ledger rule names a role once -- and names it the way the codebase
+#: already does everywhere else (AGENTS.md, "canonical field order").
+#: The facade's vocabulary is the one that expires, at 3.0.
+_V1_TO_ROLE = {"first": "given", "last": "family"}
 
-def validate_rules(rules: list[dict[str, object]]) -> None:
-    """Reject malformed allowlist rules LOUDLY at startup. A rule with
-    neither name_regex nor fields would match every diff and shadow
-    every later rule -- the harness would report false confidence,
-    the exact failure it exists to prevent."""
+#: An unclassified diff, carrying BOTH surfaces' before/after:
+#: (name, old_facade, new_facade, old_v2, new_v2). Both halves are kept
+#: because a diff can exist on the v2 surface alone, and a report that
+#: named such a diff without showing it would be unactionable.
+_Unexplained = tuple[str, dict[str, str], dict[str, str],
+                     dict[str, object], dict[str, object]]
+
+
+def _parse_version(text: str) -> tuple[int, int, int]:
+    """The numeric release tuple, padded to three parts. Every version
+    comparison in this file goes through it.
+
+    Explicit because string comparison is wrong twice over here: it
+    orders '1.4.0' < '2.0.0' by luck and would misorder a future
+    '10.0.0', and it would call a requested '2.0' unequal to a wheel
+    reporting '2.0.0' -- turning a correct run into a spurious tell
+    mismatch, which is an abort on a run that was fine.
+
+    A prerelease segment is ignored: '2.0.0rc1' is release (2, 0, 0),
+    because what is being asked is which RELEASE answered.
+    """
+    m = re.match(r"\s*(\d+)(?:\.(\d+))?(?:\.(\d+))?", text)
+    if not m:
+        raise SystemExit(
+            f"cannot parse a version from {text!r}: expected a numeric "
+            f"release like '2.0.0'")
+    major, minor, micro = (int(p) if p else 0 for p in m.groups())
+    return (major, minor, micro)
+
+
+def _surfaces_for(version: str) -> frozenset[str]:
+    """Which output surfaces a baseline can be compared on.
+
+    1.4 has no v2 API, so a pre-2.0 baseline compares the facade
+    alone. From 2.0 on both are compared: the v2 API is the primary
+    surface for 2.x users, and its ambiguity kinds catch a change the
+    field diff cannot see -- a parse that starts or stops reporting
+    SEGMENTATION while every field stays byte-identical.
+    """
+    if _parse_version(version) >= (2, 0, 0):
+        return frozenset({"facade", "v2"})
+    return frozenset({"facade"})
+
+
+def _allowlist_for(version: str) -> Path:
+    """The ledger for a baseline, one file per baseline so each
+    release's classified changes stay as history.
+
+    A missing file is a hard error rather than an empty rule set: an
+    empty set classifies nothing, so every diff reports UNEXPLAINED and
+    the run reads as a catastrophic regression instead of as a missing
+    file.
+    """
+    path = HERE / f"expected_since_{version}.toml"
+    if not path.exists():
+        raise SystemExit(
+            f"no allowlist for baseline {version!r}: expected {path}. "
+            f"Create it before running this baseline -- an absent "
+            f"ledger cannot classify anything, so every diff would "
+            f"report as unexplained.")
+    return path
+
+
+def _sorted_rules(rules: list[dict[str, object]]) -> list[dict[str, object]]:
+    """Most-specific-first: a name_regex rule outranks a fields-only
+    rule wherever both match, so file order does not decide BETWEEN THE
+    TIERS.
+
+    Within a tier it still decides everything, because the sort is
+    stable. That is not a footnote: every rule in
+    expected_since_2.0.0.toml carries a name_regex, so they all sit in
+    one tier and the order they are written in settles every tie among
+    them -- three names match both honorific rules and are labelled by
+    whichever comes first.
+    """
+    return sorted(rules, key=lambda r: not isinstance(r.get("name_regex"), str))
+
+
+_WORKER_TEMPLATE = '''\
+# /// script
+# requires-python = ">=3.9"
+# dependencies = ["nameparser==@@VERSION@@"]
+# ///
+"""GENERATED by tools/differential/compare.py -- edit the template
+there, not a copy of this.
+
+Writes a VERSION TELL as its first stdout line, then one result per
+input name. The tell exists because the alternative failure is
+invisible: a worker that silently resolved to the checkout answers
+every query as the working tree while the run is labelled with the
+baseline, so every diff vanishes and the run reports parity -- the
+precise opposite of the truth.
+"""
+import json
+import sys
+
+import nameparser
+from nameparser import HumanName
+
+V1_FIELDS = ("title", "first", "middle", "last", "suffix", "nickname",
+             "maiden")
+V2_FIELDS = ("title", "given", "middle", "family", "suffix", "nickname",
+             "maiden")
+WANT_V2 = @@WANT_V2@@
+
+print(json.dumps({"__version__": nameparser.__version__,
+                  "__file__": nameparser.__file__}), flush=True)
+
+if WANT_V2:
+    from nameparser import parse
+
+for line in sys.stdin:
+    line = line.strip()
+    if not line:
+        continue
+    name = json.loads(line)
+    row = {"facade": {k: v or ""
+                      for k, v in HumanName(name).as_dict().items()
+                      if k in V1_FIELDS}}
+    if WANT_V2:
+        p = parse(name)
+        v2 = {f: (getattr(p, f, "") or "") for f in V2_FIELDS}
+        v2["_ambiguities"] = sorted(
+            {a.kind.name for a in getattr(p, "ambiguities", ())})
+        row["v2"] = v2
+    print(json.dumps(row, ensure_ascii=False), flush=True)
+'''
+
+
+def _worker_source(version: str, want_v2: bool) -> str:
+    """Render the worker with its dependency pin substituted.
+
+    Sentinel replacement rather than str.format or f-strings: the
+    worker body is mostly literal braces, and escaping every one of
+    them is a defect waiting to happen in a file whose silent
+    misbehavior is the thing this harness exists to prevent.
+    """
+    return (_WORKER_TEMPLATE
+            .replace("@@VERSION@@", version)
+            .replace("@@WANT_V2@@", "True" if want_v2 else "False"))
+
+
+def _check_tell(tell: dict[str, str], version: str) -> None:
+    """Abort before comparing anything if the wrong library answered.
+
+    This is the check the README's trap sections exist for. Both halves
+    matter and neither implies the other: an editable install reports
+    the TREE's version, so version-only agreement proves nothing when
+    the tree and the baseline share a number, while a genuine wheel at
+    the wrong version passes any path check.
+    """
+    got = tell.get("__version__", "")
+    where = tell.get("__file__", "")
+    if not got or not where:
+        raise SystemExit(
+            f"baseline worker produced no usable version tell "
+            f"({tell!r}); comparison aborted")
+    if _parse_version(got) != _parse_version(version):
+        raise SystemExit(
+            f"baseline worker reports nameparser {got!r}, not the "
+            f"requested {version!r} (loaded from {where}). See the "
+            f"invocation traps in tools/differential/README.md; "
+            f"comparison aborted.")
+    if Path(where).resolve().is_relative_to(REPO_ROOT):
+        raise SystemExit(
+            f"baseline worker loaded nameparser from the CHECKOUT "
+            f"({where}), so it answers as the working tree while "
+            f"reporting {got!r} -- every diff would vanish and the run "
+            f"would read as parity. Comparison aborted.")
+
+
+def _worker_env() -> dict[str, str]:
+    """The child's environment, with the import-path overrides stripped.
+
+    PEP 723 isolation does NOT survive PYTHONPATH: it precedes
+    site-packages, so a directory named there shadows the pinned wheel
+    inside uv's own environment. Measured 2026-08-05 -- with a released
+    2.0.0 on PYTHONPATH the run reported `intentional diffs: 0` and
+    exited 0, both halves of the tell passing (the version matched, and
+    the path was outside REPO_ROOT because it was outside the repo).
+    That is the README's catastrophic failure by a third road, and it
+    needs no exotic setup: a stale PYTHONPATH entry or a sibling
+    checkout is enough.
+    """
+    return {k: v for k, v in os.environ.items()
+            if k not in ("PYTHONPATH", "PYTHONHOME")}
+
+
+def _check_tree(module_file: str) -> Path:
+    """Prove the OTHER side of the comparison is the working tree.
+
+    The baseline side gets a version tell, a pinned wheel and a temp
+    dir; the tree side was a bare import trusted on sight. It is
+    reachable by the same road: run as a script, sys.path[0] is
+    tools/differential/ -- which holds no nameparser -- so PYTHONPATH
+    outranks the editable install and compare.py imports a wheel while
+    believing it read the checkout. Two wheels agree on everything, so
+    the run reports parity.
+
+    (The reason this is easy to miss when probing by hand: from the
+    repo root, `python -c` puts the CWD on sys.path first, so the
+    checkout wins there and the trap does not reproduce. Only the
+    script invocation shows it.)
+
+    The test is "is this the SOURCE PACKAGE", not "is this somewhere
+    under the repo". The weaker form was written first and was wrong:
+    the checkout also contains .venv/, build/lib/ and dist/, any of
+    which can hold a released wheel, so `PYTHONPATH=<repo>/build/lib`
+    is the same trap with the shadowing directory moved one level to
+    the left -- and uv never touches build/, so nothing self-heals it.
+    Note the asymmetry the weak form created: <repo>/.venv/.../
+    nameparser is REJECTED as a baseline by _check_tell and would have
+    been ACCEPTED as the tree here.
+    """
+    at = Path(module_file).resolve()
+    source = REPO_ROOT / "nameparser"
+    if not at.is_relative_to(source):
+        raise SystemExit(
+            f"the tree side imported nameparser from {at}, not from "
+            f"this checkout's source package ({source}) -- so this run "
+            f"would compare that module against the baseline instead of "
+            f"the working tree. Unset PYTHONPATH; uninstall a "
+            f"non-editable nameparser from the active environment; or, "
+            f"in a git worktree, check that the editable install points "
+            f"at THIS worktree rather than the main checkout. "
+            f"Comparison aborted.")
+    return at
+
+
+def _run_worker(version: str, want_v2: bool,
+                names: list[str]) -> tuple[dict[str, str], list[dict]]:
+    """Run the baseline worker from a temp dir OUTSIDE the worktree.
+
+    The placement is the safety mechanism, not plumbing. uv reads
+    genuine PEP 723 metadata from a real script path, and sys.path[0]
+    is the script's directory -- a temp dir holding no nameparser -- so
+    the checkout cannot shadow the pinned wheel. The README notes that
+    an absolute script path from outside the project is the one
+    invocation variant that does not lie; this makes it the only one
+    reachable.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        script = Path(tmp) / "baseline_worker.py"
+        script.write_text(_worker_source(version, want_v2), encoding="utf-8")
+        proc = subprocess.Popen(
+            ["uv", "run", "--no-project", str(script)],
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True,
+            cwd=tmp, env=_worker_env())
+        payload = "".join(json.dumps(n, ensure_ascii=False) + "\n"
+                          for n in names)
+        out, _ = proc.communicate(payload)
+    # hard checks, not asserts: -O must not turn a crashed worker into
+    # a truncated-but-green comparison
+    if proc.returncode != 0:
+        raise SystemExit(
+            f"baseline worker exited {proc.returncode}; comparison aborted")
+    lines = out.splitlines()
+    if not lines:
+        raise SystemExit(
+            "baseline worker produced no output, not even a version "
+            "tell; comparison aborted")
+    tell = json.loads(lines[0])
+    _check_tell(tell, version)
+    results = [json.loads(x) for x in lines[1:]]
+    if len(results) != len(names):
+        raise SystemExit(
+            f"worker returned {len(results)} results for {len(names)} "
+            f"corpus names; comparison aborted")
+    return tell, results
+
+
+def _canonical_field(field: str) -> str:
+    """A role's canonical name: Role's, not the facade's. Applied to
+    diffs from BOTH surfaces, so it must be a no-op on names that are
+    already canonical."""
+    return _V1_TO_ROLE.get(field, field)
+
+
+def _is_latin_only(name: str) -> bool:
+    """Every character below U+0250 -- Latin, ASCII punctuation and
+    Latin-1 accents.
+
+    The partition is by SCRIPT OF THE INPUT, not by which issue claimed
+    the diff, because the question it answers is whether a user parsing
+    Western names sees any change at all. That number goes into the
+    release notes.
+    """
+    return all(ord(ch) < 0x250 for ch in name)
+
+
+#: Every legal entry in a rule's `fields`: the seven roles under Role's
+#: names, plus the pseudo-field carrying reported AmbiguityKinds. The
+#: ambiguity entry is legal and load-bearing -- a SEGMENTATION-only diff
+#: is facade-identical, so this is the one name that can classify it.
+_RULE_FIELDS = frozenset((*V2_FIELDS, "_ambiguities"))
+_RULE_KEYS = frozenset(("issue", "name_regex", "fields"))
+#: Probe names for the over-match check, chosen to share no script, no
+#: vocabulary and no punctuation. A `name_regex` matching ALL of them is
+#: not targeting a behavior family, it is matching everything -- and
+#: since name_regex rules sort first, one such rule shadows the ledger.
+#: Probing the empty string instead (the first attempt) tested the wrong
+#: property: '.', '.+', r'\b' and '[\s\S]' all decline "" and still
+#: match every name in every corpus.
+_SENTINELS = ("John Smith", "田中さん", "Хосе Сантос", "x")
+
+#: Per-corpus size floors. The existing empty-file guard only catches a
+#: corpus that lost EVERY name; one truncated to a handful sails past
+#: it, and the run then exits 0 having compared a fraction of what its
+#: own summary line reports -- green, and quietly meaningless.
+#:
+#: Floors, not counts, because corpus_issues.jsonl grows whenever it is
+#: regenerated from the tracker and pinning it exactly would fail on
+#: every legitimate harvest. Set a little under the real size, and
+#: ratchet up only deliberately. A file with no entry here is a hard
+#: error rather than an unguarded default: the point is to force a
+#: decision when a corpus is added, the way the Script tables do.
+_CORPUS_FLOORS = {
+    "corpus.jsonl": 480,        # 486 today, from v1's banks at a pinned ref
+    "corpus_cjk.jsonl": 95,     # 97 today, generated from the case table
+    "corpus_issues.jsonl": 190,  # 200 today, harvested and append-only
+}
+
+
+def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
+    """Reject malformed allowlist rules LOUDLY at startup.
+
+    Every check below is a way a rule can silently stop meaning what
+    its author wrote. Most of them catch a rule matching MORE than
+    intended, which is the dangerous direction: it converts a real
+    regression into a classified diff and a green run. Two catch the
+    opposite -- an empty `fields`, or one naming something that is not
+    a role, makes a rule that can never match, and its diff then
+    surfaces as UNEXPLAINED. That failure is loud, so those two checks
+    buy a precise message rather than safety; they are here because the
+    family is easier to reason about whole than split by direction.
+
+    The TYPE and VALUE checks are the quiet ones, not the presence
+    check: `classify` skips a `name_regex` that is not a str and a
+    `fields` that is not a list, so a mistyped or misspelled key does
+    not fail -- it deletes that half of the rule's narrowing and the
+    rule matches on the other half alone.
+
+    Rules are also compiled here, not at match time. `classify` returns
+    on the first match, so an uncompilable pattern at position k only
+    raises once a diff gets past rules 1..k-1: a ledger can run green
+    for months and then explode mid-run, after the multi-minute worker
+    pass, in a traceback naming neither the file nor the rule.
+
+    `ledger` is named rather than hardcoded because there is one per
+    baseline now: a message naming the wrong file sends the reader to
+    edit a rule that is not the broken one.
+    """
     for i, rule in enumerate(rules):
+        where = f"{ledger} rule #{i + 1}"
         issue = rule.get("issue")
         if not isinstance(issue, str) or not issue:
             raise SystemExit(
-                f"expected_changes.toml rule #{i + 1} has no string "
-                f"'issue': {rule!r}")
-        if not isinstance(rule.get("name_regex"), str) \
-                and not isinstance(rule.get("fields"), list):
+                f"{where} has no string 'issue': {rule!r}")
+        where = f"{where} ({issue!r})"
+        unknown = set(rule) - _RULE_KEYS
+        if unknown:
             raise SystemExit(
-                f"expected_changes.toml rule #{i + 1} ({issue!r}) has "
-                f"neither 'name_regex' nor 'fields' -- it would match "
-                f"every diff and shadow every later rule")
+                f"{where} has unknown key(s) {sorted(unknown)}; expected "
+                f"only {sorted(_RULE_KEYS)}. A misspelled key is not "
+                f"ignored -- it drops that half of the rule's narrowing "
+                f"and the rule matches on the other half alone")
+        has_regex, has_fields = "name_regex" in rule, "fields" in rule
+        if not has_regex and not has_fields:
+            raise SystemExit(
+                f"{where} has neither 'name_regex' nor 'fields' -- it "
+                f"would match every diff and shadow every later rule")
+        if has_regex:
+            pattern = rule["name_regex"]
+            if not isinstance(pattern, str):
+                raise SystemExit(
+                    f"{where} has a non-string 'name_regex' "
+                    f"({pattern!r}); classify would skip it and the rule "
+                    f"would match on 'fields' alone")
+            try:
+                compiled = re.compile(pattern)
+            except re.error as exc:
+                raise SystemExit(
+                    f"{where} has an invalid 'name_regex' "
+                    f"({pattern!r}): {exc}") from None
+            if all(compiled.search(s) for s in _SENTINELS):
+                raise SystemExit(
+                    f"{where} has a 'name_regex' ({pattern!r}) that "
+                    f"matches every one of {list(_SENTINELS)} -- names "
+                    f"with no script, vocabulary or punctuation in "
+                    f"common, so a rule targeting one behavior family "
+                    f"cannot match them all. name_regex rules sort "
+                    f"FIRST, so this one would shadow the whole ledger")
+        if has_fields:
+            fields = rule["fields"]
+            if not isinstance(fields, list) \
+                    or not all(isinstance(f, str) for f in fields):
+                raise SystemExit(
+                    f"{where} has a 'fields' that is not a list of "
+                    f"strings ({fields!r}); classify would skip it and "
+                    f"the rule would match on 'name_regex' alone")
+            if not fields:
+                raise SystemExit(
+                    f"{where} has an empty 'fields', which can never "
+                    f"match any diff -- a rule that does nothing")
+            bad = sorted(set(fields) - _RULE_FIELDS)
+            if bad:
+                raise SystemExit(
+                    f"{where} names {bad} in 'fields', which are not "
+                    f"roles; expected from {sorted(_RULE_FIELDS)}. A "
+                    f"name outside that set never matches, so the rule "
+                    f"is silently dead")
+            if set(V2_FIELDS) <= set(fields):
+                raise SystemExit(
+                    f"{where} lists all seven roles in 'fields', so the "
+                    f"subset test admits every diff -- the narrowing is "
+                    f"not narrowing anything. Checked against the seven "
+                    f"roles rather than against every legal entry, "
+                    f"because '_ambiguities' cannot enter a diff at all "
+                    f"below baseline 2.0: there the seven ARE the whole "
+                    f"vocabulary, and a rule listing them would have "
+                    f"claimed every diff in the 1.4 ledger")
 
 
 def classify(name: str, diff_fields: set[str],
@@ -50,23 +474,27 @@ def classify(name: str, diff_fields: set[str],
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    # Both corpora by default: they have different blind spots (see
+    # Every corpus by default: they have different blind spots (see
     # build_issues_corpus.py), and one that has to be asked for by name
-    # is one that stops being run.
+    # is one that stops being run. Deliberately a glob rather than a
+    # list, so adding a corpus file is enough to put it in the gate.
     ap.add_argument("--corpus", action="append", metavar="PATH",
                     help="corpus file; repeatable. Defaults to every "
                          "corpus*.jsonl beside this script.")
+    ap.add_argument("--baseline", default=DEFAULT_BASELINE, metavar="VERSION",
+                    help=f"released version to compare the tree against "
+                         f"(default {DEFAULT_BASELINE}). Use 1.4.0 for the "
+                         f"v1 compat contract, the previous minor for a "
+                         f"release's blast radius.")
     args = ap.parse_args()
+    baseline = args.baseline
+    surfaces = _surfaces_for(baseline)
     paths = ([Path(p) for p in args.corpus] if args.corpus
              else sorted(HERE.glob("corpus*.jsonl")))
-    rules = tomllib.loads(
-        (HERE / "expected_changes.toml").read_text()).get("change", [])
-    validate_rules(rules)
-    # Most-specific-first: a name_regex rule outranks a fields-only rule
-    # wherever both match, so file order stops being load-bearing. The
-    # sort is stable, so rules within a tier keep the order they were
-    # written in.
-    rules.sort(key=lambda r: not isinstance(r.get("name_regex"), str))
+    ledger = _allowlist_for(baseline)
+    rules = tomllib.loads(ledger.read_text()).get("change", [])
+    validate_rules(rules, ledger.name)
+    rules = _sorted_rules(rules)
     # A glob that matches nothing must not read as "everything passed".
     # Comparing zero names would print 0 unexplained and exit 0 -- the
     # harness's own stated nightmare (see validate_rules), and a
@@ -82,6 +510,20 @@ def main() -> int:
                  for line in path.read_text().splitlines() if line.strip()]
         if not names:
             raise SystemExit(f"{path.name} is empty; comparison aborted")
+        floor = _CORPUS_FLOORS.get(path.name)
+        if floor is None:
+            raise SystemExit(
+                f"{path.name} has no entry in _CORPUS_FLOORS. Add one at "
+                f"a little under its size: without a floor a corpus can "
+                f"shrink to a handful of names and the run still exits "
+                f"0, having compared far less than it reports")
+        if len(names) < floor:
+            raise SystemExit(
+                f"{path.name} holds {len(names)} names, below its floor "
+                f"of {floor} -- it has shrunk or been truncated. The run "
+                f"would still exit 0 while comparing a fraction of what "
+                f"it claims. Restore the file, or lower the floor "
+                f"deliberately if names were removed on purpose")
         per_file[path.name] = len(names)
         corpus.extend(names)
     # dedupe across files, keeping first-seen order stable for output
@@ -91,50 +533,89 @@ def main() -> int:
     print("corpora: " + ", ".join(f"{name} ({n})"
                                   for name, n in per_file.items()))
 
-    proc = subprocess.Popen(
-        ["uv", "run", "--no-project", str(HERE / "worker_v1.py")],
-        stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-    v1_input = "".join(json.dumps(n, ensure_ascii=False) + "\n"
-                        for n in corpus)
-    v1_lines, _ = proc.communicate(v1_input)
-    v1_results = [json.loads(line) for line in v1_lines.splitlines()]
-    # hard checks, not asserts: -O must not turn a crashed worker into
-    # a truncated-but-green comparison
-    if proc.returncode != 0:
-        raise SystemExit(
-            f"worker_v1.py exited {proc.returncode}; comparison aborted")
-    if len(v1_results) != len(corpus):
-        raise SystemExit(
-            f"worker returned {len(v1_results)} results for "
-            f"{len(corpus)} corpus names; comparison aborted")
+    # The tree is checked BEFORE the worker runs. It depends on nothing
+    # the worker produces, and validate_rules' own reasoning applies: a
+    # misconfiguration that aborts after a full uv-install-plus-751-name
+    # pass costs minutes to learn what costs a second here.
+    import nameparser  # the working tree -- verified, not assumed
+    from nameparser import HumanName
+    tree_at = _check_tree(nameparser.__file__)
+    print(f"tree:     nameparser {nameparser.__version__} ({tree_at})")
 
-    from nameparser import HumanName  # the working tree (2.0 facade)
+    want_v2 = "v2" in surfaces
+    if want_v2:
+        from nameparser import parse
+    tell, old_rows = _run_worker(baseline, want_v2, corpus)
+    print(f"baseline: nameparser {tell['__version__']} ({tell['__file__']})")
     by_issue: dict[str, list[str]] = {}
-    unexplained: list[tuple[str, dict[str, str], dict[str, str]]] = []
-    for name, old in zip(corpus, v1_results):
-        new = {k: v or "" for k, v in HumanName(name).as_dict().items()}
-        diff = {f for f in FIELDS if old.get(f, "") != new.get(f, "")}
+    # BOTH surfaces' old/new are retained, not just the facade's. A diff
+    # can exist on the v2 surface alone -- an _ambiguities-only change is
+    # facade-identical by construction, and is the case _surfaces_for
+    # names as the whole reason to compare v2 -- and keeping only the
+    # facade dicts would print such a name under UNEXPLAINED with no
+    # field lines under it at all: a failure nobody can act on.
+    unexplained: list[_Unexplained] = []
+    for name, old in zip(corpus, old_rows):
+        new = {k: v or "" for k, v in HumanName(name).as_dict().items()
+               if k in FIELDS}
+        # canonicalized on the way in: the ledger speaks Role's names,
+        # and the facade is the surface whose vocabulary differs
+        diff = {_canonical_field(f) for f in FIELDS
+                if old["facade"].get(f, "") != new.get(f, "")}
+        new_v2: dict[str, object] = {}
+        if want_v2:
+            p = parse(name)
+            new_v2 = {f: (getattr(p, f, "") or "") for f in V2_FIELDS}
+            new_v2["_ambiguities"] = sorted(
+                {a.kind.name for a in getattr(p, "ambiguities", ())})
+            diff |= {_canonical_field(f)
+                     for f in (*V2_FIELDS, "_ambiguities")
+                     if old["v2"].get(f, "") != new_v2.get(f, "")}
         if not diff:
             continue
         issue = classify(name, diff, rules)
         if issue is None:
-            unexplained.append((name, old, new))
+            unexplained.append(
+                (name, old["facade"], new, old.get("v2", {}), new_v2))
         else:
             by_issue.setdefault(issue, []).append(name)
 
+    changed = [n for names in by_issue.values() for n in names] \
+        + [row[0] for row in unexplained]
+    latin = sum(1 for n in changed if _is_latin_only(n))
     print(f"corpus: {len(corpus)} names; "
           f"intentional diffs: {sum(map(len, by_issue.values()))}; "
-          f"unexplained: {len(unexplained)}\n")
+          f"unexplained: {len(unexplained)}; "
+          f"{latin} of {len(changed)} changed names are Latin-only\n")
     for issue, names in sorted(by_issue.items()):
         print(f"## {issue} ({len(names)})")
         for n in names[:10]:
             print(f"  {n!r}")
         print()
-    for name, old, new in unexplained:
+    if unexplained:
+        print("Field names below are Role's, matching what a ledger "
+              "`fields` rule must say.\n")
+    for name, old_facade, new, old_v2, new_v2 in unexplained:
         print(f"UNEXPLAINED {name!r}")
+        # Role's names, not the facade's: this block exists to be turned
+        # into a ledger rule, and a rule naming the facade's `first`
+        # is rejected by validate_rules at startup. (Before that guard
+        # existed it parsed, validated and silently never matched --
+        # which is why the label printed here has to be the label a
+        # rule needs.) Both surfaces are walked, and a field is
+        # reported once even when both moved, since one rule covers it.
+        seen: set[str] = set()
         for f in FIELDS:
-            if old.get(f, "") != new.get(f, ""):
-                print(f"    {f}: {old.get(f, '')!r} -> {new.get(f, '')!r}")
+            if old_facade.get(f, "") != new.get(f, ""):
+                seen.add(_canonical_field(f))
+                print(f"    {_canonical_field(f)}: "
+                      f"{old_facade.get(f, '')!r} -> {new.get(f, '')!r}")
+        for f in (*V2_FIELDS, "_ambiguities"):
+            if old_v2.get(f, "") != new_v2.get(f, "") \
+                    and _canonical_field(f) not in seen:
+                print(f"    {_canonical_field(f)}: "
+                      f"{old_v2.get(f, '')!r} -> {new_v2.get(f, '')!r}"
+                      f"   [v2 surface only]")
     return 1 if unexplained else 0
 
 

@@ -192,7 +192,7 @@ def _expected_bmp_spans() -> set[tuple[int, int]]:
 
 
 def test_differential_cjk_rule_matches_the_script_ranges() -> None:
-    """The CJK rule in tools/differential/expected_changes.toml hand-
+    """The CJK rule in tools/differential/expected_since_1.4.0.toml hand-
     copies the script spans from _policy._SCRIPT_RANGES into a character
     class. A TOML file cannot import the constant, so this is the one
     copy with no possible alternative -- and the one whose divergence
@@ -237,7 +237,7 @@ def test_differential_cjk_rule_matches_the_script_ranges() -> None:
     has to be written down to exist.
     """
     toml_path = (Path(__file__).parents[2] / "tools" / "differential"
-                 / "expected_changes.toml")
+                 / "expected_since_1.4.0.toml")
     rules = tomllib.loads(toml_path.read_text())["change"]
     matched = [r for r in rules
                if "#271" in r["issue"] or "#272" in r["issue"]]
@@ -284,7 +284,7 @@ def test_every_span_bearing_rule_matches_the_script_ranges() -> None:
     uniqueness -- compound slugs must avoid them.
     """
     toml_path = (Path(__file__).parents[2] / "tools" / "differential"
-                 / "expected_changes.toml")
+                 / "expected_since_1.4.0.toml")
     rules = tomllib.loads(toml_path.read_text())["change"]
     table_spans = _expected_bmp_spans()
     checked = []
@@ -349,7 +349,7 @@ def test_differential_honorific_rule_matches_the_suffix_vocabulary() -> None:
     from nameparser.config.suffixes import SUFFIX_NOT_ACRONYMS
 
     toml_path = (Path(__file__).parents[2] / "tools" / "differential"
-                 / "expected_changes.toml")
+                 / "expected_since_1.4.0.toml")
     rules = tomllib.loads(toml_path.read_text())["change"]
     matched = [r for r in rules if "cjk-honorific-suffix" in r["issue"]]
     assert len(matched) == 1

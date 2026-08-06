@@ -59,12 +59,12 @@ issue = "fix(#271/#272/#298) native-script CJK: family-first order, hangul segme
 # CJK, and build_issues_corpus.py requires an internal space, which
 # unspaced names never have.
 name_regex = "[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65]"
-fields = ["first", "middle", "last"]
+fields = ["given", "middle", "family"]
 
 [[change]]
 issue = "fix(#274) maiden markers consumed"
 name_regex = "(?i)\\b(n[ée]e|born|geb\\.?|roz\\.?)\\b"
-fields = ["maiden", "middle", "last"]
+fields = ["maiden", "middle", "family"]
 
 [[change]]
 issue = "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip"
@@ -77,7 +77,7 @@ issue = "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK
 # (#328). The regex is the marker itself, so this rule can claim
 # nothing else.
 name_regex = "旧姓"
-fields = ["first", "middle", "last", "maiden"]
+fields = ["given", "middle", "family", "maiden"]
 
 [[change]]
 issue = "fix(comma-family) lone post-comma piece routes to suffix/title, not first"
@@ -125,7 +125,7 @@ issue = "fix(comma-family) lone post-comma piece routes to suffix/title, not fir
 # next to it, '田中さん, V.', appears under no rule at all: it is
 # parity with 1.4.0, so it never reaches classify().
 name_regex = ","
-fields = ["first", "title", "suffix"]
+fields = ["given", "title", "suffix"]
 
 [[change]]
 issue = "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix"
@@ -137,7 +137,7 @@ issue = "fix(suffix-routing) two-token name with unambiguous trailing suffix sta
 # glued Latin honorific -- see the note on fix(comma-family) above for
 # why its four comma-bearing siblings split between that rule and
 # fix(cjk-comma-compound) instead.
-fields = ["first", "last", "suffix"]
+fields = ["given", "family", "suffix"]
 
 [[change]]
 issue = "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole"
@@ -173,7 +173,7 @@ issue = "feat(#269) Arabic بن prefix chains onto family (non-Latin new-recogni
 # Word-bounded: a bare "بن" would also match the substring inside e.g.
 # لبنان ("Lebanon") and silently absorb unrelated middle/last diffs.
 name_regex = "\\bبن\\b"
-fields = ["middle", "last"]
+fields = ["middle", "family"]
 
 [[change]]
 issue = "feat(#273) typographic nickname delimiters recognized by default"
@@ -213,7 +213,7 @@ issue = "fix(cjk-delimited-nickname) delimiter recognition compounds with the CJ
 # test_regex_sync's differential pin selects the canonical CJK rule
 # by those substrings and asserts it is unique.
 name_regex = "(?s)(?=.*[「」『』・･])(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
-fields = ["first", "last", "nickname"]
+fields = ["given", "family", "nickname"]
 
 [[change]]
 issue = "fix(cjk-fullwidth-paren-nickname) fullwidth-parenthesis recognition compounds with the CJK order flip"
@@ -247,7 +247,7 @@ issue = "fix(cjk-fullwidth-paren-nickname) fullwidth-parenthesis recognition com
 # avoids the literal #271/#272 substrings the canonical-rule pin
 # selects by.
 name_regex = "(?s)(?=.*[（）])(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
-fields = ["first", "middle", "last", "nickname"]
+fields = ["given", "middle", "family", "nickname"]
 
 [[change]]
 issue = "fix(cjk-comma-compound) comma routing compounds with the CJK order flip"
@@ -272,7 +272,7 @@ issue = "fix(cjk-comma-compound) comma routing compounds with the CJK order flip
 # match fix(comma-family) first instead, purely on file order -- see
 # the note there for why.
 name_regex = "(?s)(?=.*,)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
-fields = ["first", "middle", "last", "title", "suffix"]
+fields = ["given", "middle", "family", "title", "suffix"]
 
 [[change]]
 issue = "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip"
@@ -306,7 +306,7 @@ issue = "fix(cjk-honorific-suffix) postnominal honorifics recognized, compoundin
 # in the corpus (Latin+glued like Andersonさん included) and every
 # one classified there -- none carried a middle-field diff.
 name_regex = "(?:^| )(?:씨|박사|박사님|선생님|교수님|군|양|님|先生|女士|小姐|博士|教授|様|氏|殿|さん|さま|くん|ちゃん)$"
-fields = ["first", "middle", "last", "suffix"]
+fields = ["given", "middle", "family", "suffix"]
 
 [[change]]
 issue = "feat(#269) non-Latin titles/conjunctions recognized"
@@ -327,7 +327,7 @@ issue = "feat(#269) non-Latin titles/conjunctions recognized"
 # script over loosening this one -- the \bبن\b rule below is the
 # model.
 name_regex = "[\\u0400-\\u04FF]"
-fields = ["title", "first", "middle"]
+fields = ["title", "given", "middle"]
 
 [[change]]
 issue = "fix(leading-credential) a split 'Ph. D.' before the name stays one unit"
@@ -343,7 +343,7 @@ issue = "fix(leading-credential) a split 'Ph. D.' before the name stays one unit
 # stays unclassified below; widening this regex would mask a
 # regression in the shape that is the whole reason fix_phd exists.
 name_regex = "^Ph\\. ?D\\."
-fields = ["title", "first", "middle", "suffix"]
+fields = ["title", "given", "middle", "suffix"]
 
 # Deliberately NOT a [[change]] rule: TRAILING 'Ph. D.' split-token
 # healing ('John Ph. D.', 'John Smith, Ph. D.') is PARITY, not a 2.0

@@ -177,7 +177,7 @@ CASES: tuple[Case, ...] = (
                "the pair pre-parse and re-appended it, reordering the "
                "tail, where 2.0 renders it as written. Same words, "
                "same roles, different order, and the harness cannot "
-               "currently see it: expected_changes.toml states that a "
+               "currently see it: expected_since_1.4.0.toml states that a "
                "diffing trailing 'Ph. D.' must fail the run, but this "
                "input is absorbed by fix(comma-family), whose "
                "name_regex is a bare comma -- measured on a probe "

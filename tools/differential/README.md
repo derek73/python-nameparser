@@ -1,87 +1,133 @@
-# Differential harness (v1 vs 2.0)
+# Differential harness (a released baseline vs the working tree)
 
-Dev-only tooling for the 2.0 migration (migration plan S5). Not
-shipped (excluded from the wheel by the packaging config -- only
-`nameparser/` is packaged) and not CI-gated. Run it by hand when
-touching parsing behavior, and before cutting a 2.0 release.
+Dev-only tooling for the 2.x line (migration plan S5). Not shipped
+(excluded from the wheel by the packaging config -- only `nameparser/`
+is packaged) and not CI-gated. Run it by hand when touching parsing
+behavior, and before cutting a release.
 
 Two processes, two environments:
 
-- `worker_v1.py` runs under a **pinned nameparser 1.4** installed fresh
-  from PyPI via a PEP 723 inline script. It must be invoked with
-  `uv run --no-project` -- **without `--no-project`, `uv` installs the
-  working tree as an editable dependency and the 1.4 pin never takes
-  effect**, silently comparing 2.0 against itself.
+- A **baseline worker** runs under a pinned nameparser installed fresh
+  from PyPI via a PEP 723 inline script. It is not a checked-in file:
+  `compare.py` renders it from a template with the version pin
+  substituted and writes it to a temp directory outside the worktree.
+  That placement is a safety mechanism rather than plumbing -- it is
+  what makes the invocation traps below unreachable rather than merely
+  documented.
 - `compare.py` runs in the project's own dev environment and imports
-  `nameparser` normally (the 2.0 facade, which still speaks the v1
-  component names).
+  `nameparser` normally: the working tree, on whichever surfaces the
+  baseline supports.
 
 ## Running it
 
 ```
 uv run python tools/differential/build_corpus.py --ref <ref> > tools/differential/corpus.jsonl   # only when regenerating
-uv run python tools/differential/compare.py
+uv run python tools/differential/compare.py --baseline 1.4.0
+uv run python tools/differential/compare.py --baseline 2.0.0
 ```
 
 `compare.py` spawns the worker as a subprocess, feeds it every corpus
-name as a line of JSON, and diffs the two component dicts on the seven
-v1 field names (`title`, `first`, `middle`, `last`, `suffix`,
-`nickname`, `maiden` -- both sides use these keys, so no field mapping
-is needed). Every diff is checked against `expected_changes.toml`:
+name as a line of JSON, and diffs the two sides field by field. Every
+diff is checked against that baseline's ledger:
 
 - Matches a rule -> counted as an intentional, classified change.
 - Matches no rule -> printed under `UNEXPLAINED` and the run exits 1.
 
-An unexplained diff means either a real 2.0 parity bug (fix it, don't
-allowlist it) or a known change whose `expected_changes.toml` rule
-needs widening. The run must exit 0 before a 2.0 release; the classified
-summary it prints is the source for the "Behavior Changes" section of
-`docs/release_log.rst`.
+An unexplained diff means either a real parity bug (fix it, don't
+allowlist it) or a known change whose ledger rule needs widening. The
+run must exit 0 at every baseline you claim before a release; the
+classified summary it prints is the source for the "Behavior Changes"
+section of `docs/release_log.rst`.
 
-## Do not put `python` in front of the worker
+## Baselines
 
-`compare.py` spawns the worker by **script path**:
+`--baseline VERSION` chooses what the tree is compared against, and
+two things follow from it: which ledger is read
+(`expected_since_<VERSION>.toml`, a hard error if absent) and which
+surfaces are compared (the facade alone below 2.0, which has no v2
+API; both from 2.0 on, ambiguity kinds included).
 
-```
-uv run --no-project tools/differential/worker_v1.py
-```
+Run both before cutting a release:
 
-Inserting `python` before the path --
-`uv run --no-project python tools/differential/worker_v1.py` -- makes
-`python` the command and the script a mere argument, so `uv` never
-reads the script's PEP 723 inline metadata and the `nameparser==1.4.*`
-pin is never installed. With nothing to satisfy, `uv` runs the script
-in the project's own `.venv`, where the working tree is installed
-editable (`__editable__.nameparser-2.0.0.pth`) -- so the import
-resolves to the checkout and **2.x answers every query while the
-output is labelled 1.4.0**. Reproduced twice while working on #320.
+- `--baseline 1.4.0` — the v1 compat contract.
+- `--baseline <previous minor>` — what changes for a user upgrading.
+
+The worker is generated per run, with the pin substituted, into a temp
+directory outside the worktree. Its first output line is a version
+tell, and `compare.py` aborts before comparing anything if the wrong
+version answered or if the module resolved inside the checkout.
+
+**Both** sides are proved, not just the baseline. `compare.py` also
+checks that its own `nameparser` is this checkout's source package and
+prints it on a `tree:` line — see the third trap below for why a bare
+import was not enough.
+
+A rule's `fields` names roles the way `Role` does, whichever surface
+the diff came from, plus the pseudo-field `_ambiguities` for a change
+in reported `AmbiguityKind`s. The roster is not restated here: it is
+`Role`'s members, `validate_rules` rejects anything outside them, and
+a copy in prose is a copy that goes stale when a role is added. The
+facade reports `first`/`last`; those are canonicalized on the way in,
+and the `UNEXPLAINED` block prints the canonical name so what you read
+is what you write.
+
+## The three invocation traps
+
+None of the three below is hypothetical -- the second was reproduced
+twice while working on #320, and the third was demonstrated during
+review of this harness's own generalization. The first two are
+recorded here because the generated worker's cwd and script path are
+what disarm them: a later change that runs the worker from a cwd
+inside the project reopens both. The analysis is the
+reason for the design, so it outlives the bug.
+
+**Without `--no-project`,** `uv` installs the working tree as an
+editable dependency and the version pin never takes effect, silently
+comparing the tree against itself. `compare.py` passes `--no-project`,
+and runs the worker from a temp cwd where there is no project to
+discover in the first place.
+
+**With `python` in front of the script path** --
+`uv run --no-project python <script>` instead of
+`uv run --no-project <script>` -- `python` becomes the command and the
+script a mere argument, so `uv` never reads the script's PEP 723
+inline metadata and the `nameparser==<baseline>` pin is never
+installed. With nothing to satisfy, `uv` runs the script in the
+project's own `.venv`, where the working tree is installed editable
+(`__editable__.nameparser-2.0.0.pth`) -- so the import resolves to the
+checkout and **the tree answers every query while the output is
+labelled with the baseline version**.
 
 It is the same editable working tree that the missing-`--no-project`
-case above lands on, by a different road. **`PYTHONSAFEPATH=1` does
-not rescue it** -- that is the fix for the sibling CWD trap
-(`AGENTS.md`, "Comparing against v1"), and reaching for it here is the
-natural wrong turn, since a `.pth`-installed package is on `sys.path`
-proper and safe-path never touches it. Measured: safe path on, still
-2.0.0. `sys.path[0]` is the SCRIPT's directory
-(`tools/differential/`), which contains no `nameparser` at all, so the
-CWD is not the route either. Running the same command with an absolute
-script path from a directory outside the project is the one variant
-that does not lie: it raises `ModuleNotFoundError` instead.
+case lands on, by a different road. **`PYTHONSAFEPATH=1` does not
+rescue it** -- that is the fix for the sibling CWD trap (`AGENTS.md`,
+"Comparing against v1"), and reaching for it here is the natural wrong
+turn, since a `.pth`-installed package is on `sys.path` proper and
+safe-path never touches it. Measured: safe path on, still 2.0.0.
+`sys.path[0]` is the SCRIPT's directory, which contains no
+`nameparser` at all, so the CWD is not the route either. Running the
+same command with an absolute script path from a directory outside the
+project is the one variant that does not lie: it raises
+`ModuleNotFoundError` instead. Generating the worker into a temp dir
+makes that honest variant the only reachable one.
 
-That is worse than an ordinary mistake, because of what the corrupted
-output looks like. It is not garbage and it does not crash: it is
-exactly the 2.x expected values, which is exactly what someone asking
-"did 1.4.0 agree?" is hoping to see. Every diff vanishes, the run
-comes out as parity, and the conclusion drawn is the precise opposite
-of the truth. Same outcome as the missing `--no-project` above, and
-the same reason both are written down here rather than left to the
-reader to rediscover.
+That corruption is worse than an ordinary mistake, because of what the
+bad output looks like. It is not garbage and it does not crash: it is
+exactly the tree's own expected values, which is exactly what someone
+asking "did the baseline agree?" is hoping to see. Every diff
+vanishes, the run comes out as parity, and the conclusion drawn is the
+precise opposite of the truth.
 
-So do not trust a 1.4 version number you did not make the worker
-report. Establishing which library actually answered is cheap -- print
-`nameparser.__version__` from **inside** the worker and check it
-against the pin before comparing anything. Under this trap it prints
-the checkout's version, which is the whole tell.
+So do not trust a version number you did not make the worker report.
+Establishing which library actually answered is cheap, and the harness
+now does it for you: the worker prints `nameparser.__version__` and
+`nameparser.__file__` from **inside** itself as its first output line,
+and `compare.py` aborts unless the release tuple matches the requested
+baseline *and* the module resolved outside the repo root. Both halves
+matter and neither implies the other -- an editable install reports
+the TREE's version, so version agreement proves nothing when tree and
+baseline share a number, while a genuine wheel at the wrong version
+passes any path check.
 
 One shell note while you are here: `compare.py | tail` swallows the
 exit code under zsh. `$?` after a pipeline is `tail`'s status, and
@@ -89,6 +135,43 @@ exit code under zsh. `$?` after a pipeline is `tail`'s status, and
 is the 1-indexed `pipestatus`, so `${PIPESTATUS[0]}` is the empty
 string and a failing run reads as a passing one. Redirect to a file
 and read the file instead of piping.
+
+### Trap 3: `PYTHONPATH` shadows BOTH sides, and the tell passes
+
+The first two traps are about which library answers as the *baseline*.
+This one is about the *tree*, and it defeats every guard aimed at the
+other side.
+
+Run as a script, `sys.path[0]` is `tools/differential/` -- which holds
+no `nameparser` -- so a `PYTHONPATH` entry outranks the editable
+install and `compare.py` imports a released wheel while believing it
+read the checkout. PEP 723 does not save the worker either:
+`PYTHONPATH` precedes site-packages *inside* uv's own environment.
+Measured 2026-08-05, with a released 2.0.0 on `PYTHONPATH`:
+
+```
+baseline: nameparser 2.0.0 (.../shadow/nameparser/__init__.py)
+corpus: 751 names; intentional diffs: 0; unexplained: 0
+```
+
+exit 0, with **both halves of the baseline tell passing** -- the
+version matched, and the path was outside the repo. 89 diffs became 0.
+
+Two things close it. `_worker_env()` strips `PYTHONPATH`/`PYTHONHOME`
+from the child, and `_check_tree()` requires `compare.py`'s own
+`nameparser` to be this checkout's **source package**.
+
+That second predicate was first written as "somewhere under the repo",
+which was wrong in a way worth recording: the checkout also contains
+`.venv/`, `build/lib/` and `dist/`, any of which can hold a released
+wheel, so `PYTHONPATH=<repo>/build/lib` was the same trap with the
+shadowing directory moved one level to the left -- and `uv` never
+touches `build/`, so nothing self-heals it.
+
+Why this is easy to miss when probing by hand: from the repo root,
+`python -c "import nameparser"` puts the CWD on `sys.path` first, so
+the checkout wins and the trap does not reproduce. Only the script
+invocation shows it.
 
 ## The three corpora
 
@@ -100,7 +183,7 @@ that stops being run. Pass `--corpus PATH` (repeatable) to narrow it.
 |---|---|---|
 | `corpus.jsonl` | v1's own test suite at a pinned ref | anything 2.0 added — v1's authors had no reason to test a typographic nickname delimiter or a Cyrillic title |
 | `corpus_issues.jsonl` | name-like strings harvested from the GitHub issue tracker | anything nobody ever reported |
-| `corpus_cjk.jsonl` | the CJK-bearing rows of `tests/v2/cases.py`, via `build_cjk_corpus.py` (#295) | anything the case table itself missed — it re-witnesses reviewed expectations at the 1.4 boundary rather than discovering new shapes |
+| `corpus_cjk.jsonl` | the CJK-bearing rows of `tests/v2/cases.py`, via `build_cjk_corpus.py` (#295) | anything the case table itself missed — it re-witnesses reviewed expectations at the baseline boundary rather than discovering new shapes |
 
 They are deliberately separate rather than merged: `corpus.jsonl` is
 reproducible forever from an immutable git ref, while the issue
@@ -165,7 +248,10 @@ as new issues arrive. Over-collection is fine in both builders: the
 comparator just parses more names, and junk like `Bridge (1.4)` costs
 one parse and produces no diff.
 
-## `expected_changes.toml`
+## The ledgers (`expected_since_<VERSION>.toml`)
+
+One ledger per baseline, so each release's classified changes stay as
+history rather than being edited into the next one's.
 
 Each `[[change]]` entry needs `issue` (a short label, ideally an
 issue number or `fix(<slug>)` matching a `tests/v2/cases.py`
@@ -175,14 +261,50 @@ matches only if the observed diff fields are a subset of this list).
 Keep both as tight as the actual diff allows -- a loose rule can mask
 a real regression.
 
-Rules are sorted most-specific-first before matching -- a `name_regex`
+Rules are sorted most-specific-first before matching: a `name_regex`
 rule outranks a `fields`-only one (which is broad by construction)
-wherever both match -- so file order does not decide which rule claims
-a diff.
+wherever both match. **Within a tier, file order decides.** That is
+not a detail -- every rule in `expected_since_2.0.0.toml` carries a
+`name_regex`, so they all sit in one tier and the order they are
+written in settles every tie between them. Append a rule to the bottom
+of a file only after checking that nothing above it already claims the
+diff you meant it for.
 
-Some entries in the seed list are for behavior families that this
-particular corpus (pre-M12 v1 test strings) happens not to contain any
-example of (e.g. custom suffix-delimiter rendering, which only fires
-under a non-default `Policy`). They're kept in the file anyway,
+Some entries in the seed list are for behavior families that a
+particular corpus happens not to contain any example of (e.g. custom
+suffix-delimiter rendering, which only fires under a non-default
+`Policy` -- see the ceiling below). They're kept in the file anyway,
 matching the family documented in `tests/v2/cases.py`, so the rule is
 ready the moment a matching string is added to the corpus.
+
+## What this gate does not cover
+
+The corpora run under the **default policy**, so any behavior gated
+behind a non-default `Policy` field is invisible here. Default
+*vocabulary* is a different matter: it is fully in EFFECT, never
+gated off the way a `Policy` field is, so a change to it can show up
+here. That is not the same as coverage -- only 3 of the 17 shipped
+`maiden_markers` and 8 of the 15 `honorific_tails` appear anywhere in
+the corpora (measured 2026-08-05), so an entry no corpus name
+exercises is as invisible as an opt-in policy.
+
+Two independent mechanisms put a birth surname in `maiden`, and only
+one is opt-in (measured 2026-08-05):
+
+| input | default policy | `maiden_delimiters={("(", ")")}` |
+|---|---|---|
+| `Jane Smith (Jones)` | nickname `Jones` | maiden `Jones` |
+| `Jane Smith née Jones` | maiden `Jones` | maiden `Jones` |
+
+Row 1 carries no marker word, so it isolates the delimiter: the
+brackets alone route their content to `maiden`, and only once the
+policy says they do. Row 2 carries no brackets, so it isolates the
+marker: `Lexicon.maiden_markers` ships 17 entries by default, `nee`
+among them, and the bare form needs no configuration at all.
+
+So what is opt-in is not the marker words — it is only the delimited
+path. #329 changed what happens when both are in play (the marker
+inside a delimited clause is now dropped from the value), and this
+gate cannot see it, because the corpora never configure the delimiter.
+Opt-in behavior is covered by `tests/v2/cases.py`, whose rows carry
+their own `policy=`.
