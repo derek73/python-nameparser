@@ -335,10 +335,10 @@ this section is how to switch them off, which you can do separately:
 
     >>> parse("김민준").family                    # both defaults on
     '김'
-    >>> positional = Parser(policy=Policy(script_orders={}))
+    >>> positional = Parser(policy=Policy(script_orders=()))
     >>> positional.parse("김민준").family         # still split
     '민준'
-    >>> unsplit = Parser(policy=Policy(segment_scripts=()))
+    >>> unsplit = Parser(policy=Policy(segment_scripts=frozenset()))
     >>> unsplit.parse("김민준").family            # one token, not split
     '김민준'
 
@@ -363,8 +363,9 @@ because splitting Han text requires knowing Chinese from Japanese;
 :doc:`locales` covers the opt-in ``zh`` pack that supplies them.
 
 The Japanese behaviors ride these same two fields, so they need no
-switches of their own: ``script_orders={}`` clears the kana-licensed
-entry along with the Han and Hangul ones, and ``segment_scripts=()``
+switches of their own: ``script_orders=()`` clears the kana-licensed
+entry along with the Han and Hangul ones, and
+``segment_scripts=frozenset()``
 deactivates every script at once, which also stops a parser consulting
 whatever segmenter it was given. The segmenter has an off-switch as
 well — ``Parser(segmenter=None)``, which is the default; see
@@ -389,13 +390,21 @@ off.
 
 .. note::
 
-   Both fields are annotated with their canonical *storage* type
+   Every field here is annotated with its canonical *storage* type
    rather than with everything the constructor accepts — the same as
-   ``capitalization_exceptions``. Under mypy the readable spellings
-   above (``script_orders={...}``, ``segment_scripts=(...)``) need a
-   ``# type: ignore[arg-type]``; ``script_orders=()`` and
-   ``segment_scripts=frozenset(...)`` check clean and mean the same
-   thing.
+   ``capitalization_exceptions``, and for the same reason: the
+   annotation is what you get back when you READ the attribute, which
+   is the commoner operation.
+
+   The constructor is deliberately wider. It takes any mapping for
+   ``script_orders``, any iterable of ``Script`` for
+   ``segment_scripts``, and plain strings wherever a ``Role`` is
+   wanted (``Role`` is a ``StrEnum`` precisely so that works). A
+   dataclass cannot express those two types separately, so the
+   examples in this guide use the spellings that check clean under
+   mypy — ``()`` and ``frozenset(...)`` rather than ``{}`` and a bare
+   set literal. The wider spellings parse identically; they just need
+   a ``# type: ignore[arg-type]`` if you run a type checker.
 
 Nicknames, maiden names, and brackets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -407,7 +416,7 @@ one-liner is the whole recipe:
 
 .. doctest::
 
-    >>> policy = Policy(maiden_delimiters={("(", ")")})
+    >>> policy = Policy(maiden_delimiters=frozenset({("(", ")")}))
     >>> Parser(policy=policy).parse("Jane (Jones) Smith").maiden
     'Jones'
 

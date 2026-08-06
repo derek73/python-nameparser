@@ -427,7 +427,7 @@ now.
 
 ``Constants`` has no switch for any of this — the v1 configuration
 surface is frozen for 2.x — so the way out is the 2.0 API:
-``Parser(policy=Policy(script_orders={}, segment_scripts=()))``
+``Parser(policy=Policy(script_orders=(), segment_scripts=frozenset()))``
 restores 1.4's reading of every shape above that turns on order or
 splitting. The middle dots are the exception: both the katakana dot
 and the Chinese interpunct ``·`` (U+00B7, dividing a transcription

@@ -565,6 +565,31 @@ def test_script_orders_default_and_canonical_storage() -> None:
     assert Policy(script_orders={}).script_orders == ()  # type: ignore[arg-type]
 
 
+def test_a_later_script_orders_entry_replaces_an_earlier_one() -> None:
+    """Appending is how you override a single script, and the docs now
+    say so (modules.rst, the script_orders entry).
+
+    The behavior falls out of _validated_script_orders building a dict
+    before sorting, so it was emergent rather than contracted -- and
+    prose that tells readers to append is prose that depends on it.
+    The type-clean spelling for "everything as shipped, but Han reads
+    given-first" is exactly this, which is why it is worth pinning.
+    """
+    overridden = Policy(
+        script_orders=(*DEFAULT_SCRIPT_ORDERS, (Script.HAN, GIVEN_FIRST)))
+    assert dict(overridden.script_orders)[Script.HAN] == GIVEN_FIRST
+    # the other shipped entries survive untouched
+    assert dict(overridden.script_orders)[Script.HANGUL] == FAMILY_FIRST
+    assert dict(overridden.script_orders)[Script.HIRAGANA] == FAMILY_FIRST
+    # one entry per script, whatever the input carried
+    keys = [s for s, _ in overridden.script_orders]
+    assert len(keys) == len(set(keys)) == len(DEFAULT_SCRIPT_ORDERS)
+    # and the mapping spelling it replaces still means the same thing
+    assert overridden == Policy(
+        script_orders=dict(DEFAULT_SCRIPT_ORDERS)  # type: ignore[arg-type]
+        | {Script.HAN: GIVEN_FIRST})
+
+
 def test_script_orders_validates_keys_and_values() -> None:
     with pytest.raises(ValueError, match="han, hangul"):
         Policy(script_orders={"klingon": FAMILY_FIRST})  # type: ignore[arg-type]
