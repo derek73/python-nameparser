@@ -104,7 +104,8 @@ reading is a fact about the domain the names come from: that makes it a
 square brackets — ``John [Johnny] Smith`` — instead of quotes is a
 fact about that one data source's export format, not about the
 language of the names in it — that's a
-:class:`~nameparser.Policy` (``nickname_delimiters={('[', ']')}``).
+:class:`~nameparser.Policy`
+(``nickname_delimiters=frozenset({('[', ']')})``).
 One particular report
 wanting names formatted as "Family, Given" while every other consumer
 of the same parsed data wants "Given Family" is a fact about where the

@@ -140,9 +140,10 @@ because only these three orders have defined assignment semantics.
    the names no entry matches. The values are drawn from the same
    three constants above, and the same restriction applies. Build on it for
    additive customization —
-   ``script_orders=dict(DEFAULT_SCRIPT_ORDERS) | {Script.HAN:
-   GIVEN_FIRST}`` — and pass ``script_orders={}`` to opt out entirely
-   and get the purely positional read back. Latin-script and
+   ``script_orders=(*DEFAULT_SCRIPT_ORDERS, (Script.HAN, GIVEN_FIRST))``,
+   where a later entry for a script REPLACES an earlier one, so
+   appending is how you override — and pass ``script_orders=()`` to
+   opt out entirely and get the purely positional read back. Latin-script and
    mixed-script names are never affected either way.
 
 Delimiter defaults
