@@ -791,6 +791,9 @@ def test_stacked_activation_warns_only_for_uncovered_scripts() -> None:
     # scripts are dead rather than naming the whole activation set
     with pytest.warns(UserWarning) as caught:
         parser_for(locales.ZH, locales.JA)
-    message = str(caught[0].message)
+    # select by content: pack application can emit its own warnings
+    # ahead of construction, so positional indexing is order-fragile
+    message = next(str(w.message) for w in caught
+                   if "segment_scripts activates" in str(w.message))
     assert "hiragana" in message
     assert "hangul" not in message

@@ -463,7 +463,10 @@ def _quiet_parser(**kwargs: object) -> Parser:
     targets parse behavior, not construction diagnostics --
     tests/v2/test_parser.py pins the warning itself."""
     with warnings.catch_warnings():
-        warnings.simplefilter("ignore", UserWarning)
+        # message-scoped, not a blanket UserWarning ignore: a future
+        # unrelated construction diagnostic should still fail the fuzz
+        warnings.filterwarnings(
+            "ignore", message=r"Policy\.segment_scripts activates")
         return Parser(**kwargs)  # type: ignore[arg-type]
 
 

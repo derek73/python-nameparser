@@ -100,15 +100,27 @@ class Parser:
                            for entry in self.lexicon.surnames))
             if uncovered:
                 names = ", ".join(uncovered)
+                one = len(uncovered) == 1
+                # the ja hint only where a Japanese script is among the
+                # dead ones -- a hangul-only gap (a from-scratch
+                # lexicon under the default policy) has different
+                # remedies, and pointing it at ja_segmenter would be a
+                # non sequitur
+                ja_hint = (
+                    " For Japanese, pass "
+                    "segmenter=locales.ja_segmenter() (install with: "
+                    "pip install 'nameparser[ja]')."
+                    if {"han", "hiragana", "katakana"} & set(uncovered)
+                    else "")
                 warnings.warn(
                     f"Policy.segment_scripts activates {names} but the "
                     f"vocabulary has no surnames in "
-                    f"{'that script' if len(uncovered) == 1 else 'those scripts'} "
+                    f"{'that script' if one else 'those scripts'} "
                     f"and no segmenter is configured: unspaced names "
-                    f"written in {'it' if len(uncovered) == 1 else 'them'} "
-                    f"will never divide. For Japanese, pass "
-                    f"segmenter=locales.ja_segmenter() (install with: "
-                    f"pip install 'nameparser[ja]').",
+                    f"written in {'it' if one else 'them'} will never "
+                    f"divide. Supply covering surnames, pass a "
+                    f"segmenter, or deactivate with "
+                    f"Policy(segment_scripts=()).{ja_hint}",
                     UserWarning, stacklevel=3)
 
     def __repr__(self) -> str:
@@ -280,4 +292,15 @@ def parser_for(*locales: Locale, base: Parser | None = None,
             # a subclass with extra mandatory args would break this rewrap
             raise type(exc)(
                 f"while applying locale {loc.code!r}: {exc}") from exc
-    return Parser(lexicon=lexicon, policy=policy, segmenter=segmenter)
+    # Construction warnings (the segmenterless-activation check in
+    # Parser.__post_init__) re-emit from THIS frame: its stacklevel is
+    # sized for direct Parser(...) construction, and through this
+    # function's extra frame the default single-line rendering would
+    # point into the library instead of at the caller -- the exact
+    # call the message tells them to change.
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        built = Parser(lexicon=lexicon, policy=policy, segmenter=segmenter)
+    for w in caught:
+        warnings.warn(w.message, stacklevel=2)
+    return built
