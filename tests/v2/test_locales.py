@@ -371,7 +371,11 @@ def test_ja_pack_alone_is_inert() -> None:
     # to segment WITH changes no parse at all. Pure pack data, so this
     # runs whether or not nameparser[ja] is installed -- and it is the
     # unsegmented pack's entire observable behavior.
-    p = parser_for(locales.JA)
+    # construction now SAYS the pack alone cannot divide anything --
+    # the segmenterless-activation warning is the loud half of this
+    # test's claim, and the inert parses below are the quiet half
+    with pytest.warns(UserWarning, match="ja_segmenter"):
+        p = parser_for(locales.JA)
     for name in _ROTATORS["ja"]:
         assert p.parse(name).as_dict() == _default_parse(name), name
 
@@ -977,9 +981,18 @@ def test_non_interference_all_packs_combined() -> None:
     all_rotators = [n for code in sorted(_ROTATORS) if code in _PACKED
                     for n in _ROTATORS[code]]
     corpus = _default_corpus() + all_rotators
-    packed = parser_for(
-        *(locales.get(code) for code in sorted(_PACKS)),
-        segmenter=locales.ja_segmenter() if _JA_AVAILABLE else None)
+    if _JA_AVAILABLE:
+        packed = parser_for(
+            *(locales.get(code) for code in sorted(_PACKS)),
+            segmenter=locales.ja_segmenter())
+    else:
+        # without the extra, the stack's hiragana activation is
+        # unservable -- which construction now SAYS (the segmenterless
+        # warning, pinned in test_parser.py); expected noise here, the
+        # gate below is what this test is about
+        with pytest.warns(UserWarning, match="ja_segmenter"):
+            packed = parser_for(
+                *(locales.get(code) for code in sorted(_PACKS)))
     declared = _assert_non_interference(
         packed,
         lambda n: any(m.DEVIATES(n) for m in _PACKS.values()),

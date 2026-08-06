@@ -268,6 +268,14 @@ dependency installed with the ``ja`` extra:
 
 Both halves are required, and they do different jobs: the ``ja`` pack
 activates division for Japanese text, and the segmenter performs it.
+Forgetting the segmenter is loud: building the parser emits a
+``UserWarning`` naming the scripts that could never divide and the
+call to pass, because the misconfigured parser would otherwise behave
+exactly like a working one minus the feature. The same check guards
+any configuration whose activated scripts nothing can serve — a
+from-scratch lexicon with no hangul surnames warns under the default
+policy, and ``Policy(segment_scripts=())`` is the deactivation the
+message offers.
 ``ja_segmenter()`` wraps namedivider's ``BasicNameDivider``, which
 reads data bundled in the installed package;
 ``ja_segmenter(gbdt=True)`` selects its gradient-boosted divider

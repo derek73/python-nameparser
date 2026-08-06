@@ -18,6 +18,7 @@ from nameparser._locale import Locale
 from nameparser._pipeline import run
 from nameparser._pipeline._assemble import assemble
 from nameparser._pipeline._state import ParseState
+from nameparser._pipeline._vocab import _SCRIPT_MATCHERS
 from nameparser._policy import UNSET, Policy, PolicyPatch, _Unset, apply_patch
 from nameparser._types import (
     FOLDED_TAG, ParsedName, Segmenter, Token, _guarded_getstate,
@@ -80,6 +81,47 @@ class Parser:
         if self.segmenter is not None and not callable(self.segmenter):
             raise TypeError(
                 f"segmenter must be callable or None, got {self.segmenter!r}")
+        # A configuration gap that used to be silent (#272's API, made
+        # loud before 2.1.0): segment_scripts can activate a script
+        # that neither the vocabulary nor a segmenter can ever divide
+        # -- the JA pack's whole shape, when its segmenter is
+        # forgotten. The parser then behaves identically to a working
+        # one minus the feature, which reads as "not working" with no
+        # signal why. Statically decidable here, so say it here; a
+        # warning rather than an error because the inert pack is a
+        # pinned, deliberate property (a JA registration must be safe
+        # without the extra), and warnings are filterable by the rare
+        # caller who wants exactly that.
+        if self.segmenter is None:
+            uncovered = sorted(
+                script.value
+                for script in self.policy.segment_scripts
+                if not any(_SCRIPT_MATCHERS[script](entry)
+                           for entry in self.lexicon.surnames))
+            if uncovered:
+                names = ", ".join(uncovered)
+                one = len(uncovered) == 1
+                # the ja hint only where a Japanese script is among the
+                # dead ones -- a hangul-only gap (a from-scratch
+                # lexicon under the default policy) has different
+                # remedies, and pointing it at ja_segmenter would be a
+                # non sequitur
+                ja_hint = (
+                    " For Japanese, pass "
+                    "segmenter=locales.ja_segmenter() (install with: "
+                    "pip install 'nameparser[ja]')."
+                    if {"han", "hiragana", "katakana"} & set(uncovered)
+                    else "")
+                warnings.warn(
+                    f"Policy.segment_scripts activates {names} but the "
+                    f"vocabulary has no surnames in "
+                    f"{'that script' if one else 'those scripts'} "
+                    f"and no segmenter is configured: unspaced names "
+                    f"written in {'it' if one else 'them'} will never "
+                    f"divide. Supply covering surnames, pass a "
+                    f"segmenter, or deactivate with "
+                    f"Policy(segment_scripts=()).{ja_hint}",
+                    UserWarning, stacklevel=3)
 
     def __repr__(self) -> str:
         # composes the two bounded component reprs (spec §2 reprs); the
@@ -250,4 +292,15 @@ def parser_for(*locales: Locale, base: Parser | None = None,
             # a subclass with extra mandatory args would break this rewrap
             raise type(exc)(
                 f"while applying locale {loc.code!r}: {exc}") from exc
-    return Parser(lexicon=lexicon, policy=policy, segmenter=segmenter)
+    # Construction warnings (the segmenterless-activation check in
+    # Parser.__post_init__) re-emit from THIS frame: its stacklevel is
+    # sized for direct Parser(...) construction, and through this
+    # function's extra frame the default single-line rendering would
+    # point into the library instead of at the caller -- the exact
+    # call the message tells them to change.
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        built = Parser(lexicon=lexicon, policy=policy, segmenter=segmenter)
+    for w in caught:
+        warnings.warn(w.message, stacklevel=2)
+    return built
