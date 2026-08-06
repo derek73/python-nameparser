@@ -18,6 +18,7 @@ from nameparser._locale import Locale
 from nameparser._pipeline import run
 from nameparser._pipeline._assemble import assemble
 from nameparser._pipeline._state import ParseState
+from nameparser._pipeline._vocab import _SCRIPT_MATCHERS
 from nameparser._policy import UNSET, Policy, PolicyPatch, _Unset, apply_patch
 from nameparser._types import (
     FOLDED_TAG, ParsedName, Segmenter, Token, _guarded_getstate,
@@ -80,6 +81,35 @@ class Parser:
         if self.segmenter is not None and not callable(self.segmenter):
             raise TypeError(
                 f"segmenter must be callable or None, got {self.segmenter!r}")
+        # A configuration gap that used to be silent (#272's API, made
+        # loud before 2.1.0): segment_scripts can activate a script
+        # that neither the vocabulary nor a segmenter can ever divide
+        # -- the JA pack's whole shape, when its segmenter is
+        # forgotten. The parser then behaves identically to a working
+        # one minus the feature, which reads as "not working" with no
+        # signal why. Statically decidable here, so say it here; a
+        # warning rather than an error because the inert pack is a
+        # pinned, deliberate property (a JA registration must be safe
+        # without the extra), and warnings are filterable by the rare
+        # caller who wants exactly that.
+        if self.segmenter is None:
+            uncovered = sorted(
+                script.value
+                for script in self.policy.segment_scripts
+                if not any(_SCRIPT_MATCHERS[script](entry)
+                           for entry in self.lexicon.surnames))
+            if uncovered:
+                names = ", ".join(uncovered)
+                warnings.warn(
+                    f"Policy.segment_scripts activates {names} but the "
+                    f"vocabulary has no surnames in "
+                    f"{'that script' if len(uncovered) == 1 else 'those scripts'} "
+                    f"and no segmenter is configured: unspaced names "
+                    f"written in {'it' if len(uncovered) == 1 else 'them'} "
+                    f"will never divide. For Japanese, pass "
+                    f"segmenter=locales.ja_segmenter() (install with: "
+                    f"pip install 'nameparser[ja]').",
+                    UserWarning, stacklevel=3)
 
     def __repr__(self) -> str:
         # composes the two bounded component reprs (spec §2 reprs); the

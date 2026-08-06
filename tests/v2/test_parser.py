@@ -754,3 +754,43 @@ def test_a_segmenter_split_reaches_the_fields() -> None:
     n3 = q.parse("Dr 阿明日, Jr.")
     assert (n3.title, n3.family, n3.given, n3.middle, n3.suffix) == (
         "Dr", "阿", "明", "日", "Jr.")
+
+
+def _noop_segmenter(text: str) -> None:
+    return None
+
+
+def test_segmenterless_activation_without_vocabulary_warns() -> None:
+    # The JA pack activates HAN and HIRAGANA segmentation but ships no
+    # vocabulary, and no bundled list could serve those scripts -- so
+    # without a segmenter, Japanese names can never divide. That is a
+    # CONFIGURATION gap, not a fact about any name, and it was silent:
+    # the misconfigured parser behaved identically to a working one
+    # minus the feature. Statically detectable at construction, so
+    # warn there.
+    with pytest.warns(UserWarning, match=r"ja_segmenter"):
+        parser_for(locales.JA)
+
+
+def test_a_segmenter_silences_the_activation_warning() -> None:
+    # any segmenter counts: the gap is "nothing can divide these",
+    # not "you did not use namedivider"
+    parser_for(locales.JA, segmenter=_noop_segmenter)
+
+
+def test_covered_activation_does_not_warn() -> None:
+    # HANGUL is served by the census surnames; the zh pack ships the
+    # vocabulary its own activation needs
+    Parser()
+    parser_for(locales.ZH)
+
+
+def test_stacked_activation_warns_only_for_uncovered_scripts() -> None:
+    # zh covers HAN and the default vocabulary covers HANGUL; only
+    # HIRAGANA is left unservable, and the message must say WHICH
+    # scripts are dead rather than naming the whole activation set
+    with pytest.warns(UserWarning) as caught:
+        parser_for(locales.ZH, locales.JA)
+    message = str(caught[0].message)
+    assert "hiragana" in message
+    assert "hangul" not in message

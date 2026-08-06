@@ -371,7 +371,11 @@ def test_ja_pack_alone_is_inert() -> None:
     # to segment WITH changes no parse at all. Pure pack data, so this
     # runs whether or not nameparser[ja] is installed -- and it is the
     # unsegmented pack's entire observable behavior.
-    p = parser_for(locales.JA)
+    # construction now SAYS the pack alone cannot divide anything --
+    # the segmenterless-activation warning is the loud half of this
+    # test's claim, and the inert parses below are the quiet half
+    with pytest.warns(UserWarning, match="ja_segmenter"):
+        p = parser_for(locales.JA)
     for name in _ROTATORS["ja"]:
         assert p.parse(name).as_dict() == _default_parse(name), name
 

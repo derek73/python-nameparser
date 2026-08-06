@@ -7,6 +7,7 @@ keeps runs reproducible on shared CI runners -- this layer guards
 against regressions; exploratory fuzzing happened during review.
 """
 import dataclasses
+import warnings
 
 import pytest
 from hypothesis import given, settings
@@ -452,13 +453,27 @@ def _names_using(draw: st.DrawFn, lexicon: Lexicon,
     return " ".join(drawn)
 
 
+
+
+def _quiet_parser(**kwargs: object) -> Parser:
+    """Parser construction with the segmenterless-activation warning
+    ignored: a drawn segment_scripts with a drawn vocabulary that
+    cannot serve it is exactly the misconfiguration the warning names,
+    so drawn configs hit it legitimately and constantly. The fuzz here
+    targets parse behavior, not construction diagnostics --
+    tests/v2/test_parser.py pins the warning itself."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        return Parser(**kwargs)  # type: ignore[arg-type]
+
+
 @given(_lexicons(), _policies(), st.data())
 @settings(max_examples=250, deadline=None, derandomize=True)
 def test_any_valid_config_still_parses_totally(
         lexicon: Lexicon, policy: Policy, data: st.DataObject) -> None:
     # Building the parser is part of the contract: a Lexicon and Policy
     # that each constructed must also combine.
-    parser = Parser(lexicon=lexicon, policy=policy)
+    parser = _quiet_parser(lexicon=lexicon, policy=policy)
     text = data.draw(_names_using(lexicon, policy))
     parsed = parser.parse(text)          # must not raise, ever
     # the anti-#100 invariant, under configuration rather than under
@@ -481,8 +496,8 @@ def test_config_values_are_hashable_and_reusable(
     # safe to build a parser from more than once.
     assert hash(lexicon) == hash(lexicon)
     assert {lexicon: 1, policy: 2}
-    assert Parser(lexicon=lexicon, policy=policy) == Parser(
-        lexicon=lexicon, policy=policy)
+    assert _quiet_parser(lexicon=lexicon, policy=policy) == \
+        _quiet_parser(lexicon=lexicon, policy=policy)
 
 
 # Values a real caller plausibly passes by mistake: the bare string that
@@ -513,7 +528,7 @@ def test_bad_lexicon_field_fails_cleanly(field: str, value: object) -> None:
         return
     # Accepted, so it has to survive an actual parse -- construction
     # succeeding while parsing dies is the same bug one stage later.
-    Parser(lexicon=lexicon).parse("Dr. John de la Vega III")
+    _quiet_parser(lexicon=lexicon).parse("Dr. John de la Vega III")
 
 
 @given(st.sampled_from(_POLICY_FIELDS), _HOSTILE)
@@ -523,4 +538,4 @@ def test_bad_policy_field_fails_cleanly(field: str, value: object) -> None:
         policy = Policy(**{field: value})       # type: ignore[arg-type]
     except (ValueError, TypeError):
         return
-    Parser(policy=policy).parse("Dr. John de la Vega III")
+    _quiet_parser(policy=policy).parse("Dr. John de la Vega III")
