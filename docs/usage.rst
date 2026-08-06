@@ -275,6 +275,32 @@ instead, which is more accurate and downloads its model and surname
 files from the network on first use — worth knowing before deploying
 it somewhere sandboxed or air-gapped.
 
+Decomposed text
+^^^^^^^^^^^^^^^
+
+Korean and Japanese text is sometimes stored decomposed, with a
+syllable held as its separate jamo rather than as one codepoint. macOS
+filenames are the common source. Everything above works on decomposed
+input: script classification normalizes to NFC before deciding, so a
+decomposed name gets the same order rule as its composed twin.
+
+Splitting is the exception. An unspaced decomposed hangul name is
+ordered correctly but not split, because surname matching runs against
+the text as given and a decomposed name matches no entry in the census
+list. That is the deliberate choice: being unsplit is recoverable,
+whereas splitting in the wrong place is not.
+
+One consequence is worth stating outright, because it looks like a
+bug. Parse output preserves the encoding it was given, so a field from
+a decomposed name is decomposed too, and comparing it against a
+composed literal fails even where the parse was correct::
+
+    decomposed = unicodedata.normalize("NFD", "김 민준")
+    parse(decomposed).family == "김"                          # False
+    unicodedata.normalize("NFC", parse(decomposed).family)    # '김'
+
+Normalize both sides before comparing across encodings.
+
 Boundaries
 ~~~~~~~~~~~
 
