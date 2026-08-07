@@ -44,11 +44,9 @@ Quick Start Example
     >>> name.render("{family}, {given}")
     'de la Vega, Juan'
 
-    >>> parse("毛 泽东").family                    # Chinese: family name first
-    '毛'
     >>> parse("김민준").family                     # Korean: unspaced, split on the census list
     '김'
-    >>> parse("高橋 みなみ").family                 # Japanese: kanji with kana
+    >>> parse("高橋 みなみ").family                 # Japanese: kanji with kana, family first
     '高橋'
     >>> parse("김민준씨").suffix                   # an honorific written against the name
     '씨'
@@ -58,7 +56,10 @@ Quick Start Example
     'بن سلمان'
 
     >>> from nameparser import locales, parser_for
-    >>> russian = parser_for(locales.RU)           # patronymics need their pack
+    >>> chinese = parser_for(locales.ZH)           # Han text does not say which language
+    >>> chinese.parse("毛泽东").family              # so splitting it is opt-in
+    '毛'
+    >>> russian = parser_for(locales.RU)
     >>> russian.parse("Сидоров Иван Петрович").family
     'Сидоров'
     >>> locales.available()
