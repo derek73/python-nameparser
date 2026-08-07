@@ -46,9 +46,22 @@ uv run sphinx-build -b html docs dist/docs
 # - Format matches existing entries — see 1.3.0 block for a current example
 
 # Release checklist (PyPI publish is triggered automatically by GitHub Actions on release creation)
-# 0. Review docs/ for anything stale — especially usage.rst (examples, API surface)
-#    and any .rst files that reference config constants or HumanName kwargs
-#    Also review AGENTS.md for stale commands, architecture notes, or gotchas
+# 0. Sweep for stale prose. Grepping for the changed SYMBOL finds almost none of
+#    it: prose describes behavior in words, not identifiers. Walk these sites
+#    explicitly — every one of them has gone stale at least once.
+#    - docs/*.rst: usage.rst examples and API surface, plus any file listing
+#      config constants or HumanName kwargs
+#    - docstrings that autodoc renders (nameparser/_policy.py, _types.py, ...).
+#      These ARE the API reference in modules.html, so a docs/*.rst-only sweep
+#      structurally misses half the rendered page — that is how the guide and
+#      the reference ended up teaching different Policy spellings in 2.1
+#    - user-facing MESSAGES: warnings and raise text often hand the reader code
+#      to paste, and it has to be code that still works (and type-checks)
+#    - pipeline stage header blocks: each _pipeline/*.py docstring declares
+#      "Reads:". That is checkable, so check it rather than reading it:
+#      compare it against grep -oE '\b(policy|lexicon)\.[a-z_]+' on the module
+#    - tests/v2/cases.py notes, which explain why a row lands where it does
+#    - AGENTS.md itself, for stale commands, architecture notes, or gotchas
 #    And check for open Dependabot PRs on uv.lock (namedivider-python) and merge them
 #    first — pyproject floats >=0.4 so fresh installs get the newest namedivider, but
 #    CI's ja-extra job installs from uv.lock and only tests what the lock pins
