@@ -320,6 +320,37 @@ family-then-given regardless of the configured order:
     >>> family_first.parse("Thomas, John").family
     'Thomas'
 
+A Vietnamese full name needs a third order. It is written family, then
+middle, then given — the name a person is actually called by is the
+*last* word, not the second. Family-first order gets the family name
+right and then reverses the remaining two, so
+``FAMILY_FIRST_GIVEN_LAST`` exists for the names that read this way:
+
+.. doctest::
+
+    >>> from nameparser import FAMILY_FIRST_GIVEN_LAST
+    >>> family_first.parse("Tran Quoc Toan").given       # FAMILY_FIRST
+    'Quoc'
+    >>> given_last = Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST))
+    >>> viet = given_last.parse("Tran Quoc Toan")
+    >>> viet.family, viet.middle, viet.given
+    ('Tran', 'Quoc', 'Toan')
+
+Nothing keys this order to a script the way the East Asian defaults
+below do — Vietnamese is written in the Latin alphabet, which carries
+no order of its own — so it applies only where you set it, and there
+is no ``vn`` locale pack yet (issue `#146
+<https://github.com/derek73/python-nameparser/issues/146>`_).
+
+One caution, which is why the example above is not the more obvious
+``"Nguyen Van Minh"``: a middle word that is also a shipped particle
+is claimed by the vocabulary layer before ``name_order`` is consulted
+at all. ``Van`` is the Dutch particle ``van``, so that name reads
+family ``Nguyen`` with ``Van Minh`` given under *both* family-first
+orders, and the choice between them makes no difference. `Words that
+are also ordinary names`_ covers dropping such a word from the
+vocabulary.
+
 East Asian defaults, and turning them off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
