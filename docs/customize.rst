@@ -296,20 +296,20 @@ without going through a locale pack -- call :meth:`Policy.patched()
 Family-first name order
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-``name_order`` is the one most likely to matter for non-Western data.
-Positional input is assigned in the order you declare, so a
-family-first name parses as written instead of needing to be
-rearranged afterwards:
+``name_order`` is the one most likely to matter for data that is not
+in Western order. Positional input is assigned in the order you
+declare, so a name written family-first — Hungarian, here — parses as
+written instead of needing to be rearranged afterwards:
 
 .. doctest::
 
     >>> from nameparser import Parser, Policy, FAMILY_FIRST, parse
-    >>> parse("Nguyen Van Minh").family              # default GIVEN_FIRST
-    'Van Minh'
+    >>> parse("Nagy Laszlo Peter").family            # default GIVEN_FIRST
+    'Peter'
     >>> family_first = Parser(policy=Policy(name_order=FAMILY_FIRST))
-    >>> name = family_first.parse("Nguyen Van Minh")
-    >>> name.family, name.given
-    ('Nguyen', 'Van Minh')
+    >>> name = family_first.parse("Nagy Laszlo Peter")
+    >>> name.family, name.given, name.middle
+    ('Nagy', 'Laszlo', 'Peter')
 
 An explicit comma still wins, on the reasoning that someone who wrote
 one meant it — so the same parser reads ``"Thomas, John"`` as
