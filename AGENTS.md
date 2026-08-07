@@ -65,16 +65,30 @@ uv run sphinx-build -b html docs dist/docs
 #    And check for open Dependabot PRs on uv.lock (namedivider-python) and merge them
 #    first — pyproject floats >=0.4 so fresh installs get the newest namedivider, but
 #    CI's ja-extra job installs from uv.lock and only tests what the lock pins
-# 1. Bump VERSION in nameparser/_version.py (and the `version:` field in CITATION.cff to match)
+# 1. Run the differential gate at BOTH baselines and confirm each exits 0:
+#    uv run python tools/differential/compare.py --baseline 1.4.0   # the v1 compat contract
+#    uv run python tools/differential/compare.py                    # the previous minor
+#    Redirect to a file rather than piping — under zsh a pipe replaces the exit
+#    code with the pipe's, so a failing run reads as a passing one. The
+#    classified summary it prints is the source for the release notes' behavior
+#    claims, including the count of changed names that are Latin-only.
+# 2. Bump VERSION in nameparser/_version.py (and the `version:` field in CITATION.cff to match)
 #    For a pre-release, set PRE_RELEASE = 'rc1' (etc.) — __version__ joins it without a dot ('2.0.0rc1'); '' means final
-# 2. Stamp "Unreleased" → "X.Y.Z - Month DD, YYYY" in docs/release_log.rst
-# 3. git commit + git tag -a vX.Y.Z -m "Release X.Y.Z"
-# 4. git push origin master && git push origin vX.Y.Z  ← tag must be pushed separately before gh release create
-# 5. gh release create vX.Y.Z --title "vX.Y.Z" --notes "..."
-# 6. Close the vX.Y.Z milestone and create a new "Next Release" one:
+# 3. Stamp "Unreleased" → "X.Y.Z - Month DD, YYYY" in docs/release_log.rst
+# 4. git commit + git tag -a vX.Y.Z -m "Release X.Y.Z"
+# 5. git push origin master && git push origin vX.Y.Z  ← tag must be pushed separately before gh release create
+# 6. gh release create vX.Y.Z --title "vX.Y.Z" --notes "..."
+# 7. Close the vX.Y.Z milestone and create a new "Next Release" one:
 #    MILESTONE=$(gh api repos/derek73/python-nameparser/milestones --jq '.[] | select(.title=="vX.Y.Z") | .number')
 #    gh api -X PATCH repos/derek73/python-nameparser/milestones/$MILESTONE -f state=closed
 #    gh api -X POST repos/derek73/python-nameparser/milestones -f title="Next Release"
+# 8. Open the next cycle's ledger: set DEFAULT_BASELINE in
+#    tools/differential/compare.py to the version just released, and create
+#    tools/differential/expected_since_<that version>.toml. Until both are done a
+#    bare compare.py measures against two minors back while reporting the
+#    previous one, and _allowlist_for hard-errors on the missing file. Land the
+#    regex-sync globbing (#333) FIRST, or the new ledger is born with the same
+#    unpinned hand copies of _SCRIPT_RANGES and the honorific vocabulary.
 ```
 
 Enable debug logging to see the parser's internal decisions:
