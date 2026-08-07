@@ -313,137 +313,220 @@ Normalize both sides before comparing across encodings.
 Boundaries
 ~~~~~~~~~~~
 
-Several boundaries apply to all of the above. Romanized names ("Kim
-Min-jun", "Yamada Taro") are Latin script and follow the ordinary
-positional rules — order genuinely varies in romanized data, so
-nothing script-based applies. A name written wholly in katakana stays
-positional for the reason given above, pack or no pack: it is
-predominantly a transcription, and a transcription is already in the
-order it should be read in. A Han transcription written with a space
-instead of the 间隔号 (威廉 莎士比亚) carries nothing to distinguish it
-from a native two-token name and keeps the family-first reading — the
-dot is the marker, and without it there is no signal. The same holds
-for a transcription typed with the Japanese middle dot (威廉・莎士比亚):
-each dot carries its own script's convention, the nakaguro's is
-Japanese roster formatting rather than transcription, so only the
-Chinese dot rescues the source order. And a comma disables the script
-behaviors that decide where a name divides, on the reasoning
-``name_order`` already follows: whoever wrote the comma has already
-said where the family name ends.
+Several boundaries apply to all of the above.
+
+When the script rules don't apply
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Romanized names ("Kim Min-jun", "Yamada Taro") are Latin script and
+follow the ordinary positional rules. Order genuinely varies in
+romanized data, so nothing script-based applies. A name written wholly
+in katakana stays positional for the reason given above, pack or no
+pack: it is predominantly a transcription, and a transcription is
+already in the order it should be read in.
+
+A Han transcription written with a space instead of the 间隔号
+(威廉 莎士比亚) carries nothing to distinguish it from a native
+two-token name, and keeps the family-first reading. The dot is the
+marker, and without it there is no signal. The same holds for a
+transcription typed with the Japanese middle dot (威廉・莎士比亚): each
+dot carries its own script's convention, the nakaguro's is Japanese
+roster formatting rather than transcription, so only the Chinese dot
+rescues the source order.
+
+A comma disables the script behaviors that decide where a name
+divides, on the reasoning ``name_order`` already follows: whoever
+wrote the comma has already said where the family name ends.
+
+Honorifics come off first
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Honorifics and degrees follow a CJK name, and both the spaced and the
-glued forms are recognized as suffixes: ``王小明 先生`` reads family
-王小明 with 先生 in ``suffix``, and so do glued ``田中さん``,
-``山田太郎様`` and ``김민준씨``. The honorific is split off the end of
-the last token of the name before the name is split or ordered, so
-those rules see the name without it — which is why ``김민준씨`` still
-divides into family 김 and given 민준, and why a configured Japanese
-segmenter is handed 山田太郎 rather than 山田太郎様. Neither a comma nor
-a 间隔号 switches the peel off. Both say where a name divides — the
-comma that the writer has already given the family name, the dot that
-the pieces are a transcription's syllable groups — and an honorific is
-not part of the name in either reading. So ``김, 민준씨`` reads the
-same as ``김 민준씨``. What a comma does instead is say which runs are
-the name: the two around a family comma, an honorific being as often
-glued to the given name as to the family. Nothing past those two is in
-reach — ``김, 민준 지훈씨`` peels, ``김, 민준, 지훈씨`` does not — and
-the second of those runs counts only where it is name text. A run that
-is nothing but credentials is not, whatever the comma looked like, and
-the same test that decides the comma structure decides this too: the
-run is left alone and the honorific is found in the name. Being
-credentials is necessary but not enough, because the test cannot help
-counting the honorific itself — a glued honorific is a suffix word,
-so it is part of what makes its own run read as credentials. The run
-is passed over only when the part *before* the comma has an honorific
-of its own to give up; otherwise passing it over would discard the
-only one there is. So ``田中さん, V.`` and ``田中さん, Ph. D.``
-give さん up exactly as
-``田中さん, PhD`` does — though where the credential itself lands is
-the comma's business rather than the peel's, and still differs by
-spelling (``title`` for ``PhD``, ``given`` for ``V.``, and ``Ph. D.``
-in ``suffix`` beside さん). What those marks do stop is
-the *split*, which is a different question and still theirs to answer.
-``田中さん, 太郎`` is unchanged, and not because of its comma: the
-honorific there is not at the end of the name, 太郎 is.
+glued forms are recognized as suffixes:
+
+.. doctest::
+
+    >>> parse("王小明 先生").suffix
+    '先生'
+    >>> glued = parse("김민준씨")
+    >>> glued.family, glued.given, glued.suffix
+    ('김', '민준', '씨')
+
+The honorific is split off the end of the last token of the name
+before the name is split or ordered, so those rules see the name
+without it. That is why ``김민준씨`` still divides into family 김 and
+given 민준, and why a configured Japanese segmenter is handed 山田太郎
+rather than 山田太郎様.
+
+Commas and dots
+^^^^^^^^^^^^^^^
+
+Neither a comma nor a 间隔号 switches the peel off. Both say where a
+name divides: the comma that the writer has already given the family
+name, the dot that the pieces are a transcription's syllable groups.
+An honorific is not part of the name in either reading.
+
+.. doctest::
+
+    >>> parse("김, 민준씨").given == parse("김 민준씨").given
+    True
+
+What a comma does instead is say which runs are the name: the two
+around a family comma, an honorific being as often glued to the given
+name as to the family. Nothing past those two is in reach.
+
+.. doctest::
+
+    >>> parse("김, 민준 지훈씨").suffix     # second run, still in reach
+    '씨'
+    >>> parse("김, 민준, 지훈씨").suffix    # a third run, left whole
+    '지훈씨'
+
+What those marks do stop is the *split*, which is a different question
+and still theirs to answer. ``田中さん, 太郎`` is unchanged, and not
+because of its comma: the honorific there is not at the end of the
+name, 太郎 is.
+
+Credentials after a comma
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The second of those two runs counts only where it is name text. A run
+that is nothing but credentials is not, whatever the comma looked
+like, and the same test that decides the comma structure decides this
+too: the run is left alone and the honorific is found in the name.
+
+Being credentials is necessary but not enough, because the test cannot
+help counting the honorific itself. A glued honorific is a suffix
+word, so it is part of what makes its own run read as credentials. The
+run is passed over only when the part *before* the comma has an
+honorific of its own to give up; otherwise passing it over would
+discard the only one there is.
+
+.. doctest::
+
+    >>> credential = parse("田中さん, V.")
+    >>> credential.family, credential.suffix
+    ('田中', 'さん')
+
+So ``田中さん, V.`` and ``田中さん, Ph. D.`` give さん up exactly as
+``田中さん, PhD`` does. Where the credential itself lands is the
+comma's business rather than the peel's, and still differs by
+spelling: ``title`` for ``PhD``, ``given`` for ``V.``, and ``Ph. D.``
+in ``suffix`` beside さん.
+
+Spacing, and where the name divides
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Where a segmenter divides the name, the two spellings part company. A
 spaced honorific is a token boundary the writer typed, and the
-segmenter is asked only where an undivided name divides — so anything
-standing beside the name calls it off, honorific or not: under the
+segmenter is asked only where an undivided name divides, so anything
+standing beside the name calls it off, honorific or not. Under the
 Japanese pack ``佐藤 氏`` keeps family 佐藤, where bare ``佐藤`` would
-have been divided 佐 + 藤. That is a conservative reading rather than
-a principled one; a spaced honorific cannot be told apart from a
-spaced given name by position, and treating it as one keeps four real
-surnames whole (``佐藤 氏``, ``田中 様``, ``鈴木 先生``, ``中村 教授``)
-at the price of one division it declines to make (``山田太郎 様``). A
-glued honorific carries no boundary at all — its writer drew none
-anywhere — so ``田中さん`` divides the way bare ``田中`` does, into
-family 田 and given 中, with さん in ``suffix``. Writing the honorific
-spaced is therefore also how you ask for a family name to be kept
-whole on this path, short of declining the pack.
+have been divided 佐 + 藤.
+
+That is a conservative reading rather than a principled one. A spaced
+honorific cannot be told apart from a spaced given name by position,
+and treating it as one keeps four real surnames whole (``佐藤 氏``,
+``田中 様``, ``鈴木 先生``, ``中村 教授``) at the price of one division
+it declines to make (``山田太郎 様``). A glued honorific carries no
+boundary at all, its writer having drawn none anywhere, so ``田中さん``
+divides the way bare ``田中`` does, into family 田 and given 中, with
+さん in ``suffix``. Writing the honorific spaced is therefore also how
+you ask for a family name to be kept whole on this path, short of
+declining the pack.
 
 Where the VOCABULARY divides the name the two spellings never part
 company, because the peel hands the same remainder to the same surname
-match either way: ``김민준 씨`` and ``김민준씨`` both give family 김,
-given 민준 and suffix 씨, and under the Chinese pack ``王小明 先生``
-and ``王小明先生`` both give family 王, given 小明 and suffix 先生.
-Spacing the honorific is no lever there, and for Korean data there is
-no pack to decline either — hangul segmentation is on by default.
+match either way:
+
+.. doctest::
+
+    >>> parse("김민준 씨").family, parse("김민준씨").family
+    ('김', '김')
+
+Under the Chinese pack ``王小明 先生`` and ``王小明先生`` both give
+family 王, given 小明 and suffix 先生 for the same reason. Spacing the
+honorific is no lever there, and for Korean data there is no pack to
+decline either, hangul segmentation being on by default.
+
+Which honorifics peel when glued
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The glued reading is deliberately narrower than the spaced one. A
 spaced honorific sits behind a boundary its writer drew; a glued one
 has only itself to go on, so a word peels off the end of a name only
-if it could never BE the end of a name. 씨, 님, 박사, 박사님, 선생님,
-교수님, さん, さま, くん, ちゃん, 様, 先生, 教授, 女士 and 小姐
-qualify; 양, 군, 氏, 博士 and 殿 do not, because 김지양 is a given
-name, 田中博士 is Tanaka Hiroshi as readily as Doctor Tanaka, and some
-ninety Japanese surnames end in 殿 (鵜殿, 真殿). Those stay recognized
-in their spaced form, where position settles what the glued form
-leaves ambiguous. 君 is recognized in neither form, since 王君 is a
-complete Chinese name — though its kana spelling くん peels. Exactly
-one honorific peels off a token, and the entries are whole
+if it could never BE the end of a name.
+
+씨, 님, 박사, 박사님, 선생님, 교수님, さん, さま, くん, ちゃん, 様,
+先生, 教授, 女士 and 小姐 qualify. 양, 군, 氏, 博士 and 殿 do not,
+because 김지양 is a given name, 田中博士 is Tanaka Hiroshi as readily
+as Doctor Tanaka, and some ninety Japanese surnames end in 殿 (鵜殿,
+真殿). Those stay recognized in their spaced form, where position
+settles what the glued form leaves ambiguous. 君 is recognized in
+neither form, since 王君 is a complete Chinese name, though its kana
+spelling くん peels.
+
+Exactly one honorific peels off a token, and the entries are whole
 honorifics rather than parts: ``김민준박사님`` gives up 박사님 entire,
 not 님 with 박사 left behind.
 
+When a division was a judgment call
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 A division the parser had to choose is reported rather than hidden.
-When an unspaced name has more than one vocabulary-supported split —
-``남궁민수`` is 남궁 + 민수 by the two-syllable surname but 남 + 궁민수
-by the single-syllable one — the longest surname wins and the parse
-records the decision as an ``AmbiguityKind.SEGMENTATION``, described
-under `When the parser had to guess`_; a name with only one possible
-split reports nothing. A segmenter's answer is reported on the same
-kind whenever its confidence falls below the stage's floor, naming the
-division and the score in the report's ``detail``::
+When an unspaced name has more than one vocabulary-supported split,
+the longest surname wins and the parse records the decision as an
+``AmbiguityKind.SEGMENTATION``, described under `When the parser had
+to guess`_. ``남궁민수`` is 남궁 + 민수 by the two-syllable surname but
+남 + 궁민수 by the single-syllable one:
+
+.. doctest::
+
+    >>> parse("남궁민수").ambiguities
+    (Ambiguity('segmentation': '남궁'/'민수'),)
+
+A name with only one possible split reports nothing.
+
+A segmenter's answer is reported on the same kind whenever its
+confidence falls below the stage's floor, naming the division and the
+score in the report's ``detail``::
 
     "'山田太郎' splits as '山田' + '太郎' on a segmenter answer scoring 0.44, under the 0.9 confidence floor"
 
 With namedivider that line separates its two kinds of answer. A
-division it states as a rule — the kanji-to-kana boundary in 高橋みなみ
-— scores 1.0 and reports nothing; a division read off kanji statistics
-scores far below the floor and always reports. Read the report as a
-statement about the *kind* of answer, not as a measure of how likely
-this particular one is to be wrong.
+division it states as a rule, such as the kanji-to-kana boundary in
+高橋みなみ, scores 1.0 and reports nothing; a division read off kanji
+statistics scores far below the floor and always reports. Read the
+report as a statement about the *kind* of answer, not as a measure of
+how likely this particular one is to be wrong.
 
 A lone two-character kanji name divides one character to each side, on
 namedivider's rule for that length. A name that short carries no
-evidence of where its own boundary falls, and one character each way is
-the presumption Japanese practice makes; that is an accepted
-presumption, not a measurement, so a two-character token is the shape
-to check first if a division looks wrong.
+evidence of where its own boundary falls, and one character each way
+is the presumption Japanese practice makes. That is an accepted
+presumption rather than a measurement, so a two-character token is the
+shape to check first if a division looks wrong.
 
-A segmenter that answers outside the token it was given — a cut at or
-past the end of the text — has violated the protocol, and the parse
-says so rather than hiding it: it raises ``ValueError`` naming the
+When a segmenter misbehaves
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A segmenter that answers outside the token it was given, with a cut at
+or past the end of the text, has violated the protocol, and the parse
+says so rather than hiding it. It raises ``ValueError`` naming the
 offending offset and the token's length, the way an answer of the
 wrong type raises ``TypeError``. Declining silently would leave an
-off-by-one segmenter invisible; every answer it gave would vanish and
-the name would merely look undivided. The shipped ``ja_segmenter()``
-does decline — returns ``None``, token left whole — for the cases that
-are *not* protocol violations: text outside the Japanese repertoire,
-text too short to divide, an answer that fails to reconstruct its
-input, and a score outside [0, 1]. Exceptions are the one thing that
-does *not* stay inside the parse: a segmenter is your code, so its
-errors propagate rather than being absorbed as content errors.
+off-by-one segmenter invisible: every answer it gave would vanish and
+the name would merely look undivided.
+
+The shipped ``ja_segmenter()`` does decline, returning ``None`` and
+leaving the token whole, for the cases that are *not* protocol
+violations: text outside the Japanese repertoire, text too short to
+divide, an answer that fails to reconstruct its input, and a score
+outside [0, 1].
+
+Exceptions are the one thing that does *not* stay inside the parse: a
+segmenter is your code, so its errors propagate rather than being
+absorbed as content errors.
 
 The command line takes the pack but not the segmenter: ``python -m
 nameparser --locale ja`` has no way to attach one, so it activates
