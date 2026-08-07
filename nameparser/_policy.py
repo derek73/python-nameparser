@@ -563,7 +563,7 @@ class Policy:
     """The behavior switches a parser runs with: name order,
     patronymic rules, delimiter routing, input scrubbing. Immutable
     and hashable; every field has a safe default, so construct with
-    only what you change -- ``Policy(maiden_delimiters={("(", ")")})``
+    only what you change -- ``Policy(maiden_delimiters=frozenset({("(", ")")}))``
     -- and pass the result to ``Parser(policy=...)``."""
 
     #: How positional (no-comma) input maps onto given/middle/family.
@@ -584,7 +584,7 @@ class Policy:
     #: stored as sorted pairs). The default reads wholly-Han/Hangul
     #: names, and kana-licensed Japanese names, family-first -- see
     #: :data:`~nameparser.DEFAULT_SCRIPT_ORDERS`. Opt out with
-    #: ``script_orders={}``. Latin-script and mixed-script input is
+    #: ``script_orders=()``. Latin-script and mixed-script input is
     #: never affected. Like name_order, ignored where a comma already
     #: decides the family name.
     script_orders: tuple[tuple[Script, tuple[Role, Role, Role]], ...] = (
@@ -602,7 +602,7 @@ class Policy:
     #: locales.ZH for Chinese and locales.JA -- which activates
     #: Script.HIRAGANA alongside it, the kana license's carrier key --
     #: for Japanese.
-    #: Opt out with ``segment_scripts=()``; note a PolicyPatch unions
+    #: Opt out with ``segment_scripts=frozenset()``; note a PolicyPatch unions
     #: rather than replaces, so a pack can only add scripts, never
     #: disable one.
     segment_scripts: frozenset[Script] = frozenset({Script.HANGUL})
@@ -622,7 +622,7 @@ class Policy:
     #: (open, close) pairs whose enclosed content becomes the maiden
     #: field instead; a pair listed here is dropped from the effective
     #: nickname set (maiden wins, see __post_init__), so
-    #: maiden_delimiters={("(", ")")} is the whole recipe (#274).
+    #: maiden_delimiters=frozenset({("(", ")")}) is the whole recipe (#274).
     #: A maiden_markers word opening the enclosed content is dropped
     #: from the value, but only where that content holds more than one
     #: token: a lone "(Nee)" is a maiden NAME, not a marker (#329).

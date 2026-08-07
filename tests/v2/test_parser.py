@@ -772,6 +772,20 @@ def test_segmenterless_activation_without_vocabulary_warns() -> None:
         parser_for(locales.JA)
 
 
+def test_the_activation_warning_offers_a_spelling_that_type_checks() -> None:
+    # The message's actionable half is the deactivation it offers, and
+    # a user pastes it verbatim. nameparser ships py.typed, so that
+    # paste has to survive a type checker: Policy(segment_scripts=())
+    # is an arg-type error, since the field is annotated with what it
+    # STORES (a frozenset) rather than everything the constructor
+    # accepts. Nothing pinned this half of the message before.
+    with pytest.warns(UserWarning) as caught:
+        parser_for(locales.JA)
+    message = str(caught[0].message)
+    assert "Policy(segment_scripts=frozenset())" in message
+    assert "Policy(segment_scripts=())" not in message
+
+
 def test_a_segmenter_silences_the_activation_warning() -> None:
     # any segmenter counts: the gap is "nothing can divide these",
     # not "you did not use namedivider"

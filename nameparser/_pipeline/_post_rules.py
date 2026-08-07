@@ -2,7 +2,8 @@
 
 Consumes: tokens (roles assigned).
 Produces: tokens with roles adjusted by the post rules.
-Reads: Policy.patronymic_rules; Lexicon.given_name_titles.
+Reads: Policy.patronymic_rules, Policy.middle_as_family;
+Lexicon.given_name_titles.
 
 Rules (each a small pure function over the role-bearing tokens):
 1. v1 handle_firstnames: when the parse is exactly a title plus ONE

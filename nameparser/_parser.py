@@ -120,7 +120,7 @@ class Parser:
                     f"written in {'it' if one else 'them'} will never "
                     f"divide. Supply covering surnames, pass a "
                     f"segmenter, or deactivate with "
-                    f"Policy(segment_scripts=()).{ja_hint}",
+                    f"Policy(segment_scripts=frozenset()).{ja_hint}",
                     UserWarning, stacklevel=3)
 
     def __repr__(self) -> str:

@@ -7,7 +7,12 @@ UNBALANCED_DELIMITER ambiguities for opens with no close.
 A Role.MAIDEN region is the WHOLE inner span, marker word included --
 nothing here strips one. classify tags a marker inside it like any
 other token, and group drops it from a multi-token clause (#329).
-Reads: Policy.nickname_delimiters, Policy.maiden_delimiters.
+Reads: Policy.nickname_delimiters, Policy.maiden_delimiters, and
+Lexicon.suffix_words / suffix_acronyms / suffix_acronyms_ambiguous
+through _suffix_shaped, which lets a clause's CONTENT overrule the
+delimiter's verdict: 'Andrew Perkins (MBA)' is not a nickname, so
+only the two delimiter spans are masked and the content rejoins the
+token stream.
 
 Matching rules (the #273 mechanism): one left-to-right scan over the
 original text, no nesting. At each position the LEFTMOST boundary-valid
