@@ -8,11 +8,17 @@ family, suffix, nickname, maiden. Results are immutable, configuration is
 composable, and locale packs are opt-in.
 
 📣 **nameparser 2.0 is out.** Existing ``HumanName`` code keeps working
-through 2.x — most 1.x code needs no changes. The `migration guide
+through 2.x, and most 1.x code needs no changes. The `migration guide
 <https://nameparser.readthedocs.io/en/latest/migrate.html>`__ has the
-field-by-field map, and anything the migration missed can be reported
-on `the discussion issue
-<https://github.com/derek73/python-nameparser/issues/284>`__.
+field-by-field map. Please `open an issue
+<https://github.com/derek73/python-nameparser/issues>`__ for anything that
+parses wrong.
+
+**2.1 adds East Asian name support.** Chinese, Japanese and Korean names
+written in their own scripts are read family-first, unspaced Korean names
+are split against the census surname list, and CJK honorifics are
+recognized. See `East Asian names
+<https://nameparser.readthedocs.io/en/latest/usage.html#east-asian-names>`__.
 
 Installation
 ------------

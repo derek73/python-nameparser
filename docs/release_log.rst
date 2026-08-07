@@ -1,6 +1,6 @@
 Release Log
 ===========
-* 2.1.0 - Unreleased
+* 2.1.0 - August 7, 2026
 
     nameparser 2.1 makes East Asian names work without configuration.
     A name written wholly in Han or hangul, or in kanji with kana, is
