@@ -29,16 +29,40 @@ Quick Start Example
 .. code-block:: python
 
     >>> from nameparser import parse
-    >>> name = parse("Dr. Juan Q. Xavier de la Vega III")
-    >>> name.given, name.family
-    ('Juan', 'de la Vega')
+    >>> name = parse("Dr. Juan Q. Xavier de la Vega III (Doc Vega)")
+    >>> name
+    <ParsedName: [
+        title: 'Dr.'
+        given: 'Juan'
+        middle: 'Q. Xavier'
+        family: 'de la Vega'
+        suffix: 'III'
+        nickname: 'Doc Vega'
+    ]>
+    >>> name.family_base, name.family_particles
+    ('Vega', 'de la')
     >>> name.render("{family}, {given}")
     'de la Vega, Juan'
 
-Those seven fields are ``title``, ``given``, ``middle``, ``family``,
-``suffix``, ``nickname``, and ``maiden`` — plus aggregate views like
-``given_names``, ``surnames``, ``family_base``, and ``family_particles``
-for combining or splitting them further.
+    >>> parse("毛 泽东").family                    # Chinese: family name first
+    '毛'
+    >>> parse("김민준").family                     # Korean: unspaced, split on the census list
+    '김'
+    >>> parse("高橋 みなみ").family                 # Japanese: kanji with kana
+    '高橋'
+    >>> parse("김민준씨").suffix                   # an honorific written against the name
+    '씨'
+    >>> parse("г-н Иван Петров").title             # Cyrillic title
+    'г-н'
+    >>> parse("محمد بن سلمان").family              # Arabic: بن chains onto the family name
+    'بن سلمان'
+
+    >>> from nameparser import locales, parser_for
+    >>> russian = parser_for(locales.RU)           # patronymics need their pack
+    >>> russian.parse("Сидоров Иван Петрович").family
+    'Сидоров'
+    >>> locales.available()
+    ('ja', 'ru', 'tr_az', 'zh')
 
 Learn more
 ----------
