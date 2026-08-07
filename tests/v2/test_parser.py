@@ -147,6 +147,16 @@ def test_family_first_given_last_places_middle_between() -> None:
     assert (pn.family, pn.middle, pn.given) == ("Zeng", "Xiao", "Long")
 
 
+def test_ambiguous_particle_middle_defeats_both_family_first_orders() -> None:
+    # the vocabulary layer joins the ambiguous particle "van" forward
+    # before the positional layer runs, so a name whose middle word
+    # collides with it parses identically under either family-first
+    # order -- the caution in customize.rst rests on this
+    for order in (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST):
+        pn = Parser(policy=Policy(name_order=order)).parse("Nguyen Van Minh")
+        assert (pn.family, pn.middle, pn.given) == ("Nguyen", "", "Van Minh")
+
+
 def test_multiple_unbalanced_delimiters_each_reported() -> None:
     # T4: the extract scan continues past the first unmatched opener;
     # each one is reported and treated as literal text
