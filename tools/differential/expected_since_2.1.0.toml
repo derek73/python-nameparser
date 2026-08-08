@@ -1,0 +1,35 @@
+# Ledger for baseline 2.1.0 -- what changes for a user upgrading from
+# the previous minor. Same rule grammar as the other ledgers: every rule
+# needs `issue`; optional `name_regex` and `fields` narrow it, and
+# compare.py sorts name_regex rules ahead of fields-only ones.
+#
+# EMPTY ON PURPOSE, and correct while it stays that way. A ledger is
+# opened the day its baseline ships (AGENTS.md release step 8), before
+# the cycle has produced a single behavior change -- so there is nothing
+# to classify yet. `nameparser/` is byte-identical to the v2.1.0 tag as
+# this file is added, so a run against this baseline reports zero diffs
+# and zero UNEXPLAINED.
+#
+# It exists rather than waiting because DEFAULT_BASELINE and the ledger
+# are coupled: _allowlist_for treats a missing file as a hard error, on
+# the reasoning that an absent ledger classifies nothing and would make
+# every diff report as unexplained. So the baseline cannot advance to
+# 2.1.0 without this file.
+#
+# Add the first rule when the first 2.2 behavior change lands. Do not
+# copy rules across from expected_since_2.0.0.toml: that ledger
+# classifies what 2.1 changed on top of 2.0, and a rule copied without
+# checking either over-matches -- hiding a real 2.2 regression behind a
+# 2.1-era label -- or never fires at all.
+#
+# tests/v2/test_differential.py permits exactly one empty ledger, the
+# one DEFAULT_BASELINE names. Once this stops being the open cycle it
+# must carry rules like any other, so a 2.2 that changed no behavior at
+# all would need that decision made deliberately rather than inherited.
+#
+# tests/v2/test_regex_sync.py's _SPAN_BEARING_RULES already records this
+# file with an empty set: no rule here hand-copies _SCRIPT_RANGES yet,
+# and the first one that does has to be recorded there or the sweep
+# fails.
+
+change = []

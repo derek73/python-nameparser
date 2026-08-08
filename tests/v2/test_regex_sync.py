@@ -426,6 +426,7 @@ _SPAN_BEARING_RULES: dict[str, frozenset[str]] = {
         "fix(#271/#272/#298)",              # the canonical class
         "fix(#298)",                        # the 间隔号 lookahead
     }),
+    "expected_since_2.1.0.toml": frozenset(),   # open cycle, no rules yet
 }
 
 #: The leading `fix(...)`/`feat(...)` tag of a rule's `issue`, which is
