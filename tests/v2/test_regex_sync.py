@@ -29,6 +29,7 @@ from nameparser._pipeline import _assign, _post_rules, _tokenize, _vocab
 from nameparser import _policy
 from nameparser._policy import Script
 from nameparser import _render
+from nameparser.config.suffixes import GLUED_HONORIFICS, SUFFIX_NOT_ACRONYMS
 
 
 def test_emoji_ranges_match_config() -> None:
@@ -395,31 +396,93 @@ def test_cjk_corpus_matches_the_case_table() -> None:
         "`uv run python tools/differential/build_cjk_corpus.py`")
 
 
-def test_differential_honorific_rule_matches_the_suffix_vocabulary() -> None:
-    """The fix(cjk-honorific-suffix) rule's alternation is a hand copy
-    of SUFFIX_NOT_ACRONYMS' CJK entries (#307) -- the toml cannot
-    import them. The expected set is DERIVED from the config by script
-    membership (a classified codepoint anywhere in the entry), so
-    adding a CJK honorific without widening the rule -- or widening
-    the rule with something the vocabulary does not ship -- fails
-    here. The span-bearing pins above skip this rule on purpose: its
-    trigger is the alternation, not a character class.
-    """
-    from nameparser.config.suffixes import SUFFIX_NOT_ACRONYMS
+#: Which vocabulary constant each ledger rule's alternation is a hand
+#: copy of. A roster rather than an inference: GLUED_HONORIFICS is a
+#: SUBSET of SUFFIX_NOT_ACRONYMS (asserted at the bottom of
+#: nameparser/config/suffixes.py), so "equals one of the two known sets"
+#: would let a spaced rule that silently narrowed to exactly the glued
+#: set pass by matching the other member -- a subset check wearing a
+#: disguise, and the subset direction is precisely the one that removal
+#: drift travels in.
+#:
+#: Keys are matched as substrings of a rule's `issue` and must select
+#: exactly one entry. The full issue lists are the keys, not a bare
+#: '#308': both 2.0 rules cite #308 while copying different constants.
+_HONORIFIC_SOURCES: dict[str, set[str]] = {
+    "cjk-honorific-suffix": SUFFIX_NOT_ACRONYMS,        # 1.4
+    "#307/#308/#320": SUFFIX_NOT_ACRONYMS,              # 2.0, spaced
+    "#308/#312/#319/#320": GLUED_HONORIFICS,            # 2.0, glued
+}
 
-    toml_path = (Path(__file__).parents[2] / "tools" / "differential"
-                 / "expected_since_1.4.0.toml")
-    rules = tomllib.loads(toml_path.read_text())["change"]
-    matched = [r for r in rules if "cjk-honorific-suffix" in r["issue"]]
-    assert len(matched) == 1
-    regex = matched[0]["name_regex"]
-    prefix = "(?:^| )(?:"
-    assert regex.startswith(prefix) and regex.endswith(")$"), (
-        "the honorific rule's shape changed; update this parser")
-    declared = set(regex[len(prefix):-2].split("|"))
+#: A (?:a|b|c) group with two or more alternatives and no nested
+#: parentheses. Verified to find exactly the three honorific
+#: alternations across both ledgers and nothing else: the rules' other
+#: groups are either lookarounds, which this does not match, or carry
+#: no script-classified member and are dropped by the filter below.
+_ALTERNATION = re.compile(r"\(\?:((?:[^()|]+\|)+[^()|]+)\)")
+
+
+def _cjk_alternations(name_regex: str) -> list[set[str]]:
+    """Every alternation in a rule with a script-classified member."""
     has_classified = _policy._script_matcher(*_policy._SCRIPT_RANGES)
-    expected = {entry for entry in SUFFIX_NOT_ACRONYMS
-                if has_classified(entry)}
-    assert declared == expected, (
-        f"rule declares {sorted(declared)}; the config's CJK suffix "
-        f"entries are {sorted(expected)}")
+    return [members
+            for body in _ALTERNATION.findall(name_regex)
+            for members in [set(body.split("|"))]
+            if any(has_classified(m) for m in members)]
+
+
+def test_differential_honorific_rules_match_their_vocabulary() -> None:
+    """The honorific rules' alternations are hand copies of the CJK
+    entries of SUFFIX_NOT_ACRONYMS (#307) and of GLUED_HONORIFICS
+    (#308) -- a toml cannot import them. Each expected set is DERIVED
+    from the config by script membership (a classified codepoint
+    anywhere in the entry), so adding a CJK honorific without widening
+    the rule, or widening a rule with something the vocabulary does not
+    ship, fails here.
+
+    Swept over every ledger and every alternation, because the three
+    copies are anchored three different ways -- a leading '(?:^| )' in
+    1.4, a character class and a lookbehind in 2.0 -- so the old
+    startswith/endswith parser could not read two of them. Discovery
+    plus a declared source is what replaces it.
+
+    The span-bearing pins skip these rules on purpose: their trigger is
+    the alternation, not a character class. Note GLUED_HONORIFICS had no
+    pinned copy anywhere in the tree before this.
+
+    Two completeness directions, both required. An alternation matching
+    no roster key fails as UNDECLARED, so a new rule's copy is pinned by
+    existing rather than by an author remembering to enroll it. A roster
+    key matching no rule fails as STALE, catching an entry left behind
+    after a rule was renamed or deleted.
+    """
+    has_classified = _policy._script_matcher(*_policy._SCRIPT_RANGES)
+    used: set[str] = set()
+    found = 0
+    for ledger in _LEDGERS:
+        for rule in _rules(ledger):
+            regex = rule.get("name_regex")
+            if not isinstance(regex, str):
+                continue
+            for declared in _cjk_alternations(regex):
+                keys = [k for k in _HONORIFIC_SOURCES if k in rule["issue"]]
+                assert len(keys) == 1, (
+                    f"{ledger.name}: rule {rule['issue']!r} carries a CJK "
+                    f"alternation matching {len(keys)} roster keys "
+                    f"({keys}); every such hand copy must name exactly "
+                    f"one source in _HONORIFIC_SOURCES")
+                used.add(keys[0])
+                found += 1
+                expected = {entry for entry in _HONORIFIC_SOURCES[keys[0]]
+                            if has_classified(entry)}
+                assert declared == expected, (
+                    f"{ledger.name}: {rule['issue']!r} declares "
+                    f"{sorted(declared)}; the config's CJK entries for "
+                    f"{keys[0]!r} are {sorted(expected)}")
+    assert found, (
+        "no CJK honorific alternation found in any ledger; this pin is "
+        "passing vacuously")
+    assert used == set(_HONORIFIC_SOURCES), (
+        f"_HONORIFIC_SOURCES keys matching no rule: "
+        f"{sorted(set(_HONORIFIC_SOURCES) - used)}. A renamed or deleted "
+        f"rule left its entry behind; drop it.")
