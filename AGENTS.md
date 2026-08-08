@@ -89,11 +89,12 @@ uv run sphinx-build -b html docs dist/docs
 #    previous one, and _allowlist_for hard-errors on the missing file.
 #    tests/v2/test_regex_sync.py sweeps every expected_since_*.toml (#333), so
 #    the new ledger's hand copies of _SCRIPT_RANGES and of the honorific and
-#    Latin vocabularies are checked from the day the file lands. Two of the
-#    three rosters find copies by their SYNTAX -- an alternation, a span
-#    class -- so a copy spelled some other way is not undeclared but unseen;
-#    what catches those is the corpus check keyed on `fields`, which no
-#    notation escapes. Enrol the new ledger in whichever apply:
+#    Latin vocabularies are checked from the day the file lands. All three
+#    rosters find copies by their SYNTAX -- a span class or an alternation --
+#    so a copy spelled some other way is not undeclared but unseen. What
+#    covers those is the pair of corpus checks: what a rule claims beyond
+#    its own vocabulary members, and what it claims without the vocabulary
+#    its `fields` assert. Enrol the new ledger in whichever apply:
 #      - _SPAN_BEARING_RULES: add the filename, mapped to the set of issue
 #        tags whose rules carry a script-span class (empty set if none).
 #      - _HONORIFIC_SOURCES: if the ledger has a CJK honorific rule, add a

@@ -34,7 +34,7 @@
 #
 # There is deliberately no `change = []` line. TOML forbids appending a
 # [[change]] table to a statically defined array, so that line would
-# block the exact next step this comment asks for -- and both readers
+# block the exact next step this comment asks for -- and
 # every reader uses .get("change", []) -- four call sites across
 # three files -- so the key's absence is already the empty
 # ledger. tests/v2/test_differential.py checks that nothing else is
