@@ -285,30 +285,56 @@ def test_differential_cjk_rule_matches_the_script_ranges() -> None:
         f"_SCRIPT_RANGES' BMP spans are {sorted(expected)}")
 
 
-def test_every_span_bearing_rule_matches_the_script_ranges() -> None:
-    """Auto-discovered pin for every FURTHER hand copy of the script
-    spans in the toml: any rule whose character class declares spans
+#: How many span-bearing rules each ledger is known to carry. A floor,
+#: not an equality: a NEW span-bearing rule is pinned by discovery the
+#: moment it exists, so forcing a bump here would be churn. The number
+#: exists to catch a copy that fell OUT of discovery's reach, and it is
+#: per-file so the failure names the ledger that lost one.
+#:
+#: Membership is the forcing function: a new baseline's ledger fails as
+#: unrecorded until someone writes its count down. Recording 0 is fine
+#: and correct for a release that changed nothing CJK.
+_SPAN_BEARING_FLOORS = {
+    "expected_since_1.4.0.toml": 4,   # canonical + three compounds
+    "expected_since_2.0.0.toml": 2,   # canonical + the #298 lookahead
+}
+
+
+@pytest.mark.parametrize("ledger", _LEDGERS, ids=lambda p: p.name)
+def test_every_span_bearing_rule_matches_the_script_ranges(
+        ledger: Path) -> None:
+    """Auto-discovered pin for every hand copy of the script spans in
+    every ledger: any rule whose character class declares spans
     intersecting _SCRIPT_RANGES must declare the whole expected class
-    (table BMP spans + sanctioned extras). The compound rules'
-    require-a-classified-codepoint lookaheads exist so their trigger
-    sets alone (delimiters; a comma) cannot claim a Latin name's
-    regression -- and each such lookahead is a copy nothing else
-    checks. Discovery replaces a hand-maintained slug roster: a new
+    (table BMP spans + sanctioned extras).
+
+    A TOML file cannot import _policy._SCRIPT_RANGES, so these are the
+    copies with no possible alternative -- and the ones whose divergence
+    is quietest, because the harness is run by hand rather than in CI.
+
+    Both failure directions matter, which is why this compares sets
+    rather than checking coverage. A span MISSING from a class turns an
+    intended change into an UNEXPLAINED diff (a release blocker for the
+    wrong reason); a span that should not be there silently classifies a
+    real regression as intended, which is the failure the whole harness
+    exists to prevent.
+
+    The compound rules' require-a-classified-codepoint lookaheads exist
+    so their trigger sets alone (delimiters; a comma) cannot claim a
+    Latin name's regression -- and each such lookahead is a copy nothing
+    else checks. Discovery replaces a hand-maintained slug roster: a new
     compound rule's copy is pinned by existing here, not by an author
     remembering to enroll it. Rules whose spans touch OTHER scripts
     (Cyrillic, say) are out of scope and skipped by the intersection
     test.
-
-    Selection note for future rule authors: the canonical-rule pin
-    above selects by the literal '#271'/'#272' substrings and asserts
-    uniqueness -- compound slugs must avoid them.
     """
-    toml_path = (Path(__file__).parents[2] / "tools" / "differential"
-                 / "expected_since_1.4.0.toml")
-    rules = tomllib.loads(toml_path.read_text())["change"]
+    assert ledger.name in _SPAN_BEARING_FLOORS, (
+        f"{ledger.name} is a new ledger with no recorded span-bearing "
+        f"count; add it to _SPAN_BEARING_FLOORS (0 is a legal answer "
+        f"for a release that changed nothing CJK)")
     table_spans = _expected_bmp_spans()
     checked = []
-    for rule in rules:
+    for rule in _rules(ledger):
         regex = rule.get("name_regex")
         if not isinstance(regex, str):
             continue
@@ -317,18 +343,12 @@ def test_every_span_bearing_rule_matches_the_script_ranges() -> None:
             continue
         checked.append(rule["issue"])
         assert declared == table_spans, (
-            f"{rule['issue']!r} declares {sorted(declared)}; expected "
-            f"{sorted(table_spans)}")
-    # the canonical rule plus both compound rules, today -- if this
-    # count drops, a hand copy fell out of discovery's reach
-    assert len(checked) >= 3, checked
-    # the delimiter compound's trigger set is its own decision surface
-    nickname = [r for r in rules
-                if "cjk-delimited-nickname" in r["issue"]]
-    assert len(nickname) == 1
-    assert "[\u300C\u300D\u300E\u300F\u30FB\uFF65]" in nickname[0][
-        "name_regex"] or "[「」『』・･]" in nickname[0]["name_regex"], (
-        "the compound rule's delimiter set changed; decide deliberately")
+            f"{ledger.name}: {rule['issue']!r} declares "
+            f"{sorted(declared)}; expected {sorted(table_spans)}")
+    assert len(checked) >= _SPAN_BEARING_FLOORS[ledger.name], (
+        f"{ledger.name} carries {len(checked)} span-bearing rules, "
+        f"below its recorded {_SPAN_BEARING_FLOORS[ledger.name]}: a hand "
+        f"copy fell out of discovery's reach. {checked}")
 
 
 def test_cjk_corpus_matches_the_case_table() -> None:
