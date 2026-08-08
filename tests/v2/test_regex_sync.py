@@ -188,6 +188,44 @@ _TOOLS = Path(__file__).parents[2] / "tools" / "differential"
 #: release -- see AGENTS.md's release step 8.
 _LEDGERS = sorted(_TOOLS.glob("expected_since_*.toml"))
 
+#: Every name the harness classifies, deduplicated. The ledgers exist
+#: to explain diffs on THESE strings and no others, so "what does this
+#: rule claim?" is answerable here without parsing anything -- a plain
+#: regex search, no baseline wheel, no network.
+#:
+#: This is what the guards below check against, and it is why they hold
+#: where four rounds of syntactic ones did not. Depth-0 pipes, nesting
+#: levels and probe strings are all proxies for the question that
+#: actually matters; a rule cannot widen its corpus reach and still
+#: answer this one the same way, however it is spelled.
+_CORPUS_NAMES = sorted({
+    json.loads(line)
+    for path in sorted(_TOOLS.glob("corpus*.jsonl"))
+    for line in path.read_text(encoding="utf-8").splitlines() if line.strip()})
+
+
+def _claimed(name_regex: str) -> list[str]:
+    """Corpus names a rule's regex matches."""
+    return [name for name in _CORPUS_NAMES if re.search(name_regex, name)]
+
+
+def _unclassified_names() -> list[str]:
+    """Corpus names carrying no codepoint _SCRIPT_RANGES classifies."""
+    has_classified = _policy._script_matcher(*_policy._SCRIPT_RANGES)
+    return [name for name in _CORPUS_NAMES if not has_classified(name)]
+
+
+def _normalize(text: str) -> str:
+    """How the config stores vocabulary: lowercase, no edge punctuation."""
+    return text.strip(".,()[]\"'\u2019 ").lower()
+
+
+def test_corpus_is_loaded() -> None:
+    """The guards below all reduce to zero findings over an empty
+    corpus, which is what a silent load failure produces."""
+    assert len(_CORPUS_NAMES) > 500, len(_CORPUS_NAMES)
+    assert _unclassified_names(), "no unclassified names; guard A is inert"
+
 
 def test_ledger_glob_is_not_empty() -> None:
     """A parametrize over an empty list generates a single silent SKIP
@@ -516,6 +554,23 @@ def test_every_span_bearing_rule_matches_the_script_ranges(
             f"{ledger.name}: {rule['issue']!r} has a '|' at depth 0, so "
             f"the whole rule is an alternation and the pinned class "
             f"governs only one branch. Wrap it in '(?:...)'")
+        # The property the syntactic check above is only a proxy for.
+        # A rule scoped to classified scripts must not reach a name
+        # written in none of them -- and unlike a depth test, this does
+        # not care how the widening is spelled. "(?:CJK|[A-Za-z])"
+        # hides the pipe at depth 1 where the check above stops
+        # looking, and claims 665 unclassified corpus names; this sees
+        # it. Both are kept: the depth test gives the clearer message
+        # for the naive spelling, and catches a widening toward a
+        # script the corpora happen not to contain.
+        reached = _claimed(regex)
+        latin = [name for name in reached if name in set(_unclassified_names())]
+        assert not latin, (
+            f"{ledger.name}: {rule['issue']!r} declares the script table's "
+            f"spans but claims {len(latin)} corpus names carrying no "
+            f"classified codepoint at all, e.g. {latin[:3]}. A rule scoped "
+            f"to these scripts cannot explain a diff on those names, so it "
+            f"would absorb one instead")
     # Every rule, not just the discovered ones: this is what stops a
     # class being respelled out of discovery in the first place, and it
     # has to reach the rules that are NOT currently span-bearing to do
@@ -790,16 +845,35 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     frozenset({"^", " "}),      # the honorific rule's leading anchor
 })
 
-#: Ordinary name fragments no vocabulary member may match. fullmatch
-#: against the vocabulary bounds what a member matches WITHIN those
-#: entries and says nothing about what it matches in a NAME, so a
-#: fixed-width or dot-bearing member slips past it: "[a-z]{3}" and
-#: ".{3}" each cover exactly {geb, nee, née, roz}, because every entry
-#: this rule needs happens to be three characters -- while the rule they
-#: produce would absorb a family-only regression on a third of the
-#: corpus. These probes are what make the over-claiming direction mean
-#: something.
-_NOT_VOCABULARY = ("Bob", "Nye", "Van", "der", "Jones", "Gen", "Get", "abc")
+def _reaches_non_vocabulary(member: str, vocabulary: set[str]) -> list[str]:
+    """Corpus text this member matches that is NOT a vocabulary entry.
+
+    fullmatch against the vocabulary bounds what a member matches
+    WITHIN those entries and says nothing about what it matches in a
+    NAME. That gap was first filled with a tuple of eight hand-picked
+    probe strings, and the tuple was defeated by a wider rule than the
+    one it was added to stop: every entry this rule needs is three
+    characters, so a member must accept some 3-character string and is
+    unconstrained everywhere else -- "[acdf-uw-z]{3,}" covers `roz`,
+    dodges all eight probes, and claims 563 of the corpus.
+
+    Eight strings could never be more than a spot check. The corpus is
+    the whole population the rule will ever be asked about, so ask it
+    instead: every fragment a member matches must BE an entry.
+
+    Searched unanchored, which is stricter than the rule's own \\b
+    anchoring and so cannot produce a false negative from it.
+    Normalized before comparison because the corpus writes "geb." where
+    the config stores "geb" -- without that, the shipped member fails.
+    Exempting only THIS vocabulary, not the union of all of them, keeps
+    a maiden member from being excused by an acronym entry.
+    """
+    matches = set()
+    for name in _CORPUS_NAMES:
+        for found in re.finditer(member, name, re.IGNORECASE):
+            if found.group() and _normalize(found.group()) not in vocabulary:
+                matches.add(found.group())
+    return sorted(matches)
 
 
 def test_latin_alternations_mean_something_the_vocabulary_ships() -> None:
@@ -859,24 +933,22 @@ def test_latin_alternations_mean_something_the_vocabulary_ships() -> None:
                 covered = set()
                 for member in members:
                     try:
-                        matched = {entry for entry in source.vocabulary
-                                   if re.fullmatch(member, entry,
-                                                   re.IGNORECASE)}
-                        loose = [probe for probe in _NOT_VOCABULARY
-                                 if re.fullmatch(member, probe,
-                                                 re.IGNORECASE)]
+                        pattern = re.compile(member, re.IGNORECASE)
                     except re.error as exc:
                         raise AssertionError(
                             f"{ledger.name}: {rule['issue']!r} member "
                             f"{member!r} is not a valid regex ({exc}). A "
                             f"mis-split alternation can produce this -- see "
                             f"_ALTERNATION's notes") from None
+                    matched = {entry for entry in source.vocabulary
+                               if pattern.fullmatch(entry)}
+                    loose = _reaches_non_vocabulary(member, source.vocabulary)
                     assert not loose, (
                         f"{ledger.name}: {rule['issue']!r} member "
-                        f"{member!r} also matches ordinary name text "
-                        f"{loose}. Spell it literally -- a member broad "
-                        f"enough to hit a real name lets the rule claim "
-                        f"that name's diff as intended")
+                        f"{member!r} matches corpus text that is not "
+                        f"vocabulary: {loose[:6]}. Spell it literally -- a "
+                        f"member broad enough to reach a real name lets the "
+                        f"rule claim that name's diff as intended")
                     assert matched, (
                         f"{ledger.name}: {rule['issue']!r} offers the "
                         f"alternative {member!r}, which matches no entry in "
@@ -897,3 +969,76 @@ def test_latin_alternations_mean_something_the_vocabulary_ships() -> None:
     assert used == set(_LATIN_ALTERNATION_SOURCES), (
         f"_LATIN_ALTERNATION_SOURCES keys matching no rule: "
         f"{sorted(set(_LATIN_ALTERNATION_SOURCES) - used)}")
+
+
+#: A role a rule can claim, mapped to the vocabulary a name must carry
+#: for that claim to be possible. Keyed on `fields` rather than on the
+#: regex, which is the point: the two pins above discover hand copies
+#: by their SYNTAX, so a copy that is not written as an alternation or
+#: a character class is not undeclared, it is unseen. A brand-new rule
+#: whose name_regex is "(?i)\b[a-z]{3}\b" with maiden fields passed
+#: every check in this module while claiming 320 corpus names.
+#:
+#: `fields` cannot be dodged the same way. A rule that does not claim
+#: `maiden` cannot be labelled a maiden change at all, so keying here
+#: reaches every spelling -- including fix(cjk-maiden-marker), whose
+#: regex is the bare literal "旧姓" and which no roster in this module
+#: could see.
+#:
+#: Only `maiden` today, because only its vocabulary is small and
+#: mandatory enough for the implication to hold: a maiden diff needs a
+#: marker in the name. `suffix` and `title` are not like that -- most
+#: of their diffs come from routing, not from a vocabulary word being
+#: present -- so adding them would be false rather than strict.
+_FIELD_VOCABULARIES: dict[str, set[str]] = {
+    "maiden": MAIDEN_MARKERS,
+}
+
+
+def _carries(name: str, vocabulary: set[str]) -> bool:
+    """Whether a name contains a vocabulary entry.
+
+    Whole-token for entries that have token boundaries, substring for
+    the ones that do not: 旧姓 is written against the name it marks.
+    """
+    tokens = {_normalize(token) for token in name.split()}
+    return bool(tokens & vocabulary) or any(
+        entry in name for entry in vocabulary if not entry.isascii())
+
+
+def test_rules_claiming_a_vocabulary_role_need_the_vocabulary_present() -> None:
+    """The guard that does not care how a rule is spelled.
+
+    Every pin above starts from regex syntax -- an alternation, a
+    character class, a span. Each closed the hole it was built for and
+    left the next spelling open, four rounds running. This one starts
+    from what the rule CLAIMS: if a rule says a diff is a maiden-marker
+    change, then every corpus name it claims must actually carry a
+    maiden marker. A rule cannot escape that by changing notation,
+    because it is not reading the notation.
+
+    Deliberately narrow. It does not say the rule is correct, only that
+    it cannot be explaining a marker on a name that has none -- which
+    is exactly the shape every widening in this PR's review took.
+    """
+    checked = 0
+    for ledger in _LEDGERS:
+        for rule in _rules(ledger):
+            regex = rule.get("name_regex")
+            if not isinstance(regex, str):
+                continue
+            for field, vocabulary in _FIELD_VOCABULARIES.items():
+                if field not in (rule.get("fields") or []):
+                    continue
+                checked += 1
+                bare = [name for name in _claimed(regex)
+                        if not _carries(name, vocabulary)]
+                assert not bare, (
+                    f"{ledger.name}: {rule['issue']!r} claims {field!r} "
+                    f"diffs on {len(bare)} corpus names carrying no {field} "
+                    f"vocabulary, e.g. {bare[:3]}. It cannot be explaining a "
+                    f"marker that is not there, so on those names it would "
+                    f"absorb a regression instead")
+    assert checked, (
+        "no rule claims a role in _FIELD_VOCABULARIES; this pin is passing "
+        "vacuously")
