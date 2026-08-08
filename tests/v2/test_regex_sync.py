@@ -216,8 +216,8 @@ def _unrecognized_class_content(name_regex: str) -> list[str]:
     escaped span. Anything appended in another notation -- a literal
     range, a bare character, a leading "^" negating the whole class --
     is invisible to it and rides along unchecked. That is not
-    hypothetical: this file's own convention mixes both spellings (see
-    the interpunct note in expected_since_2.0.0.toml), and the ledgers'
+    hypothetical: the ledgers' own convention mixes both spellings (see
+    the interpunct note in expected_since_2.0.0.toml), and their
     non-span classes are written literally.
 
     The consequence is worst in the widening direction the equality is
@@ -243,9 +243,10 @@ def _expected_bmp_spans() -> set[tuple[int, int]]:
 
     Han's astral block is the single table entry out of scope, on both
     sides: the ledger rules omit it deliberately because no corpus name
-    reaches it (see the comment at the rule), so the comparisons run
-    over the BMP spans only rather than failing forever on a difference
-    everyone agreed to.
+    reaches it -- see the comment on the canonical rule in
+    expected_since_1.4.0.toml, which is the only place that reasoning is
+    written down -- so the comparisons run over the BMP spans only
+    rather than failing forever on a difference everyone agreed to.
     """
     return {span
             for spans in _policy._SCRIPT_RANGES.values()
@@ -428,21 +429,30 @@ def test_nickname_delimiter_sets_are_deliberate() -> None:
     checking nothing.
 
     Note the scope this does NOT have: it is a decision surface, not a
-    sync pin. _NICKNAME_DELIMITERS is a literal rather than derived
-    from Policy.nickname_delimiters because the two are not the same
-    set -- the class also carries the nakaguro separators, which
-    delimit nothing. Removing a real delimiter pair from the config
-    fails the behavior tests in tests/v2/pipeline/, not here."""
+    sync pin. _NICKNAME_DELIMITERS is a literal because the rule's class
+    is not Policy.nickname_delimiters and is not meant to be -- it is
+    the two CJK corner-bracket pairs, plus the nakaguro separators,
+    which delimit nothing, and minus the nine other pairs the config
+    ships. Deriving it would mean deciding all of that in code rather
+    than writing it down.
+
+    So a delimiter pair removed from the config does not fail here; it
+    fails tests/v2/test_cases.py, on the cjk_white_corner_bracket_
+    nickname row (measured -- tests/v2/pipeline/ stays green, which is
+    why the pointer is worth being exact about)."""
     found = []
     for ledger in _LEDGERS:
         for rule in _rules(ledger):
             if "cjk-delimited-nickname" not in rule["issue"]:
                 continue
             found.append(f"{ledger.name}: {rule['issue']}")
+            # .get rather than [] on purpose: a rule that dropped its
+            # name_regex outright should land on the assertion below,
+            # not raise KeyError out of the sweep
             assert _NICKNAME_DELIMITERS in rule.get("name_regex", ""), (
                 f"{ledger.name}: the compound rule's delimiter set "
-                f"changed; decide deliberately, then update "
-                f"_NICKNAME_DELIMITERS")
+                f"changed, or the rule lost its name_regex; decide "
+                f"deliberately, then update _NICKNAME_DELIMITERS")
     assert found, (
         "no cjk-delimited-nickname rule in any ledger; this check is "
         "passing vacuously")
@@ -505,11 +515,15 @@ _HONORIFIC_SOURCES: dict[str, set[str]] = {
 #: "(?:씨|님|先生)" would otherwise carry a hand copy this pin cannot
 #: see, which is the silent-unpinning this module exists to prevent.
 #:
-#: Still unreadable to it, by construction: an alternation with a
-#: nested group, one with a "|" or paren inside a character class, and
-#: a single-member "group". The first two surface through the STALE
-#: half of the roster check below -- the rule stops matching its key --
-#: rather than passing quietly.
+#: Shapes it still cannot read, and where each one lands (measured):
+#: an alternation with a nested group, or with a paren inside a
+#: character class, stops matching at all and surfaces through the
+#: STALE half of the roster check below. A "|" inside a character class
+#: is worse than unreadable -- it is MISread, since the member split is
+#: a plain str.split("|"): "[a|b]" becomes the two members "[a" and
+#: "b]", so the rule still matches its key and fails the declared-vs-
+#: expected equality instead. A single-member "group" is not an
+#: alternation at all and falls out silently, caught only by STALE.
 _ALTERNATION = re.compile(r"\((?:\?:|(?!\?))((?:[^()|]+\|)+[^()|]+)\)")
 
 
@@ -576,7 +590,8 @@ def test_differential_honorific_rules_match_their_vocabulary() -> None:
     assert used == set(_HONORIFIC_SOURCES), (
         f"_HONORIFIC_SOURCES keys matching no rule: "
         f"{sorted(set(_HONORIFIC_SOURCES) - used)}. Either a renamed or "
-        f"deleted rule left its entry behind -- drop it -- or that rule's "
-        f"alternation is no longer parseable by _ALTERNATION (a nested "
-        f"group, or a '|' inside a character class), which is how a "
-        f"still-present hand copy silently leaves this pin.")
+        f"deleted rule left its entry behind -- drop it -- or that "
+        f"rule's alternation stopped matching _ALTERNATION (a nested "
+        f"group, a paren inside a character class, or a lone member), "
+        f"which is how a still-present hand copy silently leaves this "
+        f"pin.")

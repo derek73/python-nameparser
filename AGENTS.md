@@ -95,8 +95,10 @@ uv run sphinx-build -b html docs dist/docs
 #        tags whose rules carry a script-span class (empty set if none).
 #      - _HONORIFIC_SOURCES: if the ledger has a CJK honorific rule, add a
 #        substring of its issue (keyed that way, not by tag) mapped to the
-#        constant it copies. Its slug will be new by construction, so no
-#        existing key covers it, and it must match exactly one key.
+#        constant it copies -- but only if no existing key already matches
+#        that issue. A retroactive ledger can repeat an older one's rule
+#        verbatim (fix(#271/#272/#298) is in both today), and every rule
+#        must match exactly one key.
 ```
 
 Enable debug logging to see the parser's internal decisions:
