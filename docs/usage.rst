@@ -252,7 +252,7 @@ kanji, both sides run one to four characters, and the reading rather
 than the spelling decides most divisions. nameparser therefore takes a
 **segmenter** — a callable from token text to a division — and ships a
 factory wrapping `namedivider-python
-<https://pypi.org/project/namedivider-python/>`_, an optional
+<https://github.com/rskmoi/namedivider-python>`_, an optional
 dependency installed with the ``ja`` extra:
 
 .. code-block:: console
