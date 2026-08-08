@@ -86,9 +86,11 @@ uv run sphinx-build -b html docs dist/docs
 #    tools/differential/compare.py to the version just released, and create
 #    tools/differential/expected_since_<that version>.toml. Until both are done a
 #    bare compare.py measures against two minors back while reporting the
-#    previous one, and _allowlist_for hard-errors on the missing file. Land the
-#    regex-sync globbing (#333) FIRST, or the new ledger is born with the same
-#    unpinned hand copies of _SCRIPT_RANGES and the honorific vocabulary.
+#    previous one, and _allowlist_for hard-errors on the missing file. The new
+#    ledger's hand copies of _SCRIPT_RANGES and the honorific vocabulary are
+#    pinned automatically by tests/v2/test_regex_sync.py, which sweeps every
+#    expected_since_*.toml (#333) -- but add the file to _SPAN_BEARING_FLOORS
+#    there, or it fails as unrecorded (0 is correct if nothing CJK changed).
 ```
 
 Enable debug logging to see the parser's internal decisions:

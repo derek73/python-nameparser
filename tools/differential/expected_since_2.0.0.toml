@@ -54,17 +54,12 @@ issue = "fix(#271/#272/#298) native-script CJK: family-first order, hangul segme
 # expected_since_1.4.0.toml rather than rewritten in literal
 # characters, so the two ledgers spell the same class the same way.
 #
-# Be aware of what does NOT hold here: tests/v2/test_regex_sync.py pins
-# the 1.4 ledger's copy against _policy._SCRIPT_RANGES by hardcoded
-# filename, so THIS copy is unpinned. A span removed from the script
-# table forces the 1.4 rule to narrow, test-driven, while this twin
-# stays wide and starts classifying real regressions as intended. The
-# same gap covers the honorific alternations below, hand-copied from
-# SUFFIX_NOT_ACRONYMS and GLUED_HONORIFICS (both verified equal to
-# their sources 2026-08-05). Parametrizing those pins over every
-# expected_since_*.toml is the fix; it needs the #271/#272 selector
-# reworked first, since it asserts uniqueness and this file has two
-# such rules.
+# tests/v2/test_regex_sync.py pins this copy, and the honorific
+# alternations below, by sweeping every expected_since_*.toml rather
+# than naming one (#333). A span removed from the script table, or an
+# entry removed from SUFFIX_NOT_ACRONYMS or GLUED_HONORIFICS, now
+# forces this file to narrow with it instead of leaving a wide twin
+# behind to classify a real regression as intended.
 name_regex = "[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65]"
 fields = ["given", "middle", "family", "_ambiguities"]
 
