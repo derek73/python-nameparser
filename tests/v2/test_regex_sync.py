@@ -12,9 +12,10 @@ convention), so this module is where the promise gets checked.
 Layering is the usual reason for a copy but not the only one, so this
 module's scope is the PROMISE rather than that one pair of packages:
 the comma-set pin below reads _pipeline._state instead of config, and
-the last three tests reach outside the package altogether -- two to a
-TOML file that could not import a Python constant if it wanted to,
-one to a generated corpus whose generator can, and must stay run.
+several tests reach outside the package altogether -- four to the
+differential ledgers, which could not import a Python constant if they
+wanted to, one to a generated corpus whose generator can, and must
+stay run.
 """
 import importlib.util
 import json
@@ -170,8 +171,10 @@ def test_comma_char_matches_the_pipeline_comma_set() -> None:
 # separates tokens without being classified (halfwidth kana stays out
 # of the table on purpose). U+00B7 is deliberately NOT here -- its
 # flank guard means every name it can change matches through a
-# classified flanking character already. Single-sourced: both span
-# pins below read this set.
+# classified flanking character already. Single-sourced: read by the
+# span sweep below, and by the membership guard that keeps "sanctioned"
+# meaning something -- an extra that becomes classified belongs in the
+# table, not in this list.
 _SANCTIONED_EXTRAS = frozenset({(0xFF65, 0xFF65)})
 
 _TOOLS = Path(__file__).parents[2] / "tools" / "differential"
@@ -184,9 +187,10 @@ _LEDGERS = sorted(_TOOLS.glob("expected_since_*.toml"))
 
 
 def test_ledger_glob_is_not_empty() -> None:
-    """A parametrize over an empty list generates zero tests and passes
-    vacuously -- the exact silence this module exists to break. The
-    swept pins cannot assert this for themselves, so it lives here."""
+    """A parametrize over an empty list generates a single silent SKIP
+    rather than a failure -- the exact silence this module exists to
+    break. The swept pins cannot assert this for themselves, since a
+    test that is never generated cannot complain, so it lives here."""
     assert _LEDGERS, f"no expected_since_*.toml under {_TOOLS}"
 
 
@@ -235,7 +239,14 @@ def _unrecognized_class_content(name_regex: str) -> list[str]:
 
 def _expected_bmp_spans() -> set[tuple[int, int]]:
     """What a full CJK character class in the toml must declare: the
-    table's BMP spans plus the sanctioned extras."""
+    table's BMP spans plus the sanctioned extras.
+
+    Han's astral block is the single table entry out of scope, on both
+    sides: the ledger rules omit it deliberately because no corpus name
+    reaches it (see the comment at the rule), so the comparisons run
+    over the BMP spans only rather than failing forever on a difference
+    everyone agreed to.
+    """
     return {span
             for spans in _policy._SCRIPT_RANGES.values()
             for span in spans
@@ -256,27 +267,12 @@ def test_script_ranges_membership_is_decided() -> None:
     until someone decides, in writing, whether the rules should cover
     it.
 
-    Han's astral block is the single exception, out of scope on both
-    sides -- no corpus name reaches it, see the comment there -- so the
-    span comparisons run over the BMP spans only.
-
-    The rules are also WIDER than the table by exactly one span, which
-    the equality has to know about or it would just fail forever. The
-    halfwidth middle dot U+FF65 changes parses without being classified
-    as anything: tokenize separates on it, so a halfwidth transcription
-    splits where 1.4 kept one token, while halfwidth kana stays out of
-    _SCRIPT_RANGES on purpose. U+00B7 -- the context-sensitive 间隔号
-    (#298) -- also changes parses yet is deliberately NOT an extra: its
-    flank guard means every name it can change matches the class through
-    a flanking character already, and a B7 span's only actual effect
-    would be letting a rule claim diffs on punt-volat Latin names
-    (Gal·la), pre-excusing a regression on exactly the guarded class.
-    Naming the sanctioned span rather than relaxing the comparisons to a
-    subset check is what keeps the pins honest in both directions: an
-    unsanctioned source of divergence still fails, and each sanctioned
-    difference has to be written down to exist. The guard below is what
-    makes "sanctioned" mean something -- an extra that BECOMES
-    classified belongs in the table, not in the exception list.
+    The second assert is what makes _SANCTIONED_EXTRAS mean something.
+    That set is the ledgers' licence to be WIDER than the table -- see
+    its definition above for why U+FF65 is in it and U+00B7 is not --
+    and a licence nobody audits is just a hole. An extra that becomes
+    classified belongs in the table, not in the exception list, and
+    fails here until it moves.
 
     There is deliberately no canonical-rule selector here any more. It
     picked rules by the literal '#271'/'#272' substrings and asserted
@@ -425,10 +421,18 @@ _NICKNAME_DELIMITERS = "[「」『』・･]"
 def test_nickname_delimiter_sets_are_deliberate() -> None:
     """Swept rather than pinned to one file and one rule. The 1.4 ledger
     has exactly one cjk-delimited-nickname rule and the 2.0 ledger has
-    none, so neither a per-file `== 1` nor a global one is true; what is
-    true is that EVERY such rule must carry the sanctioned trigger set,
-    and that at least one must exist somewhere or this is checking
-    nothing."""
+    none, so a per-file `== 1` is already false and a global one holds
+    only by accident of there being a single rule today. What is
+    actually invariant is that EVERY such rule carries the sanctioned
+    trigger set, and that at least one exists somewhere or this is
+    checking nothing.
+
+    Note the scope this does NOT have: it is a decision surface, not a
+    sync pin. _NICKNAME_DELIMITERS is a literal rather than derived
+    from Policy.nickname_delimiters because the two are not the same
+    set -- the class also carries the nakaguro separators, which
+    delimit nothing. Removing a real delimiter pair from the config
+    fails the behavior tests in tests/v2/pipeline/, not here."""
     found = []
     for ledger in _LEDGERS:
         for rule in _rules(ledger):
