@@ -22,6 +22,7 @@ import json
 import re
 import tomllib
 from pathlib import Path
+from typing import NamedTuple
 
 import pytest
 
@@ -31,7 +32,8 @@ from nameparser import _policy
 from nameparser._policy import Script
 from nameparser import _render
 from nameparser.config.maiden_markers import MAIDEN_MARKERS
-from nameparser.config.suffixes import GLUED_HONORIFICS, SUFFIX_NOT_ACRONYMS
+from nameparser.config.suffixes import (
+    GLUED_HONORIFICS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_NOT_ACRONYMS)
 
 
 def test_emoji_ranges_match_config() -> None:
@@ -737,70 +739,140 @@ def test_differential_honorific_rules_match_their_vocabulary() -> None:
         f"pin.")
 
 
-#: Ledger rules whose alternation is a hand copy of a LATIN vocabulary,
-#: mapped to the constant it mirrors and the entries it is known to
-#: cover. Kept apart from _HONORIFIC_SOURCES because the relationship
-#: is not set equality: these members are regex FRAGMENTS, not entries.
-#: "n[ée]e" covers two markers at once and "geb\.?" covers one, so
-#: there is no set to compare against.
+class _LatinCopy(NamedTuple):
+    """A ledger alternation that hand-copies a Latin-script vocabulary.
+
+    Two set-shaped fields that are emphatically not the same kind of
+    thing, which is why they are named rather than positional:
+    `vocabulary` is the source of truth, `covers` an audited snapshot of
+    which of its entries the rule's members reach.
+    """
+    vocabulary: set[str]
+    covers: frozenset[str]
+
+
+#: Ledger rules whose alternation hand-copies a LATIN vocabulary, keyed
+#: by a substring of the rule's `issue`. Kept apart from
+#: _HONORIFIC_SOURCES because the relationship is not set equality:
+#: these members are regex FRAGMENTS, not entries -- "n[ée]e" covers two
+#: markers at once, "geb\.?" and "roz\.?" one each -- so there is no set
+#: to compare against.
 #:
-#: What is pinned instead runs in two directions, and they are not
-#: symmetric:
+#: `covers` is recorded rather than equated to the whole vocabulary.
+#: Equality would force the rule to grow alternatives for markers it has
+#: no reason to claim, and 旧姓 already has a dedicated rule further down
+#: this same ledger which sorts AFTER this one -- so widening here would
+#: shadow that rule rather than complement it. Recording still catches
+#: removal: drop an entry a member covers and the snapshot shrinks.
 #:
-#:   Every member must mean something the vocabulary ships. This is the
-#:   over-claiming direction and the one that absorbs regressions -- a
-#:   member matching no entry cannot correspond to a real change, so it
-#:   can only ever claim OTHER names' diffs. It is how "born" sat in
-#:   this rule from the harness's first commit (#350) while never
-#:   appearing in any config constant: the rule's fields are maiden/
-#:   middle/family, so a genuine regression on any name containing
-#:   "born" read as intended.
-#:
-#:   The covered set is recorded, not equal to the vocabulary. Forcing
-#:   equality would widen the rule to markers no corpus name exercises
-#:   (README: 3 of 17 appear anywhere), and 旧姓 already has its own
-#:   rule in the 2.0 ledger, so folding it in here would make two rules
-#:   claim one diff. Recording it still catches removal: drop an entry
-#:   a member covers and the set shrinks.
-_LATIN_ALTERNATION_SOURCES: dict[str, tuple[set[str], frozenset[str]]] = {
-    "fix(#274)": (MAIDEN_MARKERS, frozenset({"geb", "nee", "née", "roz"})),
+#: Three nearby counts differ and are easy to conflate: MAIDEN_MARKERS
+#: ships 17 entries; this rule's members reach 4 of them; the corpora
+#: contain 3 markers in total (geb, née, 旧姓), only 2 of which this
+#: rule covers.
+_LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
+    "fix(#274)": _LatinCopy(
+        vocabulary=MAIDEN_MARKERS,
+        covers=frozenset({"geb", "nee", "née", "roz"})),
+    "ambiguous-surname-acronym": _LatinCopy(
+        vocabulary=SUFFIX_ACRONYMS_AMBIGUOUS,
+        covers=frozenset({"do", "ma"})),
 }
+
+#: Alternations that copy no vocabulary, so discovery must not demand a
+#: source for them. Declared rather than inferred, on the principle
+#: _SOURCES' None entries already set: an undeclared alternation is a
+#: question someone answers in writing, not something to skip past.
+_NOT_A_VOCABULARY_COPY = frozenset({
+    frozenset({"^", " "}),      # the honorific rule's leading anchor
+})
+
+#: Ordinary name fragments no vocabulary member may match. fullmatch
+#: against the vocabulary bounds what a member matches WITHIN those
+#: entries and says nothing about what it matches in a NAME, so a
+#: fixed-width or dot-bearing member slips past it: "[a-z]{3}" and
+#: ".{3}" each cover exactly {geb, nee, née, roz}, because every entry
+#: this rule needs happens to be three characters -- while the rule they
+#: produce would absorb a family-only regression on a third of the
+#: corpus. These probes are what make the over-claiming direction mean
+#: something.
+_NOT_VOCABULARY = ("Bob", "Nye", "Van", "der", "Jones", "Gen", "Get", "abc")
 
 
 def test_latin_alternations_mean_something_the_vocabulary_ships() -> None:
     """The Latin twin of the honorific pin, shaped by what a regex
     alternation over a vocabulary can honestly promise.
 
-    A member is matched against entries as a full regex, not compared
-    as a string, because that is what the rule does at classification
-    time -- "geb\\.?" is one member standing for the entry "geb", which
-    the config stores normalized (lowercase, no trailing period).
+    Discovery-first, like its twin: every alternation in every ledger
+    must be a declared vocabulary copy or a declared non-copy. Keying
+    off the roster and skipping everything else would mean a future rule
+    that hand-copies a vocabulary under a new tag is pinned only if its
+    author remembers to enroll it -- the failure this module exists to
+    prevent, not a shape it should adopt.
+
+    Members are matched against entries as regexes rather than compared
+    as strings, because the members ARE regex syntax: "geb\\.?" stands
+    for the entry "geb", which the config stores normalized (lowercase,
+    no trailing period).
+
+    Three ways a member can be wrong, so three assertions. It can match
+    nothing in the vocabulary -- then it cannot describe a real change
+    and can only claim other names' diffs, which is how "born" survived
+    from the harness's first commit to #350. It can match ordinary name
+    text as well as the vocabulary. And the rule around it can widen at
+    depth 0, leaving the pinned alternation governing one branch of an
+    unchecked whole -- the same hatch the span-bearing sweep closes.
     """
+    has_classified = _policy._script_matcher(*_policy._SCRIPT_RANGES)
     used: set[str] = set()
+    found = 0
     for ledger in _LEDGERS:
         for rule in _rules(ledger):
             regex = rule.get("name_regex")
             if not isinstance(regex, str):
                 continue
-            keys = [k for k in _LATIN_ALTERNATION_SOURCES
-                    if k in rule["issue"]]
-            if not keys:
-                continue
-            assert len(keys) == 1, (
-                f"{ledger.name}: {rule['issue']!r} matches {len(keys)} "
-                f"roster keys ({keys}); it must name exactly one")
-            vocabulary, recorded = _LATIN_ALTERNATION_SOURCES[keys[0]]
-            used.add(keys[0])
-            alternations = _alternations(regex)
-            assert alternations, (
-                f"{ledger.name}: {rule['issue']!r} is rostered as a "
-                f"vocabulary copy but carries no alternation _ALTERNATION "
-                f"can read; see its notes for the shapes that do not parse")
-            covered = set()
-            for members in alternations:
+            for members in _alternations(regex):
+                if any(has_classified(m) for m in members):
+                    continue        # the honorific pin owns these
+                if frozenset(members) in _NOT_A_VOCABULARY_COPY:
+                    continue
+                found += 1
+                keys = [k for k in _LATIN_ALTERNATION_SOURCES
+                        if k in rule["issue"]]
+                assert len(keys) == 1, (
+                    f"{ledger.name}: {rule['issue']!r} carries the Latin "
+                    f"alternation {sorted(members)}, which matches "
+                    f"{len(keys)} roster keys ({keys}). Declare the "
+                    f"vocabulary it copies in _LATIN_ALTERNATION_SOURCES, "
+                    f"or add it to _NOT_A_VOCABULARY_COPY if it copies "
+                    f"nothing")
+                used.add(keys[0])
+                source = _LATIN_ALTERNATION_SOURCES[keys[0]]
+                assert not _top_level_alternation(regex), (
+                    f"{ledger.name}: {rule['issue']!r} has a '|' at depth "
+                    f"0, so the pinned alternation governs only one branch "
+                    f"and the rest of the rule is unchecked. Wrap it in "
+                    f"'(?:...)'")
+                covered = set()
                 for member in members:
-                    matched = {entry for entry in vocabulary
-                               if re.fullmatch(member, entry, re.IGNORECASE)}
+                    try:
+                        matched = {entry for entry in source.vocabulary
+                                   if re.fullmatch(member, entry,
+                                                   re.IGNORECASE)}
+                        loose = [probe for probe in _NOT_VOCABULARY
+                                 if re.fullmatch(member, probe,
+                                                 re.IGNORECASE)]
+                    except re.error as exc:
+                        raise AssertionError(
+                            f"{ledger.name}: {rule['issue']!r} member "
+                            f"{member!r} is not a valid regex ({exc}). A "
+                            f"mis-split alternation can produce this -- see "
+                            f"_ALTERNATION's notes") from None
+                    assert not loose, (
+                        f"{ledger.name}: {rule['issue']!r} member "
+                        f"{member!r} also matches ordinary name text "
+                        f"{loose}. Spell it literally -- a member broad "
+                        f"enough to hit a real name lets the rule claim "
+                        f"that name's diff as intended")
                     assert matched, (
                         f"{ledger.name}: {rule['issue']!r} offers the "
                         f"alternative {member!r}, which matches no entry in "
@@ -809,12 +881,15 @@ def test_latin_alternations_mean_something_the_vocabulary_ships() -> None:
                         f"diffs as intended -- drop it, or ship it as "
                         f"vocabulary first")
                     covered |= matched
-            assert covered == recorded, (
-                f"{ledger.name}: {rule['issue']!r} covers {sorted(covered)}; "
-                f"recorded {sorted(recorded)}. Lost: "
-                f"{sorted(recorded - covered)} (an entry the rule relied on "
-                f"left the vocabulary). Gained: {sorted(covered - recorded)} "
-                f"(record it)")
+                assert covered == source.covers, (
+                    f"{ledger.name}: {rule['issue']!r} covers "
+                    f"{sorted(covered)}; recorded {sorted(source.covers)}. "
+                    f"Lost: {sorted(source.covers - covered)} (an entry the "
+                    f"rule relied on left the vocabulary). Gained: "
+                    f"{sorted(covered - source.covers)} (record it)")
+    assert found, (
+        "no Latin vocabulary alternation found in any ledger; this pin is "
+        "passing vacuously")
     assert used == set(_LATIN_ALTERNATION_SOURCES), (
         f"_LATIN_ALTERNATION_SOURCES keys matching no rule: "
         f"{sorted(set(_LATIN_ALTERNATION_SOURCES) - used)}")
