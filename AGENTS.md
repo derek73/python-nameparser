@@ -86,9 +86,19 @@ uv run sphinx-build -b html docs dist/docs
 #    tools/differential/compare.py to the version just released, and create
 #    tools/differential/expected_since_<that version>.toml. Until both are done a
 #    bare compare.py measures against two minors back while reporting the
-#    previous one, and _allowlist_for hard-errors on the missing file. Land the
-#    regex-sync globbing (#333) FIRST, or the new ledger is born with the same
-#    unpinned hand copies of _SCRIPT_RANGES and the honorific vocabulary.
+#    previous one, and _allowlist_for hard-errors on the missing file.
+#    tests/v2/test_regex_sync.py sweeps every expected_since_*.toml (#333), so
+#    the new ledger's hand copies of _SCRIPT_RANGES and the honorific
+#    vocabulary are checked from the day the file lands -- but it enrolls
+#    itself in neither roster, and both failures are loud, not silent:
+#      - _SPAN_BEARING_RULES: add the filename, mapped to the set of issue
+#        tags whose rules carry a script-span class (empty set if none).
+#      - _HONORIFIC_SOURCES: if the ledger has a CJK honorific rule, add a
+#        substring of its issue (keyed that way, not by tag) mapped to the
+#        constant it copies -- but only if no existing key already matches
+#        that issue. A retroactive ledger can repeat an older one's rule
+#        verbatim (fix(#271/#272/#298) is in both today), and every rule
+#        must match exactly one key.
 ```
 
 Enable debug logging to see the parser's internal decisions:

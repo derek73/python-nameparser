@@ -209,9 +209,10 @@ issue = "fix(cjk-delimited-nickname) delimiter recognition compounds with the CJ
 # overlaps the CJK rule above and the delimiter rule below; within
 # the name_regex tier file order decides which label a diff reports
 # under, so it sits after the tighter single-change rules on purpose.
-# The issue slug deliberately avoids the literal #271/#272 strings --
-# test_regex_sync's differential pin selects the canonical CJK rule
-# by those substrings and asserts it is unique.
+# The slug is free-form. It used to avoid the literal #271/#272
+# strings, because a pin selected the canonical CJK rule by those
+# substrings and asserted uniqueness; that pin is gone (#333) and the
+# span sweep finds rules by their character class instead.
 name_regex = "(?s)(?=.*[「」『』・･])(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
 fields = ["given", "family", "nickname"]
 
@@ -243,9 +244,9 @@ issue = "fix(cjk-fullwidth-paren-nickname) fullwidth-parenthesis recognition com
 # span, so a Latin name can carry it ('John （Jack） Kennedy') and the
 # delimiter alone would let this rule absorb a first/last regression on
 # one. The span class is the same hand copy of _SCRIPT_RANGES the rules
-# above carry, pinned by the same auto-discovering test. The slug
-# avoids the literal #271/#272 substrings the canonical-rule pin
-# selects by.
+# above carry, pinned by the same auto-discovering test. The slug is
+# free-form; the #271/#272 substrings it avoids were a constraint of a
+# selector retired in #333.
 name_regex = "(?s)(?=.*[（）])(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
 fields = ["given", "middle", "family", "nickname"]
 
@@ -263,8 +264,9 @@ issue = "fix(cjk-comma-compound) comma routing compounds with the CJK order flip
 # 'Smith, Jr.' in the corpus, and the classified-codepoint lookahead
 # confines the rule to names the CJK behaviors can actually reach.
 # The class is the same hand copy of _SCRIPT_RANGES the rules above
-# carry, pinned by the same sync test. The slug avoids the literal
-# #271/#272 substrings the canonical-rule pin selects by.
+# carry, pinned by the same sync test. The slug is free-form; the
+# #271/#272 substrings it avoids were a constraint of a selector
+# retired in #333.
 #
 # #312 sends only the two glued-honorific comma rows whose diff
 # includes `last` here ('Dr 김민준씨, V.', '田中さん, PhD'); the two
