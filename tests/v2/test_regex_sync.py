@@ -431,8 +431,19 @@ _ISSUE_TAG = re.compile(r"^[a-z]+\([^)]*\)")
 
 
 def _tag(issue: str) -> str:
+    """The leading tag, required only of rules the roster has to name.
+
+    Nothing obliges a ledger rule to carry a tag in general, and one in
+    the 1.4 file does not ("ambiguous-surname-acronym data change:
+    ..."). That is fine while it declares no script span. If such a rule
+    ever gains one it lands here, and the fix is to give it a tag rather
+    than to loosen the roster.
+    """
     match = _ISSUE_TAG.match(issue)
-    assert match, f"rule issue does not open with a fix(...) tag: {issue!r}"
+    assert match, (
+        f"a span-bearing rule's issue must open with a fix(...) or "
+        f"feat(...) tag so _SPAN_BEARING_RULES can name it; this one "
+        f"does not: {issue!r}")
     return match.group(0)
 
 
