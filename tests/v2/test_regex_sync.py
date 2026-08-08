@@ -211,78 +211,65 @@ def _expected_bmp_spans() -> set[tuple[int, int]]:
             if span[1] <= 0xFFFF} | set(_SANCTIONED_EXTRAS)
 
 
-def test_differential_cjk_rule_matches_the_script_ranges() -> None:
-    """The CJK rule in tools/differential/expected_since_1.4.0.toml hand-
-    copies the script spans from _policy._SCRIPT_RANGES into a character
-    class. A TOML file cannot import the constant, so this is the one
-    copy with no possible alternative -- and the one whose divergence
-    is quietest, because the harness is run by hand rather than in CI.
+def test_script_ranges_membership_is_decided() -> None:
+    """The two guards that belong to the script TABLE rather than to any
+    one ledger's copy of it.
 
-    Both failure directions matter, which is why this compares sets
-    rather than checking coverage. A span MISSING from the class turns
-    an intended #271/#272 change into an UNEXPLAINED diff (a release
-    blocker for the wrong reason); a span that should not be there
-    silently classifies a real regression as intended, which is the
-    failure the whole harness exists to prevent.
-
-    Every table entry is in scope. The rule covered HAN and HANGUL
-    alone while the kana members existed only for classification, but
-    #272 gave HIRAGANA a default order entry and made the kana blocks
-    part of the same first/middle/last diff shape the rule explains,
-    so scoping it by issue no longer draws a real line. Comparing
-    against the whole table is also the stronger promise: a script
-    added to _SCRIPT_RANGES for ANY reason fails here until someone
-    decides, in writing, whether the rule should cover it.
+    Every table entry is in scope for the differential rules. The
+    canonical rule covered HAN and HANGUL alone while the kana members
+    existed only for classification, but #272 gave HIRAGANA a default
+    order entry and made the kana blocks part of the same
+    first/middle/last diff shape, so scoping by issue no longer draws a
+    real line. Comparing against the whole table is the stronger
+    promise: a script added to _SCRIPT_RANGES for ANY reason fails here
+    until someone decides, in writing, whether the rules should cover
+    it.
 
     Han's astral block is the single exception, out of scope on both
-    sides. The rule omits it deliberately -- no corpus name reaches
-    it, see the comment there -- so the comparison runs over the BMP
-    spans only.
+    sides -- no corpus name reaches it, see the comment there -- so the
+    span comparisons run over the BMP spans only.
 
-    The rule is also WIDER than the table by exactly one span, which
+    The rules are also WIDER than the table by exactly one span, which
     the equality has to know about or it would just fail forever. The
-    halfwidth middle dot U+FF65 changes parses without being
-    classified as anything: tokenize separates on it, so a halfwidth
-    transcription splits where 1.4 kept one token, while halfwidth
-    kana stays out of _SCRIPT_RANGES on purpose. U+00B7 -- the
-    context-sensitive 间隔号 (#298) -- also changes parses yet is
-    deliberately NOT an extra: its flank guard means every name it
-    can change matches the class through a flanking character
-    already, and a B7 span's only actual effect would be letting the
-    rule claim diffs on punt-volat Latin names (Gal·la), pre-excusing
-    a regression on exactly the guarded class. Naming the sanctioned
-    span here rather than relaxing the comparison to a subset check
-    is what keeps the pin honest in both directions: an unsanctioned
-    source of divergence still fails, and each sanctioned difference
-    has to be written down to exist.
+    halfwidth middle dot U+FF65 changes parses without being classified
+    as anything: tokenize separates on it, so a halfwidth transcription
+    splits where 1.4 kept one token, while halfwidth kana stays out of
+    _SCRIPT_RANGES on purpose. U+00B7 -- the context-sensitive 间隔号
+    (#298) -- also changes parses yet is deliberately NOT an extra: its
+    flank guard means every name it can change matches the class through
+    a flanking character already, and a B7 span's only actual effect
+    would be letting a rule claim diffs on punt-volat Latin names
+    (Gal·la), pre-excusing a regression on exactly the guarded class.
+    Naming the sanctioned span rather than relaxing the comparisons to a
+    subset check is what keeps the pins honest in both directions: an
+    unsanctioned source of divergence still fails, and each sanctioned
+    difference has to be written down to exist. The guard below is what
+    makes "sanctioned" mean something -- an extra that BECOMES
+    classified belongs in the table, not in the exception list.
+
+    There is deliberately no canonical-rule selector here any more. It
+    picked rules by the literal '#271'/'#272' substrings and asserted
+    uniqueness, which #332 broke: expected_since_2.0.0.toml has two such
+    rules. Its equality check was in any case fully subsumed by
+    test_every_span_bearing_rule_matches_the_script_ranges, since the
+    canonical rule is itself span-bearing. Splitting the two guarantees
+    is the point -- the sweep owns "every hand copy equals the table",
+    this test owns "the table did not change shape without a decision"
+    -- so a selector break can no longer take the decision gate out as
+    collateral. Rule authors are correspondingly free to put #271 or
+    #272 in a compound slug.
     """
-    toml_path = (Path(__file__).parents[2] / "tools" / "differential"
-                 / "expected_since_1.4.0.toml")
-    rules = tomllib.loads(toml_path.read_text())["change"]
-    matched = [r for r in rules
-               if "#271" in r["issue"] or "#272" in r["issue"]]
-    assert len(matched) == 1, (
-        f"expected exactly one CJK rule in {toml_path.name}, "
-        f"found {len(matched)}")
-    # A new table entry must force an explicit decision rather than
-    # quietly widening (or failing to widen) the rule above.
     assert set(_policy._SCRIPT_RANGES) == {
         Script.HAN, Script.HANGUL, Script.HIRAGANA, Script.KATAKANA}, (
-        "a Script joined _SCRIPT_RANGES: decide whether the "
-        f"differential rule in {toml_path.name} should cover it, then "
-        "update this assertion")
-    declared = _declared_spans(matched[0]["name_regex"])
-    # the extras must stay UNclassified, or they belong in the table
+        "a Script joined _SCRIPT_RANGES: decide whether the differential "
+        "rules in tools/differential/expected_since_*.toml should cover "
+        "it, then update this assertion")
     for xlo, xhi in _SANCTIONED_EXTRAS:
         assert not any(lo <= xhi and xlo <= hi
                        for spans in _policy._SCRIPT_RANGES.values()
                        for lo, hi in spans), (
             f"U+{xlo:04X}-U+{xhi:04X} is classified now; drop it "
             "from _SANCTIONED_EXTRAS")
-    expected = _expected_bmp_spans()
-    assert declared == expected, (
-        f"{toml_path.name}'s CJK name_regex declares {sorted(declared)}; "
-        f"_SCRIPT_RANGES' BMP spans are {sorted(expected)}")
 
 
 #: How many span-bearing rules each ledger is known to carry. A floor,
