@@ -199,6 +199,19 @@ def _rules(ledger: Path) -> list[dict]:
     return tomllib.loads(ledger.read_text(encoding="utf-8"))["change"]
 
 
+def test_span_bearing_roster_names_exactly_the_ledgers_on_disk() -> None:
+    """The roster's per-ledger sweep asserts every ledger has an entry,
+    but it runs over _LEDGERS, so it can never visit an entry naming a
+    file that is gone. A deleted or renamed ledger would leave its key
+    behind indefinitely -- the same staleness the roster's tag-level
+    check exists to prevent, one level up."""
+    assert set(_SPAN_BEARING_RULES) == {ledger.name for ledger in _LEDGERS}, (
+        f"_SPAN_BEARING_RULES names ledgers that do not exist: "
+        f"{sorted(set(_SPAN_BEARING_RULES) - {L.name for L in _LEDGERS})}; "
+        f"and is missing: "
+        f"{sorted({L.name for L in _LEDGERS} - set(_SPAN_BEARING_RULES))}")
+
+
 _SPAN = re.compile(r"\\u([0-9A-Fa-f]{4})-\\u([0-9A-Fa-f]{4})")
 
 
@@ -228,13 +241,95 @@ def _unrecognized_class_content(name_regex: str) -> list[str]:
 
     So: a class that declares any span must declare NOTHING else.
     Classes carrying no spans (the delimiter sets) are a different
-    decision surface and are out of scope here.
+    decision surface and are out of scope here -- as is widening spelled
+    OUTSIDE the brackets, which _no_top_level_alternation covers.
+
+    Two known false positives, both deliberate: a single non-range
+    escape and a trailing literal "-" are legal regex and would be
+    rejected. Write them as a one-codepoint span instead. A class
+    metacharacter like \\s has no span spelling at all, so a rule
+    genuinely needing one has to move it out of the span-bearing class.
+
+    The bracket scan is a simple findall, not a regex parser: an escaped
+    "\\]" inside a class truncates the body early and a nested "[" reads
+    as content. Both surface as unrecognized content rather than as
+    silence, which is the safe direction, and no ledger rule uses either.
     """
     return [rest
             for body in re.findall(r"\[([^\]]*)\]", name_regex)
             if _SPAN.search(body)
             for rest in [_SPAN.sub("", body)]
             if rest]
+
+
+def _top_level_alternation(name_regex: str) -> bool:
+    """Whether the rule has a "|" at nesting depth 0.
+
+    The sibling of the hole above, three characters to the right of the
+    "]". Appending "|[A-Za-z]" to a span-bearing rule widens it exactly
+    as appending "a-z" inside the class would, and passes BOTH layers
+    that are supposed to stop that: the span equality sees an unchanged
+    class, and compare.validate_rules' sentinel probe clears it because
+    "Хосе Сантос" fails to match, breaking the matches-everything
+    conjunction. A CJK-scoped rule would then claim a Latin name's diff
+    as intended.
+
+    No ledger rule has one today, and a rule that genuinely needs an
+    alternation can wrap it in "(?:...)", so requiring depth-0 purity
+    costs nothing and closes the hatch.
+    """
+    depth = in_class = 0
+    i = 0
+    while i < len(name_regex):
+        char = name_regex[i]
+        if char == "\\":
+            i += 2
+            continue
+        if in_class:
+            in_class = char != "]"
+        elif char == "[":
+            in_class = 1
+        elif char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+        elif char == "|" and depth == 0:
+            return True
+        i += 1
+    return False
+
+
+#: Codepoints the script table classifies that a ledger rule may still
+#: spell literally inside a character class. The nakaguro separators
+#: sit in the katakana block by Unicode block assignment while
+#: functioning as punctuation, which is exactly why the delimiter rules
+#: write them as themselves alongside the corner brackets.
+_LITERAL_IN_CLASS_OK = frozenset("・･")
+
+_SPAN_TOKEN = re.compile(r"\\u[0-9A-Fa-f]{4}")
+
+
+def _literally_spelled_script_chars(name_regex: str) -> list[str]:
+    """Classified codepoints a class spells as themselves, not as spans.
+
+    This is the escape hatch every masking attack on the roster below
+    actually uses. Respell a rule's class in literal characters and the
+    regex means the same thing while the rule vanishes from discovery --
+    its hand copy is then unpinned, and _SPAN_BEARING_RULES cannot tell
+    a rule that LEFT from a rule that was never there, because a set of
+    names cannot see that two different rules answer to one name (the
+    1.4 ledger already has two rules tagged feat(#269)).
+
+    Naming rules could never fix that on its own. Closing the hatch can:
+    a classified codepoint written literally in a class is refused, so a
+    class covering script content has to stay in the notation discovery
+    reads.
+    """
+    return sorted({char
+                   for body in re.findall(r"\[([^\]]*)\]", name_regex)
+                   for char in _SPAN_TOKEN.sub("", body)
+                   if char not in _LITERAL_IN_CLASS_OK
+                   and _policy._script_matcher(*_policy._SCRIPT_RANGES)(char)})
 
 
 def _expected_bmp_spans() -> set[tuple[int, int]]:
@@ -394,6 +489,24 @@ def test_every_span_bearing_rule_matches_the_script_ranges(
             f"character class holding {extra!r} besides its spans. The "
             f"span equality above cannot see that, so it would widen the "
             f"rule unchecked -- write it as an escaped span or not at all")
+        assert not _top_level_alternation(regex), (
+            f"{ledger.name}: {rule['issue']!r} has a '|' at depth 0, so "
+            f"the whole rule is an alternation and the pinned class "
+            f"governs only one branch. Wrap it in '(?:...)'")
+    # Every rule, not just the discovered ones: this is what stops a
+    # class being respelled out of discovery in the first place, and it
+    # has to reach the rules that are NOT currently span-bearing to do
+    # that job.
+    for rule in _rules(ledger):
+        regex = rule.get("name_regex")
+        if not isinstance(regex, str):
+            continue
+        literal = _literally_spelled_script_chars(regex)
+        assert not literal, (
+            f"{ledger.name}: {rule['issue']!r} spells the classified "
+            f"codepoints {literal} literally inside a character class. "
+            f"Write them as \\uXXXX-\\uXXXX spans, or the rule drops out "
+            f"of the sweep above while meaning the same thing")
     # two rules sharing a tag would collapse into one set member and
     # read as a disappearance below, which is a confusing way to learn
     # that the naming scheme broke
@@ -515,15 +628,22 @@ _HONORIFIC_SOURCES: dict[str, set[str]] = {
 #: "(?:씨|님|先生)" would otherwise carry a hand copy this pin cannot
 #: see, which is the silent-unpinning this module exists to prevent.
 #:
-#: Shapes it still cannot read, and where each one lands (measured):
-#: an alternation with a nested group, or with a paren inside a
-#: character class, stops matching at all and surfaces through the
-#: STALE half of the roster check below. A "|" inside a character class
-#: is worse than unreadable -- it is MISread, since the member split is
-#: a plain str.split("|"): "[a|b]" becomes the two members "[a" and
-#: "b]", so the rule still matches its key and fails the declared-vs-
-#: expected equality instead. A single-member "group" is not an
-#: alternation at all and falls out silently, caught only by STALE.
+#: Shapes it still cannot read correctly. All of them fail, but by two
+#: different mechanisms, and the message you get depends on which
+#: (every row measured):
+#:
+#:   STALE half of the roster check -- the group stops matching, so the
+#:   rule's key goes unused:
+#:     a nested group whose inner members are UNclassified;
+#:     a paren inside a character class;
+#:     a single-member "group", which is not an alternation at all;
+#:     the named and inline-flag forms "(?P<n>a|b)" and "(?i:a|b)".
+#:
+#:   Declared-vs-expected equality -- the group still matches, but its
+#:   members are MISread, since the split is a plain str.split("|"):
+#:     "|" inside a character class: "[a|b]" yields "[a" and "b]";
+#:     a nested group whose inner members ARE classified: the inner
+#:     group is extracted and shows up as a member of the outer one.
 _ALTERNATION = re.compile(r"\((?:\?:|(?!\?))((?:[^()|]+\|)+[^()|]+)\)")
 
 
