@@ -195,12 +195,42 @@ def _rules(ledger: Path) -> list[dict]:
     return tomllib.loads(ledger.read_text(encoding="utf-8"))["change"]
 
 
+_SPAN = re.compile(r"\\u([0-9A-Fa-f]{4})-\\u([0-9A-Fa-f]{4})")
+
+
 def _declared_spans(name_regex: str) -> set[tuple[int, int]]:
     """The \\uXXXX-\\uXXXX span pairs a rule's character class declares."""
-    return {
-        (int(lo, 16), int(hi, 16))
-        for lo, hi in re.findall(r"\\u([0-9A-Fa-f]{4})-\\u([0-9A-Fa-f]{4})",
-                                 name_regex)}
+    return {(int(lo, 16), int(hi, 16))
+            for lo, hi in _SPAN.findall(name_regex)}
+
+
+def _unrecognized_class_content(name_regex: str) -> list[str]:
+    """Whatever a span-declaring character class holds BESIDES spans.
+
+    _declared_spans reads one notation and is blind to every other, so
+    set equality against the table only pins what is written as an
+    escaped span. Anything appended in another notation -- a literal
+    range, a bare character, a leading "^" negating the whole class --
+    is invisible to it and rides along unchecked. That is not
+    hypothetical: this file's own convention mixes both spellings (see
+    the interpunct note in expected_since_2.0.0.toml), and the ledgers'
+    non-span classes are written literally.
+
+    The consequence is worst in the widening direction the equality is
+    supposed to cover. Appending "a-z" to a pinned CJK class passes both
+    that equality and compare.validate_rules' sentinel probe, and lets
+    the rule claim every Latin diff in the corpus as intended -- exactly
+    the regression-absorbing failure the harness exists to prevent.
+
+    So: a class that declares any span must declare NOTHING else.
+    Classes carrying no spans (the delimiter sets) are a different
+    decision surface and are out of scope here.
+    """
+    return [rest
+            for body in re.findall(r"\[([^\]]*)\]", name_regex)
+            if _SPAN.search(body)
+            for rest in [_SPAN.sub("", body)]
+            if rest]
 
 
 def _expected_bmp_spans() -> set[tuple[int, int]]:
@@ -361,6 +391,12 @@ def test_every_span_bearing_rule_matches_the_script_ranges(
         assert declared == table_spans, (
             f"{ledger.name}: {rule['issue']!r} declares "
             f"{sorted(declared)}; expected {sorted(table_spans)}")
+        extra = _unrecognized_class_content(regex)
+        assert not extra, (
+            f"{ledger.name}: {rule['issue']!r} has a span-declaring "
+            f"character class holding {extra!r} besides its spans. The "
+            f"span equality above cannot see that, so it would widen the "
+            f"rule unchecked -- write it as an escaped span or not at all")
     # two rules sharing a tag would collapse into one set member and
     # read as a disappearance below, which is a confusing way to learn
     # that the naming scheme broke
@@ -399,7 +435,7 @@ def test_nickname_delimiter_sets_are_deliberate() -> None:
             if "cjk-delimited-nickname" not in rule["issue"]:
                 continue
             found.append(f"{ledger.name}: {rule['issue']}")
-            assert _NICKNAME_DELIMITERS in rule["name_regex"], (
+            assert _NICKNAME_DELIMITERS in rule.get("name_regex", ""), (
                 f"{ledger.name}: the compound rule's delimiter set "
                 f"changed; decide deliberately, then update "
                 f"_NICKNAME_DELIMITERS")
@@ -451,12 +487,26 @@ _HONORIFIC_SOURCES: dict[str, set[str]] = {
     "#308/#312/#319/#320": GLUED_HONORIFICS,            # 2.0, glued
 }
 
-#: A (?:a|b|c) group with two or more alternatives and no nested
-#: parentheses. Verified to find exactly the three honorific
-#: alternations across both ledgers and nothing else: the rules' other
-#: groups are either lookarounds, which this does not match, or carry
-#: no script-classified member and are dropped by the filter below.
-_ALTERNATION = re.compile(r"\(\?:((?:[^()|]+\|)+[^()|]+)\)")
+#: An alternation group with two or more members and no nested
+#: parentheses, capturing or not. Together with the classified-member
+#: filter in _cjk_alternations it selects exactly the three honorific
+#: alternations across both ledgers; on its own it also matches
+#: "(?:^| )" from the 1.4 rule and the two Latin maiden/acronym
+#: alternations, all of which the filter drops.
+#:
+#: The "(?:" alternative is spelled out and the plain "(" is guarded by
+#: (?!\?) so that lookarounds -- "(?=$|[ ,])", "(?<=[^\s,])" -- do not
+#: parse as alternations of their own syntax. Matching plain capturing
+#: groups matters: a rule written "(씨|님|先生)" instead of
+#: "(?:씨|님|先生)" would otherwise carry a hand copy this pin cannot
+#: see, which is the silent-unpinning this module exists to prevent.
+#:
+#: Still unreadable to it, by construction: an alternation with a
+#: nested group, one with a "|" or paren inside a character class, and
+#: a single-member "group". The first two surface through the STALE
+#: half of the roster check below -- the rule stops matching its key --
+#: rather than passing quietly.
+_ALTERNATION = re.compile(r"\((?:\?:|(?!\?))((?:[^()|]+\|)+[^()|]+)\)")
 
 
 def _cjk_alternations(name_regex: str) -> list[set[str]]:
@@ -521,5 +571,8 @@ def test_differential_honorific_rules_match_their_vocabulary() -> None:
         "passing vacuously")
     assert used == set(_HONORIFIC_SOURCES), (
         f"_HONORIFIC_SOURCES keys matching no rule: "
-        f"{sorted(set(_HONORIFIC_SOURCES) - used)}. A renamed or deleted "
-        f"rule left its entry behind; drop it.")
+        f"{sorted(set(_HONORIFIC_SOURCES) - used)}. Either a renamed or "
+        f"deleted rule left its entry behind -- drop it -- or that rule's "
+        f"alternation is no longer parseable by _ALTERNATION (a nested "
+        f"group, or a '|' inside a character class), which is how a "
+        f"still-present hand copy silently leaves this pin.")
