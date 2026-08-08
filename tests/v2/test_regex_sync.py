@@ -30,6 +30,7 @@ from nameparser._pipeline import _assign, _post_rules, _tokenize, _vocab
 from nameparser import _policy
 from nameparser._policy import Script
 from nameparser import _render
+from nameparser.config.maiden_markers import MAIDEN_MARKERS
 from nameparser.config.suffixes import GLUED_HONORIFICS, SUFFIX_NOT_ACRONYMS
 
 
@@ -658,12 +659,15 @@ _HONORIFIC_SOURCES: dict[str, set[str]] = {
 _ALTERNATION = re.compile(r"\((?:\?:|(?!\?))((?:[^()|]+\|)+[^()|]+)\)")
 
 
+def _alternations(name_regex: str) -> list[set[str]]:
+    """Every alternation group's members."""
+    return [set(body.split("|")) for body in _ALTERNATION.findall(name_regex)]
+
+
 def _cjk_alternations(name_regex: str) -> list[set[str]]:
     """Every alternation in a rule with a script-classified member."""
     has_classified = _policy._script_matcher(*_policy._SCRIPT_RANGES)
-    return [members
-            for body in _ALTERNATION.findall(name_regex)
-            for members in [set(body.split("|"))]
+    return [members for members in _alternations(name_regex)
             if any(has_classified(m) for m in members)]
 
 
@@ -726,3 +730,86 @@ def test_differential_honorific_rules_match_their_vocabulary() -> None:
         f"group, a paren inside a character class, or a lone member), "
         f"which is how a still-present hand copy silently leaves this "
         f"pin.")
+
+
+#: Ledger rules whose alternation is a hand copy of a LATIN vocabulary,
+#: mapped to the constant it mirrors and the entries it is known to
+#: cover. Kept apart from _HONORIFIC_SOURCES because the relationship
+#: is not set equality: these members are regex FRAGMENTS, not entries.
+#: "n[ée]e" covers two markers at once and "geb\.?" covers one, so
+#: there is no set to compare against.
+#:
+#: What is pinned instead runs in two directions, and they are not
+#: symmetric:
+#:
+#:   Every member must mean something the vocabulary ships. This is the
+#:   over-claiming direction and the one that absorbs regressions -- a
+#:   member matching no entry cannot correspond to a real change, so it
+#:   can only ever claim OTHER names' diffs. It is how "born" sat in
+#:   this rule from the harness's first commit (#350) while never
+#:   appearing in any config constant: the rule's fields are maiden/
+#:   middle/family, so a genuine regression on any name containing
+#:   "born" read as intended.
+#:
+#:   The covered set is recorded, not equal to the vocabulary. Forcing
+#:   equality would widen the rule to markers no corpus name exercises
+#:   (README: 3 of 17 appear anywhere), and 旧姓 already has its own
+#:   rule in the 2.0 ledger, so folding it in here would make two rules
+#:   claim one diff. Recording it still catches removal: drop an entry
+#:   a member covers and the set shrinks.
+_LATIN_ALTERNATION_SOURCES: dict[str, tuple[set[str], frozenset[str]]] = {
+    "fix(#274)": (MAIDEN_MARKERS, frozenset({"geb", "nee", "née", "roz"})),
+}
+
+
+def test_latin_alternations_mean_something_the_vocabulary_ships() -> None:
+    """The Latin twin of the honorific pin, shaped by what a regex
+    alternation over a vocabulary can honestly promise.
+
+    A member is matched against entries as a full regex, not compared
+    as a string, because that is what the rule does at classification
+    time -- "geb\\.?" is one member standing for the entry "geb", which
+    the config stores normalized (lowercase, no trailing period).
+    """
+    used: set[str] = set()
+    for ledger in _LEDGERS:
+        for rule in _rules(ledger):
+            regex = rule.get("name_regex")
+            if not isinstance(regex, str):
+                continue
+            keys = [k for k in _LATIN_ALTERNATION_SOURCES
+                    if k in rule["issue"]]
+            if not keys:
+                continue
+            assert len(keys) == 1, (
+                f"{ledger.name}: {rule['issue']!r} matches {len(keys)} "
+                f"roster keys ({keys}); it must name exactly one")
+            vocabulary, recorded = _LATIN_ALTERNATION_SOURCES[keys[0]]
+            used.add(keys[0])
+            alternations = _alternations(regex)
+            assert alternations, (
+                f"{ledger.name}: {rule['issue']!r} is rostered as a "
+                f"vocabulary copy but carries no alternation _ALTERNATION "
+                f"can read; see its notes for the shapes that do not parse")
+            covered = set()
+            for members in alternations:
+                for member in members:
+                    matched = {entry for entry in vocabulary
+                               if re.fullmatch(member, entry, re.IGNORECASE)}
+                    assert matched, (
+                        f"{ledger.name}: {rule['issue']!r} offers the "
+                        f"alternative {member!r}, which matches no entry in "
+                        f"the vocabulary it copies. It cannot correspond to "
+                        f"a real change, so it can only claim other names' "
+                        f"diffs as intended -- drop it, or ship it as "
+                        f"vocabulary first")
+                    covered |= matched
+            assert covered == recorded, (
+                f"{ledger.name}: {rule['issue']!r} covers {sorted(covered)}; "
+                f"recorded {sorted(recorded)}. Lost: "
+                f"{sorted(recorded - covered)} (an entry the rule relied on "
+                f"left the vocabulary). Gained: {sorted(covered - recorded)} "
+                f"(record it)")
+    assert used == set(_LATIN_ALTERNATION_SOURCES), (
+        f"_LATIN_ALTERNATION_SOURCES keys matching no rule: "
+        f"{sorted(set(_LATIN_ALTERNATION_SOURCES) - used)}")

@@ -63,7 +63,24 @@ fields = ["given", "middle", "family"]
 
 [[change]]
 issue = "fix(#274) maiden markers consumed"
-name_regex = "(?i)\\b(n[ée]e|born|geb\\.?|roz\\.?)\\b"
+# The alternation is a hand copy of MAIDEN_MARKERS, pinned by
+# tests/v2/test_regex_sync.py: every alternative must match at least one
+# entry the config actually ships. It covers the four the corpora
+# exercise, not all seventeen -- widening it to markers no corpus name
+# contains would buy nothing, and 旧姓 has its own rule in the 2.0
+# ledger, so claiming it here too would make two rules answer for one
+# diff.
+#
+# 'born' was an alternative here from the harness's first commit and
+# was removed in #350. It is not in MAIDEN_MARKERS and never was, in
+# v1 or v2, so it could not correspond to a real #274 change. What it
+# could do is claim any name containing "born" -- with fields
+# maiden/middle/family -- and absorb a genuine regression. No corpus
+# name contains it, so removing it changes no classification. English
+# is absent from the vocabulary on purpose: it borrows née. Supporting
+# 'born' would mean shipping it as vocabulary first, and that is not
+# free: 'Bertha Born Smith' loses its family name to the marker.
+name_regex = "(?i)\\b(n[ée]e|geb\\.?|roz\\.?)\\b"
 fields = ["maiden", "middle", "family"]
 
 [[change]]
