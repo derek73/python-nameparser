@@ -31,5 +31,11 @@
 # file with an empty set: no rule here hand-copies _SCRIPT_RANGES yet,
 # and the first one that does has to be recorded there or the sweep
 # fails.
-
-change = []
+#
+# There is deliberately no `change = []` line. TOML forbids appending a
+# [[change]] table to a statically defined array, so that line would
+# block the exact next step this comment asks for -- and both readers
+# use .get("change", []), so the key's absence is already the empty
+# ledger. tests/v2/test_differential.py checks that nothing else is
+# defined at the top level here, since a mistyped table name would
+# otherwise read as an empty ledger rather than as a broken one.

@@ -298,6 +298,36 @@ def test_validate_rules_rejects_a_rule_that_would_silently_widen(
         compare.validate_rules([rule], "expected_since_2.0.0.toml")
 
 
+def test_default_baseline_has_a_ledger_and_nothing_else_in_it() -> None:
+    """Two facts about the OPEN cycle's ledger, which the carve-out
+    below leans on and neither of us should have to derive.
+
+    It must exist: _allowlist_for treats a missing ledger as a hard
+    error, so a DEFAULT_BASELINE with no file makes a bare compare.py
+    run abort -- and it would also make the carve-out inert, since it
+    would name a file nothing iterates over.
+
+    And it must define nothing at the top level except `change`. This is
+    the one ledger allowed to be empty, so a mistyped table header --
+    `[[changes]]`, `[[rules]]` -- reads as a legitimately empty open
+    cycle everywhere instead of as a broken file: every sweep gets zero
+    rules and passes, while the author believes they shipped a rule.
+    The other ledgers are protected by having to be non-empty; this one
+    needs saying out loud.
+    """
+    import tomllib
+    open_cycle = _TOOLS / f"expected_since_{compare.DEFAULT_BASELINE}.toml"
+    assert open_cycle.exists(), (
+        f"DEFAULT_BASELINE is {compare.DEFAULT_BASELINE!r} but "
+        f"{open_cycle.name} does not exist; a bare compare.py run would "
+        f"hard-error, and the empty-ledger carve-out would be inert")
+    keys = set(tomllib.loads(open_cycle.read_text(encoding="utf-8")))
+    assert keys <= {"change"}, (
+        f"{open_cycle.name} defines {sorted(keys - {'change'})} at the top "
+        f"level. Only `change` is read, so anything else is a typo that "
+        f"would read as an empty ledger rather than as a broken one")
+
+
 def test_validate_rules_accepts_the_shipped_ledgers() -> None:
     """The guards above must not be so strict they reject real rules.
 
@@ -312,9 +342,6 @@ def test_validate_rules_accepts_the_shipped_ledgers() -> None:
     open_cycle = f"expected_since_{compare.DEFAULT_BASELINE}.toml"
     ledgers = sorted(_TOOLS.glob("expected_since_*.toml"))
     assert ledgers, "no ledgers found; this test would pass vacuously"
-    assert any(led.name == open_cycle for led in ledgers), (
-        f"DEFAULT_BASELINE is {compare.DEFAULT_BASELINE!r} but {open_cycle} "
-        f"does not exist; a bare compare.py run would hard-error")
     for ledger in ledgers:
         rules = tomllib.loads(
             ledger.read_text(encoding="utf-8")).get("change", [])
