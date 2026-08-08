@@ -173,6 +173,26 @@ def test_comma_char_matches_the_pipeline_comma_set() -> None:
 # pins below read this set.
 _SANCTIONED_EXTRAS = frozenset({(0xFF65, 0xFF65)})
 
+_TOOLS = Path(__file__).parents[2] / "tools" / "differential"
+
+#: Every baseline's ledger, swept rather than named. #332 added a second
+#: file whose four hand copies went unchecked because the pins below
+#: named the 1.4 one by filename, and the count grows by one per
+#: release -- see AGENTS.md's release step 8.
+_LEDGERS = sorted(_TOOLS.glob("expected_since_*.toml"))
+
+
+def test_ledger_glob_is_not_empty() -> None:
+    """A parametrize over an empty list generates zero tests and passes
+    vacuously -- the exact silence this module exists to break. The
+    swept pins cannot assert this for themselves, so it lives here."""
+    assert _LEDGERS, f"no expected_since_*.toml under {_TOOLS}"
+
+
+def _rules(ledger: Path) -> list[dict]:
+    """The [[change]] table of one ledger."""
+    return tomllib.loads(ledger.read_text(encoding="utf-8"))["change"]
+
 
 def _declared_spans(name_regex: str) -> set[tuple[int, int]]:
     """The \\uXXXX-\\uXXXX span pairs a rule's character class declares."""
