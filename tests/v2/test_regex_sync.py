@@ -199,9 +199,13 @@ def test_ledger_glob_is_not_empty() -> None:
 
 def _rules(ledger: Path) -> list[dict]:
     """The [[change]] table of one ledger."""
-    # .get, matching compare.py: the open cycle's ledger is created
-    # empty at release and has no [[change]] table until that cycle's
-    # first behavior change lands.
+    # .get, matching compare.py. The open cycle's ledger is created at
+    # release with no `change` key at all -- an empty [[change]] array
+    # cannot be appended to in TOML -- so an absent key IS the empty
+    # ledger here, not a malformed file. What stops that leniency from
+    # hiding a typo'd table header lives in tests/v2/test_differential.py:
+    # every other ledger must be non-empty, and the open one may define
+    # nothing but `change`.
     return tomllib.loads(
         ledger.read_text(encoding="utf-8")).get("change", [])
 

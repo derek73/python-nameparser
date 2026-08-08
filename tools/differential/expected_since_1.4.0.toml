@@ -64,32 +64,40 @@ fields = ["given", "middle", "family"]
 [[change]]
 issue = "fix(#274) maiden markers consumed"
 # The alternation is a hand copy of MAIDEN_MARKERS, pinned by
-# tests/v2/test_regex_sync.py: every alternative must match at least one
-# entry the config actually ships. It covers the four the corpora
-# exercise, not all seventeen -- widening it to markers no corpus name
-# contains would buy nothing, and 旧姓 has its own rule in the 2.0
-# ledger, so claiming it here too would make two rules answer for one
-# diff.
+# tests/v2/test_regex_sync.py: every alternative must match at least
+# one entry the config ships, and none may match ordinary name text.
+#
+# Its members reach 4 of the 17 entries -- geb, nee, née, roz -- which
+# is not the same set as the markers the corpora contain (geb, née and
+# 旧姓; only the first two are covered here). Growing it toward the
+# other 13 is not obviously right: the 旧姓 rule below sorts AFTER this
+# one, so covering 旧姓 here would shadow it rather than complement it,
+# and the rest have no corpus name to classify. Widen deliberately, and
+# record the new coverage in _LATIN_ALTERNATION_SOURCES.
 #
 # 'born' was an alternative here from the harness's first commit and
 # was removed in #350. It is not in MAIDEN_MARKERS and never was, in
 # v1 or v2, so it could not correspond to a real #274 change. What it
 # could do is claim any name containing "born" -- with fields
 # maiden/middle/family -- and absorb a genuine regression. No corpus
-# name contains it, so removing it changes no classification. English
-# is absent from the vocabulary on purpose: it borrows née. Supporting
-# 'born' would mean shipping it as vocabulary first, and that is not
-# free: 'Bertha Born Smith' loses its family name to the marker.
+# name contains it, so removing it changed no classification.
+#
+# Supporting 'born' would mean shipping it as vocabulary first, and it
+# is not free: 'Bertha Born Smith' loses its family name to the marker.
+# Note the vocabulary is not missing English -- 'nee' is there, and
+# tests/v2/cases.py calls it the spelling English writes most often.
+# See maiden_markers.py's own "Deliberately absent" note for what has
+# actually been considered and declined.
 name_regex = "(?i)\\b(n[ée]e|geb\\.?|roz\\.?)\\b"
 fields = ["maiden", "middle", "family"]
 
 [[change]]
 issue = "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip"
 # Its own rule rather than a widening of fix(#274) above: that rule's
-# fields stop at maiden/middle/last because a Latin marker moves only
-# those, while a Han one also flips `first` -- the name left after the
-# marker is consumed is wholly Han, so it reads family-first (#271).
-# Adding `first` to #274's list would make that rule broader than its
+# fields stop at maiden/middle/family because a Latin marker moves
+# only those, while a Han one also flips `given` -- the name left after
+# the marker is consumed is wholly Han, so it reads family-first
+# (#271). Adding `given` to #274's list would make it broader than its
 # prose and let it absorb diffs that have nothing to do with markers
 # (#328). The regex is the marker itself, so this rule can claim
 # nothing else.
