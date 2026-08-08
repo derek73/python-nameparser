@@ -299,14 +299,28 @@ def test_validate_rules_rejects_a_rule_that_would_silently_widen(
 
 
 def test_validate_rules_accepts_the_shipped_ledgers() -> None:
-    """The guards above must not be so strict they reject real rules."""
+    """The guards above must not be so strict they reject real rules.
+
+    Every ledger but one must carry rules. The exception is the OPEN
+    cycle's -- the one DEFAULT_BASELINE names -- which is created the day
+    its baseline is released and is legitimately empty until that
+    cycle's first behavior change lands. An older ledger is history, and
+    history is not empty, so emptying one is still a mistake this
+    catches.
+    """
     import tomllib
+    open_cycle = f"expected_since_{compare.DEFAULT_BASELINE}.toml"
     ledgers = sorted(_TOOLS.glob("expected_since_*.toml"))
     assert ledgers, "no ledgers found; this test would pass vacuously"
+    assert any(led.name == open_cycle for led in ledgers), (
+        f"DEFAULT_BASELINE is {compare.DEFAULT_BASELINE!r} but {open_cycle} "
+        f"does not exist; a bare compare.py run would hard-error")
     for ledger in ledgers:
         rules = tomllib.loads(
             ledger.read_text(encoding="utf-8")).get("change", [])
-        assert rules, f"{ledger.name} has no [[change]] rules"
+        assert rules or ledger.name == open_cycle, (
+            f"{ledger.name} has no [[change]] rules, and it is not the "
+            f"open cycle's ledger ({open_cycle})")
         compare.validate_rules(rules, ledger.name)
 
 

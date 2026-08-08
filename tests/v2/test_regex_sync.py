@@ -197,7 +197,11 @@ def test_ledger_glob_is_not_empty() -> None:
 
 def _rules(ledger: Path) -> list[dict]:
     """The [[change]] table of one ledger."""
-    return tomllib.loads(ledger.read_text(encoding="utf-8"))["change"]
+    # .get, matching compare.py: the open cycle's ledger is created
+    # empty at release and has no [[change]] table until that cycle's
+    # first behavior change lands.
+    return tomllib.loads(
+        ledger.read_text(encoding="utf-8")).get("change", [])
 
 
 def test_span_bearing_roster_names_exactly_the_ledgers_on_disk() -> None:
