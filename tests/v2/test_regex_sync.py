@@ -338,6 +338,38 @@ def test_every_span_bearing_rule_matches_the_script_ranges(
         f"copy fell out of discovery's reach. {checked}")
 
 
+#: The delimiter compound's trigger set is its own decision surface,
+#: separate from the script spans: these are the characters whose mere
+#: presence lets the rule claim a diff. Written once here rather than
+#: inline: the check this replaces tested the regex against this set
+#: spelled as unicode escapes OR against it spelled as the characters
+#: themselves, which in a non-raw literal are the same str -- an `or`
+#: whose two operands could never disagree. One spelling, named once.
+_NICKNAME_DELIMITERS = "[「」『』・･]"
+
+
+def test_nickname_delimiter_sets_are_deliberate() -> None:
+    """Swept rather than pinned to one file and one rule. The 1.4 ledger
+    has exactly one cjk-delimited-nickname rule and the 2.0 ledger has
+    none, so neither a per-file `== 1` nor a global one is true; what is
+    true is that EVERY such rule must carry the sanctioned trigger set,
+    and that at least one must exist somewhere or this is checking
+    nothing."""
+    found = []
+    for ledger in _LEDGERS:
+        for rule in _rules(ledger):
+            if "cjk-delimited-nickname" not in rule["issue"]:
+                continue
+            found.append(f"{ledger.name}: {rule['issue']}")
+            assert _NICKNAME_DELIMITERS in rule["name_regex"], (
+                f"{ledger.name}: the compound rule's delimiter set "
+                f"changed; decide deliberately, then update "
+                f"_NICKNAME_DELIMITERS")
+    assert found, (
+        "no cjk-delimited-nickname rule in any ledger; this check is "
+        "passing vacuously")
+
+
 def test_cjk_corpus_matches_the_case_table() -> None:
     """corpus_cjk.jsonl is GENERATED, not curated (#295): every
     distinct case-table text bearing a codepoint the script table
