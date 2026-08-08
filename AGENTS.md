@@ -86,11 +86,17 @@ uv run sphinx-build -b html docs dist/docs
 #    tools/differential/compare.py to the version just released, and create
 #    tools/differential/expected_since_<that version>.toml. Until both are done a
 #    bare compare.py measures against two minors back while reporting the
-#    previous one, and _allowlist_for hard-errors on the missing file. The new
-#    ledger's hand copies of _SCRIPT_RANGES and the honorific vocabulary are
-#    pinned automatically by tests/v2/test_regex_sync.py, which sweeps every
-#    expected_since_*.toml (#333) -- but add the file to _SPAN_BEARING_FLOORS
-#    there, or it fails as unrecorded (0 is correct if nothing CJK changed).
+#    previous one, and _allowlist_for hard-errors on the missing file.
+#    tests/v2/test_regex_sync.py sweeps every expected_since_*.toml (#333), so
+#    the new ledger's hand copies of _SCRIPT_RANGES and the honorific
+#    vocabulary are checked from the day the file lands -- but it enrolls
+#    itself in neither roster, and both failures are loud, not silent:
+#      - _SPAN_BEARING_RULES: add the filename, mapped to the set of issue
+#        tags whose rules carry a script-span class (empty set if none).
+#      - _HONORIFIC_SOURCES: if the ledger has a CJK honorific rule, add a
+#        substring of its issue (keyed that way, not by tag) mapped to the
+#        constant it copies. Its slug will be new by construction, so no
+#        existing key covers it, and it must match exactly one key.
 ```
 
 Enable debug logging to see the parser's internal decisions:
