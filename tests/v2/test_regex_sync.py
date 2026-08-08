@@ -273,19 +273,45 @@ def test_script_ranges_membership_is_decided() -> None:
             "from _SANCTIONED_EXTRAS")
 
 
-#: How many span-bearing rules each ledger is known to carry. A floor,
-#: not an equality: a NEW span-bearing rule is pinned by discovery the
-#: moment it exists, so forcing a bump here would be churn. The number
-#: exists to catch a copy that fell OUT of discovery's reach, and it is
-#: per-file so the failure names the ledger that lost one.
+#: Which rules each ledger is known to carry a script-span copy in,
+#: named by the leading fix(...)/feat(...) tag of their `issue`.
+#:
+#: Declared rather than counted. A count is identity-free, so one copy
+#: could leave discovery -- rewritten as literal characters, say -- while
+#: an unrelated span-bearing rule was added, and the total would hold
+#: steady while a hand copy went unpinned (measured). Naming them also
+#: buys the staleness direction the count never had, and that this
+#: module's other two rosters already have: a tag here that matches no
+#: rule fails, so a renamed or deleted rule cannot leave its entry
+#: behind.
 #:
 #: Membership is the forcing function: a new baseline's ledger fails as
-#: unrecorded until someone writes its count down. Recording 0 is fine
+#: unrecorded until someone writes its rules down. An empty set is fine
 #: and correct for a release that changed nothing CJK.
-_SPAN_BEARING_FLOORS = {
-    "expected_since_1.4.0.toml": 4,   # canonical + three compounds
-    "expected_since_2.0.0.toml": 2,   # canonical + the #298 lookahead
+_SPAN_BEARING_RULES: dict[str, frozenset[str]] = {
+    "expected_since_1.4.0.toml": frozenset({
+        "fix(#271/#272/#298)",              # the canonical class
+        "fix(cjk-delimited-nickname)",      # the three compounds, whose
+        "fix(cjk-fullwidth-paren-nickname)",  # lookaheads each carry
+        "fix(cjk-comma-compound)",          # their own copy
+    }),
+    "expected_since_2.0.0.toml": frozenset({
+        "fix(#271/#272/#298)",              # the canonical class
+        "fix(#298)",                        # the 间隔号 lookahead
+    }),
 }
+
+#: The leading `fix(...)`/`feat(...)` tag of a rule's `issue`, which is
+#: what _SPAN_BEARING_RULES names rules by. Unique within each ledger
+#: among span-bearing rules (asserted below), and stable across the
+#: prose that follows it.
+_ISSUE_TAG = re.compile(r"^[a-z]+\([^)]*\)")
+
+
+def _tag(issue: str) -> str:
+    match = _ISSUE_TAG.match(issue)
+    assert match, f"rule issue does not open with a fix(...) tag: {issue!r}"
+    return match.group(0)
 
 
 @pytest.mark.parametrize("ledger", _LEDGERS, ids=lambda p: p.name)
@@ -310,18 +336,20 @@ def test_every_span_bearing_rule_matches_the_script_ranges(
     The compound rules' require-a-classified-codepoint lookaheads exist
     so their trigger sets alone (delimiters; a comma) cannot claim a
     Latin name's regression -- and each such lookahead is a copy nothing
-    else checks. Discovery replaces a hand-maintained slug roster: a new
-    compound rule's copy is pinned by existing here, not by an author
-    remembering to enroll it. Rules whose spans touch OTHER scripts
-    (Cyrillic, say) are out of scope and skipped by the intersection
-    test.
+    else checks. Discovery, not enrollment, is what subjects a rule to
+    the equality above: a new compound rule's copy is checked because it
+    exists, not because an author remembered it. _SPAN_BEARING_RULES
+    then holds discovery itself to account, since a copy rewritten in a
+    notation discovery cannot see would otherwise just vanish from the
+    sweep. Rules whose spans touch OTHER scripts (Cyrillic, say) are out
+    of scope and skipped by the intersection test.
     """
-    assert ledger.name in _SPAN_BEARING_FLOORS, (
-        f"{ledger.name} is a new ledger with no recorded span-bearing "
-        f"count; add it to _SPAN_BEARING_FLOORS (0 is a legal answer "
-        f"for a release that changed nothing CJK)")
+    assert ledger.name in _SPAN_BEARING_RULES, (
+        f"{ledger.name} is a new ledger whose span-bearing rules are not "
+        f"recorded; add it to _SPAN_BEARING_RULES (an empty set is a "
+        f"legal answer for a release that changed nothing CJK)")
     table_spans = _expected_bmp_spans()
-    checked = []
+    tags = []
     for rule in _rules(ledger):
         regex = rule.get("name_regex")
         if not isinstance(regex, str):
@@ -329,14 +357,23 @@ def test_every_span_bearing_rule_matches_the_script_ranges(
         declared = _declared_spans(regex)
         if not declared & table_spans:
             continue
-        checked.append(rule["issue"])
+        tags.append(_tag(rule["issue"]))
         assert declared == table_spans, (
             f"{ledger.name}: {rule['issue']!r} declares "
             f"{sorted(declared)}; expected {sorted(table_spans)}")
-    assert len(checked) >= _SPAN_BEARING_FLOORS[ledger.name], (
-        f"{ledger.name} carries {len(checked)} span-bearing rules, "
-        f"below its recorded {_SPAN_BEARING_FLOORS[ledger.name]}: a hand "
-        f"copy fell out of discovery's reach. {checked}")
+    # two rules sharing a tag would collapse into one set member and
+    # read as a disappearance below, which is a confusing way to learn
+    # that the naming scheme broke
+    assert len(tags) == len(set(tags)), (
+        f"{ledger.name}: two span-bearing rules share an issue tag "
+        f"({sorted(tags)}); _SPAN_BEARING_RULES cannot name them apart")
+    found = set(tags)
+    assert found == _SPAN_BEARING_RULES[ledger.name], (
+        f"{ledger.name}'s span-bearing rules are not the recorded set. "
+        f"Left discovery (a hand copy is now unpinned): "
+        f"{sorted(_SPAN_BEARING_RULES[ledger.name] - found)}. "
+        f"Newly discovered (pinned now, but record it): "
+        f"{sorted(found - _SPAN_BEARING_RULES[ledger.name])}")
 
 
 #: The delimiter compound's trigger set is its own decision surface,
