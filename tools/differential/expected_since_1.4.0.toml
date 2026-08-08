@@ -70,10 +70,12 @@ issue = "fix(#274) maiden markers consumed"
 # Its members reach 4 of the 17 entries -- geb, nee, née, roz -- which
 # is not the same set as the markers the corpora contain (geb, née and
 # 旧姓; only the first two are covered here). Growing it toward the
-# other 13 is not obviously right: the 旧姓 rule below sorts AFTER this
-# one, so covering 旧姓 here would shadow it rather than complement it,
-# and the rest have no corpus name to classify. Widen deliberately, and
-# record the new coverage in _LATIN_ALTERNATION_SOURCES.
+# other 12 buys nothing: none appears as a token in any corpus, so
+# there is no diff for them to classify. Widening it to 旧姓 buys
+# nothing either, and the reason is on the rule below rather than here
+# -- this rule's `fields` stop short of `given`, so it can never claim
+# a name the Han marker moves. Widen deliberately, and record the new
+# coverage in _LATIN_ALTERNATION_SOURCES.
 #
 # 'born' was an alternative here from the harness's first commit and
 # was removed in #350. It is not in MAIDEN_MARKERS and never was, in

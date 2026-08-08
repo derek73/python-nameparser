@@ -818,16 +818,15 @@ class _LatinCopy(NamedTuple):
 #: to compare against.
 #:
 #: `covers` is recorded rather than equated to the whole vocabulary.
-#: Equality would force the rule to grow alternatives for markers it has
-#: no reason to claim, and 旧姓 already has a dedicated rule further down
-#: this same ledger which sorts AFTER this one -- so widening here would
-#: shadow that rule rather than complement it. Recording still catches
+#: Equality would force a rule to grow alternatives for markers it has
+#: no reason to claim -- see the note on fix(#274) in the 1.4 ledger for
+#: why 旧姓 in particular is not one of them. Recording still catches
 #: removal: drop an entry a member covers and the snapshot shrinks.
 #:
-#: Three nearby counts differ and are easy to conflate: MAIDEN_MARKERS
-#: ships 17 entries; this rule's members reach 4 of them; the corpora
-#: contain 3 markers in total (geb, née, 旧姓), only 2 of which this
-#: rule covers.
+#: Three nearby counts differ and are easy to conflate, all for
+#: fix(#274) specifically: MAIDEN_MARKERS ships 17 entries; that rule's
+#: members reach 4 of them; the corpora contain 3 markers in total
+#: (geb, née, 旧姓), only 2 of which it covers.
 _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
     "fix(#274)": _LatinCopy(
         vocabulary=MAIDEN_MARKERS,
@@ -892,13 +891,14 @@ def test_latin_alternations_mean_something_the_vocabulary_ships() -> None:
     for the entry "geb", which the config stores normalized (lowercase,
     no trailing period).
 
-    Three ways a member can be wrong, so three assertions. It can match
+    Two ways a MEMBER can be wrong, checked per member: it can match
     nothing in the vocabulary -- then it cannot describe a real change
     and can only claim other names' diffs, which is how "born" survived
-    from the harness's first commit to #350. It can match ordinary name
-    text as well as the vocabulary. And the rule around it can widen at
-    depth 0, leaving the pinned alternation governing one branch of an
-    unchecked whole -- the same hatch the span-bearing sweep closes.
+    from the harness's first commit to #350 -- or it can reach corpus
+    text that is not vocabulary. A third assertion is about the RULE
+    around them, which can widen at depth 0 and leave the pinned
+    alternation governing one branch of an unchecked whole. An invalid
+    member raises rather than asserts, since nothing else can proceed.
     """
     has_classified = _policy._script_matcher(*_policy._SCRIPT_RANGES)
     used: set[str] = set()
