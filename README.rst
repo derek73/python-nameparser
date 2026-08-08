@@ -47,8 +47,8 @@ Quick Start Example
     ]>
     >>> name.family_base, name.family_particles
     ('Vega', 'de la')
-    >>> name.given_names
-    'Juan Q. Xavier'
+    >>> name.given_names, name.surnames
+    ('Juan Q. Xavier', 'Q. Xavier de la Vega')
     >>> name.render("{family}, {given}")
     'de la Vega, Juan'
 
