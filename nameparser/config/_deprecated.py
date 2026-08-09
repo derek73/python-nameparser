@@ -2,15 +2,27 @@
 
 The 2.0 API named its concepts for what they are -- particles, bound
 given names, given-name titles, suffix words -- while the data modules
-kept the 1.x names a little longer. #293 moves the data layer to match,
-one vocabulary at a time: the particle sets have moved, and each
-remaining rename reuses this bridge as it lands. A 1.x name resolves to
-its 2.2 constant, warns once, and names the path to migrate to. The
-whole layer goes away in 3.0 with the rest of the v1 facade.
+kept the 1.x names a little longer. #293 moved all four to match. A 1.x
+name resolves to its 2.2 constant, warns once, and names the path to
+migrate to; the whole layer goes away in 3.0 with the rest of the v1
+facade.
+
+Two of the four moved module and all: prefixes -> particles and
+bound_first_names -> bound_given_names, whose old modules are now
+data-free shims that are nothing but a docstring and an alias table.
+The other two renamed a constant in place, so titles.py and suffixes.py
+carry their alias table at the bottom of the file, beside their data.
 
 Same PEP 562 mechanism as nameparser/locales/__init__.py, and the same
 write-back for the same reason -- one lookup, then the name is an
 ordinary module global.
+
+PEP 562 defines the hook for attribute ACCESS and nothing else, which
+is why every alias-bearing module also carries an ``__all__`` naming
+its retired names: ``from x import *`` reads ``__all__``, or failing
+that the module ``__dict__``, and consults ``__getattr__`` in neither
+case. Without the list a star import binds no retired name and issues
+no diagnostic. See the note at the ``__all__`` in prefixes.py.
 """
 from __future__ import annotations
 

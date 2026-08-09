@@ -45,7 +45,7 @@ Release Log
          * - ``suffixes.SUFFIX_NOT_ACRONYMS``
            - ``suffixes.SUFFIX_WORDS``
 
-      Every 1.x name above still resolves: reading one emits a ``DeprecationWarning`` naming the module and constant to move to, once per name per process, and is removed in 3.0. Two of the four kept their module, so only the constant moved there. ``SUFFIX_NOT_ACRONYMS`` was also inaccurate as well as dated — ``esq`` is in ``SUFFIX_ACRONYMS`` too. The ``CONSTANTS`` attribute names (``prefixes``, ``non_first_name_prefixes``, ``bound_first_names``, ``first_name_titles``, ``suffix_not_acronyms``) are v1 facade surface and are unchanged. See :doc:`migrate` (#293)
+      Every 1.x name above still resolves, by attribute access, by ``from ... import``, and by ``from ... import *``: reading one emits a ``DeprecationWarning`` naming the module and constant to move to, once per name per process, and is removed in 3.0. Two of the four kept their module, so only the constant moved there. ``SUFFIX_NOT_ACRONYMS`` was also inaccurate as well as dated — ``esq`` is in ``SUFFIX_ACRONYMS`` too. The ``CONSTANTS`` attribute names (``prefixes``, ``non_first_name_prefixes``, ``bound_first_names``, ``first_name_titles``, ``suffix_not_acronyms``) are v1 facade surface and are unchanged. See :doc:`migrate` (#293)
 
 * 2.1.0 - August 7, 2026
 

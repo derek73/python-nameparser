@@ -135,6 +135,51 @@ def test_dir_advertises_the_old_names(old_module: str, old_name: str) -> None:
     assert old_name in dir(importlib.import_module(old_module))
 
 
+@pytest.mark.parametrize(
+    "old_module", sorted({m for m, _, _, _ in ALIASES}))
+def test_star_import_binds_exactly_the_live_and_retired_names(
+    old_module: str,
+) -> None:
+    """``from x import *`` consults ``__all__`` and nothing else.
+
+    A module ``__getattr__`` is invisible to it, so before ``__all__``
+    landed this was the one 1.x import form the bridge did not cover,
+    and it failed in the mode the bridge exists to prevent: no warning,
+    no ``AttributeError``, just a ``NameError`` further down at a line
+    with nothing to do with the rename -- and ``alias_getattr`` bound
+    into the caller's namespace in place of the vocabulary.
+
+    The expected set is DERIVED from the module rather than listed, so a
+    constant added to ``suffixes``/``titles`` without a matching
+    ``__all__`` entry fails here. A hand-written list would have to be
+    kept in step by the same person who forgot ``__all__``.
+    """
+    module = importlib.import_module(old_module)
+    retired = {n for m, n, _, _ in ALIASES if m == old_module}
+    # computed BEFORE the star import, which writes each resolved alias
+    # back into the module globals and would otherwise pad this set
+    live = {n for n in vars(module) if n.isupper() and not n.startswith("_")}
+
+    namespace: dict[str, object] = {}
+    with pytest.warns(DeprecationWarning) as record:
+        exec(f"from {old_module} import *", namespace)  # noqa: S102
+
+    bound = {n for n in namespace if not n.startswith("__")}
+    assert bound == live | retired
+    # the helper the bridge is built from is not vocabulary; before
+    # __all__ it was the only thing a star import bound here
+    assert "alias_getattr" not in bound
+    # one warning per retired name, each naming where to go
+    assert len(record) == len(retired)
+    for warning in record:
+        message = str(warning.message)
+        assert old_module in message, message
+        assert "3.0" in message, message
+    assert {n for n in retired
+            if any(f"{old_module}.{n} " in str(w.message) for w in record)
+            } == retired
+
+
 #: Serving a 1.x name is an alias table's whole job, so the file
 #: holding that table may spell it. Nothing else in the package may,
 #: including the bridge machinery itself. One row per retired name,

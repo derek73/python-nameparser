@@ -806,3 +806,11 @@ from nameparser.config._deprecated import alias_getattr  # noqa: E402
 __getattr__, __dir__ = alias_getattr(__name__, {
     "FIRST_NAME_TITLES": ("nameparser.config.titles", "GIVEN_NAME_TITLES"),
 })
+
+# Star imports read __all__ and never the module __getattr__ -- see the
+# note in prefixes.py. This module keeps its live constants, so they are
+# listed too: without __all__ a star import bound them and dropped the
+# retired name silently; with a PARTIAL __all__ it would bind the
+# retired name and drop the live ones instead.
+# Source order, not alphabetical -- see the note in suffixes.py.
+__all__ = ["GIVEN_NAME_TITLES", "TITLES", "FIRST_NAME_TITLES"]  # noqa: F822

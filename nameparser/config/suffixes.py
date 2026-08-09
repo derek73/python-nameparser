@@ -878,3 +878,21 @@ from nameparser.config._deprecated import alias_getattr  # noqa: E402
 __getattr__, __dir__ = alias_getattr(__name__, {
     "SUFFIX_NOT_ACRONYMS": ("nameparser.config.suffixes", "SUFFIX_WORDS"),
 })
+
+# Star imports read __all__ and never the module __getattr__ -- see the
+# note in prefixes.py. Live constants listed alongside the retired name
+# for the same reason titles.py lists its own.
+#
+# In SOURCE order, not alphabetical: `automodule :members:` follows
+# __all__ where a module defines one, so an alphabetical list here would
+# silently reorder this module's entries in modules.html. The retired
+# name goes last because autodoc does not document it (it is not a
+# module global, so autodoc's getattr-free member scan never sees it)
+# and it therefore has no position to preserve.
+__all__ = [  # noqa: F822
+    "SUFFIX_WORDS",
+    "GLUED_HONORIFICS",
+    "SUFFIX_ACRONYMS_AMBIGUOUS",
+    "SUFFIX_ACRONYMS",
+    "SUFFIX_NOT_ACRONYMS",
+]

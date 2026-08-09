@@ -249,7 +249,8 @@ configuration — four vocabularies moved:
    * - ``suffixes.SUFFIX_NOT_ACRONYMS``
      - ``suffixes.SUFFIX_WORDS``
 
-Every 1.x name still resolves. Reading one emits a
+Every 1.x name still resolves — by attribute access, by ``from ...
+import``, and by ``from ... import *``. Reading one emits a
 ``DeprecationWarning`` naming the module and constant to move to, then
 returns the constant from its new home; the warning fires once per name
 per process, and the old names are removed in 3.0. Only the data layer
