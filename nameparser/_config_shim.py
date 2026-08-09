@@ -669,15 +669,15 @@ def _default_vocab() -> dict[str, set[str]]:
     # (same rule as Lexicon.default()).
     from nameparser.config.bound_first_names import BOUND_FIRST_NAMES
     from nameparser.config.conjunctions import CONJUNCTIONS
-    from nameparser.config.prefixes import (
-        NON_FIRST_NAME_PREFIXES, PREFIXES,
+    from nameparser.config.particles import (
+        NON_GIVEN_NAME_PARTICLES, PARTICLES,
     )
     from nameparser.config.suffixes import (
         SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_NOT_ACRONYMS,
     )
     from nameparser.config.titles import FIRST_NAME_TITLES, TITLES
     return {
-        "prefixes": PREFIXES,
+        "prefixes": PARTICLES,
         "suffix_acronyms": SUFFIX_ACRONYMS,
         "suffix_not_acronyms": SUFFIX_NOT_ACRONYMS,
         "suffix_acronyms_ambiguous": SUFFIX_ACRONYMS_AMBIGUOUS,
@@ -685,7 +685,7 @@ def _default_vocab() -> dict[str, set[str]]:
         "first_name_titles": FIRST_NAME_TITLES,
         "conjunctions": CONJUNCTIONS,
         "bound_first_names": BOUND_FIRST_NAMES,
-        "non_first_name_prefixes": NON_FIRST_NAME_PREFIXES,
+        "non_first_name_prefixes": NON_GIVEN_NAME_PARTICLES,
     }
 
 
@@ -1038,7 +1038,7 @@ class Constants:
             particles=particles,
             # complement translation: v1 marks the never-given subset;
             # v2 marks the may-be-given subset. The trailing union keeps
-            # a config v1 accepted: prefixes.py asserts its own data has
+            # a config v1 accepted: particles.py asserts its own data has
             # no word in both non_first_name_prefixes and
             # bound_first_names, but nothing stops a caller adding one at
             # runtime, and v1 then lets the bound rule win (leading "dos

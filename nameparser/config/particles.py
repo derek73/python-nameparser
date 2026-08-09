@@ -1,16 +1,17 @@
 from nameparser.config._invariants import assert_normalized
 from nameparser.config.bound_first_names import BOUND_FIRST_NAMES
 
-#: The sub-set of :py:data:`PREFIXES` that are *never* a standalone first name.
-#: A name that *starts* with one of these has no first name -- the whole thing
-#: is a surname (e.g. "de Mesnil" -> last name "de Mesnil"). Curated to exclude
-#: anything that can be a given name in some culture (`al`, `van`, `von`,
-#: `della`, `di`, `del`, `da`, `vander`, ...) and anything that is also a first
-#: name prefix (`abu`). When unsure, leave a word out: a missing member just
-#: means that name is not auto-fixed, whereas a wrong member misparses a real
-#: person. Must stay a subset of :py:data:`PREFIXES` and disjoint from
+#: The sub-set of :py:data:`PARTICLES` that are *never* a standalone given
+#: name. A name that *starts* with one of these has no given name -- the
+#: whole thing is a surname (e.g. "de Mesnil" -> family name "de Mesnil").
+#: Curated to exclude anything that can be a given name in some culture
+#: (`al`, `van`, `von`, `della`, `di`, `del`, `da`, `vander`, ...) and
+#: anything that is also a bound given-name particle (`abu`). When unsure,
+#: leave a word out: a missing member just means that name is not
+#: auto-fixed, whereas a wrong member misparses a real person. Must stay a
+#: subset of :py:data:`PARTICLES` and disjoint from
 #: :py:data:`~nameparser.config.bound_first_names.BOUND_FIRST_NAMES`.
-NON_FIRST_NAME_PREFIXES = {
+NON_GIVEN_NAME_PARTICLES = {
     "'t",
     'af',
     'auf',
@@ -39,7 +40,7 @@ NON_FIRST_NAME_PREFIXES = {
     # collision against an unrelated Latin given name, so each is judged
     # on its own semantics rather than mirrored blindly:
     'بن',     # "bin"/"ibn" (son of) -- never a bare given name. Latin
-              # 'bin' is in PREFIXES but not in this set; that judgment
+              # 'bin' is in PARTICLES but not in this set; that judgment
               # is unchanged by adding the Arabic-script form.
     'بنت',    # "bint" (daughter of) -- mirrors Latin 'bint' above.
     'ابن',    # "ibn" (son of, alternate spelling) -- mirrors Latin
@@ -59,21 +60,24 @@ NON_FIRST_NAME_PREFIXES = {
     'בת',     # "bat" (daughter of)
 }
 
-#: Name pieces that appear before a last name. Prefixes join to the piece
-#: that follows them to make one new piece. They can be chained together, e.g
-#: "von der" and "de la". Because they only appear in middle or last names,
-#: they also signify that all following name pieces should be in the same name
-#: part, for example, "von" will be joined to all following pieces that are not
-#: prefixes or suffixes, allowing recognition of double last names when they
-#: appear after a prefixes. So in "pennie von bergen wessels MD", "von" will
-#: join with all following name pieces until the suffix "MD", resulting in the
-#: correct parsing of the last name "von bergen wessels".
+#: Name pieces that attach to the family name. A particle joins to the
+#: piece that follows it to make one new piece, and particles chain, e.g.
+#: "von der" and "de la". A particle in a non-leading position also pulls
+#: the pieces after it into the same one, up to the next particle run or
+#: suffix, which is how multi-word family names are recognized: in
+#: "pennie von bergen wessels MD", "von" joins each following piece until
+#: the suffix "MD", giving the family name "von bergen wessels". A leading
+#: particle is the exception and chains nothing, since it may be a given
+#: name instead: one in :py:data:`NON_GIVEN_NAME_PARTICLES` makes the
+#: whole name a family name ("de la Vega"), while one outside that set is
+#: read as a given name ("Van Johnson") and records a particle-or-given
+#: ambiguity for the reading not taken.
 #:
-#: Defined as a static union so every :py:data:`NON_FIRST_NAME_PREFIXES` member
-#: is guaranteed to also be a prefix (and still join forward), with no drift --
-#: mirroring ``TITLES = FIRST_NAME_TITLES | {...}`` in
+#: Defined as a static union so every :py:data:`NON_GIVEN_NAME_PARTICLES`
+#: member is guaranteed to also be a particle (and still join forward),
+#: with no drift -- mirroring ``TITLES = FIRST_NAME_TITLES | {...}`` in
 #: :py:mod:`nameparser.config.titles`.
-PREFIXES = NON_FIRST_NAME_PREFIXES | {
+PARTICLES = NON_GIVEN_NAME_PARTICLES | {
     'aan',
     'aen',
     'abu',
@@ -114,8 +118,8 @@ PREFIXES = NON_FIRST_NAME_PREFIXES | {
 
     # #269: Arabic "abu" (father of), left ambiguous like its Latin
     # transliteration 'abu' above (both spellings): "Abu Bakr" reads
-    # "Abu" as a given name, so this stays a PREFIXES-only member, not
-    # NON_FIRST_NAME_PREFIXES.
+    # "Abu" as a given name, so this stays a PARTICLES-only member, not
+    # NON_GIVEN_NAME_PARTICLES.
     'أبو',
     'ابو',
 }
@@ -123,8 +127,8 @@ PREFIXES = NON_FIRST_NAME_PREFIXES | {
 # Guard the two invariants the docstring above promises, so a future edit that
 # breaks them fails at import time instead of silently drifting until a test
 # happens to catch it.
-assert NON_FIRST_NAME_PREFIXES <= PREFIXES, \
-    "NON_FIRST_NAME_PREFIXES must stay a subset of PREFIXES"
-assert not (NON_FIRST_NAME_PREFIXES & BOUND_FIRST_NAMES), \
-    "NON_FIRST_NAME_PREFIXES must stay disjoint from BOUND_FIRST_NAMES"
-assert_normalized("PREFIXES", PREFIXES)
+assert NON_GIVEN_NAME_PARTICLES <= PARTICLES, \
+    "NON_GIVEN_NAME_PARTICLES must stay a subset of PARTICLES"
+assert not (NON_GIVEN_NAME_PARTICLES & BOUND_FIRST_NAMES), \
+    "NON_GIVEN_NAME_PARTICLES must stay disjoint from BOUND_FIRST_NAMES"
+assert_normalized("PARTICLES", PARTICLES)

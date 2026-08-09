@@ -330,14 +330,14 @@ class Lexicon:
     suffix_acronyms_ambiguous: frozenset[str] = frozenset()
     #: Family-name particles that chain onto the following piece
     #: ("van", "de", "bin", ...). Full default list:
-    #: :data:`~nameparser.config.prefixes.PREFIXES`.
+    #: :data:`~nameparser.config.particles.PARTICLES`.
     particles: frozenset[str] = frozenset()
     #: Subset of particles that can also BE a given name: a leading
     #: one reads as given and records a particle-or-given ambiguity
     #: ("Van Johnson", but also "Van Buren"). No constant of its own
     #: -- the default derives
     #: as particles minus
-    #: :data:`~nameparser.config.prefixes.NON_FIRST_NAME_PREFIXES`
+    #: :data:`~nameparser.config.particles.NON_GIVEN_NAME_PARTICLES`
     #: (which marks the opposite, never-given subset).
     particles_ambiguous: frozenset[str] = frozenset()
     #: Words or characters that join surrounding pieces into one
@@ -419,7 +419,7 @@ class Lexicon:
         # the expensive one -- three working configurations broken
         # across two attempts. Do not add a third.
         #
-        # The v2 form of prefixes.py's NON_FIRST_NAME_PREFIXES-disjoint-
+        # The v2 form of particles.py's NON_GIVEN_NAME_PARTICLES-disjoint-
         # from-BOUND_FIRST_NAMES assertion. That module guards its own
         # data at import; this guards vocabulary a caller supplies.
         contradictory = (
@@ -618,7 +618,7 @@ def _default_lexicon() -> Lexicon:
     from nameparser.config.capitalization import CAPITALIZATION_EXCEPTIONS
     from nameparser.config.conjunctions import CONJUNCTIONS
     from nameparser.config.maiden_markers import MAIDEN_MARKERS
-    from nameparser.config.prefixes import NON_FIRST_NAME_PREFIXES, PREFIXES
+    from nameparser.config.particles import NON_GIVEN_NAME_PARTICLES, PARTICLES
     from nameparser.config.suffixes import (
         GLUED_HONORIFICS, SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS,
         SUFFIX_NOT_ACRONYMS,
@@ -636,10 +636,10 @@ def _default_lexicon() -> Lexicon:
         suffix_acronyms=frozenset(SUFFIX_ACRONYMS),
         suffix_words=frozenset(SUFFIX_NOT_ACRONYMS),
         suffix_acronyms_ambiguous=frozenset(SUFFIX_ACRONYMS_AMBIGUOUS),
-        particles=frozenset(PREFIXES),
+        particles=frozenset(PARTICLES),
         # FLIPPED from v1: v1 marks the never-given subset; v2 marks the
         # may-be-given subset (migration: complement translation).
-        particles_ambiguous=frozenset(PREFIXES - NON_FIRST_NAME_PREFIXES),
+        particles_ambiguous=frozenset(PARTICLES - NON_GIVEN_NAME_PARTICLES),
         conjunctions=frozenset(CONJUNCTIONS),
         bound_given_names=frozenset(BOUND_FIRST_NAMES),
         maiden_markers=frozenset(MAIDEN_MARKERS),
