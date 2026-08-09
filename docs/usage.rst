@@ -117,11 +117,12 @@ names together as easily as two surnames:
 
 Position matters in exactly one place: the start of a name. A particle
 there has no surname to attach to yet, so what decides the reading is
-whether it is one that can double as a given name. Where the pieces
-then land is ``name_order``'s question — see :doc:`customize` — and
-the destinations below are the default given-first order's: the
-particle either becomes the given name or turns the whole name into a
-surname:
+whether it is one that can double as a given name: the particle either
+becomes the given name or turns the whole name into a surname. Only
+the first of those is ``name_order``'s question — see
+:doc:`customize`, and read the given name below as the default
+given-first order's — since a particle that can never be a given name
+is the surname whatever order you declare:
 
 .. doctest::
 

@@ -10,9 +10,11 @@ Release Log
     editing one in place as a way to change a default and replaces it
     with configuring a ``Lexicon`` or a private ``Constants``.
 
-    Nothing moved between vocabularies and no parse changes: over the
-    751 names of the differential corpora, every one of the seven
-    fields is identical to 2.1 through both the 2.0 and the 1.x API.
+    Nothing moved between vocabularies and no parse changes in the
+    default name order: over the 751 names of the differential
+    corpora, every one of the seven fields is identical to 2.1 through
+    both the 2.0 and the 1.x API. One non-default order does change,
+    below.
     What breaks is code that *writes* to a default word list, and code
     that imports one by its 1.x name has until 3.0.
 
@@ -21,6 +23,8 @@ Release Log
     - Change every vocabulary set in ``nameparser.config`` to a ``frozenset``: ``TITLES``, ``GIVEN_NAME_TITLES``, ``SUFFIX_WORDS``, ``SUFFIX_ACRONYMS``, ``SUFFIX_ACRONYMS_AMBIGUOUS``, ``GLUED_HONORIFICS``, ``PARTICLES``, ``NON_GIVEN_NAME_PARTICLES``, ``BOUND_GIVEN_NAMES``, ``CONJUNCTIONS`` and ``MAIDEN_MARKERS`` (``KOREAN_SURNAMES`` already was one). Editing one in place -- ``TITLES.add("dean")``, the old way of changing a global default -- now raises ``AttributeError: 'frozenset' object has no attribute 'add'`` at the line that writes it. It was never a reliable way to change a default: whether an edit reached a given parse depended on which config objects had already been built, so one program could hold two disagreeing defaults with nothing to say so. To change the defaults for ``HumanName``, build a private ``Constants`` and pass it (``c = Constants(); c.titles.add("dean"); HumanName(name, constants=c)``); mutating the shared ``CONSTANTS`` still works, but warns and goes away in 3.0. For the 2.0 API, build a lexicon and pass it to a parser (``Parser(lexicon=Lexicon.default().add(titles={"dean"}))``). Neither is affected by this change. ``CAPITALIZATION_EXCEPTIONS`` is a mapping, not a set, and is unchanged. See :doc:`migrate` and :doc:`customize` (#293)
 
     **Behavior Changes**
+
+    - Fix a name opening with a particle that is *never* a given name being split at the particle under ``Policy(name_order=FAMILY_FIRST)``: ``"de Mesnil"`` read as family ``de``, given ``Mesnil``, and ``"de la Vega"`` as family ``de``, given ``la Vega``. Each is now the whole surname, as it has always been in the default order. The rule that folds a leading never-given particle into the family keyed on the ``GIVEN`` role, which under a family-first order belongs to the token *after* the particle, so the test read the wrong word and declined; it now keys on the position that opens the name and fires under every ``name_order``. The decision behind that: a word that can never be a given name leaves ``name_order`` nothing to decide, so declaring family-first is not a reason to make ``de`` a surname on its own. A leading particle that *may* be a given name is genuinely order-dependent and is untouched -- ``"van Gogh"`` still reads as family ``van``, given ``Gogh`` under ``FAMILY_FIRST``. This is also what gives ``Lexicon.particles_ambiguous`` an effect outside the default order: taking a word out of it now changes the parsed fields under a family-first order, where before it moved only the ambiguity report. One shape moves the other way, on the same re-key: a bare never-given particle in the *given* position rather than the leading one -- ``"Mesnil de"`` under ``FAMILY_FIRST`` -- was folded by the old role test and now reads as family ``Mesnil``, given ``de``. Default-order output is byte-identical over all 751 corpus names, at the 1.4.0, 2.0.0 and 2.1.0 differential baselines alike (closes #359)
 
     - Change the ``detail`` text of a ``PARTICLE_OR_GIVEN`` ambiguity to name the role the leading particle was actually given. It said "read as a given name" under every ``name_order``, which is false under ``Policy(name_order=FAMILY_FIRST)`` -- there ``"Van Johnson"`` reads as family ``Van``, given ``Johnson``, and the report described the reading not taken. It now ends "read as a family name" in that case, reading the role off the assigned token the way ``SUFFIX_OR_NAME`` already did -- that kind names both parts (``read as a family name rather than a post-nominal``), while this one names only the part it took. The ``kind`` is unchanged and stays ``PARTICLE_OR_GIVEN``: the fork really is particle-or-given, and only the human-readable text moved. Default-order output is identical (#355)
 

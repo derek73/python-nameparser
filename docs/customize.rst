@@ -168,12 +168,13 @@ a suffix only when written with periods:
 ``particles_ambiguous`` is the same idea for surname particles. A
 particle listed there may also be a given name, which is what makes a
 leading one a decision to take; a particle *not* listed there never
-is, so there is nothing to decide. Under the default name order that
-shows up as whether the name has a given name at all: one that starts
-with a listed particle keeps it, while one starting with an unlisted
-particle has no given name — the whole thing is the surname. (Which
-field each piece lands in is ``name_order``'s question, covered
-below.)
+is, so there is nothing to decide. That shows up as whether the name
+has a given name at all: one that starts with a listed particle keeps
+it, while one starting with an unlisted particle has no given name —
+the whole thing is the surname. Which field a *listed* particle lands
+in is ``name_order``'s question, covered below; an unlisted one is the
+surname under every order, because a word that can never be a given
+name leaves the order nothing to decide.
 
 .. doctest::
 
@@ -186,8 +187,8 @@ below.)
 
 If your data never uses ``Van`` as a given name, take it out of the
 ambiguous set: a leading ``van`` is then no decision at all, so no
-ambiguity is recorded, and under the default order it becomes part of
-the surname:
+ambiguity is recorded and it becomes part of the surname — under any
+``name_order``, since that is what taking the word out asserted:
 
 .. doctest::
 
