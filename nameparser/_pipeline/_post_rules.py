@@ -1,6 +1,8 @@
 """Stage: post_rules.
 
-Consumes: tokens (roles assigned).
+Consumes: tokens (roles assigned), plus pieces and structure -- rule 1b
+reads the opening piece of segment 0, or of segment 1 under a family
+comma (#359). structure was always read here, for the rotation gate.
 Produces: tokens with roles adjusted by the post rules.
 Reads: Policy.patronymic_rules, Policy.middle_as_family;
 Lexicon.given_name_titles.
@@ -9,12 +11,16 @@ Rules (each a small pure function over the role-bearing tokens):
 1. v1 handle_firstnames: when the parse is exactly a title plus ONE
    given token (no other roles), and the title is not a given-name
    title ('Sir'), that token is a family name -- "Mr. Johnson".
-1b. a particle that is never a given name is never reported as one:
-   opening the name it pulls the rest of it into the family ("de la
-   Vega"), and left alone in the given position it folds into the
-   family beside it. Alone among these rules it reads the opening
-   position from `pieces` rather than from the roles assign left, so
-   the first shape holds under every name_order (#359).
+1b. where a particle that is never a given name stands ALONE as a
+   piece -- either opening the name or in the given position -- the
+   name is left with no given name at all: the given and the middles
+   fold into the family. Opening the name it pulls the rest of it in
+   ("de la Vega"); in the given position it folds into the family
+   beside it ("Mesnil de" under a family-first order). Needs another
+   name token to fold into, so a bare "de" stays as it is. Alone among
+   these rules it reads the opening position from `pieces` rather than
+   from the roles assign left, so that shape holds for a lone leading
+   particle piece under every name_order (#359).
 2. EAST_SLAVIC (opt-in): positional GIVEN/MIDDLE/FAMILY each exactly
    one token, the FAMILY-position token carries an East Slavic
    patronymic ending, and the MIDDLE-position token does NOT (given +
@@ -72,11 +78,15 @@ def _idx(tokens: list[WorkToken], role: Role) -> list[int]:
 def _leading_name_piece(state: ParseState,
                         tokens: list[WorkToken]) -> tuple[int, ...]:
     """The piece that OPENS the name, whatever role name_order gave it:
-    the first name-position piece (titles and group-flagged suffixes
-    already skipped) of the segment the positional read governs. That is
-    segment 0, except under a family comma, where segment 0 is already
-    fixed as the surname and the name continues in segment 1. Empty when
-    the segment has no name piece at all."""
+    the first piece holding a GIVEN, MIDDLE or FAMILY token, in the
+    segment the positional read governs. Every piece holding none of
+    those is walked past -- title and suffix pieces, but NICKNAME and
+    MAIDEN as well, and anything assign left unroled -- and any number
+    of them, not only a single leading title. The segment is 0, except
+    under a family comma, where segment 0 is already fixed as the
+    surname and the name continues in segment 1. Empty on either of
+    two exits: that segment does not exist, or none of its pieces
+    holds a name token."""
     seg = 1 if state.structure is Structure.FAMILY_COMMA else 0
     if seg >= len(state.pieces):
         return ()
@@ -118,27 +128,42 @@ def post_rules(state: ParseState) -> ParseState:
             families = _idx(tokens, Role.FAMILY)
 
     # rule 1b enforces one invariant (v1 handle_non_first_name_prefix):
-    # a particle that is NEVER a given name is never REPORTED as the
-    # given name. It reaches the parse in two shapes, and the repair is
-    # the same in both -- the given and the middles join the family:
+    # where a particle that is NEVER a given name stands ALONE as a
+    # piece -- either opening the name, or in the given position -- the
+    # name is left with no given name at all, the given and the middles
+    # joining the family. Two shapes, one repair:
     #   * the particle OPENS the name, so the whole name is a surname
     #     and it pulls the rest in -- "de la Vega";
     #   * the particle is left ALONE in the given position, so it folds
     #     into the family beside it -- "Mesnil de" under
     #     name_order=FAMILY_FIRST, where the given position is the
     #     trailing piece.
-    # Only a never-given particle is in scope: ambiguous 'van Gogh'
-    # keeps its given reading, and #360 tracks the vocabulary line.
+    # A lone PIECE is the whole of it, which is a clause narrower than
+    # "a member is never reported as the given name" -- that reading
+    # would be false, and #359 blesses the first of its counterexamples
+    # outright: "Juan de la Vega" under FAMILY_FIRST reports given='de
+    # la Vega', "Sir de Mesnil" reports given='de Mesnil' in the
+    # default order, and the degenerate bare 'de' keeps given='de'. In
+    # each the particle is in a piece with something else, or has
+    # nothing to fold into.
+    # Only a never-given particle is in scope: an ambiguous one keeps
+    # whatever reading name_order gives it -- 'van Gogh' is given
+    # 'van' in the default order and family 'van' under a family-first
+    # one -- and #360 tracks the vocabulary line.
     # The opening shape is read from `pieces` rather than from the role
     # assign left (#359). Under the default order the opening piece IS
     # the given, so the one role test used to catch both shapes; under
     # FAMILY_FIRST the opening piece is the family and the given sits
     # behind it, and reading the role alone let "de Mesnil" split. The
     # single-token test says the same thing in each shape: a particle
-    # group already chained forward ('Mr. de Mesnil' is one piece) is
-    # not a lone particle. Both shapes then need another name token to
-    # fold with, which leaves a degenerate bare 'de' as it stands
-    # rather than inventing a surname.
+    # group already chained forward is not a lone particle. "Mr. de
+    # Mesnil" is three tokens in two pieces -- the title alone, then
+    # the particle GROUP -- so both sites are two tokens long and 1b
+    # declines on each; the family reading there is rule 1's in the
+    # default order and assign's under a family-first one. Both shapes
+    # then need another name token to fold with, which leaves a
+    # degenerate bare 'de' as it stands rather than inventing a
+    # surname.
     sites = (_leading_name_piece(state, tokens), tuple(givens))
     if len(givens) + len(middles) + len(families) > 1 and any(
             len(site) == 1

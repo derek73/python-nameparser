@@ -208,9 +208,11 @@ def test_family_first_leading_particle_cases_that_do_not_fold(
     ("Juan de Mesnil", "", "Juan", "", "de Mesnil", ""),
     ("van Gogh", "", "van", "", "Gogh", ""),
     # a family comma folds the post-comma part when IT opens with a
-    # never-given particle -- long-standing behaviour, order-independent
-    # (assign ignores name_order after a family comma), pinned here so
-    # the re-key cannot quietly drop it
+    # never-given particle -- long-standing behaviour, and rule 1b's
+    # own doing: assign hands it the same roles in every order (the
+    # comma already fixed the family), and both of 1b's sites then
+    # agree, the opening piece of segment 1 and the lone given being
+    # the same token. Pinned here so the re-key cannot quietly drop it
     ("Smith, de Mesnil", "", "", "", "Smith de Mesnil", ""),
     ("Smith, van Gogh", "", "van", "Gogh", "Smith", ""),
 ])

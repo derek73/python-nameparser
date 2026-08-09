@@ -2,17 +2,22 @@ from nameparser.config._invariants import assert_normalized
 from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
 
 #: The sub-set of :py:data:`PARTICLES` that are *never* a standalone given
-#: name. A name *starting* with one of these has no given name -- the
-#: whole thing is a surname (e.g. "de Mesnil" -> family name "de Mesnil")
-#: -- and that reading holds under EVERY ``name_order`` (#359). It is not
-#: scoped to the default order the way the rest of the positional read is:
-#: ``name_order`` says which side of the name the family sits on, and a
-#: word that can never be a given name leaves it nothing to decide, so
-#: ``Policy(name_order=FAMILY_FIRST)`` reads "de Mesnil" as the family
-#: name too. Leading is only the commonest way that comes up: what the
-#: parse guarantees is that a member is never *reported* as the given
-#: name, so one that lands alone in the given position under a
-#: non-default order folds into the family beside it instead.
+#: name. Where one of these stands ALONE as the piece opening a name, that
+#: name has no given name -- the whole thing is a surname (e.g. "de Mesnil"
+#: -> family name "de Mesnil") -- and that reading holds under EVERY
+#: ``name_order`` (#359). It is not scoped to the default order the way the
+#: rest of the positional read is: ``name_order`` says which side of the
+#: name the family sits on, and a word that can never be a given name
+#: leaves it nothing to decide, so ``Policy(name_order=FAMILY_FIRST)``
+#: reads "de Mesnil" as the family name too. What is asked about is the
+#: opening *piece*, not the first word of the string: in "Sir de Mesnil"
+#: the particle has already chained onto "Mesnil", so it is not standing
+#: alone and the default order reads that piece as the given name.
+#: Opening the name is only the commonest shape. The rule enforcing it
+#: (``post_rules`` rule 1b) reaches a member standing alone as a piece in
+#: the given position too, folding it into the family beside it, so that
+#: neither shape leaves a given name behind -- as long as there is another
+#: name token to fold into. A bare "de" stays as it is.
 #: Membership also decides the ambiguity report -- see
 #: :py:data:`PARTICLES` below.
 #: Curated to exclude anything that can be a given name in some culture
@@ -97,10 +102,10 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
 #: that is never a given name leaves the order nothing to place. A
 #: leading particle OUTSIDE that set could be either, so there
 #: ``name_order`` decides after all: the default given-first order reads
-#: it as the given name ("Van Johnson"), while
-#: ``Policy(name_order=FAMILY_FIRST)`` splits the same chains-nothing
-#: grouping the other way round ("Van Johnson" -> family "Van", given
-#: "Johnson"). What membership decides under EITHER order is also the
+#: it as the given name ("Van Johnson"), while either family-first order
+#: splits the same chains-nothing grouping the other way round ("Van
+#: Johnson" -> family "Van", given "Johnson").
+#: What membership decides under ANY of the three orders is also the
 #: report: a leading particle outside
 #: :py:data:`NON_GIVEN_NAME_PARTICLES` records a particle-or-given
 #: ambiguity for the reading not taken, and one inside it records none.

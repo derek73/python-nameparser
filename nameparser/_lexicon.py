@@ -338,7 +338,7 @@ class Lexicon:
     #: and never consults this set, so it leaves a leading particle a
     #: piece of its own whether listed or not -- "de Mesnil" groups
     #: into two pieces exactly as "van Gogh" does. What membership
-    #: decides is what becomes of that piece afterwards. Under EITHER
+    #: decides is what becomes of that piece afterwards. Under ANY
     #: ``name_order`` a member records a particle-or-given ambiguity
     #: and a non-member records none, and a non-member is additionally
     #: folded back into the family name once roles exist, so the whole
