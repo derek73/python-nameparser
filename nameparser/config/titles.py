@@ -801,11 +801,22 @@ assert_normalized("TITLES", TITLES)
 # aliases a name to one of this module's own globals: a module
 # __getattr__ runs only once the body has finished and the module is in
 # sys.modules, so the lookup resolves rather than recursing.
+from typing import TYPE_CHECKING  # noqa: E402
+
 from nameparser.config._deprecated import alias_getattr  # noqa: E402
 
-__getattr__, __dir__ = alias_getattr(__name__, {
-    "FIRST_NAME_TITLES": ("nameparser.config.titles", "GIVEN_NAME_TITLES"),
-})
+# Declared for the type checker, served by __getattr__ at runtime. The
+# split is what keeps mypy checking this module's LIVE names: an
+# assigned module __getattr__ answers every missing attribute, so a
+# plain assignment here made `from ... import TITLE` type-check clean.
+# See alias_getattr's docstring. Both branches go in 3.0.
+if TYPE_CHECKING:
+    FIRST_NAME_TITLES: frozenset[str]
+else:
+    __getattr__, __dir__ = alias_getattr(__name__, {
+        "FIRST_NAME_TITLES": (
+            "nameparser.config.titles", "GIVEN_NAME_TITLES"),
+    })
 
 # Star imports read __all__ and never the module __getattr__ -- see the
 # note in prefixes.py. This module keeps its live constants, so they are
@@ -813,4 +824,4 @@ __getattr__, __dir__ = alias_getattr(__name__, {
 # retired name silently; with a PARTIAL __all__ it would bind the
 # retired name and drop the live ones instead.
 # Source order, not alphabetical -- see the note in suffixes.py.
-__all__ = ["GIVEN_NAME_TITLES", "TITLES", "FIRST_NAME_TITLES"]  # noqa: F822
+__all__ = ["GIVEN_NAME_TITLES", "TITLES", "FIRST_NAME_TITLES"]

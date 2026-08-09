@@ -4,13 +4,20 @@ constant name matches the :class:`~nameparser.Lexicon` field it feeds.
 Reading a name from here warns and returns the constant from its new
 home; this module is deleted in 3.0.
 """
+from typing import TYPE_CHECKING
+
 from nameparser.config._deprecated import alias_getattr
 
-__getattr__, __dir__ = alias_getattr(__name__, {
-    "BOUND_FIRST_NAMES": (
-        "nameparser.config.bound_given_names", "BOUND_GIVEN_NAMES"),
-})
+# Declared for the type checker, served by __getattr__ at runtime --
+# see the note in prefixes.py and alias_getattr's docstring.
+if TYPE_CHECKING:
+    BOUND_FIRST_NAMES: frozenset[str]
+else:
+    __getattr__, __dir__ = alias_getattr(__name__, {
+        "BOUND_FIRST_NAMES": (
+            "nameparser.config.bound_given_names", "BOUND_GIVEN_NAMES"),
+    })
 
 # Star imports read __all__ and never the module __getattr__ -- see the
 # note in prefixes.py for what that cost before this line existed.
-__all__ = ["BOUND_FIRST_NAMES"]  # noqa: F822
+__all__ = ["BOUND_FIRST_NAMES"]

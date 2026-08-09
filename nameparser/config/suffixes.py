@@ -873,11 +873,20 @@ assert_normalized("suffix", SUFFIX_ACRONYMS | SUFFIX_WORDS)
 # own globals: a module __getattr__ runs only once the body has finished
 # and the module is in sys.modules, so the lookup resolves rather than
 # recursing.
+from typing import TYPE_CHECKING  # noqa: E402
+
 from nameparser.config._deprecated import alias_getattr  # noqa: E402
 
-__getattr__, __dir__ = alias_getattr(__name__, {
-    "SUFFIX_NOT_ACRONYMS": ("nameparser.config.suffixes", "SUFFIX_WORDS"),
-})
+# Declared for the type checker, served by __getattr__ at runtime --
+# the split is what keeps mypy checking this module's LIVE names; see
+# the note in titles.py and alias_getattr's docstring.
+if TYPE_CHECKING:
+    SUFFIX_NOT_ACRONYMS: frozenset[str]
+else:
+    __getattr__, __dir__ = alias_getattr(__name__, {
+        "SUFFIX_NOT_ACRONYMS": (
+            "nameparser.config.suffixes", "SUFFIX_WORDS"),
+    })
 
 # Star imports read __all__ and never the module __getattr__ -- see the
 # note in prefixes.py. Live constants listed alongside the retired name
@@ -889,7 +898,7 @@ __getattr__, __dir__ = alias_getattr(__name__, {
 # name goes last because autodoc does not document it (it is not a
 # module global, so autodoc's getattr-free member scan never sees it)
 # and it therefore has no position to preserve.
-__all__ = [  # noqa: F822
+__all__ = [
     "SUFFIX_WORDS",
     "GLUED_HONORIFICS",
     "SUFFIX_ACRONYMS_AMBIGUOUS",

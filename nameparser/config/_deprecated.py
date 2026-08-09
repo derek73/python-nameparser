@@ -55,15 +55,35 @@ def alias_getattr(
     deprecated vocabulary names.
 
     ``aliases`` maps each old attribute name to the ``(module, name)``
-    it now lives at. Assign the result at module level::
+    it now lives at. Assign the result at module level, in the ``else``
+    of a ``TYPE_CHECKING`` guard that declares the same names::
 
-        __getattr__, __dir__ = alias_getattr(__name__, {...})
+        if TYPE_CHECKING:
+            OLD_NAME: frozenset[str]   # 1.x alias, removed in 3.0 (#293)
+        else:
+            __getattr__, __dir__ = alias_getattr(__name__, {...})
 
-    Typed ``Any`` rather than ``object`` because mypy honors an assigned
-    module ``__getattr__`` (PEP 484's convention for one): the package
-    ships ``py.typed``, and a return of ``object`` would type every
-    deprecated name as unusable for a caller still on the old path --
-    a type error about ``object`` instead of a word about deprecation.
+    (a placeholder rather than a real retired name, for the reason the
+    ``stacklevel`` comment below gives)
+
+    The guard is load-bearing. mypy honors an assigned module
+    ``__getattr__`` (PEP 484's convention for one) and thereafter
+    answers EVERY missing attribute of that module from its return
+    type, so a bare assignment turns off missing-attribute checking for
+    the whole module. On titles.py and suffixes.py, which keep their
+    live constants and are still imported from, that cost real
+    checking: ``from nameparser.config.titles import TITLE`` type-
+    checked clean. Keeping the assignment out of the type checker's
+    view restores it, and the declarations in the other branch type
+    each retired name as the ``frozenset[str]`` it is rather than
+    ``Any``. The package ships ``py.typed``, so both reach callers.
+    Runtime is untouched -- ``TYPE_CHECKING`` is False, so only the
+    ``else`` ever runs -- and the two branches delete together in 3.0.
+
+    Which leaves the ``Any`` return below typing nothing outside this
+    module: mypy reads no module ``__getattr__`` for the alias-bearing
+    modules any more, and does not analyze the ``else`` branch it is
+    assigned in. It stays ``Any`` as what ``getattr`` itself returns.
     """
 
     def __getattr__(name: str) -> Any:  # noqa: ANN401

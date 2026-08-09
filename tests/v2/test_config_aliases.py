@@ -157,9 +157,16 @@ def test_star_import_binds_exactly_the_live_and_retired_names(
     """
     module = importlib.import_module(old_module)
     retired = {n for m, n, _, _ in ALIASES if m == old_module}
-    # a retired name is served by __getattr__ and never written into the
-    # module, so vars() holds the live constants and nothing else
-    live = {n for n in vars(module) if n.isupper() and not n.startswith("_")}
+    # A retired name is served by __getattr__ and never written into the
+    # module, so vars() holds the live constants -- plus whatever else
+    # the file imported. The type test is what separates the two:
+    # `TYPE_CHECKING`, imported to hide the __getattr__ assignment from
+    # mypy, has the name shape of a constant and is not vocabulary.
+    # Every live constant in these four modules is a frozenset (the 2.2
+    # freeze), so a new one still has to reach __all__ or fail here.
+    live = {n for n, v in vars(module).items()
+            if n.isupper() and not n.startswith("_")
+            and isinstance(v, frozenset)}
 
     namespace: dict[str, object] = {}
     with pytest.warns(DeprecationWarning) as record:
