@@ -332,10 +332,15 @@ class Lexicon:
     #: ("van", "de", "bin", ...). Full default list:
     #: :data:`~nameparser.config.particles.PARTICLES`.
     particles: frozenset[str] = frozenset()
-    #: Subset of particles that can also BE a given name: a leading
-    #: one reads as given and records a particle-or-given ambiguity
-    #: ("Van Johnson", but also "Van Buren"). No constant of its own
-    #: -- the default derives
+    #: Subset of particles that can also BE a given name, which is
+    #: what makes a leading one a fork rather than a plain particle:
+    #: it stays a name piece of its own instead of chaining onto what
+    #: follows. Under the default given-first order that piece is the
+    #: given name ("Van Johnson", but also "Van Buren"); where it
+    #: lands under another ``name_order`` is that order's question,
+    #: not this set's. What membership decides under EITHER order is
+    #: that the fork is recorded as a particle-or-given ambiguity.
+    #: No constant of its own -- the default derives
     #: as particles minus
     #: :data:`~nameparser.config.particles.NON_GIVEN_NAME_PARTICLES`
     #: (which marks the opposite, never-given subset).

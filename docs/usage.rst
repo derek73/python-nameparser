@@ -116,9 +116,11 @@ names together as easily as two surnames:
     'de la Vega y Rodriguez'
 
 Position matters in exactly one place: the start of a name. A particle
-there has no surname to attach to yet, so it either becomes the given
-name or turns the whole name into a surname, depending on whether it is
-one that can double as a given name:
+there has no surname to attach to yet, so what decides the reading is
+whether it is one that can double as a given name. Under the default
+name order it either becomes the given name or turns the whole name
+into a surname; under another ``name_order`` — see :doc:`customize` —
+where the pieces land follows that order instead:
 
 .. doctest::
 

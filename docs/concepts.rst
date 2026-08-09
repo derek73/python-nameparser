@@ -159,11 +159,13 @@ Some calls are irreducibly ambiguous — both readings are legitimate,
 and no amount of rule-tuning resolves them without breaking some other
 name. Those surface as entries on ``ParsedName.ambiguities`` instead
 of being silently guessed away. The canonical example: a leading "Van"
-reads as a given name — the right call for the actor Van Johnson, the
-wrong one for a bare "Van Buren", and nothing in the two-word shape
-distinguishes them — so the parse records a ``particle-or-given``
-ambiguity alongside its answer. You can inspect ``ambiguities`` to decide, case
-by case, whether your data needs a second look.
+reads as a name of its own — the given name, under the default name
+order — rather than as the start of a surname, which is the right call
+for the actor Van Johnson and the wrong one for a bare "Van Buren",
+and nothing in the two-word shape distinguishes them. So the parse
+records a ``particle-or-given`` ambiguity alongside its answer. You
+can inspect ``ambiguities`` to decide, case by case, whether your data
+needs a second look.
 
 An ambiguity records a *decision*, not a word. The same token in a
 different position may present no fork at all: ``do`` is in the
