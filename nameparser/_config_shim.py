@@ -664,28 +664,28 @@ _SHARED_MUTATION_MESSAGE = (
 )
 
 
-def _default_vocab() -> dict[str, set[str]]:
+def _default_vocab() -> dict[str, frozenset[str]]:
     # v1 data modules stay the single vocabulary source through 2.x
     # (same rule as Lexicon.default()).
-    from nameparser.config.bound_first_names import BOUND_FIRST_NAMES
+    from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
     from nameparser.config.conjunctions import CONJUNCTIONS
-    from nameparser.config.prefixes import (
-        NON_FIRST_NAME_PREFIXES, PREFIXES,
+    from nameparser.config.particles import (
+        NON_GIVEN_NAME_PARTICLES, PARTICLES,
     )
     from nameparser.config.suffixes import (
-        SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_NOT_ACRONYMS,
+        SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_WORDS,
     )
-    from nameparser.config.titles import FIRST_NAME_TITLES, TITLES
+    from nameparser.config.titles import GIVEN_NAME_TITLES, TITLES
     return {
-        "prefixes": PREFIXES,
+        "prefixes": PARTICLES,
         "suffix_acronyms": SUFFIX_ACRONYMS,
-        "suffix_not_acronyms": SUFFIX_NOT_ACRONYMS,
+        "suffix_not_acronyms": SUFFIX_WORDS,
         "suffix_acronyms_ambiguous": SUFFIX_ACRONYMS_AMBIGUOUS,
         "titles": TITLES,
-        "first_name_titles": FIRST_NAME_TITLES,
+        "first_name_titles": GIVEN_NAME_TITLES,
         "conjunctions": CONJUNCTIONS,
-        "bound_first_names": BOUND_FIRST_NAMES,
-        "non_first_name_prefixes": NON_FIRST_NAME_PREFIXES,
+        "bound_first_names": BOUND_GIVEN_NAMES,
+        "non_first_name_prefixes": NON_GIVEN_NAME_PARTICLES,
     }
 
 
@@ -1038,9 +1038,9 @@ class Constants:
             particles=particles,
             # complement translation: v1 marks the never-given subset;
             # v2 marks the may-be-given subset. The trailing union keeps
-            # a config v1 accepted: prefixes.py asserts its own data has
-            # no word in both non_first_name_prefixes and
-            # bound_first_names, but nothing stops a caller adding one at
+            # a config v1 accepted: particles.py asserts its own data has
+            # no word in both NON_GIVEN_NAME_PARTICLES and
+            # BOUND_GIVEN_NAMES, but nothing stops a caller adding one at
             # runtime, and v1 then lets the bound rule win (leading "dos
             # Santos Silva" parses first="dos Santos"). Treating such a
             # word as may-be-given reproduces that rather than raising.
@@ -1062,23 +1062,19 @@ class Constants:
             bound_given_names=bound,
             # v1 Constants has no manager for these (#274 is 2.0
             # behavior); the data module is the only source
-            maiden_markers=frozenset(MAIDEN_MARKERS),
+            maiden_markers=MAIDEN_MARKERS,
             # likewise no v1 manager: the unspaced-name segmentation
             # vocabulary is 2.0 behavior (#271), so it rides in the
             # snapshot only -- v1's Constants surface stays frozen.
-            # Unwrapped where maiden_markers above is wrapped: this
-            # module is born frozen (#293), so no wrap
             surnames=KOREAN_SURNAMES,
             # likewise no v1 manager: the glued-honorific tail set is
             # 2.1 behavior (#308), so it rides in the snapshot only.
-            # Wrapped, unlike surnames above: suffixes.py is still a
-            # mutable v1 module, not born-frozen like surnames.py
-            # (#293). Intersect with the word set: Lexicon enforces
-            # tails <= suffix_words, and v1 semantics are that deleting
-            # a suffix word turns the behavior off -- a lingering tail
-            # simply stops mattering, the same rule ambiguous_acronyms
-            # gets against suffix_acronyms above.
-            honorific_tails=frozenset(GLUED_HONORIFICS) & suffix_words,
+            # Intersect with the word set: Lexicon enforces tails <=
+            # suffix_words, and v1 semantics are that deleting a suffix
+            # word turns the behavior off -- a lingering tail simply
+            # stops mattering, the same rule ambiguous_acronyms gets
+            # against suffix_acronyms above.
+            honorific_tails=GLUED_HONORIFICS & suffix_words,
             # TupleManager is dict[str, object] (v1 parity: values were
             # never statically str-typed); every real entry is a str,
             # same assumption _DelimiterManager's sentinel lookup makes

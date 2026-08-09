@@ -2,7 +2,7 @@ from nameparser import HumanName
 from tests.base import HumanNameTestBase
 
 
-class BoundFirstNamesTestCase(HumanNameTestBase):
+class BoundGivenNamesTestCase(HumanNameTestBase):
     # The v1 is_bound_first_name predicate is gone with the other v1 parsing
     # hooks (#280); the vocabulary's behavior is pinned through the parsing
     # tests below.

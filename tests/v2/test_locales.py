@@ -1075,7 +1075,7 @@ def test_non_interference_all_packs_combined() -> None:
     ("أبو مازن", "given", "أبو"),
     ("أحمد أبو خليل", "family", "أبو خليل"),
     ("علي ابو خالد", "family", "ابو خالد"),
-    # "الشيخ" carries the FIRST_NAME_TITLES semantics of its
+    # "الشيخ" carries the GIVEN_NAME_TITLES semantics of its
     # transliterated cousin 'sheikh': a single following name reads as
     # given, not family.
     ("الشيخ محمد", "given", "محمد"),
@@ -1110,7 +1110,7 @@ def test_non_interference_all_packs_combined() -> None:
     # behavior.
     ("דוד בן גוריון", "family", "בן גוריון"),
     ("שרה בת אברהם", "family", "בת אברהם"),
-    # Hebrew "מר" title (plain title, not FIRST_NAME_TITLES -- like
+    # Hebrew "מר" title (plain title, not GIVEN_NAME_TITLES -- like
     # 'mr', the following name reads as family).
     ("מר דוד לוי", "title", "מר"),
     # Hebrew title/suffix sweep (#269 follow-up): plain titles (Israeli

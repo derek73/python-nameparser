@@ -44,7 +44,7 @@ from nameparser._policy import Script
 from nameparser._lexicon import _normalize
 from nameparser.config.maiden_markers import MAIDEN_MARKERS
 from nameparser.config.suffixes import (
-    GLUED_HONORIFICS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_NOT_ACRONYMS)
+    GLUED_HONORIFICS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_WORDS)
 
 from ._differential_fixtures import (
     _CORPUS_NAMES, _LEDGERS, _TOOLS, _UNCLASSIFIED_NAMES, _claimed, _rules,
@@ -517,7 +517,7 @@ def test_cjk_corpus_matches_the_case_table() -> None:
 
 #: Which vocabulary constant each ledger rule's alternation is a hand
 #: copy of. A roster rather than an inference: GLUED_HONORIFICS is a
-#: SUBSET of SUFFIX_NOT_ACRONYMS (asserted at the bottom of
+#: SUBSET of SUFFIX_WORDS (asserted at the bottom of
 #: nameparser/config/suffixes.py), so "equals one of the two known sets"
 #: would let a spaced rule that silently narrowed to exactly the glued
 #: set pass by matching the other member -- a subset check wearing a
@@ -527,9 +527,9 @@ def test_cjk_corpus_matches_the_case_table() -> None:
 #: Keys are matched as substrings of a rule's `issue` and must select
 #: exactly one entry. The full issue lists are the keys, not a bare
 #: '#308': both 2.0 rules cite #308 while copying different constants.
-_HONORIFIC_SOURCES: dict[str, set[str]] = {
-    "cjk-honorific-suffix": SUFFIX_NOT_ACRONYMS,        # 1.4
-    "#307/#308/#320": SUFFIX_NOT_ACRONYMS,              # 2.0, spaced
+_HONORIFIC_SOURCES: dict[str, frozenset[str]] = {
+    "cjk-honorific-suffix": SUFFIX_WORDS,               # 1.4
+    "#307/#308/#320": SUFFIX_WORDS,                     # 2.0, spaced
     "#308/#312/#319/#320": GLUED_HONORIFICS,            # 2.0, glued
 }
 
@@ -580,12 +580,12 @@ def _cjk_alternations(name_regex: str) -> list[set[str]]:
 
 def test_differential_honorific_rules_match_their_vocabulary() -> None:
     """The honorific rules' alternations are hand copies of the CJK
-    entries of SUFFIX_NOT_ACRONYMS (#307) and of GLUED_HONORIFICS
-    (#308) -- a toml cannot import them. Each expected set is DERIVED
-    from the config by script membership (a classified codepoint
-    anywhere in the entry), so adding a CJK honorific without widening
-    the rule, or widening a rule with something the vocabulary does not
-    ship, fails here.
+    entries of SUFFIX_WORDS (#307) and of GLUED_HONORIFICS (#308) --
+    a toml cannot import them. Each expected set is DERIVED from the
+    config by script membership (a classified codepoint anywhere in the
+    entry), so adding a CJK honorific without widening the rule, or
+    widening a rule with something the vocabulary does not ship, fails
+    here.
 
     Swept over every ledger and every alternation, because the three
     copies are anchored three different ways -- a leading '(?:^| )' in
@@ -647,7 +647,7 @@ class _LatinCopy(NamedTuple):
     `vocabulary` is the source of truth, `covers` an audited snapshot of
     which of its entries the rule's members reach.
     """
-    vocabulary: set[str]
+    vocabulary: frozenset[str]
     covers: frozenset[str]
 
 
@@ -711,7 +711,7 @@ def _unjustified_reach(name_regex: str, members: set[str]) -> list[str]:
             if not any(pattern.search(name) for pattern in reachable)]
 
 
-def _reaches_non_vocabulary(member: str, vocabulary: set[str]) -> list[str]:
+def _reaches_non_vocabulary(member: str, vocabulary: frozenset[str]) -> list[str]:
     """Corpus text this member matches that is NOT a vocabulary entry.
 
     fullmatch against the vocabulary bounds what a member matches
@@ -873,12 +873,12 @@ def test_latin_alternations_mean_something_the_vocabulary_ships() -> None:
 #: marker in the name. `suffix` and `title` are not like that -- most
 #: of their diffs come from routing, not from a vocabulary word being
 #: present -- so adding them would be false rather than strict.
-_FIELD_VOCABULARIES: dict[str, set[str]] = {
+_FIELD_VOCABULARIES: dict[str, frozenset[str]] = {
     "maiden": MAIDEN_MARKERS,
 }
 
 
-def _carries(name: str, vocabulary: set[str]) -> bool:
+def _carries(name: str, vocabulary: frozenset[str]) -> bool:
     """Whether a name contains a vocabulary entry.
 
     Whole-token for ASCII entries, substring for the rest, because a

@@ -1,6 +1,6 @@
 from nameparser.config._invariants import assert_normalized
 
-MAIDEN_MARKERS = {
+MAIDEN_MARKERS = frozenset({
     'née',
     'né',
     'nee',
@@ -18,7 +18,7 @@ MAIDEN_MARKERS = {
     'урождённый',
     'урожденный',
     '旧姓',
-}
+})
 """
 Marker words that introduce a birth surname, e.g. "Jane Smith née Jones"
 (#274). French née/né/nee, German geb./geborene, Dutch geboren,

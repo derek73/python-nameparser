@@ -2,12 +2,12 @@ import pytest
 
 from nameparser import HumanName
 from nameparser.config import CONSTANTS, Constants
-from nameparser.config.prefixes import NON_FIRST_NAME_PREFIXES
+from nameparser.config.particles import NON_GIVEN_NAME_PARTICLES
 
 from tests.base import HumanNameTestBase
 
 
-class PrefixesTestCase(HumanNameTestBase):
+class ParticlesTestCase(HumanNameTestBase):
 
     def test_prefix(self) -> None:
         hn = HumanName("Juan del Sur")
@@ -164,22 +164,23 @@ class PrefixesTestCase(HumanNameTestBase):
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.suffix, "III", hn)
 
-    # The subset-of-PREFIXES and disjoint-from-BOUND_FIRST_NAMES invariants
-    # are enforced by import-time asserts in nameparser/config/prefixes.py,
+    # The subset-of-PARTICLES and disjoint-from-BOUND_GIVEN_NAMES invariants
+    # are enforced by import-time asserts in nameparser/config/particles.py,
     # so they are not repeated as tests here.
 
-    def test_non_first_name_prefixes_expected_members(self) -> None:
-        # 'abu' is in PREFIXES but excluded (it is a bound_first_name);
+    def test_non_given_name_particles_expected_members(self) -> None:
+        # 'abu' is in PARTICLES but excluded (it is a bound_first_name);
         # 'von'/'van'/'della'/'di'/'del' are excluded (they can be first names).
-        self.assertIn('de', NON_FIRST_NAME_PREFIXES)
-        self.assertIn('dos', NON_FIRST_NAME_PREFIXES)
-        self.assertNotIn('abu', NON_FIRST_NAME_PREFIXES)
-        self.assertNotIn('von', NON_FIRST_NAME_PREFIXES)
-        self.assertNotIn('van', NON_FIRST_NAME_PREFIXES)
-        self.assertNotIn('della', NON_FIRST_NAME_PREFIXES)
+        self.assertIn('de', NON_GIVEN_NAME_PARTICLES)
+        self.assertIn('dos', NON_GIVEN_NAME_PARTICLES)
+        self.assertNotIn('abu', NON_GIVEN_NAME_PARTICLES)
+        self.assertNotIn('von', NON_GIVEN_NAME_PARTICLES)
+        self.assertNotIn('van', NON_GIVEN_NAME_PARTICLES)
+        self.assertNotIn('della', NON_GIVEN_NAME_PARTICLES)
 
     def test_constants_exposes_non_first_name_prefixes(self) -> None:
-        self.assertEqual(set(CONSTANTS.non_first_name_prefixes), NON_FIRST_NAME_PREFIXES)
+        self.assertEqual(
+            set(CONSTANTS.non_first_name_prefixes), NON_GIVEN_NAME_PARTICLES)
 
     def test_non_first_name_prefixes_disjoint_from_titles(self) -> None:
         # A member that is also a title is consumed as a title before the fold
@@ -234,7 +235,7 @@ class LastNamePrefixSplitTestCase(HumanNameTestBase):
         self.assertEqual(hn.last_prefixes_list, [])
 
     def test_do_guard_surname_equals_prefix_word(self) -> None:
-        # "Do" is in PREFIXES; without the guard last_base would be empty
+        # "Do" is in PARTICLES; without the guard last_base would be empty
         hn = HumanName("Anh Do")
         self.m(hn.last_base, "Do", hn)
         self.m(hn.last_prefixes, "", hn)

@@ -475,7 +475,7 @@ class HumanName:
         # v1 parser.py _split_last, verbatim: vocabulary lookup at ACCESS
         # time (so assigned last names split too), with the all-particle
         # guard (a family name is assumed not to consist entirely of
-        # particles, e.g. surname "Do" which also appears in PREFIXES)
+        # particles, e.g. surname "Do" which also appears in PARTICLES)
         words = " ".join(self.last_list).split()
         i = 0
         while i < len(words) and self._is_particle(words[i]):

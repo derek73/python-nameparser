@@ -1,28 +1,23 @@
-from nameparser.config._invariants import assert_normalized
+"""Deprecated alias module: the bound given-name vocabulary moved to
+:mod:`nameparser.config.bound_given_names` in 2.2 (#293), where the
+constant name matches the :class:`~nameparser.Lexicon` field it feeds.
+Reading a name from here warns and returns the constant from its new
+home; this module is deleted in 3.0.
+"""
+from typing import TYPE_CHECKING
 
-#: Bound Arabic given-name prefixes that attach to the following word to form
-#: one first name (e.g. "abdul salam" → first name "abdul salam"). They are
-#: never standalone names. Join logic runs in the given-name region only,
-#: mirroring :py:data:`~nameparser.config.prefixes.PREFIXES` for last names.
-BOUND_FIRST_NAMES: set[str] = {
-    'abdul',
-    'abdel',
-    'abdal',
-    'abu',
-    'abou',
-    'umm',
+from nameparser.config._deprecated import alias_getattr
 
-    # #269 follow-up: the Arabic-script originals of the entries above.
-    # Script writes "Abdul Rahman" as two words (عبد + الرحمن -- the
-    # article attaches to the following word), so عبد alone covers the
-    # abdul/abdel/abdal variants. Both kunya spellings ship, matching
-    # the أبو/ابو prefix pair.
-    'عبد',    # "abd" (servant of) -- عبد الرحمن -> given "عبد الرحمن"
-    'أبو',    # "abu" (father of), hamza spelling
-    'ابو',    # "abu", hamza-less spelling
-    'أم',     # "umm" (mother of), hamza spelling
-    'ام',     # "umm", hamza-less spelling
-}
+# Declared for the type checker, served by __getattr__ at runtime --
+# see the note in prefixes.py and alias_getattr's docstring.
+if TYPE_CHECKING:
+    BOUND_FIRST_NAMES: frozenset[str]
+else:
+    __getattr__, __dir__ = alias_getattr(__name__, {
+        "BOUND_FIRST_NAMES": (
+            "nameparser.config.bound_given_names", "BOUND_GIVEN_NAMES"),
+    })
 
-
-assert_normalized("BOUND_FIRST_NAMES", BOUND_FIRST_NAMES)
+# Star imports read __all__ and never the module __getattr__ -- see the
+# note in prefixes.py for what that cost before this line existed.
+__all__ = ["BOUND_FIRST_NAMES"]

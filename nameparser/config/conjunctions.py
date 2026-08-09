@@ -1,6 +1,6 @@
 from nameparser.config._invariants import assert_normalized
 
-CONJUNCTIONS = {
+CONJUNCTIONS = frozenset({
     '&',
     'and',
     'et',
@@ -26,7 +26,7 @@ CONJUNCTIONS = {
     # the "john e smith" bug) protects short names (joins
     # only with enough rootname pieces).
     'و',
-}
+})
 """
 Pieces that should join to their neighboring pieces, e.g. "and", "y" and "&".
 "of" and "the" are also include to facilitate joining multiple titles,

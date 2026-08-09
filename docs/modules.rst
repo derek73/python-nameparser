@@ -209,9 +209,9 @@ HumanName.config Defaults
    :members:
 .. automodule:: nameparser.config.suffixes
    :members:
-.. automodule:: nameparser.config.prefixes
+.. automodule:: nameparser.config.particles
    :members:
-.. automodule:: nameparser.config.bound_first_names
+.. automodule:: nameparser.config.bound_given_names
    :members:
 .. automodule:: nameparser.config.conjunctions
    :members:

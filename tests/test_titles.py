@@ -186,7 +186,7 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.middle, "A.", hn)
         self.m(hn.suffix, "V, Jr.", hn)
 
-    # 'ben' is removed from PREFIXES in v0.2.5
+    # 'ben' was removed from the particle set (then PREFIXES) in v0.2.5
     # this test could re-enable this test if we decide to support 'ben' as a prefix
     @pytest.mark.xfail
     def test_ben_as_conjunction(self) -> None:

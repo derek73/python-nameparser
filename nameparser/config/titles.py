@@ -1,6 +1,6 @@
 from nameparser.config._invariants import assert_normalized
 
-FIRST_NAME_TITLES = {
+GIVEN_NAME_TITLES = frozenset({
     'aunt',
     'auntie',
     'brother',
@@ -48,17 +48,25 @@ FIRST_NAME_TITLES = {
     'الحاجة',      # hajj honorific (f)
     'الشيخة',      # female counterpart of الشيخ
     'مهندس',       # engineer (a genuine title in Egyptian usage)
-}
+})
 """
-When these titles appear with a single other name, that name is a first name, e.g.
+When these titles appear with a single other name, that name is a given name, e.g.
 "Sir John", "Sister Mary", "Queen Elizabeth".
 """
 
-#: **Cannot include things that could also be first names**, e.g. "dean".
+# Maintainer note, deliberately a plain comment ABOVE the `#:` run and
+# not inside it (a plain comment within a `#:` run splits it, and
+# autodoc then drops everything above the split -- see particles.py).
+# `#:` would publish this into the API reference, where it is advice to
+# nobody. Frozen by
+# construction (#293) -- `frozenset | set` returns a frozenset, the LEFT
+# operand's type wins, so keep the frozenset first. Flipped, this
+# silently yields a plain set again and unfreezes the constant.
+#: **Cannot include things that could also be given names**, e.g. "dean".
 #: Many of these from wikipedia: https://en.wikipedia.org/wiki/Title.
-#: The parser recognizes chains of these including conjunctions allowing 
+#: The parser recognizes chains of these including conjunctions allowing
 #: recognition titles like "Deputy Secretary of State".
-TITLES = FIRST_NAME_TITLES | {
+TITLES = GIVEN_NAME_TITLES | {
     "attaché",
     "chargé",
     "d'affaires",
@@ -715,7 +723,7 @@ TITLES = FIRST_NAME_TITLES | {
 
     # #269: Cyrillic (ru/uk) -- mr/mrs/dr/prof/academician/pan(i)
     # honorifics, same title-then-family convention as 'mr'/'dr'/'prof'
-    # above (not FIRST_NAME_TITLES: "г-н Петров" families the surname
+    # above (not GIVEN_NAME_TITLES: "г-н Петров" families the surname
     # just like "Mr. Smith" does).
     'г-н',
     'г-жа',
@@ -777,12 +785,48 @@ TITLES = FIRST_NAME_TITLES | {
 
 
 # Guard the invariants at import time, so a bad edit fails here instead of
-# drifting silently until a test happens to catch it (see prefixes.py).
+# drifting silently until a test happens to catch it (see particles.py).
 # The subset rule holds by construction today -- TITLES is defined as
-# FIRST_NAME_TITLES | {...} -- so this pins it against a future edit that
-# makes TITLES a standalone set. Lexicon enforces the same rule on
-# caller-supplied vocabulary; `assert` is stripped under `python -O`.
-assert FIRST_NAME_TITLES <= TITLES, \
-    "FIRST_NAME_TITLES must stay a subset of TITLES"
-# TITLES covers FIRST_NAME_TITLES, by the subset assert above.
+# GIVEN_NAME_TITLES | {...} -- so this pins it against a future edit that
+# makes TITLES a standalone set. Note `assert` is stripped under
+# `python -O`, and unlike suffixes.py's relations this one has no
+# runtime backstop: Lexicon deliberately does NOT validate
+# given_name_titles against titles (its "NOT validated" comment gives
+# the reasoning), so a caller's
+# Lexicon(titles=frozenset({"sir"}), given_name_titles=frozenset({"dame"}))
+# is accepted. Under -O nothing checks this relation at all.
+assert GIVEN_NAME_TITLES <= TITLES, \
+    "GIVEN_NAME_TITLES must stay a subset of TITLES"
+# TITLES covers GIVEN_NAME_TITLES, by the subset assert above.
 assert_normalized("TITLES", TITLES)
+
+
+# 1.x name, deprecated in 2.2 and removed in 3.0 (#293). Unlike the
+# module moves in #293, the constant did not change module, so this
+# aliases a name to one of this module's own globals: a module
+# __getattr__ runs only once the body has finished and the module is in
+# sys.modules, so the lookup resolves rather than recursing.
+from typing import TYPE_CHECKING  # noqa: E402
+
+from nameparser.config._deprecated import alias_getattr  # noqa: E402
+
+# Declared for the type checker, served by __getattr__ at runtime. The
+# split is what keeps mypy checking this module's LIVE names: an
+# assigned module __getattr__ answers every missing attribute, so a
+# plain assignment here made `from ... import TITLE` type-check clean.
+# See alias_getattr's docstring. Both branches go in 3.0.
+if TYPE_CHECKING:
+    FIRST_NAME_TITLES: frozenset[str]
+else:
+    __getattr__, __dir__ = alias_getattr(__name__, {
+        "FIRST_NAME_TITLES": (
+            "nameparser.config.titles", "GIVEN_NAME_TITLES"),
+    })
+
+# Star imports read __all__ and never the module __getattr__ -- see the
+# note in prefixes.py. This module keeps its live constants, so they are
+# listed too: without __all__ a star import bound them and dropped the
+# retired name silently; with a PARTIAL __all__ it would bind the
+# retired name and drop the live ones instead.
+# Source order, not alphabetical -- see the note in suffixes.py.
+__all__ = ["GIVEN_NAME_TITLES", "TITLES", "FIRST_NAME_TITLES"]

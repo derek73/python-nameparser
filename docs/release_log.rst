@@ -1,5 +1,52 @@
 Release Log
 ===========
+* 2.2.0 - Unreleased
+
+    nameparser 2.2 finishes the 2.0 rename at the layer it never
+    reached. The word lists in ``nameparser.config`` were still named
+    for v1's fields — prefixes, first names — while the
+    ``Lexicon`` they feed has spoken of particles and given names since
+    2.0. They now agree. The lists are also frozen, which retires
+    editing one in place as a way to change a default and replaces it
+    with configuring a ``Lexicon`` or a private ``Constants``.
+
+    Nothing moved between vocabularies and no parse changes: over the
+    751 names of the differential corpora, every one of the seven
+    fields is identical to 2.1 through both the 2.0 and the 1.x API.
+    What breaks is code that *writes* to a default word list, and code
+    that imports one by its 1.x name has until 3.0.
+
+    **Breaking Changes**
+
+    - Change every vocabulary set in ``nameparser.config`` to a ``frozenset``: ``TITLES``, ``GIVEN_NAME_TITLES``, ``SUFFIX_WORDS``, ``SUFFIX_ACRONYMS``, ``SUFFIX_ACRONYMS_AMBIGUOUS``, ``GLUED_HONORIFICS``, ``PARTICLES``, ``NON_GIVEN_NAME_PARTICLES``, ``BOUND_GIVEN_NAMES``, ``CONJUNCTIONS`` and ``MAIDEN_MARKERS`` (``KOREAN_SURNAMES`` already was one). Editing one in place -- ``TITLES.add("dean")``, the old way of changing a global default -- now raises ``AttributeError: 'frozenset' object has no attribute 'add'`` at the line that writes it. It was never a reliable way to change a default: whether an edit reached a given parse depended on which config objects had already been built, so one program could hold two disagreeing defaults with nothing to say so. To change the defaults for ``HumanName``, build a private ``Constants`` and pass it (``c = Constants(); c.titles.add("dean"); HumanName(name, constants=c)``); mutating the shared ``CONSTANTS`` still works, but warns and goes away in 3.0. For the 2.0 API, build a lexicon and pass it to a parser (``Parser(lexicon=Lexicon.default().add(titles={"dean"}))``). Neither is affected by this change. ``CAPITALIZATION_EXCEPTIONS`` is a mapping, not a set, and is unchanged. See :doc:`migrate` and :doc:`customize` (#293)
+
+    **Deprecations**
+
+    - Rename the four vocabularies whose 1.x names described the fields they feed in v1's words, so the data layer matches the ``Lexicon``:
+
+      .. list-table::
+         :header-rows: 1
+         :widths: 50 50
+
+         * - 1.x name
+           - 2.2 name
+         * - ``nameparser.config.prefixes``
+           - :mod:`nameparser.config.particles`
+         * - ``prefixes.PREFIXES``
+           - ``particles.PARTICLES``
+         * - ``prefixes.NON_FIRST_NAME_PREFIXES``
+           - ``particles.NON_GIVEN_NAME_PARTICLES``
+         * - ``nameparser.config.bound_first_names``
+           - :mod:`nameparser.config.bound_given_names`
+         * - ``bound_first_names.BOUND_FIRST_NAMES``
+           - ``bound_given_names.BOUND_GIVEN_NAMES``
+         * - ``titles.FIRST_NAME_TITLES``
+           - ``titles.GIVEN_NAME_TITLES``
+         * - ``suffixes.SUFFIX_NOT_ACRONYMS``
+           - ``suffixes.SUFFIX_WORDS``
+
+      Every row above still resolves and is removed in 3.0. The two module rows are import paths: importing them still works and says nothing, since both modules are now empty shims. Reading a *constant* -- by attribute access, by ``from ... import``, or by ``from ... import *`` -- emits a ``DeprecationWarning`` naming the module and constant to move to, once per line that reads it rather than once per process, so every place you have to edit is reported rather than only whichever one ran first. ``python -W error::DeprecationWarning -c "import yourapp"`` surfaces them; Python hides ``DeprecationWarning`` outside ``__main__``. Two of the four kept their module, so only the constant moved there. ``SUFFIX_NOT_ACRONYMS`` was also inaccurate as well as dated — ``esq`` is in ``SUFFIX_ACRONYMS`` too. The ``CONSTANTS`` attribute names (``prefixes``, ``non_first_name_prefixes``, ``bound_first_names``, ``first_name_titles``, ``suffix_not_acronyms``) are v1 facade surface and are unchanged. See :doc:`migrate` (#293)
+
 * 2.1.0 - August 7, 2026
 
     nameparser 2.1 makes East Asian names work without configuration.

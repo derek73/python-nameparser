@@ -57,7 +57,7 @@ issue = "fix(#271/#272/#298) native-script CJK: family-first order, hangul segme
 # tests/v2/test_ledger_guards.py pins this copy, and the honorific
 # alternations below, by sweeping every expected_since_*.toml rather
 # than naming one (#333). A span removed from the script table, or an
-# entry removed from SUFFIX_NOT_ACRONYMS or GLUED_HONORIFICS, now
+# entry removed from SUFFIX_WORDS or GLUED_HONORIFICS, now
 # forces this file to narrow with it instead of leaving a wide twin
 # behind to classify a real regression as intended.
 name_regex = "[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65]"
@@ -134,7 +134,7 @@ issue = "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix"
 # explain: unanchored, any name ENDING in 양 or 군 would match, and a
 # real suffix regression on the glued given name '김지양' would be
 # absorbed as intentional. The alternation is the CJK half of
-# SUFFIX_NOT_ACRONYMS. It is written longest-first for readability,
+# SUFFIX_WORDS. It is written longest-first for readability,
 # not for correctness: the trailing `(?=$|[ ,])` forces backtracking
 # out of a short alternative, so '박사|박사님' matches '박사님' too
 # (measured 2026-08-05, and the 1.4 ledger's twin lists them in that
