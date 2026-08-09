@@ -24,8 +24,8 @@ from nameparser import _policy
 _TOOLS = Path(__file__).parents[2] / "tools" / "differential"
 
 #: Every baseline's ledger, swept rather than named. #332 added a second
-#: file whose four hand copies went unchecked because the pins below
-#: named the 1.4 one by filename, and the count grows by one per
+#: file whose four hand copies went unchecked because the pins in
+#: test_ledger_guards.py named the 1.4 one by filename, and the count grows by one per
 #: release -- see AGENTS.md's release step 8.
 _LEDGERS = sorted(_TOOLS.glob("expected_since_*.toml"))
 
@@ -34,8 +34,8 @@ _LEDGERS = sorted(_TOOLS.glob("expected_since_*.toml"))
 #: rule claim?" is answerable here without parsing anything -- a plain
 #: regex search, no baseline wheel, no network.
 #:
-#: This is what the guards below check against, and it is why they hold
-#: where four rounds of syntactic ones did not. Depth-0 pipes, nesting
+#: This is what test_ledger_guards.py's corpus checks read, and why
+#: they hold where four rounds of syntactic ones did not. Depth-0 pipes, nesting
 #: levels and probe strings are all proxies for the question that
 #: actually matters; a rule cannot widen its corpus reach and still
 #: answer this one the same way, however it is spelled.
@@ -77,17 +77,23 @@ def _rules(ledger: Path) -> list[dict]:
         ledger.read_text(encoding="utf-8")).get("change", [])
 
 
-def load_compare() -> ModuleType:
-    """compare.py, loaded by path.
+def load_tool(stem: str) -> ModuleType:
+    """A module from tools/differential/, loaded by path.
 
     `tools/` is outside testpaths, and adding it would run
-    --doctest-modules over the corpus builders, so the harness is
-    imported this way rather than made importable. It has no
-    import-time side effects: its main() is behind a __name__ guard.
+    --doctest-modules over the corpus builders, so these are imported
+    this way rather than made importable. Two callers need it and
+    wrote the same six lines each: test_differential.py for compare.py,
+    test_ledger_guards.py for build_cjk_corpus.py.
+
+    Neither has import-time side effects -- compare.py's main() is
+    behind a __name__ guard, and build_cjk_corpus.py only defines
+    functions -- so importing them to read a constant or call one
+    function is safe.
     """
     spec = importlib.util.spec_from_file_location(
-        "differential_compare", _TOOLS / "compare.py")
-    assert spec is not None and spec.loader is not None
+        f"differential_{stem}", _TOOLS / f"{stem}.py")
+    assert spec is not None and spec.loader is not None, stem
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

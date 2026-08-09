@@ -8,19 +8,24 @@ nameparser constants -- script ranges, honorific and maiden vocabulary
 -- that a TOML file could not import if it wanted to. Nothing else
 checks them.
 
-Two kinds of guard live here, and the distinction is load-bearing.
-Some read a rule's SYNTAX: which spans a character class declares,
-which members an alternation offers. Those are exact where they apply
-and blind where they do not -- six review rounds each found a widening
-spelled just outside whichever one had been added last (#333, #350).
-The rest read the CORPORA, asking what a rule actually claims of the
-names the harness will ever be asked about. Those cannot be dodged by
-notation, because they do not read notation.
+Most of what is here reads a rule's SYNTAX -- which spans a character
+class declares, which members an alternation offers. Those are exact
+where they apply and blind where they do not: five review rounds each
+found a widening spelled just outside whichever one had been added
+last (#333, #350). The rest read the CORPORA, asking what a rule
+actually claims of the names the harness will ever be asked about;
+those cannot be dodged by notation, because they do not read notation
+-- though a recorded claim can be re-recorded, which is why the syntax
+guards stay.
+
+Three tests are neither kind. They keep this file's own inputs honest:
+the ledger glob, the roster-versus-filesystem staleness check, and the
+pin holding a GENERATED corpus equal to what its generator would
+write.
 
 Split from test_regex_sync.py, which shares none of this (#352).
 """
 import hashlib
-import importlib.util
 import json
 import re
 from pathlib import Path
@@ -31,7 +36,7 @@ import pytest
 from nameparser import _policy
 from nameparser._policy import Script
 # The parser's own fold, imported rather than reimplemented: a
-# hand-written one here stripped commas, parens, brackets and quotes,
+# hand-written one here stripped commas, parens, brackets and quotes --
 # classes neither the lexicon's fold nor config's assert_normalized
 # touches -- looser in the dangerous direction, and a hand copy of a
 # constant with a source of truth, inside the module written to forbid
@@ -41,11 +46,13 @@ from nameparser.config.maiden_markers import MAIDEN_MARKERS
 from nameparser.config.suffixes import (
     GLUED_HONORIFICS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_NOT_ACRONYMS)
 
-from tests.v2._differential_fixtures import (
+from ._differential_fixtures import (
     _CORPUS_NAMES, _LEDGERS, _TOOLS, _UNCLASSIFIED_NAMES, _claimed, _rules,
-    _unclassified_names)
+    _unclassified_names, load_tool)
 
 
+# The one sanctioned divergence between the differential rules'
+# character classes and _SCRIPT_RANGES: the halfwidth middle dot
 # separates tokens without being classified (halfwidth kana stays out
 # of the table on purpose). U+00B7 is deliberately NOT here -- its
 # flank guard means every name it can change matches through a
@@ -504,14 +511,9 @@ def test_cjk_corpus_matches_the_case_table() -> None:
     Same promise as the toml pin above, aimed at a generated artifact
     instead of a hand copy.
     """
-    tools = Path(__file__).parents[2] / "tools" / "differential"
-    spec = importlib.util.spec_from_file_location(
-        "build_cjk_corpus", tools / "build_cjk_corpus.py")
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    module = load_tool("build_cjk_corpus")
     checked_in = [json.loads(line) for line in
-                  (tools / "corpus_cjk.jsonl")
+                  (_TOOLS / "corpus_cjk.jsonl")
                   .read_text(encoding="utf-8").splitlines()]
     assert checked_in == module.selected_names(), (
         "corpus_cjk.jsonl is stale: regenerate with "
@@ -682,7 +684,7 @@ _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
 
 #: Alternations that copy no vocabulary, so discovery must not demand a
 #: source for them. Declared rather than inferred, on the principle
-#: _SOURCES' None entries already set: an undeclared alternation is a
+#: test_regex_sync.py's _SOURCES sets with its None entries: an undeclared alternation is a
 #: question someone answers in writing, not something to skip past.
 _NOT_A_VOCABULARY_COPY = frozenset({
     frozenset({"^", " "}),      # the honorific rule's leading anchor

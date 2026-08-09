@@ -14,9 +14,9 @@ from pathlib import Path
 
 import pytest
 
-from tests.v2._differential_fixtures import _TOOLS, load_compare
+from ._differential_fixtures import _TOOLS, load_tool
 
-compare = load_compare()
+compare = load_tool("compare")
 
 
 def test_parse_version_pads_a_short_release_to_three_parts() -> None:
