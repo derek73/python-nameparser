@@ -22,7 +22,7 @@ Release Log
 
     **Behavior Changes**
 
-    - Change the ``detail`` text of a ``PARTICLE_OR_GIVEN`` ambiguity to name the role the leading particle was actually given. It said "read as a given name" under every ``name_order``, which is false under ``Policy(name_order=FAMILY_FIRST)`` -- there ``"Van Johnson"`` reads as family ``Van``, given ``Johnson``, and the report described the reading not taken. It now ends "read as a family name" in that case, the way ``SUFFIX_OR_NAME`` has always named the part it declined. The ``kind`` is unchanged and stays ``PARTICLE_OR_GIVEN``: the fork really is particle-or-given, and only the human-readable text moved. Default-order output is identical (#355)
+    - Change the ``detail`` text of a ``PARTICLE_OR_GIVEN`` ambiguity to name the role the leading particle was actually given. It said "read as a given name" under every ``name_order``, which is false under ``Policy(name_order=FAMILY_FIRST)`` -- there ``"Van Johnson"`` reads as family ``Van``, given ``Johnson``, and the report described the reading not taken. It now ends "read as a family name" in that case, reading the role off the assigned token the way ``SUFFIX_OR_NAME`` already did -- that kind names both parts (``read as a family name rather than a post-nominal``), while this one names only the part it took. The ``kind`` is unchanged and stays ``PARTICLE_OR_GIVEN``: the fork really is particle-or-given, and only the human-readable text moved. Default-order output is identical (#355)
 
     **Deprecations**
 

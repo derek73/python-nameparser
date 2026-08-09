@@ -211,7 +211,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 j += 1
             # The other half of PARTICLE_OR_GIVEN. _assign reports the
             # fork when an ambiguous particle stays a lone leading piece
-            # ("Van Johnson" -> given); the chain here takes the
+            # ("Van Johnson" -> given under the default order, family
+            # under FAMILY_FIRST); the chain here takes the
             # opposite branch whenever a title shifts it off index 0
             # ("Dr. Van Johnson" -> family "Van Johnson"). A fork whose
             # two sides are decided in different stages needs an emitter
