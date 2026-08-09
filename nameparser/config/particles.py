@@ -9,7 +9,11 @@ from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
 #: ``name_order`` says which side of the name the family sits on, and a
 #: word that can never be a given name leaves it nothing to decide, so
 #: ``Policy(name_order=FAMILY_FIRST)`` reads "de Mesnil" as the family
-#: name too. Membership also decides the ambiguity report -- see
+#: name too. Leading is only the commonest way that comes up: what the
+#: parse guarantees is that a member is never *reported* as the given
+#: name, so one that lands alone in the given position under a
+#: non-default order folds into the family beside it instead.
+#: Membership also decides the ambiguity report -- see
 #: :py:data:`PARTICLES` below.
 #: Curated to exclude anything that can be a given name in some culture
 #: (`al`, `van`, `von`, `della`, `di`, `del`, `da`, `vander`, ...) and

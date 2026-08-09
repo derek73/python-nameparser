@@ -191,14 +191,23 @@ def test_family_comma_fold_is_order_independent() -> None:
     assert not _by_role(out, Role.GIVEN)
 
 
-def test_trailing_particle_is_not_a_leading_particle() -> None:
-    # consequence of keying on position: under FAMILY_FIRST the
-    # given-POSITION piece here is the bare 'de', which the role-keyed
-    # rule used to fold ("Mesnil de" -> family). The rule is about a
-    # LEADING particle, and 'Mesnil' is not one, so it declines.
+def test_lone_never_given_particle_in_given_position_folds() -> None:
+    # The invariant is "never REPORTED as the given name", which the
+    # opening-position test alone does not carry: under FAMILY_FIRST
+    # the given position is the TRAILING piece, and a bare 'de' landing
+    # there has to fold into the family beside it or the parse
+    # contradicts the very set that says 'de' is never a given name.
+    # Guarded here because a refactor that reads the rule as
+    # leading-particle-only drops exactly this shape, silently and
+    # under a non-default order (#359 review).
     out = _parsed("Mesnil de", _FF)
-    assert _by_role(out, Role.FAMILY) == "Mesnil"
-    assert _by_role(out, Role.GIVEN) == "de"
+    assert _by_role(out, Role.FAMILY) == "Mesnil de"
+    assert not _by_role(out, Role.GIVEN)
+    # the default order reaches the invariant from the other side: the
+    # particle is already the family, so there is nothing to repair
+    default = _parsed("Mesnil de")
+    assert _by_role(default, Role.GIVEN) == "Mesnil"
+    assert _by_role(default, Role.FAMILY) == "de"
 
 
 def test_middle_as_family_folds_middles() -> None:
