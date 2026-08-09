@@ -249,13 +249,31 @@ configuration — four vocabularies moved:
    * - ``suffixes.SUFFIX_NOT_ACRONYMS``
      - ``suffixes.SUFFIX_WORDS``
 
-Every 1.x name still resolves — by attribute access, by ``from ...
-import``, and by ``from ... import *``. Reading one emits a
-``DeprecationWarning`` naming the module and constant to move to, then
-returns the constant from its new home; the warning fires once per name
-per process, and the old names are removed in 3.0. Only the data layer
-moved: the ``CONSTANTS`` attribute names in the field-mapping table
-above are v1 facade surface and are unaffected, so ``constants.prefixes``,
+Every row still resolves, and the old names are removed in 3.0. The two
+module rows are import paths and nothing more: importing
+``nameparser.config.prefixes`` or ``nameparser.config.bound_first_names``
+still works and says nothing, because the modules are now empty shims.
+It is reading a *constant* that reports — by attribute access, by
+``from ... import``, and by ``from ... import *`` alike. The read emits
+a ``DeprecationWarning`` naming the module and constant to move to,
+then returns the constant from its new home.
+
+The warning fires once per line that reads a retired name, not once per
+process, so a repeated read of the same import stays quiet while a
+second import somewhere else in your code reports for itself. To find
+your own uses, raise ``DeprecationWarning`` — which Python hides by
+default outside ``__main__``, so an untouched run of a library that
+reads these names on import shows nothing::
+
+    python -W error::DeprecationWarning -c "import yourapp"
+
+That stops at the first one, with a traceback whose last frame outside
+nameparser is the line to edit. Swap ``error`` for ``default`` to print
+them all and keep going.
+
+Only the data layer moved: the ``CONSTANTS`` attribute names in the
+field-mapping table above are v1 facade surface and are unaffected,
+so ``constants.prefixes``,
 ``constants.non_first_name_prefixes``, ``constants.bound_first_names``,
 ``constants.first_name_titles`` and ``constants.suffix_not_acronyms``
 keep their 1.x spelling for as long as the facade exists.

@@ -10,7 +10,7 @@ from __future__ import annotations
 import importlib
 import inspect
 import pathlib
-from collections.abc import Iterator
+import warnings
 
 import pytest
 
@@ -29,30 +29,6 @@ ALIASES = [
     ("nameparser.config.suffixes", "SUFFIX_NOT_ACRONYMS",
      "nameparser.config.suffixes", "SUFFIX_WORDS"),
 ]
-
-
-def _uncache(module: str, name: str) -> None:
-    """Drop a resolved alias from the shim module's globals."""
-    importlib.import_module(module).__dict__.pop(name, None)
-
-
-@pytest.fixture(autouse=True)
-def _cold_aliases() -> Iterator[None]:
-    """Serve every test in this file a cold bridge.
-
-    The bridge caches each resolved alias into the shim module's
-    globals, so the DeprecationWarning fires once per name per process
-    -- which is the contract, and which makes any test of that warning
-    order-dependent by construction: whoever touches the name first
-    consumes the only warning. Clearing before AND after means this
-    file neither inherits a warmed cache from an earlier test nor
-    leaves one behind for the rest of the suite.
-    """
-    for module, name, _, _ in ALIASES:
-        _uncache(module, name)
-    yield
-    for module, name, _, _ in ALIASES:
-        _uncache(module, name)
 
 
 @pytest.mark.parametrize(
@@ -106,16 +82,41 @@ def test_from_import_is_attributed_to_the_importing_module() -> None:
     [(m, n) for m, n, _, _ in ALIASES],
     ids=[f"{m.rsplit('.', 1)[-1]}.{n}" for m, n, _, _ in ALIASES],
 )
-def test_old_name_warns_once_then_becomes_a_plain_global(
+def test_old_name_warns_once_per_read_location(
     old_module: str, old_name: str,
 ) -> None:
+    """Every line that has to be edited is told, and told once.
+
+    The bridge deliberately does not cache the resolved value back into
+    the shim module, so the suppression is ``__warningregistry__``'s:
+    keyed on (text, category, lineno) in the READING module's globals,
+    it silences a repeat from the same line and lets a new line through.
+    A write-back would instead hand the single warning to whoever read
+    first, which in a real program is usually a dependency.
+
+    The filter action is load-bearing, and this test is vacuous under
+    the wrong one. ``pytest.warns`` installs ``always``, and the suite's
+    own ``filterwarnings = ["error"]`` raises before recording -- under
+    either, nothing is ever written to the registry, so all three reads
+    below report and the assertion measures nothing. ``default`` is the
+    action that records what it has already shown. Entering and leaving
+    ``catch_warnings`` bumps the filter version, which invalidates any
+    registry this file left behind, so each parametrization starts cold
+    without anyone clearing it.
+    """
     module = importlib.import_module(old_module)
-    with pytest.warns(DeprecationWarning):
-        first = getattr(module, old_name)
-    # the suite runs under filterwarnings=error, so a second warning
-    # here would raise rather than merely be recorded
-    second = getattr(module, old_name)
+    frame = inspect.currentframe()
+    assert frame is not None
+    with warnings.catch_warnings(record=True) as record:
+        warnings.simplefilter("default")
+        repeated_lineno = frame.f_lineno + 2
+        for _ in range(2):
+            first = getattr(module, old_name)
+        fresh_lineno = frame.f_lineno + 1
+        second = getattr(module, old_name)
+
     assert first is second
+    assert [w.lineno for w in record] == [repeated_lineno, fresh_lineno]
 
 
 @pytest.mark.parametrize(
@@ -156,8 +157,8 @@ def test_star_import_binds_exactly_the_live_and_retired_names(
     """
     module = importlib.import_module(old_module)
     retired = {n for m, n, _, _ in ALIASES if m == old_module}
-    # computed BEFORE the star import, which writes each resolved alias
-    # back into the module globals and would otherwise pad this set
+    # a retired name is served by __getattr__ and never written into the
+    # module, so vars() holds the live constants and nothing else
     live = {n for n in vars(module) if n.isupper() and not n.startswith("_")}
 
     namespace: dict[str, object] = {}
@@ -217,9 +218,10 @@ def test_no_internal_code_reads_a_retired_vocabulary_name() -> None:
 
     An internal read of a 1.x name would warn on a path the suite may
     never take, so ``filterwarnings = ["error"]`` alone does not pin
-    this. A stale internal reference also rots the bridge in the worst
-    way: the write-back cache means the FIRST reader consumes the only
-    warning, so a real caller downstream could be told nothing at all.
+    this. It would also aim the bridge at the wrong reader: the warning
+    is attributed to the line that did the read, so a library-internal
+    one reports a file inside nameparser and hands the caller advice
+    about code they cannot edit.
     """
     package = pathlib.Path(nameparser.__file__).parent
     seen = set()

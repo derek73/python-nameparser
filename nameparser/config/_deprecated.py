@@ -3,9 +3,9 @@
 The 2.0 API named its concepts for what they are -- particles, bound
 given names, given-name titles, suffix words -- while the data modules
 kept the 1.x names a little longer. #293 moved all four to match. A 1.x
-name resolves to its 2.2 constant, warns once, and names the path to
-migrate to; the whole layer goes away in 3.0 with the rest of the v1
-facade.
+name resolves to its 2.2 constant, warns at the line that read it, and
+names the path to migrate to; the whole layer goes away in 3.0 with the
+rest of the v1 facade.
 
 Two of the four moved module and all: prefixes -> particles and
 bound_first_names -> bound_given_names, whose old modules are now
@@ -13,9 +13,18 @@ data-free shims that are nothing but a docstring and an alias table.
 The other two renamed a constant in place, so titles.py and suffixes.py
 carry their alias table at the bottom of the file, beside their data.
 
-Same PEP 562 mechanism as nameparser/locales/__init__.py, and the same
-write-back for the same reason -- one lookup, then the name is an
-ordinary module global.
+Same PEP 562 hook as nameparser/locales/__init__.py, but deliberately
+without that module's write-back: a retired name stays served by
+``__getattr__`` for the life of the process, so every read reaches the
+warning. Suppressing the repeats is the warnings module's own job, and
+it does it per LOCATION -- ``__warningregistry__`` lives in the READING
+module's globals and is keyed on (text, category, lineno). That is the
+granularity the advice is written at: one line that reads a retired
+name is told once however often it runs, and a second line, in that
+file or another, is told for itself. Caching the resolved value into
+the module globals instead would silence every reader after the first,
+and the first is whoever imported earliest -- routinely a dependency,
+whose author is not the person who has to edit anything.
 
 PEP 562 defines the hook for attribute ACCESS and nothing else, which
 is why every alias-bearing module also carries an ``__all__`` naming
@@ -62,6 +71,11 @@ def alias_getattr(
         if target is None:
             raise AttributeError(f"module {module!r} has no attribute {name!r}")
         new_module, new_name = target
+        # resolved BEFORE warning, so a mistyped alias target fails as
+        # a ModuleNotFoundError or an AttributeError from here rather
+        # than first advising the reader to move to a path that does
+        # not exist.
+        value = getattr(importlib.import_module(new_module), new_name)
         warnings.warn(
             _MESSAGE.format(
                 module=module, old=name, new_module=new_module, new=new_name),
@@ -75,17 +89,6 @@ def alias_getattr(
             # ::test_no_internal_code_reads_a_retired_vocabulary_name)
             stacklevel=2,
         )
-        value = getattr(importlib.import_module(new_module), new_name)
-        # write back, so the name is an ordinary global from here on and
-        # the warning fires once per name per process rather than once
-        # per read. A caller who ignores the first warning is not told
-        # again, which is the point: the message is advice to the
-        # author, not a runtime signal to the program. Benign race under
-        # free threading: two threads racing here resolve the same
-        # constant and assign the same value to the same name, so the
-        # last write wins and a duplicate warning is the only
-        # observable difference.
-        setattr(sys.modules[module], name, value)
         return value
 
     def __dir__() -> list[str]:
