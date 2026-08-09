@@ -222,7 +222,89 @@ fields:
      - Pair-valued; set it via ``dataclasses.replace(lexicon,
        capitalization_exceptions={...})``, not ``add()``/``remove()``
 
-And behavior/render scalars map onto :class:`~nameparser.Policy` (or a
+The vocabulary that feeds both columns lives in ``nameparser.config``,
+and in 2.2 its module and constant names moved to the same terminology
+the ``Lexicon`` column uses. If you import the default word lists
+directly — to read one, extend one, or copy one into your own
+configuration — four vocabularies moved:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 50 50
+
+   * - 1.x name
+     - 2.2 name
+   * - ``nameparser.config.prefixes``
+     - :mod:`nameparser.config.particles`
+   * - ``prefixes.PREFIXES``
+     - ``particles.PARTICLES``
+   * - ``prefixes.NON_FIRST_NAME_PREFIXES``
+     - ``particles.NON_GIVEN_NAME_PARTICLES``
+   * - ``nameparser.config.bound_first_names``
+     - :mod:`nameparser.config.bound_given_names`
+   * - ``bound_first_names.BOUND_FIRST_NAMES``
+     - ``bound_given_names.BOUND_GIVEN_NAMES``
+   * - ``titles.FIRST_NAME_TITLES``
+     - ``titles.GIVEN_NAME_TITLES``
+   * - ``suffixes.SUFFIX_NOT_ACRONYMS``
+     - ``suffixes.SUFFIX_WORDS``
+
+Every 1.x name still resolves. Reading one emits a
+``DeprecationWarning`` naming the module and constant to move to, then
+returns the constant from its new home; the warning fires once per name
+per process, and the old names are removed in 3.0. Only the data layer
+moved: the ``CONSTANTS`` attribute names in the field-mapping table
+above are v1 facade surface and are unaffected, so ``constants.prefixes``,
+``constants.non_first_name_prefixes``, ``constants.bound_first_names``,
+``constants.first_name_titles`` and ``constants.suffix_not_acronyms``
+keep their 1.x spelling for as long as the facade exists.
+
+Every vocabulary set in ``nameparser.config`` is also a ``frozenset``
+as of 2.2 — the renamed ones and the rest, ``CAPITALIZATION_EXCEPTIONS``
+being a mapping and unchanged. That retires one 1.x idiom outright:
+``TITLES.add("dean")`` — editing a default word list in place — now
+raises ``AttributeError`` at the line that writes it, rather than
+changing some parses and not others some distance away.
+
+It was never a dependable way to change a default, because the two
+config layers read the module constants at different moments.
+``Lexicon.default()`` is cached and reads them exactly once, at its
+first call; a v1 ``Constants`` copies them at every construction; and
+the shared ``CONSTANTS`` singleton is one such copy, taken at import.
+An edit landing *after* the first parse therefore reached only a
+freshly built ``Constants`` — neither ``parse()``, whose lexicon was
+already built, nor the shared ``CONSTANTS``, which predated the edit.
+An edit landing *before* any parse reached ``Lexicon.default()``, and
+so ``parse()``, and a fresh ``Constants`` — but still never the shared
+``CONSTANTS``. Whether an edit reached a given parse thus depended on
+which config objects the program had already built, and one program
+could hold two disagreeing defaults with nothing to say so.
+
+Configure the objects instead, which both APIs have always supported
+and neither the freeze nor the rename affects. For ``HumanName``, build
+a private ``Constants`` and pass it::
+
+    from nameparser import HumanName
+    from nameparser.config import Constants
+
+    constants = Constants()
+    constants.titles.add("dean")
+    name = HumanName("Dean Smith", constants=constants)
+
+For the 2.0 API, extend the default lexicon and hand it to a parser::
+
+    from nameparser import Lexicon, Parser
+
+    parser = Parser(lexicon=Lexicon.default().add(titles={"dean"}))
+    name = parser.parse("Dean Smith")
+
+Mutating the shared ``CONSTANTS`` singleton still works and still
+reaches every ``HumanName`` that reads it, but it warns: it is
+deprecated along with the rest of the v1 facade and goes away in 3.0.
+Prefer a private ``Constants`` in new code. See :doc:`customize` for
+the full set of knobs on each.
+
+Behavior and render scalars map onto :class:`~nameparser.Policy` (or a
 rendering argument, where the 2.0 equivalent isn't config at all):
 
 .. list-table::

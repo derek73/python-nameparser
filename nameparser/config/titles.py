@@ -50,17 +50,22 @@ GIVEN_NAME_TITLES = frozenset({
     'مهندس',       # engineer (a genuine title in Egyptian usage)
 })
 """
-When these titles appear with a single other name, that name is a first name, e.g.
+When these titles appear with a single other name, that name is a given name, e.g.
 "Sir John", "Sister Mary", "Queen Elizabeth".
 """
 
-#: **Cannot include things that could also be first names**, e.g. "dean".
+# Maintainer note, deliberately a plain comment ABOVE the `#:` run and
+# not inside it (a plain comment within a `#:` run splits it, and
+# autodoc then drops everything above the split -- see particles.py).
+# `#:` would publish this into the API reference, where it is advice to
+# nobody. Frozen by
+# construction (#293) -- `frozenset | set` returns a frozenset, the LEFT
+# operand's type wins, so keep the frozenset first. Flipped, this
+# silently yields a plain set again and unfreezes the constant.
+#: **Cannot include things that could also be given names**, e.g. "dean".
 #: Many of these from wikipedia: https://en.wikipedia.org/wiki/Title.
-#: The parser recognizes chains of these including conjunctions allowing 
+#: The parser recognizes chains of these including conjunctions allowing
 #: recognition titles like "Deputy Secretary of State".
-#: Frozen by construction (#293): ``frozenset | set`` returns a frozenset.
-#: The LEFT operand's type wins, so keep the frozenset first -- flipped,
-#: this silently yields a plain set again.
 TITLES = GIVEN_NAME_TITLES | {
     "attaché",
     "chargé",

@@ -60,6 +60,14 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
     'בת',     # "bat" (daughter of)
 })
 
+# Maintainer note, deliberately a plain comment ABOVE the `#:` run
+# rather than inside it: `#:` would publish it into the API reference,
+# where it is advice to nobody, and a plain comment placed *within* the
+# run splits it -- autodoc then renders only the fragment below the
+# split and silently drops everything above it. Frozen by construction
+# (#293) -- `frozenset | set` returns a frozenset, the LEFT operand's
+# type wins, so keep the frozenset first. Flipped, this silently yields
+# a plain set again and unfreezes the constant.
 #: Family-name particles: a particle joins to the piece that follows it
 #: to make one new piece, and particles chain, e.g. "von der" and
 #: "de la". A particle in a non-leading position also pulls the pieces
@@ -79,9 +87,6 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
 #: member is guaranteed to also be a particle (and still join forward),
 #: with no drift -- mirroring ``TITLES = GIVEN_NAME_TITLES | {...}`` in
 #: :py:mod:`nameparser.config.titles`.
-#: Frozen by construction (#293): ``frozenset | set`` returns a frozenset.
-#: The LEFT operand's type wins, so keep the frozenset first -- flipped,
-#: this silently yields a plain set again.
 PARTICLES = NON_GIVEN_NAME_PARTICLES | {
     'aan',
     'aen',

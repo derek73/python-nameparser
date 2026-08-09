@@ -28,6 +28,14 @@ accepts a plain set of lowercase words, keyword by field name (``titles``
 above; ``particles``, ``suffix_words``, and the rest work the same
 way) — see :doc:`modules` for the full field list.
 
+The default word lists themselves — ``TITLES``, ``PARTICLES`` and the
+rest of ``nameparser.config`` — are frozen, so a runtime addition
+belongs on a :class:`~nameparser.Lexicon` as above, or on a private
+``Constants`` if you are still parsing through ``HumanName``. Those
+constants were renamed in 2.2 to match the field names used here; the
+1.x names still import, with a ``DeprecationWarning``, until 3.0 — see
+:doc:`migrate` for the mapping.
+
 Vocabulary entries are matched one word at a time (``given_name_titles``
 excepted), so a multi-word entry like ``titles={"grand moff"}`` can
 never match; the constructor warns when it sees one

@@ -87,11 +87,11 @@ name to its full vocabulary set:
      - adjacent suffixes
      - ``suffix``
      - ``John Smith PhD MD`` → ``PhD, MD``
-   * - :mod:`Bound given names <nameparser.config.bound_first_names>`
+   * - :mod:`Bound given names <nameparser.config.bound_given_names>`
      - the following word
      - ``given``
      - ``abdul salam ahmed`` → ``abdul salam``
-   * - :mod:`Particles <nameparser.config.prefixes>`
+   * - :mod:`Particles <nameparser.config.particles>`
      - the following surname
      - ``family``
      - ``Juan de la Vega`` → ``de la Vega``
