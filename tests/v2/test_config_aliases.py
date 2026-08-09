@@ -23,6 +23,8 @@ ALIASES = [
      "nameparser.config.bound_given_names", "BOUND_GIVEN_NAMES"),
     ("nameparser.config.titles", "FIRST_NAME_TITLES",
      "nameparser.config.titles", "GIVEN_NAME_TITLES"),
+    ("nameparser.config.suffixes", "SUFFIX_NOT_ACRONYMS",
+     "nameparser.config.suffixes", "SUFFIX_WORDS"),
 ]
 
 

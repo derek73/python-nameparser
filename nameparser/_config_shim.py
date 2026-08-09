@@ -673,13 +673,13 @@ def _default_vocab() -> dict[str, set[str]]:
         NON_GIVEN_NAME_PARTICLES, PARTICLES,
     )
     from nameparser.config.suffixes import (
-        SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_NOT_ACRONYMS,
+        SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_WORDS,
     )
     from nameparser.config.titles import GIVEN_NAME_TITLES, TITLES
     return {
         "prefixes": PARTICLES,
         "suffix_acronyms": SUFFIX_ACRONYMS,
-        "suffix_not_acronyms": SUFFIX_NOT_ACRONYMS,
+        "suffix_not_acronyms": SUFFIX_WORDS,
         "suffix_acronyms_ambiguous": SUFFIX_ACRONYMS_AMBIGUOUS,
         "titles": TITLES,
         "first_name_titles": GIVEN_NAME_TITLES,

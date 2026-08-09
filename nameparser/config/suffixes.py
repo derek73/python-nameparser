@@ -1,6 +1,6 @@
 from nameparser.config._invariants import assert_normalized
 
-SUFFIX_NOT_ACRONYMS = {
+SUFFIX_WORDS = {
     # #269: Cyrillic мл/ст (junior/senior, the jr/sr analogs) deferred
     # pending the within-script collision vetting the issue asks for;
     # 'ст' especially is a plausible false-positive risk (many two-
@@ -97,16 +97,23 @@ SUFFIX_NOT_ACRONYMS = {
 }
 """
 
-Post-nominal pieces that are not acronyms. The parser does not remove periods
-when matching against these pieces.
+Post-nominal suffixes matched as WORDS: the lookup uses the normalized token,
+so only EDGE periods come off and interior ones survive -- "Junior." matches
+here, "J.u.n.i.o.r." does not. :data:`SUFFIX_ACRONYMS` is the set matched
+with every period removed, so it alone covers the multi-dot spelling
+"E.S.Q." -- and, having no interior period to lose, "Esq" as well. 'esq'
+is listed here too (v1 data): inert against the shipped acronym set, since
+dropping it changes no parse, but what keeps "Esq" matching for a caller
+who removes it from :data:`SUFFIX_ACRONYMS`. That is why the two sets are
+deliberately not asserted disjoint -- see the guard block at the bottom.
 
 """
 GLUED_HONORIFICS = {
     # #308: the entries above that may also be peeled off the END of a
     # name token -- 田中さん, 山田太郎様, 김민준씨. A separate set, not
-    # SUFFIX_NOT_ACRONYMS reused, because the glued position has no
-    # token boundary to lean on: the vetting question is not "is this
-    # a name?" but "can this END a name?", and only entries that can
+    # SUFFIX_WORDS reused, because the glued position has no token
+    # boundary to lean on: the vetting question is not "is this a
+    # name?" but "can this END a name?", and only entries that can
     # never end one belong here.
     # kana -- name-final never, in any of the four, and the kana/kanji
     # split is itself a vetting result: くん ships where 君 cannot,
@@ -131,10 +138,10 @@ GLUED_HONORIFICS = {
 }
 """
 
-The subset of :data:`SUFFIX_NOT_ACRONYMS` a name token may end WITH, peeled
-off as its own token before segmentation (#308). Deliberately harsher than
-the spaced set, because a glued tail has no writer-drawn token boundary to
-lean on -- these entries are recognized in the SPACED position only:
+The subset of :data:`SUFFIX_WORDS` a name token may end WITH, peeled off as
+its own token before segmentation (#308). Deliberately harsher than the
+spaced set, because a glued tail has no writer-drawn token boundary to lean
+on -- these entries are recognized in the SPACED position only:
 
 * 양, 군 -- 김지양 and 김지군 are given names ending in these syllables, and
   양 is a top-tier surname besides.
@@ -502,10 +509,13 @@ SUFFIX_ACRONYMS = {
     'emt-p',
     'enp',
     'erd',
-    # Also in SUFFIX_NOT_ACRONYMS, and NOT redundant: the word test
-    # strips only edge periods while the acronym test strips all of
-    # them, so the multi-dot spelling "E.S.Q." matches only here while
-    # bare "Esq" matches only there.
+    # The load-bearing membership: the acronym test strips every
+    # period, so this entry is the only thing matching the multi-dot
+    # spelling, and removing it costs the family name ("John Smith
+    # E.S.Q." -> family='E.S.Q.'). 'esq' is in SUFFIX_WORDS as well,
+    # which against this set is inert -- "Esq" has no interior period,
+    # so it matches here too -- but that is not a duplicate to clean
+    # up: it is what still matches "Esq" if this entry ever goes.
     'esq',
     'evp',
     'faafp',
@@ -822,30 +832,49 @@ when matching against these pieces.
 
 # Guard the invariants the docstrings above promise, so a future edit that
 # breaks them fails at import time instead of silently drifting until a test
-# happens to catch it (same rationale as prefixes.py). Note `assert` is
+# happens to catch it (same rationale as particles.py). Note `assert` is
 # stripped under `python -O`; Lexicon re-checks the relationships at
 # construction, which is what protects a caller's own vocabulary.
 assert SUFFIX_ACRONYMS_AMBIGUOUS <= SUFFIX_ACRONYMS, \
     "SUFFIX_ACRONYMS_AMBIGUOUS must stay a subset of SUFFIX_ACRONYMS"
-# NOT asserted: disjointness of SUFFIX_ACRONYMS and SUFFIX_NOT_ACRONYMS.
-# The two sets are matched with different normalization -- the word test
-# strips only edge periods, the acronym test strips all of them -- so an
-# entry in both is covering two spellings, not duplicated. 'esq' matches
-# "Esq" only as a word and "E.S.Q." only as an acronym.
+# NOT asserted: disjointness of SUFFIX_ACRONYMS and SUFFIX_WORDS.
+# The two are matched with different normalization -- the word test strips
+# only edge periods, the acronym test strips all of them -- and no
+# SUFFIX_WORDS entry carries an interior period, so for a word in both
+# sets the acronym branch fires wherever the word branch does (the assert
+# just below keeps such a word out of the period-gated ambiguous subset).
+# The single overlap, 'esq', is therefore inert as shipped rather than a
+# second spelling: SUFFIX_ACRONYMS covers "E.S.Q." AND "Esq", and dropping
+# 'esq' from SUFFIX_WORDS changes no parse. It stays because these sets
+# are caller-editable -- it is what still matches "Esq" once 'esq' leaves
+# SUFFIX_ACRONYMS -- and an inert overlap is not worth an assert that
+# would reject a working config.
 # DO assert that an ambiguous acronym is not also a plain suffix word:
 # suffix_as_written ORs the two branches, so the word membership would
 # bypass the period gate the ambiguous set exists to impose.
-assert not (SUFFIX_ACRONYMS_AMBIGUOUS & SUFFIX_NOT_ACRONYMS), \
+assert not (SUFFIX_ACRONYMS_AMBIGUOUS & SUFFIX_WORDS), \
     "an ambiguous acronym must not also be a suffix word (the word " \
     "branch bypasses its period gate): " \
-    f"{sorted(SUFFIX_ACRONYMS_AMBIGUOUS & SUFFIX_NOT_ACRONYMS)}"
+    f"{sorted(SUFFIX_ACRONYMS_AMBIGUOUS & SUFFIX_WORDS)}"
 # The peel splits its tail off as a TOKEN and suffix classification is
 # what claims it downstream, so a tail that is not also a suffix word
 # would split the name and then leave the piece sitting in it. The
 # reverse direction is deliberately unguarded: a suffix word that is
 # not a tail is the ordinary case, and an empty tail set is inert
 # rather than wrong.
-assert GLUED_HONORIFICS <= SUFFIX_NOT_ACRONYMS, \
-    "GLUED_HONORIFICS must stay a subset of SUFFIX_NOT_ACRONYMS: " \
-    f"{sorted(GLUED_HONORIFICS - SUFFIX_NOT_ACRONYMS)}"
-assert_normalized("suffix", SUFFIX_ACRONYMS | SUFFIX_NOT_ACRONYMS)
+assert GLUED_HONORIFICS <= SUFFIX_WORDS, \
+    "GLUED_HONORIFICS must stay a subset of SUFFIX_WORDS: " \
+    f"{sorted(GLUED_HONORIFICS - SUFFIX_WORDS)}"
+assert_normalized("suffix", SUFFIX_ACRONYMS | SUFFIX_WORDS)
+
+
+# 1.x name, deprecated in 2.2 and removed in 3.0 (#293). The constant
+# did not change module, so this aliases a name to one of this module's
+# own globals: a module __getattr__ runs only once the body has finished
+# and the module is in sys.modules, so the lookup resolves rather than
+# recursing.
+from nameparser.config._deprecated import alias_getattr  # noqa: E402
+
+__getattr__, __dir__ = alias_getattr(__name__, {
+    "SUFFIX_NOT_ACRONYMS": ("nameparser.config.suffixes", "SUFFIX_WORDS"),
+})

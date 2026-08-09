@@ -55,7 +55,7 @@ _VOCAB_FIELDS = (
 #:   nothing needs the acronym half: the shipped tails are CJK
 #:   honorifics, which are words.
 #:   The same relation is asserted a second time in config/suffixes.py,
-#:   over the raw GLUED_HONORIFICS/SUFFIX_NOT_ACRONYMS constants at
+#:   over the raw GLUED_HONORIFICS/SUFFIX_WORDS constants at
 #:   import. The two are not redundant in the way they look: that one
 #:   is an `assert`, stripped under `python -O`, while the check here
 #:   raises unconditionally -- so under -O this is what still holds the
@@ -321,7 +321,7 @@ class Lexicon:
     suffix_acronyms: frozenset[str] = frozenset()
     #: Post-nominal word suffixes ("jr", "esquire", "iii", ...). Full
     #: default list:
-    #: :data:`~nameparser.config.suffixes.SUFFIX_NOT_ACRONYMS`.
+    #: :data:`~nameparser.config.suffixes.SUFFIX_WORDS`.
     suffix_words: frozenset[str] = frozenset()
     #: Subset of suffix_acronyms counted as suffixes only when written
     #: WITH periods -- their bare forms are common surnames ("ma",
@@ -621,7 +621,7 @@ def _default_lexicon() -> Lexicon:
     from nameparser.config.particles import NON_GIVEN_NAME_PARTICLES, PARTICLES
     from nameparser.config.suffixes import (
         GLUED_HONORIFICS, SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS,
-        SUFFIX_NOT_ACRONYMS,
+        SUFFIX_WORDS,
     )
     from nameparser.config.surnames import KOREAN_SURNAMES
     from nameparser.config.titles import GIVEN_NAME_TITLES, TITLES
@@ -634,7 +634,7 @@ def _default_lexicon() -> Lexicon:
         titles=frozenset(TITLES),
         given_name_titles=frozenset(GIVEN_NAME_TITLES),
         suffix_acronyms=frozenset(SUFFIX_ACRONYMS),
-        suffix_words=frozenset(SUFFIX_NOT_ACRONYMS),
+        suffix_words=frozenset(SUFFIX_WORDS),
         suffix_acronyms_ambiguous=frozenset(SUFFIX_ACRONYMS_AMBIGUOUS),
         particles=frozenset(PARTICLES),
         # FLIPPED from v1: v1 marks the never-given subset; v2 marks the

@@ -789,10 +789,10 @@ assert_normalized("TITLES", TITLES)
 
 
 # 1.x name, deprecated in 2.2 and removed in 3.0 (#293). Unlike the
-# other renames in #293 the constant did not change module, so this
-# module aliases a name to itself: by the time __getattr__ can run the
-# module is fully imported and in sys.modules, so the lookup resolves
-# the global rather than recursing.
+# module moves in #293, the constant did not change module, so this
+# aliases a name to one of this module's own globals: a module
+# __getattr__ runs only once the body has finished and the module is in
+# sys.modules, so the lookup resolves rather than recursing.
 from nameparser.config._deprecated import alias_getattr  # noqa: E402
 
 __getattr__, __dir__ = alias_getattr(__name__, {
