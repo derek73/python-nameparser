@@ -135,26 +135,29 @@ def test_dir_advertises_the_old_names(old_module: str, old_name: str) -> None:
     assert old_name in dir(importlib.import_module(old_module))
 
 
-#: Serving the 1.x names is the bridge's whole job, so the files that
-#: make up the bridge may spell them; everything else in the package
-#: must be on the 2.2 names. One row per retired name, mapped to the
-#: package-relative files it is allowed to appear in -- relative paths
-#: rather than bare filenames so a future ``locales/titles.py`` does not
-#: inherit ``config/titles.py``'s exemption.
+#: Serving a 1.x name is an alias table's whole job, so the file
+#: holding that table may spell it. Nothing else in the package may,
+#: including the bridge machinery itself. One row per retired name,
+#: mapped to the package-relative files it is allowed to appear in --
+#: relative paths rather than bare filenames, so a future
+#: ``locales/titles.py`` does not inherit ``config/titles.py``'s
+#: exemption.
 #:
 #: The match below is ``name in source``: raw text, not a token, so a
 #: mention in a comment or a docstring counts too. That is the intent --
 #: prose naming a retired constant goes stale exactly the way code does
-#: -- and it is why ``config/_deprecated.py`` is listed here: its
-#: ``stacklevel`` comment quotes a ``from ... import PREFIXES`` line as
-#: the worked example of what the bridge serves.
+#: -- but it admits two hits that are not stale references, neither of
+#: which can hide a real one:
 #:
-#: Substring matching also means ``NON_FIRST_NAME_PREFIXES`` contains
-#: ``PREFIXES``, so a file holding only the longer name trips both rows.
-#: The overlap costs a duplicate line in the failure report and can hide
-#: nothing: every row's allow-list is checked against the same file.
+#: * ``NON_FIRST_NAME_PREFIXES`` contains ``PREFIXES``, so a file
+#:   holding only the longer name trips both rows. It costs a duplicate
+#:   line in the report; every row is still checked against the file.
+#: * an unrelated identifier may simply contain a retired name --
+#:   ``TITLE_PREFIXES`` reports as ``PREFIXES``. Renaming is the wrong
+#:   advice there, so the failure message offers this allow-list as the
+#:   other remedy.
 _RETIRED_NAMES = {
-    "PREFIXES": ("config/prefixes.py", "config/_deprecated.py"),
+    "PREFIXES": ("config/prefixes.py",),
     "NON_FIRST_NAME_PREFIXES": ("config/prefixes.py",),
     "BOUND_FIRST_NAMES": ("config/bound_first_names.py",),
     # these two kept their module; the exemption is for the alias table
@@ -195,4 +198,6 @@ def test_no_internal_code_reads_a_retired_vocabulary_name() -> None:
         f"every retired name, so the scan itself is broken")
     assert not offenders, (
         "retired 1.x vocabulary names used inside the package; move them "
-        f"to their 2.2 names (#293): {offenders}")
+        "to their 2.2 names (#293) -- or, where a hit is an unrelated "
+        "identifier that merely contains a retired name, add its path to "
+        f"that row's _RETIRED_NAMES allow-list: {offenders}")

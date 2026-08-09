@@ -54,9 +54,13 @@ def alias_getattr(
             _MESSAGE.format(
                 module=module, old=name, new_module=new_module, new=new_name),
             DeprecationWarning,
-            # 2: the frame that touched the name, which for
-            # `from nameparser.config.prefixes import PREFIXES` is the
-            # importing module -- the place that has to be edited
+            # 2: the frame that touched the name -- for the
+            # `from nameparser.config.prefixes import ...` form, the
+            # importing module, which is the place that has to be
+            # edited. Which name it imports does not matter here, and
+            # spelling one out would put a retired name in a file that
+            # serves no single vocabulary (tests/v2/test_config_aliases
+            # ::test_no_internal_code_reads_a_retired_vocabulary_name)
             stacklevel=2,
         )
         value = getattr(importlib.import_module(new_module), new_name)
