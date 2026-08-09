@@ -518,7 +518,26 @@ def validate_exclusions(entries: list[dict[str, object]],
 
 
 def classify(name: str, diff_fields: set[str],
-             rules: list[dict[str, object]]) -> str | None:
+             rules: list[dict[str, object]],
+             exclusions: list[dict[str, object]] | None = None) -> str | None:
+    """Which rule explains this diff, or None if nothing does.
+
+    Exclusions are consulted FIRST and win outright. They are the
+    ledger's way of saying a shape must never be explained, which the
+    rule vocabulary cannot express: a rule says "this diff is intended
+    and here is why", and there is no rule meaning "whatever happens
+    here is a regression". Two comments in expected_since_1.4.0.toml
+    promised exactly that in prose and could not keep it (#328).
+
+    Consulting them first also makes them MONOTONE -- an exclusion only
+    ever removes a name from classification, never moves it between
+    rules -- so a new entry's blast radius is exactly the set of names
+    it captures, independent of rule order.
+    """
+    for entry in exclusions or ():
+        pattern = entry.get("name_regex")
+        if isinstance(pattern, str) and re.search(pattern, name):
+            return None
     for rule in rules:
         name_regex = rule.get("name_regex")
         if isinstance(name_regex, str) and not re.search(name_regex, name):
@@ -634,7 +653,7 @@ def main() -> int:
                      if old["v2"].get(f, "") != new_v2.get(f, "")}
         if not diff:
             continue
-        issue = classify(name, diff, rules)
+        issue = classify(name, diff, rules, exclusions)
         if issue is None:
             unexplained.append(
                 (name, old["facade"], new, old.get("v2", {}), new_v2))

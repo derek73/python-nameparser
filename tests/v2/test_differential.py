@@ -761,3 +761,20 @@ def test_validate_exclusions_accepts_the_shipped_entries() -> None:
     for ledger in sorted(_TOOLS.glob("expected_since_*.toml")):
         parsed = tomllib.loads(ledger.read_text(encoding="utf-8"))
         compare.validate_exclusions(parsed.get("never", []), ledger.name)
+
+
+def test_classify_refuses_an_excluded_shape() -> None:
+    """The whole point: an excluded name reports UNEXPLAINED however
+    many rules would otherwise claim it. Two do, for the shape this
+    was built for -- fix(comma-family) on file order, and the
+    fields-only fix(suffix-routing) which has no name_regex at all and
+    so reaches every name."""
+    rules = [{"issue": "broad", "name_regex": ","},
+             {"issue": "broader", "fields": ["given", "suffix"]}]
+    never = [{"why": "parity", "name_regex": r"(?i)\bph\.\s*d\.\s*$",
+              "examples": ["John Smith, Ph. D."]}]
+    assert compare.classify("John Smith, Ph. D.", {"suffix"}, rules) == "broad"
+    assert compare.classify(
+        "John Smith, Ph. D.", {"suffix"}, rules, never) is None
+    # a name the exclusion does not cover is unaffected
+    assert compare.classify("Smith, Dr.", {"suffix"}, rules, never) == "broad"
