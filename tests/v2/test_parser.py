@@ -253,6 +253,26 @@ def test_ambiguous_acronym_detail_names_the_role_it_got() -> None:
     assert "family name" not in n.ambiguities[0].detail
 
 
+def test_leading_particle_detail_names_the_role_it_got() -> None:
+    # the same requirement as the acronym above, for the other kind:
+    # `detail` is public output, so the role it names has to survive
+    # assembly into ParsedName under a non-default order, not just be
+    # right where _assign builds it
+    fam_first = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    n = fam_first.parse("Van Johnson")
+    assert (n.family, n.given) == ("Van", "Johnson")
+    (amb,) = n.ambiguities
+    assert amb.kind is AmbiguityKind.PARTICLE_OR_GIVEN
+    assert amb.detail == (
+        "leading 'Van' may be a family-name particle; "
+        "read as a family name")
+    # the default order is untouched by that change
+    (default,) = parse("Van Johnson").ambiguities
+    assert default.detail == (
+        "leading 'Van' may be a family-name particle; "
+        "read as a given name")
+
+
 def test_trailing_roman_numeral_reports_the_fork() -> None:
     # a trailing single letter is a name part unless it happens to be a
     # roman numeral, in which case it is silently reclassified -- and
@@ -316,6 +336,27 @@ def test_chained_particle_detail_does_not_claim_a_role() -> None:
     assert n.given == "Van Johnson"
     (amb,) = n.ambiguities
     assert "family name" not in amb.detail
+
+
+@pytest.mark.parametrize("policy", [
+    Policy(),
+    Policy(name_order=FAMILY_FIRST),
+    Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+])
+def test_chained_particle_detail_is_order_invariant(policy: Policy) -> None:
+    # _group's emitter is the reason the docs can scope leading-particle
+    # DESTINATIONS to the default order without qualifying this text:
+    # it names no field, and the chain it reports is a grouping-stage
+    # decision taken before any role exists. "Dr. Van Johnson" takes the
+    # chained branch under every order, so the string is the same one
+    # three times -- pin it, or the invariant is only an intention.
+    n = Parser(policy=policy).parse("Dr. Van Johnson")
+    assert (n.given, n.family) == ("", "Van Johnson")
+    (amb,) = n.ambiguities
+    assert amb.kind is AmbiguityKind.PARTICLE_OR_GIVEN
+    assert amb.detail == (
+        "'Van' was chained onto the following name piece; "
+        "it is also a given name in other names")
 
 
 def test_each_suffix_or_name_branch_describes_itself() -> None:

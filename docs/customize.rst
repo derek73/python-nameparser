@@ -166,10 +166,14 @@ a suffix only when written with periods:
     'M.A.'
 
 ``particles_ambiguous`` is the same idea for surname particles. A
-particle listed there may also be a given name, so a name that starts
-with one keeps its given name; a particle *not* listed there is never a
-given name, so a name starting with it has no given name at all — the
-whole thing is the surname:
+particle listed there may also be a given name, which is what makes a
+leading one a decision to take; a particle *not* listed there never
+is, so there is nothing to decide. Under the default name order that
+shows up as whether the name has a given name at all: one that starts
+with a listed particle keeps it, while one starting with an unlisted
+particle has no given name — the whole thing is the surname. (Which
+field each piece lands in is ``name_order``'s question, covered
+below.)
 
 .. doctest::
 
@@ -181,7 +185,9 @@ whole thing is the surname:
     'de Mesnil'
 
 If your data never uses ``Van`` as a given name, take it out of the
-ambiguous set and leading ``van`` becomes part of the surname:
+ambiguous set: a leading ``van`` is then no decision at all, so no
+ambiguity is recorded, and under the default order it becomes part of
+the surname:
 
 .. doctest::
 

@@ -332,10 +332,21 @@ class Lexicon:
     #: ("van", "de", "bin", ...). Full default list:
     #: :data:`~nameparser.config.particles.PARTICLES`.
     particles: frozenset[str] = frozenset()
-    #: Subset of particles that can also BE a given name: a leading
-    #: one reads as given and records a particle-or-given ambiguity
-    #: ("Van Johnson", but also "Van Buren"). No constant of its own
-    #: -- the default derives
+    #: Subset of particles that can also BE a given name ("Van
+    #: Johnson", but also "Van Buren"). Membership decides nothing
+    #: about chaining: the prefix chain skips index 0 unconditionally
+    #: and never consults this set, so it leaves a leading particle a
+    #: piece of its own whether listed or not -- "de Mesnil" groups
+    #: into two pieces exactly as "van Gogh" does. What membership
+    #: decides is what becomes of that piece afterwards. Under EITHER
+    #: ``name_order`` a member records a particle-or-given ambiguity
+    #: and a non-member records none; under the default given-first
+    #: order a non-member is additionally folded back into the family
+    #: name once roles exist, so the whole name is the surname ("de
+    #: Mesnil" -- a bare "de", with nothing to fold into, is left
+    #: alone). Which field each piece lands in is ``name_order``'s
+    #: question, not this set's.
+    #: No constant of its own -- the default derives
     #: as particles minus
     #: :data:`~nameparser.config.particles.NON_GIVEN_NAME_PARTICLES`
     #: (which marks the opposite, never-given subset).

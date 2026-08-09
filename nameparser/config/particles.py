@@ -83,8 +83,10 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
 #: joins each following piece until the suffix "MD", giving the family
 #: name "von bergen wessels", while the same chaining in "Smith, Juan
 #: de la Cruz" gives the middle name "de la Cruz". A leading
-#: particle is the exception and chains nothing, since it may be a given
-#: name instead. Where the pieces then land is again a later question,
+#: particle is the exception and chains nothing: the chain skips the
+#: first piece unconditionally, membership in this set or any other
+#: never entering into it. Where the pieces then land is again a later
+#: question,
 #: and this one is ``name_order``'s: under the default given-first order
 #: a leading :py:data:`NON_GIVEN_NAME_PARTICLES` member makes the whole
 #: name a family name ("de la Vega"), while a leading particle outside
