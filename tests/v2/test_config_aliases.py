@@ -21,6 +21,8 @@ ALIASES = [
      "nameparser.config.particles", "NON_GIVEN_NAME_PARTICLES"),
     ("nameparser.config.bound_first_names", "BOUND_FIRST_NAMES",
      "nameparser.config.bound_given_names", "BOUND_GIVEN_NAMES"),
+    ("nameparser.config.titles", "FIRST_NAME_TITLES",
+     "nameparser.config.titles", "GIVEN_NAME_TITLES"),
 ]
 
 

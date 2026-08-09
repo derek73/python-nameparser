@@ -1,6 +1,6 @@
 from nameparser.config._invariants import assert_normalized
 
-FIRST_NAME_TITLES = {
+GIVEN_NAME_TITLES = {
     'aunt',
     'auntie',
     'brother',
@@ -58,7 +58,7 @@ When these titles appear with a single other name, that name is a first name, e.
 #: Many of these from wikipedia: https://en.wikipedia.org/wiki/Title.
 #: The parser recognizes chains of these including conjunctions allowing 
 #: recognition titles like "Deputy Secretary of State".
-TITLES = FIRST_NAME_TITLES | {
+TITLES = GIVEN_NAME_TITLES | {
     "attaché",
     "chargé",
     "d'affaires",
@@ -715,7 +715,7 @@ TITLES = FIRST_NAME_TITLES | {
 
     # #269: Cyrillic (ru/uk) -- mr/mrs/dr/prof/academician/pan(i)
     # honorifics, same title-then-family convention as 'mr'/'dr'/'prof'
-    # above (not FIRST_NAME_TITLES: "г-н Петров" families the surname
+    # above (not GIVEN_NAME_TITLES: "г-н Петров" families the surname
     # just like "Mr. Smith" does).
     'г-н',
     'г-жа',
@@ -777,12 +777,24 @@ TITLES = FIRST_NAME_TITLES | {
 
 
 # Guard the invariants at import time, so a bad edit fails here instead of
-# drifting silently until a test happens to catch it (see prefixes.py).
+# drifting silently until a test happens to catch it (see particles.py).
 # The subset rule holds by construction today -- TITLES is defined as
-# FIRST_NAME_TITLES | {...} -- so this pins it against a future edit that
+# GIVEN_NAME_TITLES | {...} -- so this pins it against a future edit that
 # makes TITLES a standalone set. Lexicon enforces the same rule on
 # caller-supplied vocabulary; `assert` is stripped under `python -O`.
-assert FIRST_NAME_TITLES <= TITLES, \
-    "FIRST_NAME_TITLES must stay a subset of TITLES"
-# TITLES covers FIRST_NAME_TITLES, by the subset assert above.
+assert GIVEN_NAME_TITLES <= TITLES, \
+    "GIVEN_NAME_TITLES must stay a subset of TITLES"
+# TITLES covers GIVEN_NAME_TITLES, by the subset assert above.
 assert_normalized("TITLES", TITLES)
+
+
+# 1.x name, deprecated in 2.2 and removed in 3.0 (#293). Unlike the
+# other renames in #293 the constant did not change module, so this
+# module aliases a name to itself: by the time __getattr__ can run the
+# module is fully imported and in sys.modules, so the lookup resolves
+# the global rather than recursing.
+from nameparser.config._deprecated import alias_getattr  # noqa: E402
+
+__getattr__, __dir__ = alias_getattr(__name__, {
+    "FIRST_NAME_TITLES": ("nameparser.config.titles", "GIVEN_NAME_TITLES"),
+})

@@ -313,7 +313,7 @@ class Lexicon:
     titles: frozenset[str] = frozenset()
     #: Titles whose single following name reads as a GIVEN name
     #: ("sheikh", "sister", ...) rather than a family name. Full
-    #: default list: :data:`~nameparser.config.titles.FIRST_NAME_TITLES`.
+    #: default list: :data:`~nameparser.config.titles.GIVEN_NAME_TITLES`.
     given_name_titles: frozenset[str] = frozenset()
     #: Post-nominal acronym suffixes, matched with or without periods
     #: ("phd" matches "PhD" and "Ph.D."). Full default list:
@@ -624,7 +624,7 @@ def _default_lexicon() -> Lexicon:
         SUFFIX_NOT_ACRONYMS,
     )
     from nameparser.config.surnames import KOREAN_SURNAMES
-    from nameparser.config.titles import FIRST_NAME_TITLES, TITLES
+    from nameparser.config.titles import GIVEN_NAME_TITLES, TITLES
 
     # v1 data modules export plain `set[str]`; wrap each at this call site
     # so the strictly-typed frozenset[str] fields never see a bare set.
@@ -632,7 +632,7 @@ def _default_lexicon() -> Lexicon:
     # default-Constants equality test in tests/v2/test_config_shim.py)
     return Lexicon(
         titles=frozenset(TITLES),
-        given_name_titles=frozenset(FIRST_NAME_TITLES),
+        given_name_titles=frozenset(GIVEN_NAME_TITLES),
         suffix_acronyms=frozenset(SUFFIX_ACRONYMS),
         suffix_words=frozenset(SUFFIX_NOT_ACRONYMS),
         suffix_acronyms_ambiguous=frozenset(SUFFIX_ACRONYMS_AMBIGUOUS),

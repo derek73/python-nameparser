@@ -217,7 +217,7 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
     def test_conjunction_in_an_address_with_a_first_name_title(self) -> None:
         hn = HumanName("Her Majesty Queen Elizabeth")
         self.m(hn.title, "Her Majesty Queen", hn)
-        # if you want to be technical, Queen is in FIRST_NAME_TITLES
+        # if you want to be technical, Queen is in GIVEN_NAME_TITLES
         self.m(hn.first, "Elizabeth", hn)
 
     def test_name_is_conjunctions(self) -> None:

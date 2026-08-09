@@ -77,7 +77,7 @@ NON_GIVEN_NAME_PARTICLES = {
 #:
 #: Defined as a static union so every :py:data:`NON_GIVEN_NAME_PARTICLES`
 #: member is guaranteed to also be a particle (and still join forward),
-#: with no drift -- mirroring ``TITLES = FIRST_NAME_TITLES | {...}`` in
+#: with no drift -- mirroring ``TITLES = GIVEN_NAME_TITLES | {...}`` in
 #: :py:mod:`nameparser.config.titles`.
 PARTICLES = NON_GIVEN_NAME_PARTICLES | {
     'aan',

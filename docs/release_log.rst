@@ -6,6 +6,7 @@ Release Log
 
     - Rename the particle vocabulary to the 2.0 terminology, so the data layer matches the ``Lexicon`` fields it feeds: ``nameparser.config.prefixes`` → :mod:`nameparser.config.particles`, ``PREFIXES`` → ``PARTICLES``, ``NON_FIRST_NAME_PREFIXES`` → ``NON_GIVEN_NAME_PARTICLES``. The old names still resolve and warn once, naming their new path, and go away in 3.0. The ``CONSTANTS`` attribute names are v1 facade surface and are unchanged. See :doc:`migrate` (#293)
     - Rename the bound given-name vocabulary the same way: ``nameparser.config.bound_first_names`` → :mod:`nameparser.config.bound_given_names`, ``BOUND_FIRST_NAMES`` → ``BOUND_GIVEN_NAMES``. Old name, same bridge: it resolves, warns once and goes away in 3.0. ``CONSTANTS.bound_first_names`` is unchanged (#293)
+    - Rename the given-name title vocabulary in place: ``nameparser.config.titles.FIRST_NAME_TITLES`` → ``GIVEN_NAME_TITLES``, matching ``Lexicon.given_name_titles``. The module keeps its name and its data, so only the constant moves; the old name resolves from the same module, warns once and goes away in 3.0. ``CONSTANTS.first_name_titles`` is unchanged (#293)
 
 * 2.1.0 - August 7, 2026
 
