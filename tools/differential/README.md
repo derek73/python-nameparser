@@ -192,7 +192,7 @@ explicit, reviewable act that can only add names — and the CJK corpus
 exists because BOTH of those are structurally blind to unspaced CJK (v1's
 banks never tested it; `build_issues_corpus.py` requires an internal
 space, which unspaced names never have). It regenerates from the case
-table, and `tests/v2/test_regex_sync.py` pins the checked-in file
+table, and `tests/v2/test_ledger_guards.py` pins the checked-in file
 against the generator's selection, so a CJK case row added without
 regenerating fails the suite instead of silently narrowing this gate.
 

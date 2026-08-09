@@ -27,7 +27,7 @@ issue = "fix(#271/#272/#298) native-script CJK: family-first order, hangul segme
 # astral block (U+20000-U+323AF) is deliberately left out of the class:
 # no name in either corpus reaches it, and a rule should be no wider
 # than the diffs it has to explain. Extend it -- and the sync pin in
-# tests/v2/test_regex_sync.py, which fails if the two disagree -- if
+# tests/v2/test_ledger_guards.py, which fails if the two disagree -- if
 # one ever does. The kana spans are BMP-only for a different reason:
 # supplementary-plane kana is hentaigana and other archaic forms no
 # modern name uses, so _SCRIPT_RANGES does not list it either.
@@ -64,7 +64,7 @@ fields = ["given", "middle", "family"]
 [[change]]
 issue = "fix(#274) maiden markers consumed"
 # The alternation is a hand copy of MAIDEN_MARKERS, pinned by
-# tests/v2/test_regex_sync.py: every alternative must match at least
+# tests/v2/test_ledger_guards.py: every alternative must match at least
 # one entry the config ships, and none may match ordinary name text.
 #
 # Its members reach 4 of the 17 entries -- geb, nee, née, roz -- which
@@ -270,7 +270,7 @@ issue = "fix(cjk-fullwidth-paren-nickname) fullwidth-parenthesis recognition com
 # middle-name word -- a spaced corner-bracket name never does that.
 # Adding `middle` there would pre-excuse a bare middle regression on
 # '山田「タロ」太郎'. Its delimiter set is separately pinned in
-# tests/v2/test_regex_sync.py as "its own decision surface", so
+# tests/v2/test_ledger_guards.py as "its own decision surface", so
 # widening it is a deliberate act with a test to update, and there is
 # nothing to gain by making it here.
 #
@@ -325,7 +325,7 @@ issue = "fix(cjk-honorific-suffix) postnominal honorifics recognized, compoundin
 # ('Wang Xiaoming 先生') is inside its shadow, accepted because the
 # recognized honorific is the diff's cause there too, and the
 # alternation is a hand copy of SUFFIX_NOT_ACRONYMS' CJK entries --
-# pinned by tests/v2/test_regex_sync.py, which derives the expected
+# pinned by tests/v2/test_ledger_guards.py, which derives the expected
 # set from the config by script membership. Anchored to a WHOLE
 # trailing token ((?:^| )...$), judged on the NAME STRING: without
 # it, any name string merely ENDING in 양/군 -- the glued given name

@@ -2,33 +2,21 @@
 
 `tools/` is outside `testpaths`, and adding it would run
 `--doctest-modules` over the corpus builders, so `compare.py` is
-imported by path here -- the same way `test_regex_sync.py` already
-imports `build_cjk_corpus`.
+imported by path -- through `_differential_fixtures.load_compare`,
+shared with `test_ledger_guards.py` so the loader exists once.
 
 Only pure logic is covered: nothing here spawns `uv` or the network.
 What is tested is what produces FALSE CONFIDENCE when it silently
 misbehaves -- which surfaces get compared, which ledger gets consulted,
 and above all whether a version tell is believed.
 """
-import importlib.util
 from pathlib import Path
-from types import ModuleType
 
 import pytest
 
-_TOOLS = Path(__file__).parents[2] / "tools" / "differential"
+from ._differential_fixtures import _TOOLS, load_tool
 
-
-def _load_compare() -> ModuleType:
-    spec = importlib.util.spec_from_file_location(
-        "differential_compare", _TOOLS / "compare.py")
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-compare = _load_compare()
+compare = load_tool("compare")
 
 
 def test_parse_version_pads_a_short_release_to_three_parts() -> None:
