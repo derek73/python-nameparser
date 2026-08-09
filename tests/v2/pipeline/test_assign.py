@@ -1,4 +1,6 @@
 # tests/v2/pipeline/test_assign.py
+import pytest
+
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._assign import assign
 from nameparser._pipeline._classify import classify
@@ -24,8 +26,9 @@ _LEX = Lexicon(
 )
 
 
-def _assigned(text: str, policy: Policy | None = None) -> ParseState:
-    state = ParseState(original=text, lexicon=_LEX,
+def _assigned(text: str, policy: Policy | None = None,
+              lexicon: Lexicon | None = None) -> ParseState:
+    state = ParseState(original=text, lexicon=lexicon or _LEX,
                        policy=policy or Policy())
     return assign(group(classify(segment(tokenize(
         extract_delimited(state))))))
@@ -72,23 +75,44 @@ def test_leading_ambiguous_particle_reads_as_given_with_ambiguity() -> None:
     assert not _assigned("John Smith").ambiguities
 
 
-def test_leading_particle_detail_names_the_role_it_took() -> None:
-    # The fork is the same under either order -- particle or name --
-    # but which role the head piece actually took is name_order's
+@pytest.mark.parametrize("policy,role", [
+    (None, "given"),
+    (Policy(name_order=FAMILY_FIRST), "family"),
+    (Policy(name_order=FAMILY_FIRST_GIVEN_LAST), "family"),
+])
+def test_leading_particle_detail_names_the_role_it_took(
+        policy: Policy | None, role: str) -> None:
+    # The fork is the same under every order -- particle or name --
+    # but which role the head piece actually took is the assignment's
     # answer, so the user-facing detail has to read it off the token
     # rather than hardcode "given", exactly as SUFFIX_OR_NAME does.
-    given_first = _assigned("Van Johnson").ambiguities[0]
-    assert given_first.kind is AmbiguityKind.PARTICLE_OR_GIVEN
-    assert given_first.detail == (
-        "leading 'Van' may be a family-name particle; "
-        "read as a given name")
-    family_first = _assigned(
-        "Van Johnson", Policy(name_order=FAMILY_FIRST)).ambiguities[0]
-    # kind is public API and stays PARTICLE_OR_GIVEN -- the fork really
-    # is "particle or given" -- but here the piece was assigned FAMILY.
-    assert family_first.kind is AmbiguityKind.PARTICLE_OR_GIVEN
-    assert family_first.detail == (
-        "leading 'Van' may be a family-name particle; "
+    # kind is public API and stays PARTICLE_OR_GIVEN throughout: the
+    # fork really is "particle or given" even where the piece landed
+    # in FAMILY.
+    (amb,) = _assigned("Van Johnson", policy).ambiguities
+    assert amb.kind is AmbiguityKind.PARTICLE_OR_GIVEN
+    assert amb.detail == (
+        f"leading 'Van' may be a family-name particle; "
+        f"read as a {role} name")
+
+
+def test_leading_particle_detail_follows_the_effective_order() -> None:
+    # Reading policy.name_order[0] instead of the token's own role
+    # would pass every case above, because there the two agree. They
+    # come apart on the script_orders path (#271): a wholly-Han name
+    # resolves family-first through _effective_order while name_order
+    # is untouched and still reads given-first. The head piece is the
+    # FAMILY name here, and the detail has to say so.
+    han = _LEX.add(particles={"毛"}, particles_ambiguous={"毛"})
+    out = _assigned("毛 泽东", lexicon=han)
+    assert out.policy.name_order[0] is Role.GIVEN
+    assert out.policy.script_orders[0][0] is Script.HAN
+    assert _by_role(out, Role.FAMILY) == "毛"
+    assert _by_role(out, Role.GIVEN) == "泽东"
+    (amb,) = out.ambiguities
+    assert amb.kind is AmbiguityKind.PARTICLE_OR_GIVEN
+    assert amb.detail == (
+        "leading '毛' may be a family-name particle; "
         "read as a family name")
 
 

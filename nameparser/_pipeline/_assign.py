@@ -274,9 +274,12 @@ def _assign_main(seg_idx: int, state: ParseState,
         head = pieces[name_pieces[0]]
         if (len(head) == 1 and len(name_pieces) > 1
                 and "vocab:particle-ambiguous" in tokens[head[0]].tags):
-            # the loops above gave the head piece its role; which one it
-            # is follows name_order, so name the role rather than assume
-            # given -- same reason as SUFFIX_OR_NAME just above.
+            # the loops above gave the head piece its role from
+            # `order`, which is _effective_order's answer and not
+            # necessarily name_order's -- a script_orders entry
+            # overrides it. So read the role off the token rather than
+            # assume given, or re-derive it here; same reason as
+            # SUFFIX_OR_NAME just above.
             token = tokens[head[0]]
             assert token.role is not None
             ambiguities.append(PendingAmbiguity(
