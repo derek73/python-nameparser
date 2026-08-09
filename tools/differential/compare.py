@@ -471,8 +471,17 @@ def validate_exclusions(entries: list[dict[str, object]],
     validate_rules', with one addition: an entry whose `examples` do
     not match its own `name_regex` protects nothing while looking
     complete, and nothing else would ever say so.
+
+    `fields` is optional and narrows WHICH READING is protected, the
+    same subset test the rules use. It exists because ASCII parens mark
+    nicknames, maiden names, suffixes and credentials alike -- a
+    name-only exclusion for the nickname promise would also silence
+    'Jenny (Johnson) Baker' and 'Lon (Jr.) Williams', hiding a
+    regression in areas under active development. Typographic
+    delimiters have no such ambiguity, which is why feat(#273)'s own
+    rule can be a bare character class and its exclusion cannot.
     """
-    allowed = {"why", "name_regex", "examples"}
+    allowed = {"why", "name_regex", "examples", "fields"}
     for index, entry in enumerate(entries):
         where = f"{ledger} exclusion #{index + 1}"
         unknown = set(entry) - allowed
@@ -515,6 +524,30 @@ def validate_exclusions(entries: list[dict[str, object]],
                 f"{where} lists {stray} which does not match its own "
                 f"'name_regex' -- the entry would protect nothing while "
                 f"looking complete.")
+        if "fields" in entry:
+            fields = entry["fields"]
+            if not isinstance(fields, list) \
+                    or not all(isinstance(f, str) for f in fields):
+                raise SystemExit(
+                    f"{where} has a 'fields' that is not a list of "
+                    f"strings ({fields!r}); classify would ignore it and "
+                    f"the entry would silence EVERY diff on a matching "
+                    f"name, not the reading it names")
+            if not fields:
+                raise SystemExit(
+                    f"{where} has an empty 'fields', which can never "
+                    f"match any diff -- an exclusion that protects "
+                    f"nothing")
+            bad = sorted(set(fields) - _RULE_FIELDS)
+            if bad:
+                raise SystemExit(
+                    f"{where} names {bad} in 'fields', which are not "
+                    f"roles; expected from {sorted(_RULE_FIELDS)}")
+            if set(V2_FIELDS) <= set(fields):
+                raise SystemExit(
+                    f"{where} lists all seven roles in 'fields', which "
+                    f"is what omitting the key already means. omit "
+                    f"'fields' to exclude any diff on a matching name")
 
 
 def classify(name: str, diff_fields: set[str],
@@ -533,11 +566,22 @@ def classify(name: str, diff_fields: set[str],
     ever removes a name from classification, never moves it between
     rules -- so a new entry's blast radius is exactly the set of names
     it captures, independent of rule order.
+
+    An exclusion narrows by `name_regex` and optionally by `fields`,
+    exactly as a rule does. Without `fields` it refuses any diff on a
+    matching name; with them it refuses only the reading it names, so a
+    name whose parens mark a nickname to one rule and a suffix to
+    another stays classifiable on the reading the exclusion is not
+    about.
     """
     for entry in exclusions or ():
         pattern = entry.get("name_regex")
-        if isinstance(pattern, str) and re.search(pattern, name):
-            return None
+        if isinstance(pattern, str) and not re.search(pattern, name):
+            continue
+        fields = entry.get("fields")
+        if isinstance(fields, list) and not diff_fields <= set(fields):
+            continue
+        return None
     for rule in rules:
         name_regex = rule.get("name_regex")
         if isinstance(name_regex, str) and not re.search(name_regex, name):

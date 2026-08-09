@@ -778,3 +778,47 @@ def test_classify_refuses_an_excluded_shape() -> None:
         "John Smith, Ph. D.", {"suffix"}, rules, never) is None
     # a name the exclusion does not cover is unaffected
     assert compare.classify("Smith, Dr.", {"suffix"}, rules, never) == "broad"
+
+
+@pytest.mark.parametrize("entry,expect", [
+    ({"why": "x", "name_regex": "a", "examples": ["a"], "fields": "given"},
+     "not a list of strings"),
+    ({"why": "x", "name_regex": "a", "examples": ["a"], "fields": []},
+     "empty 'fields'"),
+    ({"why": "x", "name_regex": "a", "examples": ["a"], "fields": ["nope"]},
+     "not roles"),
+    # the facade's vocabulary is not the role vocabulary
+    ({"why": "x", "name_regex": "a", "examples": ["a"], "fields": ["first"]},
+     "not roles"),
+    # all seven means "any diff", which is what omitting the key does
+    ({"why": "x", "name_regex": "a", "examples": ["a"],
+      "fields": ["title", "given", "middle", "family", "suffix",
+                 "nickname", "maiden"]}, "omit 'fields'"),
+])
+def test_validate_exclusions_rejects_a_bad_fields_narrowing(
+        entry: dict, expect: str) -> None:
+    with pytest.raises(SystemExit, match=expect):
+        compare.validate_exclusions([entry], "expected_since_1.4.0.toml")
+
+
+def test_an_excluded_shape_stays_classifiable_on_other_roles() -> None:
+    """The reason `fields` exists. ASCII parens mark nicknames, maiden
+    names, suffixes and credentials alike, so an exclusion that names
+    the nickname reading must not silence a suffix diff on the same
+    name -- that would hide a regression in an area under active
+    development, which is the failure this feature exists to prevent."""
+    rules = [{"issue": "catch-all", "fields": ["given", "suffix",
+                                               "nickname", "middle"]}]
+    never = [{"why": "ascii pairs were already handled in 1.4",
+              "name_regex": r"\w\s+\([^)]+\)\s+\w",
+              "fields": ["nickname", "middle"],
+              "examples": ["John (Jack) Kennedy"]}]
+    name = "Lon (Jr.) Williams"
+    # the reading the exclusion names is refused
+    assert compare.classify(name, {"nickname"}, rules, never) is None
+    assert compare.classify(name, {"middle"}, rules, never) is None
+    # a different reading of the same name is still classifiable
+    assert compare.classify(name, {"suffix"}, rules, never) == "catch-all"
+    # and a mixed diff is not a subset of the exclusion, so it survives
+    assert compare.classify(
+        name, {"nickname", "suffix"}, rules, never) == "catch-all"
