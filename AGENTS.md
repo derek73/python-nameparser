@@ -72,8 +72,15 @@ uv run sphinx-build -b html docs dist/docs
 #    code with the pipe's, so a failing run reads as a passing one. The
 #    classified summary it prints is the source for the release notes' behavior
 #    claims, including the count of changed names that are Latin-only.
-# 2. Bump VERSION in nameparser/_version.py (and the `version:` field in CITATION.cff to match)
-#    For a pre-release, set PRE_RELEASE = 'rc1' (etc.) — __version__ joins it without a dot ('2.0.0rc1'); '' means final
+# 2. Clear PRE_RELEASE in nameparser/_version.py — it carries 'dev' through the
+#    cycle (see step 9), so releasing is setting it to ''. VERSION should already
+#    be the version you are shipping; bump it here only if step 9 was skipped.
+#    For an RC, set PRE_RELEASE = 'rc1' (etc.) instead — __version__ joins it
+#    without a dot ('2.0.0rc1').
+#    Also set the `version:` field in CITATION.cff to this release. It is the ONE
+#    version string that does NOT track the tree: it names the last citable
+#    released artifact, so it lags on purpose for the whole cycle and catches up
+#    here. Nothing checks this — no test, no CI — so it is on you.
 # 3. Stamp "Unreleased" → "X.Y.Z - Month DD, YYYY" in docs/release_log.rst
 # 4. git commit + git tag -a vX.Y.Z -m "Release X.Y.Z"
 # 5. git push origin master && git push origin vX.Y.Z  ← tag must be pushed separately before gh release create
@@ -112,6 +119,19 @@ uv run sphinx-build -b html docs dist/docs
 #        vocabulary (maiden markers, ambiguous acronyms). An alternation
 #        matching no key fails as undeclared -- add it, or record it in
 #        _NOT_A_VOCABULARY_COPY if it copies nothing.
+# 9. Open the next cycle's VERSION: bump VERSION in nameparser/_version.py to
+#    the minor now being worked, and set PRE_RELEASE = 'dev'. The tree then says
+#    what it is building rather than what it last shipped -- docs/conf.py reads
+#    __version__ directly, so Read the Docs' "latest" is otherwise stuck on the
+#    previous release for the whole cycle.
+#    It also restores the differential harness's version tell: with the tree and
+#    the baseline wheel both reporting the same release, only the __file__ path
+#    distinguishes them, which is the weak state test_tell_rejects_a_module_
+#    loaded_from_the_checkout documents. A dev tree differs on both halves.
+#    'dev' normalizes to X.Y.0.dev0 -- above the last release, below the one it
+#    precedes -- so an install from master can never masquerade as the release.
+#    Leave CITATION.cff alone: it names the last RELEASED version and is meant
+#    to lag until step 2 of the next release.
 ```
 
 Enable debug logging to see the parser's internal decisions:
