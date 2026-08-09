@@ -108,11 +108,14 @@ def test_every_vocabulary_constant_is_frozen() -> None:
     """A module vocabulary constant must not be mutable (#293).
 
     ``Lexicon.default()`` is ``functools.cache``d and reads these sets
-    once, while the v1 shim's ``Constants`` copy from them at every
-    construction. A runtime ``TITLES.add("dean")`` was therefore
-    visible to a freshly built ``Constants`` and invisible to the
-    cached default ``Lexicon`` -- two APIs disagreeing about their own
-    defaults, decided by construction order. Frozen makes that
+    once, at its first call, while the v1 shim's ``Constants`` copy
+    from them at every construction. A runtime ``TITLES.add("dean")``
+    was therefore always visible to a freshly built ``Constants``, and
+    visible to the default ``Lexicon`` only when it landed before the
+    first parse -- after that the cache was already built and the same
+    edit was invisible there. Two APIs disagreeing about their own
+    defaults, decided by construction order, and no way from the
+    mutating code to tell which branch it was on. Frozen makes that
     unrepresentable: the mutation raises where it is written.
 
     It also carries more than it did. ``_default_lexicon()`` used to
@@ -148,9 +151,24 @@ def test_every_vocabulary_constant_is_frozen() -> None:
 
     import nameparser.config
 
+    # The two mapping constants, EXEMPT and named rather than dropped by
+    # the isinstance filter without comment. REGEXES is a compiled-
+    # pattern table rather than vocabulary and was never in #293's
+    # scope. CAPITALIZATION_EXCEPTIONS is vocabulary-shaped and is a
+    # decided, in-scope exemption, which means the split-default hazard
+    # the freeze closes is STILL LIVE for it -- an edit reaches a
+    # freshly built Constants and neither the cached Lexicon.default()
+    # nor the shared CONSTANTS. Written down here, in docs/migrate.rst
+    # and in AGENTS.md so it does not read as covered.
+    exempt_mappings = {
+        "capitalization.CAPITALIZATION_EXCEPTIONS",
+        "regexes.REGEXES",
+    }
+
     config_dir = pathlib.Path(nameparser.config.__file__).parent
     checked = []
     offenders = []
+    exempt_seen = set()
     for path in sorted(config_dir.rglob("*.py")):
         relative = path.relative_to(config_dir).with_suffix("")
         if any(part.startswith("_") for part in relative.parts):
@@ -158,11 +176,25 @@ def test_every_vocabulary_constant_is_frozen() -> None:
         stem = ".".join(relative.parts)
         module = importlib.import_module(f"nameparser.config.{stem}")
         for name, value in sorted(vars(module).items()):
-            if not name.isupper() or not isinstance(value, (set, frozenset)):
+            if not name.isupper():
                 continue
-            checked.append(f"{stem}.{name}")
+            qualified = f"{stem}.{name}"
+            if isinstance(value, dict):
+                assert qualified in exempt_mappings, (
+                    f"{qualified} is a mutable mapping constant with no "
+                    f"recorded exemption; freeze it, or add it to "
+                    f"exempt_mappings with the reason it stays mutable")
+                exempt_seen.add(qualified)
+                continue
+            if not isinstance(value, (set, frozenset)):
+                continue
+            checked.append(qualified)
             if not isinstance(value, frozenset):
-                offenders.append(f"{stem}.{name}")
+                offenders.append(qualified)
+    assert exempt_seen == exempt_mappings, (
+        f"exempt_mappings names {sorted(exempt_mappings - exempt_seen)}, "
+        f"which the sweep never found -- a stale exemption hides the "
+        f"next mutable mapping that inherits the name")
     # A FLOOR, not a presence check: `assert checked` is satisfied by
     # one surviving constant, so a filter or a path change that quietly
     # dropped twelve of the thirteen would still read as a pass. Twelve

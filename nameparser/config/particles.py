@@ -2,8 +2,14 @@ from nameparser.config._invariants import assert_normalized
 from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
 
 #: The sub-set of :py:data:`PARTICLES` that are *never* a standalone given
-#: name. A name that *starts* with one of these has no given name -- the
-#: whole thing is a surname (e.g. "de Mesnil" -> family name "de Mesnil").
+#: name. Under the default given-first order that means a name *starting*
+#: with one of these has no given name -- the whole thing is a surname
+#: (e.g. "de Mesnil" -> family name "de Mesnil"). The reading is scoped to
+#: the order on purpose: ``Policy(name_order=FAMILY_FIRST)`` parses the
+#: same input as family "de", given "Mesnil", because which side of a
+#: leading particle the family name sits on is ``name_order``'s question,
+#: not this set's. What membership decides under either order is the
+#: ambiguity report -- see :py:data:`PARTICLES` below.
 #: Curated to exclude anything that can be a given name in some culture
 #: (`al`, `van`, `von`, `della`, `di`, `del`, `da`, `vander`, ...) and
 #: anything that is also a bound given-name particle (`abu`). When unsure,
@@ -78,10 +84,18 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
 #: name "von bergen wessels", while the same chaining in "Smith, Juan
 #: de la Cruz" gives the middle name "de la Cruz". A leading
 #: particle is the exception and chains nothing, since it may be a given
-#: name instead: one in :py:data:`NON_GIVEN_NAME_PARTICLES` makes the
-#: whole name a family name ("de la Vega"), while one outside that set is
-#: read as a given name ("Van Johnson") and records a particle-or-given
-#: ambiguity for the reading not taken.
+#: name instead. Where the pieces then land is again a later question,
+#: and this one is ``name_order``'s: under the default given-first order
+#: a leading :py:data:`NON_GIVEN_NAME_PARTICLES` member makes the whole
+#: name a family name ("de la Vega"), while a leading particle outside
+#: that set is read as the given name ("Van Johnson") -- whereas
+#: ``Policy(name_order=FAMILY_FIRST)`` splits both at the leading
+#: particle alike ("de la Vega" -> family "de", given "la Vega"; "Van
+#: Johnson" -> family "Van", given "Johnson"), which is the same
+#: chains-nothing grouping read the other way round. What membership
+#: decides under EITHER order is the report: a leading particle outside
+#: :py:data:`NON_GIVEN_NAME_PARTICLES` records a particle-or-given
+#: ambiguity for the reading not taken, and one inside it records none.
 #:
 #: Defined as a static union so every :py:data:`NON_GIVEN_NAME_PARTICLES`
 #: member is guaranteed to also be a particle (and still join forward),

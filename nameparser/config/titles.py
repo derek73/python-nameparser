@@ -788,8 +788,13 @@ TITLES = GIVEN_NAME_TITLES | {
 # drifting silently until a test happens to catch it (see particles.py).
 # The subset rule holds by construction today -- TITLES is defined as
 # GIVEN_NAME_TITLES | {...} -- so this pins it against a future edit that
-# makes TITLES a standalone set. Lexicon enforces the same rule on
-# caller-supplied vocabulary; `assert` is stripped under `python -O`.
+# makes TITLES a standalone set. Note `assert` is stripped under
+# `python -O`, and unlike suffixes.py's relations this one has no
+# runtime backstop: Lexicon deliberately does NOT validate
+# given_name_titles against titles (its "NOT validated" comment gives
+# the reasoning), so a caller's
+# Lexicon(titles=frozenset({"sir"}), given_name_titles=frozenset({"dame"}))
+# is accepted. Under -O nothing checks this relation at all.
 assert GIVEN_NAME_TITLES <= TITLES, \
     "GIVEN_NAME_TITLES must stay a subset of TITLES"
 # TITLES covers GIVEN_NAME_TITLES, by the subset assert above.

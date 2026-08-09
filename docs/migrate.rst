@@ -223,10 +223,13 @@ fields:
        capitalization_exceptions={...})``, not ``add()``/``remove()``
 
 The vocabulary that feeds both columns lives in ``nameparser.config``,
-and in 2.2 its module and constant names moved to the same terminology
-the ``Lexicon`` column uses. If you import the default word lists
-directly — to read one, extend one, or copy one into your own
-configuration — four vocabularies moved:
+and in 2.2 its module and constant names moved to the vocabulary the
+``Lexicon`` column speaks — particles, bound given names, given-name
+titles, suffix words. Terminology only; one of the four kept 1.x's
+*meaning* while its ``Lexicon`` counterpart marks the opposite set, so
+read the caveat under the table before pairing them up. If you import
+the default word lists directly — to read one, extend one, or copy one
+into your own configuration — four vocabularies moved:
 
 .. list-table::
    :header-rows: 1
@@ -248,6 +251,16 @@ configuration — four vocabularies moved:
      - ``titles.GIVEN_NAME_TITLES``
    * - ``suffixes.SUFFIX_NOT_ACRONYMS``
      - ``suffixes.SUFFIX_WORDS``
+
+The caveat is on the third row. ``NON_GIVEN_NAME_PARTICLES`` is
+``NON_FIRST_NAME_PREFIXES`` renamed and nothing else — same members,
+same *never a given name* meaning. It is **not** the constant behind
+``Lexicon.particles_ambiguous``, which is that field's complement, even
+though the two now sound as though they belong together. Pairing this
+table's third row with the field-mapping table above and concluding
+that ``NON_GIVEN_NAME_PARTICLES`` is what ``particles_ambiguous``
+holds is exactly the inversion the flip warning below exists to
+prevent.
 
 Every row still resolves, and the old names are removed in 3.0. The two
 module rows are import paths and nothing more: importing
@@ -278,12 +291,13 @@ so ``constants.prefixes``,
 ``constants.first_name_titles`` and ``constants.suffix_not_acronyms``
 keep their 1.x spelling for as long as the facade exists.
 
-Every vocabulary set in ``nameparser.config`` is also a ``frozenset``
-as of 2.2 — the renamed ones and the rest, ``CAPITALIZATION_EXCEPTIONS``
-being a mapping and unchanged. That retires one 1.x idiom outright:
-``TITLES.add("dean")`` — editing a default word list in place — now
-raises ``AttributeError`` at the line that writes it, rather than
-changing some parses and not others some distance away.
+Every vocabulary *set* in ``nameparser.config`` is also a ``frozenset``
+as of 2.2 — the renamed ones and the rest. Every set, that is; the one
+mapping constant is untouched, and there is a note on it below. The
+freeze retires one 1.x idiom outright: ``TITLES.add("dean")`` — editing
+a default word list in place — now raises ``AttributeError`` at the
+line that writes it, rather than changing some parses and not others
+some distance away.
 
 It was never a dependable way to change a default, because the two
 config layers read the module constants at different moments.
@@ -298,6 +312,18 @@ so ``parse()``, and a fresh ``Constants`` — but still never the shared
 ``CONSTANTS``. Whether an edit reached a given parse thus depended on
 which config objects the program had already built, and one program
 could hold two disagreeing defaults with nothing to say so.
+
+``CAPITALIZATION_EXCEPTIONS`` is the constant the freeze left out. It
+is a mapping rather than a set, and it is still a plain mutable
+``dict`` — ``CAPITALIZATION_EXCEPTIONS["phd"] = "PhD"`` runs on 2.2 and
+raises nothing. Everything just said about split defaults still applies
+to it, unchanged and measured on 2.2: an edit after the first parse
+reaches a freshly built ``Constants``, and neither
+``Lexicon.default()`` nor the shared ``CONSTANTS``. The advice below is
+the same advice — configure the object, with
+``constants.capitalization_exceptions["phd"] = "PhD"`` on a private
+``Constants``, or ``dataclasses.replace(lexicon,
+capitalization_exceptions={...})`` for the 2.0 API.
 
 Configure the objects instead, which both APIs have always supported
 and neither the freeze nor the rename affects. For ``HumanName``, build
@@ -380,7 +406,12 @@ handing the parser a regex.
    **complementary** sets, not the same set under a new name.
    ``non_first_name_prefixes`` lists particles that are *never* read as
    a given name; ``particles_ambiguous`` lists the particles that
-   *may* be read as one. Translating a customization means flipping
+   *may* be read as one. The same holds for the config constant behind
+   it: ``particles.NON_GIVEN_NAME_PARTICLES`` (1.x
+   ``prefixes.NON_FIRST_NAME_PREFIXES``) marks the never-given set, so
+   it is the complement of ``particles_ambiguous`` too, however much
+   the 2.2 names now suggest otherwise. Translating a customization
+   means flipping
    the set: ``particles_ambiguous = lexicon.particles -
    constants.non_first_name_prefixes``. Copying
    ``non_first_name_prefixes`` straight into ``particles_ambiguous``

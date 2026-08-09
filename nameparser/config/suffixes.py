@@ -99,7 +99,15 @@ SUFFIX_WORDS = frozenset({
 
 Post-nominal suffixes matched as WORDS: the lookup uses the normalized token,
 so only EDGE periods come off and interior ones survive -- "Junior." matches
-here, "J.u.n.i.o.r." does not. :data:`SUFFIX_ACRONYMS` is the set matched
+here, "J.u.n.o.r." does not and stays name text ("John J.u.n.o.r." parses a
+family name, on both APIs). The example is deliberately not "J.u.n.i.o.r.",
+which fails this lookup too and is a suffix anyway: an interior-period token
+that no whole-token set claims goes to ``period_joined_vocab``, which splits
+it on its periods and, no chunk being a title, calls the whole thing a
+suffix if ANY chunk is suffix vocabulary -- and the chunk "i" is the Roman
+numeral listed above.
+So membership here is not the last word on a dotted token; the sentence is
+about this set's lookup alone. :data:`SUFFIX_ACRONYMS` is the set matched
 with every period removed, so it alone covers the multi-dot spelling
 "E.S.Q." -- and, having no interior period to lose, "Esq" as well. 'esq'
 is listed here too (v1 data): inert against the shipped acronym set, since
@@ -895,9 +903,20 @@ else:
 # In SOURCE order, not alphabetical: `automodule :members:` follows
 # __all__ where a module defines one, so an alphabetical list here would
 # silently reorder this module's entries in modules.html. The retired
-# name goes last because autodoc does not document it (it is not a
-# module global, so autodoc's getattr-free member scan never sees it)
-# and it therefore has no position to preserve.
+# name goes last because autodoc does not document it, and so it has no
+# position to preserve. Not for want of SEEING it: the module member
+# scan walks dir(), which our __dir__ lists the retired name in, and
+# then calls safe_getattr on it -- so an html build resolves this name
+# and titles.py's retired one alike, emitting a real DeprecationWarning
+# for each. (Invisible in a "build succeeded, 0 warnings" line: Sphinx
+# warnings and Python warnings are different channels. Wrap
+# sphinx.cmd.build.build_main in warnings.catch_warnings to see them.)
+# What declines it is the attribute-doc scan: ModuleAnalyzer parses the
+# SOURCE and finds no assignment statement for a name served by
+# __getattr__, so autodoc computes is_attr=False, and at module level a
+# member that is not an attribute and is neither a class nor a callable
+# matches no object type at all -- no documenter is chosen and the
+# member is skipped.
 __all__ = [
     "SUFFIX_WORDS",
     "GLUED_HONORIFICS",

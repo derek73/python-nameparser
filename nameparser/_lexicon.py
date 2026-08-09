@@ -628,9 +628,12 @@ def _default_lexicon() -> Lexicon:
 
     # every vocabulary constant is a frozenset since #293, so each one
     # feeds its strictly-typed frozenset[str] field as it stands -- and
-    # this cache reading them ONCE is the reason they are frozen: a
-    # mutated module set would reach a freshly built Constants and never
-    # reach the default Lexicon.
+    # this cache reading them ONCE is the reason they are frozen. A
+    # mutated module set always reached a freshly built Constants, and
+    # reached this Lexicon only when the edit landed before the first
+    # call; after it, the cache was already built and the same edit was
+    # invisible here. Which of the two a program got was not something
+    # the code doing the mutating could see.
     # keep in sync with _config_shim.Constants._snapshot() (pinned by the
     # default-Constants equality test in tests/v2/test_config_shim.py)
     return Lexicon(
