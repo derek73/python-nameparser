@@ -136,6 +136,76 @@ def test_dir_advertises_the_old_names(old_module: str, old_name: str) -> None:
     assert old_name in dir(importlib.import_module(old_module))
 
 
+def test_dir_lists_the_live_names_as_well_as_the_retired_ones() -> None:
+    """The other half of what these four ``__dir__`` overrides owe.
+
+    A module ``__dir__`` REPLACES the default listing, so an override
+    that returns only the alias table takes every live constant out of
+    REPL completion, out of ``inspect.getmembers``, and out of autodoc's
+    module member scan -- which walks ``dir()`` and would then document
+    nothing from ``suffixes``/``titles``. The retired-name assertion
+    above is satisfied by exactly that override, so it has to be said
+    separately.
+
+    Stated over the whole of ``vars()`` rather than the vocabulary
+    alone: the union is what the override actually promises, and it
+    cannot go vacuous the way an empty vocabulary filter can on the two
+    data-free shim modules.
+    """
+    live_seen = []
+    dropped = {}
+    for old_module in sorted({m for m, _, _, _ in ALIASES}):
+        module = importlib.import_module(old_module)
+        missing = set(vars(module)) - set(dir(module))
+        if missing:
+            dropped[old_module] = sorted(missing)
+        live_seen += [name for name, value in vars(module).items()
+                      if name.isupper() and isinstance(value, frozenset)]
+    # checked first: the sweep below is equally happy with four modules
+    # holding no vocabulary at all, which is the shape that would make
+    # it prove nothing
+    assert live_seen, (
+        "no live vocabulary constant found in any alias-bearing module "
+        "-- the sweep below would be measuring only dunders")
+    assert not dropped, (
+        f"__dir__ returned less than the module's own globals: {dropped}"
+        f" -- an override that does not union them hides the live "
+        f"constants from every getattr-free member scan")
+
+
+@pytest.mark.parametrize(
+    "old_module", sorted({m for m, _, _, _ in ALIASES}))
+def test_every_alias_table_row_reaches_star_import(old_module: str) -> None:
+    """The direction the star-import test cannot see.
+
+    ``__all__`` is hand-written per module and the alias table is a
+    second hand-written list. An ``__all__`` entry with no table row
+    fails loudly (the name resolves to nothing). A table row missing
+    from ``__all__`` is the silent one: ``from x import *`` reads
+    ``__all__`` and never the module ``__getattr__``, so the row is
+    simply dropped -- no warning, no ``AttributeError`` -- which is
+    verbatim the failure fc46a9b added ``__all__`` to eliminate. The
+    star-import test derives its expected set from this file's
+    ``ALIASES``, so it agrees with a truncated ``__all__`` and stays
+    green.
+
+    ``ALIASES`` itself is checked against the module's table for the
+    same reason: a row added there and not here would leave every other
+    assertion in this file blind to the new alias.
+    """
+    module = importlib.import_module(old_module)
+    table = module.__getattr__.deprecated_aliases  # type: ignore[attr-defined]
+    exported = set(module.__all__)
+    assert set(table) <= exported, (
+        f"{old_module} serves {sorted(set(table) - exported)} through "
+        f"__getattr__ but omits it from __all__, so `from {old_module} "
+        f"import *` drops the name silently")
+    assert set(table) == {n for m, n, _, _ in ALIASES if m == old_module}, (
+        f"{old_module}'s alias table and this file's ALIASES disagree; "
+        f"the literal table here is what proves the bridge points where "
+        f"the migration guide says, so it has to cover every row")
+
+
 @pytest.mark.parametrize(
     "old_module", sorted({m for m, _, _, _ in ALIASES}))
 def test_star_import_binds_exactly_the_live_and_retired_names(

@@ -115,16 +115,33 @@ def test_every_vocabulary_constant_is_frozen() -> None:
     defaults, decided by construction order. Frozen makes that
     unrepresentable: the mutation raises where it is written.
 
+    It also carries more than it did. ``_default_lexicon()`` used to
+    wrap every constant in ``frozenset(...)`` on the way into the
+    ``Lexicon``; #293 dropped the wraps because the sources are frozen,
+    which makes this test the only thing anywhere that checks they
+    still are. The import-time ``assert``\\ s in the config modules
+    check normalization and subset relations, never mutability.
+
     The roster is DERIVED from the source tree for the same reason the
     guarded-module roster above is: a hand-written list fails open on
-    the next module or the next constant.
+    the next module or the next constant. ``rglob``, not ``glob``, so a
+    future ``config/`` subpackage is in scope from the day it lands
+    rather than from the day someone notices.
 
-    The deprecated alias modules are in the glob too, and contribute
-    whatever the bridge has cached back into their globals -- so the
-    NAMES collected here depend on what ran first. The verdict does
-    not: a cached alias is the same object its 2.2 home contributes,
-    and every one of those is frozen, so the cache can only ever add a
-    duplicate entry under an old name.
+    Scope stops at ``nameparser/config``, which is where the hazard is:
+    three consumers read these constants at three different moments
+    (the cached ``Lexicon.default()``, a per-construction ``Constants``,
+    the import-time ``CONSTANTS``), so a mutable one lets two defaults
+    disagree. A locale pack has one consumer and one moment -- the
+    ``Lexicon(...)`` in its own module body, whose fields are frozen
+    copies -- so ``locales/zh.py``'s ``_SURNAMES`` could not desync
+    anything even as a plain ``set``. It is a ``frozenset`` anyway.
+
+    The two deprecated alias modules are in the glob too and contribute
+    nothing: the bridge deliberately does not write a resolved value
+    back into their globals (see ``config/_deprecated.py``), so their
+    ``vars()`` never gains a vocabulary name however often it is read,
+    and the roster does not depend on what ran first.
     """
     import importlib
     import pathlib
@@ -134,18 +151,59 @@ def test_every_vocabulary_constant_is_frozen() -> None:
     config_dir = pathlib.Path(nameparser.config.__file__).parent
     checked = []
     offenders = []
-    for path in sorted(config_dir.glob("*.py")):
-        if path.stem.startswith("_"):
+    for path in sorted(config_dir.rglob("*.py")):
+        relative = path.relative_to(config_dir).with_suffix("")
+        if any(part.startswith("_") for part in relative.parts):
             continue
-        module = importlib.import_module(f"nameparser.config.{path.stem}")
+        stem = ".".join(relative.parts)
+        module = importlib.import_module(f"nameparser.config.{stem}")
         for name, value in sorted(vars(module).items()):
             if not name.isupper() or not isinstance(value, (set, frozenset)):
                 continue
-            checked.append(f"{path.stem}.{name}")
+            checked.append(f"{stem}.{name}")
             if not isinstance(value, frozenset):
-                offenders.append(f"{path.stem}.{name}")
-    assert checked, (
-        "no vocabulary set constant found -- the derivation broke, and "
-        "an empty roster asserts nothing")
+                offenders.append(f"{stem}.{name}")
+    # A FLOOR, not a presence check: `assert checked` is satisfied by
+    # one surviving constant, so a filter or a path change that quietly
+    # dropped twelve of the thirteen would still read as a pass. Twelve
+    # distinct constants across seven modules, plus the thirteenth entry
+    # -- particles.BOUND_GIVEN_NAMES, the same object as
+    # bound_given_names.BOUND_GIVEN_NAMES, imported there for the
+    # disjointness assert and counted once per module it appears in.
+    # Raise this when a constant is added; a drop is the regression.
+    assert len(checked) >= 13, (
+        f"only {len(checked)} vocabulary set constants found under "
+        f"{config_dir} ({checked}) -- the derivation shrank, and a "
+        f"roster that shrinks silently stops guarding silently")
     assert not offenders, (
         f"vocabulary constants must be frozensets (#293): {offenders}")
+
+
+def test_the_documented_replacements_for_an_in_place_edit_work() -> None:
+    """``docs/migrate.rst``'s two recipes, as behavior (#293).
+
+    Both live there as ``::`` literal blocks, which ``sphinx -b
+    doctest`` never runs -- so the page that tells a 1.x caller what to
+    do INSTEAD of ``TITLES.add("dean")`` was the one claim about the
+    freeze with nothing checking it. "dean" is the canonical example
+    for this: a common academic title and a common given name, so it is
+    deliberately absent from the shipped ``TITLES`` and a caller who
+    wants it has to add it themselves.
+    """
+    from nameparser import HumanName, Lexicon, Parser
+    from nameparser.config import Constants
+    from nameparser.config.titles import TITLES
+
+    # what the freeze retired
+    with pytest.raises(AttributeError):
+        TITLES.add("dean")  # type: ignore[attr-defined]
+    assert HumanName("Dean Smith").title == ""
+
+    # recipe 1: a private Constants for the v1 API
+    constants = Constants()
+    constants.titles.add("dean")
+    assert HumanName("Dean Smith", constants=constants).title == "Dean"
+
+    # recipe 2: an extended Lexicon for the 2.0 API
+    parser = Parser(lexicon=Lexicon.default().add(titles={"dean"}))
+    assert parser.parse("Dean Smith").title == "Dean"

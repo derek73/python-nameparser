@@ -112,6 +112,22 @@ def alias_getattr(
         return value
 
     def __dir__() -> list[str]:
+        # UNION, not just the aliases: a module __dir__ REPLACES the
+        # default listing rather than adding to it, so dropping the
+        # module's own globals here would take the live constants out
+        # of tab completion and every getattr-free member scan --
+        # autodoc's included. Pinned by test_config_aliases
+        # ::test_dir_lists_the_live_names_as_well_as_the_retired_ones.
         return sorted(set(vars(sys.modules[module])) | set(aliases))
+
+    # The table itself, reachable without tripping a warning. __all__ is
+    # hand-written per module (it must stay in SOURCE order for autodoc,
+    # which this function cannot know), so the two lists are maintained
+    # separately and a row added to only one of them is the failure
+    # fc46a9b closed for the other direction: a table row missing from
+    # __all__ is silently dropped by `from x import *` with no warning
+    # and no AttributeError. test_config_aliases
+    # ::test_every_alias_table_row_reaches_star_import cross-checks them.
+    __getattr__.deprecated_aliases = dict(aliases)  # type: ignore[attr-defined]
 
     return __getattr__, __dir__
