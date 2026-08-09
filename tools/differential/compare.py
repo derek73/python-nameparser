@@ -23,7 +23,7 @@ HERE = Path(__file__).resolve().parent
 FIELDS = ("title", "first", "middle", "last", "suffix", "nickname",
           "maiden")
 
-DEFAULT_BASELINE = "2.0.0"
+DEFAULT_BASELINE = "2.1.0"
 REPO_ROOT = HERE.parents[1]
 #: The v2 API's names for the same seven roles FIELDS names in v1
 #: vocabulary. Both are compared from baseline 2.0 on.

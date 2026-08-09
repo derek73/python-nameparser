@@ -12,16 +12,21 @@ convention), so this module is where the promise gets checked.
 Layering is the usual reason for a copy but not the only one, so this
 module's scope is the PROMISE rather than that one pair of packages:
 the comma-set pin below reads _pipeline._state instead of config, and
-several tests reach outside the package altogether -- four to the
+several tests reach outside the package altogether: eight read the
 differential ledgers, which could not import a Python constant if they
-wanted to, one to a generated corpus whose generator can, and must
-stay run.
+wanted to, and four of those eight also read the corpora as a DATA
+POPULATION rather than as an artifact -- asking what a ledger rule
+actually claims, which is the question no amount of inspecting its
+syntax could answer. One more pins a generated corpus against its
+generator, which can and must stay run.
 """
+import hashlib
 import importlib.util
 import json
 import re
 import tomllib
 from pathlib import Path
+from typing import NamedTuple
 
 import pytest
 
@@ -30,7 +35,16 @@ from nameparser._pipeline import _assign, _post_rules, _tokenize, _vocab
 from nameparser import _policy
 from nameparser._policy import Script
 from nameparser import _render
-from nameparser.config.suffixes import GLUED_HONORIFICS, SUFFIX_NOT_ACRONYMS
+# The parser's own fold, imported rather than reimplemented: a
+# hand-written one here stripped commas, parens, brackets and
+# quotes, five classes neither the lexicon's fold nor config's
+# assert_normalized touches -- looser in the dangerous direction,
+# and a hand copy of a constant with a source of truth, inside the
+# module written to forbid exactly that.
+from nameparser._lexicon import _normalize
+from nameparser.config.maiden_markers import MAIDEN_MARKERS
+from nameparser.config.suffixes import (
+    GLUED_HONORIFICS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_NOT_ACRONYMS)
 
 
 def test_emoji_ranges_match_config() -> None:
@@ -185,6 +199,63 @@ _TOOLS = Path(__file__).parents[2] / "tools" / "differential"
 #: release -- see AGENTS.md's release step 8.
 _LEDGERS = sorted(_TOOLS.glob("expected_since_*.toml"))
 
+#: Every name the harness classifies, deduplicated. The ledgers exist
+#: to explain diffs on THESE strings and no others, so "what does this
+#: rule claim?" is answerable here without parsing anything -- a plain
+#: regex search, no baseline wheel, no network.
+#:
+#: This is what the guards below check against, and it is why they hold
+#: where four rounds of syntactic ones did not. Depth-0 pipes, nesting
+#: levels and probe strings are all proxies for the question that
+#: actually matters; a rule cannot widen its corpus reach and still
+#: answer this one the same way, however it is spelled.
+_CORPUS_NAMES = sorted({
+    json.loads(line)
+    for path in sorted(_TOOLS.glob("corpus*.jsonl"))
+    for line in path.read_text(encoding="utf-8").splitlines() if line.strip()})
+
+
+def _claimed(name_regex: str) -> list[str]:
+    """Corpus names a rule's regex matches."""
+    return [name for name in _CORPUS_NAMES if re.search(name_regex, name)]
+
+
+def _unclassified_names() -> list[str]:
+    """Corpus names carrying no codepoint _SCRIPT_RANGES classifies."""
+    has_classified = _policy._script_matcher(*_policy._SCRIPT_RANGES)
+    return [name for name in _CORPUS_NAMES if not has_classified(name)]
+
+
+#: Built once. The expression this replaced sat inside a
+#: comprehension's condition, so it rebuilt the script matcher AND
+#: rescanned all 751 names per candidate name rather than per rule --
+#: measured around 400x a frozenset lookup, machine-dependent. The
+#: rescan was the cost; the rebuild alone is minor.
+_UNCLASSIFIED_NAMES = frozenset(_unclassified_names())
+
+
+def test_the_corpus_population_is_not_degenerate() -> None:
+    """The floors themselves live in compare.py and are asserted by
+    tests/v2/test_differential.py, which already checks every shipped
+    corpus clears one and that every floor names a file that exists.
+    Restating that here was a second, independently-drifting copy of a
+    guarantee the harness owns.
+
+    What is local to THIS module is the population the guards actually
+    measure, which is not the same thing: _CORPUS_NAMES is
+    deduplicated, so a corpus rewritten as 486 copies of one line
+    clears its floor while the set collapses. And guard A is inert if
+    nothing in that set is unclassified.
+    """
+    assert len(_CORPUS_NAMES) > 700, (
+        f"_CORPUS_NAMES holds {len(_CORPUS_NAMES)} distinct names; the "
+        f"corpora clear their floors in compare.py but deduplicate to far "
+        f"fewer than usual, so every guard here is measuring a smaller "
+        f"population than it appears to")
+    assert _unclassified_names(), (
+        "no corpus name lacks a classified codepoint, so the span rules' "
+        "unclassified-reach check has nothing to test against")
+
 
 def test_ledger_glob_is_not_empty() -> None:
     """A parametrize over an empty list generates a single silent SKIP
@@ -196,7 +267,15 @@ def test_ledger_glob_is_not_empty() -> None:
 
 def _rules(ledger: Path) -> list[dict]:
     """The [[change]] table of one ledger."""
-    return tomllib.loads(ledger.read_text(encoding="utf-8"))["change"]
+    # .get, matching compare.py. The open cycle's ledger is created at
+    # release with no `change` key at all -- an empty [[change]] array
+    # cannot be appended to in TOML -- so an absent key IS the empty
+    # ledger here, not a malformed file. What stops that leniency from
+    # hiding a typo'd table header lives in tests/v2/test_differential.py:
+    # every other ledger must be non-empty, and the open one may define
+    # nothing but `change`.
+    return tomllib.loads(
+        ledger.read_text(encoding="utf-8")).get("change", [])
 
 
 def test_span_bearing_roster_names_exactly_the_ledgers_on_disk() -> None:
@@ -421,6 +500,7 @@ _SPAN_BEARING_RULES: dict[str, frozenset[str]] = {
         "fix(#271/#272/#298)",              # the canonical class
         "fix(#298)",                        # the 间隔号 lookahead
     }),
+    "expected_since_2.1.0.toml": frozenset(),   # open cycle, no rules yet
 }
 
 #: The leading `fix(...)`/`feat(...)` tag of a rule's `issue`, which is
@@ -504,6 +584,23 @@ def test_every_span_bearing_rule_matches_the_script_ranges(
             f"{ledger.name}: {rule['issue']!r} has a '|' at depth 0, so "
             f"the whole rule is an alternation and the pinned class "
             f"governs only one branch. Wrap it in '(?:...)'")
+        # The property the syntactic check above is only a proxy for.
+        # A rule scoped to classified scripts must not reach a name
+        # written in none of them -- and unlike a depth test, this does
+        # not care how the widening is spelled. "(?:CJK|[A-Za-z])"
+        # hides the pipe at depth 1 where the check above stops
+        # looking, and claims 644 of the 654 unclassified corpus names;
+        # this sees
+        # it. Both are kept: the depth test gives the clearer message
+        # for the naive spelling, and catches a widening toward a
+        # script the corpora happen not to contain.
+        unclassified = _UNCLASSIFIED_NAMES.intersection(_claimed(regex))
+        assert not unclassified, (
+            f"{ledger.name}: {rule['issue']!r} declares the script table's "
+            f"spans but claims {len(unclassified)} corpus names carrying "
+            f"no classified codepoint at all, e.g. {sorted(unclassified)[:3]}. A rule scoped "
+            f"to these scripts cannot explain a diff on those names, so it "
+            f"would absorb one instead")
     # Every rule, not just the discovered ones: this is what stops a
     # class being respelled out of discovery in the first place, and it
     # has to reach the rules that are NOT currently span-bearing to do
@@ -658,12 +755,15 @@ _HONORIFIC_SOURCES: dict[str, set[str]] = {
 _ALTERNATION = re.compile(r"\((?:\?:|(?!\?))((?:[^()|]+\|)+[^()|]+)\)")
 
 
+def _alternations(name_regex: str) -> list[set[str]]:
+    """Every alternation group's members."""
+    return [set(body.split("|")) for body in _ALTERNATION.findall(name_regex)]
+
+
 def _cjk_alternations(name_regex: str) -> list[set[str]]:
     """Every alternation in a rule with a script-classified member."""
     has_classified = _policy._script_matcher(*_policy._SCRIPT_RANGES)
-    return [members
-            for body in _ALTERNATION.findall(name_regex)
-            for members in [set(body.split("|"))]
+    return [members for members in _alternations(name_regex)
             if any(has_classified(m) for m in members)]
 
 
@@ -726,3 +826,480 @@ def test_differential_honorific_rules_match_their_vocabulary() -> None:
         f"group, a paren inside a character class, or a lone member), "
         f"which is how a still-present hand copy silently leaves this "
         f"pin.")
+
+
+class _LatinCopy(NamedTuple):
+    """A ledger alternation that hand-copies a Latin-script vocabulary.
+
+    Two set-shaped fields that are emphatically not the same kind of
+    thing, which is why they are named rather than positional:
+    `vocabulary` is the source of truth, `covers` an audited snapshot of
+    which of its entries the rule's members reach.
+    """
+    vocabulary: set[str]
+    covers: frozenset[str]
+
+
+#: Ledger rules whose alternation hand-copies a LATIN vocabulary, keyed
+#: by a substring of the rule's `issue`. Kept apart from
+#: _HONORIFIC_SOURCES because the relationship is not set equality:
+#: these members are regex FRAGMENTS, not entries -- "n[ée]e" covers two
+#: markers at once, "geb\.?" and "roz\.?" one each -- so there is no set
+#: to compare against.
+#:
+#: `covers` is recorded rather than equated to the whole vocabulary.
+#: Equality would force a rule to grow alternatives for markers it has
+#: no reason to claim -- see the note on fix(#274) in the 1.4 ledger for
+#: why 旧姓 in particular is not one of them. Recording still catches
+#: removal: drop an entry a member covers and the snapshot shrinks.
+#:
+#: Three nearby counts differ and are easy to conflate, all for
+#: fix(#274) specifically: MAIDEN_MARKERS ships 17 entries; that rule's
+#: members reach 4 of them; the corpora contain 3 markers in total
+#: (geb, née, 旧姓), only 2 of which it covers.
+_LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
+    "fix(#274)": _LatinCopy(
+        vocabulary=MAIDEN_MARKERS,
+        covers=frozenset({"geb", "nee", "née", "roz"})),
+    "ambiguous-surname-acronym": _LatinCopy(
+        vocabulary=SUFFIX_ACRONYMS_AMBIGUOUS,
+        covers=frozenset({"do", "ma"})),
+}
+
+#: Alternations that copy no vocabulary, so discovery must not demand a
+#: source for them. Declared rather than inferred, on the principle
+#: _SOURCES' None entries already set: an undeclared alternation is a
+#: question someone answers in writing, not something to skip past.
+_NOT_A_VOCABULARY_COPY = frozenset({
+    frozenset({"^", " "}),      # the honorific rule's leading anchor
+})
+
+def _unjustified_reach(name_regex: str, members: set[str]) -> list[str]:
+    """Corpus names the whole rule claims that none of its own members
+    reach.
+
+    The member checks bound what each ALTERNATIVE matches. This bounds
+    the rule built around them, which is a different question and the
+    one four rounds of syntactic guards kept failing to ask. Nesting a
+    rule's own alternation one level down and adding a branch --
+    "(?:[(\"'](m\\.?a\\.?|d\\.?o\\.?)[)\"']|[A-Za-z]{4,})" -- leaves every
+    member innocent, hides the pipe below the depth test, and hides the
+    outer group from _ALTERNATION, which refuses nested parens. It
+    claimed 622 of the corpus while every check passed.
+
+    Keyed on the roster rather than on `fields`, which is what makes it
+    reach that rule: the acronym copy claims `suffix`/`nickname`, so
+    the field-keyed guard below never looks at it.
+
+    A rule claiming nothing scores zero, which is the strongest answer
+    rather than a vacuous one -- so the non-vacuity assertion is over
+    the union of all rostered rules, not per rule.
+    """
+    reachable = [re.compile(member, re.IGNORECASE) for member in members]
+    return [name for name in _claimed(name_regex)
+            if not any(pattern.search(name) for pattern in reachable)]
+
+
+def _reaches_non_vocabulary(member: str, vocabulary: set[str]) -> list[str]:
+    """Corpus text this member matches that is NOT a vocabulary entry.
+
+    fullmatch against the vocabulary bounds what a member matches
+    WITHIN those entries and says nothing about what it matches in a
+    NAME. That gap was first filled with a tuple of eight hand-picked
+    probe strings, and the tuple was defeated by a wider rule than the
+    one it was added to stop: every entry this rule needs is three
+    characters, so a member must accept some 3-character string and is
+    unconstrained everywhere else -- "[acdf-uw-z]{3,}" covers `roz`,
+    dodges all eight probes, and reaches 634 of the 751 corpus names
+    as a fourth alternative (the rule carrying it claims 542).
+    Measured with the IGNORECASE this function applies; the
+    case-sensitive figure, 592, is not what runs. Counts here and below are
+    against _CORPUS_NAMES, which deduplicates the 783 corpus lines.
+
+    Eight strings could never be more than a spot check. The corpus is
+    the whole population the rule will ever be asked about, so ask it
+    instead: every fragment a member matches must BE an entry.
+
+    Searched unanchored, which is stricter than the rule's own \\b
+    anchoring and so cannot produce a false negative from it.
+    Normalized before comparison because the corpus writes "geb." where
+    the config stores "geb" -- without that, the shipped member fails.
+    Exempting only THIS vocabulary, not the union of all of them, keeps
+    a maiden member from being excused by an acronym entry.
+    """
+    matches = set()
+    for name in _CORPUS_NAMES:
+        for found in re.finditer(member, name, re.IGNORECASE):
+            if found.group() and _normalize(found.group()) not in vocabulary:
+                matches.add(found.group())
+    return sorted(matches)
+
+
+def test_latin_alternations_mean_something_the_vocabulary_ships() -> None:
+    """The Latin twin of the honorific pin, shaped by what a regex
+    alternation over a vocabulary can honestly promise.
+
+    Discovery-first, like its twin: every alternation in every ledger
+    must be a declared vocabulary copy or a declared non-copy. Keying
+    off the roster and skipping everything else would mean a future rule
+    that hand-copies a vocabulary under a new tag is pinned only if its
+    author remembers to enroll it -- the failure this module exists to
+    prevent, not a shape it should adopt.
+
+    Members are matched against entries as regexes rather than compared
+    as strings, because the members ARE regex syntax: "geb\\.?" stands
+    for the entry "geb", which the config stores normalized (lowercase,
+    no trailing period).
+
+    Two ways a MEMBER can be wrong, checked per member: it can match
+    nothing in the vocabulary -- then it cannot describe a real change
+    and can only claim other names' diffs, which is how "born" survived
+    from the harness's first commit to #350 -- or it can reach corpus
+    text that is not vocabulary. A third assertion is about the RULE
+    around them, which can widen at depth 0 and leave the pinned
+    alternation governing one branch of an unchecked whole. An invalid
+    member raises rather than asserts, since nothing else can proceed.
+    """
+    has_classified = _policy._script_matcher(*_policy._SCRIPT_RANGES)
+    used: set[str] = set()
+    found = 0
+    reach_checked = 0
+    for ledger in _LEDGERS:
+        for rule in _rules(ledger):
+            regex = rule.get("name_regex")
+            if not isinstance(regex, str):
+                continue
+            for members in _alternations(regex):
+                if any(has_classified(m) for m in members):
+                    continue        # the honorific pin owns these
+                if frozenset(members) in _NOT_A_VOCABULARY_COPY:
+                    continue
+                found += 1
+                keys = [k for k in _LATIN_ALTERNATION_SOURCES
+                        if k in rule["issue"]]
+                assert len(keys) == 1, (
+                    f"{ledger.name}: {rule['issue']!r} carries the Latin "
+                    f"alternation {sorted(members)}, which matches "
+                    f"{len(keys)} roster keys ({keys}). Declare the "
+                    f"vocabulary it copies in _LATIN_ALTERNATION_SOURCES, "
+                    f"or add it to _NOT_A_VOCABULARY_COPY if it copies "
+                    f"nothing")
+                used.add(keys[0])
+                source = _LATIN_ALTERNATION_SOURCES[keys[0]]
+                unjustified = _unjustified_reach(regex, members)
+                assert not unjustified, (
+                    f"{ledger.name}: {rule['issue']!r} claims "
+                    f"{len(unjustified)} corpus names that none of its own "
+                    f"vocabulary members reach, e.g. {unjustified[:3]}. The "
+                    f"members are innocent and the rule around them is not "
+                    f"-- whatever it matches beyond them, it claims")
+                reach_checked += len(_claimed(regex))
+                assert not _top_level_alternation(regex), (
+                    f"{ledger.name}: {rule['issue']!r} has a '|' at depth "
+                    f"0, so the pinned alternation governs only one branch "
+                    f"and the rest of the rule is unchecked. Wrap it in "
+                    f"'(?:...)'")
+                covered = set()
+                for member in members:
+                    try:
+                        pattern = re.compile(member, re.IGNORECASE)
+                    except re.error as exc:
+                        raise AssertionError(
+                            f"{ledger.name}: {rule['issue']!r} member "
+                            f"{member!r} is not a valid regex ({exc}). A "
+                            f"mis-split alternation can produce this -- see "
+                            f"_ALTERNATION's notes") from None
+                    matched = {entry for entry in source.vocabulary
+                               if pattern.fullmatch(entry)}
+                    loose = _reaches_non_vocabulary(member, source.vocabulary)
+                    assert not loose, (
+                        f"{ledger.name}: {rule['issue']!r} member "
+                        f"{member!r} matches corpus text that is not "
+                        f"vocabulary: {loose[:6]}. Spell it literally -- a "
+                        f"member broad enough to reach a real name lets the "
+                        f"rule claim that name's diff as intended")
+                    assert matched, (
+                        f"{ledger.name}: {rule['issue']!r} offers the "
+                        f"alternative {member!r}, which matches no entry in "
+                        f"the vocabulary it copies. It cannot correspond to "
+                        f"a real change, so it can only claim other names' "
+                        f"diffs as intended -- drop it, or ship it as "
+                        f"vocabulary first")
+                    covered |= matched
+                assert covered == source.covers, (
+                    f"{ledger.name}: {rule['issue']!r} covers "
+                    f"{sorted(covered)}; recorded {sorted(source.covers)}. "
+                    f"Lost: {sorted(source.covers - covered)} (an entry the "
+                    f"rule relied on left the vocabulary). Gained: "
+                    f"{sorted(covered - source.covers)} (record it)")
+    assert found, (
+        "no Latin vocabulary alternation found in any ledger; this pin is "
+        "passing vacuously")
+    assert reach_checked, (
+        "no rostered rule claims any corpus name, so the reach check above "
+        "measured nothing -- verify the corpora loaded")
+    assert used == set(_LATIN_ALTERNATION_SOURCES), (
+        f"_LATIN_ALTERNATION_SOURCES keys matching no rule: "
+        f"{sorted(set(_LATIN_ALTERNATION_SOURCES) - used)}")
+
+
+#: A role a rule can claim, mapped to the vocabulary a name must carry
+#: for that claim to be possible. Keyed on `fields` rather than on the
+#: regex, which is the point: the two pins above discover hand copies
+#: by their SYNTAX, so a copy that is not written as an alternation or
+#: a character class is not undeclared, it is unseen. A brand-new rule
+#: whose name_regex is "(?i)\b[a-z]{3}\b" with maiden fields passed
+#: every check in this module while claiming 308 corpus names.
+#:
+#: `fields` cannot be dodged the same way. A rule that does not claim
+#: `maiden` cannot be labelled a maiden change at all, so keying here
+#: reaches every spelling -- including fix(cjk-maiden-marker), whose
+#: regex is the bare literal "旧姓" and which no roster in this module
+#: could see.
+#:
+#: Only `maiden` today, because only its vocabulary is small and
+#: mandatory enough for the implication to hold: a maiden diff needs a
+#: marker in the name. `suffix` and `title` are not like that -- most
+#: of their diffs come from routing, not from a vocabulary word being
+#: present -- so adding them would be false rather than strict.
+_FIELD_VOCABULARIES: dict[str, set[str]] = {
+    "maiden": MAIDEN_MARKERS,
+}
+
+
+def _carries(name: str, vocabulary: set[str]) -> bool:
+    """Whether a name contains a vocabulary entry.
+
+    Whole-token for ASCII entries, substring for the rest, because a
+    marker like 旧姓 is written against the name it marks rather than
+    spaced off it.
+
+    Note what the isascii() split actually covers: 12 of the 17
+    entries, not only the CJK one. `né` is two characters, so the
+    substring branch reads `René` as carrying a marker. Every
+    over-match here SHRINKS the set of unexplained names and so
+    weakens the guard -- the direction this module exists to close --
+    but exactly one corpus name reaches that branch today, and it is
+    the 旧姓 one. Tighten this before admitting a vocabulary whose
+    short non-ASCII entries occur inside ordinary names.
+    """
+    tokens = {_normalize(token) for token in name.split()}
+    return bool(tokens & vocabulary) or any(
+        entry in name for entry in vocabulary if not entry.isascii())
+
+
+def test_rules_claiming_a_vocabulary_role_need_the_vocabulary_present() -> None:
+    """The guard that does not care how a rule is spelled.
+
+    Every pin above starts from regex syntax -- an alternation, a
+    character class, a span. Each closed the hole it was built for and
+    left the next spelling open, four rounds running. This one starts
+    from what the rule CLAIMS: if a rule says a diff is a maiden-marker
+    change, then every corpus name it claims must actually carry a
+    maiden marker. A rule cannot escape that by changing notation,
+    because it is not reading the notation.
+
+    Deliberately narrow. It does not say the rule is correct, only that
+    it cannot be explaining a marker on a name that has none. That
+    covers the maiden widenings review found; the ones claiming
+    `nickname` and `suffix` fall outside it, and _CORPUS_CLAIMS is
+    what catches those.
+    """
+    checked = 0
+    for ledger in _LEDGERS:
+        for rule in _rules(ledger):
+            regex = rule.get("name_regex")
+            if not isinstance(regex, str):
+                continue
+            for field, vocabulary in _FIELD_VOCABULARIES.items():
+                if field not in (rule.get("fields") or []):
+                    continue
+                checked += 1
+                bare = [name for name in _claimed(regex)
+                        if not _carries(name, vocabulary)]
+                assert not bare, (
+                    f"{ledger.name}: {rule['issue']!r} claims {field!r} "
+                    f"diffs on {len(bare)} corpus names carrying no {field} "
+                    f"vocabulary, e.g. {bare[:3]}. It cannot be explaining a "
+                    f"marker that is not there, so on those names it would "
+                    f"absorb a regression instead")
+    assert checked, (
+        "no rule claims a role in _FIELD_VOCABULARIES; this pin is passing "
+        "vacuously")
+
+
+class _Claim(NamedTuple):
+    """What a rule claims, in the three dimensions classify() uses.
+
+    A count alone is identity-free -- the weakness this module rejects
+    at _SPAN_BEARING_RULES -- and review proved it here twice. Swapping
+    feat(#273)'s delimiter class for a single accented letter holds the
+    count at 6 while claiming six entirely different names. And
+    classify() narrows on `fields` as well as `name_regex`, so widening
+    a rule's roles moves nothing a regex-only count can see: the
+    comma rule kept its `,` regex and its 236 names while going from
+    explaining 6 of the corpus to 242.
+    """
+    #: corpus names the name_regex reaches; the whole corpus when a
+    #: rule has none, which is the most unbounded shape validate_rules
+    #: permits and the one most worth writing down
+    names: int
+    #: the roles it narrows by, sorted; () when it narrows by regex alone
+    roles: tuple[str, ...]
+    #: sha256[:12] of the claimed names, so a swap that holds the count
+    #: still fails. Unreadable by design -- the count above is what a
+    #: reviewer reads, and the failure message prints what moved.
+    digest: str
+
+
+def _claim(rule: dict) -> _Claim:
+    regex = rule.get("name_regex")
+    names = (_claimed(regex) if isinstance(regex, str) else list(_CORPUS_NAMES))
+    fields = rule.get("fields")
+    return _Claim(
+        names=len(names),
+        roles=tuple(sorted(fields)) if isinstance(fields, list) else (),
+        digest=hashlib.sha256(
+            "\n".join(names).encode("utf-8")).hexdigest()[:12])
+
+
+#: How many corpus names each rule's name_regex matches, per ledger.
+#:
+#: The backstop the other guards each failed to be. Every one of them
+#: is scoped to a CATEGORY -- a span class, an alternation's members, a
+#: `maiden` field, a member's reach -- and five review rounds each found
+#: a rule outside whichever category the last fix had covered. The
+#: categories are the test's, not the ledger's. What every rule shares
+#: is what it claims: how much corpus its regex reaches, which roles
+#: it narrows by, and WHICH names those are. Scoped to the corpus --
+#: and only there -- a widening cannot change what a rule explains
+#: without moving one of the three. Restoring 'born' moves none of
+#: them, because no corpus name contains it; the member guards catch
+#: that, which is why this does not replace them.
+#:
+#: So this is deliberately dumb: it knows nothing about vocabularies,
+#: scripts or roles, and it cannot say whether a number is RIGHT. It
+#: says only that it moved, which is the question a widening cannot
+#: dodge. The specific guards above stay because they explain WHY a
+#: rule may claim what it claims, and their messages are the ones worth
+#: reading; this one just refuses to let the number change quietly.
+#:
+#: Keyed by the full `issue` rather than by tag: the 1.4 ledger has two
+#: rules tagged feat(#269), and a tag-keyed roster cannot tell them
+#: apart -- the same identity-free weakness recorded at
+#: _SPAN_BEARING_RULES.
+#:
+#: These numbers move when the CORPORA move, not only when a rule does.
+#: That is the intended cost: a corpus name added under an existing
+#: rule is a real change in what that rule explains, and it should be
+#: read once rather than absorbed silently.
+_CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
+    "expected_since_1.4.0.toml": {
+        "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
+            _Claim(97, ('family', 'given', 'middle'), "66e71d60a075"),
+        "fix(#274) maiden markers consumed":
+            _Claim(4, ('family', 'maiden', 'middle'), "b31dc2e2bbc4"),
+        "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
+            _Claim(3, ('family', 'given', 'maiden', 'middle'), "cf5c9d671c14"),
+        "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
+            _Claim(236, ('given', 'suffix', 'title'), "3416f69d0ce4"),
+        "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
+            _Claim(751, ('family', 'given', 'suffix'), "231640fc7535"),
+        "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
+            _Claim(0, ('suffix',), "e3b0c44298fc"),
+        "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
+            _Claim(0, ('nickname', 'suffix'), "e3b0c44298fc"),
+        "feat(#269) Arabic بن prefix chains onto family (non-Latin new-recognition)":
+            _Claim(2, ('family', 'middle'), "3e2b5c6d1f4d"),
+        "feat(#273) typographic nickname delimiters recognized by default":
+            _Claim(6, ('middle', 'nickname'), "a03c9763c8c4"),
+        "fix(cjk-delimited-nickname) delimiter recognition compounds with the CJK order flip":
+            _Claim(6, ('family', 'given', 'nickname'), "ae1dffa01608"),
+        "fix(cjk-fullwidth-paren-nickname) fullwidth-parenthesis recognition compounds with the CJK order flip":
+            _Claim(1, ('family', 'given', 'middle', 'nickname'), "cf370e856ae7"),
+        "fix(cjk-comma-compound) comma routing compounds with the CJK order flip":
+            _Claim(20, ('family', 'given', 'middle', 'suffix', 'title'), "b2ea8fa59eea"),
+        "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip":
+            _Claim(14, ('family', 'given', 'middle', 'suffix'), "d49ce901bdce"),
+        "feat(#269) non-Latin titles/conjunctions recognized":
+            _Claim(2, ('given', 'middle', 'title'), "c14187bb08f8"),
+        "fix(leading-credential) a split 'Ph. D.' before the name stays one unit":
+            _Claim(1, ('given', 'middle', 'suffix', 'title'), "390e7f814d13"),
+    },
+    "expected_since_2.0.0.toml": {
+        "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
+            _Claim(97, ('_ambiguities', 'family', 'given', 'middle'), "66e71d60a075"),
+        "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into suffix":
+            _Claim(34, ('family', 'given', 'suffix'), "877ab3246d33"),
+        "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix":
+            _Claim(16, ('family', 'given', 'middle', 'suffix'), "6d390e518bd2"),
+        "fix(#309) 旧姓 maiden marker consumed, compounding with the CJK order flip":
+            _Claim(3, ('family', 'given', 'maiden', 'middle'), "cf5c9d671c14"),
+        "fix(#272) nakaguro inside delimited content renders as a space, compounding with the CJK order flip":
+            _Claim(1, ('family', 'given', 'nickname'), "d4069d459f23"),
+        "fix(#298) 间隔号 division changes the comma reading, sending the credential from title to suffix":
+            _Claim(1, ('family', 'given', 'suffix', 'title'), "1d45596e6fdb"),
+    },
+    "expected_since_2.1.0.toml": {},
+}
+
+
+def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
+    """The guard that knows nothing, and therefore cannot be dodged.
+
+    Five rounds of review defeated five guards, each by moving to a
+    rule the last fix did not cover: a span rule, then an alternation's
+    members, then a non-maiden role, then a rule whose narrowing lived
+    outside its alternation entirely. Every one of those attacks
+    changed what the rule claimed -- 6 to 668 names, 0 to 193, and the
+    comma rule from 3 roles to 6 while its regex and its 236 names
+    stood still -- because that is what widening a rule means WITHIN
+    the corpus. A widening reaching only names the corpora lack moves
+    nothing here; the guards above are what see those.
+
+    Note which layer is which, because it is the opposite of what it
+    looks like. This is a change DETECTOR, not an enforcer: it is
+    inert for a brand-new rule, whose author simply records whatever
+    number it produces, and its own failure message invites the
+    remedy that defeats it -- re-record and the attack lands. The
+    member and vocabulary guards above are the walls, because they
+    judge a rule wrong at any time INCLUDING at recording time. This
+    catches the widenings none of them is scoped to see, and holds
+    them still long enough for someone to look.
+    """
+    for ledger in _LEDGERS:
+        assert ledger.name in _CORPUS_CLAIMS, (
+            f"{ledger.name} is a new ledger with no recorded corpus claims; "
+            f"add it to _CORPUS_CLAIMS (an empty mapping if it has no rules)")
+        recorded = _CORPUS_CLAIMS[ledger.name]
+        # Keyed on `issue`, so a duplicate silently collapses to the
+        # last rule written and the other goes unmeasured -- coverage
+        # by file order, which is no coverage. Nothing else asserts
+        # this: validate_rules only requires a non-empty string, and
+        # the tag-uniqueness check above covers span-bearing rules
+        # alone. _LATIN_ALTERNATION_SOURCES and _HONORIFIC_SOURCES key
+        # on issue SUBSTRINGS, so they lean on it too.
+        issues = [rule["issue"] for rule in _rules(ledger)]
+        assert len(set(issues)) == len(issues), (
+            f"{ledger.name} has rules sharing an `issue`: "
+            f"{sorted({i for i in issues if issues.count(i) > 1})}. Every "
+            f"roster here keys on it, so one of them would go unmeasured")
+        # A rule with no name_regex narrows by `fields` alone and so
+        # reaches EVERY name -- the most unbounded shape validate_rules
+        # permits, and the one most worth recording. Counting it as the
+        # whole corpus is not a placeholder; it is what it claims.
+        actual = {rule["issue"]: _claim(rule)
+                  for rule in _rules(ledger)}
+        moved = {issue: (recorded.get(issue), count)
+                 for issue, count in actual.items()
+                 if recorded.get(issue) != count}
+        assert actual == recorded, (
+            f"{ledger.name}: the corpus each rule claims is not what is "
+            f"recorded. Moved (recorded, now): {moved}. Gone: "
+            f"{sorted(set(recorded) - set(actual))}. New: "
+            f"{sorted(set(actual) - set(recorded))}. A number that GREW "
+            f"means the rule claims more of the corpus than it did -- "
+            f"check it is not absorbing a regression, then record it")
+    assert set(_CORPUS_CLAIMS) == {led.name for led in _LEDGERS}, (
+        f"_CORPUS_CLAIMS names ledgers that do not exist: "
+        f"{sorted(set(_CORPUS_CLAIMS) - {L.name for L in _LEDGERS})}")

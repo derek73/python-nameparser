@@ -88,9 +88,14 @@ uv run sphinx-build -b html docs dist/docs
 #    bare compare.py measures against two minors back while reporting the
 #    previous one, and _allowlist_for hard-errors on the missing file.
 #    tests/v2/test_regex_sync.py sweeps every expected_since_*.toml (#333), so
-#    the new ledger's hand copies of _SCRIPT_RANGES and the honorific
-#    vocabulary are checked from the day the file lands -- but it enrolls
-#    itself in neither roster, and both failures are loud, not silent:
+#    the new ledger's hand copies of _SCRIPT_RANGES and of the honorific and
+#    Latin vocabularies are checked from the day the file lands. All three
+#    rosters find copies by their SYNTAX -- a span class or an alternation --
+#    so a copy spelled some other way is not undeclared but unseen. What
+#    covers those is _CORPUS_CLAIMS, which records what every rule claims
+#    -- its regex's corpus reach, its roles, and which names -- and so
+#    needs no notion of how a copy is spelled. Enrol the new ledger in
+#    _CORPUS_CLAIMS always, and in the others where they apply:
 #      - _SPAN_BEARING_RULES: add the filename, mapped to the set of issue
 #        tags whose rules carry a script-span class (empty set if none).
 #      - _HONORIFIC_SOURCES: if the ledger has a CJK honorific rule, add a
@@ -99,6 +104,14 @@ uv run sphinx-build -b html docs dist/docs
 #        that issue. A retroactive ledger can repeat an older one's rule
 #        verbatim (fix(#271/#272/#298) is in both today), and every rule
 #        must match exactly one key.
+#      - _CORPUS_CLAIMS: REQUIRED, not conditional -- a ledger with no
+#        entry hard-fails. Add the filename mapped to {} while the ledger
+#        is empty, then one _Claim per rule as rules land. The test prints
+#        the values to record.
+#      - _LATIN_ALTERNATION_SOURCES: same, for a rule copying a Latin
+#        vocabulary (maiden markers, ambiguous acronyms). An alternation
+#        matching no key fails as undeclared -- add it, or record it in
+#        _NOT_A_VOCABULARY_COPY if it copies nothing.
 ```
 
 Enable debug logging to see the parser's internal decisions:

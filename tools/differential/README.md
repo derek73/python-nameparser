@@ -23,7 +23,7 @@ Two processes, two environments:
 ```
 uv run python tools/differential/build_corpus.py --ref <ref> > tools/differential/corpus.jsonl   # only when regenerating
 uv run python tools/differential/compare.py --baseline 1.4.0
-uv run python tools/differential/compare.py --baseline 2.0.0
+uv run python tools/differential/compare.py   # bare = DEFAULT_BASELINE, the last release
 ```
 
 `compare.py` spawns the worker as a subprocess, feeds it every corpus
