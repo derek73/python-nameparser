@@ -1003,34 +1003,34 @@ CASES: tuple[Case, ...] = (
                "the word -- declining, not deciding"),
     Case("zh_honorific_suffix_spaced", "王小明 先生",
          {"family": "王小明", "suffix": "先生"},
-         classification="fix(#307)",
+         classification="fix(#307) + fix(#271)",
          notes="CJK honorifics FOLLOW the name; a spaced 先生 (Mr.) is "
                "a suffix, and recognizing it must come before the "
                "family-first order hands it a role -- unrecognized it "
                "read as the GIVEN name under the 2.1 defaults"),
     Case("ko_honorific_ssi", "김민준 씨",
          {"family": "김", "given": "민준", "suffix": "씨"},
-         classification="fix(#307)",
+         classification="fix(#307) + fix(#271)",
          notes="Korean orthography standardly SPACES 씨, so the "
                "whole-token suffix machinery reaches it; the name "
                "still segments (suffix classification runs after the "
                "script_segment stage, which only ever saw 김민준)"),
     Case("ko_degree_baksa", "김민준 박사",
          {"family": "김", "given": "민준", "suffix": "박사"},
-         classification="fix(#307)",
+         classification="fix(#307) + fix(#271)",
          notes="박사 (doctorate) is the ko analogue of a trailing "
                "PhD: fix(suffix-routing)'s two-token shape, one "
                "script over"),
     Case("ja_sama_spaced", "田中 太郎 様",
          {"family": "田中", "given": "太郎", "suffix": "様"},
-         classification="fix(#307)",
+         classification="fix(#307) + fix(#271)",
          notes="the spaced 様 of forms and databases, which whole-token "
                "matching reaches on its own; the glued "
                "mail-addressing form is ja_sama_glued below, reached "
                "by #308's peel instead"),
     Case("ja_san_spaced", "田中 さん",
          {"family": "田中", "suffix": "さん"},
-         classification="fix(#308)",
+         classification="fix(#308) + fix(#271)",
          notes="the kana honorifics ship as suffix vocabulary so the "
                "glued peel has somewhere to hand its tail; spaced "
                "recognition falls out of the same entry -- until this "
@@ -1038,7 +1038,7 @@ CASES: tuple[Case, ...] = (
                "family-first default"),
     Case("ja_san_glued", "田中さん",
          {"family": "田中", "suffix": "さん"},
-         classification="fix(#308)",
+         classification="fix(#308) + fix(#271)",
          notes="the everyday glued form, and the one that also "
                "corrupted classification: 田中さん is Han plus "
                "hiragana, so the kana license read the whole string "
@@ -1046,7 +1046,7 @@ CASES: tuple[Case, ...] = (
                "is consulted, so it now sees 田中 alone"),
     Case("ja_honorific_glued_before_a_roman_suffix", "田中さん II",
          {"family": "田中", "suffix": "さん, II"},
-         classification="fix(#308)",
+         classification="fix(#308) + fix(#271)",
          notes="an unrelated trailing suffix does not hide the peel "
                "site: the scan-back steps over II and peels さん off "
                "the token behind it. Half of the pair that pins "
@@ -1141,7 +1141,7 @@ CASES: tuple[Case, ...] = (
                "parity until #320 moved it"),
     Case("ja_sama_glued", "山田太郎様",
          {"family": "山田太郎", "suffix": "様"},
-         classification="fix(#308)",
+         classification="fix(#308) + fix(#271)",
          notes="the mail-addressing form. Undivided without a "
                "segmenter -- no surname list divides a kanji name -- "
                "so the family name is the whole 山田太郎; "
@@ -1149,7 +1149,7 @@ CASES: tuple[Case, ...] = (
                "locales.JA"),
     Case("ko_honorific_nim_glued", "김민준님",
          {"family": "김", "given": "민준", "suffix": "님"},
-         classification="fix(#308)",
+         classification="fix(#308) + fix(#271)",
          notes="the online/formal glued address form, 씨's twin"),
     Case("ko_honorific_written_with_a_period", "김민준, 씨.",
          {"family": "김민준", "suffix": "씨."},
@@ -1219,7 +1219,7 @@ CASES: tuple[Case, ...] = (
                "naming the same segmentation it also depends on"),
     Case("ko_honorific_glued_teacher", "김선생님",
          {"family": "김", "suffix": "선생님"},
-         classification="fix(#307)",
+         classification="fix(#307) + fix(#271)",
          notes="longest-first, end to end: 선생님 peels whole where "
                "님 alone would have left 김선생 to segment into a "
                "family 김 and a given 선생. Classified to #307 "
@@ -1232,7 +1232,11 @@ CASES: tuple[Case, ...] = (
          classification="fix(#308)",
          notes="no script precondition on the remainder -- the tail "
                "is the license. Japanese text about a foreigner, and "
-               "the Latin remainder keeps the positional default"),
+               "the Latin remainder keeps the positional default. "
+               "Single-issue on purpose where the block around it is "
+               "compound: measured, disabling script_orders and "
+               "segment_scripts leaves this row unchanged, because a "
+               "Latin remainder never reaches either"),
     Case("latin_stem_glued_hangul_honorific", "Anderson선생님",
          {"given": "Anderson", "suffix": "선생님"},
          classification="fix(#308)",
@@ -1241,10 +1245,12 @@ CASES: tuple[Case, ...] = (
                "surname site: 선 is a listed census surname, so the "
                "peeled 선생님 would otherwise be split into 선 + 생님 "
                "-- the stage dissecting the honorific it had just "
-               "manufactured"),
+               "manufactured. Single-issue for the same reason as its "
+               "kana twin: the remainder is Latin, so #271 never "
+               "applies"),
     Case("ko_honorific_glued_doctor", "김민준박사님",
          {"family": "김", "given": "민준", "suffix": "박사님"},
-         classification="fix(#308)",
+         classification="fix(#308) + fix(#271)",
          notes="박사님 is one honorific, not 박사 plus 님, and ships "
                "as one entry: 선생님, 교수님 and 박사님 are the three "
                "standard -님 professional honorifics and the first two "
@@ -1258,7 +1264,7 @@ CASES: tuple[Case, ...] = (
                "test_one_peel_never_a_stack"),
     Case("ko_honorific_glued_doctor_spaced", "김민준 박사님",
          {"family": "김", "given": "민준", "suffix": "박사님"},
-         classification="fix(#308)",
+         classification="fix(#308) + fix(#271)",
          notes="the spaced twin, and the second half of the same gap: "
                "without a 박사님 entry the peel cut this token too -- "
                "it is not a whole-token suffix word, so 박사 + 님 came "
@@ -1274,7 +1280,7 @@ CASES: tuple[Case, ...] = (
                "to family; the row exists for the guard"),
     Case("ko_honorific_token_alone_stays_whole", "선생님",
          {"family": "선생님"},
-         classification="fix(#308)",
+         classification="fix(#308) + fix(#271)",
          notes="a lone honorific is not a name to be taken apart: it "
                "is not a peel site (every tail is a suffix word) and "
                "not a surname site, though 선 is listed and the "
@@ -1326,7 +1332,7 @@ CASES: tuple[Case, ...] = (
                "order flip that makes the one token a family name"),
     Case("ja_dono_spaced", "田中 殿",
          {"family": "田中", "suffix": "殿"},
-         classification="fix(#308)",
+         classification="fix(#308) + fix(#271)",
          notes="殿 waited on an argument in #307 and gets one here: "
                "spaced it is safe for the reason 양/군 are -- a "
                "殿-surnamed person's name LEADS, and the suffix gate "
@@ -1334,7 +1340,7 @@ CASES: tuple[Case, ...] = (
                "真殿 in two, so it ships spaced only"),
     Case("ko_honorific_nim_spaced", "김민준 님",
          {"family": "김", "given": "민준", "suffix": "님"},
-         classification="fix(#308)",
+         classification="fix(#308) + fix(#271)",
          notes="님 is new in both sets -- #307 shipped only the -님 "
                "compounds 선생님/교수님. Standardly glued in online "
                "address, spaced too, and never the end of a Korean "
@@ -1342,7 +1348,7 @@ CASES: tuple[Case, ...] = (
                "harsher glued vetting as well"),
     Case("ko_honorific_glued_via_segmentation", "김씨",
          {"family": "김", "suffix": "씨"},
-         classification="fix(#307)",
+         classification="fix(#307) + fix(#271)",
          notes="the one glued shape that was already reachable before "
                "#308, which is why this row stays fix(#307) where its "
                "neighbours are fix(#308): stage order alone delivered "
@@ -1362,10 +1368,14 @@ CASES: tuple[Case, ...] = (
                "lenient comma gate, which an earlier note named: "
                "measured, lenient_comma_suffixes=False leaves this "
                "row unchanged. The comma disables segmentation per "
-               "the comma doctrine, so 김민준 stays whole"),
+               "the comma doctrine, so 김민준 stays whole -- which is "
+               "also why this row stays single-issue while the rest of "
+               "the block is compound with fix(#271): measured, the "
+               "order table and the segmenter both leave it alone, "
+               "because the comma already decided the family"),
     Case("ko_honorific_glued_given", "김민준씨",
          {"family": "김", "given": "민준", "suffix": "씨"},
-         classification="fix(#308)",
+         classification="fix(#308) + fix(#271)",
          notes="the common full-name glued shape, and the row this "
                "replaces (ko_honorific_glued_given_stays) pinned the "
                "old boundary: 씨 peels off the last token first, and "
@@ -1373,7 +1383,7 @@ CASES: tuple[Case, ...] = (
                "and split compose, in that order"),
     Case("ko_honorific_glued_given_trailing_suffix", "김민준씨 Jr.",
          {"family": "김", "given": "민준", "suffix": "씨, Jr."},
-         classification="fix(#308)",
+         classification="fix(#308) + fix(#271)",
          notes="the peel site is the last token that is not itself a "
                "post-nominal, so an unrelated trailing suffix cannot "
                "hide it -- this now agrees with the comma-written "
@@ -1382,7 +1392,7 @@ CASES: tuple[Case, ...] = (
     Case("ko_honorific_glued_given_suffix_comma", "Dr 김민준씨, Jr.",
          {"title": "Dr", "family": "김", "given": "민준",
           "suffix": "씨, Jr."},
-         classification="fix(#308)",
+         classification="fix(#308) + fix(#271)",
          notes="the peel scans the NAME's runs, not the token stream: "
                "under a suffix comma that is segments[0] alone, a "
                "strict subset, and the peel site is found within it "
@@ -1394,7 +1404,7 @@ CASES: tuple[Case, ...] = (
     Case("ko_honorific_glued_given_nickname", "김민준씨 (Jimmy)",
          {"family": "김", "given": "민준", "suffix": "씨",
           "nickname": "Jimmy"},
-         classification="fix(#308)",
+         classification="fix(#308) + fix(#271)",
          notes="the other half of scanning the NAME's runs: extracted "
                "content is still in the token stream at this stage but "
                "in NO segment, so the scan-back never reaches "
@@ -1688,7 +1698,7 @@ CASES: tuple[Case, ...] = (
     Case("ko_honorific_glued_given_suffix_comma_initial", "Dr 김민준씨, V.",
          {"title": "Dr", "family": "김", "given": "민준",
           "suffix": "씨, V."},
-         classification="fix(#308)",
+         classification="fix(#308) + fix(#271)",
          notes="fix(#308) rather than fix(#312) because the fields do "
                "not move in this change -- a SUFFIX comma keeps the "
                "whole name in segments[0], which is what the peel "
@@ -1716,20 +1726,20 @@ CASES: tuple[Case, ...] = (
     Case("zh_honorific_glued_surname", "王先生",
          {"family": "王", "suffix": "先生"},
          locale="zh",
-         classification="fix(#307)",
+         classification="fix(#307) + fix(#271)",
          notes="the Han twin of 김씨: the zh pack's segmentation "
                "splits off the surname and the remaining 先生 is the "
                "honorific token"),
     Case("zh_honorific_glued_given", "王小明先生",
          {"family": "王", "given": "小明", "suffix": "先生"},
          locale="zh",
-         classification="fix(#308)",
+         classification="fix(#308) + fix(#271)",
          notes="the Han twin, replacing zh_honorific_glued_given_stays: "
                "先生 peels, and the zh pack's surname vocabulary then "
                "divides the remainder 王小明"),
     Case("zh_honorific_glued_given_default", "王小明先生",
          {"family": "王小明", "suffix": "先生"},
-         classification="fix(#308)",
+         classification="fix(#308) + fix(#271)",
          notes="the same input WITHOUT the pack: the peel is default-on "
                "and script-independent, so the honorific still routes "
                "to suffix -- only the surname split needs the opt-in, "
@@ -1757,7 +1767,7 @@ CASES: tuple[Case, ...] = (
                "them"),
     Case("ko_honorific_yang_trails", "김민준 양",
          {"family": "김", "given": "민준", "suffix": "양"},
-         classification="fix(#307)",
+         classification="fix(#307) + fix(#271)",
          notes="the other side of ko_surname_yang_leads: the same "
                "token trailing a name is 'Miss', and that is the whole "
                "argument shipping it -- suffixes.py singles 양 out "
@@ -1800,7 +1810,7 @@ CASES: tuple[Case, ...] = (
                "in family -- nothing in #308 moves these fields"),
     Case("ko_honorific_stack", "김민준 박사 씨",
          {"family": "김", "given": "민준", "suffix": "박사, 씨"},
-         classification="fix(#307)",
+         classification="fix(#307) + fix(#271)",
          notes="a trailing RUN of honorifics peels whole, like "
                "'Smith PhD MD' -- the multi-suffix loop the peel "
                "shares with Latin suffixes"),
