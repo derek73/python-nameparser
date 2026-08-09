@@ -9,9 +9,12 @@ from __future__ import annotations
 
 import importlib
 import inspect
+import pathlib
 from collections.abc import Iterator
 
 import pytest
+
+import nameparser
 
 #: (old module, old name, new module, new name), one row per alias.
 ALIASES = [
@@ -130,3 +133,66 @@ def test_unknown_attribute_still_raises(old_module: str) -> None:
 )
 def test_dir_advertises_the_old_names(old_module: str, old_name: str) -> None:
     assert old_name in dir(importlib.import_module(old_module))
+
+
+#: Serving the 1.x names is the bridge's whole job, so the files that
+#: make up the bridge may spell them; everything else in the package
+#: must be on the 2.2 names. One row per retired name, mapped to the
+#: package-relative files it is allowed to appear in -- relative paths
+#: rather than bare filenames so a future ``locales/titles.py`` does not
+#: inherit ``config/titles.py``'s exemption.
+#:
+#: The match below is ``name in source``: raw text, not a token, so a
+#: mention in a comment or a docstring counts too. That is the intent --
+#: prose naming a retired constant goes stale exactly the way code does
+#: -- and it is why ``config/_deprecated.py`` is listed here: its
+#: ``stacklevel`` comment quotes a ``from ... import PREFIXES`` line as
+#: the worked example of what the bridge serves.
+#:
+#: Substring matching also means ``NON_FIRST_NAME_PREFIXES`` contains
+#: ``PREFIXES``, so a file holding only the longer name trips both rows.
+#: The overlap costs a duplicate line in the failure report and can hide
+#: nothing: every row's allow-list is checked against the same file.
+_RETIRED_NAMES = {
+    "PREFIXES": ("config/prefixes.py", "config/_deprecated.py"),
+    "NON_FIRST_NAME_PREFIXES": ("config/prefixes.py",),
+    "BOUND_FIRST_NAMES": ("config/bound_first_names.py",),
+    # these two kept their module; the exemption is for the alias table
+    # at the bottom of the file, which names them as strings
+    "FIRST_NAME_TITLES": ("config/titles.py",),
+    "SUFFIX_NOT_ACRONYMS": ("config/suffixes.py",),
+}
+
+
+def test_no_internal_code_reads_a_retired_vocabulary_name() -> None:
+    """The bridge exists for callers, not for us.
+
+    An internal read of a 1.x name would warn on a path the suite may
+    never take, so ``filterwarnings = ["error"]`` alone does not pin
+    this. A stale internal reference also rots the bridge in the worst
+    way: the write-back cache means the FIRST reader consumes the only
+    warning, so a real caller downstream could be told nothing at all.
+    """
+    package = pathlib.Path(nameparser.__file__).parent
+    seen = set()
+    offenders = []
+    for path in sorted(package.rglob("*.py")):
+        source = path.read_text(encoding="utf-8")
+        relative = path.relative_to(package).as_posix()
+        for name, allowed in _RETIRED_NAMES.items():
+            if name not in source:
+                continue
+            seen.add(name)
+            if relative not in allowed:
+                offenders.append(f"{relative}: {name}")
+    # every retired name is spelled in its own allow-listed file, so a
+    # name the scan never saw at all means the scan is broken rather
+    # than the tree clean -- the failure mode where this test passes
+    # while measuring nothing
+    assert seen == set(_RETIRED_NAMES), (
+        f"scanned {package} and never saw "
+        f"{sorted(set(_RETIRED_NAMES) - seen)}; the alias tables spell "
+        f"every retired name, so the scan itself is broken")
+    assert not offenders, (
+        "retired 1.x vocabulary names used inside the package; move them "
+        f"to their 2.2 names (#293): {offenders}")
