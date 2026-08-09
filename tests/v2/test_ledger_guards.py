@@ -26,6 +26,7 @@ write.
 Split from test_regex_sync.py, which shares none of this (#352).
 """
 import hashlib
+import itertools
 import json
 import re
 from pathlib import Path
@@ -33,6 +34,7 @@ from typing import NamedTuple
 
 import pytest
 
+from nameparser import Role
 from nameparser import _policy
 from nameparser._policy import Script
 # The parser's own fold, imported rather than reimplemented: a
@@ -47,8 +49,8 @@ from nameparser.config.suffixes import (
     GLUED_HONORIFICS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_WORDS)
 
 from ._differential_fixtures import (
-    _CORPUS_NAMES, _LEDGERS, _TOOLS, _UNCLASSIFIED_NAMES, _claimed, _rules,
-    _unclassified_names, load_tool)
+    _CORPUS_NAMES, _LEDGERS, _TOOLS, _UNCLASSIFIED_NAMES, _claimed,
+    _exclusions, _rules, _unclassified_names, load_tool)
 
 
 # The one sanctioned divergence between the differential rules'
@@ -1115,3 +1117,44 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
         f"_CORPUS_CLAIMS names ledgers that do not exist: "
         f"{sorted(set(_CORPUS_CLAIMS) - {L.name for L in _LEDGERS})}")
 
+
+
+def test_no_rule_claims_a_shape_the_ledger_excludes() -> None:
+    """The failure moment that matters.
+
+    The harness runs by hand at release; this runs on every push. It
+    fires when someone ADDS or WIDENS a rule that would absorb a
+    protected shape, months before a release run would notice -- which
+    is why #328 went unseen for a year.
+
+    Every non-empty subset of the seven roles, because the promise is
+    "if it ever starts diffing", not "if it diffs the way I guessed".
+    An entry that names `fields` is only asked about the subsets it
+    covers: the ASCII-pairs entry protects the nickname reading, and a
+    suffix diff on the same name is somebody else's business.
+    """
+    compare = load_tool("compare")
+    roles = tuple(str(role) for role in Role)
+    checked = 0
+    for ledger in _LEDGERS:
+        rules = compare._sorted_rules(_rules(ledger))
+        never = _exclusions(ledger)
+        for entry in never:
+            covered = entry.get("fields")
+            for example in entry["examples"]:
+                for size in range(1, len(roles) + 1):
+                    for combo in itertools.combinations(roles, size):
+                        diff = set(combo)
+                        if covered is not None and not diff <= set(covered):
+                            continue
+                        checked += 1
+                        got = compare.classify(example, diff, rules, never)
+                        assert got is None, (
+                            f"{ledger.name}: {example!r} is excluded "
+                            f"({entry['why']}) but a diff on "
+                            f"{sorted(combo)} would be claimed by {got!r}. "
+                            f"A rule widened to reach a protected shape "
+                            f"turns a regression into a green run.")
+    assert checked, (
+        "no ledger declares a [[never]] entry, so this pin is passing "
+        "vacuously")
