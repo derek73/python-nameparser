@@ -11,7 +11,7 @@ from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
 #: auto-fixed, whereas a wrong member misparses a real person. Must stay a
 #: subset of :py:data:`PARTICLES` and disjoint from
 #: :py:data:`~nameparser.config.bound_given_names.BOUND_GIVEN_NAMES`.
-NON_GIVEN_NAME_PARTICLES = {
+NON_GIVEN_NAME_PARTICLES = frozenset({
     "'t",
     'af',
     'auf',
@@ -58,7 +58,7 @@ NON_GIVEN_NAME_PARTICLES = {
     # surname spelling is hyphenated anyway.
     'בן',     # "ben" (son of)
     'בת',     # "bat" (daughter of)
-}
+})
 
 #: Family-name particles: a particle joins to the piece that follows it
 #: to make one new piece, and particles chain, e.g. "von der" and
@@ -79,6 +79,9 @@ NON_GIVEN_NAME_PARTICLES = {
 #: member is guaranteed to also be a particle (and still join forward),
 #: with no drift -- mirroring ``TITLES = GIVEN_NAME_TITLES | {...}`` in
 #: :py:mod:`nameparser.config.titles`.
+#: Frozen by construction (#293): ``frozenset | set`` returns a frozenset.
+#: The LEFT operand's type wins, so keep the frozenset first -- flipped,
+#: this silently yields a plain set again.
 PARTICLES = NON_GIVEN_NAME_PARTICLES | {
     'aan',
     'aen',

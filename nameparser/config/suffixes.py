@@ -1,6 +1,6 @@
 from nameparser.config._invariants import assert_normalized
 
-SUFFIX_WORDS = {
+SUFFIX_WORDS = frozenset({
     # #269: Cyrillic мл/ст (junior/senior, the jr/sr analogs) deferred
     # pending the within-script collision vetting the issue asks for;
     # 'ст' especially is a plausible false-positive risk (many two-
@@ -94,7 +94,7 @@ SUFFIX_WORDS = {
     'さま',      # ja the kana spelling of 様
     'くん',      # ja the kana spelling of 君
     'ちゃん',    # ja familiar/diminutive
-}
+})
 """
 
 Post-nominal suffixes matched as WORDS: the lookup uses the normalized token,
@@ -108,7 +108,7 @@ who removes it from :data:`SUFFIX_ACRONYMS`. That is why the two sets are
 deliberately not asserted disjoint -- see the guard block at the bottom.
 
 """
-GLUED_HONORIFICS = {
+GLUED_HONORIFICS = frozenset({
     # #308: the entries above that may also be peeled off the END of a
     # name token -- 田中さん, 山田太郎様, 김민준씨. A separate set, not
     # SUFFIX_WORDS reused, because the glued position has no token
@@ -135,7 +135,7 @@ GLUED_HONORIFICS = {
     # its Han twin 博士 is not: that collision is Japanese (博士 =
     # ひろし) and the hangul spelling carries none of it.
     '씨', '님', '선생님', '교수님', '박사', '박사님',
-}
+})
 """
 
 The subset of :data:`SUFFIX_WORDS` a name token may end WITH, peeled off as
@@ -159,7 +159,7 @@ ships glued, above. Bare 선생 and 교수: they read as common nouns as readily
 as address terms, and only their -님 forms ship.
 
 """
-SUFFIX_ACRONYMS_AMBIGUOUS = {
+SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
     # Suffix acronyms that also commonly work as given-name nicknames on
     # their own (e.g. "Ed", "JD"). Read only by HumanName.parse_nicknames()
     # when deciding whether parenthesized/quoted content is a nickname or a
@@ -179,7 +179,7 @@ SUFFIX_ACRONYMS_AMBIGUOUS = {
     'ed',
     'jd',
     'ma',
-}
+})
 """
 
 Acronym suffixes from SUFFIX_ACRONYMS that also plausibly collide with a
@@ -187,7 +187,7 @@ common given-name nickname. Not a partition of SUFFIX_ACRONYMS -- a small,
 standalone exception list consulted only by parse_nicknames().
 
 """
-SUFFIX_ACRONYMS = {
+SUFFIX_ACRONYMS = frozenset({
     '8-vsb',
     'aas',
     'aba',
@@ -820,7 +820,7 @@ SUFFIX_ACRONYMS = {
     'vcp',
     'vd',
     'vrd',
-}
+})
 """
 
 Post-nominal acronyms. Titles, degrees and other things people stick after their name

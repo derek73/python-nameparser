@@ -11,7 +11,7 @@ from nameparser.config._invariants import assert_normalized
 #: is already fixed ("salam, abdul rahman" → given "abdul rahman").
 #: Mirrors :py:data:`~nameparser.config.particles.PARTICLES`, which
 #: chains onto the piece that follows it.
-BOUND_GIVEN_NAMES: set[str] = {
+BOUND_GIVEN_NAMES: frozenset[str] = frozenset({
     'abdul',
     'abdel',
     'abdal',
@@ -29,7 +29,7 @@ BOUND_GIVEN_NAMES: set[str] = {
     'ابو',    # "abu", hamza-less spelling
     'أم',     # "umm" (mother of), hamza spelling
     'ام',     # "umm", hamza-less spelling
-}
+})
 
 
 assert_normalized("BOUND_GIVEN_NAMES", BOUND_GIVEN_NAMES)

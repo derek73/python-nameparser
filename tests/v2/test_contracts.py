@@ -102,3 +102,50 @@ def test_every_guarded_config_module_is_imported() -> None:
         f"derivation broke, and an empty roster asserts nothing")
     for name in guarded:
         importlib.import_module(f"nameparser.config.{name}")
+
+
+def test_every_vocabulary_constant_is_frozen() -> None:
+    """A module vocabulary constant must not be mutable (#293).
+
+    ``Lexicon.default()`` is ``functools.cache``d and reads these sets
+    once, while the v1 shim's ``Constants`` copy from them at every
+    construction. A runtime ``TITLES.add("dean")`` was therefore
+    visible to a freshly built ``Constants`` and invisible to the
+    cached default ``Lexicon`` -- two APIs disagreeing about their own
+    defaults, decided by construction order. Frozen makes that
+    unrepresentable: the mutation raises where it is written.
+
+    The roster is DERIVED from the source tree for the same reason the
+    guarded-module roster above is: a hand-written list fails open on
+    the next module or the next constant.
+
+    The deprecated alias modules are in the glob too, and contribute
+    whatever the bridge has cached back into their globals -- so the
+    NAMES collected here depend on what ran first. The verdict does
+    not: a cached alias is the same object its 2.2 home contributes,
+    and every one of those is frozen, so the cache can only ever add a
+    duplicate entry under an old name.
+    """
+    import importlib
+    import pathlib
+
+    import nameparser.config
+
+    config_dir = pathlib.Path(nameparser.config.__file__).parent
+    checked = []
+    offenders = []
+    for path in sorted(config_dir.glob("*.py")):
+        if path.stem.startswith("_"):
+            continue
+        module = importlib.import_module(f"nameparser.config.{path.stem}")
+        for name, value in sorted(vars(module).items()):
+            if not name.isupper() or not isinstance(value, (set, frozenset)):
+                continue
+            checked.append(f"{path.stem}.{name}")
+            if not isinstance(value, frozenset):
+                offenders.append(f"{path.stem}.{name}")
+    assert checked, (
+        "no vocabulary set constant found -- the derivation broke, and "
+        "an empty roster asserts nothing")
+    assert not offenders, (
+        f"vocabulary constants must be frozensets (#293): {offenders}")

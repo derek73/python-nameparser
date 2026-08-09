@@ -527,7 +527,7 @@ def test_cjk_corpus_matches_the_case_table() -> None:
 #: Keys are matched as substrings of a rule's `issue` and must select
 #: exactly one entry. The full issue lists are the keys, not a bare
 #: '#308': both 2.0 rules cite #308 while copying different constants.
-_HONORIFIC_SOURCES: dict[str, set[str]] = {
+_HONORIFIC_SOURCES: dict[str, frozenset[str]] = {
     "cjk-honorific-suffix": SUFFIX_WORDS,               # 1.4
     "#307/#308/#320": SUFFIX_WORDS,                     # 2.0, spaced
     "#308/#312/#319/#320": GLUED_HONORIFICS,            # 2.0, glued
@@ -647,7 +647,7 @@ class _LatinCopy(NamedTuple):
     `vocabulary` is the source of truth, `covers` an audited snapshot of
     which of its entries the rule's members reach.
     """
-    vocabulary: set[str]
+    vocabulary: frozenset[str]
     covers: frozenset[str]
 
 
@@ -711,7 +711,7 @@ def _unjustified_reach(name_regex: str, members: set[str]) -> list[str]:
             if not any(pattern.search(name) for pattern in reachable)]
 
 
-def _reaches_non_vocabulary(member: str, vocabulary: set[str]) -> list[str]:
+def _reaches_non_vocabulary(member: str, vocabulary: frozenset[str]) -> list[str]:
     """Corpus text this member matches that is NOT a vocabulary entry.
 
     fullmatch against the vocabulary bounds what a member matches
@@ -873,12 +873,12 @@ def test_latin_alternations_mean_something_the_vocabulary_ships() -> None:
 #: marker in the name. `suffix` and `title` are not like that -- most
 #: of their diffs come from routing, not from a vocabulary word being
 #: present -- so adding them would be false rather than strict.
-_FIELD_VOCABULARIES: dict[str, set[str]] = {
+_FIELD_VOCABULARIES: dict[str, frozenset[str]] = {
     "maiden": MAIDEN_MARKERS,
 }
 
 
-def _carries(name: str, vocabulary: set[str]) -> bool:
+def _carries(name: str, vocabulary: frozenset[str]) -> bool:
     """Whether a name contains a vocabulary entry.
 
     Whole-token for ASCII entries, substring for the rest, because a

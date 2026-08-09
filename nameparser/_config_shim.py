@@ -664,7 +664,7 @@ _SHARED_MUTATION_MESSAGE = (
 )
 
 
-def _default_vocab() -> dict[str, set[str]]:
+def _default_vocab() -> dict[str, frozenset[str]]:
     # v1 data modules stay the single vocabulary source through 2.x
     # (same rule as Lexicon.default()).
     from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
@@ -1062,23 +1062,19 @@ class Constants:
             bound_given_names=bound,
             # v1 Constants has no manager for these (#274 is 2.0
             # behavior); the data module is the only source
-            maiden_markers=frozenset(MAIDEN_MARKERS),
+            maiden_markers=MAIDEN_MARKERS,
             # likewise no v1 manager: the unspaced-name segmentation
             # vocabulary is 2.0 behavior (#271), so it rides in the
             # snapshot only -- v1's Constants surface stays frozen.
-            # Unwrapped where maiden_markers above is wrapped: this
-            # module is born frozen (#293), so no wrap
             surnames=KOREAN_SURNAMES,
             # likewise no v1 manager: the glued-honorific tail set is
             # 2.1 behavior (#308), so it rides in the snapshot only.
-            # Wrapped, unlike surnames above: suffixes.py is still a
-            # mutable v1 module, not born-frozen like surnames.py
-            # (#293). Intersect with the word set: Lexicon enforces
-            # tails <= suffix_words, and v1 semantics are that deleting
-            # a suffix word turns the behavior off -- a lingering tail
-            # simply stops mattering, the same rule ambiguous_acronyms
-            # gets against suffix_acronyms above.
-            honorific_tails=frozenset(GLUED_HONORIFICS) & suffix_words,
+            # Intersect with the word set: Lexicon enforces tails <=
+            # suffix_words, and v1 semantics are that deleting a suffix
+            # word turns the behavior off -- a lingering tail simply
+            # stops mattering, the same rule ambiguous_acronyms gets
+            # against suffix_acronyms above.
+            honorific_tails=GLUED_HONORIFICS & suffix_words,
             # TupleManager is dict[str, object] (v1 parity: values were
             # never statically str-typed); every real entry is a str,
             # same assumption _DelimiterManager's sentinel lookup makes

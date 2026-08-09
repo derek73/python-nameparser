@@ -1,6 +1,6 @@
 from nameparser.config._invariants import assert_normalized
 
-GIVEN_NAME_TITLES = {
+GIVEN_NAME_TITLES = frozenset({
     'aunt',
     'auntie',
     'brother',
@@ -48,7 +48,7 @@ GIVEN_NAME_TITLES = {
     'الحاجة',      # hajj honorific (f)
     'الشيخة',      # female counterpart of الشيخ
     'مهندس',       # engineer (a genuine title in Egyptian usage)
-}
+})
 """
 When these titles appear with a single other name, that name is a first name, e.g.
 "Sir John", "Sister Mary", "Queen Elizabeth".
@@ -58,6 +58,9 @@ When these titles appear with a single other name, that name is a first name, e.
 #: Many of these from wikipedia: https://en.wikipedia.org/wiki/Title.
 #: The parser recognizes chains of these including conjunctions allowing 
 #: recognition titles like "Deputy Secretary of State".
+#: Frozen by construction (#293): ``frozenset | set`` returns a frozenset.
+#: The LEFT operand's type wins, so keep the frozenset first -- flipped,
+#: this silently yields a plain set again.
 TITLES = GIVEN_NAME_TITLES | {
     "attaché",
     "chargé",

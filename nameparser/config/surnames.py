@@ -1,9 +1,8 @@
 from nameparser.config._invariants import assert_normalized
 
-# Born a frozenset (#293's convention: new modules have no users to
-# bridge, and a mutable module constant would silently desync the
-# cached ``Lexicon.default()`` from the shim's per-construction
-# copies).
+# Born a frozenset (#293's convention: a mutable module constant would
+# silently desync the cached ``Lexicon.default()`` from the shim's
+# per-construction copies).
 #
 # Single-syllable surnames in census rank order, 10 per row; the cut is
 # the top ~94 -- append new entries at the tail, do not alphabetize

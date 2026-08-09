@@ -626,27 +626,28 @@ def _default_lexicon() -> Lexicon:
     from nameparser.config.surnames import KOREAN_SURNAMES
     from nameparser.config.titles import GIVEN_NAME_TITLES, TITLES
 
-    # v1 data modules export plain `set[str]`; wrap each at this call site
-    # so the strictly-typed frozenset[str] fields never see a bare set.
+    # every vocabulary constant is a frozenset since #293, so each one
+    # feeds its strictly-typed frozenset[str] field as it stands -- and
+    # this cache reading them ONCE is the reason they are frozen: a
+    # mutated module set would reach a freshly built Constants and never
+    # reach the default Lexicon.
     # keep in sync with _config_shim.Constants._snapshot() (pinned by the
     # default-Constants equality test in tests/v2/test_config_shim.py)
     return Lexicon(
-        titles=frozenset(TITLES),
-        given_name_titles=frozenset(GIVEN_NAME_TITLES),
-        suffix_acronyms=frozenset(SUFFIX_ACRONYMS),
-        suffix_words=frozenset(SUFFIX_WORDS),
-        suffix_acronyms_ambiguous=frozenset(SUFFIX_ACRONYMS_AMBIGUOUS),
-        particles=frozenset(PARTICLES),
+        titles=TITLES,
+        given_name_titles=GIVEN_NAME_TITLES,
+        suffix_acronyms=SUFFIX_ACRONYMS,
+        suffix_words=SUFFIX_WORDS,
+        suffix_acronyms_ambiguous=SUFFIX_ACRONYMS_AMBIGUOUS,
+        particles=PARTICLES,
         # FLIPPED from v1: v1 marks the never-given subset; v2 marks the
         # may-be-given subset (migration: complement translation).
-        particles_ambiguous=frozenset(PARTICLES - NON_GIVEN_NAME_PARTICLES),
-        conjunctions=frozenset(CONJUNCTIONS),
-        bound_given_names=frozenset(BOUND_GIVEN_NAMES),
-        maiden_markers=frozenset(MAIDEN_MARKERS),
-        # surnames.py is born frozen (#293) -- no call-site wrap needed,
-        # unlike the v1 modules above (their wraps drop when #293 lands)
+        particles_ambiguous=PARTICLES - NON_GIVEN_NAME_PARTICLES,
+        conjunctions=CONJUNCTIONS,
+        bound_given_names=BOUND_GIVEN_NAMES,
+        maiden_markers=MAIDEN_MARKERS,
         surnames=KOREAN_SURNAMES,
-        honorific_tails=frozenset(GLUED_HONORIFICS),
+        honorific_tails=GLUED_HONORIFICS,
         # pass canonical pair-tuples so this strictly-typed call site never
         # feeds a Mapping to the tuple-annotated field; __post_init__
         # still tolerates a Mapping at runtime for interactive use
