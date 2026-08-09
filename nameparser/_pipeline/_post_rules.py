@@ -146,6 +146,16 @@ def post_rules(state: ParseState) -> ParseState:
     # default order, and the degenerate bare 'de' keeps given='de'. In
     # each the particle is in a piece with something else, or has
     # nothing to fold into.
+    # Those two sites are the whole scope, and the MIDDLE position is
+    # deliberately not one of them -- which shows: "Mesnil Garcia de"
+    # strands middle='de' under FAMILY_FIRST, while under
+    # FAMILY_FIRST_GIVEN_LAST the same trailing piece IS the given
+    # position, so it folds to family='Mesnil Garcia de'. Whether that
+    # difference should stand is #365, not this rule's to settle. How
+    # much the fold takes once it fires is the other open question:
+    # "de Mesnil Juan" goes wholly to the family in every order,
+    # matching the default rather than stopping at the particle group
+    # (#364).
     # Only a never-given particle is in scope: an ambiguous one keeps
     # whatever reading name_order gives it -- 'van Gogh' is given
     # 'van' in the default order and family 'van' under a family-first

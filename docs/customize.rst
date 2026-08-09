@@ -168,13 +168,14 @@ a suffix only when written with periods:
 ``particles_ambiguous`` is the same idea for surname particles. A
 particle listed there may also be a given name, which is what makes a
 leading one a decision to take; a particle *not* listed there never
-is, so there is nothing to decide. That shows up as whether the name
-has a given name at all: one that starts with a listed particle keeps
-it, while one starting with an unlisted particle has no given name —
-the whole thing is the surname. Which field a *listed* particle lands
-in is ``name_order``'s question, covered below; an unlisted one is the
-surname under every order, because a word that can never be a given
-name leaves the order nothing to decide.
+is, so there is nothing to decide. That shows up in what a particle
+standing *alone* at the front of a name does: a listed one is a name
+part in its own right, while an unlisted one pulls the rest of the
+name into the surname and leaves no given name at all. Which field a
+*listed* particle lands in is ``name_order``'s question, covered
+below; an unlisted one opening the name is the surname under every
+order, because a word that can never be a given name leaves the order
+nothing to decide.
 
 .. doctest::
 
@@ -184,6 +185,19 @@ name leaves the order nothing to decide.
     ''
     >>> parse("de Mesnil").family
     'de Mesnil'
+
+Standing alone is the condition, not merely being the first word.
+Anything ahead of the particle lets it join the word behind it
+instead, and a comma has named the surname before the question is
+reached at all — so neither of these is the case above, and both keep
+a given name:
+
+.. doctest::
+
+    >>> parse("Sir de Mesnil").given     # 'de' joined 'Mesnil'
+    'de Mesnil'
+    >>> parse("de Mesnil, Juan").given   # the comma settled the surname
+    'Juan'
 
 If your data never uses ``Van`` as a given name, take it out of the
 ambiguous set: a leading ``van`` is then no decision at all, so no
