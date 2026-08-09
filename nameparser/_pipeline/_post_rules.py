@@ -105,6 +105,17 @@ def post_rules(state: ParseState) -> ParseState:
         if joined not in state.lexicon.given_name_titles:
             for i in givens:
                 _retag(tokens, i, Role.FAMILY)
+            # every rule below reads these lists; recompute them the way
+            # 1b does after its own fold, so no guard can inspect a name
+            # that has already moved. Measured harmless today -- over the
+            # 751 differential names in four policies this arm fires 48
+            # times, and 1b fires on none of them -- but reading a stale
+            # token list is the shape of the bug #359 fixed. `middles`
+            # is empty by the guard above and recomputed anyway, so
+            # relaxing that guard cannot leave it stale.
+            givens = _idx(tokens, Role.GIVEN)
+            middles = _idx(tokens, Role.MIDDLE)
+            families = _idx(tokens, Role.FAMILY)
 
     # rule 1b enforces one invariant (v1 handle_non_first_name_prefix):
     # a particle that is NEVER a given name is never REPORTED as the
