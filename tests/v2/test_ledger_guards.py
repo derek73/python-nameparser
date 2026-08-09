@@ -36,11 +36,11 @@ import pytest
 from nameparser import _policy
 from nameparser._policy import Script
 # The parser's own fold, imported rather than reimplemented: a
-# hand-written one here stripped commas, parens, brackets and quotes --
-# classes neither the lexicon's fold nor config's assert_normalized
-# touches -- looser in the dangerous direction, and a hand copy of a
-# constant with a source of truth, inside the module written to forbid
-# exactly that.
+# hand-written one here stripped commas, parens, brackets and quotes,
+# five character classes neither the lexicon's fold nor config's
+# assert_normalized touches -- looser in the dangerous direction, and a
+# hand copy of a constant with a source of truth, inside the module
+# written to forbid exactly that.
 from nameparser._lexicon import _normalize
 from nameparser.config.maiden_markers import MAIDEN_MARKERS
 from nameparser.config.suffixes import (
@@ -61,7 +61,6 @@ from ._differential_fixtures import (
 # meaning something -- an extra that becomes classified belongs in the
 # table, not in this list.
 _SANCTIONED_EXTRAS = frozenset({(0xFF65, 0xFF65)})
-
 
 
 def test_the_corpus_population_is_not_degenerate() -> None:
@@ -93,10 +92,6 @@ def test_ledger_glob_is_not_empty() -> None:
     break. The swept pins cannot assert this for themselves, since a
     test that is never generated cannot complain, so it lives here."""
     assert _LEDGERS, f"no expected_since_*.toml under {_TOOLS}"
-
-
-
-
 
 
 def test_span_bearing_roster_names_exactly_the_ledgers_on_disk() -> None:
