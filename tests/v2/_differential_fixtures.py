@@ -77,6 +77,16 @@ def _rules(ledger: Path) -> list[dict]:
         ledger.read_text(encoding="utf-8")).get("change", [])
 
 
+def _exclusions(ledger: Path) -> list[dict]:
+    """The [[never]] table of one ledger.
+
+    Same .get default as _rules and for the same reason: a ledger with
+    no exclusions is the normal case, not a malformed file.
+    """
+    return tomllib.loads(
+        ledger.read_text(encoding="utf-8")).get("never", [])
+
+
 def load_tool(stem: str) -> ModuleType:
     """A module from tools/differential/, loaded by path.
 
