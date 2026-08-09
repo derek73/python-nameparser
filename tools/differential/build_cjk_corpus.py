@@ -23,7 +23,7 @@ Regenerate after editing CJK case rows:
 
     uv run python tools/differential/build_cjk_corpus.py
 
-tests/v2/test_regex_sync.py pins the checked-in file against this
+tests/v2/test_ledger_guards.py pins the checked-in file against this
 module's selection, so a stale corpus fails the suite rather than
 silently narrowing the differential gate.
 """

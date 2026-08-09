@@ -27,7 +27,7 @@
 # must carry rules like any other, so a 2.2 that changed no behavior at
 # all would need that decision made deliberately rather than inherited.
 #
-# tests/v2/test_regex_sync.py's _SPAN_BEARING_RULES already records this
+# tests/v2/test_ledger_guards.py's _SPAN_BEARING_RULES already records this
 # file with an empty set: no rule here hand-copies _SCRIPT_RANGES yet,
 # and the first one that does has to be recorded there or the sweep
 # fails.

@@ -54,7 +54,7 @@ issue = "fix(#271/#272/#298) native-script CJK: family-first order, hangul segme
 # expected_since_1.4.0.toml rather than rewritten in literal
 # characters, so the two ledgers spell the same class the same way.
 #
-# tests/v2/test_regex_sync.py pins this copy, and the honorific
+# tests/v2/test_ledger_guards.py pins this copy, and the honorific
 # alternations below, by sweeping every expected_since_*.toml rather
 # than naming one (#333). A span removed from the script table, or an
 # entry removed from SUFFIX_NOT_ACRONYMS or GLUED_HONORIFICS, now
