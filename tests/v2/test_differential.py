@@ -723,3 +723,41 @@ def test_main_aborts_on_a_corpus_with_no_floor(
         _run_main(tmp_path, monkeypatch,
                   '[[change]]\nissue = "x"\nname_regex = "ZZZ"\n',
                   _SAME_FACADE, floor=None)
+
+
+# The exclusion grammar. Every row is a way a [[never]] entry can look
+# correct and protect nothing -- the same failure the rules' own
+# validator exists for, pointed at the section that DISABLES
+# classification instead of the one that performs it.
+@pytest.mark.parametrize("entry,expect", [
+    ({}, "no string 'why'"),
+    ({"why": ""}, "no string 'why'"),
+    ({"why": "x"}, "no string 'name_regex'"),
+    ({"why": "x", "name_regex": "Smith("}, "invalid 'name_regex'"),
+    ({"why": "x", "name_regex": "a"}, "no 'examples'"),
+    ({"why": "x", "name_regex": "a", "examples": []}, "no 'examples'"),
+    ({"why": "x", "name_regex": "a", "examples": "b"}, "not a list of strings"),
+    ({"why": "x", "name_regex": "a", "examples": ["a", 1]},
+     "not a list of strings"),
+    # an example the entry does not actually protect
+    ({"why": "x", "name_regex": "zzz", "examples": ["John Smith"]},
+     "does not match its own"),
+    # a misspelled key deletes half the declaration, exactly as for rules
+    ({"why": "x", "name_regex": "a", "examples": ["a"], "reason": "b"},
+     "unknown key"),
+    # would silence the entire ledger
+    ({"why": "x", "name_regex": ".", "examples": ["a"]},
+     "matches every one of"),
+])
+def test_validate_exclusions_rejects_an_entry_that_protects_nothing(
+        entry: dict, expect: str) -> None:
+    with pytest.raises(SystemExit, match=expect):
+        compare.validate_exclusions([entry], "expected_since_1.4.0.toml")
+
+
+def test_validate_exclusions_accepts_the_shipped_entries() -> None:
+    """The guards above must not be so strict they reject real entries."""
+    import tomllib
+    for ledger in sorted(_TOOLS.glob("expected_since_*.toml")):
+        parsed = tomllib.loads(ledger.read_text(encoding="utf-8"))
+        compare.validate_exclusions(parsed.get("never", []), ledger.name)

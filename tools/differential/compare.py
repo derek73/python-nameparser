@@ -459,6 +459,64 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
                     f"claimed every diff in the 1.4 ledger")
 
 
+def validate_exclusions(entries: list[dict[str, object]],
+                        ledger: str) -> None:
+    """Reject malformed [[never]] entries LOUDLY at startup.
+
+    An exclusion is the absorption bug pointed the other way. A rule
+    that matches too widely turns a regression into a classified diff;
+    an exclusion that matches too widely turns a legitimate
+    classification into UNEXPLAINED, which reads as a catastrophic
+    regression rather than as a bad exclusion. So the checks mirror
+    validate_rules', with one addition: an entry whose `examples` do
+    not match its own `name_regex` protects nothing while looking
+    complete, and nothing else would ever say so.
+    """
+    allowed = {"why", "name_regex", "examples"}
+    for index, entry in enumerate(entries):
+        where = f"{ledger} exclusion #{index + 1}"
+        unknown = set(entry) - allowed
+        if unknown:
+            raise SystemExit(
+                f"{where} has unknown key(s) {sorted(unknown)}; expected "
+                f"{sorted(allowed)}. A misspelled key is silently ignored, "
+                f"which deletes whatever it was meant to declare.")
+        why = entry.get("why")
+        if not isinstance(why, str) or not why:
+            raise SystemExit(
+                f"{where} has no string 'why'. An exclusion nobody can "
+                f"justify is one nobody can safely delete.")
+        pattern = entry.get("name_regex")
+        if not isinstance(pattern, str) or not pattern:
+            raise SystemExit(f"{where} has no string 'name_regex'")
+        try:
+            compiled = re.compile(pattern)
+        except re.error as exc:
+            raise SystemExit(
+                f"{where} has an invalid 'name_regex' ({exc})") from None
+        if all(compiled.search(s) for s in _SENTINELS):
+            raise SystemExit(
+                f"{where}'s 'name_regex' matches every one of "
+                f"{list(_SENTINELS)} -- it would silence the whole ledger, "
+                f"reporting every diff as unexplained.")
+        examples = entry.get("examples")
+        if examples is None or examples == []:
+            raise SystemExit(
+                f"{where} has no 'examples'. They are the entry's test "
+                f"data: a protected shape need not be in any corpus, so "
+                f"nothing else can supply one.")
+        if (not isinstance(examples, list)
+                or not all(isinstance(e, str) for e in examples)):
+            raise SystemExit(
+                f"{where}'s 'examples' is not a list of strings")
+        stray = [e for e in examples if not compiled.search(e)]
+        if stray:
+            raise SystemExit(
+                f"{where} lists {stray} which does not match its own "
+                f"'name_regex' -- the entry would protect nothing while "
+                f"looking complete.")
+
+
 def classify(name: str, diff_fields: set[str],
              rules: list[dict[str, object]]) -> str | None:
     for rule in rules:
@@ -492,9 +550,12 @@ def main() -> int:
     paths = ([Path(p) for p in args.corpus] if args.corpus
              else sorted(HERE.glob("corpus*.jsonl")))
     ledger = _allowlist_for(baseline)
-    rules = tomllib.loads(ledger.read_text()).get("change", [])
+    parsed = tomllib.loads(ledger.read_text())
+    rules = parsed.get("change", [])
     validate_rules(rules, ledger.name)
     rules = _sorted_rules(rules)
+    exclusions = parsed.get("never", [])
+    validate_exclusions(exclusions, ledger.name)
     # A glob that matches nothing must not read as "everything passed".
     # Comparing zero names would print 0 unexplained and exit 0 -- the
     # harness's own stated nightmare (see validate_rules), and a
