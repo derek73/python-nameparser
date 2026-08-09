@@ -20,6 +20,10 @@ Release Log
 
     - Change every vocabulary set in ``nameparser.config`` to a ``frozenset``: ``TITLES``, ``GIVEN_NAME_TITLES``, ``SUFFIX_WORDS``, ``SUFFIX_ACRONYMS``, ``SUFFIX_ACRONYMS_AMBIGUOUS``, ``GLUED_HONORIFICS``, ``PARTICLES``, ``NON_GIVEN_NAME_PARTICLES``, ``BOUND_GIVEN_NAMES``, ``CONJUNCTIONS`` and ``MAIDEN_MARKERS`` (``KOREAN_SURNAMES`` already was one). Editing one in place -- ``TITLES.add("dean")``, the old way of changing a global default -- now raises ``AttributeError: 'frozenset' object has no attribute 'add'`` at the line that writes it. It was never a reliable way to change a default: whether an edit reached a given parse depended on which config objects had already been built, so one program could hold two disagreeing defaults with nothing to say so. To change the defaults for ``HumanName``, build a private ``Constants`` and pass it (``c = Constants(); c.titles.add("dean"); HumanName(name, constants=c)``); mutating the shared ``CONSTANTS`` still works, but warns and goes away in 3.0. For the 2.0 API, build a lexicon and pass it to a parser (``Parser(lexicon=Lexicon.default().add(titles={"dean"}))``). Neither is affected by this change. ``CAPITALIZATION_EXCEPTIONS`` is a mapping, not a set, and is unchanged. See :doc:`migrate` and :doc:`customize` (#293)
 
+    **Behavior Changes**
+
+    - Change the ``detail`` text of a ``PARTICLE_OR_GIVEN`` ambiguity to name the role the leading particle was actually given. It said "read as a given name" under every ``name_order``, which is false under ``Policy(name_order=FAMILY_FIRST)`` -- there ``"Van Johnson"`` reads as family ``Van``, given ``Johnson``, and the report described the reading not taken. It now ends "read as a family name" in that case, the way ``SUFFIX_OR_NAME`` has always named the part it declined. The ``kind`` is unchanged and stays ``PARTICLE_OR_GIVEN``: the fork really is particle-or-given, and only the human-readable text moved. Default-order output is identical (#355)
+
     **Deprecations**
 
     - Rename the four vocabularies whose 1.x names described the fields they feed in v1's words, so the data layer matches the ``Lexicon``:

@@ -72,6 +72,26 @@ def test_leading_ambiguous_particle_reads_as_given_with_ambiguity() -> None:
     assert not _assigned("John Smith").ambiguities
 
 
+def test_leading_particle_detail_names_the_role_it_took() -> None:
+    # The fork is the same under either order -- particle or name --
+    # but which role the head piece actually took is name_order's
+    # answer, so the user-facing detail has to read it off the token
+    # rather than hardcode "given", exactly as SUFFIX_OR_NAME does.
+    given_first = _assigned("Van Johnson").ambiguities[0]
+    assert given_first.kind is AmbiguityKind.PARTICLE_OR_GIVEN
+    assert given_first.detail == (
+        "leading 'Van' may be a family-name particle; "
+        "read as a given name")
+    family_first = _assigned(
+        "Van Johnson", Policy(name_order=FAMILY_FIRST)).ambiguities[0]
+    # kind is public API and stays PARTICLE_OR_GIVEN -- the fork really
+    # is "particle or given" -- but here the piece was assigned FAMILY.
+    assert family_first.kind is AmbiguityKind.PARTICLE_OR_GIVEN
+    assert family_first.detail == (
+        "leading 'Van' may be a family-name particle; "
+        "read as a family name")
+
+
 def test_family_comma() -> None:
     out = _assigned("de la Vega, Juan")
     assert _by_role(out, Role.FAMILY) == "de la Vega"
