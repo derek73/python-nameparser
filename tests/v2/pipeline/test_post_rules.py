@@ -1,7 +1,9 @@
+import pytest
+
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline import run
 from nameparser._pipeline._state import ParseState
-from nameparser._policy import PatronymicRule, Policy
+from nameparser._policy import FAMILY_FIRST, PatronymicRule, Policy
 from nameparser._types import Role
 
 _LEX = Lexicon(
@@ -9,6 +11,7 @@ _LEX = Lexicon(
     given_name_titles=frozenset({"sir"}),
     particles=frozenset({"de", "la", "van"}),
     particles_ambiguous=frozenset({"van"}),
+    suffix_words=frozenset({"md"}),
 )
 
 
@@ -106,6 +109,96 @@ def test_degenerate_bare_particle_stays_given() -> None:
     out = _parsed("de")
     assert _by_role(out, Role.GIVEN) == "de"
     assert not _by_role(out, Role.FAMILY)
+
+
+_FF = Policy(name_order=FAMILY_FIRST)
+
+
+# --- rule 1b under name_order=FAMILY_FIRST (#359) ---------------------
+# The fold keys on POSITION, not on the GIVEN role: a never-given
+# particle keeps its particle whatever name_order says.
+
+@pytest.mark.parametrize("text,family,given,suffix", [
+    # the leading particle chains the rest of the name into the family
+    ("de Mesnil", "de Mesnil", "", ""),
+    ("de la Vega", "de la Vega", "", ""),
+    # ... and the trailing suffix run is peeled before the rule looks,
+    # comma or no comma (NO_COMMA and SUFFIX_COMMA both fold)
+    ("de Mesnil MD", "de Mesnil", "", "MD"),
+    ("De Mesnil, MD", "De Mesnil", "", "MD"),
+])
+def test_family_first_folds_leading_never_given_particle(
+        text: str, family: str, given: str, suffix: str) -> None:
+    out = _parsed(text, _FF)
+    assert _by_role(out, Role.FAMILY) == family
+    assert _by_role(out, Role.GIVEN) == given
+    assert _by_role(out, Role.SUFFIX) == suffix
+
+
+@pytest.mark.parametrize("text,family,given", [
+    # a title makes the particle non-leading, so group already chained
+    # it into one piece -- one name piece, wholly family under FF
+    ("Mr. de Mesnil", "de Mesnil", ""),
+    # a family comma has already fixed the family; the post-comma part
+    # is the given name and must not be folded into it
+    ("de Mesnil, Juan", "de Mesnil", "Juan"),
+    # degenerate: nothing to fold, so no surname is invented
+    ("de", "de", ""),
+    # the leading piece is not a particle
+    ("Juan de Mesnil", "Juan", "de Mesnil"),
+    # 'van' is particles_ambiguous -- out of the rule's scope in EVERY
+    # order, so FAMILY_FIRST still splits at the particle (#360)
+    ("van Gogh", "van", "Gogh"),
+])
+def test_family_first_leading_particle_cases_that_do_not_fold(
+        text: str, family: str, given: str) -> None:
+    out = _parsed(text, _FF)
+    assert _by_role(out, Role.FAMILY) == family
+    assert _by_role(out, Role.GIVEN) == given
+
+
+@pytest.mark.parametrize("text,title,given,middle,family,suffix", [
+    ("de Mesnil", "", "", "", "de Mesnil", ""),
+    ("de la Vega", "", "", "", "de la Vega", ""),
+    ("de Mesnil MD", "", "", "", "de Mesnil", "MD"),
+    ("De Mesnil, MD", "", "", "", "De Mesnil", "MD"),
+    ("Mr. de Mesnil", "Mr.", "", "", "de Mesnil", ""),
+    ("de Mesnil, Juan", "", "Juan", "", "de Mesnil", ""),
+    ("de", "", "de", "", "", ""),
+    ("Juan de Mesnil", "", "Juan", "", "de Mesnil", ""),
+    ("van Gogh", "", "van", "", "Gogh", ""),
+    # a family comma folds the post-comma part when IT opens with a
+    # never-given particle -- long-standing behaviour, order-independent
+    # (assign ignores name_order after a family comma), pinned here so
+    # the re-key cannot quietly drop it
+    ("Smith, de Mesnil", "", "", "", "Smith de Mesnil", ""),
+    ("Smith, van Gogh", "", "van", "Gogh", "Smith", ""),
+])
+def test_default_order_is_unchanged_by_the_family_first_fold(
+        text: str, title: str, given: str, middle: str, family: str,
+        suffix: str) -> None:
+    out = _parsed(text)
+    assert _by_role(out, Role.TITLE) == title
+    assert _by_role(out, Role.GIVEN) == given
+    assert _by_role(out, Role.MIDDLE) == middle
+    assert _by_role(out, Role.FAMILY) == family
+    assert _by_role(out, Role.SUFFIX) == suffix
+
+
+def test_family_comma_fold_is_order_independent() -> None:
+    out = _parsed("Smith, de Mesnil", _FF)
+    assert _by_role(out, Role.FAMILY) == "Smith de Mesnil"
+    assert not _by_role(out, Role.GIVEN)
+
+
+def test_trailing_particle_is_not_a_leading_particle() -> None:
+    # consequence of keying on position: under FAMILY_FIRST the
+    # given-POSITION piece here is the bare 'de', which the role-keyed
+    # rule used to fold ("Mesnil de" -> family). The rule is about a
+    # LEADING particle, and 'Mesnil' is not one, so it declines.
+    out = _parsed("Mesnil de", _FF)
+    assert _by_role(out, Role.FAMILY) == "Mesnil"
+    assert _by_role(out, Role.GIVEN) == "de"
 
 
 def test_middle_as_family_folds_middles() -> None:

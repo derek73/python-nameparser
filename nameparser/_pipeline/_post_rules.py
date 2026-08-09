@@ -9,6 +9,10 @@ Rules (each a small pure function over the role-bearing tokens):
 1. v1 handle_firstnames: when the parse is exactly a title plus ONE
    given token (no other roles), and the title is not a given-name
    title ('Sir'), that token is a family name -- "Mr. Johnson".
+1b. a lone never-given particle OPENING the name folds the rest of it
+   into the family -- "de la Vega". Alone among these rules it reads
+   position from `pieces` rather than from the roles assign left, so
+   it fires the same way under every name_order (#359).
 2. EAST_SLAVIC (opt-in): positional GIVEN/MIDDLE/FAMILY each exactly
    one token, the FAMILY-position token carries an East Slavic
    patronymic ending, and the MIDDLE-position token does NOT (given +
@@ -23,10 +27,12 @@ Rules (each a small pure function over the role-bearing tokens):
 Both rotations fire only on Structure.NO_COMMA (v1 gates them on
 `not self._had_comma`): a comma already established the family.
 
-These rules reconstruct token POSITION from roles, which is faithful
+The rotations reconstruct token POSITION from roles, which is faithful
 to v1 only under the default GIVEN_FIRST order; their interaction with
 other name_order values is an open design question for the locale-pack
-work (#270).
+work (#270). Rule 1b was the third and was re-keyed on position in
+#359, the decision there being that a never-given particle keeps its
+particle whatever order the caller declared.
 """
 from __future__ import annotations
 
@@ -53,8 +59,28 @@ _TURKIC_CYR = re.compile(
     r"^(оглу|оглы|оғлу|ўғли|угли|кызы|гызы|қызы|қизи|улы|ұлы|уулу)$", re.I)
 
 
+_NAME_ROLES = (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
+
+
 def _idx(tokens: list[WorkToken], role: Role) -> list[int]:
     return [i for i, t in enumerate(tokens) if t.role is role]
+
+
+def _leading_name_piece(state: ParseState,
+                        tokens: list[WorkToken]) -> tuple[int, ...]:
+    """The piece that OPENS the name, whatever role name_order gave it:
+    the first name-position piece (titles and group-flagged suffixes
+    already skipped) of the segment the positional read governs. That is
+    segment 0, except under a family comma, where segment 0 is already
+    fixed as the surname and the name continues in segment 1. Empty when
+    the segment has no name piece at all."""
+    seg = 1 if state.structure is Structure.FAMILY_COMMA else 0
+    if seg >= len(state.pieces):
+        return ()
+    for piece in state.pieces[seg]:
+        if any(tokens[i].role in _NAME_ROLES for i in piece):
+            return piece
+    return ()
 
 
 def _retag(tokens: list[WorkToken], i: int, role: Role) -> None:
@@ -80,11 +106,19 @@ def post_rules(state: ParseState) -> ParseState:
     # rule 1b: a leading particle that is NEVER a given name means the
     # whole name is a surname -- fold given (and middles) into family
     # (v1 handle_non_first_name_prefix; 'de la Vega' -> family, while
-    # ambiguous 'van Gogh' keeps the given reading). The middle/family
-    # guard leaves a degenerate bare 'de' as given rather than
-    # inventing a surname.
-    if len(givens) == 1 and (middles or families):
-        gtags = tokens[givens[0]].tags
+    # ambiguous 'van Gogh' keeps the given reading). Keyed on POSITION,
+    # not on the GIVEN role (#359): under the default order the opening
+    # piece IS the given, but under name_order=FAMILY_FIRST it is the
+    # family and the given sits behind it -- the same input, and a
+    # never-given particle keeps its particle either way. The
+    # one-token test is what the role-keyed `len(givens) == 1` was
+    # saying: a particle that group already chained forward ('Mr. de
+    # Mesnil') is not a lone leading particle. The second guard wants
+    # another name token to fold, leaving a degenerate bare 'de' as it
+    # stands rather than inventing a surname.
+    head = _leading_name_piece(state, tokens)
+    if len(head) == 1 and len(givens) + len(middles) + len(families) > 1:
+        gtags = tokens[head[0]].tags
         if "particle" in gtags and "vocab:particle-ambiguous" not in gtags:
             for i in givens + middles:
                 _retag(tokens, i, Role.FAMILY)
