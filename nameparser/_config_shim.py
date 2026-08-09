@@ -667,7 +667,7 @@ _SHARED_MUTATION_MESSAGE = (
 def _default_vocab() -> dict[str, set[str]]:
     # v1 data modules stay the single vocabulary source through 2.x
     # (same rule as Lexicon.default()).
-    from nameparser.config.bound_first_names import BOUND_FIRST_NAMES
+    from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
     from nameparser.config.conjunctions import CONJUNCTIONS
     from nameparser.config.particles import (
         NON_GIVEN_NAME_PARTICLES, PARTICLES,
@@ -684,7 +684,7 @@ def _default_vocab() -> dict[str, set[str]]:
         "titles": TITLES,
         "first_name_titles": FIRST_NAME_TITLES,
         "conjunctions": CONJUNCTIONS,
-        "bound_first_names": BOUND_FIRST_NAMES,
+        "bound_first_names": BOUND_GIVEN_NAMES,
         "non_first_name_prefixes": NON_GIVEN_NAME_PARTICLES,
     }
 
@@ -1039,8 +1039,8 @@ class Constants:
             # complement translation: v1 marks the never-given subset;
             # v2 marks the may-be-given subset. The trailing union keeps
             # a config v1 accepted: particles.py asserts its own data has
-            # no word in both non_first_name_prefixes and
-            # bound_first_names, but nothing stops a caller adding one at
+            # no word in both NON_GIVEN_NAME_PARTICLES and
+            # BOUND_GIVEN_NAMES, but nothing stops a caller adding one at
             # runtime, and v1 then lets the bound rule win (leading "dos
             # Santos Silva" parses first="dos Santos"). Treating such a
             # word as may-be-given reproduces that rather than raising.

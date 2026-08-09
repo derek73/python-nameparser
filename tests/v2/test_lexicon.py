@@ -342,7 +342,7 @@ def test_subset_error_names_the_fix(
 
 def test_bound_given_name_that_is_a_particle_must_be_ambiguous() -> None:
     # nameparser/config/particles.py asserts this on its own data:
-    # NON_GIVEN_NAME_PARTICLES stays disjoint from BOUND_FIRST_NAMES. In
+    # NON_GIVEN_NAME_PARTICLES stays disjoint from BOUND_GIVEN_NAMES. In
     # 2.0's complement model that reads as bound_given_names & particles
     # <= particles_ambiguous. A particle declared never-to-start-a-given-
     # name cannot simultaneously bind one; without the check, one of the

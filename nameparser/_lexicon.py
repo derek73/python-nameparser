@@ -347,7 +347,7 @@ class Lexicon:
     #: Given-name prefixes that bind to the following word to form one
     #: given name ("abdul" -> "Abdul Salam"); never standalone names.
     #: Full default list:
-    #: :data:`~nameparser.config.bound_first_names.BOUND_FIRST_NAMES`.
+    #: :data:`~nameparser.config.bound_given_names.BOUND_GIVEN_NAMES`.
     bound_given_names: frozenset[str] = frozenset()
     #: Marker words introducing a birth surname, routed to the maiden
     #: field ("née", "geb.", "roz.", ...). Full default list:
@@ -420,7 +420,7 @@ class Lexicon:
         # across two attempts. Do not add a third.
         #
         # The v2 form of particles.py's NON_GIVEN_NAME_PARTICLES-disjoint-
-        # from-BOUND_FIRST_NAMES assertion. That module guards its own
+        # from-BOUND_GIVEN_NAMES assertion. That module guards its own
         # data at import; this guards vocabulary a caller supplies.
         contradictory = (
             self.bound_given_names & self.particles) - self.particles_ambiguous
@@ -614,7 +614,7 @@ class Lexicon:
 @functools.cache
 def _default_lexicon() -> Lexicon:
     # v1 data modules are the single source of vocabulary through 2.x.
-    from nameparser.config.bound_first_names import BOUND_FIRST_NAMES
+    from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
     from nameparser.config.capitalization import CAPITALIZATION_EXCEPTIONS
     from nameparser.config.conjunctions import CONJUNCTIONS
     from nameparser.config.maiden_markers import MAIDEN_MARKERS
@@ -641,7 +641,7 @@ def _default_lexicon() -> Lexicon:
         # may-be-given subset (migration: complement translation).
         particles_ambiguous=frozenset(PARTICLES - NON_GIVEN_NAME_PARTICLES),
         conjunctions=frozenset(CONJUNCTIONS),
-        bound_given_names=frozenset(BOUND_FIRST_NAMES),
+        bound_given_names=frozenset(BOUND_GIVEN_NAMES),
         maiden_markers=frozenset(MAIDEN_MARKERS),
         # surnames.py is born frozen (#293) -- no call-site wrap needed,
         # unlike the v1 modules above (their wraps drop when #293 lands)

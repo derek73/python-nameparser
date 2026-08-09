@@ -164,7 +164,7 @@ class ParticlesTestCase(HumanNameTestBase):
         self.m(hn.middle, "Q. Xavier", hn)
         self.m(hn.suffix, "III", hn)
 
-    # The subset-of-PARTICLES and disjoint-from-BOUND_FIRST_NAMES invariants
+    # The subset-of-PARTICLES and disjoint-from-BOUND_GIVEN_NAMES invariants
     # are enforced by import-time asserts in nameparser/config/particles.py,
     # so they are not repeated as tests here.
 
