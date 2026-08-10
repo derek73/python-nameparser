@@ -414,3 +414,36 @@ fields = ["title", "given", "middle", "suffix"]
 # again, which is the thing the sort exists to prevent. Giving
 # classify() a real specificity order is the fix, and it is a change
 # to the harness rather than to a rule.
+
+[[change]]
+issue = "fix(#367) a title no longer displaces a leading particle out of the leading position"
+# 'Mr. Van Nguyen': a leading particle deliberately does not chain --
+# that is what makes 'Van Nguyen' read as given Van, family Nguyen.
+# Through 2.1 the exception was keyed on piece index 0, so a TITLE
+# displaced the particle and the chain fired, giving family
+# 'Van Nguyen' (v1's reading, which is why this name is parity with
+# 1.4.0 until now). 2.2 keys it on the first piece of the NAME, so a
+# titled name reads as the same text reads untitled.
+#
+# The wider class is any title followed by a particle -- 'Dr. Van
+# Johnson', 'Sir de Mesnil', 'Sheik Abu Bakar' all move -- and the
+# regex names only `van` because that is the only member the corpora
+# exercise. Deliberately narrower than the class: a corpus name that
+# joins it later should arrive UNEXPLAINED and be read once, not be
+# absorbed silently. Widen the literal then, and record the new count.
+#
+# The leading `\S+\.?` is the title slot, and it is the loose half:
+# nothing in a regex over the raw string can ask whether a word is a
+# title. `fields` is what carries the tightness -- the change only ever
+# redistributes name pieces between given/middle/family, and never
+# touches title, suffix, nickname or maiden.
+#
+# This rule has to exist even though the run already exited 0 without
+# it. The diff was being classified by fix(suffix-routing) below, a
+# fields-only rule whose ["given", "family", "suffix"] is a superset of
+# this diff's ["given", "family"] -- a rule about a trailing credential
+# absorbing a leading-particle change, which is the mis-classification
+# the README warns about. A name_regex rule outranks every fields-only
+# one, so this claims it back.
+name_regex = "(?i)^\\S+\\.?\\s+van\\b"
+fields = ["given", "middle", "family"]

@@ -228,3 +228,35 @@ issue = "fix(#298) 间隔号 division changes the comma reading, sending the cre
 # screen that a literal here would be unreviewable.
 name_regex = "(?s)(?=.*,)(?=.*\\u00B7)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
 fields = ["given", "family", "title", "suffix"]
+
+[[change]]
+issue = "fix(#367) a title no longer displaces a leading particle out of the leading position"
+# 'Mr. Van Nguyen': a leading particle deliberately does not chain --
+# that is what makes 'Van Nguyen' read as given Van, family Nguyen.
+# Through 2.1 the exception was keyed on piece index 0, so a TITLE
+# displaced the particle and the chain fired, giving family
+# 'Van Nguyen' (v1's reading, which is why this name is parity with
+# 1.4.0 until now). 2.2 keys it on the first piece of the NAME, so a
+# titled name reads as the same text reads untitled.
+#
+# The wider class is any title followed by a particle -- 'Dr. Van
+# Johnson', 'Sir de Mesnil', 'Sheik Abu Bakar' all move -- and the
+# regex names only `van` because that is the only member the corpora
+# exercise. Deliberately narrower than the class: a corpus name that
+# joins it later should arrive UNEXPLAINED and be read once, not be
+# absorbed silently. Widen the literal then, and record the new count.
+#
+# The leading `\S+\.?` is the title slot, and it is the loose half:
+# nothing in a regex over the raw string can ask whether a word is a
+# title. `fields` is what carries the tightness -- the change only ever
+# redistributes name pieces between given/middle/family, and never
+# touches title, suffix, nickname or maiden.
+#
+# The 1.4 ledger carries the same rule, where it also has a second job:
+# there the diff was already being absorbed by that file's fields-only
+# fix(suffix-routing), a rule about a trailing credential whose
+# ["given", "family", "suffix"] is a superset of this diff's fields. No
+# fields-only rule exists here, so this file's copy is the plain
+# classification.
+name_regex = "(?i)^\\S+\\.?\\s+van\\b"
+fields = ["given", "middle", "family"]

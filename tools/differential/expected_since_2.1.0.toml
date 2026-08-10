@@ -3,40 +3,71 @@
 # needs `issue`; optional `name_regex` and `fields` narrow it, and
 # compare.py sorts name_regex rules ahead of fields-only ones.
 #
-# EMPTY ON PURPOSE, and correct while it stays that way. A ledger is
-# opened the day its baseline ships (AGENTS.md release step 8), before
-# the cycle has produced a single behavior change -- so there is nothing
-# to classify yet. `nameparser/` is byte-identical to the v2.1.0 tag as
-# this file is added, so a run against this baseline reports zero diffs
-# and zero UNEXPLAINED.
+# This file was opened empty the day 2.1.0 shipped (AGENTS.md release
+# step 8) and stayed that way through #354, #358 and #361, none of
+# which moved the default-order corpus. #367 is the first 2.2 change
+# that does, and its rule below is the first entry here.
 #
-# It exists rather than waiting because DEFAULT_BASELINE and the ledger
-# are coupled: _allowlist_for treats a missing file as a hard error, on
-# the reasoning that an absent ledger classifies nothing and would make
-# every diff report as unexplained. So the baseline cannot advance to
-# 2.1.0 without this file.
+# The ledger is opened before it has anything to say because
+# DEFAULT_BASELINE and the ledger are coupled: _allowlist_for treats a
+# missing file as a hard error, on the reasoning that an absent ledger
+# classifies nothing and would make every diff report as unexplained.
+# So the baseline could not advance to 2.1.0 without this file.
 #
-# Add the first rule when the first 2.2 behavior change lands. Do not
-# copy rules across from expected_since_2.0.0.toml: that ledger
+# Do not copy rules across from expected_since_2.0.0.toml: that ledger
 # classifies what 2.1 changed on top of 2.0, and a rule copied without
 # checking either over-matches -- hiding a real 2.2 regression behind a
-# 2.1-era label -- or never fires at all.
+# 2.1-era label -- or never fires at all. The #367 rule below IS shared
+# with the other two ledgers, and that is not an exception to this: the
+# change is in the 2.2 cycle, so every baseline before it sees the same
+# diff, and each copy was checked against its own run rather than
+# assumed.
 #
 # tests/v2/test_differential.py permits exactly one empty ledger, the
-# one DEFAULT_BASELINE names. Once this stops being the open cycle it
-# must carry rules like any other, so a 2.2 that changed no behavior at
-# all would need that decision made deliberately rather than inherited.
+# one DEFAULT_BASELINE names -- a permission this file no longer needs.
 #
-# tests/v2/test_ledger_guards.py's _SPAN_BEARING_RULES already records this
-# file with an empty set: no rule here hand-copies _SCRIPT_RANGES yet,
-# and the first one that does has to be recorded there or the sweep
-# fails.
+# tests/v2/test_ledger_guards.py's _SPAN_BEARING_RULES records this
+# file with an empty set: no rule here hand-copies _SCRIPT_RANGES, and
+# the first one that does has to be recorded there or the sweep fails.
+# #367's rule is Latin-only and declares no script span.
 #
 # There is deliberately no `change = []` line. TOML forbids appending a
 # [[change]] table to a statically defined array, so that line would
-# block the exact next step this comment asks for -- and
-# every reader uses .get("change", []) -- four call sites across
-# three files -- so the key's absence is already the empty
-# ledger. tests/v2/test_differential.py checks that nothing else is
-# defined at the top level here, since a mistyped table name would
-# otherwise read as an empty ledger rather than as a broken one.
+# have blocked the entry below -- and every reader uses
+# .get("change", []) -- four call sites across three files -- so the
+# key's absence was already the empty ledger.
+# tests/v2/test_differential.py checks that nothing else is defined at
+# the top level here, since a mistyped table name would otherwise read
+# as an empty ledger rather than as a broken one.
+
+[[change]]
+issue = "fix(#367) a title no longer displaces a leading particle out of the leading position"
+# 'Mr. Van Nguyen': a leading particle deliberately does not chain --
+# that is what makes 'Van Nguyen' read as given Van, family Nguyen.
+# Through 2.1 the exception was keyed on piece index 0, so a TITLE
+# displaced the particle and the chain fired, giving family
+# 'Van Nguyen' (v1's reading, which is why this name is parity with
+# 1.4.0 until now). 2.2 keys it on the first piece of the NAME, so a
+# titled name reads as the same text reads untitled.
+#
+# The wider class is any title followed by a particle -- 'Dr. Van
+# Johnson', 'Sir de Mesnil', 'Sheik Abu Bakar' all move -- and the
+# regex names only `van` because that is the only member the corpora
+# exercise. Deliberately narrower than the class: a corpus name that
+# joins it later should arrive UNEXPLAINED and be read once, not be
+# absorbed silently. Widen the literal then, and record the new count.
+#
+# The leading `\S+\.?` is the title slot, and it is the loose half:
+# nothing in a regex over the raw string can ask whether a word is a
+# title. `fields` is what carries the tightness -- the change only ever
+# redistributes name pieces between given/middle/family, and never
+# touches title, suffix, nickname or maiden.
+#
+# The 1.4 ledger carries the same rule, where it also has a second job:
+# there the diff was already being absorbed by that file's fields-only
+# fix(suffix-routing), a rule about a trailing credential whose
+# ["given", "family", "suffix"] is a superset of this diff's fields. No
+# fields-only rule exists here, so this file's copy is the plain
+# classification.
+name_regex = "(?i)^\\S+\\.?\\s+van\\b"
+fields = ["given", "middle", "family"]
