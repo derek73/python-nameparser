@@ -1158,3 +1158,57 @@ def test_no_rule_claims_a_shape_the_ledger_excludes() -> None:
     assert checked, (
         "no ledger declares a [[never]] entry, so this pin is passing "
         "vacuously")
+
+
+def test_a_fields_narrowing_actually_narrows_something() -> None:
+    """The other direction, which nothing else watches.
+
+    test_no_rule_claims_a_shape_the_ledger_excludes checks that an
+    exclusion is WIDE enough -- its examples stay unclassified. Nothing
+    checked that it is NARROW enough, and the two failures are not
+    symmetric: an over-wide exclusion silences diffs a rule should
+    explain, and it does so invisibly, because the guard only ever
+    looks at names the entry lists as examples.
+
+    Measured: deleting `fields = ["nickname", "middle"]` from the
+    ASCII-pairs entry passes every other check in this tree. The entry
+    then refuses ANY diff on the ten corpus names it captures --
+    including 'Jenny (Johnson) Baker' and 'Lon (Jr.) Williams', whose
+    parens are a maiden name and a suffix, both under active
+    development. Nothing failed, because none of those names diffs
+    today and none of them is an example.
+
+    So: an entry that bothers to name `fields` must leave something
+    behind. If no captured corpus name is still classifiable on a
+    reading outside them, the narrowing is not narrowing -- either it
+    was deleted, or it grew to cover everything the entry reaches.
+    """
+    compare = load_tool("compare")
+    roles = tuple(str(role) for role in Role)
+    checked = 0
+    for ledger in _LEDGERS:
+        rules = compare._sorted_rules(_rules(ledger))
+        never = _exclusions(ledger)
+        for entry in never:
+            covered = entry.get("fields")
+            if covered is None:
+                continue
+            checked += 1
+            captured = [name for name in _CORPUS_NAMES
+                        if re.search(entry["name_regex"], name)]
+            survives = [
+                (name, sorted(combo))
+                for name in captured
+                for size in (1, 2)
+                for combo in itertools.combinations(roles, size)
+                if not set(combo) <= set(covered)
+                and compare.classify(name, set(combo), rules, never)]
+            assert survives, (
+                f"{ledger.name}: the entry for {entry['name_regex']!r} names "
+                f"fields={covered}, but no corpus name it captures is still "
+                f"classifiable on any reading outside them. It captures "
+                f"{len(captured)} names, so the narrowing has stopped "
+                f"narrowing -- check it was not deleted or widened to cover "
+                f"the whole entry.")
+    assert checked, (
+        "no exclusion declares `fields`, so this pin is passing vacuously")
