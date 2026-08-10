@@ -114,7 +114,7 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "middle": "Q", "family": "Smith",
           "suffix": "MA"},
          ambiguities=("suffix-or-name",)),
-    Case("titled_ambiguous_particle_chains", "Dr. Van Johnson",
+    Case("titled_ambiguous_particle_does_not_chain", "Dr. Van Johnson",
          {"title": "Dr.", "given": "Van", "family": "Johnson"},
          ambiguities=("particle-or-given",),
          notes="reads exactly as the untitled 'Van Johnson' does, "
@@ -143,9 +143,12 @@ CASES: tuple[Case, ...] = (
                "ambiguous particle, so it stops the scan and stays the "
                "leading NAME piece; 'von' behind it is therefore "
                "non-leading and chains, exactly as before 2.2. This is "
-               "also the only shape that still reaches group's "
-               "PARTICLE_OR_GIVEN emitter -- see "
-               "tests/v2/test_parser.py -- and the class that a plain "
+               "also the CANONICAL shape reaching group's "
+               "PARTICLE_OR_GIVEN emitter, not the only one -- 'St Van "
+               "Johnson', 'Do St Johnson' and 'Dr. Do van Johnson' "
+               "reach it too, the last with a plain title ahead of the "
+               "both-vocabulary word; see tests/v2/test_parser.py -- "
+               "and the class that a plain "
                "'first piece that is not a title' test broke: it "
                "skipped 'St'/'Do'/'Freiherr' and collapsed the "
                "untitled 'St John Smith' into one given name"),

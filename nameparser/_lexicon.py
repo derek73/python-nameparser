@@ -337,8 +337,9 @@ class Lexicon:
     #: about chaining: the prefix chain skips the name's first piece
     #: and never consults this set, so it leaves a leading particle a
     #: piece of its own whether listed or not -- "de Mesnil" groups
-    #: into two pieces exactly as "van Gogh" does, and since #367 so
-    #: do "Dr. de Mesnil" and "Dr. Van Johnson", a title not being
+    #: into two pieces exactly as "van Gogh" does, and since #367 the
+    #: NAME in "Dr. de Mesnil" and "Dr. Van Johnson" groups into those
+    #: same two pieces behind the title piece, a title not being
     #: part of the name it precedes. What membership
     #: decides is what becomes of that piece afterwards. Under ANY
     #: ``name_order`` a member records a particle-or-given ambiguity

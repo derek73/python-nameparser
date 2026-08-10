@@ -65,10 +65,14 @@ class FirstNameHandlingTests(HumanNameTestBase):
         docstring "Not sure how to fix this without breaking Mr and
         Mrs" for the whole life of the 1.x line -- the exception was
         keyed on piece index 0, so any title displaced the particle and
-        the prefix chain fired, giving last='Van Nguyen'. Keying it on
-        the first piece that is not a title instead leaves Mr and Mrs
-        provably untouched, which is why the Mr/Mrs shapes are asserted
-        here rather than only asserted about: a bare 'Mr./Mrs. Surname'
+        the prefix chain fired, giving last='Van Nguyen'. It is keyed on
+        the first piece that is not a title OR is a particle -- not the
+        naive "first piece that is not a title", which collapses
+        'St John Smith' into one given name and breaks
+        tests/test_constants.py::ConstantsCustomizationTests
+        ::test_add_title, 15 failures in all. The Mr/Mrs conclusion
+        holds under either rule, which is why the Mr/Mrs shapes are
+        asserted here rather than only asserted about: a bare 'Mr./Mrs. Surname'
         has no particle to displace, so nothing about it reaches the
         rule that moved. v1's concern was about the fix it had in mind,
         not about this one."""

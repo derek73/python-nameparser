@@ -145,10 +145,13 @@ def post_rules(state: ParseState) -> ParseState:
     # particle, so 1b declines and given='de la Vega' stands; #359
     # records that case as working as intended. And the degenerate bare
     # 'de' keeps given='de', having nothing to fold into.
-    # "Sir de Mesnil" is the same guard declining on a chained piece,
-    # but do NOT cite it as a limit this rule means to draw: it reports
-    # given='de Mesnil' with no family at all, which is believed wrong
-    # and is tracked as #367.
+    # "Sir de Mesnil" used to be this guard declining on a chained
+    # piece, reporting given='de Mesnil' with no family at all. That
+    # was never a limit this rule meant to draw, and #367 removed the
+    # chain rather than touching the rule: a title is transparent to
+    # the leading-particle exception, so 'de' is a lone piece again,
+    # this guard fires, and the name reads family='de Mesnil' like the
+    # untitled form.
     # Those two sites are the whole scope, and the MIDDLE position is
     # deliberately not one of them -- which shows: "Mesnil Garcia de"
     # strands middle='de' under FAMILY_FIRST, while under
@@ -169,14 +172,18 @@ def post_rules(state: ParseState) -> ParseState:
     # FAMILY_FIRST the opening piece is the family and the given sits
     # behind it, and reading the role alone let "de Mesnil" split. The
     # single-token test says the same thing in each shape: a particle
-    # group already chained forward is not a lone particle. "Mr. de
-    # Mesnil" is three tokens in two pieces -- the title alone, then
-    # the particle GROUP -- so both sites are two tokens long and 1b
-    # declines on each; the family reading there is rule 1's in the
-    # default order and assign's under a family-first one. Both shapes
-    # then need another name token to fold with, which leaves a
-    # degenerate bare 'de' as it stands rather than inventing a
-    # surname.
+    # group already chained forward is not a lone particle -- the
+    # FAMILY_FIRST "Juan de la Vega" above is what that looks like.
+    # "Mr. de Mesnil" is NOT one, and since #367 not even close to
+    # one: it is three tokens in THREE pieces -- the title, the
+    # particle, the surname -- because a title no longer displaces the
+    # particle out of the leading name position, so nothing chains.
+    # Both sites are one token long, so this guard FIRES and the
+    # family reading is its own. Rule 1 above cannot be what produces
+    # it: rule 1 is gated on `not families`, and 'Mesnil' is already
+    # the family. Both shapes need another name token to fold with,
+    # which leaves a degenerate bare 'de' as it stands rather than
+    # inventing a surname.
     sites = (_leading_name_piece(state, tokens), tuple(givens))
     if len(givens) + len(middles) + len(families) > 1 and any(
             len(site) == 1

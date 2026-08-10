@@ -295,10 +295,13 @@ _TITLE_PARTICLE = "Freiherr"
 
 
 def test_the_chained_emitter_is_still_reachable() -> None:
-    """_group's PARTICLE_OR_GIVEN emitter needs a leading piece that is both
-    a title and an ambiguous particle, and since #367 that is the only shape
-    reaching it -- an ordinary title is transparent to the leading-particle
-    exception, so it takes _assign's branch instead.
+    """_group's PARTICLE_OR_GIVEN emitter needs a piece that is both a title
+    and an ambiguous particle somewhere ahead of the chained particle, and
+    since #367 nothing else will do -- an ordinary title is transparent to
+    the leading-particle exception, so on its own it takes _assign's branch
+    instead. That word need not lead the input: "Dr. Do van Johnson" reaches
+    the emitter with a plain title in front of it. What it cannot be is
+    absent.
 
     Two different failures, wanting two different fixes. If the intersection
     is merely missing the word the tests below use, pick another from the
@@ -332,8 +335,9 @@ def test_ambiguous_particle_reports_both_branches_of_its_fork() -> None:
     # leading-particle exception (#367), so "Dr. Van Johnson" takes the
     # _assign branch like everything else. `freiherr`/`st`/`do` -- a
     # title that could also be the name's own first piece -- is what
-    # still reaches _group's emitter, and this is the only shape that
-    # does.
+    # still reaches _group's emitter. This is the canonical spelling of
+    # that, not the only one: "St Van Johnson", "Do St Johnson" and
+    # "Dr. Do van Johnson" reach it as well.
     given_reading = parse("von Richthofen")
     assert given_reading.given == "von"
     assert [a.kind for a in given_reading.ambiguities] == \

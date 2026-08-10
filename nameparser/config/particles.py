@@ -18,9 +18,13 @@ from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
 #: the given position too, folding it into the family beside it, so that
 #: neither shape leaves a given name behind -- as long as there is another
 #: name token to fold into. A bare "de" stays as it is. Where a chain is
-#: reported as the given name anyway -- "Sir de Mesnil" gives given
-#: "de Mesnil" and no surname at all -- that is an open bug (#367), not a
-#: limit this set means to draw.
+#: reported as the given name anyway it is because the member is no
+#: longer standing alone: under ``Policy(name_order=FAMILY_FIRST)`` the
+#: given position of "Juan de la Vega" holds the whole three-token
+#: chain, so the rule declines and given "de la Vega" stands. A title
+#: in front is NOT such a case -- since #367 a title is transparent to
+#: the leading-particle exception, so "Sir de Mesnil" leaves "de" a lone
+#: piece and reads family "de Mesnil", exactly as the untitled form does.
 #: Membership also decides the ambiguity report -- see
 #: :py:data:`PARTICLES` below.
 #: Curated to exclude anything that can be a given name in some culture

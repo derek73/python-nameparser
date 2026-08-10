@@ -218,11 +218,29 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # piece that can ONLY be a title is stepped over.
         #
         # Computed once, before the loop: every merge below starts at
-        # some k at or past this index, so no merge can move it. Suffix
-        # pieces are deliberately NOT skipped -- see the release log for
-        # 2.2.0; the shapes that look like they need it ("Jr. Van
-        # Johnson") classify their leading piece as a TITLE and are
-        # already covered here.
+        # some k at or past this index, so no merge can move it.
+        #
+        # Suffix pieces are deliberately NOT skipped, and the reason is
+        # what skipping them WOULD do rather than what it would cost.
+        # A credential written with spaces already parses without a
+        # family name -- "Ph. D. Van Johnson" is given 'Van Johnson',
+        # suffix 'Ph. D.', family '' -- and skipping the suffix piece
+        # would actually give it one (given 'Van', family 'Johnson').
+        # The shapes that decide it are the ones whose leading piece
+        # lands in `given` instead: "Ph.D. Van Johnson", "II Van
+        # Johnson" and "Msc.Ed. Van Johnson" each read given
+        # 'Ph.D.'/'II'/'Msc.Ed.' with family 'Van Johnson', and
+        # skipping the piece moves `Van` out of the family and into the
+        # middle name (given 'Ph.D.', middle 'Van', family 'Johnson')
+        # -- a worse reading, on three shapes, to fix none. "Jr. Van
+        # Johnson", the shape that looks like it needs the skip,
+        # classifies its leading piece as a TITLE and is already
+        # covered here.
+        #
+        # The `, 0` fallback is inert by construction rather than a
+        # default worth testing: it is reached only when every piece is
+        # a title and none is a prefix, and the loop below merges
+        # nothing unless some piece is a prefix.
         leading = next((k for k in range(len(pieces))
                         if not title(k) or prefix(k)), 0)
         k = 0
@@ -244,18 +262,35 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # needs an emitter in each.
             #
             # Narrow, and #367 is why. `all(title(x) for x in range(k))`
-            # says every piece ahead of this one is a title, and
-            # `leading` above says the FIRST piece that could be a name
-            # is at or before k -- so for both to hold, one of those
-            # leading titles must be a particle too, i.e. a word in both
+            # says every piece ahead of this one is a title, and the
+            # loop skipped k == leading, so `leading` is STRICTLY
+            # before k -- and being before k it is one of those titles,
+            # while being `leading` it satisfies `not title or prefix`.
+            # For both, it must be a prefix as well: a word in both
             # vocabularies (`st`, `do`, `freiherr` by default, or any
-            # overlap a caller configures). A plain title no longer
-            # reaches here at all: it is stepped over, the particle is
-            # the leading name piece, and _assign reports it. So this
-            # branch's whole remaining reach is "Freiherr von
-            # Richthofen" -- not dead, but pinned by exactly one shape,
-            # which tests/v2/cases.py and tests/v2/test_parser.py both
-            # now spell that way rather than with "Dr.".
+            # overlap a caller configures). A plain title alone can no
+            # longer put a particle off the name's leading piece; it is
+            # stepped over and _assign reports the fork instead.
+            #
+            # What that leaves is wider than one shape: any number of
+            # plain title pieces, then a piece in BOTH vocabularies,
+            # then any number of further titles, then the ambiguous
+            # particle whose chain claims something. "Freiherr von
+            # Richthofen" is the canonical spelling and the one
+            # tests/v2/cases.py and tests/v2/test_parser.py lead with,
+            # but "St Van Johnson", "Do St Johnson" (the chained
+            # particle itself in both vocabularies) and "Dr. Do van
+            # Johnson" (a plain title AHEAD of the both-vocabulary
+            # word) all reach here too. What none of them can do is
+            # dispense with the both-vocabulary WORD. The conjunction
+            # merge is the only other way a piece acquires `title` or
+            # `prefix`, and it cannot manufacture the pair: it derives
+            # from ONE neighbor, which is the left one whenever there
+            # is a left one, and its right operands are always fresh
+            # pieces (the loop runs left to right, so nothing to the
+            # right has been merged yet). Both tags therefore have to
+            # come from the piece it extends, which bottoms out at a
+            # lone token in both vocabularies.
             #
             # j > k + 1 is what makes this a DECISION rather than a
             # shape: when the next piece is a suffix the inner scan
