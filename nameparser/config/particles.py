@@ -97,8 +97,17 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
 #: name "von bergen wessels", while the same chaining in "Smith, Juan
 #: de la Cruz" gives the middle name "de la Cruz". A leading
 #: particle is the exception and chains nothing: the chain skips the
-#: first piece unconditionally, membership in this set or any other
-#: never entering into it. Where the pieces then land is again a later
+#: first piece of the NAME, its membership in this set or in
+#: :py:data:`NON_GIVEN_NAME_PARTICLES` never entering into it. Leading
+#: is read off the name rather than off the input (#367): a title is
+#: not part of the name, so it is stepped over and "Dr. Van Johnson"
+#: reads as the untitled "Van Johnson" does. One kind of word is not
+#: stepped over, and this is the one place a title's vocabulary and
+#: this one interact -- ``st``, ``do`` and ``freiherr`` are each BOTH
+#: a title and a particle, so any of them could be the name's own
+#: first piece and stops the scan, leaving a particle behind it
+#: non-leading and free to chain ("Freiherr von Richthofen").
+#: Where the pieces then land is again a later
 #: question, and this is where membership decides something: a leading
 #: :py:data:`NON_GIVEN_NAME_PARTICLES` member makes the whole name a
 #: family name ("de la Vega") under every ``name_order``, because a word

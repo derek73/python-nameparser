@@ -366,10 +366,15 @@ class AmbiguityKind(StrEnum):
     #: names ("read as a given name") -- that role is whatever
     #: assignment gave it, so it follows ``name_order`` and any
     #: ``script_orders`` entry, which is why the kind cannot name it.
-    #: A particle a title shifted off the front ("Dr. Van Johnson")
-    #: was instead claimed by the prefix chain, and ``detail`` says
-    #: that and names no field at all: grouping runs before roles
-    #: exist, so that text is the same under every order.
+    #: A particle that something ahead of it shifted off the front of
+    #: the name was instead claimed by the prefix chain, and ``detail``
+    #: says that and names no field at all: grouping runs before roles
+    #: exist, so that text is the same under every order. Since #367 a
+    #: plain title is not such a thing -- "Dr. Van Johnson" reads as
+    #: the untitled "Van Johnson" does and takes the first shape --
+    #: and what remains is a leading word that is both a title and a
+    #: particle, so it stays a name piece and the particle behind it is
+    #: genuinely not leading ("Freiherr von Richthofen").
     PARTICLE_OR_GIVEN = "particle-or-given"
     #: A nickname/maiden delimiter opened without closing (or closed
     #: without opening); the text was kept as literal name content, so

@@ -238,11 +238,24 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # The other half of PARTICLE_OR_GIVEN. _assign reports the
             # fork when an ambiguous particle stays a lone leading piece
             # ("Van Johnson" -> given under the default order, family
-            # under FAMILY_FIRST); the chain here takes the
-            # opposite branch whenever a title shifts it off index 0
-            # ("Dr. Van Johnson" -> family "Van Johnson"). A fork whose
-            # two sides are decided in different stages needs an emitter
-            # in each.
+            # under FAMILY_FIRST); the chain here takes the opposite
+            # branch when the particle is not the name's leading piece.
+            # A fork whose two sides are decided in different stages
+            # needs an emitter in each.
+            #
+            # Narrow, and #367 is why. `all(title(x) for x in range(k))`
+            # says every piece ahead of this one is a title, and
+            # `leading` above says the FIRST piece that could be a name
+            # is at or before k -- so for both to hold, one of those
+            # leading titles must be a particle too, i.e. a word in both
+            # vocabularies (`st`, `do`, `freiherr` by default, or any
+            # overlap a caller configures). A plain title no longer
+            # reaches here at all: it is stepped over, the particle is
+            # the leading name piece, and _assign reports it. So this
+            # branch's whole remaining reach is "Freiherr von
+            # Richthofen" -- not dead, but pinned by exactly one shape,
+            # which tests/v2/cases.py and tests/v2/test_parser.py both
+            # now spell that way rather than with "Dr.".
             #
             # j > k + 1 is what makes this a DECISION rather than a
             # shape: when the next piece is a suffix the inner scan

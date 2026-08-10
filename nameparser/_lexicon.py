@@ -334,10 +334,12 @@ class Lexicon:
     particles: frozenset[str] = frozenset()
     #: Subset of particles that can also BE a given name ("Van
     #: Johnson", but also "Van Buren"). Membership decides nothing
-    #: about chaining: the prefix chain skips index 0 unconditionally
+    #: about chaining: the prefix chain skips the name's first piece
     #: and never consults this set, so it leaves a leading particle a
     #: piece of its own whether listed or not -- "de Mesnil" groups
-    #: into two pieces exactly as "van Gogh" does. What membership
+    #: into two pieces exactly as "van Gogh" does, and since #367 so
+    #: do "Dr. de Mesnil" and "Dr. Van Johnson", a title not being
+    #: part of the name it precedes. What membership
     #: decides is what becomes of that piece afterwards. Under ANY
     #: ``name_order`` a member records a particle-or-given ambiguity
     #: and a non-member records none, and a non-member is additionally
