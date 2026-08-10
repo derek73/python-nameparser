@@ -30,11 +30,11 @@ import itertools
 import json
 import re
 from pathlib import Path
+from types import ModuleType
 from typing import NamedTuple
 
 import pytest
 
-from nameparser import Role
 from nameparser import _policy
 from nameparser._policy import Script
 # The parser's own fold, imported rather than reimplemented: a
@@ -1154,12 +1154,35 @@ class _Excluded(NamedTuple):
 #: Measured: dropping the Ph. D. entry's ASCII anchor keeps the whole
 #: suite passing and takes a bare run to unexplained: 1.
 _EXCLUSION_EFFECT: dict[str, _Excluded] = {
-    "(?i)^[\\x00-\\x7f]*\\bph\\.\\s*d\\.\\s*$":
+    "(?i)^[\\u0000-\\u024f]*\\bph\\.\\s*d\\.\\s*$":
         _Excluded(3, "5a12a8117651",
                   ("fix(comma-family)", "fix(suffix-routing)")),
-    '\\w\\s+[("\'][^)"\']+[)"\']\\s+\\w':
-        _Excluded(10, "01d4047a826a", ()),
+    '[\\w.]\\s+[("\'][^)"\']+[)"\']\\s+\\w':
+        _Excluded(13, "42d04d428edf", ()),
 }
+
+
+def _protectable_fields(compare: ModuleType) -> tuple[str, ...]:
+    """The universe both exclusion pins quantify over: every field a
+    rule's `fields` may name, which is what an exclusion's may name too.
+
+    Not `Role` alone. validate_exclusions accepts `_ambiguities` -- a
+    SEGMENTATION-only diff is facade-identical, so it is the one name
+    that can classify one -- and a universe of the seven roles never
+    builds a subset containing it. Measured: a rule with
+    `fields = ["_ambiguities"]` and no `name_regex` claims the
+    ambiguity-only reading of every protected shape, which is the #328
+    event in that dimension, and only the wider universe grows
+    `absorbed_by` and fails.
+
+    It does NOT close the matching hole on the exclusion side: an entry
+    narrowing itself to `fields = ["_ambiguities"]` protects nothing
+    anyone would notice and passes both pins under either universe,
+    because `absorbed_by` is legitimately empty for the honest entry
+    too. Taking the universe from compare's own set at least keeps the
+    two from drifting apart as `_RULE_FIELDS` grows.
+    """
+    return tuple(sorted(compare._RULE_FIELDS))
 
 
 def test_every_exclusion_silences_what_is_recorded() -> None:
@@ -1181,7 +1204,7 @@ def test_every_exclusion_silences_what_is_recorded() -> None:
     can introduce.
     """
     compare = load_tool("compare")
-    roles = tuple(str(role) for role in Role)
+    roles = _protectable_fields(compare)
     actual: dict[str, _Excluded] = {}
     for ledger in _LEDGERS:
         rules = compare._sorted_rules(_rules(ledger))
@@ -1219,16 +1242,24 @@ def test_every_exclusion_silences_what_is_recorded() -> None:
 def test_a_fields_narrowing_actually_narrows_something() -> None:
     """The other direction, which nothing else watches.
 
-    test_no_rule_claims_a_shape_the_ledger_excludes checks that an
-    exclusion is WIDE enough -- its examples stay unclassified. Nothing
-    checked that it is NARROW enough, and the two failures are not
-    symmetric: an over-wide exclusion silences diffs a rule should
-    explain, and it does so invisibly, because the guard only ever
-    looks at names the entry lists as examples.
+    test_every_exclusion_silences_what_is_recorded pins an entry's
+    reach by NAME -- how much corpus it captures, and which rules would
+    claim its examples. It says nothing about whether the `fields`
+    narrowing on top of that reach still leaves anything behind, and
+    the two failures are not symmetric: an over-wide `fields` silences
+    diffs a rule should explain, on names that are not examples and so
+    are looked at nowhere else.
+
+    Note where this fails when `fields` is DELETED outright: on the
+    vacuity assert at the end, not on the per-entry assert below, since
+    a deleted key drops the entry from the loop entirely. That works
+    only while one entry carries `fields`. A second one would leave the
+    deletion green here -- caught instead by `absorbed_by` in the
+    recorded pin, which sees the reading go unclaimed.
 
     Measured: deleting `fields = ["nickname", "middle"]` from the
     ASCII-pairs entry passes every other check in this tree. The entry
-    then refuses ANY diff on the ten corpus names it captures --
+    then refuses ANY diff on the thirteen corpus names it captures --
     including 'Jenny (Johnson) Baker' and 'Lon (Jr.) Williams', whose
     parens are a maiden name and a suffix, both under active
     development. Nothing failed, because none of those names diffs
@@ -1240,7 +1271,7 @@ def test_a_fields_narrowing_actually_narrows_something() -> None:
     was deleted, or it grew to cover everything the entry reaches.
     """
     compare = load_tool("compare")
-    roles = tuple(str(role) for role in Role)
+    roles = _protectable_fields(compare)
     checked = 0
     for ledger in _LEDGERS:
         rules = compare._sorted_rules(_rules(ledger))
