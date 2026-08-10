@@ -288,6 +288,36 @@ def test_trailing_roman_numeral_reports_the_fork() -> None:
     assert parse("John Q. V").ambiguities == ()
 
 
+#: The word the _group-emitter tests below lead with. It has to be BOTH a
+#: title and an ambiguous particle -- see test_the_chained_emitter_is_still
+#: _reachable for why, and for what to do when this stops being true.
+_TITLE_PARTICLE = "Freiherr"
+
+
+def test_the_chained_emitter_is_still_reachable() -> None:
+    """_group's PARTICLE_OR_GIVEN emitter needs a leading piece that is both
+    a title and an ambiguous particle, and since #367 that is the only shape
+    reaching it -- an ordinary title is transparent to the leading-particle
+    exception, so it takes _assign's branch instead.
+
+    Two different failures, wanting two different fixes. If the intersection
+    is merely missing the word the tests below use, pick another from the
+    set. If it is EMPTY, the emitter is unreachable: every test of it is
+    then measuring nothing, and the emitter itself should go rather than be
+    re-pointed. #360 may move members of this set, which is why the coupling
+    is executable here instead of being a comment.
+    """
+    lex = Lexicon.default()
+    both = lex.titles & lex.particles_ambiguous
+    assert both, (
+        "no title is an ambiguous particle, so _group's PARTICLE_OR_GIVEN "
+        "emitter is unreachable and its tests measure nothing -- remove the "
+        "emitter rather than repointing them")
+    assert _TITLE_PARTICLE.lower() in both, (
+        f"{_TITLE_PARTICLE!r} is no longer both a title and an ambiguous "
+        f"particle; the _group-emitter tests need a lead from {sorted(both)}")
+
+
 def test_ambiguous_particle_reports_both_branches_of_its_fork() -> None:
     # "von Richthofen" reads von as a given name and says so. Put a
     # piece in front of it that is BOTH a title and a particle and von
