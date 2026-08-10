@@ -103,9 +103,13 @@ def _fork_count(state: ParseState) -> int:
 def test_a_leading_ambiguous_particle_is_reported_once_and_only_once(
 ) -> None:
     """PARTICLE_OR_GIVEN is the one kind two stages emit: _group takes
-    the particle branch when a title shifts the particle off index 0 and
-    the chain claims something ("Dr. Van Johnson"), _assign takes the
-    given branch when it stays a lone leading piece ("Van Johnson").
+    the particle branch when something shifts the particle off the
+    name's leading piece and the chain claims something ("Freiherr von
+    Richthofen"), _assign takes the given branch when it stays a lone
+    leading piece ("Van Johnson", and since #367 "Dr. Van Johnson" as
+    well -- a plain title is transparent, so only a leading word that
+    is BOTH a title and a particle still reaches _group's emitter,
+    which is what the 'Freiherr ' lead below exercises).
     Each reports the side it decides -- see the ParseState docstring --
     but they coordinate only through _group's `j > k + 1` guard, which
     mirrors _assign's reachability by hand. Nothing checked the mirror.
@@ -131,7 +135,7 @@ def test_a_leading_ambiguous_particle_is_reported_once_and_only_once(
     assert particles, "no ambiguous particles to exercise"
     failures = []
     for particle in particles:
-        for lead in ("", "Dr. ", "Dr. Ann "):
+        for lead in ("", "Dr. ", "Dr. Ann ", "Freiherr "):
             for body in ("", "Johnson ", "Johnson Smith "):
                 for tail in ("", "Jr.", "MD", "III"):
                     text = f"{lead}{particle} {body}{tail}".strip()
