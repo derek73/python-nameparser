@@ -168,12 +168,14 @@ a suffix only when written with periods:
 ``particles_ambiguous`` is the same idea for surname particles. A
 particle listed there may also be a given name, which is what makes a
 leading one a decision to take; a particle *not* listed there never
-is, so there is nothing to decide. Under the default name order that
-shows up as whether the name has a given name at all: one that starts
-with a listed particle keeps it, while one starting with an unlisted
-particle has no given name — the whole thing is the surname. (Which
-field each piece lands in is ``name_order``'s question, covered
-below.)
+is, so there is nothing to decide. That shows up in what a particle
+standing *alone* at the front of a name does: a listed one is a name
+part in its own right, while an unlisted one pulls the rest of the
+name into the surname and leaves no given name at all. Which field a
+*listed* particle lands in is ``name_order``'s question, covered
+below; an unlisted one opening the name is the surname under every
+order, because a word that can never be a given name leaves the order
+nothing to decide.
 
 .. doctest::
 
@@ -184,10 +186,20 @@ below.)
     >>> parse("de Mesnil").family
     'de Mesnil'
 
+A comma forestalls the question rather than answering it. Writing the
+surname before the comma has already said which words are the surname,
+so a particle at the front of them decides nothing, and whatever
+follows the comma is the given name as usual:
+
+.. doctest::
+
+    >>> parse("de Mesnil, Juan").given   # the comma named the surname
+    'Juan'
+
 If your data never uses ``Van`` as a given name, take it out of the
 ambiguous set: a leading ``van`` is then no decision at all, so no
-ambiguity is recorded, and under the default order it becomes part of
-the surname:
+ambiguity is recorded and it becomes part of the surname — under any
+``name_order``, since that is what taking the word out asserted:
 
 .. doctest::
 
@@ -312,7 +324,8 @@ Family-first name order
 
 ``name_order`` is the one most likely to matter for data that is not
 in Western order. Positional input is assigned in the order you
-declare, so a name written family-first — Hungarian, here — parses as
+declare — with the two vocabulary exceptions noted at the end of this
+section — so a name written family-first — Hungarian, here — parses as
 written instead of needing to be rearranged afterwards:
 
 .. doctest::
@@ -356,14 +369,29 @@ no order of its own — so it applies only where you set it, and there
 is no ``vn`` locale pack yet (issue `#146
 <https://github.com/derek73/python-nameparser/issues/146>`_).
 
-One caution, which is why the example above is not the more obvious
+Two cautions, both places where the vocabulary layer answers before
+``name_order`` is consulted at all.
+
+The first is why the example above is not the more obvious
 ``"Nguyen Van Minh"``: a middle word that is also a shipped particle
-is claimed by the vocabulary layer before ``name_order`` is consulted
-at all. ``Van`` is the Dutch particle ``van``, so that name reads
-family ``Nguyen`` with ``Van Minh`` given under *both* family-first
-orders, and the choice between them makes no difference. `Words that
-are also ordinary names`_ covers dropping such a word from the
-vocabulary.
+is claimed by the vocabulary layer. ``Van`` is the Dutch particle
+``van``, so that name reads family ``Nguyen`` with ``Van Minh`` given
+under *both* family-first orders, and the choice between them makes no
+difference.
+
+The second is at the *front* of a name, and there the vocabulary
+overrides the declared order outright: where a particle that can never
+be a given name stands alone as the opening piece, the whole name is
+the surname, in every ``name_order``. ``"de Mesnil"`` is family ``de
+Mesnil`` under both family-first orders exactly as it is by default,
+not family ``de`` with ``Mesnil`` given — a word that can never be a
+given name leaves the order nothing to decide. Only the never-given
+set does this: ``"van Gogh"`` reads family ``van``, given ``Gogh``
+under a family-first order, because ``van`` *can* be a given name and
+so leaves a real question to answer.
+
+`Words that are also ordinary names`_ covers dropping a word from a
+vocabulary, or moving one between those two sets.
 
 East Asian defaults, and turning them off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
