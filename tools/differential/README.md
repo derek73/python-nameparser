@@ -280,12 +280,12 @@ ready the moment a matching string is added to the corpus.
 ### Shapes that must never be explained (`[[never]]`)
 
 A `[[change]]` rule says "this diff is intended, and here is what
-changed". There is no rule meaning "whatever happens here is a
-regression" -- so for a year two comments in
-`expected_since_1.4.0.toml` promised exactly that in prose while rules
-in the same file claimed those shapes anyway (#328). A `[[never]]`
-entry is that promise made executable: it names a shape that must stay
-unexplained.
+changed". There was no rule meaning "whatever happens here is a
+regression", so two comments in `expected_since_1.4.0.toml` promised
+exactly that in prose while rules in the same file claimed those
+shapes anyway -- both false from the day they were written until #328
+found them. A `[[never]]` entry is that promise made executable: it
+names a shape that must stay unexplained.
 
 An entry needs `why` -- an exclusion nobody can justify is one nobody
 can safely delete -- plus `name_regex` and `examples`. The examples are
@@ -297,17 +297,26 @@ test the rules use.
 That last key earns its keep on the ASCII pairs. Parens mark nicknames,
 maiden names, suffixes and credentials alike, and no regex tells them
 apart, so a name-only exclusion for the nickname promise would also
-silence `Jenny (Johnson) Baker` and `Lon (Jr.) Williams`, whose parens
-are a maiden name and a suffix. Typographic delimiters carry no such
+silence every diff on `Jenny (Johnson) Baker` and `Lon (Jr.) Williams`,
+whose parens are a maiden name and a suffix. Nothing is hidden by that
+-- an excluded name reports UNEXPLAINED, which exits non-zero -- but
+those names become permanently unexplainable, so an intended change
+there could never be recorded. Typographic delimiters carry no such
 ambiguity, which is why `feat(#273)`'s own rule can be a bare character
 class and its exclusion cannot.
+
+The ASCII-pairs entry is also narrowed by SHAPE, to a delimited run
+medial to the name. That is what keeps the trailing credentials
+(`Andrew Perkins (JD)` and its kin) out, and it is the limit of the
+promise: a leading or trailing ASCII nickname pair is still unguarded,
+for want of a regex that tells one from a credential.
 
 `classify()` consults exclusions BEFORE the rules, and a match returns
 `None`, so an excluded shape reports UNEXPLAINED however many rules
 would claim it. That order is also what makes exclusions monotone: an
 entry only ever removes a name from classification, never moves it
-between rules, so its blast radius is exactly the names it captures --
-there is no rule ordering to reason about.
+between rules, so its blast radius is exactly the names it captures, on
+the readings it names -- there is no rule ordering to reason about.
 
 `tests/v2/test_ledger_guards.py` records what each entry silences and
 holds it there. Asking whether a rule claims a protected shape *with*

@@ -806,8 +806,10 @@ def test_an_excluded_shape_stays_classifiable_on_other_roles() -> None:
     """The reason `fields` exists. ASCII parens mark nicknames, maiden
     names, suffixes and credentials alike, so an exclusion that names
     the nickname reading must not silence a suffix diff on the same
-    name -- that would hide a regression in an area under active
-    development, which is the failure this feature exists to prevent."""
+    name. Such a diff would not be hidden -- an excluded name reports
+    UNEXPLAINED and exits non-zero -- but it could never be classified
+    as intended either, leaving an area under active development
+    permanently unexplainable."""
     rules = [{"issue": "catch-all", "fields": ["given", "suffix",
                                                "nickname", "middle"]}]
     never = [{"why": "ascii pairs were already handled in 1.4",

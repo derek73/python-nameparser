@@ -470,16 +470,21 @@ def validate_exclusions(entries: list[dict[str, object]],
     regression rather than as a bad exclusion. So the checks mirror
     validate_rules', with one addition: an entry whose `examples` do
     not match its own `name_regex` protects nothing while looking
-    complete, and nothing else would ever say so.
+    complete. Nothing else says so at startup, which is where a
+    silently-inert entry most needs saying.
 
     `fields` is optional and narrows WHICH READING is protected, the
     same subset test the rules use. It exists because ASCII parens mark
     nicknames, maiden names, suffixes and credentials alike -- a
     name-only exclusion for the nickname promise would also silence
-    'Jenny (Johnson) Baker' and 'Lon (Jr.) Williams', hiding a
-    regression in areas under active development. Typographic
-    delimiters have no such ambiguity, which is why feat(#273)'s own
-    rule can be a bare character class and its exclusion cannot.
+    every diff on 'Jenny (Johnson) Baker' and 'Lon (Jr.) Williams',
+    whose parens are a maiden name and a suffix. That does not HIDE a
+    regression there -- an excluded name reports UNEXPLAINED, which
+    exits non-zero -- it makes those names permanently unexplainable,
+    so an intended change in an area under active development can
+    never be recorded and every release blocks on the same false
+    alarm. Typographic delimiters carry no such ambiguity, which is
+    why feat(#273)'s own rule can be a bare character class.
     """
     allowed = {"why", "name_regex", "examples", "fields"}
     for index, entry in enumerate(entries):
