@@ -125,8 +125,9 @@ uv run sphinx-build -b html docs dist/docs
 #    tests/v2/test_ledger_guards.py records what each one silences --
 #    which rules would claim it with exclusions off, and how much corpus it
 #    captures -- in _EXCLUSION_EFFECT. That IS an enrollment: an entry
-#    added or edited moves the record and must be re-recorded deliberately,
-#    the same forcing function _CORPUS_CLAIMS applies to rules.
+#    added, or its name_regex/fields/examples edited, moves the record and
+#    must be re-recorded deliberately, the same forcing function
+#    _CORPUS_CLAIMS applies to rules. (A `why`-only edit does not move it.)
 # 9. Open the next cycle's VERSION: bump VERSION in nameparser/_version.py to
 #    the minor now being worked, and set PRE_RELEASE = 'dev'. The tree then says
 #    what it is building rather than what it last shipped -- docs/conf.py reads

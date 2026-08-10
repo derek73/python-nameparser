@@ -325,7 +325,10 @@ before the rules are reached, so the answer is `None` however the rules
 change. The pin therefore asks with exclusions switched OFF and records
 which rules WOULD claim each protected reading. A rule widened to reach
 one changes that record and fails in CI, rather than being invisible
-until someone reasons about it. The same record carries the number and
+until someone reasons about it. It records the FIRST rule matching each
+subset, so a rule shadowed on every subset it claims by one already
+sitting ahead of it does not move the record; a rule reaching a
+protected reading does. The same record carries the number and
 digest of the corpus names an entry captures, which is the opposite
 drift: an over-wide exclusion silences real classifications, and that
 is loud at release but otherwise silent on a push.

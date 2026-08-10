@@ -1149,10 +1149,19 @@ class _Excluded(NamedTuple):
 #: harness cannot report because the exclusion (correctly) hides it.
 #:
 #: `captures` and `digest` cover the opposite direction, which nothing
-#: else watches: an exclusion widened by name_regex silences real
-#: classifications, and CI stays green while the release gate breaks.
-#: Measured: dropping the Ph. D. entry's ASCII anchor keeps the whole
-#: suite passing and takes a bare run to unexplained: 1.
+#: else watched: an exclusion widened by name_regex silences real
+#: classifications, and BEFORE this record CI stayed green while the
+#: release gate broke. Measured then: dropping the Ph. D. entry's
+#: Latin anchor left the whole suite passing and took a bare run to
+#: unexplained: 1. Measured now: the same edit fails this pin -- the
+#: record is keyed by name_regex, so editing one is exactly what it
+#: catches -- while the gate still goes to unexplained: 1.
+#:
+#: One limit worth naming: `absorbed_by` records only the FIRST rule
+#: matching each subset, so a rule appended behind one that already
+#: answers those subsets is invisible here. A rule reaching a
+#: protected READING is caught; a rule shadowed by an existing one on
+#: every subset it claims is not.
 _EXCLUSION_EFFECT: dict[str, _Excluded] = {
     "(?i)^[\\u0000-\\u024f]*\\bph\\.\\s*d\\.\\s*$":
         _Excluded(3, "5a12a8117651",
@@ -1255,7 +1264,10 @@ def test_a_fields_narrowing_actually_narrows_something() -> None:
     a deleted key drops the entry from the loop entirely. That works
     only while one entry carries `fields`. A second one would leave the
     deletion green here -- caught instead by `absorbed_by` in the
-    recorded pin, which sees the reading go unclaimed.
+    recorded pin, which is then asked about every reading rather than
+    the three the key covers, and sees rules claim them. Measured:
+    deleting this entry's `fields` grows its `absorbed_by` from () to
+    ('fix(suffix-routing)',).
 
     Measured: deleting `fields = ["nickname", "middle"]` from the
     ASCII-pairs entry passes every other check in this tree. The entry

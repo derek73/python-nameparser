@@ -424,9 +424,17 @@ fields = ["title", "given", "middle", "suffix"]
 # Shapes that must never be explained. A [[change]] rule says "this
 # diff is intended, and here is what changed"; there was no rule
 # meaning "whatever happens here is a regression", so the two promises
-# below could only be written as prose -- and both were false from the
-# day they were written (the first shipped with the harness itself,
-# the second three days later) until #328 found them.
+# below could only be written as prose -- and both were false as
+# written from the day they were written (the first shipped with the
+# harness itself, the second three days later) until #328 found them.
+#
+# The two are not false alike, and the difference matters now that
+# this file scopes the second promise to one reading. Both said
+# "unclassified", unqualified, and both were claimed on SOME reading
+# from day one. But only the Ph. D. promise was claimed on the reading
+# it now protects; no rule has ever claimed the ASCII pairs' NICKNAME
+# reading, then or today. That entry is a tripwire under no present
+# tension, which is the point of setting it before the tension exists.
 #
 # classify() consults these before any rule, so a matching name
 # reports UNEXPLAINED however many rules would claim it.
@@ -435,7 +443,10 @@ fields = ["title", "given", "middle", "suffix"]
 # any corpus -- 'John "Jack" Kennedy' does not -- so the entry carries
 # its own test data, which tests/v2/test_ledger_guards.py runs against
 # every non-empty subset of the fields a rule may name: the seven
-# roles and the `_ambiguities` pseudo-field.
+# roles and the `_ambiguities` pseudo-field. An entry carrying
+# `fields` is asked only about the subsets those cover -- 3 for the
+# ASCII pairs, not 255 -- which is where the 387 in that file comes
+# from.
 
 [[never]]
 why = "trailing 'Ph. D.' split-token healing is PARITY, not a 2.0 change: v1 healed the adjacent pair too, so a diff here is a regression"
@@ -461,8 +472,8 @@ why = "trailing 'Ph. D.' split-token healing is PARITY, not a 2.0 change: v1 hea
 # '田中さん, Ph. D.', whose diff is a real fix(cjk-comma-compound)
 # classification -- measured, it took the gate to unexplained: 1. The
 # cut is at U+0250, the same threshold _is_latin_only uses in
-# compare.py, so it covers Latin-1 and Latin Extended-A rather than
-# bare ASCII: the split-token healing is script-independent, and
+# compare.py, so it covers Latin-1 and Latin Extended-A and -B rather
+# than bare ASCII: the split-token healing is script-independent, and
 # 'José Smith, Ph. D.' is as much the protected shape as 'Jose Smith,
 # Ph. D.' is. An ASCII-only class protected one and not the other.
 name_regex = "(?i)^[\\u0000-\\u024f]*\\bph\\.\\s*d\\.\\s*$"
@@ -473,26 +484,39 @@ why = "feat(#273) recognizes TYPOGRAPHIC nickname delimiters; the ASCII pairs we
 # Narrowed twice, and both narrowings are load-bearing.
 #
 # By shape: a delimited run MEDIAL to the name -- flanked on the left
-# by a word character or a period (so a middle initial counts: 'Xyz.
-# (Bud) Smith') and on the right by a word character. A bare [("']
-# class reaches 47 corpus names, all of them claimed by a rule today,
-# so silencing them would turn 47 legitimate classifications into
-# UNEXPLAINED. Only 9 of those 47 are parenthesised credentials;
-# 11 match on a bare apostrophe -- "Brian O'connor",
-# "Harietta Keopuolani Nahi'ena'ena" -- which no delimiter regex can
-# tell from a quote.
+# by a word character or a period (so a middle initial counts:
+# 'Cherice J. (Johnson) Williams') and on the right by a word
+# character. A bare [("'] class reaches 47 corpus names. Measured by
+# adding exactly that exclusion and running the gate, silencing all 47
+# costs THREE classifications -- '山田 太郎 (マイケル・ジャクソン)',
+# '김, 민준씨 (Jimmy)', '김민준씨 (Jimmy)' -- because only those three
+# diff against 1.4.0 at all. The other 44 would be pre-silenced: no
+# diff today, and no way to report one tomorrow. Counting names
+# overstates the first cost and hides the second.
 #
-# The medial cut is what keeps the credentials out: 'Andrew Perkins
-# (JD)' and its kin put the parens LAST. Measured, widening the shape
-# to leading and trailing runs takes it from 13 corpus names to 34,
-# and the 21 it gains are almost entirely that family.
+# Of the 47, 8 are parenthesised credentials and 11 match on a bare
+# apostrophe -- "Brian O'connor", "Harietta Keopuolani Nahi'ena'ena" --
+# which no delimiter regex can tell from a quote.
 #
-# So the promise is kept for medial pairs only. A leading or trailing
-# ASCII pair -- 'Senator "Rick" Edmonds' reads as protected and is
-# not, 'Jenny Baker (Johnson)' likewise -- is still unguarded prose,
-# for want of a regex that separates a trailing nickname from a
-# trailing credential. Narrowing a rule would be the way in, not
-# widening this entry.
+# The medial cut is about POSITION, not about credentials. Widening to
+# leading and trailing runs takes the shape from 13 corpus names to
+# 34, and 20 of the 21 it gains put the delimited run last. Only 8 of
+# those are credentials; 6 are trailing NICKNAMES -- 'Franklin,
+# Benjamin (Ben)', 'Rev John A. Kenneth Doe III (Kenny)',
+# '김민준씨 (Jimmy)' -- which is the reading this entry exists to
+# protect. The rest are trailing maiden names and junk
+# ('Bridge (1.4)', 'John Jones (Google Docs)').
+#
+# So the trailing position is where protection and over-reach arrive
+# TOGETHER: a nickname and a credential wear the identical shape
+# there, and the delimiter alone cannot separate them. The promise is
+# kept for medial pairs only, and a leading or trailing ASCII pair --
+# '"Rick" Edmonds' reads as protected and is not, 'Jenny Baker
+# (Johnson)' likewise -- is still unguarded prose. (The corpus also
+# holds 'Senator "Rick" Edmonds', which IS medial and IS captured;
+# the two are easy to confuse.) Whether the `fields` narrowing already
+# makes the wider shape safe is an open question, unmeasured here;
+# narrowing a rule is the other way in.
 #
 # By role: ASCII parens mark nicknames, maiden names, suffixes and
 # credentials alike, and no regex tells them apart. The shape reaches
