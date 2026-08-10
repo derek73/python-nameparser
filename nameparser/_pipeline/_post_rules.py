@@ -140,12 +140,15 @@ def post_rules(state: ParseState) -> ParseState:
     #     trailing piece.
     # A lone PIECE is the whole of it, which is a clause narrower than
     # "a member is never reported as the given name" -- that reading
-    # would be false, and #359 blesses the first of its counterexamples
-    # outright: "Juan de la Vega" under FAMILY_FIRST reports given='de
-    # la Vega', "Sir de Mesnil" reports given='de Mesnil' in the
-    # default order, and the degenerate bare 'de' keeps given='de'. In
-    # each the particle is in a piece with something else, or has
-    # nothing to fold into.
+    # would be false. Under FAMILY_FIRST the given position of "Juan de
+    # la Vega" holds the whole chain, three tokens rather than a lone
+    # particle, so 1b declines and given='de la Vega' stands; #359
+    # records that case as working as intended. And the degenerate bare
+    # 'de' keeps given='de', having nothing to fold into.
+    # "Sir de Mesnil" is the same guard declining on a chained piece,
+    # but do NOT cite it as a limit this rule means to draw: it reports
+    # given='de Mesnil' with no family at all, which is believed wrong
+    # and is tracked as #367.
     # Those two sites are the whole scope, and the MIDDLE position is
     # deliberately not one of them -- which shows: "Mesnil Garcia de"
     # strands middle='de' under FAMILY_FIRST, while under

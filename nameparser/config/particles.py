@@ -10,14 +10,17 @@ from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
 #: name the family sits on, and a word that can never be a given name
 #: leaves it nothing to decide, so ``Policy(name_order=FAMILY_FIRST)``
 #: reads "de Mesnil" as the family name too. What is asked about is the
-#: opening *piece*, not the first word of the string: in "Sir de Mesnil"
-#: the particle has already chained onto "Mesnil", so it is not standing
-#: alone and the default order reads that piece as the given name.
+#: opening *piece*, not the first word of the string: a particle that has
+#: already chained onto the word behind it is part of that piece rather
+#: than standing alone.
 #: Opening the name is only the commonest shape. The rule enforcing it
 #: (``post_rules`` rule 1b) reaches a member standing alone as a piece in
 #: the given position too, folding it into the family beside it, so that
 #: neither shape leaves a given name behind -- as long as there is another
-#: name token to fold into. A bare "de" stays as it is.
+#: name token to fold into. A bare "de" stays as it is. Where a chain is
+#: reported as the given name anyway -- "Sir de Mesnil" gives given
+#: "de Mesnil" and no surname at all -- that is an open bug (#367), not a
+#: limit this set means to draw.
 #: Membership also decides the ambiguity report -- see
 #: :py:data:`PARTICLES` below.
 #: Curated to exclude anything that can be a given name in some culture

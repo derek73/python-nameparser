@@ -133,14 +133,12 @@ given name is the surname whatever order you declare:
     >>> parse("de Mesnil").family
     'de Mesnil'
 
-On its own is the whole of it. Put anything ahead of the particle and
-it joins the word behind it as usual, and a comma names the surname
-before the question comes up, so both of these keep a given name:
+A comma gets there first. It names the surname outright, so a particle
+opening that surname has nothing left to decide and the part after the
+comma is the given name:
 
 .. doctest::
 
-    >>> parse("Sir de Mesnil").given
-    'de Mesnil'
     >>> parse("de Mesnil, Juan").given
     'Juan'
 

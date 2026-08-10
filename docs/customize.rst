@@ -186,17 +186,14 @@ nothing to decide.
     >>> parse("de Mesnil").family
     'de Mesnil'
 
-Standing alone is the condition, not merely being the first word.
-Anything ahead of the particle lets it join the word behind it
-instead, and a comma has named the surname before the question is
-reached at all — so neither of these is the case above, and both keep
-a given name:
+A comma forestalls the question rather than answering it. Writing the
+surname before the comma has already said which words are the surname,
+so a particle at the front of them decides nothing, and whatever
+follows the comma is the given name as usual:
 
 .. doctest::
 
-    >>> parse("Sir de Mesnil").given     # 'de' joined 'Mesnil'
-    'de Mesnil'
-    >>> parse("de Mesnil, Juan").given   # the comma settled the surname
+    >>> parse("de Mesnil, Juan").given   # the comma named the surname
     'Juan'
 
 If your data never uses ``Van`` as a given name, take it out of the
