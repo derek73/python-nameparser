@@ -199,9 +199,35 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # prefix chains: a non-leading prefix run absorbs everything to
         # the next prefix or suffix (v1's leading_first_name rule keeps
         # the first piece a name: "Van Johnson")
+        #
+        # "Leading" means the first piece of the NAME, not of the input
+        # (#367): a title is not part of the name, so it must not decide
+        # whether the name begins with a particle. Keyed on index 0, a
+        # title displaced the particle and the chain fired, so identical
+        # name text parsed two ways ("Van Johnson" -> given Van, family
+        # Johnson; "Dr. Van Johnson" -> family "Van Johnson").
+        #
+        # "Title AND NOT prefix" rather than the plain "not a title" the
+        # rule is stated as, and the difference is not academic: `st`,
+        # `do` and `freiherr` are each BOTH a title and an ambiguous
+        # particle, so the plain test skipped over the very piece the
+        # exception exists to protect and "St John Smith" -- no title in
+        # front of it at all -- collapsed from title St, given John,
+        # family Smith into one given "St John Smith". A piece that
+        # could be the name's own first piece stops the scan; only a
+        # piece that can ONLY be a title is stepped over.
+        #
+        # Computed once, before the loop: every merge below starts at
+        # some k at or past this index, so no merge can move it. Suffix
+        # pieces are deliberately NOT skipped -- see the release log for
+        # 2.2.0; the shapes that look like they need it ("Jr. Van
+        # Johnson") classify their leading piece as a TITLE and are
+        # already covered here.
+        leading = next((k for k in range(len(pieces))
+                        if not title(k) or prefix(k)), 0)
         k = 0
         while k < len(pieces):
-            if k == 0 or not prefix(k):
+            if k == leading or not prefix(k):
                 k += 1
                 continue
             j = k + 1

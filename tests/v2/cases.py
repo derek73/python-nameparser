@@ -115,19 +115,55 @@ CASES: tuple[Case, ...] = (
           "suffix": "MA"},
          ambiguities=("suffix-or-name",)),
     Case("titled_ambiguous_particle_chains", "Dr. Van Johnson",
-         {"title": "Dr.", "family": "Van Johnson"},
+         {"title": "Dr.", "given": "Van", "family": "Johnson"},
          ambiguities=("particle-or-given",),
-         notes="the other branch of 'Van Johnson': a leading title "
-               "shifts Van off the given position, the prefix chain "
-               "fires, and the fork is reported from group rather than "
-               "assign (v1 parity on the fields)"),
-    Case("titled_ambiguous_particle_no_op_chain", "Dr. Van Jr.",
-         {"title": "Dr.", "given": "Van", "suffix": "Jr."},
+         notes="reads exactly as the untitled 'Van Johnson' does, "
+               "because a title is not part of the name and so cannot "
+               "decide whether the NAME begins with a particle (#367). "
+               "This row pinned the opposite until 2.2 -- title 'Dr.', "
+               "family 'Van Johnson', the chain having fired because "
+               "the title shifted Van off piece index 0 -- and cited "
+               "v1 parity for it. Parity was real (1.4.0 gives last "
+               "'Van Johnson') and still not the tiebreaker it looked "
+               "like: this is the SAME shape as 'Mr. Van Nguyen', "
+               "which v1 shipped as an xfail calling the reading "
+               "wrong, so v1 pinned one shape both as correct and as "
+               "broken. Resolved toward the xfail, which now passes "
+               "(tests/test_first_name.py::"
+               "test_first_name_is_prefix_if_three_parts). The fork is "
+               "still reported, from assign rather than group -- the "
+               "same place the untitled 'Van Johnson' reports it"),
+    Case("titled_particle_chain_survives_a_title_that_is_also_a_particle",
+         "Freiherr von Richthofen",
+         {"title": "Freiherr", "family": "von Richthofen"},
+         ambiguities=("particle-or-given",),
+         notes="#367's title transparency skips a piece that can ONLY "
+               "be a title, never one that could be the name's own "
+               "first piece. 'freiherr' is both a title and an "
+               "ambiguous particle, so it stops the scan and stays the "
+               "leading NAME piece; 'von' behind it is therefore "
+               "non-leading and chains, exactly as before 2.2. This is "
+               "also the only shape that still reaches group's "
+               "PARTICLE_OR_GIVEN emitter -- see "
+               "tests/v2/test_parser.py -- and the class that a plain "
+               "'first piece that is not a title' test broke: it "
+               "skipped 'St'/'Do'/'Freiherr' and collapsed the "
+               "untitled 'St John Smith' into one given name"),
+    Case("titled_ambiguous_particle_no_op_chain", "Do Van Jr.",
+         {"title": "Do", "given": "Van", "suffix": "Jr."},
          notes="the piece after the particle is a suffix, so the chain "
                "scan never advances and the merge is a no-op -- nothing "
                "was chained, so there is no fork to report (the emitter "
                "fired here for all 39 ambiguous particles, and _assign "
-               "double-reported the same token)"),
+               "double-reported the same token). Spelled with 'Do' "
+               "rather than the 'Dr.' this row carried until 2.2: "
+               "under #367 a plain title is transparent, so 'Dr. Van "
+               "Jr.' leaves Van the leading name piece and the chain "
+               "loop skips it without ever reaching the no-op. 'Do' is "
+               "a title AND a particle, which stops the transparency "
+               "scan, so the chain does fire on Van and the j > k + 1 "
+               "guard is what declines it -- the same output, reached "
+               "through the branch the row exists to pin"),
     Case("initial_shaped_not_conjunction", "john e. smith",
          {"given": "john", "middle": "e.", "family": "smith"},
          notes="v1 is_conjunction excludes initials at classify too"),

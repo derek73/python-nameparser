@@ -1,5 +1,3 @@
-import pytest
-
 from nameparser import HumanName
 
 from tests.base import HumanNameTestBase
@@ -61,9 +59,27 @@ class FirstNameHandlingTests(HumanNameTestBase):
         self.m(hn.first, "Van", hn)
         self.m(hn.last, "Nguyen", hn)
 
-    @pytest.mark.xfail
     def test_first_name_is_prefix_if_three_parts(self) -> None:
-        """Not sure how to fix this without breaking Mr and Mrs"""
+        """Fixed in 2.2 (#367) by making titles transparent to the
+        leading-particle exception. This carried v1's ``xfail`` and the
+        docstring "Not sure how to fix this without breaking Mr and
+        Mrs" for the whole life of the 1.x line -- the exception was
+        keyed on piece index 0, so any title displaced the particle and
+        the prefix chain fired, giving last='Van Nguyen'. Keying it on
+        the first piece that is not a title instead leaves Mr and Mrs
+        provably untouched, which is why the Mr/Mrs shapes are asserted
+        here rather than only asserted about: a bare 'Mr./Mrs. Surname'
+        has no particle to displace, so nothing about it reaches the
+        rule that moved. v1's concern was about the fix it had in mind,
+        not about this one."""
         hn = HumanName("Mr. Van Nguyen")
         self.m(hn.first, "Van", hn)
         self.m(hn.last, "Nguyen", hn)
+        for text, last in [("Mr. Smith", "Smith"), ("Mrs. Smith", "Smith"),
+                           ("Mr. Nguyen", "Nguyen")]:
+            titled = HumanName(text)
+            self.m(titled.first, "", titled)
+            self.m(titled.last, last, titled)
+        titled = HumanName("Mr. John Smith")
+        self.m(titled.first, "John", titled)
+        self.m(titled.last, "Smith", titled)

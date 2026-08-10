@@ -289,21 +289,38 @@ def test_trailing_roman_numeral_reports_the_fork() -> None:
 
 
 def test_ambiguous_particle_reports_both_branches_of_its_fork() -> None:
-    # "Van Johnson" reads Van as a given name and says so. A leading
-    # title shifts Van off index 0, the prefix-chain merge fires, and
-    # Van becomes a particle instead -- the SAME fork, called the other
-    # way. The two branches are taken in different stages (_assign vs
-    # _group), so only the one with an emitter used to report.
-    given_reading = parse("Van Johnson")
-    assert given_reading.given == "Van"
+    # "von Richthofen" reads von as a given name and says so. Put a
+    # piece in front of it that is BOTH a title and a particle and von
+    # is no longer the name's leading piece, the prefix-chain merge
+    # fires, and von becomes a particle instead -- the SAME fork,
+    # called the other way. The two branches are taken in different
+    # stages (_assign vs _group), so only the one with an emitter used
+    # to report.
+    #
+    # Spelled with 'Freiherr' rather than the 'Dr.' this test used
+    # until 2.2: an ordinary title is now transparent to the
+    # leading-particle exception (#367), so "Dr. Van Johnson" takes the
+    # _assign branch like everything else. `freiherr`/`st`/`do` -- a
+    # title that could also be the name's own first piece -- is what
+    # still reaches _group's emitter, and this is the only shape that
+    # does.
+    given_reading = parse("von Richthofen")
+    assert given_reading.given == "von"
     assert [a.kind for a in given_reading.ambiguities] == \
         [AmbiguityKind.PARTICLE_OR_GIVEN]
 
-    particle_reading = parse("Dr. Van Johnson")
-    assert particle_reading.family == "Van Johnson"
+    particle_reading = parse("Freiherr von Richthofen")
+    assert particle_reading.family == "von Richthofen"
     assert [a.kind for a in particle_reading.ambiguities] == \
         [AmbiguityKind.PARTICLE_OR_GIVEN]
-    assert [t.text for t in particle_reading.ambiguities[0].tokens] == ["Van"]
+    assert [t.text for t in particle_reading.ambiguities[0].tokens] == ["von"]
+    # and the branch the title no longer takes: "Dr. Van Johnson" is
+    # now byte-identical to the bare "Van Johnson", fork included
+    titled, bare = parse("Dr. Van Johnson"), parse("Van Johnson")
+    assert (titled.given, titled.family) == (bare.given, bare.family) \
+        == ("Van", "Johnson")
+    assert [a.detail for a in titled.ambiguities] == \
+        [a.detail for a in bare.ambiguities]
 
 
 def test_unambiguous_particle_chain_reports_nothing() -> None:
@@ -311,10 +328,18 @@ def test_unambiguous_particle_chain_reports_nothing() -> None:
     assert parse("Dr. de la Vega").ambiguities == ()
 
 
+# The first three reach the chain loop and decline inside it: the piece
+# after the particle is a suffix, so the scan never advances and merge()
+# is a no-op -- nothing was chained, no fork taken. They are spelled with
+# a title that is ALSO a particle ('Do', 'St'), because that is what
+# still puts an ambiguous particle off the name's leading position since
+# #367. The last three are the same strings with a plain title, which
+# now decline one step earlier -- the particle IS the leading name piece
+# and the loop skips it -- and are kept so the pair stays visible: two
+# different reasons, one output, and neither may start reporting a fork.
 @pytest.mark.parametrize("text", [
-    "Dr. Van Jr.",      # the piece after the particle is a suffix, so
-    "Dr. Van MD",       # the chain scan never advances and merge() is
-    "Dr. Do Jr.",       # a no-op -- nothing was chained, no fork taken
+    "Do Van Jr.", "Do Van MD", "St Van Jr.",
+    "Dr. Van Jr.", "Dr. Van MD", "Dr. Do Jr.",
 ])
 def test_no_op_prefix_chain_is_not_a_fork(text: str) -> None:
     assert parse(text).ambiguities == ()
@@ -322,18 +347,23 @@ def test_no_op_prefix_chain_is_not_a_fork(text: str) -> None:
 
 def test_a_fork_is_reported_by_exactly_one_stage() -> None:
     # the no-op merge left the particle a lone leading piece, which is
-    # _assign's trigger, so both stages reported the same token
-    n = parse("Dr. Van Jr Smith")
+    # _assign's trigger, so both stages reported the same token.
+    # 'Do' rather than the 'Dr.' this used until 2.2, for the reason
+    # above: with a plain title the chain loop never fires at all now,
+    # so the double-report it guards against is out of reach there.
+    n = parse("Do Van Jr Smith")
     assert n.given == "Van"
     assert len(n.ambiguities) == 1
 
 
 def test_chained_particle_detail_does_not_claim_a_role() -> None:
     # _group runs before assignment, so it cannot know which field the
-    # chained piece lands in -- "Dr. Van Johnson de la Cruz" puts it in
-    # GIVEN. The detail must describe the decision, not guess a role.
-    n = parse("Dr. Van Johnson de la Cruz")
-    assert n.given == "Van Johnson"
+    # chained piece lands in -- "Freiherr von Richthofen de la Cruz"
+    # puts it in GIVEN, while the bare "Freiherr von Richthofen" above
+    # puts it in FAMILY. The detail must describe the decision, not
+    # guess a role.
+    n = parse("Freiherr von Richthofen de la Cruz")
+    assert n.given == "von Richthofen"
     (amb,) = n.ambiguities
     assert "family name" not in amb.detail
 
@@ -347,15 +377,17 @@ def test_chained_particle_detail_is_order_invariant(policy: Policy) -> None:
     # _group's emitter is the reason the docs can scope leading-particle
     # DESTINATIONS to the default order without qualifying this text:
     # it names no field, and the chain it reports is a grouping-stage
-    # decision taken before any role exists. "Dr. Van Johnson" takes the
-    # chained branch under every order, so the string is the same one
-    # three times -- pin it, or the invariant is only an intention.
-    n = Parser(policy=policy).parse("Dr. Van Johnson")
-    assert (n.given, n.family) == ("", "Van Johnson")
+    # decision taken before any role exists. "Freiherr von Richthofen"
+    # takes the chained branch under every order, so the string is the
+    # same one three times -- pin it, or the invariant is only an
+    # intention. ("Dr. Van Johnson" carried this until 2.2; #367 made a
+    # plain title transparent, so it no longer chains at all.)
+    n = Parser(policy=policy).parse("Freiherr von Richthofen")
+    assert (n.given, n.family) == ("", "von Richthofen")
     (amb,) = n.ambiguities
     assert amb.kind is AmbiguityKind.PARTICLE_OR_GIVEN
     assert amb.detail == (
-        "'Van' was chained onto the following name piece; "
+        "'von' was chained onto the following name piece; "
         "it is also a given name in other names")
 
 
