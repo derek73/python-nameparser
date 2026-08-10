@@ -1119,43 +1119,99 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
 
 
 
-def test_no_rule_claims_a_shape_the_ledger_excludes() -> None:
-    """The failure moment that matters.
+class _Excluded(NamedTuple):
+    """What a [[never]] entry silences, in the two dimensions that can
+    change under it."""
+    #: corpus names its name_regex captures
+    captures: int
+    #: sha256[:12] of those names, so a regex swap holding the count
+    #: still fails -- the identity-free lesson _CORPUS_CLAIMS records
+    digest: str
+    #: rules that WOULD claim a protected reading of its examples, with
+    #: exclusions switched OFF. This is the #328 event: a rule widened
+    #: to reach a protected shape joins this tuple.
+    absorbed_by: tuple[str, ...]
 
-    The harness runs by hand at release; this runs on every push. It
-    fires when someone ADDS or WIDENS a rule that would absorb a
-    protected shape, months before a release run would notice -- which
-    is why #328 went unseen for a year.
 
-    Every non-empty subset of the seven roles, because the promise is
-    "if it ever starts diffing", not "if it diffs the way I guessed".
-    An entry that names `fields` is only asked about the subsets it
-    covers: the ASCII-pairs entry protects the nickname reading, and a
-    suffix diff on the same name is somebody else's business.
+#: What each exclusion silences today, keyed by its name_regex.
+#:
+#: The first version of this guard asked whether a rule claims a
+#: protected shape WITH exclusions active. It could not fail: classify()
+#: consults exclusions first and returns None, and the guard only asked
+#: about subsets the exclusion covers, so the answer was None by
+#: construction. Measured: prepending a catch-all rule, and deleting
+#: every rule in the ledger, both left it green across all 387 subsets.
+#: It was the tenth inert measurement recorded in this tree.
+#:
+#: So ask with exclusions OFF, and record the answer. Then a rule
+#: widened to reach a protected shape changes `absorbed_by` and demands
+#: a decision -- which is the event #328 is about, and the one the
+#: harness cannot report because the exclusion (correctly) hides it.
+#:
+#: `captures` and `digest` cover the opposite direction, which nothing
+#: else watches: an exclusion widened by name_regex silences real
+#: classifications, and CI stays green while the release gate breaks.
+#: Measured: dropping the Ph. D. entry's ASCII anchor keeps the whole
+#: suite passing and takes a bare run to unexplained: 1.
+_EXCLUSION_EFFECT: dict[str, _Excluded] = {
+    "(?i)^[\\x00-\\x7f]*\\bph\\.\\s*d\\.\\s*$":
+        _Excluded(3, "5a12a8117651",
+                  ("fix(comma-family)", "fix(suffix-routing)")),
+    '\\w\\s+[("\'][^)"\']+[)"\']\\s+\\w':
+        _Excluded(10, "01d4047a826a", ()),
+}
+
+
+def test_every_exclusion_silences_what_is_recorded() -> None:
+    """Both directions an exclusion can drift, recorded rather than
+    derived -- because a derivation from the same data always agrees
+    with itself, which is how the first version of this guard came to
+    be tautological.
+
+    `absorbed_by` is asked with exclusions OFF. That is the only way to
+    see the #328 event at all: once an entry is in place the harness
+    reports nothing, correctly, so a rule widened to reach a protected
+    shape is invisible everywhere else. When this tuple grows, someone
+    has to decide whether the new rule is legitimate and the exclusion
+    is now doing real work, or whether the rule reached too far.
+
+    `captures`/`digest` are the opposite drift. An over-wide exclusion
+    silences classifications a rule should make -- loud at release,
+    silent in CI, which is the wrong way round for something a push
+    can introduce.
     """
     compare = load_tool("compare")
     roles = tuple(str(role) for role in Role)
-    checked = 0
+    actual: dict[str, _Excluded] = {}
     for ledger in _LEDGERS:
         rules = compare._sorted_rules(_rules(ledger))
-        never = _exclusions(ledger)
-        for entry in never:
+        for entry in _exclusions(ledger):
+            captured = sorted(name for name in _CORPUS_NAMES
+                              if re.search(entry["name_regex"], name))
             covered = entry.get("fields")
+            absorbed = set()
             for example in entry["examples"]:
                 for size in range(1, len(roles) + 1):
                     for combo in itertools.combinations(roles, size):
                         diff = set(combo)
                         if covered is not None and not diff <= set(covered):
                             continue
-                        checked += 1
-                        got = compare.classify(example, diff, rules, never)
-                        assert got is None, (
-                            f"{ledger.name}: {example!r} is excluded "
-                            f"({entry['why']}) but a diff on "
-                            f"{sorted(combo)} would be claimed by {got!r}. "
-                            f"A rule widened to reach a protected shape "
-                            f"turns a regression into a green run.")
-    assert checked, (
+                        claimed = compare.classify(example, diff, rules)
+                        if claimed:
+                            absorbed.add(claimed.split(")")[0] + ")")
+            actual[entry["name_regex"]] = _Excluded(
+                len(captured),
+                hashlib.sha256(
+                    "\n".join(captured).encode("utf-8")).hexdigest()[:12],
+                tuple(sorted(absorbed)))
+    assert actual == _EXCLUSION_EFFECT, (
+        f"what an exclusion silences has moved. Recorded "
+        f"{_EXCLUSION_EFFECT}, now {actual}. A grown `absorbed_by` means "
+        f"a rule now reaches a protected shape -- decide whether that "
+        f"rule is right before recording it. A changed captures/digest "
+        f"means the exclusion itself moved, which is loud at release "
+        f"and silent here until this fails.")
+    assert actual, (
         "no ledger declares a [[never]] entry, so this pin is passing "
         "vacuously")
 

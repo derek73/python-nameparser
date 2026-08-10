@@ -309,11 +309,17 @@ entry only ever removes a name from classification, never moves it
 between rules, so its blast radius is exactly the names it captures --
 there is no rule ordering to reason about.
 
-`tests/v2/test_ledger_guards.py` asserts that every declared example
-stays unclassified across every non-empty subset of the seven roles
-(for an entry carrying `fields`, across the subsets it covers). A rule
-widened to absorb a protected shape therefore fails in CI, rather than
-at the next hand-run of the harness.
+`tests/v2/test_ledger_guards.py` records what each entry silences and
+holds it there. Asking whether a rule claims a protected shape *with*
+the exclusion active answers nothing -- `classify()` returns `None`
+before the rules are reached, so the answer is `None` however the rules
+change. The pin therefore asks with exclusions switched OFF and records
+which rules WOULD claim each protected reading. A rule widened to reach
+one changes that record and fails in CI, rather than being invisible
+until someone reasons about it. The same record carries the number and
+digest of the corpus names an entry captures, which is the opposite
+drift: an over-wide exclusion silences real classifications, and that
+is loud at release but otherwise silent on a push.
 
 ## What this gate does not cover
 
