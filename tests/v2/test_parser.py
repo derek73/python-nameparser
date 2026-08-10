@@ -362,6 +362,21 @@ def test_unambiguous_particle_chain_reports_nothing() -> None:
     assert parse("Dr. de la Vega").ambiguities == ()
 
 
+@pytest.mark.xfail(strict=True, reason="#369: 'abu' is a bound given name "
+                                       "as well as an ambiguous particle")
+def test_bound_given_name_that_is_also_a_particle() -> None:
+    # The one case #367 regressed, asserted as the DESIRED post-#369
+    # output so that fixing #369 announces itself here rather than
+    # silently. Today: given 'Abu', family 'Bakar'. Through 2.1 it read
+    # correctly only because the title displaced 'abu' out of the
+    # leading position and the prefix chain claimed 'Bakar' -- a side
+    # effect of the bug, not a rule: "Sheik abdul salam", whose lead is
+    # a bound given name and NOT a particle, chains no such thing.
+    # The name is in none of the differential corpora, so nothing else
+    # would notice it moving again.
+    assert parse("Sheik Abu Bakar").given == "Abu Bakar"
+
+
 # The first three reach the chain loop and decline inside it: the piece
 # after the particle is a suffix, so the scan never advances and merge()
 # is a no-op -- nothing was chained, no fork taken. They are spelled with
@@ -423,6 +438,23 @@ def test_chained_particle_detail_is_order_invariant(policy: Policy) -> None:
     assert amb.detail == (
         "'von' was chained onto the following name piece; "
         "it is also a given name in other names")
+
+    # The shape above is the one #367 did NOT move, so pin the one it
+    # did in the same three orders: a plain title is transparent, so
+    # "Dr. Van Johnson" is byte-identical to the bare "Van Johnson"
+    # under every name_order, and the fork comes from _assign -- whose
+    # detail DOES name the role, unlike the grouping-stage text above.
+    titled = Parser(policy=policy).parse("Dr. Van Johnson")
+    bare = Parser(policy=policy).parse("Van Johnson")
+    assert titled.title == "Dr."
+    assert (titled.given, titled.middle, titled.family) == \
+        (bare.given, bare.middle, bare.family)
+    (titled_amb,) = titled.ambiguities
+    assert titled_amb.detail == bare.ambiguities[0].detail
+    role = "family" if policy.name_order[0] is Role.FAMILY else "given"
+    assert titled_amb.detail == (
+        f"leading 'Van' may be a family-name particle; "
+        f"read as a {role} name")
 
 
 def test_each_suffix_or_name_branch_describes_itself() -> None:

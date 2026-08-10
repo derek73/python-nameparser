@@ -105,6 +105,19 @@ def test_a_title_that_is_also_a_particle_stops_the_scan() -> None:
         [["Van", "Johnson", "Smith"]]
 
 
+def test_a_suffix_shaped_leading_piece_is_not_stepped_over() -> None:
+    # #367 steps over TITLE pieces only. Adding suffix pieces to that
+    # scan survives the whole suite while changing what these names
+    # parse to, so pin them here: with the skip, `leading` moves to
+    # "Van", the chain loop passes over it, and the two pieces below
+    # become three -- which puts Van in the middle name rather than the
+    # family once roles exist. See _group.py for why that reading is
+    # worse rather than merely different.
+    assert _piece_texts(_grouped("Ph. D. Van Johnson")) == \
+        [["Ph. D.", "Van Johnson"]]
+    assert _piece_texts(_grouped("II Van Johnson")) == [["II", "Van Johnson"]]
+
+
 def test_von_und_zu_bridges() -> None:
     # conjunction "und" joins two prefixes; the joined piece is a derived
     # prefix and still chains onto the following name (v1 PR #191)

@@ -1037,7 +1037,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(leading-credential) a split 'Ph. D.' before the name stays one unit":
             _Claim(1, ('given', 'middle', 'suffix', 'title'), "390e7f814d13"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
-            _Claim(11, ('family', 'given', 'middle'), "b9d738c0e73b"),
+            _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
     },
     "expected_since_2.0.0.toml": {
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
@@ -1053,11 +1053,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#298) 间隔号 division changes the comma reading, sending the credential from title to suffix":
             _Claim(1, ('family', 'given', 'suffix', 'title'), "1d45596e6fdb"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
-            _Claim(11, ('family', 'given', 'middle'), "b9d738c0e73b"),
+            _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
     },
     "expected_since_2.1.0.toml": {
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
-            _Claim(11, ('family', 'given', 'middle'), "b9d738c0e73b"),
+            _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
     },
 }
 

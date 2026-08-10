@@ -51,15 +51,27 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # titled name reads as the same text reads untitled.
 #
 # The wider class is any title followed by a particle -- 'Dr. Van
-# Johnson', 'Sir de Mesnil', 'Sheik Abu Bakar' all move -- and the
-# regex names only `van` because that is the only member the corpora
-# exercise. Deliberately narrower than the class: a corpus name that
-# joins it later should arrive UNEXPLAINED and be read once, not be
-# absorbed silently. Widen the literal then, and record the new count.
+# Johnson', 'Sir de Mesnil', 'Sheik Abu Bakar' all move -- and this
+# regex names one title and one particle because 'Mr. Van Nguyen' is
+# the one name in the corpora that moves. Deliberately narrower than
+# the class: a corpus name that joins it later should arrive
+# UNEXPLAINED and be read once, not be absorbed silently. Widen the
+# literals then, and record the new count.
 #
-# The leading `\S+\.?` is the title slot, and it is the loose half:
-# nothing in a regex over the raw string can ask whether a word is a
-# title. `fields` is what carries the tightness -- and it is narrower
+# The title slot is a LITERAL for that reason and not by accident.
+# Nothing in a regex over the raw string can ask whether a word is a
+# title, so the `(?i)^\S+\.?\s+van\b` this rule shipped with matched
+# ANY first word: it reached 11 corpus names and explained 1. The
+# other ten include 'Vincent van Gogh', 'VINCENT VAN GOGH' and
+# 'Alex van Johnson' -- the "Van Johnson" family AGENTS.md names as a
+# standard regression canary. name_regex rules sort ahead of
+# fields-only ones and `fields` matches by subset, so a future
+# regression on any of those would have been labelled fix(#367) and
+# exited 0 -- a strict loss at this baseline, whose ledger was empty
+# before. (`\.?` was inert into the bargain: `\S+` is greedy, so it
+# had already taken the period.)
+#
+# `fields` is what carries the rest of the tightness -- and it is narrower
 # than the change rather than a description of it. The change moves
 # `title` as well: a word in BOTH vocabularies stops the transparency
 # scan and stays a title piece instead of being chained onto the name,
@@ -80,5 +92,5 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # ["given", "family", "suffix"] is a superset of this diff's fields. No
 # fields-only rule exists here, so this file's copy is the plain
 # classification.
-name_regex = "(?i)^\\S+\\.?\\s+van\\b"
+name_regex = "(?i)^mr\\.\\s+van\\b"
 fields = ["given", "middle", "family"]

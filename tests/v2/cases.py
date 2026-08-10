@@ -116,6 +116,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",)),
     Case("titled_ambiguous_particle_does_not_chain", "Dr. Van Johnson",
          {"title": "Dr.", "given": "Van", "family": "Johnson"},
+         classification="fix(#367)",
          ambiguities=("particle-or-given",),
          notes="reads exactly as the untitled 'Van Johnson' does, "
                "because a title is not part of the name and so cannot "
@@ -133,6 +134,41 @@ CASES: tuple[Case, ...] = (
                "test_first_name_is_prefix_if_three_parts). The fork is "
                "still reported, from assign rather than group -- the "
                "same place the untitled 'Van Johnson' reports it"),
+    Case("titled_ambiguous_particle_keeps_its_middles", "Dr. Van Johnson Smith",
+         {"title": "Dr.", "given": "Van", "middle": "Johnson",
+          "family": "Smith"},
+         classification="fix(#367)",
+         ambiguities=("particle-or-given",),
+         notes="the release log names this shape and nothing asserted "
+               "it. 1.4.0 gives title 'Dr.', last 'Van Johnson Smith'; "
+               "un-chaining leaves three name pieces, so the middle "
+               "appears where the whole thing used to be one surname"),
+    Case("given_name_title_ambiguous_particle", "Sir Van Johnson",
+         {"title": "Sir", "given": "Van", "family": "Johnson"},
+         classification="fix(#367)",
+         ambiguities=("particle-or-given",),
+         notes="a GIVEN-NAME title, which is the worse half of the bug "
+               "#367 fixed: 1.4.0 and 2.1 alike gave first "
+               "'Van Johnson' and no family name at all, the chain "
+               "having fired and then been handed whole to `given`. "
+               "Now identical to the untitled 'Van Johnson'"),
+    Case("given_name_title_never_given_particle", "Sir de Mesnil",
+         {"title": "Sir", "family": "de Mesnil"},
+         classification="fix(#367)",
+         notes="the never-given half: `de` is not an ambiguous "
+               "particle, so there is no fork to report and post_rules "
+               "1b folds the name into the family. 1.4.0 and 2.1 gave "
+               "first 'de Mesnil' with no family, because the chain "
+               "left 1b nothing standing alone to fire on"),
+    Case("suffix_word_title_ambiguous_particle", "Jr. Van Johnson",
+         {"title": "Jr.", "given": "Van", "family": "Johnson"},
+         classification="fix(#367)",
+         ambiguities=("particle-or-given",),
+         notes="a leading 'Jr.' classifies as a TITLE, not a suffix, "
+               "which is why the transparency scan does not step over "
+               "suffix pieces -- see tests/v2/pipeline/test_group.py::"
+               "test_a_suffix_shaped_leading_piece_is_not_stepped_over. "
+               "1.4.0 gives title 'Jr.', last 'Van Johnson'"),
     Case("titled_particle_chain_survives_a_title_that_is_also_a_particle",
          "Freiherr von Richthofen",
          {"title": "Freiherr", "family": "von Richthofen"},
