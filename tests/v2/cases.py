@@ -201,8 +201,13 @@ CASES: tuple[Case, ...] = (
                "loop skips it without ever reaching the no-op. 'Do' is "
                "a title AND a particle, which stops the transparency "
                "scan, so the chain does fire on Van and the j > k + 1 "
-               "guard is what declines it -- the same output, reached "
-               "through the branch the row exists to pin"),
+               "guard is what declines it -- the same reading of the "
+               "name, reached through the branch the row exists to pin. "
+               "Not parity, and not #367's doing either: 1.4.0 reads "
+               "'Do Van Jr.' as first 'Do Van', last 'Jr.', so the "
+               "divergence is 2.0's suffix routing plus 'do' being a "
+               "title -- both older than this row's respelling",
+         classification="fix"),
     Case("initial_shaped_not_conjunction", "john e. smith",
          {"given": "john", "middle": "e.", "family": "smith"},
          notes="v1 is_conjunction excludes initials at classify too"),
