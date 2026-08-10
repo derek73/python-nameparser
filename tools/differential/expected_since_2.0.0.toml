@@ -248,9 +248,20 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 #
 # The leading `\S+\.?` is the title slot, and it is the loose half:
 # nothing in a regex over the raw string can ask whether a word is a
-# title. `fields` is what carries the tightness -- the change only ever
-# redistributes name pieces between given/middle/family, and never
-# touches title, suffix, nickname or maiden.
+# title. `fields` is what carries the tightness -- and it is narrower
+# than the change rather than a description of it. The change moves
+# `title` as well: a word in BOTH vocabularies stops the transparency
+# scan and stays a title piece instead of being chained onto the name,
+# so 'Dr. St John Smith' goes from title 'Dr.', family 'St John Smith'
+# to title 'Dr. St', given 'John', family 'Smith'. It moves `maiden`
+# as well: un-chaining lets a marker standing behind the particle be
+# seen at all, so 'Mr. Van Johnson nee Brown' goes from family
+# 'Van Johnson nee Brown' with no maiden name to given 'Van', family
+# 'Johnson', maiden 'Brown'. `suffix` and `nickname` are the two that
+# genuinely never move. Naming three roles anyway is deliberate, for
+# the reason the regex names only `van`: a corpus name that moves
+# `title` or `maiden` should arrive UNEXPLAINED and be read once,
+# rather than be absorbed here.
 #
 # The 1.4 ledger carries the same rule, where it also has a second job:
 # there the diff was already being absorbed by that file's fields-only
