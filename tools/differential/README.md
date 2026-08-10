@@ -277,6 +277,44 @@ suffix-delimiter rendering, which only fires under a non-default
 matching the family documented in `tests/v2/cases.py`, so the rule is
 ready the moment a matching string is added to the corpus.
 
+### Shapes that must never be explained (`[[never]]`)
+
+A `[[change]]` rule says "this diff is intended, and here is what
+changed". There is no rule meaning "whatever happens here is a
+regression" -- so for a year two comments in
+`expected_since_1.4.0.toml` promised exactly that in prose while rules
+in the same file claimed those shapes anyway (#328). A `[[never]]`
+entry is that promise made executable: it names a shape that must stay
+unexplained.
+
+An entry needs `why` -- an exclusion nobody can justify is one nobody
+can safely delete -- plus `name_regex` and `examples`. The examples are
+required, not decoration: a protected shape need not appear in any
+corpus, so the entry has to carry its own test data. `fields` is
+optional and narrows WHICH READING is protected, by the same subset
+test the rules use.
+
+That last key earns its keep on the ASCII pairs. Parens mark nicknames,
+maiden names, suffixes and credentials alike, and no regex tells them
+apart, so a name-only exclusion for the nickname promise would also
+silence `Jenny (Johnson) Baker` and `Lon (Jr.) Williams`, whose parens
+are a maiden name and a suffix. Typographic delimiters carry no such
+ambiguity, which is why `feat(#273)`'s own rule can be a bare character
+class and its exclusion cannot.
+
+`classify()` consults exclusions BEFORE the rules, and a match returns
+`None`, so an excluded shape reports UNEXPLAINED however many rules
+would claim it. That order is also what makes exclusions monotone: an
+entry only ever removes a name from classification, never moves it
+between rules, so its blast radius is exactly the names it captures --
+there is no rule ordering to reason about.
+
+`tests/v2/test_ledger_guards.py` asserts that every declared example
+stays unclassified across every non-empty subset of the seven roles
+(for an entry carrying `fields`, across the subsets it covers). A rule
+widened to absorb a protected shape therefore fails in CI, rather than
+at the next hand-run of the harness.
+
 ## What this gate does not cover
 
 The corpora run under the **default policy**, so any behavior gated

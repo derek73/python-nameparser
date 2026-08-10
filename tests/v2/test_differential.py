@@ -295,13 +295,13 @@ def test_default_baseline_has_a_ledger_and_nothing_else_in_it() -> None:
     run abort -- and it would also make the carve-out inert, since it
     would name a file nothing iterates over.
 
-    And it must define nothing at the top level except `change`. This is
-    the one ledger allowed to be empty, so a mistyped table header --
-    `[[changes]]`, `[[rules]]` -- reads as a legitimately empty open
-    cycle everywhere instead of as a broken file: every sweep gets zero
-    rules and passes, while the author believes they shipped a rule.
-    The other ledgers are protected by having to be non-empty; this one
-    needs saying out loud.
+    And it must define nothing at the top level except `change` and
+    `never`, the two keys anything reads. This is the one ledger allowed
+    to be empty, so a mistyped table header -- `[[changes]]`, `[[rules]]`,
+    `[[nevr]]` -- reads as a legitimately empty open cycle everywhere
+    instead of as a broken file: every sweep gets zero rules and passes,
+    while the author believes they shipped a rule. The other ledgers are
+    protected by having to be non-empty; this one needs saying out loud.
     """
     import tomllib
     open_cycle = _TOOLS / f"expected_since_{compare.DEFAULT_BASELINE}.toml"
@@ -310,10 +310,11 @@ def test_default_baseline_has_a_ledger_and_nothing_else_in_it() -> None:
         f"{open_cycle.name} does not exist; a bare compare.py run would "
         f"hard-error, and the empty-ledger carve-out would be inert")
     keys = set(tomllib.loads(open_cycle.read_text(encoding="utf-8")))
-    assert keys <= {"change"}, (
-        f"{open_cycle.name} defines {sorted(keys - {'change'})} at the top "
-        f"level. Only `change` is read, so anything else is a typo that "
-        f"would read as an empty ledger rather than as a broken one")
+    assert keys <= {"change", "never"}, (
+        f"{open_cycle.name} defines {sorted(keys - {'change', 'never'})} at "
+        f"the top level. Only `change` and `never` are read, so anything "
+        f"else is a typo that would read as an empty ledger rather than as "
+        f"a broken one")
 
 
 def test_validate_rules_accepts_the_shipped_ledgers() -> None:
