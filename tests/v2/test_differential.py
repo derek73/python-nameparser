@@ -462,10 +462,20 @@ def test_main_sorts_a_name_regex_rule_ahead_of_a_fields_only_one(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A broad fields-only rule written FIRST must not claim a diff the
     specific name_regex rule below it owns. Deleting main's
-    _sorted_rules call leaves _sorted_rules' own test passing."""
+    _sorted_rules call leaves _sorted_rules' own test passing.
+
+    'broad' is declared dormant because in THIS fixture -- one corpus
+    name, always won by 'specific' -- it is permanently shadowed by
+    construction, which is exactly the case main()'s dormancy report
+    (#372) now calls out. Without the declaration this test would be
+    pinning main's sort order and main's dormancy report at once, and a
+    failure could not tell which one broke.
+    """
     _, out = _run_main(
         tmp_path, monkeypatch,
         '[[change]]\nissue = "broad"\nfields = ["family"]\n'
+        'dormant = "always shadowed by \'specific\' below, by construction '
+        'of this fixture"\n'
         '[[change]]\nissue = "specific"\nname_regex = "Smith"\n', _DIFFERS)
     assert "## specific (1)" in out and "broad" not in out
 
