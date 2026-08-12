@@ -114,20 +114,100 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "middle": "Q", "family": "Smith",
           "suffix": "MA"},
          ambiguities=("suffix-or-name",)),
-    Case("titled_ambiguous_particle_chains", "Dr. Van Johnson",
-         {"title": "Dr.", "family": "Van Johnson"},
+    Case("titled_ambiguous_particle_does_not_chain", "Dr. Van Johnson",
+         {"title": "Dr.", "given": "Van", "family": "Johnson"},
+         classification="fix(#367)",
          ambiguities=("particle-or-given",),
-         notes="the other branch of 'Van Johnson': a leading title "
-               "shifts Van off the given position, the prefix chain "
-               "fires, and the fork is reported from group rather than "
-               "assign (v1 parity on the fields)"),
-    Case("titled_ambiguous_particle_no_op_chain", "Dr. Van Jr.",
-         {"title": "Dr.", "given": "Van", "suffix": "Jr."},
+         notes="reads exactly as the untitled 'Van Johnson' does, "
+               "because a title is not part of the name and so cannot "
+               "decide whether the NAME begins with a particle (#367). "
+               "This row pinned the opposite until 2.2 -- title 'Dr.', "
+               "family 'Van Johnson', the chain having fired because "
+               "the title shifted Van off piece index 0 -- and cited "
+               "v1 parity for it. Parity was real (1.4.0 gives last "
+               "'Van Johnson') and still not the tiebreaker it looked "
+               "like: this is the SAME shape as 'Mr. Van Nguyen', "
+               "which v1 shipped as an xfail calling the reading "
+               "wrong, so v1 pinned one shape both as correct and as "
+               "broken. Resolved toward the xfail, which now passes "
+               "(tests/test_first_name.py::"
+               "test_first_name_is_prefix_if_three_parts). The fork is "
+               "still reported, from assign rather than group -- the "
+               "same place the untitled 'Van Johnson' reports it"),
+    Case("titled_ambiguous_particle_keeps_its_middles", "Dr. Van Johnson Smith",
+         {"title": "Dr.", "given": "Van", "middle": "Johnson",
+          "family": "Smith"},
+         classification="fix(#367)",
+         ambiguities=("particle-or-given",),
+         notes="the release log names this shape and nothing asserted "
+               "it. 1.4.0 gives title 'Dr.', last 'Van Johnson Smith'; "
+               "un-chaining leaves three name pieces, so the middle "
+               "appears where the whole thing used to be one surname"),
+    Case("given_name_title_ambiguous_particle", "Sir Van Johnson",
+         {"title": "Sir", "given": "Van", "family": "Johnson"},
+         classification="fix(#367)",
+         ambiguities=("particle-or-given",),
+         notes="a GIVEN-NAME title, which is the worse half of the bug "
+               "#367 fixed: 1.4.0 and 2.1 alike gave first "
+               "'Van Johnson' and no family name at all, the chain "
+               "having fired and then been handed whole to `given`. "
+               "Now identical to the untitled 'Van Johnson'"),
+    Case("given_name_title_never_given_particle", "Sir de Mesnil",
+         {"title": "Sir", "family": "de Mesnil"},
+         classification="fix(#367)",
+         notes="the never-given half: `de` is not an ambiguous "
+               "particle, so there is no fork to report and post_rules "
+               "1b folds the name into the family. 1.4.0 and 2.1 gave "
+               "first 'de Mesnil' with no family, because the chain "
+               "left 1b nothing standing alone to fire on"),
+    Case("suffix_word_title_ambiguous_particle", "Jr. Van Johnson",
+         {"title": "Jr.", "given": "Van", "family": "Johnson"},
+         classification="fix(#367)",
+         ambiguities=("particle-or-given",),
+         notes="a leading 'Jr.' classifies as a TITLE, not a suffix, "
+               "which is why the transparency scan does not step over "
+               "suffix pieces -- see tests/v2/pipeline/test_group.py::"
+               "test_a_suffix_shaped_leading_piece_is_not_stepped_over. "
+               "1.4.0 gives title 'Jr.', last 'Van Johnson'"),
+    Case("titled_particle_chain_survives_a_title_that_is_also_a_particle",
+         "Freiherr von Richthofen",
+         {"title": "Freiherr", "family": "von Richthofen"},
+         ambiguities=("particle-or-given",),
+         notes="#367's title transparency skips a piece that can ONLY "
+               "be a title, never one that could be the name's own "
+               "first piece. 'freiherr' is both a title and an "
+               "ambiguous particle, so it stops the scan and stays the "
+               "leading NAME piece; 'von' behind it is therefore "
+               "non-leading and chains, exactly as before 2.2. This is "
+               "also the CANONICAL shape reaching group's "
+               "PARTICLE_OR_GIVEN emitter, not the only one -- 'St Van "
+               "Johnson', 'Do St Johnson' and 'Dr. Do van Johnson' "
+               "reach it too, the last with a plain title ahead of the "
+               "both-vocabulary word; see tests/v2/test_parser.py -- "
+               "and the class that a plain "
+               "'first piece that is not a title' test broke: it "
+               "skipped 'St'/'Do'/'Freiherr' and collapsed the "
+               "untitled 'St John Smith' into one given name"),
+    Case("titled_ambiguous_particle_no_op_chain", "Do Van Jr.",
+         {"title": "Do", "given": "Van", "suffix": "Jr."},
          notes="the piece after the particle is a suffix, so the chain "
                "scan never advances and the merge is a no-op -- nothing "
                "was chained, so there is no fork to report (the emitter "
                "fired here for all 39 ambiguous particles, and _assign "
-               "double-reported the same token)"),
+               "double-reported the same token). Spelled with 'Do' "
+               "rather than the 'Dr.' this row carried until 2.2: "
+               "under #367 a plain title is transparent, so 'Dr. Van "
+               "Jr.' leaves Van the leading name piece and the chain "
+               "loop skips it without ever reaching the no-op. 'Do' is "
+               "a title AND a particle, which stops the transparency "
+               "scan, so the chain does fire on Van and the j > k + 1 "
+               "guard is what declines it -- the same reading of the "
+               "name, reached through the branch the row exists to pin. "
+               "Not parity, and not #367's doing either: 1.4.0 reads "
+               "'Do Van Jr.' as first 'Do Van', last 'Jr.', so the "
+               "divergence is 2.0's suffix routing plus 'do' being a "
+               "title -- both older than this row's respelling",
+         classification="fix"),
     Case("initial_shaped_not_conjunction", "john e. smith",
          {"given": "john", "middle": "e.", "family": "smith"},
          notes="v1 is_conjunction excludes initials at classify too"),

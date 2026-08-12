@@ -2,14 +2,31 @@ from nameparser.config._invariants import assert_normalized
 from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
 
 #: The sub-set of :py:data:`PARTICLES` that are *never* a standalone given
-#: name. Under the default given-first order that means a name *starting*
-#: with one of these has no given name -- the whole thing is a surname
-#: (e.g. "de Mesnil" -> family name "de Mesnil"). The reading is scoped to
-#: the order on purpose: ``Policy(name_order=FAMILY_FIRST)`` parses the
-#: same input as family "de", given "Mesnil", because which side of a
-#: leading particle the family name sits on is ``name_order``'s question,
-#: not this set's. What membership decides under either order is the
-#: ambiguity report -- see :py:data:`PARTICLES` below.
+#: name. Where one of these stands ALONE as the piece opening a name, that
+#: name has no given name -- the whole thing is a surname (e.g. "de Mesnil"
+#: -> family name "de Mesnil") -- and that reading holds under EVERY
+#: ``name_order`` (#359). It is not scoped to the default order the way the
+#: rest of the positional read is: ``name_order`` says which side of the
+#: name the family sits on, and a word that can never be a given name
+#: leaves it nothing to decide, so ``Policy(name_order=FAMILY_FIRST)``
+#: reads "de Mesnil" as the family name too. What is asked about is the
+#: opening *piece*, not the first word of the string: a particle that has
+#: already chained onto the word behind it is part of that piece rather
+#: than standing alone.
+#: Opening the name is only the commonest shape. The rule enforcing it
+#: (``post_rules`` rule 1b) reaches a member standing alone as a piece in
+#: the given position too, folding it into the family beside it, so that
+#: neither shape leaves a given name behind -- as long as there is another
+#: name token to fold into. A bare "de" stays as it is. Where a chain is
+#: reported as the given name anyway it is because the member is no
+#: longer standing alone: under ``Policy(name_order=FAMILY_FIRST)`` the
+#: given position of "Juan de la Vega" holds the whole three-token
+#: chain, so the rule declines and given "de la Vega" stands. A title
+#: in front is NOT such a case -- since #367 a title is transparent to
+#: the leading-particle exception, so "Sir de Mesnil" leaves "de" a lone
+#: piece and reads family "de Mesnil", exactly as the untitled form does.
+#: Membership also decides the ambiguity report -- see
+#: :py:data:`PARTICLES` below.
 #: Curated to exclude anything that can be a given name in some culture
 #: (`al`, `van`, `von`, `della`, `di`, `del`, `da`, `vander`, ...) and
 #: anything that is also a bound given-name particle (`abu`). When unsure,
@@ -84,18 +101,28 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
 #: name "von bergen wessels", while the same chaining in "Smith, Juan
 #: de la Cruz" gives the middle name "de la Cruz". A leading
 #: particle is the exception and chains nothing: the chain skips the
-#: first piece unconditionally, membership in this set or any other
-#: never entering into it. Where the pieces then land is again a later
-#: question,
-#: and this one is ``name_order``'s: under the default given-first order
-#: a leading :py:data:`NON_GIVEN_NAME_PARTICLES` member makes the whole
-#: name a family name ("de la Vega"), while a leading particle outside
-#: that set is read as the given name ("Van Johnson") -- whereas
-#: ``Policy(name_order=FAMILY_FIRST)`` splits both at the leading
-#: particle alike ("de la Vega" -> family "de", given "la Vega"; "Van
-#: Johnson" -> family "Van", given "Johnson"), which is the same
-#: chains-nothing grouping read the other way round. What membership
-#: decides under EITHER order is the report: a leading particle outside
+#: first piece of the NAME, its membership in this set or in
+#: :py:data:`NON_GIVEN_NAME_PARTICLES` never entering into it. Leading
+#: is read off the name rather than off the input (#367): a title is
+#: not part of the name, so it is stepped over and "Dr. Van Johnson"
+#: reads as the untitled "Van Johnson" does. One kind of word is not
+#: stepped over, and this is the one place a title's vocabulary and
+#: this one interact -- ``st``, ``do`` and ``freiherr`` are each BOTH
+#: a title and a particle, so any of them could be the name's own
+#: first piece and stops the scan, leaving a particle behind it
+#: non-leading and free to chain ("Freiherr von Richthofen").
+#: Where the pieces then land is again a later
+#: question, and this is where membership decides something: a leading
+#: :py:data:`NON_GIVEN_NAME_PARTICLES` member makes the whole name a
+#: family name ("de la Vega") under every ``name_order``, because a word
+#: that is never a given name leaves the order nothing to place. A
+#: leading particle OUTSIDE that set could be either, so there
+#: ``name_order`` decides after all: the default given-first order reads
+#: it as the given name ("Van Johnson"), while either family-first order
+#: splits the same chains-nothing grouping the other way round ("Van
+#: Johnson" -> family "Van", given "Johnson").
+#: What membership decides under ANY of the three orders is also the
+#: report: a leading particle outside
 #: :py:data:`NON_GIVEN_NAME_PARTICLES` records a particle-or-given
 #: ambiguity for the reading not taken, and one inside it records none.
 #:

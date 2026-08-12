@@ -22,8 +22,9 @@ suffix; segments 2+ are suffixes (lenient -- segment already flagged
 non-suffixy ones COMMA_STRUCTURE).
 SUFFIX_COMMA: segment 0 as NO_COMMA; segments 1+ wholly SUFFIX.
 Emits PARTICLE_OR_GIVEN when the leading name piece is a lone
-particles_ambiguous token with more pieces following ("Van Johnson") --
-whatever role name_order assigns that position.
+particles_ambiguous token with more pieces following ("Van Johnson",
+and since #367 "Dr. Van Johnson" too, a title no longer displacing the
+particle out of that position) -- whatever role name_order assigns.
 """
 from __future__ import annotations
 

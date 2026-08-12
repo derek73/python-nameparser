@@ -1,6 +1,8 @@
 """Stage: post_rules.
 
-Consumes: tokens (roles assigned).
+Consumes: tokens (roles assigned), plus pieces and structure -- rule 1b
+reads the opening piece of segment 0, or of segment 1 under a family
+comma (#359). structure was always read here, for the rotation gate.
 Produces: tokens with roles adjusted by the post rules.
 Reads: Policy.patronymic_rules, Policy.middle_as_family;
 Lexicon.given_name_titles.
@@ -9,6 +11,16 @@ Rules (each a small pure function over the role-bearing tokens):
 1. v1 handle_firstnames: when the parse is exactly a title plus ONE
    given token (no other roles), and the title is not a given-name
    title ('Sir'), that token is a family name -- "Mr. Johnson".
+1b. where a particle that is never a given name stands ALONE as a
+   piece -- either opening the name or in the given position -- the
+   name is left with no given name at all: the given and the middles
+   fold into the family. Opening the name it pulls the rest of it in
+   ("de la Vega"); in the given position it folds into the family
+   beside it ("Mesnil de" under a family-first order). Needs another
+   name token to fold into, so a bare "de" stays as it is. Alone among
+   these rules it reads the opening position from `pieces` rather than
+   from the roles assign left, so that shape holds for a lone leading
+   particle piece under every name_order (#359).
 2. EAST_SLAVIC (opt-in): positional GIVEN/MIDDLE/FAMILY each exactly
    one token, the FAMILY-position token carries an East Slavic
    patronymic ending, and the MIDDLE-position token does NOT (given +
@@ -23,10 +35,13 @@ Rules (each a small pure function over the role-bearing tokens):
 Both rotations fire only on Structure.NO_COMMA (v1 gates them on
 `not self._had_comma`): a comma already established the family.
 
-These rules reconstruct token POSITION from roles, which is faithful
+The rotations reconstruct token POSITION from roles, which is faithful
 to v1 only under the default GIVEN_FIRST order; their interaction with
 other name_order values is an open design question for the locale-pack
-work (#270).
+work (#270). Rule 1b read its particle the same way until #359 gave
+it the position test as well, the decision there being that a
+never-given particle keeps its particle whatever order the caller
+declared.
 """
 from __future__ import annotations
 
@@ -53,8 +68,32 @@ _TURKIC_CYR = re.compile(
     r"^(оглу|оглы|оғлу|ўғли|угли|кызы|гызы|қызы|қизи|улы|ұлы|уулу)$", re.I)
 
 
+_NAME_ROLES = (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
+
+
 def _idx(tokens: list[WorkToken], role: Role) -> list[int]:
     return [i for i, t in enumerate(tokens) if t.role is role]
+
+
+def _leading_name_piece(state: ParseState,
+                        tokens: list[WorkToken]) -> tuple[int, ...]:
+    """The piece that OPENS the name, whatever role name_order gave it:
+    the first piece holding a GIVEN, MIDDLE or FAMILY token, in the
+    segment the positional read governs. Every piece holding none of
+    those is walked past -- title and suffix pieces, but NICKNAME and
+    MAIDEN as well, and anything assign left unroled -- and any number
+    of them, not only a single leading title. The segment is 0, except
+    under a family comma, where segment 0 is already fixed as the
+    surname and the name continues in segment 1. Empty on either of
+    two exits: that segment does not exist, or none of its pieces
+    holds a name token."""
+    seg = 1 if state.structure is Structure.FAMILY_COMMA else 0
+    if seg >= len(state.pieces):
+        return ()
+    for piece in state.pieces[seg]:
+        if any(tokens[i].role in _NAME_ROLES for i in piece):
+            return piece
+    return ()
 
 
 def _retag(tokens: list[WorkToken], i: int, role: Role) -> None:
@@ -76,22 +115,87 @@ def post_rules(state: ParseState) -> ParseState:
         if joined not in state.lexicon.given_name_titles:
             for i in givens:
                 _retag(tokens, i, Role.FAMILY)
-
-    # rule 1b: a leading particle that is NEVER a given name means the
-    # whole name is a surname -- fold given (and middles) into family
-    # (v1 handle_non_first_name_prefix; 'de la Vega' -> family, while
-    # ambiguous 'van Gogh' keeps the given reading). The middle/family
-    # guard leaves a degenerate bare 'de' as given rather than
-    # inventing a surname.
-    if len(givens) == 1 and (middles or families):
-        gtags = tokens[givens[0]].tags
-        if "particle" in gtags and "vocab:particle-ambiguous" not in gtags:
-            for i in givens + middles:
-                _retag(tokens, i, Role.FAMILY)
-            # downstream rules key on the role counts: recompute
+            # every rule below reads these lists; recompute them the way
+            # 1b does after its own fold, so no guard can inspect a name
+            # that has already moved. Measured harmless today -- over the
+            # 751 differential names in four policies this arm fires 48
+            # times, and 1b fires on none of them -- but reading a stale
+            # token list is the shape of the bug #359 fixed. `middles`
+            # is empty by the guard above and recomputed anyway, so
+            # relaxing that guard cannot leave it stale.
             givens = _idx(tokens, Role.GIVEN)
             middles = _idx(tokens, Role.MIDDLE)
             families = _idx(tokens, Role.FAMILY)
+
+    # rule 1b enforces one invariant (v1 handle_non_first_name_prefix):
+    # where a particle that is NEVER a given name stands ALONE as a
+    # piece -- either opening the name, or in the given position -- the
+    # name is left with no given name at all, the given and the middles
+    # joining the family. Two shapes, one repair:
+    #   * the particle OPENS the name, so the whole name is a surname
+    #     and it pulls the rest in -- "de la Vega";
+    #   * the particle is left ALONE in the given position, so it folds
+    #     into the family beside it -- "Mesnil de" under
+    #     name_order=FAMILY_FIRST, where the given position is the
+    #     trailing piece.
+    # A lone PIECE is the whole of it, which is a clause narrower than
+    # "a member is never reported as the given name" -- that reading
+    # would be false. Under FAMILY_FIRST the given position of "Juan de
+    # la Vega" holds the whole chain, three tokens rather than a lone
+    # particle, so 1b declines and given='de la Vega' stands; #359
+    # records that case as working as intended. And the degenerate bare
+    # 'de' keeps given='de', having nothing to fold into.
+    # "Sir de Mesnil" used to be this guard declining on a chained
+    # piece, reporting given='de Mesnil' with no family at all. That
+    # was never a limit this rule meant to draw, and #367 removed the
+    # chain rather than touching the rule: a title is transparent to
+    # the leading-particle exception, so 'de' is a lone piece again,
+    # this guard fires, and the name reads family='de Mesnil' like the
+    # untitled form.
+    # Those two sites are the whole scope, and the MIDDLE position is
+    # deliberately not one of them -- which shows: "Mesnil Garcia de"
+    # strands middle='de' under FAMILY_FIRST, while under
+    # FAMILY_FIRST_GIVEN_LAST the same trailing piece IS the given
+    # position, so it folds to family='Mesnil Garcia de'. Whether that
+    # difference should stand is #365, not this rule's to settle. How
+    # much the fold takes once it fires is the other open question:
+    # "de Mesnil Juan" goes wholly to the family in every order,
+    # matching the default rather than stopping at the particle group
+    # (#364).
+    # Only a never-given particle is in scope: an ambiguous one keeps
+    # whatever reading name_order gives it -- 'van Gogh' is given
+    # 'van' in the default order and family 'van' under a family-first
+    # one -- and #360 tracks the vocabulary line.
+    # The opening shape is read from `pieces` rather than from the role
+    # assign left (#359). Under the default order the opening piece IS
+    # the given, so the one role test used to catch both shapes; under
+    # FAMILY_FIRST the opening piece is the family and the given sits
+    # behind it, and reading the role alone let "de Mesnil" split. The
+    # single-token test says the same thing in each shape: a particle
+    # group already chained forward is not a lone particle -- the
+    # FAMILY_FIRST "Juan de la Vega" above is what that looks like.
+    # "Mr. de Mesnil" is NOT one, and since #367 not even close to
+    # one: it is three tokens in THREE pieces -- the title, the
+    # particle, the surname -- because a title no longer displaces the
+    # particle out of the leading name position, so nothing chains.
+    # Both sites are one token long, so this guard FIRES and the
+    # family reading is its own. Rule 1 above cannot be what produces
+    # it: rule 1 is gated on `not families`, and 'Mesnil' is already
+    # the family. Both shapes need another name token to fold with,
+    # which leaves a degenerate bare 'de' as it stands rather than
+    # inventing a surname.
+    sites = (_leading_name_piece(state, tokens), tuple(givens))
+    if len(givens) + len(middles) + len(families) > 1 and any(
+            len(site) == 1
+            and "particle" in tokens[site[0]].tags
+            and "vocab:particle-ambiguous" not in tokens[site[0]].tags
+            for site in sites):
+        for i in givens + middles:
+            _retag(tokens, i, Role.FAMILY)
+        # downstream rules key on the role counts: recompute
+        givens = _idx(tokens, Role.GIVEN)
+        middles = _idx(tokens, Role.MIDDLE)
+        families = _idx(tokens, Role.FAMILY)
 
     # v1 gates both rotations on `not self._had_comma`; the
     # middle_as_family fold below runs comma or not (v1 order:

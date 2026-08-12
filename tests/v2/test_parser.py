@@ -288,22 +288,73 @@ def test_trailing_roman_numeral_reports_the_fork() -> None:
     assert parse("John Q. V").ambiguities == ()
 
 
+#: The word the _group-emitter tests below lead with. It has to be BOTH a
+#: title and an ambiguous particle -- see test_the_chained_emitter_is_still
+#: _reachable for why, and for what to do when this stops being true.
+_TITLE_PARTICLE = "Freiherr"
+
+
+def test_the_chained_emitter_is_still_reachable() -> None:
+    """_group's PARTICLE_OR_GIVEN emitter needs a piece that is both a title
+    and an ambiguous particle somewhere ahead of the chained particle, and
+    since #367 nothing else will do -- an ordinary title is transparent to
+    the leading-particle exception, so on its own it takes _assign's branch
+    instead. That word need not lead the input: "Dr. Do van Johnson" reaches
+    the emitter with a plain title in front of it. What it cannot be is
+    absent.
+
+    Two different failures, wanting two different fixes. If the intersection
+    is merely missing the word the tests below use, pick another from the
+    set. If it is EMPTY, the emitter is unreachable: every test of it is
+    then measuring nothing, and the emitter itself should go rather than be
+    re-pointed. #360 may move members of this set, which is why the coupling
+    is executable here instead of being a comment.
+    """
+    lex = Lexicon.default()
+    both = lex.titles & lex.particles_ambiguous
+    assert both, (
+        "no title is an ambiguous particle, so _group's PARTICLE_OR_GIVEN "
+        "emitter is unreachable and its tests measure nothing -- remove the "
+        "emitter rather than repointing them")
+    assert _TITLE_PARTICLE.lower() in both, (
+        f"{_TITLE_PARTICLE!r} is no longer both a title and an ambiguous "
+        f"particle; the _group-emitter tests need a lead from {sorted(both)}")
+
+
 def test_ambiguous_particle_reports_both_branches_of_its_fork() -> None:
-    # "Van Johnson" reads Van as a given name and says so. A leading
-    # title shifts Van off index 0, the prefix-chain merge fires, and
-    # Van becomes a particle instead -- the SAME fork, called the other
-    # way. The two branches are taken in different stages (_assign vs
-    # _group), so only the one with an emitter used to report.
-    given_reading = parse("Van Johnson")
-    assert given_reading.given == "Van"
+    # "von Richthofen" reads von as a given name and says so. Put a
+    # piece in front of it that is BOTH a title and a particle and von
+    # is no longer the name's leading piece, the prefix-chain merge
+    # fires, and von becomes a particle instead -- the SAME fork,
+    # called the other way. The two branches are taken in different
+    # stages (_assign vs _group), so only the one with an emitter used
+    # to report.
+    #
+    # Spelled with 'Freiherr' rather than the 'Dr.' this test used
+    # until 2.2: an ordinary title is now transparent to the
+    # leading-particle exception (#367), so "Dr. Van Johnson" takes the
+    # _assign branch like everything else. `freiherr`/`st`/`do` -- a
+    # title that could also be the name's own first piece -- is what
+    # still reaches _group's emitter. This is the canonical spelling of
+    # that, not the only one: "St Van Johnson", "Do St Johnson" and
+    # "Dr. Do van Johnson" reach it as well.
+    given_reading = parse("von Richthofen")
+    assert given_reading.given == "von"
     assert [a.kind for a in given_reading.ambiguities] == \
         [AmbiguityKind.PARTICLE_OR_GIVEN]
 
-    particle_reading = parse("Dr. Van Johnson")
-    assert particle_reading.family == "Van Johnson"
+    particle_reading = parse("Freiherr von Richthofen")
+    assert particle_reading.family == "von Richthofen"
     assert [a.kind for a in particle_reading.ambiguities] == \
         [AmbiguityKind.PARTICLE_OR_GIVEN]
-    assert [t.text for t in particle_reading.ambiguities[0].tokens] == ["Van"]
+    assert [t.text for t in particle_reading.ambiguities[0].tokens] == ["von"]
+    # and the branch the title no longer takes: "Dr. Van Johnson" is
+    # now byte-identical to the bare "Van Johnson", fork included
+    titled, bare = parse("Dr. Van Johnson"), parse("Van Johnson")
+    assert (titled.given, titled.family) == (bare.given, bare.family) \
+        == ("Van", "Johnson")
+    assert [a.detail for a in titled.ambiguities] == \
+        [a.detail for a in bare.ambiguities]
 
 
 def test_unambiguous_particle_chain_reports_nothing() -> None:
@@ -311,10 +362,33 @@ def test_unambiguous_particle_chain_reports_nothing() -> None:
     assert parse("Dr. de la Vega").ambiguities == ()
 
 
+@pytest.mark.xfail(strict=True, reason="#369: 'abu' is a bound given name "
+                                       "as well as an ambiguous particle")
+def test_bound_given_name_that_is_also_a_particle() -> None:
+    # The one case #367 regressed, asserted as the DESIRED post-#369
+    # output so that fixing #369 announces itself here rather than
+    # silently. Today: given 'Abu', family 'Bakar'. Through 2.1 it read
+    # correctly only because the title displaced 'abu' out of the
+    # leading position and the prefix chain claimed 'Bakar' -- a side
+    # effect of the bug, not a rule: "Sheik abdul salam", whose lead is
+    # a bound given name and NOT a particle, chains no such thing.
+    # The name is in none of the differential corpora, so nothing else
+    # would notice it moving again.
+    assert parse("Sheik Abu Bakar").given == "Abu Bakar"
+
+
+# The first three reach the chain loop and decline inside it: the piece
+# after the particle is a suffix, so the scan never advances and merge()
+# is a no-op -- nothing was chained, no fork taken. They are spelled with
+# a title that is ALSO a particle ('Do', 'St'), because that is what
+# still puts an ambiguous particle off the name's leading position since
+# #367. The last three are the same strings with a plain title, which
+# now decline one step earlier -- the particle IS the leading name piece
+# and the loop skips it -- and are kept so the pair stays visible: two
+# different reasons, one output, and neither may start reporting a fork.
 @pytest.mark.parametrize("text", [
-    "Dr. Van Jr.",      # the piece after the particle is a suffix, so
-    "Dr. Van MD",       # the chain scan never advances and merge() is
-    "Dr. Do Jr.",       # a no-op -- nothing was chained, no fork taken
+    "Do Van Jr.", "Do Van MD", "St Van Jr.",
+    "Dr. Van Jr.", "Dr. Van MD", "Dr. Do Jr.",
 ])
 def test_no_op_prefix_chain_is_not_a_fork(text: str) -> None:
     assert parse(text).ambiguities == ()
@@ -322,18 +396,23 @@ def test_no_op_prefix_chain_is_not_a_fork(text: str) -> None:
 
 def test_a_fork_is_reported_by_exactly_one_stage() -> None:
     # the no-op merge left the particle a lone leading piece, which is
-    # _assign's trigger, so both stages reported the same token
-    n = parse("Dr. Van Jr Smith")
+    # _assign's trigger, so both stages reported the same token.
+    # 'Do' rather than the 'Dr.' this used until 2.2, for the reason
+    # above: with a plain title the chain loop never fires at all now,
+    # so the double-report it guards against is out of reach there.
+    n = parse("Do Van Jr Smith")
     assert n.given == "Van"
     assert len(n.ambiguities) == 1
 
 
 def test_chained_particle_detail_does_not_claim_a_role() -> None:
     # _group runs before assignment, so it cannot know which field the
-    # chained piece lands in -- "Dr. Van Johnson de la Cruz" puts it in
-    # GIVEN. The detail must describe the decision, not guess a role.
-    n = parse("Dr. Van Johnson de la Cruz")
-    assert n.given == "Van Johnson"
+    # chained piece lands in -- "Freiherr von Richthofen de la Cruz"
+    # puts it in GIVEN, while the bare "Freiherr von Richthofen" above
+    # puts it in FAMILY. The detail must describe the decision, not
+    # guess a role.
+    n = parse("Freiherr von Richthofen de la Cruz")
+    assert n.given == "von Richthofen"
     (amb,) = n.ambiguities
     assert "family name" not in amb.detail
 
@@ -347,16 +426,35 @@ def test_chained_particle_detail_is_order_invariant(policy: Policy) -> None:
     # _group's emitter is the reason the docs can scope leading-particle
     # DESTINATIONS to the default order without qualifying this text:
     # it names no field, and the chain it reports is a grouping-stage
-    # decision taken before any role exists. "Dr. Van Johnson" takes the
-    # chained branch under every order, so the string is the same one
-    # three times -- pin it, or the invariant is only an intention.
-    n = Parser(policy=policy).parse("Dr. Van Johnson")
-    assert (n.given, n.family) == ("", "Van Johnson")
+    # decision taken before any role exists. "Freiherr von Richthofen"
+    # takes the chained branch under every order, so the string is the
+    # same one three times -- pin it, or the invariant is only an
+    # intention. ("Dr. Van Johnson" carried this until 2.2; #367 made a
+    # plain title transparent, so it no longer chains at all.)
+    n = Parser(policy=policy).parse("Freiherr von Richthofen")
+    assert (n.given, n.family) == ("", "von Richthofen")
     (amb,) = n.ambiguities
     assert amb.kind is AmbiguityKind.PARTICLE_OR_GIVEN
     assert amb.detail == (
-        "'Van' was chained onto the following name piece; "
+        "'von' was chained onto the following name piece; "
         "it is also a given name in other names")
+
+    # The shape above is the one #367 did NOT move, so pin the one it
+    # did in the same three orders: a plain title is transparent, so
+    # "Dr. Van Johnson" is byte-identical to the bare "Van Johnson"
+    # under every name_order, and the fork comes from _assign -- whose
+    # detail DOES name the role, unlike the grouping-stage text above.
+    titled = Parser(policy=policy).parse("Dr. Van Johnson")
+    bare = Parser(policy=policy).parse("Van Johnson")
+    assert titled.title == "Dr."
+    assert (titled.given, titled.middle, titled.family) == \
+        (bare.given, bare.middle, bare.family)
+    (titled_amb,) = titled.ambiguities
+    assert titled_amb.detail == bare.ambiguities[0].detail
+    role = "family" if policy.name_order[0] is Role.FAMILY else "given"
+    assert titled_amb.detail == (
+        f"leading 'Van' may be a family-name particle; "
+        f"read as a {role} name")
 
 
 def test_each_suffix_or_name_branch_describes_itself() -> None:

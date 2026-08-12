@@ -334,18 +334,22 @@ class Lexicon:
     particles: frozenset[str] = frozenset()
     #: Subset of particles that can also BE a given name ("Van
     #: Johnson", but also "Van Buren"). Membership decides nothing
-    #: about chaining: the prefix chain skips index 0 unconditionally
+    #: about chaining: the prefix chain skips the name's first piece
     #: and never consults this set, so it leaves a leading particle a
     #: piece of its own whether listed or not -- "de Mesnil" groups
-    #: into two pieces exactly as "van Gogh" does. What membership
-    #: decides is what becomes of that piece afterwards. Under EITHER
+    #: into two pieces exactly as "van Gogh" does, and since #367 the
+    #: NAME in "Dr. de Mesnil" and "Dr. Van Johnson" groups into those
+    #: same two pieces behind the title piece, a title not being
+    #: part of the name it precedes. What membership
+    #: decides is what becomes of that piece afterwards. Under ANY
     #: ``name_order`` a member records a particle-or-given ambiguity
-    #: and a non-member records none; under the default given-first
-    #: order a non-member is additionally folded back into the family
-    #: name once roles exist, so the whole name is the surname ("de
-    #: Mesnil" -- a bare "de", with nothing to fold into, is left
-    #: alone). Which field each piece lands in is ``name_order``'s
-    #: question, not this set's.
+    #: and a non-member records none, and a non-member is additionally
+    #: folded back into the family name once roles exist, so the whole
+    #: name is the surname ("de Mesnil" -- a bare "de", with nothing to
+    #: fold into, is left alone). That fold is order-independent too
+    #: (#359): a word that can never be a given name leaves
+    #: ``name_order`` nothing to decide. Which field a MEMBER's piece
+    #: lands in is ``name_order``'s question, not this set's.
     #: No constant of its own -- the default derives
     #: as particles minus
     #: :data:`~nameparser.config.particles.NON_GIVEN_NAME_PARTICLES`
