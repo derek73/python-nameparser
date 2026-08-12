@@ -19,7 +19,7 @@ import tempfile
 import tomllib
 from collections import Counter
 from pathlib import Path
-from typing import NamedTuple
+from typing import Literal, NamedTuple
 
 HERE = Path(__file__).resolve().parent
 FIELDS = ("title", "first", "middle", "last", "suffix", "nickname",
@@ -639,11 +639,37 @@ def classify(name: str, diff_fields: set[str],
     return None
 
 
+#: How each `_Dormant.kind` reads in the report. Here rather than in
+#: dormant_rules so the computation never has to know the wording, and
+#: rephrasing one is a change to output alone.
+_DORMANT_WHY = {
+    "reverted": ("matched no diffing name -- the behavior it describes "
+                 "may have been reverted"),
+    "shadowed": "shadowed by {by}",
+    "excluded": ("every diffing name it matches is refused by a "
+                 "[[never]] exclusion"),
+}
+
+
+class _Dormant(NamedTuple):
+    """One rule that explained nothing, and why.
+
+    `kind` rather than a sentence because the three have three different
+    fixes, and a caller that wants to tell them apart should not have to
+    parse prose to do it. The wording lives in main(), which is the only
+    place that renders it -- so rephrasing a diagnosis stays a change to
+    output alone, and the tests that pin the DISTINCTION keep working.
+    """
+    issue: str
+    kind: Literal["reverted", "shadowed", "excluded"]
+    #: the issue that claimed it, when `kind` is "shadowed"; else ""
+    detail: str
+
+
 class _Dormancy(NamedTuple):
     """What a run found out about rules that explained nothing."""
-    #: (issue, diagnosis) for every rule that explained nothing and does
-    #: not declare `dormant`
-    undeclared: tuple[tuple[str, str], ...]
+    #: every rule that explained nothing and does not declare `dormant`
+    undeclared: tuple[_Dormant, ...]
     #: issues declaring `dormant` that explained at least one diff
     awake: tuple[str, ...]
 
@@ -690,18 +716,16 @@ def dormant_rules(rules: list[dict[str, object]], explained: set[str],
             continue
         matched = [(n, d) for n, d in diffing
                    if _entry_matches(rule, n, d)]
+        winners = Counter(
+            c for c in (classify(n, d, ordered, exclusions)
+                        for n, d in matched) if c is not None)
         if not matched:
-            why = ("matched no diffing name -- the behavior it describes "
-                   "may have been reverted")
+            undeclared.append(_Dormant(issue, "reverted", ""))
+        elif winners:
+            undeclared.append(
+                _Dormant(issue, "shadowed", winners.most_common(1)[0][0]))
         else:
-            winners = Counter(
-                c for c in (classify(n, d, ordered, exclusions)
-                            for n, d in matched) if c is not None)
-            why = (f"shadowed by {winners.most_common(1)[0][0]!r}"
-                   if winners else
-                   "every diffing name it matches is refused by a "
-                   "[[never]] exclusion")
-        undeclared.append((issue, why))
+            undeclared.append(_Dormant(issue, "excluded", ""))
     return _Dormancy(tuple(undeclared), tuple(awake))
 
 
@@ -833,8 +857,9 @@ def main() -> int:
             print(f"  {n!r}")
         print()
     dormancy = dormant_rules(rules, set(by_issue), diffing, exclusions)
-    for issue, why in dormancy.undeclared:
-        print(f"EXPLAINED NOTHING {issue!r}\n    {why}")
+    for dormant in dormancy.undeclared:
+        print(f"EXPLAINED NOTHING {dormant.issue!r}\n    "
+              f"{_DORMANT_WHY[dormant.kind].format(by=repr(dormant.detail))}")
     for issue in dormancy.awake:
         print(f"NO LONGER DORMANT {issue!r}\n    it explained a diff in "
               f"this run, so its `dormant` reason is now false -- remove "
