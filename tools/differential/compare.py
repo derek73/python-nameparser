@@ -331,7 +331,7 @@ def _is_latin_only(name: str) -> bool:
 #: ambiguity entry is legal and load-bearing -- a SEGMENTATION-only diff
 #: is facade-identical, so this is the one name that can classify it.
 _RULE_FIELDS = frozenset((*V2_FIELDS, "_ambiguities"))
-_RULE_KEYS = frozenset(("issue", "name_regex", "fields"))
+_RULE_KEYS = frozenset(("issue", "name_regex", "fields", "dormant"))
 #: Probe names for the over-match check, chosen to share no script, no
 #: vocabulary and no punctuation. A `name_regex` matching ALL of them is
 #: not targeting a behavior family, it is matching everything -- and
@@ -387,6 +387,10 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
     `ledger` is named rather than hardcoded because there is one per
     baseline now: a message naming the wrong file sends the reader to
     edit a rule that is not the broken one.
+
+    The `dormant` check is the one exception to that framing: it is not
+    about a rule's matching semantics drifting, but about an opt-out
+    carrying a justification someone can review.
     """
     for i, rule in enumerate(rules):
         where = f"{ledger} rule #{i + 1}"
@@ -402,6 +406,15 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
                 f"only {sorted(_RULE_KEYS)}. A misspelled key is not "
                 f"ignored -- it drops that half of the rule's narrowing "
                 f"and the rule matches on the other half alone")
+        if "dormant" in rule:
+            reason = rule["dormant"]
+            if not isinstance(reason, str) or not reason:
+                raise SystemExit(
+                    f"{where} has a 'dormant' that is not a non-empty "
+                    f"string ({reason!r}). 'dormant' declares that a rule "
+                    f"is expected to explain nothing, and the reason is "
+                    f"the whole safeguard -- an exemption nobody can "
+                    f"justify means the rule should be deleted instead")
         has_regex, has_fields = "name_regex" in rule, "fields" in rule
         if not has_regex and not has_fields:
             raise SystemExit(

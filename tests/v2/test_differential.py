@@ -279,6 +279,14 @@ def test_v2_fields_matches_the_Role_enum() -> None:
     ({"issue": "x", "fields": ["title", "given", "middle", "family",
                                "suffix", "nickname", "maiden",
                                "_ambiguities"]}, "all seven roles"),
+    ({"issue": "x", "fields": ["given"], "dormant": ""}, "not a non-empty"),
+    ({"issue": "x", "fields": ["given"], "dormant": True}, "not a non-empty"),
+    # widening _RULE_KEYS is exactly the edit that could let a near-miss
+    # through, and a silently-ignored `dormnat` would mean the rule is
+    # checked for dormancy while its author believes it is exempt
+    ({"issue": "x", "fields": ["given"], "dormnat": "typo"}, "unknown key"),
+    # a dormant declaration is not a pass for the rest of the checks
+    ({"issue": "x", "dormant": "reason"}, "neither 'name_regex' nor 'fields'"),
 ])
 def test_validate_rules_rejects_a_rule_that_would_silently_widen(
         rule: dict, expect: str) -> None:
@@ -847,3 +855,11 @@ def test_entry_matches_is_the_question_classify_asks() -> None:
     assert compare._entry_matches(
         {"why": "x", "name_regex": "Smith", "examples": ["John Smith"]},
         "John Smith", {"given"})
+
+
+def test_validate_rules_accepts_a_declared_dormant_rule() -> None:
+    """`dormant` is a legal key, so a rule that declares one is not
+    rejected as a misspelling."""
+    compare.validate_rules(
+        [{"issue": "x", "fields": ["given"], "dormant": "no corpus name"}],
+        "expected_since_1.4.0.toml")
