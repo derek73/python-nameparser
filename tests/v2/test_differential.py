@@ -295,13 +295,13 @@ def test_default_baseline_has_a_ledger_and_nothing_else_in_it() -> None:
     run abort -- and it would also make the carve-out inert, since it
     would name a file nothing iterates over.
 
-    And it must define nothing at the top level except `change`. This is
-    the one ledger allowed to be empty, so a mistyped table header --
-    `[[changes]]`, `[[rules]]` -- reads as a legitimately empty open
-    cycle everywhere instead of as a broken file: every sweep gets zero
-    rules and passes, while the author believes they shipped a rule.
-    The other ledgers are protected by having to be non-empty; this one
-    needs saying out loud.
+    And it must define nothing at the top level except `change` and
+    `never`, the two keys anything reads. This is the one ledger allowed
+    to be empty, so a mistyped table header -- `[[changes]]`, `[[rules]]`,
+    `[[nevr]]` -- reads as a legitimately empty open cycle everywhere
+    instead of as a broken file: every sweep gets zero rules and passes,
+    while the author believes they shipped a rule. The other ledgers are
+    protected by having to be non-empty; this one needs saying out loud.
     """
     import tomllib
     open_cycle = _TOOLS / f"expected_since_{compare.DEFAULT_BASELINE}.toml"
@@ -310,10 +310,11 @@ def test_default_baseline_has_a_ledger_and_nothing_else_in_it() -> None:
         f"{open_cycle.name} does not exist; a bare compare.py run would "
         f"hard-error, and the empty-ledger carve-out would be inert")
     keys = set(tomllib.loads(open_cycle.read_text(encoding="utf-8")))
-    assert keys <= {"change"}, (
-        f"{open_cycle.name} defines {sorted(keys - {'change'})} at the top "
-        f"level. Only `change` is read, so anything else is a typo that "
-        f"would read as an empty ledger rather than as a broken one")
+    assert keys <= {"change", "never"}, (
+        f"{open_cycle.name} defines {sorted(keys - {'change', 'never'})} at "
+        f"the top level. Only `change` and `never` are read, so anything "
+        f"else is a typo that would read as an empty ledger rather than as "
+        f"a broken one")
 
 
 def test_validate_rules_accepts_the_shipped_ledgers() -> None:
@@ -723,3 +724,104 @@ def test_main_aborts_on_a_corpus_with_no_floor(
         _run_main(tmp_path, monkeypatch,
                   '[[change]]\nissue = "x"\nname_regex = "ZZZ"\n',
                   _SAME_FACADE, floor=None)
+
+
+# The exclusion grammar. Every row is a way a [[never]] entry can look
+# correct and protect nothing -- the same failure the rules' own
+# validator exists for, pointed at the section that DISABLES
+# classification instead of the one that performs it.
+@pytest.mark.parametrize("entry,expect", [
+    ({}, "no string 'why'"),
+    ({"why": ""}, "no string 'why'"),
+    ({"why": "x"}, "no string 'name_regex'"),
+    ({"why": "x", "name_regex": "Smith("}, "invalid 'name_regex'"),
+    ({"why": "x", "name_regex": "a"}, "no 'examples'"),
+    ({"why": "x", "name_regex": "a", "examples": []}, "no 'examples'"),
+    ({"why": "x", "name_regex": "a", "examples": "b"}, "not a list of strings"),
+    ({"why": "x", "name_regex": "a", "examples": ["a", 1]},
+     "not a list of strings"),
+    # an example the entry does not actually protect
+    ({"why": "x", "name_regex": "zzz", "examples": ["John Smith"]},
+     "does not match its own"),
+    # a misspelled key deletes half the declaration, exactly as for rules
+    ({"why": "x", "name_regex": "a", "examples": ["a"], "reason": "b"},
+     "unknown key"),
+    # would silence the entire ledger
+    ({"why": "x", "name_regex": ".", "examples": ["a"]},
+     "matches every one of"),
+])
+def test_validate_exclusions_rejects_an_entry_that_protects_nothing(
+        entry: dict, expect: str) -> None:
+    with pytest.raises(SystemExit, match=expect):
+        compare.validate_exclusions([entry], "expected_since_1.4.0.toml")
+
+
+def test_validate_exclusions_accepts_the_shipped_entries() -> None:
+    """The guards above must not be so strict they reject real entries."""
+    import tomllib
+    for ledger in sorted(_TOOLS.glob("expected_since_*.toml")):
+        parsed = tomllib.loads(ledger.read_text(encoding="utf-8"))
+        compare.validate_exclusions(parsed.get("never", []), ledger.name)
+
+
+def test_classify_refuses_an_excluded_shape() -> None:
+    """The whole point: an excluded name reports UNEXPLAINED however
+    many rules would otherwise claim it. Two do, for the shape this
+    was built for -- fix(comma-family) on file order, and the
+    fields-only fix(suffix-routing) which has no name_regex at all and
+    so reaches every name."""
+    rules = [{"issue": "broad", "name_regex": ","},
+             {"issue": "broader", "fields": ["given", "suffix"]}]
+    never = [{"why": "parity", "name_regex": r"(?i)\bph\.\s*d\.\s*$",
+              "examples": ["John Smith, Ph. D."]}]
+    assert compare.classify("John Smith, Ph. D.", {"suffix"}, rules) == "broad"
+    assert compare.classify(
+        "John Smith, Ph. D.", {"suffix"}, rules, never) is None
+    # a name the exclusion does not cover is unaffected
+    assert compare.classify("Smith, Dr.", {"suffix"}, rules, never) == "broad"
+
+
+@pytest.mark.parametrize("entry,expect", [
+    ({"why": "x", "name_regex": "a", "examples": ["a"], "fields": "given"},
+     "not a list of strings"),
+    ({"why": "x", "name_regex": "a", "examples": ["a"], "fields": []},
+     "empty 'fields'"),
+    ({"why": "x", "name_regex": "a", "examples": ["a"], "fields": ["nope"]},
+     "not roles"),
+    # the facade's vocabulary is not the role vocabulary
+    ({"why": "x", "name_regex": "a", "examples": ["a"], "fields": ["first"]},
+     "not roles"),
+    # all seven means "any diff", which is what omitting the key does
+    ({"why": "x", "name_regex": "a", "examples": ["a"],
+      "fields": ["title", "given", "middle", "family", "suffix",
+                 "nickname", "maiden"]}, "omit 'fields'"),
+])
+def test_validate_exclusions_rejects_a_bad_fields_narrowing(
+        entry: dict, expect: str) -> None:
+    with pytest.raises(SystemExit, match=expect):
+        compare.validate_exclusions([entry], "expected_since_1.4.0.toml")
+
+
+def test_an_excluded_shape_stays_classifiable_on_other_roles() -> None:
+    """The reason `fields` exists. ASCII parens mark nicknames, maiden
+    names, suffixes and credentials alike, so an exclusion that names
+    the nickname reading must not silence a suffix diff on the same
+    name. Such a diff would not be hidden -- an excluded name reports
+    UNEXPLAINED and exits non-zero -- but it could never be classified
+    as intended either, leaving an area under active development
+    permanently unexplainable."""
+    rules = [{"issue": "catch-all", "fields": ["given", "suffix",
+                                               "nickname", "middle"]}]
+    never = [{"why": "ascii pairs were already handled in 1.4",
+              "name_regex": r"\w\s+\([^)]+\)\s+\w",
+              "fields": ["nickname", "middle"],
+              "examples": ["John (Jack) Kennedy"]}]
+    name = "Lon (Jr.) Williams"
+    # the reading the exclusion names is refused
+    assert compare.classify(name, {"nickname"}, rules, never) is None
+    assert compare.classify(name, {"middle"}, rules, never) is None
+    # a different reading of the same name is still classifiable
+    assert compare.classify(name, {"suffix"}, rules, never) == "catch-all"
+    # and a mixed diff is not a subset of the exclusion, so it survives
+    assert compare.classify(
+        name, {"nickname", "suffix"}, rules, never) == "catch-all"

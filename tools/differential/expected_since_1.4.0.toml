@@ -215,8 +215,12 @@ issue = "feat(#273) typographic nickname delimiters recognized by default"
 # 'John “Jack” Kennedy', 'Hans „Hansi“ Müller', 'Jean «Petit» Dupont':
 # v1 knew only straight quotes and parentheses, so a smart-quoted or
 # guillemet-wrapped nickname leaked into `middle` as literal text.
-# Matches only when such a delimiter is actually present -- the ASCII
-# pairs stay unclassified, since a diff there would be a regression.
+# Matches only when such a delimiter is actually present. A nickname
+# diff on the ASCII pairs would be a regression; the ASCII-pairs
+# [[never]] entry at the end of this file is what refuses it, not this
+# rule's silence (#328), in any position the pair can take. See that
+# entry for why the delimiter's position turned out not to be the
+# thing worth narrowing on.
 name_regex = "[“”„«»「」『』（）]"
 fields = ["middle", "nickname"]
 
@@ -389,31 +393,41 @@ fields = ["title", "given", "middle", "suffix"]
 # vocab tag (tests/v2/cases.py classification="parity" on both
 # 'phd_split' and 'suffix_comma_split_phd'; verified empirically, zero
 # diff against the 1.4 worker). Adding a suppression rule for it would
-# risk masking a real regression in this exact shape, so it is
-# intentionally left unclassified: if it ever starts diffing, the
-# harness must fail. (The leading case above is a separate shape, which
-# is why it needed its own anchored rule rather than a widened one.)
+# risk masking a real regression in this exact shape, so the
+# trailing-'Ph. D.' [[never]] entry below refuses it instead: any diff here
+# reports UNEXPLAINED (#328). (The leading case above is a separate
+# shape, which is why it needed its own anchored rule rather than a
+# widened one.)
 #
-# That last sentence does NOT hold today, and the scope of what is
-# parity has to be read narrowly because of it. Parity is the two
-# inputs named above, where the pair LEADS its run. A trailing pair
-# after another suffix diffs on ORDER -- 'John Smith, Jr. Ph. D.' is
-# 1.4.0 suffix 'Ph. D., Jr.' against 2.0's 'Jr. Ph. D.', because
+# The scope of what is parity still has to be read narrowly. Parity is
+# the two inputs named above, where the pair LEADS its run. A trailing
+# pair after another suffix diffs on ORDER -- 'John Smith, Jr. Ph. D.'
+# is 1.4.0 suffix 'Ph. D., Jr.' against 2.0's 'Jr. Ph. D.', because
 # fix_phd extracted the credential pre-parse and re-appended it while
 # 2.0 renders the tail as written (tests/v2/cases.py
 # 'suffix_comma_split_phd_after_another_suffix',
-# classification="fix(credential-pair-order)"). Measured on a probe
-# corpus: the run comes out unexplained 0, absorbed by
-# fix(comma-family) below, whose name_regex is a bare comma and whose
-# `fields` list contains `suffix`. So the shape is guarded by the case
-# table and not by this file. Left that way deliberately rather than
-# fixed in passing: classify() takes the FIRST matching rule and the
-# sort has only two tiers (name_regex before fields-only, stable
-# within a tier), so a narrower rule for this shape could only win by
-# being written earlier in the file -- making file order load-bearing
-# again, which is the thing the sort exists to prevent. Giving
-# classify() a real specificity order is the fix, and it is a change
-# to the harness rather than to a rule.
+# classification="fix(credential-pair-order)"). That input is in the
+# case table and in no corpus, so nothing is reported on it either
+# way; note that the trailing-'Ph. D.' [[never]] entry's anchor
+# captures it too, and would call its intended order diff a regression
+# if a corpus ever gained it. Reconciling them then means a narrower
+# `name_regex`, and only that: the two renderings differ in the ORDER
+# of one suffix string and in nothing else, so the diff is `suffix`
+# alone -- the one field the parity promise is about. Any `fields`
+# list permissive enough to let the order diff classify would abandon
+# the promise. Not a question to settle now, on a name the harness
+# never sees.
+#
+# No ordering question arises here: exclusions are consulted before
+# any rule, so this is independent of where it sits in the file.
+#
+# Before the [[never]] entry existed this shape was ABSORBED rather
+# than refused: fix(comma-family) below matches on a bare comma and
+# lists `suffix`, so a probe corpus carrying the name came out
+# unexplained 0. That is one of the instances filed as #372. It is
+# no longer what happens here -- exclusions are consulted first, so
+# the name is refused before any rule sees it -- and #372 tracks the
+# general problem, which this entry does not solve.
 
 [[change]]
 issue = "fix(#367) a title no longer displaces a leading particle out of the leading position"
@@ -470,3 +484,123 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # one, so this claims it back.
 name_regex = "(?i)^mr\\.\\s+van\\b"
 fields = ["given", "middle", "family"]
+
+# Shapes that must never be explained. A [[change]] rule says "this
+# diff is intended, and here is what changed"; there was no rule
+# meaning "whatever happens here is a regression", so the two promises
+# below could only be written as prose -- and both were false as
+# written from the day they were written (the first shipped with the
+# harness itself, the second three days later) until #328 found them.
+#
+# The two are not false alike, and the difference matters now that
+# this file scopes the second promise to one reading. Both said
+# "unclassified", unqualified, and both were claimed on SOME reading
+# from day one. But only the Ph. D. promise was claimed on the reading
+# it now protects; no rule has ever claimed the ASCII pairs' NICKNAME
+# reading, then or today. That entry is a tripwire under no present
+# tension, which is the point of setting it before the tension exists.
+#
+# classify() consults these before any rule, so a matching name
+# reports UNEXPLAINED however many rules would claim it.
+#
+# `examples` is not decoration. A protected shape need not appear in
+# any corpus -- 'John "Jack" Kennedy' does not -- so the entry carries
+# its own test data, which tests/v2/test_ledger_guards.py runs against
+# every non-empty subset of the fields a rule may name: the seven
+# roles and the `_ambiguities` pseudo-field. An entry carrying
+# `fields` is asked only about the subsets those cover -- 3 for the
+# ASCII pairs, not 255 -- which is where the 387 in that file comes
+# from.
+
+[[never]]
+why = "trailing 'Ph. D.' split-token healing is PARITY, not a 2.0 change: v1 healed the adjacent pair too, so a diff here is a regression"
+# Anchored to the END, and that is the whole design. The promise names
+# two forms -- 'John Ph. D.' and 'John Smith, Ph. D.' -- so an
+# exclusion keyed on the comma protects half of it while looking
+# complete. The anchor also keeps clear of 'Ph. D. John Smith', the
+# LEADING shape, which has its own fix(leading-credential) rule that
+# this must not silence. No `fields`: any diff on this shape is a
+# regression, which is what omitting the key means.
+#
+# One shape this deliberately over-reaches: 'John Smith, Jr. Ph. D.'
+# still matches, and its ORDER diff (1.4's 'Ph. D., Jr.' against 2.x's
+# 'Jr. Ph. D.') is an INTENDED change -- cases.py classifies it
+# fix(credential-pair-order). No corpus contains it, so nothing is
+# silenced today. Erring toward refusal is the safe direction: an
+# UNEXPLAINED diff blocks a release for scrutiny, where a wrongly
+# classified one passes silently. If a corpus ever gains a
+# <suffix> Ph. D. name, narrow this entry rather than widening a rule
+# to claim it.
+#
+# Latin-anchored: an unrestricted trailing anchor also caught
+# '田中さん, Ph. D.', whose diff is a real fix(cjk-comma-compound)
+# classification -- measured, it took the gate to unexplained: 1. The
+# cut is at U+0250, the same threshold _is_latin_only uses in
+# compare.py, so it covers Latin-1 and Latin Extended-A and -B rather
+# than bare ASCII: the split-token healing is script-independent, and
+# 'José Smith, Ph. D.' is as much the protected shape as 'Jose Smith,
+# Ph. D.' is. An ASCII-only class protected one and not the other.
+name_regex = "(?i)^[\\u0000-\\u024f]*\\bph\\.\\s*d\\.\\s*$"
+examples = ["John Ph. D.", "John Smith Ph. D.", "John Smith, Ph. D."]
+
+[[never]]
+why = "feat(#273) recognizes TYPOGRAPHIC nickname delimiters; the ASCII pairs were already recognized in 1.4, so a NICKNAME diff on them is a regression"
+# Narrowed by ROLE, not by shape, and the reason is measured.
+#
+# By shape this covers a delimited run anywhere: leading
+# ('"Rick" Edmonds'), medial ('John (Jack) Kennedy') or trailing
+# ('Franklin, Benjamin (Ben)'), with a word character or a period as
+# the inner flank so a middle initial counts ('Cherice J. (Johnson)
+# Williams'). 34 corpus names.
+#
+# It was medial-only for three rounds, on the theory that the trailing
+# position is where credentials live and that widening would silence
+# 21 legitimate classifications. Both halves were wrong, and 1.4.0
+# says so directly:
+#
+#   'Andrew Perkins (JD)'      1.4 nickname 'JD'   2.x nickname 'JD'
+#   'Andrew Perkins (MBA)'     1.4 suffix   'MBA'  2.x suffix   'MBA'
+#   'Franklin, Benjamin (Ben)' 1.4 nickname 'Ben'  2.x nickname 'Ben'
+#
+# 1.4 read a trailing '(JD)' as a NICKNAME, exactly as it read
+# '(Ben)'. So the promise -- ASCII pairs were already recognized, a
+# nickname diff on them is a regression -- covers the trailing
+# credentials too, and refusing them is the promise being kept rather
+# than over-reach. Where 1.4 did read the parens as a credential it
+# put them in `suffix` ('MBA' is in the suffix vocabulary), so the
+# diff lands outside this entry's `fields` and the exclusion never
+# fires. The PARSER discriminates by vocabulary, which is the
+# discrimination no delimiter regex can make.
+#
+# Cost of the widening, measured against the 1.4.0 wheel: of the 21
+# names it adds, only 3 diff at all, and none of those diffs is a
+# subset of {nickname, middle} -- '山田 太郎 (マイケル・ジャクソン)'
+# moves {first,last,nickname}, '김, 민준씨 (Jimmy)' {first,suffix},
+# '김민준씨 (Jimmy)' {first,last,suffix}. Zero classifications lost.
+#
+# A bare [("'] class is still wrong, for the reason the role
+# narrowing cannot fix: it reaches 47 names, 11 of them on an
+# apostrophe that is part of the surname ("Brian O'connor",
+# "Harietta Keopuolani Nahi'ena'ena"), which is not a delimited run at
+# all.
+#
+# By role: ASCII parens mark nicknames, maiden names, suffixes and
+# credentials alike, and no regex tells them apart. The shape reaches
+# 'Jenny (Johnson) Baker' and 'Lon (Jr.) Williams', whose parens are a
+# maiden name and a suffix -- both areas under active development
+# (#335, suffix in parens). `fields` names the two roles a nickname
+# regression moves a token BETWEEN, so those names stay classifiable
+# on the five it does not name. It does not leave them wholly alone:
+# 'Lon (Jr.) Williams' parses its suffix into `middle` today, so a
+# middle-only diff on it is silenced. That is the price of protecting
+# the reading at all, since a nickname regression is exactly a
+# middle/nickname move.
+#
+# feat(#273)'s own rule needs no shape narrowing of this kind -- a
+# typographic delimiter is not a credential marker -- which is why its
+# regex is a bare character class. It does carry `fields`, for the
+# separate reason recorded there.
+name_regex = "(^|[\\w.]\\s+)[(\"'][^)\"']+[)\"'](\\s+\\w|\\s*$)"
+fields = ["nickname", "middle"]
+examples = ["John \"Jack\" Kennedy", "John (Jack) Kennedy",
+            "\"Rick\" Edmonds", "Franklin, Benjamin (Ben)"]

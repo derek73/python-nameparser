@@ -26,9 +26,11 @@ write.
 Split from test_regex_sync.py, which shares none of this (#352).
 """
 import hashlib
+import itertools
 import json
 import re
 from pathlib import Path
+from types import ModuleType
 from typing import NamedTuple
 
 import pytest
@@ -47,8 +49,8 @@ from nameparser.config.suffixes import (
     GLUED_HONORIFICS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_WORDS)
 
 from ._differential_fixtures import (
-    _CORPUS_NAMES, _LEDGERS, _TOOLS, _UNCLASSIFIED_NAMES, _claimed, _rules,
-    _unclassified_names, load_tool)
+    _CORPUS_NAMES, _LEDGERS, _TOOLS, _UNCLASSIFIED_NAMES, _claimed,
+    _exclusions, _rules, _unclassified_names, load_tool)
 
 
 # The one sanctioned divergence between the differential rules'
@@ -1122,3 +1124,197 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
         f"_CORPUS_CLAIMS names ledgers that do not exist: "
         f"{sorted(set(_CORPUS_CLAIMS) - {L.name for L in _LEDGERS})}")
 
+
+
+class _Excluded(NamedTuple):
+    """What a [[never]] entry silences, in the two dimensions that can
+    change under it."""
+    #: corpus names its name_regex captures
+    captures: int
+    #: sha256[:12] of those names, so a regex swap holding the count
+    #: still fails -- the identity-free lesson _CORPUS_CLAIMS records
+    digest: str
+    #: rules that WOULD claim a protected reading of its examples, with
+    #: exclusions switched OFF. This is the #328 event: a rule widened
+    #: to reach a protected shape joins this tuple.
+    absorbed_by: tuple[str, ...]
+
+
+#: What each exclusion silences today, keyed by its name_regex.
+#:
+#: The first version of this guard asked whether a rule claims a
+#: protected shape WITH exclusions active. It could not fail: classify()
+#: consults exclusions first and returns None, and the guard only asked
+#: about subsets the exclusion covers, so the answer was None by
+#: construction. Measured: prepending a catch-all rule, and deleting
+#: every rule in the ledger, both left it green across all 387 subsets.
+#: It was the tenth inert measurement recorded in this tree.
+#:
+#: So ask with exclusions OFF, and record the answer. Then a rule
+#: widened to reach a protected shape changes `absorbed_by` and demands
+#: a decision -- which is the event #328 is about, and the one the
+#: harness cannot report because the exclusion (correctly) hides it.
+#:
+#: `captures` and `digest` cover the opposite direction, which nothing
+#: else watched: an exclusion widened by name_regex silences real
+#: classifications, and BEFORE this record CI stayed green while the
+#: release gate broke. Measured then: dropping the Ph. D. entry's
+#: Latin anchor left the whole suite passing and took a bare run to
+#: unexplained: 1. Measured now: the same edit fails this pin -- the
+#: record is keyed by name_regex, so editing one is exactly what it
+#: catches -- while the gate still goes to unexplained: 1.
+#:
+#: One limit worth naming: `absorbed_by` records only the FIRST rule
+#: matching each subset, so a rule appended behind one that already
+#: answers those subsets is invisible here. A rule reaching a
+#: protected READING is caught; a rule shadowed by an existing one on
+#: every subset it claims is not.
+_EXCLUSION_EFFECT: dict[str, _Excluded] = {
+    "(?i)^[\\u0000-\\u024f]*\\bph\\.\\s*d\\.\\s*$":
+        _Excluded(3, "5a12a8117651",
+                  ("fix(comma-family)", "fix(suffix-routing)")),
+    '(^|[\\w.]\\s+)[("\'][^)"\']+[)"\'](\\s+\\w|\\s*$)':
+        _Excluded(34, "9ea55c4c4382", ()),
+}
+
+
+def _protectable_fields(compare: ModuleType) -> tuple[str, ...]:
+    """The universe both exclusion pins quantify over: every field a
+    rule's `fields` may name, which is what an exclusion's may name too.
+
+    Not `Role` alone. validate_exclusions accepts `_ambiguities` -- a
+    SEGMENTATION-only diff is facade-identical, so it is the one name
+    that can classify one -- and a universe of the seven roles never
+    builds a subset containing it. Measured: a rule with
+    `fields = ["_ambiguities"]` and no `name_regex` claims the
+    ambiguity-only reading of every protected shape, which is the #328
+    event in that dimension, and only the wider universe grows
+    `absorbed_by` and fails.
+
+    It does NOT close the matching hole on the exclusion side: an entry
+    narrowing itself to `fields = ["_ambiguities"]` protects nothing
+    anyone would notice and passes both pins under either universe,
+    because `absorbed_by` is legitimately empty for the honest entry
+    too. Taking the universe from compare's own set at least keeps the
+    two from drifting apart as `_RULE_FIELDS` grows.
+    """
+    return tuple(sorted(compare._RULE_FIELDS))
+
+
+def test_every_exclusion_silences_what_is_recorded() -> None:
+    """Both directions an exclusion can drift, recorded rather than
+    derived -- because a derivation from the same data always agrees
+    with itself, which is how the first version of this guard came to
+    be tautological.
+
+    `absorbed_by` is asked with exclusions OFF. That is the only way to
+    see the #328 event at all: once an entry is in place the harness
+    reports nothing, correctly, so a rule widened to reach a protected
+    shape is invisible everywhere else. When this tuple grows, someone
+    has to decide whether the new rule is legitimate and the exclusion
+    is now doing real work, or whether the rule reached too far.
+
+    `captures`/`digest` are the opposite drift. An over-wide exclusion
+    silences classifications a rule should make -- loud at release,
+    silent in CI, which is the wrong way round for something a push
+    can introduce.
+    """
+    compare = load_tool("compare")
+    roles = _protectable_fields(compare)
+    actual: dict[str, _Excluded] = {}
+    for ledger in _LEDGERS:
+        rules = compare._sorted_rules(_rules(ledger))
+        for entry in _exclusions(ledger):
+            captured = sorted(name for name in _CORPUS_NAMES
+                              if re.search(entry["name_regex"], name))
+            covered = entry.get("fields")
+            absorbed = set()
+            for example in entry["examples"]:
+                for size in range(1, len(roles) + 1):
+                    for combo in itertools.combinations(roles, size):
+                        diff = set(combo)
+                        if covered is not None and not diff <= set(covered):
+                            continue
+                        claimed = compare.classify(example, diff, rules)
+                        if claimed:
+                            absorbed.add(claimed.split(")")[0] + ")")
+            actual[entry["name_regex"]] = _Excluded(
+                len(captured),
+                hashlib.sha256(
+                    "\n".join(captured).encode("utf-8")).hexdigest()[:12],
+                tuple(sorted(absorbed)))
+    assert actual == _EXCLUSION_EFFECT, (
+        f"what an exclusion silences has moved. Recorded "
+        f"{_EXCLUSION_EFFECT}, now {actual}. A grown `absorbed_by` means "
+        f"a rule now reaches a protected shape -- decide whether that "
+        f"rule is right before recording it. A changed captures/digest "
+        f"means the exclusion itself moved, which is loud at release "
+        f"and silent here until this fails.")
+    assert actual, (
+        "no ledger declares a [[never]] entry, so this pin is passing "
+        "vacuously")
+
+
+def test_a_fields_narrowing_actually_narrows_something() -> None:
+    """The other direction, which nothing else watches.
+
+    test_every_exclusion_silences_what_is_recorded pins an entry's
+    reach by NAME -- how much corpus it captures, and which rules would
+    claim its examples. It says nothing about whether the `fields`
+    narrowing on top of that reach still leaves anything behind, and
+    the two failures are not symmetric: an over-wide `fields` silences
+    diffs a rule should explain, on names that are not examples and so
+    are looked at nowhere else.
+
+    Note where this fails when `fields` is DELETED outright: on the
+    vacuity assert at the end, not on the per-entry assert below, since
+    a deleted key drops the entry from the loop entirely. That works
+    only while one entry carries `fields`. A second one would leave the
+    deletion green here -- caught instead by `absorbed_by` in the
+    recorded pin, which is then asked about every reading rather than
+    the three the key covers, and sees rules claim them. Measured:
+    deleting this entry's `fields` grows its `absorbed_by` from () to
+    ('fix(suffix-routing)',).
+
+    Measured: deleting `fields = ["nickname", "middle"]` from the
+    ASCII-pairs entry passes every other check in this tree. The entry
+    then refuses ANY diff on the 34 corpus names it captures --
+    including 'Jenny (Johnson) Baker' and 'Lon (Jr.) Williams', whose
+    parens are a maiden name and a suffix, both under active
+    development. Nothing failed, because none of those names diffs
+    today and none of them is an example.
+
+    So: an entry that bothers to name `fields` must leave something
+    behind. If no captured corpus name is still classifiable on a
+    reading outside them, the narrowing is not narrowing -- either it
+    was deleted, or it grew to cover everything the entry reaches.
+    """
+    compare = load_tool("compare")
+    roles = _protectable_fields(compare)
+    checked = 0
+    for ledger in _LEDGERS:
+        rules = compare._sorted_rules(_rules(ledger))
+        never = _exclusions(ledger)
+        for entry in never:
+            covered = entry.get("fields")
+            if covered is None:
+                continue
+            checked += 1
+            captured = [name for name in _CORPUS_NAMES
+                        if re.search(entry["name_regex"], name)]
+            survives = [
+                (name, sorted(combo))
+                for name in captured
+                for size in (1, 2)
+                for combo in itertools.combinations(roles, size)
+                if not set(combo) <= set(covered)
+                and compare.classify(name, set(combo), rules, never)]
+            assert survives, (
+                f"{ledger.name}: the entry for {entry['name_regex']!r} names "
+                f"fields={covered}, but no corpus name it captures is still "
+                f"classifiable on any reading outside them. It captures "
+                f"{len(captured)} names, so the narrowing has stopped "
+                f"narrowing -- check it was not deleted or widened to cover "
+                f"the whole entry.")
+    assert checked, (
+        "no exclusion declares `fields`, so this pin is passing vacuously")

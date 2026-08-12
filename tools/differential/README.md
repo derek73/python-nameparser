@@ -277,6 +277,65 @@ suffix-delimiter rendering, which only fires under a non-default
 matching the family documented in `tests/v2/cases.py`, so the rule is
 ready the moment a matching string is added to the corpus.
 
+### Shapes that must never be explained (`[[never]]`)
+
+A `[[change]]` rule says "this diff is intended, and here is what
+changed". There was no rule meaning "whatever happens here is a
+regression", so two comments in `expected_since_1.4.0.toml` promised
+exactly that in prose while rules in the same file claimed those
+shapes anyway -- both false from the day they were written until #328
+found them. A `[[never]]` entry is that promise made executable: it
+names a shape that must stay unexplained.
+
+An entry needs `why` -- an exclusion nobody can justify is one nobody
+can safely delete -- plus `name_regex` and `examples`. The examples are
+required, not decoration: a protected shape need not appear in any
+corpus, so the entry has to carry its own test data. `fields` is
+optional and narrows WHICH READING is protected, by the same subset
+test the rules use.
+
+That last key earns its keep on the ASCII pairs. Parens mark nicknames,
+maiden names, suffixes and credentials alike, and no regex tells them
+apart, so a name-only exclusion for the nickname promise would also
+silence every diff on `Jenny (Johnson) Baker` and `Lon (Jr.) Williams`,
+whose parens are a maiden name and a suffix. Nothing is hidden by that
+-- an excluded name reports UNEXPLAINED, which exits non-zero -- but
+those names become permanently unexplainable, so an intended change
+there could never be recorded. Typographic delimiters carry no such
+ambiguity, which is why `feat(#273)`'s own rule can be a bare character
+class and its exclusion cannot.
+
+The ASCII-pairs entry is narrowed by role ALONE, and covers a delimited
+run in any position -- 34 corpus names. It was medial-only for three
+rounds on the theory that trailing parens are credentials to be kept
+out; 1.4.0 says otherwise, reading a trailing `(JD)` as a nickname just
+as it reads `(Ben)`. Where 1.4 did read parens as a credential it put
+them in `suffix`, outside this entry's `fields`, so the parser
+discriminates by vocabulary where no delimiter regex could. Measured,
+the widening lost zero classifications.
+
+`classify()` consults exclusions BEFORE the rules, and a match returns
+`None`, so an excluded shape reports UNEXPLAINED however many rules
+would claim it. That order is also what makes exclusions monotone: an
+entry only ever removes a name from classification, never moves it
+between rules, so its blast radius is exactly the names it captures, on
+the readings it names -- there is no rule ordering to reason about.
+
+`tests/v2/test_ledger_guards.py` records what each entry silences and
+holds it there. Asking whether a rule claims a protected shape *with*
+the exclusion active answers nothing -- `classify()` returns `None`
+before the rules are reached, so the answer is `None` however the rules
+change. The pin therefore asks with exclusions switched OFF and records
+which rules WOULD claim each protected reading. A rule widened to reach
+one changes that record and fails in CI, rather than being invisible
+until someone reasons about it. It records the FIRST rule matching each
+subset, so a rule shadowed on every subset it claims by one already
+sitting ahead of it does not move the record; a rule reaching a
+protected reading does. The same record carries the number and
+digest of the corpus names an entry captures, which is the opposite
+drift: an over-wide exclusion silences real classifications, and that
+is loud at release but otherwise silent on a push.
+
 ## What this gate does not cover
 
 The corpora run under the **default policy**, so any behavior gated

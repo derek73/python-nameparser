@@ -459,8 +459,134 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
                     f"claimed every diff in the 1.4 ledger")
 
 
+def validate_exclusions(entries: list[dict[str, object]],
+                        ledger: str) -> None:
+    """Reject malformed [[never]] entries LOUDLY at startup.
+
+    An exclusion is the absorption bug pointed the other way. A rule
+    that matches too widely turns a regression into a classified diff;
+    an exclusion that matches too widely turns a legitimate
+    classification into UNEXPLAINED, which reads as a catastrophic
+    regression rather than as a bad exclusion. So the checks mirror
+    validate_rules', with one addition: an entry whose `examples` do
+    not match its own `name_regex` protects nothing while looking
+    complete. Nothing else says so at startup, which is where a
+    silently-inert entry most needs saying.
+
+    `fields` is optional and narrows WHICH READING is protected, the
+    same subset test the rules use. It exists because ASCII parens mark
+    nicknames, maiden names, suffixes and credentials alike -- a
+    name-only exclusion for the nickname promise would also silence
+    every diff on 'Jenny (Johnson) Baker' and 'Lon (Jr.) Williams',
+    whose parens are a maiden name and a suffix. That does not HIDE a
+    regression there -- an excluded name reports UNEXPLAINED, which
+    exits non-zero -- it makes those names permanently unexplainable,
+    so an intended change in an area under active development can
+    never be recorded and every release blocks on the same false
+    alarm. Typographic delimiters carry no such ambiguity, which is
+    why feat(#273)'s own rule can be a bare character class.
+    """
+    allowed = {"why", "name_regex", "examples", "fields"}
+    for index, entry in enumerate(entries):
+        where = f"{ledger} exclusion #{index + 1}"
+        unknown = set(entry) - allowed
+        if unknown:
+            raise SystemExit(
+                f"{where} has unknown key(s) {sorted(unknown)}; expected "
+                f"{sorted(allowed)}. A misspelled key is silently ignored, "
+                f"which deletes whatever it was meant to declare.")
+        why = entry.get("why")
+        if not isinstance(why, str) or not why:
+            raise SystemExit(
+                f"{where} has no string 'why'. An exclusion nobody can "
+                f"justify is one nobody can safely delete.")
+        pattern = entry.get("name_regex")
+        if not isinstance(pattern, str) or not pattern:
+            raise SystemExit(f"{where} has no string 'name_regex'")
+        try:
+            compiled = re.compile(pattern)
+        except re.error as exc:
+            raise SystemExit(
+                f"{where} has an invalid 'name_regex' ({exc})") from None
+        if all(compiled.search(s) for s in _SENTINELS):
+            raise SystemExit(
+                f"{where}'s 'name_regex' matches every one of "
+                f"{list(_SENTINELS)} -- it would silence the whole ledger, "
+                f"reporting every diff as unexplained.")
+        examples = entry.get("examples")
+        if examples is None or examples == []:
+            raise SystemExit(
+                f"{where} has no 'examples'. They are the entry's test "
+                f"data: a protected shape need not be in any corpus, so "
+                f"nothing else can supply one.")
+        if (not isinstance(examples, list)
+                or not all(isinstance(e, str) for e in examples)):
+            raise SystemExit(
+                f"{where}'s 'examples' is not a list of strings")
+        stray = [e for e in examples if not compiled.search(e)]
+        if stray:
+            raise SystemExit(
+                f"{where} lists {stray} which does not match its own "
+                f"'name_regex' -- the entry would protect nothing while "
+                f"looking complete.")
+        if "fields" in entry:
+            fields = entry["fields"]
+            if not isinstance(fields, list) \
+                    or not all(isinstance(f, str) for f in fields):
+                raise SystemExit(
+                    f"{where} has a 'fields' that is not a list of "
+                    f"strings ({fields!r}); classify would ignore it and "
+                    f"the entry would silence EVERY diff on a matching "
+                    f"name, not the reading it names")
+            if not fields:
+                raise SystemExit(
+                    f"{where} has an empty 'fields', which can never "
+                    f"match any diff -- an exclusion that protects "
+                    f"nothing")
+            bad = sorted(set(fields) - _RULE_FIELDS)
+            if bad:
+                raise SystemExit(
+                    f"{where} names {bad} in 'fields', which are not "
+                    f"roles; expected from {sorted(_RULE_FIELDS)}")
+            if set(V2_FIELDS) <= set(fields):
+                raise SystemExit(
+                    f"{where} lists all seven roles in 'fields', which "
+                    f"is what omitting the key already means. omit "
+                    f"'fields' to exclude any diff on a matching name")
+
+
 def classify(name: str, diff_fields: set[str],
-             rules: list[dict[str, object]]) -> str | None:
+             rules: list[dict[str, object]],
+             exclusions: list[dict[str, object]] | None = None) -> str | None:
+    """Which rule explains this diff, or None if nothing does.
+
+    Exclusions are consulted FIRST and win outright. They are the
+    ledger's way of saying a shape must never be explained, which the
+    rule vocabulary cannot express: a rule says "this diff is intended
+    and here is why", and there is no rule meaning "whatever happens
+    here is a regression". Two comments in expected_since_1.4.0.toml
+    promised exactly that in prose and could not keep it (#328).
+
+    Consulting them first also makes them MONOTONE -- an exclusion only
+    ever removes a name from classification, never moves it between
+    rules -- so a new entry's blast radius is exactly the set of names
+    it captures, independent of rule order.
+
+    An exclusion narrows by `name_regex` and optionally by `fields`,
+    exactly as a rule does. Without `fields` it refuses any diff on a
+    matching name; with them it refuses only the reading it names, so a
+    name whose parens mark a nickname to one rule and a suffix to
+    another stays classifiable on the reading the exclusion is not
+    about.
+    """
+    for entry in exclusions or ():
+        pattern = entry.get("name_regex")
+        if isinstance(pattern, str) and not re.search(pattern, name):
+            continue
+        fields = entry.get("fields")
+        if isinstance(fields, list) and not diff_fields <= set(fields):
+            continue
+        return None
     for rule in rules:
         name_regex = rule.get("name_regex")
         if isinstance(name_regex, str) and not re.search(name_regex, name):
@@ -492,9 +618,12 @@ def main() -> int:
     paths = ([Path(p) for p in args.corpus] if args.corpus
              else sorted(HERE.glob("corpus*.jsonl")))
     ledger = _allowlist_for(baseline)
-    rules = tomllib.loads(ledger.read_text()).get("change", [])
+    parsed = tomllib.loads(ledger.read_text())
+    rules = parsed.get("change", [])
     validate_rules(rules, ledger.name)
     rules = _sorted_rules(rules)
+    exclusions = parsed.get("never", [])
+    validate_exclusions(exclusions, ledger.name)
     # A glob that matches nothing must not read as "everything passed".
     # Comparing zero names would print 0 unexplained and exit 0 -- the
     # harness's own stated nightmare (see validate_rules), and a
@@ -573,7 +702,7 @@ def main() -> int:
                      if old["v2"].get(f, "") != new_v2.get(f, "")}
         if not diff:
             continue
-        issue = classify(name, diff, rules)
+        issue = classify(name, diff, rules, exclusions)
         if issue is None:
             unexplained.append(
                 (name, old["facade"], new, old.get("v2", {}), new_v2))

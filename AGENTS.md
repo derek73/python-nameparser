@@ -119,6 +119,15 @@ uv run sphinx-build -b html docs dist/docs
 #        vocabulary (maiden markers, ambiguous acronyms). An alternation
 #        matching no key fails as undeclared -- add it, or record it in
 #        _NOT_A_VOCABULARY_COPY if it copies nothing.
+#    A ledger may also carry [[never]] entries -- shapes that must stay
+#    unexplained, documented in tools/differential/README.md. compare.py's
+#    validate_exclusions checks them at startup and
+#    tests/v2/test_ledger_guards.py records what each one silences --
+#    which rules would claim it with exclusions off, and how much corpus it
+#    captures -- in _EXCLUSION_EFFECT. That IS an enrollment: an entry
+#    added, or its name_regex/fields/examples edited, moves the record and
+#    must be re-recorded deliberately, the same forcing function
+#    _CORPUS_CLAIMS applies to rules. (A `why`-only edit does not move it.)
 # 9. Open the next cycle's VERSION: bump VERSION in nameparser/_version.py to
 #    the minor now being worked, and set PRE_RELEASE = 'dev'. The tree then says
 #    what it is building rather than what it last shipped -- docs/conf.py reads
