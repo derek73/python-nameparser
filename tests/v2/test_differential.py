@@ -982,6 +982,25 @@ def test_dormant_rules_names_the_shadower_that_does_the_shadowing() -> None:
     assert "shadowed by 'fix(z)'" in report.undeclared[0][1]
 
 
+def test_dormant_rules_sorts_before_diagnosing() -> None:
+    """classify() must be asked in the order main() asks it. These rules
+    are written broad-first, but _sorted_rules puts the name_regex rule
+    ahead of the fields-only one, so 'specific' is what actually claims
+    'John Smith' -- which makes 'broad' the dormant one, shadowed by it.
+
+    Without the internal sort this returns the diagnosis backwards,
+    naming 'specific' as dormant and shadowed by 'broad'. Nothing else
+    pins that line: main() always pre-sorts before calling this.
+    """
+    rules = [{"issue": "broad", "fields": ["given"]},
+             {"issue": "specific", "name_regex": "Smith",
+              "fields": ["given"]}]
+    report = compare.dormant_rules(
+        rules, {"specific"}, [("John Smith", {"given"})])
+    assert [i for i, _ in report.undeclared] == ["broad"]
+    assert "shadowed by 'specific'" in report.undeclared[0][1]
+
+
 def test_validate_rules_rejects_two_rules_sharing_an_issue() -> None:
     """The dormancy check identifies a rule by its `issue`, so a
     duplicate lets one rule hide behind the other -- it can explain
