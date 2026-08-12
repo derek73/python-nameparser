@@ -863,3 +863,76 @@ def test_validate_rules_accepts_a_declared_dormant_rule() -> None:
     compare.validate_rules(
         [{"issue": "x", "fields": ["given"], "dormant": "no corpus name"}],
         "expected_since_1.4.0.toml")
+
+
+def test_dormant_rules_reports_a_rule_whose_behavior_vanished() -> None:
+    """The #372 case: a rule matching no diffing name at all. Its fix
+    was probably reverted, and today the run exits 0 regardless."""
+    rules = [{"issue": "fix(a)", "name_regex": "Smith", "fields": ["given"]},
+             {"issue": "fix(b)", "name_regex": "Jones", "fields": ["given"]}]
+    report = compare.dormant_rules(
+        rules, {"fix(a)"}, [("John Smith", {"given"})])
+    assert report.awake == ()
+    assert [i for i, _ in report.undeclared] == ["fix(b)"]
+    assert "reverted" in report.undeclared[0][1]
+
+
+def test_dormant_rules_names_the_rule_that_shadows_one() -> None:
+    """A rule can explain nothing because a broader rule written ahead
+    of it in the same tier claimed every diff it would have claimed.
+    That is a different diagnosis with a different fix, so it gets
+    different words."""
+    rules = [{"issue": "fix(broad)", "name_regex": "Smith",
+              "fields": ["given", "family"]},
+             {"issue": "fix(narrow)", "name_regex": "John Smith",
+              "fields": ["given"]}]
+    report = compare.dormant_rules(
+        rules, {"fix(broad)"}, [("John Smith", {"given"})])
+    assert [i for i, _ in report.undeclared] == ["fix(narrow)"]
+    assert "shadowed by 'fix(broad)'" in report.undeclared[0][1]
+
+
+def test_dormant_rules_distinguishes_an_excluded_shape() -> None:
+    """Third diagnosis: the rule matches a diffing name, but a [[never]]
+    entry refuses it, so no rule claims it. Reporting that as `reverted`
+    would send someone hunting for a fix that was never undone."""
+    rules = [{"issue": "fix(a)", "name_regex": "Smith", "fields": ["given"]}]
+    never = [{"why": "protected", "name_regex": "Smith"}]
+    report = compare.dormant_rules(
+        rules, set(), [("John Smith", {"given"})], never)
+    assert [i for i, _ in report.undeclared] == ["fix(a)"]
+    assert "[[never]]" in report.undeclared[0][1]
+
+
+def test_dormant_rules_is_silent_about_a_declared_rule() -> None:
+    rules = [{"issue": "fix(a)", "name_regex": "Smith", "fields": ["given"],
+              "dormant": "no corpus name reaches it"}]
+    report = compare.dormant_rules(rules, set(), [])
+    assert report.undeclared == () and report.awake == ()
+
+
+def test_dormant_rules_reports_a_declared_rule_that_woke_up() -> None:
+    """The other direction. A `dormant` declaration that stopped being
+    true is a false statement in the ledger, and the roster pattern in
+    this tree checks both directions or it checks nothing."""
+    rules = [{"issue": "fix(a)", "fields": ["given"], "dormant": "was idle"}]
+    report = compare.dormant_rules(
+        rules, {"fix(a)"}, [("John Smith", {"given"})])
+    assert report.awake == ("fix(a)",)
+    assert report.undeclared == ()
+
+
+def test_dormant_rules_names_the_shadower_that_does_the_shadowing() -> None:
+    """Which rule to go and look at. Picking the alphabetically first
+    claimant would send someone to the rule that took one name while
+    another took the rest."""
+    rules = [{"issue": "fix(a)", "name_regex": "Alpha", "fields": ["given"]},
+             {"issue": "fix(z)", "name_regex": "Zeta", "fields": ["given"]},
+             {"issue": "fix(idle)", "name_regex": "Alpha|Zeta",
+              "fields": ["given"]}]
+    report = compare.dormant_rules(
+        rules, {"fix(a)", "fix(z)"},
+        [("Alpha One", {"given"}), ("Zeta One", {"given"}),
+         ("Zeta Two", {"given"}), ("Zeta Three", {"given"})])
+    assert [i for i, _ in report.undeclared] == ["fix(idle)"]
+    assert "shadowed by 'fix(z)'" in report.undeclared[0][1]

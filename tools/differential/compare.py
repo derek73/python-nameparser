@@ -17,7 +17,9 @@ import re
 import subprocess
 import tempfile
 import tomllib
+from collections import Counter
 from pathlib import Path
+from typing import NamedTuple
 
 HERE = Path(__file__).resolve().parent
 FIELDS = ("title", "first", "middle", "last", "suffix", "nickname",
@@ -622,6 +624,72 @@ def classify(name: str, diff_fields: set[str],
         if _entry_matches(rule, name, diff_fields):
             return rule["issue"]  # type: ignore[return-value]
     return None
+
+
+class _Dormancy(NamedTuple):
+    """What a run found out about rules that explained nothing."""
+    #: (issue, diagnosis) for every rule that explained nothing and does
+    #: not declare `dormant`
+    undeclared: tuple[tuple[str, str], ...]
+    #: issues declaring `dormant` that explained at least one diff
+    awake: tuple[str, ...]
+
+
+def dormant_rules(rules: list[dict[str, object]], explained: set[str],
+                  diffing: list[tuple[str, set[str]]],
+                  exclusions: list[dict[str, object]] | None = None,
+                  ) -> _Dormancy:
+    """Which rules explained nothing, and which kind of nothing.
+
+    A rule going inert is invisible to every other guard here.
+    _CORPUS_CLAIMS records what a rule's REGEX reaches, which is
+    parser-independent, so reverting the fix a rule describes leaves the
+    rule matching exactly as many names as before while it explains no
+    diff at all -- and the run exits 0 (#372).
+
+    Pure on purpose: it needs only values main() already derives per
+    name, and no second baseline run. Wiring it in means threading the
+    diff-fields set through the existing loop, not adding new I/O. A
+    check reachable only through a full baseline run is a check nobody
+    mutates, and this tree has a long list of measurements that ran,
+    printed a plausible number, and measured nothing.
+
+    Three diagnoses, because they have three different fixes:
+      reverted  -- matches no diffing name; the behavior is likely gone
+      shadowed  -- an earlier rule claimed every diff it would have
+      excluded  -- a [[never]] entry refuses every name it matches
+    """
+    # classify() must be asked in the order main() asked it, or the
+    # shadower named here is not the rule that actually won. Sorting
+    # internally makes that true whatever the caller passes; the sort is
+    # stable and idempotent, so doing it twice costs nothing.
+    ordered = _sorted_rules(rules)
+    undeclared: list[tuple[str, str]] = []
+    awake: list[str] = []
+    for rule in ordered:
+        issue = str(rule["issue"])
+        declared = "dormant" in rule
+        if issue in explained:
+            if declared:
+                awake.append(issue)
+            continue
+        if declared:
+            continue
+        matched = [(n, d) for n, d in diffing
+                   if _entry_matches(rule, n, d)]
+        if not matched:
+            why = ("matched no diffing name -- the behavior it describes "
+                   "may have been reverted")
+        else:
+            winners = Counter(
+                c for c in (classify(n, d, ordered, exclusions)
+                            for n, d in matched) if c is not None)
+            why = (f"shadowed by {winners.most_common(1)[0][0]!r}"
+                   if winners else
+                   "every diffing name it matches is refused by a "
+                   "[[never]] exclusion")
+        undeclared.append((issue, why))
+    return _Dormancy(tuple(undeclared), tuple(awake))
 
 
 def main() -> int:
