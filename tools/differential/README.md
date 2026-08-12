@@ -292,14 +292,16 @@ and the run still exits 0 (#372). Two tiers ask:
   `<issue>`** (an earlier rule claimed every diff it would have), or
   refused by a `[[never]]` exclusion. The three have three different fixes.
 
-Two limits worth knowing. Only the ledger for the baseline being run gets
-the dynamic check, and the release checklist runs 1.4.0 and the default
-baseline only -- so `expected_since_2.0.0.toml` has static coverage alone.
-And the static tier exempts a rule on the mere PRESENCE of `dormant`; it
-never asks whether the reason is still true. Those two combine: a `dormant`
-that is wrong, or that quietly stops being true, is caught in the ledgers
-the checklist runs and is unauditable in the ones it does not. Widening the
-checklist, or sweeping every ledger, is the way to close it.
+One limit worth knowing. Only the ledger for the baseline being run gets the
+dynamic check, so the release checklist runs `compare.py` at every baseline
+that has a ledger with rules -- a ledger left out of the checklist gets no
+dynamic dormancy check at all, and a `dormant` declaration in it goes
+unaudited. Adding a new ledger means adding its baseline to the checklist.
+
+The static tier still exempts a rule on the mere PRESENCE of `dormant`; it
+never asks whether the reason is still true. Only the dynamic check can
+catch a `dormant` that quietly stops being true, which is why every ledger
+with rules needs one.
 
 ### Shapes that must never be explained (`[[never]]`)
 
