@@ -1,3 +1,5 @@
+import dataclasses
+
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited
@@ -74,6 +76,46 @@ def test_leading_prefix_is_never_chained() -> None:
     # "Van Johnson": the leading piece is a first name, not a particle
     out = _grouped("Van Johnson")
     assert _piece_texts(out) == [["Van", "Johnson"]]
+
+
+def test_a_title_does_not_make_the_particle_behind_it_non_leading() -> None:
+    # #367: "leading" is the first piece of the NAME. A title is not
+    # part of the name, so it is stepped over and the grouping is the
+    # untitled one with the title in front of it.
+    assert _piece_texts(_grouped("Mr. Van Johnson")) == \
+        [["Mr.", "Van", "Johnson"]]
+    assert _piece_texts(_grouped("Mr. Van Johnson Smith")) == \
+        [["Mr.", "Van", "Johnson", "Smith"]]
+
+
+def test_a_title_that_is_also_a_particle_stops_the_scan() -> None:
+    # the other half of the same rule, and the reason it is not spelled
+    # "the first piece that is not a title": the default vocabulary
+    # puts `freiherr`, `st` and `do` in BOTH sets, so any of them could
+    # be the name's own first piece. Stepping over one would make the
+    # particle behind it chain, and would break a name with no title in
+    # front of it at all ("St John Smith" -> title St, given John,
+    # family Smith). Spelled here as the overlap a CONFIG can create,
+    # which is the same shape: tests/test_constants.py::test_add_title
+    # adds `te` to the titles while `te` ships as a particle.
+    overlap = dataclasses.replace(_LEX, titles=_LEX.titles | {"van"})
+    assert _piece_texts(_grouped("Van von Richthofen", lexicon=overlap)) == \
+        [["Van", "von Richthofen"]]
+    assert _piece_texts(_grouped("Van Johnson Smith", lexicon=overlap)) == \
+        [["Van", "Johnson", "Smith"]]
+
+
+def test_a_suffix_shaped_leading_piece_is_not_stepped_over() -> None:
+    # #367 steps over TITLE pieces only. Adding suffix pieces to that
+    # scan survives the whole suite while changing what these names
+    # parse to, so pin them here: with the skip, `leading` moves to
+    # "Van", the chain loop passes over it, and the two pieces below
+    # become three -- which puts Van in the middle name rather than the
+    # family once roles exist. See _group.py for why that reading is
+    # worse rather than merely different.
+    assert _piece_texts(_grouped("Ph. D. Van Johnson")) == \
+        [["Ph. D.", "Van Johnson"]]
+    assert _piece_texts(_grouped("II Van Johnson")) == [["II", "Van Johnson"]]
 
 
 def test_von_und_zu_bridges() -> None:

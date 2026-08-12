@@ -18,9 +18,13 @@ from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
 #: the given position too, folding it into the family beside it, so that
 #: neither shape leaves a given name behind -- as long as there is another
 #: name token to fold into. A bare "de" stays as it is. Where a chain is
-#: reported as the given name anyway -- "Sir de Mesnil" gives given
-#: "de Mesnil" and no surname at all -- that is an open bug (#367), not a
-#: limit this set means to draw.
+#: reported as the given name anyway it is because the member is no
+#: longer standing alone: under ``Policy(name_order=FAMILY_FIRST)`` the
+#: given position of "Juan de la Vega" holds the whole three-token
+#: chain, so the rule declines and given "de la Vega" stands. A title
+#: in front is NOT such a case -- since #367 a title is transparent to
+#: the leading-particle exception, so "Sir de Mesnil" leaves "de" a lone
+#: piece and reads family "de Mesnil", exactly as the untitled form does.
 #: Membership also decides the ambiguity report -- see
 #: :py:data:`PARTICLES` below.
 #: Curated to exclude anything that can be a given name in some culture
@@ -97,8 +101,17 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
 #: name "von bergen wessels", while the same chaining in "Smith, Juan
 #: de la Cruz" gives the middle name "de la Cruz". A leading
 #: particle is the exception and chains nothing: the chain skips the
-#: first piece unconditionally, membership in this set or any other
-#: never entering into it. Where the pieces then land is again a later
+#: first piece of the NAME, its membership in this set or in
+#: :py:data:`NON_GIVEN_NAME_PARTICLES` never entering into it. Leading
+#: is read off the name rather than off the input (#367): a title is
+#: not part of the name, so it is stepped over and "Dr. Van Johnson"
+#: reads as the untitled "Van Johnson" does. One kind of word is not
+#: stepped over, and this is the one place a title's vocabulary and
+#: this one interact -- ``st``, ``do`` and ``freiherr`` are each BOTH
+#: a title and a particle, so any of them could be the name's own
+#: first piece and stops the scan, leaving a particle behind it
+#: non-leading and free to chain ("Freiherr von Richthofen").
+#: Where the pieces then land is again a later
 #: question, and this is where membership decides something: a leading
 #: :py:data:`NON_GIVEN_NAME_PARTICLES` member makes the whole name a
 #: family name ("de la Vega") under every ``name_order``, because a word

@@ -414,3 +414,59 @@ fields = ["title", "given", "middle", "suffix"]
 # again, which is the thing the sort exists to prevent. Giving
 # classify() a real specificity order is the fix, and it is a change
 # to the harness rather than to a rule.
+
+[[change]]
+issue = "fix(#367) a title no longer displaces a leading particle out of the leading position"
+# 'Mr. Van Nguyen': a leading particle deliberately does not chain --
+# that is what makes 'Van Nguyen' read as given Van, family Nguyen.
+# Through 2.1 the exception was keyed on piece index 0, so a TITLE
+# displaced the particle and the chain fired, giving family
+# 'Van Nguyen' (v1's reading, which is why this name is parity with
+# 1.4.0 until now). 2.2 keys it on the first piece of the NAME, so a
+# titled name reads as the same text reads untitled.
+#
+# The wider class is any title followed by a particle -- 'Dr. Van
+# Johnson', 'Sir de Mesnil', 'Sheik Abu Bakar' all move -- and this
+# regex names one title and one particle because 'Mr. Van Nguyen' is
+# the one name in the corpora that moves. Deliberately narrower than
+# the class: a corpus name that joins it later should arrive
+# UNEXPLAINED and be read once, not be absorbed silently. Widen the
+# literals then, and record the new count.
+#
+# The title slot is a LITERAL for that reason and not by accident.
+# Nothing in a regex over the raw string can ask whether a word is a
+# title, so the `(?i)^\S+\.?\s+van\b` this rule shipped with matched
+# ANY first word: it reached 11 corpus names and explained 1. The
+# other ten include 'Vincent van Gogh', 'VINCENT VAN GOGH' and
+# 'Alex van Johnson' -- the "Van Johnson" family AGENTS.md names as a
+# standard regression canary. name_regex rules sort ahead of
+# fields-only ones and `fields` matches by subset, so a future
+# regression on any of those would have been labelled fix(#367) and
+# exited 0 -- a strict loss at this baseline, whose ledger was empty
+# before. (`\.?` was inert into the bargain: `\S+` is greedy, so it
+# had already taken the period.)
+#
+# `fields` is what carries the rest of the tightness -- and it is narrower
+# than the change rather than a description of it. The change moves
+# `title` as well: a word in BOTH vocabularies stops the transparency
+# scan and stays a title piece instead of being chained onto the name,
+# so 'Dr. St John Smith' goes from title 'Dr.', family 'St John Smith'
+# to title 'Dr. St', given 'John', family 'Smith'. It moves `maiden`
+# as well: un-chaining lets a marker standing behind the particle be
+# seen at all, so 'Mr. Van Johnson nee Brown' goes from family
+# 'Van Johnson nee Brown' with no maiden name to given 'Van', family
+# 'Johnson', maiden 'Brown'. `suffix` and `nickname` are the two that
+# genuinely never move. Naming three roles anyway is deliberate, for
+# the reason the regex names only `van`: a corpus name that moves
+# `title` or `maiden` should arrive UNEXPLAINED and be read once,
+# rather than be absorbed here.
+#
+# This rule has to exist even though the run already exited 0 without
+# it. The diff was being classified by fix(suffix-routing) below, a
+# fields-only rule whose ["given", "family", "suffix"] is a superset of
+# this diff's ["given", "family"] -- a rule about a trailing credential
+# absorbing a leading-particle change, which is the mis-classification
+# the README warns about. A name_regex rule outranks every fields-only
+# one, so this claims it back.
+name_regex = "(?i)^mr\\.\\s+van\\b"
+fields = ["given", "middle", "family"]
