@@ -555,6 +555,29 @@ def validate_exclusions(entries: list[dict[str, object]],
                     f"'fields' to exclude any diff on a matching name")
 
 
+def _entry_matches(rule: dict[str, object], name: str,
+                   diff_fields: set[str]) -> bool:
+    """Does this entry's narrowing admit this diff?
+
+    Shared by classify() and dormant_rules(), and by the exclusion loop
+    below, which narrows on the same two keys. The dormancy diagnosis is
+    only meaningful if it asks the question classify asks, so there is
+    one predicate rather than three copies of it.
+
+    A non-str `name_regex` or non-list `fields` is IGNORED rather than
+    rejected here: validate_rules and validate_exclusions reject both at
+    startup, and duplicating that judgement in the hot path would put the
+    two in a position to disagree.
+    """
+    name_regex = rule.get("name_regex")
+    if isinstance(name_regex, str) and not re.search(name_regex, name):
+        return False
+    fields = rule.get("fields")
+    if isinstance(fields, list) and not diff_fields <= set(fields):
+        return False
+    return True
+
+
 def classify(name: str, diff_fields: set[str],
              rules: list[dict[str, object]],
              exclusions: list[dict[str, object]] | None = None) -> str | None:
@@ -580,21 +603,11 @@ def classify(name: str, diff_fields: set[str],
     about.
     """
     for entry in exclusions or ():
-        pattern = entry.get("name_regex")
-        if isinstance(pattern, str) and not re.search(pattern, name):
-            continue
-        fields = entry.get("fields")
-        if isinstance(fields, list) and not diff_fields <= set(fields):
-            continue
-        return None
+        if _entry_matches(entry, name, diff_fields):
+            return None
     for rule in rules:
-        name_regex = rule.get("name_regex")
-        if isinstance(name_regex, str) and not re.search(name_regex, name):
-            continue
-        fields = rule.get("fields")
-        if isinstance(fields, list) and not diff_fields <= set(fields):
-            continue
-        return rule["issue"]  # type: ignore[return-value]
+        if _entry_matches(rule, name, diff_fields):
+            return rule["issue"]  # type: ignore[return-value]
     return None
 
 

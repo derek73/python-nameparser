@@ -825,3 +825,25 @@ def test_an_excluded_shape_stays_classifiable_on_other_roles() -> None:
     # and a mixed diff is not a subset of the exclusion, so it survives
     assert compare.classify(
         name, {"nickname", "suffix"}, rules, never) == "catch-all"
+
+
+def test_entry_matches_is_the_question_classify_asks() -> None:
+    """classify() and the dormancy check must agree on what a rule
+    would claim. They share this predicate so they cannot drift."""
+    rule = {"issue": "x", "name_regex": "Smith", "fields": ["given"]}
+    assert compare._entry_matches(rule, "John Smith", {"given"})
+    # regex misses
+    assert not compare._entry_matches(rule, "John Jones", {"given"})
+    # fields is a SUBSET test, not an intersection
+    assert not compare._entry_matches(rule, "John Smith", {"given", "family"})
+    # a rule with neither key admits everything validate_rules lets exist
+    assert compare._entry_matches({"issue": "x"}, "anyone", {"suffix"})
+    # the ignore-don't-reject contract the docstring rests on: validate_*
+    # already rejected these at startup, so re-judging them here would put
+    # the two in a position to disagree
+    assert compare._entry_matches({"issue": "x", "name_regex": 5}, "anyone", {"suffix"})
+    assert compare._entry_matches({"issue": "x", "fields": "given"}, "anyone", {"given"})
+    # an exclusion entry narrows on the same two keys and carries no `issue`
+    assert compare._entry_matches(
+        {"why": "x", "name_regex": "Smith", "examples": ["John Smith"]},
+        "John Smith", {"given"})
