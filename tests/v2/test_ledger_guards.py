@@ -1015,7 +1015,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
             _Claim(3, ('family', 'given', 'maiden', 'middle'), "cf5c9d671c14"),
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(236, ('given', 'suffix', 'title'), "3416f69d0ce4"),
+            _Claim(215, ('given', 'suffix', 'title'), "f16a0e79cba3"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
             _Claim(751, ('family', 'given', 'suffix'), "231640fc7535"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
