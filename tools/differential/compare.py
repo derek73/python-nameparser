@@ -585,10 +585,11 @@ def _entry_matches(rule: dict[str, object], name: str,
                    diff_fields: set[str]) -> bool:
     """Does this entry's narrowing admit this diff?
 
-    Shared by classify() and dormant_rules(), and by the exclusion loop
-    below, which narrows on the same two keys. The dormancy diagnosis is
-    only meaningful if it asks the question classify asks, so there is
-    one predicate rather than three copies of it.
+    Called twice in classify() -- once for exclusions, once for rules --
+    and again in dormant_rules(). All three narrow on the same two keys,
+    and the dormancy diagnosis is only meaningful if it asks the
+    question classify asks, so there is one predicate rather than three
+    copies of it.
 
     A non-str `name_regex` or non-list `fields` is IGNORED rather than
     rejected here: validate_rules and validate_exclusions reject both at
