@@ -17,7 +17,9 @@ import re
 import subprocess
 import tempfile
 import tomllib
+from collections import Counter
 from pathlib import Path
+from typing import NamedTuple
 
 HERE = Path(__file__).resolve().parent
 FIELDS = ("title", "first", "middle", "last", "suffix", "nickname",
@@ -331,7 +333,7 @@ def _is_latin_only(name: str) -> bool:
 #: ambiguity entry is legal and load-bearing -- a SEGMENTATION-only diff
 #: is facade-identical, so this is the one name that can classify it.
 _RULE_FIELDS = frozenset((*V2_FIELDS, "_ambiguities"))
-_RULE_KEYS = frozenset(("issue", "name_regex", "fields"))
+_RULE_KEYS = frozenset(("issue", "name_regex", "fields", "dormant"))
 #: Probe names for the over-match check, chosen to share no script, no
 #: vocabulary and no punctuation. A `name_regex` matching ALL of them is
 #: not targeting a behavior family, it is matching everything -- and
@@ -387,7 +389,23 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
     `ledger` is named rather than hardcoded because there is one per
     baseline now: a message naming the wrong file sends the reader to
     edit a rule that is not the broken one.
+
+    The `dormant` check is the one exception to that framing: it is not
+    about a rule's matching semantics drifting, but about an opt-out
+    carrying a justification someone can review.
     """
+    seen: set[str] = set()
+    for rule in rules:
+        issue = rule.get("issue")
+        if not isinstance(issue, str):
+            continue  # the per-rule loop below rejects it with a better message
+        if issue in seen:
+            raise SystemExit(
+                f"{ledger} has two rules sharing the issue {issue!r}. The "
+                f"dormancy check identifies a rule by its issue, so the "
+                f"second would hide behind the first: it could explain "
+                f"nothing and never be reported")
+        seen.add(issue)
     for i, rule in enumerate(rules):
         where = f"{ledger} rule #{i + 1}"
         issue = rule.get("issue")
@@ -402,6 +420,15 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
                 f"only {sorted(_RULE_KEYS)}. A misspelled key is not "
                 f"ignored -- it drops that half of the rule's narrowing "
                 f"and the rule matches on the other half alone")
+        if "dormant" in rule:
+            reason = rule["dormant"]
+            if not isinstance(reason, str) or not reason:
+                raise SystemExit(
+                    f"{where} has a 'dormant' that is not a non-empty "
+                    f"string ({reason!r}). 'dormant' declares that a rule "
+                    f"is expected to explain nothing, and the reason is "
+                    f"the whole safeguard -- an exemption nobody can "
+                    f"justify means the rule should be deleted instead")
         has_regex, has_fields = "name_regex" in rule, "fields" in rule
         if not has_regex and not has_fields:
             raise SystemExit(
@@ -555,6 +582,30 @@ def validate_exclusions(entries: list[dict[str, object]],
                     f"'fields' to exclude any diff on a matching name")
 
 
+def _entry_matches(rule: dict[str, object], name: str,
+                   diff_fields: set[str]) -> bool:
+    """Does this entry's narrowing admit this diff?
+
+    Called twice in classify() -- once for exclusions, once for rules --
+    and again in dormant_rules(). All three narrow on the same two keys,
+    and the dormancy diagnosis is only meaningful if it asks the
+    question classify asks, so there is one predicate rather than three
+    copies of it.
+
+    A non-str `name_regex` or non-list `fields` is IGNORED rather than
+    rejected here: validate_rules and validate_exclusions reject both at
+    startup, and duplicating that judgement in the hot path would put the
+    two in a position to disagree.
+    """
+    name_regex = rule.get("name_regex")
+    if isinstance(name_regex, str) and not re.search(name_regex, name):
+        return False
+    fields = rule.get("fields")
+    if isinstance(fields, list) and not diff_fields <= set(fields):
+        return False
+    return True
+
+
 def classify(name: str, diff_fields: set[str],
              rules: list[dict[str, object]],
              exclusions: list[dict[str, object]] | None = None) -> str | None:
@@ -580,22 +631,78 @@ def classify(name: str, diff_fields: set[str],
     about.
     """
     for entry in exclusions or ():
-        pattern = entry.get("name_regex")
-        if isinstance(pattern, str) and not re.search(pattern, name):
-            continue
-        fields = entry.get("fields")
-        if isinstance(fields, list) and not diff_fields <= set(fields):
-            continue
-        return None
+        if _entry_matches(entry, name, diff_fields):
+            return None
     for rule in rules:
-        name_regex = rule.get("name_regex")
-        if isinstance(name_regex, str) and not re.search(name_regex, name):
-            continue
-        fields = rule.get("fields")
-        if isinstance(fields, list) and not diff_fields <= set(fields):
-            continue
-        return rule["issue"]  # type: ignore[return-value]
+        if _entry_matches(rule, name, diff_fields):
+            return rule["issue"]  # type: ignore[return-value]
     return None
+
+
+class _Dormancy(NamedTuple):
+    """What a run found out about rules that explained nothing."""
+    #: (issue, diagnosis) for every rule that explained nothing and does
+    #: not declare `dormant`
+    undeclared: tuple[tuple[str, str], ...]
+    #: issues declaring `dormant` that explained at least one diff
+    awake: tuple[str, ...]
+
+
+def dormant_rules(rules: list[dict[str, object]], explained: set[str],
+                  diffing: list[tuple[str, set[str]]],
+                  exclusions: list[dict[str, object]] | None = None,
+                  ) -> _Dormancy:
+    """Which rules explained nothing, and which kind of nothing.
+
+    A rule going inert is invisible to every other guard here.
+    _CORPUS_CLAIMS records what a rule's REGEX reaches, which is
+    parser-independent, so reverting the fix a rule describes leaves the
+    rule matching exactly as many names as before while it explains no
+    diff at all -- and the run exits 0 (#372).
+
+    Pure on purpose: it needs only values main() already derives per
+    name, and no second baseline run. Wiring it in means threading the
+    diff-fields set through the existing loop, not adding new I/O. A
+    check reachable only through a full baseline run is a check nobody
+    mutates, and this tree has a long list of measurements that ran,
+    printed a plausible number, and measured nothing.
+
+    Three diagnoses, because they have three different fixes:
+      reverted  -- matches no diffing name; the behavior is likely gone
+      shadowed  -- an earlier rule claimed every diff it would have
+      excluded  -- a [[never]] entry refuses every name it matches
+    """
+    # classify() must be asked in the order main() asked it, or the
+    # shadower named here is not the rule that actually won. Sorting
+    # internally makes that true whatever the caller passes; the sort is
+    # stable and idempotent, so doing it twice costs nothing.
+    ordered = _sorted_rules(rules)
+    undeclared: list[tuple[str, str]] = []
+    awake: list[str] = []
+    for rule in ordered:
+        issue = str(rule["issue"])
+        declared = "dormant" in rule
+        if issue in explained:
+            if declared:
+                awake.append(issue)
+            continue
+        if declared:
+            continue
+        matched = [(n, d) for n, d in diffing
+                   if _entry_matches(rule, n, d)]
+        if not matched:
+            why = ("matched no diffing name -- the behavior it describes "
+                   "may have been reverted")
+        else:
+            winners = Counter(
+                c for c in (classify(n, d, ordered, exclusions)
+                            for n, d in matched) if c is not None)
+            why = (f"shadowed by {winners.most_common(1)[0][0]!r}"
+                   if winners else
+                   "every diffing name it matches is refused by a "
+                   "[[never]] exclusion")
+        undeclared.append((issue, why))
+    return _Dormancy(tuple(undeclared), tuple(awake))
 
 
 def main() -> int:
@@ -684,6 +791,9 @@ def main() -> int:
     # facade dicts would print such a name under UNEXPLAINED with no
     # field lines under it at all: a failure nobody can act on.
     unexplained: list[_Unexplained] = []
+    # every name that diffed, with its diff, so dormant_rules can ask
+    # which rule WOULD have claimed one that no rule did
+    diffing: list[tuple[str, set[str]]] = []
     for name, old in zip(corpus, old_rows):
         new = {k: v or "" for k, v in HumanName(name).as_dict().items()
                if k in FIELDS}
@@ -702,6 +812,7 @@ def main() -> int:
                      if old["v2"].get(f, "") != new_v2.get(f, "")}
         if not diff:
             continue
+        diffing.append((name, diff))
         issue = classify(name, diff, rules, exclusions)
         if issue is None:
             unexplained.append(
@@ -720,6 +831,15 @@ def main() -> int:
         print(f"## {issue} ({len(names)})")
         for n in names[:10]:
             print(f"  {n!r}")
+        print()
+    dormancy = dormant_rules(rules, set(by_issue), diffing, exclusions)
+    for issue, why in dormancy.undeclared:
+        print(f"EXPLAINED NOTHING {issue!r}\n    {why}")
+    for issue in dormancy.awake:
+        print(f"NO LONGER DORMANT {issue!r}\n    it explained a diff in "
+              f"this run, so its `dormant` reason is now false -- remove "
+              f"the key")
+    if dormancy.undeclared or dormancy.awake:
         print()
     if unexplained:
         print("Field names below are Role's, matching what a ledger "
@@ -745,7 +865,10 @@ def main() -> int:
                 print(f"    {_canonical_field(f)}: "
                       f"{old_v2.get(f, '')!r} -> {new_v2.get(f, '')!r}"
                       f"   [v2 surface only]")
-    return 1 if unexplained else 0
+    # A rule explaining nothing is as much a broken contract as an
+    # unexplained diff: both mean the ledger no longer describes what the
+    # code does. Same exit code, so neither can be the one nobody noticed.
+    return 1 if unexplained or dormancy.undeclared or dormancy.awake else 0
 
 
 if __name__ == "__main__":

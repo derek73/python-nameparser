@@ -65,9 +65,13 @@ uv run sphinx-build -b html docs dist/docs
 #    And check for open Dependabot PRs on uv.lock (namedivider-python) and merge them
 #    first — pyproject floats >=0.4 so fresh installs get the newest namedivider, but
 #    CI's ja-extra job installs from uv.lock and only tests what the lock pins
-# 1. Run the differential gate at BOTH baselines and confirm each exits 0:
+# 1. Run the differential gate at EVERY baseline that has a ledger with rules,
+#    and confirm each exits 0. The dynamic check only runs for the ledger
+#    matching the baseline being run, so a ledger left out here gets no
+#    dynamic dormancy check at all -- see tools/differential/README.md:
 #    uv run python tools/differential/compare.py --baseline 1.4.0   # the v1 compat contract
 #    uv run python tools/differential/compare.py                    # the previous minor
+#    uv run python tools/differential/compare.py --baseline 2.0.0   # 2.0.0's ledger has rules too
 #    Redirect to a file rather than piping — under zsh a pipe replaces the exit
 #    code with the pipe's, so a failing run reads as a passing one. The
 #    classified summary it prints is the source for the release notes' behavior
@@ -128,6 +132,10 @@ uv run sphinx-build -b html docs dist/docs
 #    added, or its name_regex/fields/examples edited, moves the record and
 #    must be re-recorded deliberately, the same forcing function
 #    _CORPUS_CLAIMS applies to rules. (A `why`-only edit does not move it.)
+#    A rule that explains nothing must carry `dormant = "<reason>"`: the
+#    CI guard checks regex reach, compare.py checks whether it explained a
+#    diff, and both fail undeclared. Removing the last name a rule reached is
+#    therefore a decision, not a silent no-op.
 # 9. Open the next cycle's VERSION: bump VERSION in nameparser/_version.py to
 #    the minor now being worked, and set PRE_RELEASE = 'dev'. The tree then says
 #    what it is building rather than what it last shipped -- docs/conf.py reads

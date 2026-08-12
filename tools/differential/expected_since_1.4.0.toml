@@ -181,6 +181,7 @@ issue = "fix(suffix-delimiter-rendering) no-space delimiter core token kept whol
 # this rule is expected to match nothing here. Kept for documentation
 # parity with tests/v2/cases.py's 'suffix_delimiter_no_space_core' row
 # (anti-#100, migration plan deviation 5).
+dormant = "the no-space delimiter rendering fires only under a non-default Policy, and the corpora run under the default one, so no corpus name can reach this rule. Kept because the behavior family is real and documented in tests/v2/cases.py: the rule is ready the moment a matching string is added"
 name_regex = "/"
 fields = ["suffix"]
 
@@ -192,6 +193,7 @@ issue = "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stay
 # unambiguous there) -- they now fall through to nickname parsing.
 # Not expected to fire against this corpus (no such strings survived
 # into the v1 banks); kept for documentation completeness.
+dormant = "no corpus contains a parenthesized (MA) or (DO), so this data change has no diff to explain here. Kept so the rule is ready the moment such a name is harvested"
 name_regex = "(?i)[(\"'](m\\.?a\\.?|d\\.?o\\.?)[)\"']"
 fields = ["suffix", "nickname"]
 

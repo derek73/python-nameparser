@@ -1318,3 +1318,41 @@ def test_a_fields_narrowing_actually_narrows_something() -> None:
                 f"the whole entry.")
     assert checked, (
         "no exclusion declares `fields`, so this pin is passing vacuously")
+
+
+def test_a_rule_reaching_no_corpus_name_says_why_it_is_kept() -> None:
+    """The cheap half of #372, asked on every push.
+
+    A rule whose regex reaches nothing explains nothing, and no other
+    guard here can tell that from a rule that is merely narrow:
+    _CORPUS_CLAIMS records the reach it HAS, whatever that is, so a
+    reach of zero is recorded as contentedly as any other number.
+
+    This is deliberately about REACH, not about diffs. Asking whether a
+    rule explained a diff needs a baseline wheel and belongs in the
+    harness; asking whether it could reach any name at all needs only
+    the corpus, so it runs here, on every push, for free.
+    """
+    silent = []
+    checked = 0
+    for ledger in _LEDGERS:
+        for rule in _rules(ledger):
+            if "dormant" in rule:
+                continue
+            # fields-only rules reach every name by construction, so only
+            # a name_regex can be statically silent -- see _claim(), which
+            # counts them as the whole corpus for the same reason
+            regex = rule.get("name_regex")
+            if not isinstance(regex, str):
+                continue
+            checked += 1
+            if not _claimed(regex):
+                silent.append(f"{ledger.name}: {rule['issue']}")
+    assert not silent, (
+        f"these rules reach no corpus name, so they explain nothing and "
+        f"nothing else would say so: {silent}. Either declare `dormant` "
+        f"with the reason the rule is worth keeping, or delete it.")
+    assert checked, (
+        "no rule was examined, so this guard is passing vacuously -- "
+        "every rule either declares `dormant` or narrows by `fields` "
+        "alone")

@@ -279,6 +279,14 @@ def test_v2_fields_matches_the_Role_enum() -> None:
     ({"issue": "x", "fields": ["title", "given", "middle", "family",
                                "suffix", "nickname", "maiden",
                                "_ambiguities"]}, "all seven roles"),
+    ({"issue": "x", "fields": ["given"], "dormant": ""}, "not a non-empty"),
+    ({"issue": "x", "fields": ["given"], "dormant": True}, "not a non-empty"),
+    # widening _RULE_KEYS is exactly the edit that could let a near-miss
+    # through, and a silently-ignored `dormnat` would mean the rule is
+    # checked for dormancy while its author believes it is exempt
+    ({"issue": "x", "fields": ["given"], "dormnat": "typo"}, "unknown key"),
+    # a dormant declaration is not a pass for the rest of the checks
+    ({"issue": "x", "dormant": "reason"}, "neither 'name_regex' nor 'fields'"),
 ])
 def test_validate_rules_rejects_a_rule_that_would_silently_widen(
         rule: dict, expect: str) -> None:
@@ -354,7 +362,9 @@ _WORKER_CALL: dict = {}
 
 
 def _run_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ledger_body: str,
-              baseline_facade: dict, baseline: str = "1.4.0",
+              baseline_facade: dict,
+              extra: list[tuple[str, dict]] | None = None,
+              baseline: str = "1.4.0",
               baseline_v2: dict | None = None,
               floor: int | None = 1) -> tuple[int, str]:
     """Drive main() end to end with a faked baseline worker.
@@ -366,21 +376,31 @@ def _run_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ledger_body: str,
     `baseline` defaults to 1.4.0 (facade only). Pass 2.0.0 with
     `baseline_v2` to exercise the v2 surface, including the
     ambiguity-only diff that is the stated reason to compare it.
+
+    `extra` appends more (name, baseline_facade) pairs to the corpus,
+    in order, alongside the fixture's own 'John Smith'. It exists so a
+    test can mix a diffing and a non-diffing name -- the single-name
+    corpus below is structurally incapable of that.
     """
+    import json
     import sys
     corpus = tmp_path / "corpus_x.jsonl"
-    corpus.write_text('"John Smith"\n', encoding="utf-8")
+    names = ["John Smith"] + [n for n, _ in (extra or ())]
+    corpus.write_text(
+        "\n".join(json.dumps(n) for n in names) + "\n", encoding="utf-8")
     (tmp_path / f"expected_since_{baseline}.toml").write_text(
         ledger_body, encoding="utf-8")
-    row: dict = {"facade": baseline_facade}
+    rows: list[dict] = [{"facade": baseline_facade}]
     if baseline_v2 is not None:
-        row["v2"] = baseline_v2
+        rows[0]["v2"] = baseline_v2
+    for _, facade in (extra or ()):
+        rows.append({"facade": facade})
     _WORKER_CALL.clear()
 
     def _fake(v: str, w: bool, n: list[str]) -> tuple[dict, list[dict]]:
         _WORKER_CALL.update(version=v, want_v2=w, names=list(n))
         return ({"__version__": v,
-                 "__file__": "/wheel/nameparser/__init__.py"}, [row])
+                 "__file__": "/wheel/nameparser/__init__.py"}, rows)
 
     # The fixture corpus needs a floor like any other. `floor=None`
     # leaves it unregistered, for the test that pins what happens when
@@ -454,12 +474,88 @@ def test_main_sorts_a_name_regex_rule_ahead_of_a_fields_only_one(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A broad fields-only rule written FIRST must not claim a diff the
     specific name_regex rule below it owns. Deleting main's
-    _sorted_rules call leaves _sorted_rules' own test passing."""
+    _sorted_rules call leaves _sorted_rules' own test passing.
+
+    'broad' is declared dormant because in THIS fixture -- one corpus
+    name, always won by 'specific' -- it is permanently shadowed by
+    construction, which is exactly the case main()'s dormancy report
+    (#372) now calls out. Without the declaration this test would be
+    pinning main's sort order and main's dormancy report at once, and a
+    failure could not tell which one broke.
+    """
     _, out = _run_main(
         tmp_path, monkeypatch,
         '[[change]]\nissue = "broad"\nfields = ["family"]\n'
+        'dormant = "always shadowed by \'specific\' below, by construction '
+        'of this fixture"\n'
         '[[change]]\nissue = "specific"\nname_regex = "Smith"\n', _DIFFERS)
     assert "## specific (1)" in out and "broad" not in out
+
+
+def test_main_exits_1_and_names_a_rule_that_explained_nothing(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The #372 gate. `idle` matches no diffing name, so it explains
+    nothing and is not declared dormant -- the run must say so and fail,
+    even though every diff here IS explained.
+
+    Nothing else pins this: dropping the dormancy terms from main's
+    return, or deleting the report loop, leaves every other test green.
+    """
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "explains-it"\nfields = ["family"]\n'
+        '[[change]]\nissue = "idle"\nname_regex = "ZZNOSUCHNAME"\n'
+        'fields = ["family"]\n', _DIFFERS)
+    assert code == 1
+    assert "EXPLAINED NOTHING 'idle'" in out
+    assert "may have been reverted" in out
+    # the diff itself was explained; this failure is only about the rule
+    assert "unexplained: 0" in out
+
+
+def test_main_only_feeds_diffing_names_to_the_dormancy_check(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """If a non-diffing name reached `diffing`, a rule matching only
+    that name would appear to match a name in the diff set -- and
+    since it is the only rule that matches it, dormant_rules would
+    classify it via that same rule and diagnose it as its own
+    shadower ("shadowed by 'idle'"), instead of the correct
+    'reverted' diagnosis for a rule that matches no diffing name.
+
+    'Alice Jones' is added via `extra` with a baseline facade equal to
+    what the tree parses it as -- it does not diff -- alongside the
+    fixture's own diffing 'John Smith'. `idle`'s regex matches only
+    'Alice Jones', so it must be reported reverted, never shadowed.
+    """
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "explains-it"\nfields = ["family"]\n'
+        '[[change]]\nissue = "idle"\nname_regex = "Jones"\n'
+        'fields = ["family"]\n', _DIFFERS,
+        extra=[("Alice Jones",
+                {"title": "", "first": "Alice", "middle": "",
+                 "last": "Jones", "suffix": "", "nickname": "",
+                 "maiden": ""})])
+    assert code == 1
+    assert "EXPLAINED NOTHING 'idle'" in out
+    assert "may have been reverted" in out
+    assert "shadowed by 'idle'" not in out
+    # the diffing name's diff was explained; this failure is only
+    # about the rule that matched no diffing name
+    assert "unexplained: 0" in out
+
+
+def test_main_exits_1_when_a_declared_dormant_rule_wakes_up(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The other direction. A `dormant` reason that stopped being true is
+    a false statement in the ledger, so it fails the run too."""
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "awake"\nfields = ["family"]\n'
+        'dormant = "claims to be idle, but explains the only diff here"\n',
+        _DIFFERS)
+    assert code == 1
+    assert "NO LONGER DORMANT 'awake'" in out
 
 
 def test_check_tree_accepts_the_checkout_and_rejects_anything_else(
@@ -825,3 +921,138 @@ def test_an_excluded_shape_stays_classifiable_on_other_roles() -> None:
     # and a mixed diff is not a subset of the exclusion, so it survives
     assert compare.classify(
         name, {"nickname", "suffix"}, rules, never) == "catch-all"
+
+
+def test_entry_matches_is_the_question_classify_asks() -> None:
+    """classify() and the dormancy check must agree on what a rule
+    would claim. They share this predicate so they cannot drift."""
+    rule = {"issue": "x", "name_regex": "Smith", "fields": ["given"]}
+    assert compare._entry_matches(rule, "John Smith", {"given"})
+    # regex misses
+    assert not compare._entry_matches(rule, "John Jones", {"given"})
+    # fields is a SUBSET test, not an intersection
+    assert not compare._entry_matches(rule, "John Smith", {"given", "family"})
+    # a rule with neither key admits everything validate_rules lets exist
+    assert compare._entry_matches({"issue": "x"}, "anyone", {"suffix"})
+    # the ignore-don't-reject contract the docstring rests on: validate_*
+    # already rejected these at startup, so re-judging them here would put
+    # the two in a position to disagree
+    assert compare._entry_matches({"issue": "x", "name_regex": 5}, "anyone", {"suffix"})
+    assert compare._entry_matches({"issue": "x", "fields": "given"}, "anyone", {"given"})
+    # an exclusion entry narrows on the same two keys and carries no `issue`
+    assert compare._entry_matches(
+        {"why": "x", "name_regex": "Smith", "examples": ["John Smith"]},
+        "John Smith", {"given"})
+
+
+def test_validate_rules_accepts_a_declared_dormant_rule() -> None:
+    """`dormant` is a legal key, so a rule that declares one is not
+    rejected as a misspelling."""
+    compare.validate_rules(
+        [{"issue": "x", "fields": ["given"], "dormant": "no corpus name"}],
+        "expected_since_1.4.0.toml")
+
+
+def test_dormant_rules_reports_a_rule_whose_behavior_vanished() -> None:
+    """The #372 case: a rule matching no diffing name at all. Its fix
+    was probably reverted, and today the run exits 0 regardless."""
+    rules = [{"issue": "fix(a)", "name_regex": "Smith", "fields": ["given"]},
+             {"issue": "fix(b)", "name_regex": "Jones", "fields": ["given"]}]
+    report = compare.dormant_rules(
+        rules, {"fix(a)"}, [("John Smith", {"given"})])
+    assert report.awake == ()
+    assert [i for i, _ in report.undeclared] == ["fix(b)"]
+    assert "reverted" in report.undeclared[0][1]
+
+
+def test_dormant_rules_names_the_rule_that_shadows_one() -> None:
+    """A rule can explain nothing because a broader rule written ahead
+    of it in the same tier claimed every diff it would have claimed.
+    That is a different diagnosis with a different fix, so it gets
+    different words."""
+    rules = [{"issue": "fix(broad)", "name_regex": "Smith",
+              "fields": ["given", "family"]},
+             {"issue": "fix(narrow)", "name_regex": "John Smith",
+              "fields": ["given"]}]
+    report = compare.dormant_rules(
+        rules, {"fix(broad)"}, [("John Smith", {"given"})])
+    assert [i for i, _ in report.undeclared] == ["fix(narrow)"]
+    assert "shadowed by 'fix(broad)'" in report.undeclared[0][1]
+
+
+def test_dormant_rules_distinguishes_an_excluded_shape() -> None:
+    """Third diagnosis: the rule matches a diffing name, but a [[never]]
+    entry refuses it, so no rule claims it. Reporting that as `reverted`
+    would send someone hunting for a fix that was never undone."""
+    rules = [{"issue": "fix(a)", "name_regex": "Smith", "fields": ["given"]}]
+    never = [{"why": "protected", "name_regex": "Smith"}]
+    report = compare.dormant_rules(
+        rules, set(), [("John Smith", {"given"})], never)
+    assert [i for i, _ in report.undeclared] == ["fix(a)"]
+    assert "[[never]]" in report.undeclared[0][1]
+
+
+def test_dormant_rules_is_silent_about_a_declared_rule() -> None:
+    rules = [{"issue": "fix(a)", "name_regex": "Smith", "fields": ["given"],
+              "dormant": "no corpus name reaches it"}]
+    report = compare.dormant_rules(rules, set(), [])
+    assert report.undeclared == () and report.awake == ()
+
+
+def test_dormant_rules_reports_a_declared_rule_that_woke_up() -> None:
+    """The other direction. A `dormant` declaration that stopped being
+    true is a false statement in the ledger, and the roster pattern in
+    this tree checks both directions or it checks nothing."""
+    rules = [{"issue": "fix(a)", "fields": ["given"], "dormant": "was idle"}]
+    report = compare.dormant_rules(
+        rules, {"fix(a)"}, [("John Smith", {"given"})])
+    assert report.awake == ("fix(a)",)
+    assert report.undeclared == ()
+
+
+def test_dormant_rules_names_the_shadower_that_does_the_shadowing() -> None:
+    """Which rule to go and look at. Picking the alphabetically first
+    claimant would send someone to the rule that took one name while
+    another took the rest."""
+    rules = [{"issue": "fix(a)", "name_regex": "Alpha", "fields": ["given"]},
+             {"issue": "fix(z)", "name_regex": "Zeta", "fields": ["given"]},
+             {"issue": "fix(idle)", "name_regex": "Alpha|Zeta",
+              "fields": ["given"]}]
+    report = compare.dormant_rules(
+        rules, {"fix(a)", "fix(z)"},
+        [("Alpha One", {"given"}), ("Zeta One", {"given"}),
+         ("Zeta Two", {"given"}), ("Zeta Three", {"given"})])
+    assert [i for i, _ in report.undeclared] == ["fix(idle)"]
+    assert "shadowed by 'fix(z)'" in report.undeclared[0][1]
+
+
+def test_dormant_rules_sorts_before_diagnosing() -> None:
+    """classify() must be asked in the order main() asks it. These rules
+    are written broad-first, but _sorted_rules puts the name_regex rule
+    ahead of the fields-only one, so 'specific' is what actually claims
+    'John Smith' -- which makes 'broad' the dormant one, shadowed by it.
+
+    Without the internal sort this returns the diagnosis backwards,
+    naming 'specific' as dormant and shadowed by 'broad'. Nothing else
+    pins that line: main() always pre-sorts before calling this.
+    """
+    rules = [{"issue": "broad", "fields": ["given"]},
+             {"issue": "specific", "name_regex": "Smith",
+              "fields": ["given"]}]
+    report = compare.dormant_rules(
+        rules, {"specific"}, [("John Smith", {"given"})])
+    assert [i for i, _ in report.undeclared] == ["broad"]
+    assert "shadowed by 'specific'" in report.undeclared[0][1]
+
+
+def test_validate_rules_rejects_two_rules_sharing_an_issue() -> None:
+    """The dormancy check identifies a rule by its `issue`, so a
+    duplicate lets one rule hide behind the other -- it can explain
+    nothing and never be reported. Measured before this check existed:
+    dormant_rules returned undeclared=() awake=() for a rule that
+    genuinely explained nothing."""
+    with pytest.raises(SystemExit, match="sharing the issue"):
+        compare.validate_rules(
+            [{"issue": "dup", "name_regex": "Smith", "fields": ["given"]},
+             {"issue": "dup", "name_regex": "Jones", "fields": ["given"]}],
+            "expected_since_1.4.0.toml")
