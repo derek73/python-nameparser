@@ -218,9 +218,9 @@ issue = "feat(#273) typographic nickname delimiters recognized by default"
 # Matches only when such a delimiter is actually present. A nickname
 # diff on the ASCII pairs would be a regression; the ASCII-pairs
 # [[never]] entry at the end of this file is what refuses it, not this
-# rule's silence (#328) -- and only for a MEDIAL pair, which is as far
-# as a delimiter regex can reach without swallowing the trailing
-# credentials. See that entry for what stays unguarded.
+# rule's silence (#328), in any position the pair can take. See that
+# entry for why the delimiter's position turned out not to be the
+# thing worth narrowing on.
 name_regex = "[“”„«»「」『』（）]"
 fields = ["middle", "nickname"]
 
