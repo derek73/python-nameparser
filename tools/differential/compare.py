@@ -778,6 +778,9 @@ def main() -> int:
     # facade dicts would print such a name under UNEXPLAINED with no
     # field lines under it at all: a failure nobody can act on.
     unexplained: list[_Unexplained] = []
+    # every name that diffed, with its diff, so dormant_rules can ask
+    # which rule WOULD have claimed one that no rule did
+    diffing: list[tuple[str, set[str]]] = []
     for name, old in zip(corpus, old_rows):
         new = {k: v or "" for k, v in HumanName(name).as_dict().items()
                if k in FIELDS}
@@ -796,6 +799,7 @@ def main() -> int:
                      if old["v2"].get(f, "") != new_v2.get(f, "")}
         if not diff:
             continue
+        diffing.append((name, diff))
         issue = classify(name, diff, rules, exclusions)
         if issue is None:
             unexplained.append(
@@ -814,6 +818,15 @@ def main() -> int:
         print(f"## {issue} ({len(names)})")
         for n in names[:10]:
             print(f"  {n!r}")
+        print()
+    dormancy = dormant_rules(rules, set(by_issue), diffing, exclusions)
+    for issue, why in dormancy.undeclared:
+        print(f"EXPLAINED NOTHING {issue!r}\n    {why}")
+    for issue in dormancy.awake:
+        print(f"NO LONGER DORMANT {issue!r}\n    it explained a diff in "
+              f"this run, so its `dormant` reason is now false -- remove "
+              f"the key")
+    if dormancy.undeclared or dormancy.awake:
         print()
     if unexplained:
         print("Field names below are Role's, matching what a ledger "
@@ -839,7 +852,10 @@ def main() -> int:
                 print(f"    {_canonical_field(f)}: "
                       f"{old_v2.get(f, '')!r} -> {new_v2.get(f, '')!r}"
                       f"   [v2 surface only]")
-    return 1 if unexplained else 0
+    # A rule explaining nothing is as much a broken contract as an
+    # unexplained diff: both mean the ledger no longer describes what the
+    # code does. Same exit code, so neither can be the one nobody noticed.
+    return 1 if unexplained or dormancy.undeclared or dormancy.awake else 0
 
 
 if __name__ == "__main__":
