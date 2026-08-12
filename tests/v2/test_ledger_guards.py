@@ -1334,6 +1334,7 @@ def test_a_rule_reaching_no_corpus_name_says_why_it_is_kept() -> None:
     the corpus, so it runs here, on every push, for free.
     """
     silent = []
+    checked = 0
     for ledger in _LEDGERS:
         for rule in _rules(ledger):
             if "dormant" in rule:
@@ -1342,9 +1343,16 @@ def test_a_rule_reaching_no_corpus_name_says_why_it_is_kept() -> None:
             # a name_regex can be statically silent -- see _claim(), which
             # counts them as the whole corpus for the same reason
             regex = rule.get("name_regex")
-            if isinstance(regex, str) and not _claimed(regex):
+            if not isinstance(regex, str):
+                continue
+            checked += 1
+            if not _claimed(regex):
                 silent.append(f"{ledger.name}: {rule['issue']}")
     assert not silent, (
         f"these rules reach no corpus name, so they explain nothing and "
         f"nothing else would say so: {silent}. Either declare `dormant` "
         f"with the reason the rule is worth keeping, or delete it.")
+    assert checked, (
+        "no rule was examined, so this guard is passing vacuously -- "
+        "every rule either declares `dormant` or narrows by `fields` "
+        "alone")
