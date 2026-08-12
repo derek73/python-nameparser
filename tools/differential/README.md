@@ -270,12 +270,36 @@ written in settles every tie between them. Append a rule to the bottom
 of a file only after checking that nothing above it already claims the
 diff you meant it for.
 
-Some entries in the seed list are for behavior families that a
-particular corpus happens not to contain any example of (e.g. custom
-suffix-delimiter rendering, which only fires under a non-default
-`Policy` -- see the ceiling below). They're kept in the file anyway,
-matching the family documented in `tests/v2/cases.py`, so the rule is
-ready the moment a matching string is added to the corpus.
+Some entries in `expected_since_1.4.0.toml` are for behavior families that
+a corpus happens to contain no example of (e.g. custom suffix-delimiter
+rendering, which only fires under a non-default `Policy` -- see the ceiling
+below). They're kept in the file anyway, matching the family documented in
+`tests/v2/cases.py`, so the rule is ready the moment a matching string is
+added to the corpus.
+
+Such a rule must say so, with `dormant = "<reason>"`. Without it a rule
+that explains nothing is indistinguishable from one that has stopped
+explaining anything -- which is how a reverted fix leaves its rule inert
+and the run still exits 0 (#372). Two tiers ask:
+
+- `tests/v2/test_ledger_guards.py` fails, in CI, when a rule's
+  `name_regex` reaches no corpus name and no `dormant` reason is given. It
+  needs no baseline wheel, so it is cheap and early.
+- `compare.py` fails the run when a rule explained no diff, and equally
+  when a rule declaring `dormant` explained one -- a declaration that
+  stopped being true is a false statement in the ledger. It reports which
+  kind of nothing: **reverted** (matched no diffing name), **shadowed by
+  `<issue>`** (an earlier rule claimed every diff it would have), or
+  refused by a `[[never]]` exclusion. The three have three different fixes.
+
+Two limits worth knowing. Only the ledger for the baseline being run gets
+the dynamic check, and the release checklist runs 1.4.0 and the default
+baseline only -- so `expected_since_2.0.0.toml` has static coverage alone.
+And the static tier exempts a rule on the mere PRESENCE of `dormant`; it
+never asks whether the reason is still true. Those two combine: a `dormant`
+that is wrong, or that quietly stops being true, is caught in the ledgers
+the checklist runs and is unauditable in the ones it does not. Widening the
+checklist, or sweeping every ledger, is the way to close it.
 
 ### Shapes that must never be explained (`[[never]]`)
 
