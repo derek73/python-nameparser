@@ -394,6 +394,17 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
     about a rule's matching semantics drifting, but about an opt-out
     carrying a justification someone can review.
     """
+    seen: set[str] = set()
+    for rule in rules:
+        issue = rule.get("issue")
+        if isinstance(issue, str) and issue in seen:
+            raise SystemExit(
+                f"{ledger} has two rules sharing the issue {issue!r}. The "
+                f"dormancy check identifies a rule by its issue, so the "
+                f"second would hide behind the first: it could explain "
+                f"nothing and never be reported")
+        if isinstance(issue, str):
+            seen.add(issue)
     for i, rule in enumerate(rules):
         where = f"{ledger} rule #{i + 1}"
         issue = rule.get("issue")

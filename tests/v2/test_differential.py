@@ -980,3 +980,16 @@ def test_dormant_rules_names_the_shadower_that_does_the_shadowing() -> None:
          ("Zeta Two", {"given"}), ("Zeta Three", {"given"})])
     assert [i for i, _ in report.undeclared] == ["fix(idle)"]
     assert "shadowed by 'fix(z)'" in report.undeclared[0][1]
+
+
+def test_validate_rules_rejects_two_rules_sharing_an_issue() -> None:
+    """The dormancy check identifies a rule by its `issue`, so a
+    duplicate lets one rule hide behind the other -- it can explain
+    nothing and never be reported. Measured before this check existed:
+    dormant_rules returned undeclared=() awake=() for a rule that
+    genuinely explained nothing."""
+    with pytest.raises(SystemExit, match="sharing the issue"):
+        compare.validate_rules(
+            [{"issue": "dup", "name_regex": "Smith", "fields": ["given"]},
+             {"issue": "dup", "name_regex": "Jones", "fields": ["given"]}],
+            "expected_since_1.4.0.toml")
