@@ -305,11 +305,14 @@ there could never be recorded. Typographic delimiters carry no such
 ambiguity, which is why `feat(#273)`'s own rule can be a bare character
 class and its exclusion cannot.
 
-The ASCII-pairs entry is also narrowed by SHAPE, to a delimited run
-medial to the name. That is what keeps the trailing credentials
-(`Andrew Perkins (JD)` and its kin) out, and it is the limit of the
-promise: a leading or trailing ASCII nickname pair is still unguarded,
-for want of a regex that tells one from a credential.
+The ASCII-pairs entry is narrowed by role ALONE, and covers a delimited
+run in any position -- 34 corpus names. It was medial-only for three
+rounds on the theory that trailing parens are credentials to be kept
+out; 1.4.0 says otherwise, reading a trailing `(JD)` as a nickname just
+as it reads `(Ben)`. Where 1.4 did read parens as a credential it put
+them in `suffix`, outside this entry's `fields`, so the parser
+discriminates by vocabulary where no delimiter regex could. Measured,
+the widening lost zero classifications.
 
 `classify()` consults exclusions BEFORE the rules, and a match returns
 `None`, so an excluded shape reports UNEXPLAINED however many rules

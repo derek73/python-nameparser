@@ -1173,8 +1173,8 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
     "(?i)^[\\u0000-\\u024f]*\\bph\\.\\s*d\\.\\s*$":
         _Excluded(3, "5a12a8117651",
                   ("fix(comma-family)", "fix(suffix-routing)")),
-    '[\\w.]\\s+[("\'][^)"\']+[)"\']\\s+\\w':
-        _Excluded(13, "42d04d428edf", ()),
+    '(^|[\\w.]\\s+)[("\'][^)"\']+[)"\'](\\s+\\w|\\s*$)':
+        _Excluded(34, "9ea55c4c4382", ()),
 }
 
 
@@ -1278,7 +1278,7 @@ def test_a_fields_narrowing_actually_narrows_something() -> None:
 
     Measured: deleting `fields = ["nickname", "middle"]` from the
     ASCII-pairs entry passes every other check in this tree. The entry
-    then refuses ANY diff on the thirteen corpus names it captures --
+    then refuses ANY diff on the 34 corpus names it captures --
     including 'Jenny (Johnson) Baker' and 'Lon (Jr.) Williams', whose
     parens are a maiden name and a suffix, both under active
     development. Nothing failed, because none of those names diffs
