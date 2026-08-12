@@ -961,8 +961,8 @@ def test_dormant_rules_reports_a_rule_whose_behavior_vanished() -> None:
     report = compare.dormant_rules(
         rules, {"fix(a)"}, [("John Smith", {"given"})])
     assert report.awake == ()
-    assert [i for i, _ in report.undeclared] == ["fix(b)"]
-    assert "reverted" in report.undeclared[0][1]
+    assert [d.issue for d in report.undeclared] == ["fix(b)"]
+    assert report.undeclared[0].kind == "reverted"
 
 
 def test_dormant_rules_names_the_rule_that_shadows_one() -> None:
@@ -976,8 +976,9 @@ def test_dormant_rules_names_the_rule_that_shadows_one() -> None:
               "fields": ["given"]}]
     report = compare.dormant_rules(
         rules, {"fix(broad)"}, [("John Smith", {"given"})])
-    assert [i for i, _ in report.undeclared] == ["fix(narrow)"]
-    assert "shadowed by 'fix(broad)'" in report.undeclared[0][1]
+    assert [d.issue for d in report.undeclared] == ["fix(narrow)"]
+    assert report.undeclared[0].kind == "shadowed"
+    assert report.undeclared[0].detail == "fix(broad)"
 
 
 def test_dormant_rules_distinguishes_an_excluded_shape() -> None:
@@ -988,8 +989,8 @@ def test_dormant_rules_distinguishes_an_excluded_shape() -> None:
     never = [{"why": "protected", "name_regex": "Smith"}]
     report = compare.dormant_rules(
         rules, set(), [("John Smith", {"given"})], never)
-    assert [i for i, _ in report.undeclared] == ["fix(a)"]
-    assert "[[never]]" in report.undeclared[0][1]
+    assert [d.issue for d in report.undeclared] == ["fix(a)"]
+    assert report.undeclared[0].kind == "excluded"
 
 
 def test_dormant_rules_is_silent_about_a_declared_rule() -> None:
@@ -1022,8 +1023,8 @@ def test_dormant_rules_names_the_shadower_that_does_the_shadowing() -> None:
         rules, {"fix(a)", "fix(z)"},
         [("Alpha One", {"given"}), ("Zeta One", {"given"}),
          ("Zeta Two", {"given"}), ("Zeta Three", {"given"})])
-    assert [i for i, _ in report.undeclared] == ["fix(idle)"]
-    assert "shadowed by 'fix(z)'" in report.undeclared[0][1]
+    assert [d.issue for d in report.undeclared] == ["fix(idle)"]
+    assert report.undeclared[0].detail == "fix(z)"
 
 
 def test_dormant_rules_sorts_before_diagnosing() -> None:
@@ -1041,8 +1042,8 @@ def test_dormant_rules_sorts_before_diagnosing() -> None:
               "fields": ["given"]}]
     report = compare.dormant_rules(
         rules, {"specific"}, [("John Smith", {"given"})])
-    assert [i for i, _ in report.undeclared] == ["broad"]
-    assert "shadowed by 'specific'" in report.undeclared[0][1]
+    assert [d.issue for d in report.undeclared] == ["broad"]
+    assert report.undeclared[0].detail == "specific"
 
 
 def test_validate_rules_rejects_two_rules_sharing_an_issue() -> None:
