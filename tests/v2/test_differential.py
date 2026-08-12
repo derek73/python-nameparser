@@ -362,7 +362,9 @@ _WORKER_CALL: dict = {}
 
 
 def _run_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ledger_body: str,
-              baseline_facade: dict, baseline: str = "1.4.0",
+              baseline_facade: dict,
+              extra: list[tuple[str, dict]] | None = None,
+              baseline: str = "1.4.0",
               baseline_v2: dict | None = None,
               floor: int | None = 1) -> tuple[int, str]:
     """Drive main() end to end with a faked baseline worker.
@@ -374,21 +376,31 @@ def _run_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ledger_body: str,
     `baseline` defaults to 1.4.0 (facade only). Pass 2.0.0 with
     `baseline_v2` to exercise the v2 surface, including the
     ambiguity-only diff that is the stated reason to compare it.
+
+    `extra` appends more (name, baseline_facade) pairs to the corpus,
+    in order, alongside the fixture's own 'John Smith'. It exists so a
+    test can mix a diffing and a non-diffing name -- the single-name
+    corpus below is structurally incapable of that.
     """
+    import json
     import sys
     corpus = tmp_path / "corpus_x.jsonl"
-    corpus.write_text('"John Smith"\n', encoding="utf-8")
+    names = ["John Smith"] + [n for n, _ in (extra or ())]
+    corpus.write_text(
+        "\n".join(json.dumps(n) for n in names) + "\n", encoding="utf-8")
     (tmp_path / f"expected_since_{baseline}.toml").write_text(
         ledger_body, encoding="utf-8")
-    row: dict = {"facade": baseline_facade}
+    rows: list[dict] = [{"facade": baseline_facade}]
     if baseline_v2 is not None:
-        row["v2"] = baseline_v2
+        rows[0]["v2"] = baseline_v2
+    for _, facade in (extra or ()):
+        rows.append({"facade": facade})
     _WORKER_CALL.clear()
 
     def _fake(v: str, w: bool, n: list[str]) -> tuple[dict, list[dict]]:
         _WORKER_CALL.update(version=v, want_v2=w, names=list(n))
         return ({"__version__": v,
-                 "__file__": "/wheel/nameparser/__init__.py"}, [row])
+                 "__file__": "/wheel/nameparser/__init__.py"}, rows)
 
     # The fixture corpus needs a floor like any other. `floor=None`
     # leaves it unregistered, for the test that pins what happens when
@@ -498,6 +510,38 @@ def test_main_exits_1_and_names_a_rule_that_explained_nothing(
     assert "EXPLAINED NOTHING 'idle'" in out
     assert "may have been reverted" in out
     # the diff itself was explained; this failure is only about the rule
+    assert "unexplained: 0" in out
+
+
+def test_main_only_feeds_diffing_names_to_the_dormancy_check(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """If a non-diffing name reached `diffing`, a rule matching only
+    that name would appear to match a name in the diff set -- and
+    since it is the only rule that matches it, dormant_rules would
+    classify it via that same rule and diagnose it as its own
+    shadower ("shadowed by 'idle'"), instead of the correct
+    'reverted' diagnosis for a rule that matches no diffing name.
+
+    'Alice Jones' is added via `extra` with a baseline facade equal to
+    what the tree parses it as -- it does not diff -- alongside the
+    fixture's own diffing 'John Smith'. `idle`'s regex matches only
+    'Alice Jones', so it must be reported reverted, never shadowed.
+    """
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "explains-it"\nfields = ["family"]\n'
+        '[[change]]\nissue = "idle"\nname_regex = "Jones"\n'
+        'fields = ["family"]\n', _DIFFERS,
+        extra=[("Alice Jones",
+                {"title": "", "first": "Alice", "middle": "",
+                 "last": "Jones", "suffix": "", "nickname": "",
+                 "maiden": ""})])
+    assert code == 1
+    assert "EXPLAINED NOTHING 'idle'" in out
+    assert "may have been reverted" in out
+    assert "shadowed by 'idle'" not in out
+    # the diffing name's diff was explained; this failure is only
+    # about the rule that matched no diffing name
     assert "unexplained: 0" in out
 
 
