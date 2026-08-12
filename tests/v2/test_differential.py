@@ -480,6 +480,40 @@ def test_main_sorts_a_name_regex_rule_ahead_of_a_fields_only_one(
     assert "## specific (1)" in out and "broad" not in out
 
 
+def test_main_exits_1_and_names_a_rule_that_explained_nothing(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The #372 gate. `idle` matches no diffing name, so it explains
+    nothing and is not declared dormant -- the run must say so and fail,
+    even though every diff here IS explained.
+
+    Nothing else pins this: dropping the dormancy terms from main's
+    return, or deleting the report loop, leaves every other test green.
+    """
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "explains-it"\nfields = ["family"]\n'
+        '[[change]]\nissue = "idle"\nname_regex = "ZZNOSUCHNAME"\n'
+        'fields = ["family"]\n', _DIFFERS)
+    assert code == 1
+    assert "EXPLAINED NOTHING 'idle'" in out
+    assert "may have been reverted" in out
+    # the diff itself was explained; this failure is only about the rule
+    assert "unexplained: 0" in out
+
+
+def test_main_exits_1_when_a_declared_dormant_rule_wakes_up(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The other direction. A `dormant` reason that stopped being true is
+    a false statement in the ledger, so it fails the run too."""
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "awake"\nfields = ["family"]\n'
+        'dormant = "claims to be idle, but explains the only diff here"\n',
+        _DIFFERS)
+    assert code == 1
+    assert "NO LONGER DORMANT 'awake'" in out
+
+
 def test_check_tree_accepts_the_checkout_and_rejects_anything_else(
         tmp_path: Path) -> None:
     """The tree side is the half that had no proof at all: the baseline
