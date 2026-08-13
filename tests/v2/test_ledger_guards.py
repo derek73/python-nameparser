@@ -1017,7 +1017,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(3, ('family', 'given', 'maiden', 'middle'), "cf5c9d671c14"),
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
             _Claim(215, ('given', 'suffix', 'title'), "f16a0e79cba3"),
-        "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
+        "fix(comma-precomma-family) pre-comma run reads as family, not given":
+            _Claim(215, ('family', 'given'), "f16a0e79cba3"),
+        "fix(suffix-routing) a trailing token routes to suffix":
             _Claim(751, ('family', 'given', 'suffix'), "231640fc7535"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
@@ -1166,6 +1168,18 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         ("田中さん, PhD", ("family", "given", "suffix")):
             "fix(cjk-comma-compound)",
         ("田中さん, V.", ("family", "suffix")): "fix(cjk-comma-compound)",
+        # #372's suffix-routing split. 'Bob Jones, author' moves NO
+        # suffix, which is what disqualifies it from the routing rule;
+        # 'Smith Jr.' is the Latin shape that rule is named for; the two
+        # glued honorifics are the majority it also legitimately takes,
+        # and cannot be given a rule of their own -- '김민준씨' and the
+        # given name '김지양' are the same string shape.
+        ("Bob Jones, author", ("family", "given")):
+            "fix(comma-precomma-family)",
+        ("MD, PHD", ("family", "given")): "fix(comma-precomma-family)",
+        ("Smith Jr.", ("family", "suffix")): "fix(suffix-routing)",
+        ("Andersonさん", ("given", "suffix")): "fix(suffix-routing)",
+        ("김민준씨", ("family", "given", "suffix")): "fix(suffix-routing)",
     },
 }
 
@@ -1252,7 +1266,15 @@ class _Excluded(NamedTuple):
 _EXCLUSION_EFFECT: dict[str, _Excluded] = {
     "(?i)^[\\u0000-\\u024f]*\\bph\\.\\s*d\\.\\s*$":
         _Excluded(3, "5a12a8117651",
-                  ("fix(comma-family)", "fix(suffix-routing)")),
+                  # fix(comma-precomma-family) JOINED this tuple in #372,
+                  # it did not replace anything: it claims the {given,
+                  # family} readings, which it legitimately describes for a
+                  # Latin comma name, while fix(suffix-routing) still
+                  # claims the readings outside its two fields. The
+                  # exclusion refuses the name before any of the three is
+                  # reached; this records what would happen without it.
+                  ("fix(comma-family)", "fix(comma-precomma-family)",
+                   "fix(suffix-routing)")),
     '(^|[\\w.]\\s+)[("\'][^)"\']+[)"\'](\\s+\\w|\\s*$)':
         _Excluded(34, "9ea55c4c4382", ()),
 }
