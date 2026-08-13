@@ -310,9 +310,10 @@ def test_script_ranges_membership_is_decided() -> None:
 _SPAN_BEARING_RULES: dict[str, frozenset[str]] = {
     "expected_since_1.4.0.toml": frozenset({
         "fix(#271/#272/#298)",              # the canonical class
-        "fix(cjk-delimited-nickname)",      # the three compounds, whose
+        "fix(cjk-delimited-nickname)",      # the four compounds, whose
         "fix(cjk-fullwidth-paren-nickname)",  # lookaheads each carry
         "fix(cjk-comma-compound)",          # their own copy
+        "fix(cjk-comma-honorific-peel)",
     }),
     "expected_since_2.0.0.toml": frozenset({
         "fix(#271/#272/#298)",              # the canonical class
@@ -1030,6 +1031,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(6, ('family', 'given', 'nickname'), "ae1dffa01608"),
         "fix(cjk-fullwidth-paren-nickname) fullwidth-parenthesis recognition compounds with the CJK order flip":
             _Claim(1, ('family', 'given', 'middle', 'nickname'), "cf370e856ae7"),
+        "fix(cjk-comma-honorific-peel) glued honorific peels off a post-comma given name":
+            _Claim(20, ('given', 'suffix'), "b2ea8fa59eea"),
         "fix(cjk-comma-compound) comma routing compounds with the CJK order flip":
             _Claim(20, ('family', 'given', 'middle', 'suffix', 'title'), "b2ea8fa59eea"),
         "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip":

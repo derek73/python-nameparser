@@ -147,7 +147,15 @@ issue = "fix(comma-family) lone post-comma piece routes to suffix/title, not fir
 # One row nearby is not here and never was: '田中さん, 太郎' agrees
 # with 1.4.0, so it never reaches classify() at all. It is the pinned
 # guard for the case a naive #312 fix breaks (the peel site is 太郎, so
-# nothing peels). Same for '田中さん, V.'.
+# nothing peels).
+#
+# '田中さん, V.' is NOT that case, though this comment said it was
+# until #372 checked. It diffs {family, suffix} and lands on
+# fix(cjk-comma-compound) below, before and after this change. It
+# reads as parity only under Policy(lenient_comma_suffixes=False) --
+# the knob tests/v2/cases.py exercises in
+# ja_honorific_glued_family_comma_strict_knob -- and the corpora run
+# under the default policy, so here it is a real diff.
 name_regex = "^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*$"
 fields = ["given", "title", "suffix"]
 
@@ -158,9 +166,10 @@ issue = "fix(suffix-routing) two-token name with unambiguous trailing suffix sta
 # `suffix`.
 # #312: also claims comma-less glued-honorific names like
 # '威廉·莎士比亚さん' by the same {first, last, suffix} shape as any
-# glued Latin honorific -- see the note on fix(comma-family) above for
-# why its four comma-bearing siblings split between that rule and
-# fix(cjk-comma-compound) instead.
+# glued Latin honorific. Its comma-bearing siblings never reach here:
+# they split by whether the diff moves `family` --
+# fix(cjk-comma-compound) when it does, fix(cjk-comma-honorific-peel)
+# when it does not -- both above, both keyed on a comma.
 fields = ["given", "family", "suffix"]
 
 [[change]]
@@ -281,6 +290,38 @@ name_regex = "(?s)(?=.*[（）])(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u3
 fields = ["given", "middle", "family", "nickname"]
 
 [[change]]
+issue = "fix(cjk-comma-honorific-peel) glued honorific peels off a post-comma given name"
+# '김, 민준씨' / '田中, 太郎さん': the comma already fixes family/given
+# order on both sides, so NO order flip happens -- `family` is
+# byte-identical. The only change is #312's peel: the honorific glued
+# to the post-comma given name comes off into `suffix` (민준씨 ->
+# 민준/씨, 太郎さん -> 太郎/さん). Diff is exactly {given, suffix} on
+# all seven names this rule claims.
+#
+# Its own rule because neither neighbour describes it, and #372 is
+# about rules explaining what they describe. fix(comma-family) above
+# is the Latin lone-post-comma-piece routing and is now anchored to
+# Latin, so it cannot reach these at all. fix(cjk-comma-compound)
+# below is for the UNION -- comma routing AND the family-first flip
+# together -- which is why its fields include `family`; these names
+# move no family, so claiming them there would be the same field-shape
+# coincidence #372 was filed over, relocated rather than fixed.
+#
+# `fields` is what separates the two, not file order. The union rows
+# ('Dr 김민준씨, V.', '田中さん, PhD') diff with `family` in the mix,
+# which is outside this rule's [given, suffix], so they cannot match
+# here however early it sits and still fall through to the compound
+# rule. Written above it anyway, so the narrower rule is also the
+# earlier one and the tie never has to be reasoned about.
+#
+# The regex is the same comma-plus-classified-codepoint pair the
+# compound rule carries, hand-copied from _SCRIPT_RANGES and pinned by
+# the same sync test -- a comma alone matches every Latin 'Smith, Jr.'
+# in the corpus.
+name_regex = "(?s)(?=.*,)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
+fields = ["given", "suffix"]
+
+[[change]]
 issue = "fix(cjk-comma-compound) comma routing compounds with the CJK order flip"
 # '威廉·莎士比亚, PhD': one name, two intended changes at once -- the
 # post-comma lone-piece routing (fix(comma-family): v1 read PhD as
@@ -298,11 +339,13 @@ issue = "fix(cjk-comma-compound) comma routing compounds with the CJK order flip
 # #271/#272 substrings it avoids were a constraint of a selector
 # retired in #333.
 #
-# #312 sends only the two glued-honorific comma rows whose diff
-# includes `last` here ('Dr 김민준씨, V.', '田中さん, PhD'); the two
-# whose diff is only {first, suffix} ('김, 민준씨', '田中, 太郎さん')
-# match fix(comma-family) first instead, purely on file order -- see
-# the note there for why.
+# #312 sends only the glued-honorific comma rows whose diff includes
+# `family` here ('Dr 김민준씨, V.', '田中さん, PhD') -- the union this
+# rule is for. The rows whose diff is only {given, suffix} peel
+# without any order flip and belong to fix(cjk-comma-honorific-peel)
+# above, which names that shape and whose fields exclude `family` so
+# the two cannot compete. Until #372 they landed on fix(comma-family)
+# instead, on nothing but file order.
 name_regex = "(?s)(?=.*,)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
 fields = ["given", "middle", "family", "title", "suffix"]
 
