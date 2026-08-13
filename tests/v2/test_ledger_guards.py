@@ -1128,6 +1128,83 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
         f"{sorted(set(_CORPUS_CLAIMS) - {L.name for L in _LEDGERS})}")
 
 
+#: Which rule classify() actually picks, for names several rules could
+#: claim. Keyed by (name, the diff it produces against that baseline).
+#:
+#: Every other guard here measures a rule ALONE: _CORPUS_CLAIMS records
+#: what a regex reaches, and the gate's total counts names. Neither can
+#: see which rule wins a contest, and that is the property #372 is
+#: about -- seven of these names spent months on fix(comma-family),
+#: whose prose describes none of them, with every guard green and the
+#: gate reporting 108/0 throughout.
+#:
+#: The comma family is recorded because it is where that went wrong.
+#: 42 corpus names are reachable by two or more rules in the same tier;
+#: these ten are the ones whose boundaries this file argues about, and
+#: pinning the argument is cheaper than re-deriving it. Note
+#: 'Andrews, M.D.' diffs on the SAME {given, suffix} shape as the seven
+#: peels -- only the CJK lookahead separates them, so it is the row
+#: that fails if that lookahead is ever dropped.
+#:
+#: The diff shapes are measured against the 1.4.0 wheel, not guessed.
+#: Re-measure rather than adjust them if a parser change moves one:
+#: a diff shape that shifted is a finding, not a number to update.
+_CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
+    "expected_since_1.4.0.toml": {
+        ("Andrews, M.D.", ("given", "suffix")): "fix(comma-family)",
+        ("田中, 太郎さん", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
+        ("김, 민준씨", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
+        ("김, 민준씨 (Jimmy)", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
+        ("김민준, 씨", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
+        ("김민준, 씨.", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
+        ("선생님, J.씨", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
+        ("이, J.씨", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
+        # the union rows: they move `family`, so the peel rule's fields
+        # exclude them and they must stay on the compound rule
+        ("Dr 김민준씨, V.", ("family", "given", "suffix")):
+            "fix(cjk-comma-compound)",
+        ("田中さん, PhD", ("family", "given", "suffix")):
+            "fix(cjk-comma-compound)",
+        ("田中さん, V.", ("family", "suffix")): "fix(cjk-comma-compound)",
+    },
+}
+
+
+def test_the_recorded_rule_still_wins_each_contested_name() -> None:
+    """Who explains what, which nothing else here asks.
+
+    Measured: narrowing fix(cjk-comma-compound)'s script class sends
+    three of these names to fix(suffix-routing) -- a fields-only
+    catch-all whose prose is about two-token Latin names -- and the
+    gate still reports 108 intentional / 0 unexplained. Reach is
+    per-rule, the total is per-corpus; neither notices a name changing
+    hands.
+
+    A failure here is not necessarily a regression: it can equally mean
+    a rule was narrowed correctly and its names found a better home. It
+    means someone has to look, which is the point.
+    """
+    compare = load_tool("compare")
+    by_name = {led.name: led for led in _LEDGERS}
+    checked = 0
+    for ledger_name, winners in _CROSS_RULE_WINNERS.items():
+        ledger = by_name[ledger_name]
+        rules = compare._sorted_rules(_rules(ledger))
+        never = _exclusions(ledger)
+        for (name, fields), expected in winners.items():
+            got = compare.classify(name, set(fields), rules, never)
+            assert got is not None and got.startswith(expected), (
+                f"{ledger_name}: {name!r} diffing {list(fields)} is now "
+                f"explained by {got!r}, not {expected!r}. Check the new "
+                f"rule's prose actually describes this name before "
+                f"recording it -- a rule claiming a diff it does not "
+                f"describe is #372, and it stays green everywhere else")
+            checked += 1
+    assert checked, "no contested name was checked, so this pin is vacuous"
+    assert set(_CROSS_RULE_WINNERS) <= {led.name for led in _LEDGERS}, (
+        f"_CROSS_RULE_WINNERS names ledgers that do not exist: "
+        f"{sorted(set(_CROSS_RULE_WINNERS) - {L.name for L in _LEDGERS})}")
+
 
 class _Excluded(NamedTuple):
     """What a [[never]] entry silences, in the two dimensions that can
