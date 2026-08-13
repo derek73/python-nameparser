@@ -180,33 +180,23 @@ name_regex = "^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*$"
 fields = ["given", "family"]
 
 [[change]]
-issue = "fix(suffix-routing) a trailing token routes to suffix"
-# 'Johnson PhD' / 'Smith Jr.' / 'John V': v1 routed a lone trailing
-# suffix to family/first (no comma present); 2.0 keeps recognized
-# suffixes in `suffix`.
+issue = "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix"
+# 'Johnson PhD' / 'Smith Jr.' / 'John V' / 'QC MP': v1 routed a lone
+# trailing suffix to family/first (no comma present); 2.0 keeps
+# recognized suffixes in `suffix`. Four corpus names, and the prose
+# fits all four.
 #
-# The issue text says "a trailing token", not "a two-token Latin
-# name", because #312's comma-less glued honorifics land here too and
-# they are the majority: '田中さん' -> 田中/さん, 'Andersonさん' ->
-# Anderson/さん, '김민준씨' -> 김/민준/씨. Every name this rule claims
-# moves a trailing token into `suffix`; the Latin two-token case is
-# four of them.
+# It claimed 25 until #372, on nothing but being the only fields-only
+# rule in any ledger: it sorts after every name_regex rule, so it
+# takes whatever nothing narrower named. The other 21 have their own
+# rules now -- fix(cjk-glued-honorific-peel) and the widened
+# fix(cjk-honorific-suffix) below for #312's honorifics,
+# fix(comma-precomma-family) above for the three names that move no
+# suffix at all.
 #
-# That is deliberate, not a gap left for later. The glued honorifics
-# CANNOT be given a name_regex rule of their own: '김민준씨' and the
-# given name '김지양' are the same string shape -- hangul ending in a
-# character that is also an honorific -- and only vocabulary plus
-# segmentation tells them apart, neither of which a regex over the
-# name string can reach. fix(cjk-honorific-suffix) below is anchored
-# to a whole trailing token for exactly that reason, and unanchoring
-# it to reach the glued forms was measured (#372) to make a future
-# suffix regression on '김지양' classify as a recognized honorific --
-# a specific rule confidently claiming a name it does not describe,
-# which is worse than this rule's honest breadth.
-#
-# So this is the last-resort tier and says so: it is the only
-# fields-only rule in any ledger, it sorts after every name_regex
-# rule, and it takes what nothing narrower could name.
+# Being last is the point of this rule and worth keeping. What is not
+# worth keeping is it being the only explanation a name ever gets:
+# when it grows, the question is which narrower rule is missing.
 fields = ["given", "family", "suffix"]
 
 [[change]]
@@ -387,6 +377,40 @@ name_regex = "(?s)(?=.*,)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3
 fields = ["given", "middle", "family", "title", "suffix"]
 
 [[change]]
+issue = "fix(cjk-glued-honorific-peel) glued honorific peels into suffix"
+# '김민준씨' -> 김/민준/씨, '田中さん' -> 田中/さん, 'Andersonさん' ->
+# Anderson/さん: #312's peel, on a name with no space before the
+# honorific and no comma anywhere. 17 corpus names, which fell to the
+# fields-only fix(suffix-routing) above until #372 gave them a rule
+# that names them.
+#
+# The regex is this file's first hand copy of GLUED_HONORIFICS rather
+# than SUFFIX_WORDS, and that narrower vocabulary is the whole reason
+# this rule can exist. '김민준씨' and the given name '김지양' are the
+# same string shape -- hangul ending in a character the spaced list
+# calls an honorific -- so a rule keyed on SUFFIX_WORDS could not tell
+# them apart, and unanchoring the spaced rule below to reach the glued
+# forms would let a future suffix regression on '김지양' classify as a
+# recognized honorific. GLUED_HONORIFICS settles it in the config
+# instead: 양, 군, 氏, 殿 and 博士 are deliberately absent from it,
+# because a glued match on those collides with real given names. Same
+# copy, same pin (_HONORIFIC_SOURCES) as the 2.0 ledger's twin, whose
+# regex this is verbatim.
+#
+# `\.?(?=$|[ ,])` rather than `$`: the honorific ends a TOKEN, not
+# necessarily the string. '田中さん II' and '김민준씨 Jr.' carry a
+# Latin suffix after it, '김민준씨 (Jimmy)' a nickname.
+#
+# One spaced name lands here and is left that way, exactly as the 2.0
+# twin records: '김민준 박사님' matches on its 님, glued to 사 inside
+# 박사님. The label stays true of it -- the peel is what routes it to
+# `suffix` -- and closing the overlap needs a lookbehind asserting the
+# match is not interior to a longer listed honorific, which is more
+# machinery than a correct label is worth.
+name_regex = "(?<=[^\\s,])(?:박사님|선생님|교수님|박사|씨|님|先生|女士|小姐|教授|様|さん|さま|くん|ちゃん)\\.?(?=$|[ ,])"
+fields = ["given", "family", "suffix"]
+
+[[change]]
 issue = "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip"
 # '王小明 先生', '김민준 씨', '田中 太郎 様': #307 ships the spaced CJK
 # honorifics as suffix vocabulary, so a trailing 先生/씨/様 moves to
@@ -417,7 +441,7 @@ issue = "fix(cjk-honorific-suffix) postnominal honorifics recognized, compoundin
 # 2026-07-30 run, not assumed: #308's peel put a dozen glued names
 # in the corpus (Latin+glued like Andersonさん included) and every
 # one classified there -- none carried a middle-field diff.
-name_regex = "(?:^| )(?:씨|박사|박사님|선생님|교수님|군|양|님|先生|女士|小姐|博士|教授|様|氏|殿|さん|さま|くん|ちゃん)$"
+name_regex = "(?:^| )(?:씨|박사|박사님|선생님|교수님|군|양|님|先生|女士|小姐|博士|教授|様|氏|殿|さん|さま|くん|ちゃん)\\.?$"
 fields = ["given", "middle", "family", "suffix"]
 
 [[change]]
