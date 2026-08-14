@@ -32,15 +32,23 @@ The default word lists themselves — ``TITLES``, ``PARTICLES`` and the
 other frozensets in ``nameparser.config`` — are frozen, so a runtime
 addition belongs on a :class:`~nameparser.Lexicon` as above, or on a
 private ``Constants`` if you are still parsing through ``HumanName``.
-The freeze covers the word lists only; ``REGEXES`` and
-``CAPITALIZATION_EXCEPTIONS`` are still plain dicts.
+``REGEXES`` and ``CAPITALIZATION_EXCEPTIONS`` are the two members the
+freeze does not cover — they are still plain dicts. Editing one at
+runtime is not a supported override, and it is not a clean no-op
+either: the edit reaches a freshly built ``Constants``, while the
+shared ``CONSTANTS`` (copied at import) and the cached
+:meth:`~nameparser.Lexicon.default` never see it. That is the same
+inconsistent reach the freeze removed for the word lists, so these
+overrides belong on a config object too.
 
-Some of these lists were renamed in 2.2 to match the field names used
-here — ``PREFIXES`` became ``PARTICLES``, ``FIRST_NAME_TITLES`` became
-``GIVEN_NAME_TITLES`` — while ``TITLES`` and the rest kept the names
-they already had. Every 1.x name still imports, with a
-``DeprecationWarning``, until 3.0 — see :doc:`migrate` for the full
-mapping.
+Five of these lists were renamed in 2.2 to match the field names used
+here: ``PREFIXES``, ``NON_FIRST_NAME_PREFIXES``, ``BOUND_FIRST_NAMES``,
+``FIRST_NAME_TITLES`` and ``SUFFIX_NOT_ACRONYMS`` became ``PARTICLES``,
+``NON_GIVEN_NAME_PARTICLES``, ``BOUND_GIVEN_NAMES``,
+``GIVEN_NAME_TITLES`` and ``SUFFIX_WORDS``, and two modules moved with
+them. Names outside that list, ``TITLES`` among them, are unchanged.
+Every 1.x name still imports, with a ``DeprecationWarning``, until 3.0
+— see :doc:`migrate` for the full mapping.
 
 Vocabulary entries are matched one word at a time (``given_name_titles``
 excepted), so a multi-word entry like ``titles={"grand moff"}`` can
