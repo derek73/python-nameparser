@@ -19,15 +19,20 @@ blob raises ``AttributeError`` looking up the class, not a clean
 compatibility failure.
 """
 # Maintainer note, deliberately outside the docstring: the docstring
-# above no longer says "this package is deleted in 3.0", which the
-# migration spec's §3 list asserts while enumerating only the shim
-# names in its parenthetical. Whether the DATA modules keep this
-# package as their home in 3.0 or move under the core is an open
-# decision, not something to settle in a published docstring -- and it
-# now has a consequence, since Lexicon's public field docs
-# cross-reference nameparser.config.particles et al. Resolve it when
-# 3.0 is planned; until then this docstring claims only what is
-# settled, which is that the re-exports below go.
+# above no longer says "this package is deleted in 3.0". The migration
+# spec's removal schedule (§4, not §3 -- §3 is the shim itself) does
+# say it, listing "nameparser.config in its entirety" while its own
+# parenthetical enumerates only the five shim exports re-exported
+# below. That gap is the whole reason for this note, so it is stated
+# here rather than left to a section number: the spec lives under
+# docs/superpowers/, which is gitignored and absent for anyone outside
+# this checkout. Whether the DATA modules keep this package as their
+# home in 3.0 or move under the core is an open decision, not something
+# to settle in a published docstring -- and it now has a consequence,
+# since Lexicon's public field docs cross-reference
+# nameparser.config.particles et al. Resolve it when 3.0 is planned;
+# until then this docstring claims only what is settled, which is that
+# the re-exports below go.
 from nameparser._config_shim import CONSTANTS as CONSTANTS
 from nameparser._config_shim import Constants as Constants
 from nameparser._config_shim import RegexTupleManager as RegexTupleManager
