@@ -29,12 +29,18 @@ above; ``particles``, ``suffix_words``, and the rest work the same
 way) — see :doc:`modules` for the full field list.
 
 The default word lists themselves — ``TITLES``, ``PARTICLES`` and the
-rest of ``nameparser.config`` — are frozen, so a runtime addition
-belongs on a :class:`~nameparser.Lexicon` as above, or on a private
-``Constants`` if you are still parsing through ``HumanName``. Those
-constants were renamed in 2.2 to match the field names used here; the
-1.x names still import, with a ``DeprecationWarning``, until 3.0 — see
-:doc:`migrate` for the mapping.
+other frozensets in ``nameparser.config`` — are frozen, so a runtime
+addition belongs on a :class:`~nameparser.Lexicon` as above, or on a
+private ``Constants`` if you are still parsing through ``HumanName``.
+The freeze covers the word lists only; ``REGEXES`` and
+``CAPITALIZATION_EXCEPTIONS`` are still plain dicts.
+
+Some of these lists were renamed in 2.2 to match the field names used
+here — ``PREFIXES`` became ``PARTICLES``, ``FIRST_NAME_TITLES`` became
+``GIVEN_NAME_TITLES`` — while ``TITLES`` and the rest kept the names
+they already had. Every 1.x name still imports, with a
+``DeprecationWarning``, until 3.0 — see :doc:`migrate` for the full
+mapping.
 
 Vocabulary entries are matched one word at a time (``given_name_titles``
 excepted), so a multi-word entry like ``titles={"grand moff"}`` can
