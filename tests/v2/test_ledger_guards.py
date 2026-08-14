@@ -531,7 +531,8 @@ def test_cjk_corpus_matches_the_case_table() -> None:
 #: exactly one entry. The full issue lists are the keys, not a bare
 #: '#308': both 2.0 rules cite #308 while copying different constants.
 _HONORIFIC_SOURCES: dict[str, frozenset[str]] = {
-    "cjk-honorific-suffix": SUFFIX_WORDS,               # 1.4
+    "cjk-honorific-suffix": SUFFIX_WORDS,               # 1.4, spaced
+    "cjk-glued-honorific-peel": GLUED_HONORIFICS,       # 1.4, glued (#372)
     "#307/#308/#320": SUFFIX_WORDS,                     # 2.0, spaced
     "#308/#312/#319/#320": GLUED_HONORIFICS,            # 2.0, glued
 }
@@ -1017,6 +1018,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(3, ('family', 'given', 'maiden', 'middle'), "cf5c9d671c14"),
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
             _Claim(215, ('given', 'suffix', 'title'), "f16a0e79cba3"),
+        "fix(comma-precomma-family) pre-comma run reads as family, not given":
+            _Claim(215, ('family', 'given'), "f16a0e79cba3"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
             _Claim(751, ('family', 'given', 'suffix'), "231640fc7535"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
@@ -1035,8 +1038,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(20, ('given', 'suffix'), "b2ea8fa59eea"),
         "fix(cjk-comma-compound) comma routing compounds with the CJK order flip":
             _Claim(20, ('family', 'given', 'middle', 'suffix', 'title'), "b2ea8fa59eea"),
+        "fix(cjk-glued-honorific-peel) glued honorific peels into suffix":
+            _Claim(34, ('family', 'given', 'suffix'), "877ab3246d33"),
         "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip":
-            _Claim(14, ('family', 'given', 'middle', 'suffix'), "d49ce901bdce"),
+            _Claim(19, ('family', 'given', 'middle', 'suffix'), "aa475ddd4745"),
         "feat(#269) non-Latin titles/conjunctions recognized":
             _Claim(2, ('given', 'middle', 'title'), "c14187bb08f8"),
         "fix(leading-credential) a split 'Ph. D.' before the name stays one unit":
@@ -1166,6 +1171,35 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         ("田中さん, PhD", ("family", "given", "suffix")):
             "fix(cjk-comma-compound)",
         ("田中さん, V.", ("family", "suffix")): "fix(cjk-comma-compound)",
+        # #372's suffix-routing split. 'Bob Jones, author' moves NO
+        # suffix, which is what disqualifies it from the routing rule;
+        # 'Smith Jr.' is the Latin shape that rule is named for; the two
+        # glued honorifics are the majority it also legitimately takes,
+        # and cannot be given a rule of their own -- '김민준씨' and the
+        # given name '김지양' are the same string shape.
+        ("Bob Jones, author", ("family", "given")):
+            "fix(comma-precomma-family)",
+        ("MD, PHD", ("family", "given")): "fix(comma-precomma-family)",
+        ("Smith Jr.", ("family", "suffix")): "fix(suffix-routing)",
+        # the glued/spaced boundary. 'Andersonさん' and '김민준씨' left
+        # suffix-routing for a rule that names them; '김민준 씨.' is
+        # spaced and stays on the spaced rule, which #372 taught to
+        # tolerate the trailing period.
+        #
+        # '김지양' is why the glued rule copies GLUED_HONORIFICS and not
+        # SUFFIX_WORDS: 양 is absent from the glued set, so no rule
+        # NAMED for honorifics can claim a suffix diff on a given name
+        # that merely ends in one. The fields-only fix(suffix-routing)
+        # still would -- measured -- which is unchanged by #372 and is
+        # the residual cost of having a last-resort tier at all. Being
+        # absorbed by the catch-all is recoverable; being labelled
+        # 'recognized honorific' by a specific rule is not.
+        ("Andersonさん", ("given", "suffix")):
+            "fix(cjk-glued-honorific-peel)",
+        ("김민준씨", ("family", "given", "suffix")):
+            "fix(cjk-glued-honorific-peel)",
+        ("김민준 씨.", ("family", "given", "suffix")):
+            "fix(cjk-honorific-suffix)",
     },
 }
 
@@ -1252,7 +1286,15 @@ class _Excluded(NamedTuple):
 _EXCLUSION_EFFECT: dict[str, _Excluded] = {
     "(?i)^[\\u0000-\\u024f]*\\bph\\.\\s*d\\.\\s*$":
         _Excluded(3, "5a12a8117651",
-                  ("fix(comma-family)", "fix(suffix-routing)")),
+                  # fix(comma-precomma-family) JOINED this tuple in #372,
+                  # it did not replace anything: it claims the {given,
+                  # family} readings, which it legitimately describes for a
+                  # Latin comma name, while fix(suffix-routing) still
+                  # claims the readings outside its two fields. The
+                  # exclusion refuses the name before any of the three is
+                  # reached; this records what would happen without it.
+                  ("fix(comma-family)", "fix(comma-precomma-family)",
+                   "fix(suffix-routing)")),
     '(^|[\\w.]\\s+)[("\'][^)"\']+[)"\'](\\s+\\w|\\s*$)':
         _Excluded(34, "9ea55c4c4382", ()),
 }
