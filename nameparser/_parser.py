@@ -3,8 +3,8 @@
 Layering: sits on _types/_lexicon/_policy/_locale/_pipeline; never
 imports _render or the v1 facade (enforced by tests/v2/test_layering.py).
 
-_default_parser is THE one sanctioned module-level global (conventions
-§8): a functools.cache'd frozen Parser over default config.
+_default_parser is THE one sanctioned module-level global: a
+functools.cache'd frozen Parser over default config.
 """
 from __future__ import annotations
 
@@ -39,7 +39,8 @@ class Parser:
     consulted only for a token the segmentation stage gates in and the
     vocabulary DECLINES, so a locale pack's surnames always win where
     they match; returning None declines in turn and the token stays
-    whole. Two promises narrow when one is supplied (locales spec §4):
+    whole. Two promises narrow when one is supplied
+(mechanisms.md#LOCALE-PACKS-PURE-DATA):
     parse-totality gains its one exception -- an exception raised by
     the segmenter propagates, because a user-supplied callable's own
     error is a user-code error, not a content error -- and this Parser
@@ -59,7 +60,8 @@ class Parser:
     #: An optional hook supplying outside knowledge of where an unspaced
     #: token divides -- see the class docstring; None leaves such tokens
     #: whole. Keyword-only, so the reserved growth stays additive
-    #: (locales spec §4): positional construction keeps its two-argument
+    #: (mechanisms.md#LOCALE-PACKS-PURE-DATA): positional construction
+#: keeps its two-argument
     #: shape.
     segmenter: Segmenter | None = field(default=None, kw_only=True)
 
@@ -124,7 +126,7 @@ class Parser:
                     UserWarning, stacklevel=3)
 
     def __repr__(self) -> str:
-        # composes the two bounded component reprs (spec §2 reprs); the
+        # composes the two bounded component reprs; the
         # segmenter shows by name, and only when one is set, so the
         # default Parser's repr is unchanged
         seg = ""
@@ -237,7 +239,7 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     """Lexicon fragments unioned left-to-right onto base's; policy
     patches applied left-to-right (later wins; set-valued fields union
     per the patch metadata). Validation errors raised while applying a
-    pack are wrapped with that pack's identity (spec §4 amendment) --
+    pack are wrapped with that pack's identity (rule D2) --
     PolicyPatch validates lazily, so with stacked packs the raw error
     would otherwise point at nothing. Two packs setting the same SCALAR
     field is a declared conflict: UserWarning, later wins.

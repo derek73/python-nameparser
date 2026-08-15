@@ -1,4 +1,4 @@
-"""The Turkish/Azerbaijani locale pack (locales spec §3): policy-only
+"""The Turkish/Azerbaijani locale pack (rule O2): policy-only
 -- it turns on the TURKIC patronymic rule. The marker data (oglu/qizi/
 uulu/kyzy and Cyrillic forms) lives inside the rule implementation in
 nameparser/_pipeline/_post_rules.py (mirrors v1's flag design).
@@ -7,7 +7,8 @@ Data sources: the v1 Turkic patronymic rule (issue #185 and its test
 bank, tests/test_turkic_patronymic_order.py); the pack carries no
 vocabulary.
 
-Declared deviations (spec §2 authoring requirement 3): applying this
+Declared deviations (mechanisms.md#LOCALE-PACKS-PURE-DATA):
+applying this
 pack changes only NO_COMMA names where some token is a standalone
 Turkic patronymic marker -- DEVIATES(name) below is the
 machine-readable declaration the non-interference gate checks.

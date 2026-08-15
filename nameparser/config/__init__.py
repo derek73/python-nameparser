@@ -1,4 +1,5 @@
-"""v1 import-path preservation (migration spec §3): the Constants shim
+"""v1 import-path preservation (mechanisms.md#CONFIG-SHIM-SNAPSHOT):
+the Constants shim
 lives in nameparser._config_shim.
 
 Two unrelated things share this package. The names re-exported below --
@@ -19,14 +20,12 @@ blob raises ``AttributeError`` looking up the class, not a clean
 compatibility failure.
 """
 # Maintainer note, deliberately outside the docstring: the docstring
-# above no longer says "this package is deleted in 3.0". The migration
-# spec's removal schedule (§4, not §3 -- §3 is the shim itself) does
-# say it, listing "nameparser.config in its entirety" while its own
-# parenthetical enumerates only the five shim exports re-exported
-# below. That gap is the whole reason for this note, so it is stated
-# here rather than left to a section number: the spec lives under
-# docs/superpowers/, which is gitignored and absent for anyone outside
-# this checkout. Whether the DATA modules keep this package as their
+# above no longer says "this package is deleted in 3.0". The 3.0
+# removal schedule names "nameparser.config in its entirety" while
+# actually enumerating only the five shim exports re-exported below;
+# that gap is recorded in docs/design/decisions.md#3-0-reevaluations
+# rather than left to a section number of an uncommitted document.
+# Whether the DATA modules keep this package as their
 # home in 3.0 or move under the core is an open decision, not something
 # to settle in a published docstring -- and it now has a consequence,
 # since Lexicon's public field docs cross-reference

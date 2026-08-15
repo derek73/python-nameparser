@@ -1,5 +1,6 @@
 """v1 ``Constants`` compatibility shim over Lexicon/Policy (migration
-spec §3). ``nameparser.config`` re-exports these names from the swap
+mechanisms.md#CONFIG-SHIM-SNAPSHOT). ``nameparser.config``
+re-exports these names from the swap
 commit onward; the whole module is deleted in 3.0 with the facade.
 
 Layering: facade layer -- may import anything public; here that's
@@ -431,7 +432,7 @@ class TupleManager(dict[str, object]):
 
 
 #: The named delimiter buckets, translated to the ``Policy``
-#: (open, close) pairs they stand for (spec §3). The first three are
+#: (open, close) pairs they stand for. The first three are
 #: v1's; the rest are the #273 typographic conventions, named so the
 #: v1 keyed idioms (pop/move/del) work on them like the originals.
 #: Keep in sync with DEFAULT_NICKNAME_DELIMITERS in _policy.py (pinned
@@ -472,8 +473,8 @@ class RegexTupleManager(TupleManager):  # pickle-compat: do NOT delete
 
 class _DelimiterManager(TupleManager):
     """v1 ``nickname_delimiters``/``maiden_delimiters`` bucket. In 2.0
-    only the named sentinels in ``_DELIMITER_SENTINELS`` exist (spec
-    §3; the v1 trio plus the #273 typographic pairs) -- assigning any
+    only the named sentinels in ``_DELIMITER_SENTINELS`` exist (the v1
+    trio plus the #273 typographic pairs) -- assigning any
     other key raises so a caller reaches for a custom-delimiter Policy
     kwarg instead of a dict entry that silently does nothing. ``pop()``/
     ``__setitem__``/``__delitem__`` stay open (inherited) for the
@@ -517,7 +518,7 @@ class _RegexesProxy:
     ``CONSTANTS.regexes.word`` stays informational -- but 2.0 configures
     parsing behavior through named ``Policy`` flags, not by mutating a
     regex, so any attribute *or* item assignment raises ``TypeError``
-    (spec §3's uniform read-only rule).
+    (the shim's uniform read-only rule).
     """
 
     @staticmethod
@@ -691,7 +692,8 @@ def _default_vocab() -> dict[str, frozenset[str]]:
 
 class _RenderDefaults(NamedTuple):
     """v1 scalar rendering knobs that have no home on ``Policy``
-    (spec §3): ``__str__``/initials formatting and capitalization stay
+    (mechanisms.md#CONFIG-SHIM-SNAPSHOT): ``__str__``/initials
+    formatting and capitalization stay
     per-Constants defaults, layered onto a shared ``Parser`` by the
     facade (a later task) rather than folded into the cache key."""
 
@@ -707,7 +709,8 @@ class _RenderDefaults(NamedTuple):
 @functools.lru_cache(maxsize=64)
 def _cached_parser(lexicon: Lexicon, policy: Policy) -> Parser:
     # keyed on hashable value objects: shared across every facade whose
-    # Constants resolve to the same snapshot (spec §3)
+    # Constants resolve to the same snapshot
+    # (mechanisms.md#CONFIG-SHIM-SNAPSHOT)
     return Parser(lexicon=lexicon, policy=policy)
 
 
@@ -716,7 +719,7 @@ class Constants:
     a frozen ``(Lexicon, Policy, _RenderDefaults)`` snapshot via
     ``_snapshot()``. ``_generation`` increments on every mutation;
     facades compare it against a cached value to decide whether their
-    snapshot is stale (dirty-tracking, spec §3 -- the facade itself is
+    snapshot is stale (dirty-tracking -- the facade itself is
     a later task).
 
     The module-level ``CONSTANTS`` singleton (below) has ``_shared``
@@ -980,7 +983,7 @@ class Constants:
 
     def _build_snapshot(self) -> tuple[Lexicon, Policy, _RenderDefaults]:
         """Resolve this v1-shaped, mutable Constants into the frozen
-        2.0 value objects it corresponds to (spec §3). A pure read: no
+        2.0 value objects it corresponds to. A pure read: no
         generation bump, no deprecation warning even on the shared
         singleton -- only direct attribute mutation is on the 3.0
         removal path.

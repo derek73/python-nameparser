@@ -34,7 +34,7 @@ class Role(StrEnum):
     ``sorted()`` yields alphabetical order -- iterate ``Role`` itself
     for the canonical order."""
 
-    # Declaration order IS the canonical field order (conventions §3):
+    # Declaration order IS the canonical field order:
     # every listing of the seven fields anywhere derives from this.
 
     #: Pre-nominal titles and honorifics ("Dr.", "Sir", "Capt.").

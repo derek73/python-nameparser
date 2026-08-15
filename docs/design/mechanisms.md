@@ -221,6 +221,51 @@ and every recorded roster.
 Reach for it when. Tempted to write "remember to keep X in sync
 with Y."
 
+## LOCALE-PACKS-PURE-DATA — packs configure, they never compute
+
+Problem shape. Language-specific behavior needs a home that cannot
+drift from the core.
+Contract statement. A locale pack is pure data — a Policy patch and
+Lexicon additions — applied by parser_for; packs contain no code
+paths of their own, and each pack's docstring declares its
+deviations from the defaults.
+How it works. What is policy for every language (an order constant)
+is policy, not pack data; packs are lowercase modules exposing
+uppercase constants; a pack error is wrapped with the pack's code
+(rule D2). Pure data means a pack can be audited by reading it.
+Lives in. nameparser/locales/ (packs), nameparser/_parser.py
+(parser_for, the one applier).
+Reach for it when. A language fix wants an if-statement — make it
+vocabulary or policy in a pack instead.
+
+## FACADE-CONTRACT — HumanName wraps the core, warning-free v1 keeps working
+
+Problem shape. Where does v1-compatibility behavior live, and what
+may it do?
+Contract statement. HumanName is a mutable facade over the immutable
+core: code that runs warning-free on 1.4 keeps working with
+identical results through 2.x, via validating setters, dirty-tracked
+re-parses, and pickle round-trips — and the facade never calls the
+v1 parsing hooks it still carries.
+Lives in. nameparser/_facade.py; v1 import paths preserved by
+nameparser/parser.py and nameparser/config/.
+Reach for it when. A core change needs a v1-visible behavior —
+the facade, not the core, is where parity lives (and cite
+decisions.md#3-0-reevaluations when parity is the only reason).
+
+## CONFIG-SHIM-SNAPSHOT — v1 config mutations reach the core by snapshot
+
+Problem shape. v1 code mutates CONSTANTS at runtime; the core is
+immutable.
+Contract statement. nameparser.config re-exports mutable managers
+whose contents are converted to immutable core objects through a
+dirty-tracked snapshot: mutations mark the snapshot stale, and the
+next parse rebuilds it, so v1 mutation semantics survive over an
+immutable core.
+Lives in. nameparser/_config_shim.py, nameparser/config/.
+Reach for it when. Wiring any new v1 config surface — it must go
+through the snapshot, never sideways into a Lexicon.
+
 ## Verification shapes
 
 How to measure in this codebase without fooling yourself. The

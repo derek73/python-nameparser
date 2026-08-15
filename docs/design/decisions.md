@@ -390,6 +390,13 @@ nobody re-litigates it. Append here whenever a design choice cites
   the v1-shaped public API. Typeable in 3.0.
 - (A) A .pyi stub for Policy (wide __init__, narrow attributes) —
   deferred from #334, see the differential-ledger Declined entry.
+- (A) nameparser.config removal scope: the 3.0 schedule says
+  "nameparser.config in its entirety" while actually enumerating
+  only the five shim exports; whether the DATA modules keep the
+  package as their home or move under the core is open, and
+  Lexicon's public field docs cross-reference
+  nameparser.config.particles et al. (see the maintainer note in
+  nameparser/config/__init__.py).
 - (B) Pickle-guard layout breaks landing in minors (2.1's
   __setstate__ breaks): the guarded-raise design is right
   regardless; only the in-a-minor friction is shim-era.
