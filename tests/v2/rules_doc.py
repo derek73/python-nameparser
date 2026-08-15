@@ -79,6 +79,7 @@ POLICIES: dict[str, Policy] = {
     "middle_as_family": Policy(middle_as_family=True),
     "maiden-parens": Policy(maiden_delimiters=frozenset({("(", ")")})),
     "keep-emoji": Policy(strip_emoji=False),
+    "strict-comma-suffixes": Policy(lenient_comma_suffixes=False),
 }
 #: Extras gates: locale requiring an optional dependency; the examples
 #: runner skips these when the import is absent (CI's ja-extra job

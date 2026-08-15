@@ -11,19 +11,8 @@ owns the rest (Policy.lenient_comma_suffixes picks the lenient or
 strict token test; Policy.extra_suffix_delimiters gives v1
 suffix_delimiter parity, a delimiter-core token being transparent).
 
-Decision (v1 parity): >=1 comma and the SECOND segment entirely
-suffix AND >1 word before the first comma -> SUFFIX_COMMA; otherwise
-FAMILY_COMMA ("Family, Given ..."). Only the second segment decides
-(v1 parser.py:1318) -- segments beyond it are consumed as suffixes
-either way, and a NON-EMPTY one that is not entirely suffix is
-flagged COMMA_STRUCTURE rather than vetoing the structure (an empty
-one is consumed silently, as v1 consumed it, so "John Smith, MD,, Jr."
-reports nothing where "John Smith, MD, Bart" does; they are still
-best-effort consumed as suffixes by assign, since parse must stay
-total over str input and never raise on content). "Entirely suffix"
-is is_wholly_suffix's question, so the token test inside it is
-lenient by default and strict under
-Policy(lenient_comma_suffixes=False).
+Implements rules C1 and C2 of docs/design/rules.md, cited at the
+decision site below; history in decisions.md#C1.
 """
 from __future__ import annotations
 
@@ -73,7 +62,13 @@ def segment(state: ParseState) -> ParseState:
     # v1 parity: only parts[1] decides the suffix-comma structure
     # (parser.py:1318); parts[2:] are consumed as suffixes
     # unconditionally either way, so a non-suffix tail segment gets the
-    # COMMA_STRUCTURE flag, not a structure veto
+    # rules.md#C1: "the name reads as trailing suffixes when the part
+    # after the first comma is entirely suffix words and more than one
+    # word precedes the comma; otherwise it reads as the listing form"
+    # (history: decisions.md#C1)
+    # rules.md#C2: "a non-empty extra part that is not entirely suffix
+    # words is flagged as a structural ambiguity rather than rejected"
+    # -- COMMA_STRUCTURE flag, not a structure veto
     structure = (Structure.SUFFIX_COMMA
                  if suffixy(groups[1]) and len(groups[0]) > 1
                  else Structure.FAMILY_COMMA)

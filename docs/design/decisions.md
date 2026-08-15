@@ -59,6 +59,21 @@ should the middle position be a third site ·
 [#360](https://github.com/derek73/python-nameparser/issues/360)
 which particles count as never-given.
 
+### C1 — the suffix-comma decision
+
+- 2026-07 (v2 core, PR #288) — v1 parity: only the second segment
+  decides (v1 parser.py:1318), and ">1 word before the first comma"
+  is v1's guard, which is why "Smith, PhD" keeps the listing form.
+- 2026-07 (plan deviation #3, recorded) — the decision is
+  definitionally vocabulary-dependent: there is no way to recognize
+  a credential run without consulting the suffix word lists, so the
+  structural stage reads vocabulary through one predicate.
+- 2026-07-30 #291/#296 — the lenient token test is the default and
+  `lenient_comma_suffixes=False` restores the strict one.
+- 2026-08 #319 — the wholly-suffix predicate was lifted into the
+  vocabulary layer so the comma decision and the honorific peel's
+  segment test cannot drift apart.
+
 ### T1 — separators, not joiners
 
 - 2026-07 (v2 core, PR #288) — v1's squash_emoji/squash_bidi

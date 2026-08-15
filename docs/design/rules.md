@@ -167,6 +167,41 @@ M1. Rationale: an enclosure the caller has declared to mean maiden
 
 ## Commas & structure (C)
 
+Background: a comma in a name signals one of two conventions — the
+listing form "Family, Given" or trailing credentials "Name, PhD" —
+and which is meant can only be judged from what stands after the
+first comma. Recognizing a credential run is by nature a vocabulary
+judgment, so this is the one structural decision that consults the
+suffix word lists.
+
+C1. Rationale: a credential run after the comma means the name is in
+    natural order with suffixes appended; anything else after the
+    comma means the listing form.
+    With a comma present, the name reads as trailing suffixes when
+    the part after the first comma is entirely suffix words and more
+    than one word precedes the comma; otherwise it reads as the
+    listing form, the part before the comma being the family name.
+    Only the part after the first comma decides. By default the
+    suffix judgment is lenient about initials-like abbreviations;
+    strict mode confines it to the recognized vocabulary.
+      "Smith, John"               →  family="Smith"
+      "John Smith, PhD"           →  suffix="PhD"
+      "John Smith, V."            →  suffix="V."
+      "John Smith, V."  strict-comma-suffixes  →  family="John Smith"
+      "Smith, PhD"                →  family="Smith"  · boundary
+    history: decisions.md#C1 · implemented: nameparser/_pipeline/_segment.py
+
+C2. Rationale: text beyond the recognized comma parts should be
+    taken in without silent guessing.
+    Parts beyond the second are consumed as suffixes either way; a
+    non-empty extra part that is not entirely suffix words is
+    flagged as a structural ambiguity rather than rejected — parsing
+    never fails on content. An empty part between doubled commas is
+    consumed silently.
+      "John Smith, MD, Bart"      →  suffix="MD, Bart"
+      "John Smith, MD,, Jr."      →  suffix="MD, Jr."  · boundary
+    history: decisions.md#C1 · implemented: nameparser/_pipeline/_segment.py
+
 ## Name order (O)
 
 Background: written name order varies by convention: given-first
