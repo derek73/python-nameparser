@@ -258,6 +258,68 @@ O3. Rationale: several traditions write compound family names
 
 ## Scripts & writing systems (W)
 
+Background: script-conditional behavior is permitted exactly where
+the writing system itself — not statistics about it — settles the
+convention; a language can never be inferred from Latin-script text,
+because transliteration destroys the signal. The facts this section
+builds on: Chinese and Japanese both write the family name first in
+native script, so the script settles the order without knowing the
+language. Hangul is written by exactly one language and Korean
+family names are a small closed census set. Han text does not
+identify its language — a Chinese surname list would divide Japanese
+高橋一郎 as 高 + 橋一郎 — which is why Han division is opt-in and
+there is no Korean pack to opt into. Hiragana never transcribes a
+foreign name (transcriptions are katakana alone), so kanji-plus-kana
+is a Japanese name in Japanese order, while wholly-katakana is
+predominantly a transcribed foreign name already in given-first
+order. Real Chinese text is unspaced (毛泽东); the spaced 毛 泽东 is
+an artifact. A fuller narrative lives in docs/usage.rst's East Asian
+section.
+
+W1. Rationale: hangul is monoglot Korean and its surnames are a
+    closed census set, so an unspaced hangul name divides at a
+    certain point; Han carries no such certainty by default.
+    An unspaced name in an activated script divides after a
+    recognized surname, the longest recognized surname first; where
+    the vocabulary recognizes nothing, an optional segmenter may
+    divide instead, and with neither the name stays whole rather
+    than divide in a wrong place. Korean division is active by
+    default; Han division is opt-in.
+      "김민준"                    →  family="김"
+      "남궁민수"                  →  family="남궁"
+      "毛泽东"                    →  family="毛泽东"  · boundary
+      "毛泽东"  [zh]              →  family="毛"
+      "高橋一郎"  [zh]            →  family="高"
+    history: decisions.md#W1 · implemented: nameparser/_pipeline/_script_segment.py
+
+W2. Rationale: some East Asian honorifics glue directly onto the end
+    of the name (田中さん); a glued word peels off only if it could
+    never itself end a name, so the listed vocabulary carries its
+    own license and needs no other gate.
+    A listed honorific glued to the end of the name's last name word
+    splits off and reads as a suffix. The peel crosses a family
+    comma and ignores surrounding punctuation, but never takes a
+    part that is not name text as its site.
+      "田中さん"                  →  suffix="さん"
+      "김, 민준씨"                →  suffix="씨"
+      "田中さん, V."              →  suffix="さん"
+      "김지양"                    →  suffix=""  · boundary
+      "王君"                      →  family="王君"  · boundary
+    history: decisions.md#W2 · implemented: nameparser/_pipeline/_script_segment.py
+
+W3. Rationale: a divided name was divided by its writer, and
+    re-dividing would invent a boundary nobody drew; a family name
+    declared by a comma is likewise the writer's own division.
+    Division applies only to a name whose written form is undivided:
+    a name part already containing a division divides no further —
+    a spaced honorific counts as a written division — and under a
+    family comma the pre-comma text is the family by declaration
+    and never divides. Only the honorific peel crosses these,
+    because an honorific is no part of the name on either side.
+      "남궁민수"                  →  family="남궁"
+      "남궁민수, 지훈"            →  family="남궁민수"  · boundary
+    history: decisions.md#W3 · implemented: nameparser/_pipeline/_script_segment.py
+
 ## Tokens, initials & punctuation (T)
 
 Background: every parsed name part is an exact piece of the input,

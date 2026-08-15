@@ -59,6 +59,67 @@ should the middle position be a third site ·
 [#360](https://github.com/derek73/python-nameparser/issues/360)
 which particles count as never-given.
 
+### W1 — unspaced CJK division
+
+- 2026-08-07 #271 (2.1.0) — Korean division ships as a default: the
+  census surname list is closed, hangul is self-selecting (a hangul
+  entry can only match hangul text), and being unsplit is
+  recoverable while a wrong split is not — which is also why an
+  unrecognized name stays whole.
+- 2026-08-07 #272/amendment 2026-07-29 — Han division is opt-in per
+  language pack because Han text does not identify its language
+  (高橋一郎 under a Chinese list divides wrongly); a pluggable
+  segmenter takes what the vocabulary declines, so pack + segmenter
+  compose mechanically: a listed surname is a dictionary certainty
+  and wins.
+
+- 2026-08 — zh and ja packs are corpus ALTERNATIVES, one per
+  corpus; stacking them (parser_for(ZH, JA, segmenter=...)) is for
+  genuinely mixed data that accepts the trade: a listed Chinese
+  surname wins before the segmenter is consulted, so 高橋一郎 still
+  divides 高 + 橋一郎 under ZH+JA exactly as under ZH alone. Kana
+  gating resolves through the same script function order uses, so
+  kana-licensed composites (高橋みなみ) gate in under JA while
+  pure-katakana tokens never do (amendment 2026-07-27: activation
+  is per script because the ambiguity is per script).
+
+### W3 — the writer's divisions are respected
+
+- 2026-08 (segmenter amendment 2026-07-29) — a segmenter answers
+  where an UNDIVIDED name divides, so it is consulted only when the
+  gated token is the name part's only script-written one: "山田
+  太郎" was divided by its writer and must not have its family
+  divided again. The peeled tail is exempt (that boundary was
+  manufactured, not written); a SPACED honorific is not — at that
+  position it cannot be told from a spaced name element. The trade
+  was measured before deciding: counting spaced honorifics keeps
+  four real surnames whole (佐藤 氏, 田中 様, 鈴木 先生, 中村 教授)
+  and costs the one division 山田太郎 様.
+- 2026-08 #312 — under FAMILY_COMMA the whole stage stood down
+  until the peel moved in front of the gate: the comma doctrine is
+  about the input's structure, not the split's source, so it covers
+  vocabulary and segmenter identically, while an honorific is no
+  part of the name whichever side of the comma it glues to.
+- 2026-07 — the stage runs AFTER comma segmentation on purpose:
+  running before would make the comma structure depend on the
+  split ("김민준, Jr." pre-split would read suffix-comma on
+  vocabulary alone; as written it stays the listing form).
+
+### W2 — the glued-honorific peel
+
+- 2026-08 #308 — an entry peels only where it can never end a name:
+  씨/님/さん/様/先生 peel; 양/군/氏/博士/殿 stay spaced-only; 君 is
+  in neither set while its kana spelling くん peels. The vocabulary
+  carries the license, so no structural or per-script gate stands
+  over the peel.
+- 2026-08 #312 — the peel crosses the family comma and the 间隔号:
+  both answer where a name DIVIDES into surname and given, a
+  question the peel never asks.
+- 2026-08 #319 — a wholly suffix-shaped second run is declined as a
+  peel site (the "田中さん, V." shape), but only when the name's own
+  run offers a site, since a glued honorific is itself part of what
+  makes a run read as suffix-shaped.
+
 ### C1 — the suffix-comma decision
 
 - 2026-07 (v2 core, PR #288) — v1 parity: only the second segment
