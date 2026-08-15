@@ -33,9 +33,9 @@ def test_every_rule_has_examples_and_boundary(rule: Rule) -> None:
 
 
 def _check_diagnostic(example: Example) -> None:
-    from typing import Callable, cast
-
     import re as _re
+    from collections.abc import Callable
+    from typing import cast
 
     from tests.v2.rules_doc import SUBJECTS
     fn = cast(Callable[[], object], SUBJECTS[example.subject or ""])

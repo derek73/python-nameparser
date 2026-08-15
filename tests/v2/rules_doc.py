@@ -90,7 +90,7 @@ def _segmenterless_ja() -> object:
 
 
 def _bad_name_order() -> object:
-    return Policy(name_order=("given",))
+    return Policy(name_order=("given",))  # type: ignore[arg-type]
 
 
 def _bad_order_none() -> object:

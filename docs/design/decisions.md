@@ -113,9 +113,9 @@ which particles count as never-given.
   parser_for frame so the reported location is the caller's own
   call.
 - 2026-08-07 #339 — diagnostics that hand the reader code must hand
-  code that type-checks: the message's offered deactivation was
-  Policy(segment_scripts=()) — an arg-type error under mypy in a
-  py.typed package — and became frozenset(), pinned by a test
+  code that type-checks: the message's offered deactivation used a
+  bare tuple literal for segment_scripts — an arg-type error under
+  mypy in a py.typed package — and became frozenset(), pinned by a test
   asserting the offered spelling. The known-bad spelling is in the
   denylist test.
 
