@@ -80,19 +80,25 @@ H1. Rationale: a title normally addresses by surname, so a title
 H2. Rationale: before a name, an abbreviation is almost always a
     title — "Rev.", "Ing.", "Mag." — and no vocabulary can list
     every profession's abbreviations in every language.
-    A name-opening abbreviation of at least two letters ending in a
-    period reads as a title even when unlisted; a bare initial does
-    not.
+    A name-opening abbreviation — an unbroken run of two or more
+    letters ending in its one period — reads as a title even when
+    unlisted; a bare initial does not, and neither does anything
+    with interior periods, hyphens or digits.
       "Rev. John Smith"           →  title="Rev."
       "Xyz. John Smith"           →  title="Xyz."
       "J. Smith"                  →  given="J."  · boundary
+      "J.R. Smith"                →  given="J.R."  · boundary
     Accepted: the shape is only recognizable as an unbroken run of
     letters, so an abbreviation in a script whose letters carry
     combining vowel signs (Bengali, Devanagari) never reads as a
     title by shape — an unlisted abugida honorific stays a name
     word, and only vocabulary (#343) can recognize it.
       "প্রফেসর. Sen"              →  given="প্রফেসর."
-    history: decisions.md#H2 · implemented: nameparser/_pipeline/_assign.py
+    Accepted: before a family comma the pre-comma text is wholly the
+    family name (C1), so no shape or vocabulary reading makes a
+    title there.
+      "Xyz. Smith, John"          →  family="Xyz. Smith"
+    history: decisions.md#H2 · interacts: C1 · implemented: nameparser/_pipeline/_assign.py
 
 H3. Rationale: compound titles are written as a run of title words,
     connectives included; a title word standing inside the name is
@@ -102,7 +108,10 @@ H3. Rationale: compound titles are written as a run of title words,
       "Asst. Vice Chancellor John Smith"  →  title="Asst. Vice Chancellor"
       "Marquess of Bath"          →  title="Marquess of Bath"
       "John Doctor Smith"         →  middle="Doctor"  · boundary
-    implemented: nameparser/_pipeline/_group.py
+    Accepted: before a family comma the pre-comma text is wholly the
+    family name (C1), title words included.
+      "Dr. Smith, John"           →  family="Dr. Smith"
+    interacts: C1 · implemented: nameparser/_pipeline/_group.py
 
 ## Particles & surname prefixes (P)
 
@@ -133,10 +142,11 @@ P1. Rationale: a never-given particle standing alone cannot be
 
 P2. Rationale: a particle is written as part of the surname it
     precedes, and a title stands outside the name entirely.
-    A particle joins forward onto the name word after it, chains
-    included; the chain begins wherever the name begins, and a
-    preceding title does not move that point.
+    A particle joins the words after it into one family name, and
+    the join runs to the end of the name; the chain begins wherever
+    the name begins, and a preceding title does not move that point.
       "John van der Berg"         →  family="van der Berg"
+      "John van der Berg Smith"   →  family="van der Berg Smith"
       "Sir de Mesnil"             →  family="de Mesnil"
       "Juan de"                   →  family="de"  · boundary
     history: decisions.md#P2 · implemented: nameparser/_pipeline/_group.py
@@ -178,16 +188,20 @@ S2. Rationale: generational suffixes and credentials are recognized
     unmistakably a credential when its periods are written.
     A trailing word of the suffix vocabulary reads as a suffix —
     generational forms and credential acronyms alike, and an
-    ambiguous acronym written with periods counts unambiguously.
+    ambiguous acronym written with periods counts unambiguously. A
+    BARE ambiguous acronym is consumed only when the name has words
+    to spare: as the second of two words it stays the family name,
+    flagged ambiguous.
       "John Smith Jr."            →  suffix="Jr."
       "John Smith M.A."           →  suffix="M.A."
       "John Smith PhD"            →  suffix="PhD"
-    Accepted: a BARE ambiguous acronym in the trailing position
-    still reads as a suffix today, even beside an East Asian
-    surname it more likely belongs to.
+      "John Ma"                   →  family="Ma"  · boundary
+    Accepted: with words to spare, a bare ambiguous acronym reads
+    as a suffix even beside an East Asian surname it more likely
+    belongs to; and an unambiguous suffix is consumed even when
+    that leaves no family name at all.
       "Jack Wei Ma"               →  suffix="Ma"
-    no-boundary: the vocabulary is the boundary; an unlisted
-    trailing word simply reads as the family name.
+      "Smith Jr."                 →  family=""
     implemented: nameparser/_pipeline/_classify.py
 
 ## Nicknames & quoted names (N)
@@ -228,6 +242,10 @@ N3. Rationale: a person set down as a nickname plus one name word is
     positional reading applies.
       "'Smitty' Jones"            →  family="Jones"
       "'Smitty' John Jones"       →  given="John"  · boundary
+    Accepted: the count does not set suffixes or titles aside, so a
+    nickname plus one name word plus a suffix reads the name word
+    as given and leaves the family empty.
+      "'Smitty' Jones Jr."        →  family=""
     history: decisions.md#N3 · implemented: nameparser/_pipeline/_assign.py
 
 ## Maiden names (M)
@@ -241,24 +259,31 @@ M1. Rationale: an enclosure the caller has declared to mean maiden
     holds the former family name; a recognized marker word inside it
     marks the clause and is not itself part of the name.
     With a delimiter pair configured for maiden names, its enclosed
-    clause reads as the maiden name, a leading recognized marker
-    word inside the clause being dropped; a pair configured for both
-    maiden and nickname reads maiden.
+    clause reads as the maiden name — unless the content is
+    suffix-shaped, which S1 takes first — a leading recognized
+    marker word inside the clause being dropped; a pair configured
+    for both maiden and nickname reads maiden.
       "Jane Smith (née Jones)"  maiden-parens  →  maiden="Jones"
       "Jane Smith (née Jones)"                 →  nickname="née Jones"  · boundary
-    history: decisions.md#M1 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_group.py
+    history: decisions.md#M1 · interacts: S1 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_group.py
 
 M2. Rationale: a maiden marker announces that what follows it is the
     former family name; the marker is an announcement, not a name.
-    A recognized maiden marker inside the name takes the words after
-    it — up to any trailing suffix — as the maiden name, and the
-    marker itself is dropped. A marker with nothing after it is just
-    a word.
+    A recognized maiden marker standing after at least one name
+    word takes the words after it — up to any trailing suffix — as
+    the maiden name, and the marker itself is dropped. A marker
+    with nothing after it, or nothing before it, is just a word.
       "Jane Smith née Jones"      →  maiden="Jones"
       "Jane née Jones Smith"      →  maiden="Jones Smith"
       "Jane Smith née Jones PhD"  →  suffix="PhD"
       "Jones née"                 →  family="née"  · boundary
-    history: decisions.md#M2 · implemented: nameparser/_pipeline/_group.py
+      "née Jones"                 →  family="Jones"  · boundary
+    Accepted: a marker straight after a comma is post-comma given
+    text, not a marker; and a particle chain swallows a marker in
+    its path, the join (P2) running first.
+      "Jane Smith, née Jones"     →  maiden=""
+      "Jane de la née Jones"      →  family="de la née Jones"
+    history: decisions.md#M2 · interacts: P2 · implemented: nameparser/_pipeline/_group.py
 
 ## Commas & structure (C)
 
@@ -276,9 +301,10 @@ C1. Rationale: a credential run after the comma means the name is in
     the part after the first comma is entirely suffix words and more
     than one word precedes the comma; otherwise it reads as the
     listing form, the part before the comma being the family name.
-    Only the part after the first comma decides. By default the
-    suffix judgment is lenient about initials-like abbreviations;
-    strict mode confines it to the recognized vocabulary.
+    Only the part after the first comma decides. Both modes consult
+    the vocabulary alone; by default a recognized suffix word counts
+    even written like an initial ("V."), while strict mode vetoes
+    initial-shaped words.
       "Smith, John"               →  family="Smith"
       "John Smith, PhD"           →  suffix="PhD"
       "John Smith, V."            →  suffix="V."
@@ -389,14 +415,16 @@ section.
 W1. Rationale: hangul is monoglot Korean and its surnames are a
     closed census set, so an unspaced hangul name divides at a
     certain point; Han carries no such certainty by default.
-    An unspaced name in an activated script divides after a
-    recognized surname, the longest recognized surname first; where
-    the vocabulary recognizes nothing, an optional segmenter may
-    divide instead, and with neither the name stays whole rather
-    than divide in a wrong place. Korean division is active by
-    default; Han division is opt-in.
+    An undivided word in the family position of a name written in
+    an activated script divides after a recognized surname, the
+    longest recognized surname first; where the vocabulary
+    recognizes nothing, an optional segmenter may divide instead,
+    and with neither the word stays whole rather than divide in a
+    wrong place. Korean division is active by default; Han division
+    is opt-in.
       "김민준"                    →  family="김"
       "남궁민수"                  →  family="남궁"
+      "남궁민수 지훈"             →  family="남궁"
       "毛泽东"                    →  family="毛泽东"  · boundary
       "毛泽东"  [zh]              →  family="毛"
       "高橋一郎"  [zh]            →  family="高"
@@ -406,10 +434,10 @@ W2. Rationale: some East Asian honorifics glue directly onto the end
     of the name (田中さん); a glued word peels off only if it could
     never itself end a name, so the listed vocabulary carries its
     own license and needs no other gate.
-    A listed honorific glued to the end of the name's last name word
-    splits off and reads as a suffix. The peel crosses a family
-    comma and ignores surrounding punctuation, but never takes a
-    part that is not name text as its site.
+    A listed honorific glued to the end of the name's last name
+    word splits off once and reads as a suffix. The split-off
+    crosses a family comma and ignores surrounding punctuation, but
+    never treats a part that is not name text as the name's end.
       "田中さん"                  →  suffix="さん"
       "김, 민준씨"                →  suffix="씨"
       "田中さん, V."              →  suffix="さん"
@@ -417,16 +445,18 @@ W2. Rationale: some East Asian honorifics glue directly onto the end
       "王君"                      →  family="王君"  · boundary
     history: decisions.md#W2 · implemented: nameparser/_pipeline/_script_segment.py
 
-W3. Rationale: a divided name was divided by its writer, and
-    re-dividing would invent a boundary nobody drew; a family name
-    declared by a comma is likewise the writer's own division.
-    Division applies only to a name whose written form is undivided:
-    a name part already containing a division divides no further —
-    a spaced honorific counts as a written division — and under a
-    family comma the pre-comma text is the family by declaration
-    and never divides. Only the honorific peel crosses these,
-    because an honorific is no part of the name on either side.
+W3. Rationale: a family name declared by a comma is the writer's
+    own division, and re-dividing it would invent a boundary nobody
+    drew.
+    Under a family comma the pre-comma text is the family by
+    declaration and never divides, and the post-comma side is given
+    text with no family to find; only the honorific split-off (W2)
+    crosses the comma, an honorific being no part of the name on
+    either side. A segmenter — unlike the vocabulary — is consulted
+    only for a name whose written form is wholly undivided, a
+    spaced honorific counting as a written division.
       "남궁민수"                  →  family="남궁"
+      "지훈, 남궁민수"            →  given="남궁민수"
       "남궁민수, 지훈"            →  family="남궁민수"  · boundary
     history: decisions.md#W3 · implemented: nameparser/_pipeline/_script_segment.py
 
@@ -443,7 +473,11 @@ W4. Rationale: Chinese, Japanese and Korean all write the family
       "山田 太郎"                 →  family="山田"
       "高橋 みなみ"               →  family="高橋"
       "マイケル ジャクソン"        →  given="マイケル"  · boundary
-    history: decisions.md#W4 · implemented: nameparser/_pipeline/_assign.py
+    Accepted: a name the interpunct divides keeps its source order —
+    the divider itself marks a transcription (T3) — so the override
+    stands down there.
+      "毛·泽东"                   →  given="毛"
+    history: decisions.md#W4 · interacts: T3 · implemented: nameparser/_pipeline/_assign.py
 
 ## Tokens, initials & punctuation (T)
 
@@ -458,9 +492,9 @@ Catalan punt volat interior to legitimate words (Gal·la).
 T1. Rationale: a character that carries no name content (emoji, an
     invisible directionality control) stands between words, not
     inside them.
-    A name splits at whitespace and, when stripping is active, at
-    ignorable characters: an ignorable character separates its
-    neighbors and never joins them.
+    A name splits at whitespace and — unless the caller opts to
+    keep them — at ignorable characters: an ignorable character
+    separates its neighbors and never joins them.
       "John😀Smith"                →  family="Smith"
       "John😀Smith"  keep-emoji    →  given="John😀Smith"  · boundary
     history: decisions.md#T1 · implemented: nameparser/_pipeline/_tokenize.py

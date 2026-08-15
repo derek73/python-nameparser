@@ -63,9 +63,10 @@ def _is_title_piece(piece: Sequence[int], ptags: Set[str],
     return len(piece) == 1 and "vocab:title" in tokens[piece[0]].tags
 
 
-# rules.md#P2: "a particle joins forward onto the name word after it,
-# chains included; the chain begins wherever the name begins, and a
-# preceding title does not move that point" (history: decisions.md#P2)
+# rules.md#P2: "a particle joins the words after it into one family
+# name, and the join runs to the end of the name; the chain begins
+# wherever the name begins, and a preceding title does not move that
+# point" (history: decisions.md#P2)
 def _is_prefix_piece(piece: Sequence[int], ptags: Set[str],
                      tokens: Sequence[WorkToken]) -> bool:
     if "prefix" in ptags:
@@ -402,10 +403,10 @@ def group(state: ParseState) -> ParseState:
                 for i in piece[1:]:
                     tokens[i] = dataclasses.replace(
                         tokens[i], tags=tokens[i].tags | {"joined"})
-        # rules.md#M2: "a recognized maiden marker inside the name
-        # takes the words after it — up to any trailing suffix — as
-        # the maiden name, and the marker itself is dropped"
-        # (history: decisions.md#M2)
+        # rules.md#M2: "a recognized maiden marker standing after at
+        # least one name word takes the words after it — up to any
+        # trailing suffix — as the maiden name, and the marker itself
+        # is dropped" (history: decisions.md#M2)
         # maiden markers: a non-leading marker piece consumes following
         # pieces until a suffix; consumed tokens become MAIDEN, the
         # marker is dropped (#274)

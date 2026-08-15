@@ -272,9 +272,10 @@ def _peel_site(state: ParseState, flat: Sequence[int],
 
 
 # rules.md#W2: "a listed honorific glued to the end of the name's
-# last name word splits off and reads as a suffix. The peel crosses a
-# family comma and ignores surrounding punctuation, but never takes a
-# part that is not name text as its site." (history: decisions.md#W2)
+# last name word splits off once and reads as a suffix. The
+# split-off crosses a family comma and ignores surrounding
+# punctuation, but never treats a part that is not name text as the
+# name's end." (history: decisions.md#W2)
 def _peel_honorific_tail(state: ParseState) -> ParseState:
     """#308: split a listed honorific off the END of the name's last
     NON-POST-NOMINAL token -- 田中さん -> 田中 + さん -- and let
@@ -619,13 +620,13 @@ def _split_surname_site(state: ParseState) -> ParseState:
     return _split(state, i, answer.splits, detail)
 
 
-# rules.md#W1: "an unspaced name in an activated script divides after
-# a recognized surname, the longest recognized surname first; where
-# the vocabulary recognizes nothing, an optional segmenter may divide
-# instead, and with neither the name stays whole"
-# rules.md#W3: "a name part already containing a division divides no
-# further" and "under a family comma the pre-comma text is the family
-# by declaration and never divides" (history: decisions.md#W3)
+# rules.md#W1: "an undivided word in the family position of a name
+# written in an activated script divides after a recognized surname,
+# the longest recognized surname first; where the vocabulary
+# recognizes nothing, an optional segmenter may divide instead"
+# rules.md#W3: "under a family comma the pre-comma text is the
+# family by declaration and never divides, and the post-comma side
+# is given text with no family to find" (history: decisions.md#W3)
 def script_segment(state: ParseState) -> ParseState:
     if state.original.isascii():
         # spans index the original exactly (the anti-#100 invariant),
