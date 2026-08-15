@@ -126,7 +126,16 @@ def test_a_leading_ambiguous_particle_is_reported_once_and_only_once(
     one is a fork -- so any reconstruction here would have to
     re-implement _group rather than check it.
     """
-    lex = Lexicon.default()
+    # The 'Freiherr ' lead below has to be a title AND a particle, or it
+    # is transparent to the leading-particle exception (#367), every
+    # shape using it leaves _group's emitter for _assign's, and this
+    # sweep goes on passing with the fork count unchanged -- coverage
+    # lost silently, which is the failure this sweep is least able to
+    # notice about itself. Supplied rather than borrowed from the shipped
+    # vocabulary, for the reason test_parser.py's _TITLE_PARTICLES block
+    # gives; a no-op against today's data, and #360-proof against
+    # tomorrow's.
+    lex = Lexicon.default().add(titles={"freiherr"}, particles={"freiherr"})
     # bound-given prefixes are excluded, not overlooked: 'abu' is both
     # an ambiguous particle and a bound given prefix, so whether it
     # forks depends on whether the bound join fired -- a second rule,

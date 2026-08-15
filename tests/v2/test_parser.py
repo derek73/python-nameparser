@@ -288,18 +288,24 @@ def test_trailing_roman_numeral_reports_the_fork() -> None:
     assert parse("John Q. V").ambiguities == ()
 
 
-#: The words the _group-emitter tests below spell. The emitter asks two
-#: DIFFERENT things of two different words, measured 2026-08-14 against
-#: "Freiherr von Richthofen":
+#: The words the _group-emitter tests below spell, apart from the
+#: by-construction test, which invents its own. The emitter asks two
+#: DIFFERENT things of two different words. Measured against
+#: "Freiherr von Richthofen", one membership dropped at a time:
 #:
-#:   leading word ('Freiherr')  must be in titles & PARTICLES. Drop it
-#:       from either and there is no chain at all -- the particle is the
-#:       leading name piece again and _assign reports the fork instead.
-#:       Since #367 a plain title is transparent to the leading-particle
-#:       exception, which is why a title alone no longer does it.
-#:   chained word ('von')       must be in PARTICLES_AMBIGUOUS. Drop it
-#:       and the chain still happens (family='von Richthofen') but no
-#:       fork is reported -- an unambiguous particle is not a decision.
+#:   leading word ('Freiherr')  titles & PARTICLES, and the two halves
+#:       buy different things. Without `particles` there is no CHAIN --
+#:       'von' is the leading name piece again (given='von',
+#:       family='Richthofen') and _assign reports the fork. Without
+#:       `titles` the chain still happens (family='von Richthofen') but
+#:       this emitter's `all(title(x) for x in range(k))` guard fails,
+#:       so the REPORT is lost and _assign reports a fork about
+#:       'Freiherr' instead. The merge sits outside that guard.
+#:       Its `particles_ambiguous` membership is irrelevant either way,
+#:       pinned by control 3 in the test below.
+#:   chained word ('von')       PARTICLES_AMBIGUOUS. Drop it and the
+#:       chain still happens (family='von Richthofen') but no fork is
+#:       reported -- an unambiguous particle is not a decision.
 #:
 #: The distinction matters because this file used to assert
 #: `titles & particles_ambiguous` for the LEADING word, which is the
@@ -309,49 +315,66 @@ def test_trailing_roman_numeral_reports_the_fork() -> None:
 #: subsets of `particles`, so it cannot empty `titles & particles` and
 #: cannot orphan this emitter.
 #:
-#: These tests supply the memberships anyway rather than borrowing them,
-#: because reachability is a property of the EMITTER, not of the shipped
-#: word lists: a caller may configure the overlap themselves (`Lexicon`
-#: asserts no invariant against it and construction warns about nothing).
-#: What the SHIPPED vocabulary reaches is a separate claim, pinned where
-#: it belongs -- the "Freiherr von Richthofen" row in tests/v2/cases.py,
-#: which should fail loudly if #360 ever changes that parse.
+#: Both roles are supplied rather than borrowed, because reachability is
+#: a property of the EMITTER, not of the shipped word lists: a caller may
+#: configure the overlap themselves, and no `Lexicon` invariant forbids
+#: it -- constructing one emits no warning. Supplying only the leading
+#: half would leave the tests coupled to #360 through the chained word,
+#: which is the bug the first cut of this commit shipped.
+#:
+#: What the SHIPPED vocabulary reaches is a separate claim, pinned in
+#: tests/v2/cases.py's "Freiherr von Richthofen" row. Note that row
+#: tracks the PARSE, not the memberships: moving `freiherr` between the
+#: particle halves leaves it green, and only a change to the leading
+#: word's `titles`/`particles` membership, or to `von`'s ambiguous one,
+#: moves it.
 _TITLE_PARTICLES = frozenset({"freiherr", "do", "st"})
+
+#: The words those tests CHAIN. Disjoint from the leading set on purpose
+#: -- the two roles need different memberships, and holding them apart is
+#: what keeps that legible.
+_CHAINED_PARTICLES = frozenset({"von", "van"})
 
 
 def _overlap_parser(policy: Policy | None = None) -> Parser:
-    """A Parser whose lexicon spells every `_TITLE_PARTICLES` member as a
-    title, a particle AND an ambiguous particle, whatever the shipped data
-    says today. All three sets because these words appear in both roles
-    across the tests below -- 'Do St Johnson' chains `St`, which needs the
-    ambiguous membership, while `Do` leads and needs the other two."""
+    """A Parser whose lexicon gives each word the memberships its ROLE
+    needs, whatever the shipped data says today: the leading words become
+    titles and particles, the chained words ambiguous particles.
+
+    `particles` covers both because `_SUBSET_FIELDS` requires
+    `particles_ambiguous <= particles`; the leading words are deliberately
+    NOT made ambiguous, since that membership does nothing for them and
+    asserting it is how the wrong set got written down in the first place.
+    """
     lex = Lexicon.default().add(
         titles=_TITLE_PARTICLES,
-        particles=_TITLE_PARTICLES,
-        particles_ambiguous=_TITLE_PARTICLES,
+        particles=_TITLE_PARTICLES | _CHAINED_PARTICLES,
+        particles_ambiguous=_CHAINED_PARTICLES,
     )
     return Parser(lexicon=lex, policy=policy or Policy())
 
 
 def test_the_chained_emitter_is_reachable_by_construction() -> None:
     """_group's PARTICLE_OR_GIVEN emitter fires when a piece that is both a
-    title and an ambiguous particle sits ahead of the chained particle.
+    title and a PARTICLE sits ahead of the chained particle.
 
     Asserted against a lexicon built here, so what it pins is the emitter
-    rather than today's word lists. The control carries the weight: the
-    SAME input, with the word a plain title instead, takes _assign's
-    leading-particle branch and reports the other detail -- so a passing
-    assertion below cannot be the parser doing what it would have done
-    anyway. The overlap is what routes to _group, not the title.
+    rather than today's word lists. Three controls carry the weight, one
+    per membership the claim rests on: drop the leading word's `particles`
+    and the chain is gone; drop the chained word's `particles_ambiguous`
+    and the report is gone; drop the leading word's `particles_ambiguous`
+    and nothing moves at all -- which is the whole correction, since
+    asserting THAT membership is what this file used to do.
 
-    If this test ever fails, the emitter really is gone or broken. An
-    empty `titles & particles_ambiguous` in the shipped vocabulary does
-    NOT fail it, and does not mean the emitter is unreachable.
+    If this test fails, the emitter is gone or broken, or one of the two
+    words this test builds has lost a membership it supplies itself. An
+    empty `titles & particles_ambiguous` in the SHIPPED vocabulary does
+    not fail it and does not mean the emitter is unreachable.
     """
     word = "zzoverlap"
-    base = Lexicon.default()
-    overlap = base.add(
-        titles={word}, particles={word}, particles_ambiguous={word})
+    base = Lexicon.default().add(
+        particles=_CHAINED_PARTICLES, particles_ambiguous=_CHAINED_PARTICLES)
+    overlap = base.add(titles={word}, particles={word})
     text = f"{word} van Johnson"
 
     # the emitter, reached by construction
@@ -380,6 +403,17 @@ def test_the_chained_emitter_is_reachable_by_construction() -> None:
     quiet = Parser(lexicon=unambiguous).parse(text)
     assert (quiet.given, quiet.family) == (chained.given, chained.family)
     assert quiet.ambiguities == ()
+
+    # control 3 -- the leading word made ambiguous as well, which is the
+    # membership the deleted guard test asserted. Byte-identical to the
+    # treatment, fork included: it buys the emitter nothing. This is the
+    # executable half of the correction; without it the claim that
+    # `titles & particles` is the right set lives only in a comment, and
+    # a fixture supplying all three sets could never contradict it.
+    also_ambiguous = overlap.add(particles_ambiguous={word})
+    same = Parser(lexicon=also_ambiguous).parse(text)
+    assert (same.given, same.family) == (chained.given, chained.family)
+    assert [a.detail for a in same.ambiguities] == [amb.detail]
 
 
 def test_ambiguous_particle_reports_both_branches_of_its_fork() -> None:
@@ -509,8 +543,12 @@ def test_chained_particle_detail_is_order_invariant(policy: Policy) -> None:
     # "Dr. Van Johnson" is byte-identical to the bare "Van Johnson"
     # under every name_order, and the fork comes from _assign -- whose
     # detail DOES name the role, unlike the grouping-stage text above.
-    titled = Parser(policy=policy).parse("Dr. Van Johnson")
-    bare = Parser(policy=policy).parse("Van Johnson")
+    # through _overlap_parser as well: 'Van' has to be an ambiguous
+    # particle for _assign to report anything here, and that membership
+    # is exactly what #360 may move
+    p = _overlap_parser(policy)
+    titled = p.parse("Dr. Van Johnson")
+    bare = p.parse("Van Johnson")
     assert titled.title == "Dr."
     assert (titled.given, titled.middle, titled.family) == \
         (bare.given, bare.middle, bare.family)
