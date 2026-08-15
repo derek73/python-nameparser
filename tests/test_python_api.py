@@ -550,7 +550,7 @@ class HumanNamePythonTests(HumanNameTestBase):
 
     def test_override_regex_raises(self) -> None:
         # Custom regexes are not supported in 2.0 (deliberate divergence,
-        # migration spec §3 uniform rule): the constructor kwarg raises the
+        # shim's uniform read-only rule): the constructor kwarg raises the
         # same TypeError as attribute assignment, pointing at named Policy
         # flags. Reads of the built-in patterns stay available.
         var = TupleManager([("spaces", re.compile(r"\s+")),])

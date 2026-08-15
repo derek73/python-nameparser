@@ -1,4 +1,4 @@
-"""Perf smoke (core spec §7 tail): parse cost stays v1-comparable
+"""Perf smoke: parse cost stays v1-comparable
 (microseconds per name). Deliberately generous bound -- guards against
 order-of-magnitude regressions, does not gate normal variance.
 

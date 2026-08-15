@@ -1,4 +1,5 @@
-"""THE shared behavior case table (core spec §7.2).
+"""THE shared behavior case table (rules.md cites it as the pin of
+CURRENT behavior).
 
 Format is fixed here, in the first pipeline PR, and never per-PR:
 one Case per input, expected values for exactly the non-empty fields,
@@ -787,7 +788,7 @@ CASES: tuple[Case, ...] = (
          {"given": "Иван", "family": "Петров"},
          locale="ru",
          notes="a comma is an explicit signal that suppresses the "
-               "rotation (spec §1)"),
+               "rotation (rule O1)"),
     Case("tr_az_pack_marker", "Mammadova Aygun Ali kizi",
          {"given": "Aygun", "middle": "Ali kizi", "family": "Mammadova"},
          locale="tr_az",
@@ -826,7 +827,7 @@ CASES: tuple[Case, ...] = (
     Case("unbalanced_quote", 'Jon "Nick Smith',
          {"given": "Jon", "middle": '"Nick', "family": "Smith"},
          ambiguities=("unbalanced-delimiter",),
-         notes="quote char stays literal (spec §5a)"),
+         notes="quote char stays literal (rule N2)"),
     Case("suffix_stays_suffix", "Johnson PhD",
          {"given": "Johnson", "suffix": "PhD"},
          classification="fix(suffix-routing)",

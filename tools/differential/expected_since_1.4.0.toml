@@ -1,6 +1,6 @@
 # Every rule needs `issue`; optional `name_regex` and `fields` narrow
 # it. An unexplained diff is a release blocker until classified (spec
-# S5). Rules are seeded from docs/superpowers/plans/notes-m12-diffs.md
+# S5). Rules were seeded from the 2.0 rewrite's working notes
 # and the `classification="fix(...)"` rows in tests/v2/cases.py; keep
 # each entry's `name_regex`/`fields` as tight as the diff allows.
 # File order is not load-bearing: compare.py sorts `name_regex` rules
@@ -205,7 +205,7 @@ issue = "fix(suffix-delimiter-rendering) no-space delimiter core token kept whol
 # Constants.suffix_delimiters); the corpus runs with default policy, so
 # this rule is expected to match nothing here. Kept for documentation
 # parity with tests/v2/cases.py's 'suffix_delimiter_no_space_core' row
-# (anti-#100, migration plan deviation 5).
+# (anti-#100; mechanisms.md#SPANS).
 dormant = "the no-space delimiter rendering fires only under a non-default Policy, and the corpora run under the default one, so no corpus name can reach this rule. Kept because the behavior family is real and documented in tests/v2/cases.py: the rule is ready the moment a matching string is added"
 name_regex = "/"
 fields = ["suffix"]

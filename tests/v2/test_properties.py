@@ -1,4 +1,4 @@
-"""Property layer (core spec §7.3). Hypothesis is a dev dependency only.
+"""Property layer. Hypothesis is a dev dependency only.
 
 The alphabet is punctuation-heavy on purpose: plain st.text() spreads
 over all of Unicode, so commas, quotes, and delimiters almost never

@@ -1,4 +1,4 @@
-"""Core runner over the shared case table (spec §7.2). The facade
+"""Core runner over the shared case table. The facade
 runner (migration plan) consumes the same CASES."""
 import pytest
 

@@ -1,4 +1,5 @@
-"""Facade runner (migration spec §5): the shared case table asserted
+"""Facade runner (mechanisms.md#FACADE-CONTRACT): the shared case
+table asserted
 through HumanName. Deleted wholesale in 3.0 with the facade."""
 import dataclasses
 

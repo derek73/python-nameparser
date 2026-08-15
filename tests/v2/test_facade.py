@@ -1,4 +1,4 @@
-"""The 2.0 HumanName facade (migration spec §2)."""
+"""The 2.0 HumanName facade (mechanisms.md#FACADE-CONTRACT)."""
 import pickle
 import warnings
 from pathlib import Path
@@ -123,7 +123,7 @@ def test_field_assignment_str_list_none() -> None:
     assert n.full_name == "John Smith"       # no re-parse (v1 parity)
 
 
-def test_list_attributes_are_snapshots() -> None:          # spec §2 exc. 1
+def test_list_attributes_are_snapshots() -> None:
     n = HumanName("John Quincy Adams Smith")
     lst = n.middle_list
     lst.append("HACKED")

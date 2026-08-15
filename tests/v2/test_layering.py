@@ -30,7 +30,8 @@ _PIPELINE_STAGE_ALLOWED = (
 )
 
 # a locale pack: pure data over the base types, no pipeline or config
-# access (locales spec §2) -- one contract shared by every pack, like
+# access (mechanisms.md#LOCALE-PACKS-PURE-DATA) -- one contract
+# shared by every pack, like
 # _PIPELINE_STAGE_ALLOWED above, so tightening it is a one-line edit.
 # _types joined the three in #272: the ja pack's segmenter factory
 # constructs a Segmentation, and _types is the bottom of the graph
@@ -76,7 +77,8 @@ ALLOWED = {
     "_parser.py": ("nameparser._types", "nameparser._lexicon",
                    "nameparser._policy", "nameparser._locale",
                    "nameparser._pipeline"),
-    # facade layer (migration spec §2/§3): may import anything public
+    # facade layer (mechanisms.md#FACADE-CONTRACT): may import anything
+    # public
     # plus _render (unused yet) and each other. _facade delegates
     # parsing to the core Parser resolved from the bound Constants shim.
     # The bare "nameparser.config" import (not just its submodules) is
@@ -103,7 +105,7 @@ ALLOWED = {
     # v1 import-path preservation: thin re-exports of the facade/shim
     "parser.py": ("nameparser._facade",),
     "config/__init__.py": ("nameparser._config_shim",),
-    # CLI (migration spec §6): imports only the public package, same as
+    # CLI: imports only the public package, same as
     # any other consumer -- no access to internal modules.
     "__main__.py": ("nameparser",),
 }

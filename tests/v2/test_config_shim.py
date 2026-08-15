@@ -1,4 +1,5 @@
-"""Shim Constants/SetManager/TupleManager (migration spec §3)."""
+"""Shim Constants/SetManager/TupleManager
+(mechanisms.md#CONFIG-SHIM-SNAPSHOT)."""
 import copy
 import pickle
 import warnings
@@ -150,7 +151,7 @@ def test_delimiter_manager_sentinels_only() -> None:
     d2["parenthesis"] = moved          # the documented bucket-move idiom
     assert "parenthesis" in d2
     with pytest.raises(TypeError, match="quoted_word"):
-        d2["angle_brackets"] = "custom"     # spec §3: custom keys raise
+        d2["angle_brackets"] = "custom"     # custom keys raise
 
 
 def test_delimiter_manager_no_bypass_via_constructor_or_update() -> None:
