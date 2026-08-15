@@ -24,6 +24,10 @@ _CITE_RE = re.compile(
     r"#\s*(?:rules|mechanisms|decisions)\.md#"
     r"(?P<cid>[A-Z]\d+|[A-Z][A-Z0-9]+(?:-[A-Z0-9]+)+)"
     r":\s*(?P<first>.*)")
+# The excerpt is the FIRST double-quoted span after the ID, wrapped
+# over continuation comment lines; text outside the quotes (v1 names,
+# history pointers, code-local notes) is free.
+_EXCERPT_RE = re.compile(r'"(.*?)"')
 
 
 def _norm(s: str) -> str:
@@ -55,15 +59,16 @@ def _citations() -> list[tuple[Path, int, str, str]]:
                 m = _CITE_RE.search(line)
                 if not m:
                     continue
-                excerpt = [m.group("first")]
+                block = [m.group("first")]
                 for cont in lines[i + 1:]:
                     cs = cont.strip()
                     if cs.startswith("#") and not _CITE_RE.search(cont):
-                        excerpt.append(cs.lstrip("# "))
+                        block.append(cs.lstrip("# "))
                     else:
                         break
+                qm = _EXCERPT_RE.search(" ".join(block))
                 found.append((path, i + 1, m.group("cid"),
-                              _norm(" ".join(excerpt))))
+                              _norm(qm.group(1)) if qm else ""))
     return found
 
 
@@ -73,7 +78,10 @@ def test_citations_are_verbatim_excerpts() -> None:
     for path, lineno, cid, excerpt in _citations():
         if cid not in statements:
             problems.append(f"{path}:{lineno}: cites unknown ID {cid}")
-        elif excerpt and excerpt not in statements[cid]:
+        elif not excerpt:
+            problems.append(
+                f"{path}:{lineno}: citation of {cid} has no quoted excerpt")
+        elif excerpt not in statements[cid]:
             problems.append(
                 f"{path}:{lineno}: not a verbatim excerpt of {cid}")
     assert not problems, "\n".join(problems)

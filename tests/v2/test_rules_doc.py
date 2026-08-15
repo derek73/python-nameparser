@@ -20,7 +20,6 @@ from tests.v2.rules_doc import (
 RULES = parse_rules_doc(RULES_DOC.read_text(encoding="utf-8"))
 
 
-@pytest.mark.xfail(strict=True, reason="until the first extraction pass")
 def test_doc_has_rules() -> None:
     assert RULES, "rules.md holds no rules yet -- extraction not started"
 

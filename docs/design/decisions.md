@@ -26,3 +26,47 @@ Entry conventions:
   of the option chosen. The costs accepted here are the artifacts
   rules.md lists under the rule's `Accepted:` consequences; the two
   link by rule ID.
+
+### P1 — lone particle fold
+
+A lone PIECE is the whole test — deliberately narrower than "a
+never-given particle is never reported as the given name," which
+would be false. Under a family-first order, "Juan de la Vega" holds
+the entire chained group in the given position — three words, not a
+lone particle — so P1 declines and given="de la Vega" stands; #359
+records that case as working as intended. The MIDDLE position is
+deliberately not a fold site.
+
+- 2026-08 #359 — the opening site is read from joining structure
+  (pieces), not from assigned roles, so the fold holds under every
+  name_order. Before this, the role-only read let "de Mesnil" split
+  under a family-first order.
+- 2026-08 #367 — titles are transparent to the fold: "Sir de
+  Mesnil" now reads like "de Mesnil". Fixed by removing the
+  title→particle chain in grouping, not by touching this rule.
+
+Open: [#364](https://github.com/derek73/python-nameparser/issues/364)
+how much the fold takes ·
+[#365](https://github.com/derek73/python-nameparser/issues/365)
+should the middle position be a third site ·
+[#360](https://github.com/derek73/python-nameparser/issues/360)
+which particles count as never-given.
+
+### O1 — East Slavic rotation
+
+- 2026-07-12 — v1 parity pinned live: the rotation reconstructs
+  token position from assigned roles, which is faithful to v1 only
+  under the default given-first order.
+
+Open: [#270](https://github.com/derek73/python-nameparser/issues/270)
+how the rotations interact with non-default name_order values.
+
+### O2 — Turkic rotation
+
+- 2026-07-02 — shape fixed at exactly four words (1 given + 2
+  middle + 1 marker), v1 parity; other shapes keep their positional
+  reading even when that leaves the marker in a name field (see the
+  rule's Accepted consequence).
+
+Open: [#270](https://github.com/derek73/python-nameparser/issues/270)
+same rotation/name_order interaction as O1.
