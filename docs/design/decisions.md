@@ -59,6 +59,23 @@ should the middle position be a third site ·
 [#360](https://github.com/derek73/python-nameparser/issues/360)
 which particles count as never-given.
 
+### T1 — separators, not joiners
+
+- 2026-07 (v2 core, PR #288) — v1's squash_emoji/squash_bidi
+  REMOVED the character and joined its neighbors ('A😀B' → 'AB');
+  v2 makes an ignorable character a separator ('A😀B' → 'A', 'B').
+  The unavoidable consequence of every part being an exact
+  positioned piece of the input: with no rewriting stage, nothing
+  can splice two half-words together.
+
+### T3 — the interpunct's flank guard
+
+- 2026-08 #298 — U+00B7 divides only between classified-script
+  characters because it is also the Catalan punt volat, interior to
+  legitimate names (Gal·la). The nakaguro (T2) needs no such guard:
+  its codepoints are CJK-only and appear in no other script's
+  names, which is what licenses an unconditional rule.
+
 ### M1 — delimited maiden names
 
 - 2026-07-03 (maiden-bucket design, landed via the v2 core, PR

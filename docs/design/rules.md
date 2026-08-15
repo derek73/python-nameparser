@@ -225,6 +225,44 @@ O3. Rationale: several traditions write compound family names
 
 ## Tokens, initials & punctuation (T)
 
+Background: every parsed name part is an exact piece of the input,
+located by its position — nothing rewrites the text before parsing.
+Some punctuation is a name divider only by convention of a
+particular writing system: Japanese writes name parts with a middle
+dot between them (マイケル・ジャクソン, 姓・名), while U+00B7 is
+both the Chinese divider for transcribed foreign names and the
+Catalan punt volat interior to legitimate words (Gal·la).
+
+T1. Rationale: a character that carries no name content (emoji, an
+    invisible directionality control) stands between words, not
+    inside them.
+    A name splits at whitespace and, when stripping is active, at
+    ignorable characters: an ignorable character separates its
+    neighbors and never joins them.
+      "John😀Smith"                →  family="Smith"
+      "John😀Smith"  keep-emoji    →  given="John😀Smith"  · boundary
+    history: decisions.md#T1 · implemented: nameparser/_pipeline/_tokenize.py
+
+T2. Rationale: the katakana middle dot exists to divide name parts
+    and appears in no native name.
+    The katakana middle dot and its halfwidth twin divide a name
+    like whitespace, always.
+      "マイケル・ジャクソン"        →  given="マイケル"
+      "高橋・一郎"                 →  family="高橋"
+    no-boundary: the separation is unconditional; the
+    context-sensitive interpunct is T3's subject.
+    implemented: nameparser/_pipeline/_tokenize.py
+
+T3. Rationale: U+00B7 is two marks in one codepoint — the Chinese
+    间隔号 dividing a transcribed foreign name, and the Catalan punt
+    volat interior to words.
+    The interpunct divides a name only between two characters of a
+    classified East Asian script; anywhere else it is part of the
+    word.
+      "威廉·莎士比亚"              →  family="莎士比亚"
+      "Gal·la Serra"              →  given="Gal·la"  · boundary
+    history: decisions.md#T3 · implemented: nameparser/_pipeline/_tokenize.py
+
 ## Ambiguity & tie-breaking (A)
 
 ## Rendering & views (R)
