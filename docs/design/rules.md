@@ -77,6 +77,23 @@ H1. Rationale: a title normally addresses by surname, so a title
       "Sir John"                  →  given="John"  · boundary
     implemented: nameparser/_pipeline/_post_rules.py
 
+H2. Rationale: before a name, an abbreviation is almost always a
+    title — "Rev.", "Ing.", "Mag." — and no vocabulary can list
+    every profession's abbreviations in every language.
+    A name-opening abbreviation of at least two letters ending in a
+    period reads as a title even when unlisted; a bare initial does
+    not.
+      "Rev. John Smith"           →  title="Rev."
+      "Xyz. John Smith"           →  title="Xyz."
+      "J. Smith"                  →  given="J."  · boundary
+    Accepted: the shape is only recognizable as an unbroken run of
+    letters, so an abbreviation in a script whose letters carry
+    combining vowel signs (Bengali, Devanagari) never reads as a
+    title by shape — an unlisted abugida honorific stays a name
+    word, and only vocabulary (#343) can recognize it.
+      "প্রফেসর. Sen"              →  given="প্রফেসর."
+    history: decisions.md#H2 · implemented: nameparser/_pipeline/_assign.py
+
 ## Particles & surname prefixes (P)
 
 Background: particles ("de", "la", "van", "von", "bin") link forward
@@ -106,6 +123,16 @@ P1. Rationale: a never-given particle standing alone cannot be
 
 ## Suffixes: generational & credentials (S)
 
+Background: what follows a name is one of two different things —
+generational suffixes (Jr., III), which attach to the name itself,
+and credentials (PhD, MD, MBA), which are earned attachments. CLDR
+personNames keeps them as separate fields (`generation`,
+`credentials`) and formats them differently; this library currently
+reports both in one `suffix` field, a merge #326 examines. The
+vocabulary is largely split already: a generational word list and a
+credential acronym list, plus a short list of acronyms that are also
+ordinary names (MA, BA) and so are AMBIGUOUS as bare words.
+
 S1. Rationale: brackets set off more than nicknames — credentials
     are routinely written parenthesized after a name, and a
     credential is recognizable by its form.
@@ -115,6 +142,23 @@ S1. Rationale: brackets set off more than nicknames — credentials
       "Andrew Perkins (MBA)"      →  suffix="MBA"
       "Andrew Perkins (Andy)"     →  nickname="Andy"  · boundary
     implemented: nameparser/_pipeline/_extract.py
+
+S2. Rationale: generational suffixes and credentials are recognized
+    by vocabulary; an acronym that is also an ordinary name is only
+    unmistakably a credential when its periods are written.
+    A trailing word of the suffix vocabulary reads as a suffix —
+    generational forms and credential acronyms alike, and an
+    ambiguous acronym written with periods counts unambiguously.
+      "John Smith Jr."            →  suffix="Jr."
+      "John Smith M.A."           →  suffix="M.A."
+      "John Smith PhD"            →  suffix="PhD"
+    Accepted: a BARE ambiguous acronym in the trailing position
+    still reads as a suffix today, even beside an East Asian
+    surname it more likely belongs to.
+      "Jack Wei Ma"               →  suffix="Ma"
+    no-boundary: the vocabulary is the boundary; an unlisted
+    trailing word simply reads as the family name.
+    implemented: nameparser/_pipeline/_classify.py
 
 ## Nicknames & quoted names (N)
 

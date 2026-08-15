@@ -59,6 +59,17 @@ should the middle position be a third site ·
 [#360](https://github.com/derek73/python-nameparser/issues/360)
 which particles count as never-given.
 
+### H2 — the leading-abbreviation title
+
+- 2026-06-30 (leading-period-title design; v2 core, PR #288) — the
+  shape test is v1 parity (period_abbreviation): two-plus letters
+  then a period, leading position only, bare initials exempt. The
+  extraction litmus (2026-08-15): the spec drafted this rule as
+  "recognized by vocabulary, not by written shape" and the live
+  parser falsified that framing — the shape heuristic is real, and
+  what the abugida gap (#342-#345) shows is its LIMIT, not its
+  absence. Recorded as the rule's Accepted consequence.
+
 ### W1 — unspaced CJK division
 
 - 2026-08-07 #271 (2.1.0) — Korean division ships as a default: the

@@ -57,6 +57,9 @@ def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
         tokens[i] = dataclasses.replace(tokens[i], role=role)
 
 
+# rules.md#H2: "a name-opening abbreviation of at least two letters
+# ending in a period reads as a title even when unlisted; a bare
+# initial does not" (history: decisions.md#H2)
 def _is_leading_title(piece: tuple[int, ...], ptags: frozenset[str],
                       tokens: list[WorkToken]) -> bool:
     if _is_title_piece(piece, ptags, tokens):
