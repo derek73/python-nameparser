@@ -44,6 +44,9 @@ def _run(example: Example) -> object:
             policy = obj
         elif kind == "locale":
             assert isinstance(obj, str)
+            assert obj != "ja", (
+                "ja needs the optional segmenter: use the "
+                "[ja+segmenter] gate so CI without the extra skips it")
             locale = obj
         elif kind == "gated_locale":
             if importlib.util.find_spec("namedivider") is None:

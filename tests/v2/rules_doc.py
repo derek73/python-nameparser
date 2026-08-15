@@ -1,7 +1,7 @@
 """Parser and annotation registry for docs/design/rules.md example lines.
 
-The grammar (spec: docs/superpowers/specs/, library-rules-documentation
-design; the committed description lives in rules.md's preamble):
+The grammar (described for humans in rules.md's preamble; this module
+is its executable definition):
 
     "INPUT" [annotation] →  field=VALUE  [· boundary]
                             [deviates: #N (today: field=VALUE)]

@@ -27,6 +27,13 @@ Entry conventions:
   rules.md lists under the rule's `Accepted:` consequences; the two
   link by rule ID.
 
+### legacy-rule-numbers — the old docstring numbering
+
+Before rules.md, the post_rules stage docstring numbered its rules
+locally, and historical issue comments (#359, #364, #365, #367) use
+those numbers. The mapping: rule 1 → H1, rule 1b → P1, rule 2 → O1,
+rule 3 → O2, rule 4 → O3.
+
 ### P1 — lone particle fold
 
 A lone PIECE is the whole test — deliberately narrower than "a
@@ -54,19 +61,21 @@ which particles count as never-given.
 
 ### O1 — East Slavic rotation
 
-- 2026-07-12 — v1 parity pinned live: the rotation reconstructs
-  token position from assigned roles, which is faithful to v1 only
-  under the default given-first order.
+- 2026-07-12 (landed in the v2 core, PR #288) — v1 parity pinned
+  live: the rotation reconstructs token position from assigned
+  roles, which is faithful to v1 only under the default given-first
+  order.
 
 Open: [#270](https://github.com/derek73/python-nameparser/issues/270)
 how the rotations interact with non-default name_order values.
 
 ### O2 — Turkic rotation
 
-- 2026-07-02 — shape fixed at exactly four words (1 given + 2
-  middle + 1 marker), v1 parity; other shapes keep their positional
-  reading even when that leaves the marker in a name field (see the
-  rule's Accepted consequence).
+- 2026-07-02 (landed in the v2 core, PR #288) — shape fixed at
+  exactly four name words (1 given + 2 middle + 1 marker), v1
+  parity; other shapes keep their positional reading even when that
+  leaves the marker in a name field (see the rule's Accepted
+  consequence).
 
 Open: [#270](https://github.com/derek73/python-nameparser/issues/270)
 same rotation/name_order interaction as O1.
