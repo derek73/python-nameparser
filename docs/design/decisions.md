@@ -105,6 +105,26 @@ which particles count as never-given.
   kana cannot be Chinese and is not a transcription, so 高橋みなみ
   reads family-first though it is written in two scripts.
 
+### D1 — the segmenterless-activation warning
+
+- 2026-08 #337 — the warning exists because parser_for(locales.JA)
+  without segmenter= used to build a parser that silently behaved
+  like a working one minus the feature; it re-emits from the
+  parser_for frame so the reported location is the caller's own
+  call.
+- 2026-08-07 #339 — diagnostics that hand the reader code must hand
+  code that type-checks: the message's offered deactivation was
+  Policy(segment_scripts=()) — an arg-type error under mypy in a
+  py.typed package — and became frozenset(), pinned by a test
+  asserting the offered spelling. The known-bad spelling is in the
+  denylist test.
+
+### D2 — construction raises, parse never does
+
+- 2026-07 (v2 core, PR #288) — every raise in the locale-apply path
+  is a plain TypeError/ValueError so the wrap-with-locale-code
+  rewrap cannot break on exotic exception signatures.
+
 ### H2 — the leading-abbreviation title
 
 - 2026-06-30 (leading-period-title design; v2 core, PR #288) — the

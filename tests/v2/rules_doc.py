@@ -41,7 +41,7 @@ _POINTER_PART_RE = re.compile(r"(history|interacts|implemented):\s*([^·]+)")
 ASSERTABLE_FIELDS = frozenset({
     "title", "given", "middle", "family", "suffix", "nickname", "maiden",
     "family_base", "family_particles", "initials", "capitalized",
-    "ambiguities", "pieces", "warns"})
+    "ambiguities", "pieces", "warns", "raises"})
 
 
 @dataclass(frozen=True)
@@ -82,6 +82,27 @@ POLICIES: dict[str, Policy] = {
     "keep-emoji": Policy(strip_emoji=False),
     "strict-comma-suffixes": Policy(lenient_comma_suffixes=False),
 }
+#: D-section subjects: zero-arg constructions whose diagnostics the
+#: warns=/raises= assertion forms exercise.
+def _segmenterless_ja() -> object:
+    from nameparser import locales, parser_for
+    return parser_for(locales.get("ja"))
+
+
+def _bad_name_order() -> object:
+    return Policy(name_order=("given",))
+
+
+def _bad_order_none() -> object:
+    return Policy(name_order=None)  # type: ignore[arg-type]
+
+
+SUBJECTS: dict[str, object] = {
+    "segmenterless-ja": _segmenterless_ja,
+    "bad-name-order": _bad_name_order,
+    "bad-order-none": _bad_order_none,
+}
+
 #: Extras gates: locale requiring an optional dependency; the examples
 #: runner skips these when the import is absent (CI's ja-extra job
 #: exercises them).

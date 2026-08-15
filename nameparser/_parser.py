@@ -292,6 +292,13 @@ def parser_for(*locales: Locale, base: Parser | None = None,
             # a subclass with extra mandatory args would break this rewrap
             raise type(exc)(
                 f"while applying locale {loc.code!r}: {exc}") from exc
+    # rules.md#D1: "constructing a parser that activates division for
+    # scripts with no covering surnames and no segmenter warns at
+    # construction, naming the dead scripts and each way out"
+    # (history: decisions.md#D1)
+    # rules.md#D2: "applying a locale pack wraps any such error with
+    # the locale's code, so a stacked configuration names which layer
+    # broke" (history: decisions.md#D2)
     # Construction warnings (the segmenterless-activation check in
     # Parser.__post_init__) re-emit from THIS frame: its stacklevel is
     # sized for direct Parser(...) construction, and through this

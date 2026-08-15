@@ -32,8 +32,24 @@ def test_every_rule_has_examples_and_boundary(rule: Rule) -> None:
         f"'no-boundary: <reason>'")
 
 
+def _check_diagnostic(example: Example) -> None:
+    from typing import Callable, cast
+
+    import re as _re
+
+    from tests.v2.rules_doc import SUBJECTS
+    fn = cast(Callable[[], object], SUBJECTS[example.subject or ""])
+    pattern = _re.escape(str(example.value))
+    if example.field == "warns":
+        with pytest.warns(UserWarning, match=pattern):
+            fn()
+    else:
+        with pytest.raises((TypeError, ValueError), match=pattern):
+            fn()
+
+
 def _run(example: Example) -> object:
-    if example.field in ("warns", "pieces"):
+    if example.field == "pieces":
         pytest.skip("assertion form lands with its first using rule")
     policy: Policy | None = None
     locale: str | None = None
@@ -76,6 +92,9 @@ _EXAMPLE_IDS = [f"{r.rule_id}-{i}" for r in RULES
 
 @pytest.mark.parametrize("rule, example", _EXAMPLES, ids=_EXAMPLE_IDS)
 def test_example(rule: Rule, example: Example) -> None:
+    if example.field in ("warns", "raises"):
+        _check_diagnostic(example)
+        return
     actual = _run(example)
     if example.deviates_issue is not None:
         assert actual == example.today_value, (

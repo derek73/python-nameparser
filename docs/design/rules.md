@@ -536,6 +536,10 @@ A1. Rationale: a caller can only act on doubt that is reported.
       "Jane „JD Smith"            →  ambiguities=("unbalanced-delimiter",)
       "John Smith, MD, Bart"      →  ambiguities=("comma-structure",)
       "John Smith"                →  ambiguities=()  · boundary
+    Accepted: the one exception to totality is a user-supplied
+    segmenter's own error, which propagates — a user-code error is
+    not a content error. (Needs the optional extra to demonstrate,
+    so no example line.)
     implemented: nameparser/_pipeline/_state.py
 
 ## Rendering & views (R)
@@ -584,3 +588,33 @@ R4. Rationale: case repair is a display concern, applied only on
     implemented: nameparser/_render.py
 
 ## Construction & configuration diagnostics (D)
+
+Background: configuration mistakes are reported when they are made —
+at construction — not when a name happens to hit them; and a
+diagnostic that hands the reader code must hand code that works and
+type-checks.
+
+D1. Rationale: a parser whose activated scripts nothing can divide
+    behaves like a working parser minus a feature, silently — the
+    one misconfiguration a caller cannot see in output.
+    Constructing a parser that activates division for scripts with
+    no covering surnames and no segmenter warns at construction,
+    naming the dead scripts and each way out.
+      [segmenterless-ja]  →  warns="deactivate with Policy(segment_scripts=frozenset())"
+    no-boundary: any covering surname vocabulary, configured
+    segmenter, or deactivation silences it — the default parser and
+    the zh pack never warn, which every other example in this
+    document exercises.
+    history: decisions.md#D1 · implemented: nameparser/_parser.py
+
+D2. Rationale: whatever a name contains, parsing answers; only a
+    broken configuration may raise, and it must name the field.
+    Configuration validation raises at construction with the
+    offending field and value named; applying a locale pack wraps
+    any such error with the locale's code, so a stacked
+    configuration names which layer broke.
+      [bad-name-order]  →  raises="name_order elements must be Role members"
+      [bad-order-none]  →  raises="name_order must be an iterable"
+    no-boundary: the non-raising side is every other rule's
+    examples; parse() itself is total (A1).
+    history: decisions.md#D2 · implemented: nameparser/_policy.py, nameparser/_parser.py
