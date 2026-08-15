@@ -33,7 +33,7 @@ def test_every_rule_has_examples_and_boundary(rule: Rule) -> None:
 
 
 def _run(example: Example) -> object:
-    if example.field in ("warns", "ambiguities", "pieces"):
+    if example.field in ("warns", "pieces"):
         pytest.skip("assertion form lands with its first using rule")
     policy: Policy | None = None
     locale: str | None = None
@@ -60,6 +60,8 @@ def _run(example: Example) -> object:
         parsed = Parser(policy=policy).parse(example.text)
     else:
         parsed = parse(example.text)
+    if example.field == "ambiguities":
+        return tuple(a.kind.value for a in parsed.ambiguities)
     return getattr(parsed, example.field)
 
 

@@ -6,7 +6,7 @@ be EMPTY -- doubled commas keep their structural position), structure,
 COMMA_STRUCTURE ambiguities for unrecognized extra segments.
 Reads: Lexicon suffix vocabulary and Policy, both through
 _vocab.is_wholly_suffix -- the suffix-comma decision is definitionally
-vocabulary-dependent (recorded plan deviation #3), and the predicate
+vocabulary-dependent (decisions.md#C1), and the predicate
 owns the rest (Policy.lenient_comma_suffixes picks the lenient or
 strict token test; Policy.extra_suffix_delimiters gives v1
 suffix_delimiter parity, a delimiter-core token being transparent).

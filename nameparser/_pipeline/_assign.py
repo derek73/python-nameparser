@@ -8,13 +8,15 @@ in the Han/Hiragana/Katakana repertoire the #272 kana license shares
 across pieces); token/piece tags; Lexicon only through tags already
 applied by classify (plus the leading-title period rule).
 
-Ports v1's assignment loops. NO_COMMA (per name_order):
+Implements rules N3, O4 and W4 of docs/design/rules.md (plus H2
+above), cited at their code below. Ports v1's assignment loops.
+NO_COMMA (per name_order):
 leading title pieces chain while no given-position name has been seen
 (a title needs a following piece, unless the whole name is one title);
 then positional assignment per name_order with the trailing-suffix
 rule: the piece from which everything after is a strict suffix is the
 last name-position piece, the rest are suffixes. The v1 single-name+
-nickname rule lives here (plan deviation #2): one non-title piece plus
+nickname rule lives here (decisions.md#N3): one non-title piece plus
 a nonempty nickname puts that piece in FAMILY.
 FAMILY_COMMA: segment 0 wholly FAMILY (v1 parity); segment 1 gets
 leading titles, then given, then middles with strict-suffix pieces to
@@ -85,6 +87,10 @@ def _peel_leading_titles(pieces: tuple[tuple[int, ...], ...],
     return n
 
 
+# rules.md#W4: "a name written wholly in one East Asian script, or in
+# the kana-licensed Japanese repertoire, reads family-first whatever
+# order the caller declared; a wholly-katakana name keeps the declared
+# order" (history: decisions.md#W4)
 def _effective_order(policy: Policy,
                      pieces: list[tuple[int, ...]],
                      tokens: list[WorkToken],
@@ -141,6 +147,9 @@ def _effective_order(policy: Policy,
                  if s is resolved), policy.name_order)
 
 
+# rules.md#O4: "words no vocabulary has claimed read by position. In
+# the default given-first order the first name word is the given name,
+# the last is the family name, and everything between is middle names"
 def _name_positions(order: tuple[Role, Role, Role],
                     count: int) -> list[Role]:
     """Roles for `count` name pieces (titles/suffixes already peeled),
@@ -180,7 +189,9 @@ def _assign_main(seg_idx: int, state: ParseState,
     rest = [k for k in rest if "suffix" not in ptags[k]]
     if not rest:
         return
-    # v1 nickname rule (plan deviation #2): v1's p_len == 1 counted
+    # rules.md#N3: "a name that is only a nickname and one name word
+    # reads that word as the family name" (history: decisions.md#N3)
+    # -- v1's p_len == 1 counted
     # the WHOLE segment before any title peeling -- 'Xyz. (Bud) Smith'
     # has two pieces, so the title peel wins and Smith stays the given
     # name (pinned live 2026-07-17)

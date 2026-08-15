@@ -13,13 +13,12 @@ per-parse state that dissolves with the state (v1 kept per-parse sets
 for the same reason). Reads Policy.extra_suffix_delimiters: tail
 segments drop delimiter-core tokens (v1 suffix_delimiter parity).
 
-Ports v1's join_on_conjunctions + prefix chains + _join_bound_first_name
-plus three additions: the "Ph. D."-split merge (v1 fix_phd, recorded
-plan deviation #1), the maiden-marker consuming rule (#274: marker plus
-following pieces until a suffix become maiden; the marker itself is
-structural, like a delimiter char, and is dropped from assembly), and
-the same marker dropped inside EXTRACTED maiden content (#329), which
-#274 cannot reach because extract's content never enters pieces.
+Implements rules H3, P2, P3 and M2 of docs/design/rules.md and the
+group half of M1 (#329: the marker dropped inside EXTRACTED maiden
+content, which M2's pieces walk cannot reach because extract's
+content never enters pieces); each is cited at its code below. Also
+ports v1's _join_bound_first_name and the "Ph. D."-split merge
+(v1 fix_phd; decisions.md#phd-merge).
 """
 from __future__ import annotations
 
@@ -55,6 +54,8 @@ class BoundJoin(IntEnum):
     STRICT = 3     # main segments (reserve_last=True: keep a family piece)
 
 
+# rules.md#H3: "successive title words at the name's start chain into
+# one title; a title word elsewhere in the name does not"
 def _is_title_piece(piece: Sequence[int], ptags: Set[str],
                     tokens: Sequence[WorkToken]) -> bool:
     if "title" in ptags:
@@ -62,6 +63,9 @@ def _is_title_piece(piece: Sequence[int], ptags: Set[str],
     return len(piece) == 1 and "vocab:title" in tokens[piece[0]].tags
 
 
+# rules.md#P2: "a particle joins forward onto the name word after it,
+# chains included; the chain begins wherever the name begins, and a
+# preceding title does not move that point" (history: decisions.md#P2)
 def _is_prefix_piece(piece: Sequence[int], ptags: Set[str],
                      tokens: Sequence[WorkToken]) -> bool:
     if "prefix" in ptags:
@@ -79,6 +83,9 @@ def _is_suffix_piece(piece: Sequence[int], ptags: Set[str],
     return "vocab:suffix" in tags and "initial" not in tags
 
 
+# rules.md#P3: "a recognized connective joins its neighbors into one
+# name part, connective runs included — except a single-letter
+# connective in a three-word name, which stays a name word"
 def _is_conj_piece(piece: Sequence[int], ptags: Set[str],
                    tokens: Sequence[WorkToken]) -> bool:
     if "conjunction" in ptags:
@@ -395,6 +402,10 @@ def group(state: ParseState) -> ParseState:
                 for i in piece[1:]:
                     tokens[i] = dataclasses.replace(
                         tokens[i], tags=tokens[i].tags | {"joined"})
+        # rules.md#M2: "a recognized maiden marker inside the name
+        # takes the words after it — up to any trailing suffix — as
+        # the maiden name, and the marker itself is dropped"
+        # (history: decisions.md#M2)
         # maiden markers: a non-leading marker piece consumes following
         # pieces until a suffix; consumed tokens become MAIDEN, the
         # marker is dropped (#274)
@@ -419,7 +430,9 @@ def group(state: ParseState) -> ParseState:
                 ptags[m:j] = []
         all_pieces.append(tuple(tuple(p) for p in pieces))
         all_ptags.append(tuple(frozenset(t) for t in ptags))
-    # A marker inside EXTRACTED maiden content (#329). classify tags
+    # rules.md#M1: "a leading recognized marker word inside the clause
+    # being dropped" — a marker inside EXTRACTED maiden content
+    # (#329). classify tags
     # such a marker like any other token -- what the #274 rule above
     # lacks is not the TAG but the token: extract claims a delimited
     # clause and tokenize gives its tokens Role.MAIDEN up front, so

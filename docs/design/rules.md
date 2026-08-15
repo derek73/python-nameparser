@@ -94,6 +94,16 @@ H2. Rationale: before a name, an abbreviation is almost always a
       "প্রফেসর. Sen"              →  given="প্রফেসর."
     history: decisions.md#H2 · implemented: nameparser/_pipeline/_assign.py
 
+H3. Rationale: compound titles are written as a run of title words,
+    connectives included; a title word standing inside the name is
+    just a name word.
+    Successive title words at the name's start chain into one
+    title; a title word elsewhere in the name does not.
+      "Asst. Vice Chancellor John Smith"  →  title="Asst. Vice Chancellor"
+      "Marquess of Bath"          →  title="Marquess of Bath"
+      "John Doctor Smith"         →  middle="Doctor"  · boundary
+    implemented: nameparser/_pipeline/_group.py
+
 ## Particles & surname prefixes (P)
 
 Background: particles ("de", "la", "van", "von", "bin") link forward
@@ -119,7 +129,27 @@ P1. Rationale: a never-given particle standing alone cannot be
     Accepted: a bare "de" stays the given name — there is nothing to
     fold into, and inventing a surname would be worse.
       "de"                        →  given="de"
-    history: decisions.md#P1 · implemented: nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P1 · interacts: P2 · implemented: nameparser/_pipeline/_post_rules.py
+
+P2. Rationale: a particle is written as part of the surname it
+    precedes, and a title stands outside the name entirely.
+    A particle joins forward onto the name word after it, chains
+    included; the chain begins wherever the name begins, and a
+    preceding title does not move that point.
+      "John van der Berg"         →  family="van der Berg"
+      "Sir de Mesnil"             →  family="de Mesnil"
+      "Juan de"                   →  family="de"  · boundary
+    history: decisions.md#P2 · implemented: nameparser/_pipeline/_group.py
+
+P3. Rationale: connective words ("y", "of the") bind name words into
+    one name part; but a single letter in a short name is more
+    likely an initial than a connective.
+    A recognized connective joins its neighbors into one name part,
+    connective runs included — except a single-letter connective in
+    a three-word name, which stays a name word.
+      "Juan y Eva Garcia"         →  given="Juan y Eva"
+      "Juan y Garcia"             →  middle="y"  · boundary
+    implemented: nameparser/_pipeline/_group.py
 
 ## Suffixes: generational & credentials (S)
 
@@ -191,6 +221,15 @@ N2. Rationale: only a mark standing at word boundaries is quoting;
       "Mari' Aube'"               →  family="Aube'"  · boundary
     implemented: nameparser/_pipeline/_extract.py
 
+N3. Rationale: a person set down as a nickname plus one name word is
+    being identified by surname.
+    A name that is only a nickname and one name word reads that word
+    as the family name; with two or more name words the ordinary
+    positional reading applies.
+      "'Smitty' Jones"            →  family="Jones"
+      "'Smitty' John Jones"       →  given="John"  · boundary
+    history: decisions.md#N3 · implemented: nameparser/_pipeline/_assign.py
+
 ## Maiden names (M)
 
 Background: a maiden name is written beside the current name, set
@@ -207,7 +246,19 @@ M1. Rationale: an enclosure the caller has declared to mean maiden
     maiden and nickname reads maiden.
       "Jane Smith (née Jones)"  maiden-parens  →  maiden="Jones"
       "Jane Smith (née Jones)"                 →  nickname="née Jones"  · boundary
-    history: decisions.md#M1 · implemented: nameparser/_pipeline/_extract.py
+    history: decisions.md#M1 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_group.py
+
+M2. Rationale: a maiden marker announces that what follows it is the
+    former family name; the marker is an announcement, not a name.
+    A recognized maiden marker inside the name takes the words after
+    it — up to any trailing suffix — as the maiden name, and the
+    marker itself is dropped. A marker with nothing after it is just
+    a word.
+      "Jane Smith née Jones"      →  maiden="Jones"
+      "Jane née Jones Smith"      →  maiden="Jones Smith"
+      "Jane Smith née Jones PhD"  →  suffix="PhD"
+      "Jones née"                 →  family="née"  · boundary
+    history: decisions.md#M2 · implemented: nameparser/_pipeline/_group.py
 
 ## Commas & structure (C)
 
@@ -300,6 +351,21 @@ O3. Rationale: several traditions write compound family names
       "Hassan Mohamad Ali"                    →  family="Ali"  · boundary
     implemented: nameparser/_pipeline/_post_rules.py
 
+O4. Rationale: what no vocabulary claims can only be read by where
+    it stands, under the order the caller declared.
+    Words no vocabulary has claimed read by position. In the default
+    given-first order the first name word is the given name, the
+    last is the family name, and everything between is middle names.
+    In a family-first order the first name word is the family; in
+    family-first-given-last the given name comes from the end, the
+    middles from between.
+      "Mary Beth Smith"           →  middle="Beth"
+      "Garcia Juan Carlos"  family-first  →  family="Garcia"
+      "Nguyễn Thị Minh Khai"  family-first-given-last  →  given="Khai"
+    no-boundary: this is the default reading every other rule carves
+    exceptions from; its boundaries are the other rules.
+    implemented: nameparser/_pipeline/_assign.py
+
 ## Scripts & writing systems (W)
 
 Background: script-conditional behavior is permitted exactly where
@@ -364,6 +430,21 @@ W3. Rationale: a divided name was divided by its writer, and
       "남궁민수, 지훈"            →  family="남궁민수"  · boundary
     history: decisions.md#W3 · implemented: nameparser/_pipeline/_script_segment.py
 
+W4. Rationale: Chinese, Japanese and Korean all write the family
+    name first in native script — the script settles the order
+    without knowing the language — while a wholly-katakana name is
+    predominantly a transcribed foreign name already in its source
+    order.
+    A name written wholly in one East Asian script, or in the
+    kana-licensed Japanese repertoire, reads family-first whatever
+    order the caller declared; a wholly-katakana name keeps the
+    declared order.
+      "김 민준"                   →  family="김"
+      "山田 太郎"                 →  family="山田"
+      "高橋 みなみ"               →  family="高橋"
+      "マイケル ジャクソン"        →  given="マイケル"  · boundary
+    history: decisions.md#W4 · implemented: nameparser/_pipeline/_assign.py
+
 ## Tokens, initials & punctuation (T)
 
 Background: every parsed name part is an exact piece of the input,
@@ -405,6 +486,23 @@ T3. Rationale: U+00B7 is two marks in one codepoint — the Chinese
     history: decisions.md#T3 · implemented: nameparser/_pipeline/_tokenize.py
 
 ## Ambiguity & tie-breaking (A)
+
+Background: some name strings are genuinely ambiguous — the same
+written shape carries two readings ("Van Johnson": given name or
+particle?), or the text's structure is malformed. Parsing never
+fails and never silently discards; it completes on the best reading
+and says what it was unsure of.
+
+A1. Rationale: a caller can only act on doubt that is reported.
+    Parsing never fails on any input: where the text's structure or
+    a word's reading is genuinely uncertain, the parse completes on
+    the best reading and carries an ambiguity report naming the
+    doubt.
+      "Van Johnson"               →  ambiguities=("particle-or-given",)
+      "Jane „JD Smith"            →  ambiguities=("unbalanced-delimiter",)
+      "John Smith, MD, Bart"      →  ambiguities=("comma-structure",)
+      "John Smith"                →  ambiguities=()  · boundary
+    implemented: nameparser/_pipeline/_state.py
 
 ## Rendering & views (R)
 

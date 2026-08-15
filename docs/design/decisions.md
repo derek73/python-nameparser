@@ -59,6 +59,52 @@ should the middle position be a third site ·
 [#360](https://github.com/derek73/python-nameparser/issues/360)
 which particles count as never-given.
 
+### P2 — particles join forward
+
+- 2026-08 #367 — a title is transparent to the chain's start:
+  "Sir de Mesnil" chains de→Mesnil exactly as the untitled form
+  does. Before, the title displaced the particle out of the leading
+  position and "Sir de Mesnil" reported given="de Mesnil" with no
+  family at all — a limit the rule never meant to draw. Fixed in
+  grouping, which is why P1's fold needed no change (its interacts:
+  points here).
+
+### M2 — the maiden-marker rule
+
+- 2026-07-03 #274 (v2 core, PR #288) — the marker takes everything
+  after it up to a trailing suffix, greedily: "née Jones Smith" is
+  a two-word maiden name, matching how the marker is actually used
+  in running text. The marker itself is dropped as structural, like
+  a delimiter character.
+
+### N3 — the lone-word nickname rule
+
+- 2026-07 (v2 core, PR #288; recorded plan deviation #2 of the core
+  plan) — v1's rule counted pieces before grouping; the v2 port
+  counts one non-title piece plus a nonempty nickname. The rule
+  lives in assignment rather than grouping because that is where
+  the piece count is settled.
+
+### phd-merge — the "Ph. D." split
+
+- 2026-07 (v2 core, PR #288; recorded plan deviation #1 of the core
+  plan) — "Ph. D." tokenizes as two words and is merged back by
+  vocabulary (v1 fix_phd), so the spaced and unspaced spellings
+  read alike.
+
+### W4 — script-scoped order
+
+- 2026-07-27 (script-scoped order amendment) — the family-first
+  override is keyed to the SCRIPT of the written name, never to a
+  guessed language: wholly-Han, wholly-Hangul, and kana-licensed
+  Japanese read family-first because zh, ko and ja all write
+  family-first in native script; wholly-katakana names are
+  predominantly transcriptions and keep the declared order. Latin
+  transliterations are never touched.
+- 2026-08-07 #272 — the kana license: Han∪kana with at least one
+  kana cannot be Chinese and is not a transcription, so 高橋みなみ
+  reads family-first though it is written in two scripts.
+
 ### H2 — the leading-abbreviation title
 
 - 2026-06-30 (leading-period-title design; v2 core, PR #288) — the
