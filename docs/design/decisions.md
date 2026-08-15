@@ -92,6 +92,18 @@ which particles count as never-given.
   vocabulary (v1 fix_phd), so the spaced and unspaced spellings
   read alike.
 
+### O4 — positional assignment and declared order
+
+- 2026-08-07 #83 — romanized Chinese order is answered by
+  DECLARATION, not detection: pinyin carries no signal and diaspora
+  makes locale no guide (the issue's own 2019/2021 conclusions);
+  Policy(name_order=FAMILY_FIRST) is the answer the thread wanted.
+- 2026-08-07 #146 — Vietnamese needs the THIRD order constant:
+  measured on "Nguyễn Thị Minh Khai", FAMILY_FIRST strands
+  given="Thị" while FAMILY_FIRST_GIVEN_LAST reads
+  given="Khai", middle="Thị Minh", family="Nguyễn". This is why
+  three order constants exist rather than two.
+
 ### W4 — script-scoped order
 
 - 2026-07-27 (script-scoped order amendment) — the family-first
@@ -197,6 +209,34 @@ which particles count as never-given.
   run offers a site, since a glued honorific is itself part of what
   makes a run read as suffix-shaped.
 
+Excluded (Lexicon.honorific_tails — a glued tail peels only if it
+could never end a name; per-entry reasons live in
+nameparser/config/suffixes.py's vetting block):
+
+- 양, 군 — 양 is also a top-tier surname (Yang), and 김지양 is a
+  given name; the surname-leads argument covers 군 the same way.
+- 氏 — recognized spaced only.
+- 博士 — 田中博士 is Tanaka Hiroshi as readily as Doctor Tanaka.
+- 殿 — Japanese surnames end in it (鵜殿, 真殿).
+- 君 — 王君 is a complete Chinese name; its kana spelling くん does
+  peel.
+
+Excluded (Policy.script_orders defaults): Script.KATAKANA is
+deliberately absent — a pure-katakana token is predominantly a
+transcribed foreign name kept in its source order, so nothing
+defaults on it (rule W4's boundary). Noted 2026-08-15: of the three
+Script-keyed axes, this is the one with no force-a-decision guard
+(mechanisms.md#FORCE-A-DECISION-TABLE), so a new Script member
+silently gets no order.
+
+Excluded (MAIDEN_MARKERS, per nameparser/config/maiden_markers.py):
+
+- Polish "z domu" — a two-token marker; pending the multi-token
+  matching decision.
+- Scandinavian "f." — collides with the initial F.; only the full
+  participles (født/fødd/född) are safe. Czech masculine "rozený"
+  awaits the same vetting.
+
 ### C1 — the suffix-comma decision
 
 - 2026-07 (v2 core, PR #288) — v1 parity: only the second segment
@@ -243,6 +283,14 @@ which particles count as never-given.
   itself keeps the whole enclosed span, so nothing is lost when
   there is no marker.
 
+- 2026-08-05 #329/#335 — marker auto-detection inside a
+  nickname-delimited clause was deferred to #335 on a corpus
+  measurement: 山田 花子（旧姓 佐藤） is in the CJK differential
+  corpus so the #329 change was gate-visible, while "Jane Smith
+  (née Jones)" is in no corpus — shipping auto-detection in 2.1
+  would have let a real Latin-affecting change ride under a "0
+  Latin-only" gate report.
+
 Open: [#335](https://github.com/derek73/python-nameparser/issues/335)
 should a marker inside a NICKNAME-delimited clause flip it to maiden
 without configuration.
@@ -267,3 +315,88 @@ how the rotations interact with non-default name_order values.
 
 Open: [#270](https://github.com/derek73/python-nameparser/issues/270)
 same rotation/name_order interaction as O1.
+
+### differential-ledger — tooling decisions (2.1.0 release arc)
+
+Harvested 2026-08-15 from the release-arc session; measurements are
+that session's, spot-checked at landing.
+
+- 2026-08-05 #332 — ledger field vocabulary is Role's names, not the
+  facade's: canonicalizing to first/last would have put an eighth
+  place naming roles differently from Role inside the durable
+  record, and the facade vocabulary is removed at 3.0.
+
+Declined:
+
+- Policy annotations widened to input unions (2026-08-06 #334) —
+  five documented spellings fail mypy and every one has a
+  type-clean equivalent; widening would make every READER see a
+  union, and reading is the commoner operation. A .pyi stub typing
+  __init__ wide and attributes narrow was deferred as a 3.0
+  candidate (needs a parallel signature list with its own sync
+  test).
+- Closing the differential gate's default-policy ceiling
+  (2026-08-04 #332) — a per-row policy in the corpus needs defined
+  behavior for baselines that cannot construct newer policy fields;
+  tests/v2/cases.py already covers opt-in paths per row, so the
+  ceiling is documented instead.
+- `_check_tree` as is_relative_to(REPO_ROOT) (2026-08-06 #332) —
+  accepts .venv/, build/ and dist/ copies inside the repo; the
+  invariant is "is the source package", so the predicate is
+  is_relative_to(REPO_ROOT / "nameparser").
+- Empty-string probe as the ledger over-match guard (2026-08-06
+  #332) — `.`, `.+`, `\b`, `[\s\S]` all decline "" and still match
+  every corpus name; replaced by the sentinel set
+  (mechanisms.md#SENTINEL-SET-OVER-MATCH-CHECK).
+- "Lists every role" checked against all eight fields entries
+  (2026-08-06 #332) — a seven-role list passed while omitting
+  _ambiguities, which below baseline 2.0 cannot enter a diff at
+  all; the check is against V2_FIELDS.
+- A seed ledger rule with name_regex and no fields (2026-08-05
+  #332) — it matched every CJK-bearing name and would have
+  classified all 89 diffs on the first pass, exiting 0 having
+  distinguished nothing.
+- An issue for rotating DEFAULT_BASELINE (2026-08-07) — it recurs
+  every release; it lives in the AGENTS.md release checklist beside
+  the VERSION bump instead (#333 must land first).
+
+Excluded (ledger name_regex patterns — one over-matching rule
+shadows the whole ledger, since name_regex rules sort first): "",
+"(?:)", ".", ".+", "\b", "[\s\S]". Enforced by the sentinel-set
+check.
+
+### 3-0-reevaluations — decisions shaped by the v1 shim
+
+Promoted 2026-08-15 from session memory (Derek's 2026-07-30 ask;
+promotion approved 2026-08-15). Discipline when appending: mark each
+entry (A) "would decide differently without the shim" — real 3.0
+work — or (B) "cited 1.4 parity but stands on its own", recorded so
+nobody re-litigates it. Append here whenever a design choice cites
+1.4 parity or the shim as a load-bearing reason.
+
+- (A) v1 field vocabulary at the facade boundary: CJK semantics
+  squeeze into first/last through HumanName while the core speaks
+  given/family. 3.0 could drop the aliasing entirely.
+- (A) Render's v1-inherited string_format defaults, including
+  space-joined output for interpunct transcriptions (#298:
+  str(HumanName("威廉·莎士比亚")) == "威廉 莎士比亚"; users
+  reinstate the dot via custom format). 3.0 render defaults are a
+  clean slate.
+- (A) The differential harness baseline is 1.4-on-PyPI: post-shim,
+  the migration promise it verifies dissolves; the successor
+  baseline is presumably last-2.x. Machinery survives; corpus
+  contracts change.
+- (A) empty_attribute_default left untyped (PR #250): cascades into
+  the v1-shaped public API. Typeable in 3.0.
+- (A) A .pyi stub for Policy (wide __init__, narrow attributes) —
+  deferred from #334, see the differential-ledger Declined entry.
+- (B) Pickle-guard layout breaks landing in minors (2.1's
+  __setstate__ breaks): the guarded-raise design is right
+  regardless; only the in-a-minor friction is shim-era.
+- (B) Positional-read-when-unlicensed as the safe direction
+  (script_orders fallbacks, #298 dot-suppression granularity):
+  coincides with 1.4 parity but stands alone — family-first is the
+  marked case needing affirmative evidence.
+- (B) The FAMILY_COMMA doctrine (rule W3): inherited from v1's
+  lastname-comma but correct on its own terms — an explicit comma
+  is stronger evidence than script.
