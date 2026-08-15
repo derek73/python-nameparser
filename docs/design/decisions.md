@@ -59,6 +59,24 @@ should the middle position be a third site ·
 [#360](https://github.com/derek73/python-nameparser/issues/360)
 which particles count as never-given.
 
+### M1 — delimited maiden names
+
+- 2026-07-03 (maiden-bucket design, landed via the v2 core, PR
+  #288) — the maiden reading of a delimiter pair is opt-in because
+  enclosure conventions genuinely vary; there is no default pair.
+- 2026-07 — bucket overlap is canonicalized before parsing: a pair
+  listed for maiden is dropped from the effective nickname set
+  (maiden wins). The v1 facade restores v1's nickname-wins reading
+  by pre-subtracting on its side.
+- 2026-08 #329 — the marker word inside a delimited clause is
+  dropped from a multi-token clause during grouping; the extraction
+  itself keeps the whole enclosed span, so nothing is lost when
+  there is no marker.
+
+Open: [#335](https://github.com/derek73/python-nameparser/issues/335)
+should a marker inside a NICKNAME-delimited clause flip it to maiden
+without configuration.
+
 ### O1 — East Slavic rotation
 
 - 2026-07-12 (landed in the v2 core, PR #288) — v1 parity pinned

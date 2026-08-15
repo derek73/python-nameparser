@@ -106,9 +106,64 @@ P1. Rationale: a never-given particle standing alone cannot be
 
 ## Suffixes: generational & credentials (S)
 
+S1. Rationale: brackets set off more than nicknames — credentials
+    are routinely written parenthesized after a name, and a
+    credential is recognizable by its form.
+    A bracketed clause whose content is suffix-shaped is not a
+    nickname: the brackets are dropped and the content reads exactly
+    as if written bare.
+      "Andrew Perkins (MBA)"      →  suffix="MBA"
+      "Andrew Perkins (Andy)"     →  nickname="Andy"  · boundary
+    implemented: nameparser/_pipeline/_extract.py
+
 ## Nicknames & quoted names (N)
 
+Background: a nickname is written beside the formal name, set off by
+quotes or brackets. Quotation conventions vary by language („…“,
+«…», “…”), several share characters — one convention's closer is
+another's opener — and the straight apostrophe doubles as a
+quotation mark and as a letter-like mark inside names (O'Connor).
+Which pairs delimit nicknames is caller configuration.
+
+N1. Rationale: a quoted or bracketed clause beside a name is an
+    informal alias, not part of the name.
+    A clause enclosed by a configured nickname delimiter pair reads
+    as the nickname and is lifted out of the name; an empty
+    enclosure is simply dropped.
+      "Andrew (Andy) Perkins"     →  nickname="Andy"
+      "Jean 'JD' Smith"           →  nickname="JD"
+      "Anna () Smith"             →  nickname=""  · boundary
+    implemented: nameparser/_pipeline/_extract.py
+
+N2. Rationale: only a mark standing at word boundaries is quoting;
+    anywhere else it is part of the word.
+    A quote whose open and close are the same character opens only
+    at a word start and closes only at a word end, so an apostrophe
+    inside or at the end of a word is literal. Between conventions
+    that share a character, position in the text decides: the
+    leftmost valid opener wins.
+      "Sean O'Connor"             →  family="O'Connor"
+      "Hans „Erster“ und “Zweiter” Müller"  →  nickname="Erster Zweiter"
+      "Mari' Aube'"               →  family="Aube'"  · boundary
+    implemented: nameparser/_pipeline/_extract.py
+
 ## Maiden names (M)
+
+Background: a maiden name is written beside the current name, set
+off by a marker word (née, geb., 旧姓) or by enclosure. Which
+enclosures mean "maiden" rather than "nickname" is a caller
+convention, so the maiden reading of a delimiter pair is opt-in.
+
+M1. Rationale: an enclosure the caller has declared to mean maiden
+    holds the former family name; a recognized marker word inside it
+    marks the clause and is not itself part of the name.
+    With a delimiter pair configured for maiden names, its enclosed
+    clause reads as the maiden name, a leading recognized marker
+    word inside the clause being dropped; a pair configured for both
+    maiden and nickname reads maiden.
+      "Jane Smith (née Jones)"  maiden-parens  →  maiden="Jones"
+      "Jane Smith (née Jones)"                 →  nickname="née Jones"  · boundary
+    history: decisions.md#M1 · implemented: nameparser/_pipeline/_extract.py
 
 ## Commas & structure (C)
 
