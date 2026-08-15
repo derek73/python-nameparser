@@ -62,6 +62,10 @@ def _run(example: Example) -> object:
         parsed = parse(example.text)
     if example.field == "ambiguities":
         return tuple(a.kind.value for a in parsed.ambiguities)
+    if example.field == "initials":
+        return parsed.initials()
+    if example.field == "capitalized":
+        return str(parsed.capitalized())
     return getattr(parsed, example.field)
 
 

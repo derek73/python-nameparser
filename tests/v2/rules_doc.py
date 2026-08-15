@@ -40,6 +40,7 @@ _POINTER_PART_RE = re.compile(r"(history|interacts|implemented):\s*([^·]+)")
 
 ASSERTABLE_FIELDS = frozenset({
     "title", "given", "middle", "family", "suffix", "nickname", "maiden",
+    "family_base", "family_particles", "initials", "capitalized",
     "ambiguities", "pieces", "warns"})
 
 

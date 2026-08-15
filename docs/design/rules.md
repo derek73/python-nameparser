@@ -540,4 +540,47 @@ A1. Rationale: a caller can only act on doubt that is reported.
 
 ## Rendering & views (R)
 
+Background: parsing produces words with roles; every string a caller
+reads is assembled from those words on request. Nothing about
+rendering changes the parse, and nothing about reading a field
+mutates anything.
+
+R1. Rationale: a field is a way of reading the parse, not a stored
+    string.
+    Every field is a view computed from the parsed words at read
+    time, joining its words in written order — except folded family
+    words (O3), which render before the rest of the family wherever
+    they stood in the string.
+      "Dr. Juan Q. Xavier de la Vega III"  →  family="de la Vega"
+      "Hassan, Mohamad Ahmad Ali"  middle_as_family  →  family="Ahmad Ali Hassan"
+      "Hassan, Mohamad Ahmad Ali"          →  family="Hassan"  · boundary
+    implemented: nameparser/_types.py
+
+R2. Rationale: callers need the surname with and without its
+    particles — sorting wants "Vega", display wants "de la Vega".
+    The family name splits into further views: the base (the family
+    without its leading particles) and the particles themselves.
+      "Dr. Juan Q. Xavier de la Vega III"  →  family_base="Vega"
+      "Dr. Juan Q. Xavier de la Vega III"  →  family_particles="de la"
+      "Sean O'Connor"             →  family_base="O'Connor"  · boundary
+    implemented: nameparser/_types.py
+
+R3. Rationale: initials abbreviate the person's name words; titles,
+    suffixes, particles and nicknames are not name words.
+    Initials take the first letter of each given, middle, and base
+    family word; titles, suffixes, particles and nicknames
+    contribute nothing.
+      "Dr. Juan Q. Xavier de la Vega III"  →  initials="J. Q. X. V."
+      "Sean O'Connor"             →  initials="S. O."  · boundary
+    implemented: nameparser/_render.py
+
+R4. Rationale: case repair is a display concern, applied only on
+    request and never destructively.
+    Case repair returns a repaired copy — vocabulary exceptions
+    (McDonald) included — and never mutates the parse; an
+    already-correct name comes back unchanged.
+      "juan mcdonald"             →  capitalized="Juan McDonald"
+      "Juan McDonald"             →  capitalized="Juan McDonald"  · boundary
+    implemented: nameparser/_render.py
+
 ## Construction & configuration diagnostics (D)

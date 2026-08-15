@@ -92,6 +92,9 @@ def render(name: ParsedName, spec: str) -> str:
     return _format_spec(spec, values, "render", _RENDER_KEYS)
 
 
+# rules.md#R3: "initials take the first letter of each given, middle,
+# and base family word; titles, suffixes, particles and nicknames
+# contribute nothing"
 def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str:
     """First letter of each contributing token per group, v1 semantics:
     delimiter follows each initial, separator sits between initials
@@ -144,6 +147,8 @@ def _cap_text(text: str, role: Role, lex: Lexicon) -> str:
     return _WORD.sub(lambda m: _cap_word(m.group(0), role, lex), text)
 
 
+# rules.md#R4: "case repair returns a repaired copy — vocabulary
+# exceptions (McDonald) included — and never mutates the parse"
 def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
                 force: bool) -> ParsedName:
     """Case-fixing transform -> new ParsedName, same spans, new token
