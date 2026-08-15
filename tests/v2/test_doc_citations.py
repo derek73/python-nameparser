@@ -22,7 +22,7 @@ _LEGACY = ("§", "superpowers", "plan deviation")
 
 _CITE_RE = re.compile(
     r"#\s*(?:rules|mechanisms|decisions)\.md#"
-    r"(?P<cid>[A-Z]\d+|[A-Z][A-Z0-9]+(?:-[A-Z0-9]+)+)"
+    r"(?P<cid>[A-Z]\d+|[A-Z][A-Z0-9_]*(?:-[A-Z0-9_]+)*)"
     r":\s*(?P<first>.*)")
 # The excerpt is the FIRST double-quoted span after the ID, wrapped
 # over continuation comment lines; text outside the quotes (v1 names,
@@ -44,7 +44,8 @@ def _statements() -> dict[str, str]:
             out[m.group(1)] = _norm(body)
     mech = MECH_DOC.read_text(encoding="utf-8")
     for mm in re.finditer(
-            r"^## (?P<slug>[A-Z][A-Z0-9-]+)\b.*?Contract statement[.:*]*\s*"
+            r"^## (?P<slug>[A-Z][A-Z0-9_-]+)(?=[\s—-])"
+            r".*?Contract statement[.:*]*\s*"
             r"(?P<stmt>.+?)(?=\n\n|\Z)", mech, flags=re.M | re.S):
         out[mm.group("slug")] = _norm(mm.group("stmt"))
     return out

@@ -73,6 +73,16 @@ def test_unparseable_example_line_is_an_error() -> None:
         parse_rules_doc(bad)
 
 
+def test_nested_pieces_value_parses() -> None:
+    doc = ('X1. Structural claim.\n'
+           '      "de Mesnil"  family-first  →  '
+           'pieces=[["de"], ["Mesnil"]]\n'
+           '    no-boundary: structural form.\n')
+    ex = parse_rules_doc(doc)[0].examples[0]
+    assert ex.field == "pieces"
+    assert ex.value == [["de"], ["Mesnil"]]
+
+
 def test_registry_resolves_policies_and_gates() -> None:
     from tests.v2.rules_doc import resolve_annotation
     kind, obj = resolve_annotation("family-first")

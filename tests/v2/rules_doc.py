@@ -24,7 +24,7 @@ from pathlib import Path
 RULES_DOC = Path(__file__).resolve().parents[2] / "docs" / "design" / "rules.md"
 
 _RULE_RE = re.compile(r"^([A-Z])(\d+)\.\s")
-_VALUE = r"\"[^\"]*\"|\([^)]*\)|\[[^\]]*\]"
+_VALUE = r"\"[^\"]*\"|\([^)]*\)|\[(?:[^\[\]]|\[[^\]]*\])*\]"
 _EXAMPLE_RE = re.compile(
     r'^\s*(?:"(?P<text>[^"]*)"|\[(?P<subject>[a-z][a-z0-9_+-]*)\])'
     r"(?:\s+(?P<annot>[a-z][a-z0-9_+-]*|\[[a-z][a-z0-9_+-]*\]))?"
