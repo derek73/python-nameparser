@@ -150,9 +150,9 @@ def post_rules(state: ParseState) -> ParseState:
             _retag(tokens, g, Role.FAMILY)
     # rules.md#O3: "every middle word joins the family name and is
     # rendered before it" (v1 handle_middle_name_as_last). v1
-    # PREPENDED middle_list to last_list; spans cannot reorder
-    # (anti-#100), so folded tokens carry a tag and the family views
-    # order them first.
+    # PREPENDED middle_list to last_list; mechanisms.md#FOLDED_TAG:
+    # "tokens never move: a rule that needs different rendering order
+    # tags the token, and the rendering views consult the tag"
     if state.policy.middle_as_family:
         for i in _idx(tokens, Role.MIDDLE):
             tokens[i] = dataclasses.replace(
