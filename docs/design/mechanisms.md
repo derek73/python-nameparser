@@ -117,7 +117,8 @@ Problem shape. A fact known during tokenization matters to a much
 later stage.
 Contract statement. A pre-token fact is recorded as offsets on the
 ParseState (comma_offsets, interpunct_offsets) and consulted later
-by position, rather than re-derived from text.
+by position — or by presence alone where the fact is name-level, as
+both interpunct consumers do — rather than re-derived from text.
 How it works. The offsets survive every intermediate stage
 untouched; #298's transcription marker rides this channel from
 tokenize to order resolution (rules T3/W4).
@@ -320,6 +321,18 @@ Exemplar: tests/v2/pipeline/test_vocab.py's per-script initials
 check; reused for _CORPUS_FLOORS in tools/differential/compare.py.
 Known gap it exposes: DEFAULT_SCRIPT_ORDERS has no such guard.
 
+### SELF-EXPIRING-GUARD — a decline keyed to a measured defect
+
+Contract statement. A workaround keyed to a third-party library's
+measured defect carries a canary test that pins the defect itself,
+so the workaround cannot outlive its reason: when the library fixes
+it, the canary fails and the decline gets revisited rather than
+fossilizing.
+Exemplar: tests/v2/test_locales.py's namedivider shime canary pins
+0.4.x cutting 〆木太郎 at offset 1 with confidence 1.0, guarding the
+adapter's 〆 decline (#303 arc); its comment says to revisit the
+decline, not delete the test.
+
 ### Field notes — the traps themselves
 
 - Assert which tree you imported, on BOTH sides of a comparison.
@@ -340,3 +353,8 @@ Known gap it exposes: DEFAULT_SCRIPT_ORDERS has no such guard.
   passed.
 - Purge __pycache__ between same-length source mutations; stale
   bytecode makes a changed file measure as unchanged.
+- Mind the optional-extra environment split: a local venv's
+  incidental namedivider makes `if available` branches run PRESENT
+  locally and ABSENT in CI, so a locally-green suite proves nothing
+  about the no-extra path (this broke #337's first landing). Run
+  the decisive check in both states or gate the example.

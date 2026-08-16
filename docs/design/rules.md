@@ -441,6 +441,7 @@ W2. Rationale: some East Asian honorifics glue directly onto the end
       "田中さん"                  →  suffix="さん"
       "김, 민준씨"                →  suffix="씨"
       "田中さん, V."              →  suffix="さん"
+      "马丁·路德·金씨"            →  suffix="씨"
       "김지양"                    →  suffix=""  · boundary
       "王君"                      →  family="王君"  · boundary
     history: decisions.md#W2 · implemented: nameparser/_pipeline/_script_segment.py
@@ -475,8 +476,10 @@ W4. Rationale: Chinese, Japanese and Korean all write the family
       "マイケル ジャクソン"        →  given="マイケル"  · boundary
     Accepted: a name the interpunct divides keeps its source order —
     the divider itself marks a transcription (T3) — so the override
-    stands down there.
+    stands down there; the katakana middle dot (T2) carries no such
+    signal, so a name it divides still reads by the script license.
       "毛·泽东"                   →  given="毛"
+      "威廉・莎士比亚"            →  family="威廉"
     history: decisions.md#W4 · interacts: T3 · implemented: nameparser/_pipeline/_assign.py
 
 ## Tokens, initials & punctuation (T)

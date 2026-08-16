@@ -113,12 +113,19 @@ which particles count as never-given.
   family-first in native script; wholly-katakana names are
   predominantly transcriptions and keep the declared order. Latin
   transliterations are never touched.
-- 2026-08-07 #272 — the kana license: Han∪kana with at least one
+- 2026-07-29 #272 — the kana license: Han∪kana with at least one
   kana cannot be Chinese and is not a transcription, so 高橋みなみ
   reads family-first though it is written in two scripts.
 
 ### D1 — the segmenterless-activation warning
 
+- 2026-08 #337 — WARN rather than raise, deliberately: registering
+  the JA pack without the extra must stay safe (the inert
+  registration is itself a pinned property), and a warning is
+  filterable by the caller who wants exactly that inertness. The
+  Japanese install hint is conditional — it appears only when a
+  Japanese script is among the dead scripts; a hangul-only gap gets
+  the generic remedies.
 - 2026-08 #337 — the warning exists because parser_for(locales.JA)
   without segmenter= used to build a parser that silently behaved
   like a working one minus the feature; it re-emits from the
@@ -150,12 +157,14 @@ which particles count as never-given.
 
 ### W1 — unspaced CJK division
 
-- 2026-08-07 #271 (2.1.0) — Korean division ships as a default: the
+- 2026-07-27 #271 (decision; shipped in 2.1.0 via PR #294) — Korean
+  division ships as a default: the
   census surname list is closed, hangul is self-selecting (a hangul
   entry can only match hangul text), and being unsplit is
   recoverable while a wrong split is not — which is also why an
   unrecognized name stays whole.
-- 2026-08-07 #272/amendment 2026-07-29 — Han division is opt-in per
+- 2026-07-29 #272 (the ja amendment; shipped in 2.1.0 via PR #297) —
+  Han division is opt-in per
   language pack because Han text does not identify its language
   (高橋一郎 under a Chinese list divides wrongly); a pluggable
   segmenter takes what the vocabulary declines, so pack + segmenter
@@ -203,7 +212,10 @@ which particles count as never-given.
   over the peel.
 - 2026-08 #312 — the peel crosses the family comma and the 间隔号:
   both answer where a name DIVIDES into surname and given, a
-  question the peel never asks.
+  question the peel never asks. Provenance matters here: neither
+  gate was argued for the peel specifically — both came with the
+  placement (#312's own framing) — so the crossing was a repair of
+  inherited gates, not a designed-in property.
 - 2026-08 #319 — a wholly suffix-shaped second run is declined as a
   peel site (the "田中さん, V." shape), but only when the name's own
   run offers a site, since a glued honorific is itself part of what
@@ -263,7 +275,24 @@ Excluded (MAIDEN_MARKERS, per nameparser/config/maiden_markers.py):
 
 ### T3 — the interpunct's flank guard
 
-- 2026-08 #298 — U+00B7 divides only between classified-script
+- 2026-07-30 #298 — codepoint scope, chosen over a blanket
+  "dot = transcription" rule that would have flipped 高橋・一郎, a
+  correct and deliberately pinned #272 reading: U+00B7 records the
+  transcription fact and suppresses division; U+30FB/U+FF65 stay
+  pure separators whose pieces the script license reads (rule W4's
+  Accepted pair demonstrates both). Cross-convention input reads by
+  the codepoint it was actually typed with — a chosen limitation,
+  recorded in #298's comments.
+
+Declined:
+
+- Ambiguity emission on a half-flanked interpunct ("王·Smith") —
+  proposed in the 2.1 PR review, declined because the dot decides
+  silently under the no-emission decision; the
+  undivided-dot-stays-in-the-word behavior went to docs instead.
+
+
+- 2026-07-30 #298 — U+00B7 divides only between classified-script
   characters because it is also the Catalan punt volat, interior to
   legitimate names (Gal·la). The nakaguro (T2) needs no such guard:
   its codepoints are CJK-only and appear in no other script's
@@ -356,6 +385,13 @@ Declined:
   #332) — it matched every CJK-bearing name and would have
   classified all 89 diffs on the first pass, exiting 0 having
   distinguished nothing.
+- The B7 sanctioned-extra span (pre-#332 arc) — added, then removed
+  as a pure loss when review measured that every B7-divided name
+  already matches through its guaranteed classified flanks, so the
+  span's only effect was absorbing punt-volat Latin regressions
+  ("Gal·la Marcet" probes on both sides, recorded in PR #305's
+  history). The cleanest "sanctioned extras must be earned"
+  precedent the ledger has.
 - An issue for rotating DEFAULT_BASELINE (2026-08-07) — it recurs
   every release; it lives in the AGENTS.md release checklist beside
   the VERSION bump instead (#333 must land first).
