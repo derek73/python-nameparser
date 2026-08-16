@@ -195,6 +195,57 @@ Declined:
   unambiguously). Documented side effect: parenthesized bare
   "(MA)"/"(DO)" no longer escape to suffix as in 1.x.
 
+### vocabulary-collisions — when a word earns the ambiguous marking
+
+The mechanism shipped twice before anyone wrote down its criterion.
+Sizes as of 2.2.0dev: particles 67 with 39 ambiguous (58%,
+PARTICLE_OR_GIVEN); suffix_acronyms 613 with 4 ambiguous (0.65%,
+SUFFIX_OR_NAME); titles 711 with no ambiguous subset and no
+AmbiguityKind at all.
+
+- 2026-08-16 (collision keystone; #348, #360, #342, #385) — the
+  58%-vs-0.65% gap is BASE RATE, not disagreement. Both sets apply
+  the same test; most particles are short words that double as
+  names (van, bin, le, do, bar, mac) while most credential acronyms
+  are not (abpp, acp). Recorded because the gap reads as an
+  inconsistency and is not one — a reviewer who "harmonizes" the
+  two shares will break one of them.
+- **C-i, vocabulary vs. name.** A word belongs in its set's
+  ambiguous subset iff it is also borne as an ordinary name (given
+  or family) in some tradition. Under uncertainty, default to
+  AMBIGUOUS. This generalizes the evidence standard already stated
+  in NON_GIVEN_NAME_PARTICLES' docstring — a wrong unambiguous
+  claim misparses a real person, a wrong ambiguous marking only
+  adds a flag — from "which set" to "which subset". Applies
+  uniformly to particles, suffix_acronyms and titles.
+- **C-ii, vocabulary vs. vocabulary.** Where two sets claim a word
+  and NEITHER reading is a name, precedence is a frequency judgment
+  recorded per word. vd is the live case: never-given particle AND
+  credential acronym (the British Volunteer Decoration), neither of
+  them a name. Decision: the Dutch van der reading, as the more
+  common. That is what unblocks #380, whose trailing-orphan half is
+  a separate decision recorded under its own rule.
+- The concrete demonstration is "do", which three vocabularies
+  claim — titles, particles/ambiguous, suffix_acronyms/ambiguous.
+  Two mark it ambiguous; the third, TITLES, is the one that
+  actually decides "Do Quang Minh" (title="Do", given="Quang") and
+  reports nothing. Same word behind #385's "Anh Do".
+- Applications, each still its own work: #360 (mc, ste — neither is
+  a borne given name, so both leave the ambiguous half); #342 (rai
+  — Rai IS a borne surname, so it earns the marking rather than
+  moving); #385 (do — resolved at decisions.md#R2).
+- Caution when applying C-i to the particle set: TITLES ∩ ambiguous
+  == {do, freiherr, st} is load-bearing, per the Excluded note in
+  the W2 section. Emptying it makes the particle-or-given emitter
+  dead code.
+
+Open: [#348](https://github.com/derek73/python-nameparser/issues/348)
+applying C-i to the 711 title entries, then titles_ambiguous plus a
+TITLE_OR_GIVEN kind. Blocked on data, not on judgement — the census
+needs a given-name frequency corpus this repo does not have, which
+is why the criterion is recorded here and the census is not
+attempted.
+
 ### deviates-registry — packs stay pure data (option C)
 
 - 2026-07-18 (d4aaafa; the DEVIATES design note) — a `deviates`
@@ -1041,11 +1092,20 @@ Declined:
   v2 core does not (parse("Anh Do").family_base == "",
   family_particles == "Do"), and the surname vanishes from
   initials (parse("Anh Do").initials() == "A.").
-
-Open:
-[#385](https://github.com/derek73/python-nameparser/issues/385)
-whether an all-particle family should have an empty base (three
-options weighed in the issue).
+- 2026-08-16 #385 RESOLVED by the collision criterion, not on its
+  own terms: the issue's option 3 ("guard the view only when a word
+  is vocabulary-ambiguous") is what
+  decisions.md#vocabulary-collisions produces when applied here.
+  "Do" is borne as an ordinary surname, so it is ambiguous
+  vocabulary and anchors the base; "van der" is never anyone's
+  name, so an all-particle family there genuinely has no base. The
+  two rows of the issue's table were never one case.
+  This is the keystone's clearest payoff: #385 was filed as a leaf
+  with three options and no way to choose between them, and the
+  criterion picks one without arguing about family_base at all.
+- Still open inside the resolution: whether "Do" remains in
+  family_particles once it is also the base. Recorded here rather
+  than left to the implementing PR to decide by accident.
 
 ### removed-v1-surface
 

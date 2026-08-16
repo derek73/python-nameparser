@@ -709,10 +709,13 @@ R2. Rationale: callers need the surname with and without its
       "Dr. Juan Q. Xavier de la Vega III"  →  family_base="Vega"
       "Dr. Juan Q. Xavier de la Vega III"  →  family_particles="de la"
       "Sean O'Connor"             →  family_base="O'Connor"  · boundary
-    Accepted: an all-particle family reads an empty base today;
-    whether it should is #385.
-      "Anh Do"                    →  family_base=""
-    history: decisions.md#R2 · implemented: nameparser/_types.py
+    A family name written wholly out of particle vocabulary still
+    has a base where one of those words is itself borne as an
+    ordinary surname: that word anchors the base, and only the words
+    that are never anyone's name stay particles.
+      "Anh Do"                    →  family_base="Do"  deviates: #385 (today: family_base="")
+      "Juan van der"              →  family_base=""
+    history: decisions.md#R2 · interacts: R3 · implemented: nameparser/_types.py
 
 R3. Rationale: initials abbreviate the person's name words; titles,
     suffixes, particles and nicknames are not name words.
