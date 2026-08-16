@@ -71,13 +71,18 @@ unresolved (#316): today "John Smith Prof." keeps Prof. a name word
 while "Smith, Prof." reads it as a title — the two comma paths
 disagree, and TITLES holding ordinary surnames (king, judge,
 bishop) is what bars the blanket vocabulary-wins answer.
-The dividing criterion for the given-name list is NOT
-"religious title" but whether the tradition retains a family name:
-renunciation abolishes the surname, so for Swami, Guru, Baba or
-Lama an empty family is the correct output (#346), while rabbi and
-imam traditions keep surnames — "Rabbi Cohen" addresses by title
-and keeps family "Cohen". Sweeping all religious titles into the
-given-name list would break the latter.
+Two criteria govern two different questions here.
+Membership in the given-name-title list follows HOW THE TITLE
+ADDRESSES: a title that precedes and addresses by the given name
+belongs (Sir, Sheikh, the Arabic honorifics الدكتور/الشيخ — which
+qualify even though those traditions fully retain family names).
+Whether an EMPTY FAMILY is correct output is the separate question,
+governed by surname retention: renunciation abolishes the surname,
+so for Swami, Guru, Baba or Lama family="" is right (#346), while
+rabbi and imam traditions keep surnames — "Rabbi Cohen" addresses
+by title and keeps family "Cohen". Conflating the two criteria
+either ejects the Arabic entries or sweeps in titles that break
+"Rabbi Cohen".
 
 H1. Rationale: a title normally addresses by surname, so a title
     followed by a single name word usually names the family; but a
@@ -285,11 +290,14 @@ N2. Rationale: only a mark standing at word boundaries is quoting;
     at a word start and closes only at a word end, so an apostrophe
     inside or at the end of a word is literal. Between conventions
     that share a character, position in the text decides: the
-    leftmost valid opener wins.
+    leftmost valid opener wins — and a dangling-open report is
+    suppressed where its character sits inside another pair's
+    successful match, being literal content there rather than an
+    imbalance (A1 depends on that filter).
       "Sean O'Connor"             →  family="O'Connor"
       "Hans „Erster“ und “Zweiter” Müller"  →  nickname="Erster Zweiter"
       "Mari' Aube'"               →  family="Aube'"  · boundary
-    implemented: nameparser/_pipeline/_extract.py
+    history: decisions.md#N2 · implemented: nameparser/_pipeline/_extract.py
 
 N3. Rationale: a person set down as a nickname plus one name word is
     being identified by surname.
@@ -630,7 +638,10 @@ A1. Rationale: a caller can only act on doubt that is reported.
 Background: parsing produces words with roles; every string a caller
 reads is assembled from those words on request. Nothing about
 rendering changes the parse, and nothing about reading a field
-mutates anything.
+mutates anything. The default view renders
+'{title} {given} "{nickname}" {middle} {family} ({maiden})
+{suffix}' — the choice and its declined née-template alternative
+are decisions.md#render-default.
 
 R1. Rationale: a field is a way of reading the parse, not a stored
     string.

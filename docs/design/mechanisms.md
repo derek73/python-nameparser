@@ -372,8 +372,10 @@ vocabulary or policy in a pack instead.
 Problem shape. Where does v1-compatibility behavior live, and what
 may it do?
 Contract statement. HumanName is a mutable facade over the immutable
-core: code that runs warning-free on 1.4 keeps working with
-identical results through 2.x, via validating setters, dirty-tracked
+core: code that runs warning-free on 1.4 keeps working through 2.x
+with identical results EXCEPT release-log-classified fixes, each
+verified in the differential ledger (the RFC's compatibility promise
+carries the same carve-out) — via validating setters, dirty-tracked
 re-parses, and pickle round-trips — and the facade never calls the
 v1 parsing hooks it still carries. "Warning-free" describes the
 code's 1.4 behavior, not a promise it STAYS warning-free: 2.x adds
@@ -452,7 +454,10 @@ silently inherit a default, a local table's key set is asserted
 equal to the population, so growth fails the suite until someone
 decides — against a local table, not the constant under test.
 Exemplar: tests/v2/pipeline/test_vocab.py's per-script initials
-check; reused for _CORPUS_FLOORS in tools/differential/compare.py.
+check; reused for _CORPUS_FLOORS in tools/differential/compare.py,
+and for the pack registry (test_registry_is_the_pack_contract:
+every registered pack must ship DEVIATES and its rotator list or
+the suite fails structurally — decisions.md#deviates-registry).
 Known gap it exposes: DEFAULT_SCRIPT_ORDERS has no such guard.
 
 ### SELF-EXPIRING-GUARD — a decline keyed to a measured defect

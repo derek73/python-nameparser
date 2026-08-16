@@ -49,7 +49,10 @@ Entry conventions:
 Before rules.md, the post_rules stage docstring numbered its rules
 locally, and historical issue comments (#359, #364, #365, #367) use
 those numbers. The mapping: rule 1 → H1, rule 1b → P1, rule 2 → O1,
-rule 3 → O2, rule 4 → O3.
+rule 3 → O2, rule 4 → O3. Older still: bare "#11"-style citations
+from v1 comments live in the GOOGLE CODE namespace, not GitHub —
+GC issue 11 is decisions.md#P3's provenance — so a v1-era number
+that doesn't fit its GitHub issue is probably a GC number.
 
 ### P1 — lone particle fold
 
@@ -129,6 +132,76 @@ head-peel question).
   counts one non-title piece plus a nonempty nickname. The rule
   lives in assignment rather than grouping because that is where
   the piece count is settled.
+
+### N2 — same-character quotes and shared-character conventions
+
+- 2026-07-13 #273 (7ee6e3a) — the typographic delimiter pairs
+  shipped with a per-pair full-text scan; three independent review
+  agents broke it the same day: with two shared-character
+  conventions genuinely present, the earlier-sorted pair stole the
+  close and the legitimate match dropped silently, zero ambiguity.
+- 2026-07-19 (05fe693) — the interleaved leftmost-match restructure
+  replaced it (an altitude review called it the right depth); the
+  author's own first fix — post-hoc offset filtering of unbalanced
+  candidates alone — was superseded within the day and survives
+  only as the bulk-recorded dangler filter rules.md#N2 now names. A
+  cached delimiter-charset prescreen landed in the same commit,
+  measured: no-delimiter names parse faster than the pre-#273
+  baseline.
+
+Declined:
+
+- The offset-filter as the whole fix — it repaired the reported
+  symptom (spurious unbalanced flags) while leaving the stolen-
+  close mis-extraction in place.
+
+### ma-do — ambiguous acronyms by decision
+
+- 2026-07-17 (M12, Derek-approved) — ma and do joined the ambiguous
+  acronym set because both are common surnames; the periods gate is
+  what keeps "Jack Ma" intact. Documented side effect: parenthesized
+  bare "(MA)"/"(DO)" no longer escape to suffix as in 1.x.
+
+### deviates-registry — packs stay pure data (option C)
+
+- 2026-07-18 (d4aaafa; the DEVIATES design note) — a `deviates`
+  field ON Locale was rejected: callables break value equality and
+  pickle-by-reference, and DEVIATES is acceptance metadata, not
+  runtime behavior (revisit only if a runtime consumer like
+  explain() appears). The REGISTRY became the contract instead:
+  test_registry_is_the_pack_contract fails structurally unless
+  every registered pack ships DEVIATES and its rotator list. This
+  is why LOCALE-PACKS-PURE-DATA can promise "no code paths of
+  their own" and mean it.
+
+### normalization-fold — lower(), not casefold(); comparison folds harder
+
+- 2026-07-17/19 — vocabulary storage normalizes with lower(), NOT
+  casefold(): casefold mutated stored spellings (κος→κοσ,
+  großfürst→grossfürst) while lower() keeps authored forms; the
+  accepted cost, pinned deliberately, is that ASCII-SS GROSSFÜRST
+  no longer matches. The paired half: comparison_key()/matches()
+  use casefold() ON PURPOSE — comparison is the one surface that
+  wants aggressive folding, a documented 1.4 deviation (ß and
+  final-sigma forms compare equal). The storage-vs-comparison
+  split is deliberate asymmetry; do not "fix" it symmetric.
+
+### render-default — the default view's format
+
+- 2026-07-19 (bf1141c) — the default spec is
+  '{title} {given} "{nickname}" {middle} {family} ({maiden})
+  {suffix}'. Declined the same day: a née-template maiden
+  ('née {maiden}') that round-tripped LOSSLESSLY (née is a maiden
+  marker), rejected on presentation grounds. Accepted cost of the
+  shipped form: a parenthesized maiden re-parses as a nickname.
+
+### P3 — connectives
+
+- Provenance: the single-letter-connective guard is v1's fix for
+  Google Code issue 11 ("john e smith", 2014, commit 33676c9) —
+  the "#11" citations that circulated pointed at a 2014 GitHub
+  accident, not the real source. Recorded so the archaeology stays
+  done.
 
 ### phd-merge — the "Ph. D." split
 
@@ -342,6 +415,32 @@ algebra):
   defends. Deliberately no changed-parse count — the count is a
   property of the measuring grid, not of the code.
 
+Excluded (DEFAULT_NICKNAME_DELIMITERS):
+
+- Curly single quotes ('‘','’') are deliberately absent from the
+  default pairs: U+2019 is the typographic apostrophe (O'Connor in
+  curly type), so shipping the pair would eat real names. #273's
+  own proposal excluded them; pinned by the
+  curly_apostrophe_stays_literal case. A sweeper "completing the
+  typographic set" ships the regression.
+
+Excluded (given-name titles and post-nominals — the 2026-07-19
+transliteration deferrals, each living in a data-module comment
+until now):
+
+- Arabic bare سيد/شيخ/أمير/سلطان — given-name collisions (Sayyid,
+  Shaikha, Amir, Sultan); the honorific forms with the article
+  (الدكتور, الشيخ) ship instead.
+- The abbreviation د. — edge-period normalization leaves bare د,
+  the single-letter trap; Greek bare κ deferred on the same
+  grounds.
+- Ottoman post-nominals باشا/بك/أفندي — surname collisions.
+- Hebrew bare רב (an ordinary word, "many") and בר (Bar is a
+  common modern Israeli given name) — deferred, #269's territory.
+- Latin sri/shri deliberately absent while Devanagari श्री ships:
+  the transliteration collides (Sri Mulyani), the native script
+  cannot.
+
 Excluded (multi-word vocabulary entries — every set matches one
 written word, so a multi-word entry is silently inert and now warns
 at configuration):
@@ -415,6 +514,10 @@ Excluded (MAIDEN_MARKERS, per nameparser/config/maiden_markers.py):
 - 2026-07 (v2 core, PR #288) — v1 parity: only the second segment
   decides (v1 parser.py:1318), and ">1 word before the first comma"
   is v1's guard, which is why "Smith, PhD" keeps the listing form.
+  The strict/lenient knob's blast radius on default vocabulary is
+  exactly the single-letter Roman numerals i and v — the only
+  initial-shaped members of the shipped suffix words — which is
+  what makes rules.md#C1's "V." examples the canonical pair.
 - 2026-07 (plan deviation #3, recorded) — the decision is
   definitionally vocabulary-dependent: there is no way to recognize
   a credential run without consulting the suffix word lists, so the
@@ -467,10 +570,19 @@ Declined:
 - 2026-07-03 (maiden-bucket design, landed via the v2 core, PR
   #288) — the maiden reading of a delimiter pair is opt-in because
   enclosure conventions genuinely vary; there is no default pair.
-- 2026-07 — bucket overlap is canonicalized before parsing: a pair
-  listed for maiden is dropped from the effective nickname set
-  (maiden wins). The v1 facade restores v1's nickname-wins reading
-  by pre-subtracting on its side.
+- 2026-07-19 (cc7063f; Derek's proposal out of a docs-review pain
+  point — routing parens to maiden used to require editing both
+  buckets in tandem, and the nickname default's contents were not
+  discoverable) — bucket overlap is canonicalized before parsing: a
+  pair listed for maiden is dropped from the effective nickname set
+  (maiden wins), and the public DEFAULT_NICKNAME_DELIMITERS
+  constant landed with it. The v1 facade restores v1's
+  nickname-wins reading by pre-subtracting on its side. Weighed and
+  ruled the same day: maiden-wins applies THROUGH apply_patch too —
+  a pack's maiden pair silently removes a user's unrelated explicit
+  nickname pair; warn-on-removal was considered (a silent-failure
+  review flagged the site) and rejected, the silence ruled
+  intended.
 - 2026-08-04 #329 (PR #331) — the marker word inside a delimited
   clause is dropped from a multi-word clause during grouping; the
   extraction itself keeps the whole enclosed span, so nothing is
