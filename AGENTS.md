@@ -25,7 +25,9 @@ you are about to invent is often already there.
   tests/v2/test_doc_citations.py.
 - **decisions.md** — the ADR-style record: dated entries, Declined:
   (rejected WITH evidence), Excluded: (what must stay out of a
-  wordlist and why), Open: (issue links, never restated),
+  wordlist and why), Open: (issue links, never restated; also keyed
+  to a vocabulary set for contested memberships — the
+  right-rule-wrong-set class),
   3-0-reevaluations (append whenever a design cites 1.4 parity as
   load-bearing).
 - **mechanisms.md** — problem-shape catalog with citable contract

@@ -21,6 +21,13 @@ Entry conventions:
   sweeping a wordlist ships the excluded entry as a bug.
 - **`Open:`** — unresolved questions as issue links with one-line
   handles. The ISSUE is canonical; this block never restates it.
+  Two keyings: under a rule ID for questions about the rule, and —
+  like `Excluded:` — keyed to a VOCABULARY SET for contested
+  memberships, the category neither `deviates:` nor `Excluded:`
+  covers: the rule is right and a word's set membership is the
+  question (rai in the suffix acronyms, swami absent from the
+  given-name titles). Place the block beside the set's `Excluded:`
+  entries so a wordlist editor meets both.
 - **Weighing entries** for contested questions: the options
   considered, each option's intended effect, and the accepted costs
   of the option chosen. The costs accepted here are the artifacts
