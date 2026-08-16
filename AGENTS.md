@@ -64,6 +64,20 @@ memory. Per-rule ledger toml comments asserting PARSER behavior cite
 rule IDs under the excerpt discipline; free prose is for ledger
 mechanics only (owned by tools/differential/README.md).
 
+**Landing a design.** The gitignored spec (docs/superpowers/specs/)
+is the working medium; it dies with the branch, and the docs are the
+record. Before a design PR merges, walk its spec (including
+amendments) and distill the durable residue: decisions made or
+reversed → decisions.md entries; proposals rejected with evidence →
+Declined:; vocabulary that must stay out → Excluded:; behavior the
+design settled → rules.md (with a deviates: marker if unshipped);
+reusable patterns → mechanisms.md; options weighed → a weighing
+entry. Then check the spec cites nothing the docs don't now carry —
+a spec section with no committed home when the PR merges is lost,
+not deferred (a 2026-08-16 sweep of eight weeks of specs recovered
+nine such items). The same-PR amendment rule above covers code-driven
+changes; this covers the design-driven ones.
+
 **Primary-source review.** When doc content is distilled from a
 session's work, have that session (or its transcript) review its
 own sections before or soon after landing — attribution flattening

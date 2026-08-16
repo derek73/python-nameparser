@@ -6,6 +6,11 @@ cross-cutting and tooling decisions. Section headings carry the key,
 so every `decisions.md#P2` reference in code or rules.md is a live
 anchor.
 
+The gitignored planning specs are the working medium and die with
+their branches; this file is the record. A landing design PR
+distills its spec's durable residue here (the checklist is
+AGENTS.md's "Landing a design").
+
 Entry conventions:
 
 - **Dated decision entries**, append-only in spirit: a reversed
