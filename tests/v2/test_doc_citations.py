@@ -4,8 +4,8 @@ Checks: cited rule/mechanism IDs exist; citation sentences are
 whitespace-normalized verbatim excerpts of their statements;
 ``implemented:`` lists match the set of modules actually citing the
 rule; ``interacts:`` IDs exist (existence only -- the field is
-advisory). The legacy-pattern check stays OFF until the final rewrite
-pass arms it.
+advisory). The legacy-pattern check (armed) keeps gitignored-spec
+citation forms out of the committed tree.
 """
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from tests.v2.rules_doc import RULES_DOC, parse_rules_doc
 REPO = Path(__file__).resolve().parents[2]
 MECH_DOC = REPO / "docs" / "design" / "mechanisms.md"
 SWEEP_DIRS = ("nameparser", "tests", "tools")
-ENFORCE_NO_LEGACY = False   # armed by the final rewrite pass
+ENFORCE_NO_LEGACY = True    # armed 2026-08-15, the rewrite complete
 _LEGACY = ("§", "superpowers", "plan deviation")
 
 _CITE_RE = re.compile(
@@ -115,10 +115,14 @@ def test_interacts_ids_exist() -> None:
 def test_no_legacy_citations() -> None:
     if not ENFORCE_NO_LEGACY:
         return   # armed by the final rewrite pass
+    self_files = {Path(__file__).name, "test_doc_spellings.py",
+                  "rules_doc.py"}
     problems = []
     for d in SWEEP_DIRS:
         for path in sorted((REPO / d).rglob("*")):
             if path.suffix not in (".py", ".toml"):
+                continue
+            if path.name in self_files:
                 continue
             text = path.read_text(encoding="utf-8", errors="ignore")
             for pat in _LEGACY:
