@@ -77,6 +77,11 @@ which particles count as never-given.
   in running text. The marker itself is dropped as structural, like
   a delimiter character.
 
+Open (M2):
+[#317](https://github.com/derek73/python-nameparser/issues/317)
+the fullwidth-colon marker (旧姓：佐藤 arrives as one word; the
+head-peel question).
+
 ### N3 — the lone-word nickname rule
 
 - 2026-07 (v2 core, PR #288; recorded plan deviation #2 of the core
@@ -103,6 +108,17 @@ which particles count as never-given.
   given="Thị" while FAMILY_FIRST_GIVEN_LAST reads
   given="Khai", middle="Thị Minh", family="Nguyễn". This is why
   three order constants exist rather than two.
+
+Declined:
+
+- middle_as_family as the way to suppress the middle slot for
+  Vietnamese (2026-08-07 #146) — measured: it merges the middles
+  into the family, giving family="Thị Minh Nguyễn" for "Nguyễn Thị
+  Minh Khai" under family-first-given-last — a plausible-looking
+  wrong answer. There is no policy field that suppresses middle,
+  and name_order rejects a two-role tuple ("name_order must be one
+  of the exported orders"); given_names (given + middle) is the
+  view that stays correct wherever the internal boundary falls.
 
 ### W4 — script-scoped order
 
@@ -136,7 +152,11 @@ which particles count as never-given.
   bare tuple literal for segment_scripts — an arg-type error under
   mypy in a py.typed package — and became frozenset(), pinned by a test
   asserting the offered spelling. The known-bad spelling is in the
-  denylist test.
+  denylist test. The structural fact behind the recurrence: autodoc
+  renders docstrings into the API reference, so docs/*.rst is NOT
+  the boundary of "the docs" — a guide and the reference can teach
+  different spellings on the same rendered page, invisibly to any
+  .rst-only sweep.
 
 ### D2 — construction raises, parse never does
 
@@ -225,11 +245,15 @@ Excluded (Lexicon.honorific_tails — a glued tail peels only if it
 could never end a name; per-entry reasons live in
 nameparser/config/suffixes.py's vetting block):
 
-- 양, 군 — 양 is also a top-tier surname (Yang), and 김지양 is a
-  given name; the surname-leads argument covers 군 the same way.
-- 氏 — recognized spaced only.
+- 양, 군 — 김지양 and 김지군 are given names ending in these
+  syllables, and 양 is a top-tier surname (Yang) besides. (The
+  surname-LEADS argument is a different job: it is why both are
+  safe in the SPACED set — a leading surname never meets the
+  trailing-only suffix gate, so 양 미선 keeps family 양.)
+- 氏 — 王氏 is a historical name form ("the Wang woman").
 - 博士 — 田中博士 is Tanaka Hiroshi as readily as Doctor Tanaka.
-- 殿 — Japanese surnames end in it (鵜殿, 真殿).
+- 殿 — Japanese surnames end in it (鵜殿, 真殿, four-figure
+  populations); peeling it would cut a real family name in two.
 - 君 — 王君 is a complete Chinese name; its kana spelling くん does
   peel.
 
@@ -357,7 +381,7 @@ that session's, spot-checked at landing.
 
 Declined:
 
-- Policy annotations widened to input unions (2026-08-06 #334) —
+- Policy annotations widened to input unions (2026-08-05 #334) —
   five documented spellings fail mypy and every one has a
   type-clean equivalent; widening would make every READER see a
   union, and reading is the commoner operation. A .pyi stub typing
@@ -369,16 +393,16 @@ Declined:
   behavior for baselines that cannot construct newer policy fields;
   tests/v2/cases.py already covers opt-in paths per row, so the
   ceiling is documented instead.
-- `_check_tree` as is_relative_to(REPO_ROOT) (2026-08-06 #332) —
+- `_check_tree` as is_relative_to(REPO_ROOT) (2026-08-05 #332) —
   accepts .venv/, build/ and dist/ copies inside the repo; the
   invariant is "is the source package", so the predicate is
   is_relative_to(REPO_ROOT / "nameparser").
-- Empty-string probe as the ledger over-match guard (2026-08-06
+- Empty-string probe as the ledger over-match guard (2026-08-05
   #332) — `.`, `.+`, `\b`, `[\s\S]` all decline "" and still match
   every corpus name; replaced by the sentinel set
   (mechanisms.md#SENTINEL-SET-OVER-MATCH-CHECK).
 - "Lists every role" checked against all eight fields entries
-  (2026-08-06 #332) — a seven-role list passed while omitting
+  (2026-08-05 #332) — a seven-role list passed while omitting
   _ambiguities, which below baseline 2.0 cannot enter a diff at
   all; the check is against V2_FIELDS.
 - A seed ledger rule with name_regex and no fields (2026-08-05

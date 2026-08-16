@@ -206,6 +206,25 @@ Reach for it when. A ledger rule's behavior seems to depend on where
 it sits in the file — it doesn't, and if moving it changes anything,
 the fields are wrong.
 
+## CANONICAL-VOCABULARY-AT-THE-BOUNDARY — one vocabulary at the comparison
+
+Problem shape. Two surfaces name the same concept differently
+(first/last vs given/family), and a matcher needs to compare across
+them.
+Contract statement. Canonicalize at the point of comparison: every
+compared surface's output is converted to one vocabulary before
+matching, and the canonical choice is the one the codebase already
+derives everywhere else.
+How it works. Teaching the matcher both vocabularies doubles every
+rule silently; canonicalizing means existing rules keep matching
+when a second surface joins. The ledger canonicalizes v1 field
+names to Role's before matching.
+Lives in. tools/differential/compare.py (_canonical_field,
+_V1_TO_ROLE).
+Reach for it when. A second surface joins an existing matcher —
+without this, every existing rule silently stops matching the new
+surface, which looks like added coverage.
+
 ## MAKE-WRONG-STATES-UNREPRESENTABLE — the house meta-pattern
 
 Problem shape. A convention keeps being violated no matter how

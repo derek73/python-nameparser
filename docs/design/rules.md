@@ -251,9 +251,15 @@ N3. Rationale: a person set down as a nickname plus one name word is
 ## Maiden names (M)
 
 Background: a maiden name is written beside the current name, set
-off by a marker word (née, geb., 旧姓) or by enclosure. Which
-enclosures mean "maiden" rather than "nickname" is a caller
-convention, so the maiden reading of a delimiter pair is opt-in.
+off by a marker word or by enclosure. Markers are attested across
+French née/né, German geb./geborene, Dutch geboren, Czech/Slovak
+roz./rozená, Scandinavian født/fødd/född, Russian урожд. (both ё
+and е spellings), and Japanese 旧姓 — both grammatical genders
+where attested. Japanese more often writes the marker with a
+fullwidth colon (旧姓：佐藤), which is no separator, so marker and
+name arrive as a single word. Which enclosures mean "maiden" rather
+than "nickname" is a caller convention, so the maiden reading of a
+delimiter pair is opt-in.
 
 M1. Rationale: an enclosure the caller has declared to mean maiden
     holds the former family name; a recognized marker word inside it
@@ -278,6 +284,10 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "Jane Smith née Jones PhD"  →  suffix="PhD"
       "Jones née"                 →  family="née"  · boundary
       "née Jones"                 →  family="Jones"  · boundary
+    Accepted: the fullwidth-colon spelling arrives as one word, so
+    the marker inside it goes unrecognized; #317 tracks whether it
+    should peel.
+      "山田 花子 旧姓：佐藤"       →  maiden=""
     Accepted: a marker straight after a comma is post-comma given
     text, not a marker; and a particle chain swallows a marker in
     its path, the join (P2) running first.
@@ -327,7 +337,11 @@ C2. Rationale: text beyond the recognized comma parts should be
 
 Background: written name order varies by convention: given-first
 (the library's default reading), family-first, and family-first with
-the given name last (Vietnamese). The order is declared by the
+the given name last (Vietnamese, where the person is called by the
+last element, given names are frequently two syllables — the
+given_names view stays correct wherever the internal boundary
+falls — and quốc ngữ is Latin script, so no native-script signal
+exists at all). The order is declared by the
 caller or a locale pack, never detected — but a few conventions
 leave a recognizable trace in the name itself. Patronymics are one:
 East Slavic names carry a father's-name derivative with distinctive
