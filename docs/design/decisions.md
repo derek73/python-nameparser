@@ -1026,8 +1026,13 @@ Declined:
   surname AND a particle), so last_base was guarded non-empty. The
   facade still guards (HumanName("Anh Do").last_base == "Do"); the
   v2 core does not (parse("Anh Do").family_base == "",
-  family_particles == "Do"). No issue or decision records whether
-  the core's drop was deliberate — flagged for adjudication.
+  family_particles == "Do"), and the surname vanishes from
+  initials (parse("Anh Do").initials() == "A.").
+
+Open:
+[#385](https://github.com/derek73/python-nameparser/issues/385)
+whether an all-particle family should have an empty base (three
+options weighed in the issue).
 
 ### removed-v1-surface
 
