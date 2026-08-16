@@ -59,16 +59,16 @@ def segment(state: ParseState) -> ParseState:
         return is_wholly_suffix([state.tokens[i].text for i in seg],
                                 state.lexicon, state.policy)
 
-    # v1 parity: only parts[1] decides the suffix-comma structure
-    # (parser.py:1318); parts[2:] are consumed as suffixes
-    # unconditionally either way, so a non-suffix tail segment gets the
     # rules.md#C1: "the name reads as trailing suffixes when the part
     # after the first comma is entirely suffix words and more than one
     # word precedes the comma; otherwise it reads as the listing form"
-    # (history: decisions.md#C1)
+    # (v1 parity: only parts[1] decides, parser.py:1318; history:
+    # decisions.md#C1)
     # rules.md#C2: "a non-empty extra part that is not entirely suffix
     # words is flagged as a structural ambiguity rather than rejected"
-    # -- COMMA_STRUCTURE flag, not a structure veto
+    # -- parts[2:] are consumed as suffixes unconditionally either
+    # way, so a non-suffix tail segment gets the COMMA_STRUCTURE
+    # flag, not a structure veto
     structure = (Structure.SUFFIX_COMMA
                  if suffixy(groups[1]) and len(groups[0]) > 1
                  else Structure.FAMILY_COMMA)
