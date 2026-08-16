@@ -10,7 +10,17 @@ Entry conventions:
 
 - **Dated decision entries**, append-only in spirit: a reversed
   decision is not edited, a later entry supersedes it. Each entry
-  cites its issue or PR.
+  cites its issue or PR. The date is the DECISION's, never the
+  release's (add "shipped in X" alongside if useful), and git
+  author dates outrank remembered ones — two review rounds
+  corrected exactly these two errors.
+- **Harvested entries** (content landed from a session's report)
+  keep their provenance: a "measurements are that session's,
+  spot-checked at landing" framing line, the contributor's
+  measured-vs-remembered markings where they matter, and — the
+  hard-won one — a flagged uncertainty is resolved by reading the
+  source artifact, never by inference from the neighboring
+  argument.
 - **`Declined:`** — proposals rejected WITH the evidence that killed
   them. Resolved-as-no is a decision; without a home for it, the next
   person re-derives the rejected proposal and its measurement.

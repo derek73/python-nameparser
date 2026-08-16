@@ -63,6 +63,14 @@ memory. Per-rule ledger toml comments asserting PARSER behavior cite
 rule IDs under the excerpt discipline; free prose is for ledger
 mechanics only (owned by tools/differential/README.md).
 
+**Primary-source review.** When doc content is distilled from a
+session's work, have that session (or its transcript) review its
+own sections before or soon after landing — attribution flattening
+and inverted arguments are visible only to the source. Reviewers
+state which tree each measurement ran on (stale fetches produced
+three rounds of already-fixed findings), and landed corrections are
+re-verified here before committing.
+
 **Guard tests** SHOULD carry a recorded negative control — the
 answer with the guard off, stored as data (the _EXCLUSION_EFFECT
 shape; see mechanisms.md's Verification shapes).
