@@ -145,9 +145,13 @@ head-peel question).
 
 - 2026-07 (v2 core, PR #288; recorded plan deviation #2 of the core
   plan) — v1's rule counted pieces before grouping; the v2 port
-  counts one non-title piece plus a nonempty nickname. The rule
-  lives in assignment rather than grouping because that is where
-  the piece count is settled.
+  fires only when the nickname accompanies exactly ONE piece in
+  total — a title counts against it, which is why "'Smitty' Dr.
+  Jones" reads given="Jones" with the family empty (rules.md#N3's
+  Accepted consequence) rather than family="Jones". The rule lives
+  in assignment because that is where the piece count is settled.
+  (An earlier wording here said "one non-title piece", predicting
+  the opposite output; the coherence review measured the truth.)
 
 ### N2 — same-character quotes and shared-character conventions
 
@@ -180,9 +184,11 @@ Declined:
 ### ma-do — ambiguous acronyms by decision
 
 - 2026-07-17 (M12, Derek-approved) — ma and do joined the ambiguous
-  acronym set because both are common surnames; the periods gate is
-  what keeps "Jack Ma" intact. Documented side effect: parenthesized
-  bare "(MA)"/"(DO)" no longer escape to suffix as in 1.x.
+  acronym set because both are common surnames; the two-word "Jack
+  Ma" is kept intact by S2's words-to-spare guard, while the
+  periods gate governs the dotted spellings ("M.A." counts
+  unambiguously). Documented side effect: parenthesized bare
+  "(MA)"/"(DO)" no longer escape to suffix as in 1.x.
 
 ### deviates-registry — packs stay pure data (option C)
 
@@ -924,12 +930,13 @@ than in the gitignored doc; #316 (trailing titles) was filed the
 same day, carrying the esq cleanup as a Related section.
 
 The approved 19-word TITLES∩suffix audit table (2026-07-30/08-01,
-intent for the unshipped bundle): jr, junior, phd, md and do DROP
-from TITLES (never prenominal); dr drops from SUFFIX_WORDS and sra
-from the suffix sets (v1 residue); sr, lt, cpl, cpt, cpo, csm,
-sgm, ra and vc KEEP dual membership (position decides); ms and sa
-keep dual membership AND join the ambiguous set (the periods
-gate). Derek's framing thesis for the whole table: v1's sets
+intent for the unshipped bundle): jr, junior, phd, md, do and se
+DROP from TITLES (se: Structural Engineer is the PE/SE
+post-nominal pair, no prenominal convention — v1 residue); dr
+drops from SUFFIX_WORDS and sra from the suffix sets (v1 residue);
+sr, lt, cpl, cpt, cpo, csm, sgm, ra and vc KEEP dual membership
+(position decides); ms and sa keep dual membership AND join the
+ambiguous set (the periods gate). Derek's framing thesis for the whole table: v1's sets
 encoded where the v1 PARSER needed words to be, not where words
 can occur. Amendment A6: once SUFFIX_PHRASES ships, the glued
 peel's token-level post-nominal test cannot step over a phrase

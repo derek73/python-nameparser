@@ -549,6 +549,10 @@ W1. Rationale: hangul is monoglot Korean and its surnames are a
       "毛泽东"                    →  family="毛泽东"  · boundary
       "毛泽东"  [zh]              →  family="毛"
       "高橋一郎"  [zh]            →  family="高"
+    Accepted: a name the interpunct divides is already divided in
+    the sense that matters — division stands down entirely there,
+    vocabulary and segmenter alike (#298; decisions.md#T3).
+      "安东尼·陈志明"  [zh]        →  family="陈志明"
     history: decisions.md#W1 · implemented: nameparser/_pipeline/_script_segment.py
 
 W2. Rationale: some East Asian honorifics glue directly onto the end
@@ -574,7 +578,8 @@ W3. Rationale: a family name declared by a comma is the writer's
     declaration and never divides, and the post-comma side is given
     text with no family to find; only the honorific split-off (W2)
     crosses the comma, an honorific being no part of the name on
-    either side. A segmenter — unlike the vocabulary — is consulted
+    either side. A segmenter — unlike the vocabulary, which ignores
+    spacing but not the interpunct (W1's Accepted) — is consulted
     only for a name whose written form is wholly undivided, a
     spaced honorific counting as a written division.
       "남궁민수"                  →  family="남궁"
@@ -704,6 +709,8 @@ R2. Rationale: callers need the surname with and without its
       "Dr. Juan Q. Xavier de la Vega III"  →  family_base="Vega"
       "Dr. Juan Q. Xavier de la Vega III"  →  family_particles="de la"
       "Sean O'Connor"             →  family_base="O'Connor"  · boundary
+    Accepted: an all-particle family reads an empty base today;
+    whether it should is #385.
       "Anh Do"                    →  family_base=""
     history: decisions.md#R2 · implemented: nameparser/_types.py
 

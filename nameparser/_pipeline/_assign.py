@@ -17,8 +17,8 @@ leading title pieces chain while no given-position name has been seen
 then positional assignment per name_order with the trailing-suffix
 rule: the piece from which everything after is a strict suffix is the
 last name-position piece, the rest are suffixes. The v1 single-name+
-nickname rule lives here (decisions.md#N3): one non-title piece plus
-a nonempty nickname puts that piece in FAMILY.
+nickname rule lives here (decisions.md#N3): a nonempty nickname
+beside exactly one piece in total puts that piece in FAMILY.
 FAMILY_COMMA: segment 0 wholly FAMILY (v1 parity); segment 1 gets
 leading titles, then given, then middles with strict-suffix pieces to
 suffix; segments 2+ are suffixes (lenient -- segment already flagged

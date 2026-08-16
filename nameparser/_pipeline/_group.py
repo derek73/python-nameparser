@@ -13,7 +13,7 @@ per-parse state that dissolves with the state (v1 kept per-parse sets
 for the same reason). Reads Policy.extra_suffix_delimiters: tail
 segments drop delimiter-core tokens (v1 suffix_delimiter parity).
 
-Implements rules H3, P2, P3 and M2 of docs/design/rules.md and the
+Implements rules H3, P2, P3, P4 and M2 of docs/design/rules.md and the
 group half of M1 (#329: the marker dropped inside EXTRACTED maiden
 content, which M2's pieces walk cannot reach because extract's
 content never enters pieces); each is cited at its code below. Also
