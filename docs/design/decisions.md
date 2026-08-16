@@ -499,6 +499,52 @@ shadows the whole ledger, since name_regex rules sort first): "",
 "(?:)", ".", ".+", "\b", "[\s\S]". Enforced by the sentinel-set
 check.
 
+### differential-ledger, the dormancy arc (2026-08, #328–#376)
+
+The second ledger arc; measurements are that session's, the
+machinery verified present at landing.
+
+Decisions that landed:
+
+- 2026-08 #328 — `[[never]]` exclusions: ledger vocabulary for
+  "this shape must never be explained". classify() consults
+  exclusions before rules, which makes them MONOTONE — an entry
+  only ever removes a name, never moves one between rules — so an
+  exclusion's blast radius is exactly the names it captures,
+  independent of rule order.
+- 2026-08-12 #373 — `dormant = "<reason>"`: a rule explaining
+  nothing fails the run in both directions, with three diagnoses
+  (reverted / shadowed by X / refused by a [[never]] entry). Always
+  on, not behind --strict: a check nobody passes a flag to is a
+  check that doesn't exist.
+- 2026-08 #373 — `--baseline 2.0.0` joined the release checklist:
+  that ledger's rules had no dynamic coverage at all; measured
+  clean at 90/0, so the gap was closed rather than documented.
+
+Declined:
+
+- Ambiguity reporting on multi-matching rules (#372/#373) —
+  measured: 28% of claimed name×role pairs already have ≥2
+  matching rules (732 of 2619; 432 are one pair of rules alone). A
+  report firing on 28% of what it inspects is wallpaper. The
+  actionable slice shipped as the "shadowed by <issue>" diagnosis,
+  which speaks only on FULL shadowing.
+- A specificity floor for fields-only rules (#372/#373) — exactly
+  one fields-only rule exists in any ledger, naming 3 of 7 roles;
+  a six-of-seven floor matches nothing, and nothing would reveal
+  it vacuous.
+- Specificity reordering of the rule sort (#328) — measured across
+  all 751 names: width-then-regex-length moves five rule
+  populations and sends 17 names into the generic fields-only
+  rule, draining the CJK-specific ones. No reading of the sort
+  produces the "exactly one label changes" originally claimed;
+  that figure was corrected on the PR.
+- Unanchoring the honorific-suffix rule to reach glued forms
+  (#376) — it would make a future suffix regression on 김지양
+  classify as a recognized honorific. A confidently wrong label is
+  worse than a catch-all's honest breadth, and the gate reads the
+  same either way.
+
 ### 3-0-reevaluations — decisions shaped by the v1 shim
 
 Promoted 2026-08-15 from session memory (Derek's 2026-07-30 ask;

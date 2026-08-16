@@ -172,6 +172,11 @@ given name. The set, not a regex, draws the line.
 Lives in. nameparser/config/suffixes.py (the vetting block).
 Reach for it when. Arguing that "no regex can separate X from Y" —
 check whether a config set already splits them by listing one side.
+The second half of the pattern: to USE the set in a regex, hand-copy
+the alternation and pin the copy with a sync roster
+(_HONORIFIC_SOURCES) — the 2.0.0 ledger has done exactly this since
+#308, which is why #376's fix was copying its twin verbatim rather
+than inventing one.
 
 ## RECORDED-ROSTERS — record the answer, don't re-derive it
 
@@ -181,7 +186,9 @@ Contract statement. Store the measured answer as literal data (a
 roster) and compare against it; never re-derive the expectation from
 the same inputs the check reads, because a derivation from the same
 data always agrees with itself.
-Lives in. tests/v2/test_ledger_guards.py (_CORPUS_CLAIMS),
+Lives in. tests/v2/test_ledger_guards.py (_CORPUS_CLAIMS,
+_EXCLUSION_EFFECT, _CROSS_RULE_WINNERS, _SPAN_BEARING_RULES,
+_HONORIFIC_SOURCES, _LATIN_ALTERNATION_SOURCES),
 tools/differential/compare.py (_CORPUS_FLOORS),
 tests/v2/test_facade_cases.py (_CORE_ONLY_IDS).
 Reach for it when. Writing a check whose expected value is computed
@@ -192,25 +199,33 @@ make it data the suite asserts.
 
 Problem shape. Two differential-ledger rules claim overlapping
 names.
-Contract statement. Ledger rules are separated by their fields
-subsets and matching predicates, never by their order in the file;
-a fields-only rule sorts last and takes what nothing narrower named.
-How it works. Detail is owned by tools/differential/README.md. One
-standing constraint worth repeating here: sync-pinned rosters select
-rules by issue-string substring, so a new rule's issue slug must
-avoid the literal #271/#272 substrings unless it means to be
-selected.
+Contract statement. Fields subsets and matching predicates separate
+ledger rules BETWEEN tiers; within a tier, file order decides and
+the narrower rule must be written first. A fields-only rule sorts
+last unconditionally and takes what nothing narrower named.
+How it works. Detail is owned by tools/differential/README.md. The
+within-tier clause is measured, not theoretical: in the 1.4 ledger
+the comma-honorific-peel rule's fields are a strict subset of the
+comma-compound rule's, both carry a name_regex, and a pure reorder
+reattributes seven names — caught by _CROSS_RULE_WINNERS and by
+nothing else in the suite (#375's mutation). Whether that pair
+should be separated by a predicate instead of by order is an open
+question with no issue yet. One standing constraint worth repeating
+here: sync-pinned rosters select rules by issue-string substring, so
+a new rule's issue slug must avoid the literal #271/#272 substrings
+unless it means to be selected.
 Lives in. tools/differential/compare.py, the expected_since_*.toml
 ledgers.
 Reach for it when. A ledger rule's behavior seems to depend on where
-it sits in the file — it doesn't, and if moving it changes anything,
-the fields are wrong. Standing caution (#372, closed): the contract
-is true as written and was measured loose in practice — a
-fields-only rule matched all 751 corpus names and owned 1639 of
-5257 name×field pairs, and the moving-test above had never actually
-been run. #372's two proposed mechanical checks (report every
-matching rule, not just the first; a specificity floor for
-fields-only rules) are recorded there.
+it sits in the file — within a tier it does, and the reorder
+mutation is the test (run twice in #375; it fails
+_CROSS_RULE_WINNERS). History: #372 (closed) measured the
+fields-only rule owning 1639 of 5257 name×field pairs as filed
+(2026-08-10); #375/#376 then cut its classifier-of-record share
+sharply, and the residual pair ownership is the last-resort tier
+working as designed, not a defect. #372's two proposed mechanical
+checks were DECLINED with measurements (see
+decisions.md#differential-ledger), not left open.
 
 ## CANONICAL-VOCABULARY-AT-THE-BOUNDARY — one vocabulary at the comparison
 
@@ -245,6 +260,21 @@ Lives in. tests/v2/test_parser.py
 (test_the_chained_emitter_is_still_reachable).
 Reach for it when. Any config-coupled fixture — a test input chosen
 because of what a vocabulary happens to contain.
+
+## CROSS-RULE-OUTCOME-PINS — pin who wins the contest
+
+Problem shape. Every per-rule roster measures a rule alone and the
+gate total is per-corpus, but WHICH rule wins a contested name is
+neither — and it is exactly what a reorder or a narrowing changes.
+Contract statement. Contested outcomes are pinned as data: a roster
+records which rule classifies which contested name, so a change in
+the winner fails the suite even when every total is unchanged.
+How it works. A pure file reorder in the 1.4 ledger fails
+_CROSS_RULE_WINNERS and nothing else in the suite — the pin is the
+only guard at that granularity.
+Lives in. tests/v2/test_ledger_guards.py (_CROSS_RULE_WINNERS).
+Reach for it when. Two rules can claim the same name and you are
+about to change either one, or their order.
 
 ## MAKE-WRONG-STATES-UNREPRESENTABLE — the house meta-pattern
 
@@ -397,6 +427,10 @@ decline, not delete the test.
   passed.
 - Purge __pycache__ between same-length source mutations; stale
   bytecode makes a changed file measure as unchanged.
+- After NARROWING a rule, check the receiver: the names a narrowed
+  rule sheds land on a neighbour, and nothing guarantees the
+  neighbour's prose describes what it inherited — #375 fixed an
+  over-claiming rule and relocated the bug onto its neighbour.
 - A skip is indistinguishable from "correctly declined": pytest
   turns an empty parametrize into a skip, and a filter that widens
   its own skip set cannot fail. After changing any selection shape,
