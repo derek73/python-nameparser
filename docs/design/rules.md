@@ -205,7 +205,11 @@ P4. Rationale: a particle links forward from inside a name; at the
 
 Background: what follows a name is one of two different things —
 generational suffixes (Jr., III), which attach to the name itself,
-and credentials (PhD, MD, MBA), which are earned attachments. CLDR
+and credentials (PhD, MD, MBA), which are earned attachments. All
+vocabulary sets match one written word at a time: a multi-word
+entry can never match anything and is warned about at
+configuration (the eight that shipped dead for years are the
+Excluded story in decisions.md). CLDR
 personNames keeps them as separate fields (`generation`,
 `credentials`) and formats them differently; this library currently
 reports both in one `suffix` field, a merge #326 examines. The
@@ -378,6 +382,9 @@ C1. Rationale: a credential run after the comma means the name is in
       "John Smith, V."  strict-comma-suffixes  →  family="John Smith"
       "Smith, PhD"                →  family="Smith"  · boundary
       "Smith, PhD"                →  suffix="PhD"  deviates: #296 (today: suffix="")
+    (Today PhD lands in TITLE — the #316 trailing-title tangle
+    crossing C1; the marker tracks the suffix field only, so a
+    measured title="PhD" does not mean the marker is stale.)
       "John Smith, LEED AP"       →  family="Smith"  deviates: #291 (today: family="John Smith")
     history: decisions.md#C1 · implemented: nameparser/_pipeline/_segment.py
 

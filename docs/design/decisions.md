@@ -303,6 +303,13 @@ question):
 - mc, ste — measured misparses ("Mc Donald" → given "Mc"), tracked
   in #360; st is inert at the head because TITLES claims it first;
   mac must stay ambiguous because Mac is a real given name.
+- Encoding rationale (#293, predating #360's membership questions):
+  the data layer stores the NEVER-GIVEN set and derives the
+  ambiguous one, because that is safe-by-default for new particles
+  — a one-place addition — and the v1 shim translates by
+  one-directional complement. And the constants are FROZEN
+  specifically to kill the cached-Lexicon.default()-vs-fresh-
+  Constants desync that runtime module-constant mutation caused.
 - Load-bearing dependency: TITLES ∩ ambiguous == {do, freiherr,
   st} is what keeps the particle-or-given ambiguity emitter
   reachable at all; moving all three would make it dead code,
@@ -334,6 +341,18 @@ algebra):
   disjointness assert, which is the standing cost this entry
   defends. Deliberately no changed-parse count — the count is a
   property of the measuring grid, not of the code.
+
+Excluded (multi-word vocabulary entries — every set matches one
+written word, so a multi-word entry is silently inert and now warns
+at configuration):
+
+- Eight entries shipped unmatchable from 2013 to 2.0. chargé
+  d'affaires was SPLIT into the chainable chargé + d'affaires, plus
+  unaccented charge (the attaché/attache precedent, Derek's call);
+  leed ap, nicet i–iv and psm i/ii were REMOVED rather than split,
+  on the name-swallowing measurements recorded in #291 (see the
+  comma-suffix-arc Declined entry). The multi-word UserWarning is
+  this story's enforcement.
 
 Excluded (Lexicon.honorific_tails — a glued tail peels only if it
 could never end a name; per-entry reasons live in
@@ -382,7 +401,11 @@ silently gets no order.
 Excluded (MAIDEN_MARKERS, per nameparser/config/maiden_markers.py):
 
 - Polish "z domu" — a two-token marker; pending the multi-token
-  matching decision.
+  matching decision, tracked in #291 since 2026-07-27.
+- "born" — never shipped: a release-log drafting invention, caught
+  by the 2.0 milestone audit and corrected (5ccf9f3). Recorded so
+  nobody "restores" it; if ever proposed for real, Max Born is the
+  counterexample to analyze.
 - Scandinavian "f." — collides with the initial F.; only the full
   participles (født/fødd/född) are safe. Czech masculine "rozený"
   awaits the same vetting.
@@ -611,9 +634,12 @@ Declined:
   worse than a catch-all's honest breadth, and the gate reads the
   same either way.
 
-### comma-suffix-arc — #291/#296/#316 (2026-07-30 → 2026-08-01)
+### comma-suffix-arc — #291/#296/#316 (2026-07-26 → 2026-08-01)
 
-Intent for #291 and #296 is settled by the approved bundle spec but
+#291 was filed 2026-07-26 out of the 2.0 vocabulary cleanup, with
+its decline-by-measurement evidence in the issue body; "z domu"
+folded into it 2026-07-27 (see Excluded, MAIDEN_MARKERS). Intent
+for #291 and #296 is settled by the approved bundle spec but
 UNSHIPPED — rules.md carries both as deviates: markers on C1. The
 arc's bookkeeping: #291/#296 moved milestone v2.1 → v2.2 on
 2026-08-01 (with #289/#293); the 2026-07-30 design doc was amended
@@ -623,6 +649,14 @@ same day, carrying the esq cleanup as a Related section.
 
 Declined:
 
+- Splitting the dead multi-word suffix entries into single-word
+  entries (2026-07-26, the evidence in #291's body) — measured:
+  "Smith, A.P." has the suffix steal the given initials; "John
+  Leed" and "Mary Nicet" lose family names; and the period-gate
+  escape is equivalent to removal because nobody writes "L.E.E.D.".
+  This decline is why the seven removable entries were REMOVED in
+  2.0 rather than split, and it is the missing history behind C1's
+  #291 marker.
 - The trailing-abbreviation structural fallback — with a
   measurement LIMIT rather than a measurement: the differential
   corpora structurally cannot evidence it, because they hold only

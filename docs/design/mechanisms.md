@@ -49,7 +49,11 @@ How it works. Reordering the token tuple would break span math and
 reintroduce the #100 family. Parse state stays in string order; only
 the view reorders (rule R1, rule O3's render clause).
 Lives in. nameparser/_types.py (FOLDED_TAG, the family view),
-nameparser/_pipeline/_post_rules.py (the one producer today).
+nameparser/_pipeline/_post_rules.py (the one producer today), and
+one deliberate CONSUMER-side strip: Parser.revise removes the tag
+from harvested tokens (a revised value must not inherit fold
+ordering) — losing that strip is this mechanism's measured hazard,
+a family rendering "García Gabriel Márquez".
 Reach for it when. A new rule needs "X renders before Y" and you are
 tempted to swap tokens. Don't swap. Tag.
 
@@ -297,6 +301,34 @@ Reach for it when. Editing suffix membership for any word that
 occurs after a comma in real data — check the structure flip, not
 just the field.
 
+## WARN-AT-THE-CALLER — walk out of the library, don't count frames
+
+Problem shape. A warning should point at the caller's code, but the
+entry depth varies (constructor, add(), unpickle,
+dataclasses.replace, the shim snapshot), so any fixed stacklevel
+lands on library internals for most paths.
+Contract statement. The warner walks the stack outward until the
+first frame outside the library's own modules and warns there,
+instead of counting frames.
+Lives in. nameparser/_lexicon.py (_warn_dead_entry), and the
+related but distinct per-read-location choice is in the #293/#354
+bridge (decisions.md#3-0-reevaluations).
+Reach for it when. Adding any warning reachable through more than
+one public entry point.
+
+## LEGACY-STATE-SIGNATURE — subtract legacy defaults only as a complete set
+
+Problem shape. A retired default rides in on old pickles, but a
+user may have deliberately re-added one of the same entries.
+Contract statement. Known-dead legacy defaults are subtracted from
+restored state only when the state carries ALL of them — the
+complete pre-retirement signature — so real legacy blobs clean up
+silently while a deliberate single re-add survives round-trips.
+Lives in. nameparser/_lexicon.py / _config_shim.py
+(_LEGACY_DEAD_ENTRIES).
+Reach for it when. Retiring any default vocabulary entry that
+existing pickles may carry.
+
 ## MAKE-WRONG-STATES-UNREPRESENTABLE — the house meta-pattern
 
 Problem shape. A convention keeps being violated no matter how
@@ -335,7 +367,7 @@ Lives in. nameparser/locales/ (packs), nameparser/_parser.py
 Reach for it when. A language fix wants an if-statement — make it
 vocabulary or policy in a pack instead.
 
-## FACADE-CONTRACT — HumanName wraps the core, warning-free v1 keeps working
+## FACADE-CONTRACT — HumanName wraps the core; 1.4-warning-free code keeps working
 
 Problem shape. Where does v1-compatibility behavior live, and what
 may it do?
@@ -343,7 +375,10 @@ Contract statement. HumanName is a mutable facade over the immutable
 core: code that runs warning-free on 1.4 keeps working with
 identical results through 2.x, via validating setters, dirty-tracked
 re-parses, and pickle round-trips — and the facade never calls the
-v1 parsing hooks it still carries.
+v1 parsing hooks it still carries. "Warning-free" describes the
+code's 1.4 behavior, not a promise it STAYS warning-free: 2.x adds
+deliberate warnings (the multi-word-vocabulary and field-assignment
+ones), each release-log-classified, always with identical results.
 Lives in. nameparser/_facade.py; v1 import paths preserved by
 nameparser/parser.py and nameparser/config/.
 Reach for it when. A core change needs a v1-visible behavior —
