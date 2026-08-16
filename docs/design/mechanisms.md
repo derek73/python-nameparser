@@ -294,10 +294,14 @@ inert-measurement class — checks that run, print plausible results,
 and measure nothing — has recurred double-digit times; these shapes
 are its known antidotes. Convention (AGENTS.md): guard tests SHOULD
 carry a RECORDED negative control, the _EXCLUSION_EFFECT shape — the
-answer with the guard off, stored as data. Honest limit: these
-reduce the inert-measurement class, not the wrong-predicate class; a
-guard asserting the wrong invariant is caught only by adversarial
-review.
+answer with the guard off, stored as data. Honest limit, precisely drawn: these
+reduce the inert-measurement class. Mutation testing reaches part
+of the wrong-predicate class too — mutating the thing a guard
+watches exposes a guard that never depended on it (the #329
+survivors: deleting the tag check left the suite green while every
+multi-word maiden clause lost its first word, after adversarial
+review had passed that code twice) — but a predicate wrong in a way
+the fixture happens to satisfy still needs adversarial review.
 
 ### VERSION-TELL — know who answered
 
@@ -372,6 +376,11 @@ decline, not delete the test.
   passed.
 - Purge __pycache__ between same-length source mutations; stale
   bytecode makes a changed file measure as unchanged.
+- A skip is indistinguishable from "correctly declined": pytest
+  turns an empty parametrize into a skip, and a filter that widens
+  its own skip set cannot fail. After changing any selection shape,
+  verify the guard still REACHES the code it watches — assert the
+  selected set is non-empty, or force-a-decision on its size.
 - Mind the optional-extra environment split: a local venv's
   incidental namedivider makes `if available` branches run PRESENT
   locally and ABSENT in CI, so a locally-green suite proves nothing

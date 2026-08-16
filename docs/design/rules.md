@@ -267,11 +267,16 @@ M1. Rationale: an enclosure the caller has declared to mean maiden
     With a delimiter pair configured for maiden names, its enclosed
     clause reads as the maiden name — unless the content is
     suffix-shaped, which S1 takes first — a leading recognized
-    marker word inside the clause being dropped; a pair configured
-    for both maiden and nickname reads maiden.
+    marker word inside a multi-word clause being dropped; a one-word
+    clause keeps its word, which may itself be a surname (Nee).
+    Clauses are independent: two enclosures read as one maiden name,
+    each dropping or keeping its own marker. A pair configured for
+    both maiden and nickname reads maiden.
       "Jane Smith (née Jones)"  maiden-parens  →  maiden="Jones"
+      "Jane Smith (Nee)"  maiden-parens        →  maiden="Nee"  · boundary
+      "Jane Smith (Nee) (Jones)"  maiden-parens  →  maiden="Nee Jones"
       "Jane Smith (née Jones)"                 →  nickname="née Jones"  · boundary
-    history: decisions.md#M1 · interacts: S1 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_group.py
+    history: decisions.md#M1 · interacts: S1, M2 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_group.py
 
 M2. Rationale: a maiden marker announces that what follows it is the
     former family name; the marker is an announcement, not a name.
@@ -293,7 +298,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
     its path, the join (P2) running first.
       "Jane Smith, née Jones"     →  maiden=""
       "Jane de la née Jones"      →  family="de la née Jones"
-    history: decisions.md#M2 · interacts: P2 · implemented: nameparser/_pipeline/_group.py
+    history: decisions.md#M2 · interacts: P2, M1 · implemented: nameparser/_pipeline/_group.py
 
 ## Commas & structure (C)
 

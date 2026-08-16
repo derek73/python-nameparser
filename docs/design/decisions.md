@@ -331,10 +331,33 @@ Declined:
   listed for maiden is dropped from the effective nickname set
   (maiden wins). The v1 facade restores v1's nickname-wins reading
   by pre-subtracting on its side.
-- 2026-08 #329 — the marker word inside a delimited clause is
-  dropped from a multi-token clause during grouping; the extraction
-  itself keeps the whole enclosed span, so nothing is lost when
-  there is no marker.
+- 2026-08-04 #329 (PR #331) — the marker word inside a delimited
+  clause is dropped from a multi-word clause during grouping; the
+  extraction itself keeps the whole enclosed span, so nothing is
+  lost when there is no marker. Three decisions argued separately:
+  the clause-size guard exists because Nee is an attested surname
+  (Irish Ní/Nee, a Chinese romanization) — load-bearing, not
+  defensive, and mutation-proven; clauses are independent — "(Nee)
+  (Jones)" reads maiden "Nee Jones", each clause dropping or
+  keeping its own marker (the first implementation leaked across
+  clauses, a real defect); and the contentless "(née —)" alone now
+  parses to every field empty and bool() False (an explicit
+  alternative keeping maiden "née —" was rejected; pinned by the
+  maiden_marker_delimited_content_free case).
+- M1 and M2 are disjoint by construction, which is the no-conflict
+  guarantee: M2's walk covers joining structure that role-bearing
+  words never enter, while M1's drop reaches only extracted
+  content. Verified independently at review over 7,775 records:
+  967 diffs, every one in the maiden field.
+
+Declined:
+
+- Neighbour-scoping the drop (drop a marker whose next word also
+  reads maiden) — implemented, reviewed and rejected: it also fires
+  on the bare-marker path, eating the surname out of "Jane Smith
+  nee Nee Jones" (maiden "Jones" instead of "Nee Jones"), and it
+  leaks across adjacent clauses. It is the obvious implementation,
+  which is why this entry exists.
 
 - 2026-08-05 #329/#335 — marker auto-detection inside a
   nickname-delimited clause was deferred to #335 on a corpus
