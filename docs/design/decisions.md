@@ -77,15 +77,9 @@ The counter-example set has since shrunk, and its shrinkage is the
 section's history: "Sir de Mesnil" fell to #367 (titles became
 transparent); "Juan de la Vega" under family-first — the whole
 chain in the given position — was called working-as-intended by
-#359, but #368 SUPERSEDES that sentence: the recorded decision is
-that the particle wins and a chain becomes the family name
-whatever order was declared, so that case is now P1's tracked
-deviation, not its boundary. The survivor is the degenerate bare
-"de". The MIDDLE position is deliberately not a fold site — and
-not merely unimplemented: the two family-first orders disagree
-there ("Mesnil Garcia de" strands middle="de" under FAMILY_FIRST
-and folds under FAMILY_FIRST_GIVEN_LAST, 464 measured inputs),
-which is what makes #365 a decision rather than a gap.
+#359, contested by #368, and is working-as-intended again as of
+the 2026-08-16 entries below. The survivor is the degenerate bare
+"de".
 
 - 2026-08 #359 — the opening site is read from joining structure
   (pieces), not from assigned roles, so the fold holds under every
@@ -94,6 +88,59 @@ which is what makes #365 a decision rather than a gap.
 - 2026-08 #367 — titles are transparent to the fold: "Sir de
   Mesnil" now reads like "de Mesnil". Fixed by removing the
   title→particle chain in grouping, not by touching this rule.
+- 2026-08-16 (order-precedence keystone; #364, #365, #368) — the
+  stage split is the decision, and the three issues are one
+  question seen from three angles. GROUPING is vocabulary's job and
+  is order-independent: a particle joins forward through
+  consecutive particles and stops at the first non-particle, and no
+  name_order moves that stopping point. ASSIGNMENT is name_order's
+  job: groups take roles by the declared order. The bugs existed
+  because the implementation runs the two in the opposite
+  dependency — `assign` hands out positions from `_effective_order`
+  and `post_rules` then inspects a fixed list of ROLES, so P1's
+  fold sites and P2's chain had coverage that varied with the
+  declared order by accident.
+  Consequences, each recorded in its own right below: the fold
+  takes only the particle's own group (#364); the middle position
+  needs no third site once grouping is order-independent (#365);
+  and #368 reverses.
+- 2026-08-16 #364 — the fold takes the particle and the ONE name
+  word it attaches to, not every remaining word. "de Mesnil Juan"
+  is family="de Mesnil" plus given="Juan". Nothing ever argued for
+  "takes everything"; it was the shape of v1's
+  handle_non_first_name_prefix, not a decision.
+  Measured before deciding: filtering the three differential
+  corpora (782 names) to the shape that actually changes — no
+  comma, so C1 does not take it first; leading never-given
+  particle; three or more words — gives exactly ONE name,
+  "de Mesnil Garcia". #364's own body warns the change "breaks the
+  v1 parity tools/differential protects" and that "each ledger
+  would need re-examining"; measured, it is one name and one ledger
+  entry. The warning was written without the filter and is
+  corrected on the issue.
+- 2026-08-16 #368 REVERSED — shipped behavior is correct.
+  "Juan de la Vega" under FAMILY_FIRST groups [Juan][de la Vega]
+  and assigns family="Juan", given="de la Vega". The earlier
+  decision ("the particle wins ... whatever order was declared")
+  was made before the grouping/assignment split was stated and
+  cannot survive it: a mid-name chain HAS a head word and is
+  positioned like any other group. What NON_GIVEN_NAME_PARTICLES
+  guarantees is that the bare word never reads as a given name, not
+  that no name part may begin with one.
+  The asymmetry with the leading case is P4's, not an exception
+  invented here: a leading particle chains nothing, so without the
+  fold pure position makes the BARE particle the given name. That
+  is measurable today on the ambiguous half, where no fold fires —
+  "van Mesnil Juan" gives given="van", middle="Mesnil",
+  family="Juan". given="de" is the reading the vocabulary exists to
+  forbid, and the fold is what prevents it.
+  The all-orders agreement in P1 is deliberate and is W4's shape: a
+  wholly-hangul name reads family="김" under every declared order
+  because the script carries a signal the order does not override,
+  and a leading never-given particle is the Latin-script analogue.
+  decisions.md#O4 already draws the line — "Words no vocabulary has
+  claimed read by position" — so name_order governs the unclaimed
+  remainder, which is most inputs.
 
 Declined:
 
@@ -106,13 +153,20 @@ Declined:
   "St John Smith" into one given name and broke test_add_title
   (which adds "te", also a particle). The shipped predicate is
   "not a title or a prefix".
+- 2026-08-16 — deleting P4 so a leading particle chains and is then
+  positioned, which is the only way to make "de Mesnil Juan" vary
+  by declared order. It avoids given="de" (the group would be
+  [de Mesnil]) but breaks "de la Vega": measured, a single group is
+  positioned by the declared order — "Cher" reads given under
+  GIVEN_FIRST — so "de la Vega" would read given="de la Vega"
+  unless a further rule forced a particle-headed group into the
+  family. Add that rule and [de Mesnil][Juan] yields the #364
+  reading anyway, so the deletion buys nothing and costs P4.
 
-Open: [#364](https://github.com/derek73/python-nameparser/issues/364)
-how much the fold takes ·
-[#365](https://github.com/derek73/python-nameparser/issues/365)
-should the middle position be a third site ·
-[#360](https://github.com/derek73/python-nameparser/issues/360)
-which particles count as never-given.
+Open: [#360](https://github.com/derek73/python-nameparser/issues/360)
+which particles count as never-given (the criterion is settled at
+decisions.md#vocabulary-collisions; the 39-member application is
+not).
 
 ### P2 — particles join forward
 
@@ -131,6 +185,45 @@ which particles count as never-given.
   family, while #132 wanted the combined double-surname reading —
   the same shape with opposing wants, which is why the combined
   reading lives in the surnames VIEW and the split in the fields.
+
+### P6 — the trailing orphan particle
+
+- 2026-08-16 (order-precedence keystone; #379, #380, #365) — a
+  particle ending the name has nothing to link forward to, and no
+  particle is a name by itself, so it attaches to the family name
+  standing beside it and renders BEFORE it. The distinction from a
+  chain is what makes this a rule rather than an exception: a
+  chained group has a head word and can be positioned; an orphan
+  has no head, so position has nothing to work with.
+- Scope: the COMMA form only, deliberately. "Jong, Anke de" is
+  unambiguous — the comma has already named the family. Without the
+  comma the written shape is not settled: "Jong Anke de" may be a
+  misformatted listing (arguably a missing comma under a declared
+  family-first order) and "Jong de" may be a given name beside a
+  particle. Those keep their positional reading and are not tracked
+  as deviations.
+- The words-to-spare guard is load-bearing, not incidental. #379's
+  own subject is "van", which is in the AMBIGUOUS half — so a rule
+  keyed to never-given particles alone would not fix the issue it
+  was filed for, while a rule with no guard breaks Vietnamese
+  "Nguyen, Van" (given="Van") by eating the only given word. The
+  guard is S2's shape, reused: consume only when the name has words
+  to spare.
+- Rendering before the family has precedent in rules.md#R1 — folded
+  family words under O3 already "render before the rest of the
+  family wherever they stood in the string". The surnames view
+  renders backwards today ("Vega de la", "Jong de") and flips with
+  this rule.
+- Measured, default-order shapes that move: "Vega, Juan de la",
+  "Smith van der", "Sander van". Unlike #364 this is NOT a one-name
+  change; it wants a tools/differential run at all three baselines
+  with ledger entries, which belongs to the implementing PR rather
+  than to this record.
+
+Open: [#380](https://github.com/derek73/python-nameparser/issues/380)
+covers "Berg, Jan vd" under this rule, but the vd reading itself is
+decisions.md#vocabulary-collisions (C-ii); and the no-given-word
+case "Jong, vd" is deliberately unresolved — see the scope note.
 
 ### M2 — the maiden-marker rule
 

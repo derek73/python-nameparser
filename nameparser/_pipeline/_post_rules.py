@@ -95,9 +95,14 @@ def post_rules(state: ParseState) -> ParseState:
 
     # rules.md#P1: "a never-given particle standing alone where the
     # given name would go — or opening the name — marks the name as
-    # surname-only: the given and middle words fold into the family.
-    # It needs another name word to fold into." (v1
-    # handle_non_first_name_prefix; history: decisions.md#P1)
+    # surname-only: the particle and the one name word it attaches
+    # to are the family, and any name words beyond that read by
+    # position." (v1 handle_non_first_name_prefix; history:
+    # decisions.md#P1)
+    # DEVIATION #364: the fold below still takes every remaining
+    # name word, not just the particle's own; "de Mesnil Juan" gives
+    # family="de Mesnil Juan" where the rule says family="de Mesnil"
+    # plus given="Juan". Pinned by the deviates: markers on P1.
     # Code-local: a lone PIECE is the test at both sites, so a
     # particle group already chained forward is not a lone particle,
     # and rule H1 above cannot be what produces the fold's family
