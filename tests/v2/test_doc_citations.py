@@ -112,6 +112,32 @@ def test_interacts_ids_exist() -> None:
     assert not missing, f"advisory interacts: cite unknown IDs: {missing}"
 
 
+def test_doc_internal_anchors_resolve() -> None:
+    """Every rules.md#X / decisions.md#Y / mechanisms.md#Z reference
+    INSIDE the three docs points at a real rule ID, ### key, or
+    entry heading (## or ###). The code-side citations are covered
+    above; this closes the doc-to-doc half."""
+    docs = {name: (REPO / "docs" / "design" / f"{name}.md")
+            .read_text(encoding="utf-8")
+            for name in ("rules", "decisions", "mechanisms")}
+    rule_ids = set(re.findall(r"^([A-Z]\d+)\.\s", docs["rules"], re.M))
+    dec_keys = set(re.findall(r"^### ([^\s—]+)", docs["decisions"], re.M))
+    mech_slugs = set(re.findall(r"^#{2,3} ([A-Z][A-Z0-9_-]+)",
+                                docs["mechanisms"], re.M))
+    problems = []
+    for name, text in docs.items():
+        for m in re.finditer(
+                r"(rules|decisions|mechanisms)\.md#([A-Za-z0-9_-]+)", text):
+            doc, anchor = m.group(1), m.group(2)
+            ok = (anchor in rule_ids if doc == "rules"
+                  else anchor in dec_keys if doc == "decisions"
+                  else anchor in mech_slugs)
+            if not ok:
+                line = text[:m.start()].count("\n") + 1
+                problems.append(f"{name}.md:{line} -> {doc}.md#{anchor}")
+    assert not problems, "\n".join(problems)
+
+
 def test_no_legacy_citations() -> None:
     if not ENFORCE_NO_LEGACY:
         return   # armed by the final rewrite pass
