@@ -196,9 +196,14 @@ Declined:
   accepted cost, pinned deliberately, is that ASCII-SS GROSSFÜRST
   no longer matches. The paired half: comparison_key()/matches()
   use casefold() ON PURPOSE — comparison is the one surface that
-  wants aggressive folding, a documented 1.4 deviation (ß and
-  final-sigma forms compare equal). The storage-vs-comparison
-  split is deliberate asymmetry; do not "fix" it symmetric.
+  wants aggressive folding; this is a release-log-classified 2.0
+  CHANGE from 1.4's lower() (ß and final-sigma forms compare equal
+  only since the v2 core; v1.4 has no casefold anywhere). The 1.x
+  line was symmetric BY DESIGN — lower() everywhere, chosen for
+  symmetry with the parser's lc() convention — so the
+  storage-vs-comparison split is a v2 decision moving away from a
+  real, deliberate alternative, not a fix of an oversight. Do not
+  "fix" it symmetric: symmetric is what 1.x was.
 - 2026-07 (rc1 arc) — the fold must reach a FIXED POINT, and
   anything built on it must converge too: _title_key joined
   per-word folds and kept empty slots, so given_name_titles with a
@@ -878,8 +883,51 @@ Declined:
   must merge where the render tag is applied, not where the role
   is assigned.
 
+### comparison-surface — why value equality died, and what replaced it
+
+- 2026-07 (1.3.0 arc, #223/#224; executed in the v2 core —
+  measured: HumanName == HumanName is False, matches() and
+  comparison_key() live, the facade cites #223) — the trilemma:
+  case-insensitive equality, equality-with-plain-strings, and
+  hashability are mutually inconsistent (a hash cannot equal both
+  hash("John Smith") and hash("john smith")), so 1.2.0's design
+  was unfixable in place, not merely disliked. Additional costs of
+  the old surface: equality ran through str(self) and so depended
+  on mutable string_format, and maiden was invisible to ==
+  (absent from the default format).
+- 2026-07-06 — the cross-constants asymmetry, pinned: a str
+  operand is reparsed with self.C; a HumanName operand is compared
+  as already parsed.
+
+Declined:
+
+- Component-based __eq__/__hash__ — workable, considered, rejected:
+  it still privileged one equality semantic for a domain that has
+  none, and kept the mutate-while-hashed hazard.
+- Lenient matching (initials-compatible, Bob/Robert) — declined
+  WITHOUT an issue, deliberately: matches() is exact-components by
+  design. Someone will propose could_match() within a year; this
+  entry is the resolved-as-no they should find.
+
 ### removed-v1-surface
 
+- empty_attribute_default: removed in 2.0 (#255; deprecated in 1.4
+  per the bridge discipline). Origin #44 (2016): a DB-NULL
+  convenience whose first answer — `name.title or None` — became
+  the migration path. The in-band-signaling bug that sealed it
+  (#254): the 2016 `.replace('None','')` scrub could not tell
+  interpolated None from name text, so "Nonez Smith" rendered
+  "z Smith" — the fix shape, worth keeping as a one-liner, is
+  SUBSTITUTE BEFORE FORMAT, never scrub after. Two removal
+  cautions shaped the implementation: tombstone-not-deletion (a
+  plain deleted attribute would make assignment silently
+  accepted-and-ignored, the #241 failure family) and
+  readers-not-just-writers (#44's own thread advised asserting
+  against the attribute, so reads existed downstream). The
+  tombstone and pickle-tolerant load die with the shim. (An
+  earlier 3-0-reevaluations bullet said "left untyped, typeable in
+  3.0" — promoted from a memory that was already three days stale
+  when written; nothing is left to type.)
 - no_vowels: removed in 2.0 (#268, filed 2026-07-07, closed
   2026-07-28) — never consulted by any parser version, ASCII-only;
   the facade carries no replacement because there was nothing to
@@ -892,7 +940,12 @@ promotion approved 2026-08-15). Discipline when appending: mark each
 entry (A) "would decide differently without the shim" — real 3.0
 work — or (B) "cited 1.4 parity but stands on its own", recorded so
 nobody re-litigates it. Append here whenever a design choice cites
-1.4 parity or the shim as a load-bearing reason.
+1.4 parity or the shim as a load-bearing reason. Standing
+discipline for the removals themselves: every removal warns in a
+RELEASED version first — the rule established by the 1.3.0 eq/hash
+work (#223/#224), the reason the v1.4 milestone existed, and the
+reason FACADE-CONTRACT's "warning-free on 1.4" anchor works at all.
+3.0's shim removals follow the same bridge.
 
 - (A) v1 field vocabulary at the facade boundary: CJK semantics
   squeeze into first/last through HumanName while the core speaks
@@ -906,8 +959,6 @@ nobody re-litigates it. Append here whenever a design choice cites
   the migration promise it verifies dissolves; the successor
   baseline is presumably last-2.x. Machinery survives; corpus
   contracts change.
-- (A) empty_attribute_default left untyped (PR #250): cascades into
-  the v1-shaped public API. Typeable in 3.0.
 - (A) A .pyi stub for Policy (wide __init__, narrow attributes) —
   deferred from #334, see the differential-ledger Declined entry.
 - (A) nameparser.config removal scope: the 3.0 schedule says
@@ -925,7 +976,9 @@ nobody re-litigates it. Append here whenever a design choice cites
   coincides with 1.4 parity but stands alone — family-first is the
   marked case needing affirmative evidence.
 - (B) The deprecation-bridge shape (#293/#354) is the template for
-  every remaining 2.x→3.0 shim: PEP 562 module __getattr__ PLUS
+  every remaining 2.x→3.0 shim (the bridge DISCIPLINE — warn in a
+  released version first — predates it, from #223/#224; this entry
+  is the module-__getattr__ mechanics): PEP 562 module __getattr__ PLUS
   __all__ (star imports never reach __getattr__ — measured: `from
   ...prefixes import *` bound nothing and leaked the helper); warn
   per read-location rather than per process (a write-back let a

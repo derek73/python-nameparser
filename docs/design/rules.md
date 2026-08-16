@@ -58,6 +58,9 @@ set in decisions.md).
   inflected forms. CLDR personNames draws the same line.
 - **Validation.** Deciding whether a string IS a person's name is not
   parsing; `parse()` is total over strings and never rejects input.
+- **Comparison.** matches()/comparison_key() are a value-API
+  surface, not parsing; their design record is
+  decisions.md#comparison-surface.
 
 ## Titles & honorifics (H)
 

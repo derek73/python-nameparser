@@ -312,7 +312,9 @@ first frame outside the library's own modules and warns there,
 instead of counting frames.
 Lives in. nameparser/_lexicon.py (_warn_dead_entry), and the
 related but distinct per-read-location choice is in the #293/#354
-bridge (decisions.md#3-0-reevaluations).
+bridge (decisions.md#3-0-reevaluations). First measured instance
+of the hazard: the delegated bytes-deprecation warnings shipped
+with fixed stacklevel=2 and needed the follow-up fix (0044073).
 Reach for it when. Adding any warning reachable through more than
 one public entry point.
 
