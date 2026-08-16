@@ -209,8 +209,8 @@ the comma-honorific-peel rule's fields are a strict subset of the
 comma-compound rule's, both carry a name_regex, and a pure reorder
 reattributes seven names — caught by _CROSS_RULE_WINNERS and by
 nothing else in the suite (#375's mutation). Whether that pair
-should be separated by a predicate instead of by order is an open
-question with no issue yet. One standing constraint worth repeating
+should be separated by a predicate instead of by order is
+[#382](https://github.com/derek73/python-nameparser/issues/382). One standing constraint worth repeating
 here: sync-pinned rosters select rules by issue-string substring, so
 a new rule's issue slug must avoid the literal #271/#272 substrings
 unless it means to be selected.
