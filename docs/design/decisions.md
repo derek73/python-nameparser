@@ -344,6 +344,16 @@ Declined:
   is a plain TypeError/ValueError so the wrap-with-locale-code
   rewrap cannot break on exotic exception signatures.
 
+Declined (ambiguity kinds for script-resolved names, 2026-07-27):
+
+- A "han-script" zh-vs-ja kind — applying the ZH pack IS the
+  disambiguation; per-name flags after an explicit opt-in are
+  noise.
+- ORDER emission for script-resolved names — native-script order
+  is convention, not a guess; the reserved kind stays unemitted.
+  SEGMENTATION fires only on a genuine multi-split vocabulary fork
+  (夏侯惇, 남궁민수).
+
 ### H2 — the leading-abbreviation title
 
 - 2026-06-30 (leading-period-title design; v2 core, PR #288) — the
@@ -387,14 +397,28 @@ disagree today).
   compose mechanically: a listed surname is a dictionary certainty
   and wins.
 
+- 2026-07-29 (ja amendment §1a) — script CLASSIFICATION
+  NFC-normalizes its input (NFD katakana carries combining marks
+  outside the block; NFD hangul decomposes to jamo, which would
+  miss the order rule for macOS-origin names) while segmentation
+  MATCHING stays raw — chosen over offset-mapping complexity
+  because NFD then degrades to no-split, never to a wrong split.
+  The read-only fold is the one deliberate exception to "nothing
+  rewrites the text" (rules.md T Background), and it never enters
+  a token.
+
 Declined:
 
 - JMnedict as bundled segmentation data (#272's body, 2026-07-07)
   — the pip packaging (jamdict-data) was last compiled 2021-04;
   JMnedict carries no frequency data, so it cannot resolve the
   ambiguous 2+2/3+1 splits that motivate a segmenter at all; and
-  CC BY-SA bundling raises questions the LGPL core avoids by
-  delegating to namedivider (MIT). The kind of decline someone
+  bundling raised licensing questions the core avoids by delegating
+  to namedivider — whose code and GBDT model are MIT, whose surname
+  data carries Myoji-Yurai terms permitting exactly this
+  name-dividing use, and whose CC-BY-SA BERT model is unused (the
+  2026-07-29 amendment corrected an earlier flat-"MIT"
+  description; so does this entry). The kind of decline someone
   re-proposes in two years.
 
 - 2026-08 — zh and ja packs are corpus ALTERNATIVES, one per
@@ -495,6 +519,19 @@ algebra):
   disjointness assert, which is the standing cost this entry
   defends. Deliberately no changed-parse count — the count is a
   property of the measuring grid, not of the code.
+
+### P5 — bound given names
+
+- 2026-06-30 (first-name-prefix-join design; v1-era, carried into
+  the v2 port) — the join is vocabulary-driven and deliberately
+  tiny.
+
+Excluded (BOUND_GIVEN_NAMES):
+
+- mohamad — a standalone given name in its own right; binding it
+  would eat the middle name.
+- abd — collides with the academic post-nominal "ABD", and the
+  real form is the deferred multi-token "abd al rahman".
 
 Excluded (DEFAULT_NICKNAME_DELIMITERS):
 
@@ -742,6 +779,13 @@ divergent measurement is in the issue).
   leaves the marker in a name field (see the rule's Accepted
   consequence).
 
+- 2026-07-02 (design, orthography coverage) — dotless ı does not
+  case-fold to i, so qızı is a literal alternative in the pattern
+  (re.I cannot bridge it; all-caps QIZI falls to the ASCII
+  alternative); the patterns are NFC literals and NFD input does
+  not match. Scoping decline: suffix-attached Kazakh/Uzbek
+  patronymics (Әбішұлы) are bound-suffix morphology, not a
+  standalone marker, and deliberately out.
 - 2026-08-15 — same rotation/name_order interaction status as O1.
 
 Open:
@@ -796,6 +840,13 @@ Declined:
   #332) — it matched every CJK-bearing name and would have
   classified all 89 diffs on the first pass, exiting 0 having
   distinguished nothing.
+- 2026-08-07 #333 — the canonical-rule selector (keyed on literal
+  #271/#272 slug substrings) was deleted rather than repaired,
+  option A of three: split "every hand copy equals the table" (the
+  sweep's job) from "the table did not change shape without a
+  decision" (the span-bearing test's job), so a selector break can
+  never take the decision gate out as collateral. This retired the
+  slug taboo an earlier mechanisms.md entry carried.
 - The B7 sanctioned-extra span (pre-#332 arc) — added, then removed
   as a pure loss when review measured that every B7-divided name
   already matches through its guaranteed classified flanks, so the
@@ -867,9 +918,22 @@ for #291 and #296 is settled by the approved bundle spec but
 UNSHIPPED — rules.md carries both as deviates: markers on C1. The
 arc's bookkeeping: #291/#296 moved milestone v2.1 → v2.2 on
 2026-08-01 (with #289/#293); the 2026-07-30 design doc was amended
-in place 2026-08-01 with an A1–A6 amendments section, and citations
-should be to the amended form; #316 (trailing titles) was filed the
+in place 2026-08-01 (A1–A6); its durable content is HERE rather
+than in the gitignored doc; #316 (trailing titles) was filed the
 same day, carrying the esq cleanup as a Related section.
+
+The approved 19-word TITLES∩suffix audit table (2026-07-30/08-01,
+intent for the unshipped bundle): jr, junior, phd, md and do DROP
+from TITLES (never prenominal); dr drops from SUFFIX_WORDS and sra
+from the suffix sets (v1 residue); sr, lt, cpl, cpt, cpo, csm,
+sgm, ra and vc KEEP dual membership (position decides); ms and sa
+keep dual membership AND join the ambiguous set (the periods
+gate). Derek's framing thesis for the whole table: v1's sets
+encoded where the v1 PARSER needed words to be, not where words
+can occur. Amendment A6: once SUFFIX_PHRASES ships, the glued
+peel's token-level post-nominal test cannot step over a phrase
+segment ("김민준씨, LEED AP" will not peel) — #291 owns deciding
+that, with a case row either way.
 
 - 2026-08-01 (plan amendment 1, Derek's call: "ship + repair the
   merge") — dropping dr/ms from the suffix vocabulary flips
@@ -911,6 +975,24 @@ capitalization-knob consolidation; the logger rename. (Lenient
 matching, declined in the same sweep, is recorded under
 comparison-surface.)
 
+### initials-repertoire — is_initial across scripts (#320)
+
+- The principle: alphabetic-vs-CJK, not Latin-vs-non-Latin — Han,
+  kana and hangul characters are morphemes or syllables, so a
+  single one cannot stand in for a name word, while any alphabet's
+  single letter can. _NO_INITIALS is ENUMERATED per script rather
+  than derived from the script ranges, so a new Script member
+  forces a decision instead of silently deciding Thai has no
+  initials.
+
+Declined:
+
+- Narrowing is_initial to [A-Za-z] — measured: "Й." regresses to
+  the #267 Ukrainian-conjunction misreading (the exact regression
+  2.1.0's release log claims to prevent), and the stable "initial"
+  tag silently strips from every Cyrillic, Greek, Arabic and
+  Hebrew initial, invisibly to the fields.
+
 ### comparison-surface — why value equality died, and what replaced it
 
 - 2026-07 (1.3.0 arc, #223/#224; executed in the v2 core —
@@ -936,6 +1018,16 @@ Declined:
   WITHOUT an issue, deliberately: matches() is exact-components by
   design. Someone will propose could_match() within a year; this
   entry is the resolved-as-no they should find.
+
+### R2 — the all-particles family_base divergence
+
+- Recorded 2026-08-16, intent UNVERIFIED: the v1-era design held
+  that a family name cannot be only particles ("Anh Do" — Do is a
+  surname AND a particle), so last_base was guarded non-empty. The
+  facade still guards (HumanName("Anh Do").last_base == "Do"); the
+  v2 core does not (parse("Anh Do").family_base == "",
+  family_particles == "Do"). No issue or decision records whether
+  the core's drop was deliberate — flagged for adjudication.
 
 ### removed-v1-surface
 
@@ -964,6 +1056,19 @@ Declined:
   the facade carries no replacement because there was nothing to
   replace.
 
+### script-table-placement — a recorded reversal
+
+- 2026-07-29 (script-ranges relocation) — REVERSES #271's
+  documented choice ("tables deliberately live in _vocab"): the
+  tables moved to _policy because packs cannot import the
+  pipeline, evidenced by two hand copies with sync tests and a
+  blocked 16–30× compiled-regex optimization (a module-level
+  re.Pattern in a pack would flip its classification, hence the
+  closure-held-pattern convention). Rider: U+3006 〆 joined the
+  HAN span on a justification deliberately beyond UAX #24 — it is
+  Script=Common but appears solely in Japanese surnames (〆木,
+  〆谷, 〆野).
+
 ### 3-0-reevaluations — decisions shaped by the v1 shim
 
 Promoted 2026-08-15 from session memory (Derek's 2026-07-30 ask;
@@ -976,7 +1081,13 @@ discipline for the removals themselves: every removal warns in a
 RELEASED version first — the rule established by the 1.3.0 eq/hash
 work (#223/#224), the reason the v1.4 milestone existed, and the
 reason FACADE-CONTRACT's "warning-free on 1.4" anchor works at all.
-3.0's shim removals follow the same bridge.
+3.0's shim removals follow the same bridge. The CONVERSE rule,
+declined-with-reasoning twice in the migration design (2026-07-11):
+a bridge warning must WAIT when the replacement does not yet exist
+— 1.4 warned on neither shared-CONSTANTS mutation nor the
+subclass hooks, because users had no actionable response until
+2.0, and #262's contract docs shipped in the same release
+(warn-while-documenting is a mixed message).
 
 - (A) v1 field vocabulary at the facade boundary: CJK semantics
   squeeze into first/last through HumanName while the core speaks

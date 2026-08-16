@@ -153,8 +153,10 @@ to a surname and are written as part of it. Some are never anyone's
 given name; others ("Van", "Bin") are ordinary given names in some
 cultures, so the vocabulary distinguishes never-given particles from
 ambiguous ones, and only the never-given ones license special
-treatment. Which particles fall on which side of that line is its own
-open question (#360).
+treatment. A separate small vocabulary binds forward to a GIVEN
+name instead: words like "abdul" that are not complete given names
+alone (P5). Which particles fall on which side of the never-given
+line is its own open question (#360).
 
 P1. Rationale: a never-given particle standing alone cannot be
     someone's given name; a name that opens with one, or offers only
@@ -223,6 +225,14 @@ P4. Rationale: a particle links forward from inside a name; at the
       "Sir de Mesnil"             →  pieces=[["Sir"], ["de"], ["Mesnil"]]
       "John van der Berg"         →  pieces=[["John"], ["van", "der", "Berg"]]  · boundary
     history: decisions.md#P2 · interacts: P1 · implemented: nameparser/_pipeline/_group.py
+
+P5. Rationale: some given-name words are incomplete alone — "abdul"
+    is a bound form that the next word completes.
+    A recognized bound given-name word joins the word after it into
+    one given name.
+      "abdul salam ahmed salem"   →  given="abdul salam"
+      "mohamad ali smith"         →  given="mohamad"  · boundary
+    history: decisions.md#P5 · implemented: nameparser/_pipeline/_group.py
 
 ## Suffixes: generational & credentials (S)
 
@@ -694,7 +704,8 @@ R2. Rationale: callers need the surname with and without its
       "Dr. Juan Q. Xavier de la Vega III"  →  family_base="Vega"
       "Dr. Juan Q. Xavier de la Vega III"  →  family_particles="de la"
       "Sean O'Connor"             →  family_base="O'Connor"  · boundary
-    implemented: nameparser/_types.py
+      "Anh Do"                    →  family_base=""
+    history: decisions.md#R2 · implemented: nameparser/_types.py
 
 R3. Rationale: initials abbreviate the person's name words; titles,
     suffixes, particles and nicknames are not name words.

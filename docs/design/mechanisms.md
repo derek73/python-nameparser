@@ -216,10 +216,13 @@ comma-compound rule's, both carry a name_regex, and a pure reorder
 reattributes seven names — caught by _CROSS_RULE_WINNERS and by
 nothing else in the suite (#375's mutation). Whether that pair
 should be separated by a predicate instead of by order is
-[#382](https://github.com/derek73/python-nameparser/issues/382). One standing constraint worth repeating
-here: sync-pinned rosters select rules by issue-string substring, so
-a new rule's issue slug must avoid the literal #271/#272 substrings
-unless it means to be selected.
+[#382](https://github.com/derek73/python-nameparser/issues/382). The old #271/#272
+slug taboo is RETIRED (#333): the canonical-rule selector that keyed
+on those substrings is deliberately deleted — rule authors are free
+to use them in compound slugs — and the surviving rosters select on
+their own explicit keys (_HONORIFIC_SOURCES and
+_LATIN_ALTERNATION_SOURCES by named issue strings,
+_SPAN_BEARING_RULES by exact leading fix(...) tag).
 Lives in. tools/differential/compare.py, the expected_since_*.toml
 ledgers.
 Reach for it when. A ledger rule's behavior seems to depend on where

@@ -17,8 +17,8 @@ Implements rules H3, P2, P3 and M2 of docs/design/rules.md and the
 group half of M1 (#329: the marker dropped inside EXTRACTED maiden
 content, which M2's pieces walk cannot reach because extract's
 content never enters pieces); each is cited at its code below. Also
-ports v1's _join_bound_first_name and the "Ph. D."-split merge
-(v1 fix_phd; decisions.md#phd-merge).
+implements rule P5 (cited below at the bound-given join) and ports
+the "Ph. D."-split merge (v1 fix_phd; decisions.md#phd-merge).
 """
 from __future__ import annotations
 
@@ -326,7 +326,9 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                     (i,)))
             merge(k, j, drop={"prefix"})
             k += 1
-        # bound given names: the first non-title piece joins the next
+        # rules.md#P5: "a recognized bound given-name word joins the
+        # word after it into one given name" (history: decisions.md#P5)
+        # -- bound given names: the first non-title piece joins the next
         # ONCE (pairwise, v1 parity: 'Salem, Abdul Rahman Ahmed' keeps
         # Ahmed a middle name). BoundJoin encodes v1's reserve_last.
         first_name_k = next(
