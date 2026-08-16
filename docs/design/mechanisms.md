@@ -180,7 +180,8 @@ Contract statement. Store the measured answer as literal data (a
 roster) and compare against it; never re-derive the expectation from
 the same inputs the check reads, because a derivation from the same
 data always agrees with itself.
-Lives in. tools/differential/compare.py (_CORPUS_CLAIMS and kin);
+Lives in. tests/v2/test_ledger_guards.py (_CORPUS_CLAIMS),
+tools/differential/compare.py (_CORPUS_FLOORS),
 tests/v2/test_facade_cases.py (_CORE_ONLY_IDS).
 Reach for it when. Writing a check whose expected value is computed
 by the code under test, or a comment that enumerates ids/counts —

@@ -14,7 +14,8 @@ namespaced (unstable): "vocab:title", "vocab:given-title",
 suffix vocabulary, or an ambiguous acronym written with periods --
 at the TAG level 'M.A.' gets "vocab:suffix" while 'Ma' gets only
 "vocab:suffix-ambiguous"; what assign then does with a trailing
-ambiguous tag is rule S2's Accepted consequence.
+ambiguous tag is the rest of rule S2's statement (the
+words-to-spare guard) and its Accepted consequences.
 The initial veto is assign's job, not classify's: 'V' carries both
 "vocab:suffix" and "initial".
 """

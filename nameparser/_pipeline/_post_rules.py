@@ -9,7 +9,7 @@ Reads: Policy.patronymic_rules, Policy.middle_as_family;
 Lexicon.given_name_titles.
 
 Implements rules H1, P1, O1, O2 and O3 of docs/design/rules.md; each
-is cited at its code below, and the history lives in
+is cited at its code below, and P1/O1/O2's history lives in
 docs/design/decisions.md.
 """
 from __future__ import annotations

@@ -44,7 +44,8 @@ caller of this module can put it to. Those terms bind only the opt-in
 ``ja_segmenter(gbdt=True)`` path, which is what loads that file; the
 default BasicNameDivider reads namedivider's own bundled kanji.csv and
 never touches it. Its BERT model for katakana division is CC-BY-SA and
-is NOT used (katakana division is out of scope; decisions.md#W4).
+is NOT used (katakana division is out of scope; decisions.md#W1's
+kana-gating bullet).
 
 Declared deviations (mechanisms.md#LOCALE-PACKS-PURE-DATA): the
 pack sets

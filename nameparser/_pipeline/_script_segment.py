@@ -574,8 +574,9 @@ def _split_surname_site(state: ParseState) -> ParseState:
            and _PEELED_TAG not in state.tokens[j].tags
            for j in state.segments[0]):
         return state
-    # No try/except around the call: the module docstring's totality
-    # exception. The two checks below are that same doctrine, curated,
+    # No try/except around the call: rules.md#A1's Accepted clause
+    # ("a user-supplied segmenter's own error propagates"). The two
+    # checks below are that same doctrine, curated,
     # and they are where the line this module draws is easiest to state:
     # a PROTOCOL VIOLATION BY THE SEGMENTER AUTHOR RAISES, while an
     # ADAPTER'S DEFENSE AGAINST ITS LIBRARY DECLINES. Both checks here

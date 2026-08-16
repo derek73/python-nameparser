@@ -2,14 +2,15 @@
 
 Consumes: pieces + piece_tags (grouped), segments, structure, tokens.
 Produces: tokens with roles set on every main-stream token.
-Reads: Policy.name_order (#270) and Policy.script_orders (#271, which
+Reads: Policy.name_order (#270), is_suffix_lenient on the trailing
+piece of a two-part comma name, and Policy.script_orders (#271, which
 overrides it when every name piece is written wholly in one script, or
 in the Han/Hiragana/Katakana repertoire the #272 kana license shares
 across pieces); token/piece tags; Lexicon only through tags already
 applied by classify (plus the leading-title period rule).
 
-Implements rules N3, O4 and W4 of docs/design/rules.md (plus H2
-above), cited at their code below. Ports v1's assignment loops.
+Implements rules H2, N3, O4 and W4 of docs/design/rules.md, each
+cited at its code below. Ports v1's assignment loops.
 NO_COMMA (per name_order):
 leading title pieces chain while no given-position name has been seen
 (a title needs a following piece, unless the whole name is one title);

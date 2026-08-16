@@ -39,8 +39,8 @@ class Parser:
     consulted only for a token the segmentation stage gates in and the
     vocabulary DECLINES, so a locale pack's surnames always win where
     they match; returning None declines in turn and the token stays
-    whole. Two promises narrow when one is supplied
-(mechanisms.md#LOCALE-PACKS-PURE-DATA):
+    whole. Two promises narrow when one is supplied (the first is
+    rules.md#A1's Accepted clause):
     parse-totality gains its one exception -- an exception raised by
     the segmenter propagates, because a user-supplied callable's own
     error is a user-code error, not a content error -- and this Parser
@@ -59,10 +59,8 @@ class Parser:
     policy: Policy = None  # type: ignore[assignment]    # None -> Policy()
     #: An optional hook supplying outside knowledge of where an unspaced
     #: token divides -- see the class docstring; None leaves such tokens
-    #: whole. Keyword-only, so the reserved growth stays additive
-    #: (mechanisms.md#LOCALE-PACKS-PURE-DATA): positional construction
-#: keeps its two-argument
-    #: shape.
+    #: whole. Keyword-only, so the reserved growth stays additive:
+    #: positional construction keeps its two-argument shape.
     segmenter: Segmenter | None = field(default=None, kw_only=True)
 
     # in the class body so @dataclass(slots=True) keeps them

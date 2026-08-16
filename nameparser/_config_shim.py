@@ -1,5 +1,5 @@
-"""v1 ``Constants`` compatibility shim over Lexicon/Policy (migration
-mechanisms.md#CONFIG-SHIM-SNAPSHOT). ``nameparser.config``
+"""v1 ``Constants`` compatibility shim over Lexicon/Policy
+(mechanisms.md#CONFIG-SHIM-SNAPSHOT). ``nameparser.config``
 re-exports these names from the swap
 commit onward; the whole module is deleted in 3.0 with the facade.
 
@@ -100,7 +100,7 @@ def _normalize_iterable_of_strings(
 class SetManager:
     """v1 ``SetManager`` surface over a plain set of ``lc()``-normalized
     strings. Mutations call ``_on_change`` (the owning Constants'
-    generation bump, wired by a later task). ``__call__`` and the
+    generation bump, wired by the facade). ``__call__`` and the
     missing-member-tolerant ``remove()`` are gone per the #243 schedule
     (warned 1.3.0, removed 2.0): ``remove()`` of a missing member raises
     ``KeyError``, matching ``set.remove``.
@@ -317,7 +317,7 @@ class TupleManager(dict[str, object]):
     ``AttributeError`` naming the key (#256, warned 1.4, enforced 2.0 --
     the v1 ``DeprecationWarning`` is gone, this shim only speaks 2.0).
     Mutations call ``_on_change`` (the owning Constants' generation
-    bump, wired by a later task).
+    bump, wired by the facade).
     """
 
     _on_change: Callable[[], None] | None
@@ -695,7 +695,8 @@ class _RenderDefaults(NamedTuple):
     (mechanisms.md#CONFIG-SHIM-SNAPSHOT): ``__str__``/initials
     formatting and capitalization stay
     per-Constants defaults, layered onto a shared ``Parser`` by the
-    facade (a later task) rather than folded into the cache key."""
+    facade (nameparser/_facade.py) rather than folded into the cache
+    key."""
 
     string_format: str | None
     initials_format: str
@@ -719,8 +720,8 @@ class Constants:
     a frozen ``(Lexicon, Policy, _RenderDefaults)`` snapshot via
     ``_snapshot()``. ``_generation`` increments on every mutation;
     facades compare it against a cached value to decide whether their
-    snapshot is stale (dirty-tracking -- the facade itself is
-    a later task).
+    snapshot is stale (dirty-tracking -- the facade side lives in
+    nameparser/_facade.py).
 
     The module-level ``CONSTANTS`` singleton (below) has ``_shared``
     flipped to ``True``: any mutation reached through it emits
@@ -1098,8 +1099,8 @@ class Constants:
                 _SENTINEL_PAIRS[k] for k in self.maiden_delimiters
                 if k not in self.nickname_delimiters),
             # suffix_delimiter is a _RenderDefaults-only field here; the
-            # facade layers it onto extra_suffix_delimiters per instance
-            # (a later task) -- _snapshot() itself stays pure translation
+            # facade layers it onto extra_suffix_delimiters per
+            # instance -- _snapshot() itself stays pure translation
         )
         defaults = _RenderDefaults(
             self.string_format, self.initials_format, self.initials_delimiter,
