@@ -223,8 +223,12 @@ Declined:
   capital joins. #267's closure ("v2.0 behaves this way by
   default … verify it was the right call") showed only the
   Cyrillic half; the Latin-capital veto was never separately
-  adjudicated, which rules.md#P3 now records as an Accepted
-  consequence pending anyone caring.
+  adjudicated, which rules.md#P3 records as an Accepted
+  consequence.
+
+Open:
+[#383](https://github.com/derek73/python-nameparser/issues/383)
+should the Latin-capital veto stand (bless / drop / extend).
 - Provenance: the single-letter-connective guard is v1's fix for
   Google Code issue 11 ("john e smith", 2014, commit 33676c9) —
   the "#11" citations that circulated pointed at a 2014 GitHub
@@ -705,9 +709,12 @@ without configuration.
 
 - 2026-08-15 — the rotation × non-default name_order interaction
   question rode #270, which closed 2026-07-28 with the order
-  constants and no recorded answer for the rotations; no successor
-  issue tracks it. Flagged at review: needs either a resolution
-  note or a live issue.
+  constants and no recorded answer for the rotations.
+
+Open:
+[#384](https://github.com/derek73/python-nameparser/issues/384)
+what the rotations should do under a non-default name_order (the
+divergent measurement is in the issue).
 
 ### O2 — Turkic rotation
 
@@ -718,8 +725,11 @@ without configuration.
   leaves the marker in a name field (see the rule's Accepted
   consequence).
 
-- 2026-08-15 — same rotation/name_order interaction status as O1
-  (#270 closed without a recorded answer; no successor issue).
+- 2026-08-15 — same rotation/name_order interaction status as O1.
+
+Open:
+[#384](https://github.com/derek73/python-nameparser/issues/384)
+same question as O1.
 
 ### differential-ledger — tooling decisions (2.1.0 release arc)
 

@@ -197,8 +197,7 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     Accepted: the initial veto is a LATIN shape — a Cyrillic
     capital joins ("И".isupper() is true, so this is not a
     Unicode-uppercase rule); #267's closure blessed the Cyrillic
-    side while the Latin-capital half was never separately
-    adjudicated.
+    side, and whether the Latin-capital half should stand is #383.
       "Хосе И Мария Сантос"       →  given="Хосе И Мария"
     history: decisions.md#P3 · implemented: nameparser/_pipeline/_group.py
 
