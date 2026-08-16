@@ -123,7 +123,7 @@ def _effective_order(policy: Policy,
     one per token below.
     """
     # #298 transcription marker -- see the docstring; codepoint-scoped
-    # (only U+00B7 records, spec 2026-07-30 decision 5)
+    # (only U+00B7 records; decisions.md#T3)
     if dot_divided:
         return policy.name_order
     if not policy.script_orders:

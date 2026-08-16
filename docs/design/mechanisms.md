@@ -49,7 +49,7 @@ How it works. Reordering the token tuple would break span math and
 reintroduce the #100 family. Parse state stays in string order; only
 the view reorders (rule R1, rule O3's render clause).
 Lives in. nameparser/_types.py (FOLDED_TAG, the family view),
-nameparser/_pipeline/_post_rules.py (the one producer today), and
+nameparser/_pipeline/_post_rules.py (its producer), and
 one deliberate CONSUMER-side strip: Parser.revise removes the tag
 from harvested tokens (a revised value must not inherit fold
 ordering) — losing that strip is this mechanism's measured hazard,

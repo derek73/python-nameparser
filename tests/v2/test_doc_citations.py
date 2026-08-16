@@ -18,10 +18,12 @@ REPO = Path(__file__).resolve().parents[2]
 MECH_DOC = REPO / "docs" / "design" / "mechanisms.md"
 SWEEP_DIRS = ("nameparser", "tests", "tools")
 ENFORCE_NO_LEGACY = True    # armed 2026-08-15, the rewrite complete
-_LEGACY = ("§", "superpowers", "plan deviation")
+_LEGACY_RES = (re.compile(r"§"), re.compile(r"superpowers"),
+               re.compile(r"plan[\s#]+deviation"),
+               re.compile(r"spec\s+[S§]?\d"))
 
 _CITE_RE = re.compile(
-    r"#\s*(?:rules|mechanisms|decisions)\.md#"
+    r"(?:rules|mechanisms|decisions)\.md#"
     r"(?P<cid>[A-Z]\d+|[A-Z][A-Z0-9_]*(?:-[A-Z0-9_]+)*)"
     r":\s*(?P<first>.*)")
 # The excerpt is the FIRST double-quoted span after the ID, wrapped
@@ -40,14 +42,20 @@ def _statements() -> dict[str, str]:
     for block in re.split(r"^(?=[A-Z]\d+\.\s)", text, flags=re.M):
         m = re.match(r"([A-Z]\d+)\.\s(.*)", block, flags=re.S)
         if m:
-            body = m.group(2).split('\n      "')[0]     # stop at examples
+            # stop at the first example-like line, any indent/quote kind
+            body = re.split(r'\n\s+["“„\[]', m.group(2))[0]
             out[m.group(1)] = _norm(body)
     mech = MECH_DOC.read_text(encoding="utf-8")
-    for mm in re.finditer(
-            r"^## (?P<slug>[A-Z][A-Z0-9_-]+)(?=[\s—-])"
-            r".*?Contract statement[.:*]*\s*"
-            r"(?P<stmt>.+?)(?=\n\n|\Z)", mech, flags=re.M | re.S):
-        out[mm.group("slug")] = _norm(mm.group("stmt"))
+    # split into sections first so a missing Contract line cannot
+    # bleed into the next section's statement
+    for sec in re.split(r"^(?=#{2,3} )", mech, flags=re.M):
+        hm = re.match(r"#{2,3} (?P<slug>[A-Z][A-Z0-9_-]+)(?=[\s—-])", sec)
+        if not hm:
+            continue
+        cm = re.search(r"Contract statement[.:*]*\s*(?P<stmt>.+?)(?=\n\n|\Z)",
+                       sec, flags=re.S)
+        if cm:
+            out[hm.group("slug")] = _norm(cm.group("stmt"))
     return out
 
 
@@ -151,7 +159,8 @@ def test_no_legacy_citations() -> None:
             if path.name in self_files:
                 continue
             text = path.read_text(encoding="utf-8", errors="ignore")
-            for pat in _LEGACY:
-                if pat in text:
-                    problems.append(f"{path}: contains {pat!r}")
+            for pat in _LEGACY_RES:
+                if pat.search(text):
+                    problems.append(
+                        f"{path}: matches {pat.pattern!r}")
     assert not problems, "\n".join(problems)

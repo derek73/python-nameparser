@@ -12,7 +12,8 @@ Before opening the PR, if the change alters parser behavior or internals, *read*
 ## Rules documentation (docs/design/)
 
 Three committed contributor docs carry the parser's normative rules
-and their reasons; three tests enforce them. Before proposing a
+and their reasons, enforced by the doc tests in tests/v2/
+(rules_doc.py and the test_doc_*/test_rules_doc* modules). Before proposing a
 design or a fix that touches parser behavior, read
 docs/design/mechanisms.md and the relevant docs/design/rules.md
 sections — the catalog is keyed by problem shape, and the pattern

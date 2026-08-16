@@ -164,8 +164,9 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         pieces[lo:hi] = [combined]
         ptags[lo:hi] = [(set().union(*ptags[lo:hi]) | add) - drop]
 
-    # ph-d merge first: "Ph." "D." adjacent -> one suffix piece (plan
-    # deviation #1; v1 fix_phd did this by regex on the raw string)
+    # ph-d merge first: "Ph." "D." adjacent -> one suffix piece
+    # (decisions.md#phd-merge; v1 fix_phd did this by regex on the
+    # raw string)
     k = 0
     while k < len(pieces) - 1:
         a, b = pieces[k], pieces[k + 1]

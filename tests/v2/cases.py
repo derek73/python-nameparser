@@ -1040,7 +1040,7 @@ CASES: tuple[Case, ...] = (
          notes="the SAME transcription typed with the Japanese "
                "nakaguro reads as the dot's own typography says -- a "
                "姓・名 roster pair, family-first (#272) -- because the "
-               "nakaguro records nothing (spec 2026-07-30 decision 5: "
+               "nakaguro records nothing (per decisions.md#T3, "
                "codepoint-scoped; only the Chinese B7 marks a "
                "transcription). A limitation row: chosen, not "
                "accidental -- cross-convention input reads by the "

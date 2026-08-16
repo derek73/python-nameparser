@@ -30,9 +30,9 @@ _EXAMPLE_RE = re.compile(
     r"(?:\s+(?P<annot>[a-z][a-z0-9_+-]*|\[[a-z][a-z0-9_+-]*\]))?"
     r"\s+→\s+"
     rf"(?P<field>[a-z_]+)=(?P<value>{_VALUE})"
-    r"(?:\s+·\s+boundary)?"
+    r"(?P<boundary>\s+·\s+boundary)?"
     r"(?:\s+deviates:\s+#(?P<issue>\d+)\s+\(today:\s+"
-    rf"[a-z_]+=(?P<today>{_VALUE})\))?"
+    rf"(?P<tfield>[a-z_]+)=(?P<today>{_VALUE})\))?"
     r"\s*$")
 _NO_BOUNDARY_RE = re.compile(r"^\s*no-boundary:\s+(?P<reason>\S.*)$")
 _POINTER_RE = re.compile(r"^\s*(history|interacts|implemented):")
@@ -130,9 +130,15 @@ def parse_rules_doc(text: str) -> list[Rule]:
     rules: list[Rule] = []
     current: Rule | None = None
     for lineno, line in enumerate(text.splitlines(), 1):
+        if line.startswith("#"):        # a heading ends any rule block
+            current = None
+            continue
         m = _RULE_RE.match(line)
         if m:
-            current = Rule(rule_id=m.group(1) + m.group(2))
+            rid = m.group(1) + m.group(2)
+            if any(r.rule_id == rid for r in rules):
+                raise ValueError(f"duplicate rule ID {rid} at line {lineno}")
+            current = Rule(rule_id=rid)
             rules.append(current)
             continue
         if current is None:
@@ -145,19 +151,25 @@ def parse_rules_doc(text: str) -> list[Rule]:
                 raise ValueError(
                     f"{current.rule_id}: line {lineno}: field "
                     f"{fieldname!r} not assertable")
+            if em.group("tfield") and em.group("tfield") != fieldname:
+                raise ValueError(
+                    f"{current.rule_id}: line {lineno}: deviates "
+                    f"today-field {em.group('tfield')!r} differs from "
+                    f"the asserted field {fieldname!r}")
             current.examples.append(Example(
                 text=em.group("text") or "",
                 annotation=em.group("annot"),
                 field=fieldname,
                 value=_literal(em.group("value")),
-                boundary=" · boundary" in line,
+                boundary=bool(em.group("boundary")),
                 deviates_issue=(int(em.group("issue"))
                                 if em.group("issue") else None),
                 today_value=(_literal(em.group("today"))
                              if em.group("today") else None),
                 subject=em.group("subject")))
             continue
-        if stripped.startswith(('"', "[")):
+        if stripped.startswith(('"', "[", "“", "”", "„",
+                                "‘", "’", "«")):
             raise ValueError(
                 f"{current.rule_id}: line {lineno} looks like an example "
                 f"but does not parse: {stripped!r}")
