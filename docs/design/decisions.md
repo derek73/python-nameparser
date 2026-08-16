@@ -151,12 +151,13 @@ head-peel question).
 
 ### N2 — same-character quotes and shared-character conventions
 
-- 2026-07-13 #273 (7ee6e3a) — the typographic delimiter pairs
+- 2026-07-18 #273 (7ee6e3a) — the typographic delimiter pairs
   shipped with a per-pair full-text scan; three independent review
   agents broke it the same day: with two shared-character
   conventions genuinely present, the earlier-sorted pair stole the
   close and the legitimate match dropped silently, zero ambiguity.
-- 2026-07-19 (05fe693) — the interleaved leftmost-match restructure
+- 2026-07-18 (05fe693, the same day) — the interleaved
+  leftmost-match restructure
   replaced it (an altitude review called it the right depth); the
   author's own first fix — post-hoc offset filtering of unbalanced
   candidates alone — was superseded within the day and survives
@@ -221,7 +222,7 @@ Declined:
 
 ### render-default — the default view's format
 
-- 2026-07-19 (bf1141c) — the default spec is
+- 2026-07-18 (bf1141c) — the default spec is
   '{title} {given} "{nickname}" {middle} {family} ({maiden})
   {suffix}'. Declined the same day: a née-template maiden
   ('née {maiden}') that round-tripped LOSSLESSLY (née is a maiden
@@ -242,8 +243,8 @@ Open:
 [#383](https://github.com/derek73/python-nameparser/issues/383)
 should the Latin-capital veto stand (bless / drop / extend).
 - Provenance: the single-letter-connective guard is v1's fix for
-  Google Code issue 11 ("john e smith", 2014, commit 33676c9) —
-  the "#11" citations that circulated pointed at a 2014 GitHub
+  Google Code issue 11 ("john e smith", 2013, commit 33676c9) —
+  the "#11" citations that circulated pointed at a GitHub
   accident, not the real source. Recorded so the archaeology stays
   done.
 
@@ -696,7 +697,7 @@ Declined:
 - 2026-07-03 (maiden-bucket design, landed via the v2 core, PR
   #288) — the maiden reading of a delimiter pair is opt-in because
   enclosure conventions genuinely vary; there is no default pair.
-- 2026-07-19 (cc7063f; Derek's proposal out of a docs-review pain
+- 2026-07-18 (cc7063f; Derek's proposal out of a docs-review pain
   point — routing parens to maiden used to require editing both
   buckets in tandem, and the nickname default's contents were not
   discoverable) — bucket overlap is canonicalized before parsing: a
