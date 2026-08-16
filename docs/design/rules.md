@@ -177,13 +177,20 @@ P1. Rationale: a never-given particle standing alone cannot be
 
 P2. Rationale: a particle is written as part of the surname it
     precedes, and a title stands outside the name entirely.
-    A particle joins the words after it into one family name, and
-    the join runs to the end of the name; the chain begins wherever
-    the name begins, and a preceding title does not move that point.
+    A particle joins the words after it into one name part, the
+    join running until the next particle starts a group of its own
+    or the name ends. The final group reads as the family name;
+    earlier groups read by position. The chain begins wherever the
+    name begins, and a preceding title does not move that point.
       "John van der Berg"         →  family="van der Berg"
       "John van der Berg Smith"   →  family="van der Berg Smith"
+      "Vincent van Gogh van Beethoven"  →  middle="van Gogh"
       "Dr. John van der Berg"     →  family="van der Berg"
       "Juan de"                   →  family="de"  · boundary
+    Accepted: a caller wanting the combined double-surname reading
+    (#132's ask) has it as the surnames view rather than the
+    family field.
+      "Vincent van Gogh van Beethoven"  →  surnames="van Gogh van Beethoven"
     history: decisions.md#P2 · implemented: nameparser/_pipeline/_group.py
 
 P3. Rationale: connective words ("y", "of the") bind name words into

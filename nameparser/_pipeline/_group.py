@@ -64,10 +64,10 @@ def _is_title_piece(piece: Sequence[int], ptags: Set[str],
     return len(piece) == 1 and "vocab:title" in tokens[piece[0]].tags
 
 
-# rules.md#P2: "a particle joins the words after it into one family
-# name, and the join runs to the end of the name; the chain begins
-# wherever the name begins, and a preceding title does not move that
-# point" (history: decisions.md#P2)
+# rules.md#P2: "a particle joins the words after it into one name
+# part, the join running until the next particle starts a group of
+# its own or the name ends. The final group reads as the family
+# name; earlier groups read by position." (history: decisions.md#P2)
 # rules.md#P4: "a particle in the name's leading position chains
 # nothing: the words stay separate" (history: decisions.md#P2)
 def _is_prefix_piece(piece: Sequence[int], ptags: Set[str],

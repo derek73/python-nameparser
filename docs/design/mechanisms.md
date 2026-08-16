@@ -502,6 +502,11 @@ decline, not delete the test.
   outranks the editable install — measured: 89 diffs became 0, exit
   0, both tell halves passing, because both sides had become the
   shadow.
+- Release notes describe intent; TAGS are ground truth. Before
+  trusting a changelog cross-reference about what shipped where,
+  run `git diff <tagA> <tagB> -- <file>` — the "1.2.1 pickle shim"
+  claim recurred twice from a changelog line describing a thing
+  that never shipped.
 - Never pipe a gate's output. Under zsh, `compare.py | tail` makes
   `$?` tail's status. Redirect to a file and read the file.
 - Mutation-test a new guard before believing it, and mutate the

@@ -120,6 +120,13 @@ which particles count as never-given.
   P1's fold needed no change (its interacts: points here). Grouped
   today: [Sir] [de] [Mesnil].
 
+- Group distribution is load-bearing, not incidental: the v1
+  Portuguese tests (test_portuguese_dos, test_portuguese_prefixes)
+  require multiple particle groups to land across middle and
+  family, while #132 wanted the combined double-surname reading —
+  the same shape with opposing wants, which is why the combined
+  reading lives in the surnames VIEW and the split in the fields.
+
 ### M2 — the maiden-marker rule
 
 - 2026-07-03 (maiden-bucket design; #274 filed 2026-07-07, landed
@@ -707,6 +714,11 @@ without configuration.
 
 ### O1 — East Slavic rotation
 
+- (v1 era, PR #154) — why patronymic handling is OPT-IN at all:
+  unconditional detection breaks ordinary Latin names whose endings
+  collide (Martin, Franklin, Benjamin), the finding that forced
+  v1's Russian work behind a flag and set the opt-in shape v2
+  inherited.
 - 2026-07-12 (landed in the v2 core, PR #288) — v1 parity pinned
   live: the rotation reconstructs token position from assigned
   roles, which is faithful to v1 only under the default given-first
@@ -859,6 +871,14 @@ in place 2026-08-01 with an A1–A6 amendments section, and citations
 should be to the amended form; #316 (trailing titles) was filed the
 same day, carrying the esq cleanup as a Related section.
 
+- 2026-08-01 (plan amendment 1, Derek's call: "ship + repair the
+  merge") — dropping dr/ms from the suffix vocabulary flips
+  segment() to FAMILY_COMMA and degrades "John Smith, Dr." to
+  family="John Smith" (mechanisms.md#VOCABULARY-FEEDS-STRUCTURE is
+  this shape); the approved repair, ordered FIRST in the bundle so
+  no commit introduces a regression a later one heals: assign
+  segment 0 positionally when segment 1 is nothing but titles.
+
 Declined:
 
 - Splitting the dead multi-word suffix entries into single-word
@@ -882,6 +902,14 @@ Declined:
   only grouping applies. The general form: multi-word vocabulary
   must merge where the render tag is applied, not where the role
   is assigned.
+
+### api-churn-declines — do not re-propose without new cause
+
+Declined (2026-07-06, the post-1.3.0 modernization sweep; each on
+churn-outweighs-benefit grounds): the hn.C → constants rename;
+capitalization-knob consolidation; the logger rename. (Lenient
+matching, declined in the same sweep, is recorded under
+comparison-surface.)
 
 ### comparison-surface — why value equality died, and what replaced it
 
@@ -928,6 +956,9 @@ Declined:
   earlier 3-0-reevaluations bullet said "left untyped, typeable in
   3.0" — promoted from a memory that was already three days stale
   when written; nothing is left to type.)
+- bytes input: removed in 2.0 (#245; decode-first
+  DeprecationWarnings shipped 1.3.0 per the bridge discipline);
+  the shipped TypeError carries the decode hint.
 - no_vowels: removed in 2.0 (#268, filed 2026-07-07, closed
   2026-07-28) — never consulted by any parser version, ASCII-only;
   the facade carries no replacement because there was nothing to
@@ -986,6 +1017,17 @@ reason FACADE-CONTRACT's "warning-free on 1.4" anchor works at all.
   the TYPE_CHECKING split, because a module __getattr__ silently
   disables mypy's attr-defined checking for the whole module
   (measured on a py.typed package).
+- (A) Parking lot from the 2026-07-06 config-model discussion,
+  3.0-shaped by design: scoped config override via contextvars
+  (`with nameparser.config.use(c):`, the decimal.localcontext
+  pattern — fixes test pollution and config wars while keeping the
+  shared default), and a requests-Session-style Parser(constants)
+  API (rejected then as a full rewrite; the shared CONSTANTS
+  survives 2.x because it is the only config channel that reaches
+  parses inside code users don't own — #262's contract framing).
+- (B) The 1.3.0-era legacy-pickle property-key skip
+  (suffixes_prefixes_titles in old blobs) rides in the shim's
+  __setstate__ and dies with it.
 - (B) The FAMILY_COMMA doctrine (rule W3): inherited from v1's
   lastname-comma but correct on its own terms — an explicit comma
   is stronger evidence than script.
