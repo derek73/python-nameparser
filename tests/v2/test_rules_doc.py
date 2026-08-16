@@ -48,9 +48,18 @@ def _check_diagnostic(example: Example) -> None:
             fn()
 
 
+def _pieces(text: str, policy: Policy | None) -> list[list[str]]:
+    from nameparser._pipeline import run
+    from nameparser._pipeline._state import ParseState
+    from nameparser._parser import Parser as _P
+    p = _P(policy=policy) if policy is not None else _P()
+    state = run(ParseState(original=text, lexicon=p.lexicon,
+                           policy=p.policy, segmenter=None))
+    return [[state.tokens[i].text for i in piece]
+            for seg in state.pieces for piece in seg]
+
+
 def _run(example: Example) -> object:
-    if example.field == "pieces":
-        pytest.skip("assertion form lands with its first using rule")
     policy: Policy | None = None
     locale: str | None = None
     if example.annotation is not None:
@@ -70,6 +79,8 @@ def _run(example: Example) -> object:
                             "runs this")
             assert isinstance(obj, str)
             locale = obj
+    if example.field == "pieces":
+        return _pieces(example.text, policy)
     if locale is not None:
         parsed = parser_for(locales.get(locale)).parse(example.text)
     elif policy is not None:

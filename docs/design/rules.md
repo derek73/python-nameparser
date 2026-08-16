@@ -130,10 +130,12 @@ P1. Rationale: a never-given particle standing alone cannot be
     go — or opening the name — marks the name as surname-only: the
     given and middle words fold into the family. It needs another
     name word to fold into. An ambiguous particle keeps whatever
-    reading its position gives it.
+    reading its position gives it. Whether the fold should stop at
+    the particle group instead of taking everything is open (#364).
       "de la Vega"                →  family="de la Vega"
+      "Sir de Mesnil"             →  family="de Mesnil"
       "Mesnil de"  family-first   →  family="Mesnil de"
-      "Juan de la Vega"  family-first  →  given="de la Vega"  · boundary
+      "Juan de la Vega"  family-first  →  family="de la Vega"  deviates: #368 (today: family="Juan")
       "van Gogh"                  →  given="van"  · boundary
     Accepted: a bare "de" stays the given name — there is nothing to
     fold into, and inventing a surname would be worse.
@@ -147,7 +149,7 @@ P2. Rationale: a particle is written as part of the surname it
     the name begins, and a preceding title does not move that point.
       "John van der Berg"         →  family="van der Berg"
       "John van der Berg Smith"   →  family="van der Berg Smith"
-      "Sir de Mesnil"             →  family="de Mesnil"
+      "Dr. John van der Berg"     →  family="van der Berg"
       "Juan de"                   →  family="de"  · boundary
     history: decisions.md#P2 · implemented: nameparser/_pipeline/_group.py
 
@@ -160,6 +162,19 @@ P3. Rationale: connective words ("y", "of the") bind name words into
       "Juan y Eva Garcia"         →  given="Juan y Eva"
       "Juan y Garcia"             →  middle="y"  · boundary
     implemented: nameparser/_pipeline/_group.py
+
+P4. Rationale: a particle links forward from inside a name; at the
+    very front there is no name yet to be inside.
+    A particle in the name's leading position chains nothing: the
+    words stay separate, and any surname reading the name gets
+    comes from the fold (P1) or from position (O4), never from a
+    join. This is why a title before a leading particle changes
+    nothing (the title is not a name word), and why "Van Johnson"
+    is a given-name reading at all.
+      "Van Johnson"               →  given="Van"
+      "Sir de Mesnil"             →  pieces=[["Sir"], ["de"], ["Mesnil"]]
+      "John van der Berg"         →  pieces=[["John"], ["van", "der", "Berg"]]  · boundary
+    history: decisions.md#P2 · interacts: P1 · implemented: nameparser/_pipeline/_group.py
 
 ## Suffixes: generational & credentials (S)
 
@@ -203,6 +218,17 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Jack Wei Ma"               →  suffix="Ma"
       "Smith Jr."                 →  family=""
     implemented: nameparser/_pipeline/_classify.py
+
+S3. Rationale: credentials are often written run together with
+    periods; the chunks between the periods are what carry the
+    vocabulary.
+    A word with interior periods reads as a suffix when any of its
+    period-separated chunks is suffix vocabulary — any chunk, which
+    is looser than it sounds, since single letters can be Roman
+    numerals.
+      "John Smith J.u.n.i.o.r."   →  suffix="J.u.n.i.o.r."
+      "John Smith Q.W.E.R.T."     →  family="Q.W.E.R.T."  · boundary
+    implemented: nameparser/_pipeline/_vocab.py
 
 ## Nicknames & quoted names (N)
 

@@ -204,7 +204,13 @@ Lives in. tools/differential/compare.py, the expected_since_*.toml
 ledgers.
 Reach for it when. A ledger rule's behavior seems to depend on where
 it sits in the file — it doesn't, and if moving it changes anything,
-the fields are wrong.
+the fields are wrong. Standing caution (#372, closed): the contract
+is true as written and was measured loose in practice — a
+fields-only rule matched all 751 corpus names and owned 1639 of
+5257 name×field pairs, and the moving-test above had never actually
+been run. #372's two proposed mechanical checks (report every
+matching rule, not just the first; a specificity floor for
+fields-only rules) are recorded there.
 
 ## CANONICAL-VOCABULARY-AT-THE-BOUNDARY — one vocabulary at the comparison
 
@@ -224,6 +230,21 @@ _V1_TO_ROLE).
 Reach for it when. A second surface joins an existing matcher —
 without this, every existing rule silently stops matching the new
 surface, which looks like added coverage.
+
+## VOCABULARY-OVERLAP-AS-PRECONDITION — assert the intersection you stand on
+
+Problem shape. A test's input depends on two config sets
+intersecting (a word that is both a title and a particle), and a
+vocabulary edit could quietly unground it.
+Contract statement. Assert the intersection as a precondition and
+distinguish the two failure modes: word moved (pick another member;
+the message prints what is left) versus intersection empty (the
+code under test is unreachable — delete it rather than repointing
+the test).
+Lives in. tests/v2/test_parser.py
+(test_the_chained_emitter_is_still_reachable).
+Reach for it when. Any config-coupled fixture — a test input chosen
+because of what a vocabulary happens to contain.
 
 ## MAKE-WRONG-STATES-UNREPRESENTABLE — the house meta-pattern
 

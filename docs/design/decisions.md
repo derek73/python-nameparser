@@ -38,11 +38,21 @@ rule 3 → O2, rule 4 → O3.
 
 A lone PIECE is the whole test — deliberately narrower than "a
 never-given particle is never reported as the given name," which
-would be false. Under a family-first order, "Juan de la Vega" holds
-the entire chained group in the given position — three words, not a
-lone particle — so P1 declines and given="de la Vega" stands; #359
-records that case as working as intended. The MIDDLE position is
-deliberately not a fold site.
+would be false (the over-broad invariant shipped to five sites
+before #361's review falsified it with three counter-examples).
+The counter-example set has since shrunk, and its shrinkage is the
+section's history: "Sir de Mesnil" fell to #367 (titles became
+transparent); "Juan de la Vega" under family-first — the whole
+chain in the given position — was called working-as-intended by
+#359, but #368 SUPERSEDES that sentence: the recorded decision is
+that the particle wins and a chain becomes the family name
+whatever order was declared, so that case is now P1's tracked
+deviation, not its boundary. The survivor is the degenerate bare
+"de". The MIDDLE position is deliberately not a fold site — and
+not merely unimplemented: the two family-first orders disagree
+there ("Mesnil Garcia de" strands middle="de" under FAMILY_FIRST
+and folds under FAMILY_FIRST_GIVEN_LAST, 464 measured inputs),
+which is what makes #365 a decision rather than a gap.
 
 - 2026-08 #359 — the opening site is read from joining structure
   (pieces), not from assigned roles, so the fold holds under every
@@ -51,6 +61,18 @@ deliberately not a fold site.
 - 2026-08 #367 — titles are transparent to the fold: "Sir de
   Mesnil" now reads like "de Mesnil". Fixed by removing the
   title→particle chain in grouping, not by touching this rule.
+
+Declined:
+
+- A strict xfail asserting "de Mesnil" → family under FAMILY_FIRST
+  (#359 review) — #359 deliberately left those semantics open, and
+  a strict xfail decides the question by the back door.
+- Keying the leading-particle exception on "the first piece that is
+  not a title" — the obvious implementation, and wrong: st, do and
+  freiherr are titles AND ambiguous particles, so it collapsed
+  "St John Smith" into one given name and broke test_add_title
+  (which adds "te", also a particle). The shipped predicate is
+  "not a title or a prefix".
 
 Open: [#364](https://github.com/derek73/python-nameparser/issues/364)
 how much the fold takes ·
@@ -61,13 +83,14 @@ which particles count as never-given.
 
 ### P2 — particles join forward
 
-- 2026-08 #367 — a title is transparent to the chain's start:
-  "Sir de Mesnil" chains de→Mesnil exactly as the untitled form
-  does. Before, the title displaced the particle out of the leading
-  position and "Sir de Mesnil" reported given="de Mesnil" with no
-  family at all — a limit the rule never meant to draw. Fixed in
-  grouping, which is why P1's fold needed no change (its interacts:
-  points here).
+- 2026-08 #367 — REMOVED a chain, it did not create one: before,
+  the title displaced the particle out of the leading position, so
+  "Sir de Mesnil" grouped [Sir][de Mesnil] — a chain — and
+  reported given="de Mesnil" with no family at all. After, "de" is
+  the leading name piece, and a leading particle chains nothing
+  (rule P4): the family reading comes from P1's fold, which is why
+  P1's fold needed no change (its interacts: points here). Grouped
+  today: [Sir] [de] [Mesnil].
 
 ### M2 — the maiden-marker rule
 
@@ -240,6 +263,34 @@ Declined:
   peel site (the "田中さん, V." shape), but only when the name's own
   run offers a site, since a glued honorific is itself part of what
   makes a run read as suffix-shaped.
+
+Excluded (the never-given / ambiguous particle line,
+nameparser/config/particles.py — #360 owns the vocabulary
+question):
+
+- Only 9 of the 39 ambiguous members were ever individually
+  justified; the rest sit there by the conservative default
+  (ambiguous unless argued never-given).
+- mc, ste — measured misparses ("Mc Donald" → given "Mc"), tracked
+  in #360; st is inert at the head because TITLES claims it first;
+  mac must stay ambiguous because Mac is a real given name.
+- Load-bearing dependency: TITLES ∩ ambiguous == {do, freiherr,
+  st} is what keeps the particle-or-given ambiguity emitter
+  reachable at all; moving all three would make it dead code,
+  which is why test_the_chained_emitter_is_still_reachable
+  distinguishes "pick another word" from "delete the emitter".
+
+Excluded (SUFFIX_ACRONYMS / SUFFIX_WORDS — the esq dual
+membership, deliberate; AGENTS.md's gotcha carries the full
+algebra):
+
+- esq is in BOTH sets and must not be "deduplicated". The
+  load-bearing membership is the acronym one (it carries the
+  multi-dot spellings: removing it costs "John Smith E.S.Q." its
+  family name); the word membership is inert as shipped but is
+  what keeps "Esq" matching for a caller who edits suffix_acronyms
+  themselves. Deliberately no changed-parse count — the count is a
+  property of the measuring grid, not of the code.
 
 Excluded (Lexicon.honorific_tails — a glued tail peels only if it
 could never end a name; per-entry reasons live in
@@ -487,6 +538,15 @@ nobody re-litigates it. Append here whenever a design choice cites
   (script_orders fallbacks, #298 dot-suppression granularity):
   coincides with 1.4 parity but stands alone — family-first is the
   marked case needing affirmative evidence.
+- (B) The deprecation-bridge shape (#293/#354) is the template for
+  every remaining 2.x→3.0 shim: PEP 562 module __getattr__ PLUS
+  __all__ (star imports never reach __getattr__ — measured: `from
+  ...prefixes import *` bound nothing and leaked the helper); warn
+  per read-location rather than per process (a write-back let a
+  vendored dependency's first read consume the only warning); and
+  the TYPE_CHECKING split, because a module __getattr__ silently
+  disables mypy's attr-defined checking for the whole module
+  (measured on a py.typed package).
 - (B) The FAMILY_COMMA doctrine (rule W3): inherited from v1's
   lastname-comma but correct on its own terms — an explicit comma
   is stronger evidence than script.

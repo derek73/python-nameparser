@@ -67,6 +67,8 @@ def _is_title_piece(piece: Sequence[int], ptags: Set[str],
 # name, and the join runs to the end of the name; the chain begins
 # wherever the name begins, and a preceding title does not move that
 # point" (history: decisions.md#P2)
+# rules.md#P4: "a particle in the name's leading position chains
+# nothing: the words stay separate" (history: decisions.md#P2)
 def _is_prefix_piece(piece: Sequence[int], ptags: Set[str],
                      tokens: Sequence[WorkToken]) -> bool:
     if "prefix" in ptags:
