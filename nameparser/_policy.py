@@ -654,6 +654,8 @@ class Policy:
     __getstate__ = _guarded_getstate
     __setstate__ = _guarded_setstate
 
+    # rules.md#D2: "configuration validation raises at construction
+    # with the offending field and value named"
     def __post_init__(self) -> None:
         object.__setattr__(
             self, "name_order", _validated_order(self.name_order,

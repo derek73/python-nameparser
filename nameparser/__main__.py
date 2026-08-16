@@ -1,4 +1,4 @@
-"""Command-line debug helper over the 2.0 API (migration spec §6).
+"""Command-line debug helper over the 2.0 API.
 
     python -m nameparser "Dr. Juan Q. Xavier de la Vega III"
     python -m nameparser --json "Doe, John"

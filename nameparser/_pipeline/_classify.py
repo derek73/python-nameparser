@@ -11,8 +11,11 @@ namespaced (unstable): "vocab:title", "vocab:given-title",
 "vocab:suffix", "vocab:suffix-word", "vocab:suffix-ambiguous",
 "vocab:particle-ambiguous", "vocab:bound-given", "vocab:maiden-marker".
 "vocab:suffix" means "counts as a suffix as written": unambiguous
-suffix vocabulary, or an ambiguous acronym written with periods
-('M.A.' yes, 'Ma' no -- 'Ma' gets only "vocab:suffix-ambiguous").
+suffix vocabulary, or an ambiguous acronym written with periods --
+at the TAG level 'M.A.' gets "vocab:suffix" while 'Ma' gets only
+"vocab:suffix-ambiguous"; what assign then does with a trailing
+ambiguous tag is the rest of rule S2's statement (the
+words-to-spare guard) and its Accepted consequences.
 The initial veto is assign's job, not classify's: 'V' carries both
 "vocab:suffix" and "initial".
 """
@@ -32,6 +35,11 @@ from nameparser._pipeline._vocab import (
 
 
 
+# rules.md#S2: "a trailing word of the suffix vocabulary reads as a
+# suffix — generational forms and credential acronyms alike, and an
+# ambiguous acronym written with periods counts unambiguously. A
+# bare ambiguous acronym is consumed only when the name has words to
+# spare"
 def _tags_for(token: WorkToken, state: ParseState) -> frozenset[str]:
     lex = state.lexicon
     n = _normalize(token.text)

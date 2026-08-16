@@ -35,120 +35,18 @@ delimiter-core token as a suffix and splits a token on a core, the
 split being the half that flips "田中さん, Jr./V." under {"/"} and the
 bare core the half that flips "田中さん, /").
 
-Unspaced CJK names give tokenize no separator to find, so this stage
-inserts the missing token boundary by vocabulary: the first token
-written in an activated script is matched longest-first against
-Lexicon.surnames, and a hit splits it in two. Compound-before-single
-("夏侯惇" is 夏侯 + 惇, though 夏 is itself a surname) falls out of
-longest-first. The split makes sub-slices of the one token, rewriting
-nothing -- spans still index the original exactly, so the anti-#100
-invariant holds by construction.
-
-A second, independent split runs first (#308): a listed honorific
-glued to the END of the name's last non-post-nominal token is peeled
-off as its own token -- 田中さん -> 田中 + さん -- so that suffix
-classification can claim it and the surname match or segmenter consult
-below sees the name rather than the name plus an honorific. No
-STRUCTURAL gate stands over it -- the only things above it are the
-stage's own two preconditions, the ASCII bail and non-empty segments.
-Not segment_scripts either: the vocabulary of tails is licensed by the
-entries themselves, each of which can never end a name, so no
-per-script trust question arises. And since #312 not the FAMILY comma
-or the 间隔号 either -- both of those answer where a name divides into
-surname and given, which the peel never asks, so a comma or a dot
-elsewhere in the string cannot change whether a token ends in a word
-that can never end a name. The ASCII bail is the gate a caller adding
-a LATIN tail meets -- it sits above everything here, so such a tail
+Implements rules W1 (the vocabulary/segmenter division), W2 (the
+glued-honorific peel) and W3 (the writer's divisions are respected)
+of docs/design/rules.md, cited at their code below; the decision
+chain (#308, #312, #319, the vetting bars, the measured
+spaced-honorific trade) is decisions.md#W1, #W2 and #W3. Both splits make sub-slices of one token,
+rewriting nothing -- spans still index the original exactly, so the
+anti-#100 invariant holds by construction. The peel runs FIRST, so
+suffix classification can claim the tail and the surname match or
+segmenter consult sees the name rather than name-plus-honorific; its
+ASCII bail sits above everything here, so a caller-added LATIN tail
 fires only on a name carrying at least one non-ASCII character (see
-the bail's own comment, and honorific_tails' field note). A suffix
-comma gates nothing either -- "Dr 김민준씨, Jr." peels within its name
-part like any other.
-
-Where the VOCABULARY declines -- no prefix matched -- an optional
-Parser(segmenter=...) gets the token (#272 amendment 2026-07-29).
-Vocabulary first, segmenter on decline, so parser_for(ZH, JA,
-segmenter=...) composes MECHANICALLY: a listed surname is a
-dictionary certainty and wins, and the segmenter takes what is left.
-Composing is not a free lunch, and the docs qualify it where they
-show the stack: the zh pack's own mis-split warning survives
-unchanged, because a Japanese kanji name opening on a listed Chinese
-surname never reaches the segmenter at all -- 高橋一郎 still splits
-高 + 橋一郎 under ZH+JA, exactly as it does under ZH alone. The two
-packs are corpus ALTERNATIVES, one per corpus; stacking them is for
-genuinely mixed data that accepts that trade. Its Segmentation may
-cut anywhere and any number of times, which is why the split path
-below takes n cuts. One precondition guards it that the vocabulary
-has no twin of: a segmenter answers where an UNDIVIDED name divides,
-so it is consulted only when the gated token is the name part's ONLY
-script-written one -- "山田 太郎" was divided by its writer and must
-not have its family divided again (a Latin title or suffix draws no
-such boundary either, and effective_script gates those out before the
-test is reached). The neighbour test reads effective_script -- merely
-non-None -- and exempts exactly one token: the tail the peel above
-MANUFACTURED (#308), which is a boundary nobody drew. A SPACED
-honorific is not exempt, and the distinction is provenance rather
-than vocabulary: glued 山田太郎様 was written undivided, while "佐藤
-氏" carries a boundary its writer typed. Not that the writer thereby
-declared 佐藤 a unit -- in "山田太郎 様" the unit they drew is the
-whole name -- but that at this position a spaced honorific cannot be
-told apart from a spaced name ELEMENT, so the precondition counts it
-rather than guess. The trade that buys is measured: counting spaced
-honorifics keeps four real surnames whole (佐藤 氏, 田中 様, 鈴木
-先生, 中村 教授, all four divided bare under the JA pack) and costs
-the one division 山田太郎 様. A segmenter's own exceptions
-PROPAGATE -- the single declared exception to parse totality (locales
-spec section 4): a user-supplied callable's error is a user-code
-error, not a content error.
-
-Placed AFTER segment, on the comma doctrine that script-conditional
-behavior DECIDING WHERE A NAME DIVIDES is ignored where a comma
-already decides the family (the rule script_orders follows -- and the
-qualifier is load-bearing since #312, which is what the peel crosses
-the comma on): under FAMILY_COMMA the pre-comma text IS
-the family by declaration, and splitting it would invent a boundary
-the writer explicitly did not draw -- "남궁민수, 지훈" must render
-family "남궁민수", not "남궁 민수". That doctrine is about the input's
-structure, not the split's source, so it covers the segmenter
-identically: the opt-out runs before either is consulted. The
-post-comma side is given-name text, no surname site either, so that
-structure opts out of the SURNAME SPLIT whole -- of the stage entire
-until #312 moved the peel in front of the gate, an honorific being no
-part of the name whichever side of the comma it was glued to.
-NO_COMMA and SUFFIX_COMMA still split, within segments[0] (the name
-part) only. Running after segment costs the index remaps below;
-running BEFORE it would have made the comma structure itself depend
-on the split -- segment's suffix-comma rule needs more than one word
-before the comma, so a pre-split "김민준, Jr." would have changed
-structure on vocabulary alone. As written it stays FAMILY_COMMA,
-which is why the SUFFIX_COMMA path needs a second word ("Dr 김민준,
-Jr.") to be reachable at all.
-
-Activation is per script because the AMBIGUITY is per script
-(amendment 2026-07-27): HANGUL is on by default (hangul is
-unambiguously Korean, and its surname set is closed and
-default-shipped), while HAN is opt-in via locales.ZH -- a Chinese
-surname list corrupts Japanese names ("高橋一郎" must not split as
-高 + 橋一郎). Japanese divides through the segmenter path below under
-locales.JA, not through this table's vocabulary.
-The gate resolves each token through effective_script, the same
-function order resolution uses, so kana-licensed composites (高橋みなみ
--> HIRAGANA) gate in under the JA pack's HIRAGANA entry while
-pure-katakana tokens (-> KATAKANA, in no activation set by design --
-they are predominantly transcribed foreign names) never do.
-Only the FIRST activated-script token is considered, match or no
-match: family-first traditions put the surname at the front of the
-name, and a match deeper in the token stream would be a given name or
-an ordinary word, not a surname site. Where that first token is one
-the vocabulary reads as a POST-NOMINAL, the stage DECLINES rather than
-looking further along: an honorific is not part of the name, and a
-surname leads, so an honorific in the surname's own position means
-there is no surname here to find. Deciding includes deciding that.
-Looking further would reach the given name the rule already refuses to
-touch -- "양 지훈" would split its own given name, 지 being listed too
--- while declining leaves the peel's manufactured tail intact, since
-in "Anderson선생님" that tail is the first and only script-written
-token (선생님 opens on the listed surname 선, and a spaced
-"Anderson 선생님" was mis-split that way before the peel existed).
+the bail's own comment, and honorific_tails' field note).
 """
 from __future__ import annotations
 
@@ -373,6 +271,11 @@ def _peel_site(state: ParseState, flat: Sequence[int],
     return None
 
 
+# rules.md#W2: "a listed honorific glued to the end of the name's
+# last name word splits off once and reads as a suffix. The
+# split-off crosses a family comma and ignores surrounding
+# punctuation, but never treats a part that is not name text as the
+# name's end." (history: decisions.md#W2)
 def _peel_honorific_tail(state: ParseState) -> ParseState:
     """#308: split a listed honorific off the END of the name's last
     NON-POST-NOMINAL token -- 田中さん -> 田中 + さん -- and let
@@ -671,8 +574,9 @@ def _split_surname_site(state: ParseState) -> ParseState:
            and _PEELED_TAG not in state.tokens[j].tags
            for j in state.segments[0]):
         return state
-    # No try/except around the call: the module docstring's totality
-    # exception. The two checks below are that same doctrine, curated,
+    # No try/except around the call: rules.md#A1's Accepted clause
+    # ("a user-supplied segmenter's own error propagates"). The two
+    # checks below are that same doctrine, curated,
     # and they are where the line this module draws is easiest to state:
     # a PROTOCOL VIOLATION BY THE SEGMENTER AUTHOR RAISES, while an
     # ADAPTER'S DEFENSE AGAINST ITS LIBRARY DECLINES. Both checks here
@@ -717,6 +621,13 @@ def _split_surname_site(state: ParseState) -> ParseState:
     return _split(state, i, answer.splits, detail)
 
 
+# rules.md#W1: "an undivided word in the family position of a name
+# written in an activated script divides after a recognized surname,
+# the longest recognized surname first; where the vocabulary
+# recognizes nothing, an optional segmenter may divide instead"
+# rules.md#W3: "under a family comma the pre-comma text is the
+# family by declaration and never divides, and the post-comma side
+# is given text with no family to find" (history: decisions.md#W3)
 def script_segment(state: ParseState) -> ParseState:
     if state.original.isascii():
         # spans index the original exactly (the anti-#100 invariant),

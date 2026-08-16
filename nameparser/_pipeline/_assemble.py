@@ -22,6 +22,10 @@ from nameparser._pipeline._state import ParseState
 from nameparser._types import Ambiguity, ParsedName, Role, Token
 
 
+# rules.md#A2: "a name with no name content parses to the empty
+# name — every field empty, false as a boolean — while ambiguities
+# born from its punctuation survive on the empty result"
+# (history: decisions.md#A2)
 def assemble(state: ParseState) -> ParsedName:
     dropped = set(state.dropped)
     final: dict[int, Token] = {}

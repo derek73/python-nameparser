@@ -294,7 +294,7 @@ call to pass, because the misconfigured parser would otherwise behave
 exactly like a working one minus the feature. The same check guards
 any configuration whose activated scripts nothing can serve. A
 from-scratch lexicon with no hangul surnames warns under the default
-policy, and ``Policy(segment_scripts=())`` is the deactivation the
+policy, and ``Policy(segment_scripts=frozenset())`` is the deactivation the
 message offers.
 
 Decomposed text

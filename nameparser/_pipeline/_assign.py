@@ -2,20 +2,23 @@
 
 Consumes: pieces + piece_tags (grouped), segments, structure, tokens.
 Produces: tokens with roles set on every main-stream token.
-Reads: Policy.name_order (#270) and Policy.script_orders (#271, which
+Reads: Policy.name_order (#270), is_suffix_lenient on the trailing
+piece of a two-part comma name, and Policy.script_orders (#271, which
 overrides it when every name piece is written wholly in one script, or
 in the Han/Hiragana/Katakana repertoire the #272 kana license shares
 across pieces); token/piece tags; Lexicon only through tags already
 applied by classify (plus the leading-title period rule).
 
-Ports v1's assignment loops. NO_COMMA (per name_order):
+Implements rules H2, N3, O4 and W4 of docs/design/rules.md, each
+cited at its code below. Ports v1's assignment loops.
+NO_COMMA (per name_order):
 leading title pieces chain while no given-position name has been seen
 (a title needs a following piece, unless the whole name is one title);
 then positional assignment per name_order with the trailing-suffix
 rule: the piece from which everything after is a strict suffix is the
 last name-position piece, the rest are suffixes. The v1 single-name+
-nickname rule lives here (plan deviation #2): one non-title piece plus
-a nonempty nickname puts that piece in FAMILY.
+nickname rule lives here (decisions.md#N3): a nonempty nickname
+beside exactly one piece in total puts that piece in FAMILY.
 FAMILY_COMMA: segment 0 wholly FAMILY (v1 parity); segment 1 gets
 leading titles, then given, then middles with strict-suffix pieces to
 suffix; segments 2+ are suffixes (lenient -- segment already flagged
@@ -57,6 +60,10 @@ def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
         tokens[i] = dataclasses.replace(tokens[i], role=role)
 
 
+# rules.md#H2: "an abbreviation opening the part of the name that
+# carries the given name — the whole name, or the part after a
+# family comma — reads as a title even when unlisted"
+# (history: decisions.md#H2)
 def _is_leading_title(piece: tuple[int, ...], ptags: frozenset[str],
                       tokens: list[WorkToken]) -> bool:
     if _is_title_piece(piece, ptags, tokens):
@@ -82,6 +89,10 @@ def _peel_leading_titles(pieces: tuple[tuple[int, ...], ...],
     return n
 
 
+# rules.md#W4: "a name written wholly in one East Asian script, or in
+# the kana-licensed Japanese repertoire, reads family-first whatever
+# order the caller declared; a wholly-katakana name keeps the declared
+# order" (history: decisions.md#W4)
 def _effective_order(policy: Policy,
                      pieces: list[tuple[int, ...]],
                      tokens: list[WorkToken],
@@ -112,7 +123,7 @@ def _effective_order(policy: Policy,
     one per token below.
     """
     # #298 transcription marker -- see the docstring; codepoint-scoped
-    # (only U+00B7 records, spec 2026-07-30 decision 5)
+    # (only U+00B7 records; decisions.md#T3)
     if dot_divided:
         return policy.name_order
     if not policy.script_orders:
@@ -138,6 +149,9 @@ def _effective_order(policy: Policy,
                  if s is resolved), policy.name_order)
 
 
+# rules.md#O4: "words no vocabulary has claimed read by position. In
+# the default given-first order the first name word is the given name,
+# the last is the family name, and everything between is middle names"
 def _name_positions(order: tuple[Role, Role, Role],
                     count: int) -> list[Role]:
     """Roles for `count` name pieces (titles/suffixes already peeled),
@@ -177,7 +191,9 @@ def _assign_main(seg_idx: int, state: ParseState,
     rest = [k for k in rest if "suffix" not in ptags[k]]
     if not rest:
         return
-    # v1 nickname rule (plan deviation #2): v1's p_len == 1 counted
+    # rules.md#N3: "a name that is only a nickname and one name word
+    # reads that word as the family name" (history: decisions.md#N3)
+    # -- v1's p_len == 1 counted
     # the WHOLE segment before any title peeling -- 'Xyz. (Bud) Smith'
     # has two pieces, so the title peel wins and Smith stays the given
     # name (pinned live 2026-07-17)

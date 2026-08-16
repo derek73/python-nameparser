@@ -1,4 +1,5 @@
-"""THE shared behavior case table (core spec §7.2).
+"""THE shared behavior case table (rules.md cites it as the pin of
+CURRENT behavior).
 
 Format is fixed here, in the first pipeline PR, and never per-PR:
 one Case per input, expected values for exactly the non-empty fields,
@@ -787,7 +788,7 @@ CASES: tuple[Case, ...] = (
          {"given": "Иван", "family": "Петров"},
          locale="ru",
          notes="a comma is an explicit signal that suppresses the "
-               "rotation (spec §1)"),
+               "rotation (rule O1)"),
     Case("tr_az_pack_marker", "Mammadova Aygun Ali kizi",
          {"given": "Aygun", "middle": "Ali kizi", "family": "Mammadova"},
          locale="tr_az",
@@ -826,7 +827,7 @@ CASES: tuple[Case, ...] = (
     Case("unbalanced_quote", 'Jon "Nick Smith',
          {"given": "Jon", "middle": '"Nick', "family": "Smith"},
          ambiguities=("unbalanced-delimiter",),
-         notes="quote char stays literal (spec §5a)"),
+         notes="quote char stays literal (rule N2)"),
     Case("suffix_stays_suffix", "Johnson PhD",
          {"given": "Johnson", "suffix": "PhD"},
          classification="fix(suffix-routing)",
@@ -1039,7 +1040,7 @@ CASES: tuple[Case, ...] = (
          notes="the SAME transcription typed with the Japanese "
                "nakaguro reads as the dot's own typography says -- a "
                "姓・名 roster pair, family-first (#272) -- because the "
-               "nakaguro records nothing (spec 2026-07-30 decision 5: "
+               "nakaguro records nothing (per decisions.md#T3, "
                "codepoint-scoped; only the Chinese B7 marks a "
                "transcription). A limitation row: chosen, not "
                "accidental -- cross-convention input reads by the "

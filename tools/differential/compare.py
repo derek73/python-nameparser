@@ -1,4 +1,4 @@
-"""Differential harness (migration spec S5): a released baseline vs
+"""Differential harness: a released baseline vs
 the working tree over the corpora. Every diff must classify against
 that baseline's ledger or the run fails.
 

@@ -45,6 +45,10 @@ class Structure(Enum):
 
 
 @dataclass(frozen=True, slots=True)
+# rules.md#A1: "parsing never fails on any input: where the text's
+# structure or a word's reading is genuinely uncertain, the parse
+# completes on the best reading and carries an ambiguity report
+# naming the doubt"
 class PendingAmbiguity:
     """An ambiguity recorded mid-pipeline by token INDEX; assemble
     materializes real Ambiguity objects over the final tokens.

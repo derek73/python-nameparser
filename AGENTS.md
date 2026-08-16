@@ -9,6 +9,87 @@ Branch naming: `fix/issue-NNN-short-description` or `feat/short-description`.
 
 Before opening the PR, if the change alters parser behavior or internals, *read* the Architecture, Extension Patterns, and Gotchas sections of this file against the change — don't grep for it: AGENTS.md paraphrases behavior in its own words, so text made stale by a code change rarely matches the code's phrasing (a doc-staleness sweep driven by grep terms from the diff will miss it every time). The same applies when scoping a doc-review pass or a subagent prompt: include AGENTS.md in the list of docs to check, or it won't be checked.
 
+## Rules documentation (docs/design/)
+
+Three committed contributor docs carry the parser's normative rules
+and their reasons, enforced by the doc tests in tests/v2/
+(rules_doc.py and the test_doc_*/test_rules_doc* modules). Before proposing a
+design or a fix that touches parser behavior, read
+docs/design/mechanisms.md and the relevant docs/design/rules.md
+sections — the catalog is keyed by problem shape, and the pattern
+you are about to invent is often already there.
+
+- **rules.md** — NORMATIVE rules (intended behavior, domain-topic
+  sections, executable examples; `deviates:` markers track known
+  parser gaps). Cite as `rules.md#P1`; code comments quote a
+  verbatim excerpt in double quotes, checked by
+  tests/v2/test_doc_citations.py.
+- **decisions.md** — the ADR-style record: dated entries, Declined:
+  (rejected WITH evidence), Excluded: (what must stay out of a
+  wordlist and why), Open: (issue links, never restated; also keyed
+  to a vocabulary set for contested memberships — the
+  right-rule-wrong-set class),
+  3-0-reevaluations (append whenever a design cites 1.4 parity as
+  load-bearing).
+- **mechanisms.md** — problem-shape catalog with citable contract
+  statements; stage-attribution claims in comments must cite an
+  entry verbatim, never restate it in fresh words.
+
+**Same-PR amendment rule.** Any PR that changes or clarifies parser
+behavior — or the boundaries around a documented rule, since a
+neighboring change can invalidate a rule's stated limits without
+touching its code — amends rules.md in the same diff (the doc diff
+is part of the reviewable change, like tests). A change that
+resolves or reverses a design question adds a decisions.md entry; a
+new reusable pattern adds a mechanisms.md entry; a fixed deviation
+removes its `deviates:` marker in the same PR (the examples test
+forces this). Issues proposing behavior changes should be drafted in
+rule shape — rationale, statement, examples with boundaries,
+accepted consequences, open questions, exclusions — so landing an
+accepted proposal is a copy, not a rewrite.
+
+**Counting claims.** A bare count in prose is either an assertion or
+a liability, keyed by who observes its staleness: asserted counts (a
+test holds the number) fail CI at change time — the useful kind;
+dated snapshots ("51 sites at spec time") cannot go stale; standing
+present-tense prose counts are the forbidden class — promote to an
+assertion, add a date, or state the invariant and let a test count.
+After changing how many times something runs, sweep for counts, not
+for the thing's name.
+
+**Release-log claims.** Quantified or universal behavior claims in
+release bullets must come from the differential gate's classified
+summary or be verified against rules.md examples, never written from
+memory. Per-rule ledger toml comments asserting PARSER behavior cite
+rule IDs under the excerpt discipline; free prose is for ledger
+mechanics only (owned by tools/differential/README.md).
+
+**Landing a design.** The gitignored spec (docs/superpowers/specs/)
+is the working medium; it dies with the branch, and the docs are the
+record. Before a design PR merges, walk its spec (including
+amendments) and distill the durable residue: decisions made or
+reversed → decisions.md entries; proposals rejected with evidence →
+Declined:; vocabulary that must stay out → Excluded:; behavior the
+design settled → rules.md (with a deviates: marker if unshipped);
+reusable patterns → mechanisms.md; options weighed → a weighing
+entry. Then check the spec cites nothing the docs don't now carry —
+a spec section with no committed home when the PR merges is lost,
+not deferred (a 2026-08-16 sweep of eight weeks of specs recovered
+nine such items). The same-PR amendment rule above covers code-driven
+changes; this covers the design-driven ones.
+
+**Primary-source review.** When doc content is distilled from a
+session's work, have that session (or its transcript) review its
+own sections before or soon after landing — attribution flattening
+and inverted arguments are visible only to the source. Reviewers
+state which tree each measurement ran on (stale fetches produced
+three rounds of already-fixed findings), and landed corrections are
+re-verified here before committing.
+
+**Guard tests** SHOULD carry a recorded negative control — the
+answer with the guard off, stored as data (the _EXCLUSION_EFFECT
+shape; see mechanisms.md's Verification shapes).
+
 ## Commands
 
 ```bash
@@ -61,6 +142,10 @@ uv run sphinx-build -b html docs dist/docs
 #      "Reads:". That is checkable, so check it rather than reading it:
 #      compare it against grep -oE '\b(policy|lexicon)\.[a-z_]+' on the module
 #    - tests/v2/cases.py notes, which explain why a row lands where it does
+#    - docs/design/rules.md, decisions.md and mechanisms.md -- READ, don't
+#      grep: the excerpt and example tests catch citation and example drift,
+#      but statement and Background prose can still be wrong about behavior
+#      that changed
 #    - AGENTS.md itself, for stale commands, architecture notes, or gotchas
 #    And check for open Dependabot PRs on uv.lock (namedivider-python) and merge them
 #    first — pyproject floats >=0.4 so fresh installs get the newest namedivider, but

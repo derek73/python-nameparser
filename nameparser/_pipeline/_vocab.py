@@ -178,6 +178,8 @@ def splits_into_suffixes(text: str, cores: frozenset[str],
     return False
 
 
+# rules.md#S3: "a word with interior periods reads as a suffix when
+# any of its period-separated chunks is suffix vocabulary"
 def period_joined_vocab(text: str, lexicon: Lexicon) -> str | None:
     """v1's parse_pieces derivation for interior-period tokens
     ('Lt.Gov.', 'Msc.Ed.', and by the ANY rule 'Mr.Smith'): ANY title

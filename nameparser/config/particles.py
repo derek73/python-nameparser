@@ -14,7 +14,8 @@ from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
 #: already chained onto the word behind it is part of that piece rather
 #: than standing alone.
 #: Opening the name is only the commonest shape. The rule enforcing it
-#: (``post_rules`` rule 1b) reaches a member standing alone as a piece in
+#: (rules.md#P1; the pre-2.2 docstrings called it rule 1b) reaches a
+#: member standing alone as a piece in
 #: the given position too, folding it into the family beside it, so that
 #: neither shape leaves a given name behind -- as long as there is another
 #: name token to fold into. A bare "de" stays as it is. Where a chain is

@@ -43,7 +43,7 @@ def test_parse_rejects_non_str_with_decode_hint() -> None:
 
 
 def test_degenerate_inputs_are_total() -> None:
-    # spec §5a table
+    # the quote-pair defaults table (rule N2's conventions)
     assert not parse("")
     assert not parse("   ")
     assert parse("").original == ""

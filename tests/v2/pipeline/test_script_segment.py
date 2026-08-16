@@ -763,7 +763,7 @@ def test_interpunct_divided_name_never_segments() -> None:
     # 马丁·路德·金 (Martin Luther King): 马 is a listed surname, but a
     # 间隔号-divided name is a transcription -- its pieces are syllable
     # groups, not surname+given, so the dot gates the stage off
-    # entirely, vocabulary AND segmenter (spec 2026-07-30). Built
+    # entirely, vocabulary AND segmenter (rule W1's Accepted). Built
     # through the real tokenize so interpunct_offsets is the field's
     # own producer's, not hand-set.
     state = segment(tokenize(ParseState(

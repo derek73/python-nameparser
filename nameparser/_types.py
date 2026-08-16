@@ -34,7 +34,7 @@ class Role(StrEnum):
     ``sorted()`` yields alphabetical order -- iterate ``Role`` itself
     for the canonical order."""
 
-    # Declaration order IS the canonical field order (conventions §3):
+    # Declaration order IS the canonical field order:
     # every listing of the seven fields anywhere derives from this.
 
     #: Pre-nominal titles and honorifics ("Dr.", "Sir", "Capt.").
@@ -608,6 +608,10 @@ class ParsedName:
         return self._text_for(Role.MIDDLE)
 
     @property
+    # rules.md#R1: "every field is a view computed from the parsed
+    # words at read time, joining its words in written order — except
+    # folded family words (O3), which render before the rest of the
+    # family"
     def family(self) -> str:
         return self._text_for(Role.FAMILY)
 
@@ -626,6 +630,9 @@ class ParsedName:
     # -- derived views (filters over roles + STABLE tags only) ----------
 
     @property
+    # rules.md#R2: "the family name splits into further views: the
+    # base (the family without its leading particles) and the
+    # particles themselves"
     def family_particles(self) -> str:
         return self._text_for(Role.FAMILY, tag="particle")
 

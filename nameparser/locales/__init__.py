@@ -1,5 +1,6 @@
 """Locale packs: named (lexicon fragment, PolicyPatch) deltas folded in
-by parser_for (locales spec §2). Packs are pure data with no
+by parser_for (mechanisms.md#LOCALE-PACKS-PURE-DATA). Packs are
+pure data with no
 privileged capabilities; they dissolve at parser construction.
 
 Loaded lazily (PEP 562): importing nameparser.locales never imports a
@@ -20,7 +21,7 @@ if TYPE_CHECKING:
     from nameparser._types import Segmenter
 
 #: attribute name -> (module name, module attribute). Codes are the
-#: lowercase module names; attribute constants are uppercase (spec §2).
+#: lowercase module names; attribute constants are uppercase.
 _REGISTRY = {
     "JA": ("nameparser.locales.ja", "JA"),
     "RU": ("nameparser.locales.ru", "RU"),
@@ -74,7 +75,7 @@ def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
 
 def get(code: str) -> Locale:
     """Dynamic lookup by code ('ru'); raises KeyError listing the
-    available codes (spec §2)."""
+    available codes."""
     attr = code.upper() if isinstance(code, str) else code
     if not isinstance(code, str) or attr not in _REGISTRY:
         raise KeyError(

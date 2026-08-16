@@ -7,19 +7,10 @@ slice), comma_offsets (segmentation points; never tokens),
 interpunct_offsets (间隔号 transcription markers, #298; never tokens).
 Reads: Policy.strip_emoji, Policy.strip_bidi.
 
-There is NO text-rewriting normalize stage: whitespace collapsing,
-emoji/bidi stripping, and the katakana name-dot split are all
-character-classification rules here -- ignorable characters act as
-separators and never enter a token, so spans always index the
-original exactly as given. Whitespace and the name-dot are
-unconditional; emoji/bidi stripping alone is policy-gated
-(Policy.strip_emoji/strip_bidi). The Chinese interpunct U+00B7 is
-context-sensitive -- see _INTERPUNCT below.
-
-v1's squash_emoji/squash_bidi REMOVED the char and joined neighbors
-('A\U0001f600B' -> 'AB'); here an ignorable char is a SEPARATOR
-('A\U0001f600B' -> 'A', 'B') -- the unavoidable consequence of spans
-indexing the original exactly.
+Implements rules T1, T2 and T3 of docs/design/rules.md, cited at
+their code below. There is NO text-rewriting normalize stage: all
+three are character-classification rules, so spans always index the
+original exactly as given (v1 contrast: decisions.md#T1).
 """
 from __future__ import annotations
 
@@ -44,23 +35,19 @@ _EMOJI_RANGES = ((0x1F300, 0x1F64F), (0x1F680, 0x1F6FF),
                  (0x2600, 0x26FF), (0x2700, 0x27BF))
 _BIDI = re.compile('[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]+')
 
-# The katakana middle dot and its halfwidth twin divide the parts of
-# a foreign name transcribed into katakana (マイケル・ジャクソン) --
-# native names never contain them, so they separate unconditionally,
-# like whitespace (amendment 2026-07-29 section 1b). They record no
-# offset: the nakaguro also divides kanji roster pairs (高橋・一郎,
-# 姓・名 -- read family-first by the script license, #272), so it is
-# not a transcription marker. Only the Chinese 间隔号 is (#298), and
-# it is context-sensitive -- see _INTERPUNCT below.
+# rules.md#T2: "the katakana middle dot and its halfwidth twin divide
+# a name like whitespace, always." They record no offset: the
+# nakaguro also divides kanji roster pairs (高橋・一郎, read
+# family-first by the script license, #272), so it is not a
+# transcription marker; only the Chinese 间隔号 is (#298).
 _NAME_DOT_SEPARATORS = frozenset({"\u30FB", "\uFF65"})
 
 _INTERPUNCT = "\u00B7"
-# Per-CHAR classifier for the interpunct's flank guard: a one-char
-# string is wholly-classified iff the character is. U+00B7 cannot be
-# an unconditional separator like the name dots above -- it is also
-# the Catalan punt volat, INTERIOR to legitimate names (Gal\u00B7la) -- so
-# it divides only between classified-script characters: the first
-# context-sensitive separator rule, which is why it lives in
+# rules.md#T3: "the interpunct divides a name only between two
+# characters of a classified East Asian script; anywhere else it is
+# part of the word" (history: decisions.md#T3). Per-CHAR classifier
+# for the flank guard: a one-char string is wholly-classified iff the
+# character is. Context-sensitivity is why this lives in
 # _tokenize_region (where the index exists) and not in _ignorable.
 _classified_char = _script_matcher(*_SCRIPT_RANGES, whole=True)
 
@@ -70,6 +57,8 @@ def _is_emoji(ch: str) -> bool:
     return any(lo <= cp <= hi for lo, hi in _EMOJI_RANGES)
 
 
+# rules.md#T1: "an ignorable character separates its neighbors and
+# never joins them" (v1 contrast: decisions.md#T1)
 def _stripped(ch: str, policy: Policy) -> bool:
     """True when the strip policy removes `ch` from the token stream.
     The ONE definition of that set, shared by _ignorable and _flank: a

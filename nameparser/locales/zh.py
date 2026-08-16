@@ -22,7 +22,8 @@ surnames={...})))``. (Adding to the finished parser's lexicon instead
 is a silent no-op: Lexicon is frozen, so ``.add`` returns a NEW
 lexicon that no parser is holding.)
 
-Declared deviations (spec §2 authoring requirement 3): the pack adds
+Declared deviations (mechanisms.md#LOCALE-PACKS-PURE-DATA): the
+pack adds
 vocabulary and one union policy field, both self-selecting by script,
 so it can only change names containing Han characters -- DEVIATES
 below declares exactly that (over-declaring within the script: only

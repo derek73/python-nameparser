@@ -1,16 +1,18 @@
-"""The Russian locale pack (locales spec §3): policy-only -- it turns
+"""The Russian locale pack (rule O1): policy-only -- it turns
 on the EAST_SLAVIC patronymic rule. The morphology data (-ovich/-ovna
 endings, Cyrillic and transliterated) lives inside the rule
 implementation in nameparser/_pipeline/_post_rules.py, not in the
 Lexicon (mirrors v1's patronymic_name_order flag design, v1.3.0).
 Cyrillic titles/conjunctions are default-lexicon vocabulary (#269),
-not pack data (spec §2 sorting rule).
+not pack data (mechanisms.md#LOCALE-PACKS-PURE-DATA, the sorting
+rule).
 
 Data sources: the v1.3.0 patronymic rule (PR #154 discussion and the
 east-slavic test bank); no external lists -- the pack itself carries
 no vocabulary.
 
-Declared deviations (spec §2 authoring requirement 3): applying this
+Declared deviations (mechanisms.md#LOCALE-PACKS-PURE-DATA):
+applying this
 pack changes only NO_COMMA names whose final token carries an East
 Slavic patronymic ending while the middle token does not --
 DEVIATES(name) below is the machine-readable declaration the

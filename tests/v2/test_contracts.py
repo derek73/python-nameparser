@@ -1,4 +1,4 @@
-"""Stable-string contract tests (core spec §7.4): every enum member and
+"""Stable-string contract tests: every enum member and
 stable tag has a canonical triggering input, parametrized by iterating
 the registries -- a new member without an entry here fails loudly."""
 import pytest

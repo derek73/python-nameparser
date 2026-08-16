@@ -1,4 +1,5 @@
-"""The 2.0 ``HumanName`` facade (migration spec §2): a mutable wrapper
+"""The 2.0 ``HumanName`` facade (mechanisms.md#FACADE-CONTRACT): a
+mutable wrapper
 over a frozen ParsedName, delegating parsing to the core Parser resolved
 from the bound Constants shim. Keeps every v1 spelling. Deleted in 3.0.
 
@@ -41,7 +42,8 @@ _MEMBERS = tuple(_V1_SPELLING.get(r.value, r.value) for r in Role)
 
 
 
-#: v1 parsing hooks the facade never calls (spec §2 exception 2 / #280).
+#: v1 parsing hooks the facade never calls
+#: (mechanisms.md#FACADE-CONTRACT / #280).
 _V1_HOOKS = (
     "pre_process", "post_process", "parse_full_name", "parse_pieces",
     "parse_nicknames", "join_on_conjunctions", "squash_emoji",
@@ -152,7 +154,8 @@ class HumanName:
                 DeprecationWarning, stacklevel=3)
 
     # -- render defaults -----------------------------------------------------
-    # One-line validating setters (spec §2): assigning a non-str (or, for
+    # One-line validating setters (mechanisms.md#FACADE-CONTRACT):
+    # assigning a non-str (or, for
     # the two fields that allow it, non-str-non-None) raises TypeError at
     # assignment time instead of failing later inside .format().
 
@@ -218,7 +221,8 @@ class HumanName:
     # -- config / parsing ---------------------------------------------------
 
     def _resolve(self) -> Parser:
-        """Dirty-tracked parser resolution (spec §3): rebuild the
+        """Dirty-tracked parser resolution
+        (mechanisms.md#CONFIG-SHIM-SNAPSHOT): rebuild the
         snapshot only when the bound Constants' generation moved."""
         gen = self._C._generation
         if self._snapshot_gen != gen:
@@ -685,7 +689,8 @@ class HumanName:
         self._suffix_delimiter = state.get("suffix_delimiter",
                                            defaults.suffix_delimiter)
         self._full_name = state.get("_full_name", "")
-        # Components come back exactly as pickled (spec §2): synthetic
+        # Components come back exactly as pickled
+        # (mechanisms.md#FACADE-CONTRACT): synthetic
         # tokens, never a re-parse. Build them per *_list ENTRY rather
         # than from one joined string -- an entry may hold several words
         # ("Ph. D.", "Q.C. M.P."), and re-splitting the joined string on
