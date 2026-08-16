@@ -60,9 +60,10 @@ def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
         tokens[i] = dataclasses.replace(tokens[i], role=role)
 
 
-# rules.md#H2: "a name-opening abbreviation — an unbroken run of two
-# or more letters ending in its one period — reads as a title even
-# when unlisted; a bare initial does not" (history: decisions.md#H2)
+# rules.md#H2: "an abbreviation opening the part of the name that
+# carries the given name — the whole name, or the part after a
+# family comma — reads as a title even when unlisted"
+# (history: decisions.md#H2)
 def _is_leading_title(piece: tuple[int, ...], ptags: frozenset[str],
                       tokens: list[WorkToken]) -> bool:
     if _is_title_piece(piece, ptags, tokens):

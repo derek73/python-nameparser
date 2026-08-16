@@ -208,12 +208,24 @@ Declined:
 
 - 2026-06-30 (leading-period-title design; v2 core, PR #288) — the
   shape test is v1 parity (period_abbreviation): two-plus letters
-  then a period, leading position only, bare initials exempt. The
+  then a period, bare initials exempt. Its site is the head of the
+  part CARRYING THE GIVEN NAME — the whole name, or the post-comma
+  part under a family comma — not "the head of the name"; that
+  scope correction is PR #315 (2026-08-01, docs-only), verified
+  against 1.4.0 from PyPI, so the parity claim is real and the
+  narrower description never was. The
   extraction litmus (2026-08-15): the spec drafted this rule as
   "recognized by vocabulary, not by written shape" and the live
   parser falsified that framing — the shape heuristic is real, and
   what the abugida gap (#343/#344) shows is its LIMIT, not its
-  absence. Recorded as the rule's Accepted consequence.
+  absence. Recorded as the rule's Accepted consequence — and the
+  2026-08-15 landing initially re-narrowed the scope to "name-
+  opening", correcting one error while preserving another; the
+  eighth review round fixed it.
+
+Open: [#316](https://github.com/derek73/python-nameparser/issues/316)
+what a trailing title-vocabulary word should do (the comma paths
+disagree today).
 
 ### W1 — unspaced CJK division
 
@@ -317,7 +329,10 @@ algebra):
   multi-dot spellings: removing it costs "John Smith E.S.Q." its
   family name); the word membership is inert as shipped but is
   what keeps "Esq" matching for a caller who edits suffix_acronyms
-  themselves. Deliberately no changed-parse count — the count is a
+  themselves. esq is the ONLY member of SUFFIX_ACRONYMS ∩
+  SUFFIX_WORDS — that singleton is why the two sets cannot carry a
+  disjointness assert, which is the standing cost this entry
+  defends. Deliberately no changed-parse count — the count is a
   property of the measuring grid, not of the code.
 
 Excluded (Lexicon.honorific_tails — a glued tail peels only if it
@@ -346,6 +361,15 @@ Excluded (TITLES):
 - ঠাকুর — a genuine Bengali honorific (lord/master) that is also
   Tagore, the surname (#343 records it so a wordlist sweep does not
   ship it).
+- The trailing-position rule that must NOT be adopted: TITLES holds
+  hundreds of words in no suffix set, at least nineteen of them
+  ordinary English surnames (king, judge, bishop, baron, sheriff,
+  ...), so a blanket "vocabulary outranks position in the trailing
+  slot" reading would turn "Mary Jane King" into title="King" with
+  the family name gone. The leading half of this argument is
+  AGENTS.md's "Dean is deliberately absent" gotcha; this is the
+  trailing half, and it shadows the family name rather than the
+  given (#316).
 
 Excluded (Policy.script_orders defaults): Script.KATAKANA is
 deliberately absent — a pure-katakana token is predominantly a
@@ -372,8 +396,11 @@ Excluded (MAIDEN_MARKERS, per nameparser/config/maiden_markers.py):
   definitionally vocabulary-dependent: there is no way to recognize
   a credential run without consulting the suffix word lists, so the
   structural stage reads vocabulary through one predicate.
-- 2026-07-30 #291/#296 — the lenient token test is the default and
-  `lenient_comma_suffixes=False` restores the strict one.
+- 2026-07-12/13 (v2 Policy work, PR #288) — the lenient token test
+  is the default and `lenient_comma_suffixes=False` restores the
+  strict one. (An earlier entry here credited #291/#296 — git
+  author dates place both the field and its wiring in the Policy
+  commits, and the #291/#296 design doc never mentions the knob.)
 - 2026-08 #319 — the wholly-suffix predicate was lifted into the
   vocabulary layer so the comma decision and the honorific peel's
   segment test cannot drift apart.
@@ -583,6 +610,32 @@ Declined:
   classify as a recognized honorific. A confidently wrong label is
   worse than a catch-all's honest breadth, and the gate reads the
   same either way.
+
+### comma-suffix-arc — #291/#296/#316 (2026-07-30 → 2026-08-01)
+
+Intent for #291 and #296 is settled by the approved bundle spec but
+UNSHIPPED — rules.md carries both as deviates: markers on C1. The
+arc's bookkeeping: #291/#296 moved milestone v2.1 → v2.2 on
+2026-08-01 (with #289/#293); the 2026-07-30 design doc was amended
+in place 2026-08-01 with an A1–A6 amendments section, and citations
+should be to the amended form; #316 (trailing titles) was filed the
+same day, carrying the esq cleanup as a Related section.
+
+Declined:
+
+- The trailing-abbreviation structural fallback — with a
+  measurement LIMIT rather than a measurement: the differential
+  corpora structurally cannot evidence it, because they hold only
+  names someone wrote down, and an unrecognized abbreviation is by
+  definition outside the vocabulary. A green run there proves
+  nothing (the reusable harness fact is in mechanisms.md's field
+  notes).
+- SUFFIX_PHRASES matching in assignment — measured cost: it
+  renders suffix="LEED, AP", because the suffix view comma-joins
+  suffix words unless they carry the stable "joined" tag, which
+  only grouping applies. The general form: multi-word vocabulary
+  must merge where the render tag is applied, not where the role
+  is assigned.
 
 ### 3-0-reevaluations — decisions shaped by the v1 shim
 

@@ -66,7 +66,12 @@ of it; it addresses or ranks the person. Most titles address by
 surname ("Mr. Johnson"), but a few — knighthoods, some clerical and
 courtesy titles — address by given name ("Sir John"). The library
 keeps a vocabulary of titles and, separately, of these given-name
-titles. The dividing criterion for the given-name list is NOT
+titles. What a TRAILING title-vocabulary word should do is
+unresolved (#316): today "John Smith Prof." keeps Prof. a name word
+while "Smith, Prof." reads it as a title — the two comma paths
+disagree, and TITLES holding ordinary surnames (king, judge,
+bishop) is what bars the blanket vocabulary-wins answer.
+The dividing criterion for the given-name list is NOT
 "religious title" but whether the tradition retains a family name:
 renunciation abolishes the surname, so for Swami, Guru, Baba or
 Lama an empty family is the correct output (#346), while rabbi and
@@ -92,12 +97,18 @@ H1. Rationale: a title normally addresses by surname, so a title
 H2. Rationale: before a name, an abbreviation is almost always a
     title — "Rev.", "Ing.", "Mag." — and no vocabulary can list
     every profession's abbreviations in every language.
-    A name-opening abbreviation — an unbroken run of two or more
-    letters ending in its one period — reads as a title even when
-    unlisted; a bare initial does not, and neither does anything
-    with interior periods, hyphens or digits.
+    An abbreviation opening the part of the name that carries the
+    given name — the whole name, or the part after a family comma —
+    reads as a title even when unlisted, provided it is an unbroken
+    run of two or more letters ending in its one period; a bare
+    initial does not, and neither does anything with interior
+    periods, hyphens or digits. Where it fires, the shape outranks
+    vocabulary: a period-marked opening word is a title even when
+    the word is suffix vocabulary.
       "Rev. John Smith"           →  title="Rev."
       "Xyz. John Smith"           →  title="Xyz."
+      "Smith, Major. John"        →  title="Major."
+      "Esq. Smith"                →  title="Esq."
       "J. Smith"                  →  given="J."  · boundary
       "J.R. Smith"                →  given="J.R."  · boundary
     Accepted: the shape is only recognizable as an unbroken run of
@@ -115,10 +126,12 @@ H2. Rationale: before a name, an abbreviation is almost always a
 H3. Rationale: compound titles are written as a run of title words,
     connectives included; a title word standing inside the name is
     just a name word.
-    Successive title words at the name's start chain into one
-    title; a title word elsewhere in the name does not.
+    Successive title words at the start of the part carrying the
+    given name chain into one title; a title word elsewhere in the
+    name does not.
       "Asst. Vice Chancellor John Smith"  →  title="Asst. Vice Chancellor"
       "Marquess of Bath"          →  title="Marquess of Bath"
+      "Morse, Det. Insp. Jane"    →  title="Det. Insp."
       "John Doctor Smith"         →  middle="Doctor"  · boundary
     Accepted: before a family comma the pre-comma text is wholly the
     family name (C1), title words included.
@@ -364,6 +377,8 @@ C1. Rationale: a credential run after the comma means the name is in
       "John Smith, V."            →  suffix="V."
       "John Smith, V."  strict-comma-suffixes  →  family="John Smith"
       "Smith, PhD"                →  family="Smith"  · boundary
+      "Smith, PhD"                →  suffix="PhD"  deviates: #296 (today: suffix="")
+      "John Smith, LEED AP"       →  family="Smith"  deviates: #291 (today: family="John Smith")
     history: decisions.md#C1 · implemented: nameparser/_pipeline/_segment.py
 
 C2. Rationale: text beyond the recognized comma parts should be

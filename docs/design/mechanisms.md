@@ -102,7 +102,9 @@ Problem shape. Where should a new "recognize X" behavior live?
 Contract statement. A vocabulary layer first claims words for what
 they ARE, wherever they sit; a positional layer then reads every
 unclaimed word by where it STANDS. Every rule belongs to exactly one
-layer.
+layer — with one named exception: the leading-abbreviation shape
+(rule H2) fires before the suffix vocabulary is consulted, so
+"Esq. Smith" reads title, not suffix.
 How it works. The two layers compose without ordering bugs because
 the positional layer never overrides a vocabulary claim (rule O4 is
 the positional layer's contract).
@@ -276,6 +278,25 @@ Lives in. tests/v2/test_ledger_guards.py (_CROSS_RULE_WINNERS).
 Reach for it when. Two rules can claim the same name and you are
 about to change either one, or their order.
 
+## VOCABULARY-FEEDS-STRUCTURE — a wordlist edit can move the comma decision
+
+Problem shape. Editing suffix vocabulary looks field-local, but the
+comma-structure decision (rule C1) reads that vocabulary, so a
+removal can flip which segment is the family name.
+Contract statement. Suffix-set membership is an input to the
+structure decision: removing a word from the suffix vocabulary can
+change a suffix-comma name into a listing-form name, relocating the
+family.
+How it works. Measured in the comma-suffix arc: dropping "dr" from
+the suffix vocabulary flips "John Smith, Dr." from family="Smith"
+suffix="Dr." to family="John Smith" — three individually correct
+documented facts composing into a family-name loss.
+Lives in. nameparser/_pipeline/_segment.py (the C1 decision) reading
+the suffix sets through _vocab.is_wholly_suffix.
+Reach for it when. Editing suffix membership for any word that
+occurs after a comma in real data — check the structure flip, not
+just the field.
+
 ## MAKE-WRONG-STATES-UNREPRESENTABLE — the house meta-pattern
 
 Problem shape. A convention keeps being violated no matter how
@@ -440,6 +461,11 @@ decline, not delete the test.
   its own skip set cannot fail. After changing any selection shape,
   verify the guard still REACHES the code it watches — assert the
   selected set is non-empty, or force-a-decision on its size.
+- A differential corpus cannot evidence behavior keyed to
+  OUT-of-vocabulary shapes: it holds only names someone wrote
+  down, and an unrecognized word is by definition outside the
+  vocabulary — a green run over the corpus proves nothing about
+  such a rule.
 - Mind the optional-extra environment split: a local venv's
   incidental namedivider makes `if available` branches run PRESENT
   locally and ABSENT in CI, so a locally-green suite proves nothing

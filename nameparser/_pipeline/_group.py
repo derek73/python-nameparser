@@ -54,8 +54,9 @@ class BoundJoin(IntEnum):
     STRICT = 3     # main segments (reserve_last=True: keep a family piece)
 
 
-# rules.md#H3: "successive title words at the name's start chain into
-# one title; a title word elsewhere in the name does not"
+# rules.md#H3: "successive title words at the start of the part
+# carrying the given name chain into one title; a title word
+# elsewhere in the name does not"
 def _is_title_piece(piece: Sequence[int], ptags: Set[str],
                     tokens: Sequence[WorkToken]) -> bool:
     if "title" in ptags:
