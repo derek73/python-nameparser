@@ -34,6 +34,10 @@ def assemble(state: ParseState) -> ParsedName:
     # name: a bare '.' or '- -' is not a person. v1 kept such input
     # (parse('.') -> first '.'); 2.0 empties it so bool() stays an
     # honest "did I get a name?" check. isalnum() is Unicode-aware, so
+    # rules.md#A2: "a name with no name content parses to the empty
+    # name — every field empty, false as a boolean — while
+    # ambiguities born from its punctuation survive on the empty
+    # result" (history: decisions.md#A2)
     # every real name in any script has content and only pure
     # punctuation/symbols empty out. (Embedded junk in a name with
     # content -- 'John . Smith' -- is left alone: that parse is truthy,

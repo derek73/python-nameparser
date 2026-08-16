@@ -44,6 +44,14 @@ Entry conventions:
   rules.md lists under the rule's `Accepted:` consequences; the two
   link by rule ID.
 
+### A2 — the empty name
+
+- 2026-07 (v2 core, PR #288) — v1 kept parse(".") as first=".";
+  2.0 empties content-free input instead. The born-empty-ambiguity
+  survival was a review fix in the rc1 arc: an unbalanced-delimiter
+  report must outlive the emptying, or malformed input becomes
+  indistinguishable from blank input.
+
 ### legacy-rule-numbers — the old docstring numbering
 
 Before rules.md, the post_rules stage docstring numbered its rules
@@ -144,7 +152,12 @@ head-peel question).
   replaced it (an altitude review called it the right depth); the
   author's own first fix — post-hoc offset filtering of unbalanced
   candidates alone — was superseded within the day and survives
-  only as the bulk-recorded dangler filter rules.md#N2 now names. A
+  only as the bulk-recorded dangler filter rules.md#N2 now names.
+  The word-internal carve-out covers ONLY the straight apostrophe
+  because it is the one delimiter character that occurs mid- and
+  end-of-word in real names; Derek's distinguishing test: with
+  double quotes the same shape ("Mari\" Aube\"") is genuinely
+  ambiguous, while Mari' Aube' is not. A
   cached delimiter-charset prescreen landed in the same commit,
   measured: no-delimiter names parse faster than the pre-#273
   baseline.
@@ -185,6 +198,13 @@ Declined:
   wants aggressive folding, a documented 1.4 deviation (ß and
   final-sigma forms compare equal). The storage-vs-comparison
   split is deliberate asymmetry; do not "fix" it symmetric.
+- 2026-07 (rc1 arc) — the fold must reach a FIXED POINT, and
+  anything built on it must converge too: _title_key joined
+  per-word folds and kept empty slots, so given_name_titles with a
+  foldable word stored a key match-time could never rebuild —
+  silently inert, and pickle round-trips then rejected the state.
+  Shipped in the rc, caught in review, fixed by dropping words
+  that fold away.
 
 ### render-default — the default view's format
 
@@ -202,6 +222,19 @@ Declined:
   the "#11" citations that circulated pointed at a 2014 GitHub
   accident, not the real source. Recorded so the archaeology stays
   done.
+
+### given-name-titles — deliberately unvalidated
+
+Declined (rc1 arc; the full argument is AGENTS.md's gotcha):
+
+- Validating given_name_titles against titles, twice: the
+  whole-entry check rejected legitimate multi-word entries; the
+  per-word check rejected "sir and dame" (a conjunction inside a
+  title run is itself a TITLE token, so the key is matchable while
+  its middle word lives in conjunctions). No static relation over
+  the vocabulary sets decides reachability, and an unreachable
+  entry is inert — each guard cost a working configuration to
+  forbid a condition that costs nothing.
 
 ### phd-merge — the "Ph. D." split
 
@@ -648,6 +681,14 @@ same rotation/name_order interaction as O1.
 
 Harvested 2026-08-15 from the release-arc session; measurements are
 that session's, spot-checked at landing.
+
+- 2026-07-24 (rc1 arc, predating this section's window) — the
+  TWO-CORPUS design: corpus_issues.jsonl (198 tracker-harvested
+  names, 166 absent from the v1-test-bank corpus) exists because
+  v1 test banks are structurally blind to anything 2.0 added;
+  compare.py globs corpus*.jsonl and fails loudly on none. Its
+  first catch was the leading-credential case ("Ph. D. John
+  Smith" → suffix).
 
 - 2026-08-05 #332 — ledger field vocabulary is Role's names, not the
   facade's: canonicalizing to first/last would have put an eighth

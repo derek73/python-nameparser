@@ -633,6 +633,16 @@ A1. Rationale: a caller can only act on doubt that is reported.
     so no example line.)
     implemented: nameparser/_pipeline/_state.py
 
+A2. Rationale: an input with no name content names nobody, and
+    saying so beats inventing fields from punctuation.
+    A name with no name content parses to the empty name — every
+    field empty, false as a boolean — while ambiguities born from
+    its punctuation survive on the empty result.
+      ".,"                        →  family=""
+      "("                         →  ambiguities=("unbalanced-delimiter",)
+      "John . Smith"              →  family="Smith"  · boundary
+    history: decisions.md#A2 · implemented: nameparser/_pipeline/_assemble.py
+
 ## Rendering & views (R)
 
 Background: parsing produces words with roles; every string a caller
