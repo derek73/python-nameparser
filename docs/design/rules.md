@@ -41,7 +41,9 @@ issue; the runner asserts today's output strictly, so a parser change
 that closes the gap fails the suite until the marker is removed in
 the same PR. `grep deviates:` on this file is the deviation backlog
 (deviations from statable rules — coverage gaps are a separate,
-larger category no grep can see).
+larger category no grep can see, and contested vocabulary
+memberships a third, tracked as Open blocks keyed to the vocabulary
+set in decisions.md).
 
 ## Not in scope
 
@@ -64,7 +66,13 @@ of it; it addresses or ranks the person. Most titles address by
 surname ("Mr. Johnson"), but a few — knighthoods, some clerical and
 courtesy titles — address by given name ("Sir John"). The library
 keeps a vocabulary of titles and, separately, of these given-name
-titles.
+titles. The dividing criterion for the given-name list is NOT
+"religious title" but whether the tradition retains a family name:
+renunciation abolishes the surname, so for Swami, Guru, Baba or
+Lama an empty family is the correct output (#346), while rabbi and
+imam traditions keep surnames — "Rabbi Cohen" addresses by title
+and keeps family "Cohen". Sweeping all religious titles into the
+given-name list would break the latter.
 
 H1. Rationale: a title normally addresses by surname, so a title
     followed by a single name word usually names the family; but a
@@ -75,6 +83,10 @@ H1. Rationale: a title normally addresses by surname, so a title
       "Mr. Johnson"               →  family="Johnson"
       "Mrs. Garcia"               →  family="Garcia"
       "Sir John"                  →  given="John"  · boundary
+    Accepted: a given-name title plus one name word leaves the
+    family empty — the input names no family, and inventing one
+    would be worse.
+      "Sir John"                  →  family=""
     implemented: nameparser/_pipeline/_post_rules.py
 
 H2. Rationale: before a name, an abbreviation is almost always a
@@ -205,8 +217,8 @@ S2. Rationale: generational suffixes and credentials are recognized
     generational forms and credential acronyms alike, and an
     ambiguous acronym written with periods counts unambiguously. A
     BARE ambiguous acronym is consumed only when the name has words
-    to spare: as the second of two words it stays the family name,
-    flagged ambiguous.
+    to spare — as the second of two words it stays the family
+    name — and either reading carries the ambiguity flag.
       "John Smith Jr."            →  suffix="Jr."
       "John Smith M.A."           →  suffix="M.A."
       "John Smith PhD"            →  suffix="PhD"
@@ -216,6 +228,7 @@ S2. Rationale: generational suffixes and credentials are recognized
     belongs to; and an unambiguous suffix is consumed even when
     that leaves no family name at all.
       "Jack Wei Ma"               →  suffix="Ma"
+      "Jack Wei Ma"               →  ambiguities=("suffix-or-name",)
       "Smith Jr."                 →  family=""
     implemented: nameparser/_pipeline/_classify.py
 

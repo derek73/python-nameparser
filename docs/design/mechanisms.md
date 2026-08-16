@@ -298,13 +298,17 @@ with Y."
 Problem shape. Language-specific behavior needs a home that cannot
 drift from the core.
 Contract statement. A locale pack is pure data — a Policy patch and
-Lexicon additions — applied by parser_for; packs contain no code
-paths of their own, and each pack's docstring declares its
+Lexicon ADDITIONS, add-only: a pack unions vocabulary in and can
+never remove a base entry — applied by parser_for; packs contain no
+code paths of their own, and each pack's docstring declares its
 deviations from the defaults.
 How it works. What is policy for every language (an order constant)
 is policy, not pack data; packs are lowercase modules exposing
 uppercase constants; a pack error is wrapped with the pack's code
-(rule D2). Pure data means a pack can be audited by reading it.
+(rule D2). Pure data means a pack can be audited by reading it —
+and add-only means a bad DEFAULT can never be routed around by a
+pack, which is why #342-class fixes must change shipped
+vocabulary.
 Lives in. nameparser/locales/ (packs), nameparser/_parser.py
 (parser_for, the one applier).
 Reach for it when. A language fix wants an if-statement — make it

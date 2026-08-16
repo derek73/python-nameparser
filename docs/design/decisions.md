@@ -195,7 +195,7 @@ Declined:
   extraction litmus (2026-08-15): the spec drafted this rule as
   "recognized by vocabulary, not by written shape" and the live
   parser falsified that framing — the shape heuristic is real, and
-  what the abugida gap (#342-#345) shows is its LIMIT, not its
+  what the abugida gap (#343/#344) shows is its LIMIT, not its
   absence. Recorded as the rule's Accepted consequence.
 
 ### W1 — unspaced CJK division
@@ -280,6 +280,17 @@ question):
   which is why test_the_chained_emitter_is_still_reachable
   distinguishes "pick another word" from "delete the emitter".
 
+Open (contested vocabulary memberships — the rule is right, the
+word's set is questioned; the issue is canonical):
+[#342](https://github.com/derek73/python-nameparser/issues/342)
+rai in SUFFIX_ACRONYMS vs. the South Asian surname ·
+[#346](https://github.com/derek73/python-nameparser/issues/346)
+swami and the renunciate titles absent from the given-name-title
+set ·
+[#343](https://github.com/derek73/python-nameparser/issues/343) /
+[#344](https://github.com/derek73/python-nameparser/issues/344)
+Bengali and Devanagari honorific vocabulary.
+
 Excluded (SUFFIX_ACRONYMS / SUFFIX_WORDS — the esq dual
 membership, deliberate; AGENTS.md's gotcha carries the full
 algebra):
@@ -307,6 +318,17 @@ nameparser/config/suffixes.py's vetting block):
   populations); peeling it would cut a real family name in two.
 - 君 — 王君 is a complete Chinese name; its kana spelling くん does
   peel.
+- जी (standing prohibition for #344's implementation) — Banerjee,
+  Mukherjee and Chatterjee end in the substring
+  (बनर्जी/मुखर्जी/चटर्जी), and glued peeling strands a fragment on
+  a bare virama (बनर् + जी). The 殿 criterion, in a non-CJK script
+  — which also shows the criterion is not CJK-specific.
+
+Excluded (TITLES):
+
+- ঠাকুর — a genuine Bengali honorific (lord/master) that is also
+  Tagore, the surname (#343 records it so a wordlist sweep does not
+  ship it).
 
 Excluded (Policy.script_orders defaults): Script.KATAKANA is
 deliberately absent — a pure-katakana token is predominantly a
