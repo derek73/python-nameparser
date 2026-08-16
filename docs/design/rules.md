@@ -188,10 +188,19 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     likely an initial than a connective.
     A recognized connective joins its neighbors into one name part,
     connective runs included — except a single-letter connective in
-    a three-word name, which stays a name word.
+    a three-word name, which stays a name word, and a single-letter
+    connective written as a bare Latin capital, which reads as an
+    initial and never joins.
       "Juan y Eva Garcia"         →  given="Juan y Eva"
+      "Jose E Maria Santos"       →  middle="E Maria"
       "Juan y Garcia"             →  middle="y"  · boundary
-    implemented: nameparser/_pipeline/_group.py
+    Accepted: the initial veto is a LATIN shape — a Cyrillic
+    capital joins ("И".isupper() is true, so this is not a
+    Unicode-uppercase rule); #267's closure blessed the Cyrillic
+    side while the Latin-capital half was never separately
+    adjudicated.
+      "Хосе И Мария Сантос"       →  given="Хосе И Мария"
+    history: decisions.md#P3 · implemented: nameparser/_pipeline/_group.py
 
 P4. Rationale: a particle links forward from inside a name; at the
     very front there is no name yet to be inside.
@@ -371,7 +380,10 @@ listing form "Family, Given" or trailing credentials "Name, PhD" —
 and which is meant can only be judged from what stands after the
 first comma. Recognizing a credential run is by nature a vocabulary
 judgment, so this is the one structural decision that consults the
-suffix word lists.
+suffix word lists. Which characters COUNT as the comma is part of
+the rule: the Arabic comma (U+060C) and the fullwidth comma
+(U+FF0C) both signal the listing form, while the ideographic comma
+(U+3001) is not a name-structure comma at all (#265).
 
 C1. Rationale: a credential run after the comma means the name is in
     natural order with suffixes appended; anything else after the
@@ -385,6 +397,8 @@ C1. Rationale: a credential run after the comma means the name is in
     even written like an initial ("V."), while strict mode vetoes
     initial-shaped words.
       "Smith, John"               →  family="Smith"
+      "سلمان، محمد"               →  family="سلمان"
+      "田中、太郎"                 →  family=""
       "John Smith, PhD"           →  suffix="PhD"
       "John Smith, V."            →  suffix="V."
       "John Smith, V."  strict-comma-suffixes  →  family="John Smith"

@@ -122,7 +122,8 @@ which particles count as never-given.
 
 ### M2 — the maiden-marker rule
 
-- 2026-07-03 #274 (v2 core, PR #288) — the marker takes everything
+- 2026-07-03 (maiden-bucket design; #274 filed 2026-07-07, landed
+  in the v2 core, PR #288) — the marker takes everything
   after it up to a trailing suffix, greedily: "née Jones Smith" is
   a two-word maiden name, matching how the marker is actually used
   in running text. The marker itself is dropped as structural, like
@@ -217,6 +218,13 @@ Declined:
 
 ### P3 — connectives
 
+- 2026-07-30 #267 — the four-word single-letter asymmetry: a bare
+  Latin capital connective is vetoed as an initial while a Cyrillic
+  capital joins. #267's closure ("v2.0 behaves this way by
+  default … verify it was the right call") showed only the
+  Cyrillic half; the Latin-capital veto was never separately
+  adjudicated, which rules.md#P3 now records as an Accepted
+  consequence pending anyone caring.
 - Provenance: the single-letter-connective guard is v1's fix for
   Google Code issue 11 ("john e smith", 2014, commit 33676c9) —
   the "#11" citations that circulated pointed at a 2014 GitHub
@@ -255,8 +263,18 @@ Declined (rc1 arc; the full argument is AGENTS.md's gotcha):
   given="Khai", middle="Thị Minh", family="Nguyễn". This is why
   three order constants exist rather than two.
 
+- Provenance: the three-constants argument originates in #270's
+  own body (2026-07-07): "A boolean family_name_first flag was
+  considered and rejected: Vietnamese order is
+  [family][middle][given]." The 2026-08-07 #146 measurement below
+  is the verification; #270 is the origin.
+
 Declined:
 
+- Free-form order tuples (('last','middle','first')-style, #270's
+  original draft shape) — the shipped design is exported order
+  constants with tuple rejection at construction (rule D2's
+  [bad-name-order] example is the pinned message).
 - middle_as_family as the way to suppress the middle slot for
   Vietnamese (2026-08-07 #146) — measured: it merges the middles
   into the family, giving family="Thị Minh Nguyễn" for "Nguyễn Thị
@@ -340,7 +358,11 @@ disagree today).
   census surname list is closed, hangul is self-selecting (a hangul
   entry can only match hangul text), and being unsplit is
   recoverable while a wrong split is not — which is also why an
-  unrecognized name stays whole.
+  unrecognized name stays whole. The filed proposal (#271,
+  2026-07-07) asked for OPT-IN segmentation for Korean too, "like
+  all localization"; default-on is the later refinement, and the
+  census/self-selecting argument above is what justified promoting
+  Korean past the blanket opt-in stance.
 - 2026-07-29 #272 (the ja amendment; shipped in 2.1.0 via PR #297) —
   Han division is opt-in per
   language pack because Han text does not identify its language
@@ -348,6 +370,16 @@ disagree today).
   segmenter takes what the vocabulary declines, so pack + segmenter
   compose mechanically: a listed surname is a dictionary certainty
   and wins.
+
+Declined:
+
+- JMnedict as bundled segmentation data (#272's body, 2026-07-07)
+  — the pip packaging (jamdict-data) was last compiled 2021-04;
+  JMnedict carries no frequency data, so it cannot resolve the
+  ambiguous 2+2/3+1 splits that motivate a segmenter at all; and
+  CC BY-SA bundling raises questions the LGPL core avoids by
+  delegating to namedivider (MIT). The kind of decline someone
+  re-proposes in two years.
 
 - 2026-08 — zh and ja packs are corpus ALTERNATIVES, one per
   corpus; stacking them (parser_for(ZH, JA, segmenter=...)) is for
@@ -534,6 +566,12 @@ Excluded (MAIDEN_MARKERS, per nameparser/config/maiden_markers.py):
 
 - Polish "z domu" — a two-token marker; pending the multi-token
   matching decision, tracked in #291 since 2026-07-27.
+- Contrast entry — unaccented "nee" SHIPS as a marker despite
+  #274 flagging "is nee safe as a default (it's also a rare
+  surname)" as open; the question resolved silently with the
+  shipped set. Recorded here because the included risky member
+  deserves its analysis as much as the excluded ones; M1's (Nee)
+  boundary covers only the enclosure path, not this marker path.
 - "born" — never shipped: a release-log drafting invention, caught
   by the 2.0 milestone audit and corrected (5ccf9f3). Recorded so
   nobody "restores" it; if ever proposed for real, Max Born is the
@@ -567,7 +605,9 @@ Excluded (MAIDEN_MARKERS, per nameparser/config/maiden_markers.py):
 ### T1 — separators, not joiners
 
 - 2026-07 (v2 core, PR #288) — v1's squash_emoji/squash_bidi
-  REMOVED the character and joined its neighbors ('A😀B' → 'AB');
+  REMOVED the character and joined its neighbors. (v1.3.0 had no
+  bidi handling at all: squash_bidi entered late v1 via #266,
+  2026-07-07, on the emoji precedent's shape.) ('A😀B' → 'AB');
   v2 makes an ignorable character a separator ('A😀B' → 'A', 'B').
   The unavoidable consequence of every part being an exact
   positioned piece of the input: with no rewriting stage, nothing
@@ -663,19 +703,23 @@ without configuration.
   roles, which is faithful to v1 only under the default given-first
   order.
 
-Open: [#270](https://github.com/derek73/python-nameparser/issues/270)
-how the rotations interact with non-default name_order values.
+- 2026-08-15 — the rotation × non-default name_order interaction
+  question rode #270, which closed 2026-07-28 with the order
+  constants and no recorded answer for the rotations; no successor
+  issue tracks it. Flagged at review: needs either a resolution
+  note or a live issue.
 
 ### O2 — Turkic rotation
 
-- 2026-07-02 (landed in the v2 core, PR #288) — shape fixed at
+- 2026-07-02 (Turkic design; landed in the v2 core, PR #288) —
+  shape fixed at
   exactly four name words (1 given + 2 middle + 1 marker), v1
   parity; other shapes keep their positional reading even when that
   leaves the marker in a name field (see the rule's Accepted
   consequence).
 
-Open: [#270](https://github.com/derek73/python-nameparser/issues/270)
-same rotation/name_order interaction as O1.
+- 2026-08-15 — same rotation/name_order interaction status as O1
+  (#270 closed without a recorded answer; no successor issue).
 
 ### differential-ledger — tooling decisions (2.1.0 release arc)
 
@@ -823,6 +867,13 @@ Declined:
   only grouping applies. The general form: multi-word vocabulary
   must merge where the render tag is applied, not where the role
   is assigned.
+
+### removed-v1-surface
+
+- no_vowels: removed in 2.0 (#268, filed 2026-07-07, closed
+  2026-07-28) — never consulted by any parser version, ASCII-only;
+  the facade carries no replacement because there was nothing to
+  replace.
 
 ### 3-0-reevaluations — decisions shaped by the v1 shim
 
