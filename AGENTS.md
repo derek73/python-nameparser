@@ -134,6 +134,72 @@ by the author is the one form to distrust, because a green report
 from the weakest instrument manufactures confidence rather than
 supplying it.
 
+**Reviewing a docs/design change: the nine axes.** Run these before
+merging anything that touches rules.md, decisions.md, mechanisms.md —
+or THIS FILE, which carries the conventions those three rest on and
+has the same failure modes. Axes 3, 5 and 6 are rules.md-specific
+(they need rule statements, examples and `interacts:`); the other six
+apply to any of the four. Say which axes you ran and which you skipped
+as inapplicable — a checklist that asks for something meaningless
+teaches the reader to skim it.
+Each was earned by a defect that survived every other check on #386,
+where the review passes surfaced ten issues in total — nine of them
+by these axes, one by the spec self-review above — and unaided prose
+reading surfaced none. The parenthetical is the case that earned the
+axis.
+
+Skip what the suite already enforces. `tests/v2/test_rules_doc.py`
+and `tests/v2/test_doc_citations.py` machine-check example lines and
+their `deviates:` today-values, boundaries, the one-of
+`implemented:`/`tracked:` rule, `implemented:` against the modules
+that actually cite the rule, `interacts:` and cross-doc anchor IDs,
+citation excerpts quoted verbatim, and legacy citation forms. Assume
+they pass; a finding one of them would catch is a false positive.
+Read those two files rather than trusting this sentence — it named
+five of the nine guards when written, and goes stale as guards are
+added.
+
+1. **Recompute every number.** Any count, ratio or "N names" in the
+   diff gets recomputed by a script written now, never read. (A
+   filter described as returning one name returned three; a rule's
+   stated blast radius listed two names its own scope excluded.)
+2. **Your detector is a second, unreviewed implementation.** It must
+   read the same vocabulary and boundaries the rule reads. (A
+   particle-run detector that walked only the never-given half — the
+   rule chains through ANY particle — reported 50 false movers where
+   the true count was 1, printing cleanly both times.)
+3. **Rule vs. its own examples.** (P1 said the fold takes "the
+   particle and the one name word"; its example `de la Vega` is two
+   particles onto one word.)
+4. **Rule vs. the decision entries it cites.** Follow every
+   `history:` and read the entry. (P6's rationale asserted what
+   decisions.md#vocabulary-collisions denies, and the rule's own
+   guard exists because the assertion is false.)
+5. **Does the change move another rule's OUTPUT?** A marker lands on
+   the rule whose STATEMENT changed; a rule can move another's output
+   without touching its statement, and the runner cannot see it. Walk
+   `interacts:`. (family_base moved initials(); R3 had no marker.)
+6. **Contested inputs: is precedence stated?** `interacts:` is
+   advisory and pins nothing. This document states precedence in the
+   rule's own statement (H2, M1, W3). (P6 and S2 both claimed
+   `Berg, Jan vd`.)
+7. **General clause vs. adjudicated scope.** Enumerate the vocabulary
+   a shape-clause reaches. (P6's precedence was argued for `vd` and
+   swept in `do` and `mc`.)
+8. **Guard docstring vs. what the guard enforces**, especially when
+   the promise spans two test modules.
+9. **Prose is input to the doc parsers.** A line starting with `"`
+   inside a rule block is an example; a comment's quoted values join
+   the citation block above them.
+
+Also: before reporting "N names move", report the size of the
+population that COULD move — a small count over a corpus blind to the
+shape is evidence about the corpus. For rules.md#P6: of 782 corpus
+names, 245 carry a comma, two of those end in a particle, and one of
+the two clears the words-to-spare guard. Running axis 1 over this
+very list caught an earlier wording of that sentence conflating the
+population with the movers, so the count above is the corrected one.
+
 **Guard tests** SHOULD carry a recorded negative control — the
 answer with the guard off, stored as data (the _EXCLUSION_EFFECT
 shape; see mechanisms.md's Verification shapes).

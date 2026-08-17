@@ -234,7 +234,9 @@ not).
   them; they were measured before the comma scoping was chosen and
   carried forward unfiltered.
 - What that number means is the opposite of reassuring. The corpus
-  holds 245 comma names and exactly ONE with a trailing particle,
+  holds 245 comma names, TWO of which end in a particle and one of
+  which clears the words-to-spare guard ("Nguyen, Van" is the other,
+  and the guard is what keeps it a given name),
   so it is very nearly blind to the shape this rule governs —
   Dutch and Flemish listings are barely represented. Treat the one
   as evidence about the corpus, not about the blast radius, and
