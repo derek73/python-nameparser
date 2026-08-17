@@ -200,25 +200,7 @@ the two clears the words-to-spare guard. Running axis 1 over this
 very list caught an earlier wording of that sentence conflating the
 population with the movers, so the count above is the corrected one.
 
-**Markdown line width: don't hard-wrap prose.** Measured 2026-08-16,
-the ~80-column wrap in these files buys nothing. Wrapped and unwrapped
-markdown render identically (single newlines inside a paragraph
-collapse to spaces), docs/design/ is not in the Sphinx build, and
-unwrapping is byte-identical because newline→space is 1:1 — so there
-is no rendering, build, size or token argument either way. The cost is
-one-sided: 74% of the deleted words in #386's decisions.md diff were
-reflow rather than change, which is churn a reviewer has to read past.
-Write new prose unwrapped and leave existing paragraphs until they are
-being rewritten anyway — a bulk rewrap would reset `git blame` across
-the 31 and 43 authoring commits in rules.md and decisions.md, which is
-the provenance that dates a stale claim (do it as one reformat commit
-in .git-blame-ignore-revs if you ever want it uniform).
-
-The exception is enforced, not stylistic: rules.md's example lines and
-its `history:`/`interacts:`/`implemented:`/`tracked:` pointer lines are
-parsed per line, and a wrapped example line is a hard error naming its
-rule. Rule STATEMENT prose is free to rewrap, because the citation
-check normalizes whitespace before comparing (`" ".join(s.split())`).
+**Markdown line width: don't hard-wrap prose.** Measured 2026-08-16 — wrapped and unwrapped render identically, docs/design/ is not in the Sphinx build, and unwrapping is byte-identical (newline→space is 1:1), so the width buys nothing and costs diff churn (74% of #386's decisions.md deletions were reflow, not change). Write new prose unwrapped; don't bulk-rewrap old paragraphs, which would reset `git blame` on the provenance that dates stale claims. Enforced exception: rules.md's example and pointer lines are parsed per line, so a wrapped example is a hard error naming its rule — statement prose is free, since the citation check normalizes whitespace first.
 
 **Guard tests** SHOULD carry a recorded negative control — the
 answer with the guard off, stored as data (the _EXCLUSION_EFFECT
