@@ -36,28 +36,48 @@ from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
 #: subset of :py:data:`PARTICLES` and disjoint from
 #: :py:data:`~nameparser.config.bound_given_names.BOUND_GIVEN_NAMES`.
 NON_GIVEN_NAME_PARTICLES = frozenset({
-    "'t",
-    'af',
-    'auf',
-    'av',
-    'bint',
-    'de',
-    "de'",
-    'degli',
-    'dei',
-    'delle',
-    'delli',
-    'dello',
-    'dem',
-    'der',
-    'dos',
-    'het',
-    'ibn',
-    'op',
-    'ter',
-    'vd',
-    'vom',
-    'zu',
+    # Latin-script members. Every entry here is a grammatical particle --
+    # an article, a preposition, or a patronymic marker -- and that is the
+    # form a never-given record has to take. One attested bearer settles
+    # the AMBIGUOUS side; no amount of searching settles absence, so what
+    # is recorded is what the word IS rather than a failed search.
+    #
+    # The test is POSITIONAL (decisions.md#vocabulary-collisions C-i,
+    # corrected 2026-08-17): membership asks whether the word is borne as
+    # a name in the position this rule ACTS on -- leading, or alone in the
+    # given role -- not whether a bearer exists anywhere. 'de' is why the
+    # qualifier is needed: "De" is a borne Bengali/Odia surname, but a
+    # TRAILING one, so it never meets the rule.
+    #
+    # A BARE entry, here or in PARTICLES below, means nobody has examined
+    # it. Absence of a comment is the audit record.
+    "'t",      # Dutch contraction of 'het' ("'t Hooft"): the article itself
+    'af',      # Danish/Norwegian nobiliary "of"
+    'auf',     # German "upon" ("auf der Heide")
+    'av',      # Swedish/Norwegian "of"
+    'bint',    # Arabic "daughter of"; native-script بنت below
+    'de',      # French/Iberian/Italian "of". "De" IS a borne Bengali and
+               # Odia surname -- trailing, so it never reaches this rule.
+               # The case that forced C-i's positional qualifier.
+    "de'",     # Italian elided "dei" ("de' Medici")
+    'degli',   # Italian "of the", masc. pl.
+    'dei',     # Italian "of the", masc. pl.
+    'delle',   # Italian "of the", fem. pl.
+    'delli',   # Italian "of the", regional variant of 'dei'
+    'dello',   # Italian "of the", masc. sg.
+    'dem',     # German dative article
+    'der',     # German article ("von der Leyen")
+    'dos',     # Portuguese "of the", masc. pl.
+    'het',     # Dutch definite article
+    'ibn',     # Arabic "son of"; native-script ابن below
+    'op',      # Dutch "at/on" ("op den Berg")
+    'ter',     # Dutch "at the" ("ter Horst")
+    'vd',      # Dutch abbreviation of "van der". Also the British
+               # Volunteer Decoration, a suffix acronym: two non-name
+               # readings, so C-ii decides it on frequency and the Dutch
+               # one wins (decisions.md#vocabulary-collisions).
+    'vom',     # German "from the"
+    'zu',      # German "at/to", nobiliary ("zu Guttenberg")
 
     # #269: Arabic native-script patronymic/clan particles. Unlike their
     # Latin transliterations, these live in a script namespace with no
