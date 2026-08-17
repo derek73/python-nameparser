@@ -122,8 +122,33 @@ The mechanism shipped twice before anyone wrote down its criterion. Sizes as of 
     uv run python -c "from nameparser import Parser; L=Parser().lexicon; print({s: len(getattr(L,s)) for s in ('particles','particles_ambiguous','suffix_words','suffix_acronyms','suffix_acronyms_ambiguous','titles')})"
 
 - 2026-08-16 (collision keystone; #348, #360, #342, #385) — the 58%-vs-0.65% gap is BASE RATE, not disagreement. Both sets apply the same test; most particles are short words that double as names (van, bin, le, do, bar, mac) while most credential acronyms are not (abpp, acp). Recorded because the gap reads as an inconsistency and is not one — a reviewer who "harmonizes" the two shares will break one of them.
-- **C-i, vocabulary vs. name.** A word belongs in its set's ambiguous subset iff it is also borne as an ordinary name (given or family) in some tradition. Under uncertainty, default to AMBIGUOUS. This generalizes the evidence standard already stated in NON_GIVEN_NAME_PARTICLES' docstring — a wrong unambiguous claim misparses a real person, a wrong ambiguous marking only adds a flag — from "which set" to "which subset". Applies uniformly to particles, suffix_acronyms and titles.
+- **C-i, vocabulary vs. name.** A word belongs in its set's ambiguous subset iff it is borne as an ordinary name IN THE POSITION THE VOCABULARY CLAIM ACTS ON. Existence of a bearer anywhere is not the test, and the first draft of this criterion (recorded 2026-08-16, corrected 2026-08-17) got that wrong. Under uncertainty, default to AMBIGUOUS. This generalizes the evidence standard already stated in NON_GIVEN_NAME_PARTICLES' docstring — a wrong unambiguous claim misparses a real person, a wrong ambiguous marking only adds a flag — from "which set" to "which subset". Applies uniformly to particles, suffix_acronyms and titles.
 - **C-ii, vocabulary vs. vocabulary.** Where two sets claim a word and NEITHER reading is a name, precedence is a frequency judgment recorded per word. vd is the live case: never-given particle AND credential acronym (the British Volunteer Decoration), neither of them a name. Decision: the Dutch van der reading, as the more common. That is what unblocks #380, whose trailing-orphan half is a separate decision recorded under its own rule.
+- 2026-08-17 — C-i CORRECTED: the position qualifier. Writing the
+  per-word records for the never-given particles falsified the first
+  draft on the set's most load-bearing member. "De" is a borne Bengali
+  and Odia surname (parse("Bimal De").family == "De"), so C-i as first
+  written said mark `de` AMBIGUOUS -- which would break "de la Vega"
+  and every leading-particle reading. Nothing had tested the criterion
+  against `de`, and the error pointed at the safe side, so it would
+  never have announced itself as a misparse.
+  The qualifier the existing set was already obeying: P1 acts on the
+  LEADING position or a lone particle in the GIVEN role, so what
+  matters is whether the naming use occupies THAT position.
+    van   Vietnamese Văn in given position     collides   ambiguous
+    bar   Bar Refaeli, given position          collides   ambiguous
+    do    Đỗ leads a surname                   collides   ambiguous
+    de    "De" is a TRAILING surname           no clash   never-given
+  Consequence, and the reason this is not merely tidier: `das` was
+  called ambiguous on #360 under the old reading because Das is a
+  borne Bengali surname. Measured, "Anjali Das" and "Bimal Das" are
+  unchanged by never-given `das` (the surname is trailing, the rule
+  acts leading) while "Maria das Neves" GAINS its particle --
+  family="Neves" today, family="das Neves" with it. The old reading
+  would have declined a fix. `lo` and `el` need re-judging on the same
+  axis; `Lo` does lead in romanized Chinese ("Lo Wei"), so it may
+  genuinely collide where `das` does not.
+  Corrected on #360, which carried the wrong table publicly.
 - The concrete demonstration is "do", which three vocabularies claim — titles, particles/ambiguous, suffix_acronyms/ambiguous. Two mark it ambiguous; the third, TITLES, is the one that actually decides "Do Quang Minh" (title="Do", given="Quang") and reports nothing. Same word behind #385's "Anh Do".
 - Applications, each still its own work: #360 (mc, ste — neither is a borne given name, so both leave the ambiguous half); #342 (rai — Rai IS a borne surname, so it earns the marking rather than moving); #385 (do — resolved at decisions.md#R2).
 - C-ii's per-word framing versus a rule stated for a SHAPE: measured 2026-08-16, the words that are both particle and suffix vocabulary are vd, do and mc — three, not the one this criterion adjudicated. rules.md#P6 states its precedence for the shape, so do and mc inherit vd's answer without being weighed. Recorded rather than papered over: stating a per-word judgement as a general clause is how an unexamined word acquires a decision, and the two are named here so the next reader knows which one was actually argued.
