@@ -104,9 +104,12 @@ the 2026-08-16 entries below. The survivor is the degenerate bare
   takes only the particle's own group (#364); the middle position
   needs no third site once grouping is order-independent (#365);
   and #368 reverses.
-- 2026-08-16 #364 — the fold takes the particle and the ONE name
-  word it attaches to, not every remaining word. "de Mesnil Juan"
-  is family="de Mesnil" plus given="Juan". Nothing ever argued for
+- 2026-08-16 #364 — the fold takes the particle RUN and the ONE
+  name word it attaches to, not every remaining word.
+  "de Mesnil Juan" is family="de Mesnil" plus given="Juan". Run,
+  not particle: "de la Vega" is two particles onto one word, and an
+  earlier wording here said "the particle", which its own example
+  contradicted (rule-vs-decision-record review). Nothing ever argued for
   "takes everything"; it was the shape of v1's
   handle_non_first_name_prefix, not a decision.
   Measured before deciding, over every name in the three
@@ -391,6 +394,15 @@ quoting them:
   a borne given name, so both leave the ambiguous half); #342 (rai
   — Rai IS a borne surname, so it earns the marking rather than
   moving); #385 (do — resolved at decisions.md#R2).
+- C-ii's per-word framing versus a rule stated for a SHAPE: measured
+  2026-08-16, the words that are both particle and suffix
+  vocabulary are vd, do and mc — three, not the one this criterion
+  adjudicated. rules.md#P6 states its precedence for the shape, so
+  do and mc inherit vd's answer without being weighed. Recorded
+  rather than papered over: stating a per-word judgement as a
+  general clause is how an unexamined word acquires a decision, and
+  the two are named here so the next reader knows which one was
+  actually argued.
 - Caution when applying C-i to the particle set: TITLES ∩ ambiguous
   == {do, freiherr, st} is load-bearing, per the Excluded note in
   the W2 section. Emptying it makes the particle-or-given emitter

@@ -168,9 +168,11 @@ P1. Rationale: a never-given particle standing alone cannot be
     one as the given name, is a surname written out in full.
     A never-given particle standing alone where the given name would
     go — or opening the name — marks the name as surname-only: the
-    particle and the one name word it attaches to are the family,
-    and any name words beyond that read by position. It needs
-    another name word to attach to. An ambiguous particle keeps
+    particle run and the one name word it attaches to are the
+    family, and any name words beyond that read by position. It
+    needs another name word to attach to. The run is every particle
+    in sequence, never-given and ambiguous alike ("de la Vega" is
+    one group, not "de" plus a separate "la Vega"). An ambiguous particle keeps
     whatever reading its position gives it. The reading holds under
     every declared name order: a never-given particle is evidence
     about how the name is written, and a declared order governs only
@@ -279,6 +281,11 @@ P6. Rationale: a particle ending the name has nothing to link
     attachment is scoped to the comma form, and the comma-less
     shapes keep their positional reading.
       "Jong Anke de"              →  family="de"
+    Accepted: the precedence over S2 is stated for the shape, so it
+    sweeps in every word that is both particle and suffix
+    vocabulary — today vd, do and mc. Only vd's reading was
+    weighed; the other two inherit it, which is the shape's cost
+    and is tracked with the other contested memberships.
     history: decisions.md#P6 · interacts: C1, P1, S2 · tracked: #379, #380
 
 ## Suffixes: generational & credentials (S)

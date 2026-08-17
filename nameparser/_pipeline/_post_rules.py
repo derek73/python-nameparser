@@ -95,9 +95,9 @@ def post_rules(state: ParseState) -> ParseState:
 
     # rules.md#P1: "a never-given particle standing alone where the
     # given name would go — or opening the name — marks the name as
-    # surname-only: the particle and the one name word it attaches
-    # to are the family, and any name words beyond that read by
-    # position." (v1 handle_non_first_name_prefix; history:
+    # surname-only: the particle run and the one name word it
+    # attaches to are the family, and any name words beyond that
+    # read by position." (v1 handle_non_first_name_prefix; history:
     # decisions.md#P1)
     # DEVIATION #364: the fold below still takes every remaining
     # name word, not just the particle's own; "de Mesnil Juan" gives
