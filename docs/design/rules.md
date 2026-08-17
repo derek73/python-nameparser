@@ -110,6 +110,8 @@ P1. Rationale: a never-given particle standing alone cannot be
       "Mesnil de"  family-first   →  family="Mesnil de"
       "de Mesnil Juan"            →  family="de Mesnil"  deviates: #364 (today: family="de Mesnil Juan")
       "de Mesnil Juan"            →  given="Juan"  deviates: #364 (today: given="")
+      "Mc Donald"                 →  family="Mc Donald"
+      "de los Santos"             →  family="de los Santos"
       "van Gogh"                  →  given="van"  · boundary
     Accepted: a bare "de" stays the given name — there is nothing to
     fold into, and inventing a surname would be worse.
