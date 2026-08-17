@@ -1,6 +1,12 @@
-# Revisions to skip when running `git blame`. Use:
+# Revisions git blame should skip. Enable once with:
 #   git config blame.ignoreRevsFile .git-blame-ignore-revs
-# (or pass --ignore-revs-file). Add only whitespace/format-only commits.
+# Add only whitespace/format-only commits.
+#
+# Caveat, measured on the entry below: --ignore-revs-file cannot pass
+# blame through a commit that MERGES lines. A reflowed line does not
+# exist in the parent, so there is nothing to re-attribute it to, and
+# the 43 affected lines stay attributed to the reformat either way.
+# The entry is kept for future format-only commits that map 1:1.
 
 # docs: unwrap hard-wrapped prose (whitespace only, no content change)
-f0e6240a748d51554cda34057b1b2d63ad2e3592
+5e2ae60b0a287b6cf9ed5609823f39fe91568da0
