@@ -8,6 +8,7 @@ marker out in the same PR.
 from __future__ import annotations
 
 import importlib.util
+import re
 
 import pytest
 
@@ -30,6 +31,22 @@ def test_every_rule_has_examples_and_boundary(rule: Rule) -> None:
     assert rule.has_boundary_or_waiver(), (
         f"{rule.rule_id}: add a '· boundary' example or an explicit "
         f"'no-boundary: <reason>'")
+
+
+@pytest.mark.parametrize("rule", RULES, ids=lambda r: r.rule_id)
+def test_every_rule_points_at_code_or_at_the_work(rule: Rule) -> None:
+    """A normative rule names the code honoring it, or the issues that
+    would ship it -- never neither, so an unimplemented rule cannot sit
+    in the doc untracked, and never both, so a shipped rule cannot keep
+    a stale tracking pointer once its issues close."""
+    assert rule.implemented or rule.tracked, (
+        f"{rule.rule_id}: add 'implemented: <path>' or, if nothing "
+        f"implements it yet, 'tracked: #N' naming the issues that would")
+    assert not (rule.implemented and rule.tracked), (
+        f"{rule.rule_id}: has both implemented: and tracked:; drop "
+        f"tracked: once the rule ships")
+    bad = [t for t in rule.tracked if not re.fullmatch(r"#\d+", t)]
+    assert not bad, f"{rule.rule_id}: tracked: wants #N issue refs, got {bad}"
 
 
 def _check_diagnostic(example: Example) -> None:

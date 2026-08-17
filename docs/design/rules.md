@@ -22,7 +22,12 @@ decisions.md. Cross-references use the anchor form `decisions.md#P2`
 / `mechanisms.md#SPANS`; a bare ID is never a citation. The
 `interacts:` field on a pointer line is advisory — the
 citation-integrity test checks the ID exists, not that the
-interaction is real.
+interaction is real. `implemented:` and `tracked:` are not
+advisory: every rule carries exactly one. `implemented:` names the
+modules honoring the rule, checked against the modules that cite
+it; `tracked:` names the issues that would ship a rule nothing
+implements yet, so a wholly-aspirational rule cannot sit here
+untracked, and a shipped rule cannot keep a stale tracking pointer.
 
 Every example line is EXECUTABLE. The grammar (its executable
 definition is `tests/v2/rules_doc.py`; `tests/v2/test_rules_doc.py`
@@ -247,11 +252,14 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     history: decisions.md#P5 · implemented: nameparser/_pipeline/_group.py
 
 P6. Rationale: a particle ending the name has nothing to link
-    forward to, and no particle is a name by itself — so it belongs
-    to the family name written beside it. Dutch and Flemish names
-    are listed exactly this way ("Beethoven, Ludwig van"), the
-    tussenvoegsel trailing the given name but belonging to the
-    surname.
+    forward to, so it is not doing a particle's work there. A
+    never-given particle in that position cannot be a name at all
+    and must belong to the family written beside it; an ambiguous
+    particle could genuinely be the name (Vietnamese "Van"), which
+    is what the words-to-spare test below is for, not an
+    afterthought to it. Dutch and Flemish names are listed exactly
+    this way ("Beethoven, Ludwig van"), the tussenvoegsel trailing
+    the given name but belonging to the surname.
     Where a family comma has already named the family, a particle
     ending the name attaches to that family name and is written
     before it — provided at least one given word remains, so that a
@@ -271,7 +279,7 @@ P6. Rationale: a particle ending the name has nothing to link
     attachment is scoped to the comma form, and the comma-less
     shapes keep their positional reading.
       "Jong Anke de"              →  family="de"
-    history: decisions.md#P6 · interacts: C1, P1, S2
+    history: decisions.md#P6 · interacts: C1, P1, S2 · tracked: #379, #380
 
 ## Suffixes: generational & credentials (S)
 

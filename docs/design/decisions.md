@@ -256,6 +256,27 @@ not).
   unresolved — `interacts:` is advisory by design and pins nothing,
   so a declared interaction is a prompt to state the outcome, not a
   substitute for stating it.
+- 2026-08-16 — P6 is the first rule in rules.md that nothing
+  implements. Legitimate per the preamble (the document is
+  normative, and a gap is a tracked deviation), but it left the
+  rule pointing at nothing, so the shape got a pointer rather than
+  an exception: `tracked: #379, #380` in place of `implemented:`,
+  with exactly one of the two required of every rule. An
+  unimplemented rule can no longer sit here untracked, and a
+  shipped rule cannot keep a stale tracking pointer after its
+  issues close. Mutation-tested three ways before being believed
+  (drop the pointer, carry both, malformed refs); each fails.
+- The RATIONALE first shipped here was wrong and is corrected: it
+  read "no particle is a name by itself", which is true only of the
+  never-given half — decisions.md#vocabulary-collisions says the
+  opposite in as many words ("most particles are short words that
+  double as names"). The error mattered rather than merely reading
+  badly: the words-to-spare guard exists BECAUSE the rule reaches
+  ambiguous particles (#379's own subject is "van"), so the
+  rationale undercut its own guard. Caught in review, after a
+  coherence pass that interrogated rule-vs-rule pairs and never
+  checked rule-vs-decision-record — which is the gap to close next
+  time, not a one-off.
 
 Open: [#380](https://github.com/derek73/python-nameparser/issues/380)
 covers "Berg, Jan vd" under this rule, but the vd reading itself is
