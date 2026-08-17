@@ -133,10 +133,9 @@ _FAMILY_FIRST = [pytest.param(_FF, id="FAMILY_FIRST"),
     # the leading particle chains the rest of the name into the family
     ("de Mesnil", "de Mesnil", "", ""),
     ("de la Vega", "de la Vega", "", ""),
-    # three pieces, so the fold has a MIDDLE to move as well as the
-    # given -- the `givens + middles` half of the repair, and the only
-    # no-comma corpus name that reaches it
-    ("de Mesnil Garcia", "de Mesnil Garcia", "", ""),
+    # three pieces, so a name word survives the claim -- the only
+    # no-comma corpus name that reaches it, and the one #390 moved
+    ("de Mesnil Garcia", "de Mesnil", "Garcia", ""),
     # ... and the trailing suffix run is peeled before the rule looks,
     # comma or no comma (NO_COMMA and SUFFIX_COMMA both fold)
     ("de Mesnil MD", "de Mesnil", "", "MD"),
@@ -152,21 +151,17 @@ def test_family_first_folds_leading_never_given_particle(
 
 
 @pytest.mark.parametrize("policy", _FAMILY_FIRST)
-def test_leading_piece_scan_skips_pieces_that_hold_no_name(
+def test_titles_are_peeled_before_the_leading_particle_claim(
         policy: Policy) -> None:
-    # `_leading_name_piece` walks PAST pieces carrying no name role
-    # rather than reading piece 0 -- and past the first such piece, not
-    # only over a single title. 'Mr. de Mesnil' cannot show that: its
-    # particle is chained into one piece with 'Mesnil', so the scan
-    # lands on a two-token piece and the rule declines either way.
-    # Here a mid-name suffix word breaks that chain, leaving the
-    # particle a piece of its own BEHIND a title piece. Without the
-    # skip, or reading only pieces[0], the scan finds the title (or
-    # nothing) and the name splits: given='MD', middle='Mesnil',
-    # family='de'.
-    out = _parsed("Dr. de MD Mesnil", policy)
+    # The claim reads the first NAME piece, not pieces[0]: a title in
+    # front must not hide the particle behind it. assign gets this by
+    # peeling titles before it counts name pieces (#390 moved the claim
+    # there from post_rules, retiring the _leading_name_piece scan that
+    # used to walk past non-name pieces). Without the peel the title is
+    # piece 0, no claim fires, and the name splits by position.
+    out = _parsed("Dr. de Mesnil", policy)
     assert _by_role(out, Role.TITLE) == "Dr."
-    assert _by_role(out, Role.FAMILY) == "de MD Mesnil"
+    assert _by_role(out, Role.FAMILY) == "de Mesnil"
     assert not _by_role(out, Role.GIVEN)
     assert not _by_role(out, Role.MIDDLE)
 
@@ -198,8 +193,12 @@ def test_family_first_leading_particle_cases_that_do_not_fold(
 @pytest.mark.parametrize("text,title,given,middle,family,suffix", [
     ("de Mesnil", "", "", "", "de Mesnil", ""),
     ("de la Vega", "", "", "", "de la Vega", ""),
-    ("de Mesnil Garcia", "", "", "", "de Mesnil Garcia", ""),
-    ("Dr. de MD Mesnil", "Dr.", "", "", "de MD Mesnil", ""),
+    ("de Mesnil Garcia", "", "Garcia", "", "de Mesnil", ""),
+    # garbage in, garbage out: MD is suffix vocabulary sitting
+    # mid-name, so the piece the particle attaches to is "MD".
+    # Both readings of this input are garbage; pinned only so the
+    # claim's reach is visible, never as a shape to design around
+    ("Dr. de MD Mesnil", "Dr.", "Mesnil", "", "de MD", ""),
     ("de Mesnil MD", "", "", "", "de Mesnil", "MD"),
     ("De Mesnil, MD", "", "", "", "De Mesnil", "MD"),
     ("Mr. de Mesnil", "Mr.", "", "", "de Mesnil", ""),
@@ -216,7 +215,7 @@ def test_family_first_leading_particle_cases_that_do_not_fold(
     ("Smith, de Mesnil", "", "", "", "Smith de Mesnil", ""),
     ("Smith, van Gogh", "", "van", "Gogh", "Smith", ""),
 ])
-def test_default_order_is_unchanged_by_the_family_first_fold(
+def test_leading_particle_claim_reads_alike_in_the_default_order(
         text: str, title: str, given: str, middle: str, family: str,
         suffix: str) -> None:
     out = _parsed(text)

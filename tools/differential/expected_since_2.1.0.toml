@@ -94,3 +94,18 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # classification.
 name_regex = "(?i)^mr\\.\\s+van\\b"
 fields = ["given", "middle", "family"]
+
+[[change]]
+issue = "fix(#390) the leading-particle claim takes the particle's group, not the rest of the name"
+# 'de Mesnil Garcia': the claim now takes the particle and the ONE
+# piece it attaches to (rules.md#P1), so 'Garcia' survives by position
+# where it used to be swept into the family. Diff is exactly
+# {given, family} -- no suffix moves and nothing is consumed.
+#
+# The leading-particle shapes that do NOT diff are the check on this
+# rule's reach: 'de la Vega' is one group start to finish, and
+# 'de Mesnil Jr.' has two name words because Jr. is a suffix, so the
+# claim takes everything in both and the baseline agrees. Only
+# three-or-more-name-word shapes reach here, and the corpus holds one.
+name_regex = "^de Mesnil Garcia$"
+fields = ["given", "family"]

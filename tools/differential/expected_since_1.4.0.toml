@@ -180,6 +180,28 @@ name_regex = "^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*$"
 fields = ["given", "family"]
 
 [[change]]
+issue = "fix(#390) the leading-particle claim takes the particle's group, not the rest of the name"
+# 'de Mesnil Garcia': 1.4's handle_non_first_name_prefix swept every
+# remaining name word into the family, giving last='de Mesnil Garcia'
+# with no first. rules.md#P1 says the claim takes the particle and the
+# ONE piece it attaches to, so 'Garcia' survives by position. Diff is
+# exactly {given, family} -- no suffix moves, nothing is consumed.
+#
+# Its own rule for the reason #372 gave the three names above one: it
+# was falling to the fields-only fix(suffix-routing) below, whose
+# prose is "two-token name with unambiguous trailing suffix stays
+# suffix" and whose own comment says the prose fits all four of its
+# names. 'Garcia' is not a suffix and nothing here routes one, so
+# leaving it there would make that claim false for a fifth name.
+#
+# Narrower than the leading-particle shapes that do NOT diff
+# ('de la Vega', 'de Mesnil Jr.'): those are one group, or two name
+# words with the third a suffix, so the claim takes everything and
+# 1.4 agrees. Only three-or-more-name-word shapes reach this rule.
+name_regex = "^de Mesnil Garcia$"
+fields = ["given", "family"]
+
+[[change]]
 issue = "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix"
 # 'Johnson PhD' / 'Smith Jr.' / 'John V' / 'QC MP': v1 routed a lone
 # trailing suffix to family/first (no comma present); 2.0 keeps

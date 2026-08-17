@@ -390,9 +390,14 @@ class LastNamePrefixSplitTestCase(HumanNameTestBase):
         self.m(hn.last, "de Mesnil", hn)
 
     def test_leading_non_first_name_prefix_with_middle_name_as_last(self) -> None:
-        # handle_non_first_name_prefix runs first and empties middle_list, so
+        # The leading-particle claim runs first and empties middle_list, so
         # the later opt-in handle_middle_name_as_last has nothing left to do.
+        # The claim takes the particle and the ONE piece it attaches to
+        # (#390), so 'Garcia' survives as the given name -- before that it
+        # was swept into the family and first was ''. The interaction this
+        # test guards is unchanged: middle is empty either way.
         constants = Constants(middle_name_as_last=True)
         hn = HumanName("de Mesnil Garcia", constants=constants)
-        self.m(hn.first, "", hn)
-        self.m(hn.last, "de Mesnil Garcia", hn)
+        self.m(hn.first, "Garcia", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "de Mesnil", hn)

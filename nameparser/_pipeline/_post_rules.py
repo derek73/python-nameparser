@@ -1,9 +1,7 @@
 """Stage: post_rules.
 
-Consumes: tokens (roles assigned), plus pieces and structure -- the
-particle fold reads the opening piece of segment 0, or of segment 1
-under a family comma (#359). structure was always read here, for the
-rotation gate.
+Consumes: tokens (roles assigned), plus structure for the rotation
+gate.
 Produces: tokens with roles adjusted by the post rules.
 Reads: Policy.patronymic_rules, Policy.middle_as_family;
 Lexicon.given_name_titles.
@@ -11,6 +9,15 @@ Lexicon.given_name_titles.
 Implements rules H1, P1, O1, O2 and O3 of docs/design/rules.md; each
 is cited at its code below, and P1/O1/O2's history lives in
 docs/design/decisions.md.
+
+P1 is SPLIT across two stages as of #390, and the split is the rule's
+own shape rather than an accident: a leading particle CLAIMS the
+family before positions exist, so that half lives in assign; a lone
+particle that positioning has already dropped into the GIVEN role can
+only be seen afterwards, so that half stays here. The pieces scan the
+leading half used (`_leading_name_piece`, and with it the reading of
+state.pieces) went with it -- assign reaches the same piece by peeling
+titles before it counts name pieces.
 """
 from __future__ import annotations
 
@@ -37,32 +44,8 @@ _TURKIC_CYR = re.compile(
     r"^(оглу|оглы|оғлу|ўғли|угли|кызы|гызы|қызы|қизи|улы|ұлы|уулу)$", re.I)
 
 
-_NAME_ROLES = (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
-
-
 def _idx(tokens: list[WorkToken], role: Role) -> list[int]:
     return [i for i, t in enumerate(tokens) if t.role is role]
-
-
-def _leading_name_piece(state: ParseState,
-                        tokens: list[WorkToken]) -> tuple[int, ...]:
-    """The piece that OPENS the name, whatever role name_order gave it:
-    the first piece holding a GIVEN, MIDDLE or FAMILY token, in the
-    segment the positional read governs. Every piece holding none of
-    those is walked past -- title and suffix pieces, but NICKNAME and
-    MAIDEN as well, and anything assign left unroled -- and any number
-    of them, not only a single leading title. The segment is 0, except
-    under a family comma, where segment 0 is already fixed as the
-    surname and the name continues in segment 1. Empty on either of
-    two exits: that segment does not exist, or none of its pieces
-    holds a name token."""
-    seg = 1 if state.structure is Structure.FAMILY_COMMA else 0
-    if seg >= len(state.pieces):
-        return ()
-    for piece in state.pieces[seg]:
-        if any(tokens[i].role in _NAME_ROLES for i in piece):
-            return piece
-    return ()
 
 
 def _retag(tokens: list[WorkToken], i: int, role: Role) -> None:
@@ -99,24 +82,22 @@ def post_rules(state: ParseState) -> ParseState:
     # attaches to are the family, and any name words beyond that
     # read by position." (v1 handle_non_first_name_prefix; history:
     # decisions.md#P1)
-    # DEVIATION #364: the fold below still takes every remaining name
-    # word, not just the particle run's own -- de Mesnil Juan gives
-    # family=de Mesnil Juan where the rule says family=de Mesnil plus
-    # given=Juan. Pinned by the deviates: markers on P1.
-    # Values written unquoted deliberately: this note sits INSIDE the
-    # citation block above (# decisions.md#P1) does not close it --
-    # _CITE_RE wants a colon after the ID), and the excerpt check
-    # takes the first quoted span in the block.
-    # Code-local: a lone PIECE is the test at both sites, so a
-    # particle group already chained forward is not a lone particle,
-    # and rule H1 above cannot be what produces the fold's family
-    # reading -- H1 is gated on `not families`.
-    sites = (_leading_name_piece(state, tokens), tuple(givens))
-    if len(givens) + len(middles) + len(families) > 1 and any(
+    # This is P1's SECOND site only. The opening-the-name half moved to
+    # assign in #390, where the claim can happen before positions are
+    # handed out; what is left here is the case assign cannot see --
+    # a lone particle that positional assignment has already dropped
+    # into the GIVEN role (Mesnil de under FAMILY_FIRST). It has no
+    # piece after it to attach to, so the fold is backward and the
+    # whole remainder is one word anyway.
+    # Code-local: a lone TOKEN in the given role is the test, so a
+    # particle group already chained forward never reaches it, and
+    # rule H1 above cannot be what produces this family reading --
+    # H1 is gated on `not families`.
+    site = tuple(givens)
+    if len(givens) + len(middles) + len(families) > 1 and (
             len(site) == 1
             and "particle" in tokens[site[0]].tags
-            and "vocab:particle-ambiguous" not in tokens[site[0]].tags
-            for site in sites):
+            and "vocab:particle-ambiguous" not in tokens[site[0]].tags):
         for i in givens + middles:
             _retag(tokens, i, Role.FAMILY)
         # downstream rules key on the role counts: recompute

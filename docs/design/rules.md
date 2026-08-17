@@ -108,8 +108,8 @@ P1. Rationale: a never-given particle standing alone cannot be
       "de la Vega"                →  family="de la Vega"
       "Sir de Mesnil"             →  family="de Mesnil"
       "Mesnil de"  family-first   →  family="Mesnil de"
-      "de Mesnil Juan"            →  family="de Mesnil"  deviates: #364 (today: family="de Mesnil Juan")
-      "de Mesnil Juan"            →  given="Juan"  deviates: #364 (today: given="")
+      "de Mesnil Juan"            →  family="de Mesnil"
+      "de Mesnil Juan"            →  given="Juan"
       "van Gogh"                  →  given="van"  · boundary
     Accepted: a bare "de" stays the given name — there is nothing to
     fold into, and inventing a surname would be worse.
@@ -121,7 +121,7 @@ P1. Rationale: a never-given particle standing alone cannot be
     the bare particle reading as a given name, not any name part
     that begins with one.
       "Juan de la Vega"  family-first  →  family="Juan"
-    history: decisions.md#P1 · interacts: P2, P4, P6 · implemented: nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P1 · interacts: P2, P4, P6 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_post_rules.py
 
 P2. Rationale: a particle is written as part of the surname it
     precedes, and a title stands outside the name entirely.

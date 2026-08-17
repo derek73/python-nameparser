@@ -1020,6 +1020,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(215, ('given', 'suffix', 'title'), "f16a0e79cba3"),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(215, ('family', 'given'), "f16a0e79cba3"),
+        "fix(#390) the leading-particle claim takes the particle's group, "
+        "not the rest of the name":
+            _Claim(1, ('family', 'given'), "caf836e3556c"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
             _Claim(751, ('family', 'given', 'suffix'), "231640fc7535"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
@@ -1064,10 +1067,16 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given', 'suffix', 'title'), "1d45596e6fdb"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
             _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
+        "fix(#390) the leading-particle claim takes the particle's group, "
+        "not the rest of the name":
+            _Claim(1, ('family', 'given'), "caf836e3556c"),
     },
     "expected_since_2.1.0.toml": {
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
             _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
+        "fix(#390) the leading-particle claim takes the particle's group, "
+        "not the rest of the name":
+            _Claim(1, ('family', 'given'), "caf836e3556c"),
     },
 }
 
