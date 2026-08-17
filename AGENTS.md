@@ -134,6 +134,61 @@ by the author is the one form to distrust, because a green report
 from the weakest instrument manufactures confidence rather than
 supplying it.
 
+**Reviewing a docs/design change: the nine axes.** Run these before
+merging anything that touches rules.md, decisions.md or mechanisms.md.
+Each was earned by a defect that survived every other check on #386,
+where they found seven issues between them and unaided prose reading
+found none. The parenthetical is the case that earned the axis. Skip
+what the suite already enforces — example lines, `deviates:` today-
+values, boundaries, the one-of `implemented:`/`tracked:` rule, and
+citation excerpts are all machine-checked, so a finding those would
+have caught is a false positive.
+
+1. **Recompute every number.** Any count, ratio or "N names" in the
+   diff gets recomputed by a script written now, never read. (A
+   filter described as returning one name returned three; a rule's
+   stated blast radius listed two names its own scope excluded.)
+2. **Your detector is a second, unreviewed implementation.** It must
+   read the same vocabulary and boundaries the rule reads. (A
+   particle-run detector that walked only the never-given half — the
+   rule chains through ANY particle — reported 50 false movers where
+   the true count was 1, printing cleanly both times.)
+3. **Rule vs. its own examples.** (P1 said the fold takes "the
+   particle and the one name word"; its example `de la Vega` is two
+   particles onto one word.)
+4. **Rule vs. the decision entries it cites.** Follow every
+   `history:` and read the entry. (P6's rationale asserted what
+   decisions.md#vocabulary-collisions denies, and the rule's own
+   guard exists because the assertion is false.)
+5. **Does the change move another rule's OUTPUT?** A marker lands on
+   the rule whose STATEMENT changed; a rule can move another's output
+   without touching its statement, and the runner cannot see it. Walk
+   `interacts:`. (family_base moved initials(); R3 had no marker.)
+6. **Contested inputs: is precedence stated?** `interacts:` is
+   advisory and pins nothing. This document states precedence in the
+   rule's own statement (H2, M1, W3). (P6 and S2 both claimed
+   `Berg, Jan vd`.)
+7. **General clause vs. adjudicated scope.** Enumerate the vocabulary
+   a shape-clause reaches. (P6's precedence was argued for `vd` and
+   swept in `do` and `mc`.)
+8. **Guard docstring vs. what the guard enforces**, especially when
+   the promise spans two test modules.
+9. **Prose is input to the doc parsers.** A line starting with `"`
+   inside a rule block is an example; a comment's quoted values join
+   the citation block above them.
+
+Also: before reporting "N names move", report the size of the
+population that COULD move — a small count over a corpus blind to the
+shape is evidence about the corpus (245 of 782 corpus names carry a
+comma and exactly one ends in a particle).
+
+Claude Code users: `.claude/agents/design-docs-reviewer.md` packages
+this as a subagent and `/docs-review` runs it. That directory is
+untracked by design (see .gitignore's tools block, which keeps
+assistant configs personal), so the axes above are the shared record
+and the agent is a local convenience — keep them in sync by editing
+here first.
+
 **Guard tests** SHOULD carry a recorded negative control — the
 answer with the guard off, stored as data (the _EXCLUSION_EFFECT
 shape; see mechanisms.md's Verification shapes).
