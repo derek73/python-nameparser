@@ -77,15 +77,9 @@ The counter-example set has since shrunk, and its shrinkage is the
 section's history: "Sir de Mesnil" fell to #367 (titles became
 transparent); "Juan de la Vega" under family-first — the whole
 chain in the given position — was called working-as-intended by
-#359, but #368 SUPERSEDES that sentence: the recorded decision is
-that the particle wins and a chain becomes the family name
-whatever order was declared, so that case is now P1's tracked
-deviation, not its boundary. The survivor is the degenerate bare
-"de". The MIDDLE position is deliberately not a fold site — and
-not merely unimplemented: the two family-first orders disagree
-there ("Mesnil Garcia de" strands middle="de" under FAMILY_FIRST
-and folds under FAMILY_FIRST_GIVEN_LAST, 464 measured inputs),
-which is what makes #365 a decision rather than a gap.
+#359, contested by #368, and is working-as-intended again as of
+the 2026-08-16 entries below. The survivor is the degenerate bare
+"de".
 
 - 2026-08 #359 — the opening site is read from joining structure
   (pieces), not from assigned roles, so the fold holds under every
@@ -94,6 +88,71 @@ which is what makes #365 a decision rather than a gap.
 - 2026-08 #367 — titles are transparent to the fold: "Sir de
   Mesnil" now reads like "de Mesnil". Fixed by removing the
   title→particle chain in grouping, not by touching this rule.
+- 2026-08-16 (order-precedence keystone; #364, #365, #368) — the
+  stage split is the decision, and the three issues are one
+  question seen from three angles. GROUPING is vocabulary's job and
+  is order-independent: a particle joins forward through
+  consecutive particles and stops at the first non-particle, and no
+  name_order moves that stopping point. ASSIGNMENT is name_order's
+  job: groups take roles by the declared order. The bugs existed
+  because the implementation runs the two in the opposite
+  dependency — `assign` hands out positions from `_effective_order`
+  and `post_rules` then inspects a fixed list of ROLES, so P1's
+  fold sites and P2's chain had coverage that varied with the
+  declared order by accident.
+  Consequences, each recorded in its own right below: the fold
+  takes only the particle's own group (#364); the middle position
+  needs no third site once grouping is order-independent (#365);
+  and #368 reverses.
+- 2026-08-16 #364 — the fold takes the particle RUN and the ONE
+  name word it attaches to, not every remaining word.
+  "de Mesnil Juan" is family="de Mesnil" plus given="Juan". Run,
+  not particle: "de la Vega" is two particles onto one word, and an
+  earlier wording here said "the particle", which its own example
+  contradicted (rule-vs-decision-record review). Nothing ever argued for
+  "takes everything"; it was the shape of v1's
+  handle_non_first_name_prefix, not a decision.
+  Measured before deciding, over every name in the three
+  differential corpora with NO string prefilter: exactly ONE family
+  holds words beyond its particle's group — "de Mesnil Garcia".
+  #364's own body warns the change "breaks the v1 parity
+  tools/differential protects" and that "each ledger would need
+  re-examining"; measured, it is one name and one ledger entry.
+  A shape filter (no comma, leading never-given particle, three or
+  more words) returns THREE candidates, of which two do not move:
+  "de la Vega" is one group start to finish, and "de Mesnil Jr."
+  has only two name words because Jr. is a suffix. The pre-merge
+  fact-check caught this stated as "the filter gives one name",
+  which it does not.
+  Measurement trap, recorded because the fact-check fell into it
+  twice: the particle group runs through ANY particle, not only the
+  never-given ones — "de la Vega" chains never-given "de" through
+  AMBIGUOUS "la" onto "Vega". A detector that walks only the
+  never-given run splits the group after "de la" and reports 50
+  false movers.
+- 2026-08-16 #368 REVERSED — shipped behavior is correct.
+  "Juan de la Vega" under FAMILY_FIRST groups [Juan][de la Vega]
+  and assigns family="Juan", given="de la Vega". The earlier
+  decision ("the particle wins ... whatever order was declared")
+  was made before the grouping/assignment split was stated and
+  cannot survive it: a mid-name chain HAS a head word and is
+  positioned like any other group. What NON_GIVEN_NAME_PARTICLES
+  guarantees is that the bare word never reads as a given name, not
+  that no name part may begin with one.
+  The asymmetry with the leading case is P4's, not an exception
+  invented here: a leading particle chains nothing, so without the
+  fold pure position makes the BARE particle the given name. That
+  is measurable today on the ambiguous half, where no fold fires —
+  "van Mesnil Juan" gives given="van", middle="Mesnil",
+  family="Juan". given="de" is the reading the vocabulary exists to
+  forbid, and the fold is what prevents it.
+  The all-orders agreement in P1 is deliberate and is W4's shape: a
+  wholly-hangul name reads family="김" under every declared order
+  because the script carries a signal the order does not override,
+  and a leading never-given particle is the Latin-script analogue.
+  decisions.md#O4 already draws the line — "Words no vocabulary has
+  claimed read by position" — so name_order governs the unclaimed
+  remainder, which is most inputs.
 
 Declined:
 
@@ -106,13 +165,20 @@ Declined:
   "St John Smith" into one given name and broke test_add_title
   (which adds "te", also a particle). The shipped predicate is
   "not a title or a prefix".
+- 2026-08-16 — deleting P4 so a leading particle chains and is then
+  positioned, which is the only way to make "de Mesnil Juan" vary
+  by declared order. It avoids given="de" (the group would be
+  [de Mesnil]) but breaks "de la Vega": measured, a single group is
+  positioned by the declared order — "Cher" reads given under
+  GIVEN_FIRST — so "de la Vega" would read given="de la Vega"
+  unless a further rule forced a particle-headed group into the
+  family. Add that rule and [de Mesnil][Juan] yields the #364
+  reading anyway, so the deletion buys nothing and costs P4.
 
-Open: [#364](https://github.com/derek73/python-nameparser/issues/364)
-how much the fold takes ·
-[#365](https://github.com/derek73/python-nameparser/issues/365)
-should the middle position be a third site ·
-[#360](https://github.com/derek73/python-nameparser/issues/360)
-which particles count as never-given.
+Open: [#360](https://github.com/derek73/python-nameparser/issues/360)
+which particles count as never-given (the criterion is settled at
+decisions.md#vocabulary-collisions; the 39-member application is
+not).
 
 ### P2 — particles join forward
 
@@ -131,6 +197,94 @@ which particles count as never-given.
   family, while #132 wanted the combined double-surname reading —
   the same shape with opposing wants, which is why the combined
   reading lives in the surnames VIEW and the split in the fields.
+
+### P6 — the trailing orphan particle
+
+- 2026-08-16 (order-precedence keystone; #379, #380, #365) — a
+  particle ending the name has nothing to link forward to, and no
+  particle is a name by itself, so it attaches to the family name
+  standing beside it and renders BEFORE it. The distinction from a
+  chain is what makes this a rule rather than an exception: a
+  chained group has a head word and can be positioned; an orphan
+  has no head, so position has nothing to work with.
+- Scope: the COMMA form only, deliberately. "Jong, Anke de" is
+  unambiguous — the comma has already named the family. Without the
+  comma the written shape is not settled: "Jong Anke de" may be a
+  misformatted listing (arguably a missing comma under a declared
+  family-first order) and "Jong de" may be a given name beside a
+  particle. Those keep their positional reading and are not tracked
+  as deviations.
+- The words-to-spare guard is load-bearing, not incidental. #379's
+  own subject is "van", which is in the AMBIGUOUS half — so a rule
+  keyed to never-given particles alone would not fix the issue it
+  was filed for, while a rule with no guard breaks Vietnamese
+  "Nguyen, Van" (given="Van") by eating the only given word. The
+  guard is S2's shape, reused: consume only when the name has words
+  to spare.
+- Rendering before the family has precedent in rules.md#R1 — folded
+  family words under O3 already "render before the rest of the
+  family wherever they stood in the string". The surnames view
+  renders backwards today ("Vega de la", "Jong de") and flips with
+  this rule.
+- Measured under this rule's OWN comma scope, over 782 corpus names
+  (245 of them comma-bearing): exactly one moves,
+  "Vega, Juan de la" → family="de la Vega". A pre-merge fact-check
+  corrected an earlier count of three here — "Smith van der" and
+  "Sander van" have no comma, so the rule as scoped does not reach
+  them; they were measured before the comma scoping was chosen and
+  carried forward unfiltered.
+- What that number means is the opposite of reassuring. The corpus
+  holds 245 comma names and exactly ONE with a trailing particle,
+  so it is very nearly blind to the shape this rule governs —
+  Dutch and Flemish listings are barely represented. Treat the one
+  as evidence about the corpus, not about the blast radius, and
+  run tools/differential at all three baselines in the implementing
+  PR regardless of how small this looks.
+- 2026-08-16 (pre-merge coherence pass) — P6 and S2 CONTEST
+  "Berg, Jan vd": today S2 wins and reports suffix="vd", while
+  P6's marker asserts family="vd Berg". P6 wins, and the rule says
+  so in its statement rather than leaving the pair to file order.
+  The reason is C-ii's, not a new judgement: vd as the British
+  Volunteer Decoration is rarer than vd as van der, and a trailing
+  abbreviation AFTER A FAMILY COMMA is the tussenvoegsel position
+  specifically.
+  Scope check on the precedence, so it cannot creep: it reaches
+  only words that are both particle and suffix vocabulary, in the
+  trailing-orphan position, under a family comma, with a given word
+  to spare. "John Smith, PhD" and "Smith, Jr." are untouched (not
+  particles), and "Jong, vd" is untouched (no given word remains),
+  which is why that row stays out of scope rather than becoming a
+  counter-example.
+  Recorded because the pair was declared in `interacts:` and left
+  unresolved — `interacts:` is advisory by design and pins nothing,
+  so a declared interaction is a prompt to state the outcome, not a
+  substitute for stating it.
+- 2026-08-16 — P6 is the first rule in rules.md that nothing
+  implements. Legitimate per the preamble (the document is
+  normative, and a gap is a tracked deviation), but it left the
+  rule pointing at nothing, so the shape got a pointer rather than
+  an exception: `tracked: #379, #380` in place of `implemented:`,
+  with exactly one of the two required of every rule. An
+  unimplemented rule can no longer sit here untracked, and a
+  shipped rule cannot keep a stale tracking pointer after its
+  issues close. Mutation-tested three ways before being believed
+  (drop the pointer, carry both, malformed refs); each fails.
+- The RATIONALE first shipped here was wrong and is corrected: it
+  read "no particle is a name by itself", which is true only of the
+  never-given half — decisions.md#vocabulary-collisions says the
+  opposite in as many words ("most particles are short words that
+  double as names"). The error mattered rather than merely reading
+  badly: the words-to-spare guard exists BECAUSE the rule reaches
+  ambiguous particles (#379's own subject is "van"), so the
+  rationale undercut its own guard. Caught in review, after a
+  coherence pass that interrogated rule-vs-rule pairs and never
+  checked rule-vs-decision-record — which is the gap to close next
+  time, not a one-off.
+
+Open: [#380](https://github.com/derek73/python-nameparser/issues/380)
+covers "Berg, Jan vd" under this rule, but the vd reading itself is
+decisions.md#vocabulary-collisions (C-ii); and the no-given-word
+case "Jong, vd" is deliberately unresolved — see the scope note.
 
 ### M2 — the maiden-marker rule
 
@@ -194,6 +348,122 @@ Declined:
   periods gate governs the dotted spellings ("M.A." counts
   unambiguously). Documented side effect: parenthesized bare
   "(MA)"/"(DO)" no longer escape to suffix as in 1.x.
+
+### vocabulary-collisions — when a word earns the ambiguous marking
+
+The mechanism shipped twice before anyone wrote down its criterion.
+Sizes as of 2.2.0dev: particles 67 with 39 ambiguous (58%,
+PARTICLE_OR_GIVEN); suffix_acronyms 613 with 4 ambiguous (0.65%,
+SUFFIX_OR_NAME); titles 711 with no ambiguous subset and no
+AmbiguityKind at all. Those counts are evidence from the decision
+date, not live facts — they drift with every vocabulary addition.
+The argument does not depend on the digits (it depends on the two
+shares differing by orders of magnitude), but recompute before
+quoting them:
+
+    uv run python -c "from nameparser import Parser; L=Parser().lexicon; print({s: len(getattr(L,s)) for s in ('particles','particles_ambiguous','suffix_words','suffix_acronyms','suffix_acronyms_ambiguous','titles')})"
+
+- 2026-08-16 (collision keystone; #348, #360, #342, #385) — the
+  58%-vs-0.65% gap is BASE RATE, not disagreement. Both sets apply
+  the same test; most particles are short words that double as
+  names (van, bin, le, do, bar, mac) while most credential acronyms
+  are not (abpp, acp). Recorded because the gap reads as an
+  inconsistency and is not one — a reviewer who "harmonizes" the
+  two shares will break one of them.
+- **C-i, vocabulary vs. name.** A word belongs in its set's
+  ambiguous subset iff it is also borne as an ordinary name (given
+  or family) in some tradition. Under uncertainty, default to
+  AMBIGUOUS. This generalizes the evidence standard already stated
+  in NON_GIVEN_NAME_PARTICLES' docstring — a wrong unambiguous
+  claim misparses a real person, a wrong ambiguous marking only
+  adds a flag — from "which set" to "which subset". Applies
+  uniformly to particles, suffix_acronyms and titles.
+- **C-ii, vocabulary vs. vocabulary.** Where two sets claim a word
+  and NEITHER reading is a name, precedence is a frequency judgment
+  recorded per word. vd is the live case: never-given particle AND
+  credential acronym (the British Volunteer Decoration), neither of
+  them a name. Decision: the Dutch van der reading, as the more
+  common. That is what unblocks #380, whose trailing-orphan half is
+  a separate decision recorded under its own rule.
+- The concrete demonstration is "do", which three vocabularies
+  claim — titles, particles/ambiguous, suffix_acronyms/ambiguous.
+  Two mark it ambiguous; the third, TITLES, is the one that
+  actually decides "Do Quang Minh" (title="Do", given="Quang") and
+  reports nothing. Same word behind #385's "Anh Do".
+- Applications, each still its own work: #360 (mc, ste — neither is
+  a borne given name, so both leave the ambiguous half); #342 (rai
+  — Rai IS a borne surname, so it earns the marking rather than
+  moving); #385 (do — resolved at decisions.md#R2).
+- C-ii's per-word framing versus a rule stated for a SHAPE: measured
+  2026-08-16, the words that are both particle and suffix
+  vocabulary are vd, do and mc — three, not the one this criterion
+  adjudicated. rules.md#P6 states its precedence for the shape, so
+  do and mc inherit vd's answer without being weighed. Recorded
+  rather than papered over: stating a per-word judgement as a
+  general clause is how an unexamined word acquires a decision, and
+  the two are named here so the next reader knows which one was
+  actually argued.
+- Caution when applying C-i to the particle set: TITLES ∩ ambiguous
+  == {do, freiherr, st} is load-bearing, per the Excluded note in
+  the W2 section. Emptying it makes the particle-or-given emitter
+  dead code.
+
+Open: [#348](https://github.com/derek73/python-nameparser/issues/348)
+applying C-i to the 711 title entries, then titles_ambiguous plus a
+TITLE_OR_GIVEN kind. Blocked on data, not on judgement — the census
+needs a given-name frequency corpus this repo does not have, which
+is why the criterion is recorded here and the census is not
+attempted.
+
+### suffix-field-composition — three kinds of thing in one field
+
+- 2026-08-16 (suffix keystone; #326) — measured composition of
+  suffix_words (40 entries): 11 generational (i, ii, iii, iv, v,
+  jr, jnr, sr, snr, junior, 2), 5 neither (dr, esq, esquire, ret,
+  vet), and 24 POSTNOMINAL HONORIFICS — 20 CJK (さん, さま, くん,
+  ちゃん, 様, 殿, 氏, 先生, 博士, 教授, 女士, 小姐, 씨, 양, 군, 님,
+  박사, 박사님, 교수님, 선생님) and 4 Hebrew (ז"ל, ז״ל, שליט"א,
+  שליט״א). The honorifics are the LARGEST group.
+- Decision: do NOT split the field. Record the composition; #296,
+  #291, #325 and #289 proceed on their own terms rather than
+  waiting on it.
+- Why #326 cannot be taken at face value: it argues the split is
+  tractable because "the vocabulary is already split —
+  suffix_acronyms is credentials, entirely; suffix_words is
+  generational plus a handful". That was true when written
+  (2026-08-02); the 2.1.0 East Asian work landed 2026-08-07 and put
+  the 24 honorifics in the same set. CLDR's two buckets do not
+  cover what the set now holds, so "adopt CLDR's model" is not
+  available as the cheap answer. The issue's table is corrected on
+  the issue.
+- The unexamined question this leaves: whether the honorific bucket
+  belongs in `suffix` at all. rules.md#W3 already argues an
+  honorific is "no part of the name on either side" — the same
+  language the H section uses for prenominal titles — so the
+  conflation with PhD may be worse than the generation/credentials
+  one #326 was filed about. Deliberately not decided here.
+- Recorded as a documentation failure mode, not just a fact:
+  `suffix` started generational, absorbed credentials, then
+  absorbed postnominal honorifics, each step locally reasonable and
+  none recorded as a widening of the field's MEANING. rules.md#S2's
+  Background still calls it "two different things", which was
+  accurate when written. The rules doc pinned the behavior
+  faithfully; what slipped is the field's definition, which no rule
+  states because no rule owns it. Field definitions need the same
+  discipline rule statements get.
+- The 11/5/24 split above is this entry's own version of the hazard
+  it describes: a quoted vocabulary composition, dated, exactly as
+  #326 quoted one. A date does not stop rot — #326 carried one too
+  — so before relying on the split, check the set still looks like
+  it:
+
+      uv run python -c "from nameparser import Parser; print(sorted(Parser().lexicon.suffix_words))"
+
+  What is durable here is the SHAPE of the finding — three kinds of
+  thing, the honorifics the largest — not the three integers. A
+  test asserting the counts is deliberately not the answer: that is
+  the constant-content pattern, and it would fail on every
+  legitimate vocabulary addition.
 
 ### deviates-registry — packs stay pure data (option C)
 
@@ -1041,11 +1311,34 @@ Declined:
   v2 core does not (parse("Anh Do").family_base == "",
   family_particles == "Do"), and the surname vanishes from
   initials (parse("Anh Do").initials() == "A.").
-
-Open:
-[#385](https://github.com/derek73/python-nameparser/issues/385)
-whether an all-particle family should have an empty base (three
-options weighed in the issue).
+- 2026-08-16 #385 RESOLVED by the collision criterion, not on its
+  own terms: the issue's option 3 ("guard the view only when a word
+  is vocabulary-ambiguous") is what
+  decisions.md#vocabulary-collisions produces when applied here.
+  "Do" is borne as an ordinary surname, so it is ambiguous
+  vocabulary and anchors the base; "van der" is never anyone's
+  name, so an all-particle family there genuinely has no base. The
+  two rows of the issue's table were never one case.
+  This is the keystone's clearest payoff: #385 was filed as a leaf
+  with three options and no way to choose between them, and the
+  criterion picks one without arguing about family_base at all.
+- Still open inside the resolution: whether "Do" remains in
+  family_particles once it is also the base. Recorded here rather
+  than left to the implementing PR to decide by accident.
+- 2026-08-16 (pre-merge coherence pass) — the resolution moves R3
+  too, and R3 now carries its own marker. Initials read the BASE
+  family word, so anchoring "Do" changes
+  parse("Anh Do").initials() from "A." to "A. D." while
+  "Juan van der" stays "J." (no borne name, no base, and initials
+  of a bare particle run would be nonsense).
+  The general lesson, worth more than this instance: a deviates:
+  marker gets written on the rule whose STATEMENT changed, but a
+  rule can change another rule's OUTPUT without touching its
+  statement, and nothing looks for that — the runner asserts per
+  example line, so an unmarked downstream rule stays green
+  precisely because its own examples avoid the affected input.
+  When adding a marker, walk the changed rule's `interacts:`
+  targets and ask whether any of THEIR examples move.
 
 ### removed-v1-surface
 

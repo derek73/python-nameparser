@@ -536,6 +536,21 @@ decline, not delete the test.
   down, and an unrecognized word is by definition outside the
   vocabulary — a green run over the corpus proves nothing about
   such a rule.
+- The corpus can be near-blind to a WRITING CONVENTION even where
+  the vocabulary is well covered, and a small honest count then
+  reads as a small blast radius. Measured for rules.md#P6: 245 of
+  782 corpus names carry a comma and exactly ONE ends in a
+  particle, so the Dutch trailing-tussenvoegsel listing the rule
+  exists for is essentially unsampled. Before reporting "N names
+  move", report the size of the population that COULD move; when
+  that is ~1, the number is evidence about the corpus.
+- A detector that re-implements a rule's grouping will get the
+  grouping wrong. Derive the boundary from the same vocabulary the
+  rule reads, not from the half you happen to be thinking about:
+  walking a particle run over the NEVER-GIVEN set alone (the rule
+  chains through ANY particle) split "de la Vega" after "de la"
+  and reported 50 false movers for #364, where the true count is
+  one. Both wrong answers were plausible and printed cleanly.
 - Guard the whole family, parametrize over it: a defect on one of
   N parallel entry points hides behind a per-example test — three
   times in one session (a guard on one class of two, a decode hint

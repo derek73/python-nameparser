@@ -78,6 +78,36 @@ not deferred (a 2026-08-16 sweep of eight weeks of specs recovered
 nine such items). The same-PR amendment rule above covers code-driven
 changes; this covers the design-driven ones.
 
+**Triaging a design backlog: shape before value.** When a pile of
+open questions has to be ordered, relatedness will not partition it —
+in a parser nearly everything touches particles or suffixes. The line
+that does is whether a decision changes WHAT THE MODEL CAN EXPRESS or
+fills in a value in a shape already fixed. Settle the shape questions
+first, as a batch: they are few, they are usually independent of each
+other (so their own ordering does not matter), and each one collapses
+or re-frames a run of the value questions below it. The rest are
+leaves needing one measurement and one answer apiece, in any order.
+Worked example, 2026-08-16 (#386): 30 open issues and ~13 open design
+questions reduced to three shape decisions, which decided or
+re-framed fourteen of them — and two of the three turned out smaller
+than their issues claimed, because the issues had gone stale. Check
+the age of an issue's premises before believing its cost estimate.
+
+**A count in a dated entry is evidence, not a live fact.** decisions.md
+entries are snapshots by convention, so measurements belong in them —
+but a reader wanting TODAY's number must not have to trust the
+snapshot's date. Where an entry quotes something that drifts
+(vocabulary sizes, corpus counts, set compositions), give the
+one-liner that recomputes it, and phrase the argument so it survives
+the digits moving — "the two shares differ by orders of magnitude"
+outlives "58% vs 0.65%". A count that carries no argument is better
+deleted than dated: "over every name in the corpus, no prefilter"
+says what "over all 782 names" says, and cannot go stale. Do NOT
+reach for a test asserting the count — that is the constant-content
+pattern, and it fails on every legitimate vocabulary addition. #326
+is the cautionary case: it quoted a vocabulary composition, carried a
+date, and was stale in five days.
+
 **Primary-source review.** When doc content is distilled from a
 session's work, have that session (or its transcript) review its
 own sections before or soon after landing — attribution flattening
@@ -85,6 +115,24 @@ and inverted arguments are visible only to the source. Reviewers
 state which tree each measurement ran on (stale fetches produced
 three rounds of already-fixed findings), and landed corrections are
 re-verified here before committing.
+
+Two shapes, needing different instruments. CROSS-SESSION distillation
+is what the rule above is written for — the #381 arc harvested nine
+named sessions, and for each the source transcript is an artifact
+independent of the reviewing session, so "review your own sections"
+is a two-artifact comparison. SAME-SESSION design work (#386) has no
+such artifact: spec and docs were written in one context, so the same
+instruction degenerates into re-reading the working memory that
+produced any error, and the rationale inverts — when the source is
+NOW, the source is what got it wrong. There, compare against
+artifacts instead, in this measured order of yield: re-derive every
+number with a freshly written script (2 wrong claims on #386);
+re-read the written spec against a checklist for FIDELITY, not just
+presence (1); interrogate NAMED contested rule pairs one at a time
+(2). Unaided prose reading found none — so a general "coherence read"
+by the author is the one form to distrust, because a green report
+from the weakest instrument manufactures confidence rather than
+supplying it.
 
 **Guard tests** SHOULD carry a recorded negative control — the
 answer with the guard off, stored as data (the _EXCLUSION_EFFECT

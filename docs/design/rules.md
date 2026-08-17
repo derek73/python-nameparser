@@ -22,7 +22,12 @@ decisions.md. Cross-references use the anchor form `decisions.md#P2`
 / `mechanisms.md#SPANS`; a bare ID is never a citation. The
 `interacts:` field on a pointer line is advisory — the
 citation-integrity test checks the ID exists, not that the
-interaction is real.
+interaction is real. `implemented:` and `tracked:` are not
+advisory: every rule carries exactly one. `implemented:` names the
+modules honoring the rule, checked against the modules that cite
+it; `tracked:` names the issues that would ship a rule nothing
+implements yet, so a wholly-aspirational rule cannot sit here
+untracked, and a shipped rule cannot keep a stale tracking pointer.
 
 Every example line is EXECUTABLE. The grammar (its executable
 definition is `tests/v2/rules_doc.py`; `tests/v2/test_rules_doc.py`
@@ -163,19 +168,33 @@ P1. Rationale: a never-given particle standing alone cannot be
     one as the given name, is a surname written out in full.
     A never-given particle standing alone where the given name would
     go — or opening the name — marks the name as surname-only: the
-    given and middle words fold into the family. It needs another
-    name word to fold into. An ambiguous particle keeps whatever
-    reading its position gives it. Whether the fold should stop at
-    the particle group instead of taking everything is open (#364).
+    particle run and the one name word it attaches to are the
+    family, and any name words beyond that read by position. It
+    needs another name word to attach to. The run is every particle
+    in sequence, never-given and ambiguous alike ("de la Vega" is
+    one group, not "de" plus a separate "la Vega"). An ambiguous particle keeps
+    whatever reading its position gives it. The reading holds under
+    every declared name order: a never-given particle is evidence
+    about how the name is written, and a declared order governs only
+    what no vocabulary has claimed (O4) — the same precedence the
+    script license takes in W4.
       "de la Vega"                →  family="de la Vega"
       "Sir de Mesnil"             →  family="de Mesnil"
       "Mesnil de"  family-first   →  family="Mesnil de"
-      "Juan de la Vega"  family-first  →  family="de la Vega"  deviates: #368 (today: family="Juan")
+      "de Mesnil Juan"            →  family="de Mesnil"  deviates: #364 (today: family="de Mesnil Juan")
+      "de Mesnil Juan"            →  given="Juan"  deviates: #364 (today: given="")
       "van Gogh"                  →  given="van"  · boundary
     Accepted: a bare "de" stays the given name — there is nothing to
     fold into, and inventing a surname would be worse.
       "de"                        →  given="de"
-    history: decisions.md#P1 · interacts: P2 · implemented: nameparser/_pipeline/_post_rules.py
+    Accepted: only the OPENING position is this rule's subject. A
+    particle chain standing inside the name is grouped normally (P2)
+    and positioned by the declared order, so a family-first reading
+    may report it as the given name; what the vocabulary forbids is
+    the bare particle reading as a given name, not any name part
+    that begins with one.
+      "Juan de la Vega"  family-first  →  family="Juan"
+    history: decisions.md#P1 · interacts: P2, P4, P6 · implemented: nameparser/_pipeline/_post_rules.py
 
 P2. Rationale: a particle is written as part of the surname it
     precedes, and a title stands outside the name entirely.
@@ -233,6 +252,41 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "abdul salam ahmed salem"   →  given="abdul salam"
       "mohamad ali smith"         →  given="mohamad"  · boundary
     history: decisions.md#P5 · implemented: nameparser/_pipeline/_group.py
+
+P6. Rationale: a particle ending the name has nothing to link
+    forward to, so it is not doing a particle's work there. A
+    never-given particle in that position cannot be a name at all
+    and must belong to the family written beside it; an ambiguous
+    particle could genuinely be the name (Vietnamese "Van"), which
+    is what the words-to-spare test below is for, not an
+    afterthought to it. Dutch and Flemish names are listed exactly
+    this way ("Beethoven, Ludwig van"), the tussenvoegsel trailing
+    the given name but belonging to the surname.
+    Where a family comma has already named the family, a particle
+    ending the name attaches to that family name and is written
+    before it — provided at least one given word remains, so that a
+    name whose only given word is the particle keeps it (the
+    words-to-spare test S2 applies to ambiguous suffixes). Where
+    the word is BOTH a particle and suffix vocabulary, this
+    attachment outranks the suffix reading (S2): a trailing
+    abbreviation after a family comma is the tussenvoegsel far more
+    often than the decoration it collides with.
+      "Jong, Anke de"             →  family="de Jong"  deviates: #379 (today: family="Jong")
+      "Beethoven, Ludwig van"     →  family="van Beethoven"  deviates: #379 (today: family="Beethoven")
+      "Berg, Jan vd"              →  family="vd Berg"  deviates: #380 (today: family="Berg")
+      "Nguyen, Van"               →  given="Van"  · boundary
+    Accepted: without a family comma the name's written shape is not
+    settled — "Jong Anke de" may be a misformatted listing, and a
+    bare "Jong de" may be a given name beside a particle — so the
+    attachment is scoped to the comma form, and the comma-less
+    shapes keep their positional reading.
+      "Jong Anke de"              →  family="de"
+    Accepted: the precedence over S2 is stated for the shape, so it
+    sweeps in every word that is both particle and suffix
+    vocabulary — today vd, do and mc. Only vd's reading was
+    weighed; the other two inherit it, which is the shape's cost
+    and is tracked with the other contested memberships.
+    history: decisions.md#P6 · interacts: C1, P1, S2 · tracked: #379, #380
 
 ## Suffixes: generational & credentials (S)
 
@@ -709,10 +763,13 @@ R2. Rationale: callers need the surname with and without its
       "Dr. Juan Q. Xavier de la Vega III"  →  family_base="Vega"
       "Dr. Juan Q. Xavier de la Vega III"  →  family_particles="de la"
       "Sean O'Connor"             →  family_base="O'Connor"  · boundary
-    Accepted: an all-particle family reads an empty base today;
-    whether it should is #385.
-      "Anh Do"                    →  family_base=""
-    history: decisions.md#R2 · implemented: nameparser/_types.py
+    A family name written wholly out of particle vocabulary still
+    has a base where one of those words is itself borne as an
+    ordinary surname: that word anchors the base, and only the words
+    that are never anyone's name stay particles.
+      "Anh Do"                    →  family_base="Do"  deviates: #385 (today: family_base="")
+      "Juan van der"              →  family_base=""
+    history: decisions.md#R2 · interacts: R3 · implemented: nameparser/_types.py
 
 R3. Rationale: initials abbreviate the person's name words; titles,
     suffixes, particles and nicknames are not name words.
@@ -720,8 +777,14 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     family word; titles, suffixes, particles and nicknames
     contribute nothing.
       "Dr. Juan Q. Xavier de la Vega III"  →  initials="J. Q. X. V."
+      "Anh Do"                    →  initials="A. D."  deviates: #385 (today: initials="A.")
       "Sean O'Connor"             →  initials="S. O."  · boundary
-    implemented: nameparser/_render.py
+    Accepted: a family that is ALL particles contributes nothing,
+    so the initials are the given words alone — "van der" has no
+    borne name to anchor a base (R2), and initials of a bare
+    particle run would be nonsense.
+      "Juan van der"              →  initials="J."
+    history: decisions.md#R2 · interacts: R2 · implemented: nameparser/_render.py
 
 R4. Rationale: case repair is a display concern, applied only on
     request and never destructively.

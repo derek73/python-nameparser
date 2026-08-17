@@ -8,6 +8,10 @@ is its executable definition):
 
 plus per-rule ``no-boundary: reason`` lines and the trailing pointer
 line ``history: ... · interacts: A1, B2 · implemented: path, path``.
+A rule nothing implements yet carries ``tracked: #N, #M`` in place of
+``implemented:`` — the issues that would ship it. Exactly one of the
+two is required, so a normative rule always points either at the code
+that honors it or at the work that will.
 
 Inside a rule block, any line whose first non-space character is a
 double quote (or an opening bracket, the D-section subject form) is an
@@ -35,8 +39,9 @@ _EXAMPLE_RE = re.compile(
     rf"(?P<tfield>[a-z_]+)=(?P<today>{_VALUE})\))?"
     r"\s*$")
 _NO_BOUNDARY_RE = re.compile(r"^\s*no-boundary:\s+(?P<reason>\S.*)$")
-_POINTER_RE = re.compile(r"^\s*(history|interacts|implemented):")
-_POINTER_PART_RE = re.compile(r"(history|interacts|implemented):\s*([^·]+)")
+_POINTER_RE = re.compile(r"^\s*(history|interacts|implemented|tracked):")
+_POINTER_PART_RE = re.compile(
+    r"(history|interacts|implemented|tracked):\s*([^·]+)")
 
 ASSERTABLE_FIELDS = frozenset({
     "title", "given", "middle", "family", "suffix", "nickname", "maiden",
@@ -64,6 +69,10 @@ class Rule:
     no_boundary: str | None = None
     interacts: tuple[str, ...] = ()
     implemented: tuple[str, ...] = ()
+    #: Issues that would ship a rule nothing implements yet. Mutually
+    #: exclusive with ``implemented:`` -- a rule points at code or at
+    #: the issues that will produce it, never at neither.
+    tracked: tuple[str, ...] = ()
 
     def has_boundary_or_waiver(self) -> bool:
         return self.no_boundary is not None or any(
@@ -184,4 +193,6 @@ def parse_rules_doc(text: str) -> list[Rule]:
                     current.interacts = items
                 elif key == "implemented":
                     current.implemented = items
+                elif key == "tracked":
+                    current.tracked = items
     return rules
