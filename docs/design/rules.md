@@ -1,95 +1,30 @@
 # Parsing rules
 
-This document is NORMATIVE, not descriptive: the rules state how
-names are written and what should happen when they are parsed,
-grounded in how people understand names — not in what the parser
-currently does. The parser implements these rules. Where it does not
-yet, the gap is a tracked deviation (`deviates:` marker below), not a
-counterexample. Statements are implementation-free: no stage names,
-no function names, no regexes.
+This document is NORMATIVE, not descriptive: the rules state how names are written and what should happen when they are parsed, grounded in how people understand names — not in what the parser currently does. The parser implements these rules. Where it does not yet, the gap is a tracked deviation (`deviates:` marker below), not a counterexample. Statements are implementation-free: no stage names, no function names, no regexes.
 
-Authority, scoped: `tests/v2/cases.py` pins CURRENT behavior; this
-document states INTENDED behavior. A mismatch between them must be
-classified, never defaulted: either the rule is wrong (fix it here)
-or the parser is wrong (the example takes a `deviates:` marker and an
-issue). Where this document is silent, the behavior is
-pinned-but-undocumented — an extraction gap to close, not a
-specification, and not license to change the behavior.
+Authority, scoped: `tests/v2/cases.py` pins CURRENT behavior; this document states INTENDED behavior. A mismatch between them must be classified, never defaulted: either the rule is wrong (fix it here) or the parser is wrong (the example takes a `deviates:` marker and an issue). Where this document is silent, the behavior is pinned-but-undocumented — an extraction gap to close, not a specification, and not license to change the behavior.
 
-Rule IDs are stable forever: never renumbered, never reused. A
-retired rule keeps its ID with a one-line tombstone pointing at
-decisions.md. Cross-references use the anchor form `decisions.md#P2`
-/ `mechanisms.md#SPANS`; a bare ID is never a citation. The
-`interacts:` field on a pointer line is advisory — the
-citation-integrity test checks the ID exists, not that the
-interaction is real. `implemented:` and `tracked:` are not
-advisory: every rule carries exactly one. `implemented:` names the
-modules honoring the rule, checked against the modules that cite
-it; `tracked:` names the issues that would ship a rule nothing
-implements yet, so a wholly-aspirational rule cannot sit here
-untracked, and a shipped rule cannot keep a stale tracking pointer.
+Rule IDs are stable forever: never renumbered, never reused. A retired rule keeps its ID with a one-line tombstone pointing at decisions.md. Cross-references use the anchor form `decisions.md#P2` / `mechanisms.md#SPANS`; a bare ID is never a citation. The `interacts:` field on a pointer line is advisory — the citation-integrity test checks the ID exists, not that the interaction is real. `implemented:` and `tracked:` are not advisory: every rule carries exactly one. `implemented:` names the modules honoring the rule, checked against the modules that cite it; `tracked:` names the issues that would ship a rule nothing implements yet, so a wholly-aspirational rule cannot sit here untracked, and a shipped rule cannot keep a stale tracking pointer.
 
-Every example line is EXECUTABLE. The grammar (its executable
-definition is `tests/v2/rules_doc.py`; `tests/v2/test_rules_doc.py`
-runs every line):
+Every example line is EXECUTABLE. The grammar (its executable definition is `tests/v2/rules_doc.py`; `tests/v2/test_rules_doc.py` runs every line):
 
     "INPUT" [annotation] →  field="value"  [· boundary]
                             [deviates: #N (today: field="value")]
 
-An `annotation` names a policy, locale (`[ru]`), or extras gate
-(`[ja+segmenter]`) in the registry beside the test. `· boundary`
-marks the non-firing example every rule must carry — or the rule
-declares `no-boundary: <reason>` instead, so skipping the boundary is
-a recorded decision. `deviates:` states the INTENDED output on the
-example line while the marker records TODAY's output and the tracking
-issue; the runner asserts today's output strictly, so a parser change
-that closes the gap fails the suite until the marker is removed in
-the same PR. `grep deviates:` on this file is the deviation backlog
-(deviations from statable rules — coverage gaps are a separate,
-larger category no grep can see, and contested vocabulary
-memberships a third, tracked as Open blocks keyed to the vocabulary
-set in decisions.md).
+An `annotation` names a policy, locale (`[ru]`), or extras gate (`[ja+segmenter]`) in the registry beside the test. `· boundary` marks the non-firing example every rule must carry — or the rule declares `no-boundary: <reason>` instead, so skipping the boundary is a recorded decision. `deviates:` states the INTENDED output on the example line while the marker records TODAY's output and the tracking issue; the runner asserts today's output strictly, so a parser change that closes the gap fails the suite until the marker is removed in the same PR. `grep deviates:` on this file is the deviation backlog (deviations from statable rules — coverage gaps are a separate, larger category no grep can see, and contested vocabulary memberships a third, tracked as Open blocks keyed to the vocabulary set in decisions.md).
 
 ## Not in scope
 
-- **Language detection.** The parser never infers a language from
-  Latin-script text: transliteration destroys the signal ("Ali",
+- **Language detection.** The parser never infers a language from Latin-script text: transliteration destroys the signal ("Ali",
   "Van", "Bin" each belong to several languages with conflicting
-  readings). Language-specific behavior is opt-in configuration.
-  Script-conditional behavior exists only where the script itself
-  settles the convention (see the W section).
-- **Grammatical inflection.** Names inflect in many languages
-  (vocative, genitive); this library neither produces nor consumes
-  inflected forms. CLDR personNames draws the same line.
-- **Validation.** Deciding whether a string IS a person's name is not
-  parsing; `parse()` is total over strings and never rejects input.
-- **Comparison.** matches()/comparison_key() are a value-API
-  surface, not parsing; their design record is
-  decisions.md#comparison-surface.
+  readings). Language-specific behavior is opt-in configuration. Script-conditional behavior exists only where the script itself settles the convention (see the W section).
+- **Grammatical inflection.** Names inflect in many languages (vocative, genitive); this library neither produces nor consumes inflected forms. CLDR personNames draws the same line.
+- **Validation.** Deciding whether a string IS a person's name is not parsing; `parse()` is total over strings and never rejects input.
+- **Comparison.** matches()/comparison_key() are a value-API surface, not parsing; their design record is decisions.md#comparison-surface.
 
 ## Titles & honorifics (H)
 
-Background: an honorific title precedes a name and is not itself part
-of it; it addresses or ranks the person. Most titles address by
-surname ("Mr. Johnson"), but a few — knighthoods, some clerical and
-courtesy titles — address by given name ("Sir John"). The library
-keeps a vocabulary of titles and, separately, of these given-name
-titles. What a TRAILING title-vocabulary word should do is
-unresolved (#316): today "John Smith Prof." keeps Prof. a name word
-while "Smith, Prof." reads it as a title — the two comma paths
-disagree, and TITLES holding ordinary surnames (king, judge,
-bishop) is what bars the blanket vocabulary-wins answer.
-Two criteria govern two different questions here.
-Membership in the given-name-title list follows HOW THE TITLE
-ADDRESSES: a title that precedes and addresses by the given name
-belongs (Sir, Sheikh, the Arabic honorifics الدكتور/الشيخ — which
-qualify even though those traditions fully retain family names).
-Whether an EMPTY FAMILY is correct output is the separate question,
-governed by surname retention: renunciation abolishes the surname,
-so for Swami, Guru, Baba or Lama family="" is right (#346), while
-rabbi and imam traditions keep surnames — "Rabbi Cohen" addresses
-by title and keeps family "Cohen". Conflating the two criteria
-either ejects the Arabic entries or sweeps in titles that break
+Background: an honorific title precedes a name and is not itself part of it; it addresses or ranks the person. Most titles address by surname ("Mr. Johnson"), but a few — knighthoods, some clerical and courtesy titles — address by given name ("Sir John"). The library keeps a vocabulary of titles and, separately, of these given-name titles. What a TRAILING title-vocabulary word should do is unresolved (#316): today "John Smith Prof." keeps Prof. a name word while "Smith, Prof." reads it as a title — the two comma paths disagree, and TITLES holding ordinary surnames (king, judge, bishop) is what bars the blanket vocabulary-wins answer. Two criteria govern two different questions here. Membership in the given-name-title list follows HOW THE TITLE ADDRESSES: a title that precedes and addresses by the given name belongs (Sir, Sheikh, the Arabic honorifics الدكتور/الشيخ — which qualify even though those traditions fully retain family names). Whether an EMPTY FAMILY is correct output is the separate question, governed by surname retention: renunciation abolishes the surname, so for Swami, Guru, Baba or Lama family="" is right (#346), while rabbi and imam traditions keep surnames — "Rabbi Cohen" addresses by title and keeps family "Cohen". Conflating the two criteria either ejects the Arabic entries or sweeps in titles that break
 "Rabbi Cohen".
 
 H1. Rationale: a title normally addresses by surname, so a title
@@ -153,15 +88,7 @@ H3. Rationale: compound titles are written as a run of title words,
 
 ## Particles & surname prefixes (P)
 
-Background: particles ("de", "la", "van", "von", "bin") link forward
-to a surname and are written as part of it. Some are never anyone's
-given name; others ("Van", "Bin") are ordinary given names in some
-cultures, so the vocabulary distinguishes never-given particles from
-ambiguous ones, and only the never-given ones license special
-treatment. A separate small vocabulary binds forward to a GIVEN
-name instead: words like "abdul" that are not complete given names
-alone (P5). Which particles fall on which side of the never-given
-line is its own open question (#360).
+Background: particles ("de", "la", "van", "von", "bin") link forward to a surname and are written as part of it. Some are never anyone's given name; others ("Van", "Bin") are ordinary given names in some cultures, so the vocabulary distinguishes never-given particles from ambiguous ones, and only the never-given ones license special treatment. A separate small vocabulary binds forward to a GIVEN name instead: words like "abdul" that are not complete given names alone (P5). Which particles fall on which side of the never-given line is its own open question (#360).
 
 P1. Rationale: a never-given particle standing alone cannot be
     someone's given name; a name that opens with one, or offers only
@@ -290,19 +217,7 @@ P6. Rationale: a particle ending the name has nothing to link
 
 ## Suffixes: generational & credentials (S)
 
-Background: what follows a name is one of two different things —
-generational suffixes (Jr., III), which attach to the name itself,
-and credentials (PhD, MD, MBA), which are earned attachments. All
-vocabulary sets match one written word at a time: a multi-word
-entry can never match anything and is warned about at
-configuration (the eight that shipped dead for years are the
-Excluded story in decisions.md). CLDR
-personNames keeps them as separate fields (`generation`,
-`credentials`) and formats them differently; this library currently
-reports both in one `suffix` field, a merge #326 examines. The
-vocabulary is largely split already: a generational word list and a
-credential acronym list, plus a short list of acronyms that are also
-ordinary names (MA, BA) and so are AMBIGUOUS as bare words.
+Background: what follows a name is one of two different things — generational suffixes (Jr., III), which attach to the name itself, and credentials (PhD, MD, MBA), which are earned attachments. All vocabulary sets match one written word at a time: a multi-word entry can never match anything and is warned about at configuration (the eight that shipped dead for years are the Excluded story in decisions.md). CLDR personNames keeps them as separate fields (`generation`, `credentials`) and formats them differently; this library currently reports both in one `suffix` field, a merge #326 examines. The vocabulary is largely split already: a generational word list and a credential acronym list, plus a short list of acronyms that are also ordinary names (MA, BA) and so are AMBIGUOUS as bare words.
 
 S1. Rationale: brackets set off more than nicknames — credentials
     are routinely written parenthesized after a name, and a
@@ -349,12 +264,9 @@ S3. Rationale: credentials are often written run together with
 
 ## Nicknames & quoted names (N)
 
-Background: a nickname is written beside the formal name, set off by
-quotes or brackets. Quotation conventions vary by language („…“,
+Background: a nickname is written beside the formal name, set off by quotes or brackets. Quotation conventions vary by language („…“,
 «…», “…”), several share characters — one convention's closer is
-another's opener — and the straight apostrophe doubles as a
-quotation mark and as a letter-like mark inside names (O'Connor).
-Which pairs delimit nicknames is caller configuration.
+another's opener — and the straight apostrophe doubles as a quotation mark and as a letter-like mark inside names (O'Connor). Which pairs delimit nicknames is caller configuration.
 
 N1. Rationale: a quoted or bracketed clause beside a name is an
     informal alias, not part of the name.
@@ -396,16 +308,7 @@ N3. Rationale: a person set down as a nickname plus one name word is
 
 ## Maiden names (M)
 
-Background: a maiden name is written beside the current name, set
-off by a marker word or by enclosure. Markers are attested across
-French née/né, German geb./geborene, Dutch geboren, Czech/Slovak
-roz./rozená, Scandinavian født/fødd/född, Russian урожд. (both ё
-and е spellings), and Japanese 旧姓 — both grammatical genders
-where attested. Japanese more often writes the marker with a
-fullwidth colon (旧姓：佐藤), which is no separator, so marker and
-name arrive as a single word. Which enclosures mean "maiden" rather
-than "nickname" is a caller convention, so the maiden reading of a
-delimiter pair is opt-in.
+Background: a maiden name is written beside the current name, set off by a marker word or by enclosure. Markers are attested across French née/né, German geb./geborene, Dutch geboren, Czech/Slovak roz./rozená, Scandinavian født/fødd/född, Russian урожд. (both ё and е spellings), and Japanese 旧姓 — both grammatical genders where attested. Japanese more often writes the marker with a fullwidth colon (旧姓：佐藤), which is no separator, so marker and name arrive as a single word. Which enclosures mean "maiden" rather than "nickname" is a caller convention, so the maiden reading of a delimiter pair is opt-in.
 
 M1. Rationale: an enclosure the caller has declared to mean maiden
     holds the former family name; a recognized marker word inside it
@@ -448,15 +351,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
 
 ## Commas & structure (C)
 
-Background: a comma in a name signals one of two conventions — the
-listing form "Family, Given" or trailing credentials "Name, PhD" —
-and which is meant can only be judged from what stands after the
-first comma. Recognizing a credential run is by nature a vocabulary
-judgment, so this is the one structural decision that consults the
-suffix word lists. Which characters COUNT as the comma is part of
-the rule: the Arabic comma (U+060C) and the fullwidth comma
-(U+FF0C) both signal the listing form, while the ideographic comma
-(U+3001) is not a name-structure comma at all (#265).
+Background: a comma in a name signals one of two conventions — the listing form "Family, Given" or trailing credentials "Name, PhD" — and which is meant can only be judged from what stands after the first comma. Recognizing a credential run is by nature a vocabulary judgment, so this is the one structural decision that consults the suffix word lists. Which characters COUNT as the comma is part of the rule: the Arabic comma (U+060C) and the fullwidth comma (U+FF0C) both signal the listing form, while the ideographic comma (U+3001) is not a name-structure comma at all (#265).
 
 C1. Rationale: a credential run after the comma means the name is in
     natural order with suffixes appended; anything else after the
@@ -496,20 +391,7 @@ C2. Rationale: text beyond the recognized comma parts should be
 
 ## Name order (O)
 
-Background: written name order varies by convention: given-first
-(the library's default reading), family-first, and family-first with
-the given name last (Vietnamese, where the person is called by the
-last element, given names are frequently two syllables — the
-given_names view stays correct wherever the internal boundary
-falls — and quốc ngữ is Latin script, so no native-script signal
-exists at all). The order is declared by the
-caller or a locale pack, never detected — but a few conventions
-leave a recognizable trace in the name itself. Patronymics are one:
-East Slavic names carry a father's-name derivative with distinctive
-endings between given and family, and Turkic names use a standalone
-marker word ("oglu" son-of, "qizi" daughter-of) after the father's
-name. Where such a trace is present and unambiguous, an opted-in
-parser can restore the intended reading from a family-first listing.
+Background: written name order varies by convention: given-first (the library's default reading), family-first, and family-first with the given name last (Vietnamese, where the person is called by the last element, given names are frequently two syllables — the given_names view stays correct wherever the internal boundary falls — and quốc ngữ is Latin script, so no native-script signal exists at all). The order is declared by the caller or a locale pack, never detected — but a few conventions leave a recognizable trace in the name itself. Patronymics are one: East Slavic names carry a father's-name derivative with distinctive endings between given and family, and Turkic names use a standalone marker word ("oglu" son-of, "qizi" daughter-of) after the father's name. Where such a trace is present and unambiguous, an opted-in parser can restore the intended reading from a family-first listing.
 
 O1. Rationale: an East Slavic name written family-first still shows
     its patronymic — the distinctive ending identifies which word is
@@ -569,23 +451,7 @@ O4. Rationale: what no vocabulary claims can only be read by where
 
 ## Scripts & writing systems (W)
 
-Background: script-conditional behavior is permitted exactly where
-the writing system itself — not statistics about it — settles the
-convention; a language can never be inferred from Latin-script text,
-because transliteration destroys the signal. The facts this section
-builds on: Chinese and Japanese both write the family name first in
-native script, so the script settles the order without knowing the
-language. Hangul is written by exactly one language and Korean
-family names are a small closed census set. Han text does not
-identify its language — a Chinese surname list would divide Japanese
-高橋一郎 as 高 + 橋一郎 — which is why Han division is opt-in and
-there is no Korean pack to opt into. Hiragana never transcribes a
-foreign name (transcriptions are katakana alone), so kanji-plus-kana
-is a Japanese name in Japanese order, while wholly-katakana is
-predominantly a transcribed foreign name already in given-first
-order. Real Chinese text is unspaced (毛泽东); the spaced 毛 泽东 is
-an artifact. A fuller narrative lives in docs/usage.rst's East Asian
-section.
+Background: script-conditional behavior is permitted exactly where the writing system itself — not statistics about it — settles the convention; a language can never be inferred from Latin-script text, because transliteration destroys the signal. The facts this section builds on: Chinese and Japanese both write the family name first in native script, so the script settles the order without knowing the language. Hangul is written by exactly one language and Korean family names are a small closed census set. Han text does not identify its language — a Chinese surname list would divide Japanese 高橋一郎 as 高 + 橋一郎 — which is why Han division is opt-in and there is no Korean pack to opt into. Hiragana never transcribes a foreign name (transcriptions are katakana alone), so kanji-plus-kana is a Japanese name in Japanese order, while wholly-katakana is predominantly a transcribed foreign name already in given-first order. Real Chinese text is unspaced (毛泽东); the spaced 毛 泽东 is an artifact. A fuller narrative lives in docs/usage.rst's East Asian section.
 
 W1. Rationale: hangul is monoglot Korean and its surnames are a
     closed census set, so an unspaced hangul name divides at a
@@ -664,13 +530,7 @@ W4. Rationale: Chinese, Japanese and Korean all write the family
 
 ## Tokens, initials & punctuation (T)
 
-Background: every parsed name part is an exact piece of the input,
-located by its position — nothing rewrites the text before parsing.
-Some punctuation is a name divider only by convention of a
-particular writing system: Japanese writes name parts with a middle
-dot between them (マイケル・ジャクソン, 姓・名), while U+00B7 is
-both the Chinese divider for transcribed foreign names and the
-Catalan punt volat interior to legitimate words (Gal·la).
+Background: every parsed name part is an exact piece of the input, located by its position — nothing rewrites the text before parsing. Some punctuation is a name divider only by convention of a particular writing system: Japanese writes name parts with a middle dot between them (マイケル・ジャクソン, 姓・名), while U+00B7 is both the Chinese divider for transcribed foreign names and the Catalan punt volat interior to legitimate words (Gal·la).
 
 T1. Rationale: a character that carries no name content (emoji, an
     invisible directionality control) stands between words, not
@@ -704,11 +564,7 @@ T3. Rationale: U+00B7 is two marks in one codepoint — the Chinese
 
 ## Ambiguity & tie-breaking (A)
 
-Background: some name strings are genuinely ambiguous — the same
-written shape carries two readings ("Van Johnson": given name or
-particle?), or the text's structure is malformed. Parsing never
-fails and never silently discards; it completes on the best reading
-and says what it was unsure of.
+Background: some name strings are genuinely ambiguous — the same written shape carries two readings ("Van Johnson": given name or particle?), or the text's structure is malformed. Parsing never fails and never silently discards; it completes on the best reading and says what it was unsure of.
 
 A1. Rationale: a caller can only act on doubt that is reported.
     Parsing never fails on any input: where the text's structure or
@@ -737,13 +593,7 @@ A2. Rationale: an input with no name content names nobody, and
 
 ## Rendering & views (R)
 
-Background: parsing produces words with roles; every string a caller
-reads is assembled from those words on request. Nothing about
-rendering changes the parse, and nothing about reading a field
-mutates anything. The default view renders
-'{title} {given} "{nickname}" {middle} {family} ({maiden})
-{suffix}' — the choice and its declined née-template alternative
-are decisions.md#render-default.
+Background: parsing produces words with roles; every string a caller reads is assembled from those words on request. Nothing about rendering changes the parse, and nothing about reading a field mutates anything. The default view renders '{title} {given} "{nickname}" {middle} {family} ({maiden}) {suffix}' — the choice and its declined née-template alternative are decisions.md#render-default.
 
 R1. Rationale: a field is a way of reading the parse, not a stored
     string.
@@ -797,10 +647,7 @@ R4. Rationale: case repair is a display concern, applied only on
 
 ## Construction & configuration diagnostics (D)
 
-Background: configuration mistakes are reported when they are made —
-at construction — not when a name happens to hit them; and a
-diagnostic that hands the reader code must hand code that works and
-type-checks.
+Background: configuration mistakes are reported when they are made — at construction — not when a name happens to hit them; and a diagnostic that hands the reader code must hand code that works and type-checks.
 
 D1. Rationale: a parser whose activated scripts nothing can divide
     behaves like a working parser minus a feature, silently — the
