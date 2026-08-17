@@ -137,8 +137,10 @@ supplying it.
 **Reviewing a docs/design change: the nine axes.** Run these before
 merging anything that touches rules.md, decisions.md or mechanisms.md.
 Each was earned by a defect that survived every other check on #386,
-where they found seven issues between them and unaided prose reading
-found none. The parenthetical is the case that earned the axis. Skip
+where the review passes surfaced ten issues in total — nine of them
+by these axes, one by the spec self-review above — and unaided prose
+reading surfaced none. The parenthetical is the case that earned the
+axis. Skip
 what the suite already enforces — example lines, `deviates:` today-
 values, boundaries, the one-of `implemented:`/`tracked:` rule, and
 citation excerpts are all machine-checked, so a finding those would
@@ -179,15 +181,11 @@ have caught is a false positive.
 
 Also: before reporting "N names move", report the size of the
 population that COULD move — a small count over a corpus blind to the
-shape is evidence about the corpus (245 of 782 corpus names carry a
-comma and exactly one ends in a particle).
-
-Claude Code users: `.claude/agents/design-docs-reviewer.md` packages
-this as a subagent and `/docs-review` runs it. That directory is
-untracked by design (see .gitignore's tools block, which keeps
-assistant configs personal), so the axes above are the shared record
-and the agent is a local convenience — keep them in sync by editing
-here first.
+shape is evidence about the corpus. For rules.md#P6: of 782 corpus
+names, 245 carry a comma, two of those end in a particle, and one of
+the two clears the words-to-spare guard. Running axis 1 over this
+very list caught an earlier wording of that sentence conflating the
+population with the movers, so the count above is the corrected one.
 
 **Guard tests** SHOULD carry a recorded negative control — the
 answer with the guard off, stored as data (the _EXCLUSION_EFFECT

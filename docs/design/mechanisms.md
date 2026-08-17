@@ -538,12 +538,18 @@ decline, not delete the test.
   such a rule.
 - The corpus can be near-blind to a WRITING CONVENTION even where
   the vocabulary is well covered, and a small honest count then
-  reads as a small blast radius. Measured for rules.md#P6: 245 of
-  782 corpus names carry a comma and exactly ONE ends in a
-  particle, so the Dutch trailing-tussenvoegsel listing the rule
+  reads as a small blast radius. Measured for rules.md#P6: of 782
+  corpus names, 245 carry a comma, TWO of those end in a particle,
+  and ONE of the two clears the words-to-spare guard and actually
+  moves — so the Dutch trailing-tussenvoegsel listing the rule
   exists for is essentially unsampled. Before reporting "N names
   move", report the size of the population that COULD move; when
   that is ~1, the number is evidence about the corpus.
+  This note's first wording said "exactly ONE ends in a particle",
+  conflating the population with the movers — the very error it
+  exists to prevent, committed inside the correction. Caught by
+  re-running the count against AGENTS.md's axis 1 rather than by
+  re-reading it.
 - A detector that re-implements a rule's grouping will get the
   grouping wrong. Derive the boundary from the same vocabulary the
   rule reads, not from the half you happen to be thinking about:
