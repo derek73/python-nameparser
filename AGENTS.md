@@ -93,6 +93,21 @@ re-framed fourteen of them — and two of the three turned out smaller
 than their issues claimed, because the issues had gone stale. Check
 the age of an issue's premises before believing its cost estimate.
 
+**A count in a dated entry is evidence, not a live fact.** decisions.md
+entries are snapshots by convention, so measurements belong in them —
+but a reader wanting TODAY's number must not have to trust the
+snapshot's date. Where an entry quotes something that drifts
+(vocabulary sizes, corpus counts, set compositions), give the
+one-liner that recomputes it, and phrase the argument so it survives
+the digits moving — "the two shares differ by orders of magnitude"
+outlives "58% vs 0.65%". A count that carries no argument is better
+deleted than dated: "over every name in the corpus, no prefilter"
+says what "over all 782 names" says, and cannot go stale. Do NOT
+reach for a test asserting the count — that is the constant-content
+pattern, and it fails on every legitimate vocabulary addition. #326
+is the cautionary case: it quoted a vocabulary composition, carried a
+date, and was stale in five days.
+
 **Primary-source review.** When doc content is distilled from a
 session's work, have that session (or its transcript) review its
 own sections before or soon after landing — attribution flattening

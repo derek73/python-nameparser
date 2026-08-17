@@ -109,7 +109,7 @@ the 2026-08-16 entries below. The survivor is the degenerate bare
   is family="de Mesnil" plus given="Juan". Nothing ever argued for
   "takes everything"; it was the shape of v1's
   handle_non_first_name_prefix, not a decision.
-  Measured before deciding, over all 782 names of the three
+  Measured before deciding, over every name in the three
   differential corpora with NO string prefilter: exactly ONE family
   holds words beyond its particle's group — "de Mesnil Garcia".
   #364's own body warns the change "breaks the v1 parity
@@ -312,7 +312,13 @@ The mechanism shipped twice before anyone wrote down its criterion.
 Sizes as of 2.2.0dev: particles 67 with 39 ambiguous (58%,
 PARTICLE_OR_GIVEN); suffix_acronyms 613 with 4 ambiguous (0.65%,
 SUFFIX_OR_NAME); titles 711 with no ambiguous subset and no
-AmbiguityKind at all.
+AmbiguityKind at all. Those counts are evidence from the decision
+date, not live facts — they drift with every vocabulary addition.
+The argument does not depend on the digits (it depends on the two
+shares differing by orders of magnitude), but recompute before
+quoting them:
+
+    uv run python -c "from nameparser import Parser; L=Parser().lexicon; print({s: len(getattr(L,s)) for s in ('particles','particles_ambiguous','suffix_words','suffix_acronyms','suffix_acronyms_ambiguous','titles')})"
 
 - 2026-08-16 (collision keystone; #348, #360, #342, #385) — the
   58%-vs-0.65% gap is BASE RATE, not disagreement. Both sets apply
@@ -393,6 +399,19 @@ attempted.
   faithfully; what slipped is the field's definition, which no rule
   states because no rule owns it. Field definitions need the same
   discipline rule statements get.
+- The 11/5/24 split above is this entry's own version of the hazard
+  it describes: a quoted vocabulary composition, dated, exactly as
+  #326 quoted one. A date does not stop rot — #326 carried one too
+  — so before relying on the split, check the set still looks like
+  it:
+
+      uv run python -c "from nameparser import Parser; print(sorted(Parser().lexicon.suffix_words))"
+
+  What is durable here is the SHAPE of the finding — three kinds of
+  thing, the honorifics the largest — not the three integers. A
+  test asserting the counts is deliberately not the answer: that is
+  the constant-content pattern, and it would fail on every
+  legitimate vocabulary addition.
 
 ### deviates-registry — packs stay pure data (option C)
 
