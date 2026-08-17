@@ -4,207 +4,53 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Workflow
 
-For non-trivial changes, use a feature branch and open a PR.
-Branch naming: `fix/issue-NNN-short-description` or `feat/short-description`.
+For non-trivial changes, use a feature branch and open a PR. Branch naming: `fix/issue-NNN-short-description` or `feat/short-description`.
 
 Before opening the PR, if the change alters parser behavior or internals, *read* the Architecture, Extension Patterns, and Gotchas sections of this file against the change — don't grep for it: AGENTS.md paraphrases behavior in its own words, so text made stale by a code change rarely matches the code's phrasing (a doc-staleness sweep driven by grep terms from the diff will miss it every time). The same applies when scoping a doc-review pass or a subagent prompt: include AGENTS.md in the list of docs to check, or it won't be checked.
 
 ## Rules documentation (docs/design/)
 
-Three committed contributor docs carry the parser's normative rules
-and their reasons, enforced by the doc tests in tests/v2/
-(rules_doc.py and the test_doc_*/test_rules_doc* modules). Before proposing a
-design or a fix that touches parser behavior, read
-docs/design/mechanisms.md and the relevant docs/design/rules.md
-sections — the catalog is keyed by problem shape, and the pattern
-you are about to invent is often already there.
+Three committed contributor docs carry the parser's normative rules and their reasons, enforced by the doc tests in tests/v2/ (rules_doc.py and the test_doc_*/test_rules_doc* modules). Before proposing a design or a fix that touches parser behavior, read docs/design/mechanisms.md and the relevant docs/design/rules.md sections — the catalog is keyed by problem shape, and the pattern you are about to invent is often already there.
 
-- **rules.md** — NORMATIVE rules (intended behavior, domain-topic
-  sections, executable examples; `deviates:` markers track known
-  parser gaps). Cite as `rules.md#P1`; code comments quote a
-  verbatim excerpt in double quotes, checked by
-  tests/v2/test_doc_citations.py.
-- **decisions.md** — the ADR-style record: dated entries, Declined:
-  (rejected WITH evidence), Excluded: (what must stay out of a
-  wordlist and why), Open: (issue links, never restated; also keyed
-  to a vocabulary set for contested memberships — the
-  right-rule-wrong-set class),
-  3-0-reevaluations (append whenever a design cites 1.4 parity as
-  load-bearing).
-- **mechanisms.md** — problem-shape catalog with citable contract
-  statements; stage-attribution claims in comments must cite an
-  entry verbatim, never restate it in fresh words.
+- **rules.md** — NORMATIVE rules (intended behavior, domain-topic sections, executable examples; `deviates:` markers track known parser gaps). Cite as `rules.md#P1`; code comments quote a verbatim excerpt in double quotes, checked by tests/v2/test_doc_citations.py.
+- **decisions.md** — the ADR-style record: dated entries, Declined: (rejected WITH evidence), Excluded: (what must stay out of a wordlist and why), Open: (issue links, never restated; also keyed to a vocabulary set for contested memberships — the right-rule-wrong-set class), 3-0-reevaluations (append whenever a design cites 1.4 parity as load-bearing).
+- **mechanisms.md** — problem-shape catalog with citable contract statements; stage-attribution claims in comments must cite an entry verbatim, never restate it in fresh words.
 
-**Same-PR amendment rule.** Any PR that changes or clarifies parser
-behavior — or the boundaries around a documented rule, since a
-neighboring change can invalidate a rule's stated limits without
-touching its code — amends rules.md in the same diff (the doc diff
-is part of the reviewable change, like tests). A change that
-resolves or reverses a design question adds a decisions.md entry; a
-new reusable pattern adds a mechanisms.md entry; a fixed deviation
-removes its `deviates:` marker in the same PR (the examples test
-forces this). Issues proposing behavior changes should be drafted in
-rule shape — rationale, statement, examples with boundaries,
-accepted consequences, open questions, exclusions — so landing an
-accepted proposal is a copy, not a rewrite.
+**Same-PR amendment rule.** Any PR that changes or clarifies parser behavior — or the boundaries around a documented rule, since a neighboring change can invalidate a rule's stated limits without touching its code — amends rules.md in the same diff (the doc diff is part of the reviewable change, like tests). A change that resolves or reverses a design question adds a decisions.md entry; a new reusable pattern adds a mechanisms.md entry; a fixed deviation removes its `deviates:` marker in the same PR (the examples test forces this). Issues proposing behavior changes should be drafted in rule shape — rationale, statement, examples with boundaries, accepted consequences, open questions, exclusions — so landing an accepted proposal is a copy, not a rewrite.
 
-**Counting claims.** A bare count in prose is either an assertion or
-a liability, keyed by who observes its staleness: asserted counts (a
-test holds the number) fail CI at change time — the useful kind;
-dated snapshots ("51 sites at spec time") cannot go stale; standing
-present-tense prose counts are the forbidden class — promote to an
-assertion, add a date, or state the invariant and let a test count.
-After changing how many times something runs, sweep for counts, not
-for the thing's name.
+**Counting claims.** A bare count in prose is either an assertion or a liability, keyed by who observes its staleness: asserted counts (a test holds the number) fail CI at change time — the useful kind; dated snapshots ("51 sites at spec time") cannot go stale; standing present-tense prose counts are the forbidden class — promote to an assertion, add a date, or state the invariant and let a test count. After changing how many times something runs, sweep for counts, not for the thing's name.
 
-**Release-log claims.** Quantified or universal behavior claims in
-release bullets must come from the differential gate's classified
-summary or be verified against rules.md examples, never written from
-memory. Per-rule ledger toml comments asserting PARSER behavior cite
-rule IDs under the excerpt discipline; free prose is for ledger
-mechanics only (owned by tools/differential/README.md).
+**Release-log claims.** Quantified or universal behavior claims in release bullets must come from the differential gate's classified summary or be verified against rules.md examples, never written from memory. Per-rule ledger toml comments asserting PARSER behavior cite rule IDs under the excerpt discipline; free prose is for ledger mechanics only (owned by tools/differential/README.md).
 
-**Landing a design.** The gitignored spec (docs/superpowers/specs/)
-is the working medium; it dies with the branch, and the docs are the
-record. Before a design PR merges, walk its spec (including
-amendments) and distill the durable residue: decisions made or
-reversed → decisions.md entries; proposals rejected with evidence →
-Declined:; vocabulary that must stay out → Excluded:; behavior the
-design settled → rules.md (with a deviates: marker if unshipped);
-reusable patterns → mechanisms.md; options weighed → a weighing
-entry. Then check the spec cites nothing the docs don't now carry —
-a spec section with no committed home when the PR merges is lost,
-not deferred (a 2026-08-16 sweep of eight weeks of specs recovered
-nine such items). The same-PR amendment rule above covers code-driven
-changes; this covers the design-driven ones.
+**Landing a design.** The gitignored spec (docs/superpowers/specs/) is the working medium; it dies with the branch, and the docs are the record. Before a design PR merges, walk its spec (including amendments) and distill the durable residue: decisions made or reversed → decisions.md entries; proposals rejected with evidence → Declined:; vocabulary that must stay out → Excluded:; behavior the design settled → rules.md (with a deviates: marker if unshipped); reusable patterns → mechanisms.md; options weighed → a weighing entry. Then check the spec cites nothing the docs don't now carry — a spec section with no committed home when the PR merges is lost, not deferred (a 2026-08-16 sweep of eight weeks of specs recovered nine such items). The same-PR amendment rule above covers code-driven changes; this covers the design-driven ones.
 
-**Triaging a design backlog: shape before value.** When a pile of
-open questions has to be ordered, relatedness will not partition it —
-in a parser nearly everything touches particles or suffixes. The line
-that does is whether a decision changes WHAT THE MODEL CAN EXPRESS or
-fills in a value in a shape already fixed. Settle the shape questions
-first, as a batch: they are few, they are usually independent of each
-other (so their own ordering does not matter), and each one collapses
-or re-frames a run of the value questions below it. The rest are
-leaves needing one measurement and one answer apiece, in any order.
-Worked example, 2026-08-16 (#386): 30 open issues and ~13 open design
-questions reduced to three shape decisions, which decided or
-re-framed fourteen of them — and two of the three turned out smaller
-than their issues claimed, because the issues had gone stale. Check
-the age of an issue's premises before believing its cost estimate.
+**Triaging a design backlog: shape before value.** When a pile of open questions has to be ordered, relatedness will not partition it — in a parser nearly everything touches particles or suffixes. The line that does is whether a decision changes WHAT THE MODEL CAN EXPRESS or fills in a value in a shape already fixed. Settle the shape questions first, as a batch: they are few, they are usually independent of each other (so their own ordering does not matter), and each one collapses or re-frames a run of the value questions below it. The rest are leaves needing one measurement and one answer apiece, in any order. Worked example, 2026-08-16 (#386): 30 open issues and ~13 open design questions reduced to three shape decisions, which decided or re-framed fourteen of them — and two of the three turned out smaller than their issues claimed, because the issues had gone stale. Check the age of an issue's premises before believing its cost estimate.
 
-**A count in a dated entry is evidence, not a live fact.** decisions.md
-entries are snapshots by convention, so measurements belong in them —
-but a reader wanting TODAY's number must not have to trust the
-snapshot's date. Where an entry quotes something that drifts
-(vocabulary sizes, corpus counts, set compositions), give the
-one-liner that recomputes it, and phrase the argument so it survives
-the digits moving — "the two shares differ by orders of magnitude"
-outlives "58% vs 0.65%". A count that carries no argument is better
-deleted than dated: "over every name in the corpus, no prefilter"
-says what "over all 782 names" says, and cannot go stale. Do NOT
-reach for a test asserting the count — that is the constant-content
-pattern, and it fails on every legitimate vocabulary addition. #326
-is the cautionary case: it quoted a vocabulary composition, carried a
-date, and was stale in five days.
+**A count in a dated entry is evidence, not a live fact.** decisions.md entries are snapshots by convention, so measurements belong in them — but a reader wanting TODAY's number must not have to trust the snapshot's date. Where an entry quotes something that drifts (vocabulary sizes, corpus counts, set compositions), give the one-liner that recomputes it, and phrase the argument so it survives the digits moving — "the two shares differ by orders of magnitude" outlives "58% vs 0.65%". A count that carries no argument is better deleted than dated: "over every name in the corpus, no prefilter" says what "over all 782 names" says, and cannot go stale. Do NOT reach for a test asserting the count — that is the constant-content pattern, and it fails on every legitimate vocabulary addition. #326 is the cautionary case: it quoted a vocabulary composition, carried a date, and was stale in five days.
 
-**Primary-source review.** When doc content is distilled from a
-session's work, have that session (or its transcript) review its
-own sections before or soon after landing — attribution flattening
-and inverted arguments are visible only to the source. Reviewers
-state which tree each measurement ran on (stale fetches produced
-three rounds of already-fixed findings), and landed corrections are
-re-verified here before committing.
+**Primary-source review.** When doc content is distilled from a session's work, have that session (or its transcript) review its own sections before or soon after landing — attribution flattening and inverted arguments are visible only to the source. Reviewers state which tree each measurement ran on (stale fetches produced three rounds of already-fixed findings), and landed corrections are re-verified here before committing.
 
-Two shapes, needing different instruments. CROSS-SESSION distillation
-is what the rule above is written for — the #381 arc harvested nine
-named sessions, and for each the source transcript is an artifact
-independent of the reviewing session, so "review your own sections"
-is a two-artifact comparison. SAME-SESSION design work (#386) has no
-such artifact: spec and docs were written in one context, so the same
-instruction degenerates into re-reading the working memory that
-produced any error, and the rationale inverts — when the source is
-NOW, the source is what got it wrong. There, compare against
-artifacts instead, in this measured order of yield: re-derive every
-number with a freshly written script (2 wrong claims on #386);
-re-read the written spec against a checklist for FIDELITY, not just
-presence (1); interrogate NAMED contested rule pairs one at a time
-(2). Unaided prose reading found none — so a general "coherence read"
-by the author is the one form to distrust, because a green report
-from the weakest instrument manufactures confidence rather than
-supplying it.
+Two shapes, needing different instruments. CROSS-SESSION distillation is what the rule above is written for — the #381 arc harvested nine named sessions, and for each the source transcript is an artifact independent of the reviewing session, so "review your own sections" is a two-artifact comparison. SAME-SESSION design work (#386) has no such artifact: spec and docs were written in one context, so the same instruction degenerates into re-reading the working memory that produced any error, and the rationale inverts — when the source is NOW, the source is what got it wrong. There, compare against artifacts instead, in this measured order of yield: re-derive every number with a freshly written script (2 wrong claims on #386); re-read the written spec against a checklist for FIDELITY, not just presence (1); interrogate NAMED contested rule pairs one at a time (2). Unaided prose reading found none — so a general "coherence read" by the author is the one form to distrust, because a green report from the weakest instrument manufactures confidence rather than supplying it.
 
-**Reviewing a docs/design change: the nine axes.** Run these before
-merging anything that touches rules.md, decisions.md, mechanisms.md —
-or THIS FILE, which carries the conventions those three rest on and
-has the same failure modes. Axes 3, 5 and 6 are rules.md-specific
-(they need rule statements, examples and `interacts:`); the other six
-apply to any of the four. Say which axes you ran and which you skipped
-as inapplicable — a checklist that asks for something meaningless
-teaches the reader to skim it.
-Each was earned by a defect that survived every other check on #386,
-where the review passes surfaced ten issues in total — nine of them
-by these axes, one by the spec self-review above — and unaided prose
-reading surfaced none. The parenthetical is the case that earned the
-axis.
+**Reviewing a docs/design change: the nine axes.** Run these before merging anything that touches rules.md, decisions.md, mechanisms.md — or THIS FILE, which carries the conventions those three rest on and has the same failure modes. Axes 3, 5 and 6 are rules.md-specific (they need rule statements, examples and `interacts:`); the other six apply to any of the four. Say which axes you ran and which you skipped as inapplicable — a checklist that asks for something meaningless teaches the reader to skim it. Each was earned by a defect that survived every other check on #386, where the review passes surfaced ten issues in total — nine of them by these axes, one by the spec self-review above — and unaided prose reading surfaced none. The parenthetical is the case that earned the axis.
 
-Skip what the suite already enforces. `tests/v2/test_rules_doc.py`
-and `tests/v2/test_doc_citations.py` machine-check example lines and
-their `deviates:` today-values, boundaries, the one-of
-`implemented:`/`tracked:` rule, `implemented:` against the modules
-that actually cite the rule, `interacts:` and cross-doc anchor IDs,
-citation excerpts quoted verbatim, and legacy citation forms. Assume
-they pass; a finding one of them would catch is a false positive.
-Read those two files rather than trusting this sentence — it named
-five of the nine guards when written, and goes stale as guards are
-added.
+Skip what the suite already enforces. `tests/v2/test_rules_doc.py` and `tests/v2/test_doc_citations.py` machine-check example lines and their `deviates:` today-values, boundaries, the one-of `implemented:`/`tracked:` rule, `implemented:` against the modules that actually cite the rule, `interacts:` and cross-doc anchor IDs, citation excerpts quoted verbatim, and legacy citation forms. Assume they pass; a finding one of them would catch is a false positive. Read those two files rather than trusting this sentence — it named five of the nine guards when written, and goes stale as guards are added.
 
-1. **Recompute every number.** Any count, ratio or "N names" in the
-   diff gets recomputed by a script written now, never read. (A
-   filter described as returning one name returned three; a rule's
-   stated blast radius listed two names its own scope excluded.)
-2. **Your detector is a second, unreviewed implementation.** It must
-   read the same vocabulary and boundaries the rule reads. (A
-   particle-run detector that walked only the never-given half — the
-   rule chains through ANY particle — reported 50 false movers where
-   the true count was 1, printing cleanly both times.)
-3. **Rule vs. its own examples.** (P1 said the fold takes "the
-   particle and the one name word"; its example `de la Vega` is two
-   particles onto one word.)
-4. **Rule vs. the decision entries it cites.** Follow every
-   `history:` and read the entry. (P6's rationale asserted what
-   decisions.md#vocabulary-collisions denies, and the rule's own
-   guard exists because the assertion is false.)
-5. **Does the change move another rule's OUTPUT?** A marker lands on
-   the rule whose STATEMENT changed; a rule can move another's output
-   without touching its statement, and the runner cannot see it. Walk
-   `interacts:`. (family_base moved initials(); R3 had no marker.)
-6. **Contested inputs: is precedence stated?** `interacts:` is
-   advisory and pins nothing. This document states precedence in the
-   rule's own statement (H2, M1, W3). (P6 and S2 both claimed
-   `Berg, Jan vd`.)
-7. **General clause vs. adjudicated scope.** Enumerate the vocabulary
-   a shape-clause reaches. (P6's precedence was argued for `vd` and
-   swept in `do` and `mc`.)
-8. **Guard docstring vs. what the guard enforces**, especially when
-   the promise spans two test modules.
-9. **Prose is input to the doc parsers.** A line starting with `"`
-   inside a rule block is an example; a comment's quoted values join
-   the citation block above them.
+1. **Recompute every number.** Any count, ratio or "N names" in the diff gets recomputed by a script written now, never read. (A filter described as returning one name returned three; a rule's stated blast radius listed two names its own scope excluded.)
+2. **Your detector is a second, unreviewed implementation.** It must read the same vocabulary and boundaries the rule reads. (A particle-run detector that walked only the never-given half — the rule chains through ANY particle — reported 50 false movers where the true count was 1, printing cleanly both times.)
+3. **Rule vs. its own examples.** (P1 said the fold takes "the particle and the one name word"; its example `de la Vega` is two particles onto one word.)
+4. **Rule vs. the decision entries it cites.** Follow every `history:` and read the entry. (P6's rationale asserted what decisions.md#vocabulary-collisions denies, and the rule's own guard exists because the assertion is false.)
+5. **Does the change move another rule's OUTPUT?** A marker lands on the rule whose STATEMENT changed; a rule can move another's output without touching its statement, and the runner cannot see it. Walk `interacts:`. (family_base moved initials(); R3 had no marker.)
+6. **Contested inputs: is precedence stated?** `interacts:` is advisory and pins nothing. This document states precedence in the rule's own statement (H2, M1, W3). (P6 and S2 both claimed `Berg, Jan vd`.)
+7. **General clause vs. adjudicated scope.** Enumerate the vocabulary a shape-clause reaches. (P6's precedence was argued for `vd` and swept in `do` and `mc`.)
+8. **Guard docstring vs. what the guard enforces**, especially when the promise spans two test modules.
+9. **Prose is input to the doc parsers.** A line starting with `"` inside a rule block is an example; a comment's quoted values join the citation block above them.
 
-Also: before reporting "N names move", report the size of the
-population that COULD move — a small count over a corpus blind to the
-shape is evidence about the corpus. For rules.md#P6: of 782 corpus
-names, 245 carry a comma, two of those end in a particle, and one of
-the two clears the words-to-spare guard. Running axis 1 over this
-very list caught an earlier wording of that sentence conflating the
-population with the movers, so the count above is the corrected one.
+Also: before reporting "N names move", report the size of the population that COULD move — a small count over a corpus blind to the shape is evidence about the corpus. For rules.md#P6: of 782 corpus names, 245 carry a comma, two of those end in a particle, and one of the two clears the words-to-spare guard. Running axis 1 over this very list caught an earlier wording of that sentence conflating the population with the movers, so the count above is the corrected one.
 
 **Markdown line width: don't hard-wrap prose.** Measured 2026-08-16 — wrapped and unwrapped render identically, docs/design/ is not in the Sphinx build, and unwrapping is byte-identical (newline→space is 1:1), so the width buys nothing and costs diff churn (74% of #386's decisions.md deletions were reflow, not change). Write new prose unwrapped; don't bulk-rewrap old paragraphs, which would reset `git blame` on the provenance that dates stale claims. Enforced exception: rules.md's example and pointer lines are parsed per line, so a wrapped example is a hard error naming its rule — statement prose is free, since the citation check normalizes whitespace first.
 
-**Guard tests** SHOULD carry a recorded negative control — the
-answer with the guard off, stored as data (the _EXCLUSION_EFFECT
-shape; see mechanisms.md's Verification shapes).
+**Guard tests** SHOULD carry a recorded negative control — the answer with the guard off, stored as data (the _EXCLUSION_EFFECT shape; see mechanisms.md's Verification shapes).
 
 ## Commands
 
@@ -395,9 +241,7 @@ Parse flow:
 1. `pre_process()` — strips nicknames/maiden names (parenthesis/quotes, routed to `nickname_list`/`maiden_list` per `Constants.nickname_delimiters`/`maiden_delimiters`) and emoji, fixes "Ph.D." variant spellings
 2. Split on commas → 1 part (no comma), 2 parts (suffix-comma or lastname-comma), 3+ parts
 3. `parse_pieces()` — splits on spaces, detects dotted abbreviations like "Lt.Gov." and registers them as per-parse derived titles/suffixes (the `_derived_*` sets — never the config; see Gotchas)
-4. `join_on_conjunctions()` — merges pieces adjacent to conjunctions into single tokens (e.g. `['Secretary', 'of', 'State']` → `['Secretary of State']`); also joins prefix particles to the following lastname token
-   — a piece merged with a title *or prefix* neighbor is re-registered into the per-parse derived title/prefix set so later steps still recognize it, e.g. `von`+`und`+`zu` → registered as a derived prefix so the whole phrase joins to the last name (German "von und zu"; PR #191)
-4a. `_join_bound_first_name()` — called immediately after step 4 in all three paths that build a first-name-bearing token sequence: no-comma, lastname-comma (post-comma pieces), and suffix-comma (`parts[0]`); merges bound given-name prefixes (e.g. "abdul") with the next piece before the assignment loop runs; suffixes are still in `pieces` at this point, so the `reserve_last` guard must count non-suffix pieces only. Not called for the lastname portion itself (`lastname_pieces` in the lastname-comma path) — that token sequence is a surname, not first-name text, so the join must not apply there. The join lives at each of these three call sites individually rather than inside `parse_pieces()` itself. That's because `parse_pieces()` is also called for the lastname portion with the same `additional_parts_count` value used for the (joinable) post-comma given-names portion, so `additional_parts_count` alone can't disambiguate which callers want the join.
+4. `join_on_conjunctions()` — merges pieces adjacent to conjunctions into single tokens (e.g. `['Secretary', 'of', 'State']` → `['Secretary of State']`); also joins prefix particles to the following lastname token — a piece merged with a title *or prefix* neighbor is re-registered into the per-parse derived title/prefix set so later steps still recognize it, e.g. `von`+`und`+`zu` → registered as a derived prefix so the whole phrase joins to the last name (German "von und zu"; PR #191) 4a. `_join_bound_first_name()` — called immediately after step 4 in all three paths that build a first-name-bearing token sequence: no-comma, lastname-comma (post-comma pieces), and suffix-comma (`parts[0]`); merges bound given-name prefixes (e.g. "abdul") with the next piece before the assignment loop runs; suffixes are still in `pieces` at this point, so the `reserve_last` guard must count non-suffix pieces only. Not called for the lastname portion itself (`lastname_pieces` in the lastname-comma path) — that token sequence is a surname, not first-name text, so the join must not apply there. The join lives at each of these three call sites individually rather than inside `parse_pieces()` itself. That's because `parse_pieces()` is also called for the lastname portion with the same `additional_parts_count` value used for the (joinable) post-comma given-names portion, so `additional_parts_count` alone can't disambiguate which callers want the join.
 5. Iterates pieces, assigning to `title_list`, `first_list`, `middle_list`, `last_list`, `suffix_list`
 6. `post_process()` — `handle_firstnames()` swaps first/last when only a title + one name; then, gated on `patronymic_name_order`, `handle_east_slavic_patronymic_name_order()` and `handle_turkic_patronymic_name_order()` reorder Russian-formal-order and reversed Turkic patronymics; then, gated on `middle_name_as_last`, `handle_middle_name_as_last()` folds `middle_list` into `last_list`; finally `handle_capitalization()` applies optional auto-cap. Any new `self._attr` used by `post_process()` helpers must be initialized in `__init__` (with its default value) — the direct-kwargs path bypasses `parse_full_name()`, so the attribute won't exist otherwise.
 

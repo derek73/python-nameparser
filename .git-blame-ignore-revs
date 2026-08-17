@@ -1,0 +1,6 @@
+# Revisions to skip when running `git blame`. Use:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+# (or pass --ignore-revs-file). Add only whitespace/format-only commits.
+
+# docs: unwrap hard-wrapped prose (whitespace only, no content change)
+f0e6240a748d51554cda34057b1b2d63ad2e3592
