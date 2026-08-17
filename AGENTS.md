@@ -135,16 +135,29 @@ from the weakest instrument manufactures confidence rather than
 supplying it.
 
 **Reviewing a docs/design change: the nine axes.** Run these before
-merging anything that touches rules.md, decisions.md or mechanisms.md.
+merging anything that touches rules.md, decisions.md, mechanisms.md —
+or THIS FILE, which carries the conventions those three rest on and
+has the same failure modes. Axes 3, 5 and 6 are rules.md-specific
+(they need rule statements, examples and `interacts:`); the other six
+apply to any of the four. Say which axes you ran and which you skipped
+as inapplicable — a checklist that asks for something meaningless
+teaches the reader to skim it.
 Each was earned by a defect that survived every other check on #386,
 where the review passes surfaced ten issues in total — nine of them
 by these axes, one by the spec self-review above — and unaided prose
 reading surfaced none. The parenthetical is the case that earned the
-axis. Skip
-what the suite already enforces — example lines, `deviates:` today-
-values, boundaries, the one-of `implemented:`/`tracked:` rule, and
-citation excerpts are all machine-checked, so a finding those would
-have caught is a false positive.
+axis.
+
+Skip what the suite already enforces. `tests/v2/test_rules_doc.py`
+and `tests/v2/test_doc_citations.py` machine-check example lines and
+their `deviates:` today-values, boundaries, the one-of
+`implemented:`/`tracked:` rule, `implemented:` against the modules
+that actually cite the rule, `interacts:` and cross-doc anchor IDs,
+citation excerpts quoted verbatim, and legacy citation forms. Assume
+they pass; a finding one of them would catch is a false positive.
+Read those two files rather than trusting this sentence — it named
+five of the nine guards when written, and goes stale as guards are
+added.
 
 1. **Recompute every number.** Any count, ratio or "N names" in the
    diff gets recomputed by a script written now, never read. (A
