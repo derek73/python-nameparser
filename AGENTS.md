@@ -116,6 +116,24 @@ state which tree each measurement ran on (stale fetches produced
 three rounds of already-fixed findings), and landed corrections are
 re-verified here before committing.
 
+Two shapes, needing different instruments. CROSS-SESSION distillation
+is what the rule above is written for — the #381 arc harvested nine
+named sessions, and for each the source transcript is an artifact
+independent of the reviewing session, so "review your own sections"
+is a two-artifact comparison. SAME-SESSION design work (#386) has no
+such artifact: spec and docs were written in one context, so the same
+instruction degenerates into re-reading the working memory that
+produced any error, and the rationale inverts — when the source is
+NOW, the source is what got it wrong. There, compare against
+artifacts instead, in this measured order of yield: re-derive every
+number with a freshly written script (2 wrong claims on #386);
+re-read the written spec against a checklist for FIDELITY, not just
+presence (1); interrogate NAMED contested rule pairs one at a time
+(2). Unaided prose reading found none — so a general "coherence read"
+by the author is the one form to distrust, because a green report
+from the weakest instrument manufactures confidence rather than
+supplying it.
+
 **Guard tests** SHOULD carry a recorded negative control — the
 answer with the guard off, stored as data (the _EXCLUSION_EFFECT
 shape; see mechanisms.md's Verification shapes).

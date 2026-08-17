@@ -237,6 +237,25 @@ not).
   as evidence about the corpus, not about the blast radius, and
   run tools/differential at all three baselines in the implementing
   PR regardless of how small this looks.
+- 2026-08-16 (pre-merge coherence pass) — P6 and S2 CONTEST
+  "Berg, Jan vd": today S2 wins and reports suffix="vd", while
+  P6's marker asserts family="vd Berg". P6 wins, and the rule says
+  so in its statement rather than leaving the pair to file order.
+  The reason is C-ii's, not a new judgement: vd as the British
+  Volunteer Decoration is rarer than vd as van der, and a trailing
+  abbreviation AFTER A FAMILY COMMA is the tussenvoegsel position
+  specifically.
+  Scope check on the precedence, so it cannot creep: it reaches
+  only words that are both particle and suffix vocabulary, in the
+  trailing-orphan position, under a family comma, with a given word
+  to spare. "John Smith, PhD" and "Smith, Jr." are untouched (not
+  particles), and "Jong, vd" is untouched (no given word remains),
+  which is why that row stays out of scope rather than becoming a
+  counter-example.
+  Recorded because the pair was declared in `interacts:` and left
+  unresolved — `interacts:` is advisory by design and pins nothing,
+  so a declared interaction is a prompt to state the outcome, not a
+  substitute for stating it.
 
 Open: [#380](https://github.com/derek73/python-nameparser/issues/380)
 covers "Berg, Jan vd" under this rule, but the vd reading itself is
@@ -1273,6 +1292,20 @@ Declined:
 - Still open inside the resolution: whether "Do" remains in
   family_particles once it is also the base. Recorded here rather
   than left to the implementing PR to decide by accident.
+- 2026-08-16 (pre-merge coherence pass) — the resolution moves R3
+  too, and R3 now carries its own marker. Initials read the BASE
+  family word, so anchoring "Do" changes
+  parse("Anh Do").initials() from "A." to "A. D." while
+  "Juan van der" stays "J." (no borne name, no base, and initials
+  of a bare particle run would be nonsense).
+  The general lesson, worth more than this instance: a deviates:
+  marker gets written on the rule whose STATEMENT changed, but a
+  rule can change another rule's OUTPUT without touching its
+  statement, and nothing looks for that — the runner asserts per
+  example line, so an unmarked downstream rule stays green
+  precisely because its own examples avoid the affected input.
+  When adding a marker, walk the changed rule's `interacts:`
+  targets and ask whether any of THEIR examples move.
 
 ### removed-v1-surface
 

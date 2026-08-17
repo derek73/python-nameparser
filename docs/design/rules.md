@@ -256,7 +256,11 @@ P6. Rationale: a particle ending the name has nothing to link
     ending the name attaches to that family name and is written
     before it — provided at least one given word remains, so that a
     name whose only given word is the particle keeps it (the
-    words-to-spare test S2 applies to ambiguous suffixes).
+    words-to-spare test S2 applies to ambiguous suffixes). Where
+    the word is BOTH a particle and suffix vocabulary, this
+    attachment outranks the suffix reading (S2): a trailing
+    abbreviation after a family comma is the tussenvoegsel far more
+    often than the decoration it collides with.
       "Jong, Anke de"             →  family="de Jong"  deviates: #379 (today: family="Jong")
       "Beethoven, Ludwig van"     →  family="van Beethoven"  deviates: #379 (today: family="Beethoven")
       "Berg, Jan vd"              →  family="vd Berg"  deviates: #380 (today: family="Berg")
@@ -758,8 +762,14 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     family word; titles, suffixes, particles and nicknames
     contribute nothing.
       "Dr. Juan Q. Xavier de la Vega III"  →  initials="J. Q. X. V."
+      "Anh Do"                    →  initials="A. D."  deviates: #385 (today: initials="A.")
       "Sean O'Connor"             →  initials="S. O."  · boundary
-    implemented: nameparser/_render.py
+    Accepted: a family that is ALL particles contributes nothing,
+    so the initials are the given words alone — "van der" has no
+    borne name to anchor a base (R2), and initials of a bare
+    particle run would be nonsense.
+      "Juan van der"              →  initials="J."
+    history: decisions.md#R2 · interacts: R2 · implemented: nameparser/_render.py
 
 R4. Rationale: case repair is a display concern, applied only on
     request and never destructively.
