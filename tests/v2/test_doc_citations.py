@@ -102,13 +102,23 @@ def test_implemented_matches_citing_modules() -> None:
         citing.setdefault(cid, set()).add(str(path.relative_to(REPO)))
     problems = []
     for rule in parse_rules_doc(RULES_DOC.read_text(encoding="utf-8")):
+        actual = citing.get(rule.rule_id, set())
         if rule.implemented:
-            actual = citing.get(rule.rule_id, set())
             declared = set(rule.implemented)
             if actual != declared:
                 problems.append(
                     f"{rule.rule_id}: implemented: says {sorted(declared)} "
                     f"but citations found in {sorted(actual)}")
+        elif rule.tracked and actual:
+            # The other half of test_rules_doc.py's exactly-one-pointer
+            # rule: that test cannot see code, so a rule that SHIPPED
+            # while keeping tracked: would pass it. Without this branch
+            # the stale pointer is invisible -- the loop above skips
+            # any rule with no implemented: at all.
+            problems.append(
+                f"{rule.rule_id}: declares tracked: {sorted(rule.tracked)} "
+                f"but code cites it in {sorted(actual)}; swap tracked: for "
+                f"implemented: now that something implements it")
     assert not problems, "\n".join(problems)
 
 
