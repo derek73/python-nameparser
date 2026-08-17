@@ -78,6 +78,21 @@ not deferred (a 2026-08-16 sweep of eight weeks of specs recovered
 nine such items). The same-PR amendment rule above covers code-driven
 changes; this covers the design-driven ones.
 
+**Triaging a design backlog: shape before value.** When a pile of
+open questions has to be ordered, relatedness will not partition it —
+in a parser nearly everything touches particles or suffixes. The line
+that does is whether a decision changes WHAT THE MODEL CAN EXPRESS or
+fills in a value in a shape already fixed. Settle the shape questions
+first, as a batch: they are few, they are usually independent of each
+other (so their own ordering does not matter), and each one collapses
+or re-frames a run of the value questions below it. The rest are
+leaves needing one measurement and one answer apiece, in any order.
+Worked example, 2026-08-16 (#386): 30 open issues and ~13 open design
+questions reduced to three shape decisions, which decided or
+re-framed fourteen of them — and two of the three turned out smaller
+than their issues claimed, because the issues had gone stale. Check
+the age of an issue's premises before believing its cost estimate.
+
 **Primary-source review.** When doc content is distilled from a
 session's work, have that session (or its transcript) review its
 own sections before or soon after landing — attribution flattening

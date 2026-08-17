@@ -109,15 +109,24 @@ the 2026-08-16 entries below. The survivor is the degenerate bare
   is family="de Mesnil" plus given="Juan". Nothing ever argued for
   "takes everything"; it was the shape of v1's
   handle_non_first_name_prefix, not a decision.
-  Measured before deciding: filtering the three differential
-  corpora (782 names) to the shape that actually changes — no
-  comma, so C1 does not take it first; leading never-given
-  particle; three or more words — gives exactly ONE name,
-  "de Mesnil Garcia". #364's own body warns the change "breaks the
-  v1 parity tools/differential protects" and that "each ledger
-  would need re-examining"; measured, it is one name and one ledger
-  entry. The warning was written without the filter and is
-  corrected on the issue.
+  Measured before deciding, over all 782 names of the three
+  differential corpora with NO string prefilter: exactly ONE family
+  holds words beyond its particle's group — "de Mesnil Garcia".
+  #364's own body warns the change "breaks the v1 parity
+  tools/differential protects" and that "each ledger would need
+  re-examining"; measured, it is one name and one ledger entry.
+  A shape filter (no comma, leading never-given particle, three or
+  more words) returns THREE candidates, of which two do not move:
+  "de la Vega" is one group start to finish, and "de Mesnil Jr."
+  has only two name words because Jr. is a suffix. The pre-merge
+  fact-check caught this stated as "the filter gives one name",
+  which it does not.
+  Measurement trap, recorded because the fact-check fell into it
+  twice: the particle group runs through ANY particle, not only the
+  never-given ones — "de la Vega" chains never-given "de" through
+  AMBIGUOUS "la" onto "Vega". A detector that walks only the
+  never-given run splits the group after "de la" and reports 50
+  false movers.
 - 2026-08-16 #368 REVERSED — shipped behavior is correct.
   "Juan de la Vega" under FAMILY_FIRST groups [Juan][de la Vega]
   and assigns family="Juan", given="de la Vega". The earlier
@@ -214,11 +223,20 @@ not).
   family wherever they stood in the string". The surnames view
   renders backwards today ("Vega de la", "Jong de") and flips with
   this rule.
-- Measured, default-order shapes that move: "Vega, Juan de la",
-  "Smith van der", "Sander van". Unlike #364 this is NOT a one-name
-  change; it wants a tools/differential run at all three baselines
-  with ledger entries, which belongs to the implementing PR rather
-  than to this record.
+- Measured under this rule's OWN comma scope, over 782 corpus names
+  (245 of them comma-bearing): exactly one moves,
+  "Vega, Juan de la" → family="de la Vega". A pre-merge fact-check
+  corrected an earlier count of three here — "Smith van der" and
+  "Sander van" have no comma, so the rule as scoped does not reach
+  them; they were measured before the comma scoping was chosen and
+  carried forward unfiltered.
+- What that number means is the opposite of reassuring. The corpus
+  holds 245 comma names and exactly ONE with a trailing particle,
+  so it is very nearly blind to the shape this rule governs —
+  Dutch and Flemish listings are barely represented. Treat the one
+  as evidence about the corpus, not about the blast radius, and
+  run tools/differential at all three baselines in the implementing
+  PR regardless of how small this looks.
 
 Open: [#380](https://github.com/derek73/python-nameparser/issues/380)
 covers "Berg, Jan vd" under this rule, but the vd reading itself is
