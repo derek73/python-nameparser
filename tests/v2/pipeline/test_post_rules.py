@@ -136,7 +136,9 @@ _FAMILY_FIRST = [pytest.param(_FF, id="FAMILY_FIRST"),
     # three pieces, so the fold has a MIDDLE to move as well as the
     # given -- the `givens + middles` half of the repair, and the only
     # no-comma corpus name that reaches it
-    ("de Mesnil Garcia", "de Mesnil Garcia", "", ""),
+    # #390: the claim takes the particle run plus ONE word, so Garcia
+    # survives by position -- the only no-comma corpus name it moves
+    ("de Mesnil Garcia", "de Mesnil", "Garcia", ""),
     # ... and the trailing suffix run is peeled before the rule looks,
     # comma or no comma (NO_COMMA and SUFFIX_COMMA both fold)
     ("de Mesnil MD", "de Mesnil", "", "MD"),
@@ -198,7 +200,7 @@ def test_family_first_leading_particle_cases_that_do_not_fold(
 @pytest.mark.parametrize("text,title,given,middle,family,suffix", [
     ("de Mesnil", "", "", "", "de Mesnil", ""),
     ("de la Vega", "", "", "", "de la Vega", ""),
-    ("de Mesnil Garcia", "", "", "", "de Mesnil Garcia", ""),
+    ("de Mesnil Garcia", "", "Garcia", "", "de Mesnil", ""),
     ("Dr. de MD Mesnil", "Dr.", "", "", "de MD Mesnil", ""),
     ("de Mesnil MD", "", "", "", "de Mesnil", "MD"),
     ("De Mesnil, MD", "", "", "", "De Mesnil", "MD"),
@@ -213,7 +215,11 @@ def test_family_first_leading_particle_cases_that_do_not_fold(
     # comma already fixed the family), and both of 1b's sites then
     # agree, the opening piece of segment 1 and the lone given being
     # the same token. Pinned here so the re-key cannot quietly drop it
-    ("Smith, de Mesnil", "", "", "", "Smith de Mesnil", ""),
+    # #390: the comma is the primary order signal -- nobody writes a
+    # comma to mean "all of this is the family name", so the post-comma
+    # run reads as given text rather than folding into the family. v1
+    # gave family="Smith de Mesnil"; this is a deliberate parity break
+    ("Smith, de Mesnil", "", "de Mesnil", "", "Smith", ""),
     ("Smith, van Gogh", "", "van", "Gogh", "Smith", ""),
 ])
 def test_default_order_is_unchanged_by_the_family_first_fold(
@@ -229,9 +235,12 @@ def test_default_order_is_unchanged_by_the_family_first_fold(
 
 @pytest.mark.parametrize("policy", _FAMILY_FIRST)
 def test_family_comma_fold_is_order_independent(policy: Policy) -> None:
+    # The comma fixes the family in every order; what changed in #390 is
+    # that the post-comma particle group stays GIVEN text instead of
+    # folding into it. Still order-independent, which is what this pins.
     out = _parsed("Smith, de Mesnil", policy)
-    assert _by_role(out, Role.FAMILY) == "Smith de Mesnil"
-    assert not _by_role(out, Role.GIVEN)
+    assert _by_role(out, Role.FAMILY) == "Smith"
+    assert _by_role(out, Role.GIVEN) == "de Mesnil"
 
 
 @pytest.mark.parametrize("policy", _FAMILY_FIRST)

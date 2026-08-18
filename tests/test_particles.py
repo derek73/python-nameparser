@@ -394,5 +394,10 @@ class LastNamePrefixSplitTestCase(HumanNameTestBase):
         # the later opt-in handle_middle_name_as_last has nothing left to do.
         constants = Constants(middle_name_as_last=True)
         hn = HumanName("de Mesnil Garcia", constants=constants)
-        self.m(hn.first, "", hn)
-        self.m(hn.last, "de Mesnil Garcia", hn)
+        # #390: the claim takes the particle run plus ONE word, so
+        # 'Garcia' survives as the given name where it used to be swept
+        # into the family. middle is empty either way, which is the
+        # interaction this test actually guards.
+        self.m(hn.first, "Garcia", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "de Mesnil", hn)

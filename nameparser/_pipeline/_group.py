@@ -68,8 +68,8 @@ def _is_title_piece(piece: Sequence[int], ptags: Set[str],
 # part, the join running until the next particle starts a group of
 # its own or the name ends. The final group reads as the family
 # name; earlier groups read by position." (history: decisions.md#P2)
-# rules.md#P4: "a particle in the name's leading position chains
-# nothing: the words stay separate" (history: decisions.md#P2)
+# rules.md#P4: "An AMBIGUOUS particle in the name's leading position
+# chains nothing: the words stay separate" (history: decisions.md#P2)
 def _is_prefix_piece(piece: Sequence[int], ptags: Set[str],
                      tokens: Sequence[WorkToken]) -> bool:
     if "prefix" in ptags:
@@ -257,16 +257,57 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # nothing unless some piece is a prefix.
         leading = next((k for k in range(len(pieces))
                         if not title(k) or prefix(k)), 0)
+        # rules.md#P1: "the particle run and the one name word it
+        # attaches to are the family, and any name words beyond that
+        # read by position" (history: decisions.md#P1)
+        # (#390): a NEVER-GIVEN particle leading the name
+        # chains too, unlike the ambiguous one P4 leaves alone -- but
+        # only through its run onto ONE word, where a mid-name run
+        # absorbs everything to the next particle or suffix.
+        #
+        # The asymmetry is the two positions meaning different things,
+        # not an inconsistency to tidy away. Mid-name, what follows a
+        # particle run is MORE SURNAME: "pennie von bergen wessels" is a
+        # US politician and "von bergen wessels" is one compound name
+        # (tests/test_particles.py pins it). Leading, the name opens
+        # with a surname, so what follows the group is a GIVEN name --
+        # "de la Vega Juan" is family "de la Vega" plus given "Juan".
+        # Identical shape, and only the position tells them apart.
+        #
+        # Ambiguous particles keep P4 whole: "Van Johnson" must stay a
+        # given-name reading, which is the fork _assign reports.
+        # Three conditions, and each was earned by a failure:
+        #   - the head token must POSITIVELY be a particle. A conjunction
+        #     merge makes 'and van' one prefix-tagged piece whose head is
+        #     'and', which carries no particle tag at all -- testing only
+        #     for the absence of the ambiguous tag passes vacuously and
+        #     swallowed "and van Buren".
+        #   - not a title. A word in BOTH vocabularies (st, do, freiherr,
+        #     or any overlap a caller configures) must stay the title it
+        #     is; decisions.md#P1 records this as Declined for the same
+        #     reason "St John Smith" broke there.
+        #   - not ambiguous, so P4 keeps "Van Johnson" whole.
+        head_tok = tokens[pieces[leading][0]]
+        lead_bounded = (prefix(leading)
+                        and not title(leading)
+                        and "particle" in head_tok.tags
+                        and "vocab:particle-ambiguous" not in head_tok.tags)
         k = 0
         while k < len(pieces):
-            if k == leading or not prefix(k):
+            if (k == leading and not lead_bounded) or not prefix(k):
                 k += 1
                 continue
             j = k + 1
             while j < len(pieces) and prefix(j):
                 j += 1
-            while j < len(pieces) and not prefix(j) and not suffix(j):
-                j += 1
+            if k == leading:
+                # the run plus exactly one word; a suffix ends it, so
+                # "de Mesnil Jr." keeps Jr. a suffix
+                if j < len(pieces) and not suffix(j):
+                    j += 1
+            else:
+                while j < len(pieces) and not prefix(j) and not suffix(j):
+                    j += 1
             # The other half of PARTICLE_OR_GIVEN. _assign reports the
             # fork when an ambiguous particle stays a lone leading piece
             # ("Van Johnson" -> given under the default order, family

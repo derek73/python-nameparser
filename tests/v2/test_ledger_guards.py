@@ -1048,6 +1048,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('given', 'middle', 'suffix', 'title'), "390e7f814d13"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
             _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
+        "fix(#390) the leading-particle claim takes the particle run "
+        "plus one word, not the rest of the name":
+            _Claim(1, ('family', 'given'), "caf836e3556c"),
     },
     "expected_since_2.0.0.toml": {
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
@@ -1064,10 +1067,16 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given', 'suffix', 'title'), "1d45596e6fdb"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
             _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
+        "fix(#390) the leading-particle claim takes the particle run "
+        "plus one word, not the rest of the name":
+            _Claim(1, ('family', 'given'), "caf836e3556c"),
     },
     "expected_since_2.1.0.toml": {
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
             _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
+        "fix(#390) the leading-particle claim takes the particle run "
+        "plus one word, not the rest of the name":
+            _Claim(1, ('family', 'given'), "caf836e3556c"),
     },
 }
 
@@ -1156,6 +1165,10 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
 #: a diff shape that shifted is a finding, not a number to update.
 _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
     "expected_since_1.4.0.toml": {
+        # Without fix(#390) this falls to the fields-only
+        # fix(suffix-routing) catch-all with the gate still at 0
+        # unexplained -- a rule claiming a diff it does not describe.
+        ("de Mesnil Garcia", ("family", "given")): "fix(#390)",
         ("Andrews, M.D.", ("given", "suffix")): "fix(comma-family)",
         ("田中, 太郎さん", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
         ("김, 민준씨", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",

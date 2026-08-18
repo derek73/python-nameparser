@@ -268,7 +268,40 @@ def _assign_main(seg_idx: int, state: ParseState,
     order = _effective_order(state.policy,
                              [pieces[i] for i in name_pieces], tokens,
                              dot_divided=bool(state.interpunct_offsets))
-    roles = _name_positions(order, len(name_pieces))
+    # rules.md#P1: "a never-given particle standing alone where the
+    # given name would go — or opening the name — marks the name as
+    # surname-only: the particle run and the one name word it attaches
+    # to are the family, and any name words beyond that read by
+    # position." (history: decisions.md#P1)
+    # group() has already bounded that run to one word (#390), so the
+    # claim is simply: the leading piece IS the family. It happens here,
+    # before positions are handed out, because the particle is evidence
+    # about the name and name_order governs only what no vocabulary has
+    # claimed (decisions.md#O4).
+    # A piece of nothing but particles is NOT claimed -- bare "de" has
+    # no name word to attach to and stays a given name, which is P1's
+    # own Accepted consequence.
+    claimed: list[int] = []
+    if name_pieces:
+        head = pieces[name_pieces[0]]
+        if ("particle" in tokens[head[0]].tags
+                and "vocab:particle-ambiguous" not in tokens[head[0]].tags
+                and any("particle" not in tokens[i].tags for i in head)):
+            claimed, name_pieces = name_pieces[:1], name_pieces[1:]
+    if claimed:
+        # The family slot is taken, so the remainder positions itself as
+        # if it did not exist: ask for one more slot than there are
+        # pieces and drop FAMILY. Reusing _name_positions rather than
+        # re-deriving the order keeps one definition of "by position" --
+        # under FAMILY_FIRST a plain count would hand the leftover the
+        # family a second time.
+        roles: list[Role] = [
+            r for r in _name_positions(order, len(name_pieces) + 1)
+            if r is not Role.FAMILY]
+        for piece_idx in claimed:
+            _set_roles(tokens, pieces[piece_idx], Role.FAMILY)
+    else:
+        roles = list(_name_positions(order, len(name_pieces)))
     for pos, piece_idx in enumerate(name_pieces):
         _set_roles(tokens, pieces[piece_idx], roles[pos])
     for piece_idx in suffix_pieces:

@@ -108,8 +108,8 @@ P1. Rationale: a never-given particle standing alone cannot be
       "de la Vega"                →  family="de la Vega"
       "Sir de Mesnil"             →  family="de Mesnil"
       "Mesnil de"  family-first   →  family="Mesnil de"
-      "de Mesnil Juan"            →  family="de Mesnil"  deviates: #364 (today: family="de Mesnil Juan")
-      "de Mesnil Juan"            →  given="Juan"  deviates: #364 (today: given="")
+      "de Mesnil Juan"            →  family="de Mesnil"
+      "de Mesnil Juan"            →  given="Juan"
       "Mc Donald"                 →  family="Mc Donald"
       "de los Santos"             →  family="de los Santos"
       "van Gogh"                  →  given="van"  · boundary
@@ -123,7 +123,7 @@ P1. Rationale: a never-given particle standing alone cannot be
     the bare particle reading as a given name, not any name part
     that begins with one.
       "Juan de la Vega"  family-first  →  family="Juan"
-    history: decisions.md#P1 · interacts: P2, P4, P6 · implemented: nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P1 · interacts: P2, P4, P6 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P2. Rationale: a particle is written as part of the surname it
     precedes, and a title stands outside the name entirely.
@@ -161,18 +161,27 @@ P3. Rationale: connective words ("y", "of the") bind name words into
       "Хосе И Мария Сантос"       →  given="Хосе И Мария"
     history: decisions.md#P3 · implemented: nameparser/_pipeline/_group.py
 
-P4. Rationale: a particle links forward from inside a name; at the
-    very front there is no name yet to be inside.
-    A particle in the name's leading position chains nothing: the
-    words stay separate, and any surname reading the name gets
-    comes from the fold (P1) or from position (O4), never from a
-    join. This is why a title before a leading particle changes
-    nothing (the title is not a name word), and why "Van Johnson"
-    is a given-name reading at all.
+P4. Rationale: an ambiguous particle at the very front may be the
+    given name itself, so it must not swallow what follows; a
+    never-given particle cannot be, so it may.
+    An AMBIGUOUS particle in the name's leading position chains
+    nothing: the words stay separate, which is why "Van Johnson" is
+    a given-name reading at all. A NEVER-GIVEN particle there does
+    chain, through its run onto one name word (P1) — and a run
+    inside the name still joins everything after it (P2), because
+    what follows a particle mid-name is more surname while what
+    follows one at the front is a given name. A title before either
+    changes nothing: the title is not a name word.
       "Van Johnson"               →  given="Van"
-      "Sir de Mesnil"             →  pieces=[["Sir"], ["de"], ["Mesnil"]]
+      "Sir de Mesnil"             →  pieces=[["Sir"], ["de", "Mesnil"]]
+      "de la Vega Juan"           →  pieces=[["de", "la", "Vega"], ["Juan"]]
       "John van der Berg"         →  pieces=[["John"], ["van", "der", "Berg"]]  · boundary
-    history: decisions.md#P2 · interacts: P1 · implemented: nameparser/_pipeline/_group.py
+    Accepted: the two positions read the same shape differently, and
+    only position tells them apart — "pennie von bergen wessels" is
+    one compound surname while "de la Vega Juan" is a surname plus a
+    given name.
+      "pennie von bergen wessels" →  family="von bergen wessels"
+    history: decisions.md#P2 · interacts: P1, P2 · implemented: nameparser/_pipeline/_group.py
 
 P5. Rationale: some given-name words are incomplete alone — "abdul"
     is a bound form that the next word completes.
