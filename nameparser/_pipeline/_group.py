@@ -342,8 +342,18 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 and len(pieces[first_name_k]) == 1
                 and "vocab:bound-given"
                 in tokens[pieces[first_name_k][0]].tags):
+            # first_name_k counts as a name piece even when it is
+            # ALSO suffix vocabulary. The reserve asks whether enough
+            # OTHER words are left to spare, and this piece is the one
+            # the rule has already claimed as a name -- excluding it
+            # made a dual-membership word silently un-joinable --
+            # found while adding 'abd' ("All But Dissertation" as well
+            # as عبد), which this had to be fixed for, though it is
+            # not why the word was excluded. Same shape as the count
+            # #397 describes.
             non_suffix = sum(1 for k in range(len(pieces))
-                             if not title(k) and not suffix(k))
+                             if not title(k)
+                             and (k == first_name_k or not suffix(k)))
             if non_suffix >= bound_join:
                 merge(first_name_k, first_name_k + 2)
     return pieces, ptags

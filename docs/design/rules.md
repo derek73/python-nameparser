@@ -226,10 +226,20 @@ P4. Rationale: a particle links forward from inside a name; at the
 P5. Rationale: some given-name words are incomplete alone — "abdul"
     is a bound form that the next word completes.
     A recognized bound given-name word joins the word after it into
-    one given name.
+    one given name. It needs a name word to spare, so two name words
+    alone do not join — the second is the family name — except after
+    a family comma, where the family is already fixed. Where the word
+    is BOTH bound-given and suffix vocabulary, position decides and
+    both readings survive: leading, it is the bound word; trailing,
+    it is the suffix (S2). In the given slot after a family comma the
+    suffix reading wins.
       "abdul salam ahmed salem"   →  given="abdul salam"
+      "abd Allah Smith"           →  given="abd Allah"
+      "Salam, abd Allah"          →  given="abd Allah"
+      "abd Allah"                 →  given="abd"
+      "Smith, Abd"                →  suffix="Abd"
       "mohamad ali smith"         →  given="mohamad"  · boundary
-    history: decisions.md#P5 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P5 · interacts: S2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P6. Rationale: a particle ending the name has nothing to link
     forward to, so it is not doing a particle's work there. A

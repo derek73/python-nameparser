@@ -310,10 +310,15 @@ Excluded (SUFFIX_ACRONYMS / SUFFIX_WORDS — the esq dual membership, deliberate
 
 - 2026-06-30 (first-name-prefix-join design; v1-era, carried into the v2 port) — the join is vocabulary-driven and deliberately tiny.
 
+- 2026-08-18 — `abd` ADDED, and the reserve count corrected to let it work. It is the transliteration for the spellings that write the article as its own word ("Abd Allah", "Abd al-Rahman"), which abdul/abdel/abdal do not match; the Arabic-script عبد has covered the same word since #269, so only the Latin side was short. Not a C-ii collision, though it looks like one: C-ii settles a PRECEDENCE by frequency where neither reading is a name, and here one reading is a name and neither had to be given up. It is C-i's positional qualifier (2026-08-17) applied to a bound-given word — the naming use is LEADING, the credential use trailing, which is the `de` row of that table ('a TRAILING surname — no clash') rather than the `vd` row. `abd` is also the postnominal ABD ("All But Dissertation") in SUFFIX_ACRONYMS, and all three credential spellings still parse ("Jane Smith ABD", "Jane Smith, ABD", "Jane Smith A.B.D.").
+  What made it look impossible: adding the word alone changed nothing on the common three-word shape. The reserve count in the join gate excluded suffix-vocabulary pieces, and `abd` IS one, so its own piece did not count toward the three it needed — the rule declined silently. Counting the claimed piece as a name piece fixes it, and is right on its own terms: the reserve asks whether enough OTHER words are left to spare. Measured, the vocabulary-only alternatives both cost something the count fix does not — moving `abd` into SUFFIX_ACRONYMS_AMBIGUOUS loses "Jane Smith, ABD", and dropping it from SUFFIX_ACRONYMS loses the postnominal entirely.
+  Two limits, both measured and both accepted. The three-token "abd al rahman" still does not join — `al` is a particle and chains forward, which is the half of the original exclusion that survives. And position decides at the two ENDS only: in the given slot of a family-comma name the credential still wins, so "Smith, Abd" reports suffix 'Abd' with no given name where "Smith, Abdul" reports the given name, and no ambiguity is emitted for it.
+  Same shape as #397 (Catalan `i`, where dual membership shrinks the rootname count P3's carve-out tests), and the second instance the SAME DAY, #397 having been filed two and a half hours earlier. The general question — whether a word's membership in one set should suppress it from a count gating a rule keyed on another — is open there.
+
 Excluded (BOUND_GIVEN_NAMES):
 
 - mohamad — a standalone given name in its own right; binding it would eat the middle name.
-- abd — collides with the academic post-nominal "ABD", and the real form is the deferred multi-token "abd al rahman".
+- abd — ADDED 2026-08-18, see the entry above; the exclusion stood on two reasons and only one of them survived. The collision with the post-nominal "ABD" turned out to cost nothing (position decides at both ends). The other reason stands as a known limit: the three-token spelling "abd al rahman" is still not joined, `al` being a particle that chains forward, so only the two-token "abd X" and the hyphenated "abd al-Rahman X" join.
 
 Excluded (DEFAULT_NICKNAME_DELIMITERS):
 

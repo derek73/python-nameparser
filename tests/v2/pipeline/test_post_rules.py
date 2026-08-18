@@ -581,3 +581,17 @@ def test_a_suffix_word_mid_run_ends_the_chain(
     assert _by_role(out, Role.FAMILY) == "de Mesnil"
     assert _by_role(out, Role.GIVEN) == given
     assert _by_role(out, Role.MIDDLE) == middle
+
+
+@pytest.mark.parametrize("policy", _FAMILY_FIRST)
+def test_a_bound_pair_survives_the_leading_particle_stop(
+        policy: Policy) -> None:
+    # The stop leaves the bound pair whole (rules.md#P5 via _units).
+    # Asserted under a family-first order deliberately: in the DEFAULT
+    # order the fold takes the whole name into the family, so the join
+    # is invisible there and the assertion would pass with the join
+    # broken.
+    out = run(ParseState(original="de Mesnil abd Allah",
+                         lexicon=Lexicon.default(), policy=policy))
+    assert _by_role(out, Role.FAMILY) == "de Mesnil"
+    assert _by_role(out, Role.GIVEN) == "abd Allah"
