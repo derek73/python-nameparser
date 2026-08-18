@@ -24,7 +24,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from nameparser import Policy
-from nameparser._policy import PatronymicRule
+from nameparser._policy import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
+                               PatronymicRule)
 
 
 @dataclass(frozen=True)
@@ -161,6 +162,48 @@ CASES: tuple[Case, ...] = (
                "1b folds the name into the family. 1.4.0 and 2.1 gave "
                "first 'de Mesnil' with no family, because the chain "
                "left 1b nothing standing alone to fire on"),
+    # The two-leftover shape, and the ONLY shape where the two
+    # family-first orders can disagree with each other: one leftover
+    # goes to `given` under both. Spanish because the listing is real
+    # -- "Apellidos Nombres" keeps the particle in place, where Dutch
+    # moves it behind the given name ("Jong, Jan Pieter de", the
+    # tussenvoegsel convention rule P6 covers). Pinned here BEFORE #395
+    # moves it, because what it records is surprising: today all three
+    # orders agree, the leading run taking the whole name in each.
+    Case("leading_never_given_particle_two_leftovers",
+         "de la Cruz Juan Carlos",
+         {"family": "de la Cruz Juan Carlos"},
+         classification="parity",
+         notes="the DEFAULT order, which #395 leaves alone: with no "
+               "order declared there is no evidence that 'Juan Carlos' "
+               "is anything but more surname, and the same shape reads "
+               "correctly that way in 'pennie von bergen wessels'. "
+               "1.4.0 gives last 'de la Cruz Juan Carlos' too, so this "
+               "row must not move when #395 lands"),
+    Case("leading_never_given_particle_two_leftovers_family_first",
+         "de la Cruz Juan Carlos",
+         {"family": "de la Cruz Juan Carlos"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="feat(name-order)",
+         notes="core-only: name_order has no v1 spelling. Today "
+               "identical to the default order, which is the state "
+               "#395 changes -- the run should stop at 'Cruz', leaving "
+               "two words for the order to place. The run reaches "
+               "'Cruz' THROUGH ambiguous 'la', which is the chain a "
+               "stop keyed on never-given membership would break"),
+    Case("leading_never_given_particle_two_leftovers_"
+         "family_first_given_last",
+         "de la Cruz Juan Carlos",
+         {"family": "de la Cruz Juan Carlos"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         classification="feat(name-order)",
+         notes="the row that makes the leftover DISTRIBUTION testable: "
+               "once the run stops, FAMILY_FIRST and this order place "
+               "'Juan Carlos' differently, and no other shape can tell "
+               "them apart. PR #394's review found the code that does "
+               "the placing passes the whole suite with name_order "
+               "discarded, which is what an untested divergence looks "
+               "like"),
     Case("suffix_word_title_ambiguous_particle", "Jr. Van Johnson",
          {"title": "Jr.", "given": "Van", "family": "Johnson"},
          classification="fix(#367)",
