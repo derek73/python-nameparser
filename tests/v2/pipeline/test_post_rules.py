@@ -7,18 +7,59 @@ from nameparser._policy import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
                                 PatronymicRule, Policy)
 from nameparser._types import Role
 
+# A reduced lexicon, the convention in every pipeline stage module: a
+# stage test should not move when shipped vocabulary does. What it must
+# NOT do is classify a word DIFFERENTLY from the shipped sets, which
+# makes a test pass by parsing something other than the name it reads
+# as -- `_assert_fixture_mirrors_shipped` below holds the line, and
+# found three such words when it was written (#395): `dr` and `md` were
+# absent while shipping as titles, and `la` sat in the never-given half
+# while shipping as ambiguous.
 _LEX = Lexicon(
-    titles=frozenset({"mr", "sir"}),
+    titles=frozenset({"mr", "sir", "dr", "md"}),
     given_name_titles=frozenset({"sir"}),
     particles=frozenset({"de", "la", "van"}),
-    particles_ambiguous=frozenset({"van"}),
-    suffix_words=frozenset({"md"}),
+    particles_ambiguous=frozenset({"la", "van"}),
+    suffix_words=frozenset({"dr"}),
+    suffix_acronyms=frozenset({"md"}),
 )
 
 
+#: Vocabulary-derived tags. `initial` and the structural tags are
+#: excluded on purpose: they come from a token's SHAPE, which no
+#: lexicon controls.
+_VOCAB_TAGS = frozenset({"particle", "conjunction"})
+
+
+def _fixture_mirrors_shipped(text: str, policy: Policy) -> str:
+    """Empty unless `_LEX` classifies a word in `text` differently from
+    the shipped sets. A reduced fixture is fine -- a MISCLASSIFYING one
+    is not, because the test then reads one name and parses another,
+    and passes for a reason its author never sees (#395; the three
+    words it caught are named on `_LEX`)."""
+    def vocab(lexicon: Lexicon) -> list[tuple[str, frozenset[str]]]:
+        state = run(ParseState(original=text, lexicon=lexicon,
+                               policy=policy))
+        return [(t.text, frozenset(g for g in t.tags
+                                   if g.startswith("vocab:")
+                                   or g in _VOCAB_TAGS))
+                for t in state.tokens]
+    mine, shipped = vocab(_LEX), vocab(Lexicon.default())
+    if len(mine) != len(shipped):
+        return f"{text!r}: tokenizes differently under the shipped lexicon"
+    return "; ".join(
+        f"{word!r} is {sorted(ours) or 'plain'} here but "
+        f"{sorted(theirs) or 'plain'} in the shipped sets"
+        for (word, ours), (_, theirs) in zip(mine, shipped) if ours != theirs)
+
+
 def _parsed(text: str, policy: Policy | None = None) -> ParseState:
-    return run(ParseState(original=text, lexicon=_LEX,
-                          policy=policy or Policy()))
+    policy = policy or Policy()
+    divergence = _fixture_mirrors_shipped(text, policy)
+    assert not divergence, (
+        f"{divergence}. Mirror the shipped classification in _LEX, or "
+        f"pass an explicit lexicon if the test needs this word plain.")
+    return run(ParseState(original=text, lexicon=_LEX, policy=policy))
 
 
 def _by_role(state: ParseState, role: Role) -> str:
@@ -156,7 +197,7 @@ def test_leading_piece_scan_skips_pieces_that_hold_no_name(
         policy: Policy) -> None:
     # `_leading_name_piece` walks PAST pieces carrying no name role
     # rather than reading piece 0 -- and past the first such piece, not
-    # only over a single title. 'Mr. de Mesnil' cannot show that: its
+    # only over a single title. 'Mr de Mesnil' cannot show that: its
     # particle is chained into one piece with 'Mesnil', so the scan
     # lands on a two-token piece and the rule declines either way.
     # Here a mid-name suffix word breaks that chain, leaving the
@@ -164,8 +205,12 @@ def test_leading_piece_scan_skips_pieces_that_hold_no_name(
     # skip, or reading only pieces[0], the scan finds the title (or
     # nothing) and the name splits: given='MD', middle='Mesnil',
     # family='de'.
-    out = _parsed("Dr. de MD Mesnil", policy)
-    assert _by_role(out, Role.TITLE) == "Dr."
+    #
+    # The title is deliberately UNDOTTED: a period makes any opening
+    # abbreviation a title by shape (rules.md#H2), so a dotted one
+    # would pass this test with the title vocabulary empty.
+    out = _parsed("Mr de MD Mesnil", policy)
+    assert _by_role(out, Role.TITLE) == "Mr"
     assert _by_role(out, Role.FAMILY) == "de MD Mesnil"
     assert not _by_role(out, Role.GIVEN)
     assert not _by_role(out, Role.MIDDLE)
@@ -199,7 +244,7 @@ def test_family_first_leading_particle_cases_that_do_not_fold(
     ("de Mesnil", "", "", "", "de Mesnil", ""),
     ("de la Vega", "", "", "", "de la Vega", ""),
     ("de Mesnil Garcia", "", "", "", "de Mesnil Garcia", ""),
-    ("Dr. de MD Mesnil", "Dr.", "", "", "de MD Mesnil", ""),
+    ("Mr de MD Mesnil", "Mr", "", "", "de MD Mesnil", ""),
     ("de Mesnil MD", "", "", "", "de Mesnil", "MD"),
     ("De Mesnil, MD", "", "", "", "De Mesnil", "MD"),
     ("Mr. de Mesnil", "Mr.", "", "", "de Mesnil", ""),
