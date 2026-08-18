@@ -56,6 +56,11 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
     'auf',     # German "upon" ("auf der Heide")
     'av',      # Swedish/Norwegian "of"
     'bint',    # Arabic "daughter of"; native-script بنت below
+    'das',     # Portuguese/German "of the", fem. pl. Added #360: its
+               # own plural partner 'dos' was already here. "Das" IS a
+               # common Bengali surname, but a TRAILING one -- measured,
+               # "Anjali Das" and "Bimal Das" are untouched, while
+               # "Maria das Neves" gains the particle it loses today.
     'de',      # French/Iberian/Italian "of". "De" IS a borne Bengali and
                # Odia surname -- trailing, so it never reaches this rule.
                # The case that forced C-i's positional qualifier.
@@ -70,7 +75,23 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
     'dos',     # Portuguese "of the", masc. pl.
     'het',     # Dutch definite article
     'ibn',     # Arabic "son of"; native-script ابن below
+    'las',     # Spanish "the", fem. pl. Added #360: 'la' was here as
+               # AMBIGUOUS (La Shawn, La Toya) but the plurals are not
+               # name elements -- no bearer in any position.
+    'los',     # Spanish "the", masc. pl. Same as 'las' -- and the pair
+               # is why the #390 fold narrowing regressed
+               # "de los Santos" to given='Santos', family='de los'.
+    'mc',      # Contraction of 'Mac'; unlike 'mac' (Mac Miller) it is
+               # not a standalone given name. Measured misparse: "Mc
+               # Donald" gave given='Mc'. Also in SUFFIX_ACRONYMS as
+               # Master of Ceremonies, but that is trailing position and
+               # unaffected -- "John Smith MC" still reads suffix (#360).
     'op',      # Dutch "at/on" ("op den Berg")
+    'ste',     # Contraction of 'Sainte'; has a vowel, which is why the
+               # criterion is "abbreviation of a word that is never
+               # itself a name" rather than the vowel shape #360 first
+               # proposed. Measured misparse: "Ste Marie" gave
+               # given='Ste'.
     'ter',     # Dutch "at the" ("ter Horst")
     'vd',      # Dutch abbreviation of "van der". Also the British
                # Volunteer Decoration, a suffix acronym: two non-name
@@ -151,44 +172,75 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
 #: member is guaranteed to also be a particle (and still join forward),
 #: with no drift -- mirroring ``TITLES = GIVEN_NAME_TITLES | {...}`` in
 #: :py:mod:`nameparser.config.titles`.
+# The AMBIGUOUS half: words that are also borne as names in the position
+# the leading-particle rule acts on (decisions.md#vocabulary-collisions
+# C-i). A commented entry has been examined; a BARE one is sitting on the
+# conservative default and nobody has looked at it. #360 examined the 12
+# that appear leading in tools/differential's corpora plus a few more,
+# and left the rest bare rather than record an absence of knowledge as a
+# judgment.
 PARTICLES = NON_GIVEN_NAME_PARTICLES | {
     'aan',
     'aen',
-    'abu',
-    'al',
-    'bar',
+    'abu',    # "Abu Bakr" -- Abu reads as the given name; also a bound
+              # given-name word, so it joins forward (#269, P5)
+    'al',     # Al Gore: 'Al' is an ordinary English given name. Also the
+              # Arabic definite article, which is the particle reading
+    'bar',    # Bar Refaeli; a common modern Israeli given name. Aramaic
+              # "son of" is the particle reading (#269 excludes bare בר)
     'bat',
-    'bin',
+    'bin',    # Arabic "son of", but kept ambiguous deliberately: #269
+              # judged the Latin transliteration separately from the
+              # native-script بن, which IS never-given
     'bon',
     'da',
     'dal',
-    'del',
-    'dela',
-    'della',
+    'del',    # BOTH readings attested: Del Shannon (given name) and
+              # del Toro (particle). The ambiguity flag is the answer
+    'dela',   # Dela is a short form of Adela, and an African name
+              # meaning saviour/redeemer -- so the Filipino surname
+              # particle ("Dela Cruz") is not the only reading
+    'della',  # Della Reese: an ordinary given name
     'den',
-    'di',
+    'di',     # BOTH: Di as a short form of Diana, and the Italian
+              # particle (DiCaprio)
     'dí',
-    'do',
-    'du',
-    'freiherr',
-    'freiherrin',
+    'do',     # Vietnamese Đỗ leads a great many surnames. Also in
+              # TITLES -- decisions.md records TITLES n ambiguous ==
+              # {do, freiherr, st} as load-bearing for the emitter
+    'du',     # Du is a Chinese surname (Du Fu), leading under a
+              # family-first reading
+    'freiherr',    # German noble title; also in TITLES, load-bearing
+    'freiherrin',  # as above
     'heer',
-    'la',
-    'le',
-    'mac',
-    'mc',
-    'san',
+    'la',     # La Shawn, La Toya: a given-name element. The Romance
+              # article is the particle reading; its PLURALS ('las',
+              # 'los') are never-given, being no one's name
+    'le',     # Lê is among the most common Vietnamese surnames and
+              # leads under a family-first reading
+    'mac',    # Mac Miller: a real given name. This is the case that
+              # shows #360's vowel heuristic was not the criterion --
+              # 'mac' and 'mc' differ by attestation, not by shape
+    'san',    # San San Chiou: a given-name element in Burmese and
+              # Chinese naming
     'santa',
-    'st',
-    'ste',
-    'te',
+    'st',     # Also in TITLES and consumed there before particle logic
+              # runs, so moving it changes nothing; kept for the
+              # load-bearing TITLES intersection above
+    'te',     # Te Awanui-a-Rangi: a Māori given-name element, and in
+              # the corpus. Looks like the Dutch preposition 'te', which
+              # is why attestation rather than etymology decides
     'tho',
     'thoe',
-    'van',
+    'van',    # Vietnamese Văn, and Van Johnson -- the canonical
+              # particle-or-given ambiguity this whole flag exists for
     'vande',
     'vander',
     'vel',
-    'von',
+    'von',    # Von Miller: a real given name, so this stays ambiguous
+              # even though "von Braun" is misparsed today. The case
+              # that shows a word can look like a pure particle, BE
+              # misparsed as one, and still have a bearer
 
     # #269: Arabic "abu" (father of), left ambiguous like its Latin
     # transliteration 'abu' above (both spellings): "Abu Bakr" reads

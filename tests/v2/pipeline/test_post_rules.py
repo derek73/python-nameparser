@@ -303,3 +303,35 @@ def test_middle_as_family_folds_middles() -> None:
 def test_middle_as_family_off_by_default() -> None:
     out = _parsed("John Quincy Adams Smith")
     assert _by_role(out, Role.MIDDLE) == "Quincy Adams"
+
+@pytest.mark.parametrize("text,given,middle,family", [
+    # #360's two measured misparses, now folded
+    ("Mc Donald", "", "", "Mc Donald"),
+    ("Ste Marie", "", "", "Ste Marie"),
+    # the Spanish plural articles: 'de' leads, 'los' chains onto the
+    # surname. Correct before #360 too, but by the whole-remainder sweep
+    # rather than by knowing 'los' -- and the #390 fold narrowing
+    # regressed it precisely because the vocabulary did not
+    ("de los Santos", "", "", "de los Santos"),
+    ("de las Casas", "", "", "de las Casas"),
+    # 'das' mid-name chains FORWARD, which is the gain: family was
+    # 'Neves' before #360, losing the particle
+    ("Maria das Neves", "Maria", "", "das Neves"),
+    # NEGATIVE CONTROL, and the reason C-i needs its positional
+    # qualifier: 'Das' is a borne Bengali surname in TRAILING position,
+    # where the leading-particle rule never reaches. Never-given 'das'
+    # must leave these alone -- if this row moves, the qualifier is
+    # wrong and the membership has to come back out.
+    ("Anjali Das", "Anjali", "", "Das"),
+    ("Bimal Das", "Bimal", "", "Das"),
+])
+def test_article_particles_fold_without_eating_trailing_surnames(
+        text: str, given: str, middle: str, family: str) -> None:
+    # The DEFAULT lexicon deliberately, not this module's reduced _LEX:
+    # these rows are about which words the shipped vocabulary claims, so
+    # a fixture that omits them would pass while proving nothing.
+    out = run(ParseState(original=text, lexicon=Lexicon.default(),
+                         policy=Policy()))
+    assert _by_role(out, Role.GIVEN) == given
+    assert _by_role(out, Role.MIDDLE) == middle
+    assert _by_role(out, Role.FAMILY) == family
