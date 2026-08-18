@@ -78,9 +78,11 @@ class ParseState:
     pieces, still as sub-slices of the original, and every later index
     in the segment runs shifts by n); classify -> token tags; group ->
     pieces/piece_tags/dropped AND maiden token roles;
-    assign/post_rules -> the remaining token roles. Ambiguities are
-    recorded by every stage that DECIDES one -- extract (resolved to a
-    token index by tokenize), segment, script_segment, classify,
+    assign -> the remaining token roles AND `order`, the effective
+    order it read them under; post_rules -> roles again.
+    Ambiguities are recorded by every stage that DECIDES one --
+    extract (resolved to a token index by tokenize), segment,
+    script_segment, classify,
     group, and assign -- since a fork whose branches are taken in
     different stages needs an emitter in each. Post-group, segments
     may retain indices of dropped tokens -- assign iterates pieces,
@@ -109,4 +111,17 @@ class ParseState:
     pieces: tuple[tuple[tuple[int, ...], ...], ...] = ()
     piece_tags: tuple[tuple[frozenset[str], ...], ...] = ()
     dropped: tuple[int, ...] = ()   # structural tokens (maiden markers)
+    #: The order `assign` actually READ the name under -- name_order,
+    #: or the script_orders entry that overrode it. None wherever no
+    #: positional read happened: after a family comma (which fixes the
+    #: family, so assign consults no order at all), and on every early
+    #: return in `_assign_main`, where a segment holds no name piece
+    #: to position. Recorded rather than recomputed downstream,
+    #: because the two can differ and a post_rules rule keyed on
+    #: `policy.name_order` would then disagree with the roles assign
+    #: already wrote (#395). Reaching that divergence needs a custom
+    #: lexicon -- every shipped particle is Latin, and Latin has no
+    #: script_orders entry -- which is why the test for it builds its
+    #: own (test_post_rules.py).
+    order: tuple[Role, Role, Role] | None = None
     ambiguities: tuple[PendingAmbiguity, ...] = ()

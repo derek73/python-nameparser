@@ -1,11 +1,15 @@
+import dataclasses
+import sys
+
 import pytest
 
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline import run
 from nameparser._pipeline._state import ParseState
 from nameparser._policy import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
-                                PatronymicRule, Policy)
-from nameparser._types import Role
+                                GIVEN_FIRST, PatronymicRule, Policy,
+                                Script)
+from nameparser._types import STABLE_TAGS, Role
 
 # A reduced lexicon, the convention in every pipeline stage module: a
 # stage test should not move when shipped vocabulary does. What it must
@@ -18,17 +22,21 @@ from nameparser._types import Role
 _LEX = Lexicon(
     titles=frozenset({"mr", "sir", "dr", "md"}),
     given_name_titles=frozenset({"sir"}),
-    particles=frozenset({"de", "la", "van"}),
+    particles=frozenset({"de", "der", "ibn", "la", "van"}),
     particles_ambiguous=frozenset({"la", "van"}),
     suffix_words=frozenset({"dr"}),
     suffix_acronyms=frozenset({"md"}),
+    conjunctions=frozenset({"y"}),
+    bound_given_names=frozenset({"abdul"}),
 )
 
 
-#: Vocabulary-derived tags. `initial` and the structural tags are
-#: excluded on purpose: they come from a token's SHAPE, which no
-#: lexicon controls.
-_VOCAB_TAGS = frozenset({"particle", "conjunction"})
+#: The non-namespaced tags a LEXICON can produce: STABLE_TAGS minus
+#: the two that come from a token's SHAPE, which no lexicon controls.
+#: Derived rather than listed so that a new stable tag cannot quietly
+#: drop out of the comparison below -- STABLE_TAGS is itself pinned,
+#: at tests/v2/test_types.py.
+_VOCAB_TAGS = STABLE_TAGS - {"initial", "joined"}
 
 
 def _fixture_mirrors_shipped(text: str, policy: Policy) -> str:
@@ -49,16 +57,22 @@ def _fixture_mirrors_shipped(text: str, policy: Policy) -> str:
         return f"{text!r}: tokenizes differently under the shipped lexicon"
     return "; ".join(
         f"{word!r} is {sorted(ours) or 'plain'} here but "
+        f"{theirs_word!r} {sorted(theirs) or 'plain'} in the shipped "
+        f"sets" if word != theirs_word else
+        f"{word!r} is {sorted(ours) or 'plain'} here but "
         f"{sorted(theirs) or 'plain'} in the shipped sets"
-        for (word, ours), (_, theirs) in zip(mine, shipped) if ours != theirs)
+        for (word, ours), (theirs_word, theirs) in zip(mine, shipped)
+        if (word, ours) != (theirs_word, theirs))
 
 
 def _parsed(text: str, policy: Policy | None = None) -> ParseState:
     policy = policy or Policy()
     divergence = _fixture_mirrors_shipped(text, policy)
     assert not divergence, (
-        f"{divergence}. Mirror the shipped classification in _LEX, or "
-        f"pass an explicit lexicon if the test needs this word plain.")
+        f"{divergence}. Mirror the shipped classification in _LEX. A "
+        f"test that needs the word classified some OTHER way builds "
+        f"its own state with an explicit lexicon instead of calling "
+        f"this helper, the way the vocabulary rows below do.")
     return run(ParseState(original=text, lexicon=_LEX, policy=policy))
 
 
@@ -174,10 +188,10 @@ _FAMILY_FIRST = [pytest.param(_FF, id="FAMILY_FIRST"),
     # the leading particle chains the rest of the name into the family
     ("de Mesnil", "de Mesnil", "", ""),
     ("de la Vega", "de la Vega", "", ""),
-    # three pieces, so the fold has a MIDDLE to move as well as the
-    # given -- the `givens + middles` half of the repair, and the only
-    # no-comma corpus name that reaches it
-    ("de Mesnil Garcia", "de Mesnil Garcia", "", ""),
+    # three pieces: the run stops at 'Mesnil' and 'Garcia' is left to
+    # the order (#395). The only no-comma corpus name that reaches
+    # this rule, and the one #364 was closed on twice
+    ("de Mesnil Garcia", "de Mesnil", "Garcia", ""),
     # ... and the trailing suffix run is peeled before the rule looks,
     # comma or no comma (NO_COMMA and SUFFIX_COMMA both fold)
     ("de Mesnil MD", "de Mesnil", "", "MD"),
@@ -196,31 +210,40 @@ def test_family_first_folds_leading_never_given_particle(
 def test_leading_piece_scan_skips_pieces_that_hold_no_name(
         policy: Policy) -> None:
     # `_leading_name_piece` walks PAST pieces carrying no name role
-    # rather than reading piece 0 -- and past the first such piece, not
-    # only over a single title. 'Mr de Mesnil' cannot show that: its
-    # particle is chained into one piece with 'Mesnil', so the scan
-    # lands on a two-token piece and the rule declines either way.
-    # Here a mid-name suffix word breaks that chain, leaving the
-    # particle a piece of its own BEHIND a title piece. Without the
-    # skip, or reading only pieces[0], the scan finds the title (or
-    # nothing) and the name splits: given='MD', middle='Mesnil',
-    # family='de'.
+    # rather than reading piece 0. Without the skip the scan finds the
+    # title and the name splits: family='de', given='MD'.
+    #
+    # An older version of this comment claimed the simpler
+    # 'Mr de Mesnil' could not show the skip, its particle being
+    # chained into one piece with 'Mesnil'. That was true before #367,
+    # when a title displaced the particle out of the name's leading
+    # position and the chain fired. It is not true now -- the pieces
+    # are [Mr][de][Mesnil] and the simpler name fails the same way
+    # under the same mutation. What this input adds is the narrowing
+    # with a title present: the run stops after 'MD'. Not pinned here,
+    # despite the scan supporting it: walking past MORE than one
+    # non-name piece, which no fixture in this module produces.
     #
     # The title is deliberately UNDOTTED: a period makes any opening
     # abbreviation a title by shape (rules.md#H2), so a dotted one
     # would pass this test with the title vocabulary empty.
     out = _parsed("Mr de MD Mesnil", policy)
     assert _by_role(out, Role.TITLE) == "Mr"
-    assert _by_role(out, Role.FAMILY) == "de MD Mesnil"
-    assert not _by_role(out, Role.GIVEN)
+    # 'MD' mid-name is a name word, so it is the ONE word the run
+    # takes (#395); 'Mesnil' is left to the order. What the skip
+    # decides is that the run is found at all -- without it the scan
+    # stops on the title and the family is 'de' alone.
+    assert _by_role(out, Role.FAMILY) == "de MD"
+    assert _by_role(out, Role.GIVEN) == "Mesnil"
     assert not _by_role(out, Role.MIDDLE)
 
 
 @pytest.mark.parametrize("policy", _FAMILY_FIRST)
 @pytest.mark.parametrize("text,family,given", [
-    # a title makes the particle non-leading, so group already chained
-    # it into one piece -- one name piece, wholly family under both
-    # family-first orders
+    # a title is transparent to the fold (#367 removed the title->
+    # particle chain, so the pieces are [Mr.][de][Mesnil]), and with
+    # one name word after the run there is nothing for the stop to
+    # leave behind: wholly family under both family-first orders
     ("Mr. de Mesnil", "de Mesnil", ""),
     # a family comma has already fixed the family; the post-comma part
     # is the given name and must not be folded into it
@@ -380,3 +403,181 @@ def test_article_particles_fold_without_eating_trailing_surnames(
     assert _by_role(out, Role.GIVEN) == given
     assert _by_role(out, Role.MIDDLE) == middle
     assert _by_role(out, Role.FAMILY) == family
+
+
+# --- #395: how far the run reaches under a family-first order -------
+
+@pytest.mark.parametrize("policy", _FAMILY_FIRST)
+@pytest.mark.parametrize("text,family,given,middle,suffix", [
+    # one leftover -- where the two family-first orders still agree
+    ("de la Cruz Juan", "de la Cruz", "Juan", "", ""),
+    # a trailing suffix is peeled before the rule looks, so it is not
+    # a leftover and cannot change where the run stops
+    ("de la Cruz Juan MD", "de la Cruz", "Juan", "", "MD"),
+    # ... nor can a leading title, which is not a name word either
+    ("Mr de la Cruz Juan", "de la Cruz", "Juan", "", ""),
+])
+def test_family_first_run_stops_at_the_first_name_word(
+        policy: Policy, text: str, family: str, given: str,
+        middle: str, suffix: str) -> None:
+    out = _parsed(text, policy)
+    assert _by_role(out, Role.FAMILY) == family
+    assert _by_role(out, Role.GIVEN) == given
+    assert _by_role(out, Role.MIDDLE) == middle
+    assert _by_role(out, Role.SUFFIX) == suffix
+
+
+@pytest.mark.parametrize("policy", _FAMILY_FIRST)
+@pytest.mark.parametrize("text,family,rest", [
+    # the conjunction join is ONE name word (rules.md#P3), so the run
+    # takes 'Vega y Santos' whole rather than stopping inside it
+    ("de la Vega y Santos Juan", "de la Vega y Santos", "Juan"),
+    # ... and the same clause applies to what is LEFT: 'Juan y Eva' is
+    # one unit, so it lands in one field rather than being split
+    ("de la Cruz Juan y Eva", "de la Cruz", "Juan y Eva"),
+    # a bound given-name word and the word it completes are one unit
+    # (rules.md#P5), so the fold cannot leave half of the pair behind
+    ("ibn Awf abdul Rahman", "ibn Awf", "abdul Rahman"),
+    # a particle in what is LEFT chains forward the same way it would
+    # if the fold had never run (rules.md#P2). Handing its words out
+    # separately would report given='van' -- a bare particle as the
+    # given name, which is the reading P1 exists to forbid -- and
+    # would disagree with the same tail parsed alone: 'Mesnil van
+    # Berg Juan' gives given='van Berg Juan'
+    ("de Mesnil van Berg Juan", "de Mesnil", "van Berg Juan"),
+    # ... including a never-given particle, where the split output
+    # would have been given='de'
+    ("de Mesnil de Berg Juan", "de Mesnil", "de Berg Juan"),
+    # ... and a two-particle chain
+    ("de Mesnil van der Berg", "de Mesnil", "van der Berg"),
+])
+def test_the_run_counts_units_not_words(
+        policy: Policy, text: str, family: str, rest: str) -> None:
+    # one leftover unit, so both family-first orders put it in `given`
+    out = _parsed(text, policy)
+    assert _by_role(out, Role.FAMILY) == family
+    assert _by_role(out, Role.GIVEN) == rest
+    assert not _by_role(out, Role.MIDDLE)
+
+
+def test_the_two_family_first_orders_differ_at_two_leftovers() -> None:
+    # The only shape that tells them apart, and the reason
+    # tests/v2/cases.py carries it: with one leftover both orders send
+    # it to `given`, so nothing else in the suite distinguishes the
+    # name_order argument to the leftover placement.
+    ff = _parsed("de la Cruz Juan Carlos", Policy(name_order=FAMILY_FIRST))
+    fgl = _parsed("de la Cruz Juan Carlos",
+                  Policy(name_order=FAMILY_FIRST_GIVEN_LAST))
+    assert _by_role(ff, Role.GIVEN) == "Juan"
+    assert _by_role(ff, Role.MIDDLE) == "Carlos"
+    assert _by_role(fgl, Role.GIVEN) == "Carlos"
+    assert _by_role(fgl, Role.MIDDLE) == "Juan"
+    assert _by_role(ff, Role.FAMILY) == _by_role(fgl, Role.FAMILY)
+
+
+@pytest.mark.parametrize("policy", _FAMILY_FIRST)
+@pytest.mark.parametrize("text,family", [
+    # an AMBIGUOUS leading particle is out of the rule's scope in every
+    # order: the fold never fires on it, so there is no run to stop.
+    # Untouched by #395
+    ("van Gogh Jan", "van"),
+    # a family comma has already fixed the surname, so there is no
+    # positional read for a declared order to narrow (state.order is
+    # None on this path)
+    ("Smith, de Mesnil", "Smith de Mesnil"),
+    # the particle stands in the GIVEN slot rather than opening the
+    # name -- the second fold site, and not a leading run
+    ("Juan de", "Juan de"),
+])
+def test_shapes_the_stop_does_not_reach(
+        policy: Policy, text: str, family: str) -> None:
+    # the family alone: the rows above place their remaining words by
+    # order, which is not what these rows are about -- what they pin
+    # is that the family is not narrowed
+    out = _parsed(text, policy)
+    assert _by_role(out, Role.FAMILY) == family
+
+
+def test_the_fixture_guard_fires(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # The guard is a correctness check on the fixture, so it needs one
+    # on itself: without this, deleting its body leaves the suite green
+    # -- the same inertness it exists to prevent.
+    assert not _fixture_mirrors_shipped("de la Cruz Juan", Policy())
+    monkeypatch.setattr(sys.modules[__name__], "_LEX",
+                        dataclasses.replace(
+                            _LEX, particles=frozenset(),
+                            particles_ambiguous=frozenset()))
+    assert "'de'" in _fixture_mirrors_shipped("de la Cruz Juan",
+                                              Policy())
+
+
+def test_the_stop_reads_the_effective_order_not_the_policy() -> None:
+    # Why ParseState.order exists. A script_orders entry overrides
+    # name_order, so the two disagree -- and this is the direction that
+    # matters: the policy says family-first, the SCRIPT says given-
+    # first, and the read assign actually made is the given-first one.
+    # Keying the stop on policy.name_order would narrow a name that was
+    # never read family-first. Needs a custom lexicon (every shipped
+    # particle is Latin, and Latin has no script_orders entry), so it
+    # builds the state directly rather than going through _parsed.
+    lex = Lexicon(particles=frozenset({"ノ"}))
+    policy = Policy(name_order=FAMILY_FIRST,
+                    script_orders=((Script.KATAKANA, GIVEN_FIRST),))
+    out = run(ParseState(original="ノ クルス フアン カルロス",
+                         lexicon=lex, policy=policy))
+    assert out.order == GIVEN_FIRST
+    assert _by_role(out, Role.FAMILY) == "ノ クルス フアン カルロス"
+    assert not _by_role(out, Role.GIVEN)
+
+
+@pytest.mark.parametrize("policy", _FAMILY_FIRST)
+def test_a_suffix_comma_still_stops_the_run(policy: Policy) -> None:
+    # SUFFIX_COMMA takes a different assign branch from NO_COMMA
+    # (tail = 1), while the fold still reads segment 0
+    out = _parsed("de la Cruz Juan Carlos, MD", policy)
+    assert _by_role(out, Role.FAMILY) == "de la Cruz"
+    assert _by_role(out, Role.SUFFIX) == "MD"
+    assert {_by_role(out, Role.GIVEN),
+            _by_role(out, Role.MIDDLE)} == {"Juan", "Carlos"}
+
+
+def test_a_maiden_name_is_not_swept_into_the_run() -> None:
+    # `name_idx` is givens + middles + families, and MAIDEN is
+    # deliberately not among them: a regression there moves the maiden
+    # name silently into the family
+    out = _parsed("de la Cruz Juan Carlos (Vega)",
+                  Policy(name_order=FAMILY_FIRST,
+                         maiden_delimiters=frozenset({("(", ")")})))
+    assert _by_role(out, Role.FAMILY) == "de la Cruz"
+    assert _by_role(out, Role.MAIDEN) == "Vega"
+    assert _by_role(out, Role.GIVEN) == "Juan"
+
+
+def test_middle_as_family_folds_a_middle_the_old_reach_never_left() -> None:
+    # O3 now has a middle to fold, which the greedy reach never left
+    # it. In TOKEN order the family is 'de la Cruz Carlos'; the field
+    # renders it 'Carlos de la Cruz', the folded word prepended (R1),
+    # which is why this asserts roles rather than the rendered field
+    out = _parsed("de la Cruz Juan Carlos",
+                  Policy(name_order=FAMILY_FIRST, middle_as_family=True))
+    assert _by_role(out, Role.GIVEN) == "Juan"
+    assert not _by_role(out, Role.MIDDLE)
+    assert _by_role(out, Role.FAMILY) == "de la Cruz Carlos"
+
+
+@pytest.mark.parametrize("policy,given,middle", [
+    (Policy(name_order=FAMILY_FIRST), "van Berg", "MD Juan"),
+    (Policy(name_order=FAMILY_FIRST_GIVEN_LAST), "Juan", "van Berg MD"),
+])
+def test_a_suffix_word_mid_run_ends_the_chain(
+        policy: Policy, given: str, middle: str) -> None:
+    # `_units` stops a particle chain at a suffix word, which is the
+    # stop _group's own chain uses (`not prefix(j) and not suffix(j)`).
+    # Without it the whole leftover is ONE unit and lands in one field.
+    # Three leftover units here, so this is also the only place the two
+    # orders are pinned apart at a count other than two.
+    out = _parsed("de Mesnil van Berg MD Juan", policy)
+    assert _by_role(out, Role.FAMILY) == "de Mesnil"
+    assert _by_role(out, Role.GIVEN) == given
+    assert _by_role(out, Role.MIDDLE) == middle

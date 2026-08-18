@@ -95,27 +95,55 @@ P1. Rationale: a never-given particle standing alone cannot be
     one as the given name, is a surname written out in full.
     A never-given particle standing alone where the given name would
     go — or opening the name — marks the name as surname-only: the
-    particle run and the one name word it attaches to are the
-    family, and any name words beyond that read by position. It
+    particle run and the name words it attaches to are the family. It
     needs another name word to attach to. The run is every particle
     in sequence, never-given and ambiguous alike ("de la Vega" is
     one group, not "de" plus a separate "la Vega"). An ambiguous particle keeps
-    whatever reading its position gives it. The reading holds under
-    every declared name order: a never-given particle is evidence
-    about how the name is written, and a declared order governs only
-    what no vocabulary has claimed (O4) — the same precedence the
-    script license takes in W4.
+    whatever reading its position gives it. That the particle claims
+    the FAMILY rather than a given name holds under every order: a
+    never-given particle is evidence about how the name is written,
+    and a declared order governs only what no vocabulary has claimed
+    (O4) — the same precedence the script license takes in W4.
+
+    How MANY name words it attaches to depends on the order, and on
+    which of the two positions above the particle stands in. Opening
+    the name, under a family-first order, it takes exactly ONE —
+    declaring that order asserts that what follows the family is not
+    more surname. Opening the name under the default order, or
+    standing in the given position under any order, it takes the rest
+    of the name: nothing there marks where the surname ends. One name
+    word means one UNIT — a particle chain (P2), a conjunction join
+    (P3) or a bound given-name pair (P5) is taken whole or not at
+    all. A title does not move the opening position (P4), but a
+    family comma does end the question: the comma has already fixed
+    the surname, so there is no positional read left for an order to
+    narrow, and a particle opening the part AFTER it takes the rest
+    of that part whatever order is declared. What is left over is not read by O4's rule for a whole name,
+    which would make the first leftover a second family name; it is
+    laid out as the positions AFTER the family in the declared order,
+    the family slot being already filled.
       "de la Vega"                →  family="de la Vega"
       "Sir de Mesnil"             →  family="de Mesnil"
       "Mesnil de"  family-first   →  family="Mesnil de"
-      "de Mesnil Juan"            →  family="de Mesnil"  deviates: #364 (today: family="de Mesnil Juan")
-      "de Mesnil Juan"            →  given="Juan"  deviates: #364 (today: given="")
+      "de Mesnil Juan"            →  family="de Mesnil Juan"
+      "de Mesnil Juan"  family-first  →  family="de Mesnil"
+      "de Mesnil Juan"  family-first  →  given="Juan"
+      "Smith, de Mesnil Juan"  family-first  →  family="Smith de Mesnil Juan"
+      "de la Vega y Santos Juan"  family-first  →  family="de la Vega y Santos"
+      "ibn Awf abdul Rahman"  family-first  →  given="abdul Rahman"
+      "de la Cruz Juan Carlos"  family-first-given-last  →  given="Carlos"
       "Mc Donald"                 →  family="Mc Donald"
       "de los Santos"             →  family="de los Santos"
       "van Gogh"                  →  given="van"  · boundary
     Accepted: a bare "de" stays the given name — there is nothing to
     fold into, and inventing a surname would be worse.
       "de"                        →  given="de"
+    Accepted: stopping the run leaves a MIDDLE where the fold never
+    left one before, so O3 has something to claim that it could not
+    reach until now. The family it then reports is discontiguous in
+    the input — words 1-3 plus word 5 — and renders the folded word
+    first, which is R1's order, not this rule's doing.
+      "de la Cruz Juan Carlos"  family-first+middle_as_family  →  family="Carlos de la Cruz"
     Accepted: only the OPENING position is this rule's subject. A
     particle chain standing inside the name is grouped normally (P2)
     and positioned by the declared order, so a family-first reading
@@ -123,7 +151,7 @@ P1. Rationale: a never-given particle standing alone cannot be
     the bare particle reading as a given name, not any name part
     that begins with one.
       "Juan de la Vega"  family-first  →  family="Juan"
-    history: decisions.md#P1 · interacts: P2, P4, P6 · implemented: nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P1 · interacts: O3, O4, P2, P3, P4, P5, P6 · implemented: nameparser/_pipeline/_post_rules.py
 
 P2. Rationale: a particle is written as part of the surname it
     precedes, and a title stands outside the name entirely.
@@ -132,16 +160,20 @@ P2. Rationale: a particle is written as part of the surname it
     or the name ends. The final group reads as the family name;
     earlier groups read by position. The chain begins wherever the
     name begins, and a preceding title does not move that point.
+    Where P1's fold has claimed the opening, the fold decides the
+    family instead — and may take only PART of the final group,
+    since it counts name words and the group is one part.
       "John van der Berg"         →  family="van der Berg"
       "John van der Berg Smith"   →  family="van der Berg Smith"
       "Vincent van Gogh van Beethoven"  →  middle="van Gogh"
       "Dr. John van der Berg"     →  family="van der Berg"
       "Juan de"                   →  family="de"  · boundary
+      "de la Cruz Juan Carlos"  family-first  →  family="de la Cruz"
     Accepted: a caller wanting the combined double-surname reading
     (#132's ask) has it as the surnames view rather than the
     family field.
       "Vincent van Gogh van Beethoven"  →  surnames="van Gogh van Beethoven"
-    history: decisions.md#P2 · implemented: nameparser/_pipeline/_group.py
+    history: decisions.md#P2 · interacts: P1, P4 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P3. Rationale: connective words ("y", "of the") bind name words into
     one name part; but a single letter in a short name is more
@@ -176,7 +208,7 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     same two words unjoined are two name words and H1 does not fire.
     P1's leading run becomes the second once #395 lands — its run
     must take the "Vega y Santos" join whole or stop before it.
-    history: decisions.md#P3 · interacts: H1, P1 · implemented: nameparser/_pipeline/_group.py
+    history: decisions.md#P3 · interacts: H1, P1 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P4. Rationale: a particle links forward from inside a name; at the
     very front there is no name yet to be inside.
@@ -197,7 +229,7 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     one given name.
       "abdul salam ahmed salem"   →  given="abdul salam"
       "mohamad ali smith"         →  given="mohamad"  · boundary
-    history: decisions.md#P5 · implemented: nameparser/_pipeline/_group.py
+    history: decisions.md#P5 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P6. Rationale: a particle ending the name has nothing to link
     forward to, so it is not doing a particle's work there. A
