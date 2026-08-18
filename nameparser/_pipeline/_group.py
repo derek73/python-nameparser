@@ -187,10 +187,12 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 merge(k, k + 2, add={"conjunction"})
             else:
                 k += 1
-        # each conjunction joins its neighbors (v1's Google Code issue 11
-        # carve-out, the "john e smith" bug:
-        # a single-letter alphabetic conjunction in a short name is more
-        # likely an initial)
+        # each conjunction joins its neighbors, rules.md#P3: "except a
+        # single-letter connective in a three-word name, which stays a
+        # name word" (v1's Google Code issue 11 carve-out, the
+        # "john e smith" bug). The threshold reads the ROOTNAME count,
+        # so a conjunction that is also suffix vocabulary raises the
+        # bar for itself -- #397 measures that on "i".
         k = 0
         while k < len(pieces):
             if not conj(k):
