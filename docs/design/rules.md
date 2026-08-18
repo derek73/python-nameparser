@@ -150,16 +150,25 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     connective runs included — except a single-letter connective in
     a three-word name, which stays a name word, and a single-letter
     connective written as a bare Latin capital, which reads as an
-    initial and never joins.
+    initial and never joins. The joined part is ONE name word
+    wherever another rule counts them, so a rule taking "one name
+    word" takes the whole join and never half of it.
       "Juan y Eva Garcia"         →  given="Juan y Eva"
       "Jose E Maria Santos"       →  middle="E Maria"
       "Juan y Garcia"             →  middle="y"  · boundary
+      "Mr. Jack and Jill"         →  family="Jack and Jill"
+      "Mr. Jack Jill"             →  given="Jack"  · boundary
     Accepted: the initial veto is a LATIN shape — a Cyrillic
     capital joins ("И".isupper() is true, so this is not a
     Unicode-uppercase rule); #267's closure blessed the Cyrillic
     side, and whether the Latin-capital half should stand is #383.
       "Хосе И Мария Сантос"       →  given="Хосе И Мария"
-    history: decisions.md#P3 · implemented: nameparser/_pipeline/_group.py
+    H1 is the counting rule that shows the one-word clause today: a
+    title plus the join reads the whole join as the family, where the
+    same two words unjoined are two name words and H1 does not fire.
+    P1's leading run becomes the second once #395 lands — its run
+    must take the "Vega y Santos" join whole or stop before it.
+    history: decisions.md#P3 · interacts: H1, P1 · implemented: nameparser/_pipeline/_group.py
 
 P4. Rationale: a particle links forward from inside a name; at the
     very front there is no name yet to be inside.

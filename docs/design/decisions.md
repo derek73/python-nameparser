@@ -197,6 +197,7 @@ Open: [#348](https://github.com/derek73/python-nameparser/issues/348) applying C
 ### P3 — connectives
 
 - 2026-07-30 #267 — the four-word single-letter asymmetry: a bare Latin capital connective is vetoed as an initial while a Cyrillic capital joins. #267's closure ("v2.0 behaves this way by default … verify it was the right call") showed only the Cyrillic half; the Latin-capital veto was never separately adjudicated, which rules.md#P3 records as an Accepted consequence.
+- 2026-08-17 — a conjunction-joined run counts as ONE name word in every rule that counts them. Raised while bounding the leading particle run (#395): a run that stops "after the first name word" would otherwise be able to stop INSIDE a part P3 built, splitting "de la Vega y Santos Juan" between "Vega" and "Santos". This is not new behavior — H1 already counts this way, measured: "Mr. Jack and Jill" gives family="Jack and Jill" while "Mr. Jack Jill" gives given="Jack", family="Jill". What is new is that rules.md says so, which is what binds #395's implementation. Recorded because the first draft of the clause asserted that no rule could show it today and shipped an Accepted note to that effect; the shipped H1 pair was simply never run. Detector failure of the usual shape — reasoning about which rules count instead of parsing a name and looking.
 
 Open:
 [#383](https://github.com/derek73/python-nameparser/issues/383)
