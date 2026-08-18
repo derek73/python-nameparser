@@ -156,8 +156,16 @@ P3. Rationale: connective words ("y", "of the") bind name words into
       "Juan y Eva Garcia"         →  given="Juan y Eva"
       "Jose E Maria Santos"       →  middle="E Maria"
       "Juan y Garcia"             →  middle="y"  · boundary
+      "Juan and Garcia"           →  given="Juan and Garcia"
+      "Juan & Garcia"             →  given="Juan & Garcia"
       "Mr. Jack and Jill"         →  family="Jack and Jill"
       "Mr. Jack Jill"             →  given="Jack"  · boundary
+    Both exceptions are about the written FORM, not the word: the
+    three-word carve-out counts letters, so a symbol connective joins
+    at any length, and it reaches every single-letter connective the
+    vocabulary holds — Cyrillic и/і/й and Arabic و as well as y and
+    e. Which single letters a tradition actually wants joined differs
+    by language, and no locale gets its own answer today.
     Accepted: the initial veto is a LATIN shape — a Cyrillic
     capital joins ("И".isupper() is true, so this is not a
     Unicode-uppercase rule); #267's closure blessed the Cyrillic
