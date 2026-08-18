@@ -88,6 +88,8 @@ POLICIES: dict[str, Policy] = {
     "family-first": Policy(name_order=FAMILY_FIRST),
     "family-first-given-last": Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
     "middle_as_family": Policy(middle_as_family=True),
+    "family-first+middle_as_family": Policy(
+        name_order=FAMILY_FIRST, middle_as_family=True),
     "maiden-parens": Policy(maiden_delimiters=frozenset({("(", ")")})),
     "keep-emoji": Policy(strip_emoji=False),
     "strict-comma-suffixes": Policy(lenient_comma_suffixes=False),

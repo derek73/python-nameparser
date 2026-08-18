@@ -24,7 +24,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from nameparser import Policy
-from nameparser._policy import PatronymicRule
+from nameparser._policy import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
+                               PatronymicRule)
 
 
 @dataclass(frozen=True)
@@ -161,6 +162,57 @@ CASES: tuple[Case, ...] = (
                "1b folds the name into the family. 1.4.0 and 2.1 gave "
                "first 'de Mesnil' with no family, because the chain "
                "left 1b nothing standing alone to fire on"),
+    # The smallest shape in which the two family-first orders can
+    # disagree about this rule's leftovers: with one leftover both
+    # send it to `given`, and two or more is what separates them (the
+    # orders differ on plenty of names outside this rule -- 186 of the
+    # 751 corpus names -- so the claim is about the fold, not about
+    # the orders). Spanish because the listing is real: "Apellidos
+    # Nombres" keeps the particle in place, where Dutch moves it
+    # behind the given name ("Jong, Jan Pieter de", the tussenvoegsel
+    # convention -- rule P6's subject, though P6's attachment is
+    # deviates: #379, so that spelling does not yet parse the way P6
+    # describes). Added before #395 landed, when all three orders
+    # still agreed, each taking the whole name into the family.
+    Case("leading_never_given_particle_two_leftovers",
+         "de la Cruz Juan Carlos",
+         {"family": "de la Cruz Juan Carlos"},
+         classification="parity",
+         notes="the DEFAULT order, which #395 leaves alone: with no "
+               "order declared there is no evidence that 'Juan Carlos' "
+               "is anything but more surname, and a particle followed "
+               "by several words really can be all surname -- 'von "
+               "Bergen Wessels' is one. (An earlier draft cited "
+               "'pennie von bergen wessels' as the same SHAPE, which "
+               "it is not: pennie is the given name there and von is "
+               "ambiguous, so this fold cannot fire on it. See "
+               "decisions.md#P1, 2026-08-17.) 1.4.0 gives last 'de la "
+               "Cruz Juan Carlos' too, so this row must not move when "
+               "#395 lands"),
+    Case("leading_never_given_particle_two_leftovers_family_first",
+         "de la Cruz Juan Carlos",
+         {"family": "de la Cruz", "given": "Juan", "middle": "Carlos"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="feat(#395)",
+         notes="core-only: name_order has no v1 spelling. The run "
+               "stops at 'Cruz' because the declared order says what "
+               "follows the family is not more surname. It reaches "
+               "'Cruz' THROUGH ambiguous 'la', which is the chain a "
+               "stop keyed on never-given membership would break"),
+    Case("leading_never_given_particle_two_leftovers_"
+         "family_first_given_last",
+         "de la Cruz Juan Carlos",
+         {"family": "de la Cruz", "middle": "Juan", "given": "Carlos"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         classification="feat(#395)",
+         notes="the row that makes the leftover DISTRIBUTION testable, "
+               "and the divergence is here: FAMILY_FIRST reads 'Juan' "
+               "as the given name, this order reads 'Carlos'. Nothing "
+               "with fewer leftovers can tell the two apart. When "
+               "PR #394 put the placing in grouping, its review found "
+               "the whole suite passed with name_order discarded from "
+               "it; on this branch the same mutation fails three "
+               "tests, this row among them"),
     Case("suffix_word_title_ambiguous_particle", "Jr. Van Johnson",
          {"title": "Jr.", "given": "Van", "family": "Johnson"},
          classification="fix(#367)",

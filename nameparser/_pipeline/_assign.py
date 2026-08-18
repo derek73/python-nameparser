@@ -174,14 +174,17 @@ def _name_positions(order: tuple[Role, Role, Role],
 
 def _assign_main(seg_idx: int, state: ParseState,
                  tokens: list[WorkToken],
-                 ambiguities: list[PendingAmbiguity]) -> None:
+                 ambiguities: list[PendingAmbiguity],
+                 ) -> tuple[Role, Role, Role] | None:
+    """Returns the order the positional read used, for ParseState.order
+    -- None on every path that returns before resolving one."""
     pieces = state.pieces[seg_idx]
     ptags = state.piece_tags[seg_idx]
     has_nickname = any(t.role is Role.NICKNAME for t in tokens)
     n = _peel_leading_titles(pieces, ptags, tokens)
     rest = list(range(n, len(pieces)))
     if not rest:
-        return
+        return None
     # group-flagged suffix pieces (the ph-d merge) are suffixes at ANY
     # position -- v1's fix_phd extracted the credential from the string
     # before parsing, so position never mattered (PR review I3)
@@ -190,7 +193,7 @@ def _assign_main(seg_idx: int, state: ParseState,
         _set_roles(tokens, pieces[k], Role.SUFFIX)
     rest = [k for k in rest if "suffix" not in ptags[k]]
     if not rest:
-        return
+        return None
     # rules.md#N3: "a name that is only a nickname and one name word
     # reads that word as the family name" (history: decisions.md#N3)
     # -- v1's p_len == 1 counted
@@ -199,7 +202,7 @@ def _assign_main(seg_idx: int, state: ParseState,
     # name (pinned live 2026-07-17)
     if len(pieces) == 1 and len(rest) == 1 and has_nickname:
         _set_roles(tokens, pieces[rest[0]], Role.FAMILY)
-        return
+        return None
     # peel the trailing suffix run: k = first index in rest from which
     # every piece is a strict suffix (v1's are_suffixes tail rule, with
     # the roman-numeral special: a final roman numeral after a
@@ -304,6 +307,7 @@ def _assign_main(seg_idx: int, state: ParseState,
                 f"leading {token.text!r} may be a family-name "
                 f"particle; read as a {token.role.value} name",
                 tuple(head)))
+    return order
 
 
 def assign(state: ParseState) -> ParseState:
@@ -311,11 +315,12 @@ def assign(state: ParseState) -> ParseState:
     ambiguities = list(state.ambiguities)
     if not state.segments:
         return state
+    order: tuple[Role, Role, Role] | None = None
     if state.structure is Structure.NO_COMMA:
-        _assign_main(0, state, tokens, ambiguities)
+        order = _assign_main(0, state, tokens, ambiguities)
         tail = len(state.segments)
     elif state.structure is Structure.SUFFIX_COMMA:
-        _assign_main(0, state, tokens, ambiguities)
+        order = _assign_main(0, state, tokens, ambiguities)
         tail = 1
     else:  # FAMILY_COMMA
         # PARTICLE_OR_GIVEN is deliberately not emitted here: after a
@@ -376,4 +381,5 @@ def assign(state: ParseState) -> ParseState:
         for piece in state.pieces[seg_idx]:
             _set_roles(tokens, piece, Role.SUFFIX)
     return dataclasses.replace(state, tokens=tuple(tokens),
+                               order=order,
                                ambiguities=tuple(ambiguities))

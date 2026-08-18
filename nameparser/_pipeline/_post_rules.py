@@ -18,6 +18,7 @@ import dataclasses
 import re
 
 from nameparser._lexicon import _title_key
+from nameparser._pipeline._assign import _name_positions
 from nameparser._pipeline._state import ParseState, Structure, WorkToken
 from nameparser._policy import PatronymicRule
 from nameparser._types import FOLDED_TAG, Role
@@ -69,6 +70,100 @@ def _retag(tokens: list[WorkToken], i: int, role: Role) -> None:
     tokens[i] = dataclasses.replace(tokens[i], role=role)
 
 
+# rules.md#P2: "a particle joins the words after it into one name
+# part, the join running until the next particle starts a group of
+# its own or the name ends"
+# rules.md#P3: "the joined part is ONE name word wherever another
+# rule counts them"
+# rules.md#P5: "a recognized bound given-name word joins the word
+# after it into one given name"
+def _unit_end(tokens: list[WorkToken], idx: list[int], i: int) -> int:
+    """One past the end of the unit starting at `idx[i]`.
+
+    RECURSIVE, and that is the whole point: what a conjunction or a
+    bound given-name word joins is the next UNIT, not the next word.
+    Absorbing a single index instead strands a particle at the end of
+    the unit, severed from the words it chains -- "de la Vega y la
+    Vega" cut between `la` and `Vega`, reporting family
+    "de la Vega y la", which is the same defect as a bare particle
+    opening the given name, mirrored."""
+    if "particle" in tokens[idx[i]].tags:
+        j = i
+        while j + 1 < len(idx) and "particle" in tokens[idx[j + 1]].tags:
+            j += 1
+        # ... then the words it joins, stopping where the next
+        # particle starts a group of its own, at a suffix word (the
+        # stop _group's chain uses), or at a conjunction, which the
+        # shared loop below joins to the whole unit after it rather
+        # than to the one word after it.
+        while (j + 1 < len(idx)
+               and "particle" not in tokens[idx[j + 1]].tags
+               and "conjunction" not in tokens[idx[j + 1]].tags
+               and "vocab:suffix" not in tokens[idx[j + 1]].tags):
+            j += 1
+        end = j + 1
+    else:
+        end = i + 1
+        if "vocab:bound-given" in tokens[idx[i]].tags and end < len(idx):
+            end = _unit_end(tokens, idx, end)
+    while end + 1 < len(idx) and "conjunction" in tokens[idx[end]].tags:
+        end = _unit_end(tokens, idx, end + 1)
+    return end
+
+
+def _units(tokens: list[WorkToken], idx: list[int]) -> list[list[int]]:
+    """`idx` split into the units other rules COUNT: one name word
+    each, except where another rule has already made several words one
+    name. Three do -- a particle and the words it chains, a
+    conjunction-joined run, and a bound given-name word with the word
+    it completes -- so `van der Berg` and `abdul Rahman` are each one
+    unit and the fold cannot leave half of either behind.
+
+    Read off the TAGS rather than the pieces, for two different
+    reasons. A conjunction join grouping DID build and the prefix
+    chain then swallowed: "de la Vega y Santos Juan" reaches this as
+    [de][la Vega y Santos Juan], the ambiguous particle having chained
+    forward over the join, so the join's own boundary is gone. (The
+    leading particle keeps its piece -- it has to, or the fold's
+    lone-piece site test would not fire at all.) The bound-given join grouping
+    never built at all: P5 joins only where the bound word is the
+    first non-title piece, and at a fold site the first piece is the
+    particle -- "ibn Awf abdul Rahman" reaches here as four separate
+    pieces. The tag is the only witness in both cases.
+
+    The particle chain is what keeps this partition agreeing with the
+    one `assign` reads off pieces: strip the folded run and `assign`
+    gives the same tail one role, so the fold must not hand its words
+    out separately."""
+    units: list[list[int]] = []
+    i = 0
+    while i < len(idx):
+        end = _unit_end(tokens, idx, i)
+        units.append(list(idx[i:end]))
+        i = end
+    return units
+
+
+def _fold_reach(tokens: list[WorkToken], name_idx: list[int]) -> int:
+    """How many of `name_idx` the fold takes: the particle run, plus
+    the one name word it attaches to -- one UNIT, so a conjunction
+    join goes whole ("de la Vega y Santos Juan" keeps Vega y Santos
+    together). All of them when the name is nothing but particles."""
+    i = 0
+    while i < len(name_idx) and "particle" in tokens[name_idx[i]].tags:
+        i += 1
+    if i == len(name_idx):
+        return i
+    return i + len(_units(tokens, name_idx[i:])[0])
+
+
+def _is_lone_never_given_particle(site: tuple[int, ...],
+                                  tokens: list[WorkToken]) -> bool:
+    return (len(site) == 1
+            and "particle" in tokens[site[0]].tags
+            and "vocab:particle-ambiguous" not in tokens[site[0]].tags)
+
+
 def post_rules(state: ParseState) -> ParseState:
     tokens = list(state.tokens)
     titles = _idx(tokens, Role.TITLE)
@@ -95,30 +190,55 @@ def post_rules(state: ParseState) -> ParseState:
 
     # rules.md#P1: "a never-given particle standing alone where the
     # given name would go — or opening the name — marks the name as
-    # surname-only: the particle run and the one name word it
-    # attaches to are the family, and any name words beyond that
-    # read by position." (v1 handle_non_first_name_prefix; history:
+    # surname-only: the particle run and the name words it attaches
+    # to are the family." (v1 handle_non_first_name_prefix; history:
     # decisions.md#P1)
-    # DEVIATION #364: the fold below still takes every remaining name
-    # word, not just the particle run's own -- de Mesnil Juan gives
-    # family=de Mesnil Juan where the rule says family=de Mesnil plus
-    # given=Juan. Pinned by the deviates: markers on P1.
-    # Values written unquoted deliberately: this note sits INSIDE the
-    # citation block above (# decisions.md#P1) does not close it --
-    # _CITE_RE wants a colon after the ID), and the excerpt check
-    # takes the first quoted span in the block.
+    # How far the fold reaches depends on the order the name was READ
+    # under (#395; decisions.md#P1, 2026-08-17): declaring a
+    # family-first order asserts that what follows the family is not
+    # more surname, which is the very question of where the run stops.
+    # Under that declaration the run takes its own particles and ONE
+    # name word; under the default order it keeps taking the rest of
+    # the name, nothing having marked where the surname ends. The
+    # narrowing is the LEADING site's alone: a particle
+    # standing in the given slot keeps the old reach. Note what
+    # actually holds the family-comma shape back, since it is NOT
+    # that test -- "Smith, de Mesnil Juan" DOES fire the leading site,
+    # segment 1 opening with the particle. It keeps the old reach
+    # because assign records no order after a family comma, the comma
+    # having already fixed the surname, so `order is None` here.
+    # Anything that later gives that path an order turns the
+    # narrowing on for it.
     # Code-local: a lone PIECE is the test at both sites, so a
     # particle group already chained forward is not a lone particle,
     # and rule H1 above cannot be what produces the fold's family
     # reading -- H1 is gated on `not families`.
-    sites = (_leading_name_piece(state, tokens), tuple(givens))
-    if len(givens) + len(middles) + len(families) > 1 and any(
-            len(site) == 1
-            and "particle" in tokens[site[0]].tags
-            and "vocab:particle-ambiguous" not in tokens[site[0]].tags
-            for site in sites):
-        for i in givens + middles:
-            _retag(tokens, i, Role.FAMILY)
+    lead = _leading_name_piece(state, tokens)
+    lead_fires = _is_lone_never_given_particle(lead, tokens)
+    sites_fire = lead_fires or _is_lone_never_given_particle(
+        tuple(givens), tokens)
+    if len(givens) + len(middles) + len(families) > 1 and sites_fire:
+        order = state.order
+        if lead_fires and order is not None and order[0] is Role.FAMILY:
+            # `state.order`, not policy.name_order: a script_orders
+            # entry can put the family first under a given-first
+            # policy, and the roles below have to match the read
+            # assign actually made.
+            name_idx = sorted(givens + middles + families)
+            cut = _fold_reach(tokens, name_idx)
+            for i in name_idx[:cut]:
+                _retag(tokens, i, Role.FAMILY)
+            # What is left is a shorter name of the same order: one
+            # family already placed, so drop that slot and lay the
+            # rest out as _name_positions would for n + 1 pieces.
+            rest = _units(tokens, name_idx[cut:])
+            for unit, role in zip(rest, _name_positions(
+                    order, len(rest) + 1)[1:]):
+                for i in unit:
+                    _retag(tokens, i, role)
+        else:
+            for i in givens + middles:
+                _retag(tokens, i, Role.FAMILY)
         # downstream rules key on the role counts: recompute
         givens = _idx(tokens, Role.GIVEN)
         middles = _idx(tokens, Role.MIDDLE)
