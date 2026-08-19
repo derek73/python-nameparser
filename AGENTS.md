@@ -8,6 +8,12 @@ For non-trivial changes, use a feature branch and open a PR. Branch naming: `fix
 
 Before opening the PR, if the change alters parser behavior or internals, *read* the Architecture, Extension Patterns, and Gotchas sections of this file against the change — don't grep for it: AGENTS.md paraphrases behavior in its own words, so text made stale by a code change rarely matches the code's phrasing (a doc-staleness sweep driven by grep terms from the diff will miss it every time). The same applies when scoping a doc-review pass or a subagent prompt: include AGENTS.md in the list of docs to check, or it won't be checked.
 
+After a review round, **review the fix commit too** — second-round passes on #398, #400 and #403 each found defects in the first round's fixes.
+
+**Check whether the PR description still needs updating before merging.** A review that moves behavior or retracts a measurement leaves it stale, and a stale body reads as authoritative.
+
+**A scripted multi-edit that asserts as it goes discards everything when a late pattern misses.** Assert every pattern before applying any, then verify the edit landed — three times in one session a docs batch failed its last assertion, wrote nothing, and reported success, invisible because prose edits fail no test.
+
 ## Rules documentation (docs/design/)
 
 Three committed contributor docs carry the parser's normative rules and their reasons, enforced by the doc tests in tests/v2/ (rules_doc.py and the test_doc_*/test_rules_doc* modules). Before proposing a design or a fix that touches parser behavior, read docs/design/mechanisms.md and the relevant docs/design/rules.md sections — the catalog is keyed by problem shape, and the pattern you are about to invent is often already there.
