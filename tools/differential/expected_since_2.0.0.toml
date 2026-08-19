@@ -283,3 +283,44 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # classification.
 name_regex = "(?i)^mr\\.\\s+van\\b"
 fields = ["given", "middle", "family"]
+
+[[change]]
+issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
+# 'Vega, Juan de la': the Dutch alphabetized listing moves the
+# tussenvoegsel behind the given name -- "Beethoven, Ludwig van" is how
+# "Ludwig van Beethoven" is filed -- and 1.4 read the trailing particle
+# run as a middle name. 2.2 attaches it to the family already named by
+# the comma and renders it before the base, so `middle` empties and
+# `family` grows. rules.md#P6 states it; the derived views move with it
+# (family_particles 'de la', family_base 'Vega').
+#
+# Fields are {middle, family}: the given name does not move. `suffix`
+# is deliberately NOT here, though the #380 half of the change does
+# move a token out of it ('Berg, Jan vd' was suffix 'vd' at every
+# baseline and is now family 'vd Berg'). No corpus name exercises that
+# shape, and adding `suffix` to claim it costs three shapes this rule
+# has no business explaining -- {family,suffix} taken from
+# fix(suffix-routing), and {middle,suffix} and {middle,family,suffix}
+# taken from UNEXPLAINED, the last two being diffs in which `family`
+# does not move at all. A rule that pre-claims shapes it has never seen
+# is the #372 failure mode. If a vd-shaped name ever enters the corpus
+# it should arrive unexplained and be read once.
+#
+# Latin-anchored over the WHOLE name, not just the trailing word: with
+# a leading .* this absorbed non-Latin comma names whose diff has
+# another cause -- a Cyrillic 'Smith, de la' moves {family} because the
+# particle's RENDERING ORDER inside the family changed, which no rule
+# in this ledger names, and it classified here. (It now falls to the
+# fields-only catch-all, so the absorption moved rather than vanished;
+# worth a narrower rule if such a name ever appears.) The class is the
+# neighbours' and compare.py's own: U+0000-U+024F, which stops at
+# Latin Extended-B, so a diacritic-bearing 'Nguyen, Van de la' in NFD
+# or Latin Extended Additional is outside it.
+#
+# What the rule still over-claims is vocabulary, not script: any Latin
+# comma name ending in an alternation member is claimed whatever the
+# naming tradition, so a future {middle,family} regression on
+# 'Nguyen, Van' -- one of the two corpus names it reaches, and the one
+# that does NOT move -- would classify as intended.
+name_regex = "(?i)^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*\\s(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)(\\s+(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu))*\\s*$"
+fields = ["middle", "family"]

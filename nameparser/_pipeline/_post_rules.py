@@ -277,6 +277,82 @@ def post_rules(state: ParseState) -> ParseState:
             _retag(tokens, m2, Role.MIDDLE)
             _retag(tokens, f, Role.MIDDLE)
             _retag(tokens, g, Role.FAMILY)
+    # rules.md#P6: "a particle ending the name attaches to that family
+    # name and is written before it" -- where a family comma has
+    # already named the family, and provided at least one given word
+    # remains (history: decisions.md#P6). The Dutch alphabetized
+    # listing:
+    # "Beethoven, Ludwig van" is how "Ludwig van Beethoven" is filed.
+    #
+    # Keyed on the token's VOCABULARY, not its assigned role, which is
+    # what gives the attachment its stated precedence over S2. `vd`,
+    # `mc` and `do` are the three words in both vocabularies; assign
+    # reads a trailing `vd` or `mc` as a post-nominal, so those two
+    # need the override. `do` is in the AMBIGUOUS acronym half, which
+    # already leaves it a name word, so it attaches by the plain rule.
+    # After a family comma the tussenvoegsel is the commoner reading.
+    #
+    # The words-to-spare guard is a piece test, not a count: every
+    # trailing piece that is wholly particles attaches, and the run
+    # must leave a GIVEN word ahead of it, so "Nguyen, Van" keeps its
+    # only given word rather than being left with none. Only the
+    # DEGENERATE Vietnamese listing is protected by that -- "Nguyen,
+    # Thi Van" has a given word to spare, so `Van` attaches and the
+    # given name is lost. rules.md#P6 records why that is accepted.
+    #
+    # mechanisms.md#FOLDED_TAG does the rest: tokens never move, so
+    # the family view reads the tag and renders these before the base.
+    if state.structure is Structure.FAMILY_COMMA and len(state.pieces) > 1:
+        seg = state.pieces[1]
+        # A post-nominal sits BEHIND the tussenvoegsel in this listing
+        # ("Berg, Jan van Jr."), so the run is found by walking past a
+        # trailing piece that holds no name -- but only one that is not
+        # itself particle vocabulary, since `vd` arrives suffix-roled
+        # and IS the run. Without this the same name parsed two ways on
+        # whether a comma preceded the credential.
+        end = len(seg)
+        while (end
+               and not any(tokens[i].role in _NAME_ROLES
+                           for i in seg[end - 1])
+               and not all("particle" in tokens[i].tags
+                           for i in seg[end - 1])):
+            end -= 1
+        k = end
+        while k and all("particle" in tokens[i].tags for i in seg[k - 1]):
+            k -= 1
+        # GIVEN alone, which is what P6 says ("provided at least one
+        # given word remains"). Not `_NAME_ROLES`: P1's fold runs
+        # earlier in this function and retags all of segment 1 to
+        # FAMILY, so a test for "some name word remains" passes on
+        # family text P1 just produced, and the rule then hoists the
+        # particle in front of a base it never preceded ("Smith, de
+        # Mesnil van" -> 'van Smith de Mesnil'). MIDDLE was in this
+        # test until review found no input where it decides anything
+        # -- 0 hits over 740,552 instrumented guard sites. The reason
+        # is structural: the only rule that can leave a MIDDLE with no
+        # GIVEN ahead of it in segment 1 is P1's family-first
+        # redistribution, which is gated on `state.order`, and assign
+        # never records an order on the FAMILY_COMMA path (the comma
+        # has already fixed the family). P6 runs only on that path,
+        # so the branch cannot be reached from here.
+        if k and any(tokens[i].role is Role.GIVEN
+                     for piece in seg[:k] for i in piece):
+            # A range, though only ever one piece today: grouping's
+            # prefix chain makes a non-leading particle absorb what
+            # follows, so a trailing run splits into several pieces
+            # only where nothing ahead of it holds a given role --
+            # the run opening the segment ("Berg, de van"), or only
+            # titles ahead of it ("Berg, Sir de la", 8% of them). The
+            # guard then declines either way. Measured over 95,180
+            # generated multi-piece runs: `end - k` is never above 1
+            # where the guard passes. Written as a range because the
+            # guard, not this loop, is what bounds it.
+            for piece in seg[k:end]:
+                for i in piece:
+                    tokens[i] = dataclasses.replace(
+                        tokens[i], role=Role.FAMILY,
+                        tags=tokens[i].tags | {FOLDED_TAG})
+
     # rules.md#O3: "every middle word joins the family name and is
     # rendered before it" (v1 handle_middle_name_as_last). v1
     # PREPENDED middle_list to last_list; mechanisms.md#FOLDED_TAG:

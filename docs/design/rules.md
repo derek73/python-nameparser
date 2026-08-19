@@ -245,24 +245,54 @@ P6. Rationale: a particle ending the name has nothing to link
     forward to, so it is not doing a particle's work there. A
     never-given particle in that position cannot be a name at all
     and must belong to the family written beside it; an ambiguous
-    particle could genuinely be the name (Vietnamese "Van"), which
-    is what the words-to-spare test below is for, not an
-    afterthought to it. Dutch and Flemish names are listed exactly
+    particle could genuinely be the name (Vietnamese "Van"), and
+    after a comma there is no signal that separates the two
+    readings. Dutch and Flemish names are listed exactly
     this way ("Beethoven, Ludwig van"), the tussenvoegsel trailing
     the given name but belonging to the surname.
     Where a family comma has already named the family, a particle
     ending the name attaches to that family name and is written
     before it — provided at least one given word remains, so that a
     name whose only given word is the particle keeps it (the
-    words-to-spare test S2 applies to ambiguous suffixes). Where
+    words-to-spare test S2 applies to ambiguous suffixes). A
+    post-nominal is written BEHIND the particle in this listing, so
+    it does not end the name for this purpose: the run is found by
+    looking past trailing words that hold no name — unless such a
+    word is itself particle vocabulary, which makes it part of the
+    run rather than something to look past. Where
     the word is BOTH a particle and suffix vocabulary, this
     attachment outranks the suffix reading (S2): a trailing
     abbreviation after a family comma is the tussenvoegsel far more
     often than the decoration it collides with.
-      "Jong, Anke de"             →  family="de Jong"  deviates: #379 (today: family="Jong")
-      "Beethoven, Ludwig van"     →  family="van Beethoven"  deviates: #379 (today: family="Beethoven")
-      "Berg, Jan vd"              →  family="vd Berg"  deviates: #380 (today: family="Berg")
+      "Jong, Anke de"             →  family="de Jong"
+      "Beethoven, Ludwig van"     →  family="van Beethoven"
+      "Berg, Jan vd"              →  family="vd Berg"
+      "Berg, Jan van der"         →  family="van der Berg"
+      "Vega, Juan de la"          →  family_particles="de la"
+      "Beethoven, Ludwig van"     →  family_base="Beethoven"
+      "Beethoven, Ludwig van"     →  family_particles="van"
       "Nguyen, Van"               →  given="Van"  · boundary
+    Accepted: an ambiguous particle attaches on the same terms as a
+    never-given one, so a Vietnamese name written in this listing
+    loses its given name — but only in the UNACCENTED
+    transliteration. Vân carries a diacritic and is not particle
+    vocabulary, so the correctly spelled name never reaches this
+    rule. It is the ASCII spelling that collides, and there the two
+    traditions write the same string.
+      "Nguyen, Thi Van"           →  family="Van Nguyen"
+      "Nguyễn, Thị Vân"           →  family="Nguyễn"
+    Accepted: no ambiguity is reported for that collision, which A1
+    would call for. The fork is decided here, and assign's emitter is
+    scoped to the no-comma shapes on the reasoning that a comma has
+    fixed the family — true of the family, not of the particle behind
+    it. Tracked at #405.
+    Accepted: the colliding spelling has a format that reads
+    correctly, and it is ONE order, not both: FAMILY_FIRST still
+    sends the given name to the middle, and only
+    FAMILY_FIRST_GIVEN_LAST recovers it.
+      "Nguyen Thi Van"  family-first-given-last  →  family="Nguyen"
+      "Nguyen Thi Van"  family-first-given-last  →  given="Van"
+      "Nguyen Thi Van"  family-first  →  middle="Van"
     Accepted: without a family comma the name's written shape is not
     settled — "Jong Anke de" may be a misformatted listing, and a
     bare "Jong de" may be a given name beside a particle — so the
@@ -272,9 +302,11 @@ P6. Rationale: a particle ending the name has nothing to link
     Accepted: the precedence over S2 is stated for the shape, so it
     sweeps in every word that is both particle and suffix
     vocabulary — today vd, do and mc. Only vd's reading was
-    weighed; the other two inherit it, which is the shape's cost
-    and is tracked with the other contested memberships.
-    history: decisions.md#P6 · interacts: C1, P1, S2 · tracked: #379, #380
+    weighed; mc inherits it, which is the shape's cost and is
+    tracked with the other contested memberships. `do` sits in the
+    AMBIGUOUS acronym half and was already read as a name word
+    there, so the precedence decides nothing for it.
+    history: decisions.md#P6 · interacts: C1, P1, S2 · implemented: nameparser/_pipeline/_post_rules.py
 
 ## Suffixes: generational & credentials (S)
 
@@ -660,8 +692,9 @@ R1. Rationale: a field is a way of reading the parse, not a stored
     string.
     Every field is a view computed from the parsed words at read
     time, joining its words in written order — except folded family
-    words (O3), which render before the rest of the family wherever
-    they stood in the string.
+    words — O3's fold and, since #379, P6's attached tussenvoegsel —
+    which render before the rest of the family wherever they stood in
+    the string.
       "Dr. Juan Q. Xavier de la Vega III"  →  family="de la Vega"
       "Hassan, Mohamad Ahmad Ali"  middle_as_family  →  family="Ahmad Ali Hassan"
       "Hassan, Mohamad Ahmad Ali"          →  family="Hassan"  · boundary

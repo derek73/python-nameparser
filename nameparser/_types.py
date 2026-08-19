@@ -610,8 +610,8 @@ class ParsedName:
     @property
     # rules.md#R1: "every field is a view computed from the parsed
     # words at read time, joining its words in written order — except
-    # folded family words (O3), which render before the rest of the
-    # family"
+    # folded family words" (O3's fold and P6's tussenvoegsel, which
+    # render before the rest of the family)
     def family(self) -> str:
         return self._text_for(Role.FAMILY)
 

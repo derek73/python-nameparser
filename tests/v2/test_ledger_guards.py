@@ -45,6 +45,7 @@ from nameparser._policy import Script
 # written to forbid exactly that.
 from nameparser._lexicon import _normalize
 from nameparser.config.maiden_markers import MAIDEN_MARKERS
+from nameparser.config.particles import PARTICLES
 from nameparser.config.suffixes import (
     GLUED_HONORIFICS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_WORDS)
 
@@ -679,6 +680,16 @@ _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
     "ambiguous-surname-acronym": _LatinCopy(
         vocabulary=SUFFIX_ACRONYMS_AMBIGUOUS,
         covers=frozenset({"do", "ma"})),
+    # The tussenvoegsel rule copies PARTICLES, and copies it PARTLY on
+    # purpose: it needs the words that actually end a Dutch, Iberian or
+    # German listing, not all 70. A wider copy would claim comma names
+    # whose trailing word is a particle nobody files a name with, which
+    # is the reach this roster exists to keep honest.
+    "fix(#379)": _LatinCopy(
+        vocabulary=PARTICLES,
+        covers=frozenset({"de", "del", "den", "der", "di", "do", "dos",
+                          "du", "la", "le", "los", "mc", "van", "vd",
+                          "von", "zu"})),
 }
 
 #: Alternations that copy no vocabulary, so discovery must not demand a
@@ -1016,6 +1027,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(4, ('family', 'maiden', 'middle'), "b31dc2e2bbc4"),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
             _Claim(3, ('family', 'given', 'maiden', 'middle'), "cf5c9d671c14"),
+        "fix(#379) a tussenvoegsel after a family comma attaches to the family":
+            _Claim(2, ('family', 'middle'), "f3a43bebfb91"),
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
             _Claim(215, ('given', 'suffix', 'title'), "f16a0e79cba3"),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
@@ -1050,6 +1063,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
     },
     "expected_since_2.0.0.toml": {
+        "fix(#379) a tussenvoegsel after a family comma attaches to the family":
+            _Claim(2, ('family', 'middle'), "f3a43bebfb91"),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
             _Claim(97, ('_ambiguities', 'family', 'given', 'middle'), "66e71d60a075"),
         "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into suffix":
@@ -1066,6 +1081,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
     },
     "expected_since_2.1.0.toml": {
+        "fix(#379) a tussenvoegsel after a family comma attaches to the family":
+            _Claim(2, ('family', 'middle'), "f3a43bebfb91"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
             _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
     },
