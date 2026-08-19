@@ -213,6 +213,83 @@ CASES: tuple[Case, ...] = (
                "the whole suite passed with name_order discarded from "
                "it; on this branch the same mutation fails three "
                "tests, this row among them"),
+    # The Dutch alphabetized listing: "Beethoven, Ludwig van" is how
+    # "Ludwig van Beethoven" is filed, the tussenvoegsel moved behind
+    # the given name but belonging to the surname (#379).
+    Case("tussenvoegsel_after_family_comma", "Beethoven, Ludwig van",
+         {"given": "Ludwig", "family": "van Beethoven"},
+         classification="fix(#379)",
+         notes="1.4.0 gives middle 'van', last 'Beethoven'. The "
+               "particle attaches to the family the comma already "
+               "named and renders before it, so the derived views "
+               "move with it -- family_particles 'van', family_base "
+               "'Beethoven', which is what #130 asked for"),
+    Case("tussenvoegsel_multiword", "Berg, Jan van der",
+         {"given": "Jan", "family": "van der Berg"},
+         classification="fix(#379)",
+         notes="the whole run attaches, not just its last word"),
+    Case("tussenvoegsel_outranks_the_suffix_reading", "Berg, Jan vd",
+         {"given": "Jan", "family": "vd Berg"},
+         classification="fix(#380)",
+         notes="'vd' is particle AND suffix vocabulary, and assign "
+               "read the trailing one as a post-nominal (1.4.0 and "
+               "2.1 alike gave suffix 'vd'). After a family comma the "
+               "tussenvoegsel abbreviation is far more often the "
+               "reading meant; P6 states that precedence over S2"),
+    Case("tussenvoegsel_behind_a_post_nominal", "Berg, Jan van Jr.",
+         {"given": "Jan", "family": "van Berg", "suffix": "Jr."},
+         classification="fix(#379)",
+         notes="the credential sits BEHIND the tussenvoegsel in this "
+               "listing, so the run is found by walking past it. "
+               "Without that walk the same name parsed two ways on "
+               "whether a comma preceded the credential -- "
+               "'Berg, Jan van, Jr.' attached and this one did not"),
+    Case("tussenvoegsel_declines_with_no_given_word_left",
+         "Smith, de Mesnil van",
+         {"family": "Smith de Mesnil van"},
+         classification="fix(comma-precomma-family)",
+         notes="P1's fold has already made all of segment 1 the "
+               "family, so no GIVEN word remains and the "
+               "attachment declines. Testing for any NAME role here "
+               "instead would pass on family text P1 just produced, "
+               "and hoist 'van' in front of a base it never preceded "
+               "('van Smith de Mesnil'). NOT parity: 1.4.0 leaves no "
+               "given name either, but renders last 'de Mesnil van "
+               "Smith' -- it treats only the leading 'de' as a "
+               "last-prefix and leaves 'van' inside the base. The "
+               "structure agrees, the string does not"),
+    Case("tussenvoegsel_behind_a_comma_post_nominal",
+         "Berg, Jan van, Jr.",
+         {"given": "Jan", "family": "van Berg", "suffix": "Jr."},
+         classification="fix(#379)",
+         notes="the credential in its own comma segment, which is the "
+               "spelling the no-comma row is defined against -- both "
+               "must read the same, and gating the rule on a two"
+               "-segment name silently reverts this one"),
+    Case("tussenvoegsel_behind_a_title", "Berg, Dr. Jan van",
+         {"title": "Dr.", "given": "Jan", "family": "van Berg"},
+         classification="fix(#379)",
+         notes="the words-to-spare test asks whether ANY word ahead "
+               "of the run holds a given role, not whether all of "
+               "them do: the title does not, and the rule must still "
+               "fire. decisions.md#P6 calls that guard load-bearing"),
+    Case("tussenvoegsel_takes_the_vietnamese_reading", "Nguyen, Thi Van",
+         {"given": "Thi", "family": "Van Nguyen"},
+         classification="fix(#379)",
+         notes="the accepted cost, pinned so it cannot move without "
+               "someone deciding to move it: Nguyen Thi Van is "
+               "family-middle-given, so the given name Van is lost "
+               "here. The listing is identical to the Dutch one and "
+               "nothing separates them. The comma-LESS family-first "
+               "spelling reads it correctly, which is what makes the "
+               "loss acceptable -- see rules.md#P6"),
+    Case("tussenvoegsel_needs_a_given_word_to_spare", "Nguyen, Van",
+         {"given": "Van", "family": "Nguyen"},
+         classification="parity",
+         notes="the words-to-spare boundary: the only given word IS "
+               "the particle, so it stays a given name rather than "
+               "leaving the name with none. Vietnamese Van is exactly "
+               "the case that guard protects"),
     Case("suffix_word_title_ambiguous_particle", "Jr. Van Johnson",
          {"title": "Jr.", "given": "Van", "family": "Johnson"},
          classification="fix(#367)",

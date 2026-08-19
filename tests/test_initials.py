@@ -28,15 +28,30 @@ class InitialsTestCase(HumanNameTestBase):
         hn = HumanName("", constants=Constants())
         self.assertEqual(hn.initials(), "")
 
-    def test_initials_middle_name_all_prefixes(self) -> None:
-        # "Vega, Juan de la" parses with middle name "de la", which contains
-        # no initialable words (both are prefixes). The part must be skipped
-        # entirely — not emit an empty initial ("J. . V.") and not crash when
-        # empty_attribute_default is None.
+    def test_initials_with_an_attached_tussenvoegsel(self) -> None:
+        # "Vega, Juan de la" used to park "de la" in the middle name; #379
+        # attaches it to the family instead, so the initials come from
+        # 'Juan' and the family BASE. The all-prefix MIDDLE this test
+        # was written for now comes from "Nguyen, Van Le" below --
+        # whether such a middle should exist at all is #402.
         hn = HumanName("Vega, Juan de la")
-        self.m(hn.middle, "de la", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "de la Vega", hn)
         self.assertEqual(hn.initials_list(), ["J", "V"])
         self.assertEqual(hn.initials(), "J. V.")
+
+    def test_initials_middle_name_all_prefixes(self) -> None:
+        # "Nguyen, Van Le" parses with middle name "Le", which contains
+        # no initialable words (it is a particle). The part must be
+        # skipped entirely rather than emitting an empty initial:
+        # without the filter this reads "V. . N.". (The older version
+        # of this comment also named empty_attribute_default, which
+        # 2.0 removed in #255, so that half described a failure mode
+        # the test cannot reach.)
+        hn = HumanName("Nguyen, Van Le")
+        self.m(hn.middle, "Le", hn)
+        self.assertEqual(hn.initials_list(), ["V", "N"])
+        self.assertEqual(hn.initials(), "V. N.")
 
     def test_initials_complex_name(self) -> None:
         hn = HumanName("Doe, John A. Kenneth, Jr.")
