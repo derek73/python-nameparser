@@ -431,16 +431,21 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "Jane Smith née Jones PhD"  →  suffix="PhD"
       "Jones née"                 →  family="née"  · boundary
       "née Jones"                 →  family="Jones"  · boundary
+    A marker also bounds a particle join arriving from its left (P2):
+    the family name's particles stop at the marker instead of
+    absorbing it. Where that leaves a family of nothing but
+    particles, they are not in particle position and read as
+    ordinary words (R2).
+      "Jane van der Berg née Jones"  →  maiden="Jones"
+      "Jane de la née Jones"         →  family="de la"
     Accepted: the fullwidth-colon spelling arrives as one word, so
     the marker inside it goes unrecognized; #317 tracks whether it
     should peel.
       "山田 花子 旧姓：佐藤"       →  maiden=""
     Accepted: a marker straight after a comma is post-comma given
-    text, not a marker; and a particle chain swallows a marker in
-    its path, the join (P2) running first.
+    text, not a marker.
       "Jane Smith, née Jones"     →  maiden=""
-      "Jane de la née Jones"      →  family="de la née Jones"
-    history: decisions.md#M2 · interacts: P2, M1 · implemented: nameparser/_pipeline/_group.py
+    history: decisions.md#M2 · interacts: P2, R2, M1 · implemented: nameparser/_pipeline/_group.py
 
 ## Commas & structure (C)
 

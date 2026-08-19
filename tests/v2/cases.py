@@ -671,6 +671,85 @@ CASES: tuple[Case, ...] = (
          {"given": "Jane", "family": "Smith", "maiden": "Jones"},
          classification="fix(#274)",
          notes="v1 mangles to middle='Smith née'"),
+    Case("maiden_marker_after_particle_chain",
+         "Ursula von der Leyen geb. Albrecht",
+         {"given": "Ursula", "family": "von der Leyen",
+          "maiden": "Albrecht"},
+         classification="fix(#399)",
+         notes="#399: the chain that joins 'von der' to Leyen used to "
+               "run on past the marker and take the maiden name with "
+               "it (family 'von der Leyen geb. Albrecht', maiden ''), "
+               "because the marker is consumed AFTER the chain merges "
+               "and by then there is no lone marker piece left to "
+               "find. A suffix already stopped the chain; a marker now "
+               "does too. The same words one chain apart -- "
+               "maiden_marker_no_particle below is the control"),
+    Case("maiden_marker_no_particle", "Ursula Leyen geb. Albrecht",
+         {"given": "Ursula", "family": "Leyen", "maiden": "Albrecht"},
+         classification="fix(#274)",
+         notes="the control for maiden_marker_after_particle_chain: "
+               "identical but for the particles, and it always worked. "
+               "Pinned so a regression in the plain path cannot hide "
+               "behind the particle rows"),
+    Case("maiden_marker_after_one_particle", "Anna von Müller geb. Schmidt",
+         {"given": "Anna", "family": "von Müller", "maiden": "Schmidt"},
+         classification="fix(#399)",
+         notes="one particle is enough to break it -- #399 is not "
+               "about the length of the run"),
+    Case("maiden_marker_after_leading_particle", "von Müller geb. Schmidt",
+         {"given": "von", "family": "Müller", "maiden": "Schmidt"},
+         classification="fix(#274)",
+         ambiguities=("particle-or-given",),
+         notes="the second control for #399, and the one that shows "
+               "where the old boundary fell: a LEADING particle chains "
+               "nothing (P4), so it never reached the marker and this "
+               "shape always worked. given 'von' is R2 -- a lone "
+               "leading particle is not in particle position"),
+    Case("maiden_marker_after_leading_particle_run",
+         "von der Müller geb. Schmidt",
+         {"given": "von", "family": "der Müller", "maiden": "Schmidt"},
+         classification="fix(#399)",
+         ambiguities=("particle-or-given",),
+         notes="a leading RUN of two broke where a leading single did "
+               "not: 'der' is not the leading piece, so its own chain "
+               "fired and swallowed the marker. The family reading "
+               "here is unchanged by #399 -- only the maiden field "
+               "moved (from '')"),
+    Case("maiden_marker_after_particle_chain_with_suffix",
+         "Jane van der Berg née Jones PhD",
+         {"given": "Jane", "family": "van der Berg", "maiden": "Jones",
+          "suffix": "PhD"},
+         classification="fix(#399)",
+         notes="marker and suffix stops in the same name: the chain "
+               "stops at the marker, then M2's own walk stops the "
+               "maiden name at the suffix. Dutch spelling of the same "
+               "defect, and 'née' unaccented-vs-accented is not the "
+               "variable here"),
+    Case("maiden_marker_stops_the_leading_run_family_first",
+         "de la Cruz née Vega",
+         {"family": "de la Cruz", "maiden": "Vega"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#399)",
+         notes="#399's open question, answered by the chain stop "
+               "rather than by a rule of its own: the marker used to "
+               "survive as an ordinary name word and compete for the "
+               "leftover given slot, so this read given 'née' / middle "
+               "'Vega'. Consumed and dropped, it never reaches the "
+               "placement. No given name at all is the right answer "
+               "for family-plus-maiden input"),
+    Case("maiden_marker_leaves_family_all_particles",
+         "Jane de la née Jones",
+         {"given": "Jane", "family": "de la", "maiden": "Jones"},
+         classification="fix(#399)",
+         notes="stopping the chain can leave a family group that is "
+               "wholly particles, which is exactly the shape R2 "
+               "reserves: they are not in particle position, so they "
+               "report as ordinary words -- family_base 'de la' and "
+               "family_particles '' (pinned in test_cases). Before "
+               "#399 this read family 'de la née Jones' with base "
+               "'née Jones'. Nonsense input either way; pinned "
+               "because the two rules have to compose without "
+               "either producing an empty base"),
     Case("maiden_marker_kyusei", "山田花子 旧姓 佐藤",
          {"family": "山田花子", "maiden": "佐藤"},
          classification="fix(#309)",
