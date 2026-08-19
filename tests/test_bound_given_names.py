@@ -147,3 +147,60 @@ class BoundGivenNamesTestCase(HumanNameTestBase):
         self.m(hn.middle, "salam ahmed", hn)
         self.m(hn.last, "salem", hn)
 
+    # --- 'abd', which is also the postnominal ABD ---
+    def test_abd_joins_the_word_after_it(self) -> None:
+        """The spelling that writes the article separately."""
+        hn = HumanName("abd Allah Smith")
+        self.m(hn.first, "abd Allah", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_abd_joins_after_a_family_comma(self) -> None:
+        hn = HumanName("Smith, abd Allah")
+        self.m(hn.first, "abd Allah", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_abd_pairwise_like_abdul(self) -> None:
+        """Joins ONCE: 'Rahman' pairs, 'Ahmed' stays a middle name."""
+        hn = HumanName("abd Rahman Ahmed Salem")
+        self.m(hn.first, "abd Rahman", hn)
+        self.m(hn.middle, "Ahmed", hn)
+        self.m(hn.last, "Salem", hn)
+
+    def test_abd_joins_with_a_suffix_present(self) -> None:
+        """The line this fix changes is a SUFFIX count, so the shapes
+        that carry a real suffix piece are the ones it governs."""
+        for text, suffix in (("abd Allah Smith jr", "jr"),
+                             ("abd Allah Smith PhD", "PhD"),
+                             ("abd Allah Smith, PhD", "PhD"),
+                             ("abd Allah Smith III", "III")):
+            hn = HumanName(text)
+            self.m(hn.first, "abd Allah", hn)
+            self.m(hn.middle, "", hn)
+            self.m(hn.last, "Smith", hn)
+            self.m(hn.suffix, suffix, hn)
+
+    def test_both_readings_of_abd_in_one_name(self) -> None:
+        """Position tells them apart -- the claim the collision rests
+        on, in a single string: bound given name in front, postnominal
+        behind."""
+        hn = HumanName("abd Allah Smith ABD")
+        self.m(hn.first, "abd Allah", hn)
+        self.m(hn.last, "Smith", hn)
+        self.m(hn.suffix, "ABD", hn)
+
+    def test_abd_joins_behind_a_title(self) -> None:
+        hn = HumanName("Dr. abd Allah Smith")
+        self.m(hn.title, "Dr.", hn)
+        self.m(hn.first, "abd Allah", hn)
+        self.m(hn.last, "Smith", hn)
+
+    def test_the_abd_postnominal_still_reads_as_a_suffix(self) -> None:
+        """The collision: ABD is also All But Dissertation. Position
+        tells the two apart, so neither reading had to be given up."""
+        for text in ("Jane Smith ABD", "Jane Smith, ABD",
+                     "Jane Smith A.B.D."):
+            hn = HumanName(text)
+            self.m(hn.first, "Jane", hn)
+            self.m(hn.last, "Smith", hn)
+            self.assertTrue(hn.suffix.upper().replace(".", "") == "ABD",
+                            f"{text}: suffix={hn.suffix!r}")

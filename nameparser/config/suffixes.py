@@ -204,6 +204,12 @@ SUFFIX_ACRONYMS = frozenset({
     'aas',
     'aba',
     'abc',
+    # "All But Dissertation". Also the Latin transliteration of the
+    # Arabic bound given-name word in BOUND_GIVEN_NAMES (whose
+    # Arabic-script counterpart عبد is in that set only) -- the one
+    # word in both sets, kept in both deliberately. Position decides
+    # at the two ends but not in a family comma's given slot; see
+    # decisions.md#P5.
     'abd',
     'abpp',
     'abr',

@@ -292,3 +292,34 @@ def test_suffix_comma_name_segment_gets_no_additional_count() -> None:
     # ', PhD' must not tip the single-letter-conjunction carve-out
     out = _grouped("John y Smith, PhD")
     assert _piece_texts(out) == [["John", "y", "Smith"], ["PhD"]]
+
+
+_DUAL_LEX = dataclasses.replace(
+    _LEX, bound_given_names=frozenset({"abdul", "dual"}),
+    suffix_acronyms=frozenset({"phd", "dual"}))
+
+
+def test_a_bound_word_in_two_vocabularies_still_joins() -> None:
+    # The reserve counts the pieces left to spare, and the bound word's
+    # own piece is not one of them to spare -- it is the piece the rule
+    # has already claimed. Counting it as a suffix, because the same
+    # word is ALSO suffix vocabulary, left the rule silently unable to
+    # fire: three name words, but only two counted, one short of the
+    # threshold. This is what kept 'abd' out of BOUND_GIVEN_NAMES; the
+    # shipped word is exercised in tests/test_bound_given_names.py.
+    # Synthetic word, so this pins the MECHANISM -- 'abd' is the only
+    # shipped member of the intersection, and removing it from the
+    # vocabulary leaves this test green.
+    out = _grouped("dual Allah Smith", lexicon=_DUAL_LEX)
+    assert _piece_texts(out) == [["dual Allah", "Smith"]]
+
+
+def test_the_reserve_still_declines_when_only_a_suffix_is_left() -> None:
+    # The counted piece is the bound word's own, and NOTHING else that
+    # a suffix check excludes: with 'jr' behind it there is no family
+    # name to spare, so the join must still decline. The tempting
+    # simpler repair -- count every non-title piece -- passes the test
+    # above and fails this one, joining 'dual Allah' and leaving the
+    # name with no family at all.
+    out = _grouped("dual Allah jr", lexicon=_DUAL_LEX)
+    assert _piece_texts(out) == [["dual", "Allah", "jr"]]
