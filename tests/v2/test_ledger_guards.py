@@ -690,6 +690,18 @@ _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
         covers=frozenset({"de", "del", "den", "der", "di", "do", "dos",
                           "du", "la", "le", "los", "mc", "van", "vd",
                           "von", "zu"})),
+    # The same partial copy as fix(#379) above, and the same reason for
+    # being partial -- these are the words that actually precede a base
+    # in a Latin listing. Sharing the snapshot is deliberate: the two
+    # rules ask different questions of the same vocabulary (#379 wants
+    # the word that ENDS a comma listing, #399 the word that opens a
+    # chain), so a divergence between the two `covers` sets would be a
+    # fact about one of the rules, not a copy drifting.
+    "fix(#399)": _LatinCopy(
+        vocabulary=PARTICLES,
+        covers=frozenset({"de", "del", "den", "der", "di", "do", "dos",
+                          "du", "la", "le", "los", "mc", "van", "vd",
+                          "von", "zu"})),
 }
 
 #: Alternations that copy no vocabulary, so discovery must not demand a
@@ -1022,11 +1034,11 @@ def _claim(rule: dict) -> _Claim:
 _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(97, ('family', 'given', 'middle'), "66e71d60a075"),
+            _Claim(98, ('family', 'given', 'middle'), "54f0cf4eb210"),
         "fix(#274) maiden markers consumed":
             _Claim(4, ('family', 'maiden', 'middle'), "b31dc2e2bbc4"),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
-            _Claim(3, ('family', 'given', 'maiden', 'middle'), "cf5c9d671c14"),
+            _Claim(4, ('family', 'given', 'maiden', 'middle'), "ca6adbb3fa69"),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
             _Claim(2, ('family', 'middle'), "f3a43bebfb91"),
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
@@ -1034,7 +1046,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(215, ('family', 'given'), "f16a0e79cba3"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(751, ('family', 'given', 'suffix'), "231640fc7535"),
+            _Claim(752, ('family', 'given', 'suffix'), "92af19376071"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1066,13 +1078,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
             _Claim(2, ('family', 'middle'), "f3a43bebfb91"),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(97, ('_ambiguities', 'family', 'given', 'middle'), "66e71d60a075"),
+            _Claim(98, ('_ambiguities', 'family', 'given', 'middle'), "54f0cf4eb210"),
         "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into suffix":
             _Claim(34, ('family', 'given', 'suffix'), "877ab3246d33"),
         "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix":
             _Claim(16, ('family', 'given', 'middle', 'suffix'), "6d390e518bd2"),
         "fix(#309) 旧姓 maiden marker consumed, compounding with the CJK order flip":
-            _Claim(3, ('family', 'given', 'maiden', 'middle'), "cf5c9d671c14"),
+            _Claim(4, ('family', 'given', 'maiden', 'middle'), "ca6adbb3fa69"),
         "fix(#272) nakaguro inside delimited content renders as a space, compounding with the CJK order flip":
             _Claim(1, ('family', 'given', 'nickname'), "d4069d459f23"),
         "fix(#298) 间隔号 division changes the comma reading, sending the credential from title to suffix":
@@ -1081,6 +1093,14 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
     },
     "expected_since_2.1.0.toml": {
+        # One name, and the rule is written to reach exactly that one:
+        # the particle-ahead-of-a-marker shape is what #399 fixed, and
+        # the four other marker-bearing corpus names have no particle
+        # in front of the marker. A count that grows here means either
+        # a new corpus name of the shape (record it) or the rule
+        # loosening (do not).
+        "fix(#399) a maiden marker bounds the particle chain that swallowed it":
+            _Claim(1, ('family', 'maiden'), "f016cc61ca43"),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
             _Claim(2, ('family', 'middle'), "f3a43bebfb91"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":

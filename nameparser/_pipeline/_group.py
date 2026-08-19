@@ -66,8 +66,10 @@ def _is_title_piece(piece: Sequence[int], ptags: Set[str],
 
 # rules.md#P2: "a particle joins the words after it into one name
 # part, the join running until the next particle starts a group of
-# its own or the name ends. The final group reads as the family
-# name; earlier groups read by position." (history: decisions.md#P2)
+# its own, a trailing suffix begins, a maiden marker takes the words
+# after it (M2), or the name ends. The final group reads as the
+# family name; earlier groups read by position."
+# (history: decisions.md#P2)
 # rules.md#P4: "a particle in the name's leading position chains
 # nothing: the words stay separate" (history: decisions.md#P2)
 def _is_prefix_piece(piece: Sequence[int], ptags: Set[str],
@@ -149,8 +151,20 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     def conj(k: int) -> bool:
         return _is_conj_piece(pieces[k], ptags[k], tokens)
 
-    def maiden_marker(k: int) -> bool:
-        return _is_maiden_marker_piece(pieces[k], tokens)
+    def maiden_marker_stop(k: int) -> bool:
+        # A marker bounds the chain only where the consumer below will
+        # actually take it (#399). That consumer needs a non-suffix
+        # piece after the marker; stopping without one left the marker
+        # as a piece of its own, and a lone trailing piece takes a role
+        # field -- so the marker became the family name and the real
+        # surname was demoted to the middle ("Jane van der Berg née"
+        # read middle 'van der Berg', family 'née'). That is the defect
+        # this stop exists to prevent, one field over. Testing the
+        # consumer's own condition rather than restating it is what
+        # makes the two halves agree.
+        return (_is_maiden_marker_piece(pieces[k], tokens)
+                and any(not _is_suffix_piece(pieces[x], ptags[x], tokens)
+                        for x in range(k + 1, len(pieces))))
 
     def merge(lo: int, hi: int, add: Set[str] = frozenset(),
               drop: Set[str] = frozenset()) -> None:
@@ -299,7 +313,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             while j < len(pieces) and prefix(j):
                 j += 1
             while (j < len(pieces) and not prefix(j) and not suffix(j)
-                   and not maiden_marker(j)):
+                   and not maiden_marker_stop(j)):
                 j += 1
             # The other half of PARTICLE_OR_GIVEN. _assign reports the
             # fork when an ambiguous particle stays a lone leading piece

@@ -703,8 +703,11 @@ CASES: tuple[Case, ...] = (
          notes="the second control for #399, and the one that shows "
                "where the old boundary fell: a LEADING particle chains "
                "nothing (P4), so it never reached the marker and this "
-               "shape always worked. given 'von' is R2 -- a lone "
-               "leading particle is not in particle position"),
+               "shape always worked. given 'von' is P4 plus P1 "
+               "declining to fold ('von' is outside the never-given "
+               "particles), which is also why the row reports the "
+               "fork -- not R2, whose output here is the family "
+               "('Müller', base 'Müller', particles '')"),
     Case("maiden_marker_after_leading_particle_run",
          "von der Müller geb. Schmidt",
          {"given": "von", "family": "der Müller", "maiden": "Schmidt"},
@@ -712,9 +715,11 @@ CASES: tuple[Case, ...] = (
          ambiguities=("particle-or-given",),
          notes="a leading RUN of two broke where a leading single did "
                "not: 'der' is not the leading piece, so its own chain "
-               "fired and swallowed the marker. The family reading "
-               "here is unchanged by #399 -- only the maiden field "
-               "moved (from '')"),
+               "fired and swallowed the marker. What #399 left alone "
+               "is the given/family SPLIT -- given 'von', family "
+               "starting at 'der' (P4 + R2); the family itself shed "
+               "the marker and the maiden name it had swallowed "
+               "('der Müller geb. Schmidt' -> 'der Müller')"),
     Case("maiden_marker_after_particle_chain_with_suffix",
          "Jane van der Berg née Jones PhD",
          {"given": "Jane", "family": "van der Berg", "maiden": "Jones",
@@ -744,12 +749,142 @@ CASES: tuple[Case, ...] = (
          notes="stopping the chain can leave a family group that is "
                "wholly particles, which is exactly the shape R2 "
                "reserves: they are not in particle position, so they "
-               "report as ordinary words -- family_base 'de la' and "
-               "family_particles '' (pinned in test_cases). Before "
-               "#399 this read family 'de la née Jones' with base "
-               "'née Jones'. Nonsense input either way; pinned "
+               "report as ordinary words -- family_base 'de la', "
+               "family_particles ''. test_cases pins that split only "
+               "up to the partition invariant (non-empty base, words "
+               "conserved), so base 'la' / particles 'de' would also "
+               "satisfy it. Before #399 this read family 'de la née "
+               "Jones' with base 'née Jones'. Nonsense input either "
+               "way; pinned "
                "because the two rules have to compose without "
                "either producing an empty base"),
+    Case("maiden_marker_trailing_after_particles",
+         "Jane van der Berg née",
+         {"given": "Jane", "family": "van der Berg née"},
+         notes="the boundary the #399 stop is GATED on. M2 says a "
+               "marker with nothing after it is just a word, so the "
+               "chain must not stop here: there is no maiden name to "
+               "hand it to, and a stop would leave the marker as a "
+               "piece of its own, which then takes the whole family "
+               "field and demotes the real surname to the middle "
+               "(family 'née', middle 'van der Berg'). The first cut "
+               "of #399 did exactly that -- the marker-less spelling "
+               "'Jones née' -> family 'née' is M2's own boundary "
+               "example, and the particle spelling has to agree with "
+               "the rest of the family name, not replace it"),
+    Case("maiden_marker_trailing_before_suffix",
+         "Jane van der Berg née PhD",
+         {"given": "Jane", "family": "van der Berg née",
+          "suffix": "PhD"},
+         notes="the other half of the gate: the consumer walks only up "
+               "to a trailing suffix, so a marker with nothing but a "
+               "suffix after it is not consumed either. Pinned "
+               "separately from the row above because the two reach "
+               "the same decision through different conditions -- last "
+               "piece vs nothing-but-suffix-follows -- and a stop "
+               "keyed on only one of them looks correct on the other"),
+    Case("maiden_marker_surname_spelling_keeps_its_particles",
+         "Jane van der Nee",
+         {"given": "Jane", "family": "van der Nee"},
+         notes="'Nee' is an attested surname as well as a marker "
+               "spelling, which M1 already says ('a one-word clause "
+               "keeps its word, which may itself be a surname'). "
+               "Because nothing follows it the gate declines, so a "
+               "Dutch bearer of the surname keeps the tussenvoegsel "
+               "in the family name. Ungated, #399 moved 'van der' out "
+               "to the middle and left family 'Nee'"),
+    Case("maiden_marker_trailing_keeps_the_fork_report",
+         "St St née",
+         {"title": "St", "family": "St née"},
+         ambiguities=("particle-or-given",),
+         notes="'st' is both a title and an ambiguous particle (#367), "
+               "so this shape reaches group's PARTICLE_OR_GIVEN "
+               "emitter, which is guarded on the chain having merged "
+               "something. An ungated marker stop made the chain merge "
+               "nothing for a DIFFERENT reason than the guard assumes, "
+               "silencing the report while still deciding the fork -- "
+               "the shape A1 forbids and #405 tracks. Pinned because "
+               "removing a report a caller already sees is worse than "
+               "never emitting one"),
+    Case("maiden_marker_particles_on_both_sides",
+         "Anna von der Müller geb. von der Berg",
+         {"given": "Anna", "family": "von der Müller",
+          "maiden": "von der Berg"},
+         classification="fix(#399)",
+         notes="a particle chain on each side of the marker. This is "
+               "the shape decisions.md#M2 leans on when it explains "
+               "why #399 stopped the chain instead of moving the "
+               "maiden handler ahead of it, so it is pinned where the "
+               "argument can be checked. Before #399 the marker rode "
+               "into the middle name (middle 'von der Müller geb.')"),
+    Case("maiden_marker_stops_the_leading_run", "de la Cruz née Vega",
+         {"family": "de la Cruz", "maiden": "Vega"},
+         classification="fix(#399)",
+         notes="the default-order reading of the family-first row "
+               "below, added because that one is core-only and the "
+               "facade runner would otherwise never see this class. "
+               "Before #399: family 'de la Cruz née Vega'"),
+    Case("maiden_marker_stops_the_leading_run_family_first_given_last",
+         "de la Cruz née Vega",
+         {"family": "de la Cruz", "maiden": "Vega"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         classification="fix(#399)",
+         notes="the sibling of the family-first row, and the point is "
+               "that the two orders now AGREE: consuming the marker "
+               "leaves no leftover to distribute, so the reading that "
+               "distinguishes them has nothing to work on. Before "
+               "#399 they differed -- given 'Vega' middle 'née' here "
+               "against given 'née' middle 'Vega' under FAMILY_FIRST"),
+    Case("maiden_marker_swallowed_by_a_conjunction_join",
+         "Jane van der Berg née y Jones",
+         {"given": "Jane", "family": "van der Berg née y Jones"},
+         notes="accepted, and the reason #399's stop does not reach "
+               "it: the stop tests for a LONE marker piece, and P3's "
+               "connective join runs earlier in the same stage and "
+               "merges the marker into a multi-word piece. #399 fixed "
+               "the P2 instance of the join-swallow; this is one of "
+               "the two that survive"),
+    Case("maiden_marker_swallowed_by_a_bound_given_join",
+         "van der Berg, abdul née Jones",
+         {"given": "abdul née", "middle": "Jones",
+          "family": "van der Berg"},
+         notes="the other surviving join-swallow, through P5's "
+               "bound-given join rather than P3's -- the more "
+               "plausible of the two, a post-comma given side. Same "
+               "cause as the row above: the marker is inside a merged "
+               "piece before the stop can see it"),
+    Case("maiden_marker_inside_a_conjunction_piece",
+         "Jane née and Jones Smith",
+         {"given": "Jane", "middle": "née and Jones",
+          "family": "Smith"},
+         notes="pins the lone-piece guard itself. Dropping "
+               "`len(piece) == 1` from the marker test leaves the "
+               "whole suite green otherwise, yet it is live: this "
+               "connective merge produces a marker-HEADED multi-word "
+               "piece, and without the guard the marker matches and "
+               "carries 'Smith' into the maiden field with the family "
+               "left empty. #399 gave that guard a second caller, so "
+               "it needed a pin"),
+    Case("maiden_marker_after_particles_in_a_comma_segment",
+         "Smith, Jane van der Berg née Jones",
+         {"given": "Jane", "middle": "van der Berg",
+          "family": "Smith", "maiden": "Jones"},
+         classification="fix(#399)",
+         notes="the listing form, where the chain and the marker are "
+               "both on the given side of the comma. Before #399 the "
+               "marker and the maiden name stayed in the middle name "
+               "('van der Berg née Jones'). Distinct from M2's "
+               "remaining Accepted note, which is about a marker "
+               "standing straight AFTER the comma"),
+    Case("maiden_marker_after_particles_cross_script",
+         "Jane van der Berg 旧姓 Jones",
+         {"given": "Jane", "family": "van der Berg",
+          "maiden": "Jones"},
+         classification="fix(#399)",
+         notes="the stop is one vocabulary lookup, so it reaches every "
+               "marker spelling; this is the only cross-script pair "
+               "of the set -- a native-script marker between a Latin "
+               "tussenvoegsel and a Latin maiden name"),
     Case("maiden_marker_kyusei", "山田花子 旧姓 佐藤",
          {"family": "山田花子", "maiden": "佐藤"},
          classification="fix(#309)",

@@ -75,6 +75,7 @@ _CORE_ONLY_IDS = frozenset({
     "leading_never_given_particle_two_leftovers_family_first_given_last",
     "maiden_marker_delimited_beside_a_nickname_clause",
     "maiden_marker_stops_the_leading_run_family_first",
+    "maiden_marker_stops_the_leading_run_family_first_given_last",
     "maiden_marker_kyusei_delimited",
     "ko_honorific_period_under_strict_comma_suffixes",
     "ja_honorific_glued_family_comma_strict_knob",

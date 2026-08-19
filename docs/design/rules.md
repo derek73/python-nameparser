@@ -156,8 +156,10 @@ P1. Rationale: a never-given particle standing alone cannot be
 P2. Rationale: a particle is written as part of the surname it
     precedes, and a title stands outside the name entirely.
     A particle joins the words after it into one name part, the
-    join running until the next particle starts a group of its own
-    or the name ends. The final group reads as the family name;
+    join running until the next particle starts a group of its own,
+    a trailing suffix begins, a maiden marker takes the words after
+    it (M2), or the name ends. The final group reads as the family
+    name;
     earlier groups read by position. The chain begins wherever the
     name begins, and a preceding title does not move that point.
     Where P1's fold has claimed the opening, the fold decides the
@@ -169,11 +171,13 @@ P2. Rationale: a particle is written as part of the surname it
       "Dr. John van der Berg"     →  family="van der Berg"
       "Juan de"                   →  family="de"  · boundary
       "de la Cruz Juan Carlos"  family-first  →  family="de la Cruz"
+      "John van der Berg PhD"     →  family="van der Berg"
+      "John van der Berg née Jones"  →  family="van der Berg"
     Accepted: a caller wanting the combined double-surname reading
     (#132's ask) has it as the surnames view rather than the
     family field.
       "Vincent van Gogh van Beethoven"  →  surnames="van Gogh van Beethoven"
-    history: decisions.md#P2 · interacts: P1, P4 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P2 · interacts: P1, P4, M2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P3. Rationale: connective words ("y", "of the") bind name words into
     one name part; but a single letter in a short name is more
@@ -426,26 +430,33 @@ M2. Rationale: a maiden marker announces that what follows it is the
     word takes the words after it — up to any trailing suffix — as
     the maiden name, and the marker itself is dropped. A marker
     with nothing after it, or nothing before it, is just a word.
+    A marker taken this way also bounds a particle join arriving from
+    its left (P2), so the family name's particles stop at the marker
+    instead of absorbing it; a marker left as a word bounds nothing.
+    Where the bound leaves a family of nothing but particles, they
+    are not in particle position and read as ordinary words (R2).
       "Jane Smith née Jones"      →  maiden="Jones"
       "Jane née Jones Smith"      →  maiden="Jones Smith"
       "Jane Smith née Jones PhD"  →  suffix="PhD"
       "Jones née"                 →  family="née"  · boundary
       "née Jones"                 →  family="Jones"  · boundary
-    A marker also bounds a particle join arriving from its left (P2):
-    the family name's particles stop at the marker instead of
-    absorbing it. Where that leaves a family of nothing but
-    particles, they are not in particle position and read as
-    ordinary words (R2).
       "Jane van der Berg née Jones"  →  maiden="Jones"
       "Jane de la née Jones"         →  family="de la"
+      "Jane van der Berg née"        →  family="van der Berg née"
+      "Jane van der Berg née PhD"    →  family="van der Berg née"
     Accepted: the fullwidth-colon spelling arrives as one word, so
     the marker inside it goes unrecognized; #317 tracks whether it
     should peel.
       "山田 花子 旧姓：佐藤"       →  maiden=""
     Accepted: a marker straight after a comma is post-comma given
-    text, not a marker.
-      "Jane Smith, née Jones"     →  maiden=""
-    history: decisions.md#M2 · interacts: P2, R2, M1 · implemented: nameparser/_pipeline/_group.py
+    text, not a marker; and the bound reaches only a marker standing
+    as a word of its own, so the connective join (P3) and the
+    bound-given join (P5) each still absorb a marker before the bound
+    can see it.
+      "Jane Smith, née Jones"          →  maiden=""
+      "Jane van der Berg née y Jones"  →  maiden=""
+      "van der Berg, abdul née Jones"  →  given="abdul née"
+    history: decisions.md#M2 · interacts: P2, P3, P5, R2, M1 · implemented: nameparser/_pipeline/_group.py
 
 ## Commas & structure (C)
 
