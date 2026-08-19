@@ -21,7 +21,7 @@ from nameparser._lexicon import _title_key
 from nameparser._pipeline._assign import _name_positions
 from nameparser._pipeline._state import ParseState, Structure, WorkToken
 from nameparser._policy import PatronymicRule
-from nameparser._types import FOLDED_TAG, Role
+from nameparser._types import FOLDED_TAG, UNJOINED_TAG, Role
 
 # Ported verbatim from v1 (nameparser/config/regexes.py) -- layering
 # forbids the config import; keep in sync by hand.
@@ -363,4 +363,28 @@ def post_rules(state: ParseState) -> ParseState:
             tokens[i] = dataclasses.replace(
                 tokens[i], role=Role.FAMILY,
                 tags=tokens[i].tags | {FOLDED_TAG})
+    # rules.md#R2: "a name part whose every word is particle
+    # vocabulary is a part where none of them is doing a particle's
+    # work — nothing joins them to a name — so they read as ordinary
+    # name words"
+    #
+    # Last in the stage, because every rule above can still move a
+    # token between parts:
+    # P1's fold, P6's attachment and O3's fold all rewrite roles, and
+    # this reads the roles they settle on.
+    #
+    # Marked, not untagged: `particle` is stable API and says the word
+    # IS particle vocabulary wherever it lands, which stays true.
+    #
+    # All three roles for uniformity with the rule, not because all
+    # three are observable: no view filters tags on GIVEN (initials
+    # exempt that role outright), so restricting this loop to MIDDLE
+    # and FAMILY moves 0 of 4,506 parses. The GIVEN arm is marked so a
+    # future view reading the mark gets a consistent answer.
+    for role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY):
+        part = _idx(tokens, role)
+        if part and all("particle" in tokens[i].tags for i in part):
+            for i in part:
+                tokens[i] = dataclasses.replace(
+                    tokens[i], tags=tokens[i].tags | {UNJOINED_TAG})
     return dataclasses.replace(state, tokens=tuple(tokens))

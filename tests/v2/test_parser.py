@@ -669,6 +669,37 @@ def test_revise_strips_the_fold_marker() -> None:
     assert r.family == "Gabriel García Márquez"
 
 
+def test_revise_clears_a_stale_unjoined_mark() -> None:
+    # UNJOINED_TAG says a particle stands alone in its PART, so an edit
+    # that re-roles tokens invalidates it -- the harvest splices a
+    # sub-parse's tokens into one field, and a particle marked alone
+    # there can land beside a name word. Recomputed rather than
+    # stripped (the fold marker above is stripped, which is only right
+    # for one direction). Without this, an identity revise drifted:
+    # base 'Toro' became 'del Toro' and initials 'T.' became 'd. T.'
+    p = Parser()
+    r = p.parse("Mr. do Jr. del Toro")
+    assert (r.family, r.family_base, r.family_particles) == (
+        "del Toro", "Toro", "del")
+    again = p.revise(r, family=r.family)
+    assert (again.family, again.family_base, again.family_particles) == (
+        "del Toro", "Toro", "del")
+    assert again.initials() == r.initials()
+
+
+def test_revise_sets_a_missing_unjoined_mark() -> None:
+    # The other direction, and the one that made rules.md#R2's
+    # invariant false through this path: "Do" alone parses as a TITLE,
+    # so the sub-parse marks nothing, and the harvest then re-roles a
+    # bare particle into FAMILY. The recompute marks it there, so a
+    # non-empty family still has a non-empty base.
+    p = Parser()
+    revised = p.revise(p.parse("Juan de la Vega"), family="Do")
+    assert revised.family == "Do"
+    assert revised.family_base == "Do"
+    assert revised.family_particles == ""
+
+
 def test_revise_sub_parse_structural_behavior() -> None:
     # the docstring's three structural promises, pinned: delimiters
     # never become tokens, marker words are consumed as in parsing,

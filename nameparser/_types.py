@@ -80,8 +80,11 @@ class Span(NamedTuple):
 #: The four :attr:`Token.tags` values that are stable API.
 #: "particle" marks a word from the particle vocabulary ("de", "van")
 #: wherever it lands -- including a given-name "Van" -- so combine it
-#: with Role.FAMILY (as family_particles does) to get actual family
-#: particles; "conjunction" a joining word ("and", "y"); "initial" an
+#: with Role.FAMILY to get particle-vocabulary family words -- but
+#: NOT to reproduce `family_particles`, which since #404 also consults
+#: UNJOINED_TAG and excludes a particle standing alone in its part
+#: ("Anh Do" has a particle-tagged family word and no family
+#: particles); "conjunction" a joining word ("and", "y"); "initial" an
 #: initial-shaped word in a script that HAS initials -- "J." or "А.",
 #: never "씨." (#320);
 #: "joined" a continuation of the previous token within one merged
@@ -92,6 +95,17 @@ class Span(NamedTuple):
 #: STABLE_TAGS block; nothing pins the two against each other (the
 #: test only compares the frozenset), so edit both or neither.
 STABLE_TAGS = frozenset({"particle", "conjunction", "initial", "joined"})
+
+#: A name part whose every word is particle vocabulary is a part
+#: where none of them is doing a particle's work -- nothing joins them
+#: to a name -- so THREE views read them as ordinary name words: they
+#: anchor `family_base`, drop out of `family_particles`, and
+#: contribute initials (rules.md#R2). Capitalization does not consult
+#: the mark and still lowercases them, which #407 tracks.
+#: MARKED rather than untagged: `particle` is stable API and says the
+#: word IS particle vocabulary wherever it lands, which stays true, and
+#: keeping it leaves a later rule free to report the fork this decides.
+UNJOINED_TAG = "vocab:unjoined-particle"
 
 #: The one sanctioned view-reorder marker (namespaced = unstable API).
 #: Tokens cannot reorder (span order is validated), so a role fold that
@@ -467,6 +481,32 @@ def _validated_field_strings(fields: dict[str, str]) -> dict[Role, str]:
     return {by_value[k]: v for k, v in fields.items()}
 
 
+def _remarked(tokens: list[Token]) -> tuple[Token, ...]:
+    """UNJOINED_TAG recomputed over an edited token list.
+
+    The mark says a particle stands ALONE in its part, which is a fact
+    about the part rather than the word, so an edit that re-roles
+    tokens invalidates it in both directions: replace()/revise() splice
+    a sub-parse's tokens into one field, and a particle marked alone
+    there can land beside a name word (stale mark) while an unmarked
+    one can end up alone (missing mark). Parser.revise strips
+    FOLDED_TAG for the same reason; this one is RECOMPUTED rather than
+    stripped, because absent is only correct for half the cases.
+    """
+    out = list(tokens)
+    for role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY):
+        part = [i for i, t in enumerate(out) if t.role is role]
+        alone = bool(part) and all("particle" in out[i].tags for i in part)
+        for i in part:
+            tags = out[i].tags
+            if alone and UNJOINED_TAG not in tags:
+                out[i] = dataclasses.replace(out[i], tags=tags | {UNJOINED_TAG})
+            elif not alone and UNJOINED_TAG in tags:
+                out[i] = dataclasses.replace(out[i],
+                                             tags=tags - {UNJOINED_TAG})
+    return tuple(out)
+
+
 @dataclass(frozen=True, slots=True)
 class ParsedName:
     """The immutable result of parsing one name string. Read the seven
@@ -571,16 +611,24 @@ class ParsedName:
     # -- string views (canonical order = Role declaration order) --------
 
     def _text_for(self, *roles: Role, tag: str | None = None,
-                  without_tag: str | None = None) -> str:
+                  without_tag: str | None = None,
+                  unless_tag: str | None = None) -> str:
         suffix_join = roles == (Role.SUFFIX,)
         parts: list[str] = []
         folded: list[str] = []
         for tok in self.tokens:
             if tok.role not in roles:
                 continue
-            if tag is not None and tag not in tok.tags:
+            # A token carrying `unless_tag` is read as though it did
+            # not carry `tag`/`without_tag` at all -- so it is EXCLUDED
+            # by a `tag=` filter and INCLUDED by a `without_tag=` one,
+            # which is how an unjoined particle anchors the base and
+            # leaves the particles view.
+            waived = unless_tag is not None and unless_tag in tok.tags
+            if tag is not None and (tag not in tok.tags or waived):
                 continue
-            if without_tag is not None and without_tag in tok.tags:
+            if without_tag is not None and without_tag in tok.tags \
+                    and not waived:
                 continue
             # "joined" (stable tag) marks a continuation of the previous
             # token ("Ph." + "D."): attach with a space so the suffix
@@ -634,11 +682,13 @@ class ParsedName:
     # base (the family without its leading particles) and the
     # particles themselves"
     def family_particles(self) -> str:
-        return self._text_for(Role.FAMILY, tag="particle")
+        return self._text_for(Role.FAMILY, tag="particle",
+                              unless_tag=UNJOINED_TAG)
 
     @property
     def family_base(self) -> str:
-        return self._text_for(Role.FAMILY, without_tag="particle")
+        return self._text_for(Role.FAMILY, without_tag="particle",
+                              unless_tag=UNJOINED_TAG)
 
     @property
     def surnames(self) -> str:
@@ -718,7 +768,7 @@ class ParsedName:
             amb for amb in self.ambiguities
             if all(t in new_tokens for t in amb.tokens)
         )
-        return ParsedName(self.original, tuple(new_tokens), kept)
+        return ParsedName(self.original, _remarked(new_tokens), kept)
 
     # -- comparison -------------------------------------------------------
 

@@ -476,10 +476,14 @@ class HumanName:
         return _normalize(text) in self._lexicon.conjunctions
 
     def _split_last(self) -> tuple[list[str], list[str]]:
-        # v1 parser.py _split_last, verbatim: vocabulary lookup at ACCESS
-        # time (so assigned last names split too), with the all-particle
-        # guard (a family name is assumed not to consist entirely of
-        # particles, e.g. surname "Do" which also appears in PARTICLES)
+        # rules.md#R2: "a name part whose every word is particle
+        # vocabulary is a part where none of them is doing a
+        # particle's work" -- the all-particle guard
+        # below is this rule, and predates its statement: v1 assumed a
+        # family name does not consist entirely of particles, e.g. the
+        # surname "Do" which also appears in PARTICLES. v1
+        # parser.py _split_last otherwise verbatim, vocabulary lookup
+        # at ACCESS time so assigned last names split too.
         words = " ".join(self.last_list).split()
         i = 0
         while i < len(words) and self._is_particle(words[i]):
@@ -521,20 +525,40 @@ class HumanName:
         if len(initials) > 0:
             return self.initials_separator.join(initials)
         # Return '' (never empty_attribute_default, which may be None)
-        # when a part has no initialable words, e.g. a middle name
-        # consisting only of prefixes ("de la"). Callers drop these
-        # parts entirely.
+        # when a part has no initialable words. group_initials below
+        # decides what that means: one such element among others is
+        # dropped; a group that yields nothing AND is wholly particles
+        # initials its words; and a group that yields nothing for any
+        # other reason -- a conjunction, or particles mixed with one --
+        # is still dropped ("Vega, Santa de y" drops its middle).
         return ""
 
     def _initials_lists(self) -> tuple[list[str], list[str], list[str]]:
         """Initials for the first, middle and last name groups. Parts
-        that yield no initials (e.g. a prefix-only middle name like
-        "de la") are dropped rather than kept as empty strings.
+        that yield no initials are dropped rather than kept as empty
+        strings -- except a part that is wholly PARTICLES, whose words
+        initial as ordinary name words since #404, so the prefix-only
+        middle name "de la" is no longer an example of the dropping.
         """
         def group_initials(names: list[str],
                             firstname: bool = False) -> list[str]:
-            return [i for i in (self._process_initial(n, firstname)
-                                 for n in names if n) if i]
+            got = [i for i in (self._process_initial(n, firstname)
+                                for n in names if n) if i]
+            words = [w for n in names if n for w in n.split()]
+            if got or not words or not all(self._is_particle(w)
+                                           for w in words):
+                return got
+            # rules.md#R3: "except the particles of a part whose every
+            # word is one, which are not acting as particles there"
+            # -- nothing survived
+            # the filter, so the whole group is particles. The
+            # facade's twin of the core's
+            # UNJOINED_TAG. NOT pinned against it: both case runners
+            # compare the seven role fields only, and Case carries no
+            # initials column, so the one covering test is
+            # tests/test_initials.py::test_initials_middle_name_all_prefixes. _split_last already applies the same guard to
+            # the base, which is why last_base was never empty here.
+            return [w[0] for w in words]
         return (group_initials(self.first_list, True),
                 group_initials(self.middle_list),
                 group_initials(self.last_list))

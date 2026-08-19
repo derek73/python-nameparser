@@ -290,6 +290,36 @@ CASES: tuple[Case, ...] = (
                "the particle, so it stays a given name rather than "
                "leaving the name with none. Vietnamese Van is exactly "
                "the case that guard protects"),
+    # A family made only of particle vocabulary. Position decides:
+    # nothing joins these words to a name, so they are not acting as
+    # particles and they anchor the base (rules.md#R2, #404).
+    Case("all_particle_family_anchors_its_own_base", "Anh Do",
+         {"given": "Anh", "family": "Do"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="the ROLES are parity -- 1.4.0 gives first 'Anh', last "
+               "'Do' too -- and the views are what #404 moved, which "
+               "this table cannot assert (no initials or base column; "
+               "rules.md#R2/#R3 carry those). Worth recording which "
+               "way: 1.4.0's own _split_last guard kept last_base "
+               "'Do', so the empty family_base was a 2.0 regression "
+               "and this restores it. The initials half was broken in "
+               "both: 'A.' at 1.4.0 and 2.1, 'A. D.' now"),
+    Case("all_particle_family_multi_word", "Juan van der",
+         {"given": "Juan", "family": "van der"},
+         classification="parity",
+         notes="roles are parity again; R3's Accepted block used to "
+               "pin the views the other way, reasoning that 'van der' "
+               "has no borne name to anchor a base. Position trumps "
+               "that -- neither word joins anything here, so both are "
+               "name words. 1.4.0 also gave last_base 'van der'; the "
+               "core's '' was the 2.0 regression"),
+    Case("particle_beside_a_name_still_a_particle", "Juan de la Vega",
+         {"given": "Juan", "family": "de la Vega"},
+         classification="parity",
+         notes="the boundary the row above needs: here the particles "
+               "DO join a name word, so they stay particles -- base "
+               "'Vega', particles 'de la', initials 'J. V.'"),
     Case("suffix_word_title_ambiguous_particle", "Jr. Van Johnson",
          {"title": "Jr.", "given": "Van", "family": "Johnson"},
          classification="fix(#367)",
