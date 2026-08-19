@@ -41,17 +41,23 @@ class InitialsTestCase(HumanNameTestBase):
         self.assertEqual(hn.initials(), "J. V.")
 
     def test_initials_middle_name_all_prefixes(self) -> None:
-        # "Nguyen, Van Le" parses with middle name "Le", which contains
-        # no initialable words (it is a particle). The part must be
-        # skipped entirely rather than emitting an empty initial:
-        # without the filter this reads "V. . N.". (The older version
-        # of this comment also named empty_attribute_default, which
-        # 2.0 removed in #255, so that half described a failure mode
-        # the test cannot reach.)
+        # "Nguyen, Van Le" parses with middle name "Le", every word of
+        # which is particle vocabulary. A particle standing alone in a
+        # name part is not doing a particle's work there, so it
+        # initials as an ordinary name word (rules.md#R2/#R3) rather
+        # than being dropped -- this read "V. N." until #404, losing
+        # the middle name entirely.
         hn = HumanName("Nguyen, Van Le")
         self.m(hn.middle, "Le", hn)
-        self.assertEqual(hn.initials_list(), ["V", "N"])
-        self.assertEqual(hn.initials(), "V. N.")
+        self.assertEqual(hn.initials_list(), ["V", "L", "N"])
+        self.assertEqual(hn.initials(), "V. L. N.")
+
+    def test_initials_still_drop_a_particle_beside_a_name(self) -> None:
+        # The other half: where the part HAS a name word, the particle
+        # is doing particle work and contributes nothing.
+        hn = HumanName("Juan de la Vega")
+        self.m(hn.last, "de la Vega", hn)
+        self.assertEqual(hn.initials(), "J. V.")
 
     def test_initials_complex_name(self) -> None:
         hn = HumanName("Doe, John A. Kenneth, Jr.")

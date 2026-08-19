@@ -15,7 +15,8 @@ from __future__ import annotations
 import re
 
 from nameparser._lexicon import Lexicon, _normalize
-from nameparser._types import Ambiguity, ParsedName, Role, Token
+from nameparser._types import (UNJOINED_TAG, Ambiguity, ParsedName, Role,
+                               Token)
 
 _SPACES = re.compile(r"\s+")
 _SPACE_BEFORE_COMMA = re.compile(r"\s+,")
@@ -31,7 +32,10 @@ _RENDER_KEYS = tuple(r.value for r in Role) + _DERIVED_VIEWS
 #: str.format keys initials() accepts: the three name-bearing roles.
 _INITIALS_KEYS = (Role.GIVEN.value, Role.MIDDLE.value, Role.FAMILY.value)
 
-#: Tags whose tokens contribute no initial outside the given group.
+#: Tags whose tokens contribute no initial outside the given group --
+#: unless the token also carries UNJOINED_TAG, i.e. the whole part is
+#: particles, in which case they are the part's only words and do
+#: contribute (rules.md#R3, #404).
 #: Not STABLE_TAGS -- that also contains "initial", which must contribute.
 _SKIP_TAGS = frozenset({"particle", "conjunction"})
 
@@ -112,7 +116,8 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
         tokens = name.tokens_for(role)
         if role is not Role.GIVEN:
             tokens = tuple(t for t in tokens
-                           if not (_SKIP_TAGS & t.tags))
+                           if not (_SKIP_TAGS & t.tags)
+                           or UNJOINED_TAG in t.tags)
         values[key] = separator.join(
             t.text[0] + delimiter for t in tokens)
     return _format_spec(spec, values, "initials", _INITIALS_KEYS)
