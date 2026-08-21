@@ -122,6 +122,10 @@ Open: [#380](https://github.com/derek73/python-nameparser/issues/380) covers "Be
 Open (M2):
 [#317](https://github.com/derek73/python-nameparser/issues/317)
 the fullwidth-colon marker (旧姓：佐藤 arrives as one word; the head-peel question).
+[#412](https://github.com/derek73/python-nameparser/issues/412)
+the two surviving join-swallows (P3's connective join and P5's bound-given join each absorb a marker before M2's bound can see it) — where the reorder set aside above would be re-weighed.
+[#410](https://github.com/derek73/python-nameparser/issues/410)
+a maiden name makes H1 decline, so a title-plus-surname name reports no family; [#411](https://github.com/derek73/python-nameparser/issues/411) the same empty family from P5's reserve counting words the maiden name takes away. Both pre-existing, both widened by the stop.
 
 ### N3 — the lone-word nickname rule
 

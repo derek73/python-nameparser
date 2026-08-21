@@ -452,7 +452,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
     text, not a marker; and the bound reaches only a marker standing
     as a word of its own, so the connective join (P3) and the
     bound-given join (P5) each still absorb a marker before the bound
-    can see it.
+    can see it; #412 tracks whether it should reach them.
       "Jane Smith, née Jones"          →  maiden=""
       "Jane van der Berg née y Jones"  →  maiden=""
       "van der Berg, abdul née Jones"  →  given="abdul née"
