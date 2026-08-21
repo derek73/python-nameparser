@@ -323,3 +323,65 @@ def test_the_reserve_still_declines_when_only_a_suffix_is_left() -> None:
     # name with no family at all.
     out = _grouped("dual Allah jr", lexicon=_DUAL_LEX)
     assert _piece_texts(out) == [["dual", "Allah", "jr"]]
+
+
+def test_a_chain_never_leaves_a_marker_standing_alone() -> None:
+    """The #399 stop and the maiden consumer must agree at the PIECE
+    level, which is where they can disagree without any field looking
+    wrong enough to fail.
+
+    Both halves ask "is this a marker piece?" through one predicate, so
+    they cannot disagree about that. What they can disagree about is
+    whether the consumer TAKES: it needs a non-suffix piece after the
+    marker. Stopping the chain without one left the marker standing as
+    its own piece, and a lone trailing piece takes a role field -- the
+    marker became the family name and the real surname was demoted to
+    the middle. Parsed fields alone do not catch it: misaligning the
+    two halves leaves the whole suite green, because every field still
+    holds something plausible.
+
+    The invariant the gate buys, and it holds both ways round: a marker
+    standing as its own piece never follows a piece carrying a
+    particle. Either the consumer took the marker (and it is gone from
+    pieces altogether), or the chain never stopped and swallowed it. A
+    marker DOES stand alone where no chain reached it, which is M2's
+    own "Jones nee" -> family "nee" boundary, so the assertion is
+    keyed on the preceding piece rather than on markers as such.
+    """
+    def particled(state: ParseState, piece: tuple[int, ...]) -> bool:
+        return any("particle" in state.tokens[i].tags for i in piece)
+
+    for text in ("Jane van der Berg née Jones",     # consumer takes
+                 "Jane van der Berg née",           # nothing follows
+                 "Jane van der Berg née Jr",        # only a suffix
+                 "Jane van der née",                # particles only
+                 "Jane Smith née Jones",            # no particle: takes
+                 "Jane Smith née",                  # no particle: stands
+                 "Jane née"):
+        out = _grouped(text)
+        for seg, texts in zip(out.pieces, _piece_texts(out)):
+            for k, (piece, shown) in enumerate(zip(seg, texts)):
+                if shown.lower() not in _LEX.maiden_markers or k == 0:
+                    continue
+                assert not particled(out, seg[k - 1]), (
+                    f"{text!r}: marker {shown!r} left standing after "
+                    f"the particle piece {texts[k - 1]!r}")
+
+
+def test_where_the_marker_lands_when_the_consumer_declines() -> None:
+    """The concrete shapes behind the invariant above, so a change that
+    preserves it by restructuring the pieces still has to say so here.
+    """
+    # consumer takes: marker and maiden name leave `pieces` entirely
+    assert _piece_texts(_grouped("Jane van der Berg née Jones")) == [
+        ["Jane", "van der Berg"]]
+    assert _piece_texts(_grouped("Jane Smith née Jones")) == [
+        ["Jane", "Smith"]]
+    # consumer declines, chain present: the marker rides inside it
+    assert _piece_texts(_grouped("Jane van der Berg née")) == [
+        ["Jane", "van der Berg née"]]
+    assert _piece_texts(_grouped("Jane van der Berg née Jr")) == [
+        ["Jane", "van der Berg née", "Jr"]]
+    # consumer declines, no chain: the marker stands as its own piece
+    assert _piece_texts(_grouped("Jane Smith née")) == [
+        ["Jane", "Smith", "née"]]

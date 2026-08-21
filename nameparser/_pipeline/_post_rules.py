@@ -72,7 +72,8 @@ def _retag(tokens: list[WorkToken], i: int, role: Role) -> None:
 
 # rules.md#P2: "a particle joins the words after it into one name
 # part, the join running until the next particle starts a group of
-# its own or the name ends"
+# its own, a trailing suffix begins, a maiden marker takes the words
+# after it (M2), or the name ends"
 # rules.md#P3: "the joined part is ONE name word wherever another
 # rule counts them"
 # rules.md#P5: "a recognized bound given-name word joins the word

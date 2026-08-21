@@ -66,8 +66,10 @@ def _is_title_piece(piece: Sequence[int], ptags: Set[str],
 
 # rules.md#P2: "a particle joins the words after it into one name
 # part, the join running until the next particle starts a group of
-# its own or the name ends. The final group reads as the family
-# name; earlier groups read by position." (history: decisions.md#P2)
+# its own, a trailing suffix begins, a maiden marker takes the words
+# after it (M2), or the name ends. The final group reads as the
+# family name; earlier groups read by position."
+# (history: decisions.md#P2)
 # rules.md#P4: "a particle in the name's leading position chains
 # nothing: the words stay separate" (history: decisions.md#P2)
 def _is_prefix_piece(piece: Sequence[int], ptags: Set[str],
@@ -85,6 +87,22 @@ def _is_suffix_piece(piece: Sequence[int], ptags: Set[str],
         return False
     tags = tokens[piece[0]].tags
     return "vocab:suffix" in tags and "initial" not in tags
+
+
+# rules.md#M2: "a recognized maiden marker standing after at least
+# one name word takes the words after it — up to any trailing
+# suffix — as the maiden name, and the marker itself is dropped"
+# (history: decisions.md#M2)
+#
+# Shared deliberately with the prefix chain's stop (#399): a chain that
+# stopped at something the consumer below would not then take would
+# leave the marker stranded inside the family name, which is the very
+# defect the stop exists to fix. One definition, so the two cannot
+# disagree about what a marker piece is.
+def _is_maiden_marker_piece(piece: Sequence[int],
+                            tokens: Sequence[WorkToken]) -> bool:
+    return (len(piece) == 1
+            and "vocab:maiden-marker" in tokens[piece[0]].tags)
 
 
 # rules.md#P3: "a recognized connective joins its neighbors into one
@@ -132,6 +150,21 @@ def _group_segment(seg: tuple[int, ...], additional: int,
 
     def conj(k: int) -> bool:
         return _is_conj_piece(pieces[k], ptags[k], tokens)
+
+    def maiden_marker_stop(k: int) -> bool:
+        # A marker bounds the chain only where the consumer below will
+        # actually take it (#399). That consumer needs a non-suffix
+        # piece after the marker; stopping without one left the marker
+        # as a piece of its own, and a lone trailing piece takes a role
+        # field -- so the marker became the family name and the real
+        # surname was demoted to the middle ("Jane van der Berg née"
+        # read middle 'van der Berg', family 'née'). That is the defect
+        # this stop exists to prevent, one field over. Testing the
+        # consumer's own condition rather than restating it is what
+        # makes the two halves agree.
+        return (_is_maiden_marker_piece(pieces[k], tokens)
+                and any(not _is_suffix_piece(pieces[x], ptags[x], tokens)
+                        for x in range(k + 1, len(pieces))))
 
     def merge(lo: int, hi: int, add: Set[str] = frozenset(),
               drop: Set[str] = frozenset()) -> None:
@@ -253,6 +286,18 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # classifies its leading piece as a TITLE and is already
         # covered here.
         #
+        # A maiden marker stops the scan for a different reason than a
+        # suffix does (#399): it is not a name word at all but the
+        # boundary between two names, and the piece that consumes it
+        # runs later in this same stage. Absorbing it took the maiden
+        # name into the family with it -- "Ursula von der Leyen geb.
+        # Albrecht" read family 'von der Leyen geb. Albrecht' where
+        # "Ursula Leyen geb. Albrecht" reported maiden 'Albrecht'. Only
+        # a NON-leading particle ever reached the marker, so a leading
+        # single particle always worked (P4 chains nothing) while a
+        # leading run of two did not, the second particle's own chain
+        # firing.
+        #
         # The `, 0` fallback is inert by construction rather than a
         # default worth testing: it is reached only when every piece is
         # a title and none is a prefix, and the loop below merges
@@ -267,7 +312,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             j = k + 1
             while j < len(pieces) and prefix(j):
                 j += 1
-            while j < len(pieces) and not prefix(j) and not suffix(j):
+            while (j < len(pieces) and not prefix(j) and not suffix(j)
+                   and not maiden_marker_stop(j)):
                 j += 1
             # The other half of PARTICLE_OR_GIVEN. _assign reports the
             # fork when an ambiguous particle stays a lone leading piece
@@ -430,11 +476,9 @@ def group(state: ParseState) -> ParseState:
         # maiden markers: a non-leading marker piece consumes following
         # pieces until a suffix; consumed tokens become MAIDEN, the
         # marker is dropped (#274)
-        m = next(
-            (k for k in range(1, len(pieces))
-             if len(pieces[k]) == 1
-             and "vocab:maiden-marker" in tokens[pieces[k][0]].tags),
-            None)
+        m = next((k for k in range(1, len(pieces))
+                  if _is_maiden_marker_piece(pieces[k], tokens)),
+                 None)
         if m is not None:
             j = m + 1
             consumed: list[int] = []
