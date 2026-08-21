@@ -247,10 +247,13 @@ issue = "fix(#399) a maiden marker bounds the particle chain that swallowed it"
 # copy: the particle chain swallowed the marker before the maiden
 # consumer could see it, so the family kept both the marker and the
 # maiden name. The particle requirement keeps this off 'Jane Smith née
-# Jones', which is in the corpora and does not move; the trailing
-# `\s+\S` keeps it off the trailing-marker shapes, which the stop's
-# gate deliberately leaves alone.
-name_regex = "(?i)\\b(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)\\b.*?\\sn[e\u00e9]e\\s+\\S"
+# Jones', which is in the corpora and does not move. The anchors keep
+# it off the trailing-marker shape, the connective join and the
+# post-comma bound-given join -- M2's accepted limits. 'Jane van der
+# Berg nee PhD' is still claimed and does not move: excluding a suffix
+# tail needs a second vocabulary alternation, and the guards allow one
+# per rule. See the 2.1 ledger's copy for the argument.
+name_regex = "(?i)^(?![^\\n]*,)[^\\n]*\\b(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)\\b.*?\\sn[e\u00e9]e\\s+\\S+$"
 fields = ["family", "maiden"]
 
 [[change]]
@@ -270,6 +273,12 @@ issue = "fix(#400) abd joins the word after it as one given name"
 # join like `abdul` already did. Both openings move, hence the
 # alternative anchors; `abd` is also the postnominal ABD, which the
 # anchors keep out.
+#
+# A third corpus name is claimed and does NOT move: a bare 'abd Allah',
+# which has no third word for the join to leave as a family name, so
+# P5's reserve declines and it reads given 'abd', family 'Allah' at
+# every baseline. Same behaviour family as the two that move, so the
+# claim is defensible -- recorded so it is not mistaken for coverage.
 name_regex = "(?i)(?:^|,\\s*)abd\\s+\\S+"
 fields = ["given", "middle"]
 

@@ -211,7 +211,7 @@ intended-but-unclassified 2.0 behaviors (#273 typographic delimiters,
 #269 non-Latin vocabulary) plus one shape no test had considered: a
 **leading** `"Ph. D."`, which v1 split into title `Ph.` + given `D.`.
 
-The rules corpus earned its place the same way — 113 of its 156 names
+The rules corpus earned its place the same way — 113 of its 155 names
 were in no other corpus, and on its first run 12 of them turned out to
 have moved during the 2.2 cycle with nothing observing it. Classifying
 them surfaced an unlogged behavior change (`mc` moving into the

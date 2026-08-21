@@ -519,6 +519,80 @@ def test_cjk_corpus_matches_the_case_table() -> None:
         "`uv run python tools/differential/build_cjk_corpus.py`")
 
 
+#: Names each rule MUST NOT match, keyed by a substring of its `issue`.
+#:
+#: A wall, not a change detector, and that is the point. _CORPUS_CLAIMS
+#: catches a widening that changes corpus reach or roles -- but a rule
+#: whose regex is literal-anchored and claims exactly ONE corpus name
+#: can be widened with the count unmoved, because the names it newly
+#: reaches are not in the corpora. Six such widenings were demonstrated
+#: on this file's own rules with the whole suite green: `^mc\s+\S+$`
+#: to `^mc` (every leading Mc*), the vd rule to a bare `\bvd\b`,
+#: `^sir\s+de\b` without its anchor, and the nakaguro rule to `·.*씨`.
+#: Each of those then stood ready to explain exactly what its own
+#: comment promises will arrive UNEXPLAINED.
+#:
+#: The probes are taken from the names those comments already argue
+#: about, so this roster records an answer someone already wrote in
+#: prose. Being a wall rather than a snapshot, it is wrong at recording
+#: time too -- a probe that matches when it is added fails immediately
+#: rather than being blessed as the new normal.
+#:
+#: A probe must be a name the rule has no business claiming, NOT merely
+#: one that does not move today: rules deliberately claim some static
+#: names (fix(#399) claims 'Jane van der Berg nee PhD', fix(#400)
+#: claims 'abd Allah'), and those are recorded in the rules' comments
+#: instead.
+_MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
+    "fix(#380)": ("vd Berg, Jan", "Jan vd Berg", "Smith vd",
+                  "Berg, Jan mc"),
+    "fix(#399)": ("Jane van der Berg née", "Jane van der Berg née y Jones",
+                  "van der Berg, abdul née Jones", "Jane Smith née Jones"),
+    "fix(#360)": ("McDonald, Ronald", "Mcintyre Smith Jr.", "Ste Marie",
+                  "Los Santos"),
+    "fix(#400)": ("Jane Smith ABD", "Jane Smith A.B.D.", "Abdul Salam"),
+    "fix(#367) a title no longer displaces a leading never-given particle":
+        ("John Sir de Mesnil", "Smith, Sir de Vaux", "Sir Smith"),
+    "fix(#272/#308)": ("田中·太郎 김씨", "A·B 씨", "山田·花子"),
+    "fix(nickname-typographic-pairs)": ("Hans „Hansi“ Müller",
+                                        "John “Jack” Kennedy"),
+    "fix(#274)": ("Jones née", "née Jones", "Jane van der Berg née",
+                  "Jane Smith (Nee)"),
+}
+
+
+def test_no_rule_matches_a_name_it_has_no_business_claiming() -> None:
+    """The wall _CORPUS_CLAIMS cannot be.
+
+    A claim count moves only when corpus reach moves, so a rule that
+    claims one corpus name can be widened arbitrarily as long as the
+    names it newly reaches are outside the corpora -- and every rule
+    added by #414 is literal-anchored and claims exactly one. This
+    asserts the boundaries those rules' comments argue for, against
+    names chosen to sit just outside them.
+    """
+    checked = 0
+    for ledger in _LEDGERS:
+        for rule in _rules(ledger):
+            regex = rule.get("name_regex")
+            if not isinstance(regex, str):
+                continue
+            for key, probes in _MUST_NOT_MATCH.items():
+                if key not in rule["issue"]:
+                    continue
+                for probe in probes:
+                    checked += 1
+                    assert not re.search(regex, probe), (
+                        f"{ledger.name}: {rule['issue']!r} matches "
+                        f"{probe!r}, a name its own comment says should "
+                        f"arrive UNEXPLAINED. Either the rule widened "
+                        f"or the boundary moved -- if the latter, the "
+                        f"comment and this roster both need editing")
+    assert checked, (
+        "_MUST_NOT_MATCH matched no rule; the keys are `issue` "
+        "substrings and a renamed rule silently empties this pin")
+
+
 def test_rules_corpus_matches_the_rules_doc() -> None:
     """corpus_rules.jsonl is GENERATED from docs/design/rules.md's own
     examples (#414), through the doc's parser rather than a second
@@ -540,6 +614,36 @@ def test_rules_corpus_matches_the_rules_doc() -> None:
     assert checked_in == module.selected_names(), (
         "corpus_rules.jsonl is stale: regenerate with "
         "`uv run python tools/differential/build_rules_corpus.py`")
+
+    # The equality above cannot see a generator that silently selects
+    # LESS: someone regenerates, the file agrees with the degraded
+    # selection, and both are wrong together. _CORPUS_FLOORS bounds
+    # that to a few names; these two bound the shapes it cannot.
+    #
+    # A rule whose ID line stops matching, or that gains a heading
+    # mid-block, loses its examples to the previous rule or to
+    # nothing. Both are loud today only by luck of a neighbouring
+    # invariant -- every rule carries `implemented:` and is cited from
+    # code, so test_doc_citations fails on the unknown ID. That is a
+    # different file's guarantee and could stop holding.
+    from .rules_doc import parse_rules_doc
+    rules = parse_rules_doc(
+        (_TOOLS.parents[1] / "docs" / "design" / "rules.md")
+        .read_text(encoding="utf-8"))
+    assert len(rules) >= 38, (
+        f"rules.md parsed to {len(rules)} rules, fewer than the 38 this "
+        f"corpus was built from. A rule block that stops parsing hands "
+        f"its examples to its neighbour and shrinks the corpus "
+        f"silently. Ratchet this floor up when rules are added")
+    empty = [r.rule_id for r in rules
+             if not any(e.text for e in r.examples)]
+    assert empty == ["D1", "D2"], (
+        f"rules with no example NAME: {empty}. D1 and D2 are the "
+        f"expected two -- their examples name a policy rather than a "
+        f"name string. Any other rule contributing nothing means its "
+        f"examples stopped being recognized as examples, which the "
+        f"file-equality check above cannot distinguish from a rule "
+        f"that never had any")
 
 
 #: Which vocabulary constant each ledger rule's alternation is a hand
@@ -1059,12 +1163,22 @@ def _claim(rule: dict) -> _Claim:
 #: That is the intended cost: a corpus name added under an existing
 #: rule is a real change in what that rule explains, and it should be
 #: read once rather than absorbed silently.
+#: Twenty of these moved at once when corpus_rules.jsonl landed
+#: (#414), which is a lot of re-recording to review. The jumps are all
+#: one cause -- 113 names arriving -- and the ones worth naming are
+#: the broad rules: the fields-only catch-alls grew to the whole
+#: corpus (751 -> 864), the comma rules 215 -> 236, fix(#274) 4 -> 11
+#: and fix(#379) 2 -> 8. What made each jump reviewable was not this
+#: record but the two guards beside it: the vocabulary-presence guard
+#: rejected fix(#274)'s first grown reach outright, and the
+#: member-reach guard rejected the acronym rule's. A jump that passes
+#: both is growth into names the rule genuinely describes.
 _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
             _Claim(105, ('family', 'given', 'middle'), "090ac3eef3fb"),
         "fix(#274) maiden markers consumed":
-            _Claim(16, ('family', 'maiden', 'middle'), "cc672349b500"),
+            _Claim(11, ('family', 'maiden', 'middle'), "16e085499b25"),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
             _Claim(4, ('family', 'given', 'maiden', 'middle'), "27bb9ebc1951"),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
@@ -1128,7 +1242,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
             _Claim(1, ('family', 'suffix'), "081ce07f927b"),
         "fix(#399) a maiden marker bounds the particle chain that swallowed it":
-            _Claim(6, ('family', 'maiden'), "b40129435671"),
+            _Claim(4, ('family', 'maiden'), "32c8178f87c0"),
         "fix(#360) mc moved into the never-given particles, so it folds into the family":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ee4339908f4d"),
         "fix(#400) abd joins the word after it as one given name":
@@ -1146,7 +1260,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
             _Claim(1, ('family', 'suffix'), "081ce07f927b"),
         "fix(#399) a maiden marker bounds the particle chain that swallowed it":
-            _Claim(6, ('family', 'maiden'), "b40129435671"),
+            _Claim(4, ('family', 'maiden'), "32c8178f87c0"),
         "fix(#360) mc moved into the never-given particles, so it folds into the family":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ee4339908f4d"),
         "fix(#400) abd joins the word after it as one given name":
@@ -1229,9 +1343,13 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
 #: gate reporting 108/0 throughout.
 #:
 #: The comma family is recorded because it is where that went wrong.
-#: 42 corpus names are reachable by two or more rules in the same tier;
-#: these ten are the ones whose boundaries this file argues about, and
-#: pinning the argument is cheaper than re-deriving it. Note
+#: Hundreds of corpus names are reachable by two or more rules in the
+#: same tier -- 301 in the 1.4 tier as of the rules-doc corpus (#414),
+#: up from 42, which is why the count is described rather than pinned:
+#: it moves with every corpus addition and pinning it would only ever
+#: be re-recorded. The rows below are the ones whose boundaries this
+#: file argues about, and pinning the argument is cheaper than
+#: re-deriving it. Note
 #: 'Andrews, M.D.' diffs on the SAME {given, suffix} shape as the seven
 #: peels -- only the CJK lookahead separates them, so it is the row
 #: that fails if that lookahead is ever dropped.
@@ -1241,6 +1359,21 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
 #: a diff shape that shifted is a finding, not a number to update.
 _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
     "expected_since_1.4.0.toml": {
+        # Three behaviours that got named rules in the 2.0 and 2.1
+        # ledgers but not this one, so here they fall to the fields-only
+        # catch-all. Recorded because the assignment is incidental
+        # rather than argued: 'Berg, Jan vd' is reachable by three
+        # named rules and wins none of them (their `fields` do not
+        # match), while 'Mc Donald' and 'Sir de Mesnil' are reachable
+        # by NO named rule at all. Being absorbed by the catch-all is
+        # the recoverable direction, but a rule added later that takes
+        # one of them silently would change what the 1.4 summary
+        # attributes -- and AGENTS.md names that summary as the source
+        # for the release log's Behavior Changes section. #380, #360
+        # and #367 respectively.
+        ("Berg, Jan vd", ("family", "suffix")): "fix(suffix-routing)",
+        ("Mc Donald", ("family", "given")): "fix(suffix-routing)",
+        ("Sir de Mesnil", ("family", "given")): "fix(suffix-routing)",
         ("Andrews, M.D.", ("given", "suffix")): "fix(comma-family)",
         ("田中, 太郎さん", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
         ("김, 민준씨", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",

@@ -358,7 +358,7 @@ _CORPUS_FLOORS = {
     "corpus.jsonl": 480,        # 486 today, from v1's banks at a pinned ref
     "corpus_cjk.jsonl": 95,     # 97 today, generated from the case table
     "corpus_issues.jsonl": 190,  # 200 today, harvested and append-only
-    "corpus_rules.jsonl": 150,  # 156 today, generated from rules.md
+    "corpus_rules.jsonl": 150,  # 155 today, generated from rules.md
 }
 
 
@@ -764,6 +764,19 @@ def main() -> int:
     if not paths:
         raise SystemExit(
             f"no corpus files found in {HERE}: expected corpus*.jsonl")
+    # A file that DISAPPEARS is the same nightmare one step smaller:
+    # the glob simply finds fewer files, and the run compares less
+    # while printing a summary that reads exactly like a full one. The
+    # floors already name every corpus that is supposed to exist, so
+    # ask them. Skipped under --corpus, where narrowing is the point.
+    if not args.corpus:
+        missing = sorted(set(_CORPUS_FLOORS) - {p.name for p in paths})
+        if missing:
+            raise SystemExit(
+                f"corpus files named in _CORPUS_FLOORS are not on disk: "
+                f"{missing}. A corpus that vanishes shrinks the "
+                f"comparison silently -- restore it, or drop its floor "
+                f"if it is meant to be gone")
     per_file = {}
     corpus = []
     for path in paths:

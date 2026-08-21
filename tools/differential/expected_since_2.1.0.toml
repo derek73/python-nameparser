@@ -144,19 +144,32 @@ issue = "fix(#399) a maiden marker bounds the particle chain that swallowed it"
 # consumed correctly. 'Jane Smith née Jones' is in the corpora and does
 # NOT move, so the particle requirement is what keeps this rule off it.
 #
-# The trailing `\s+\S` is load-bearing, not padding: the stop is gated
-# on the maiden consumer actually taking, and the consumer needs a
-# non-suffix word after the marker. A marker with nothing after it is
-# left alone as an ordinary name word (M2: "a marker with nothing after
-# it ... is just a word"), so 'Smith nee' and 'Jane van der Berg nee'
-# do NOT move and this rule must not claim them.
+# The three anchors each keep the rule off a shape M2 states as
+# unchanged, and they are worth naming because the first cut of this
+# rule claimed all three. Requiring exactly one word after the marker
+# keeps it off the trailing-marker shape ('Jane van der Berg nee',
+# which M2 leaves as an ordinary name word) and off the connective
+# join ('Jane van der Berg nee y Jones', M2's accepted limit, #412).
+# The leading no-comma lookahead keeps it off the post-comma
+# bound-given join ('van der Berg, abdul nee Jones', the other limit).
+#
+# One name is still claimed that does NOT move, recorded rather than
+# fixed: 'Jane van der Berg nee PhD', where the only word after the
+# marker is a SUFFIX, so the consumer declines and M2 leaves the
+# marker in the family. Excluding it needs the regex to ask whether a
+# word is suffix vocabulary, which would be a second vocabulary
+# alternation -- and the guards allow one per rule, spent here on
+# PARTICLES. A future {family, maiden} regression on that one name
+# would classify as intended. Named for the same reason fix(#379)
+# names 'Nguyen, Van': an over-claim someone can find is survivable,
+# an unrecorded one is not.
 #
 # One marker spelling, spelled out rather than alternated over
 # MAIDEN_MARKERS: the three names that move all use it, the guards
 # allow one vocabulary alternation per rule and this rule spends its
 # on PARTICLES, and a differently-spelled name of this shape should
 # arrive UNEXPLAINED rather than be absorbed.
-name_regex = "(?i)\\b(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)\\b.*?\\sn[e\u00e9]e\\s+\\S"
+name_regex = "(?i)^(?![^\\n]*,)[^\\n]*\\b(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)\\b.*?\\sn[e\u00e9]e\\s+\\S+$"
 fields = ["family", "maiden"]
 
 [[change]]
@@ -200,6 +213,12 @@ issue = "fix(#400) abd joins the word after it as one given name"
 # and stays in SUFFIX_ACRONYMS, where position tells the two apart, so
 # the anchors matter: a trailing 'Jane Smith ABD' is a suffix and must
 # not be claimed here.
+#
+# A third corpus name is claimed and does NOT move: a bare 'abd Allah',
+# which has no third word for the join to leave as a family name, so
+# P5's reserve declines and it reads given 'abd', family 'Allah' at
+# every baseline. Same behaviour family as the two that move, so the
+# claim is defensible -- recorded so it is not mistaken for coverage.
 name_regex = "(?i)(?:^|,\\s*)abd\\s+\\S+"
 fields = ["given", "middle"]
 

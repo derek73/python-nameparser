@@ -29,8 +29,10 @@ arrives unexplained and has to be classified in a ledger in writing.
     "Jane de la née Jones"      →  family="de la née Jones"
 
 to family="de la". The doc test followed the edit, the name was in no
-corpus, and nothing independent observed the movement. Twelve names in
-this corpus moved during the 2.2 cycle the same way.
+corpus, and nothing independent observed the movement. Twelve names
+this corpus CONTRIBUTED moved during the 2.2 cycle the same way --
+thirteen of its names move in total, the thirteenth having already
+been in corpus.jsonl.
 
 Selection is every distinct example `text`, through the doc's own
 parser rather than a second regex -- the same argument that has
@@ -43,9 +45,18 @@ STRINGS and the differential run parses them with the default facade,
 so a family-first-scoped example is simply one more name to diff --
 build_cjk_corpus.py makes the same call for its zh-scoped rows.
 
+The one example form that carries no name is skipped. A `[subject]`
+example names a policy or locale rather than a name string, so its
+`text` is empty -- rules.md has three, and without the filter all
+three collapse into a single "" that the doc never wrote. Skipping
+them is also why the promise above is honest: an example enters the
+corpus by being written down, and a form with nothing to enter is
+better excluded than folded into a shared empty string.
+
 Boundary strings ("(", ".,", "Anna () Smith") are kept, on the
-over-collection principle the other three builders state: a name that
-parses to nothing costs one parse and produces no diff. They are more
+over-collection principle build_corpus.py and build_issues_corpus.py
+state: a name that parses to nothing costs one parse and produces no
+diff. They are more
 concentrated here than elsewhere because the doc argues its edges
 explicitly, which is a reason to keep them rather than to drop them.
 
@@ -79,7 +90,8 @@ def selected_names() -> list[str]:
     rules = parse_rules_doc(RULES_DOC.read_text(encoding="utf-8"))
     return sorted({example.text
                    for rule in rules
-                   for example in rule.examples})
+                   for example in rule.examples
+                   if example.text})
 
 
 def main() -> None:

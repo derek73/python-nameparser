@@ -96,7 +96,7 @@ def load_tool(stem: str) -> ModuleType:
     wrote the same six lines each: test_differential.py for compare.py,
     test_ledger_guards.py for build_cjk_corpus.py.
 
-    Neither has import-time side effects -- compare.py's main() is
+    None of them has import-time side effects -- compare.py's main() is
     behind a __name__ guard, and build_cjk_corpus.py only defines
     functions -- so importing them to read a constant or call one
     function is safe.
