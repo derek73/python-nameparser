@@ -98,7 +98,18 @@ issue = "fix(#274) maiden markers consumed"
 # tests/v2/cases.py calls it the spelling English writes most often.
 # See maiden_markers.py's own "Deliberately absent" note for what has
 # actually been considered and declined.
-name_regex = "(?i)\\b(n[ée]e|geb\\.?|roz\\.?)\\b"
+#
+# The paren lookarounds are not decoration. corpus_rules.jsonl (#414)
+# brought in 'Jane Smith (Nee)' and 'Jane Smith (Nee) (Jones)', which
+# are M1's examples of a one-word clause keeping a word that may
+# itself be a surname. Under the DEFAULT facade -- which is what the
+# differential parses with -- no maiden delimiter is configured, so
+# the parenthesized word is a NICKNAME and no marker is active at all.
+# Without the lookarounds this rule matched the word anyway and stood
+# ready to explain a `maiden` diff on a name that has no marker in it,
+# which is absorption waiting to happen. The vocabulary-presence guard
+# in test_ledger_guards.py is what caught it.
+name_regex = "(?i)(?<![(（])\\b(n[ée]e|geb\\.?|roz\\.?)\\b(?![)）])"
 fields = ["maiden", "middle", "family"]
 
 [[change]]
@@ -180,6 +191,50 @@ name_regex = "^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*$"
 fields = ["given", "family"]
 
 [[change]]
+issue = "fix(#400) abd joins the word after it as one given name"
+# 'abd Allah Smith' and 'Salam, abd Allah'. `abd` joined
+# BOUND_GIVEN_NAMES in 2.2 so the spellings that write the article as
+# its own word join like `abdul`, `abdel` and `abdal` already did.
+# v1 had no bound given-name join for it either, so the diff is the
+# same shape at every baseline; the 2.0 and 2.1 ledgers carry the same
+# rule.
+#
+# `abd` is also the postnominal ABD and stays in SUFFIX_ACRONYMS --
+# position tells the two readings apart -- so the anchors are what
+# keeps a trailing 'Jane Smith ABD' out of this rule.
+name_regex = "(?i)(?:^|,\\s*)abd\\s+\\S+"
+fields = ["given", "middle"]
+
+[[change]]
+issue = "fix(#272/#308) nakaguro division and a glued hangul honorific in one name"
+# '马丁·路德·金씨': two behaviours meeting in one name, which is why the
+# single-cause CJK rules do not claim it. The nakaguro divides the
+# name into given/middle/family and the glued 씨 peels off into
+# `suffix`, so all four roles move at once. Literals rather than an
+# alternation over the honorific vocabulary, because the rule is about
+# the COMBINATION rather than about the vocabulary; it claims exactly
+# the one corpus name.
+name_regex = "^\\S*\u00b7\\S*\uc528$"
+fields = ["given", "middle", "family", "suffix"]
+
+[[change]]
+issue = "fix(nickname-typographic-pairs) two typographic quote spans read as one nickname set"
+# 'Hans „Erster“ und “Zweiter” Müller': 2.0 extracts typographically
+# quoted nicknames, which v1 did not, and this name carries TWO spans
+# in different pairs joined by a conjunction. Both come out as
+# `nickname` 'Erster Zweiter', and what is left rejoins as a name --
+# so `given`, `middle` and `family` all move as well.
+#
+# Deliberately narrower than "any typographic quote": the corpora hold
+# four such names and the single-span ones ('Hans „Hansi“ Müller',
+# 'John “Jack” Kennedy') are already accounted for elsewhere. The
+# pattern asks for two spans of DIFFERENT pairs with a word between
+# them, which is the shape that moves all four roles at once. A
+# single-span regression must not be absorbed here.
+name_regex = "\u201e[^\u201c]+\u201c\\s+\\S+\\s+\u201c[^\u201d]+\u201d"
+fields = ["given", "middle", "family", "nickname"]
+
+[[change]]
 issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
 # 'Vega, Juan de la': the Dutch alphabetized listing moves the
 # tussenvoegsel behind the given name -- "Beethoven, Ludwig van" is how
@@ -259,8 +314,18 @@ issue = "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stay
 # unambiguous there) -- they now fall through to nickname parsing.
 # Not expected to fire against this corpus (no such strings survived
 # into the v1 banks); kept for documentation completeness.
+# The members are the entries themselves, undotted. They carried
+# optional periods until corpus_rules.jsonl (#414) brought in 'John
+# Smith M.A.': the member `m\.?a\.?` reaches the fragment 'M.A.' in
+# that name, and a fragment a member matches has to BE a vocabulary
+# entry -- 'M.A.' is not one. The bracket class around the alternation
+# meant the RULE never claimed that name, but the member-level guard
+# is the one that holds here, because a rule can widen at depth 0
+# later and leave a broad member governing it. A parenthesized dotted
+# '(M.A.)' should now arrive UNEXPLAINED and be read once, which is
+# the same discipline the rest of this file states.
 dormant = "no corpus contains a parenthesized (MA) or (DO), so this data change has no diff to explain here. Kept so the rule is ready the moment such a name is harvested"
-name_regex = "(?i)[(\"'](m\\.?a\\.?|d\\.?o\\.?)[)\"']"
+name_regex = "(?i)[(\"'](ma|do)[)\"']"
 fields = ["suffix", "nickname"]
 
 [[change]]

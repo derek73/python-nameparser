@@ -519,6 +519,29 @@ def test_cjk_corpus_matches_the_case_table() -> None:
         "`uv run python tools/differential/build_cjk_corpus.py`")
 
 
+def test_rules_corpus_matches_the_rules_doc() -> None:
+    """corpus_rules.jsonl is GENERATED from docs/design/rules.md's own
+    examples (#414), through the doc's parser rather than a second
+    regex. Same promise as the CJK pin above: an example added to a
+    rule without regenerating fails HERE, instead of leaving the
+    normative names outside the differential gate.
+
+    Why the doc's examples need the gate at all, when test_rules_doc
+    already executes every one of them: those pin against an
+    expectation stored beside them, so a deliberate behaviour change
+    edits both in one commit and the test stays green. The corpus
+    compares against a RELEASED baseline no commit can edit, which is
+    what forces a moved name to be classified in writing.
+    """
+    module = load_tool("build_rules_corpus")
+    checked_in = [json.loads(line) for line in
+                  (_TOOLS / "corpus_rules.jsonl")
+                  .read_text(encoding="utf-8").splitlines()]
+    assert checked_in == module.selected_names(), (
+        "corpus_rules.jsonl is stale: regenerate with "
+        "`uv run python tools/differential/build_rules_corpus.py`")
+
+
 #: Which vocabulary constant each ledger rule's alternation is a hand
 #: copy of. A roster rather than an inference: GLUED_HONORIFICS is a
 #: SUBSET of SUFFIX_WORDS (asserted at the bottom of
@@ -690,6 +713,18 @@ _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
         covers=frozenset({"de", "del", "den", "der", "di", "do", "dos",
                           "du", "la", "le", "los", "mc", "van", "vd",
                           "von", "zu"})),
+    # The same partial copy as fix(#379), and partial for the same
+    # reason -- these are the words that actually open a chain in a
+    # Latin name. The two rules ask different questions of it (#379
+    # wants the word that ENDS a comma listing, #399 the word that
+    # opens a chain running into a maiden marker), so the shared
+    # snapshot is agreement rather than duplication: a divergence
+    # would be a fact about one of the rules.
+    "fix(#399)": _LatinCopy(
+        vocabulary=PARTICLES,
+        covers=frozenset({"de", "del", "den", "der", "di", "do", "dos",
+                          "du", "la", "le", "los", "mc", "van", "vd",
+                          "von", "zu"})),
 }
 
 #: Alternations that copy no vocabulary, so discovery must not demand a
@@ -698,6 +733,11 @@ _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
 #: question someone answers in writing, not something to skip past.
 _NOT_A_VOCABULARY_COPY = frozenset({
     frozenset({"^", " "}),      # the honorific rule's leading anchor
+    # fix(#400)'s two openings: start-of-name or just after a family
+    # comma. `abd` joins forward on the given side wherever that side
+    # begins, and the alternation is over ANCHORS, not over words --
+    # there is no vocabulary here to drift from.
+    frozenset({"^", ",\\s*"}),
 })
 
 def _unjustified_reach(name_regex: str, members: set[str]) -> list[str]:
@@ -1022,19 +1062,19 @@ def _claim(rule: dict) -> _Claim:
 _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(97, ('family', 'given', 'middle'), "66e71d60a075"),
+            _Claim(105, ('family', 'given', 'middle'), "090ac3eef3fb"),
         "fix(#274) maiden markers consumed":
-            _Claim(4, ('family', 'maiden', 'middle'), "b31dc2e2bbc4"),
+            _Claim(16, ('family', 'maiden', 'middle'), "cc672349b500"),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
-            _Claim(3, ('family', 'given', 'maiden', 'middle'), "cf5c9d671c14"),
+            _Claim(4, ('family', 'given', 'maiden', 'middle'), "27bb9ebc1951"),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(2, ('family', 'middle'), "f3a43bebfb91"),
+            _Claim(8, ('family', 'middle'), "f4d52b062f39"),
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(215, ('given', 'suffix', 'title'), "f16a0e79cba3"),
+            _Claim(236, ('given', 'suffix', 'title'), "9393109ebf99"),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(215, ('family', 'given'), "f16a0e79cba3"),
+            _Claim(236, ('family', 'given'), "9393109ebf99"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(751, ('family', 'given', 'suffix'), "231640fc7535"),
+            _Claim(864, ('family', 'given', 'suffix'), "7127402a5078"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1042,49 +1082,77 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "feat(#269) Arabic بن prefix chains onto family (non-Latin new-recognition)":
             _Claim(2, ('family', 'middle'), "3e2b5c6d1f4d"),
         "feat(#273) typographic nickname delimiters recognized by default":
-            _Claim(6, ('middle', 'nickname'), "a03c9763c8c4"),
+            _Claim(8, ('middle', 'nickname'), "968bd4162257"),
         "fix(cjk-delimited-nickname) delimiter recognition compounds with the CJK order flip":
             _Claim(6, ('family', 'given', 'nickname'), "ae1dffa01608"),
         "fix(cjk-fullwidth-paren-nickname) fullwidth-parenthesis recognition compounds with the CJK order flip":
             _Claim(1, ('family', 'given', 'middle', 'nickname'), "cf370e856ae7"),
         "fix(cjk-comma-honorific-peel) glued honorific peels off a post-comma given name":
-            _Claim(20, ('given', 'suffix'), "b2ea8fa59eea"),
+            _Claim(21, ('given', 'suffix'), "fdc02562bd15"),
         "fix(cjk-comma-compound) comma routing compounds with the CJK order flip":
-            _Claim(20, ('family', 'given', 'middle', 'suffix', 'title'), "b2ea8fa59eea"),
+            _Claim(21, ('family', 'given', 'middle', 'suffix', 'title'), "fdc02562bd15"),
         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix":
-            _Claim(34, ('family', 'given', 'suffix'), "877ab3246d33"),
+            _Claim(35, ('family', 'given', 'suffix'), "4da08a0090fe"),
         "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip":
             _Claim(19, ('family', 'given', 'middle', 'suffix'), "aa475ddd4745"),
         "feat(#269) non-Latin titles/conjunctions recognized":
-            _Claim(2, ('given', 'middle', 'title'), "c14187bb08f8"),
+            _Claim(4, ('given', 'middle', 'title'), "e86eeb13eeb2"),
         "fix(leading-credential) a split 'Ph. D.' before the name stays one unit":
             _Claim(1, ('given', 'middle', 'suffix', 'title'), "390e7f814d13"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
             _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
+        "fix(#400) abd joins the word after it as one given name":
+            _Claim(3, ('given', 'middle'), "6eb6b807523a"),
+        "fix(#272/#308) nakaguro division and a glued hangul honorific in one name":
+            _Claim(1, ('family', 'given', 'middle', 'suffix'), "2fbf1a94f122"),
+        "fix(nickname-typographic-pairs) two typographic quote spans read as one nickname set":
+            _Claim(1, ('family', 'given', 'middle', 'nickname'), "3cf566c78800"),
     },
     "expected_since_2.0.0.toml": {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(2, ('family', 'middle'), "f3a43bebfb91"),
+            _Claim(8, ('family', 'middle'), "f4d52b062f39"),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(97, ('_ambiguities', 'family', 'given', 'middle'), "66e71d60a075"),
+            _Claim(105, ('_ambiguities', 'family', 'given', 'middle'), "090ac3eef3fb"),
         "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into suffix":
-            _Claim(34, ('family', 'given', 'suffix'), "877ab3246d33"),
+            _Claim(35, ('family', 'given', 'suffix'), "4da08a0090fe"),
         "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix":
             _Claim(16, ('family', 'given', 'middle', 'suffix'), "6d390e518bd2"),
         "fix(#309) 旧姓 maiden marker consumed, compounding with the CJK order flip":
-            _Claim(3, ('family', 'given', 'maiden', 'middle'), "cf5c9d671c14"),
+            _Claim(4, ('family', 'given', 'maiden', 'middle'), "27bb9ebc1951"),
         "fix(#272) nakaguro inside delimited content renders as a space, compounding with the CJK order flip":
             _Claim(1, ('family', 'given', 'nickname'), "d4069d459f23"),
         "fix(#298) 间隔号 division changes the comma reading, sending the credential from title to suffix":
             _Claim(1, ('family', 'given', 'suffix', 'title'), "1d45596e6fdb"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
             _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
+        "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
+            _Claim(1, ('family', 'suffix'), "081ce07f927b"),
+        "fix(#399) a maiden marker bounds the particle chain that swallowed it":
+            _Claim(6, ('family', 'maiden'), "b40129435671"),
+        "fix(#360) mc moved into the never-given particles, so it folds into the family":
+            _Claim(1, ('_ambiguities', 'family', 'given'), "ee4339908f4d"),
+        "fix(#400) abd joins the word after it as one given name":
+            _Claim(3, ('given', 'middle'), "6eb6b807523a"),
+        "fix(#367) a title no longer displaces a leading never-given particle":
+            _Claim(1, ('family', 'given'), "db724fb9c779"),
+        "fix(#272/#308) nakaguro division and a glued hangul honorific in one name":
+            _Claim(1, ('family', 'given', 'middle', 'suffix'), "2fbf1a94f122"),
     },
     "expected_since_2.1.0.toml": {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(2, ('family', 'middle'), "f3a43bebfb91"),
+            _Claim(8, ('family', 'middle'), "f4d52b062f39"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
             _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
+        "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
+            _Claim(1, ('family', 'suffix'), "081ce07f927b"),
+        "fix(#399) a maiden marker bounds the particle chain that swallowed it":
+            _Claim(6, ('family', 'maiden'), "b40129435671"),
+        "fix(#360) mc moved into the never-given particles, so it folds into the family":
+            _Claim(1, ('_ambiguities', 'family', 'given'), "ee4339908f4d"),
+        "fix(#400) abd joins the word after it as one given name":
+            _Claim(3, ('given', 'middle'), "6eb6b807523a"),
+        "fix(#367) a title no longer displaces a leading never-given particle":
+            _Claim(1, ('family', 'given'), "db724fb9c779"),
     },
 }
 
@@ -1313,7 +1381,7 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
                   ("fix(comma-family)", "fix(comma-precomma-family)",
                    "fix(suffix-routing)")),
     '(^|[\\w.]\\s+)[("\'][^)"\']+[)"\'](\\s+\\w|\\s*$)':
-        _Excluded(34, "9ea55c4c4382", ()),
+        _Excluded(42, "e594ae1a2e73", ()),
 }
 
 
