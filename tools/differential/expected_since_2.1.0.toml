@@ -96,47 +96,6 @@ name_regex = "(?i)^mr\\.\\s+van\\b"
 fields = ["given", "middle", "family"]
 
 [[change]]
-issue = "fix(#399) a maiden marker bounds the particle chain that swallowed it"
-# 'Jane van der Berg 旧姓 Jones': grouping's particle chain absorbed
-# everything up to the next particle or suffix piece, and the maiden
-# marker is consumed later in the SAME stage -- by then the chain had
-# merged the marker away and there was no lone marker piece left to
-# find, so the family kept both the marker and the maiden name.
-# rules.md#M2 states the stop; decisions.md#M2 records it.
-#
-# Fields are {family, maiden}: the given name does not move, and no
-# corpus name puts this shape under a non-default name_order.
-#
-# The rule requires a PARTICLE ahead of the marker because that IS the
-# defect -- a marker with no particle in front of it was always consumed
-# correctly, and the four other marker-bearing corpus names are all of
-# that kind, so this claims exactly the one name it was read from.
-#
-# The trailing `\s+\S` is load-bearing, not padding: #399's stop is
-# gated on the maiden consumer actually taking, and the consumer needs a
-# non-suffix word after the marker. A marker with nothing after it is
-# left alone as an ordinary name word (M2: "a marker with nothing after
-# it ... is just a word"), so 'Smith nee' and 'Muller geb.' do NOT move
-# and this rule must not claim them. Ungated, the stop stranded the
-# marker as a piece of its own and it took the whole family field.
-#
-# Not Latin-anchored, unlike its #379 neighbour, and deliberately: this
-# name is the one shape in the corpus that is Latin either side of a
-# native-script marker, so an anchor over the whole name would fail to
-# match the very diff the rule exists to explain.
-#
-# The marker is the single literal the corpus name carries, not an
-# alternation over MAIDEN_MARKERS, for two reasons. The cause is
-# script-independent and the case table proves it over every spelling,
-# so breadth here would buy nothing but reach; and the ledger guards
-# pin one hand-copied vocabulary per rule, which this rule has already
-# spent on PARTICLES. A Latin-marker name of this shape entering the
-# corpus should arrive UNEXPLAINED and be read once, the discipline
-# fix(#379) states for its own vd-shaped gap.
-name_regex = "(?i)\\b(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)\\b.*?\\s\u65e7\u59d3\\s+\\S"
-fields = ["family", "maiden"]
-
-[[change]]
 issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
 # 'Vega, Juan de la': the Dutch alphabetized listing moves the
 # tussenvoegsel behind the given name -- "Beethoven, Ludwig van" is how

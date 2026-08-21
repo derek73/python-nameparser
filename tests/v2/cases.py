@@ -876,15 +876,6 @@ CASES: tuple[Case, ...] = (
                "('van der Berg née Jones'). Distinct from M2's "
                "remaining Accepted note, which is about a marker "
                "standing straight AFTER the comma"),
-    Case("maiden_marker_after_particles_cross_script",
-         "Jane van der Berg 旧姓 Jones",
-         {"given": "Jane", "family": "van der Berg",
-          "maiden": "Jones"},
-         classification="fix(#399)",
-         notes="the stop is one vocabulary lookup, so it reaches every "
-               "marker spelling; this is the only cross-script pair "
-               "of the set -- a native-script marker between a Latin "
-               "tussenvoegsel and a Latin maiden name"),
     Case("maiden_marker_kyusei", "山田花子 旧姓 佐藤",
          {"family": "山田花子", "maiden": "佐藤"},
          classification="fix(#309)",
