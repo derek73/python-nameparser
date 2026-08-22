@@ -331,31 +331,30 @@ def test_the_reserve_still_declines_when_only_a_suffix_is_left() -> None:
 
 
 def test_a_chain_never_leaves_a_marker_standing_alone() -> None:
-    """The #399 stop and the maiden consumer must agree at the PIECE
-    level, which is where they can disagree without any field looking
-    wrong enough to fail.
+    """A marker standing as its own piece never follows a piece carrying
+    a particle -- the invariant the ORDER buys, pinned at the piece
+    level because the fields cannot see it break: a stranded marker is
+    a lone trailing piece, which takes the family field and demotes
+    the real surname to the middle, and every field still holds
+    something plausible.
 
-    Both halves ask "is this a marker piece?" through one predicate, so
-    they cannot disagree about that. What they can disagree about is
-    whether the consumer TAKES: it needs a non-suffix piece after the
-    marker. Stopping the chain without one left the marker standing as
-    its own piece, and a lone trailing piece takes a role field -- the
-    marker became the family name and the real surname was demoted to
-    the middle. Parsed fields alone do not catch it: misaligning the
-    two halves leaves the whole suite green, because every field still
-    holds something plausible.
+    The consumer runs before the chain, so a marker still standing when
+    the chain arrives is one the consumer declined, and the chain takes
+    it as the word M2 says it is. Either the consumer took the marker
+    (gone from pieces altogether) or the chain did. What breaks this is
+    the pass moving back behind the chain, or a stop on the chain
+    reintroduced: #399's stop restated the consumer's condition and
+    disagreed with it one suffix later (#417 -- the 'née Jr Jones' row
+    below, which the old list did not carry).
 
-    The invariant the gate buys, and it holds both ways round: a marker
-    standing as its own piece never follows a piece carrying a
-    particle. Either the consumer took the marker (and it is gone from
-    pieces altogether), or the chain never stopped and swallowed it. A
-    marker DOES stand alone where no chain reached it, which is M2's
+    A marker DOES stand alone where no chain reached it, which is M2's
     own "Jones nee" -> family "nee" boundary, so the assertion is
     keyed on the preceding piece rather than on markers as such.
     """
     for text in ("Jane van der Berg née Jones",     # consumer takes
                  "Jane van der Berg née",           # nothing follows
                  "Jane van der Berg née Jr",        # only a suffix
+                 "Jane van der Berg née Jr Jones",  # suffix, then a word (#417)
                  "Jane van der née",                # particles only
                  "Jane Smith née Jones",            # no particle: takes
                  "Jane Smith née",                  # no particle: stands
@@ -393,9 +392,91 @@ def test_where_the_marker_lands_when_the_consumer_declines() -> None:
         ["Jane", "van der Berg née"]]
     assert _piece_texts(_grouped("Jane van der Berg née Jr")) == [
         ["Jane", "van der Berg née", "Jr"]]
+    # #417: a name word BEHIND the inner suffix does not change the
+    # consumer's answer (its walk stops at the suffix), so the marker
+    # still rides inside the chain rather than standing between the
+    # chain and the suffix. The parsed fields read the same either
+    # way -- middle 'van der Berg née Jr', family 'Jones' -- which is
+    # why this is pinned at the piece level.
+    assert _piece_texts(_grouped("Jane van der Berg née Jr Jones")) == [
+        ["Jane", "van der Berg née", "Jr", "Jones"]]
+    # ...and a chain carrying a declined marker is a name piece like
+    # any other to the bound-given join (P5 declines a marker "standing
+    # as a word of its own", and this one is not)
+    assert _piece_texts(_grouped("abdul van der Berg née Jr Jones")) == [
+        ["abdul van der Berg née", "Jr", "Jones"]]
     # consumer declines, no chain: the marker stands as its own piece
     assert _piece_texts(_grouped("Jane Smith née")) == [
         ["Jane", "Smith", "née"]]
+
+
+def test_the_connective_carveout_counts_the_surviving_name() -> None:
+    # P3's carve-out asks how many name words the name has,
+    # and the marker and the maiden name are not among them: they
+    # leave. Counted, 'juan y garcia née jones' was five words, 'y'
+    # joined, and once the clause left there was no family name (#418).
+    assert _piece_texts(_grouped("juan y garcia née jones")) == [
+        ["juan", "y", "garcia"]]
+    # the control: the clause changes nothing about the rest
+    assert _piece_texts(_grouped("juan y garcia")) == [
+        ["juan", "y", "garcia"]]
+    # a marker the consumer DECLINES is a word (M2) and counts: four
+    # words, so the connective joins
+    assert _piece_texts(_grouped("juan y garcia née")) == [
+        ["juan y garcia", "née"]]
+    # the three-piece gate ahead of the count has the same exposure:
+    # taken on the list as written, 'Jane and née Jones' is four
+    # pieces, the joins run, and 'and' takes 'Jane' -- the #418
+    # empty family one gate earlier. Two pieces remain, so no join.
+    assert _piece_texts(_grouped("Jane and née Jones")) == [
+        ["Jane", "and"]]
+
+
+_DASH = Policy(extra_suffix_delimiters=frozenset({" - "}))
+
+
+def test_a_delimiter_core_in_a_suffix_tail_is_not_maiden_text() -> None:
+    """A tail segment drops its delimiter cores (#191) and the marker
+    takes what is left, in that order -- the order group() had before
+    the marker pass moved ahead of the joins. A core is not a word the
+    marker can take: it is structure, like the marker itself."""
+    out = _grouped("Smith, John, PhD née - Jones", policy=_DASH)
+    core = next(i for i, t in enumerate(out.tokens) if t.text == "-")
+    assert core in out.dropped
+    assert out.tokens[core].role is not Role.MAIDEN
+    assert [t.text for t in out.tokens if t.role is Role.MAIDEN] == [
+        "Jones"]
+
+
+def test_a_core_is_screened_before_the_marker_looks_for_a_word_ahead() -> None:
+    """M2 needs a name word BEFORE the marker. A core is not one, so a
+    marker standing behind nothing but a core is a leading marker and
+    is not taken -- and the core, no longer the segment's only piece
+    once the tail is read as written, is dropped as usual."""
+    out = _grouped("Smith, John, - née Jones", policy=_DASH)
+    assert not any(t.role is Role.MAIDEN for t in out.tokens)
+    core = next(i for i, t in enumerate(out.tokens) if t.text == "-")
+    assert core in out.dropped
+    assert _piece_texts(out)[2] == ["née", "Jones"]
+
+
+def test_no_join_reaches_a_taken_marker() -> None:
+    """A marker the consumer takes is gone before any join looks, so
+    there is no piece list on which a join could absorb it (#412).
+    Pinned per shape the connective join reached the marker through;
+    the particle chain on its own is pinned in
+    test_where_the_marker_lands_when_the_consumer_declines."""
+    # connective after the marker, behind a chain (#412's headline)
+    assert _piece_texts(_grouped("Jane van der Berg née y Jones")) == [
+        ["Jane", "van der Berg"]]
+    # connective before the marker: 'Smith and' is what 'Jane Smith
+    # and' alone reads too, so the odd-looking family is consistency,
+    # not an artifact
+    assert _piece_texts(_grouped("Jane Smith and née Jones")) == [
+        ["Jane", "Smith and"]]
+    # marker-headed: the connective is the first word the marker takes
+    assert _piece_texts(_grouped("Jane née and Jones Smith")) == [
+        ["Jane"]]
 
 
 def test_the_bound_given_join_never_absorbs_a_marker() -> None:
@@ -405,12 +486,13 @@ def test_the_bound_given_join_never_absorbs_a_marker() -> None:
 
     Joining one merged the marker into the given name and left M2
     nothing to find, which was the P5 half of the join-swallow #412
-    records. The reserve alone does not prevent it: where the maiden
-    walk stops at an inner suffix the excluded span is short, enough
-    words survive it to clear the threshold, and the join fires and
-    takes the marker anyway -- after which nothing leaves at all, and
-    the count that authorised the join was reasoning about a name
-    that never came to be.
+    records. With the marker pass ahead of the joins, a marker the
+    consumer takes is gone before P5 looks, so the taken-marker rows
+    below hold by construction. The guard's live shape is a DECLINED
+    marker standing directly after the bound word with the reserve
+    satisfied -- 'Berg, abdul née Jr', 'Berg, abdul née PhD', 'Berg,
+    abdul née' -- where only the guard keeps the join from reading
+    given 'abdul née'.
 
     Asserted at the piece level because the field reading can look
     perfectly ordinary while this is wrong: the shipped-vocabulary

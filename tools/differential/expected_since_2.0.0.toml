@@ -494,3 +494,41 @@ issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
 # that does NOT move -- would classify as intended.
 name_regex = "(?i)^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*\\s(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)(\\s+(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu))*\\s*$"
 fields = ["middle", "family"]
+
+[[change]]
+issue = "fix(#412) a connective join no longer absorbs the maiden marker beside it"
+# 'Jane van der Berg née y Jones' and 'Jane née and Jones Smith': the
+# last of the join-swallows. rules.md#M2 takes a marker standing as a
+# word of its own, and rules.md#P3's connective join ran first in the
+# grouping stage and merged the marker into a multi-word piece, so the
+# bound never saw one. The marker pass now runs before every join
+# (#418 is the same order defect in P3's word count), so the marker is
+# taken and the words after it, connective included, are the maiden
+# name: family 'van der Berg', maiden 'y Jones'; given 'Jane', maiden
+# 'and Jones Smith'.
+#
+# Checked against this baseline's own run: 2.0.0 reads both names the
+# way 2.1.0 does, so the same two arrive UNEXPLAINED here. The
+# expected_since_2.1.0.toml copy carries the fuller account.
+name_regex = "(?i)\\bn[eé]e\\s+(y|and)\\b"
+fields = ["middle", "family", "maiden"]
+
+[[change]]
+issue = "fix(#418) the connective carve-out counts the name the maiden clause leaves behind"
+# 'Juan y Garcia née Jones': rules.md#P3's three-word carve-out
+# counted the marker and the maiden name, so the connective joined
+# and the family was empty once the clause left. Checked against this
+# baseline's own run -- 2.0.0 reads it as 2.1.0 did, given 'Juan y
+# Garcia' with no family. The expected_since_2.1.0.toml copy carries
+# the fuller account.
+name_regex = "(?i)^\\S+\\s+[ye]\\s+\\S+\\s+n[eé]e\\s+\\S+$"
+fields = ["given", "middle", "family"]
+
+[[change]]
+issue = "fix(#418) accepted: a suffix word inside the maiden name ends it, connective or not"
+# 'Jane née Jr y Jones': the accepted cost of the marker-pass reorder
+# (rules.md#M2's Accepted row). Checked against this baseline's own
+# run -- 2.0.0 reads it as 2.1.0 does, maiden 'Jr y Jones'. The
+# expected_since_2.1.0.toml copy carries the fuller account.
+name_regex = "(?i)^jane\\s+n[eé]e\\s+jr\\s+y\\s+jones$"
+fields = ["middle", "family", "maiden"]

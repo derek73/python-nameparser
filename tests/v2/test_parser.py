@@ -1,5 +1,6 @@
 import dataclasses
 import pickle
+import re
 import unicodedata
 
 import pytest
@@ -1094,3 +1095,51 @@ def test_stacked_activation_warns_only_for_uncovered_scripts() -> None:
                    if "segment_scripts activates" in str(w.message))
     assert "hiragana" in message
     assert "hangul" not in message
+
+
+#: The corpus names a maiden clause can be appended to without the
+#: clause itself being the variable: Latin script, no comma (a clause
+#: behind a comma is post-comma text, rules.md#M2's Accepted row), and
+#: no marker already present.
+_LATIN = re.compile(r"^[\x00-\u024f]*$")
+
+
+def _clause_free_latin_corpus_names() -> list[str]:
+    from nameparser.config.maiden_markers import MAIDEN_MARKERS
+
+    from ._differential_fixtures import _CORPUS_NAMES
+    return [name for name in _CORPUS_NAMES
+            if _LATIN.match(name) and "," not in name
+            and not any(word.lower().rstrip(".") in MAIDEN_MARKERS
+                        for word in name.split())]
+
+
+@pytest.mark.parametrize("name", _clause_free_latin_corpus_names())
+def test_a_maiden_clause_changes_nothing_else(name: str) -> None:
+    """The grouping rules count and join only the words that remain
+    once the marker and the maiden name leave (rules.md#M2, #418), so
+    appending a clause adds a maiden name and moves no other field.
+
+    Over the corpus rather than by example, because the defect was an
+    appended-clause shape on names that are otherwise ordinary ('John
+    e Smith', 'Lt.Gov. juan e garcia'), which no corpus carries in
+    that form and which the differential gate therefore cannot see.
+    Before the marker pass moved ahead of the joins, seven of these
+    names failed this.
+
+    One boundary, and it is not the grouping stage's: a name whose
+    residual is a single name piece (a title plus one word, 'Dr.
+    Jane') places that piece in `family` alone and in `given` once a
+    maiden name exists -- #410's shape, pre-existing, so those names
+    are stepped over rather than asserted either way.
+    """
+    base = parse(name)
+    if base.given == "":
+        pytest.skip("#410: a lone residual piece moves between fields")
+    with_clause = parse(name + " née Jones")
+    assert with_clause.maiden == "Jones"
+    for field in ("title", "given", "middle", "family", "suffix",
+                  "nickname"):
+        assert getattr(with_clause, field) == getattr(base, field), (
+            f"{name!r}: {field} reads {getattr(base, field)!r} alone and "
+            f"{getattr(with_clause, field)!r} with a maiden clause")

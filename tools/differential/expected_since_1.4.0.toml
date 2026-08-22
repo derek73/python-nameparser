@@ -992,3 +992,16 @@ name_regex = "(^|[\\w.]\\s+)[(\"'][^)\"']+[)\"'](\\s+\\w|\\s*$)"
 fields = ["nickname", "middle"]
 examples = ["John \"Jack\" Kennedy", "John (Jack) Kennedy",
             "\"Rick\" Edmonds", "Franklin, Benjamin (Ben)"]
+
+[[change]]
+issue = "fix(#418) the connective carve-out counts the name the maiden clause leaves behind"
+# 'Juan y Garcia née Jones': rules.md#P3's three-word carve-out
+# counted the marker and the maiden name, so 'y' joined and the
+# family was empty once the clause left. fix(#274) above cannot
+# classify this one: it moves `given` as well, since the joined
+# 'Juan y Garcia' comes apart. `maiden` is in the fields because 1.4
+# has no maiden field at all, the same reason every marker name is a
+# diff at this baseline. Checked against this baseline's own run; the
+# expected_since_2.1.0.toml copy carries the fuller account.
+name_regex = "(?i)^\\S+\\s+[ye]\\s+\\S+\\s+n[eé]e\\s+\\S+$"
+fields = ["given", "middle", "family", "maiden"]
