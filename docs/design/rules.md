@@ -40,7 +40,7 @@ H1. Rationale: a title normally addresses by surname, so a title
     family empty — the input names no family, and inventing one
     would be worse.
       "Sir John"                  →  family=""
-    implemented: nameparser/_pipeline/_post_rules.py
+    interacts: P5 · implemented: nameparser/_pipeline/_post_rules.py
 
 H2. Rationale: before a name, an abbreviation is almost always a
     title — "Rev.", "Ing.", "Mag." — and no vocabulary can list
@@ -230,14 +230,21 @@ P4. Rationale: a particle links forward from inside a name; at the
       "Van Johnson"               →  given="Van"
       "Sir de Mesnil"             →  pieces=[["Sir"], ["de"], ["Mesnil"]]
       "John van der Berg"         →  pieces=[["John"], ["van", "der", "Berg"]]  · boundary
-    history: decisions.md#P2 · interacts: P1 · implemented: nameparser/_pipeline/_group.py
+    history: decisions.md#P2 · interacts: P1, P5 · implemented: nameparser/_pipeline/_group.py
 
 P5. Rationale: some given-name words are incomplete alone — "abdul"
     is a bound form that the next word completes.
     A recognized bound given-name word joins the word after it into
     one given name. It needs a name word to spare, so two name words
     alone do not join — the second is the family name — except after
-    a family comma, where the family is already fixed. Where the word
+    a family comma, where the family is already fixed, or after a
+    given-name title, which asserts that a given name follows (H1):
+    there the two words join and the name has no family — two WORDS,
+    so a particle chain (P2) is not joined: it is the family name.
+    The title run is read as one key, as H1 reads it. A bound word
+    that is also a particle is read as the bound word: this join
+    outranks the leading-position reading (P4), and no fork is
+    reported. Where the word
     is BOTH bound-given and suffix vocabulary, position decides and
     both readings survive: leading, it is the bound word; trailing,
     it is the suffix (S2). In the given slot after a family comma the
@@ -253,11 +260,19 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "abd Allah"                 →  given="abd"
       "Smith, Abd"                →  suffix="Abd"
       "mohamad ali smith"         →  given="mohamad"  · boundary
+      "Sheik abdul salam"         →  given="abdul salam"
+      "Sheik Abu Bakar"           →  given="Abu Bakar"
+      "Abu Bakar Salim"           →  given="Abu Bakar"
+      "Dr. abdul salam"           →  family="salam"  · boundary
+      "Sir abdul van der Berg"    →  family="van der Berg"  · boundary
       "abd Berg née Jones"        →  family="Berg"
       "abd Allah Smith née Jones" →  given="abd Allah"
       "abd née Jones"             →  given="abd"
       "Berg, abd née Jones"       →  suffix="abd"
-    history: decisions.md#P5 · interacts: S2, M2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
+    Accepted: a given-name title plus a bound pair leaves the family
+    empty, as H1 accepts for "Sir John" — the input names no family.
+      "Sheik abdul salam"         →  family=""
+    history: decisions.md#P5 · interacts: S2, M2, H1, P2, P4 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P6. Rationale: a particle ending the name has nothing to link
     forward to, so it is not doing a particle's work there. A
