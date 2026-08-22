@@ -469,12 +469,20 @@ def test_bound_given_name_that_is_also_a_particle() -> None:
     # claimed 'Bakar' -- a side effect of the #367 bug, not a rule. Now
     # the bound given-name join reads it: "Sheik" is a given-name
     # title, which licenses the join with one word to spare
-    # (rules.md#P5), so the particle never enters into it.
-    assert parse("Sheik Abu Bakar").given == "Abu Bakar"
+    # (rules.md#P5), so the particle never enters into it -- and a
+    # bound word read as the bound word is not a fork, so the
+    # PARTICLE_OR_GIVEN report the chain used to emit is gone. The
+    # same precedence, untitled, is what "Abu Bakar Salim" has always
+    # had; where the reserve blocks the join, P4 and its report stand.
+    titled = parse("Sheik Abu Bakar")
+    assert (titled.given, titled.ambiguities) == ("Abu Bakar", ())
+    assert parse("Abu Bakar Salim").ambiguities == ()
+    assert [a.kind for a in parse("Abu Bakar").ambiguities] == \
+        [AmbiguityKind.PARTICLE_OR_GIVEN]
 
 
 def test_a_given_name_title_licenses_the_bound_given_join() -> None:
-    # rules.md#P5 (#369): the contrast the xfail above used to draw --
+    # rules.md#P5 (#369): the contrast #367's release note draws --
     # "Sheik abdul salam", whose lead is a bound given name and NOT a
     # particle -- now joins the same way, and for the same reason. A
     # plain title does not license it: "Dr." addresses by family, so
@@ -485,6 +493,21 @@ def test_a_given_name_title_licenses_the_bound_given_join() -> None:
     plain = parse("Dr. abdul salam")
     assert (plain.title, plain.given, plain.family) == \
         ("Dr.", "abdul", "salam")
+
+
+@pytest.mark.parametrize("title", [
+    "Sir", "Sheikh", "King", "الشيخ", "Dr.", "Mr.", "Mr. Sir", "Sir Dr.",
+    "Sir and Dame", "Mr. and Mrs.", "Sheik and Mrs"])
+def test_the_p5_licence_and_h1_read_a_title_run_the_same_way(
+        title: str) -> None:
+    # The licence's one invariant, as a contract: P5 lifts the reserve
+    # behind a title run exactly when H1 keeps the one word after that
+    # run a given name. Both key the run through _title_key; if either
+    # side's key construction drifted, a run P5 licensed that H1 then
+    # read as title-plus-family would hand the joined pair to the
+    # family. So "no family" must agree, run by run.
+    assert (parse(f"{title} John").family == "") == \
+        (parse(f"{title} abdul rahman").family == "")
 
 
 # The first three reach the chain loop and decline inside it: the piece

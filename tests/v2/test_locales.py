@@ -1107,6 +1107,14 @@ def test_non_interference_all_packs_combined() -> None:
     ("الحاج عبد الرحمن السيد", "title", "الحاج"),
     ("الحاج عبد الرحمن السيد", "given", "عبد الرحمن"),
     ("الحاج عبد الرحمن السيد", "family", "السيد"),
+    # a given-name title plus the bound pair ALONE: the licence
+    # (rules.md#P5, #369) lifts the family reserve, so the pair is the
+    # given name and, as for "Sir John", there is no family. Thirteen
+    # of the given-name titles are this script's, so this is where
+    # the licence mostly fires.
+    ("الشيخ عبد الله", "title", "الشيخ"),
+    ("الشيخ عبد الله", "given", "عبد الله"),
+    ("الشيخ عبد الله", "family", ""),
     # "و" ("and") joins title chains like Cyrillic "и"; single-char
     # conjunctions need the same single-letter carve-out headroom (enough
     # rootname pieces), so pinned with the 6-piece shape the и row uses
