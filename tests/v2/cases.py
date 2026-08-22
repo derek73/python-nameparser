@@ -725,9 +725,10 @@ CASES: tuple[Case, ...] = (
          {"given": "Jane", "family": "van der Berg", "maiden": "Jones",
           "suffix": "PhD"},
          classification="fix(#399)",
-         notes="marker and suffix stops in the same name: the chain "
-               "stops at the marker, then M2's own walk stops the "
-               "maiden name at the suffix. Dutch spelling of the same "
+         notes="marker and suffix in the same name: M2's walk takes "
+               "the maiden name up to the suffix before the chain "
+               "runs, so the chain has nothing to stop at (under #399 "
+               "it stopped at the marker). Dutch spelling of the same "
                "defect, and 'née' unaccented-vs-accented is not the "
                "variable here"),
     Case("maiden_marker_stops_the_leading_run_family_first",
@@ -735,8 +736,9 @@ CASES: tuple[Case, ...] = (
          {"family": "de la Cruz", "maiden": "Vega"},
          policy=Policy(name_order=FAMILY_FIRST),
          classification="fix(#399)",
-         notes="#399's open question, answered by the chain stop "
-               "rather than by a rule of its own: the marker used to "
+         notes="#399's open question, answered by the marker being "
+               "consumed before anything can place it rather than by "
+               "a rule of its own: the marker used to "
                "survive as an ordinary name word and compete for the "
                "leftover given slot, so this read given 'née' / middle "
                "'Vega'. Consumed and dropped, it never reaches the "
@@ -746,8 +748,9 @@ CASES: tuple[Case, ...] = (
          "Jane de la née Jones",
          {"given": "Jane", "family": "de la", "maiden": "Jones"},
          classification="fix(#399)",
-         notes="stopping the chain can leave a family group that is "
-               "wholly particles, which is exactly the shape R2 "
+         notes="taking the marker before the chain runs can leave a "
+               "family group that is wholly particles, which is exactly "
+               "the shape R2 "
                "reserves: they are not in particle position, so they "
                "report as ordinary words -- family_base 'de la', "
                "family_particles ''. test_cases pins that split only "
@@ -761,13 +764,13 @@ CASES: tuple[Case, ...] = (
     Case("maiden_marker_trailing_after_particles",
          "Jane van der Berg née",
          {"given": "Jane", "family": "van der Berg née"},
-         notes="the boundary the #399 stop is GATED on. M2 says a "
-               "marker with nothing after it is just a word, so the "
-               "chain must not stop here: there is no maiden name to "
-               "hand it to, and a stop would leave the marker as a "
-               "piece of its own, which then takes the whole family "
-               "field and demotes the real surname to the middle "
-               "(family 'née', middle 'van der Berg'). The first cut "
+         notes="M2's boundary on the particle side. A marker with "
+               "nothing after it is just a word: the consumer declines "
+               "it and the chain takes it like any other word. A chain "
+               "that stopped at it instead left the marker as a piece "
+               "of its own, which then took the whole family field and "
+               "demoted the real surname to the middle (family 'née', "
+               "middle 'van der Berg'). The first cut "
                "of #399 did exactly that -- the marker-less spelling "
                "'Jones née' -> family 'née' is M2's own boundary "
                "example, and the particle spelling has to agree with "
@@ -776,20 +779,22 @@ CASES: tuple[Case, ...] = (
          "Jane van der Berg née PhD",
          {"given": "Jane", "family": "van der Berg née",
           "suffix": "PhD"},
-         notes="the other half of the gate: the consumer walks only up "
+         notes="the other way the consumer declines: it walks only up "
                "to a trailing suffix, so a marker with nothing but a "
-               "suffix after it is not consumed either. Pinned "
+               "suffix after it is not consumed either, and the chain "
+               "takes it. Pinned "
                "separately from the row above because the two reach "
                "the same decision through different conditions -- last "
-               "piece vs nothing-but-suffix-follows -- and a stop "
-               "keyed on only one of them looks correct on the other"),
+               "piece vs nothing-but-suffix-follows -- and #399's chain "
+               "stop, keyed on only one of them, looked correct on the "
+               "other"),
     Case("maiden_marker_surname_spelling_keeps_its_particles",
          "Jane van der Nee",
          {"given": "Jane", "family": "van der Nee"},
          notes="'Nee' is an attested surname as well as a marker "
                "spelling, which M1 already says ('a one-word clause "
                "keeps its word, which may itself be a surname'). "
-               "Because nothing follows it the gate declines, so a "
+               "Because nothing follows it the consumer declines, so a "
                "Dutch bearer of the surname keeps the tussenvoegsel "
                "in the family name. Ungated, #399 moved 'van der' out "
                "to the middle and left family 'Nee'"),
@@ -812,10 +817,12 @@ CASES: tuple[Case, ...] = (
           "maiden": "von der Berg"},
          classification="fix(#399)",
          notes="a particle chain on each side of the marker. This is "
-               "the shape decisions.md#M2 leans on when it explains "
-               "why #399 stopped the chain instead of moving the "
-               "maiden handler ahead of it, so it is pinned where the "
-               "argument can be checked. Before #399 the marker rode "
+               "the shape decisions.md#M2 first cited against moving "
+               "the maiden handler ahead of the chain and then "
+               "retracted -- merged and unmerged pieces hand the "
+               "consumer the same words -- and the handler now does "
+               "run ahead (#420); pinned so the claim that the reorder "
+               "cannot disturb it stays checked. Before #399 the marker rode "
                "into the middle name (middle 'von der Müller geb.')"),
     Case("maiden_marker_stops_the_leading_run", "de la Cruz née Vega",
          {"family": "de la Cruz", "maiden": "Vega"},
@@ -860,8 +867,10 @@ CASES: tuple[Case, ...] = (
                "and when the clause left nothing was behind for the "
                "family: given 'juan y garcia', family ''. The count "
                "now sees the name that remains, so the clause changes "
-               "nothing about how the rest of the name reads -- the "
-               "reading is 'juan y garcia' plus a maiden name"),
+               "nothing about how the rest of this name reads -- the "
+               "reading is 'juan y garcia' plus a maiden name. "
+               "test_parser.py asserts that over the corpus, with "
+               "#410's lone-residual shape as the one boundary"),
     Case("bound_given_reserve_excludes_a_multi_word_maiden_name",
          "Abd Berg née Mary Jones",
          {"given": "Abd", "family": "Berg", "maiden": "Mary Jones"},
@@ -888,16 +897,34 @@ CASES: tuple[Case, ...] = (
                "the marker; now the marker is gone before P5 looks, "
                "and the suffix it absorbs instead is a pre-existing "
                "P5 reading, not a maiden effect"),
+    Case("bound_given_join_takes_a_chain_carrying_a_declined_marker",
+         "Abd van der Berg née Jr Jones",
+         {"given": "Abd van der Berg née", "middle": "Jr",
+          "family": "Jones"},
+         classification="fix(#417)",
+         notes="the field-level face of #417. The consumer declines "
+               "(a suffix follows the marker), the particle chain "
+               "takes the declined marker as the word M2 says it is, "
+               "and P5 then joins the bound word to the chain -- a "
+               "name piece like any other. P5's decline is for a "
+               "marker standing as a word of its own, and this one "
+               "is not. Under the #399 stop this read given 'Abd van "
+               "der Berg', middle 'née Jr'. Pinned here because the "
+               "lone-piece reading is the nicer-looking one: a "
+               "marker test widened to match inside a piece would "
+               "give given 'Abd', middle 'van der Berg née Jr' with "
+               "the whole suite otherwise green"),
     Case("bound_given_join_declines_a_marker_before_only_a_suffix",
          "Berg, abdul née PhD",
          {"given": "abdul", "middle": "née", "family": "Berg",
           "suffix": "PhD"},
          classification="fix(#411)",
-         notes="the shape where the span test and the marker test "
-               "disagree, which is why the join asks about the marker "
-               "directly. Nothing but a suffix follows the marker, so "
-               "M2 declines and there is no span -- yet the join would "
-               "still have absorbed it, reading given 'abdul née'. The "
+         notes="a marker the consumer declines is still a piece when "
+               "P5 looks, which is why the join asks about the marker "
+               "directly rather than relying on the marker pass having "
+               "removed it. Nothing but a suffix follows the marker, so "
+               "M2 declines -- yet the join would "
+               "still absorb it, reading given 'abdul née'. The "
                "marker stays an ordinary word here (M2: with nothing "
                "after it, it is just a word)"),
     Case("bound_given_join_declines_leaving_the_suffix_reading",
@@ -940,10 +967,11 @@ CASES: tuple[Case, ...] = (
                "fixed as a side effect of #411, which is why the row "
                "is renamed rather than deleted. P5's join used to "
                "merge 'abdul' with the marker before M2's bound could "
-               "see a lone marker piece; counting the reserve without "
-               "the words the maiden name takes away makes the join "
-               "decline here, so the marker stays its own piece and "
-               "is consumed normally. P3's connective join was the "
+               "see a lone marker piece. #411 made the join decline by "
+               "counting the reserve without the words the maiden name "
+               "takes; since #420 the marker pass takes 'née Jones' "
+               "before P5 looks, leaving 'abdul' alone with nothing to "
+               "join. P3's connective join was the "
                "last to go, under #412 -- "
                "connective_join_never_reaches_a_taken_marker"),
     Case("maiden_marker_ahead_of_a_conjunction",
@@ -956,10 +984,13 @@ CASES: tuple[Case, ...] = (
                "first and produced a marker-HEADED piece 'née and "
                "Jones' that the lone-piece test could not see, so the "
                "name read middle 'née and Jones', family 'Smith'. "
-               "The lone-piece test itself still stands -- a marker "
-               "the consumer declines rides inside whatever join "
-               "reaches it -- and test_group.py pins where such a "
-               "marker lands"),
+               "The lone-piece test stays as M2's own wording "
+               "('standing as a word of its own'), but with the pass "
+               "ahead of the joins no default-vocabulary input reaches "
+               "a marker-headed piece any more, so nothing pins its "
+               "`len(piece) == 1` half: kept as definition, not as a "
+               "guard -- the comment at _is_maiden_marker_piece "
+               "records the measurement"),
     Case("maiden_marker_after_particles_in_a_comma_segment",
          "Smith, Jane van der Berg née Jones",
          {"given": "Jane", "middle": "van der Berg",
@@ -976,14 +1007,13 @@ CASES: tuple[Case, ...] = (
          {"given": "Abd", "family": "Berg", "maiden": "Jones"},
          classification="fix(#411)",
          notes="#411: P5 reserves a name word so the join always "
-               "leaves a family name behind, but the reserve was "
-               "counted while the marker and the maiden name were "
-               "still pieces -- group's marker pass runs after this "
-               "one. Four words counted, the join fired, and when the "
-               "two departed nothing was left for the family: given "
-               "'Abd Berg', family ''. Counted against the name the "
-               "reserve is actually reserving in, this is the "
-               "two-word case P5 says must not join"),
+               "leaves a family name behind, but until #420 the "
+               "reserve was counted while the marker and the maiden "
+               "name were still pieces, the marker pass running after "
+               "the join. Four words counted, the join fired, and when "
+               "the two departed nothing was left for the family: given "
+               "'Abd Berg', family ''. The pass now runs first, so the "
+               "reserve sees the two-word name P5 says must not join"),
     Case("bound_given_reserve_excludes_the_maiden_name_with_particles",
          "Abd van der Berg née Jones",
          {"given": "Abd", "family": "van der Berg", "maiden": "Jones"},

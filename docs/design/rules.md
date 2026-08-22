@@ -467,6 +467,11 @@ M2. Rationale: a maiden marker announces that what follows it is the
     Accepted: a marker straight after a comma is post-comma given
     text, not a marker.
       "Jane Smith, née Jones"          →  maiden=""
+    Accepted: the marker reads the words as written, so a suffix word
+    inside the maiden name ends it even where a connective beside it
+    would have bound the two into one name word (P3); the connective
+    then builds a family name out of what is left.
+      "Jane née Jr y Jones"            →  maiden=""
     history: decisions.md#M2 · interacts: P2, P3, P5, R2, M1 · implemented: nameparser/_pipeline/_group.py
 
 ## Commas & structure (C)

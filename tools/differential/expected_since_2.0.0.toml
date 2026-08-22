@@ -523,3 +523,12 @@ issue = "fix(#418) the connective carve-out counts the name the maiden clause le
 # the fuller account.
 name_regex = "(?i)^\\S+\\s+[ye]\\s+\\S+\\s+n[eé]e\\s+\\S+$"
 fields = ["given", "middle", "family"]
+
+[[change]]
+issue = "fix(#418) accepted: a suffix word inside the maiden name ends it, connective or not"
+# 'Jane née Jr y Jones': the accepted cost of the marker-pass reorder
+# (rules.md#M2's Accepted row). Checked against this baseline's own
+# run -- 2.0.0 reads it as 2.1.0 does, maiden 'Jr y Jones'. The
+# expected_since_2.1.0.toml copy carries the fuller account.
+name_regex = "(?i)^jane\\s+n[eé]e\\s+jr\\s+y\\s+jones$"
+fields = ["middle", "family", "maiden"]

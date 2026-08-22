@@ -430,10 +430,13 @@ issue = "fix(#412) a connective join no longer absorbs the maiden marker beside 
 # field, so every marker-bearing name is a diff there.
 #
 # The regex asks for a marker IMMEDIATELY followed by a connective,
-# the only shape in which the connective join could reach the marker.
-# A marker followed by a name word ('Jane van der Berg née Jones') is
-# fix(#399)'s and does not move; a connective BEFORE the marker
-# ('Jane Smith and née Jones') is not in the corpora.
+# which is the shape the corpora carry. The join reached the marker
+# from the other side too -- 'Jane Smith and née Jones' read middle
+# 'Smith and née' and now reads family 'Smith and', maiden 'Jones' --
+# but no corpus name has that shape, so the rule does not claim it;
+# one arriving lands UNEXPLAINED and is read once, as a new name
+# should be. A marker followed by a name word ('Jane van der Berg née
+# Jones') is fix(#399)'s and does not move.
 name_regex = "(?i)\\bn[eé]e\\s+(y|and)\\b"
 fields = ["middle", "family", "maiden"]
 
@@ -458,3 +461,21 @@ issue = "fix(#418) the connective carve-out counts the name the maiden clause le
 # without the clause and do not move.
 name_regex = "(?i)^\\S+\\s+[ye]\\s+\\S+\\s+n[eé]e\\s+\\S+$"
 fields = ["given", "middle", "family"]
+
+[[change]]
+issue = "fix(#418) accepted: a suffix word inside the maiden name ends it, connective or not"
+# 'Jane née Jr y Jones': the one reading the marker-pass reorder costs,
+# recorded as an Accepted row under rules.md#M2 and so in the rules
+# corpus. The marker now reads the words as written, before any join,
+# so 'Jr' ends the maiden name where the connective join used to bind
+# 'Jr y Jones' into one name word first. The marker is then a word
+# with nothing but a suffix after it (M2 declines), and the connective
+# builds the family out of what is left: middle 'née', family 'Jr y
+# Jones', no maiden name, against the baseline's maiden 'Jr y Jones'.
+#
+# Literal-anchored to the example: the class (a suffix homograph
+# anywhere in the maiden name beside a connective) has no other corpus
+# name, and a harvested one should arrive UNEXPLAINED and be read
+# once rather than absorbed here.
+name_regex = "(?i)^jane\\s+n[eé]e\\s+jr\\s+y\\s+jones$"
+fields = ["middle", "family", "maiden"]

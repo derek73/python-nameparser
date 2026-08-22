@@ -582,16 +582,23 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     "fix(#274)": ("Jones née", "née Jones", "Jane van der Berg née",
                   "Jane Smith (Nee)"),
     # #399's and #274's names: a marker followed by a NAME word was
-    # never the connective join's to reach, and a connective before
-    # the marker is the join reaching it from the other side.
+    # never the connective join's to reach. A connective BEFORE the
+    # marker ('Jane Smith and née Jones') IS the rule's shape, reached
+    # from the other side, and is deliberately not a probe: the regex
+    # is scoped to marker-then-connective because that is what the
+    # corpora carry -- a snapshot, not a boundary.
     "fix(#412)": ("Jane van der Berg née Jones", "Jane Smith née Jones",
-                  "Jane van der Berg née", "Jane Smith and née Jones",
-                  "Jane née Andrews Smith"),
+                  "Jane van der Berg née", "Jane née Andrews Smith"),
     # the carve-out is a THREE-word rule: four name words join with or
     # without the clause, a name with no clause has nothing to lose,
     # and the #412 pair is the other rule's
     "fix(#418)": ("Juan y Eva Garcia née Jones", "Juan y Garcia",
                   "Jane van der Berg née y Jones", "Juan y Garcia née"),
+    # literal-anchored to its one example: the suffix-then-connective
+    # class has no other corpus name, and a name with either half
+    # missing is fix(#399)'s or fix(#412)'s
+    "fix(#418) accepted": ("Jane née Jr Jones", "Jane née y Jones",
+                           "Jane van der Berg née Jr Jones"),
 }
 
 
@@ -1235,7 +1242,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
             _Claim(107, ('family', 'given', 'middle'), "0191ac9143a6"),
         "fix(#274) maiden markers consumed":
-            _Claim(23, ('family', 'maiden', 'middle'), "a2b5057e859f"),
+            _Claim(24, ('family', 'maiden', 'middle'), "3adf8b0a3b24"),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
             _Claim(5, ('family', 'given', 'maiden', 'middle'), "bc0e10dd7ec8"),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
@@ -1245,7 +1252,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(261, ('family', 'given'), "ed69e02b552e"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(1024, ('family', 'given', 'suffix'), "1c9c9f69093c"),
+            _Claim(1025, ('family', 'given', 'suffix'), "672249211df3"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1328,6 +1335,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('family', 'maiden', 'middle'), "51c0eb36b5c5"),
         "fix(#418) the connective carve-out counts the name the maiden clause leaves behind":
             _Claim(1, ('family', 'given', 'middle'), "7923e6d3c5a7"),
+        "fix(#418) accepted: a suffix word inside the maiden name ends it, connective or not":
+            _Claim(1, ('family', 'maiden', 'middle'), "bedc18423d2a"),
         "fix(#367) a title-and-particle word stops the scan instead of being chained":
             _Claim(1, ('given', 'title'), "faa2c70fc49e"),
         "fix(#369) a bound given-name word that is also a particle no longer chains":
@@ -1358,6 +1367,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('family', 'maiden', 'middle'), "51c0eb36b5c5"),
         "fix(#418) the connective carve-out counts the name the maiden clause leaves behind":
             _Claim(1, ('family', 'given', 'middle'), "7923e6d3c5a7"),
+        "fix(#418) accepted: a suffix word inside the maiden name ends it, connective or not":
+            _Claim(1, ('family', 'maiden', 'middle'), "bedc18423d2a"),
         "fix(#367) a title-and-particle word stops the scan instead of being chained":
             _Claim(1, ('given', 'title'), "faa2c70fc49e"),
         "fix(#369) a bound given-name word that is also a particle no longer chains":
