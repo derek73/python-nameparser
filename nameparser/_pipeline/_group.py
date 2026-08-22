@@ -109,7 +109,7 @@ def _is_suffix_piece(piece: Sequence[int], ptags: Set[str],
 #
 # With the pass ahead of the joins no default-vocabulary input reaches
 # the lone-piece half through the one caller left that sees joined
-# pieces (P5's absorbs_marker): a marker-headed wider piece needs a
+# pieces (P5's absorbs_non_name): a marker-headed wider piece needs a
 # connective right after a declined marker, and a connective after a
 # marker is a word the consumer takes. Measured at #420's review --
 # dropping `len(piece) == 1` leaves the suite and a 337k-name sweep
@@ -463,51 +463,54 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 and len(pieces[first_name_k]) == 1
                 and "vocab:bound-given"
                 in tokens[pieces[first_name_k][0]].tags):
-            def reads_as_suffix(k: int) -> bool:
-                # What assign will read piece k as -- a suffix piece,
-                # or the trailing roman numeral S2's fork takes -- for
-                # the two places P5 asks whether a piece is a name
-                # word (#401, #421). The suffix-piece test alone
-                # vetoes a bare 'V' as an initial, which is right for
-                # assign's middle-initial question and wrong here:
-                # 'abdul Smith V' counted three name words, joined,
-                # and the family the reserve believed it was sparing
-                # was never there.
-                #
-                # The fork's conditions, exactly, over the walk assign
-                # actually makes. Only the main walk has the fork: the
-                # post-comma walk reads a trailing numeral by a
-                # lenient last-of-two rule and otherwise as a middle
-                # initial, so under LENIENT the reserve counts suffix
-                # pieces alone, as it always did ('Berg, abdul V'
-                # keeps given 'abdul V'). assign drops the flagged
-                # credential pieces (the Ph. D. merge) from its walk
-                # at ANY position before the peel, so "last" and "the
-                # piece before" are read over the pieces it keeps
-                # ('abdul Smith V Ph. D.'). The numeral must not be the
-                # first name piece -- NOT "the piece before it is not
-                # a title": 'jr' is title vocabulary too, and that
-                # phrasing lost 'abdul Smith Jr V' its family. And the
-                # piece before it is taken AS THE JOIN WOULD LEAVE IT,
-                # since assign sees the joined pair, whose first token
-                # is the bound word: an initial-shaped second word
-                # ('abdul J. V') must not suppress the fork for the
-                # reserve alone. Each of the four found in review.
-                if suffix(k):
-                    return True
-                if bound_join is not BoundJoin.STRICT:
-                    return False
+            # What assign would read each piece as were the join to
+            # fire -- a suffix piece, or the trailing roman numeral
+            # S2's fork takes -- for the two places P5 asks whether a
+            # piece is a name word (#401, #421). The suffix-piece test
+            # alone vetoes a bare 'V' as an initial, which is right for
+            # assign's middle-initial question and wrong here: 'abdul
+            # Smith V' counted three name words, joined, and the
+            # family the reserve believed it was sparing was never
+            # there.
+            #
+            # The fork's conditions, exactly, over the walk assign
+            # actually makes -- computed ONCE, since the reserve asks
+            # per piece and rebuilding the walk per ask was quadratic
+            # (found in review; the benchmark's bound_given shape
+            # guards it). Only the main walk has the fork: the
+            # post-comma walk reads a trailing numeral by a lenient
+            # last-of-two rule and otherwise as a middle initial, so
+            # under LENIENT the reserve counts suffix pieces alone, as
+            # it always did ('Berg, abdul V' keeps given 'abdul V').
+            # assign drops the flagged credential pieces (the Ph. D.
+            # merge) from its walk at ANY position before the peel, so
+            # "last" and "the piece before" are read over the pieces
+            # it keeps ('abdul Smith V Ph. D.'). The numeral must not
+            # be the first name piece -- NOT "the piece before it is
+            # not a title": 'jr' is title vocabulary too, and that
+            # phrasing lost 'abdul Smith Jr V' its family. And the
+            # piece before it is taken AS THE JOIN WOULD LEAVE IT,
+            # since assign sees the joined pair, whose first token is
+            # the bound word: an initial-shaped second word ('abdul
+            # J. V') must not suppress the fork for the reserve alone
+            # -- the reserve then declines, and assign, seeing the
+            # unjoined pieces, reads the V as the family, exactly as
+            # it reads 'John J. V'. Each of the four found in review.
+            numeral_k = None
+            if bound_join is BoundJoin.STRICT:
                 rest = [j for j in range(first_name_k, len(pieces))
                         if "suffix" not in ptags[j]]
-                if not (len(rest) >= 2 and k == rest[-1]
-                        and len(pieces[k]) == 1):
-                    return False
-                prev = rest[-2]
-                if prev == first_name_k + 1:
-                    prev = first_name_k
-                return is_trailing_numeral_suffix(
-                    tokens[pieces[k][0]].text,
-                    tokens[pieces[prev][0]].text)
+                if len(rest) >= 2 and len(pieces[rest[-1]]) == 1:
+                    prev = rest[-2]
+                    if prev == first_name_k + 1:
+                        prev = first_name_k
+                    if is_trailing_numeral_suffix(
+                            tokens[pieces[rest[-1]][0]].text,
+                            tokens[pieces[prev][0]].text):
+                        numeral_k = rest[-1]
+
+            def reads_as_suffix(k: int) -> bool:
+                return suffix(k) or k == numeral_k
 
             # first_name_k counts as a name piece even when it is
             # ALSO suffix vocabulary. The reserve asks whether enough

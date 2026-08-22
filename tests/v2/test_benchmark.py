@@ -75,6 +75,10 @@ def test_facade_thousand_names_under_a_second() -> None:
 #                             peel's site scan: every token is a
 #                             post-nominal, so the scan-back crosses the
 #                             whole run before declining
+#   P5 reserve                bound_given ONLY -- the one unit whose
+#                             first piece is a bound given-name word,
+#                             so the reserve's per-piece question is
+#                             asked over the whole run (#401)
 _SHAPES = {
     "delimiter_pairs": "(a) ",      # extract: matched pairs -> masked spans
     "quote_pairs": '"a" ',          # extract: the open==close path
@@ -86,6 +90,7 @@ _SHAPES = {
     "particles": "van ",            # group: the prefix-chain inner loop
     "conjunctions": "and ",         # group: merge() accumulating one piece
     "honorifics": "씨 ",             # script_segment: the peel's site scan
+    "bound_given": "abdul ",        # group: the P5 reserve over every piece
 }
 
 _BASE = 800
@@ -115,7 +120,13 @@ _FACTOR = 4
 # weakest quadratic. Re-derive BOTH numbers when adding a shape.
 # The tenth shape (honorifics) was measured into the clean column when
 # it arrived: 4.0-4.3 at base 800 across repeated runs, inside the range
-# the ASCII shapes already occupy, so neither number moved.
+# the ASCII shapes already occupy, so neither number moved. The
+# eleventh (bound_given, #401) arrived with its own quadratic in hand:
+# the P5 reserve rebuilt assign's walk per piece and measured 13.2 at
+# base 800 -- well outside the bound, which is why it was found in
+# review rather than here, no earlier unit leading with a bound word.
+# Computed once, the shape reads 4.2, inside the clean column; neither
+# number moved.
 _MAX_RATIO = 6.0
 
 
