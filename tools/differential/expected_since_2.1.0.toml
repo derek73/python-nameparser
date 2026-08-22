@@ -75,29 +75,29 @@ fields = ["given", "family"]
 [[change]]
 issue = "fix(#401) the bound-given reserve counts the trailing numeral assign reads as the suffix"
 # 'abdul Smith V': rules.md#P5 -- "a trailing roman numeral that
-# reads as the suffix (S2) is no word to spare". A bare 'V' is suffix
-# vocabulary AND initial-shaped, so the reserve's suffix test vetoed
-# it as an initial and counted it a name word; the join fired, and
-# assign then read the V as the suffix it is -- given 'abdul Smith',
-# family ''. The reserve now asks assign's question: given 'abdul',
-# family 'Smith', suffix 'V' -- and 'abdul Smith Jr V' likewise, a
-# suffix word before the numeral not hiding it (2.0 read suffix 'Jr,
-# V' with no family). The 'abdul Smith V Ph. D.' spelling, where assign
-# drops the flagged credential from its walk so the V is last in it,
-# is pinned at the piece level only: a trailing split credential is
-# the 1.4.0 ledger's [[exclude]] shape, and its v1 reading carries
-# the #401 family loss the exclusion would then refuse to explain. Shipped since 1.x: 1.4.0 read first
-# 'abdul Smith', last 'V' (the 1.4.0 ledger's rule lists all three
-# fields). A rules.md example, since no differential corpus name has
-# the shape.
+# assign reads as the suffix (S2) is no word to spare". A bare 'V' is
+# suffix vocabulary AND initial-shaped, so the reserve's suffix test
+# vetoed it as an initial and counted it a name word; the join fired,
+# and assign then read the V as the suffix it is -- given 'abdul
+# Smith', family ''. The reserve now asks assign's question: given
+# 'abdul', family 'Smith', suffix 'V' -- and 'abdul Smith Jr V'
+# likewise, a suffix word before the numeral not hiding it (this
+# baseline read suffix 'Jr, V' with no family). Two fields here: the
+# suffix was already read at this baseline, which is why the 1.4.0
+# rule lists three. Shipped since 1.x: 1.4.0 read first 'abdul
+# Smith', last 'V'. Both are rules.md examples, since no differential
+# corpus name has the shape; the 'abdul Smith V Ph. D.' spelling is
+# pinned at the piece level only -- a trailing split credential is
+# the 1.4.0 ledger's [[never]] shape.
 name_regex = "(?i)^abdul\\s+smith\\s+(jr\\s+)?v$"
-fields = ["given", "family", "suffix"]
+fields = ["given", "family"]
 
 [[change]]
 issue = "fix(#421) the bound-given join never absorbs a suffix piece"
 # 'abdul Jr Smith Berg': rules.md#P5 -- "the join never absorbs a
 # marker standing as a word of its own -- a marker is not a name word
-# (M2) -- nor a suffix, which is not one either (S2)". With a word to
+# (M2) -- nor a word of the suffix vocabulary (S2), wherever position
+# will then place it". With a word to
 # spare the join took the suffix as "the word after": given 'abdul
 # Jr', middle 'Smith'. Now given 'abdul', middle 'Jr Smith', where
 # 'John Jr Smith Berg' puts it. Parity with this baseline until now;

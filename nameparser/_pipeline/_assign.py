@@ -48,8 +48,8 @@ from nameparser._policy import Policy, Script
 from nameparser._types import AmbiguityKind, Role
 
 # Ported verbatim from v1 (nameparser/config/regexes.py
-# "period_abbreviation" and "roman_numeral") -- layering forbids the
-# config import; keep in sync by hand.
+# "period_abbreviation"; "roman_numeral" is _vocab._ROMAN since #401)
+# -- layering forbids the config import; keep in sync by hand.
 _PERIOD_ABBREV = re.compile(r'^[^\W\d_]{2,}\.$')
 
 

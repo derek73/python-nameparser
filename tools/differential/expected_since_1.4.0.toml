@@ -789,13 +789,13 @@ issue = "fix(#401) the bound-given reserve counts the trailing numeral assign re
 # same family lost, and the V not even a suffix -- so all three
 # fields move here where the 2.x ledgers list two. Now given 'abdul',
 # family 'Smith', suffix 'V' -- and 'abdul Smith Jr V' likewise, a
-# suffix word before the numeral not hiding it (2.0 read suffix 'Jr,
-# V' with no family). The 'abdul Smith V Ph. D.' spelling, where assign
-# drops the flagged credential from its walk so the V is last in it,
-# is pinned at the piece level only: a trailing split credential is
-# the 1.4.0 ledger's [[exclude]] shape, and its v1 reading carries
-# the #401 family loss the exclusion would then refuse to explain. A rules.md example, since no
-# differential corpus name has the shape.
+# suffix word before the numeral not hiding it. Both are rules.md
+# examples, since no differential corpus name has the shape. The
+# 'abdul Smith V Ph. D.' spelling, where assign drops the flagged
+# credential from its walk so the V is last in it, is pinned at the
+# piece level only: a trailing split credential is this ledger's
+# [[never]] shape, and its v1 reading carries the #401 family loss
+# that entry would then refuse to explain.
 #
 # A rule with fewer fields than this diff silently hands the name to
 # the fields-only fix(suffix-routing) catch-all below, which is how
@@ -808,7 +808,8 @@ fields = ["given", "family", "suffix"]
 issue = "fix(#421) the bound-given join never absorbs a suffix piece"
 # 'abdul Jr Smith Berg': rules.md#P5 -- "the join never absorbs a
 # marker standing as a word of its own -- a marker is not a name word
-# (M2) -- nor a suffix, which is not one either (S2)". With a word to
+# (M2) -- nor a word of the suffix vocabulary (S2), wherever position
+# will then place it". With a word to
 # spare the join took the suffix as "the word after": given 'abdul
 # Jr', middle 'Smith'. Now given 'abdul', middle 'Jr Smith', where
 # 'John Jr Smith Berg' puts it. Parity with this baseline until now;

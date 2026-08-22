@@ -1348,7 +1348,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#369) a given-name title licenses the bound given-name join with one word to spare":
             _Claim(3, ('family', 'given'), "724be3e6b926"),
         "fix(#401) the bound-given reserve counts the trailing numeral assign reads as the suffix":
-            _Claim(2, ('family', 'given', 'suffix'), "5713d4c0bd68"),
+            _Claim(2, ('family', 'given'), "5713d4c0bd68"),
         "fix(#421) the bound-given join never absorbs a suffix piece":
             _Claim(1, ('given', 'middle'), "9523e518e6ec"),
         "fix(#421) the bound-given join never absorbs a split credential":
@@ -1388,7 +1388,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#369) a given-name title licenses the bound given-name join with one word to spare":
             _Claim(3, ('family', 'given'), "724be3e6b926"),
         "fix(#401) the bound-given reserve counts the trailing numeral assign reads as the suffix":
-            _Claim(2, ('family', 'given', 'suffix'), "5713d4c0bd68"),
+            _Claim(2, ('family', 'given'), "5713d4c0bd68"),
         "fix(#421) the bound-given join never absorbs a suffix piece":
             _Claim(1, ('given', 'middle'), "9523e518e6ec"),
         "fix(#421) the bound-given join never absorbs a split credential":
