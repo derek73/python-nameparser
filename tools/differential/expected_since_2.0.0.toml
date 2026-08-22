@@ -230,6 +230,87 @@ name_regex = "(?s)(?=.*,)(?=.*\\u00B7)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A
 fields = ["given", "family", "title", "suffix"]
 
 [[change]]
+issue = "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal"
+# 'Berg, Jan vd'. The 2.1 ledger carries the same rule and the full
+# reasoning; `vd` is in both the particle and suffix-acronym
+# vocabularies, and 2.2 attaches it to the family the comma already
+# named (rules.md#P6) where 2.0 read it as a post-nominal. Arrived via
+# corpus_rules.jsonl (#414), which is the arrival fix(#379) below
+# predicted in writing.
+name_regex = "(?i)^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*\\svd\\s*$"
+fields = ["family", "suffix"]
+
+[[change]]
+issue = "fix(#399) a maiden marker bounds the particle chain that swallowed it"
+# 'Jane de la née Jones', 'Jane van der Berg née Jones', 'John van der
+# Berg née Jones'. Same rule and same reasoning as the 2.1 ledger's
+# copy: the particle chain swallowed the marker before the maiden
+# consumer could see it, so the family kept both the marker and the
+# maiden name. The particle requirement keeps this off 'Jane Smith née
+# Jones', which is in the corpora and does not move. The anchors keep
+# it off the trailing-marker shape, the connective join and the
+# post-comma bound-given join -- M2's accepted limits. 'Jane van der
+# Berg nee PhD' is still claimed and does not move: excluding a suffix
+# tail needs a second vocabulary alternation, and the guards allow one
+# per rule. See the 2.1 ledger's copy for the argument.
+name_regex = "(?i)^(?![^\\n]*,)[^\\n]*\\b(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)\\b.*?\\sn[e\u00e9]e\\s+\\S+$"
+fields = ["family", "maiden"]
+
+[[change]]
+issue = "fix(#360) mc moved into the never-given particles, so it folds into the family"
+# 'Mc Donald'. A data change (6389f06), not a rule change: `mc` moved
+# out of the ambiguous half of the particle vocabulary, so P1's fold
+# takes it into the family and the particle-or-given fork it used to
+# report stops being a fork. `_ambiguities` is claimed for that reason
+# and is the v2 surface only.
+name_regex = "(?i)^mc\\s+\\S+$"
+fields = ["given", "family", "_ambiguities"]
+
+[[change]]
+issue = "fix(#400) abd joins the word after it as one given name"
+# 'abd Allah Smith' and 'Salam, abd Allah'. `abd` joined
+# BOUND_GIVEN_NAMES so the spellings writing the article separately
+# join like `abdul` already did. Both openings move, hence the
+# alternative anchors; `abd` is also the postnominal ABD, which the
+# anchors keep out.
+#
+# A third corpus name is claimed and does NOT move: a bare 'abd Allah',
+# which has no third word for the join to leave as a family name, so
+# P5's reserve declines and it reads given 'abd', family 'Allah' at
+# every baseline. Same behaviour family as the two that move, so the
+# claim is defensible -- recorded so it is not mistaken for coverage.
+name_regex = "(?i)(?:^|,\\s*)abd\\s+\\S+"
+fields = ["given", "middle"]
+
+[[change]]
+issue = "fix(#367) a title no longer displaces a leading never-given particle"
+# 'Sir de Mesnil'. The never-given half of the rule below, which named
+# this very name as a future arrival. Separate rather than widened
+# because the guards allow one vocabulary alternation per rule, and
+# the fields differ for a real reason: a never-given particle folds
+# into the family under P1, emptying the given side, where the
+# ambiguous half leaves a family behind.
+name_regex = "(?i)^sir\\s+de\\b"
+fields = ["given", "family"]
+
+[[change]]
+issue = "fix(#272/#308) nakaguro division and a glued hangul honorific in one name"
+# '马丁·路德·金씨': two 2.1 behaviours meeting in one name, which is why
+# neither of the single-cause rules above claims it. The nakaguro
+# divides the name into given/middle/family (#272/#298) AND the glued
+# 씨 peels off into `suffix` (#308), so all four roles move at once
+# where each rule alone accounts for a subset.
+#
+# Written as literals -- a nakaguro anywhere in a spaceless name that
+# ends in 씨 -- rather than as an alternation over the honorific
+# vocabulary, which would need a _HONORIFIC_SOURCES declaration for a
+# rule that is about the COMBINATION rather than about the vocabulary.
+# It claims exactly the one corpus name; another combination name
+# should arrive UNEXPLAINED and be read once.
+name_regex = "^\\S*\u00b7\\S*\uc528$"
+fields = ["given", "middle", "family", "suffix"]
+
+[[change]]
 issue = "fix(#367) a title no longer displaces a leading particle out of the leading position"
 # 'Mr. Van Nguyen': a leading particle deliberately does not chain --
 # that is what makes 'Van Nguyen' read as given Van, family Nguyen.

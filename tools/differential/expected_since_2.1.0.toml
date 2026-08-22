@@ -96,6 +96,157 @@ name_regex = "(?i)^mr\\.\\s+van\\b"
 fields = ["given", "middle", "family"]
 
 [[change]]
+issue = "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal"
+# 'Berg, Jan vd': the #380 half of the tussenvoegsel change, and the
+# fix(#379) rule below predicted this arrival in writing -- "No corpus
+# name exercises that shape, and adding `suffix` to claim it costs
+# three shapes this rule has no business explaining ... If a vd-shaped
+# name ever enters the corpus it should arrive unexplained and be read
+# once." It has, via corpus_rules.jsonl (#414), and this is the once.
+#
+# `vd` is in both the particle and the suffix-acronym vocabulary. 1.4.0
+# and 2.1 alike read the trailing token as a post-nominal; 2.2 attaches
+# it to the family the comma already named, on the judgment that a
+# trailing abbreviation after a family comma is the tussenvoegsel far
+# more often than the decoration it collides with. rules.md#P6 states
+# it.
+#
+# Fields are {family, suffix} -- deliberately NOT a superset of
+# fix(#379)'s {middle, family}. The two halves move different fields
+# because they start from different readings: #379's names had the
+# particle in `middle`, this one had it in `suffix`. A rule spanning
+# both would claim {middle, family, suffix}, which is the shape #379's
+# comment refused for exactly this reason.
+#
+# `vd` is a LITERAL, not an alternation over the dual-membership words.
+# The release log names `mc` as sweeping in on the same shape, and no
+# corpus name exercises it -- so an mc-after-comma name should arrive
+# UNEXPLAINED and be read once, the same discipline that produced this
+# rule.
+name_regex = "(?i)^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*\\svd\\s*$"
+fields = ["family", "suffix"]
+
+[[change]]
+issue = "fix(#399) a maiden marker bounds the particle chain that swallowed it"
+# 'Jane de la née Jones', 'Jane van der Berg née Jones', 'John van der
+# Berg née Jones': grouping's particle chain absorbed everything up to
+# the next particle or suffix piece, and the maiden marker is consumed
+# later in the SAME stage -- by then the chain had merged the marker
+# away and there was no lone marker piece left to find, so the family
+# kept both the marker and the maiden name. rules.md#M2 states the
+# stop; decisions.md#M2 records it.
+#
+# Fields are {family, maiden}: the given name does not move, and no
+# corpus name puts this shape under a non-default name_order.
+#
+# The rule requires a PARTICLE ahead of the marker because that IS the
+# defect -- a marker with no particle in front of it was always
+# consumed correctly. 'Jane Smith née Jones' is in the corpora and does
+# NOT move, so the particle requirement is what keeps this rule off it.
+#
+# The three anchors each keep the rule off a shape M2 states as
+# unchanged, and they are worth naming because the first cut of this
+# rule claimed all three. Requiring exactly one word after the marker
+# keeps it off the trailing-marker shape ('Jane van der Berg nee',
+# which M2 leaves as an ordinary name word) and off the connective
+# join ('Jane van der Berg nee y Jones', M2's accepted limit, #412).
+# The leading no-comma lookahead keeps it off the post-comma
+# bound-given join ('van der Berg, abdul nee Jones', the other limit).
+#
+# One name is still claimed that does NOT move, recorded rather than
+# fixed: 'Jane van der Berg nee PhD', where the only word after the
+# marker is a SUFFIX, so the consumer declines and M2 leaves the
+# marker in the family. Excluding it needs the regex to ask whether a
+# word is suffix vocabulary, which would be a second vocabulary
+# alternation -- and the guards allow one per rule, spent here on
+# PARTICLES. A future {family, maiden} regression on that one name
+# would classify as intended. Named for the same reason fix(#379)
+# names 'Nguyen, Van': an over-claim someone can find is survivable,
+# an unrecorded one is not.
+#
+# One marker spelling, spelled out rather than alternated over
+# MAIDEN_MARKERS: the three names that move all use it, the guards
+# allow one vocabulary alternation per rule and this rule spends its
+# on PARTICLES, and a differently-spelled name of this shape should
+# arrive UNEXPLAINED rather than be absorbed.
+name_regex = "(?i)^(?![^\\n]*,)[^\\n]*\\b(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)\\b.*?\\sn[e\u00e9]e\\s+\\S+$"
+fields = ["family", "maiden"]
+
+[[change]]
+issue = "fix(#360) mc moved into the never-given particles, so it folds into the family"
+# 'Mc Donald': a DATA change rather than a rule change (6389f06). `mc`
+# and `ste` moved out of the ambiguous half of the particle vocabulary
+# into the never-given half, and `los`, `las` and `das` were added
+# having been absent entirely. A never-given leading particle folds
+# into the family under rules.md#P1, so 'Mc Donald' goes from given
+# 'Mc', family 'Donald' to family 'Mc Donald' -- and the
+# PARTICLE_OR_GIVEN ambiguity it used to report goes away, the fork
+# having stopped being a fork once the word can never be a given name.
+#
+# Fields are {given, family, _ambiguities}. The ambiguity is claimed
+# rather than left out because it genuinely moves and the comparator
+# would otherwise leave the diff unexplained: once `mc` can never be a
+# given name there is no particle-or-given fork left to report, so the
+# report disappearing is part of this change rather than a separate
+# one. `_ambiguities` is the v2 surface only.
+#
+# `mc` is a LITERAL and the rule is anchored at the start. The class is
+# every word the commit moved -- 'Ste Marie', 'Los Santos' and 'Das
+# Silva' all move the same way -- and only 'Mc Donald' is in the
+# corpora. The others should arrive UNEXPLAINED and be read once.
+name_regex = "(?i)^mc\\s+\\S+$"
+fields = ["given", "family", "_ambiguities"]
+
+[[change]]
+issue = "fix(#400) abd joins the word after it as one given name"
+# 'abd Allah Smith' and 'Salam, abd Allah': `abd` was added to
+# BOUND_GIVEN_NAMES so the spellings that write the article as its own
+# word join like `abdul`, `abdel` and `abdal` already did. Both the
+# plain and the post-comma given side move, which is why the rule
+# allows either opening.
+#
+# Fields are {given, middle}: the word joins forward within the given
+# name, so nothing leaves the given side. The family name does not
+# move -- 'abd Allah Smith' keeps family 'Smith'.
+#
+# `abd` is a LITERAL and word-bounded. It is also the postnominal ABD
+# and stays in SUFFIX_ACRONYMS, where position tells the two apart, so
+# the anchors matter: a trailing 'Jane Smith ABD' is a suffix and must
+# not be claimed here.
+#
+# A third corpus name is claimed and does NOT move: a bare 'abd Allah',
+# which has no third word for the join to leave as a family name, so
+# P5's reserve declines and it reads given 'abd', family 'Allah' at
+# every baseline. Same behaviour family as the two that move, so the
+# claim is defensible -- recorded so it is not mistaken for coverage.
+name_regex = "(?i)(?:^|,\\s*)abd\\s+\\S+"
+fields = ["given", "middle"]
+
+[[change]]
+issue = "fix(#367) a title no longer displaces a leading never-given particle"
+# 'Sir de Mesnil': the same change as the fix(#367) rule below, on the
+# other half of the particle vocabulary, and that rule predicted this
+# arrival by name -- "The wider class is any title followed by a
+# particle -- 'Dr. Van Johnson', 'Sir de Mesnil', 'Sheik Abu Bakar' all
+# move ... a corpus name that joins it later should arrive UNEXPLAINED
+# and be read once". It has, via corpus_rules.jsonl (#414).
+#
+# A SEPARATE rule rather than widened literals, which is what that
+# comment asked for, because the guards allow one vocabulary
+# alternation per rule: widening both the title and the particle slot
+# needs two, and their `covers` sets cannot both be recorded under one
+# key. Two rules with literal pairs say the same thing and stay
+# checkable.
+#
+# The fields differ from the sibling's for a real reason, not just
+# tightness. There the particle was ambiguous, so un-chaining moved it
+# to `given` and left a family behind: {given, middle, family}. Here it
+# is never-given, so P1's fold takes the whole name into the family and
+# the given side empties: {given, family}.
+name_regex = "(?i)^sir\\s+de\\b"
+fields = ["given", "family"]
+
+[[change]]
 issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
 # 'Vega, Juan de la': the Dutch alphabetized listing moves the
 # tussenvoegsel behind the given name -- "Beethoven, Ludwig van" is how

@@ -184,6 +184,7 @@ that stops being run. Pass `--corpus PATH` (repeatable) to narrow it.
 | `corpus.jsonl` | v1's own test suite at a pinned ref | anything 2.0 added — v1's authors had no reason to test a typographic nickname delimiter or a Cyrillic title |
 | `corpus_issues.jsonl` | name-like strings harvested from the GitHub issue tracker | anything nobody ever reported |
 | `corpus_cjk.jsonl` | the CJK-bearing rows of `tests/v2/cases.py`, via `build_cjk_corpus.py` (#295) | anything the case table itself missed — it re-witnesses reviewed expectations at the baseline boundary rather than discovering new shapes |
+| `corpus_rules.jsonl` | every example in `docs/design/rules.md`, via `build_rules_corpus.py` (#414) | anything the rules doc has no example for — it re-witnesses the normative examples at the baseline boundary |
 
 They are deliberately separate rather than merged: `corpus.jsonl` is
 reproducible forever from an immutable git ref, while the issue
@@ -196,11 +197,31 @@ table, and `tests/v2/test_ledger_guards.py` pins the checked-in file
 against the generator's selection, so a CJK case row added without
 regenerating fails the suite instead of silently narrowing this gate.
 
+The rules corpus answers a different question from the doc tests that
+already execute those examples. Those pin an example against an
+expectation stored beside it, so a deliberate behavior change edits
+both in one commit and the test stays green — a doc example cannot
+warn about the change that edited it. Parsing the same name with a
+*released* baseline can, because no commit can edit 1.4.0. It is
+generated and pinned the same way the CJK corpus is.
+
 The issue corpus earned its place on the first run — 166 of its 198
 names were not in `corpus.jsonl`, and it immediately surfaced five
 intended-but-unclassified 2.0 behaviors (#273 typographic delimiters,
 #269 non-Latin vocabulary) plus one shape no test had considered: a
 **leading** `"Ph. D."`, which v1 split into title `Ph.` + given `D.`.
+
+The rules corpus earned its place the same way — 113 of its 155 names
+were in no other corpus, and on its first run 12 of them turned out to
+have moved during the 2.2 cycle with nothing observing it. Classifying
+them surfaced an unlogged behavior change (`mc` moving into the
+never-given particles, which moves `Mc Donald`), two rules broad
+enough to absorb a regression once a name of the right shape existed
+(`fix(#274)`'s marker matching a *parenthesized* `Nee`, which is a
+nickname under the default facade, and the acronym rule's dotted
+`m\.?a\.?` reaching the real name `John Smith M.A.`), and two
+pre-existing behaviors that had never had a corpus name to exercise
+them.
 
 ## Corpus provenance
 
