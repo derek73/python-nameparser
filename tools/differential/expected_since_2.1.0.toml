@@ -198,6 +198,42 @@ name_regex = "(?i)^mc\\s+\\S+$"
 fields = ["given", "family", "_ambiguities"]
 
 [[change]]
+issue = "fix(#411) the bound-given reserve stops counting words the maiden name takes"
+# 'van der Berg, abdul nee Jones': P5 reserves a name word so the join
+# always leaves a family name behind, but the reserve was counted while
+# the marker and the maiden name were still pieces -- group's marker
+# pass runs later in the same stage. Counting words that were about to
+# leave answered the question about a name that would not exist.
+#
+# The fields here are the SIDE EFFECT rather than the defect. #411's
+# own shape is an emptied family ('abdul Berg nee Jones' read given
+# 'abdul Berg', family ''), and no BASELINE shows it -- every released
+# version already reads the corpus names carrying that shape the way
+# the fix does, so none of them can produce a #411 diff to classify.
+# ('abd Berg nee Jones' IS in corpus_rules.jsonl, and goes unexplained
+# at all three baselines if the fix is reverted, which is the guard
+# working.)
+#
+# What this corpus
+# name shows is the other half: with the reserve counted correctly the
+# join declines, so the marker is never merged into 'abdul nee' and
+# M2's bound sees a lone marker piece for the first time. That closes
+# one of the two join-swallows #412 tracks; P3's connective join is
+# the one that survives.
+#
+# `abdul` is a LITERAL, not an alternation over BOUND_GIVEN_NAMES, and
+# the words are NOT interchangeable here. 'abd' is the one shipped word
+# in both the bound-given and the suffix vocabulary, so after a family
+# comma a declining join leaves the S2 suffix reading instead: 'van der
+# Berg, abd nee Jones' moves {given, middle, suffix, maiden}, and the
+# extra field breaks the subset test, so it would arrive UNEXPLAINED --
+# correct, but not what an alternation over the vocabulary would lead
+# an author to expect. 'abdel', 'abdal' and the Arabic spelling do
+# behave like 'abdul'; only this name is in the corpora.
+name_regex = "(?i),\\s*abdul\\s+n[eé]e\\b"
+fields = ["given", "middle", "maiden"]
+
+[[change]]
 issue = "fix(#400) abd joins the word after it as one given name"
 # 'abd Allah Smith' and 'Salam, abd Allah': `abd` was added to
 # BOUND_GIVEN_NAMES so the spellings that write the article as its own

@@ -37,6 +37,11 @@ def _piece_texts(state: ParseState) -> list[list[str]]:
              for piece in seg] for seg in state.pieces]
 
 
+def _piece_has_tag(state: ParseState, piece: tuple[int, ...],
+                   tag: str) -> bool:
+    return any(tag in state.tokens[i].tags for i in piece)
+
+
 def test_no_joins_pass_through() -> None:
     out = _grouped("John Smith")
     assert _piece_texts(out) == [["John", "Smith"]]
@@ -348,22 +353,28 @@ def test_a_chain_never_leaves_a_marker_standing_alone() -> None:
     own "Jones nee" -> family "nee" boundary, so the assertion is
     keyed on the preceding piece rather than on markers as such.
     """
-    def particled(state: ParseState, piece: tuple[int, ...]) -> bool:
-        return any("particle" in state.tokens[i].tags for i in piece)
-
     for text in ("Jane van der Berg née Jones",     # consumer takes
                  "Jane van der Berg née",           # nothing follows
                  "Jane van der Berg née Jr",        # only a suffix
                  "Jane van der née",                # particles only
                  "Jane Smith née Jones",            # no particle: takes
                  "Jane Smith née",                  # no particle: stands
-                 "Jane née"):
+                 "Jane née",
+                 # The bound-given join also produces multi-word
+                 # pieces, and it may leave a marker standing after
+                 # one -- 'abdul Berg' + 'née'. That is M2's allowed
+                 # boundary, not a stranding, which is why this
+                 # invariant is keyed on the PARTICLE chain rather
+                 # than on any joined neighbour. Listed so the
+                 # distinction is exercised rather than assumed.
+                 "abdul Berg née", "abdul Berg née Jones",
+                 "abdul née Jones", "abdul née"):
         out = _grouped(text)
         for seg, texts in zip(out.pieces, _piece_texts(out)):
             for k, (piece, shown) in enumerate(zip(seg, texts)):
                 if shown.lower() not in _LEX.maiden_markers or k == 0:
                     continue
-                assert not particled(out, seg[k - 1]), (
+                assert not _piece_has_tag(out, seg[k - 1], "particle"), (
                     f"{text!r}: marker {shown!r} left standing after "
                     f"the particle piece {texts[k - 1]!r}")
 
@@ -385,3 +396,45 @@ def test_where_the_marker_lands_when_the_consumer_declines() -> None:
     # consumer declines, no chain: the marker stands as its own piece
     assert _piece_texts(_grouped("Jane Smith née")) == [
         ["Jane", "Smith", "née"]]
+
+
+def test_the_bound_given_join_never_absorbs_a_marker() -> None:
+    """P5 joins the bound word to "the word after it", and a maiden
+    marker is not a name word -- it announces that another name
+    follows.
+
+    Joining one merged the marker into the given name and left M2
+    nothing to find, which was the P5 half of the join-swallow #412
+    records. The reserve alone does not prevent it: where the maiden
+    walk stops at an inner suffix the excluded span is short, enough
+    words survive it to clear the threshold, and the join fires and
+    takes the marker anyway -- after which nothing leaves at all, and
+    the count that authorised the join was reasoning about a name
+    that never came to be.
+
+    Asserted at the piece level because the field reading can look
+    perfectly ordinary while this is wrong: the shipped-vocabulary
+    twin of the first case below read given 'abdul nee' with a
+    plausible family name beside it.
+    """
+    for text in ("abdul née Jones",
+                 "abdul née Jones Jr Berg Smith",
+                 "abdul née",
+                 "abdul née Jr",
+                 "Berg, abdul née Jones",
+                 "Berg, abdul née Jr"):
+        out = _grouped(text)
+        for seg, texts in zip(out.pieces, _piece_texts(out)):
+            for piece, shown in zip(seg, texts):
+                # Keyed on the piece carrying the BOUND word, not on
+                # width. "no wide piece holds a marker" would be a
+                # different and false claim -- the particle chain
+                # builds exactly that, and the test above pins it
+                # ("Jane van der Berg née" -> ['Jane',
+                # 'van der Berg née']).
+                if not _piece_has_tag(out, piece, "vocab:bound-given"):
+                    continue
+                assert not _piece_has_tag(
+                    out, piece, "vocab:maiden-marker"), (
+                        f"{text!r}: the join absorbed a marker into "
+                        f"the piece {shown!r}")
