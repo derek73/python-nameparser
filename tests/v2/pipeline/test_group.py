@@ -357,7 +357,16 @@ def test_a_chain_never_leaves_a_marker_standing_alone() -> None:
                  "Jane van der née",                # particles only
                  "Jane Smith née Jones",            # no particle: takes
                  "Jane Smith née",                  # no particle: stands
-                 "Jane née"):
+                 "Jane née",
+                 # The bound-given join also produces multi-word
+                 # pieces, and it may leave a marker standing after
+                 # one -- 'abdul Berg' + 'née'. That is M2's allowed
+                 # boundary, not a stranding, which is why this
+                 # invariant is keyed on the PARTICLE chain rather
+                 # than on any joined neighbour. Listed so the
+                 # distinction is exercised rather than assumed.
+                 "abdul Berg née", "abdul Berg née Jones",
+                 "abdul née Jones", "abdul née"):
         out = _grouped(text)
         for seg, texts in zip(out.pieces, _piece_texts(out)):
             for k, (piece, shown) in enumerate(zip(seg, texts)):
@@ -385,3 +394,39 @@ def test_where_the_marker_lands_when_the_consumer_declines() -> None:
     # consumer declines, no chain: the marker stands as its own piece
     assert _piece_texts(_grouped("Jane Smith née")) == [
         ["Jane", "Smith", "née"]]
+
+
+def test_the_bound_given_join_never_absorbs_a_marker() -> None:
+    """P5 joins the bound word to "the word after it", and a maiden
+    marker is not a name word -- it announces that another name
+    follows.
+
+    Joining one merged the marker into the given name and left M2
+    nothing to find, which was the P5 half of the join-swallow #412
+    records. The reserve alone does not prevent it: where the maiden
+    walk stops at an inner suffix the excluded span is short, enough
+    words survive it to clear the threshold, and the join fires and
+    takes the marker anyway -- after which nothing leaves at all, and
+    the count that authorised the join was reasoning about a name
+    that never came to be.
+
+    Asserted at the piece level because the field reading can look
+    perfectly ordinary while this is wrong: 'abd nee Jones Jr Smith
+    Berg' read given 'abd nee' with a plausible family name beside it.
+    """
+    for text in ("abdul née Jones",
+                 "abdul née Jones Jr Berg Smith",
+                 "abdul née",
+                 "abdul née Jr",
+                 "Berg, abdul née Jones",
+                 "Berg, abdul née Jr"):
+        out = _grouped(text)
+        for seg, texts in zip(out.pieces, _piece_texts(out)):
+            for piece, shown in zip(seg, texts):
+                if len(piece) < 2:
+                    continue
+                assert not any(
+                    "vocab:maiden-marker" in out.tokens[i].tags
+                    for i in piece), (
+                        f"{text!r}: the join absorbed a marker into "
+                        f"the piece {shown!r}")

@@ -110,15 +110,21 @@ def _maiden_span(pieces: Sequence[Sequence[int]],
                  tokens: Sequence[WorkToken]) -> tuple[int, int] | None:
     """The piece slice group()'s marker pass will REMOVE, or None.
 
-    Shared with P5's reserve (#411) for the reason the marker
-    predicate is shared with the chain's stop: the reserve asks how
-    many name words are left to spare, and it is computed while the
-    marker and the maiden name are still pieces, because the pass that
-    removes them runs later in this stage. Counting words that are
-    about to leave answered the question about a name that would not
-    exist -- 'Abd Berg nee Jones' counted four, joined, and left no
-    family name behind. One definition of what leaves, so the count
-    and the removal cannot disagree about it.
+    Shared with P5's reserve (#411): the reserve asks how many name
+    words are left to spare, and it is computed while the marker and
+    the maiden name are still pieces, because the pass that removes
+    them runs later in this stage. Counting words that are about to
+    leave answered the question about a name that would not exist --
+    'abdul Berg nee Jones' counted four, joined, and left no family
+    name behind.
+
+    Sharing this makes the two agree about what a maiden span IS. It
+    does NOT make them agree about what leaves: they run at different
+    times on different piece lists, and a join between them can
+    invalidate the span the count was taken against. That is closed
+    where it arises -- by forbidding the join to absorb a marker --
+    not by the sharing, which only rules out disagreeing about the
+    span itself.
     """
     m = next((k for k in range(1, len(pieces))
               if _is_maiden_marker_piece(pieces[k], tokens)), None)
@@ -431,7 +437,20 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                              if k not in going
                              and not title(k)
                              and (k == first_name_k or not suffix(k)))
-            if non_suffix >= bound_join:
+            # P5 joins the bound word to "the word after it", and a
+            # marker is not a name word -- it is the announcement that
+            # another name follows. Joining one merged the marker into
+            # the given name and left M2 nothing to find, which is the
+            # P5 half of the join-swallow #412 tracks.
+            #
+            # Tested directly rather than through `going`, because the
+            # two disagree exactly where it matters. A marker with
+            # nothing but a suffix after it has no span at all (M2
+            # declines, so nothing leaves), yet the join would still
+            # absorb it: 'Berg, abdul nee PhD' read given 'abdul nee'.
+            absorbs_marker = _is_maiden_marker_piece(
+                pieces[first_name_k + 1], tokens)
+            if non_suffix >= bound_join and not absorbs_marker:
                 merge(first_name_k, first_name_k + 2)
     return pieces, ptags
 

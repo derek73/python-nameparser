@@ -844,6 +844,73 @@ CASES: tuple[Case, ...] = (
                "merges the marker into a multi-word piece. #399 fixed "
                "the P2 instance of the join-swallow; this is one of "
                "the two that survive"),
+    Case("bound_given_reserve_excludes_a_multi_word_maiden_name",
+         "Abd Berg née Mary Jones",
+         {"given": "Abd", "family": "Berg", "maiden": "Mary Jones"},
+         classification="fix(#411)",
+         notes="the maiden name is TWO pieces, which is what "
+               "distinguishes excluding the span from excluding the "
+               "marker plus one. Capping the exclusion at two pieces "
+               "reproduces #411 exactly -- given 'Abd Berg', family "
+               "'' -- and every other row here has a one-word maiden "
+               "name, so none of them can tell the two apart. A "
+               "particle-led maiden name does NOT serve: P2's chain "
+               "makes 'van der Jones' a single piece"),
+    Case("bound_given_join_declines_a_marker_after_an_inner_suffix",
+         "abd née Jones Jr Smith Berg",
+         {"given": "abd", "middle": "Jr Smith", "family": "Berg",
+          "maiden": "Jones"},
+         classification="fix(#411)",
+         notes="the reserve alone does not settle this: the maiden "
+               "walk stops at the inner suffix, so the excluded span "
+               "is short and the two name words after it still clear "
+               "the threshold. The join fired and took the marker, "
+               "and then nothing left at all -- the count had assumed "
+               "two words would depart. P5 joins the bound word to a "
+               "NAME word, and a marker is not one, so the join "
+               "declines outright when the piece it would absorb is "
+               "the marker"),
+    Case("bound_given_join_declines_a_marker_before_only_a_suffix",
+         "Berg, abdul née PhD",
+         {"given": "abdul", "middle": "née", "family": "Berg",
+          "suffix": "PhD"},
+         classification="fix(#411)",
+         notes="the shape where the span test and the marker test "
+               "disagree, which is why the join asks about the marker "
+               "directly. Nothing but a suffix follows the marker, so "
+               "M2 declines and there is no span -- yet the join would "
+               "still have absorbed it, reading given 'abdul née'. The "
+               "marker stays an ordinary word here (M2: with nothing "
+               "after it, it is just a word)"),
+    Case("bound_given_join_declines_leaving_the_suffix_reading",
+         "Berg, abd née Jones",
+         {"family": "Berg", "suffix": "abd", "maiden": "Jones"},
+         classification="fix(#411)",
+         notes="'abd' is the one word in both the bound-given and the "
+               "suffix vocabulary, and P5 says the suffix reading "
+               "wins in the given slot after a family comma. With the "
+               "join declining, that reading is what is left -- so "
+               "the name has no given name at all, matching how "
+               "'Berg, abd' alone has always parsed. Pinned because "
+               "it is the shape where the declining join changes most "
+               "and it reads alarmingly"),
+    Case("bound_given_marker_immediately_after_the_bound_word",
+         "abd née Jones",
+         {"given": "abd", "maiden": "Jones"},
+         classification="fix(#411)",
+         notes="the shortest form of the same decision: the very next "
+               "piece is the marker. Empty family is M2's ordinary "
+               "one-name-word behaviour, not a leftover of the join "
+               "-- 'Jane née Jones' reads the same way and always "
+               "has"),
+    Case("bound_given_reserve_arabic_script",
+         "عبد Berg née Jones",
+         {"given": "عبد", "family": "Berg", "maiden": "Jones"},
+         classification="fix(#411)",
+         notes="the Arabic-script bound word, which has been in the "
+               "vocabulary since 2.0 and reaches the same arithmetic "
+               "through script segmentation as well. The only "
+               "cross-script row of the set"),
     Case("bound_given_join_no_longer_swallows_a_marker",
          "van der Berg, abdul née Jones",
          {"given": "abdul", "family": "van der Berg",

@@ -236,9 +236,11 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     is BOTH bound-given and suffix vocabulary, position decides and
     both readings survive: leading, it is the bound word; trailing,
     it is the suffix (S2). In the given slot after a family comma the
-    suffix reading wins. Words a maiden marker will take are not
-    among the words to spare: they leave the name, so counting them
-    asks the question about a name that will not exist (M2).
+    suffix reading wins. The marker and the words it will take are
+    not among the words to spare: they leave the name, so counting
+    them asks the question about a name that will not exist. The join
+    never absorbs the marker itself — a marker is not a name word
+    (M2).
       "abdul salam ahmed salem"   →  given="abdul salam"
       "abd Allah Smith"           →  given="abd Allah"
       "Salam, abd Allah"          →  given="abd Allah"
@@ -246,7 +248,9 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "Smith, Abd"                →  suffix="Abd"
       "mohamad ali smith"         →  given="mohamad"  · boundary
       "abd Berg née Jones"        →  family="Berg"
-      "abd Allah Smith née Jones"  →  given="abd Allah"
+      "abd Allah Smith née Jones" →  given="abd Allah"
+      "abd née Jones"             →  given="abd"
+      "Berg, abd née Jones"       →  suffix="abd"
     history: decisions.md#P5 · interacts: S2, M2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P6. Rationale: a particle ending the name has nothing to link
@@ -456,7 +460,8 @@ M2. Rationale: a maiden marker announces that what follows it is the
     text, not a marker; and the bound reaches only a marker standing
     as a word of its own, so the connective join (P3) still absorbs a
     marker before the bound can see it; #412 tracks whether it should
-    reach it.
+    reach it. The bound-given join (P5) no longer does: it declines
+    rather than absorb a marker.
       "Jane Smith, née Jones"          →  maiden=""
       "Jane van der Berg née y Jones"  →  maiden=""
       "van der Berg, abdul née Jones"  →  maiden="Jones"
