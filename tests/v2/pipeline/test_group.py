@@ -545,9 +545,11 @@ def test_a_plain_title_keeps_the_strict_reserve() -> None:
     assert _piece_texts(out) == [["mr", "abdul", "rahman"]]
 
 
-def test_the_licence_lowers_the_reserve_and_changes_nothing_else() -> None:
+def test_the_licence_still_needs_two_name_words() -> None:
     # A suffix is still no word to spare: LENIENT needs two name
     # words and "jr" is not one, exactly as after a family comma.
+    # (The count is what this witnesses; the decline below, which
+    # #421 will make general, fires on a different shape.)
     out = _grouped("sir abdul jr", lexicon=_GIVEN_NAME_TITLE_LEX)
     assert _piece_texts(out) == [["sir", "abdul", "jr"]]
 
@@ -567,7 +569,36 @@ def test_the_licence_joins_a_word_not_a_particle_chain() -> None:
     # it is the family name P2 built -- so behind a given-name title
     # the bound word must not absorb it: untitled, "abdul van der
     # Berg" keeps the chain as its family, and the title cannot make
-    # the surname vanish. Found in review; no corpus name has the
-    # shape.
+    # the surname vanish. Found in review; the rules.md example carries
+    # the shape into the rules corpus, so the gate witnesses it too.
     out = _grouped("sir abdul van der Berg", lexicon=_GIVEN_NAME_TITLE_LEX)
     assert _piece_texts(out) == [["sir", "abdul", "van der Berg"]]
+
+
+def test_the_licence_takes_a_name_word_not_a_suffix() -> None:
+    # P5 joins "the word after it", and a suffix is not a name word.
+    # The lowered reserve must not open to titled names the
+    # absorb-a-suffix shape #421 records for the post-comma LENIENT
+    # path: "abdul Jr rahman" keeps 'Jr' out of the given name behind
+    # a plain title, and a given-name title cannot change that. (#421
+    # will make the decline general; until then it is the licence's.)
+    out = _grouped("sir abdul jr rahman", lexicon=_GIVEN_NAME_TITLE_LEX)
+    assert _piece_texts(out) == [["sir", "abdul", "jr", "rahman"]]
+
+
+def test_a_conjunction_joined_title_run_is_keyed_whole() -> None:
+    # A conjunction-merged title is one multi-token PIECE. The key is
+    # built from every token of every title piece, as post_rules
+    # builds it from every title token; keyed on first tokens alone,
+    # "sir and mrs" would read as "sir", the join would fire, and H1
+    # would then read the joined pair as the family.
+    out = _grouped("sir and mrs abdul rahman", lexicon=_GIVEN_NAME_TITLE_LEX)
+    assert _piece_texts(out) == [["sir and mrs", "abdul", "rahman"]]
+
+
+def test_the_licence_still_declines_a_lone_marker() -> None:
+    # The lowered reserve changes the count, not what the join may
+    # take: a marker the consumer declined (nothing after it) is no
+    # name word behind a given-name title either, as after a comma.
+    out = _grouped("sir abdul née", lexicon=_GIVEN_NAME_TITLE_LEX)
+    assert _piece_texts(out) == [["sir", "abdul", "née"]]

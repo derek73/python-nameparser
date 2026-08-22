@@ -7,12 +7,11 @@ Produces: pieces + piece_tags per segment (runs of token indices --
 tokens are NEVER joined into strings: the anti-#100 invariant); maiden
 tail tokens get role=MAIDEN; marker tokens land in dropped.
 Reads: token tags (from classify), Lexicon.given_name_titles (the
-P5 licence, #369), and Policy.extra_suffix_delimiters for the
-tail-segment handling below -- no other Policy field. The v1
-"derived titles/prefixes" registration becomes piece_tags entries --
-per-parse state that dissolves with the state (v1 kept per-parse sets
-for the same reason). Reads Policy.extra_suffix_delimiters: tail
-segments drop delimiter-core tokens (v1 suffix_delimiter parity).
+P5 licence, #369), and Policy.extra_suffix_delimiters, whose
+delimiter-core tokens tail segments drop (v1 suffix_delimiter parity)
+-- no other Policy field. The v1 "derived titles/prefixes"
+registration becomes piece_tags entries -- per-parse state that
+dissolves with the state (v1 kept per-parse sets for the same reason).
 
 Implements rules H3, P2, P3, P4 and M2 of docs/design/rules.md and the
 group half of M1 (#329: the marker dropped inside EXTRACTED maiden
@@ -496,16 +495,24 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # post_rules keys H1, so the two rules cannot disagree
             # about what one run asserts: a join licensed here that H1
             # then read as title-plus-family would hand the joined
-            # piece to the family. Only STRICT relaxes: the family
-            # comma's DISABLED segment has no given name to join. And
-            # it lifts the reserve for two WORDS: the piece the join
-            # would take must be one word, not a particle chain --
-            # that is the family name P2 built, and "Sir abdul van der
-            # Berg" keeps family 'van der Berg' as the untitled name
-            # does. Found in review; no corpus name has the shape.
+            # piece to the family. (post_rules' run also takes H2's
+            # unlisted abbreviations, which no given-name title key
+            # can contain, so the runs match whenever the key does.)
+            # The STRICT test is documentary: DISABLED never reaches
+            # this block, and LENIENT is already the floor, so only
+            # STRICT can move. And the licence lifts the reserve for
+            # two name WORDS: the piece the join would take must be
+            # one word and not a suffix -- a particle chain is the
+            # family name P2 built ("Sir abdul van der Berg" keeps
+            # family 'van der Berg' as the untitled name does), and a
+            # suffix is the shape #421 records the LENIENT path
+            # absorbing ("Sheik abdul Jr Smith" keeps given 'abdul').
+            # Both found in review; the rules.md examples carry them
+            # into the rules corpus, so the gate witnesses both.
             reserve = bound_join
             if (bound_join is BoundJoin.STRICT and first_name_k > 0
                     and len(pieces[first_name_k + 1]) == 1
+                    and not suffix(first_name_k + 1)
                     and _title_key(tokens[i].text
                                    for k in range(first_name_k)
                                    for i in pieces[k])
