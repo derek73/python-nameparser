@@ -56,9 +56,9 @@ better excluded than folded into a shared empty string.
 Boundary strings ("(", ".,", "Anna () Smith") are kept, on the
 over-collection principle build_corpus.py and build_issues_corpus.py
 state: a name that parses to nothing costs one parse and produces no
-diff. They are more
-concentrated here than elsewhere because the doc argues its edges
-explicitly, which is a reason to keep them rather than to drop them.
+diff. They are more concentrated here than elsewhere because the doc
+argues its edges explicitly, which is a reason to keep them rather
+than to drop them.
 
 Regenerate after editing rules.md examples:
 
