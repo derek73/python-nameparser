@@ -907,10 +907,12 @@ CASES: tuple[Case, ...] = (
          "عبد Berg née Jones",
          {"given": "عبد", "family": "Berg", "maiden": "Jones"},
          classification="fix(#411)",
-         notes="the Arabic-script bound word, which has been in the "
-               "vocabulary since 2.0 and reaches the same arithmetic "
-               "through script segmentation as well. The only "
-               "cross-script row of the set"),
+         notes="the Arabic-script bound word, in the vocabulary since "
+               "2.0, pinned so the reserve change reaches it too. "
+               "Script segmentation is NOT the point and does not "
+               "fire: the segments and the effective script are the "
+               "same as for the Latin row, so what this adds is "
+               "vocabulary coverage, not a second code path"),
     Case("bound_given_join_no_longer_swallows_a_marker",
          "van der Berg, abdul née Jones",
          {"given": "abdul", "family": "van der Berg",

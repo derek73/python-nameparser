@@ -212,7 +212,9 @@ issue = "fix(#411) the bound-given reserve stops counting words the maiden name 
 # the fix does, so none of them can produce a #411 diff to classify.
 # ('abd Berg nee Jones' IS in corpus_rules.jsonl, and goes unexplained
 # at all three baselines if the fix is reverted, which is the guard
-# working.) What this corpus
+# working.)
+#
+# What this corpus
 # name shows is the other half: with the reserve counted correctly the
 # join declines, so the marker is never merged into 'abdul nee' and
 # M2's bound sees a lone marker piece for the first time. That closes

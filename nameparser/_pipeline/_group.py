@@ -185,6 +185,9 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     def conj(k: int) -> bool:
         return _is_conj_piece(pieces[k], ptags[k], tokens)
 
+    def marker(k: int) -> bool:
+        return _is_maiden_marker_piece(pieces[k], tokens)
+
     def maiden_marker_stop(k: int) -> bool:
         # A marker bounds the chain only where the consumer below will
         # actually take it (#399). That consumer needs a non-suffix
@@ -193,11 +196,17 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # field -- so the marker became the family name and the real
         # surname was demoted to the middle ("Jane van der Berg née"
         # read middle 'van der Berg', family 'née'). That is the defect
-        # this stop exists to prevent, one field over. Testing the
-        # consumer's own condition rather than restating it is what
-        # makes the two halves agree.
-        return (_is_maiden_marker_piece(pieces[k], tokens)
-                and any(not _is_suffix_piece(pieces[x], ptags[x], tokens)
+        # this stop exists to prevent, one field over.
+        #
+        # This RESTATES the consumer's condition rather than sharing
+        # it, and the two are not equivalent: _maiden_span walks
+        # contiguously and halts at the first suffix piece, while this
+        # asks whether any non-suffix piece follows anywhere. They part
+        # company when a suffix sits between the marker and a later
+        # name word, and the marker is then left standing exactly as
+        # described above ("Jane van der Berg née Jr Jones"). #417.
+        return (marker(k)
+                and any(not suffix(x)
                         for x in range(k + 1, len(pieces))))
 
     def merge(lo: int, hi: int, add: Set[str] = frozenset(),
@@ -431,10 +440,12 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # as عبد), which this had to be fixed for, though it is
             # not why the word was excluded. Same shape as the count
             # #397 describes.
-            leaving = _maiden_span(pieces, ptags, tokens)
-            going = range(*leaving) if leaving else ()
+            # #411: pieces the marker pass will remove are not words
+            # this count may spend, and it runs before that pass.
+            span = _maiden_span(pieces, ptags, tokens)
+            leaving = range(*span) if span else range(0)
             non_suffix = sum(1 for k in range(len(pieces))
-                             if k not in going
+                             if k not in leaving
                              and not title(k)
                              and (k == first_name_k or not suffix(k)))
             # P5 joins the bound word to "the word after it", and a
@@ -443,13 +454,12 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # the given name and left M2 nothing to find, which is the
             # P5 half of the join-swallow #412 tracks.
             #
-            # Tested directly rather than through `going`, because the
-            # two disagree exactly where it matters. A marker with
+            # Tested directly rather than through the span, because
+            # the two disagree exactly where it matters. A marker with
             # nothing but a suffix after it has no span at all (M2
             # declines, so nothing leaves), yet the join would still
             # absorb it: 'Berg, abdul nee PhD' read given 'abdul nee'.
-            absorbs_marker = _is_maiden_marker_piece(
-                pieces[first_name_k + 1], tokens)
+            absorbs_marker = marker(first_name_k + 1)
             if non_suffix >= bound_join and not absorbs_marker:
                 merge(first_name_k, first_name_k + 2)
     return pieces, ptags
@@ -523,9 +533,9 @@ def group(state: ParseState) -> ParseState:
         # least one name word takes the words after it — up to any
         # trailing suffix — as the maiden name, and the marker itself
         # is dropped" (history: decisions.md#M2)
-        # maiden markers: a non-leading marker piece consumes following
-        # pieces until a suffix; consumed tokens become MAIDEN, the
-        # marker is dropped (#274)
+        # maiden markers: the marker is dropped and the span's tokens
+        # become MAIDEN (#274). Which pieces the span covers is
+        # _maiden_span's to say, and it is shared with P5's reserve.
         span = _maiden_span(pieces, ptags, tokens)
         if span is not None:
             m, j = span

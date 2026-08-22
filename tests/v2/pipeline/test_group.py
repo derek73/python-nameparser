@@ -37,6 +37,11 @@ def _piece_texts(state: ParseState) -> list[list[str]]:
              for piece in seg] for seg in state.pieces]
 
 
+def _piece_has_tag(state: ParseState, piece: tuple[int, ...],
+                   tag: str) -> bool:
+    return any(tag in state.tokens[i].tags for i in piece)
+
+
 def test_no_joins_pass_through() -> None:
     out = _grouped("John Smith")
     assert _piece_texts(out) == [["John", "Smith"]]
@@ -348,9 +353,6 @@ def test_a_chain_never_leaves_a_marker_standing_alone() -> None:
     own "Jones nee" -> family "nee" boundary, so the assertion is
     keyed on the preceding piece rather than on markers as such.
     """
-    def particled(state: ParseState, piece: tuple[int, ...]) -> bool:
-        return any("particle" in state.tokens[i].tags for i in piece)
-
     for text in ("Jane van der Berg née Jones",     # consumer takes
                  "Jane van der Berg née",           # nothing follows
                  "Jane van der Berg née Jr",        # only a suffix
@@ -372,7 +374,7 @@ def test_a_chain_never_leaves_a_marker_standing_alone() -> None:
             for k, (piece, shown) in enumerate(zip(seg, texts)):
                 if shown.lower() not in _LEX.maiden_markers or k == 0:
                     continue
-                assert not particled(out, seg[k - 1]), (
+                assert not _piece_has_tag(out, seg[k - 1], "particle"), (
                     f"{text!r}: marker {shown!r} left standing after "
                     f"the particle piece {texts[k - 1]!r}")
 
@@ -411,8 +413,9 @@ def test_the_bound_given_join_never_absorbs_a_marker() -> None:
     that never came to be.
 
     Asserted at the piece level because the field reading can look
-    perfectly ordinary while this is wrong: 'abd nee Jones Jr Smith
-    Berg' read given 'abd nee' with a plausible family name beside it.
+    perfectly ordinary while this is wrong: the shipped-vocabulary
+    twin of the first case below read given 'abdul nee' with a
+    plausible family name beside it.
     """
     for text in ("abdul née Jones",
                  "abdul née Jones Jr Berg Smith",
@@ -423,10 +426,15 @@ def test_the_bound_given_join_never_absorbs_a_marker() -> None:
         out = _grouped(text)
         for seg, texts in zip(out.pieces, _piece_texts(out)):
             for piece, shown in zip(seg, texts):
-                if len(piece) < 2:
+                # Keyed on the piece carrying the BOUND word, not on
+                # width. "no wide piece holds a marker" would be a
+                # different and false claim -- the particle chain
+                # builds exactly that, and the test above pins it
+                # ("Jane van der Berg née" -> ['Jane',
+                # 'van der Berg née']).
+                if not _piece_has_tag(out, piece, "vocab:bound-given"):
                     continue
-                assert not any(
-                    "vocab:maiden-marker" in out.tokens[i].tags
-                    for i in piece), (
+                assert not _piece_has_tag(
+                    out, piece, "vocab:maiden-marker"), (
                         f"{text!r}: the join absorbed a marker into "
                         f"the piece {shown!r}")
