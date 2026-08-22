@@ -412,8 +412,9 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 #
 # Three joined it through #413's backtick harvest: 'Dr. Van Johnson',
 # 'Sir Van Johnson', 'Jr. Van Johnson'. The title slot is an
-# alternation over TITLES, which all four spellings copy; `jr` is also
-# suffix vocabulary and is a title PIECE here for the reason below.
+# alternation over TITLES, which all four spellings copy; `jr` reads
+# as a title because it is in TITLES and leads, which 1.4.0 already
+# did.
 # `\.?` earns its place now the literals are spelled out.
 #
 # The title slot is a LITERAL for that reason and not by accident.

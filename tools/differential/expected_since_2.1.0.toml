@@ -136,9 +136,11 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # Three joined it, through #413's backtick harvest: 'Dr. Van Johnson',
 # 'Sir Van Johnson', 'Jr. Van Johnson'. The title slot is now an
 # alternation over TITLES, which is what all four spellings copy --
-# `jr` is also suffix vocabulary and is a title PIECE here for the
-# reason given below, that a word which could be the name's own first
-# piece stops the scan. `\.?` earns its place now that the literals
+# `jr` is also suffix vocabulary and reads as a title here simply
+# because it is in TITLES and leads -- 1.4.0 already gives title 'Jr.'
+# for 'Jr. Van Johnson', so that reading predates #367. (Not the
+# stops-the-scan mechanism described below: that one is about a word in
+# both the title and PARTICLE vocabularies FOLLOWING a title.) `\.?` earns its place now that the literals
 # are spelled out: 'Sir' and 'Jr.' differ in whether the period is
 # there. `van` stays literal -- the particle half of the class is
 # wider ('Sir de Mesnil' has its own rule) but only `van` names in

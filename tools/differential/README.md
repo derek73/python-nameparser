@@ -189,7 +189,7 @@ that stops being run. Pass `--corpus PATH` (repeatable) to narrow it.
 They are deliberately separate rather than merged: `corpus.jsonl` is
 reproducible forever from an immutable git ref, while the issue
 tracker is mutable, so regenerating `corpus_issues.jsonl` is an
-explicit, reviewable act that can only add names — and the CJK corpus
+explicit, reviewable act that can only add names while the harvester is unchanged (changing its screens, as #413 did, can remove one) — and the CJK corpus
 exists because BOTH of those are structurally blind to unspaced CJK (v1's
 banks never tested it; `build_issues_corpus.py` requires an internal
 space, which unspaced names never have). It regenerates from the case
@@ -214,19 +214,20 @@ intended-but-unclassified 2.0 behaviors (#273 typographic delimiters,
 It earned it again at #413. The harvester matched names in quotes
 only, while this tracker writes them in backticks, so the corpus whose
 purpose is "what users reported" was blind to how this project
-reports — 200 names became 390. Among the arrivals were the headline
+reports — 200 names became 381. Among the arrivals were the headline
 example of nearly every issue that fixed them, including
 `Ursula von der Leyen geb. Albrecht`, which sat in #399's own title
 while that issue shipped noting the class was invisible to this
-harness. Classifying the eight diffs widened two rules that had asked
-in writing to be widened, added rules for four more, and narrowed the
-trailing-`Ph. D.` exclusion exactly as its own comment instructed the
-moment a `<suffix> Ph. D.` name appeared.
+harness. Classifying the arrivals widened `fix(#367)`, which had
+asked in writing to be widened, added six rules, gave
+`fix(leading-credential)` the `family` role its own shape always moved,
+and narrowed the trailing-`Ph. D.` exclusion as its comment instructed
+the moment a `<suffix> Ph. D.` name appeared.
 
-Backticks also wrap prose, so the same change added two screens the
-quoted branch never needed: `:` joins the structural characters (it
-appears in no name across all four corpora, and accounts for four
-harvested error messages), and a short list of English function words
+Backticks prompted a second look at prose, and the same change added
+two screens neither branch had: `:` joins the structural characters (it
+appears in no name across all four corpora, and accounts for three
+error messages and a PyPI trove classifier), and a short list of English function words
 rejects capitalized sentences the character screen cannot see —
 `What this gate does not cover` is well-formed as a phrase. That list
 is narrow on purpose: `and`, `the`, `of`, `will`, `can` and `do` all

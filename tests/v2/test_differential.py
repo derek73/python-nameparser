@@ -1057,3 +1057,67 @@ def test_validate_rules_rejects_two_rules_sharing_an_issue() -> None:
             [{"issue": "dup", "name_regex": "Smith", "fields": ["given"]},
              {"issue": "dup", "name_regex": "Jones", "fields": ["given"]}],
             "expected_since_1.4.0.toml")
+
+
+harvester = load_tool("build_issues_corpus")
+
+
+def test_a_backticked_name_is_harvested() -> None:
+    """This tracker writes names in backticks, because issues are
+    markdown. Matching only quoted names left the corpus whose whole
+    purpose is "what users reported" blind to how this project reports
+    (#413).
+    """
+    assert harvester._harvest(
+        "the tussenvoegsel in `Beethoven, Ludwig van` is filed behind "
+        "the given name") == {"Beethoven, Ludwig van"}
+
+
+def test_a_call_inside_backticks_yields_the_name_not_the_call() -> None:
+    """The reason backticks are a SECOND PASS rather than a third
+    alternative in one pattern.
+
+    A reporter writes the failing input as a call inside a code span.
+    Regex scanning takes the leftmost match, so a backtick alternative
+    starts one character before the HumanName branch can and swallows
+    the whole span -- harvesting the call and losing the name inside
+    it. This is the bug the two-pass structure exists to prevent, and
+    it is reachable from a single string.
+    """
+    got = harvester._harvest('reported as `HumanName("John  Q  Doe")`')
+    assert got == {"John  Q  Doe"}
+
+    # ... and a call anywhere in the span, not only at its start
+    assert not any("HumanName(" in n for n in
+                   harvester._harvest('see `Foo HumanName("Jane Roe")`'))
+
+
+def test_a_sentence_is_not_a_name() -> None:
+    """Prose is quoted and backticked as often as names are, and a
+    capitalized phrase is well-formed enough that the character screen
+    cannot see it.
+    """
+    for text in ("`What this gate does not cover` is the section",
+                 "the note said `Takes everything` about it",
+                 "`C is CONSTANTS` in that example",
+                 "wrote `NO Latin twins on purpose` there",
+                 "raised `TypeError: a bytes-like object is required`"):
+        assert harvester._harvest(text) == set(), text
+
+
+def test_the_sentence_screen_keeps_its_hands_off_names() -> None:
+    """The screen matches a function word only where it is written
+    LOWERCASE, which is what keeps it off names: a name capitalizes its
+    words and a sentence's function words do not.
+
+    Every name here contains a word that is in the stop list, and every
+    one is a real naming convention -- Burmese, Norwegian, Estonian,
+    Cantonese, Luhya, Dutch, Lakota. Without the case test the screen
+    drops all of them, silently, from the one corpus meant to catch
+    what users report.
+    """
+    for name in ("U Than Shwe", "Sven Are Olsen", "Kertu Must",
+                 "Chan On Kei", "Wafula Were", "John Does",
+                 "Marie Takes War Bonnet", "Rob And Beth Edmunds",
+                 "Duke of Wellington", "Anh Do", "Will De Groot"):
+        assert harvester._harvest(f"reported `{name}` today") == {name}, name

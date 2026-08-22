@@ -153,6 +153,13 @@ issue = "fix(credential-pair-order) a split credential and a suffix render in wr
 # writing and told its reader to narrow for, so the entry was narrowed
 # and the name reads here. Only `suffix` moves -- the given and family
 # names are untouched by the order the credentials render in.
+#
+# POSITION is load-bearing. fix(comma-family) below matches this name
+# too, and its ["given","title","suffix"] is a superset of the {suffix}
+# moved here, so whichever is written first wins -- both carry a
+# name_regex, and _sorted_rules is stable within that tier. Written
+# after it, this rule explains nothing and the name files under "lone
+# post-comma piece routes to suffix/title".
 name_regex = "(?i)^[\\u0000-\\u024f]*,\\s*jr\\.?\\s+ph\\.?\\s*d\\.?\\s*$"
 fields = ["suffix"]
 
@@ -697,10 +704,10 @@ issue = "fix(leading-credential) a split 'Ph. D.' before the name stays one unit
 # stays unclassified below; widening this regex would mask a
 # regression in the shape that is the whole reason fix_phd exists.
 #
-# `family` joined the roles when #413's harvest brought the first two
-# corpus names of this shape in: a bare 'Ph. D.' (1.4 read family 'D.',
-# now suffix) and 'Ph. D. Van Johnson' (1.4 read family 'Van Johnson',
-# now given). Both move `family` for the same reason the other roles
+# `family` joined the roles when #413's harvest brought three names
+# into this rule's reach, two of which move it: a bare 'Ph. D.' (1.4
+# read family 'D.', now suffix) and 'Ph. D. Van Johnson' (1.4 read
+# family 'Van Johnson', now given). Both move `family` for the same reason the other roles
 # move -- the credential stops being split into a title and a given
 # name, and everything behind it shifts one place. The REGEX is
 # untouched; only the roles the same shape was always going to move
@@ -752,6 +759,32 @@ fields = ["title", "given", "middle", "family", "suffix"]
 # general problem, which this entry does not solve.
 
 [[change]]
+issue = "fix(#369) a bound given-name word that is also a particle no longer chains"
+# 'Sheik Abu Bakar': the regression the release log records under #367
+# and tracks at #369 -- given 'Abu Bakar' becomes given 'Abu', family
+# 'Bakar'. It read correctly before only because `abu` is a particle as
+# well as a bound given name; 'Sheik abdul salam' is byte-identical,
+# which is the contrast.
+#
+# Classified because the cause is known and recorded, NOT because the
+# reading is wanted. #369 is open. Without this rule the name lands on
+# the fields-only catch-all below, where that open-bug annotation does
+# not exist and an unwanted reading files under "unambiguous trailing
+# suffix stays suffix".
+name_regex = "(?i)^sheik\\s+abu\\b"
+fields = ["given", "family"]
+
+[[change]]
+issue = "fix(#360) ste moved into the never-given particles with mc"
+# 'Ste Marie': the second word of the vocabulary move, which the
+# fix(#360) comment in the 2.x ledgers names as a name that should
+# arrive UNEXPLAINED and be read once. It has. Without this rule it
+# lands on the fields-only catch-all, whose prose describes a trailing
+# credential rather than a leading particle folding into the family.
+name_regex = "(?i)^ste\\s+\\S+$"
+fields = ["given", "family"]
+
+[[change]]
 issue = "fix(#367) a title no longer displaces a leading particle out of the leading position"
 # 'Mr. Van Nguyen': a leading particle deliberately does not chain --
 # that is what makes 'Van Nguyen' read as given Van, family Nguyen.
@@ -768,6 +801,18 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # the class: a corpus name that joins it later should arrive
 # UNEXPLAINED and be read once, not be absorbed silently. Widen the
 # literals then, and record the new count.
+#
+# Three joined through #413's backtick harvest: 'Dr. Van Johnson',
+# 'Sir Van Johnson', 'Jr. Van Johnson'. Widened here as well as in the
+# 2.0 and 2.1 copies -- widening only those left these three landing on
+# the fields-only fix(suffix-routing) below, which is the very
+# absorption this comment describes two paragraphs up. None of them is
+# a two-token name and none moves a suffix.
+#
+# The title slot copies TITLES: all four spellings are in it. `jr` is
+# also suffix vocabulary and reads as a title here simply because it
+# is in TITLES and leads -- 1.4.0 already gives title 'Jr.' for
+# 'Jr. Van Johnson', so that reading predates #367 entirely.
 #
 # The title slot is a LITERAL for that reason and not by accident.
 # Nothing in a regex over the raw string can ask whether a word is a
@@ -804,7 +849,7 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # absorbing a leading-particle change, which is the mis-classification
 # the README warns about. A name_regex rule outranks every fields-only
 # one, so this claims it back.
-name_regex = "(?i)^mr\\.\\s+van\\b"
+name_regex = "(?i)^(mr|dr|sir|jr)\\.?\\s+van\\b"
 fields = ["given", "middle", "family"]
 
 # Shapes that must never be explained. A [[change]] rule says "this
@@ -855,19 +900,25 @@ why = "trailing 'Ph. D.' split-token healing is PARITY, not a 2.0 change: v1 hea
 # to claim it.
 #
 # One did, through #413's backtick harvest, and this is that
-# narrowing. The entry now spells the two shapes it actually promises
-# -- a name then the credential, or a two-word name, a comma, then the
-# credential -- instead of "anything ending in Ph. D.". Three names
-# fall out, and each diffs for a cause this ledger names elsewhere:
-# 'John Smith, Jr. Ph. D.' (the credential-pair ORDER, its own rule
-# below), 'Smith, Ph. D.' (one word before the comma, so
-# fix(comma-precomma-family)), and a bare 'Ph. D.' with no name at all
-# (fix(leading-credential)). Refusing those was the entry over-reaching,
-# not the healing regressing.
+# narrowing. It is written as the ORIGINAL broad refusal minus three
+# named exceptions, not as a positive description of the two promised
+# shapes. The first attempt did the latter -- "a name then the
+# credential, or two words, a comma, then the credential" -- and cut
+# far more than the three: 'Smith, John Ph. D.', the ordinary
+# family-first listing, and every multi-comma or mid-title form
+# ('Smith, John, Ph. D.', 'Smith, Dr. John Ph. D.') stopped being
+# refused. All of those are dead-parity today, so the gate stayed
+# green while the tripwire was gone -- and a healing regression on
+# them would then have classified under fix(comma-family) and exited
+# 0, which is the outcome this entry's own `why` exists to prevent.
 #
-# The words are comma-free by construction, which is what does the
-# work: `\S+` would have let 'Smith,' count as one word and kept the
-# one-word comma form matching.
+# The three exceptions, each diffing for a cause this ledger names
+# elsewhere: a leading credential with no name before it
+# (fix(leading-credential)), one word before the comma
+# (fix(comma-precomma-family)), and a suffix word between the name and
+# the credential (fix(credential-pair-order), its own rule below).
+# Refusing those was the entry over-reaching; refusing anything else
+# is the entry doing its job.
 #
 # Latin-anchored: an unrestricted trailing anchor also caught
 # '田中さん, Ph. D.', whose diff is a real fix(cjk-comma-compound)
@@ -877,7 +928,7 @@ why = "trailing 'Ph. D.' split-token healing is PARITY, not a 2.0 change: v1 hea
 # than bare ASCII: the split-token healing is script-independent, and
 # 'José Smith, Ph. D.' is as much the protected shape as 'Jose Smith,
 # Ph. D.' is. An ASCII-only class protected one and not the other.
-name_regex = "(?i)^(?:[\\u0021-\\u002b\\u002d-\\u024f]+(?:\\s+[\\u0021-\\u002b\\u002d-\\u024f]+)*\\s+|[\\u0021-\\u002b\\u002d-\\u024f]+(?:\\s+[\\u0021-\\u002b\\u002d-\\u024f]+)+\\s*,\\s*)ph\\.\\s*d\\.\\s*$"
+name_regex = "(?i)^(?!\\s*ph\\.)(?![^\\s,]+\\s*,\\s*ph\\.\\s*d\\.\\s*$)(?![\\u0000-\\u024f]*\\b(?:jr|sr|ii|iii|iv)\\.?\\s+ph\\.\\s*d\\.\\s*$)[\\u0000-\\u024f]*\\bph\\.\\s*d\\.\\s*$"
 examples = ["John Ph. D.", "John Smith Ph. D.", "John Smith, Ph. D."]
 
 [[never]]

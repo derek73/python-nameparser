@@ -555,10 +555,20 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
         ("McDonald, Ronald", "Mcintyre Smith Jr.", "Ste Marie",
          "Los Santos"),
     "fix(#360) ste moved into the never-given particles with mc":
-        ("Steve Marie", "Ste", "Mc Donald", "Los Santos"),
+        ("Steve Marie", "Ste", "Mc Donald", "Los Santos",
+         "Ste Marie Jones", "Ste. Marie Dupont"),
     "fix(#400)": ("Jane Smith ABD", "Jane Smith A.B.D.", "Abdul Salam"),
     "fix(#400/#274)": ("abd Berg née Jones", "abd Allah Smith",
                        "Jane Smith née Jones"),
+    # The literal-anchored rules #413 added. Each claims exactly one
+    # corpus name, so _CORPUS_CLAIMS cannot see a widening that reaches
+    # only names the corpora lack -- these probes are the only wall.
+    "fix(#367) a title-and-particle word stops the scan instead of being chained":
+        ("Dr. Do Smith", "Dr Do Nguyen"),
+    "fix(#399) a maiden marker bounds the particle chain: the geb. spelling":
+        ("Berg, Ursula von der geb. Albrecht",),
+    "fix(credential-pair-order) a split credential and a suffix render in written order":
+        ("田中さん, Jr. Ph. D.", "Smith, Jr. Ph. D. MD"),
     "fix(#411)": ("abdul née Jones", "Smith, abdul Rahman",
                   "Jane Smith ABD", "van der Berg, abd née Jones"),
     "fix(#411/S2)": ("van der Berg, abdul née Jones", "Berg, abd Rahman",
@@ -584,6 +594,7 @@ def test_no_rule_matches_a_name_it_has_no_business_claiming() -> None:
     names chosen to sit just outside them.
     """
     checked = 0
+    hits_by_key: dict[str, int] = {k: 0 for k in _MUST_NOT_MATCH}
     for ledger in _LEDGERS:
         for rule in _rules(ledger):
             regex = rule.get("name_regex")
@@ -592,6 +603,7 @@ def test_no_rule_matches_a_name_it_has_no_business_claiming() -> None:
             for key, probes in _MUST_NOT_MATCH.items():
                 if key not in rule["issue"]:
                     continue
+                hits_by_key[key] += 1
                 for probe in probes:
                     checked += 1
                     assert not re.search(regex, probe), (
@@ -600,9 +612,16 @@ def test_no_rule_matches_a_name_it_has_no_business_claiming() -> None:
                         f"arrive UNEXPLAINED. Either the rule widened "
                         f"or the boundary moved -- if the latter, the "
                         f"comment and this roster both need editing")
-    assert checked, (
-        "_MUST_NOT_MATCH matched no rule; the keys are `issue` "
-        "substrings and a renamed rule silently empties this pin")
+    # Per KEY, not in aggregate. The old spelling summed one counter
+    # over every key, so renaming a single key to a string no rule
+    # contains left the suite green -- which is exactly the edit the
+    # message below warns about.
+    empty = sorted(k for k, n in hits_by_key.items() if not n)
+    assert not empty, (
+        f"_MUST_NOT_MATCH keys matching no rule: {empty}. The keys are "
+        f"`issue` substrings, so a renamed or deleted rule silently "
+        f"empties its pin while every other key keeps this test green")
+    assert checked
 
 
 def test_rules_corpus_matches_the_rules_doc() -> None:
@@ -838,8 +857,9 @@ _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
     # would be a fact about one of the rules.
     # The title half of the #367 rule, widened when three more titled
     # names arrived (#413). Partial on purpose: these are the four
-    # spellings that appear before a particle in the corpora, not every
-    # title that could.
+    # spellings that appear before `van` in the corpora, not every title
+    # that could -- seven titles sit before some particle, and two of the
+    # other three have rules of their own.
     "fix(#367) a title no longer displaces a leading particle out of the leading position":
         _LatinCopy(vocabulary=TITLES,
                    covers=frozenset({"mr", "dr", "sir", "jr"})),
@@ -1233,7 +1253,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(leading-credential) a split 'Ph. D.' before the name stays one unit":
             _Claim(4, ('family', 'given', 'middle', 'suffix', 'title'), "1425d85a2d86"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
-            _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
+            _Claim(4, ('family', 'given', 'middle'), "ae299117dd60"),
         "fix(#400) abd joins the word after it as one given name":
             _Claim(11, ('given', 'middle'), "1eaed91fc574"),
         "fix(#272/#308) nakaguro division and a glued hangul honorific in one name":
@@ -1248,6 +1268,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('given', 'maiden', 'middle', 'suffix'), "0f8ed9db0a32"),
         "fix(credential-pair-order) a split credential and a suffix render in written order":
             _Claim(1, ('suffix',), "6f6eef764248"),
+        "fix(#369) a bound given-name word that is also a particle no longer chains":
+            _Claim(1, ('family', 'given'), "81cf02ffdb33"),
+        "fix(#360) ste moved into the never-given particles with mc":
+            _Claim(1, ('family', 'given'), "e62caedec864"),
     },
     "expected_since_2.0.0.toml": {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
@@ -1551,8 +1575,8 @@ class _Excluded(NamedTuple):
 #: protected READING is caught; a rule shadowed by an existing one on
 #: every subset it claims is not.
 _EXCLUSION_EFFECT: dict[str, _Excluded] = {
-    "(?i)^(?:[\\u0021-\\u002b\\u002d-\\u024f]+(?:\\s+[\\u0021-\\u002b\\u002d-\\u024f]+)*\\s+|[\\u0021-\\u002b\\u002d-\\u024f]+(?:\\s+[\\u0021-\\u002b\\u002d-\\u024f]+)+\\s*,\\s*)ph\\.\\s*d\\.\\s*$":
-        _Excluded(4, "eb8e3976e6c2",
+    "(?i)^(?!\\s*ph\\.)(?![^\\s,]+\\s*,\\s*ph\\.\\s*d\\.\\s*$)(?![\\u0000-\\u024f]*\\b(?:jr|sr|ii|iii|iv)\\.?\\s+ph\\.\\s*d\\.\\s*$)[\\u0000-\\u024f]*\\bph\\.\\s*d\\.\\s*$":
+        _Excluded(3, "5a12a8117651",
                   # fix(comma-precomma-family) JOINED this tuple in #372,
                   # it did not replace anything: it claims the {given,
                   # family} readings, which it legitimately describes for a
