@@ -97,12 +97,22 @@ def _is_suffix_piece(piece: Sequence[int], ptags: Set[str],
 # suffix — as the maiden name, and the marker itself is dropped"
 # (history: decisions.md#M2)
 #
-# A marker piece is a LONE marker. The consumer runs before any join
-# (see _group_segment), so the only way a marker ends up inside a
-# wider piece is that the consumer declined it and a join then took it
-# as the ordinary word M2 says it is ("Jane van der Berg née" reads
-# family 'van der Berg née'). Matching inside joined pieces would
-# re-read those declined markers.
+# A marker piece is a LONE marker -- M2's own "standing as a word of
+# its own". The consumer runs before every join but the Ph. D. merge
+# (see _group_segment), so a marker inside a wider piece is one the
+# consumer left there: declined ("Jane van der Berg née" reads family
+# 'van der Berg née'), or never examined (a leading marker, or a second
+# marker behind the span it took). Matching inside joined pieces would
+# re-read those.
+#
+# With the pass ahead of the joins no default-vocabulary input reaches
+# the lone-piece half through the one caller left that sees joined
+# pieces (P5's absorbs_marker): a marker-headed wider piece needs a
+# connective right after a declined marker, and a connective after a
+# marker is a word the consumer takes. Measured at #420's review --
+# dropping `len(piece) == 1` leaves the suite and a 337k-name sweep
+# identical -- so it stays as the rule's definition, not as a guard a
+# pin holds.
 def _is_maiden_marker_piece(piece: Sequence[int],
                             tokens: Sequence[WorkToken]) -> bool:
     return (len(piece) == 1
@@ -114,11 +124,13 @@ def _maiden_span(pieces: Sequence[Sequence[int]],
                  tokens: Sequence[WorkToken]) -> tuple[int, int] | None:
     """The piece slice the marker pass removes, or None.
 
-    Computed on the unjoined pieces, so "up to any trailing suffix"
-    means the first suffix WORD after the marker: a connective behind
-    that suffix cannot un-suffix it first ("née Jr y Jones" declines,
-    where the joined reading took 'Jr y Jones'). That is the one
-    reading the order costs, accepted under M2.
+    Computed before any join (the Ph. D. merge aside), so "up to any
+    trailing suffix" means the first suffix WORD after the marker: a
+    connective beside that suffix cannot un-suffix it first. 'Jane
+    Smith née Jr y Jones' declines where the joined reading took
+    'Jr y Jones' as the maiden name, and 'Jane Smith née Jones Jr y
+    Smith' takes only 'Jones'. The one reading the order costs; M2's
+    Accepted row and decisions.md#M2 (#420) record it.
     """
     m = next((k for k in range(1, len(pieces))
               if _is_maiden_marker_piece(pieces[k], tokens)), None)
@@ -158,6 +170,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                    tokens: Sequence[WorkToken],
                    bound_join: BoundJoin = BoundJoin.STRICT,
                    ambiguities: list[PendingAmbiguity] | None = None,
+                   cores: Set[str] = frozenset(),
                    ) -> tuple[list[Piece], list[set[str]], MaidenTake | None]:
     pieces: list[Piece] = [[i] for i in seg]
     ptags: list[set[str]] = [set() for _ in seg]
@@ -245,13 +258,28 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     #
     # The tokens are not touched here: this function reads them and
     # returns what it took, and group() records the drop and the roles.
+    #
+    # A tail segment's delimiter cores (`cores`, empty elsewhere) are
+    # structure, not words: group() drops them after this returns, and
+    # before the pass moved here it dropped them BEFORE the pass ran.
+    # So the pass reads the segment with the cores screened out -- a
+    # core is neither a word the marker can take ('PhD née - Jones'
+    # read maiden '- Jones') nor the name word M2 needs ahead of the
+    # marker ('- née Jones' took 'Jones', leaving the core alone, which
+    # the drop then kept as the segment's only piece). The cores stay
+    # in `pieces` for the drop, which still sees the segment as written.
     taken: MaidenTake | None = None
-    span = _maiden_span(pieces, ptags, tokens)
+    seen = [k for k in range(len(pieces))
+            if not (len(pieces[k]) == 1
+                    and tokens[pieces[k][0]].text in cores)]
+    span = _maiden_span([pieces[k] for k in seen],
+                        [ptags[k] for k in seen], tokens)
     if span is not None:
-        m, j = span
-        taken = (pieces[m], pieces[m + 1:j])
-        del pieces[m:j]
-        del ptags[m:j]
+        take = seen[span[0]:span[1]]
+        taken = (pieces[take[0]], [pieces[k] for k in take[1:]])
+        for k in reversed(take):
+            del pieces[k]
+            del ptags[k]
 
     if len(pieces) + additional >= 3:
         total = sum(_is_rootname(p, t, tokens)
@@ -449,10 +477,12 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # P5 joins the bound word to "the word after it", and a
             # marker is not a name word -- it is the announcement that
             # another name follows. The only marker left by now is one
-            # the consumer declined (nothing but a suffix after it),
-            # and the join must still not take it: 'Berg, abdul nee
-            # PhD' read given 'abdul nee'. Measured rather than
-            # assumed -- dropping this undid #411 on exactly that row.
+            # the consumer declined (nothing after it, or nothing but
+            # a suffix), and the join must still not take it: 'Berg,
+            # abdul nee PhD' read given 'abdul nee', and 'Berg, abdul
+            # nee' clears the LENIENT reserve the same way. Measured
+            # rather than assumed -- dropping this undid #411 on
+            # exactly that row.
             absorbs_marker = marker(first_name_k + 1)
             if non_suffix >= bound_join and not absorbs_marker:
                 merge(first_name_k, first_name_k + 2)
@@ -470,7 +500,8 @@ def group(state: ParseState) -> ParseState:
     additional = 1 if state.structure is Structure.FAMILY_COMMA else 0
     # v1 expand_suffix_delimiter parity (#191): tail segments (wholly
     # consumed as suffixes by assign) drop delimiter-core tokens, the
-    # same structural mechanism as the maiden marker in _group_segment
+    # same structural mechanism as the maiden marker (taken out in
+    # _group_segment, recorded in `dropped` just below)
     cores = delimiter_cores(state.policy.extra_suffix_delimiters)
     tail_start = {Structure.SUFFIX_COMMA: 1,
                   Structure.FAMILY_COMMA: 2}.get(state.structure)
@@ -484,9 +515,11 @@ def group(state: ParseState) -> ParseState:
         # Suppressed after a family comma for the same reason _assign
         # suppresses it there: the family name is already fixed, so
         # there is no fork left to report.
+        tail = tail_start is not None and seg_idx >= tail_start
         pieces, ptags, taken = _group_segment(
             seg, additional, tokens, bound_join,
-            None if family_comma else ambiguities)
+            None if family_comma else ambiguities,
+            cores if tail else frozenset())
         # the marker is dropped and the maiden name's tokens become
         # MAIDEN (#274); which pieces those are was settled in
         # _group_segment, before the joins
@@ -497,7 +530,7 @@ def group(state: ParseState) -> ParseState:
                 for i in piece:
                     tokens[i] = dataclasses.replace(
                         tokens[i], role=Role.MAIDEN)
-        if tail_start is not None and seg_idx >= tail_start:
+        if tail:
             # v1 renders each tail COMMA SEGMENT as one suffix entry
             # ('Smith, V MD' -> suffix 'V MD'); a delimiter core inside
             # a segment separates entries and is dropped, but a segment
