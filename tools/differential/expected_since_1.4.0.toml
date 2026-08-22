@@ -779,6 +779,49 @@ name_regex = "(?i)^sheik\\s+abdul\\b"
 fields = ["given", "family"]
 
 [[change]]
+issue = "fix(#401) the bound-given reserve counts the trailing numeral assign reads as the suffix"
+# 'abdul Smith V', 'abdul Smith Jr V': rules.md#P5 -- "a trailing
+# roman numeral that assign reads as the suffix (S2) is no word to
+# spare, and is not joined". first 'abdul Smith', last 'V' -> given
+# 'abdul', family 'Smith', suffix 'V'; at this baseline the V was not
+# read as a suffix, so all three fields move here where the 2.x
+# ledgers list two. Both are rules.md examples; no differential corpus
+# name has the shape. The 'abdul Smith V Ph. D.' spelling stays out
+# of the corpus: a trailing split credential is this ledger's
+# [[never]] shape, and its v1 reading carries the same family loss
+# that entry would then refuse to explain.
+#
+# A rule with fewer fields than this diff silently hands the name to
+# the fields-only fix(suffix-routing) catch-all below, which is how
+# this fix was first recorded as "1.4.0 parity": the catch-all's
+# printout is capped, and EXPLAINED NOTHING is not byte-identical.
+name_regex = "(?i)^abdul\\s+smith\\s+(jr\\s+)?v$"
+fields = ["given", "family", "suffix"]
+
+[[change]]
+issue = "fix(#421) the bound-given join never absorbs a suffix piece"
+# 'abdul Jr Smith Berg': rules.md#P5 -- "the join never absorbs a
+# marker standing as a word of its own -- a marker is not a name word
+# (M2) -- nor a word of the suffix vocabulary (S2), wherever position
+# will then place it". given 'abdul Jr', middle 'Smith' -> given
+# 'abdul', middle 'Jr Smith'. Parity with this baseline until now; a
+# rules.md example, since no differential corpus name has the shape.
+name_regex = "(?i)^abdul\\s+jr\\s+smith\\s+berg$"
+fields = ["given", "middle"]
+
+[[change]]
+issue = "fix(#421) the bound-given join never absorbs a split credential"
+# 'abdul Ph. D. Smith Berg': the rule above, on the split credential.
+# At this baseline v1's fix_phd extracted the credential before
+# parsing, so: first 'abdul Smith', suffix 'Ph. D.' -> given 'abdul',
+# middle 'Smith', suffix 'Ph. D.' -- the suffix field unchanged here,
+# the given deliberately not restored (decisions.md#P5), so this
+# ledger lists two fields where the 2.x ledgers list three. A rules.md
+# example; no differential corpus name has the shape.
+name_regex = "(?i)^abdul\\s+ph\\.\\s+d\\.\\s+smith\\s+berg$"
+fields = ["given", "middle"]
+
+[[change]]
 issue = "fix(#360) ste moved into the never-given particles with mc"
 # 'Ste Marie': the second word of the vocabulary move, which the
 # fix(#360) comment in the 2.x ledgers names as a name that should

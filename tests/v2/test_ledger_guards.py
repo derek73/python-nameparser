@@ -1248,11 +1248,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
             _Claim(11, ('family', 'middle'), "3acdb7d11969"),
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(261, ('given', 'suffix', 'title'), "ed69e02b552e"),
+            _Claim(262, ('given', 'suffix', 'title'), "d5e6ee237ff9"),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(261, ('family', 'given'), "ed69e02b552e"),
+            _Claim(262, ('family', 'given'), "d5e6ee237ff9"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(1030, ('family', 'given', 'suffix'), "57f11dc2da8b"),
+            _Claim(1036, ('family', 'given', 'suffix'), "43399188180d"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1297,6 +1297,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('suffix',), "6f6eef764248"),
         "fix(#369) a given-name title licenses the bound given-name join with one word to spare":
             _Claim(3, ('family', 'given'), "724be3e6b926"),
+        "fix(#401) the bound-given reserve counts the trailing numeral assign reads as the suffix":
+            _Claim(2, ('family', 'given', 'suffix'), "5713d4c0bd68"),
+        "fix(#421) the bound-given join never absorbs a suffix piece":
+            _Claim(1, ('given', 'middle'), "9523e518e6ec"),
+        "fix(#421) the bound-given join never absorbs a split credential":
+            _Claim(1, ('given', 'middle'), "228abe0f32ef"),
         "fix(#360) ste moved into the never-given particles with mc":
             _Claim(1, ('family', 'given'), "e62caedec864"),
     },
@@ -1341,6 +1347,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('given', 'title'), "faa2c70fc49e"),
         "fix(#369) a given-name title licenses the bound given-name join with one word to spare":
             _Claim(3, ('family', 'given'), "724be3e6b926"),
+        "fix(#401) the bound-given reserve counts the trailing numeral assign reads as the suffix":
+            _Claim(2, ('family', 'given'), "5713d4c0bd68"),
+        "fix(#421) the bound-given join never absorbs a suffix piece":
+            _Claim(1, ('given', 'middle'), "9523e518e6ec"),
+        "fix(#421) the bound-given join never absorbs a split credential":
+            _Claim(1, ('given', 'middle', 'suffix'), "228abe0f32ef"),
         "fix(#369) the bound given-name join takes a particle-and-bound word, so no fork is reported":
             _Claim(1, ('_ambiguities',), "81cf02ffdb33"),
         "fix(#360) ste moved into the never-given particles with mc":
@@ -1375,6 +1387,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('given', 'title'), "faa2c70fc49e"),
         "fix(#369) a given-name title licenses the bound given-name join with one word to spare":
             _Claim(3, ('family', 'given'), "724be3e6b926"),
+        "fix(#401) the bound-given reserve counts the trailing numeral assign reads as the suffix":
+            _Claim(2, ('family', 'given'), "5713d4c0bd68"),
+        "fix(#421) the bound-given join never absorbs a suffix piece":
+            _Claim(1, ('given', 'middle'), "9523e518e6ec"),
+        "fix(#421) the bound-given join never absorbs a split credential":
+            _Claim(1, ('given', 'middle', 'suffix'), "228abe0f32ef"),
         "fix(#369) the bound given-name join takes a particle-and-bound word, so no fork is reported":
             _Claim(1, ('_ambiguities',), "81cf02ffdb33"),
         "fix(#360) ste moved into the never-given particles with mc":
