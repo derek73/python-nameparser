@@ -1252,7 +1252,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(261, ('family', 'given'), "ed69e02b552e"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(1028, ('family', 'given', 'suffix'), "dffc64a7d62e"),
+            _Claim(1030, ('family', 'given', 'suffix'), "57f11dc2da8b"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1296,7 +1296,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(credential-pair-order) a split credential and a suffix render in written order":
             _Claim(1, ('suffix',), "6f6eef764248"),
         "fix(#369) a given-name title licenses the bound given-name join with one word to spare":
-            _Claim(1, ('family', 'given'), "5159b9059d61"),
+            _Claim(3, ('family', 'given'), "724be3e6b926"),
         "fix(#360) ste moved into the never-given particles with mc":
             _Claim(1, ('family', 'given'), "e62caedec864"),
     },
@@ -1340,7 +1340,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#367) a title-and-particle word stops the scan instead of being chained":
             _Claim(1, ('given', 'title'), "faa2c70fc49e"),
         "fix(#369) a given-name title licenses the bound given-name join with one word to spare":
-            _Claim(1, ('family', 'given'), "5159b9059d61"),
+            _Claim(3, ('family', 'given'), "724be3e6b926"),
         "fix(#369) the bound given-name join takes a particle-and-bound word, so no fork is reported":
             _Claim(1, ('_ambiguities',), "81cf02ffdb33"),
         "fix(#360) ste moved into the never-given particles with mc":
@@ -1374,7 +1374,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#367) a title-and-particle word stops the scan instead of being chained":
             _Claim(1, ('given', 'title'), "faa2c70fc49e"),
         "fix(#369) a given-name title licenses the bound given-name join with one word to spare":
-            _Claim(1, ('family', 'given'), "5159b9059d61"),
+            _Claim(3, ('family', 'given'), "724be3e6b926"),
         "fix(#369) the bound given-name join takes a particle-and-bound word, so no fork is reported":
             _Claim(1, ('_ambiguities',), "81cf02ffdb33"),
         "fix(#360) ste moved into the never-given particles with mc":

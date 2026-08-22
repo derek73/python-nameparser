@@ -61,7 +61,10 @@ issue = "fix(#369) a given-name title licenses the bound given-name join with on
 # which asserts that a given name follows (H1): there the two words
 # join and the name has no family". Given 'abdul', family 'salam'
 # becomes given 'abdul salam', family '' -- the empty family H1
-# accepts for "Sir John".
+# accepts for "Sir John". The 'Sheik abdul salam Jr' rules example
+# is the same move with the suffix standing; 'Sheik abdul Jr Smith'
+# is in reach and does not move -- the licence takes a name word,
+# not a suffix.
 #
 # 'Sheik Abu Bakar', the #367 regression this issue was filed for,
 # reads given 'Abu Bakar' again with every field byte-identical to
