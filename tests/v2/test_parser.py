@@ -462,19 +462,29 @@ def test_unambiguous_particle_chain_reports_nothing() -> None:
     assert parse("Dr. de la Vega").ambiguities == ()
 
 
-@pytest.mark.xfail(strict=True, reason="#369: 'abu' is a bound given name "
-                                       "as well as an ambiguous particle")
 def test_bound_given_name_that_is_also_a_particle() -> None:
-    # The one case #367 regressed, asserted as the DESIRED post-#369
-    # output so that fixing #369 announces itself here rather than
-    # silently. Today: given 'Abu', family 'Bakar'. Through 2.1 it read
-    # correctly only because the title displaced 'abu' out of the
-    # leading position and the prefix chain claimed 'Bakar' -- a side
-    # effect of the bug, not a rule: "Sheik abdul salam", whose lead is
-    # a bound given name and NOT a particle, chains no such thing.
-    # The name is in none of the differential corpora, so nothing else
-    # would notice it moving again.
+    # The one case #367 regressed, restored by #369 for the right
+    # reason. Through 2.1 it read correctly only because the title
+    # displaced 'abu' out of the leading position and the prefix chain
+    # claimed 'Bakar' -- a side effect of the #367 bug, not a rule. Now
+    # the bound given-name join reads it: "Sheik" is a given-name
+    # title, which licenses the join with one word to spare
+    # (rules.md#P5), so the particle never enters into it.
     assert parse("Sheik Abu Bakar").given == "Abu Bakar"
+
+
+def test_a_given_name_title_licenses_the_bound_given_join() -> None:
+    # rules.md#P5 (#369): the contrast the xfail above used to draw --
+    # "Sheik abdul salam", whose lead is a bound given name and NOT a
+    # particle -- now joins the same way, and for the same reason. A
+    # plain title does not license it: "Dr." addresses by family, so
+    # the second word stays the family name.
+    licensed = parse("Sheik abdul salam")
+    assert (licensed.title, licensed.given, licensed.family) == \
+        ("Sheik", "abdul salam", "")
+    plain = parse("Dr. abdul salam")
+    assert (plain.title, plain.given, plain.family) == \
+        ("Dr.", "abdul", "salam")
 
 
 # The first three reach the chain loop and decline inside it: the piece

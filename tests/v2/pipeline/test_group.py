@@ -520,3 +520,54 @@ def test_the_bound_given_join_never_absorbs_a_marker() -> None:
                     out, piece, "vocab:maiden-marker"), (
                         f"{text!r}: the join absorbed a marker into "
                         f"the piece {shown!r}")
+
+
+_GIVEN_NAME_TITLE_LEX = dataclasses.replace(
+    _LEX, titles=_LEX.titles | {"sir"},
+    given_name_titles=frozenset({"sir"}))
+
+
+def test_a_given_name_title_licenses_the_bound_join_with_one_word_to_spare() -> None:
+    # rules.md#P5 (#369): a given-name title asserts that a given name
+    # follows -- the same assertion H1 reads when it keeps "Sir John" a
+    # given name -- so behind one the reserve is the post-comma one,
+    # and two name words join where STRICT keeps the second back as
+    # the family name.
+    out = _grouped("sir abdul rahman", lexicon=_GIVEN_NAME_TITLE_LEX)
+    assert _piece_texts(out) == [["sir", "abdul rahman"]]
+
+
+def test_a_plain_title_keeps_the_strict_reserve() -> None:
+    # The licence is the given-name title's, not any title's: "mr"
+    # addresses by family, so the second word is still the family
+    # name the reserve exists to keep.
+    out = _grouped("mr abdul rahman", lexicon=_GIVEN_NAME_TITLE_LEX)
+    assert _piece_texts(out) == [["mr", "abdul", "rahman"]]
+
+
+def test_the_licence_lowers_the_reserve_and_changes_nothing_else() -> None:
+    # A suffix is still no word to spare: LENIENT needs two name
+    # words and "jr" is not one, exactly as after a family comma.
+    out = _grouped("sir abdul jr", lexicon=_GIVEN_NAME_TITLE_LEX)
+    assert _piece_texts(out) == [["sir", "abdul", "jr"]]
+
+
+def test_the_title_run_is_one_key_as_h1_reads_it() -> None:
+    # post_rules looks the WHOLE title run up as one key, so "mr sir"
+    # is not "sir". P5 has to read the run the same way: if it joined
+    # here, H1 would then read the joined piece as the family name --
+    # the two rules would disagree about what the same run asserts.
+    out = _grouped("mr sir abdul rahman", lexicon=_GIVEN_NAME_TITLE_LEX)
+    assert _piece_texts(out) == [["mr", "sir", "abdul", "rahman"]]
+
+
+def test_the_licence_joins_a_word_not_a_particle_chain() -> None:
+    # P5 joins "the word after it", and the licence lifts the reserve
+    # for two WORDS. A particle chain is one piece but not one word --
+    # it is the family name P2 built -- so behind a given-name title
+    # the bound word must not absorb it: untitled, "abdul van der
+    # Berg" keeps the chain as its family, and the title cannot make
+    # the surname vanish. Found in review; no corpus name has the
+    # shape.
+    out = _grouped("sir abdul van der Berg", lexicon=_GIVEN_NAME_TITLE_LEX)
+    assert _piece_texts(out) == [["sir", "abdul", "van der Berg"]]

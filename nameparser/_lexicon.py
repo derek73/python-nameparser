@@ -110,8 +110,9 @@ def _title_key(words: Iterable[str]) -> str:
     A multi-word title is matched as one key ('lt col'), so the fold has
     to run per word and rejoin -- _normalize on the whole phrase would
     leave interior periods. Defined once because it is built at match
-    time (post_rules) and at translation time (the v1 facade's
-    first_name_titles), and a divergence between the two fails silently:
+    time (post_rules for H1, group for the P5 licence -- which must
+    agree, see #369) and at translation time (the v1 facade's
+    first_name_titles), and a divergence between them fails silently:
     the entry simply stops matching.
 
     Words that fold away are DROPPED, not joined as empty. Keeping the

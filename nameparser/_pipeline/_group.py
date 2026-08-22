@@ -6,8 +6,9 @@ the only stage after tokenize that reads it).
 Produces: pieces + piece_tags per segment (runs of token indices --
 tokens are NEVER joined into strings: the anti-#100 invariant); maiden
 tail tokens get role=MAIDEN; marker tokens land in dropped.
-Reads: token tags (from classify), and Policy.extra_suffix_delimiters
-for the tail-segment handling below -- no other Policy field. The v1
+Reads: token tags (from classify), Lexicon.given_name_titles (the
+P5 licence, #369), and Policy.extra_suffix_delimiters for the
+tail-segment handling below -- no other Policy field. The v1
 "derived titles/prefixes" registration becomes piece_tags entries --
 per-parse state that dissolves with the state (v1 kept per-parse sets
 for the same reason). Reads Policy.extra_suffix_delimiters: tail
@@ -27,6 +28,7 @@ import dataclasses
 from collections.abc import Sequence, Set
 from enum import IntEnum
 
+from nameparser._lexicon import _title_key
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
 )
@@ -187,6 +189,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                    bound_join: BoundJoin = BoundJoin.STRICT,
                    ambiguities: list[PendingAmbiguity] | None = None,
                    cores: Set[str] = frozenset(),
+                   given_name_titles: Set[str] = frozenset(),
                    ) -> tuple[list[Piece], list[set[str]], MaidenTake | None]:
     pieces: list[Piece] = [[i] for i in seg]
     ptags: list[set[str]] = [set() for _ in seg]
@@ -485,7 +488,30 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # rather than assumed -- dropping this undid #411 on
             # exactly that row.
             absorbs_marker = marker(first_name_k + 1)
-            if non_suffix >= bound_join and not absorbs_marker:
+            # A given-name title ahead of the bound word asserts that a
+            # given name follows -- the assertion H1 reads when it
+            # keeps "Sir John" a given name -- so behind one there is
+            # no family to spare and the post-comma reserve applies
+            # (#369). Keyed on the WHOLE title run exactly as
+            # post_rules keys H1, so the two rules cannot disagree
+            # about what one run asserts: a join licensed here that H1
+            # then read as title-plus-family would hand the joined
+            # piece to the family. Only STRICT relaxes: the family
+            # comma's DISABLED segment has no given name to join. And
+            # it lifts the reserve for two WORDS: the piece the join
+            # would take must be one word, not a particle chain --
+            # that is the family name P2 built, and "Sir abdul van der
+            # Berg" keeps family 'van der Berg' as the untitled name
+            # does. Found in review; no corpus name has the shape.
+            reserve = bound_join
+            if (bound_join is BoundJoin.STRICT and first_name_k > 0
+                    and len(pieces[first_name_k + 1]) == 1
+                    and _title_key(tokens[i].text
+                                   for k in range(first_name_k)
+                                   for i in pieces[k])
+                    in given_name_titles):
+                reserve = BoundJoin.LENIENT
+            if non_suffix >= reserve and not absorbs_marker:
                 merge(first_name_k, first_name_k + 2)
     return pieces, ptags, taken
 
@@ -520,7 +546,8 @@ def group(state: ParseState) -> ParseState:
         pieces, ptags, taken = _group_segment(
             seg, additional, tokens, bound_join,
             None if family_comma else ambiguities,
-            cores if tail else frozenset())
+            cores if tail else frozenset(),
+            state.lexicon.given_name_titles)
         # the marker is dropped and the maiden name's tokens become
         # MAIDEN (#274); which pieces those are was settled in
         # _group_segment, before the joins
