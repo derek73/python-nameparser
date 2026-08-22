@@ -211,6 +211,18 @@ intended-but-unclassified 2.0 behaviors (#273 typographic delimiters,
 #269 non-Latin vocabulary) plus one shape no test had considered: a
 **leading** `"Ph. D."`, which v1 split into title `Ph.` + given `D.`.
 
+It earned it again at #413. The harvester matched names in quotes
+only, while this tracker writes them in backticks, so the corpus whose
+purpose is "what users reported" was blind to how this project
+reports — 200 names became 390. Among the arrivals were the headline
+example of nearly every issue that fixed them, including
+`Ursula von der Leyen geb. Albrecht`, which sat in #399's own title
+while that issue shipped noting the class was invisible to this
+harness. Classifying the eight diffs widened two rules that had asked
+in writing to be widened, added rules for four more, and narrowed the
+trailing-`Ph. D.` exclusion exactly as its own comment instructed the
+moment a `<suffix> Ph. D.` name appeared.
+
 The rules corpus earned its place the same way — 113 of its 155 names
 were in no other corpus, and on its first run 12 of them turned out to
 have moved during the 2.2 cycle with nothing observing it. Classifying

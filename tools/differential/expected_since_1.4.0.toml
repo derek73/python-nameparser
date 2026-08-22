@@ -143,6 +143,20 @@ name_regex = "旧姓"
 fields = ["given", "middle", "family", "maiden"]
 
 [[change]]
+issue = "fix(credential-pair-order) a split credential and a suffix render in written order"
+# 'John Smith, Jr. Ph. D.': 1.4 rendered the pair as 'Ph. D., Jr.',
+# 2.x renders 'Jr. Ph. D.' -- the order the name was written in.
+# tests/v2/cases.py carries the same input under this classification.
+#
+# The trailing-Ph. D. exclusion refused this name until #413's harvest
+# brought it into a corpus. That is the arrival the entry predicted in
+# writing and told its reader to narrow for, so the entry was narrowed
+# and the name reads here. Only `suffix` moves -- the given and family
+# names are untouched by the order the credentials render in.
+name_regex = "(?i)^[\\u0000-\\u024f]*,\\s*jr\\.?\\s+ph\\.?\\s*d\\.?\\s*$"
+fields = ["suffix"]
+
+[[change]]
 issue = "fix(comma-family) lone post-comma piece routes to suffix/title, not first"
 # 'Smith, Dr.' / 'Andrews, M.D.': v1 put the lone strict-suffix-or-title
 # post-comma piece in `first`; 2.0 routes it to `suffix`/`title` instead
@@ -668,6 +682,7 @@ issue = "feat(#269) non-Latin titles/conjunctions recognized"
 name_regex = "[\\u0400-\\u04FF]"
 fields = ["title", "given", "middle"]
 
+
 [[change]]
 issue = "fix(leading-credential) a split 'Ph. D.' before the name stays one unit"
 # 'Ph. D. John Smith'. v1 healed the adjacent 'Ph.'/'D.' pair only when
@@ -681,8 +696,17 @@ issue = "fix(leading-credential) a split 'Ph. D.' before the name stays one unit
 # Anchored to the START on purpose. Trailing 'Ph. D.' is PARITY and
 # stays unclassified below; widening this regex would mask a
 # regression in the shape that is the whole reason fix_phd exists.
+#
+# `family` joined the roles when #413's harvest brought the first two
+# corpus names of this shape in: a bare 'Ph. D.' (1.4 read family 'D.',
+# now suffix) and 'Ph. D. Van Johnson' (1.4 read family 'Van Johnson',
+# now given). Both move `family` for the same reason the other roles
+# move -- the credential stops being split into a title and a given
+# name, and everything behind it shifts one place. The REGEX is
+# untouched; only the roles the same shape was always going to move
+# are now recorded.
 name_regex = "^Ph\\. ?D\\."
-fields = ["title", "given", "middle", "suffix"]
+fields = ["title", "given", "middle", "family", "suffix"]
 
 # Deliberately NOT a [[change]] rule: TRAILING 'Ph. D.' split-token
 # healing ('John Ph. D.', 'John Smith, Ph. D.') is PARITY, not a 2.0
@@ -830,6 +854,21 @@ why = "trailing 'Ph. D.' split-token healing is PARITY, not a 2.0 change: v1 hea
 # <suffix> Ph. D. name, narrow this entry rather than widening a rule
 # to claim it.
 #
+# One did, through #413's backtick harvest, and this is that
+# narrowing. The entry now spells the two shapes it actually promises
+# -- a name then the credential, or a two-word name, a comma, then the
+# credential -- instead of "anything ending in Ph. D.". Three names
+# fall out, and each diffs for a cause this ledger names elsewhere:
+# 'John Smith, Jr. Ph. D.' (the credential-pair ORDER, its own rule
+# below), 'Smith, Ph. D.' (one word before the comma, so
+# fix(comma-precomma-family)), and a bare 'Ph. D.' with no name at all
+# (fix(leading-credential)). Refusing those was the entry over-reaching,
+# not the healing regressing.
+#
+# The words are comma-free by construction, which is what does the
+# work: `\S+` would have let 'Smith,' count as one word and kept the
+# one-word comma form matching.
+#
 # Latin-anchored: an unrestricted trailing anchor also caught
 # '田中さん, Ph. D.', whose diff is a real fix(cjk-comma-compound)
 # classification -- measured, it took the gate to unexplained: 1. The
@@ -838,7 +877,7 @@ why = "trailing 'Ph. D.' split-token healing is PARITY, not a 2.0 change: v1 hea
 # than bare ASCII: the split-token healing is script-independent, and
 # 'José Smith, Ph. D.' is as much the protected shape as 'Jose Smith,
 # Ph. D.' is. An ASCII-only class protected one and not the other.
-name_regex = "(?i)^[\\u0000-\\u024f]*\\bph\\.\\s*d\\.\\s*$"
+name_regex = "(?i)^(?:[\\u0021-\\u002b\\u002d-\\u024f]+(?:\\s+[\\u0021-\\u002b\\u002d-\\u024f]+)*\\s+|[\\u0021-\\u002b\\u002d-\\u024f]+(?:\\s+[\\u0021-\\u002b\\u002d-\\u024f]+)+\\s*,\\s*)ph\\.\\s*d\\.\\s*$"
 examples = ["John Ph. D.", "John Smith Ph. D.", "John Smith, Ph. D."]
 
 [[never]]
