@@ -119,10 +119,12 @@ def _is_maiden_marker_piece(piece: Sequence[int],
             and "vocab:maiden-marker" in tokens[piece[0]].tags)
 
 
-def _maiden_span(pieces: Sequence[Sequence[int]],
+def _maiden_take(pieces: Sequence[Sequence[int]],
                  ptags: Sequence[Set[str]],
-                 tokens: Sequence[WorkToken]) -> tuple[int, int] | None:
-    """The piece slice the marker pass removes, or None.
+                 tokens: Sequence[WorkToken],
+                 cores: Set[str]) -> list[int] | None:
+    """The indices of the pieces the marker pass removes, the marker
+    first, or None.
 
     Computed before any join (the Ph. D. merge aside), so "up to any
     trailing suffix" means the first suffix WORD after the marker: a
@@ -131,18 +133,32 @@ def _maiden_span(pieces: Sequence[Sequence[int]],
     'Jr y Jones' as the maiden name, and 'Jane Smith née Jones Jr y
     Smith' takes only 'Jones'. The one reading the order costs; M2's
     Accepted row and decisions.md#M2 (#420) record it.
+
+    A tail segment's delimiter cores (`cores`, empty elsewhere) are
+    structure, not words, and group() drops them after the pass --
+    before the pass moved ahead of the joins it dropped them first.
+    So the walk steps over them: a core is neither a word the marker
+    can take ('PhD née - Jones' read maiden '- Jones') nor the name
+    word M2 needs ahead of the marker ('- née Jones' took 'Jones',
+    leaving the core alone, which the drop then kept as the segment's
+    only piece). They stay in place for the drop, which still sees
+    the segment as written, which is why this returns indices rather
+    than a slice.
     """
-    m = next((k for k in range(1, len(pieces))
-              if _is_maiden_marker_piece(pieces[k], tokens)), None)
+    seen = [k for k in range(len(pieces))
+            if not (len(pieces[k]) == 1
+                    and tokens[pieces[k][0]].text in cores)]
+    m = next((v for v in range(1, len(seen))
+              if _is_maiden_marker_piece(pieces[seen[v]], tokens)), None)
     if m is None:
         return None
     j = m + 1
-    while j < len(pieces) and not _is_suffix_piece(pieces[j], ptags[j],
-                                                  tokens):
+    while j < len(seen) and not _is_suffix_piece(
+            pieces[seen[j]], ptags[seen[j]], tokens):
         j += 1
     # j == m + 1 means nothing followed the marker but a suffix, so the
     # pass declines and the marker stays an ordinary word (rules.md#M2).
-    return (m, j) if j > m + 1 else None
+    return seen[m:j] if j > m + 1 else None
 
 
 # rules.md#P3: "a recognized connective joins its neighbors into one
@@ -258,24 +274,9 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     #
     # The tokens are not touched here: this function reads them and
     # returns what it took, and group() records the drop and the roles.
-    #
-    # A tail segment's delimiter cores (`cores`, empty elsewhere) are
-    # structure, not words: group() drops them after this returns, and
-    # before the pass moved here it dropped them BEFORE the pass ran.
-    # So the pass reads the segment with the cores screened out -- a
-    # core is neither a word the marker can take ('PhD née - Jones'
-    # read maiden '- Jones') nor the name word M2 needs ahead of the
-    # marker ('- née Jones' took 'Jones', leaving the core alone, which
-    # the drop then kept as the segment's only piece). The cores stay
-    # in `pieces` for the drop, which still sees the segment as written.
     taken: MaidenTake | None = None
-    seen = [k for k in range(len(pieces))
-            if not (len(pieces[k]) == 1
-                    and tokens[pieces[k][0]].text in cores)]
-    span = _maiden_span([pieces[k] for k in seen],
-                        [ptags[k] for k in seen], tokens)
-    if span is not None:
-        take = seen[span[0]:span[1]]
+    take = _maiden_take(pieces, ptags, tokens, cores)
+    if take is not None:
         taken = (pieces[take[0]], [pieces[k] for k in take[1:]])
         for k in reversed(take):
             del pieces[k]
