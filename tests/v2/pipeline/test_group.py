@@ -356,6 +356,7 @@ def test_a_chain_never_leaves_a_marker_standing_alone() -> None:
     for text in ("Jane van der Berg née Jones",     # consumer takes
                  "Jane van der Berg née",           # nothing follows
                  "Jane van der Berg née Jr",        # only a suffix
+                 "Jane van der Berg née Jr Jones",  # suffix, then a word (#417)
                  "Jane van der née",                # particles only
                  "Jane Smith née Jones",            # no particle: takes
                  "Jane Smith née",                  # no particle: stands
@@ -393,9 +394,51 @@ def test_where_the_marker_lands_when_the_consumer_declines() -> None:
         ["Jane", "van der Berg née"]]
     assert _piece_texts(_grouped("Jane van der Berg née Jr")) == [
         ["Jane", "van der Berg née", "Jr"]]
+    # #417: a name word BEHIND the inner suffix does not change the
+    # consumer's answer (its walk stops at the suffix), so the marker
+    # still rides inside the chain rather than standing between the
+    # chain and the suffix. The parsed fields read the same either
+    # way -- middle 'van der Berg née Jr', family 'Jones' -- which is
+    # why this is pinned at the piece level.
+    assert _piece_texts(_grouped("Jane van der Berg née Jr Jones")) == [
+        ["Jane", "van der Berg née", "Jr", "Jones"]]
+    # ...and a chain carrying a declined marker is a name piece like
+    # any other to the bound-given join (P5 declines a marker "standing
+    # as a word of its own", and this one is not)
+    assert _piece_texts(_grouped("abdul van der Berg née Jr Jones")) == [
+        ["abdul van der Berg née", "Jr", "Jones"]]
     # consumer declines, no chain: the marker stands as its own piece
     assert _piece_texts(_grouped("Jane Smith née")) == [
         ["Jane", "Smith", "née"]]
+
+
+def test_the_connective_carveout_counts_the_surviving_name() -> None:
+    # rules.md#P3's carve-out asks how many name words the name has,
+    # and the marker and the maiden name are not among them: they
+    # leave. Counted, 'juan y garcia née jones' was five words, 'y'
+    # joined, and once the clause left there was no family name (#418).
+    assert _piece_texts(_grouped("juan y garcia née jones")) == [
+        ["juan", "y", "garcia"]]
+    # the control: the clause changes nothing about the rest
+    assert _piece_texts(_grouped("juan y garcia")) == [
+        ["juan", "y", "garcia"]]
+    # a marker the consumer DECLINES is a word (M2) and counts: four
+    # words, so the connective joins
+    assert _piece_texts(_grouped("juan y garcia née")) == [
+        ["juan y garcia", "née"]]
+
+
+def test_no_join_reaches_a_taken_marker() -> None:
+    """A marker the consumer takes is gone before any join looks, so
+    there is no piece list on which a join could absorb it (#412).
+    Pinned per join, since each reached the marker by its own path:
+    the connective join from either side, and the particle chain."""
+    assert _piece_texts(_grouped("Jane van der Berg née y Jones")) == [
+        ["Jane", "van der Berg"]]
+    assert _piece_texts(_grouped("Jane Smith and née Jones")) == [
+        ["Jane", "Smith and"]]
+    assert _piece_texts(_grouped("Jane née and Jones Smith")) == [
+        ["Jane"]]
 
 
 def test_the_bound_given_join_never_absorbs_a_marker() -> None:

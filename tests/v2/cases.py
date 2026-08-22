@@ -835,15 +835,33 @@ CASES: tuple[Case, ...] = (
                "distinguishes them has nothing to work on. Before "
                "#399 they differed -- given 'Vega' middle 'née' here "
                "against given 'née' middle 'Vega' under FAMILY_FIRST"),
-    Case("maiden_marker_swallowed_by_a_conjunction_join",
+    Case("connective_join_never_reaches_a_taken_marker",
          "Jane van der Berg née y Jones",
-         {"given": "Jane", "family": "van der Berg née y Jones"},
-         notes="accepted, and the reason #399's stop does not reach "
-               "it: the stop tests for a LONE marker piece, and P3's "
-               "connective join runs earlier in the same stage and "
-               "merges the marker into a multi-word piece. #399 fixed "
-               "the P2 instance of the join-swallow; this is one of "
-               "the two that survive"),
+         {"given": "Jane", "family": "van der Berg",
+          "maiden": "y Jones"},
+         classification="fix(#412)",
+         notes="the last of the join-swallows. #399's stop tested for "
+               "a LONE marker piece, and P3's connective join ran "
+               "earlier in the same stage and merged the marker into "
+               "a multi-word piece the stop could not see. The marker "
+               "pass now runs before every join, so there is no piece "
+               "list on which a join can reach a taken marker. The "
+               "maiden name is 'y Jones' by M2's own reading: the "
+               "marker takes the words after it, and a connective is "
+               "one of them"),
+    Case("connective_carveout_counts_the_surviving_name",
+         "juan y garcia nee jones",
+         {"given": "juan", "middle": "y", "family": "garcia",
+          "maiden": "jones"},
+         classification="fix(#418)",
+         notes="P3's three-word carve-out counted the marker and the "
+               "maiden name, so a two-word maiden clause lifted "
+               "'juan y garcia' from three words to five, 'y' joined, "
+               "and when the clause left nothing was behind for the "
+               "family: given 'juan y garcia', family ''. The count "
+               "now sees the name that remains, so the clause changes "
+               "nothing about how the rest of the name reads -- the "
+               "reading is 'juan y garcia' plus a maiden name"),
     Case("bound_given_reserve_excludes_a_multi_word_maiden_name",
          "Abd Berg née Mary Jones",
          {"given": "Abd", "family": "Berg", "maiden": "Mary Jones"},
@@ -856,20 +874,20 @@ CASES: tuple[Case, ...] = (
                "name, so none of them can tell the two apart. A "
                "particle-led maiden name does NOT serve: P2's chain "
                "makes 'van der Jones' a single piece"),
-    Case("bound_given_join_declines_a_marker_after_an_inner_suffix",
+    Case("bound_given_join_sees_only_the_surviving_name",
          "abd née Jones Jr Smith Berg",
-         {"given": "abd", "middle": "Jr Smith", "family": "Berg",
+         {"given": "abd Jr", "middle": "Smith", "family": "Berg",
           "maiden": "Jones"},
-         classification="fix(#411)",
-         notes="the reserve alone does not settle this: the maiden "
-               "walk stops at the inner suffix, so the excluded span "
-               "is short and the two name words after it still clear "
-               "the threshold. The join fired and took the marker, "
-               "and then nothing left at all -- the count had assumed "
-               "two words would depart. P5 joins the bound word to a "
-               "NAME word, and a marker is not one, so the join "
-               "declines outright when the piece it would absorb is "
-               "the marker"),
+         classification="fix(#418)",
+         notes="#411's shape, re-pinned. The maiden walk stops at the "
+               "inner suffix and takes only 'Jones'; with the marker "
+               "pass ahead of the joins, P5 then sees 'abd Jr Smith "
+               "Berg' and reads it exactly as it reads that name "
+               "written alone -- given 'abd Jr'. Under #411 the join "
+               "declined here because the piece it would absorb was "
+               "the marker; now the marker is gone before P5 looks, "
+               "and the suffix it absorbs instead is a pre-existing "
+               "P5 reading, not a maiden effect"),
     Case("bound_given_join_declines_a_marker_before_only_a_suffix",
          "Berg, abdul née PhD",
          {"given": "abdul", "middle": "née", "family": "Berg",
@@ -925,20 +943,23 @@ CASES: tuple[Case, ...] = (
                "see a lone marker piece; counting the reserve without "
                "the words the maiden name takes away makes the join "
                "decline here, so the marker stays its own piece and "
-               "is consumed normally. Only P3's connective join "
-               "survives -- the row above"),
-    Case("maiden_marker_inside_a_conjunction_piece",
+               "is consumed normally. P3's connective join was the "
+               "last to go, under #412 -- "
+               "connective_join_never_reaches_a_taken_marker"),
+    Case("maiden_marker_ahead_of_a_conjunction",
          "Jane née and Jones Smith",
-         {"given": "Jane", "middle": "née and Jones",
-          "family": "Smith"},
-         notes="pins the lone-piece guard itself. Dropping "
-               "`len(piece) == 1` from the marker test leaves the "
-               "whole suite green otherwise, yet it is live: this "
-               "connective merge produces a marker-HEADED multi-word "
-               "piece, and without the guard the marker matches and "
-               "carries 'Smith' into the maiden field with the family "
-               "left empty. #399 gave that guard a second caller, so "
-               "it needed a pin"),
+         {"given": "Jane", "maiden": "and Jones Smith"},
+         classification="fix(#412)",
+         notes="M2's greedy reading, with a connective among the "
+               "words taken: the same as 'Jane née Jones Smith' with "
+               "'and' inside it. Until #412 closed, P3's join ran "
+               "first and produced a marker-HEADED piece 'née and "
+               "Jones' that the lone-piece test could not see, so the "
+               "name read middle 'née and Jones', family 'Smith'. "
+               "The lone-piece test itself still stands -- a marker "
+               "the consumer declines rides inside whatever join "
+               "reaches it -- and test_group.py pins where such a "
+               "marker lands"),
     Case("maiden_marker_after_particles_in_a_comma_segment",
          "Smith, Jane van der Berg née Jones",
          {"given": "Jane", "middle": "van der Berg",

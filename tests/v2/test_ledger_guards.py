@@ -44,6 +44,7 @@ from nameparser._policy import Script
 # hand copy of a constant with a source of truth, inside the module
 # written to forbid exactly that.
 from nameparser._lexicon import _normalize
+from nameparser.config.conjunctions import CONJUNCTIONS
 from nameparser.config.maiden_markers import MAIDEN_MARKERS
 from nameparser.config.particles import PARTICLES
 from nameparser.config.titles import TITLES
@@ -580,6 +581,17 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
                                         "John “Jack” Kennedy"),
     "fix(#274)": ("Jones née", "née Jones", "Jane van der Berg née",
                   "Jane Smith (Nee)"),
+    # #399's and #274's names: a marker followed by a NAME word was
+    # never the connective join's to reach, and a connective before
+    # the marker is the join reaching it from the other side.
+    "fix(#412)": ("Jane van der Berg née Jones", "Jane Smith née Jones",
+                  "Jane van der Berg née", "Jane Smith and née Jones",
+                  "Jane née Andrews Smith"),
+    # the carve-out is a THREE-word rule: four name words join with or
+    # without the clause, a name with no clause has nothing to lose,
+    # and the #412 pair is the other rule's
+    "fix(#418)": ("Juan y Eva Garcia née Jones", "Juan y Garcia",
+                  "Jane van der Berg née y Jones", "Juan y Garcia née"),
 }
 
 
@@ -838,6 +850,12 @@ _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
     "ambiguous-surname-acronym": _LatinCopy(
         vocabulary=SUFFIX_ACRONYMS_AMBIGUOUS,
         covers=frozenset({"do", "ma"})),
+    # fix(#412) copies CONJUNCTIONS partly on purpose: the two
+    # connectives the corpus names carry beside a marker. The rule
+    # names the join-swallow shape, not the vocabulary.
+    "fix(#412)": _LatinCopy(
+        vocabulary=CONJUNCTIONS,
+        covers=frozenset({"and", "y"})),
     # The tussenvoegsel rule copies PARTICLES, and copies it PARTLY on
     # purpose: it needs the words that actually end a Dutch, Iberian or
     # German listing, not all 70. A wider copy would claim comma names
@@ -1217,7 +1235,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
             _Claim(107, ('family', 'given', 'middle'), "0191ac9143a6"),
         "fix(#274) maiden markers consumed":
-            _Claim(22, ('family', 'maiden', 'middle'), "f0ad4ae1420a"),
+            _Claim(23, ('family', 'maiden', 'middle'), "a2b5057e859f"),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
             _Claim(5, ('family', 'given', 'maiden', 'middle'), "bc0e10dd7ec8"),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
@@ -1227,7 +1245,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(261, ('family', 'given'), "ed69e02b552e"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(1023, ('family', 'given', 'suffix'), "f511aaf35e1a"),
+            _Claim(1024, ('family', 'given', 'suffix'), "1c9c9f69093c"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1266,6 +1284,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given', 'maiden', 'middle'), "6bed6d349342"),
         "fix(#411/S2) a declining bound-given join leaves the suffix reading after a family comma":
             _Claim(1, ('given', 'maiden', 'middle', 'suffix'), "0f8ed9db0a32"),
+        "fix(#418) the connective carve-out counts the name the maiden clause leaves behind":
+            _Claim(1, ('family', 'given', 'maiden', 'middle'), "7923e6d3c5a7"),
         "fix(credential-pair-order) a split credential and a suffix render in written order":
             _Claim(1, ('suffix',), "6f6eef764248"),
         "fix(#369) a bound given-name word that is also a particle no longer chains":
@@ -1304,6 +1324,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given', 'middle', 'suffix'), "2fbf1a94f122"),
         "fix(#411) the bound-given reserve stops counting words the maiden name takes":
             _Claim(1, ('given', 'maiden', 'middle'), "7515923c9613"),
+        "fix(#412) a connective join no longer absorbs the maiden marker beside it":
+            _Claim(2, ('family', 'maiden', 'middle'), "51c0eb36b5c5"),
+        "fix(#418) the connective carve-out counts the name the maiden clause leaves behind":
+            _Claim(1, ('family', 'given', 'middle'), "7923e6d3c5a7"),
         "fix(#367) a title-and-particle word stops the scan instead of being chained":
             _Claim(1, ('given', 'title'), "faa2c70fc49e"),
         "fix(#369) a bound given-name word that is also a particle no longer chains":
@@ -1330,6 +1354,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given'), "db724fb9c779"),
         "fix(#411) the bound-given reserve stops counting words the maiden name takes":
             _Claim(1, ('given', 'maiden', 'middle'), "7515923c9613"),
+        "fix(#412) a connective join no longer absorbs the maiden marker beside it":
+            _Claim(2, ('family', 'maiden', 'middle'), "51c0eb36b5c5"),
+        "fix(#418) the connective carve-out counts the name the maiden clause leaves behind":
+            _Claim(1, ('family', 'given', 'middle'), "7923e6d3c5a7"),
         "fix(#367) a title-and-particle word stops the scan instead of being chained":
             _Claim(1, ('given', 'title'), "faa2c70fc49e"),
         "fix(#369) a bound given-name word that is also a particle no longer chains":

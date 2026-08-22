@@ -188,10 +188,15 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     connective written as a bare Latin capital, which reads as an
     initial and never joins. The joined part is ONE name word
     wherever another rule counts them, so a rule taking "one name
-    word" takes the whole join and never half of it.
+    word" takes the whole join and never half of it. The three-word
+    count is of the name's own words: a maiden marker taken as one,
+    and the words it takes (M2), are not among them, so a maiden
+    clause does not change whether the connective joins. A marker
+    left as a word (M2) is a word, and counts.
       "Juan y Eva Garcia"         →  given="Juan y Eva"
       "Jose E Maria Santos"       →  middle="E Maria"
       "Juan y Garcia"             →  middle="y"  · boundary
+      "Juan y Garcia née Jones"   →  middle="y"
       "Juan and Garcia"           →  given="Juan and Garcia"
       "Juan & Garcia"             →  given="Juan & Garcia"
       "Mr. Jack and Jill"         →  family="Jack and Jill"
@@ -212,7 +217,7 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     same two words unjoined are two name words and H1 does not fire.
     P1's leading run becomes the second once #395 lands — its run
     must take the "Vega y Santos" join whole or stop before it.
-    history: decisions.md#P3 · interacts: H1, P1 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P3 · interacts: H1, P1, M2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P4. Rationale: a particle links forward from inside a name; at the
     very front there is no name yet to be inside.
@@ -239,8 +244,9 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     suffix reading wins. The marker and the words it will take are
     not among the words to spare: they leave the name, so counting
     them asks the question about a name that will not exist. The join
-    never absorbs the marker itself — a marker is not a name word
-    (M2).
+    never absorbs a marker standing as a word of its own — a marker
+    is not a name word (M2); a marker left as a word that a particle
+    join (P2) has already taken travels with that join.
       "abdul salam ahmed salem"   →  given="abdul salam"
       "abd Allah Smith"           →  given="abd Allah"
       "Salam, abd Allah"          →  given="abd Allah"
@@ -452,19 +458,15 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "Jane de la née Jones"         →  family="de la"
       "Jane van der Berg née"        →  family="van der Berg née"
       "Jane van der Berg née PhD"    →  family="van der Berg née"
+      "Jane van der Berg née y Jones"  →  maiden="y Jones"
+      "van der Berg, abdul née Jones"  →  maiden="Jones"
     Accepted: the fullwidth-colon spelling arrives as one word, so
     the marker inside it goes unrecognized; #317 tracks whether it
     should peel.
       "山田 花子 旧姓：佐藤"       →  maiden=""
     Accepted: a marker straight after a comma is post-comma given
-    text, not a marker; and the bound reaches only a marker standing
-    as a word of its own, so the connective join (P3) still absorbs a
-    marker before the bound can see it; #412 tracks whether it should
-    reach it. The bound-given join (P5) no longer does: it declines
-    rather than absorb a marker.
+    text, not a marker.
       "Jane Smith, née Jones"          →  maiden=""
-      "Jane van der Berg née y Jones"  →  maiden=""
-      "van der Berg, abdul née Jones"  →  maiden="Jones"
     history: decisions.md#M2 · interacts: P2, P3, P5, R2, M1 · implemented: nameparser/_pipeline/_group.py
 
 ## Commas & structure (C)
