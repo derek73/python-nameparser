@@ -254,8 +254,15 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     not among the words to spare: they leave the name, so counting
     them asks the question about a name that will not exist. The join
     never absorbs a marker standing as a word of its own — a marker
-    is not a name word (M2); a marker left as a word that a particle
-    join (P2) has already taken travels with that join.
+    is not a name word (M2) — nor a word of the suffix vocabulary
+    (S2), wherever position will then place it; a marker left as a
+    word that a particle join (P2) has already taken travels with
+    that join. The reserve counts the same words out, and one more
+    that position decides: a trailing roman numeral that assign
+    reads as the suffix (S2) is no word to spare, and is not joined
+    — read as assign will read it, after the join, with the bound
+    word first. After a family comma there is no such fork to read:
+    the reserve there counts suffix words alone.
       "abdul salam ahmed salem"   →  given="abdul salam"
       "abd Allah Smith"           →  given="abd Allah"
       "Salam, abd Allah"          →  given="abd Allah"
@@ -270,6 +277,14 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "Sir abdul van der Berg"    →  family="van der Berg"  · boundary
       "Sheik abdul Jr Smith"      →  given="abdul"  · boundary
       "Abu Bakar"                 →  given="Abu"  · boundary
+      "abdul Smith V"             →  family="Smith"
+      "abdul Smith V"             →  suffix="V"
+      "abdul Smith Jr V"          →  family="Smith"
+      "Berg, abdul V"             →  given="abdul V"  · boundary
+      "abdul Jr Smith Berg"       →  given="abdul"
+      "abdul Jr Smith Berg"       →  middle="Jr Smith"
+      "abdul Ph. D. Smith Berg"   →  suffix="Ph. D."
+      "abdul V Smith"             →  given="abdul V"  · boundary
       "abd Berg née Jones"        →  family="Berg"
       "abd Allah Smith née Jones" →  given="abd Allah"
       "abd née Jones"             →  given="abd"
