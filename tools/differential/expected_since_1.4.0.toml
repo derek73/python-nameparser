@@ -780,21 +780,15 @@ fields = ["given", "family"]
 
 [[change]]
 issue = "fix(#401) the bound-given reserve counts the trailing numeral assign reads as the suffix"
-# 'abdul Smith V': rules.md#P5 -- "a trailing roman numeral that
-# assign reads as the suffix (S2) is no word to spare". A bare 'V' is
-# suffix vocabulary AND initial-shaped, so the reserve's suffix test
-# vetoed it as an initial and counted it a name word; the join fired,
-# and the family the reserve believed it was sparing was never there.
-# At this baseline that read first 'abdul Smith', last 'V' -- the
-# same family lost, and the V not even a suffix -- so all three
-# fields move here where the 2.x ledgers list two. Now given 'abdul',
-# family 'Smith', suffix 'V' -- and 'abdul Smith Jr V' likewise, a
-# suffix word before the numeral not hiding it. Both are rules.md
-# examples, since no differential corpus name has the shape. The
-# 'abdul Smith V Ph. D.' spelling, where assign drops the flagged
-# credential from its walk so the V is last in it, is pinned at the
-# piece level only: a trailing split credential is this ledger's
-# [[never]] shape, and its v1 reading carries the #401 family loss
+# 'abdul Smith V', 'abdul Smith Jr V': rules.md#P5 -- "a trailing
+# roman numeral that assign reads as the suffix (S2) is no word to
+# spare, and is not joined". first 'abdul Smith', last 'V' -> given
+# 'abdul', family 'Smith', suffix 'V'; at this baseline the V was not
+# read as a suffix, so all three fields move here where the 2.x
+# ledgers list two. Both are rules.md examples; no differential corpus
+# name has the shape. The 'abdul Smith V Ph. D.' spelling stays out
+# of the corpus: a trailing split credential is this ledger's
+# [[never]] shape, and its v1 reading carries the same family loss
 # that entry would then refuse to explain.
 #
 # A rule with fewer fields than this diff silently hands the name to
@@ -809,27 +803,21 @@ issue = "fix(#421) the bound-given join never absorbs a suffix piece"
 # 'abdul Jr Smith Berg': rules.md#P5 -- "the join never absorbs a
 # marker standing as a word of its own -- a marker is not a name word
 # (M2) -- nor a word of the suffix vocabulary (S2), wherever position
-# will then place it". With a word to
-# spare the join took the suffix as "the word after": given 'abdul
-# Jr', middle 'Smith'. Now given 'abdul', middle 'Jr Smith', where
-# 'John Jr Smith Berg' puts it. Parity with this baseline until now;
-# a rules.md example, since no differential corpus name has the shape.
+# will then place it". given 'abdul Jr', middle 'Smith' -> given
+# 'abdul', middle 'Jr Smith'. Parity with this baseline until now; a
+# rules.md example, since no differential corpus name has the shape.
 name_regex = "(?i)^abdul\\s+jr\\s+smith\\s+berg$"
 fields = ["given", "middle"]
 
 [[change]]
 issue = "fix(#421) the bound-given join never absorbs a split credential"
-# 'abdul Ph. D. Smith Berg': the worse half of the rule above. At this
-# baseline v1's fix_phd extracted the credential BEFORE parsing, so
-# the join saw 'abdul Smith Berg' and read given 'abdul Smith', suffix
-# 'Ph. D.'. 2.0 lost that: merge() unions piece tags, so joining onto
-# the 'Ph. D.' piece made the joined piece a SUFFIX piece and assign
-# sent the bound word to the suffix field. Now given 'abdul', middle
-# 'Smith', suffix 'Ph. D.' -- the suffix field is this baseline's
-# again; the given is not, because the join takes the word after it
-# or nothing, and does not reach past a credential for the next name
-# word (decisions.md#P5). A rules.md example; no differential corpus
-# name has the shape.
+# 'abdul Ph. D. Smith Berg': the rule above, on the split credential.
+# At this baseline v1's fix_phd extracted the credential before
+# parsing, so: first 'abdul Smith', suffix 'Ph. D.' -> given 'abdul',
+# middle 'Smith', suffix 'Ph. D.' -- the suffix field unchanged here,
+# the given deliberately not restored (decisions.md#P5), so this
+# ledger lists two fields where the 2.x ledgers list three. A rules.md
+# example; no differential corpus name has the shape.
 name_regex = "(?i)^abdul\\s+ph\\.\\s+d\\.\\s+smith\\s+berg$"
 fields = ["given", "middle"]
 

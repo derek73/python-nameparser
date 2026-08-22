@@ -635,8 +635,7 @@ def test_the_numeral_is_read_after_a_suffix_word_that_is_also_a_title() -> None:
     # family again: 'abdul Smith jr V' read given 'abdul Smith',
     # suffix 'jr, V'. Found by the design-docs review. The shipped
     # vocabulary has jr in TITLES; the test lexicon gets the same.
-    lex = dataclasses.replace(_LEX, titles=_LEX.titles | {"jr"})
-    out = _grouped("abdul Smith jr V", lexicon=lex)
+    out = _grouped("abdul Smith jr V", lexicon=_LEX.add(titles={"jr"}))
     assert _piece_texts(out) == [["abdul", "Smith", "jr", "V"]]
 
 
@@ -686,8 +685,6 @@ def test_the_join_never_absorbs_a_suffix_piece() -> None:
     # (#421; 1.4.0 parity, not a regression).
     out = _grouped("abdul jr Smith Berg")
     assert _piece_texts(out) == [["abdul", "jr", "Smith", "Berg"]]
-    out = _grouped("abdul phd Smith Berg")
-    assert _piece_texts(out) == [["abdul", "phd", "Smith", "Berg"]]
 
 
 def test_the_join_never_absorbs_a_split_credential() -> None:

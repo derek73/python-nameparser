@@ -463,39 +463,25 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 and len(pieces[first_name_k]) == 1
                 and "vocab:bound-given"
                 in tokens[pieces[first_name_k][0]].tags):
-            # What assign would read each piece as were the join to
-            # fire -- a suffix piece, or the trailing roman numeral
-            # S2's fork takes -- for the two places P5 asks whether a
-            # piece is a name word (#401, #421). The suffix-piece test
-            # alone vetoes a bare 'V' as an initial, which is right for
-            # assign's middle-initial question and wrong here: 'abdul
-            # Smith V' counted three name words, joined, and the
-            # family the reserve believed it was sparing was never
-            # there.
-            #
-            # The fork's conditions, exactly, over the walk assign
-            # actually makes -- computed ONCE, since the reserve asks
-            # per piece and rebuilding the walk per ask was quadratic
-            # (found in review; the benchmark's bound_given shape
-            # guards it). Only the main walk has the fork: the
-            # post-comma walk reads a trailing numeral by a lenient
-            # last-of-two rule and otherwise as a middle initial, so
-            # under LENIENT the reserve counts suffix pieces alone, as
-            # it always did ('Berg, abdul V' keeps given 'abdul V').
-            # assign drops the flagged credential pieces (the Ph. D.
-            # merge) from its walk at ANY position before the peel, so
-            # "last" and "the piece before" are read over the pieces
-            # it keeps ('abdul Smith V Ph. D.'). The numeral must not
-            # be the first name piece -- NOT "the piece before it is
-            # not a title": 'jr' is title vocabulary too, and that
-            # phrasing lost 'abdul Smith Jr V' its family. And the
-            # piece before it is taken AS THE JOIN WOULD LEAVE IT,
-            # since assign sees the joined pair, whose first token is
-            # the bound word: an initial-shaped second word ('abdul
-            # J. V') must not suppress the fork for the reserve alone
-            # -- the reserve then declines, and assign, seeing the
-            # unjoined pieces, reads the V as the family, exactly as
-            # it reads 'John J. V'. Each of the four found in review.
+            # rules.md#P5: "a trailing roman numeral that assign reads as the
+            # suffix (S2) is no word to spare, and is not joined" (history:
+            # decisions.md#P5) -- numeral_k is that piece, or None. Mirrors
+            # assign's fork condition for condition, over the walk assign
+            # makes (#401):
+            #   - flagged credential pieces are out of the walk, so "last"
+            #     and "the piece before" are read over the pieces assign
+            #     keeps ('abdul Smith V Ph. D.');
+            #   - the numeral is last and not the first name piece (rest[0]
+            #     is first_name_k, so len(rest) >= 2) -- NOT "the piece
+            #     before it is not a title": jr is title vocabulary too
+            #     ('abdul Smith Jr V');
+            #   - the piece before it is read as the join would leave it,
+            #     bound word first -- the remap below ('abdul J. V');
+            #   - STRICT only: the post-comma walk has no numeral fork, so
+            #     under LENIENT the reserve counts suffix pieces alone
+            #     ('Berg, abdul V').
+            # Computed once: a per-piece rebuild was quadratic, and the
+            # benchmark's bound_given shape guards it.
             numeral_k = None
             if bound_join is BoundJoin.STRICT:
                 rest = [j for j in range(first_name_k, len(pieces))
@@ -536,16 +522,13 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # abdul nee PhD' read given 'abdul nee', and 'Berg, abdul
             # nee' clears the LENIENT reserve the same way. Measured
             # rather than assumed -- dropping this undid #411 on
-            # exactly that row. A suffix is not a name word either
-            # (#421): the reserve counted it out, yet with a word to
-            # spare the join still took it as "the word after" --
-            # 'abdul Jr Smith Berg' read given 'abdul Jr' -- and the
-            # split credential was worse, since merge() unions piece
-            # tags: the joined piece became a SUFFIX piece and assign
-            # sent the bound word to the suffix field ('abdul Ph. D.
-            # Smith Berg' read suffix 'abdul Ph. D.', a 2.0
-            # regression). Same predicate as the reserve, so the two
-            # agree about what a name word is.
+            # exactly that row. A suffix piece is not a name word
+            # either (#421) -- rules.md#P5: "nor a word of the suffix
+            # vocabulary (S2), wherever position will then place it"
+            # -- and declining it is also what keeps merge()'s tag
+            # union from making the joined piece a suffix piece. Same
+            # predicate as the reserve, so the two agree about what a
+            # name word is.
             absorbs_non_name = (marker(first_name_k + 1)
                                 or reads_as_suffix(first_name_k + 1))
             # A given-name title ahead of the bound word asserts that a

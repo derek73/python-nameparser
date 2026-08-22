@@ -376,21 +376,14 @@ fields = ["given", "family"]
 
 [[change]]
 issue = "fix(#401) the bound-given reserve counts the trailing numeral assign reads as the suffix"
-# 'abdul Smith V': rules.md#P5 -- "a trailing roman numeral that
-# assign reads as the suffix (S2) is no word to spare". A bare 'V' is
-# suffix vocabulary AND initial-shaped, so the reserve's suffix test
-# vetoed it as an initial and counted it a name word; the join fired,
-# and assign then read the V as the suffix it is -- given 'abdul
-# Smith', family ''. The reserve now asks assign's question: given
-# 'abdul', family 'Smith', suffix 'V' -- and 'abdul Smith Jr V'
-# likewise, a suffix word before the numeral not hiding it (this
-# baseline read suffix 'Jr, V' with no family). Two fields here: the
-# suffix was already read at this baseline, which is why the 1.4.0
-# rule lists three. Shipped since 1.x: 1.4.0 read first 'abdul
-# Smith', last 'V'. Both are rules.md examples, since no differential
-# corpus name has the shape; the 'abdul Smith V Ph. D.' spelling is
-# pinned at the piece level only -- a trailing split credential is
-# the 1.4.0 ledger's [[never]] shape.
+# 'abdul Smith V', 'abdul Smith Jr V': rules.md#P5 -- "a trailing
+# roman numeral that assign reads as the suffix (S2) is no word to
+# spare, and is not joined". given 'abdul Smith', family '' -> given
+# 'abdul', family 'Smith'; the suffix was already read at this
+# baseline, which is why the 1.4.0 rule lists three fields and this
+# one two. Both are rules.md examples; no differential corpus name
+# has the shape, and the 'abdul Smith V Ph. D.' spelling stays out of
+# the corpus (the 1.4.0 ledger's [[never]] shape).
 name_regex = "(?i)^abdul\\s+smith\\s+(jr\\s+)?v$"
 fields = ["given", "family"]
 
@@ -399,25 +392,19 @@ issue = "fix(#421) the bound-given join never absorbs a suffix piece"
 # 'abdul Jr Smith Berg': rules.md#P5 -- "the join never absorbs a
 # marker standing as a word of its own -- a marker is not a name word
 # (M2) -- nor a word of the suffix vocabulary (S2), wherever position
-# will then place it". With a word to
-# spare the join took the suffix as "the word after": given 'abdul
-# Jr', middle 'Smith'. Now given 'abdul', middle 'Jr Smith', where
-# 'John Jr Smith Berg' puts it. Parity with this baseline until now;
-# a rules.md example, since no differential corpus name has the shape.
+# will then place it". given 'abdul Jr', middle 'Smith' -> given
+# 'abdul', middle 'Jr Smith'. Parity with this baseline until now; a
+# rules.md example, since no differential corpus name has the shape.
 name_regex = "(?i)^abdul\\s+jr\\s+smith\\s+berg$"
 fields = ["given", "middle"]
 
 [[change]]
 issue = "fix(#421) the bound-given join never absorbs a split credential"
-# 'abdul Ph. D. Smith Berg': the worse half of the rule above, and a
-# 2.0 regression. merge() unions piece tags, so joining onto the
-# 'Ph. D.' piece made the joined piece a SUFFIX piece, and assign sent
-# the bound word to the suffix field: given 'Smith', suffix 'abdul
-# Ph. D.'. Now given 'abdul', middle 'Smith', suffix 'Ph. D.' -- the
-# suffix field is 1.4.0's again (v1's fix_phd extracted the credential
-# before parsing, and then read given 'abdul Smith'; the 1.4.0 ledger
-# carries that half). A rules.md example; no differential corpus name
-# has the shape.
+# 'abdul Ph. D. Smith Berg': the rule above, on the split credential
+# -- a 2.0 regression: given 'Smith', suffix 'abdul Ph. D.' -> given
+# 'abdul', middle 'Smith', suffix 'Ph. D.', the suffix field 1.4.0's
+# again (that ledger carries the given's own story). A rules.md
+# example; no differential corpus name has the shape.
 name_regex = "(?i)^abdul\\s+ph\\.\\s+d\\.\\s+smith\\s+berg$"
 fields = ["given", "middle", "suffix"]
 

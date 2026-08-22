@@ -96,9 +96,6 @@ def is_initial_shaped(text: str) -> bool:
 
 
 # v1 regexes.py "roman_numeral", pinned by tests/v2/test_regex_sync.py.
-# Here rather than in assign since #401, so that the other reader of
-# the fork's question -- group's bound-given reserve -- shares its
-# definition instead of carrying a copy.
 _ROMAN = re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I)
 
 
@@ -107,14 +104,12 @@ _ROMAN = re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I)
 # veto would otherwise take: V, I and X are suffix vocabulary AND bare
 # capitals, and a bare capital inside a name is a middle initial.
 def is_trailing_numeral_suffix(text: str, preceding: str) -> bool:
-    """assign's roman-numeral fork, as the predicate it shares with
-    group's bound-given reserve (#401): a FINAL single-token piece
-    that is a roman numeral reads as the suffix when the piece before
-    it does not look like part of an initial run. `preceding` is that
-    piece's first token; the callers establish that `text` is last
-    and that a name piece precedes it. The reserve asks whether a
-    family name survives the join, and the only right answer is the
-    one assign gives -- which is this.
+    """assign's roman-numeral fork, shared with group's bound-given
+    reserve (#401): a FINAL single-token piece that is a roman numeral
+    reads as the suffix when the piece before it does not look like
+    part of an initial run. `preceding` is that piece's first token;
+    the callers establish that `text` is last and that a name piece
+    precedes it.
 
     is_initial_shaped, not is_initial: this asks whether the preceding
     piece looks like part of an initial run, which is a question

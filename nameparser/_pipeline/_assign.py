@@ -220,11 +220,8 @@ def _assign_main(seg_idx: int, state: ParseState,
         if _is_suffix_piece(piece, tags, tokens):
             k -= 1
             continue
-        # The predicate is _vocab's since #401, shared with group's
-        # bound-given reserve: that reserve asks whether a family name
-        # survives the join, and the only right answer is the one
-        # given here. Its docstring carries the is_initial_shaped
-        # reasoning (#320).
+        # Shared with group's bound-given reserve (#401); the
+        # docstring carries the is_initial_shaped reasoning (#320).
         if (k == len(rest) and k >= 2 and len(piece) == 1
                 and is_trailing_numeral_suffix(
                     tokens[piece[0]].text,
