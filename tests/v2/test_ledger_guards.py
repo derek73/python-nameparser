@@ -1203,11 +1203,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
             _Claim(11, ('family', 'middle'), "3acdb7d11969"),
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(262, ('given', 'suffix', 'title'), "2ff78676a1b4"),
+            _Claim(261, ('given', 'suffix', 'title'), "ed69e02b552e"),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(262, ('family', 'given'), "2ff78676a1b4"),
+            _Claim(261, ('family', 'given'), "ed69e02b552e"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(1033, ('family', 'given', 'suffix'), "797c8355be6c"),
+            _Claim(1023, ('family', 'given', 'suffix'), "f511aaf35e1a"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1563,7 +1563,7 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
                   ("fix(comma-family)", "fix(comma-precomma-family)",
                    "fix(suffix-routing)")),
     '(^|[\\w.]\\s+)[("\'][^)"\']+[)"\'](\\s+\\w|\\s*$)':
-        _Excluded(45, "68dc4c5d28f8", ()),
+        _Excluded(44, "203608eec291", ()),
 }
 
 

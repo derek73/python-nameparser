@@ -223,6 +223,16 @@ in writing to be widened, added rules for four more, and narrowed the
 trailing-`Ph. D.` exclusion exactly as its own comment instructed the
 moment a `<suffix> Ph. D.` name appeared.
 
+Backticks also wrap prose, so the same change added two screens the
+quoted branch never needed: `:` joins the structural characters (it
+appears in no name across all four corpora, and accounts for four
+harvested error messages), and a short list of English function words
+rejects capitalized sentences the character screen cannot see —
+`What this gate does not cover` is well-formed as a phrase. That list
+is narrow on purpose: `and`, `the`, `of`, `will`, `can` and `do` all
+stay out of it, because `Rob And Beth Edmunds`, `The Hon`, `Duke of
+Wellington` and `Anh Do` are real corpus names.
+
 The rules corpus earned its place the same way — 113 of its 155 names
 were in no other corpus, and on its first run 12 of them turned out to
 have moved during the 2.2 cycle with nothing observing it. Classifying

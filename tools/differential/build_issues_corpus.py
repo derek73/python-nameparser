@@ -67,10 +67,32 @@ _A_CALL = re.compile(r"""[A-Za-z_]\w*\(""")
 # Extended when the backtick branch landed (#413): backticks wrap code
 # far more often than quotes do, so the branch admits code-shaped
 # strings a quoted phrase rarely produces -- 'Constants.__init__(self,
-# **state)', 'DEVIATION #364', 'SUFFIX_ACRONYMS ∩ SUFFIX_NOT_ACRONYMS'.
-# None of '*#~;_' appears in a name. The one existing corpus entry this
-# drops, 'St. ___', is a placeholder rather than a name.
-_NOT_A_NAME = set('{}<>=/\\|*#~;_')
+# **state)', 'DEVIATION #364', 'SUFFIX_ACRONYMS ∩ SUFFIX_NOT_ACRONYMS',
+# 'TypeError: a bytes-like object is required'. None of '*#~;_:'
+# appears in a name; the colon alone accounts for four of them, and it
+# is absent from all 1033 names across the four corpora. The one
+# existing entry this drops, 'St. ___', is a placeholder, not a name.
+_NOT_A_NAME = set('{}<>=/\\|*#~;_:')
+
+#: Words that make a string a SENTENCE rather than a name. The
+#: character screen above cannot reach prose that is merely prose --
+#: 'What this gate does not cover', 'Takes everything', 'C is
+#: CONSTANTS' are all well-formed capitalized phrases in backticks.
+#:
+#: Deliberately narrow, and the exclusions matter more than the
+#: entries: 'and' is out because 'Rob And Beth Edmunds' is a real
+#: corpus name, 'the' because of 'The Hon', 'of' because of 'Duke of
+#: Wellington' and 'Dean of Chemistry', and 'will'/'can'/'do'/'no'
+#: because they are given names or particles ('Anh Do'). A name is
+#: allowed to be odd; it is not allowed to contain a finite verb or an
+#: interrogative.
+_PROSE = frozenset({
+    "is", "are", "was", "were", "be", "been", "this", "that", "these",
+    "those", "what", "which", "how", "why", "when", "not", "does",
+    "did", "without", "everything", "takes", "reads", "sure", "about",
+    "because", "than", "then", "into", "over", "under", "should",
+    "would", "could", "must", "on",
+})
 
 
 def _harvest(text: str) -> set[str]:
@@ -82,8 +104,11 @@ def _harvest(text: str) -> set[str]:
     for value in values:
         # Require an internal space: a single word is a surname at best
         # and carries no structure to disagree about.
-        if value and " " in value and not (_NOT_A_NAME & set(value)):
-            found.add(value)
+        if not value or " " not in value or (_NOT_A_NAME & set(value)):
+            continue
+        if any(w.strip(".,'\"").lower() in _PROSE for w in value.split()):
+            continue
+        found.add(value)
     return found
 
 
