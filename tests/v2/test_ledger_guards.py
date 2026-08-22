@@ -46,6 +46,7 @@ from nameparser._policy import Script
 from nameparser._lexicon import _normalize
 from nameparser.config.maiden_markers import MAIDEN_MARKERS
 from nameparser.config.particles import PARTICLES
+from nameparser.config.titles import TITLES
 from nameparser.config.suffixes import (
     GLUED_HONORIFICS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_WORDS)
 
@@ -548,11 +549,26 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
                   "Berg, Jan mc"),
     "fix(#399)": ("Jane van der Berg née", "Jane van der Berg née y Jones",
                   "van der Berg, abdul née Jones", "Jane Smith née Jones"),
-    "fix(#360)": ("McDonald, Ronald", "Mcintyre Smith Jr.", "Ste Marie",
-                  "Los Santos"),
+    # Keyed on the full issue text, not "fix(#360)": that substring now
+    # matches two rules, and each one's boundary is the other's claim.
+    "fix(#360) mc moved into the never-given particles, so it folds into the family":
+        ("McDonald, Ronald", "Mcintyre Smith Jr.", "Ste Marie",
+         "Los Santos"),
+    "fix(#360) ste moved into the never-given particles with mc":
+        ("Steve Marie", "Ste", "Mc Donald", "Los Santos",
+         "Ste Marie Jones", "Ste. Marie Dupont"),
     "fix(#400)": ("Jane Smith ABD", "Jane Smith A.B.D.", "Abdul Salam"),
     "fix(#400/#274)": ("abd Berg née Jones", "abd Allah Smith",
                        "Jane Smith née Jones"),
+    # The literal-anchored rules #413 added. Each claims exactly one
+    # corpus name, so _CORPUS_CLAIMS cannot see a widening that reaches
+    # only names the corpora lack -- these probes are the only wall.
+    "fix(#367) a title-and-particle word stops the scan instead of being chained":
+        ("Dr. Do Smith", "Dr Do Nguyen"),
+    "fix(#399) a maiden marker bounds the particle chain: the geb. spelling":
+        ("Berg, Ursula von der geb. Albrecht",),
+    "fix(credential-pair-order) a split credential and a suffix render in written order":
+        ("田中さん, Jr. Ph. D.", "Smith, Jr. Ph. D. MD"),
     "fix(#411)": ("abdul née Jones", "Smith, abdul Rahman",
                   "Jane Smith ABD", "van der Berg, abd née Jones"),
     "fix(#411/S2)": ("van der Berg, abdul née Jones", "Berg, abd Rahman",
@@ -578,6 +594,7 @@ def test_no_rule_matches_a_name_it_has_no_business_claiming() -> None:
     names chosen to sit just outside them.
     """
     checked = 0
+    hits_by_key: dict[str, int] = {k: 0 for k in _MUST_NOT_MATCH}
     for ledger in _LEDGERS:
         for rule in _rules(ledger):
             regex = rule.get("name_regex")
@@ -586,6 +603,7 @@ def test_no_rule_matches_a_name_it_has_no_business_claiming() -> None:
             for key, probes in _MUST_NOT_MATCH.items():
                 if key not in rule["issue"]:
                     continue
+                hits_by_key[key] += 1
                 for probe in probes:
                     checked += 1
                     assert not re.search(regex, probe), (
@@ -594,9 +612,16 @@ def test_no_rule_matches_a_name_it_has_no_business_claiming() -> None:
                         f"arrive UNEXPLAINED. Either the rule widened "
                         f"or the boundary moved -- if the latter, the "
                         f"comment and this roster both need editing")
-    assert checked, (
-        "_MUST_NOT_MATCH matched no rule; the keys are `issue` "
-        "substrings and a renamed rule silently empties this pin")
+    # Per KEY, not in aggregate. The old spelling summed one counter
+    # over every key, so renaming a single key to a string no rule
+    # contains left the suite green -- which is exactly the edit the
+    # message below warns about.
+    empty = sorted(k for k, n in hits_by_key.items() if not n)
+    assert not empty, (
+        f"_MUST_NOT_MATCH keys matching no rule: {empty}. The keys are "
+        f"`issue` substrings, so a renamed or deleted rule silently "
+        f"empties its pin while every other key keeps this test green")
+    assert checked
 
 
 def test_rules_corpus_matches_the_rules_doc() -> None:
@@ -830,6 +855,14 @@ _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
     # opens a chain running into a maiden marker), so the shared
     # snapshot is agreement rather than duplication: a divergence
     # would be a fact about one of the rules.
+    # The title half of the #367 rule, widened when three more titled
+    # names arrived (#413). Partial on purpose: these are the four
+    # spellings that appear before `van` in the corpora, not every title
+    # that could -- seven titles sit before some particle, and two of the
+    # other three have rules of their own.
+    "fix(#367) a title no longer displaces a leading particle out of the leading position":
+        _LatinCopy(vocabulary=TITLES,
+                   covers=frozenset({"mr", "dr", "sir", "jr"})),
     "fix(#399)": _LatinCopy(
         vocabulary=PARTICLES,
         covers=frozenset({"de", "del", "den", "der", "di", "do", "dos",
@@ -1182,19 +1215,19 @@ def _claim(rule: dict) -> _Claim:
 _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(105, ('family', 'given', 'middle'), "090ac3eef3fb"),
+            _Claim(107, ('family', 'given', 'middle'), "0191ac9143a6"),
         "fix(#274) maiden markers consumed":
-            _Claim(15, ('family', 'maiden', 'middle'), "274b98c79bfb"),
+            _Claim(22, ('family', 'maiden', 'middle'), "f0ad4ae1420a"),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
-            _Claim(4, ('family', 'given', 'maiden', 'middle'), "27bb9ebc1951"),
+            _Claim(5, ('family', 'given', 'maiden', 'middle'), "bc0e10dd7ec8"),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(8, ('family', 'middle'), "f4d52b062f39"),
+            _Claim(11, ('family', 'middle'), "3acdb7d11969"),
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(237, ('given', 'suffix', 'title'), "4bedbefbfe88"),
+            _Claim(261, ('given', 'suffix', 'title'), "ed69e02b552e"),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(237, ('family', 'given'), "4bedbefbfe88"),
+            _Claim(261, ('family', 'given'), "ed69e02b552e"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(868, ('family', 'given', 'suffix'), "c69fa749f31c"),
+            _Claim(1023, ('family', 'given', 'suffix'), "f511aaf35e1a"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1208,21 +1241,21 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(cjk-fullwidth-paren-nickname) fullwidth-parenthesis recognition compounds with the CJK order flip":
             _Claim(1, ('family', 'given', 'middle', 'nickname'), "cf370e856ae7"),
         "fix(cjk-comma-honorific-peel) glued honorific peels off a post-comma given name":
-            _Claim(21, ('given', 'suffix'), "fdc02562bd15"),
+            _Claim(22, ('given', 'suffix'), "1273a0e4e949"),
         "fix(cjk-comma-compound) comma routing compounds with the CJK order flip":
-            _Claim(21, ('family', 'given', 'middle', 'suffix', 'title'), "fdc02562bd15"),
+            _Claim(22, ('family', 'given', 'middle', 'suffix', 'title'), "1273a0e4e949"),
         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix":
-            _Claim(35, ('family', 'given', 'suffix'), "4da08a0090fe"),
+            _Claim(36, ('family', 'given', 'suffix'), "9ba2bdd624de"),
         "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip":
             _Claim(19, ('family', 'given', 'middle', 'suffix'), "aa475ddd4745"),
         "feat(#269) non-Latin titles/conjunctions recognized":
             _Claim(4, ('given', 'middle', 'title'), "e86eeb13eeb2"),
         "fix(leading-credential) a split 'Ph. D.' before the name stays one unit":
-            _Claim(1, ('given', 'middle', 'suffix', 'title'), "390e7f814d13"),
+            _Claim(4, ('family', 'given', 'middle', 'suffix', 'title'), "1425d85a2d86"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
-            _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
+            _Claim(4, ('family', 'given', 'middle'), "ae299117dd60"),
         "fix(#400) abd joins the word after it as one given name":
-            _Claim(7, ('given', 'middle'), "63d37316a87c"),
+            _Claim(11, ('given', 'middle'), "1eaed91fc574"),
         "fix(#272/#308) nakaguro division and a glued hangul honorific in one name":
             _Claim(1, ('family', 'given', 'middle', 'suffix'), "2fbf1a94f122"),
         "fix(nickname-typographic-pairs) two typographic quote spans read as one nickname set":
@@ -1233,56 +1266,80 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given', 'maiden', 'middle'), "6bed6d349342"),
         "fix(#411/S2) a declining bound-given join leaves the suffix reading after a family comma":
             _Claim(1, ('given', 'maiden', 'middle', 'suffix'), "0f8ed9db0a32"),
+        "fix(credential-pair-order) a split credential and a suffix render in written order":
+            _Claim(1, ('suffix',), "6f6eef764248"),
+        "fix(#369) a bound given-name word that is also a particle no longer chains":
+            _Claim(1, ('family', 'given'), "81cf02ffdb33"),
+        "fix(#360) ste moved into the never-given particles with mc":
+            _Claim(1, ('family', 'given'), "e62caedec864"),
     },
     "expected_since_2.0.0.toml": {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(8, ('family', 'middle'), "f4d52b062f39"),
+            _Claim(11, ('family', 'middle'), "3acdb7d11969"),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(105, ('_ambiguities', 'family', 'given', 'middle'), "090ac3eef3fb"),
+            _Claim(107, ('_ambiguities', 'family', 'given', 'middle'), "0191ac9143a6"),
         "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into suffix":
-            _Claim(35, ('family', 'given', 'suffix'), "4da08a0090fe"),
+            _Claim(36, ('family', 'given', 'suffix'), "9ba2bdd624de"),
         "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix":
             _Claim(16, ('family', 'given', 'middle', 'suffix'), "6d390e518bd2"),
         "fix(#309) 旧姓 maiden marker consumed, compounding with the CJK order flip":
-            _Claim(4, ('family', 'given', 'maiden', 'middle'), "27bb9ebc1951"),
+            _Claim(5, ('family', 'given', 'maiden', 'middle'), "bc0e10dd7ec8"),
         "fix(#272) nakaguro inside delimited content renders as a space, compounding with the CJK order flip":
             _Claim(1, ('family', 'given', 'nickname'), "d4069d459f23"),
         "fix(#298) 间隔号 division changes the comma reading, sending the credential from title to suffix":
             _Claim(1, ('family', 'given', 'suffix', 'title'), "1d45596e6fdb"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
-            _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
+            _Claim(4, ('family', 'given', 'middle'), "ae299117dd60"),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
             _Claim(1, ('family', 'suffix'), "081ce07f927b"),
         "fix(#399) a maiden marker bounds the particle chain that swallowed it":
-            _Claim(4, ('family', 'maiden'), "32c8178f87c0"),
+            _Claim(5, ('family', 'maiden'), "15ec75a89f07"),
         "fix(#360) mc moved into the never-given particles, so it folds into the family":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ee4339908f4d"),
         "fix(#400) abd joins the word after it as one given name":
-            _Claim(7, ('given', 'middle'), "63d37316a87c"),
+            _Claim(11, ('given', 'middle'), "1eaed91fc574"),
         "fix(#367) a title no longer displaces a leading never-given particle":
             _Claim(1, ('family', 'given'), "db724fb9c779"),
         "fix(#272/#308) nakaguro division and a glued hangul honorific in one name":
             _Claim(1, ('family', 'given', 'middle', 'suffix'), "2fbf1a94f122"),
         "fix(#411) the bound-given reserve stops counting words the maiden name takes":
             _Claim(1, ('given', 'maiden', 'middle'), "7515923c9613"),
+        "fix(#367) a title-and-particle word stops the scan instead of being chained":
+            _Claim(1, ('given', 'title'), "faa2c70fc49e"),
+        "fix(#369) a bound given-name word that is also a particle no longer chains":
+            _Claim(1, ('family', 'given'), "81cf02ffdb33"),
+        "fix(#360) ste moved into the never-given particles with mc":
+            _Claim(1, ('_ambiguities', 'family', 'given'), "e62caedec864"),
+        "fix(#399) a maiden marker bounds the particle chain: the geb. spelling":
+            _Claim(1, ('family', 'maiden'), "2150936a8c55"),
     },
     "expected_since_2.1.0.toml": {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(8, ('family', 'middle'), "f4d52b062f39"),
+            _Claim(11, ('family', 'middle'), "3acdb7d11969"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
-            _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
+            _Claim(4, ('family', 'given', 'middle'), "ae299117dd60"),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
             _Claim(1, ('family', 'suffix'), "081ce07f927b"),
         "fix(#399) a maiden marker bounds the particle chain that swallowed it":
-            _Claim(4, ('family', 'maiden'), "32c8178f87c0"),
+            _Claim(5, ('family', 'maiden'), "15ec75a89f07"),
         "fix(#360) mc moved into the never-given particles, so it folds into the family":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ee4339908f4d"),
         "fix(#400) abd joins the word after it as one given name":
-            _Claim(7, ('given', 'middle'), "63d37316a87c"),
+            _Claim(11, ('given', 'middle'), "1eaed91fc574"),
         "fix(#367) a title no longer displaces a leading never-given particle":
             _Claim(1, ('family', 'given'), "db724fb9c779"),
         "fix(#411) the bound-given reserve stops counting words the maiden name takes":
             _Claim(1, ('given', 'maiden', 'middle'), "7515923c9613"),
+        "fix(#367) a title-and-particle word stops the scan instead of being chained":
+            _Claim(1, ('given', 'title'), "faa2c70fc49e"),
+        "fix(#369) a bound given-name word that is also a particle no longer chains":
+            _Claim(1, ('family', 'given'), "81cf02ffdb33"),
+        "fix(#360) ste moved into the never-given particles with mc":
+            _Claim(1, ('_ambiguities', 'family', 'given'), "e62caedec864"),
+        "fix(#399) a maiden marker bounds the particle chain: the geb. spelling":
+            _Claim(1, ('family', 'maiden'), "2150936a8c55"),
+        "fix(#399) a maiden marker bounds the particle chain: a native-script marker":
+            _Claim(1, ('family', 'maiden'), "f016cc61ca43"),
     },
 }
 
@@ -1518,7 +1575,7 @@ class _Excluded(NamedTuple):
 #: protected READING is caught; a rule shadowed by an existing one on
 #: every subset it claims is not.
 _EXCLUSION_EFFECT: dict[str, _Excluded] = {
-    "(?i)^[\\u0000-\\u024f]*\\bph\\.\\s*d\\.\\s*$":
+    "(?i)^(?!\\s*ph\\.)(?![^\\s,]+\\s*,\\s*ph\\.\\s*d\\.\\s*$)(?![\\u0000-\\u024f]*\\b(?:jr|sr|ii|iii|iv)\\.?\\s+ph\\.\\s*d\\.\\s*$)[\\u0000-\\u024f]*\\bph\\.\\s*d\\.\\s*$":
         _Excluded(3, "5a12a8117651",
                   # fix(comma-precomma-family) JOINED this tuple in #372,
                   # it did not replace anything: it claims the {given,
@@ -1530,7 +1587,7 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
                   ("fix(comma-family)", "fix(comma-precomma-family)",
                    "fix(suffix-routing)")),
     '(^|[\\w.]\\s+)[("\'][^)"\']+[)"\'](\\s+\\w|\\s*$)':
-        _Excluded(42, "e594ae1a2e73", ()),
+        _Excluded(44, "203608eec291", ()),
 }
 
 

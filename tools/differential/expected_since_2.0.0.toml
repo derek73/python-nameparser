@@ -347,6 +347,52 @@ name_regex = "^\\S*\u00b7\\S*\uc528$"
 fields = ["given", "middle", "family", "suffix"]
 
 [[change]]
+issue = "fix(#367) a title-and-particle word stops the scan instead of being chained"
+# 'Dr. Do Van Johnson, MD': the arrival the fix(#367) rule below named
+# as its reason for listing three roles -- "a corpus name that moves
+# `title` or `maiden` should arrive UNEXPLAINED and be read once". This
+# is the `title` one. `do` is both a title and an ambiguous particle,
+# so it stops the transparency scan and stays a title piece instead of
+# being chained onto the name.
+name_regex = "(?i)^dr\\.?\\s+do\\s+van\\b"
+fields = ["title", "given"]
+
+[[change]]
+issue = "fix(#369) a bound given-name word that is also a particle no longer chains"
+# 'Sheik Abu Bakar': the regression the release log records under #367
+# and tracks at #369 -- given 'Abu Bakar' becomes given 'Abu', family
+# 'Bakar'. It read correctly before only because `abu` is a particle as
+# well as a bound given name. Classified because the cause is known and
+# recorded, NOT because the reading is wanted: #369 is open, and a
+# future change here should be read against that issue.
+name_regex = "(?i)^sheik\\s+abu\\b"
+fields = ["given", "family"]
+
+[[change]]
+issue = "fix(#360) ste moved into the never-given particles with mc"
+# 'Ste Marie': the second word of the vocabulary move the fix(#360)
+# rule explains for `mc`, and that rule named it -- "'Ste Marie',
+# 'Los Santos' and 'Das Silva' all move the same way ... The others
+# should arrive UNEXPLAINED and be read once." One has. A sibling
+# rather than an alternation: the guards allow one vocabulary
+# alternation per rule, and the other moved words are in no corpus.
+name_regex = "(?i)^ste\\s+\\S+$"
+fields = ["given", "family", "_ambiguities"]
+
+[[change]]
+issue = "fix(#399) a maiden marker bounds the particle chain: the geb. spelling"
+# 'Ursula von der Leyen geb. Albrecht': #399's own headline name, which
+# reached the corpus through the backtick harvest (#413) -- it sat in
+# that issue's TITLE while #399 shipped noting the class was invisible
+# to this harness. A sibling of the fix(#399) rule rather than a
+# widened marker slot: making that a vocabulary alternation would be a
+# second one, and the guards allow one per rule. The particle
+# alternation is identical to that rule's, deliberately -- both resolve
+# to the same roster key and must cover the same set.
+name_regex = "(?i)^(?![^\\n]*,)[^\\n]*\\b(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)\\b.*?\\sgeb\\..?\\s+\\S+$"
+fields = ["family", "maiden"]
+
+[[change]]
 issue = "fix(#367) a title no longer displaces a leading particle out of the leading position"
 # 'Mr. Van Nguyen': a leading particle deliberately does not chain --
 # that is what makes 'Van Nguyen' read as given Van, family Nguyen.
@@ -363,6 +409,13 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # the class: a corpus name that joins it later should arrive
 # UNEXPLAINED and be read once, not be absorbed silently. Widen the
 # literals then, and record the new count.
+#
+# Three joined it through #413's backtick harvest: 'Dr. Van Johnson',
+# 'Sir Van Johnson', 'Jr. Van Johnson'. The title slot is an
+# alternation over TITLES, which all four spellings copy; `jr` reads
+# as a title because it is in TITLES and leads, which 1.4.0 already
+# did.
+# `\.?` earns its place now the literals are spelled out.
 #
 # The title slot is a LITERAL for that reason and not by accident.
 # Nothing in a regex over the raw string can ask whether a word is a
@@ -398,7 +451,7 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # ["given", "family", "suffix"] is a superset of this diff's fields. No
 # fields-only rule exists here, so this file's copy is the plain
 # classification.
-name_regex = "(?i)^mr\\.\\s+van\\b"
+name_regex = "(?i)^(mr|dr|sir|jr)\\.?\\s+van\\b"
 fields = ["given", "middle", "family"]
 
 [[change]]

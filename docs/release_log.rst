@@ -13,11 +13,14 @@ Release Log
     Nothing moved between vocabularies. The rename itself changes no
     parse at all; the parsing changes below are separate fixes, and
     only one of them reaches the default name order -- a title no
-    longer changing how the name behind it is read, which moves one of
-    the 751 names of the differential corpora. Both family-first
-    orders change too, below -- the same eight names under each, seven
-    of them from the family-first fix and the eighth the one name the
-    title fix moves in every order.
+    longer changing how the name behind it is read, which moves four
+    names of the differential corpora. Both family-first orders change too,
+    below -- seven of those from the family-first fix, plus the names
+    the title fix moves in every order. The corpora have roughly
+    doubled across this cycle (#414 added the rules doc's examples,
+    #413 taught the issue harvester to read backticks), so the counts
+    in the bullets below are the classified summary at the time each
+    was written; the gate output is the source of record.
     What breaks is code that *writes* to a default word list, and code
     that imports one by its 1.x name has until 3.0.
 
