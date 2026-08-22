@@ -885,7 +885,7 @@ CASES: tuple[Case, ...] = (
                "makes 'van der Jones' a single piece"),
     Case("bound_given_join_sees_only_the_surviving_name",
          "abd née Jones Jr Smith Berg",
-         {"given": "abd Jr", "middle": "Smith", "family": "Berg",
+         {"given": "abd", "middle": "Jr Smith", "family": "Berg",
           "maiden": "Jones"},
          classification="fix(#418)",
          notes="#411's shape, re-pinned. The maiden walk stops at the "

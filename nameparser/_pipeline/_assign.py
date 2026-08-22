@@ -35,7 +35,7 @@ import dataclasses
 import re
 
 from nameparser._pipeline._vocab import (
-    effective_script, is_initial_shaped, is_suffix_lenient,
+    effective_script, is_suffix_lenient, is_trailing_numeral_suffix,
     resolve_script_set,
 )
 from nameparser._pipeline._group import (
@@ -51,7 +51,6 @@ from nameparser._types import AmbiguityKind, Role
 # "period_abbreviation" and "roman_numeral") -- layering forbids the
 # config import; keep in sync by hand.
 _PERIOD_ABBREV = re.compile(r'^[^\W\d_]{2,}\.$')
-_ROMAN = re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I)
 
 
 def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
@@ -221,15 +220,14 @@ def _assign_main(seg_idx: int, state: ParseState,
         if _is_suffix_piece(piece, tags, tokens):
             k -= 1
             continue
-        # is_initial_shaped, not the "initial" tag: this asks whether
-        # the preceding piece looks like part of an initial run, which
-        # is a question about layout, and #320 narrowed the tag to
-        # initials that can really stand in for a name. Reading the tag
-        # here made '씨.' stop suppressing the fork and cost 'John 씨. V'
-        # its family name.
+        # The predicate is _vocab's since #401, shared with group's
+        # bound-given reserve: that reserve asks whether a family name
+        # survives the join, and the only right answer is the one
+        # given here. Its docstring carries the is_initial_shaped
+        # reasoning (#320).
         if (k == len(rest) and k >= 2 and len(piece) == 1
-                and _ROMAN.match(tokens[piece[0]].text)
-                and not is_initial_shaped(
+                and is_trailing_numeral_suffix(
+                    tokens[piece[0]].text,
                     tokens[pieces[rest[k - 2]][0]].text)):
             # a trailing single letter is a name part unless it happens
             # to be a roman numeral -- and V/X/I are ordinary middle

@@ -34,6 +34,7 @@ from nameparser._pipeline._state import (
 from nameparser._pipeline._vocab import D as _D
 from nameparser._pipeline._vocab import PH as _PH
 from nameparser._pipeline._vocab import delimiter_cores
+from nameparser._pipeline._vocab import is_trailing_numeral_suffix
 from nameparser._types import AmbiguityKind, Role
 
 # the credential-pair regexes live in _vocab, whose own
@@ -462,6 +463,52 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 and len(pieces[first_name_k]) == 1
                 and "vocab:bound-given"
                 in tokens[pieces[first_name_k][0]].tags):
+            def reads_as_suffix(k: int) -> bool:
+                # What assign will read piece k as -- a suffix piece,
+                # or the trailing roman numeral S2's fork takes -- for
+                # the two places P5 asks whether a piece is a name
+                # word (#401, #421). The suffix-piece test alone
+                # vetoes a bare 'V' as an initial, which is right for
+                # assign's middle-initial question and wrong here:
+                # 'abdul Smith V' counted three name words, joined,
+                # and the family the reserve believed it was sparing
+                # was never there.
+                #
+                # The fork's conditions, exactly, over the walk assign
+                # actually makes. Only the main walk has the fork: the
+                # post-comma walk reads a trailing numeral by a
+                # lenient last-of-two rule and otherwise as a middle
+                # initial, so under LENIENT the reserve counts suffix
+                # pieces alone, as it always did ('Berg, abdul V'
+                # keeps given 'abdul V'). assign drops the flagged
+                # credential pieces (the Ph. D. merge) from its walk
+                # at ANY position before the peel, so "last" and "the
+                # piece before" are read over the pieces it keeps
+                # ('abdul Smith V Ph. D.'). The numeral must not be the
+                # first name piece -- NOT "the piece before it is not
+                # a title": 'jr' is title vocabulary too, and that
+                # phrasing lost 'abdul Smith Jr V' its family. And the
+                # piece before it is taken AS THE JOIN WOULD LEAVE IT,
+                # since assign sees the joined pair, whose first token
+                # is the bound word: an initial-shaped second word
+                # ('abdul J. V') must not suppress the fork for the
+                # reserve alone. Each of the four found in review.
+                if suffix(k):
+                    return True
+                if bound_join is not BoundJoin.STRICT:
+                    return False
+                rest = [j for j in range(first_name_k, len(pieces))
+                        if "suffix" not in ptags[j]]
+                if not (len(rest) >= 2 and k == rest[-1]
+                        and len(pieces[k]) == 1):
+                    return False
+                prev = rest[-2]
+                if prev == first_name_k + 1:
+                    prev = first_name_k
+                return is_trailing_numeral_suffix(
+                    tokens[pieces[k][0]].text,
+                    tokens[pieces[prev][0]].text)
+
             # first_name_k counts as a name piece even when it is
             # ALSO suffix vocabulary. The reserve asks whether enough
             # OTHER words are left to spare, and this piece is the one
@@ -476,7 +523,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # excluded them by hand while the pass still ran later).
             non_suffix = sum(1 for k in range(len(pieces))
                              if not title(k)
-                             and (k == first_name_k or not suffix(k)))
+                             and (k == first_name_k
+                                  or not reads_as_suffix(k)))
             # P5 joins the bound word to "the word after it", and a
             # marker is not a name word -- it is the announcement that
             # another name follows. The only marker left by now is one
@@ -485,8 +533,18 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # abdul nee PhD' read given 'abdul nee', and 'Berg, abdul
             # nee' clears the LENIENT reserve the same way. Measured
             # rather than assumed -- dropping this undid #411 on
-            # exactly that row.
-            absorbs_marker = marker(first_name_k + 1)
+            # exactly that row. A suffix is not a name word either
+            # (#421): the reserve counted it out, yet with a word to
+            # spare the join still took it as "the word after" --
+            # 'abdul Jr Smith Berg' read given 'abdul Jr' -- and the
+            # split credential was worse, since merge() unions piece
+            # tags: the joined piece became a SUFFIX piece and assign
+            # sent the bound word to the suffix field ('abdul Ph. D.
+            # Smith Berg' read suffix 'abdul Ph. D.', a 2.0
+            # regression). Same predicate as the reserve, so the two
+            # agree about what a name word is.
+            absorbs_non_name = (marker(first_name_k + 1)
+                                or reads_as_suffix(first_name_k + 1))
             # A given-name title ahead of the bound word asserts that a
             # given name follows -- the assertion H1 reads when it
             # keeps "Sir John" a given name -- so behind one there is
@@ -502,23 +560,21 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # this block, and LENIENT is already the floor, so only
             # STRICT can move. And the licence lifts the reserve for
             # two name WORDS: the piece the join would take must be
-            # one word and not a suffix -- a particle chain is the
-            # family name P2 built ("Sir abdul van der Berg" keeps
-            # family 'van der Berg' as the untitled name does), and a
-            # suffix is the shape #421 records the LENIENT path
-            # absorbing ("Sheik abdul Jr Smith" keeps given 'abdul').
-            # Both found in review; the rules.md examples carry them
-            # into the rules corpus, so the gate witnesses both.
+            # one word -- a particle chain is the family name P2 built
+            # ("Sir abdul van der Berg" keeps family 'van der Berg' as
+            # the untitled name does). Found in review; the rules.md
+            # example carries it into the rules corpus, so the gate
+            # witnesses it. (That the piece is not a suffix is the
+            # join's own decline above, general since #421.)
             reserve = bound_join
             if (bound_join is BoundJoin.STRICT and first_name_k > 0
                     and len(pieces[first_name_k + 1]) == 1
-                    and not suffix(first_name_k + 1)
                     and _title_key(tokens[i].text
                                    for k in range(first_name_k)
                                    for i in pieces[k])
                     in given_name_titles):
                 reserve = BoundJoin.LENIENT
-            if non_suffix >= reserve and not absorbs_marker:
+            if non_suffix >= reserve and not absorbs_non_name:
                 merge(first_name_k, first_name_k + 2)
     return pieces, ptags, taken
 

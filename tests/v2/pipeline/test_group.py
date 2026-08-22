@@ -602,3 +602,108 @@ def test_the_licence_still_declines_a_lone_marker() -> None:
     # name word behind a given-name title either, as after a comma.
     out = _grouped("sir abdul née", lexicon=_GIVEN_NAME_TITLE_LEX)
     assert _piece_texts(out) == [["sir", "abdul", "née"]]
+
+
+# -- #401 / #421: the reserve and the join agree about what a name word is
+
+
+def test_the_reserve_counts_a_trailing_numeral_as_the_suffix_assign_reads() -> None:
+    # rules.md#P5 says the reserve "needs a name word to spare". A bare
+    # 'V' carries both vocab:suffix and the initial tag, so the
+    # suffix-piece test vetoes it -- right for assign's middle-initial
+    # question, wrong here: assign reads a FINAL roman numeral after a
+    # non-initial piece as the suffix (S2's fork), so the family the
+    # reserve believed it was sparing was never there. 'abdul Smith V'
+    # read given 'abdul Smith', family '' (#401).
+    out = _grouped("abdul Smith V")
+    assert _piece_texts(out) == [["abdul", "Smith", "V"]]
+
+
+def test_a_numeral_that_is_not_last_is_a_name_word() -> None:
+    # The mirror is exact: assign's fork takes only the LAST piece, so
+    # a numeral with a suffix behind it is a middle initial to assign
+    # and a name word to the reserve -- 'abdul Smith V jr' joins, and
+    # the family assign then reads is 'V', not nothing.
+    out = _grouped("abdul Smith V jr")
+    assert _piece_texts(out) == [["abdul Smith", "V", "jr"]]
+
+
+def test_the_numeral_is_read_after_a_suffix_word_that_is_also_a_title() -> None:
+    # assign's fork asks only that the numeral not be the first NAME
+    # piece; 'jr' is title vocabulary as well as a suffix, so a guard
+    # phrased as "the piece before it is not a title" loses the
+    # family again: 'abdul Smith jr V' read given 'abdul Smith',
+    # suffix 'jr, V'. Found by the design-docs review. The shipped
+    # vocabulary has jr in TITLES; the test lexicon gets the same.
+    lex = dataclasses.replace(_LEX, titles=_LEX.titles | {"jr"})
+    out = _grouped("abdul Smith jr V", lexicon=lex)
+    assert _piece_texts(out) == [["abdul", "Smith", "jr", "V"]]
+
+
+def test_the_reserve_reads_the_numeral_as_the_join_would_leave_it() -> None:
+    # assign tests the piece before the numeral AFTER the join, whose
+    # first token is the bound word; the reserve must look at the
+    # same layout, or an initial-shaped second word suppresses the
+    # fork for the reserve alone: 'abdul J. V' read given 'abdul J.',
+    # family '', where assign would have read the V as the suffix.
+    out = _grouped("abdul J. V")
+    assert _piece_texts(out) == [["abdul", "J.", "V"]]
+
+
+def test_the_numeral_is_last_among_the_pieces_assign_keeps() -> None:
+    # assign drops a group-flagged credential piece (the Ph. D. merge)
+    # from its walk at ANY position before the trailing peel, so a
+    # numeral can be last in that walk without being the last piece:
+    # 'abdul Smith V Ph. D.' read given 'abdul Smith', family '',
+    # suffix 'V, Ph. D.' where 'John Smith V Ph. D.' keeps family
+    # 'Smith'. Found by the code review.
+    out = _grouped("abdul Smith V Ph. D.")
+    assert _piece_texts(out) == [["abdul", "Smith", "V", "Ph. D."]]
+
+
+def test_the_numeral_fork_is_not_mirrored_after_a_family_comma() -> None:
+    # The post-comma walk has no roman-numeral fork -- assign reads a
+    # trailing 'V' there by a lenient last-of-two rule, and as a middle
+    # initial with a third part -- so the LENIENT reserve counts suffix
+    # pieces only, as it always did: 'Berg, abdul V' keeps given
+    # 'abdul V' at every baseline, and so does 'Berg, abdul V, jr'.
+    # Found by the code review; a mirror of the main walk's fork here
+    # declined both with nothing classifying the change.
+    out = _grouped("Berg, abdul V")
+    assert _piece_texts(out) == [["Berg"], ["abdul V"]]
+    out = _grouped("Berg, abdul V, jr")
+    assert _piece_texts(out) == [["Berg"], ["abdul V"], ["jr"]]
+
+
+def test_the_join_never_absorbs_a_suffix_piece() -> None:
+    # rules.md#P5 says the join takes "the word after it"; a suffix is
+    # not a name word -- the same decline the join already makes for a
+    # marker. The reserve counted only non-suffix pieces, so 'abdul jr
+    # Jones' declined, but with a word to spare the join took the
+    # suffix as the word: 'abdul jr Smith Berg' read given 'abdul jr'
+    # (#421; 1.4.0 parity, not a regression).
+    out = _grouped("abdul jr Smith Berg")
+    assert _piece_texts(out) == [["abdul", "jr", "Smith", "Berg"]]
+    out = _grouped("abdul phd Smith Berg")
+    assert _piece_texts(out) == [["abdul", "phd", "Smith", "Berg"]]
+
+
+def test_the_join_never_absorbs_a_split_credential() -> None:
+    # The worse half of #421, a 2.0 regression: merge() unions piece
+    # tags, so joining onto the 'Ph. D.' piece made the joined piece a
+    # SUFFIX piece and assign routed the bound word to the suffix
+    # field -- 'abdul Ph. D. Smith Berg' read suffix 'abdul Ph. D.'.
+    # The credential piece carries the suffix ptag, which is the first
+    # thing the suffix-piece test asks.
+    out = _grouped("abdul Ph. D. Smith Berg")
+    assert _piece_texts(out) == [["abdul", "Ph. D.", "Smith", "Berg"]]
+    assert "suffix" not in out.piece_tags[0][0]
+
+
+def test_the_join_declines_a_suffix_after_a_family_comma_too() -> None:
+    # The post-comma LENIENT reserve is the path decisions.md#P5 first
+    # recorded the absorb-a-suffix shape on ('Berg, abdul jr Smith'
+    # read given 'abdul jr'); the decline is the join's, so it holds
+    # under every reserve.
+    out = _grouped("Berg, abdul jr Smith")
+    assert _piece_texts(out) == [["Berg"], ["abdul", "jr", "Smith"]]

@@ -50,8 +50,8 @@ def test_period_abbreviation_matches_config() -> None:
 
 def test_roman_numeral_matches_config() -> None:
     source = _config.REGEXES["roman_numeral"]
-    assert _assign._ROMAN.pattern == source.pattern
-    assert _assign._ROMAN.flags == source.flags
+    assert _vocab._ROMAN.pattern == source.pattern
+    assert _vocab._ROMAN.flags == source.flags
 
 
 def test_patronymic_patterns_match_config() -> None:
@@ -98,7 +98,7 @@ def test_initial_copies_agree_with_each_other_and_config() -> None:
 # source now fails here instead of being silently unpinned.
 _SOURCES: dict[tuple[str, str], str | None] = {
     ("_assign", "_PERIOD_ABBREV"): "period_abbreviation",
-    ("_assign", "_ROMAN"): "roman_numeral",
+    ("_vocab", "_ROMAN"): "roman_numeral",
     ("_post_rules", "_EAST_SLAVIC"): "east_slavic_patronymic",
     ("_post_rules", "_EAST_SLAVIC_CYR"): "east_slavic_patronymic_cyrillic",
     ("_post_rules", "_TURKIC"): "turkic_patronymic_marker",

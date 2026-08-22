@@ -495,6 +495,32 @@ def test_a_given_name_title_licenses_the_bound_given_join() -> None:
         ("Dr.", "abdul", "salam")
 
 
+def test_the_bound_given_reserve_spares_the_family_assign_will_keep() -> None:
+    # #401: the reserve asks whether a family name survives the join,
+    # and the only right answer is the one assign gives. 'V' is the
+    # suffix there, so there is no word to spare -- and behind a
+    # given-name title (#369's licence) the same count declines.
+    n = parse("abdul Smith V")
+    assert (n.given, n.family, n.suffix) == ("abdul", "Smith", "V")
+    assert [a.kind for a in n.ambiguities] == [AmbiguityKind.SUFFIX_OR_NAME]
+    licensed = parse("Sir abdul V")
+    assert (licensed.given, licensed.family, licensed.suffix) == \
+        ("abdul", "", "V")
+
+
+def test_the_bound_given_join_leaves_a_suffix_where_it_stands() -> None:
+    # #421: the join declines a suffix piece, so an inner suffix goes
+    # where it goes for any given name -- 'John Jr Smith Berg' reads
+    # middle 'Jr Smith' -- and the split credential is a suffix again,
+    # which is 1.4.0's reading restored.
+    n = parse("abdul Jr Smith Berg")
+    assert (n.given, n.middle, n.family, n.suffix) == \
+        ("abdul", "Jr Smith", "Berg", "")
+    n = parse("abdul Ph. D. Smith Berg")
+    assert (n.given, n.middle, n.family, n.suffix) == \
+        ("abdul", "Smith", "Berg", "Ph. D.")
+
+
 @pytest.mark.parametrize("title", [
     "Sir", "Sheikh", "King", "الشيخ", "Dr.", "Mr.", "Mr. Sir", "Sir Dr.",
     "Sir and Dame", "Mr. and Mrs.", "Sheik and Mrs"])
