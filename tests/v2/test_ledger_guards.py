@@ -551,6 +551,10 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     "fix(#360)": ("McDonald, Ronald", "Mcintyre Smith Jr.", "Ste Marie",
                   "Los Santos"),
     "fix(#400)": ("Jane Smith ABD", "Jane Smith A.B.D.", "Abdul Salam"),
+    "fix(#400/#274)": ("abd Berg née Jones", "abd Allah Smith",
+                       "Jane Smith née Jones"),
+    "fix(#411)": ("abdul née Jones", "Smith, abdul Rahman",
+                  "Jane Smith ABD"),
     "fix(#367) a title no longer displaces a leading never-given particle":
         ("John Sir de Mesnil", "Smith, Sir de Vaux", "Sir Smith"),
     "fix(#272/#308)": ("田中·太郎 김씨", "A·B 씨", "山田·花子"),
@@ -1178,7 +1182,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
             _Claim(105, ('family', 'given', 'middle'), "090ac3eef3fb"),
         "fix(#274) maiden markers consumed":
-            _Claim(11, ('family', 'maiden', 'middle'), "16e085499b25"),
+            _Claim(13, ('family', 'maiden', 'middle'), "367ac26b7eef"),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
             _Claim(4, ('family', 'given', 'maiden', 'middle'), "27bb9ebc1951"),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
@@ -1188,7 +1192,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(236, ('family', 'given'), "9393109ebf99"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(864, ('family', 'given', 'suffix'), "7127402a5078"),
+            _Claim(866, ('family', 'given', 'suffix'), "6b288303f4c4"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1216,11 +1220,15 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
             _Claim(1, ('family', 'given', 'middle'), "dce0ae6df4be"),
         "fix(#400) abd joins the word after it as one given name":
-            _Claim(3, ('given', 'middle'), "6eb6b807523a"),
+            _Claim(5, ('given', 'middle'), "483fee35b912"),
         "fix(#272/#308) nakaguro division and a glued hangul honorific in one name":
             _Claim(1, ('family', 'given', 'middle', 'suffix'), "2fbf1a94f122"),
         "fix(nickname-typographic-pairs) two typographic quote spans read as one nickname set":
             _Claim(1, ('family', 'given', 'middle', 'nickname'), "3cf566c78800"),
+        "fix(#411) the bound-given reserve stops counting words the maiden name takes":
+            _Claim(1, ('given', 'maiden', 'middle'), "7515923c9613"),
+        "fix(#400/#274) bound-given join and maiden consumption in one name":
+            _Claim(1, ('family', 'given', 'maiden', 'middle'), "6bed6d349342"),
     },
     "expected_since_2.0.0.toml": {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
@@ -1246,11 +1254,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#360) mc moved into the never-given particles, so it folds into the family":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ee4339908f4d"),
         "fix(#400) abd joins the word after it as one given name":
-            _Claim(3, ('given', 'middle'), "6eb6b807523a"),
+            _Claim(5, ('given', 'middle'), "483fee35b912"),
         "fix(#367) a title no longer displaces a leading never-given particle":
             _Claim(1, ('family', 'given'), "db724fb9c779"),
         "fix(#272/#308) nakaguro division and a glued hangul honorific in one name":
             _Claim(1, ('family', 'given', 'middle', 'suffix'), "2fbf1a94f122"),
+        "fix(#411) the bound-given reserve stops counting words the maiden name takes":
+            _Claim(1, ('given', 'maiden', 'middle'), "7515923c9613"),
     },
     "expected_since_2.1.0.toml": {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
@@ -1264,9 +1274,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#360) mc moved into the never-given particles, so it folds into the family":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ee4339908f4d"),
         "fix(#400) abd joins the word after it as one given name":
-            _Claim(3, ('given', 'middle'), "6eb6b807523a"),
+            _Claim(5, ('given', 'middle'), "483fee35b912"),
         "fix(#367) a title no longer displaces a leading never-given particle":
             _Claim(1, ('family', 'given'), "db724fb9c779"),
+        "fix(#411) the bound-given reserve stops counting words the maiden name takes":
+            _Claim(1, ('given', 'maiden', 'middle'), "7515923c9613"),
     },
 }
 

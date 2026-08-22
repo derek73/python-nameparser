@@ -105,6 +105,34 @@ def _is_maiden_marker_piece(piece: Sequence[int],
             and "vocab:maiden-marker" in tokens[piece[0]].tags)
 
 
+def _maiden_span(pieces: Sequence[Sequence[int]],
+                 ptags: Sequence[Set[str]],
+                 tokens: Sequence[WorkToken]) -> tuple[int, int] | None:
+    """The piece slice group()'s marker pass will REMOVE, or None.
+
+    Shared with P5's reserve (#411) for the reason the marker
+    predicate is shared with the chain's stop: the reserve asks how
+    many name words are left to spare, and it is computed while the
+    marker and the maiden name are still pieces, because the pass that
+    removes them runs later in this stage. Counting words that are
+    about to leave answered the question about a name that would not
+    exist -- 'Abd Berg nee Jones' counted four, joined, and left no
+    family name behind. One definition of what leaves, so the count
+    and the removal cannot disagree about it.
+    """
+    m = next((k for k in range(1, len(pieces))
+              if _is_maiden_marker_piece(pieces[k], tokens)), None)
+    if m is None:
+        return None
+    j = m + 1
+    while j < len(pieces) and not _is_suffix_piece(pieces[j], ptags[j],
+                                                  tokens):
+        j += 1
+    # j == m + 1 means nothing followed the marker but a suffix, so the
+    # pass declines and the marker stays an ordinary word (rules.md#M2).
+    return (m, j) if j > m + 1 else None
+
+
 # rules.md#P3: "a recognized connective joins its neighbors into one
 # name part, connective runs included — except a single-letter
 # connective in a three-word name, which stays a name word, and a
@@ -397,8 +425,11 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # as عبد), which this had to be fixed for, though it is
             # not why the word was excluded. Same shape as the count
             # #397 describes.
+            leaving = _maiden_span(pieces, ptags, tokens)
+            going = range(*leaving) if leaving else ()
             non_suffix = sum(1 for k in range(len(pieces))
-                             if not title(k)
+                             if k not in going
+                             and not title(k)
                              and (k == first_name_k or not suffix(k)))
             if non_suffix >= bound_join:
                 merge(first_name_k, first_name_k + 2)
@@ -476,23 +507,16 @@ def group(state: ParseState) -> ParseState:
         # maiden markers: a non-leading marker piece consumes following
         # pieces until a suffix; consumed tokens become MAIDEN, the
         # marker is dropped (#274)
-        m = next((k for k in range(1, len(pieces))
-                  if _is_maiden_marker_piece(pieces[k], tokens)),
-                 None)
-        if m is not None:
-            j = m + 1
-            consumed: list[int] = []
-            while j < len(pieces) and not _is_suffix_piece(
-                    pieces[j], ptags[j], tokens):
-                consumed.extend(pieces[j])
-                j += 1
-            if consumed:
-                dropped.extend(pieces[m])
-                for i in consumed:
+        span = _maiden_span(pieces, ptags, tokens)
+        if span is not None:
+            m, j = span
+            dropped.extend(pieces[m])
+            for piece in pieces[m + 1:j]:
+                for i in piece:
                     tokens[i] = dataclasses.replace(
                         tokens[i], role=Role.MAIDEN)
-                pieces[m:j] = []
-                ptags[m:j] = []
+            pieces[m:j] = []
+            ptags[m:j] = []
         all_pieces.append(tuple(tuple(p) for p in pieces))
         all_ptags.append(tuple(frozenset(t) for t in ptags))
     # rules.md#M1: "a leading recognized marker word inside a

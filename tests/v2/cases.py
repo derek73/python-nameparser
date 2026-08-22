@@ -844,15 +844,20 @@ CASES: tuple[Case, ...] = (
                "merges the marker into a multi-word piece. #399 fixed "
                "the P2 instance of the join-swallow; this is one of "
                "the two that survive"),
-    Case("maiden_marker_swallowed_by_a_bound_given_join",
+    Case("bound_given_join_no_longer_swallows_a_marker",
          "van der Berg, abdul née Jones",
-         {"given": "abdul née", "middle": "Jones",
-          "family": "van der Berg"},
-         notes="the other surviving join-swallow, through P5's "
-               "bound-given join rather than P3's -- the more "
-               "plausible of the two, a post-comma given side. Same "
-               "cause as the row above: the marker is inside a merged "
-               "piece before the stop can see it"),
+         {"given": "abdul", "family": "van der Berg",
+          "maiden": "Jones"},
+         classification="fix(#411)",
+         notes="was the second of #412's two join-swallows and is now "
+               "fixed as a side effect of #411, which is why the row "
+               "is renamed rather than deleted. P5's join used to "
+               "merge 'abdul' with the marker before M2's bound could "
+               "see a lone marker piece; counting the reserve without "
+               "the words the maiden name takes away makes the join "
+               "decline here, so the marker stays its own piece and "
+               "is consumed normally. Only P3's connective join "
+               "survives -- the row above"),
     Case("maiden_marker_inside_a_conjunction_piece",
          "Jane née and Jones Smith",
          {"given": "Jane", "middle": "née and Jones",
@@ -876,6 +881,47 @@ CASES: tuple[Case, ...] = (
                "('van der Berg née Jones'). Distinct from M2's "
                "remaining Accepted note, which is about a marker "
                "standing straight AFTER the comma"),
+    Case("bound_given_reserve_excludes_the_maiden_name",
+         "Abd Berg née Jones",
+         {"given": "Abd", "family": "Berg", "maiden": "Jones"},
+         classification="fix(#411)",
+         notes="#411: P5 reserves a name word so the join always "
+               "leaves a family name behind, but the reserve was "
+               "counted while the marker and the maiden name were "
+               "still pieces -- group's marker pass runs after this "
+               "one. Four words counted, the join fired, and when the "
+               "two departed nothing was left for the family: given "
+               "'Abd Berg', family ''. Counted against the name the "
+               "reserve is actually reserving in, this is the "
+               "two-word case P5 says must not join"),
+    Case("bound_given_reserve_excludes_the_maiden_name_with_particles",
+         "Abd van der Berg née Jones",
+         {"given": "Abd", "family": "van der Berg", "maiden": "Jones"},
+         classification="fix(#411)",
+         notes="the particle spelling of the row above, which is how "
+               "#411 was found -- #399's chain stop put this shape in "
+               "front of the reserve for the first time. The chain "
+               "makes 'van der Berg' ONE piece, so the count is the "
+               "same three-versus-two question"),
+    Case("bound_given_reserve_still_joins_with_a_word_to_spare",
+         "Abd Allah Smith née Jones",
+         {"given": "Abd Allah", "family": "Smith", "maiden": "Jones"},
+         classification="fix(#400)",
+         notes="the control: one more name word, so the join has its "
+               "word to spare even after the maiden name leaves, and "
+               "fires exactly as it does without a maiden clause. "
+               "Unchanged by #411 -- pinned so the fix cannot be "
+               "mistaken for switching the join off near a marker"),
+    Case("bound_given_reserve_maiden_and_suffix",
+         "Abd Berg née Jones PhD",
+         {"given": "Abd", "family": "Berg", "maiden": "Jones",
+          "suffix": "PhD"},
+         classification="fix(#411)",
+         notes="the marker walk stops at a trailing suffix, so the "
+               "excluded span is the marker plus 'Jones' and not the "
+               "suffix -- which the reserve already discounted. Two "
+               "different reasons for a piece not to count, on one "
+               "name"),
     Case("maiden_marker_kyusei", "山田花子 旧姓 佐藤",
          {"family": "山田花子", "maiden": "佐藤"},
          classification="fix(#309)",

@@ -236,14 +236,18 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     is BOTH bound-given and suffix vocabulary, position decides and
     both readings survive: leading, it is the bound word; trailing,
     it is the suffix (S2). In the given slot after a family comma the
-    suffix reading wins.
+    suffix reading wins. Words a maiden marker will take are not
+    among the words to spare: they leave the name, so counting them
+    asks the question about a name that will not exist (M2).
       "abdul salam ahmed salem"   →  given="abdul salam"
       "abd Allah Smith"           →  given="abd Allah"
       "Salam, abd Allah"          →  given="abd Allah"
       "abd Allah"                 →  given="abd"
       "Smith, Abd"                →  suffix="Abd"
       "mohamad ali smith"         →  given="mohamad"  · boundary
-    history: decisions.md#P5 · interacts: S2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
+      "abd Berg née Jones"        →  family="Berg"
+      "abd Allah Smith née Jones"  →  given="abd Allah"
+    history: decisions.md#P5 · interacts: S2, M2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P6. Rationale: a particle ending the name has nothing to link
     forward to, so it is not doing a particle's work there. A
@@ -450,12 +454,12 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "山田 花子 旧姓：佐藤"       →  maiden=""
     Accepted: a marker straight after a comma is post-comma given
     text, not a marker; and the bound reaches only a marker standing
-    as a word of its own, so the connective join (P3) and the
-    bound-given join (P5) each still absorb a marker before the bound
-    can see it; #412 tracks whether it should reach them.
+    as a word of its own, so the connective join (P3) still absorbs a
+    marker before the bound can see it; #412 tracks whether it should
+    reach it.
       "Jane Smith, née Jones"          →  maiden=""
       "Jane van der Berg née y Jones"  →  maiden=""
-      "van der Berg, abdul née Jones"  →  given="abdul née"
+      "van der Berg, abdul née Jones"  →  maiden="Jones"
     history: decisions.md#M2 · interacts: P2, P3, P5, R2, M1 · implemented: nameparser/_pipeline/_group.py
 
 ## Commas & structure (C)
