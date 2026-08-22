@@ -759,19 +759,23 @@ fields = ["title", "given", "middle", "family", "suffix"]
 # general problem, which this entry does not solve.
 
 [[change]]
-issue = "fix(#369) a bound given-name word that is also a particle no longer chains"
-# 'Sheik Abu Bakar': the regression the release log records under #367
-# and tracks at #369 -- given 'Abu Bakar' becomes given 'Abu', family
-# 'Bakar'. It read correctly before only because `abu` is a particle as
-# well as a bound given name; 'Sheik abdul salam' is byte-identical,
-# which is the contrast.
+issue = "fix(#369) a given-name title licenses the bound given-name join with one word to spare"
+# 'Sheik abdul salam': rules.md#P5 -- "or after a given-name title,
+# which asserts that a given name follows (H1): there the two words
+# join and the name has no family". Given 'abdul', family 'salam'
+# becomes given 'abdul salam', family '' -- the empty family H1
+# accepts for "Sir John". The 'Sheik abdul salam Jr' rules example
+# is the same move with the suffix standing; 'Sheik abdul Jr Smith'
+# is in reach and does not move -- the licence takes a name word,
+# not a suffix.
 #
-# Classified because the cause is known and recorded, NOT because the
-# reading is wanted. #369 is open. Without this rule the name lands on
-# the fields-only catch-all below, where that open-bug annotation does
-# not exist and an unwanted reading files under "unambiguous trailing
-# suffix stays suffix".
-name_regex = "(?i)^sheik\\s+abu\\b"
+# 'Sheik Abu Bakar', the #367 regression this issue was filed for,
+# reads given 'Abu Bakar' again with every field byte-identical to
+# this baseline, so no rule names its fields: restored, not moved.
+#
+# Without this rule the name lands on the fields-only
+# fix(suffix-routing) catch-all below, which moves no suffix here.
+name_regex = "(?i)^sheik\\s+abdul\\b"
 fields = ["given", "family"]
 
 [[change]]
@@ -795,7 +799,8 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # titled name reads as the same text reads untitled.
 #
 # The wider class is any title followed by a particle -- 'Dr. Van
-# Johnson', 'Sir de Mesnil', 'Sheik Abu Bakar' all move -- and this
+# Johnson', 'Sir de Mesnil', 'Sheik Abu Bakar' all move (the last restored
+# by #369) -- and this
 # regex names one title and one particle because 'Mr. Van Nguyen' is
 # the one name in the corpora that moves. Deliberately narrower than
 # the class: a corpus name that joins it later should arrive
