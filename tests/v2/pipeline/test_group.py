@@ -645,7 +645,9 @@ def test_the_reserve_reads_the_numeral_as_the_join_would_leave_it() -> None:
     # first token is the bound word; the reserve must look at the
     # same layout, or an initial-shaped second word suppresses the
     # fork for the reserve alone: 'abdul J. V' read given 'abdul J.',
-    # family '', where assign would have read the V as the suffix.
+    # family ''. The reserve now declines, and assign, seeing the
+    # unjoined pieces, reads the V as the family -- exactly as it
+    # reads 'John J. V' (pinned at the field level in test_parser).
     out = _grouped("abdul J. V")
     assert _piece_texts(out) == [["abdul", "J.", "V"]]
 

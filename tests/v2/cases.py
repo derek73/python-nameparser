@@ -888,15 +888,17 @@ CASES: tuple[Case, ...] = (
          {"given": "abd", "middle": "Jr Smith", "family": "Berg",
           "maiden": "Jones"},
          classification="fix(#418)",
-         notes="#411's shape, re-pinned. The maiden walk stops at the "
-               "inner suffix and takes only 'Jones'; with the marker "
-               "pass ahead of the joins, P5 then sees 'abd Jr Smith "
-               "Berg' and reads it exactly as it reads that name "
-               "written alone -- given 'abd Jr'. Under #411 the join "
-               "declined here because the piece it would absorb was "
-               "the marker; now the marker is gone before P5 looks, "
-               "and the suffix it absorbs instead is a pre-existing "
-               "P5 reading, not a maiden effect"),
+         notes="#411's shape, re-pinned twice. The maiden walk stops "
+               "at the inner suffix and takes only 'Jones'; with the "
+               "marker pass ahead of the joins, P5 then sees 'abd Jr "
+               "Smith Berg' and reads it exactly as it reads that "
+               "name written alone. Under #411 the join declined here "
+               "because the piece it would absorb was the marker; "
+               "under #420 the marker was gone before P5 looked and "
+               "the join took the suffix instead, given 'abd Jr'; "
+               "since #421 the join declines a suffix piece as it "
+               "declines a marker, so it takes nothing and 'Jr Smith' "
+               "is the middle name, as for 'John Jr Smith Berg'"),
     Case("bound_given_join_takes_a_chain_carrying_a_declined_marker",
          "Abd van der Berg née Jr Jones",
          {"given": "Abd van der Berg née", "middle": "Jr",

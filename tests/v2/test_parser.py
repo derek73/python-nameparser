@@ -519,6 +519,36 @@ def test_the_bound_given_join_leaves_a_suffix_where_it_stands() -> None:
     n = parse("abdul Ph. D. Smith Berg")
     assert (n.given, n.middle, n.family, n.suffix) == \
         ("abdul", "Smith", "Berg", "Ph. D.")
+    # after a family comma the decline holds under the LENIENT reserve
+    n = parse("Berg, abdul Jr Smith")
+    assert (n.given, n.middle, n.family, n.suffix) == \
+        ("abdul", "Smith", "Berg", "Jr")
+
+
+def test_the_reserve_declines_and_assign_reads_the_unjoined_pieces() -> None:
+    # 'abdul J. V': the reserve reads the V as the suffix it would be
+    # behind the joined pair, declines, and assign then sees the
+    # unjoined pieces and reads the V as the family -- exactly as it
+    # reads 'John J. V'. Decided, not accidental (decisions.md#P5).
+    for text in ("abdul J. V", "John J. V"):
+        n = parse(text)
+        assert (n.middle, n.family, n.suffix) == ("J.", "V", "")
+    # and behind a merged credential, which assign drops from its walk
+    # so the V is last in it, the family survives
+    n = parse("abdul Smith V Ph. D.")
+    assert (n.given, n.family, n.suffix) == ("abdul", "Smith", "V, Ph. D.")
+
+
+@pytest.mark.parametrize("bound", ["abd", "abu"])
+@pytest.mark.parametrize("numeral", ["I", "X"])
+def test_every_bound_word_spares_the_family_before_every_numeral(
+        bound: str, numeral: str) -> None:
+    # The release log's claim: I and X as well as V, and the bound
+    # words that are ALSO suffix vocabulary ('abd') or an ambiguous
+    # particle ('abu') -- the dual-vocabulary paths where a veto could
+    # hide. Two name words behind the bound word, so the join fires.
+    n = parse(f"{bound} Allah Smith {numeral}")
+    assert (n.given, n.family, n.suffix) == (f"{bound} Allah", "Smith", numeral)
 
 
 @pytest.mark.parametrize("title", [
