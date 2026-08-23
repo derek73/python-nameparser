@@ -335,10 +335,12 @@ def post_rules(state: ParseState) -> ParseState:
         # -- 0 hits over 740,552 instrumented guard sites. The reason
         # is structural: the only rule that can leave a MIDDLE with no
         # GIVEN ahead of it in segment 1 is P1's family-first
-        # redistribution, which is gated on `state.order`, and assign
-        # never records an order on the FAMILY_COMMA path (the comma
-        # has already fixed the family). P6 runs only on that path,
-        # so the branch cannot be reached from here.
+        # redistribution, which is gated on `state.order`. On the
+        # FAMILY_COMMA path assign records an order only where
+        # segment 1 holds no name word (#296's positional read), and
+        # a no-name segment holds no MIDDLE for the fold to leave
+        # either. P6 runs only on that path, so the branch cannot be
+        # reached from here.
         if k and any(tokens[i].role is Role.GIVEN
                      for piece in seg[:k] for i in piece):
             # A range, though only ever one piece today: grouping's

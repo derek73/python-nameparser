@@ -162,7 +162,7 @@ def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
     # removed periods only for the suffix_acronyms test); suffix WORDS
     # match on the plain normalized form
     a = n.replace(".", "")
-    if _dotted(text) and a in lexicon.suffix_acronyms_ambiguous:
+    if a in lexicon.suffix_acronyms_ambiguous and _dotted(text):
         return True
     return (a in lexicon.suffix_acronyms
             and a not in lexicon.suffix_acronyms_ambiguous) \
