@@ -19,7 +19,7 @@ content, which M2's pieces walk cannot reach because extract's
 content never enters pieces); each is cited at its code below. Also
 implements rule P5 (cited below at the bound-given join) and ports
 the "Ph. D."-split merge (v1 fix_phd; decisions.md#phd-merge). Houses
-assign's S2 trailing peel (peel_trailing), which P5's reserve runs
+assign's S2 trailing peel (_peel_trailing), which P5's reserve runs
 over the view the join would leave (#425).
 """
 from __future__ import annotations
@@ -56,7 +56,10 @@ class BoundJoin(IntEnum):
     """v1 _join_bound_first_name's reserve_last, as the three states it
     actually has. IntEnum: the value IS the number of name pieces
     assign's peel must leave in the JOINED view for the join to stand
-    (#425), so the >= comparison below reads unchanged."""
+    (#425), so the >= comparison below reads unchanged. Post-comma no
+    peel is run -- the pair alone is that one piece -- and DISABLED
+    is a mode, never compared: as a threshold 0 would join everything,
+    which is why the block is entered on identity first."""
 
     DISABLED = 0   # the FAMILY_COMMA family segment (v1 never joined it)
     LENIENT = 1    # FAMILY_COMMA's post-comma segment (reserve_last=False)
@@ -99,11 +102,14 @@ def _is_suffix_piece(piece: Sequence[int], ptags: Set[str],
 
 
 class Peel(NamedTuple):
-    """What assign's trailing peel made of a walk: rest[:names] are
-    the name pieces and rest[names:] the suffixes; `numeral` is the
-    piece the roman-numeral fork took (None when it did not fire);
-    `picks` are the bare ambiguous acronyms the peel had to resolve,
-    in peel order, either way."""
+    """What assign's trailing peel made of a walk. `names` is a count
+    of positions in the caller's `rest`: rest[:names] are the name
+    pieces and rest[names:] the suffixes. The other two are pieces --
+    token-index tuples, as PendingAmbiguity wants them -- and each is
+    one token long: `numeral` is the piece the roman-numeral fork
+    took (None when it did not fire; always the walk's last piece),
+    `picks` the bare ambiguous acronyms the peel had to resolve, in
+    peel order, either way (the last may sit at rest[names - 1])."""
 
     names: int
     numeral: tuple[int, ...] | None
@@ -115,12 +121,15 @@ class Peel(NamedTuple):
 # ambiguous acronym written with periods counts unambiguously. A BARE
 # ambiguous acronym is consumed only when the name has words to spare"
 # (v1's are_suffixes tail rule, with the roman-numeral special)
-def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
+def _peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                   ptags: Sequence[Set[str]],
                   tokens: Sequence[WorkToken]) -> Peel:
     """assign's trailing peel over `rest` -- the indices assign walks:
     after the leading titles, minus the group-flagged credential
-    pieces. Housed here rather than in assign because assign imports
+    pieces, and running to the segment's END: the numeral fork is a
+    last-piece test and reads rest[k - 2] as "the piece before", so a
+    caller handing it a prefix of the pieces silently never fires the
+    fork. Housed here rather than in assign because assign imports
     group's piece predicates, and group's bound-given reserve asks the
     same question of the view the join would leave (#425): one walk,
     so the reserve and the assignment cannot drift. Pure -- the
@@ -181,7 +190,8 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
 #
 # With the pass ahead of the joins no default-vocabulary input reaches
 # the lone-piece half through the one caller left that sees joined
-# pieces (P5's absorbs_non_name): a marker-headed wider piece needs a
+# pieces (P5's marker decline, marker(fk + 1)): a marker-headed wider
+# piece needs a
 # connective right after a declined marker, and a connective after a
 # marker is a word the consumer takes. Measured at #420's review --
 # dropping `len(piece) == 1` leaves the suite and a 337k-name sweep
@@ -286,6 +296,13 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     def marker(k: int) -> bool:
         return _is_maiden_marker_piece(pieces[k], tokens)
 
+    def joined_tags(lo: int, hi: int, add: Set[str] = frozenset(),
+                    drop: Set[str] = frozenset()) -> set[str]:
+        # the ONE definition of a merged piece's tags: merge() applies
+        # it, and P5's reserve reads it to model the join it is
+        # weighing (#425) -- so the view cannot drift from the merge
+        return (set().union(*ptags[lo:hi]) | add) - drop
+
     def merge(lo: int, hi: int, add: Set[str] = frozenset(),
               drop: Set[str] = frozenset()) -> None:
         # pieces/ptags are parallel arrays; every merge must update
@@ -315,7 +332,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         for piece in pieces[lo + 1:hi]:
             combined.extend(piece)
         pieces[lo:hi] = [combined]
-        ptags[lo:hi] = [(set().union(*ptags[lo:hi]) | add) - drop]
+        ptags[lo:hi] = [joined_tags(lo, hi, add, drop)]
 
     # ph-d merge first: "Ph." "D." adjacent -> one suffix piece
     # (decisions.md#phd-merge; v1 fix_phd did this by regex on the
@@ -547,9 +564,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # exactly that row. Nor is a suffix piece (#421) --
             # rules.md#P5: "nor a word of the unambiguous suffix
             # vocabulary (S2), wherever position will then place it"
-            # -- and declining
-            # it is also what keeps merge()'s tag union from making the
-            # joined piece a suffix piece.
+            # -- and declining it is also what keeps merge()'s tag
+            # union from making the joined piece a suffix piece.
             if not (marker(fk + 1) or suffix(fk + 1)):
                 # rules.md#P5: "the join is tried on the pieces as it
                 # would leave them, assign's trailing peel (S2) is read
@@ -582,15 +598,15 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 if bound_join is BoundJoin.STRICT:
                     rest = [j for j in range(fk, len(pieces))
                             if "suffix" not in ptags[j]]
-                    before = peel_trailing(rest, pieces, ptags, tokens)
+                    before = _peel_trailing(rest, pieces, ptags, tokens)
                     view = (pieces[:fk] + [pieces[fk] + pieces[fk + 1]]
                             + pieces[fk + 2:])
                     view_tags = (ptags[:fk]
-                                 + [(ptags[fk] | ptags[fk + 1]) - {"title"}]
+                                 + [joined_tags(fk, fk + 2, drop={"title"})]
                                  + ptags[fk + 2:])
                     view_rest = [j for j in range(fk, len(view))
                                  if "suffix" not in view_tags[j]]
-                    after = peel_trailing(view_rest, view, view_tags,
+                    after = _peel_trailing(view_rest, view, view_tags,
                                           tokens)
                     spare = (after.names
                              if after.names == before.names - 1 else 0)
@@ -632,10 +648,15 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                     # a chain such as "Sheikh and Ahmad", and the tag
                     # union would hand it to the pair, which assign
                     # then peels as a leading title: 'abdul Sheikh and
-                    # Ahmad Bakar' read title 'abdul Sheikh and Ahmad'.
-                    # The pair is a given name whatever tag the word
-                    # carried; the view above drops the tag the same
-                    # way. Found by the code review.
+                    # Ahmad Bakar Smith' read title 'abdul Sheikh and
+                    # Ahmad' on 2.0 and 2.1, and 'abdul Sheikh and
+                    # Ahmad Bakar' would have too once the count's
+                    # title exclusion went. The pair is a given name
+                    # whatever tag the word carried; the view above is
+                    # built by the same definition, so it drops the
+                    # tag too (inert to the peel, which reads only the
+                    # suffix tag, but the view IS what merge builds).
+                    # Found by the code review.
                     merge(fk, fk + 2, drop={"title"})
     return pieces, ptags, taken
 

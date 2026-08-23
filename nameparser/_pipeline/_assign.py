@@ -38,7 +38,7 @@ from nameparser._pipeline._vocab import (
     effective_script, is_suffix_lenient, resolve_script_set,
 )
 from nameparser._pipeline._group import (
-    _is_suffix_piece, _is_title_piece, peel_trailing,
+    _is_suffix_piece, _is_title_piece, _peel_trailing,
 )
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
@@ -202,7 +202,7 @@ def _assign_main(seg_idx: int, state: ParseState,
         _set_roles(tokens, pieces[rest[0]], Role.FAMILY)
         return None
     # peel the trailing suffix run: k = first index in rest from which
-    # every piece is a suffix. The walk is group's peel_trailing since
+    # every piece is a suffix. The walk is group's _peel_trailing since
     # #425 -- one walk, shared with the bound-given reserve, and
     # documented there. Every bare ambiguous acronym it had to resolve
     # is one coin-flip each, in either direction, so the report
@@ -210,7 +210,7 @@ def _assign_main(seg_idx: int, state: ParseState,
     # because the wording reads the role back, and which role "not
     # peeled" means depends on name_order. (The roman-numeral fork
     # needs no such deferral and is reported here.)
-    peeled = peel_trailing(rest, pieces, ptags, tokens)
+    peeled = _peel_trailing(rest, pieces, ptags, tokens)
     if peeled.numeral is not None:
         # a trailing single letter is a name part unless it happens
         # to be a roman numeral -- and V/X/I are ordinary middle
@@ -221,7 +221,7 @@ def _assign_main(seg_idx: int, state: ParseState,
             f"it reads as a generational suffix; any other single "
             f"letter there would be a middle initial",
             peeled.numeral))
-    ambiguous_picks = list(peeled.picks)
+    ambiguous_picks = peeled.picks
     k = peeled.names
     name_pieces, suffix_pieces = rest[:k], rest[k:]
     if not name_pieces and suffix_pieces:
