@@ -53,11 +53,15 @@ def _leading_name_piece(state: ParseState,
     those is walked past -- title and suffix pieces, but NICKNAME and
     MAIDEN as well, and anything assign left unroled -- and any number
     of them, not only a single leading title. The segment is 0, except
-    under a family comma, where segment 0 is already fixed as the
-    surname and the name continues in segment 1. Empty on either of
-    two exits: that segment does not exist, or none of its pieces
-    holds a name token."""
-    seg = 1 if state.structure is Structure.FAMILY_COMMA else 0
+    under a family comma that fixed the surname, where the name
+    continues in segment 1 -- assign records no order there. A family
+    comma followed by no name word fixed nothing, and assign reads
+    segment 0 positionally and records the order (#296's bundle), so
+    the name is segment 0 again. Empty on either of two exits: that
+    segment does not exist, or none of its pieces holds a name
+    token."""
+    seg = (1 if state.structure is Structure.FAMILY_COMMA
+           and state.order is None else 0)
     if seg >= len(state.pieces):
         return ()
     for piece in state.pieces[seg]:
@@ -331,10 +335,12 @@ def post_rules(state: ParseState) -> ParseState:
         # -- 0 hits over 740,552 instrumented guard sites. The reason
         # is structural: the only rule that can leave a MIDDLE with no
         # GIVEN ahead of it in segment 1 is P1's family-first
-        # redistribution, which is gated on `state.order`, and assign
-        # never records an order on the FAMILY_COMMA path (the comma
-        # has already fixed the family). P6 runs only on that path,
-        # so the branch cannot be reached from here.
+        # redistribution, which is gated on `state.order`. On the
+        # FAMILY_COMMA path assign records an order only where
+        # segment 1 holds no name word (#296's positional read), and
+        # a no-name segment holds no MIDDLE for the fold to leave
+        # either. P6 runs only on that path, so the branch cannot be
+        # reached from here.
         if k and any(tokens[i].role is Role.GIVEN
                      for piece in seg[:k] for i in piece):
             # A range, though only ever one piece today: grouping's

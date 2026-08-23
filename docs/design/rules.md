@@ -52,7 +52,9 @@ H2. Rationale: before a name, an abbreviation is almost always a
     initial does not, and neither does anything with interior
     periods, hyphens or digits. Where it fires, the shape outranks
     vocabulary: a period-marked opening word is a title even when
-    the word is suffix vocabulary.
+    the word is suffix vocabulary — except after a family comma,
+    where a part that is nothing but suffix words is the credential
+    run (C1) and the abbreviation opens nothing.
       "Rev. John Smith"           →  title="Rev."
       "Xyz. John Smith"           →  title="Xyz."
       "Smith, Major. John"        →  title="Major."
@@ -69,6 +71,11 @@ H2. Rationale: before a name, an abbreviation is almost always a
     family name (C1), so no shape or vocabulary reading makes a
     title there.
       "Xyz. Smith, John"          →  family="Xyz. Smith"
+    Accepted: after a family comma a part that is nothing but suffix
+    words is the credential run (C1), which the abbreviation does
+    not open: the vocabulary decides, and "Esq." is the postnominal
+    it is.
+      "Smith, Esq."               →  suffix="Esq."
     history: decisions.md#H2 · interacts: C1, P4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 
 H3. Rationale: compound titles are written as a run of title words,
@@ -437,7 +444,9 @@ S2. Rationale: generational suffixes and credentials are recognized
     unmistakably a credential when its periods are written.
     A trailing word of the suffix vocabulary reads as a suffix —
     generational forms and credential acronyms alike, and an
-    ambiguous acronym written with periods counts unambiguously. A
+    ambiguous acronym written with its periods, one after each
+    letter, counts unambiguously; a single trailing period is the
+    abbreviation shape any word can wear and does not. A
     BARE ambiguous acronym is consumed only when the name has words
     to spare — as the second of two words it stays the family
     name — and either reading carries the ambiguity flag.
@@ -445,6 +454,7 @@ S2. Rationale: generational suffixes and credentials are recognized
       "John Smith M.A."           →  suffix="M.A."
       "John Smith PhD"            →  suffix="PhD"
       "John Ma"                   →  family="Ma"  · boundary
+      "Jack Ma."                  →  family="Ma."  · boundary
     Accepted: with words to spare, a bare ambiguous acronym reads
     as a suffix even beside an East Asian surname it more likely
     belongs to; and an unambiguous suffix is consumed even when
@@ -593,7 +603,16 @@ C1. Rationale: a credential run after the comma means the name is in
     Only the part after the first comma decides. Both modes consult
     the vocabulary alone; by default a recognized suffix word counts
     even written like an initial ("V."), while strict mode vetoes
-    initial-shaped words.
+    initial-shaped words. In the listing form the part after the
+    comma is still read for what it is: a part that is nothing but
+    suffix words is the credential run and reads as suffixes, whole
+    — the slot after a family comma is postnominal position, so the
+    vocabulary's verdict comes before any title reading of the same
+    word — and a part that holds no name word at all, titles and suffixes
+    only, fixes no family boundary, so a part before the comma with
+    more than one name word keeps its positional read, order and
+    all. A name word in the part after the comma makes it the
+    given name, with titles before it and suffixes after.
       "Smith, John"               →  family="Smith"
       "سلمان، محمد"               →  family="سلمان"
       "田中、太郎"                 →  family=""
@@ -601,12 +620,35 @@ C1. Rationale: a credential run after the comma means the name is in
       "John Smith, V."            →  suffix="V."
       "John Smith, V."  strict-comma-suffixes  →  family="John Smith"
       "Smith, PhD"                →  family="Smith"  · boundary
-      "Smith, PhD"                →  suffix="PhD"  deviates: #296 (today: suffix="")
-    (Today PhD lands in TITLE — the #316 trailing-title tangle
-    crossing C1; the marker tracks the suffix field only, so a
-    measured title="PhD" does not mean the marker is stale.)
+      "Smith, PhD"                →  suffix="PhD"
+      "Smith, Jr."                →  suffix="Jr."
+      "Smith, Sr."                →  suffix="Sr."
+      "Smith, Ph. D. Jr."         →  suffix="Ph. D., Jr."
+      "Smith, Dr."                →  title="Dr."
+      "Smith, Dr. Jr."            →  suffix="Jr."
+      "John Smith, Mr."           →  given="John"
+      "John Smith, Mr."           →  family="Smith"
+      "John Smith, Mr. Jr."       →  given="John"
+      "Smith Jr., Mr."            →  family="Smith"  · boundary
+      "John Smith, Jones"         →  family="John Smith"
+    Accepted: a word of both the title and the unambiguous suffix
+    vocabulary reads as the postnominal after a family comma in
+    every spelling, the honorific's too — position decides for the
+    duals, and the slot is postnominal.
+      "Smith, Ms."                →  suffix="Ms."
+      "Smith, Ms. Jane"           →  title="Ms."
+    Accepted: a title-only part after a one-word family keeps the
+    family whole, and a glued honorific in it stays glued — the
+    honorific peel (W3) runs on the other structures, before the
+    comma is read; a credential after the comma still frees it.
+      "田中さん, Dr."              →  family="田中さん"
+      "田中さん, PhD"              →  suffix="さん, PhD"
+    Accepted: a delimiter core the policy names (T1) is a word here,
+    not structure — v1 applied the delimiter to the suffix-comma
+    form alone, and that limitation is kept as parity: "Smith, RN -
+    CRNA" reads given "RN" under the policy as without it.
       "John Smith, LEED AP"       →  family="Smith"  deviates: #291 (today: family="John Smith")
-    history: decisions.md#C1 · implemented: nameparser/_pipeline/_segment.py
+    history: decisions.md#C1 · interacts: H2, P6 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py
 
 C2. Rationale: text beyond the recognized comma parts should be
     taken in without silent guessing.

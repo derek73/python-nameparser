@@ -71,6 +71,11 @@ _TRANSLATED = frozenset({
 #: to the unsubtracted default pushes every parenthesis-maiden row
 #: into this set and turns nothing red.
 _CORE_ONLY_IDS = frozenset({
+    # #296's bundle: the positional read of the pre-comma name under a
+    # declared family-first order -- v1 has no name order to declare
+    "family_comma_no_name_word_family_first",
+    "family_comma_no_name_word_family_first_given_last",
+    "family_comma_no_name_word_family_first_plain",
     "leading_never_given_particle_two_leftovers_family_first",
     "leading_never_given_particle_two_leftovers_family_first_given_last",
     "maiden_marker_delimited_beside_a_nickname_clause",

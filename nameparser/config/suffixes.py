@@ -6,7 +6,6 @@ SUFFIX_WORDS = frozenset({
     # 'ст' especially is a plausible false-positive risk (many two-
     # letter Cyrillic abbreviations exist), and both are short enough
     # to worry about. Not shipped in this pass.
-    'dr',
     'esq',
     'esquire',
     'jr',
@@ -186,6 +185,15 @@ SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
     # also gates bare recognition: an ambiguous acronym counts as a
     # suffix only when written with periods ('M.A.' yes, 'Ma' no), so
     # 'Jack Ma' keeps its family name.
+    #
+    # NOT 'ms' or 'sa', though #296's audit table put them here for the
+    # leading-title collision (bare "Ms" the honorific, "M.S." the
+    # degree): the gate is position-blind and the collision is not.
+    # Gated, 'John Smith, MS' lost its suffix-comma route and read
+    # title 'MS', and 'Smith, Ms.' passed the gate on its one period
+    # and read as a credential anyway. Both words are genuine duals --
+    # title and unambiguous suffix -- and position decides, as for
+    # 'sr' and 'lt' (decisions.md#C1).
     'do',
     'ed',
     'jd',
@@ -815,7 +823,6 @@ SUFFIX_ACRONYMS = frozenset({
     'siie',
     'smieee',
     'sphr',
-    'sra',
     'sscp',
     'stb',
     'stmieee',
