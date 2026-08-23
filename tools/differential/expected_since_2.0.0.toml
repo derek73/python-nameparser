@@ -426,6 +426,80 @@ name_regex = "(?i)^abdul\\s+smith\\s+(jr\\s+)?ma$"
 fields = ["given", "family", "suffix"]
 
 [[change]]
+issue = "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example"
+# 'Xyz. van Johnson': the rules.md#P4 example of the 'Esq. van Gogh'
+# rule of this change (beside the fix(#367) rules, further down),
+# same reading and fields. Separate rather than an alternation, per
+# the guards' one-alternation-per-rule roster.
+name_regex = "(?i)^xyz\\.\\s+van\\s+johnson$"
+fields = ["given", "family", "_ambiguities"]
+
+[[change]]
+issue = "fix(#424) a title-led chain before the numeral is the one name piece"
+# 'Freiherr von Richthofen V': rules.md#P2 boundary -- the chain stops
+# before the numeral, and the chain is then the one name piece, which
+# reads as 'Dr. Smith V' reads. family 'von Richthofen V' -> given
+# 'von Richthofen', suffix 'V'. A rules.md example.
+name_regex = "(?i)^freiherr\\s+von\\s+richthofen\\s+v$"
+fields = ["given", "family", "suffix", "_ambiguities"]
+
+[[change]]
+issue = "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece"
+# 'John Smith Mc V': rules.md#P2 Accepted -- "where it opens the
+# trailing run the chain stops before it as before any suffix word,
+# and the peel takes it". middle 'Smith', family 'Mc V' -> family
+# 'Smith', suffix 'Mc, V'. A rules.md example; the class was found
+# unrecorded by the second docs review of #424.
+name_regex = "(?i)^john\\s+smith\\s+mc\\s+v$"
+fields = ["middle", "family", "suffix", "_ambiguities"]
+
+[[change]]
+issue = "fix(#424) the particle chain stops before the trailing numeral"
+# 'John van der Berg V': rules.md#P2 -- "a trailing suffix begins --
+# read as assign will read it (S2): a trailing roman numeral, or a
+# bare acronym with words to spare, ends the chain as a suffix word
+# does". last 'van der Berg V' -> family 'van der Berg', suffix 'V',
+# as 'John Smith V' reads. Shipped since 1.x: the chain's stop asked
+# with the suffix-piece test, whose initial veto does not see a bare
+# V. A rules.md example; no differential corpus name has the shape.
+# The fork's report arrives with the reading.
+name_regex = "(?i)^john\\s+van\\s+der\\s+berg\\s+v$"
+fields = ["family", "suffix", "_ambiguities"]
+
+[[change]]
+issue = "fix(#424) the particle chain stops before a bare acronym with words to spare"
+# 'John van der Berg Ma': the rule above, on S2's other fork. family
+# 'van der Berg Ma' -> family 'van der Berg', suffix 'Ma', as 'John
+# Smith Ma' reads -- and as 1.4.0 read it, so this rule has no 1.4.0
+# twin: a 2.0 regression. A rules.md example; no differential corpus
+# name has the shape.
+name_regex = "(?i)^john\\s+van\\s+der\\s+berg\\s+ma$"
+fields = ["family", "suffix", "_ambiguities"]
+
+[[change]]
+issue = "fix(#424) the maiden walk stops before the trailing numeral"
+# 'John née Jones Smith V': rules.md#M2 -- "takes the words after it
+# -- up to any suffix word, or the trailing roman numeral assign
+# reads as the suffix (S2) -- as the maiden name". maiden 'Jones
+# Smith V' -> maiden 'Jones Smith', suffix 'V'. The walk's stop asked
+# with the suffix-piece test too. No 1.4.0 twin: v1 had no maiden
+# support, and the fix(#274) rule carries the name there. A rules.md
+# example; no differential corpus name has the shape.
+name_regex = "(?i)^john\\s+n[ée]e\\s+jones\\s+smith\\s+v$"
+fields = ["suffix", "maiden", "_ambiguities"]
+
+[[change]]
+issue = "fix(#424) a marker followed only by the numeral is just a word"
+# 'Jane Smith née V': the peel is read from the marker, so the V has
+# the piece before it the fork wants and reads as the suffix; nothing
+# follows the marker but a suffix, the pass declines, and the marker
+# stays a word -- as for 'Jane Smith née PhD'. maiden 'V' -> middle
+# 'Smith', family 'née', suffix 'V', which is 1.4.0's reading, so
+# this rule has no 1.4.0 twin. A rules.md example.
+name_regex = "(?i)^jane\\s+smith\\s+n[ée]e\\s+v$"
+fields = ["middle", "family", "suffix", "maiden", "_ambiguities"]
+
+[[change]]
 issue = "fix(#369) the bound given-name join takes a particle-and-bound word, so no fork is reported"
 # 'Sheik Abu Bakar': the fields are byte-identical to this baseline
 # (the rule above); what moves is the REPORT. Through 2.1 the particle
@@ -458,6 +532,19 @@ issue = "fix(#399) a maiden marker bounds the particle chain: the geb. spelling"
 # to the same roster key and must cover the same set.
 name_regex = "(?i)^(?![^\\n]*,)[^\\n]*\\b(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)\\b.*?\\sgeb\\..?\\s+\\S+$"
 fields = ["family", "maiden"]
+
+[[change]]
+issue = "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle"
+# 'Esq. van Gogh' (corpus_issues): rules.md#P4 -- "An unlisted
+# abbreviation before the particle is as transparent as a listed
+# title, since assign reads it as one (H2)". family 'van Gogh' ->
+# given 'van', family 'Gogh', with the PARTICLE_OR_GIVEN report, as
+# 'Dr. van Gogh' reads since #367. #367 keyed the leading-particle
+# exception on the first piece of the name by group's title test,
+# which does not see H2's abbreviations; the scan asks assign's test
+# now. Literal for the reason the #367 rule gives.
+name_regex = "(?i)^esq\\.\\s+van\\s+gogh$"
+fields = ["given", "family", "_ambiguities"]
 
 [[change]]
 issue = "fix(#367) a title no longer displaces a leading particle out of the leading position"

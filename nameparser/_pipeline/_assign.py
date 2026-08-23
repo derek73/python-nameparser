@@ -32,25 +32,18 @@ particle out of that position) -- whatever role name_order assigns.
 from __future__ import annotations
 
 import dataclasses
-import re
 
 from nameparser._pipeline._vocab import (
     effective_script, is_suffix_lenient, resolve_script_set,
 )
 from nameparser._pipeline._group import (
-    _is_suffix_piece, _is_title_piece, _peel_trailing, _peel_walk,
+    _is_suffix_piece, _leading_titles, _peel_trailing, _peel_walk,
 )
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
 )
 from nameparser._policy import Policy, Script
 from nameparser._types import AmbiguityKind, Role
-
-# Ported verbatim from v1 (nameparser/config/regexes.py
-# "period_abbreviation"; "roman_numeral" is _vocab._ROMAN since #401)
-# -- layering forbids the config import; keep in sync by hand.
-_PERIOD_ABBREV = re.compile(r'^[^\W\d_]{2,}\.$')
-
 
 def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
                role: Role) -> None:
@@ -60,30 +53,17 @@ def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
 
 # rules.md#H2: "an abbreviation opening the part of the name that
 # carries the given name — the whole name, or the part after a
-# family comma — reads as a title even when unlisted"
-# (history: decisions.md#H2)
-def _is_leading_title(piece: tuple[int, ...], ptags: frozenset[str],
-                      tokens: list[WorkToken]) -> bool:
-    if _is_title_piece(piece, ptags, tokens):
-        return True
-    return (len(piece) == 1
-            and bool(_PERIOD_ABBREV.match(tokens[piece[0]].text)))
-
-
+# family comma — reads as a title even when unlisted" -- the count is
+# group's _leading_titles since #424 (its test, _is_leading_title, is
+# the leading-particle scan's too); the roles are set here.
 def _peel_leading_titles(pieces: tuple[tuple[int, ...], ...],
                          ptags: tuple[frozenset[str], ...],
                          tokens: list[WorkToken]) -> int:
     """Assign TITLE to the leading title pieces and return the first
-    non-title index. A title needs a following piece, unless the whole
-    segment is one title (v1 parity)."""
-    n = 0
-    while n < len(pieces):
-        if ((n + 1 < len(pieces) or len(pieces) == 1)
-                and _is_leading_title(pieces[n], ptags[n], tokens)):
-            _set_roles(tokens, pieces[n], Role.TITLE)
-            n += 1
-            continue
-        break
+    non-title index."""
+    n = _leading_titles(pieces, ptags, tokens)
+    for k in range(n):
+        _set_roles(tokens, pieces[k], Role.TITLE)
     return n
 
 

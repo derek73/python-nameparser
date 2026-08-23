@@ -69,7 +69,7 @@ H2. Rationale: before a name, an abbreviation is almost always a
     family name (C1), so no shape or vocabulary reading makes a
     title there.
       "Xyz. Smith, John"          →  family="Xyz. Smith"
-    history: decisions.md#H2 · interacts: C1 · implemented: nameparser/_pipeline/_assign.py
+    history: decisions.md#H2 · interacts: C1, P4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 
 H3. Rationale: compound titles are written as a run of title words,
     connectives included; a title word standing inside the name is
@@ -157,9 +157,12 @@ P2. Rationale: a particle is written as part of the surname it
     precedes, and a title stands outside the name entirely.
     A particle joins the words after it into one name part, the
     join running until the next particle starts a group of its own,
-    a trailing suffix begins, a maiden marker takes the words after
-    it (M2), or the name ends. The final group reads as the family
-    name;
+    a trailing suffix begins — read as assign will read it (S2),
+    over the pieces the chain leaves: a trailing roman numeral, or a
+    bare acronym with words to spare, ends the chain as a suffix word
+    does — a maiden marker takes the
+    words after it (M2), or the name ends. The final group reads as
+    the family name;
     earlier groups read by position. The chain begins wherever the
     name begins, and a preceding title does not move that point.
     Where P1's fold has claimed the opening, the fold decides the
@@ -172,12 +175,25 @@ P2. Rationale: a particle is written as part of the surname it
       "Juan de"                   →  family="de"  · boundary
       "de la Cruz Juan Carlos"  family-first  →  family="de la Cruz"
       "John van der Berg PhD"     →  family="van der Berg"
+      "John van der Berg V"       →  family="van der Berg"
+      "John van der Berg V"       →  suffix="V"
+      "John van der Berg Ma"      →  suffix="Ma"
+      "John van der J. V"         →  family="van der J. V"  · boundary
+      "Freiherr von Berg MA"      →  family="von Berg MA"
+      "Freiherr von Richthofen V" →  suffix="V"  · boundary
       "John van der Berg née Jones"  →  family="van der Berg"
+    Accepted: a particle of the unambiguous suffix vocabulary too
+    (vd, mc) is a suffix piece to the peel, so where it opens the
+    trailing run the chain stops before it as before any suffix
+    word, and the peel takes it; where it continues a prefix run,
+    the run takes it as a particle, as P6 reads it after a comma.
+      "John Smith Mc V"           →  suffix="Mc, V"
+      "John van Mc"               →  family="van Mc"
     Accepted: a caller wanting the combined double-surname reading
     (#132's ask) has it as the surnames view rather than the
     family field.
       "Vincent van Gogh van Beethoven"  →  surnames="van Gogh van Beethoven"
-    history: decisions.md#P2 · interacts: P1, P4, M2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P2 · interacts: P1, P4, M2, S2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P3. Rationale: connective words ("y", "of the") bind name words into
     one name part; but a single letter in a short name is more
@@ -226,11 +242,14 @@ P4. Rationale: a particle links forward from inside a name; at the
     comes from the fold (P1) or from position (O4), never from a
     join. This is why a title before a leading particle changes
     nothing (the title is not a name word), and why "Van Johnson"
-    is a given-name reading at all.
+    is a given-name reading at all. An unlisted abbreviation before
+    the particle is as transparent as a listed title, since assign
+    reads it as one (H2).
       "Van Johnson"               →  given="Van"
       "Sir de Mesnil"             →  pieces=[["Sir"], ["de"], ["Mesnil"]]
+      "Xyz. van Johnson"          →  given="van"
       "John van der Berg"         →  pieces=[["John"], ["van", "der", "Berg"]]  · boundary
-    history: decisions.md#P2 · interacts: P1, P5 · implemented: nameparser/_pipeline/_group.py
+    history: decisions.md#P2 · interacts: P1, P5, H2 · implemented: nameparser/_pipeline/_group.py
 
 P5. Rationale: some given-name words are incomplete alone — "abdul"
     is a bound form that the next word completes.
@@ -259,12 +278,18 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     ambiguous acronym is a name word wherever the peel does not take
     it; a marker left as a word that a particle join (P2) has already
     taken travels with that join. A title word standing in the name
-    is a name word (H3) and joins like one: the pair is a given name
-    whatever tag the word carried. What there is to spare is what
+    is a name word (H3) and joins like one, and so is a particle the
+    chain has not taken (P2) — unless it is of the unambiguous
+    suffix vocabulary too (vd, mc), which the join declines as the
+    suffix piece it is:
+    the pair is a given name whatever tag the word carried, and
+    after a family comma the join runs before the trailing
+    particle's attachment (P6) sees the name. What
+    there is to spare is what
     assign will leave: the join is tried on the pieces as it would
     leave them, assign's trailing peel (S2) is read over that, and
     the name words it leaves are the words to spare — a trailing
-    roman numeral, or a bare acronym with words behind it, is no
+    roman numeral, or a bare acronym the peel takes, is no
     word to spare. The join joins two name words into one and
     changes no suffix reading: a word the peel reads as a suffix
     unjoined must read so joined, or the join declines. After a
@@ -293,6 +318,8 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "abdul Smith Ma"            →  suffix="Ma"
       "abdul Smith Berg Ma"       →  family="Berg"  · boundary
       "abdul Sir Smith Berg"      →  given="abdul Sir"
+      "Berg, abdul van"           →  given="abdul van"
+      "Berg, abdul vd"            →  family="vd Berg"
       "abdul Jr Smith Berg"       →  given="abdul"
       "abdul Jr Smith Berg"       →  middle="Jr Smith"
       "abdul Ph. D. Smith Berg"   →  suffix="Ph. D."
@@ -316,7 +343,7 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "Sheik abdul salam"  family-first  →  family="abdul salam"
       "Sheik abdul salam"  family-first  →  given=""
       "Sheik abdul salam"  family-first-given-last  →  family="abdul salam"
-    history: decisions.md#P5 · interacts: S2, M2, H1, P2, P4 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P5 · interacts: S2, M2, H1, P2, P4, P6 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P6. Rationale: a particle ending the name has nothing to link
     forward to, so it is not doing a particle's work there. A
@@ -383,7 +410,13 @@ P6. Rationale: a particle ending the name has nothing to link
     tracked with the other contested memberships. `do` sits in the
     AMBIGUOUS acronym half and was already read as a name word
     there, so the precedence decides nothing for it.
-    history: decisions.md#P6 · interacts: C1, P1, S2 · implemented: nameparser/_pipeline/_post_rules.py
+    Accepted: a bound given word ahead of the trailing particle takes
+    it as its pair first (P5), so the attachment never sees it —
+    unless the particle is of the unambiguous suffix vocabulary too
+    (vd, mc), which the join declines and the attachment then takes.
+      "Berg, abdul van"           →  given="abdul van"
+      "Berg, abdul vd"            →  family="vd Berg"
+    history: decisions.md#P6 · interacts: C1, P1, S2, P5 · implemented: nameparser/_pipeline/_post_rules.py
 
 ## Suffixes: generational & credentials (S)
 
@@ -500,8 +533,12 @@ M1. Rationale: an enclosure the caller has declared to mean maiden
 M2. Rationale: a maiden marker announces that what follows it is the
     former family name; the marker is an announcement, not a name.
     A recognized maiden marker standing after at least one name
-    word takes the words after it — up to any trailing suffix — as
-    the maiden name, and the marker itself is dropped. A marker
+    word takes the words after it — up to any suffix word, or the
+    trailing roman numeral assign reads as the suffix (S2), both as
+    written and as the take would leave the name, the word before
+    the numeral being then the word before the marker — as the
+    maiden name, and
+    the marker itself is dropped. A marker
     with nothing after it, or nothing before it, is just a word.
     A marker taken this way also bounds a particle join arriving from
     its left (P2), so the family name's particles stop at the marker
@@ -511,6 +548,11 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "Jane Smith née Jones"      →  maiden="Jones"
       "Jane née Jones Smith"      →  maiden="Jones Smith"
       "Jane Smith née Jones PhD"  →  suffix="PhD"
+      "John née Jones Smith V"    →  maiden="Jones Smith"
+      "John née Jones Smith V"    →  suffix="V"
+      "Jane Smith née V"          →  suffix="V"
+      "J. née Jones Smith V"      →  maiden="Jones Smith V"  · boundary
+      "Jane née Jones J. V"       →  maiden="Jones J. V"  · boundary
       "Jones née"                 →  family="née"  · boundary
       "née Jones"                 →  family="Jones"  · boundary
       "Jane van der Berg née Jones"  →  maiden="Jones"
@@ -531,7 +573,11 @@ M2. Rationale: a maiden marker announces that what follows it is the
     would have bound the two into one name word (P3); the connective
     then builds a family name out of what is left.
       "Jane née Jr y Jones"            →  maiden=""
-    history: decisions.md#M2 · interacts: P2, P3, P5, R2, M1 · implemented: nameparser/_pipeline/_group.py
+    Accepted: a bare acronym the peel would take with words to spare
+    is maiden text all the same — the count it needs includes the
+    very words the marker removes, so the reading is left to assign.
+      "John née Jones Smith Ma"        →  maiden="Jones Smith Ma"
+    history: decisions.md#M2 · interacts: P2, P3, P5, R2, M1, S2 · implemented: nameparser/_pipeline/_group.py
 
 ## Commas & structure (C)
 

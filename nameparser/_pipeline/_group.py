@@ -13,20 +13,23 @@ delimiter-core tokens tail segments drop (v1 suffix_delimiter parity)
 registration becomes piece_tags entries -- per-parse state that
 dissolves with the state (v1 kept per-parse sets for the same reason).
 
-Implements rules H3, P2, P3, P4 and M2 of docs/design/rules.md and the
+Implements rules H3, P2, P3, P4 and M2, and houses H2's test of docs/design/rules.md and the
 group half of M1 (#329: the marker dropped inside EXTRACTED maiden
 content, which M2's pieces walk cannot reach because extract's
 content never enters pieces); each is cited at its code below. Also
 implements rule P5 (cited below at the bound-given join) and ports
 the "Ph. D."-split merge (v1 fix_phd; decisions.md#phd-merge). Houses
-the S2 trailing peel (_peel_walk, _peel_trailing), a piece-level walk
-that assign applies and P5's reserve reads over the view the join
-would leave (#425).
+the S2 trailing peel (_peel_walk, _peel_trailing, _trailing_start), a
+piece-level walk that assign applies and that P5's reserve, P2's
+chain and M2's walk read (#425, #424), and assign's leading-title
+test (_is_leading_title, _leading_titles), which the chain's scan
+shares since #424.
 """
 from __future__ import annotations
 
 import bisect
 import dataclasses
+import re
 from collections.abc import Sequence, Set
 from enum import IntEnum
 from typing import NamedTuple
@@ -77,12 +80,51 @@ def _is_title_piece(piece: Sequence[int], ptags: Set[str],
     return len(piece) == 1 and "vocab:title" in tokens[piece[0]].tags
 
 
+# Ported verbatim from v1 (nameparser/config/regexes.py
+# "period_abbreviation") -- layering forbids the config import; keep
+# in sync by hand (tests/v2/test_regex_sync.py). Here rather than in
+# assign since #424: the leading-title test is assign's, and group's
+# leading-particle scan and trailing-run walk must start where assign
+# starts.
+_PERIOD_ABBREV = re.compile(r'^[^\W\d_]{2,}\.$')
+
+
+# rules.md#H2: "an abbreviation opening the part of the name that
+# carries the given name — the whole name, or the part after a
+# family comma — reads as a title even when unlisted"
+# (history: decisions.md#H2)
+def _is_leading_title(piece: Sequence[int], ptags: Set[str],
+                      tokens: Sequence[WorkToken]) -> bool:
+    if _is_title_piece(piece, ptags, tokens):
+        return True
+    return (len(piece) == 1
+            and bool(_PERIOD_ABBREV.match(tokens[piece[0]].text)))
+
+
+def _leading_titles(pieces: Sequence[Sequence[int]],
+                    ptags: Sequence[Set[str]],
+                    tokens: Sequence[WorkToken]) -> int:
+    """How many leading pieces assign peels as titles: the first
+    non-title index. A title needs a following piece, unless the whole
+    segment is one title (v1 parity). One definition, read by assign
+    (which sets the roles) and by the chain's trailing-run walk; the
+    leading-particle scan shares the predicate, _is_leading_title,
+    but stops at a title-and-particle word (P4, #367, #424)."""
+    n = 0
+    while n < len(pieces):
+        if ((n + 1 < len(pieces) or len(pieces) == 1)
+                and _is_leading_title(pieces[n], ptags[n], tokens)):
+            n += 1
+            continue
+        break
+    return n
+
+
 # rules.md#P2: "a particle joins the words after it into one name
 # part, the join running until the next particle starts a group of
-# its own, a trailing suffix begins, a maiden marker takes the words
-# after it (M2), or the name ends. The final group reads as the
-# family name; earlier groups read by position."
-# (history: decisions.md#P2)
+# its own, a trailing suffix begins" -- and on to the maiden marker
+# (M2) or the name's end; the final group reads as the family name,
+# earlier groups by position. (history: decisions.md#P2)
 # rules.md#P4: "a particle in the name's leading position chains
 # nothing: the words stay separate" (history: decisions.md#P2)
 def _is_prefix_piece(piece: Sequence[int], ptags: Set[str],
@@ -122,14 +164,47 @@ class Peel(NamedTuple):
 # ambiguous acronym written with periods counts unambiguously. A BARE
 # ambiguous acronym is consumed only when the name has words to spare"
 # (v1's are_suffixes tail rule, with the roman-numeral special)
-def _peel_walk(start: int, ptags: Sequence[Set[str]]) -> list[int]:
+def _peel_walk(start: int, ptags: Sequence[Set[str]],
+               skip: Set[int] = frozenset()) -> list[int]:
     """The indices _peel_trailing walks: `start` to the segment's end,
     minus the group-flagged credential pieces (the Ph. D. merge),
-    which assign reads as suffixes at any position. Built here and
-    nowhere else, so the walk's input cannot drift between assign and
-    the reserve: the numeral fork is a last-piece test that reads the
-    piece before as rest[k - 2], which holds only over this list."""
-    return [j for j in range(start, len(ptags)) if "suffix" not in ptags[j]]
+    which assign reads as suffixes at any position, and minus `skip`
+    -- a tail segment's delimiter cores, which are structure rather
+    than words (the maiden walk's case, #424). Built here and nowhere
+    else, so the walk's input cannot drift between assign and the
+    three group sites that read it: the numeral fork is a last-piece
+    test that reads the piece before as rest[k - 2], which holds only
+    over this list."""
+    return [j for j in range(start, len(ptags))
+            if j not in skip and "suffix" not in ptags[j]]
+
+
+def _trailing_start(start: int, pieces: Sequence[Sequence[int]],
+                    ptags: Sequence[Set[str]], tokens: Sequence[WorkToken],
+                    skip: Set[int] = frozenset(),
+                    numeral_only: bool = False) -> int:
+    """Where assign's trailing suffix run begins, read over the pieces
+    as they stand from `start`: the index of the first piece the S2
+    peel takes, or len(pieces) when it takes none (#424). What P2's
+    chain and M2's walk stop before -- each had asked "is this a
+    suffix?" with the suffix-piece test, which vetoes a bare 'V' as
+    an initial (the #401 question), and so took a trailing numeral,
+    or a bare acronym with words to spare, into the family or the
+    maiden name.
+
+    `numeral_only` is the maiden walk's reading: the bare-acronym
+    fork counts pieces, and the walk removes the very pieces it
+    counted, so an acronym peeled over the pieces as they stand may
+    be the family of what is left ('John née Jones Smith Ma' read
+    maiden 'Jones Smith', family 'Ma'). The numeral fork reads one
+    piece, the one before the numeral, and _maiden_take re-asks it
+    with the piece the take leaves there; the acronym is left to
+    assign."""
+    rest = _peel_walk(start, ptags, skip)
+    peeled = _peel_trailing(rest, pieces, ptags, tokens)
+    if numeral_only:
+        return rest[-1] if peeled.numeral is not None else len(pieces)
+    return rest[peeled.names] if peeled.names < len(rest) else len(pieces)
 
 
 def _peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
@@ -183,8 +258,9 @@ def _peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
 
 
 # rules.md#M2: "a recognized maiden marker standing after at least
-# one name word takes the words after it — up to any trailing
-# suffix — as the maiden name, and the marker itself is dropped"
+# one name word takes the words after it" -- up to any suffix word,
+# or the trailing numeral assign reads as the suffix, as the maiden
+# name, the marker itself dropped
 # (history: decisions.md#M2)
 #
 # A marker piece is a LONE marker -- M2's own "standing as a word of
@@ -243,9 +319,42 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
               if _is_maiden_marker_piece(pieces[seen[v]], tokens)), None)
     if m is None:
         return None
+    # "up to any trailing suffix": a suffix WORD anywhere after the
+    # marker ends the maiden name, and so does the trailing numeral as
+    # assign will read it, which the suffix-piece test does not see
+    # (#424): 'John née Jones Smith V' took the V as maiden text. The
+    # numeral only -- _trailing_start says why the acronym fork is
+    # left to assign here. Read from the MARKER, not after it: a
+    # numeral straight after the marker then has the piece before it
+    # the fork wants, and 'Jane Smith née V' declines like 'Jane Smith
+    # née PhD' -- nothing after the marker but a suffix, so the marker
+    # stays a word -- as 1.4.0 read it.
+    skip = frozenset(range(len(pieces))) - frozenset(seen)
+    trailing = _trailing_start(seen[m], pieces, ptags, tokens, skip,
+                               numeral_only=True)
+    # The fork reads the piece before the numeral, and the take
+    # REMOVES that piece: afterwards assign sees the piece before the
+    # marker there, and if that is initial-shaped the fork will not
+    # fire -- a walk that stopped anyway handed the V to the family
+    # ('J. née Jones Smith V'). So the numeral must read as the suffix
+    # as the take would leave the name too, and the question is asked
+    # the way P5's reserve asks it (#425): the peel is run over the
+    # VIEW the take would leave, not one condition of it -- the first
+    # re-ask checked the preceding piece alone, and a title before the
+    # marker ('Dr. née Jones Smith V') leaves the numeral as assign's
+    # whole rest, where no fork fires at all (the code review).
+    if trailing < len(pieces):
+        left = [i for i in seen if i < seen[m] or i >= trailing]
+        view = [pieces[i] for i in left]
+        view_tags = [ptags[i] for i in left]
+        if _trailing_start(_leading_titles(view, view_tags, tokens),
+                           view, view_tags, tokens,
+                           numeral_only=True) == len(view):
+            trailing = len(pieces)
     j = m + 1
-    while j < len(seen) and not _is_suffix_piece(
-            pieces[seen[j]], ptags[seen[j]], tokens):
+    while (j < len(seen) and seen[j] < trailing
+           and not _is_suffix_piece(pieces[seen[j]], ptags[seen[j]],
+                                    tokens)):
         j += 1
     # j == m + 1 means nothing followed the marker but a suffix, so the
     # pass declines and the marker stays an ordinary word (rules.md#M2).
@@ -360,8 +469,9 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             k += 1
 
     # rules.md#M2: "a recognized maiden marker standing after at least
-    # one name word takes the words after it — up to any trailing
-    # suffix — as the maiden name, and the marker itself is dropped"
+    # one name word takes the words after it" -- up to any suffix
+    # word, or the trailing numeral assign reads as the suffix, as the
+    # maiden name, the marker itself dropped
     # (history: decisions.md#M2) -- the marker pass (#274), and it runs
     # BEFORE every join below. Each join rule asks a question about the
     # name -- how many words it has (P3's carve-out, P5's reserve),
@@ -479,86 +589,148 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # default worth testing: it is reached only when every piece is
         # a title and none is a prefix, and the loop below merges
         # nothing unless some piece is a prefix.
+        # `title(k)` alone missed H2's unlisted abbreviations, which
+        # assign peels as titles all the same, so 'Xyz. van Johnson'
+        # chained where 'Dr. van Johnson' did not (#424 found it
+        # through the acronym fork: the chain had swallowed the given
+        # word and left assign two pieces where the fork counted
+        # three). The scan asks assign's own test.
         leading = next((k for k in range(len(pieces))
-                        if not title(k) or prefix(k)), 0)
-        k = 0
-        while k < len(pieces):
-            if k == leading or not prefix(k):
+                        if not _is_leading_title(pieces[k], ptags[k],
+                                                 tokens)
+                        or prefix(k)), 0)
+        # rules.md#P2: "a trailing suffix begins" -- where it begins
+        # is read by assign's peel over the pieces as they stand
+        # (#424), once per segment and kept as a length from the end,
+        # which the chain's merges ahead of it do not move -- except
+        # where a particle that is suffix vocabulary too (vd, mc, do)
+        # starts the run: the prefix run below takes it as a particle,
+        # as P6 reads it after a comma, and 'John van Mc' keeps family
+        # 'van Mc' (every baseline's reading). A suffix WORD stops the
+        # chain wherever it stands, and the trailing
+        # run -- the numeral, or the bare acronym with words to spare
+        # -- stops it where the suffix-piece test alone did not ('John
+        # van der Berg V' read family 'van der Berg V'). The chain
+        # takes both forks, and asks again after its merges whether
+        # the acronym still has the pieces the fork counted (below).
+        name_start = _leading_titles(pieces, ptags, tokens)
+        tail = len(pieces) - _trailing_start(name_start, pieces, ptags,
+                                             tokens)
+        def chain(tail: int) -> None:
+            k = 0
+            while k < len(pieces):
+                if k == leading or not prefix(k):
+                    k += 1
+                    continue
+                j = k + 1
+                while j < len(pieces) and prefix(j):
+                    j += 1
+                while (j < len(pieces) - tail and not prefix(j)
+                       and not suffix(j)):
+                    j += 1
+                # The other half of PARTICLE_OR_GIVEN. _assign reports the
+                # fork when an ambiguous particle stays a lone leading piece
+                # ("Van Johnson" -> given under the default order, family
+                # under FAMILY_FIRST); the chain here takes the opposite
+                # branch when the particle is not the name's leading piece.
+                # A fork whose two sides are decided in different stages
+                # needs an emitter in each.
+                #
+                # Narrow, and #367 is why. `all(_is_leading_title(...))`
+                # says every piece ahead of this one is a title, and the
+                # loop skipped k == leading, so `leading` is STRICTLY
+                # before k -- and being before k it is one of those titles,
+                # while being `leading` it satisfies `not title or prefix`.
+                # For both, it must be a prefix as well: a word in both
+                # vocabularies (`st`, `do`, `freiherr` by default, or any
+                # overlap a caller configures). A plain title alone can no
+                # longer put a particle off the name's leading piece; it is
+                # stepped over and _assign reports the fork instead.
+                #
+                # What that leaves is wider than one shape: any number of
+                # plain title pieces, then a piece in BOTH vocabularies,
+                # then any number of further titles, then the ambiguous
+                # particle whose chain claims something. "Freiherr von
+                # Richthofen" is the canonical spelling and the one
+                # tests/v2/cases.py and tests/v2/test_parser.py lead with,
+                # but "St Van Johnson", "Do St Johnson" (the chained
+                # particle itself in both vocabularies) and "Dr. Do van
+                # Johnson" (a plain title AHEAD of the both-vocabulary
+                # word) all reach here too. What none of them can do is
+                # dispense with the both-vocabulary WORD. The conjunction
+                # merge is the only other way a piece acquires `title` or
+                # `prefix`, and it cannot manufacture the pair: it derives
+                # from ONE neighbor, which is the left one whenever there
+                # is a left one, and its right operands are always fresh
+                # pieces (the loop runs left to right, so nothing to the
+                # right has been merged yet). Both tags therefore have to
+                # come from the piece it extends, which bottoms out at a
+                # lone token in both vocabularies.
+                #
+                # j > k + 1 is what makes this a DECISION rather than a
+                # shape: when the next piece is a suffix the inner scan
+                # never advances, merge(k, k+1) folds a piece into itself,
+                # and the particle stays a lone leading piece -- nothing
+                # was chained, and _assign reports that case instead.
+                # Without this the two emitters both fire on the same token.
+                # (Tag test first: it is a set lookup and almost no name has
+                # an ambiguous particle, while title() is a call per piece.)
+                if (j > k + 1
+                        and "vocab:particle-ambiguous"
+                        in tokens[pieces[k][0]].tags
+                        and all(_is_leading_title(pieces[x], ptags[x],
+                                                  tokens)
+                                for x in range(k))):
+                    i = pieces[k][0]
+                    ambiguities.append(PendingAmbiguity(
+                        AmbiguityKind.PARTICLE_OR_GIVEN,
+                        f"{tokens[i].text!r} was chained onto the following "
+                        f"name piece; it is also a given name in other "
+                        f"names",
+                        (i,)))
+                merge(k, j, drop={"prefix"})
                 k += 1
-                continue
-            j = k + 1
-            while j < len(pieces) and prefix(j):
-                j += 1
-            while j < len(pieces) and not prefix(j) and not suffix(j):
-                j += 1
-            # The other half of PARTICLE_OR_GIVEN. _assign reports the
-            # fork when an ambiguous particle stays a lone leading piece
-            # ("Van Johnson" -> given under the default order, family
-            # under FAMILY_FIRST); the chain here takes the opposite
-            # branch when the particle is not the name's leading piece.
-            # A fork whose two sides are decided in different stages
-            # needs an emitter in each.
-            #
-            # Narrow, and #367 is why. `all(title(x) for x in range(k))`
-            # says every piece ahead of this one is a title, and the
-            # loop skipped k == leading, so `leading` is STRICTLY
-            # before k -- and being before k it is one of those titles,
-            # while being `leading` it satisfies `not title or prefix`.
-            # For both, it must be a prefix as well: a word in both
-            # vocabularies (`st`, `do`, `freiherr` by default, or any
-            # overlap a caller configures). A plain title alone can no
-            # longer put a particle off the name's leading piece; it is
-            # stepped over and _assign reports the fork instead.
-            #
-            # What that leaves is wider than one shape: any number of
-            # plain title pieces, then a piece in BOTH vocabularies,
-            # then any number of further titles, then the ambiguous
-            # particle whose chain claims something. "Freiherr von
-            # Richthofen" is the canonical spelling and the one
-            # tests/v2/cases.py and tests/v2/test_parser.py lead with,
-            # but "St Van Johnson", "Do St Johnson" (the chained
-            # particle itself in both vocabularies) and "Dr. Do van
-            # Johnson" (a plain title AHEAD of the both-vocabulary
-            # word) all reach here too. What none of them can do is
-            # dispense with the both-vocabulary WORD. The conjunction
-            # merge is the only other way a piece acquires `title` or
-            # `prefix`, and it cannot manufacture the pair: it derives
-            # from ONE neighbor, which is the left one whenever there
-            # is a left one, and its right operands are always fresh
-            # pieces (the loop runs left to right, so nothing to the
-            # right has been merged yet). Both tags therefore have to
-            # come from the piece it extends, which bottoms out at a
-            # lone token in both vocabularies.
-            #
-            # j > k + 1 is what makes this a DECISION rather than a
-            # shape: when the next piece is a suffix the inner scan
-            # never advances, merge(k, k+1) folds a piece into itself,
-            # and the particle stays a lone leading piece -- nothing
-            # was chained, and _assign reports that case instead.
-            # Without this the two emitters both fire on the same token.
-            # (Tag test first: it is a set lookup and almost no name has
-            # an ambiguous particle, while title() is a call per piece.)
-            if (j > k + 1
-                    and "vocab:particle-ambiguous"
-                    in tokens[pieces[k][0]].tags
-                    and all(title(x) for x in range(k))):
-                i = pieces[k][0]
-                ambiguities.append(PendingAmbiguity(
-                    AmbiguityKind.PARTICLE_OR_GIVEN,
-                    f"{tokens[i].text!r} was chained onto the following "
-                    f"name piece; it is also a given name in other "
-                    f"names",
-                    (i,)))
-            merge(k, j, drop={"prefix"})
-            k += 1
+
+        # The peel was read over the pieces as they stand, and the
+        # chain's own merges can change what it counts: behind a word
+        # in both the title and particle vocabularies the scan above
+        # stops where assign's title peel does not (P4, #367), so the
+        # chain takes the name's first word, and the acronym the fork
+        # counted with three pieces meets assign with two -- 'Freiherr
+        # von Berg Ma' read given 'von Berg', family 'Ma' (1.4.0's
+        # reading; the reviews found it behind the claim that the
+        # merges leave the count alone). So the peel is asked again
+        # over the pieces the chain leaves, and where it no longer
+        # takes what the chain stopped before, the chain runs again
+        # without that stop: what assign will not peel is a name word,
+        # and the chain takes it. The numeral cannot flip (a chain
+        # group is never initial-shaped), so the second run is the
+        # acronym's alone, and rare; the snapshot is one copy per
+        # segment with a trailing run, linear like the rest.
+        if tail:
+            kept = ([list(q) for q in pieces], [set(t) for t in ptags],
+                    len(ambiguities))
+            chain(tail)
+            left = len(pieces) - _trailing_start(
+                _leading_titles(pieces, ptags, tokens), pieces, ptags,
+                tokens)
+            if left < tail:
+                pieces[:], ptags[:] = kept[0], kept[1]
+                del ambiguities[kept[2]:]
+                chain(left)
+        else:
+            chain(0)
         # rules.md#P5: "a recognized bound given-name word joins the
         # word after it into one given name" (history: decisions.md#P5)
         # -- bound given names: the first non-title piece joins the next
         # ONCE (pairwise, v1 parity: 'Salem, Abdul Rahman Ahmed' keeps
         # Ahmed a middle name). BoundJoin encodes v1's reserve_last.
-        fk = next((k for k in range(len(pieces)) if not title(k)), None)
+        # "the first non-title piece" by assign's count (#424): group's
+        # title test does not see H2's unlisted abbreviations, and
+        # 'Xyz. abdul John Smith' joined nothing where 'Dr. abdul John
+        # Smith' read given 'abdul John'.
+        fk = _leading_titles(pieces, ptags, tokens)
         if (bound_join is not BoundJoin.DISABLED
-                and fk is not None
                 and fk + 1 < len(pieces)
                 and len(pieces[fk]) == 1
                 and "vocab:bound-given" in tokens[pieces[fk][0]].tags):
