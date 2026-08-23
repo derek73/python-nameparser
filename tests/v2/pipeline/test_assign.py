@@ -65,6 +65,14 @@ def test_title_only() -> None:
     assert not _by_role(out, Role.GIVEN)
 
 
+def test_a_title_needs_a_following_piece() -> None:
+    # v1 parity, in the count group shares since #424: the last of two
+    # title words is the name, not a second title
+    out = _assigned("Dr. Mr.")
+    assert _by_role(out, Role.TITLE) == "Dr."
+    assert _by_role(out, Role.GIVEN) == "Mr."
+
+
 def test_leading_ambiguous_particle_reads_as_given_with_ambiguity() -> None:
     out = _assigned("Van Johnson")
     assert _by_role(out, Role.GIVEN) == "Van"

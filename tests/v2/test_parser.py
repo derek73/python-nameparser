@@ -621,6 +621,23 @@ def test_the_chain_and_the_walk_stop_where_the_peel_begins() -> None:
         assert (n.given, n.family, n.suffix) == ("van", "Berg", "MA"), abbrev
         n = parse(f"{abbrev} van Johnson")
         assert (n.given, n.family) == ("van", "Johnson"), abbrev
+        n = parse(f"{abbrev} abdul John Smith")
+        assert (n.given, n.middle) == ("abdul John", ""), abbrev
+    # behind a title-and-particle word the chain takes the name's first
+    # word (#367), and the acronym it leaves has no words to spare for
+    # assign: the chain keeps it rather than leave it as the family
+    n = parse("Freiherr von Berg MA")
+    assert (n.title, n.family, n.suffix) == ("Freiherr", "von Berg MA", "")
+    # the numeral keeps its three pieces behind the same word, and the
+    # chain, now the one name piece, reads as 'Dr. Smith V' reads
+    n = parse("Freiherr von Richthofen V")
+    assert (n.given, n.family, n.suffix) == ("von Richthofen", "", "V")
+    n = parse("Dr. Smith V")
+    assert (n.given, n.family, n.suffix) == ("Smith", "", "V")
+    # the walk takes the numeral only: an acronym between the maiden
+    # name and the numeral is maiden text
+    n = parse("Jane Smith née Jones Ma V")
+    assert (n.maiden, n.suffix) == ("Jones Ma", "V")
 
 
 def test_the_numeral_fork_fires_on_the_last_piece_only() -> None:

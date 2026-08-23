@@ -23,7 +23,9 @@ import re
 import pytest
 
 from nameparser.config import regexes as _config
-from nameparser._pipeline import _group, _post_rules, _tokenize, _vocab
+from nameparser._pipeline import (
+    _assign, _group, _post_rules, _tokenize, _vocab,
+)
 from nameparser import _render
 
 
@@ -119,7 +121,8 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     ("_render", "_COMMA_CHAR"): None,
 }
 
-_MODULES = {"_group": _group, "_post_rules": _post_rules,
+_MODULES = {"_assign": _assign, "_group": _group,
+            "_post_rules": _post_rules,
             "_render": _render, "_tokenize": _tokenize, "_vocab": _vocab}
 
 

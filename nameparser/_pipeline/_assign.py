@@ -53,9 +53,9 @@ def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
 
 # rules.md#H2: "an abbreviation opening the part of the name that
 # carries the given name — the whole name, or the part after a
-# family comma — reads as a title even when unlisted" -- the test is
-# group's _is_leading_title since #424, shared with its leading-
-# particle scan; the roles are set here.
+# family comma — reads as a title even when unlisted" -- the count is
+# group's _leading_titles since #424 (its test, _is_leading_title, is
+# the leading-particle scan's too); the roles are set here.
 def _peel_leading_titles(pieces: tuple[tuple[int, ...], ...],
                          ptags: tuple[frozenset[str], ...],
                          tokens: list[WorkToken]) -> int:
