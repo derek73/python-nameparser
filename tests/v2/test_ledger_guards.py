@@ -1242,17 +1242,17 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
             _Claim(107, ('family', 'given', 'middle'), "0191ac9143a6"),
         "fix(#274) maiden markers consumed":
-            _Claim(24, ('family', 'maiden', 'middle'), "3adf8b0a3b24"),
+            _Claim(28, ('family', 'maiden', 'middle'), "7e8b0766190a"),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
             _Claim(5, ('family', 'given', 'maiden', 'middle'), "bc0e10dd7ec8"),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(11, ('family', 'middle'), "3acdb7d11969"),
+            _Claim(13, ('family', 'middle'), "973617235cda"),
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(262, ('given', 'suffix', 'title'), "d5e6ee237ff9"),
+            _Claim(264, ('given', 'suffix', 'title'), "a639a0ca7ce2"),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(262, ('family', 'given'), "d5e6ee237ff9"),
+            _Claim(264, ('family', 'given'), "a639a0ca7ce2"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(1041, ('family', 'given', 'suffix'), "705c375e2778"),
+            _Claim(1052, ('family', 'given', 'suffix'), "ffd9e07f04fd"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1307,12 +1307,20 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('given', 'middle'), "228abe0f32ef"),
         "fix(#425) accepted: a bare ambiguous acronym the peel does not take joins as a name word":
             _Claim(1, ('given', 'middle'), "2010cc79a34d"),
+        "fix(#424) the particle chain stops before the trailing numeral":
+            _Claim(1, ('family', 'suffix'), "2c99162bc9cf"),
+        "fix(#424) accepted: the maiden walk keeps a bare acronym":
+            _Claim(1, ('family', 'maiden', 'middle', 'suffix'), "f2c6cd2e3001"),
+        "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example":
+            _Claim(1, ('family', 'given'), "42b69cf1b320"),
+        "fix(#424) accepted: the maiden walk keeps the numeral an initial before the marker vetoes":
+            _Claim(1, ('family', 'maiden', 'middle', 'suffix'), "08c0158c8d3f"),
         "fix(#360) ste moved into the never-given particles with mc":
             _Claim(1, ('family', 'given'), "e62caedec864"),
     },
     "expected_since_2.0.0.toml": {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(11, ('family', 'middle'), "3acdb7d11969"),
+            _Claim(13, ('family', 'middle'), "973617235cda"),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
             _Claim(107, ('_ambiguities', 'family', 'given', 'middle'), "0191ac9143a6"),
         "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into suffix":
@@ -1330,7 +1338,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
             _Claim(4, ('family', 'given', 'middle'), "ae299117dd60"),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
-            _Claim(1, ('family', 'suffix'), "081ce07f927b"),
+            _Claim(2, ('family', 'suffix'), "ec0d45289dc1"),
         "fix(#399) a maiden marker bounds the particle chain that swallowed it":
             _Claim(5, ('family', 'maiden'), "15ec75a89f07"),
         "fix(#360) mc moved into the never-given particles, so it folds into the family":
@@ -1361,6 +1369,16 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('given', 'middle', 'suffix'), "228abe0f32ef"),
         "fix(#425) the bound-given reserve runs assign's peel over the joined view":
             _Claim(2, ('family', 'given', 'suffix'), "ef1ab03b617e"),
+        "fix(#424) the particle chain stops before the trailing numeral":
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "2c99162bc9cf"),
+        "fix(#424) the particle chain stops before a bare acronym with words to spare":
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "3e3aae6a5b4b"),
+        "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example":
+            _Claim(1, ('_ambiguities', 'family', 'given'), "42b69cf1b320"),
+        "fix(#424) the maiden walk stops before the trailing numeral":
+            _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "cbe5bdd97317"),
+        "fix(#424) a marker followed only by the numeral is just a word":
+            _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle', 'suffix'), "aaf53040b071"),
         "fix(#369) the bound given-name join takes a particle-and-bound word, so no fork is reported":
             _Claim(1, ('_ambiguities',), "81cf02ffdb33"),
         "fix(#360) ste moved into the never-given particles with mc":
@@ -1370,13 +1388,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     },
     "expected_since_2.1.0.toml": {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(11, ('family', 'middle'), "3acdb7d11969"),
+            _Claim(13, ('family', 'middle'), "973617235cda"),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ca7b37af6cf8"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
             _Claim(4, ('family', 'given', 'middle'), "ae299117dd60"),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
-            _Claim(1, ('family', 'suffix'), "081ce07f927b"),
+            _Claim(2, ('family', 'suffix'), "ec0d45289dc1"),
         "fix(#399) a maiden marker bounds the particle chain that swallowed it":
             _Claim(5, ('family', 'maiden'), "15ec75a89f07"),
         "fix(#360) mc moved into the never-given particles, so it folds into the family":
@@ -1405,6 +1423,16 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('given', 'middle', 'suffix'), "228abe0f32ef"),
         "fix(#425) the bound-given reserve runs assign's peel over the joined view":
             _Claim(2, ('family', 'given', 'suffix'), "ef1ab03b617e"),
+        "fix(#424) the particle chain stops before the trailing numeral":
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "2c99162bc9cf"),
+        "fix(#424) the particle chain stops before a bare acronym with words to spare":
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "3e3aae6a5b4b"),
+        "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example":
+            _Claim(1, ('_ambiguities', 'family', 'given'), "42b69cf1b320"),
+        "fix(#424) the maiden walk stops before the trailing numeral":
+            _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "cbe5bdd97317"),
+        "fix(#424) a marker followed only by the numeral is just a word":
+            _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle', 'suffix'), "aaf53040b071"),
         "fix(#369) the bound given-name join takes a particle-and-bound word, so no fork is reported":
             _Claim(1, ('_ambiguities',), "81cf02ffdb33"),
         "fix(#360) ste moved into the never-given particles with mc":

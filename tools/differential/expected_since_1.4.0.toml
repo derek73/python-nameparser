@@ -836,6 +836,53 @@ name_regex = "(?i)^abdul\\s+ma\\s+smith$"
 fields = ["given", "middle"]
 
 [[change]]
+issue = "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example"
+# 'Xyz. van Johnson': the rules.md#P4 example of the change above,
+# same reading and fields. Separate rather than an alternation, per
+# the guards' one-alternation-per-rule roster.
+name_regex = "(?i)^xyz\\.\\s+van\\s+johnson$"
+fields = ["given", "family"]
+
+[[change]]
+issue = "fix(#424) accepted: the maiden walk keeps the numeral an initial before the marker vetoes"
+# 'J. née Jones Smith V': rules.md#M2 -- the numeral is taken "read as
+# the take would leave the name, the word before the numeral being
+# then the word before the marker". 1.4.0 has no maiden support and
+# read middle 'née Jones', last 'Smith', suffix 'V'; 2.x reads maiden
+# 'Jones Smith V' with the J. before the marker vetoing the fork, as
+# 'J. Smith V' reads the V as a name. The fix(#274) rule's fields omit
+# the suffix v1 read, so this accepted reading names its own.
+name_regex = "(?i)^j\\.\\s+n[ée]e\\s+jones\\s+smith\\s+v$"
+fields = ["middle", "family", "suffix", "maiden"]
+
+[[change]]
+issue = "fix(#424) the particle chain stops before the trailing numeral"
+# 'John van der Berg V': rules.md#P2 -- "a trailing suffix begins --
+# read as assign will read it (S2): a trailing roman numeral, or a
+# bare acronym with words to spare, ends the chain as a suffix word
+# does". last 'van der Berg V' -> family 'van der Berg', suffix 'V',
+# as 'John Smith V' reads. Shipped since 1.x: the chain's stop asked
+# with the suffix-piece test, whose initial veto does not see a bare
+# V. A rules.md example; no differential corpus name has the shape.
+# Without this rule the name lands on the fields-only
+# fix(suffix-routing) catch-all below -- the count is the tell.
+name_regex = "(?i)^john\\s+van\\s+der\\s+berg\\s+v$"
+fields = ["family", "suffix"]
+
+[[change]]
+issue = "fix(#424) accepted: the maiden walk keeps a bare acronym"
+# 'John née Jones Smith Ma': rules.md#M2 -- "a bare acronym the peel
+# would take with words to spare is maiden text all the same". middle
+# 'née Jones', family 'Smith', suffix 'Ma' -> maiden 'Jones Smith Ma':
+# v1 had no maiden support; 2.0 has read the name so since #274, and
+# the walk deliberately leaves the acronym fork to assign (the count
+# it needs includes the words the marker removes). The fix(#274) rule
+# cannot carry it: its fields omit the suffix v1 read. A rules.md
+# Accepted example, first witnessed here.
+name_regex = "(?i)^john\\s+n[ée]e\\s+jones\\s+smith\\s+ma$"
+fields = ["middle", "family", "suffix", "maiden"]
+
+[[change]]
 issue = "fix(#360) ste moved into the never-given particles with mc"
 # 'Ste Marie': the second word of the vocabulary move, which the
 # fix(#360) comment in the 2.x ledgers names as a name that should
