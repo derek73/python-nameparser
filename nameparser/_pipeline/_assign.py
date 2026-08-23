@@ -38,7 +38,7 @@ from nameparser._pipeline._vocab import (
     effective_script, is_suffix_lenient, resolve_script_set,
 )
 from nameparser._pipeline._group import (
-    _is_suffix_piece, _is_title_piece, _peel_trailing,
+    _is_suffix_piece, _is_title_piece, _peel_trailing, _peel_walk,
 )
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
@@ -189,7 +189,7 @@ def _assign_main(seg_idx: int, state: ParseState,
     flagged = [k for k in rest if "suffix" in ptags[k]]
     for k in flagged:
         _set_roles(tokens, pieces[k], Role.SUFFIX)
-    rest = [k for k in rest if "suffix" not in ptags[k]]
+    rest = _peel_walk(n, ptags)
     if not rest:
         return None
     # rules.md#N3: "a name that is only a nickname and one name word
@@ -221,9 +221,7 @@ def _assign_main(seg_idx: int, state: ParseState,
             f"it reads as a generational suffix; any other single "
             f"letter there would be a middle initial",
             peeled.numeral))
-    ambiguous_picks = peeled.picks
-    k = peeled.names
-    name_pieces, suffix_pieces = rest[:k], rest[k:]
+    name_pieces, suffix_pieces = rest[:peeled.names], rest[peeled.names:]
     if not name_pieces and suffix_pieces:
         # everything suffix-shaped after titles: first one is the name
         name_pieces, suffix_pieces = suffix_pieces[:1], suffix_pieces[1:]
@@ -238,7 +236,7 @@ def _assign_main(seg_idx: int, state: ParseState,
         _set_roles(tokens, pieces[piece_idx], roles[pos])
     for piece_idx in suffix_pieces:
         _set_roles(tokens, pieces[piece_idx], Role.SUFFIX)
-    for piece in ambiguous_picks:
+    for piece in peeled.picks:
         # every pick is in rest, so the loops above just gave it a role
         token = tokens[piece[0]]
         assert token.role is not None

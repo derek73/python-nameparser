@@ -393,8 +393,8 @@ issue = "fix(#421) the bound-given join never absorbs a suffix piece"
 # marker standing as a word of its own -- a marker is not a name word
 # (M2) -- nor a word of the unambiguous suffix vocabulary (S2),
 # wherever position will then place it". given 'abdul Jr', middle
-# 'Smith' -> given
-# 'abdul', middle 'Jr Smith'. Parity with this baseline until now; a
+# 'Smith' -> given 'abdul', middle 'Jr Smith'. Parity with this
+# baseline until now; a
 # rules.md example, since no differential corpus name has the shape.
 name_regex = "(?i)^abdul\\s+jr\\s+smith\\s+berg$"
 fields = ["given", "middle"]
@@ -421,9 +421,7 @@ issue = "fix(#425) the bound-given reserve runs assign's peel over the joined vi
 # -> given 'abdul', family 'Smith', suffix 'Ma' (the join would have
 # turned a credential into the family). Both 1.4.0 parity, so the
 # 1.4.0 ledger has no twin. Rules.md examples; no differential corpus
-# name has either shape. 'abdul Smith Berg Ma', the rules example
-# behind the same rule, keeps its join -- with a family behind it the
-# acronym peels either way -- and is outside this rule's reach.
+# name has either shape.
 name_regex = "(?i)^abdul\\s+smith\\s+(jr\\s+)?ma$"
 fields = ["given", "family", "suffix"]
 

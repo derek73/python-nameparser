@@ -739,13 +739,13 @@ def test_the_join_never_turns_a_suffix_into_a_name() -> None:
 
 
 def test_the_join_never_turns_a_name_into_a_suffix_either() -> None:
-    # The same equality from the other side: 'abdul V' is two pieces
+    # The same rule from the other side: 'abdul V' is two pieces
     # whose V the peel reads as the suffix; joined it would be one
     # piece the fork cannot fire on, so the V would become a name
-    # word. The view leaves one name word where the pieces leave one,
-    # not one fewer -- the join declines. (Of the numeral pins above,
-    # 'abdul J. V' declines by this equality; 'abdul Smith V' by the
-    # threshold, one name word being no family to spare.)
+    # word. The peel takes the V unjoined and nothing joined -- the
+    # join declines. (Of the numeral pins above, 'abdul J. V'
+    # declines by this comparison; 'abdul Smith V' by the threshold,
+    # one name word being no family to spare.)
     out = _grouped("abdul V")
     assert _piece_texts(out) == [["abdul", "V"]]
 
@@ -782,9 +782,9 @@ def test_the_licence_does_not_lift_the_equality() -> None:
     # The one shape where the join would move the numeral fork AND
     # the licence's threshold of one would let it through: 'sir abdul
     # J. V' -- unjoined the V is a name word (the fork is suppressed
-    # by the initial-shaped 'J.'), joined it is the suffix, so the
-    # view leaves two name words fewer, not one. Declines, as 'Sir
-    # John J. V' reads. The mutation "at most one fewer" passed every
-    # other test; found by the test review.
+    # by the initial-shaped 'J.'), joined it is the suffix: the peel
+    # takes nothing unjoined and the V joined. Declines, as 'Sir John
+    # J. V' reads. A looser comparison passed every other test; found
+    # by the test review.
     out = _grouped("sir abdul J. V", lexicon=_GIVEN_NAME_TITLE_LEX)
     assert _piece_texts(out) == [["sir", "abdul", "J.", "V"]]

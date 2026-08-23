@@ -584,9 +584,10 @@ def test_a_joined_pair_is_never_peeled_as_a_title() -> None:
 
 def test_the_licence_does_not_lift_the_equality() -> None:
     # Behind a given-name title the reserve needs one name piece, so
-    # the equality is the only thing between 'Sir abdul J. V' and a
-    # join that turns the V from a name word into the suffix (#369
-    # had joined it). It reads exactly as 'Sir John J. V' does.
+    # "changes no suffix reading" is the only thing between 'Sir abdul
+    # J. V' and a join that turns the V from a name word into the
+    # suffix (#369 had joined it). It reads exactly as 'Sir John J. V'
+    # does.
     for text in ("Sir abdul J. V", "Sir John J. V"):
         n = parse(text)
         assert (n.middle, n.family, n.suffix) == ("J.", "V", "")
