@@ -1252,7 +1252,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(262, ('family', 'given'), "d5e6ee237ff9"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(1036, ('family', 'given', 'suffix'), "43399188180d"),
+            _Claim(1041, ('family', 'given', 'suffix'), "705c375e2778"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1303,6 +1303,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('given', 'middle'), "9523e518e6ec"),
         "fix(#421) the bound-given join never absorbs a split credential":
             _Claim(1, ('given', 'middle'), "228abe0f32ef"),
+        "fix(#425) accepted: a bare ambiguous acronym the peel does not take joins as a name word":
+            _Claim(1, ('given', 'middle'), "2010cc79a34d"),
         "fix(#360) ste moved into the never-given particles with mc":
             _Claim(1, ('family', 'given'), "e62caedec864"),
     },
@@ -1353,6 +1355,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('given', 'middle'), "9523e518e6ec"),
         "fix(#421) the bound-given join never absorbs a split credential":
             _Claim(1, ('given', 'middle', 'suffix'), "228abe0f32ef"),
+        "fix(#425) the bound-given reserve runs assign's peel over the joined view":
+            _Claim(2, ('family', 'given', 'suffix'), "ef1ab03b617e"),
         "fix(#369) the bound given-name join takes a particle-and-bound word, so no fork is reported":
             _Claim(1, ('_ambiguities',), "81cf02ffdb33"),
         "fix(#360) ste moved into the never-given particles with mc":
@@ -1393,6 +1397,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('given', 'middle'), "9523e518e6ec"),
         "fix(#421) the bound-given join never absorbs a split credential":
             _Claim(1, ('given', 'middle', 'suffix'), "228abe0f32ef"),
+        "fix(#425) the bound-given reserve runs assign's peel over the joined view":
+            _Claim(2, ('family', 'given', 'suffix'), "ef1ab03b617e"),
         "fix(#369) the bound given-name join takes a particle-and-bound word, so no fork is reported":
             _Claim(1, ('_ambiguities',), "81cf02ffdb33"),
         "fix(#360) ste moved into the never-given particles with mc":

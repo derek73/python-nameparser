@@ -802,8 +802,9 @@ fields = ["given", "family", "suffix"]
 issue = "fix(#421) the bound-given join never absorbs a suffix piece"
 # 'abdul Jr Smith Berg': rules.md#P5 -- "the join never absorbs a
 # marker standing as a word of its own -- a marker is not a name word
-# (M2) -- nor a word of the suffix vocabulary (S2), wherever position
-# will then place it". given 'abdul Jr', middle 'Smith' -> given
+# (M2) -- nor a word of the unambiguous suffix vocabulary (S2),
+# wherever position will then place it". given 'abdul Jr', middle
+# 'Smith' -> given
 # 'abdul', middle 'Jr Smith'. Parity with this baseline until now; a
 # rules.md example, since no differential corpus name has the shape.
 name_regex = "(?i)^abdul\\s+jr\\s+smith\\s+berg$"
@@ -819,6 +820,19 @@ issue = "fix(#421) the bound-given join never absorbs a split credential"
 # ledger lists two fields where the 2.x ledgers list three. A rules.md
 # example; no differential corpus name has the shape.
 name_regex = "(?i)^abdul\\s+ph\\.\\s+d\\.\\s+smith\\s+berg$"
+fields = ["given", "middle"]
+
+[[change]]
+issue = "fix(#425) accepted: a bare ambiguous acronym the peel does not take joins as a name word"
+# 'abdul Ma Smith': rules.md#P5 -- "a bare ambiguous acronym is a name
+# word wherever the peel does not take it". first 'abdul', middle
+# 'Ma' -> given 'abdul Ma': v1's join counted the acronym out as
+# suffix vocabulary and declined; since 2.0 the join takes it, as
+# assign reads it (a middle name, not a credential, with a family
+# behind it). A 2.0 reading, byte-identical at 2.0.0 and 2.1.0, first
+# witnessed here -- P5 records it as Accepted, and the example exists
+# to carry the shape into this corpus.
+name_regex = "(?i)^abdul\\s+ma\\s+smith$"
 fields = ["given", "middle"]
 
 [[change]]

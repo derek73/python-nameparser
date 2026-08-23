@@ -288,6 +288,11 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "abdul Smith V"             →  family="Smith"
       "abdul Smith V"             →  suffix="V"
       "abdul Smith Jr V"          →  family="Smith"
+      "abdul Smith Jr Ma"         →  family="Smith"
+      "abdul Smith Jr Ma"         →  suffix="Jr, Ma"
+      "abdul Smith Ma"            →  suffix="Ma"
+      "abdul Smith Berg Ma"       →  family="Berg"  · boundary
+      "abdul Sir Smith Berg"      →  given="abdul Sir"
       "abdul Jr Smith Berg"       →  given="abdul"
       "abdul Jr Smith Berg"       →  middle="Jr Smith"
       "abdul Ph. D. Smith Berg"   →  suffix="Ph. D."
@@ -301,6 +306,7 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     is fixed there and the pair is the given; and a bare ambiguous
     acronym the peel does not take joins as any name word does.
       "Berg, abdul V"             →  given="abdul V"
+      "abdul Ma Smith"            →  given="abdul Ma"
     Accepted: a given-name title plus a bound pair leaves the family
     empty, as H1 accepts for "Sir John" — the input names no family.
     Under a family-first order the joined pair is the family and the
