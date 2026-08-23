@@ -1242,7 +1242,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
             _Claim(107, ('family', 'given', 'middle'), "0191ac9143a6"),
         "fix(#274) maiden markers consumed":
-            _Claim(28, ('family', 'maiden', 'middle'), "7e8b0766190a"),
+            _Claim(29, ('family', 'maiden', 'middle'), "c0981c1c6557"),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
             _Claim(5, ('family', 'given', 'maiden', 'middle'), "bc0e10dd7ec8"),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
@@ -1252,7 +1252,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(264, ('family', 'given'), "a639a0ca7ce2"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(1052, ('family', 'given', 'suffix'), "ffd9e07f04fd"),
+            _Claim(1056, ('family', 'given', 'suffix'), "bfb2e274a968"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1315,6 +1315,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given'), "42b69cf1b320"),
         "fix(#424) accepted: the maiden walk keeps the numeral an initial before the marker vetoes":
             _Claim(1, ('family', 'maiden', 'middle', 'suffix'), "08c0158c8d3f"),
+        "fix(#424) accepted: the chain keeps an acronym assign will not peel behind a title-and-particle word":
+            _Claim(1, ('family', 'given'), "faa4bedda537"),
+        "fix(#424) a title-led chain before the numeral is the one name piece":
+            _Claim(1, ('family', 'given', 'suffix'), "5b3a743f9e35"),
+        "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece":
+            _Claim(1, ('family', 'middle', 'suffix'), "a564b97f7162"),
         "fix(#360) ste moved into the never-given particles with mc":
             _Claim(1, ('family', 'given'), "e62caedec864"),
     },
@@ -1373,6 +1379,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "2c99162bc9cf"),
         "fix(#424) the particle chain stops before a bare acronym with words to spare":
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "3e3aae6a5b4b"),
+        "fix(#424) a title-led chain before the numeral is the one name piece":
+            _Claim(1, ('_ambiguities', 'family', 'given', 'suffix'), "5b3a743f9e35"),
+        "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece":
+            _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "a564b97f7162"),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example":
             _Claim(1, ('_ambiguities', 'family', 'given'), "42b69cf1b320"),
         "fix(#424) the maiden walk stops before the trailing numeral":
@@ -1427,6 +1437,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "2c99162bc9cf"),
         "fix(#424) the particle chain stops before a bare acronym with words to spare":
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "3e3aae6a5b4b"),
+        "fix(#424) a title-led chain before the numeral is the one name piece":
+            _Claim(1, ('_ambiguities', 'family', 'given', 'suffix'), "5b3a743f9e35"),
+        "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece":
+            _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "a564b97f7162"),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example":
             _Claim(1, ('_ambiguities', 'family', 'given'), "42b69cf1b320"),
         "fix(#424) the maiden walk stops before the trailing numeral":

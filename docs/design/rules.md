@@ -157,9 +157,10 @@ P2. Rationale: a particle is written as part of the surname it
     precedes, and a title stands outside the name entirely.
     A particle joins the words after it into one name part, the
     join running until the next particle starts a group of its own,
-    a trailing suffix begins — read as assign will read it (S2): a
-    trailing roman numeral, or a bare acronym with words to spare,
-    ends the chain as a suffix word does — a maiden marker takes the
+    a trailing suffix begins — read as assign will read it (S2),
+    over the pieces the chain leaves: a trailing roman numeral, or a
+    bare acronym with words to spare, ends the chain as a suffix word
+    does — a maiden marker takes the
     words after it (M2), or the name ends. The final group reads as
     the family name;
     earlier groups read by position. The chain begins wherever the
@@ -178,11 +179,15 @@ P2. Rationale: a particle is written as part of the surname it
       "John van der Berg V"       →  suffix="V"
       "John van der Berg Ma"      →  suffix="Ma"
       "John van der J. V"         →  family="van der J. V"  · boundary
+      "Freiherr von Berg MA"      →  family="von Berg MA"
+      "Freiherr von Richthofen V" →  suffix="V"  · boundary
       "John van der Berg née Jones"  →  family="van der Berg"
-    Accepted: a particle that is suffix vocabulary too (vd, mc)
-    standing where the run would begin is taken by the chain as a
-    particle, as P6 reads it after a comma, rather than ending the
-    chain as the suffix assign would read there.
+    Accepted: a particle of the unambiguous suffix vocabulary too
+    (vd, mc) is a suffix piece to the peel, so where it opens the
+    trailing run the chain stops before it as before any suffix
+    word, and the peel takes it; where it continues a prefix run,
+    the run takes it as a particle, as P6 reads it after a comma.
+      "John Smith Mc V"           →  suffix="Mc, V"
       "John van Mc"               →  family="van Mc"
     Accepted: a caller wanting the combined double-surname reading
     (#132's ask) has it as the surnames view rather than the
@@ -274,8 +279,9 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     it; a marker left as a word that a particle join (P2) has already
     taken travels with that join. A title word standing in the name
     is a name word (H3) and joins like one, and so is a particle the
-    chain has not taken (P2) — unless it is suffix vocabulary too
-    (vd, mc), which the join declines as the suffix piece it may be:
+    chain has not taken (P2) — unless it is of the unambiguous
+    suffix vocabulary too (vd, mc), which the join declines as the
+    suffix piece it is:
     the pair is a given name whatever tag the word carried, and
     after a family comma the join runs before the trailing
     particle's attachment (P6) sees the name. What
@@ -406,8 +412,8 @@ P6. Rationale: a particle ending the name has nothing to link
     there, so the precedence decides nothing for it.
     Accepted: a bound given word ahead of the trailing particle takes
     it as its pair first (P5), so the attachment never sees it —
-    unless the particle is suffix vocabulary too (vd, mc), which the
-    join declines and the attachment then takes.
+    unless the particle is of the unambiguous suffix vocabulary too
+    (vd, mc), which the join declines and the attachment then takes.
       "Berg, abdul van"           →  given="abdul van"
       "Berg, abdul vd"            →  family="vd Berg"
     history: decisions.md#P6 · interacts: C1, P1, S2, P5 · implemented: nameparser/_pipeline/_post_rules.py
@@ -528,9 +534,10 @@ M2. Rationale: a maiden marker announces that what follows it is the
     former family name; the marker is an announcement, not a name.
     A recognized maiden marker standing after at least one name
     word takes the words after it — up to any suffix word, or the
-    trailing roman numeral assign reads as the suffix (S2), read as
-    the take would leave the name, the word before the numeral
-    being then the word before the marker — as the maiden name, and
+    trailing roman numeral assign reads as the suffix (S2), both as
+    written and as the take would leave the name, the word before
+    the numeral being then the word before the marker — as the
+    maiden name, and
     the marker itself is dropped. A marker
     with nothing after it, or nothing before it, is just a word.
     A marker taken this way also bounds a particle join arriving from
@@ -545,6 +552,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "John née Jones Smith V"    →  suffix="V"
       "Jane Smith née V"          →  suffix="V"
       "J. née Jones Smith V"      →  maiden="Jones Smith V"  · boundary
+      "Jane née Jones J. V"       →  maiden="Jones J. V"  · boundary
       "Jones née"                 →  family="née"  · boundary
       "née Jones"                 →  family="Jones"  · boundary
       "Jane van der Berg née Jones"  →  maiden="Jones"

@@ -427,11 +427,31 @@ fields = ["given", "family", "suffix"]
 
 [[change]]
 issue = "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example"
-# 'Xyz. van Johnson': the rules.md#P4 example of the change above,
+# 'Xyz. van Johnson': the rules.md#P4 example of the 'Esq. van Gogh'
+# rule of this change (beside the fix(#367) rules, further down),
 # same reading and fields. Separate rather than an alternation, per
 # the guards' one-alternation-per-rule roster.
 name_regex = "(?i)^xyz\\.\\s+van\\s+johnson$"
 fields = ["given", "family", "_ambiguities"]
+
+[[change]]
+issue = "fix(#424) a title-led chain before the numeral is the one name piece"
+# 'Freiherr von Richthofen V': rules.md#P2 boundary -- the chain stops
+# before the numeral, and the chain is then the one name piece, which
+# reads as 'Dr. Smith V' reads. family 'von Richthofen V' -> given
+# 'von Richthofen', suffix 'V'. A rules.md example.
+name_regex = "(?i)^freiherr\\s+von\\s+richthofen\\s+v$"
+fields = ["given", "family", "suffix", "_ambiguities"]
+
+[[change]]
+issue = "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece"
+# 'John Smith Mc V': rules.md#P2 Accepted -- "where it opens the
+# trailing run the chain stops before it as before any suffix word,
+# and the peel takes it". middle 'Smith', family 'Mc V' -> family
+# 'Smith', suffix 'Mc, V'. A rules.md example; the class was found
+# unrecorded by the second docs review of #424.
+name_regex = "(?i)^john\\s+smith\\s+mc\\s+v$"
+fields = ["middle", "family", "suffix", "_ambiguities"]
 
 [[change]]
 issue = "fix(#424) the particle chain stops before the trailing numeral"
