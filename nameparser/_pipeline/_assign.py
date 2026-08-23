@@ -22,9 +22,11 @@ beside exactly one piece in total puts that piece in FAMILY.
 FAMILY_COMMA: segment 0 wholly FAMILY (v1 parity) UNLESS segment 1 is
 nothing but titles, which fixed no family boundary -- there segment 0
 takes the NO_COMMA positional read instead ('John Smith, Dr.'); segment
-1 gets leading titles, then given, then middles with strict-suffix
-pieces to suffix; segments 2+ are suffixes (lenient -- segment already
-flagged non-suffixy ones COMMA_STRUCTURE).
+1 is wholly SUFFIX when it is nothing but suffix pieces ('Smith, Jr.',
+'Smith, Ph. D. Jr.' -- the credential run C1 describes, in the listing
+form), else gets leading titles, then given, then middles with
+strict-suffix pieces to suffix; segments 2+ are suffixes (lenient --
+segment already flagged non-suffixy ones COMMA_STRUCTURE).
 SUFFIX_COMMA: segment 0 as NO_COMMA; segments 1+ wholly SUFFIX.
 Emits PARTICLE_OR_GIVEN when the leading name piece is a lone
 particles_ambiguous token with more pieces following ("Van Johnson",
@@ -324,7 +326,29 @@ def assign(state: ParseState) -> ParseState:
         if len(state.segments) > 1:
             pieces = state.pieces[1]
             ptags = state.piece_tags[1]
-            if all_titles:
+            # rules.md#C1: "a credential run after the comma means the
+            # name is in natural order with suffixes appended" -- and
+            # with one word before the comma the listing form holds,
+            # the family is that word, and the run is still the
+            # credential run: the slot after a family comma is
+            # postnominal position, so a segment that is nothing but
+            # suffix pieces reads as suffixes BEFORE the title peel's
+            # whole-segment exception or the given-name walk can claim
+            # it (#296: 'Smith, Jr.' read title 'Jr.' through the
+            # period-abbreviation inference; #325: 'Smith, Ph. D. Jr.'
+            # put the split credential in the given name, the lone-
+            # piece route not applying). Vocabulary decides which
+            # words qualify -- 'Smith, Dr.' never reaches this, 'dr'
+            # not being suffix vocabulary since the audit -- and
+            # position breaks the tie for the genuine duals ('Smith,
+            # Sr.' is Senior, 'Sr. Garcia' Señor). A name word in the
+            # run makes it v1's walk ('Smith, John Jr.').
+            if all(_is_suffix_piece(pieces[k], ptags[k], tokens)
+                   for k in range(len(pieces))):
+                for piece in pieces:
+                    _set_roles(tokens, piece, Role.SUFFIX)
+                n = len(pieces)
+            elif all_titles:
                 for piece in pieces:
                     _set_roles(tokens, piece, Role.TITLE)
                 n = len(pieces)
@@ -336,9 +360,12 @@ def assign(state: ParseState) -> ParseState:
                 # the given, before any suffix check --
                 # 'Hardman, RN - CRNA' keeps first='RN'. One deliberate
                 # 2.0 deviation, classified fix(comma-family): when that
-                # piece is the segment's ONLY piece and unambiguously
-                # suffix-shaped ('Andrews, M.D.'), it is a suffix -- v1
-                # made it the given.
+                # piece is the segment's LAST piece and unambiguously
+                # suffix-shaped, it is a suffix -- v1 made it the given.
+                # The lone-piece case ('Andrews, M.D.') is the credential
+                # run read above now and never reaches here; what this
+                # still decides is the piece behind a title ('Smith, Dr.
+                # Jr.' reads suffix 'Jr.').
                 if not given_done:
                     if (m == len(pieces) - 1
                             and _is_suffix_piece(pieces[m], ptags[m],

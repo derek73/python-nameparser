@@ -348,14 +348,15 @@ CASES: tuple[Case, ...] = (
                "'first piece that is not a title' test broke: it "
                "skipped 'St'/'Do'/'Freiherr' and collapsed the "
                "untitled 'St John Smith' into one given name"),
-    Case("titled_ambiguous_particle_no_op_chain", "Do Van Jr.",
-         {"title": "Do", "given": "Van", "suffix": "Jr."},
+    Case("titled_ambiguous_particle_no_op_chain", "St Van Jr.",
+         {"title": "St", "given": "Van", "suffix": "Jr."},
          notes="the piece after the particle is a suffix, so the chain "
                "scan never advances and the merge is a no-op -- nothing "
                "was chained, so there is no fork to report (the emitter "
                "fired here for all 39 ambiguous particles, and _assign "
-               "double-reported the same token). Spelled with 'Do' "
-               "rather than the 'Dr.' this row carried until 2.2: "
+               "double-reported the same token). Spelled with 'St' "
+               "since #296's audit took 'do' out of TITLES, and with "
+               "'Do' rather than the 'Dr.' this row carried before 2.2: "
                "under #367 a plain title is transparent, so 'Dr. Van "
                "Jr.' leaves Van the leading name piece and the chain "
                "loop skips it without ever reaching the no-op. 'Do' is "
@@ -1394,6 +1395,192 @@ CASES: tuple[Case, ...] = (
          {"given": "Jones", "family": "John Smith"},
          notes="the non-flip: a post-comma NAME means the comma did fix "
                "the family, so segment 0 stays wholly family (v1 parity)"),
+    # -- #296: the TITLES/suffix overlap audit. A word that is only ever
+    # a postnominal leaves TITLES, so the title peel stops claiming it
+    # first. Leading position is the price and is pinned here.
+    Case("audit_phd_leading_is_a_name", "PhD Smith",
+         {"given": "PhD", "family": "Smith"},
+         classification="fix(#296)",
+         notes="'phd' left TITLES because M.D./Ph.D. are postnominal "
+               "only; nothing is prenominal-'PhD', so the leading "
+               "position falls through to the positional read"),
+    Case("audit_jr_leading_is_a_name", "Jr Smith",
+         {"given": "Jr", "family": "Smith"},
+         classification="fix(#296)",
+         notes="same as audit_phd_leading_is_a_name: 'jr' is never "
+               "prenominal in any tradition"),
+    Case("audit_md_leading_stays_a_title", "Md Abdul Karim",
+         {"title": "Md", "given": "Abdul", "family": "Karim"},
+         notes="the one word the 2026-07-30 table got wrong: 'md' KEEPS "
+               "dual membership. Bare 'Md' before a name is the "
+               "Bengali and South Asian Muslim abbreviation of "
+               "Muhammad (#343/#345's corpus rows), a prenominal use "
+               "the 'postnominal only' disposition did not consider; "
+               "'MD' after the name is the degree. Position decides, "
+               "as for 'sr'"),
+    Case("audit_do_leading_is_a_name", "Do Nguyen",
+         {"given": "Do", "family": "Nguyen"},
+         ambiguities=("particle-or-given",),
+         classification="fix(#296)",
+         notes="the disposition's own argument, realized: 'Do' is a "
+               "Vietnamese name, and dropping the title membership is "
+               "what lets it be read as one -- with the fork 'Van "
+               "Johnson' reports, since 'do' is an ambiguous particle "
+               "too and the title membership had been hiding the fork"),
+    Case("audit_se_leading_is_a_name", "SE Smith",
+         {"given": "SE", "family": "Smith"},
+         classification="fix(#296)",
+         notes="Structural Engineer is a US licensure postnominal (the "
+               "PE/SE pair); no prenominal SE convention exists"),
+    Case("audit_junior_leading_is_a_name", "Junior Smith",
+         {"given": "Junior", "family": "Smith"},
+         classification="fix(#296)",
+         notes="and 'Junior' is a real given name besides"),
+    # the non-flips: trailing position was already right and must stay
+    Case("audit_phd_trailing_unchanged", "John Smith PhD",
+         {"given": "John", "family": "Smith", "suffix": "PhD"}),
+    Case("audit_jr_trailing_unchanged", "John Smith Jr.",
+         {"given": "John", "family": "Smith", "suffix": "Jr."}),
+    Case("audit_lt_leading_stays_a_title", "Lt. Smith",
+         {"title": "Lt.", "family": "Smith"},
+         notes="'lt' KEPT its dual membership -- a prenominal rank with "
+               "real retired-designation postnominal use; position "
+               "decides, so leading is untouched"),
+    Case("audit_sr_leading_stays_a_title", "Sr. Garcia",
+         {"title": "Sr.", "family": "Garcia"},
+         notes="Señor (leading) vs Senior (trailing): kept dual, and "
+               "the leading read is the peel's normal path"),
+    Case("audit_sra_leading_stays_a_title", "Sra Garcia",
+         {"title": "Sra", "family": "Garcia"},
+         notes="Señora is title-only; the SUFFIX_ACRONYMS entry was v1 "
+               "residue and is what got dropped, not this"),
+    Case("audit_dr_leading_stays_a_title", "Dr. Smith",
+         {"title": "Dr.", "family": "Smith"}),
+    Case("audit_dr_after_comma_is_a_title", "Smith, Dr.",
+         {"title": "Dr.", "family": "Smith"},
+         classification="fix(comma-family)",
+         notes="'dr' left SUFFIX_WORDS: 'Dr.' is not a postnominal in "
+               "any tradition and the entry was v1 residue. This is "
+               "what keeps the postnominal reading of a lone post-comma "
+               "suffix piece from taking it -- the vocabulary decides, "
+               "not the position"),
+    Case("audit_dr_after_two_word_comma_keeps_the_split", "John Smith, Dr.",
+         {"title": "Dr.", "given": "John", "family": "Smith"},
+         classification="fix(comma-family)",
+         notes="with 'dr' gone from the suffix sets the post-comma word "
+               "is a title only, so the all-titles repair keeps the "
+               "pre-comma split; v1 got the same fields by a different "
+               "route ('dr' was suffix-tagged, making this a SUFFIX_COMMA "
+               "with suffix 'Dr.')"),
+    Case("audit_sra_after_comma_is_a_title", "Smith, Sra",
+         {"title": "Sra", "family": "Smith"},
+         classification="fix(comma-family)",
+         notes="the same removal on the acronym side"),
+    Case("audit_bare_ms_declines_the_degree", "Smith, MS",
+         {"title": "MS", "family": "Smith"},
+         notes="'ms' joined SUFFIX_ACRONYMS_AMBIGUOUS, so the bare "
+               "spelling declines and the title membership claims it -- "
+               "the Ms. reading, which is the gate's documented default "
+               "direction (the same gate that saves 'Jack Ma')"),
+    Case("audit_perioded_ms_is_the_degree", "Smith, M.S.",
+         {"family": "Smith", "suffix": "M.S."},
+         notes="and the perioded spelling passes the gate"),
+    Case("audit_bare_sa_declines_the_postnominal", "Smith, SA",
+         {"title": "SA", "family": "Smith"},
+         notes="Special Agent leading; the postnominal reading is the "
+               "perioded business form, so 'sa' is gated the same way"),
+    Case("audit_perioded_sa_is_the_postnominal", "Smith, S.A.",
+         {"family": "Smith", "suffix": "S.A."}),
+    Case("audit_bare_do_after_comma_is_a_name", "Smith, DO",
+         {"given": "DO", "family": "Smith"},
+         classification="fix(#296)",
+         notes="'do' left TITLES but was already AMBIGUOUS, so the bare "
+               "spelling is neither title nor suffix and falls to the "
+               "given position -- the period gate handles the real "
+               "collision, which is that 'Do' is a name"),
+    Case("audit_perioded_do_after_comma_is_a_suffix", "Smith, D.O.",
+         {"family": "Smith", "suffix": "D.O."}),
+    # -- the TRAILING half of the same two removals. `dr` and `sra` are
+    # the ONLY audit words that lose SUFFIX membership; the other six
+    # keep theirs, so trailing position is untouched for them.
+    Case("audit_dr_trailing_joins_the_title_word_gap", "John Smith Dr.",
+         {"given": "John", "middle": "Smith", "family": "Dr."},
+         classification="fix(#296)",
+         notes="'dr' left SUFFIX_WORDS, so a trailing 'Dr.' is no "
+               "longer suffix vocabulary and falls to the positional "
+               "read, taking the family name with it. NOT a new defect "
+               "class -- no trailing title word routes to title on the "
+               "no-comma path, so 'John Smith Prof.' and 'John Smith "
+               "Mr.' already read this way (pinned below; #316 is the "
+               "open question). The v1-residue suffix entry was the "
+               "only thing making 'dr' behave unlike every other "
+               "title-only word. This row records that 'dr' JOINED the "
+               "existing behavior, not that the behavior is right"),
+    Case("audit_sra_trailing_joins_the_title_word_gap", "John Smith Sra",
+         {"given": "John", "middle": "Smith", "family": "Sra"},
+         classification="fix(#296)",
+         notes="the same move for the other word losing suffix "
+               "membership"),
+    Case("family_comma_lone_generational_suffix", "Smith, Jr.",
+         {"family": "Smith", "suffix": "Jr."},
+         classification="fix(#296)",
+         notes="the issue as filed: the peel's whole-segment exception "
+               "claimed 'Jr.' through the period-abbreviation inference "
+               "even after the audit, so the ordering change is what "
+               "actually reaches this input"),
+    Case("family_comma_lone_generational_suffix_bare", "Smith, Jr",
+         {"family": "Smith", "suffix": "Jr"},
+         classification="fix(#296)"),
+    Case("family_comma_lone_degree", "Smith, PhD",
+         {"family": "Smith", "suffix": "PhD"},
+         classification="fix(#296)"),
+    Case("family_comma_dual_word_reads_postnominal", "Smith, Sr.",
+         {"family": "Smith", "suffix": "Sr."},
+         classification="fix(#296)",
+         notes="Señor vs Senior: 'sr' keeps both memberships and this "
+               "is the position that picks Senior"),
+    Case("family_comma_dual_rank_reads_postnominal", "Smith, CPT",
+         {"family": "Smith", "suffix": "CPT"},
+         classification="fix(#296)",
+         notes="the retired-designation reading of a prenominal rank"),
+    Case("family_comma_lone_esquire_is_the_postnominal", "Smith, Esq.",
+         {"family": "Smith", "suffix": "Esq."},
+         classification="fix(#296)",
+         notes="H2's period-abbreviation inference reads a LEADING "
+               "'Esq.' as a title ('Esq. Smith'); after a family comma "
+               "the slot is postnominal and the vocabulary says "
+               "suffix, so the inference does not run"),
+    # -- #325: the whole credential run, not the lone piece
+    Case("family_comma_split_credential_run", "Smith, Ph. D. Jr.",
+         {"family": "Smith", "suffix": "Ph. D., Jr."},
+         classification="fix(#325)",
+         notes="one word before the comma, the space-split 'Ph. D.' "
+               "and a suffix after it: the lone-piece route did not "
+               "apply and the merged credential fell through to the "
+               "given name (a 1.4.0 regression -- v1 read suffix 'Ph. "
+               "D.', title 'Jr.'). A run that is nothing but suffix "
+               "pieces is the credential run C1 describes, whole"),
+    Case("family_comma_credential_run_then_numeral", "Smith, Ph. D. III",
+         {"family": "Smith", "suffix": "Ph. D., III"},
+         classification="fix(#325)"),
+    Case("family_comma_two_credentials", "Smith, PhD Jr.",
+         {"family": "Smith", "suffix": "PhD, Jr."},
+         classification="fix(#325)",
+         notes="'PhD' led the run as a title until the audit, then "
+               "as a given name for the length of one commit; the run "
+               "is suffixes"),
+    Case("family_comma_run_with_a_name_is_not_a_run", "Smith, John Jr.",
+         {"given": "John", "family": "Smith", "suffix": "Jr."},
+         notes="the non-flip: a name word in the run makes it the "
+               "given-and-suffix walk v1 had"),
+    Case("title_word_trailing_is_not_a_title", "John Smith Prof.",
+         {"given": "John", "middle": "Smith", "family": "Prof."},
+         notes="the pre-existing behavior the two rows above join, "
+               "pinned so the pair reads as consistency rather than as "
+               "damage -- and so the general fix (#316) has a row to "
+               "flip when it lands. Contrast 'Smith, Prof.', which the "
+               "comma path DOES route to title: the two paths disagree "
+               "today"),
 
     # -- #271: script-scoped order + segmentation (amendment 2026-07-27)
     Case("ko_unspaced_default", "김민준",
@@ -2057,30 +2244,17 @@ CASES: tuple[Case, ...] = (
                "extract_delimited claimed something passes the row "
                "above and fails only here"),
     Case("ja_honorific_glued_family_comma", "田中さん, PhD",
-         {"title": "PhD", "family": "田中", "suffix": "さん"},
+         {"family": "田中", "suffix": "さん, PhD"},
          classification="fix(#312)",
          notes="the peel reaches 田中さん across the comma, though no "
                "longer by crossing it: since #319 is_wholly_suffix "
                "declines the post-comma run outright (PhD is suffix "
                "vocabulary and it is the whole run), so the scan never "
-               "leaves segments[0] and never examines PhD at all. It "
-               "did cross before, stepping OVER PhD because that "
-               "spelling satisfies _is_post_nominal's strict test -- "
-               "the same fields by the older route. The spaced "
-               "田中さん PhD still peels that way, its single run "
-               "holding both tokens, so the two spellings now agree on "
-               "the outcome through DIFFERENT mechanisms; "
-               "ja_honorific_glued_family_comma_suffixy_second_run "
-               "cites this row for the outcome, not the route. Where "
-               "PhD itself lands still differs "
-               "between the two spellings -- suffix spaced, title "
-               "post-comma -- and that is fix(comma-family)'s, not "
-               "the peel's. The expectation bakes in TWO deviations "
-               "from 1.4.0 and only one of them is #312's: the peel "
-               "is, while first -> family is comma-family's, witnessed "
-               "on pure Latin by family_comma_lone_title (1.4.0 first "
-               "Smith, here family Smith) -- so no script-conditional "
-               "rule is reaching that half"),
+               "meets the comma. PhD reads as the postnominal it is "
+               "since #296's audit took 'phd' out of TITLES -- this row "
+               "carried title 'PhD' until then, which was the title "
+               "peel claiming a credential because v1's lists put it "
+               "where v1's parser needed it"),
     Case("ja_honorific_glued_family_comma_suffixy_second_run",
          "田中さん, V.",
          {"given": "V.", "family": "田中", "suffix": "さん"},

@@ -601,12 +601,10 @@ C1. Rationale: a credential run after the comma means the name is in
       "John Smith, V."            →  suffix="V."
       "John Smith, V."  strict-comma-suffixes  →  family="John Smith"
       "Smith, PhD"                →  family="Smith"  · boundary
-      "Smith, PhD"                →  suffix="PhD"  deviates: #296 (today: suffix="")
-    (Today PhD lands in TITLE — the #316 trailing-title tangle
-    crossing C1; the marker tracks the suffix field only, so a
-    measured title="PhD" does not mean the marker is stale.)
+      "Smith, PhD"                →  suffix="PhD"
+      "Smith, Ph. D. Jr."         →  suffix="Ph. D., Jr."
       "John Smith, LEED AP"       →  family="Smith"  deviates: #291 (today: family="John Smith")
-    history: decisions.md#C1 · implemented: nameparser/_pipeline/_segment.py
+    history: decisions.md#C1 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py
 
 C2. Rationale: text beyond the recognized comma parts should be
     taken in without silent guessing.

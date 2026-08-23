@@ -48,36 +48,39 @@ class ParticlesTestCase(HumanNameTestBase):
         self.m(hn.suffix, "M.D.", hn)
 
     def test_title_before_and_after_prefixed_last_name(self) -> None:
-        # Issue #100: a repeated title/suffix token ("dr") before AND after a
+        # Issue #100: a repeated title/suffix token before AND after a
         # prefixed last name used to corrupt the middle name into
         # " dr Vincent van" because the suffix-boundary lookup matched the
-        # LEADING "dr" instead of the trailing one.
-        hn = HumanName("dr Vincent van Gogh dr")
-        self.m(hn.title, "dr", hn)
+        # LEADING token instead of the trailing one. The token was "dr"
+        # until #296's audit took 'dr' out of the suffix vocabulary (it
+        # is not a postnominal); "lt" is both a title and a suffix, which
+        # is the only property these three tests need.
+        hn = HumanName("lt Vincent van Gogh lt")
+        self.m(hn.title, "lt", hn)
         self.m(hn.first, "Vincent", hn)
         self.m(hn.middle, "", hn)
         self.m(hn.last, "van Gogh", hn)
-        self.m(hn.suffix, "dr", hn)
+        self.m(hn.suffix, "lt", hn)
 
     def test_suffix_token_collision_with_two_word_prefix(self) -> None:
         # Same fix as #100 but with a two-word prefix ("van der"). Exercises a
         # different iteration count through the prefix-joining loop.
-        hn = HumanName("dr Vincent van der Gogh dr")
-        self.m(hn.title, "dr", hn)
+        hn = HumanName("lt Vincent van der Gogh lt")
+        self.m(hn.title, "lt", hn)
         self.m(hn.first, "Vincent", hn)
         self.m(hn.middle, "", hn)
         self.m(hn.last, "van der Gogh", hn)
-        self.m(hn.suffix, "dr", hn)
+        self.m(hn.suffix, "lt", hn)
 
     def test_title_before_and_after_prefixed_last_name_with_middle(self) -> None:
         # The pre-fix bug corrupted the middle field; verify it is not disturbed
         # when a genuine middle name is present alongside the repeated token.
-        hn = HumanName("dr Vincent James van Gogh dr")
-        self.m(hn.title, "dr", hn)
+        hn = HumanName("lt Vincent James van Gogh lt")
+        self.m(hn.title, "lt", hn)
         self.m(hn.first, "Vincent", hn)
         self.m(hn.middle, "James", hn)
         self.m(hn.last, "van Gogh", hn)
-        self.m(hn.suffix, "dr", hn)
+        self.m(hn.suffix, "lt", hn)
 
     @pytest.mark.timeout(2)
     def test_many_repeated_prefixes_does_not_blow_up(self) -> None:

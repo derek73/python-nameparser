@@ -347,17 +347,6 @@ name_regex = "^\\S*\u00b7\\S*\uc528$"
 fields = ["given", "middle", "family", "suffix"]
 
 [[change]]
-issue = "fix(#367) a title-and-particle word stops the scan instead of being chained"
-# 'Dr. Do Van Johnson, MD': the arrival the fix(#367) rule below named
-# as its reason for listing three roles -- "a corpus name that moves
-# `title` or `maiden` should arrive UNEXPLAINED and be read once". This
-# is the `title` one. `do` is both a title and an ambiguous particle,
-# so it stops the transparency scan and stays a title piece instead of
-# being chained onto the name.
-name_regex = "(?i)^dr\\.?\\s+do\\s+van\\b"
-fields = ["title", "given"]
-
-[[change]]
 issue = "fix(#369) a given-name title licenses the bound given-name join with one word to spare"
 # 'Sheik abdul salam': rules.md#P5 -- "or after a given-name title,
 # which asserts that a given name follows (H1): there the two words
@@ -465,6 +454,105 @@ issue = "fix(comma-family) a comma followed only by titles keeps the given/famil
 # John Smith' with the honorific moved).
 name_regex = "(?i)^bob\\s+jones,\\s*[a-z]+$"
 fields = ["given", "family"]
+
+[[change]]
+issue = "fix(#296) a dropped prenominal takes the name position it occupies"
+# 'Do Quang Minh': 'do' left TITLES -- a postnominal (D.O.) and a
+# Vietnamese surname, never a prenominal -- so a leading 'Do' is no
+# longer peeled as a title and falls through to the positional read:
+# title 'Do', first 'Quang' -> given 'Do', middle 'Quang'. The
+# 2026-07-30 audit table's disposition; 'phd', 'jr', 'junior' and
+# 'se' left with it, and no corpus name leads with those. `family`
+# is deliberately OUT of the field list: the family name must not
+# move on this rule, so a regression there stays loud. The anchors
+# are the two openings a name has (start, or after a family comma).
+name_regex = "(?i)(^|,\\s*)do\\b"
+fields = ["title", "given", "middle", "_ambiguities"]
+
+[[change]]
+issue = "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word"
+# 'John Smith Dr.' (and 'Smith Dr', 'dr Vincent van Gogh dr' with its
+# #100 siblings at 2.x): 'dr' left SUFFIX_WORDS, where it was v1
+# residue -- 'Dr.' is not a postnominal in any tradition -- so a
+# trailing bare 'Dr' is no longer suffix vocabulary and falls to the
+# positional read, taking the family name with it. NOT a new class:
+# no trailing title-only word routes to title on the no-comma path
+# ('John Smith Prof.' reads family 'Prof.' at every baseline), and
+# the suffix entry was the only thing making 'dr' the exception. #316
+# is the open question for the class.
+name_regex = "(?i)\\sdr\\.?$"
+fields = ["middle", "family", "suffix"]
+
+[[change]]
+issue = "fix(#296) a credential-only comma string reads a name and its postnominal"
+# 'Jr., PhD' / 'MD, PHD': a string that is nothing BUT credentials.
+# v1 read the trailing one as a title and the leading one as a first
+# name; with 'phd' out of TITLES the comma structure reads it as a
+# one-word name plus a postnominal -- a reading of a string nobody
+# writes as a name, and the honest one for it.
+name_regex = "(?i)^[a-z]{2,3}\\.?,\\s*phd$"
+fields = ["title", "given", "family", "suffix"]
+
+[[change]]
+issue = "fix(#296) a lone post-comma credential is a suffix"
+# 'Smith, Jr.' / 'Kim, Jr.' / 'Smith, PhD': rules.md#C1 -- the listing
+# form holds with one word before the comma, and the word after it is
+# the credential run. v1 put the family in `first` and the credential
+# in `title`; 2.0 routed the pre-comma word to the family (the
+# comma-family rule below) but the title peel still claimed the
+# credential -- 'jr' and 'phd' were title vocabulary, and the
+# period-abbreviation inference reads 'Jr.' as a title regardless --
+# so the postnominal position is read first now: a post-comma run
+# that is nothing but suffix pieces is suffixes. A one-word name, a
+# comma, one short word: the reach is pinned by the guards.
+name_regex = "(?i)^[a-z]+,\\s*[a-z]{2,6}\\.?$"
+fields = ["title", "given", "family", "suffix"]
+
+[[change]]
+issue = "fix(#325) a credential run after a one-word family comma reads as suffixes, whole"
+# 'Smith, Ph. D. Jr.' and its #325 rows ('Smith, Ph. D. MD', 'Smith,
+# Ph. D. III', 'Smith, Ph. D. Jr. MD', 'Smith, Ph.D. Jr.', 'Smith, PhD
+# Jr.', 'Smith, Jr., PhD'): with one word before the comma the name
+# is the listing form, and the space-split 'Ph. D.' followed by
+# another suffix was no longer the LONE post-comma piece, so it fell
+# through to the given name -- a 1.4.0 regression (v1 read suffix
+# 'Ph. D.', title 'Jr.'). The whole run is suffixes now. The regex is
+# the shape -- 'Smith', a comma, two or more tokens -- rather than the
+# credential spellings (an alternation over them would also reach the
+# spaced 'Ph. D.', which is no vocabulary entry); the guards pin what
+# it reaches.
+name_regex = "(?i)^smith,\\s*\\S+[\\s,]+\\S+"
+fields = ["title", "given", "suffix"]
+
+[[change]]
+issue = "fix(#296) a glued honorific before a lone credential: the credential is the postnominal"
+# '田中さん, PhD': 'phd' left TITLES, so the lone post-comma credential
+# is the suffix it is, and the glued-honorific peel (#312) reads 田中
+# and さん as before. title 'PhD' -> suffix 'さん, PhD'.
+name_regex = "(?i)^田中さん,\\s*phd$"
+fields = ["title", "family", "suffix"]
+
+[[change]]
+issue = "fix(#296) do is a name, so it no longer stops the leading-particle scan as a title"
+# 'Dr. Do Van Johnson, MD': the fix(#367) title-and-particle rule that
+# explained this name is gone with 'do' from TITLES -- a word in both
+# the title and particle vocabularies stopped the transparency scan
+# and stayed a title piece; 'do' is a particle and a name now, and
+# reads as the given name: title 'Dr. Do', given 'Van Johnson' ->
+# title 'Dr.', given 'Do', family 'Van Johnson'.
+name_regex = "(?i)^dr\\.?\\s+do\\s+van\\b"
+fields = ["title", "given", "family"]
+
+[[change]]
+issue = "fix(#296) dr is not postnominal vocabulary, so 'John Smith, Dr.' keeps its split and its title"
+# 'John Smith, Dr.' / 'John, Smith, Dr.': with 'dr' out of the suffix
+# sets the post-comma 'Dr.' is a title only, so the comma is followed
+# by nothing but titles and the pre-comma name keeps its split (the
+# all-titles repair): suffix 'Dr.' -> title 'Dr.'. The three-part
+# spelling gains the COMMA_STRUCTURE report C2 gives a third part
+# that is not suffix words.
+name_regex = "(?i)^john,?\\s+smith,\\s*dr\\.?$"
+fields = ["title", "suffix", "_ambiguities"]
 
 [[change]]
 issue = "fix(#424) the particle chain stops before the trailing numeral"
@@ -619,7 +707,19 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # ["given", "family", "suffix"] is a superset of this diff's fields. No
 # fields-only rule exists here, so this file's copy is the plain
 # classification.
-name_regex = "(?i)^(mr|dr|sir|jr)\\.?\\s+van\\b"
+name_regex = "(?i)^(mr|dr|sir)\\.?\\s+van\\b"
+fields = ["given", "middle", "family"]
+
+[[change]]
+issue = "fix(#367) an inferred title no longer displaces a leading particle either"
+# 'Jr. Van Johnson': the same change as the rule above, for a leading
+# piece the period-abbreviation inference reads as a title (H2). It
+# sat in that rule's alternation as 'jr' while 'jr' was title
+# vocabulary; #296's audit took it out (a postnominal only), so the
+# member would now reach a word the vocabulary does not ship, and the
+# shape gets its literal. The reading is unchanged: 'Jr.' is still a
+# title by shape, and Van is still the leading name piece.
+name_regex = "(?i)^jr\\.\\s+van\\b"
 fields = ["given", "middle", "family"]
 
 [[change]]

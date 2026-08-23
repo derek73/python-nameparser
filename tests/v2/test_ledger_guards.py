@@ -564,8 +564,6 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # The literal-anchored rules #413 added. Each claims exactly one
     # corpus name, so _CORPUS_CLAIMS cannot see a widening that reaches
     # only names the corpora lack -- these probes are the only wall.
-    "fix(#367) a title-and-particle word stops the scan instead of being chained":
-        ("Dr. Do Smith", "Dr Do Nguyen"),
     "fix(#399) a maiden marker bounds the particle chain: the geb. spelling":
         ("Berg, Ursula von der geb. Albrecht",),
     "fix(credential-pair-order) a split credential and a suffix render in written order":
@@ -881,13 +879,15 @@ _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
     # snapshot is agreement rather than duplication: a divergence
     # would be a fact about one of the rules.
     # The title half of the #367 rule, widened when three more titled
-    # names arrived (#413). Partial on purpose: these are the four
-    # spellings that appear before `van` in the corpora, not every title
-    # that could -- seven titles sit before some particle, and two of the
-    # other three have rules of their own.
+    # names arrived (#413). Partial on purpose: these are the spellings
+    # that appear before `van` in the corpora, not every title that
+    # could -- seven titles sit before some particle, and the others
+    # have rules of their own. 'jr' was a member until #296's audit took
+    # it out of TITLES (a postnominal only); 'Jr. Van Johnson' reads the
+    # same by the period-abbreviation inference and has its literal.
     "fix(#367) a title no longer displaces a leading particle out of the leading position":
         _LatinCopy(vocabulary=TITLES,
-                   covers=frozenset({"mr", "dr", "sir", "jr"})),
+                   covers=frozenset({"mr", "dr", "sir"})),
     "fix(#399)": _LatinCopy(
         vocabulary=PARTICLES,
         covers=frozenset({"de", "del", "den", "der", "di", "do", "dos",
@@ -1251,6 +1251,18 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(264, ('given', 'suffix', 'title'), "a639a0ca7ce2"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
+        "fix(#296) a dropped prenominal takes the name position it occupies":
+            _Claim(3, ('given', 'middle', 'title'), "263d5957cfc1"),
+        "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
+            _Claim(7, ('family', 'middle', 'suffix'), "99d4827cbbf9"),
+        "fix(#296) a credential-only comma string reads a name and its postnominal":
+            _Claim(2, ('family', 'given', 'suffix', 'title'), "3f983ff71dee"),
+        "fix(#296) a lone post-comma credential is a suffix":
+            _Claim(14, ('family', 'given', 'suffix', 'title'), "5c5e08db3812"),
+        "fix(#325) a credential run after a one-word family comma reads as suffixes, whole":
+            _Claim(20, ('given', 'suffix', 'title'), "c322fe058b2c"),
+        "fix(#367) an inferred title no longer displaces a leading particle either":
+            _Claim(1, ('family', 'given', 'middle'), "d8ee9cd5da5f"),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(264, ('family', 'given'), "a639a0ca7ce2"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
@@ -1282,7 +1294,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
             _Claim(1, ('family', 'given'), "ca7b37af6cf8"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
-            _Claim(4, ('family', 'given', 'middle'), "ae299117dd60"),
+            _Claim(3, ('family', 'given', 'middle'), "724967a4a117"),
         "fix(#400) abd joins the word after it as one given name":
             _Claim(11, ('given', 'middle'), "1eaed91fc574"),
         "fix(#272/#308) nakaguro division and a glued hangul honorific in one name":
@@ -1344,7 +1356,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ca7b37af6cf8"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
-            _Claim(4, ('family', 'given', 'middle'), "ae299117dd60"),
+            _Claim(3, ('family', 'given', 'middle'), "724967a4a117"),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
             _Claim(2, ('family', 'suffix'), "ec0d45289dc1"),
         "fix(#399) a maiden marker bounds the particle chain that swallowed it":
@@ -1365,8 +1377,6 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given', 'middle'), "7923e6d3c5a7"),
         "fix(#418) accepted: a suffix word inside the maiden name ends it, connective or not":
             _Claim(1, ('family', 'maiden', 'middle'), "bedc18423d2a"),
-        "fix(#367) a title-and-particle word stops the scan instead of being chained":
-            _Claim(1, ('given', 'title'), "faa2c70fc49e"),
         "fix(#369) a given-name title licenses the bound given-name join with one word to spare":
             _Claim(3, ('family', 'given'), "724be3e6b926"),
         "fix(#401) the bound-given reserve counts the trailing numeral assign reads as the suffix":
@@ -1385,6 +1395,24 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'given', 'suffix'), "5b3a743f9e35"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
+        "fix(#296) a dropped prenominal takes the name position it occupies":
+            _Claim(3, ('_ambiguities', 'given', 'middle', 'title'), "263d5957cfc1"),
+        "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
+            _Claim(7, ('family', 'middle', 'suffix'), "99d4827cbbf9"),
+        "fix(#296) a credential-only comma string reads a name and its postnominal":
+            _Claim(2, ('family', 'given', 'suffix', 'title'), "3f983ff71dee"),
+        "fix(#296) a lone post-comma credential is a suffix":
+            _Claim(14, ('family', 'given', 'suffix', 'title'), "5c5e08db3812"),
+        "fix(#325) a credential run after a one-word family comma reads as suffixes, whole":
+            _Claim(20, ('given', 'suffix', 'title'), "c322fe058b2c"),
+        "fix(#296) a glued honorific before a lone credential: the credential is the postnominal":
+            _Claim(1, ('family', 'suffix', 'title'), "01bf2bd3f895"),
+        "fix(#296) do is a name, so it no longer stops the leading-particle scan as a title":
+            _Claim(1, ('family', 'given', 'title'), "faa2c70fc49e"),
+        "fix(#296) dr is not postnominal vocabulary, so 'John Smith, Dr.' keeps its split and its title":
+            _Claim(2, ('_ambiguities', 'suffix', 'title'), "34d3d96adb65"),
+        "fix(#367) an inferred title no longer displaces a leading particle either":
+            _Claim(1, ('family', 'given', 'middle'), "d8ee9cd5da5f"),
         "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "a564b97f7162"),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example":
@@ -1406,7 +1434,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ca7b37af6cf8"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
-            _Claim(4, ('family', 'given', 'middle'), "ae299117dd60"),
+            _Claim(3, ('family', 'given', 'middle'), "724967a4a117"),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
             _Claim(2, ('family', 'suffix'), "ec0d45289dc1"),
         "fix(#399) a maiden marker bounds the particle chain that swallowed it":
@@ -1425,8 +1453,6 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given', 'middle'), "7923e6d3c5a7"),
         "fix(#418) accepted: a suffix word inside the maiden name ends it, connective or not":
             _Claim(1, ('family', 'maiden', 'middle'), "bedc18423d2a"),
-        "fix(#367) a title-and-particle word stops the scan instead of being chained":
-            _Claim(1, ('given', 'title'), "faa2c70fc49e"),
         "fix(#369) a given-name title licenses the bound given-name join with one word to spare":
             _Claim(3, ('family', 'given'), "724be3e6b926"),
         "fix(#401) the bound-given reserve counts the trailing numeral assign reads as the suffix":
@@ -1445,6 +1471,24 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'given', 'suffix'), "5b3a743f9e35"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
+        "fix(#296) a dropped prenominal takes the name position it occupies":
+            _Claim(3, ('_ambiguities', 'given', 'middle', 'title'), "263d5957cfc1"),
+        "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
+            _Claim(7, ('family', 'middle', 'suffix'), "99d4827cbbf9"),
+        "fix(#296) a credential-only comma string reads a name and its postnominal":
+            _Claim(2, ('family', 'given', 'suffix', 'title'), "3f983ff71dee"),
+        "fix(#296) a lone post-comma credential is a suffix":
+            _Claim(14, ('family', 'given', 'suffix', 'title'), "5c5e08db3812"),
+        "fix(#325) a credential run after a one-word family comma reads as suffixes, whole":
+            _Claim(20, ('given', 'suffix', 'title'), "c322fe058b2c"),
+        "fix(#296) a glued honorific before a lone credential: the credential is the postnominal":
+            _Claim(1, ('family', 'suffix', 'title'), "01bf2bd3f895"),
+        "fix(#296) do is a name, so it no longer stops the leading-particle scan as a title":
+            _Claim(1, ('family', 'given', 'title'), "faa2c70fc49e"),
+        "fix(#296) dr is not postnominal vocabulary, so 'John Smith, Dr.' keeps its split and its title":
+            _Claim(2, ('_ambiguities', 'suffix', 'title'), "34d3d96adb65"),
+        "fix(#367) an inferred title no longer displaces a leading particle either":
+            _Claim(1, ('family', 'given', 'middle'), "d8ee9cd5da5f"),
         "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "a564b97f7162"),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example":
@@ -1596,7 +1640,12 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         ("Bob Jones, author", ("family", "given")):
             "fix(comma-family) a comma followed only by titles keeps "
             "the given/family split",
-        ("MD, PHD", ("family", "given")): "fix(comma-precomma-family)",
+        # since #296's audit 'PHD' is a postnominal here and the string
+        # is credentials only; the rule written for that shape is ahead
+        # of the precomma merge in the file
+        ("MD, PHD", ("family", "given", "suffix", "title")):
+            "fix(#296) a credential-only comma string reads a name and "
+            "its postnominal",
         ("Smith Jr.", ("family", "suffix")): "fix(suffix-routing)",
         # the glued/spaced boundary. 'Andersonさん' and '김민준씨' left
         # suffix-routing for a rule that names them; '김민준 씨.' is

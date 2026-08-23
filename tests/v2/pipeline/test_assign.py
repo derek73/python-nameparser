@@ -15,10 +15,10 @@ from nameparser._policy import (
 from nameparser._types import AmbiguityKind, Role
 
 _LEX = Lexicon(
-    titles=frozenset({"dr", "mr", "mrs", "sir"}),
+    titles=frozenset({"dr", "mr", "mrs", "sir", "sr"}),
     given_name_titles=frozenset({"sir"}),
     suffix_acronyms=frozenset({"phd", "md"}),
-    suffix_words=frozenset({"jr", "iii", "v"}),
+    suffix_words=frozenset({"jr", "iii", "v", "sr"}),
     particles=frozenset({"de", "la", "van"}),
     particles_ambiguous=frozenset({"van"}),
     conjunctions=frozenset({"and"}),
@@ -340,3 +340,62 @@ def test_positional_segment_zero_reports_the_particle_fork() -> None:
     assert _by_role(out, Role.FAMILY) == "Johnson"
     assert [a.kind for a in out.ambiguities] == \
         [AmbiguityKind.PARTICLE_OR_GIVEN]
+
+
+def test_a_credential_run_after_a_family_comma_reads_as_suffixes() -> None:
+    # 'Smith, Jr.' -- the peel's whole-segment exception claimed this
+    # even with 'jr' out of TITLES, because _is_leading_title also
+    # infers a title from the period-abbreviation shape. The slot after
+    # a family comma IS postnominal position, so a run that is nothing
+    # but suffix pieces is read as one before the peel gets a chance
+    # (#296) -- and the whole run, not the lone piece: 'Smith, Ph. D.
+    # Jr.' put the split credential in the given name (#325).
+    out = _assigned("Smith, Jr.")
+    assert _by_role(out, Role.FAMILY) == "Smith"
+    assert _by_role(out, Role.SUFFIX) == "Jr."
+    assert _by_role(out, Role.TITLE) == ""
+    out = _assigned("Smith, Ph. D. Jr.")
+    assert _by_role(out, Role.FAMILY) == "Smith"
+    assert _by_role(out, Role.SUFFIX) == "Ph. D. Jr."
+    assert _by_role(out, Role.GIVEN) == ""
+    out = _assigned("Smith, Jr. PhD")
+    assert _by_role(out, Role.SUFFIX) == "Jr. PhD"
+    assert _by_role(out, Role.TITLE) == ""
+
+
+def test_lone_post_comma_dual_word_reads_as_the_postnominal() -> None:
+    # 'sr' kept BOTH memberships; position is what decides, and this is
+    # the position that decides postnominal.
+    out = _assigned("Smith, Sr.")
+    assert _by_role(out, Role.SUFFIX) == "Sr."
+    assert _by_role(out, Role.TITLE) == ""
+
+
+def test_leading_dual_word_still_reads_as_the_title() -> None:
+    # The other half of the same fork, untouched: the peel's normal path.
+    out = _assigned("Sr. Garcia")
+    assert _by_role(out, Role.TITLE) == "Sr."
+    # assign leaves the one name word as the given; H1 (post_rules)
+    # makes it the family
+    assert _by_role(out, Role.GIVEN) == "Garcia"
+
+
+def test_lone_post_comma_title_is_not_a_suffix() -> None:
+    # 'Smith, Dr.' decides WITHOUT consulting the ordering: after the
+    # audit 'dr' is not suffix-tagged, so the suffix test simply declines
+    # and the title peel takes it as before.
+    out = _assigned("Smith, Dr.")
+    assert _by_role(out, Role.TITLE) == "Dr."
+    assert _by_role(out, Role.SUFFIX) == ""
+
+
+def test_a_mixed_post_comma_run_keeps_the_walk_order() -> None:
+    # a title then a suffix word is read where each stands (v1's walk:
+    # leading titles peel, the rest is given / middle / suffix), and a
+    # name word anywhere in the run makes it a name, not a credential run
+    out = _assigned("Smith, Dr. Jr.")
+    assert _by_role(out, Role.TITLE) == "Dr."
+    assert _by_role(out, Role.SUFFIX) == "Jr."
+    out = _assigned("Smith, John Jr.")
+    assert _by_role(out, Role.GIVEN) == "John"
+    assert _by_role(out, Role.SUFFIX) == "Jr."
