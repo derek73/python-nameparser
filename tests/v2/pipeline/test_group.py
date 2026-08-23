@@ -743,8 +743,9 @@ def test_the_join_never_turns_a_name_into_a_suffix_either() -> None:
     # whose V the peel reads as the suffix; joined it would be one
     # piece the fork cannot fire on, so the V would become a name
     # word. The view leaves one name word where the pieces leave one,
-    # not one fewer -- the join declines, and the numeral pins above
-    # hold for this reason too.
+    # not one fewer -- the join declines. (Of the numeral pins above,
+    # 'abdul J. V' declines by this equality; 'abdul Smith V' by the
+    # threshold, one name word being no family to spare.)
     out = _grouped("abdul V")
     assert _piece_texts(out) == [["abdul", "V"]]
 
@@ -754,9 +755,11 @@ def test_the_joined_pair_is_a_given_name_whatever_tag_the_word_carried() -> None
     # join takes it as v1 did -- but the conjunction merge derives a
     # `title` piece tag for "mr and mrs", and merge()'s tag union
     # would hand that tag to the joined pair, which assign then peels
-    # as a leading title: 'abdul Sheikh and Ahmad Bakar' read title
-    # 'abdul Sheikh and Ahmad'. The bound join drops the tag: the pair
-    # is a given name. Found by the code review.
+    # as a leading title: 'abdul Sheikh and Ahmad Bakar Smith' read
+    # title 'abdul Sheikh and Ahmad' on 2.0 and 2.1, and the shorter
+    # 'abdul Sheikh and Ahmad Bakar' would have too once the count's
+    # title exclusion went. The bound join drops the tag: the pair is
+    # a given name. Found by the code review.
     out = _grouped("abdul mr and mrs Smith Berg")
     assert _piece_texts(out) == [["abdul mr and mrs", "Smith", "Berg"]]
     assert "title" not in out.piece_tags[0][0]
@@ -773,3 +776,15 @@ def test_a_title_word_in_the_name_is_a_name_word_to_the_join() -> None:
     assert _piece_texts(out) == [["abdul Smith", "mr"]]
     out = _grouped("Berg, abdul mr")
     assert _piece_texts(out) == [["Berg"], ["abdul mr"]]
+
+
+def test_the_licence_does_not_lift_the_equality() -> None:
+    # The one shape where the join would move the numeral fork AND
+    # the licence's threshold of one would let it through: 'sir abdul
+    # J. V' -- unjoined the V is a name word (the fork is suppressed
+    # by the initial-shaped 'J.'), joined it is the suffix, so the
+    # view leaves two name words fewer, not one. Declines, as 'Sir
+    # John J. V' reads. The mutation "at most one fewer" passed every
+    # other test; found by the test review.
+    out = _grouped("sir abdul J. V", lexicon=_GIVEN_NAME_TITLE_LEX)
+    assert _piece_texts(out) == [["sir", "abdul", "J.", "V"]]

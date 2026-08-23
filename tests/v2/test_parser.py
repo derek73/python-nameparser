@@ -493,6 +493,12 @@ def test_a_given_name_title_licenses_the_bound_given_join() -> None:
     plain = parse("Dr. abdul salam")
     assert (plain.title, plain.given, plain.family) == \
         ("Dr.", "abdul", "salam")
+    # and the pair's report: a bound word read as the bound word is
+    # not a fork, so the pick 'Sheik John Ma' reports is not reported
+    # for 'Sheik abdul Ma' (decisions.md#P5, the #369 precedent)
+    assert parse("Sheik abdul Ma").ambiguities == ()
+    assert [a.kind for a in parse("Sheik John Ma").ambiguities] == \
+        [AmbiguityKind.SUFFIX_OR_NAME]
 
 
 def test_the_bound_given_reserve_spares_the_family_assign_will_keep() -> None:
@@ -567,11 +573,33 @@ def test_a_joined_pair_is_never_peeled_as_a_title() -> None:
     n = parse("abdul Sheikh and Ahmad Bakar")
     assert (n.title, n.given, n.family) == \
         ("", "abdul Sheikh and Ahmad", "Bakar")
-    # the restored-parity class: title words are name words to P5
+    # the title-word class: name words to P5, as v1 read them --
+    # parity restored for the post-comma shape, never lost for the
+    # main-walk one
     n = parse("abdul Sir Smith Berg")
     assert (n.given, n.middle, n.family) == ("abdul Sir", "Smith", "Berg")
     n = parse("Berg, abdul Sir")
     assert (n.given, n.family) == ("abdul Sir", "Berg")
+
+
+def test_the_licence_does_not_lift_the_equality() -> None:
+    # Behind a given-name title the reserve needs one name piece, so
+    # the equality is the only thing between 'Sir abdul J. V' and a
+    # join that turns the V from a name word into the suffix (#369
+    # had joined it). It reads exactly as 'Sir John J. V' does.
+    for text in ("Sir abdul J. V", "Sir John J. V"):
+        n = parse(text)
+        assert (n.middle, n.family, n.suffix) == ("J.", "V", "")
+
+
+def test_the_numeral_fork_fires_on_the_last_piece_only() -> None:
+    # The shared peel's own contract, pinned at the stage that owns
+    # it: a numeral with a suffix behind it is a name word, for an
+    # ordinary given name and the bound pair alike.
+    for text, family in (("John Smith V Jr", "V"),
+                         ("abdul Smith V Jr", "V")):
+        n = parse(text)
+        assert (n.family, n.suffix) == (family, "Jr")
 
 
 @pytest.mark.parametrize("bound", ["abd", "abu"])
