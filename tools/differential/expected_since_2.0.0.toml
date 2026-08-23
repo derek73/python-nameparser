@@ -456,6 +456,15 @@ name_regex = "(?i)^bob\\s+jones,\\s*[a-z]+$"
 fields = ["given", "family"]
 
 [[change]]
+issue = "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example"
+# 'John Smith, Mr.': the rules.md#C1 example of the rule above, same
+# reading and fields (first 'John Smith' -> given 'John', family
+# 'Smith'; the title stays where it was). Its own literal rather than
+# an alternation with 'Bob Jones', which would be no vocabulary.
+name_regex = "(?i)^john\\s+smith,\\s*mr\\.?$"
+fields = ["given", "family"]
+
+[[change]]
 issue = "fix(#296) a dropped prenominal takes the name position it occupies"
 # 'Do Quang Minh': 'do' left TITLES -- a postnominal (D.O.) and a
 # Vietnamese surname, never a prenominal -- so a leading 'Do' is no

@@ -1248,25 +1248,27 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
             _Claim(13, ('family', 'middle'), "973617235cda"),
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(264, ('given', 'suffix', 'title'), "a639a0ca7ce2"),
+            _Claim(270, ('given', 'suffix', 'title'), "45cec16f786e"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
+        "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
+            _Claim(1, ('family', 'given'), "970555ace2f9"),
         "fix(#296) a dropped prenominal takes the name position it occupies":
             _Claim(3, ('given', 'middle', 'title'), "263d5957cfc1"),
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
-            _Claim(7, ('family', 'middle', 'suffix'), "99d4827cbbf9"),
+            _Claim(8, ('family', 'middle', 'suffix'), "3b880a916c91"),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
             _Claim(2, ('family', 'given', 'suffix', 'title'), "3f983ff71dee"),
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(14, ('family', 'given', 'suffix', 'title'), "5c5e08db3812"),
+            _Claim(17, ('family', 'given', 'suffix', 'title'), "a7ce53224382"),
         "fix(#325) a credential run after a one-word family comma reads as suffixes, whole":
-            _Claim(20, ('given', 'suffix', 'title'), "c322fe058b2c"),
+            _Claim(21, ('given', 'suffix', 'title'), "f58fa29941d8"),
         "fix(#367) an inferred title no longer displaces a leading particle either":
             _Claim(1, ('family', 'given', 'middle'), "d8ee9cd5da5f"),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(264, ('family', 'given'), "a639a0ca7ce2"),
+            _Claim(270, ('family', 'given'), "45cec16f786e"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(1056, ('family', 'given', 'suffix'), "bfb2e274a968"),
+            _Claim(1062, ('family', 'given', 'suffix'), "5529d4c5d693"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1395,16 +1397,18 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'given', 'suffix'), "5b3a743f9e35"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
+        "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
+            _Claim(1, ('family', 'given'), "970555ace2f9"),
         "fix(#296) a dropped prenominal takes the name position it occupies":
             _Claim(3, ('_ambiguities', 'given', 'middle', 'title'), "263d5957cfc1"),
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
-            _Claim(7, ('family', 'middle', 'suffix'), "99d4827cbbf9"),
+            _Claim(8, ('family', 'middle', 'suffix'), "3b880a916c91"),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
             _Claim(2, ('family', 'given', 'suffix', 'title'), "3f983ff71dee"),
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(14, ('family', 'given', 'suffix', 'title'), "5c5e08db3812"),
+            _Claim(17, ('family', 'given', 'suffix', 'title'), "a7ce53224382"),
         "fix(#325) a credential run after a one-word family comma reads as suffixes, whole":
-            _Claim(20, ('given', 'suffix', 'title'), "c322fe058b2c"),
+            _Claim(21, ('given', 'suffix', 'title'), "f58fa29941d8"),
         "fix(#296) a glued honorific before a lone credential: the credential is the postnominal":
             _Claim(1, ('family', 'suffix', 'title'), "01bf2bd3f895"),
         "fix(#296) do is a name, so it no longer stops the leading-particle scan as a title":
@@ -1471,16 +1475,18 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'given', 'suffix'), "5b3a743f9e35"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
+        "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
+            _Claim(1, ('family', 'given'), "970555ace2f9"),
         "fix(#296) a dropped prenominal takes the name position it occupies":
             _Claim(3, ('_ambiguities', 'given', 'middle', 'title'), "263d5957cfc1"),
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
-            _Claim(7, ('family', 'middle', 'suffix'), "99d4827cbbf9"),
+            _Claim(8, ('family', 'middle', 'suffix'), "3b880a916c91"),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
             _Claim(2, ('family', 'given', 'suffix', 'title'), "3f983ff71dee"),
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(14, ('family', 'given', 'suffix', 'title'), "5c5e08db3812"),
+            _Claim(17, ('family', 'given', 'suffix', 'title'), "a7ce53224382"),
         "fix(#325) a credential run after a one-word family comma reads as suffixes, whole":
-            _Claim(20, ('given', 'suffix', 'title'), "c322fe058b2c"),
+            _Claim(21, ('given', 'suffix', 'title'), "f58fa29941d8"),
         "fix(#296) a glued honorific before a lone credential: the credential is the postnominal":
             _Claim(1, ('family', 'suffix', 'title'), "01bf2bd3f895"),
         "fix(#296) do is a name, so it no longer stops the leading-particle scan as a title":
