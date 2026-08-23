@@ -164,6 +164,19 @@ name_regex = "(?i)^[\\u0000-\\u024f]*,\\s*jr\\.?\\s+ph\\.?\\s*d\\.?\\s*$"
 fields = ["suffix"]
 
 [[change]]
+issue = "fix(comma-family) a comma followed only by titles keeps the given/family split"
+# 'Bob Jones, author' / 'Bob Jones, compositeur': the comma is followed
+# by nothing but a title word, which said nothing about where the
+# family name ends, so the pre-comma name keeps its positional read --
+# first 'Bob Jones' -> given 'Bob', family 'Jones', the title staying
+# where it was (the post-comma word is a title on both sides). 2.0 had
+# merged the pre-comma run into the family (the comma-precomma-family
+# rule below, whose fields would absorb this move -- written ahead of
+# it so the name files here and that rule's count tells).
+name_regex = "(?i)^bob\\s+jones,\\s*[a-z]+$"
+fields = ["given", "family"]
+
+[[change]]
 issue = "fix(comma-family) lone post-comma piece routes to suffix/title, not first"
 # 'Smith, Dr.' / 'Andrews, M.D.': v1 put the lone strict-suffix-or-title
 # post-comma piece in `first`; 2.0 routes it to `suffix`/`title` instead

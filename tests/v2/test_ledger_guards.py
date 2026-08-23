@@ -1249,6 +1249,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(13, ('family', 'middle'), "973617235cda"),
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
             _Claim(264, ('given', 'suffix', 'title'), "a639a0ca7ce2"),
+        "fix(comma-family) a comma followed only by titles keeps the given/family split":
+            _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(264, ('family', 'given'), "a639a0ca7ce2"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
@@ -1381,6 +1383,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "3e3aae6a5b4b"),
         "fix(#424) a title-led chain before the numeral is the one name piece":
             _Claim(1, ('_ambiguities', 'family', 'given', 'suffix'), "5b3a743f9e35"),
+        "fix(comma-family) a comma followed only by titles keeps the given/family split":
+            _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
         "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "a564b97f7162"),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example":
@@ -1439,6 +1443,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "3e3aae6a5b4b"),
         "fix(#424) a title-led chain before the numeral is the one name piece":
             _Claim(1, ('_ambiguities', 'family', 'given', 'suffix'), "5b3a743f9e35"),
+        "fix(comma-family) a comma followed only by titles keeps the given/family split":
+            _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
         "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "a564b97f7162"),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example":
@@ -1583,8 +1589,13 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         # glued honorifics are the majority it also legitimately takes,
         # and cannot be given a rule of their own -- '김민준씨' and the
         # given name '김지양' are the same string shape.
+        # since the all-titles repair (#296's bundle) the pre-comma name
+        # keeps its split here, and the rule written for that shape is
+        # ahead of the precomma merge in the file; 'MD, PHD' has one
+        # pre-comma piece, no split to keep, and stays merged
         ("Bob Jones, author", ("family", "given")):
-            "fix(comma-precomma-family)",
+            "fix(comma-family) a comma followed only by titles keeps "
+            "the given/family split",
         ("MD, PHD", ("family", "given")): "fix(comma-precomma-family)",
         ("Smith Jr.", ("family", "suffix")): "fix(suffix-routing)",
         # the glued/spaced boundary. 'Andersonさん' and '김민준씨' left

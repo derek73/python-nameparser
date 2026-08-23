@@ -1376,6 +1376,24 @@ CASES: tuple[Case, ...] = (
          {"title": "Dr.", "family": "Smith"},
          classification="fix(comma-family)",
          notes="pre-comma is definitionally family; v1 put it in first"),
+    Case("family_comma_all_title_segment_keeps_split", "John Smith, Mr.",
+         {"title": "Mr.", "given": "John", "family": "Smith"},
+         classification="fix(comma-family)",
+         notes="a comma followed only by titles said nothing about "
+               "where the family name ends, so segment 0 keeps its "
+               "positional read instead of merging into one family "
+               "name (v1 read first 'John Smith'; 2.0 read it as the "
+               "family, the comma-precomma-family move)"),
+    Case("family_comma_all_title_segment_needs_two_pieces", "Smith, Dr.",
+         {"title": "Dr.", "family": "Smith"},
+         classification="fix(comma-family)",
+         notes="the guard on family_comma_all_title_segment_keeps_split: "
+               "one pre-comma piece has no split to keep, and the "
+               "positional read would make it a lone GIVEN"),
+    Case("family_comma_untitled_segment_still_merges", "John Smith, Jones",
+         {"given": "Jones", "family": "John Smith"},
+         notes="the non-flip: a post-comma NAME means the comma did fix "
+               "the family, so segment 0 stays wholly family (v1 parity)"),
 
     # -- #271: script-scoped order + segmentation (amendment 2026-07-27)
     Case("ko_unspaced_default", "김민준",

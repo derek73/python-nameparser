@@ -288,3 +288,55 @@ def test_script_with_no_table_entry_falls_back() -> None:
     out = _assigned("毛 泽东", hangul_only)
     assert _by_role(out, Role.GIVEN) == "毛"
     assert _by_role(out, Role.FAMILY) == "泽东"
+
+
+def test_all_title_post_comma_segment_leaves_segment_zero_positional() -> None:
+    # 'John Smith, Dr.' -- the comma is followed by nothing but a title,
+    # so it never said where the family name ends. Reading segment 0
+    # wholly as family throws away a split the writer gave us.
+    out = _assigned("John Smith, Dr.")
+    assert _by_role(out, Role.TITLE) == "Dr."
+    assert _by_role(out, Role.GIVEN) == "John"
+    assert _by_role(out, Role.FAMILY) == "Smith"
+
+
+def test_all_title_post_comma_segment_needs_two_pre_comma_pieces() -> None:
+    # 'Smith, Dr.' has nothing to split: one pre-comma piece stays FAMILY
+    # rather than becoming a lone GIVEN under the positional read.
+    out = _assigned("Smith, Dr.")
+    assert _by_role(out, Role.TITLE) == "Dr."
+    assert _by_role(out, Role.FAMILY) == "Smith"
+    assert _by_role(out, Role.GIVEN) == ""
+
+
+def test_post_comma_title_run_is_all_titles() -> None:
+    out = _assigned("John Smith, Mr. Dr.")
+    assert _by_role(out, Role.TITLE) == "Mr. Dr."
+    assert _by_role(out, Role.GIVEN) == "John"
+    assert _by_role(out, Role.FAMILY) == "Smith"
+
+
+def test_partly_title_post_comma_segment_keeps_family_comma() -> None:
+    # 'Smith, Dr. John' still has a name after the title, so the comma
+    # DID fix the family: segment 0 stays wholly family.
+    out = _assigned("Smith, Dr. John")
+    assert _by_role(out, Role.TITLE) == "Dr."
+    assert _by_role(out, Role.GIVEN) == "John"
+    assert _by_role(out, Role.FAMILY) == "Smith"
+
+
+def test_non_title_post_comma_segment_is_untouched() -> None:
+    out = _assigned("John Smith, Jones")
+    assert _by_role(out, Role.FAMILY) == "John Smith"
+    assert _by_role(out, Role.GIVEN) == "Jones"
+
+
+def test_positional_segment_zero_reports_the_particle_fork() -> None:
+    # The comma no longer fixed the family, so the leading ambiguous
+    # particle IS a live fork again -- emitted at the site that decides
+    # it, per the ambiguity doctrine.
+    out = _assigned("Van Johnson, Dr.")
+    assert _by_role(out, Role.GIVEN) == "Van"
+    assert _by_role(out, Role.FAMILY) == "Johnson"
+    assert [a.kind for a in out.ambiguities] == \
+        [AmbiguityKind.PARTICLE_OR_GIVEN]

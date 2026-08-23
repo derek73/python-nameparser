@@ -454,6 +454,19 @@ name_regex = "(?i)^john\\s+smith\\s+mc\\s+v$"
 fields = ["middle", "family", "suffix", "_ambiguities"]
 
 [[change]]
+issue = "fix(comma-family) a comma followed only by titles keeps the given/family split"
+# 'Bob Jones, author' / 'Bob Jones, compositeur': the comma is followed
+# by nothing but a title word, which said nothing about where the
+# family name ends, so the pre-comma name keeps its positional read --
+# family 'Bob Jones' -> given 'Bob', family 'Jones', the title staying
+# where it was. The FAMILY_COMMA rule that segment 0 is wholly the
+# family rests on the writer having marked where it ends; a comma
+# followed only by titles marked nothing ('John Smith, Mr.' is 'Mr.
+# John Smith' with the honorific moved).
+name_regex = "(?i)^bob\\s+jones,\\s*[a-z]+$"
+fields = ["given", "family"]
+
+[[change]]
 issue = "fix(#424) the particle chain stops before the trailing numeral"
 # 'John van der Berg V': rules.md#P2 -- "a trailing suffix begins --
 # read as assign will read it (S2): a trailing roman numeral, or a
