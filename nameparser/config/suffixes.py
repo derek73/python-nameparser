@@ -186,17 +186,18 @@ SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
     # suffix only when written with periods ('M.A.' yes, 'Ma' no), so
     # 'Jack Ma' keeps its family name.
     #
-    # 'ms' and 'sa' are here for the leading-title collision rather than
-    # a nickname one (#296): bare "Ms" is the honorific and bare "SA" is
-    # Special Agent, while the perioded "M.S." and "S.A." are the degree
-    # and the business form. Same gate, other direction -- 'ma' protects
-    # a family name from a credential, these protect a title from one.
+    # NOT 'ms' or 'sa', though #296's audit table put them here for the
+    # leading-title collision (bare "Ms" the honorific, "M.S." the
+    # degree): the gate is position-blind and the collision is not.
+    # Gated, 'John Smith, MS' lost its suffix-comma route and read
+    # title 'MS', and 'Smith, Ms.' passed the gate on its one period
+    # and read as a credential anyway. Both words are genuine duals --
+    # title and unambiguous suffix -- and position decides, as for
+    # 'sr' and 'lt' (decisions.md#C1).
     'do',
     'ed',
     'jd',
     'ma',
-    'ms',
-    'sa',
 })
 """
 

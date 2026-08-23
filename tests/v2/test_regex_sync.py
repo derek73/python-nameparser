@@ -101,6 +101,7 @@ def test_initial_copies_agree_with_each_other_and_config() -> None:
 _SOURCES: dict[tuple[str, str], str | None] = {
     ("_group", "_PERIOD_ABBREV"): "period_abbreviation",
     ("_group", "_D"): None,
+    ("_vocab", "_DOTTED"): None,
     ("_group", "_PH"): None,
     ("_vocab", "_ROMAN"): "roman_numeral",
     ("_post_rules", "_EAST_SLAVIC"): "east_slavic_patronymic",

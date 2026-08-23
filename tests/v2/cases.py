@@ -355,8 +355,8 @@ CASES: tuple[Case, ...] = (
                "was chained, so there is no fork to report (the emitter "
                "fired here for all 39 ambiguous particles, and _assign "
                "double-reported the same token). Spelled with 'St' "
-               "since #296's audit took 'do' out of TITLES, and with "
-               "'Do' rather than the 'Dr.' this row carried before 2.2: "
+               "since #296's audit took 'do' out of TITLES; before that "
+               "with 'Do', and before 2.2 with 'Dr.': "
                "under #367 a plain title is transparent, so 'Dr. Van "
                "Jr.' leaves Van the leading name piece and the chain "
                "loop skips it without ever reaching the no-op. 'Do' is "
@@ -1418,6 +1418,10 @@ CASES: tuple[Case, ...] = (
                "the 'postnominal only' disposition did not consider; "
                "'MD' after the name is the degree. Position decides, "
                "as for 'sr'"),
+    Case("audit_md_after_comma_is_the_degree", "Smith, MD",
+         {"family": "Smith", "suffix": "MD"},
+         classification="fix(#296)",
+         notes="the third leg of 'position decides' for 'md'"),
     Case("audit_do_leading_is_a_name", "Do Nguyen",
          {"given": "Do", "family": "Nguyen"},
          ambiguities=("particle-or-given",),
@@ -1468,27 +1472,53 @@ CASES: tuple[Case, ...] = (
          {"title": "Dr.", "given": "John", "family": "Smith"},
          classification="fix(comma-family)",
          notes="with 'dr' gone from the suffix sets the post-comma word "
-               "is a title only, so the all-titles repair keeps the "
-               "pre-comma split; v1 got the same fields by a different "
-               "route ('dr' was suffix-tagged, making this a SUFFIX_COMMA "
-               "with suffix 'Dr.')"),
+               "is a title only, so the no-name-word repair keeps the "
+               "pre-comma split. v1, and 2.0 through master, kept the "
+               "same split by a different route -- 'dr' was "
+               "suffix-tagged, making this a SUFFIX_COMMA -- but put "
+               "'Dr.' in suffix, not title: a change against every "
+               "baseline"),
     Case("audit_sra_after_comma_is_a_title", "Smith, Sra",
          {"title": "Sra", "family": "Smith"},
          classification="fix(comma-family)",
          notes="the same removal on the acronym side"),
-    Case("audit_bare_ms_declines_the_degree", "Smith, MS",
-         {"title": "MS", "family": "Smith"},
-         notes="'ms' joined SUFFIX_ACRONYMS_AMBIGUOUS, so the bare "
-               "spelling declines and the title membership claims it -- "
-               "the Ms. reading, which is the gate's documented default "
-               "direction (the same gate that saves 'Jack Ma')"),
+    Case("audit_ms_after_comma_is_the_degree", "Smith, MS",
+         {"family": "Smith", "suffix": "MS"},
+         classification="fix(#296)",
+         notes="'ms' is a genuine dual -- 'Ms.' leading, 'MS' the "
+               "degree trailing -- and position decides. The 2026-07-30 "
+               "table put it in the AMBIGUOUS set so bare 'MS' would "
+               "read as the honorific; measured, that gate is "
+               "position-blind: 'John Smith, MS' lost its suffix-comma "
+               "route and read title 'MS', and 'Smith, Ms.' passed the "
+               "gate on its one period anyway. The second deviation "
+               "from the table, with 'md'"),
+    Case("audit_ms_after_two_word_comma_is_the_degree", "John Smith, MS",
+         {"given": "John", "family": "Smith", "suffix": "MS"},
+         notes="the common listing, unchanged at every baseline -- "
+               "what the ambiguous gate would have cost"),
+    Case("audit_ms_leading_is_the_honorific", "Ms. Smith",
+         {"title": "Ms.", "family": "Smith"}),
     Case("audit_perioded_ms_is_the_degree", "Smith, M.S.",
-         {"family": "Smith", "suffix": "M.S."},
-         notes="and the perioded spelling passes the gate"),
-    Case("audit_bare_sa_declines_the_postnominal", "Smith, SA",
-         {"title": "SA", "family": "Smith"},
-         notes="Special Agent leading; the postnominal reading is the "
-               "perioded business form, so 'sa' is gated the same way"),
+         {"family": "Smith", "suffix": "M.S."}),
+    Case("audit_ms_honorific_spelling_after_comma_is_the_postnominal",
+         "Smith, Ms.",
+         {"family": "Smith", "suffix": "Ms."},
+         classification="fix(#296)",
+         notes="the cost of the dual, recorded: after a family comma "
+               "the slot is postnominal and the vocabulary says suffix, "
+               "whatever the period suggests -- as for 'Smith, Sr.'. "
+               "Every baseline read title 'Ms.' (the design-docs "
+               "review found the flip unrecorded). 'Smith, Ms. Jane' "
+               "still reads the title: a name word follows"),
+    Case("audit_ms_before_a_name_after_comma_is_the_title",
+         "Smith, Ms. Jane",
+         {"title": "Ms.", "given": "Jane", "family": "Smith"}),
+    Case("audit_sa_after_comma_is_the_postnominal", "Smith, SA",
+         {"family": "Smith", "suffix": "SA"},
+         classification="fix(#296)",
+         notes="the same dual: Special Agent leading, the business "
+               "form trailing"),
     Case("audit_perioded_sa_is_the_postnominal", "Smith, S.A.",
          {"family": "Smith", "suffix": "S.A."}),
     Case("audit_bare_do_after_comma_is_a_name", "Smith, DO",
@@ -1501,8 +1531,9 @@ CASES: tuple[Case, ...] = (
     Case("audit_perioded_do_after_comma_is_a_suffix", "Smith, D.O.",
          {"family": "Smith", "suffix": "D.O."}),
     # -- the TRAILING half of the same two removals. `dr` and `sra` are
-    # the ONLY audit words that lose SUFFIX membership; the other six
-    # keep theirs, so trailing position is untouched for them.
+    # the ONLY audit words that lose SUFFIX membership; every other
+    # audit word keeps its suffix membership, so trailing position is
+    # untouched for them.
     Case("audit_dr_trailing_joins_the_title_word_gap", "John Smith Dr.",
          {"given": "John", "middle": "Smith", "family": "Dr."},
          classification="fix(#296)",
@@ -1511,8 +1542,8 @@ CASES: tuple[Case, ...] = (
                "read, taking the family name with it. NOT a new defect "
                "class -- no trailing title word routes to title on the "
                "no-comma path, so 'John Smith Prof.' and 'John Smith "
-               "Mr.' already read this way (pinned below; #316 is the "
-               "open question). The v1-residue suffix entry was the "
+               "Mr.' already read this way (both pinned below; #316 is "
+               "the open question). The v1-residue suffix entry was the "
                "only thing making 'dr' behave unlike every other "
                "title-only word. This row records that 'dr' JOINED the "
                "existing behavior, not that the behavior is right"),
@@ -1566,21 +1597,104 @@ CASES: tuple[Case, ...] = (
     Case("family_comma_two_credentials", "Smith, PhD Jr.",
          {"family": "Smith", "suffix": "PhD, Jr."},
          classification="fix(#325)",
-         notes="'PhD' led the run as a title until the audit, then "
-               "as a given name for the length of one commit; the run "
-               "is suffixes"),
+         notes="'PhD' led the run as a title until the audit; the audit "
+               "alone would have made it the given name, which is why "
+               "the ordering shipped in the same commit. The run is "
+               "suffixes"),
     Case("family_comma_run_with_a_name_is_not_a_run", "Smith, John Jr.",
          {"given": "John", "family": "Smith", "suffix": "Jr."},
          notes="the non-flip: a name word in the run makes it the "
                "given-and-suffix walk v1 had"),
+    Case("family_comma_title_then_suffix", "Smith, Dr. Jr.",
+         {"title": "Dr.", "family": "Smith", "suffix": "Jr."},
+         classification="fix(comma-family)",
+         notes="a title and a postnominal, each read where it stands "
+               "-- the 2.0 deviation's other case (v1 read first "
+               "'Jr.'), and what keeps the no-name-word test from "
+               "reading 'Dr. Jr.' as one title run"),
+    Case("family_comma_title_then_suffix_mr", "Smith, Mr. Jr.",
+         {"title": "Mr.", "family": "Smith", "suffix": "Jr."},
+         classification="fix(comma-family)"),
+    Case("family_comma_title_then_suffix_keeps_the_split",
+         "John Smith, Mr. Jr.",
+         {"title": "Mr.", "given": "John", "family": "Smith",
+          "suffix": "Jr."},
+         classification="fix(#296)",
+         notes="no name word after the comma, so it fixed no family "
+               "boundary -- the same reasoning as 'John Smith, Mr.'; "
+               "v1 read first 'Jr.', last 'John Smith', and 2.0 through "
+               "master family 'John Smith' (the design-docs review "
+               "found C1 silent on the shape)"),
+    Case("family_comma_title_run_keeps_the_split", "John Smith, Mr. Dr.",
+         {"title": "Mr. Dr.", "given": "John", "family": "Smith"},
+         classification="fix(#296)"),
+    Case("family_comma_title_run_one_word", "Smith, Mr. Dr.",
+         {"title": "Mr. Dr.", "family": "Smith"},
+         classification="fix(#296)",
+         notes="one pre-comma piece, no split to keep; the run is "
+               "titles (master read suffix 'Dr.')"),
+    Case("family_comma_three_segments_credential_run", "Smith, Jr., PhD",
+         {"family": "Smith", "suffix": "Jr., PhD"},
+         classification="fix(#325)",
+         notes="segments 2+ compose with the credential run"),
+    Case("family_comma_suffixed_family_before_a_title", "Smith Jr., Dr.",
+         {"title": "Dr.", "family": "Smith", "suffix": "Jr."},
+         classification="fix(#296)",
+         notes="two pre-comma pieces but ONE name piece: the positional "
+               "read peels the suffix first and would have left a lone "
+               "given and no family (the code review found 'Smith Jr., "
+               "Mr.' reading so), so the guard counts name pieces and "
+               "the family stays. v1 read first 'Smith', last 'Jr.', "
+               "suffix 'Dr.'; 2.0 through master family 'Smith', "
+               "suffix 'Jr.', title 'Mr.' for the Mr. spelling"),
+    Case("family_comma_suffixed_family_before_a_title_mr", "Smith Jr., Mr.",
+         {"title": "Mr.", "family": "Smith", "suffix": "Jr."},
+         notes="unchanged at every baseline -- the shape the guard "
+               "protects"),
+    Case("family_comma_suffixed_two_word_family_before_a_title",
+         "John Smith Jr., Mr.",
+         {"title": "Mr.", "given": "John", "family": "Smith",
+          "suffix": "Jr."},
+         classification="fix(#296)",
+         notes="two name pieces, so the split is kept"),
+    # -- the positional read keeps its ORDER, so the family-first fold
+    # (P1) reaches a particle-led pre-comma name as it does without
+    # the comma (the test review found it reading family 'de')
+    Case("family_comma_no_name_word_family_first", "de Mesnil Juan, Dr.",
+         {"title": "Dr.", "given": "Juan", "family": "de Mesnil"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         notes="as 'de Mesnil Juan' reads under the same order; master "
+               "read it through the suffix-comma route ('dr' was "
+               "suffix vocabulary) and got the fold that way"),
+    Case("family_comma_no_name_word_family_first_given_last",
+         "de la Cruz Juan Carlos, Dr.",
+         {"title": "Dr.", "given": "Carlos", "middle": "Juan",
+          "family": "de la Cruz"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST)),
+    Case("family_comma_no_name_word_family_first_plain", "John Smith, Dr.",
+         {"title": "Dr.", "given": "Smith", "family": "John"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         notes="the declared order applies to the pre-comma name as it "
+               "does to 'John Smith' alone -- deliberate"),
     Case("title_word_trailing_is_not_a_title", "John Smith Prof.",
          {"given": "John", "middle": "Smith", "family": "Prof."},
-         notes="the pre-existing behavior the two rows above join, "
-               "pinned so the pair reads as consistency rather than as "
-               "damage -- and so the general fix (#316) has a row to "
-               "flip when it lands. Contrast 'Smith, Prof.', which the "
-               "comma path DOES route to title: the two paths disagree "
-               "today"),
+         notes="the pre-existing behavior the audit_dr_trailing and "
+               "audit_sra_trailing rows join, pinned so the pair reads "
+               "as consistency rather than as damage -- and so the "
+               "general fix (#316) has a row to flip when it lands. "
+               "Contrast 'Smith, Prof.', which the comma path DOES "
+               "route to title: the two paths disagree today"),
+    Case("ja_honorific_glued_family_comma_title_only", "田中さん, Dr.",
+         {"title": "Dr.", "family": "田中さん"},
+         classification="fix(#296)",
+         notes="Accepted (C1): with 'dr' out of the suffix sets the "
+               "comma is a family comma, and the honorific peel runs "
+               "in script_segment on the other structures only, before "
+               "group or assign can say this comma fixed nothing -- so "
+               "the honorific stays glued, joining master's '田中さん, "
+               "Mr.'. Master peeled it through the suffix-comma route"),
+    Case("title_word_trailing_is_not_a_title_mr", "John Smith Mr.",
+         {"given": "John", "middle": "Smith", "family": "Mr."}),
 
     # -- #271: script-scoped order + segmentation (amendment 2026-07-27)
     Case("ko_unspaced_default", "김민준",

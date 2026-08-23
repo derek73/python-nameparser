@@ -53,11 +53,15 @@ def _leading_name_piece(state: ParseState,
     those is walked past -- title and suffix pieces, but NICKNAME and
     MAIDEN as well, and anything assign left unroled -- and any number
     of them, not only a single leading title. The segment is 0, except
-    under a family comma, where segment 0 is already fixed as the
-    surname and the name continues in segment 1. Empty on either of
-    two exits: that segment does not exist, or none of its pieces
-    holds a name token."""
-    seg = 1 if state.structure is Structure.FAMILY_COMMA else 0
+    under a family comma that fixed the surname, where the name
+    continues in segment 1 -- assign records no order there. A family
+    comma followed by no name word fixed nothing, and assign reads
+    segment 0 positionally and records the order (#296's bundle), so
+    the name is segment 0 again. Empty on either of two exits: that
+    segment does not exist, or none of its pieces holds a name
+    token."""
+    seg = (1 if state.structure is Structure.FAMILY_COMMA
+           and state.order is None else 0)
     if seg >= len(state.pieces):
         return ()
     for piece in state.pieces[seg]:

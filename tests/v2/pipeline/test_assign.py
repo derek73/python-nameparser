@@ -316,6 +316,28 @@ def test_post_comma_title_run_is_all_titles() -> None:
     assert _by_role(out, Role.FAMILY) == "Smith"
 
 
+def test_a_title_and_a_suffix_after_the_comma_fix_no_family_either() -> None:
+    # the condition is "no name word", not "all titles": a title and a
+    # postnominal with nothing between them said nothing about where
+    # the family ends (the design-docs review found C1 silent on it)
+    out = _assigned("John Smith, Mr. Jr.")
+    assert _by_role(out, Role.TITLE) == "Mr."
+    assert _by_role(out, Role.GIVEN) == "John"
+    assert _by_role(out, Role.FAMILY) == "Smith"
+    assert _by_role(out, Role.SUFFIX) == "Jr."
+
+
+def test_the_positional_segment_zero_records_its_order() -> None:
+    # post_rules' family-first fold and its leading-piece scan key on
+    # "assign records no order after a family comma"; the positional
+    # read is the path that gives one (the test review found the fold
+    # missing 'de Mesnil Juan, Dr.' under a family-first order)
+    out = _assigned("John Smith, Dr.")
+    assert out.order is not None
+    out = _assigned("Smith, Dr. John")
+    assert out.order is None
+
+
 def test_partly_title_post_comma_segment_keeps_family_comma() -> None:
     # 'Smith, Dr. John' still has a name after the title, so the comma
     # DID fix the family: segment 0 stays wholly family.

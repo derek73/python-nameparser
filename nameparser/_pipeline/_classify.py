@@ -37,7 +37,9 @@ from nameparser._pipeline._vocab import (
 
 # rules.md#S2: "a trailing word of the suffix vocabulary reads as a
 # suffix — generational forms and credential acronyms alike, and an
-# ambiguous acronym written with periods counts unambiguously. A
+# ambiguous acronym written with its periods, one after each
+# letter, counts unambiguously; a single trailing period is the
+# abbreviation shape any word can wear and does not. A
 # bare ambiguous acronym is consumed only when the name has words to
 # spare"
 def _tags_for(token: WorkToken, state: ParseState) -> frozenset[str]:

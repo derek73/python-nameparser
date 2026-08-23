@@ -132,6 +132,19 @@ def is_initial(text: str) -> bool:
     return is_initial_shaped(text) and not _in_initialless_script(text)
 
 
+_DOTTED = re.compile(r"(?:[^\W\d_]\.)+")
+
+
+def _dotted(text: str) -> bool:
+    """Written with its periods: one after each letter ('M.A.',
+    'J.D.'), the acronym's own spelling. A single trailing period
+    ('Ma.', 'Ed.', 'Ms.') is the abbreviation shape any word can wear
+    -- the honorific's, a name's -- and is not the gate's "written
+    with periods" (rules.md#S2). Until #296's review the gate was
+    "any period", and 'Smith, Ms.' passed it as the degree."""
+    return _DOTTED.fullmatch(text) is not None
+
+
 def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
     """Counts as a suffix as written, with NO initial veto (the veto
     differs by caller): unambiguous suffix vocabulary, or an ambiguous
@@ -149,7 +162,7 @@ def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
     # removed periods only for the suffix_acronyms test); suffix WORDS
     # match on the plain normalized form
     a = n.replace(".", "")
-    if "." in text and a in lexicon.suffix_acronyms_ambiguous:
+    if _dotted(text) and a in lexicon.suffix_acronyms_ambiguous:
         return True
     return (a in lexicon.suffix_acronyms
             and a not in lexicon.suffix_acronyms_ambiguous) \
@@ -159,7 +172,7 @@ def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
 def _is_suffix_strict_n(n: str, text: str, lexicon: Lexicon) -> bool:
     if is_initial(text):
         # period-written ambiguous acronyms are exempt from the veto
-        return "." in text and \
+        return _dotted(text) and \
             n.replace(".", "") in lexicon.suffix_acronyms_ambiguous
     return suffix_as_written(n, text, lexicon)
 

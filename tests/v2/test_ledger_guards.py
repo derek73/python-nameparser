@@ -881,8 +881,8 @@ _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
     # The title half of the #367 rule, widened when three more titled
     # names arrived (#413). Partial on purpose: these are the spellings
     # that appear before `van` in the corpora, not every title that
-    # could -- seven titles sit before some particle, and the others
-    # have rules of their own. 'jr' was a member until #296's audit took
+    # could -- the other titles before a particle in the corpora either
+    # have rules of their own or do not diff. 'jr' was a member until #296's audit took
     # it out of TITLES (a postnominal only); 'Jr. Van Johnson' reads the
     # same by the period-abbreviation inference and has its literal.
     "fix(#367) a title no longer displaces a leading particle out of the leading position":
@@ -1240,7 +1240,7 @@ def _claim(rule: dict) -> _Claim:
 _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(107, ('family', 'given', 'middle'), "0191ac9143a6"),
+            _Claim(108, ('family', 'given', 'middle'), "9a814f70c2dc"),
         "fix(#274) maiden markers consumed":
             _Claim(29, ('family', 'maiden', 'middle'), "c0981c1c6557"),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
@@ -1248,27 +1248,29 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
             _Claim(13, ('family', 'middle'), "973617235cda"),
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(270, ('given', 'suffix', 'title'), "45cec16f786e"),
+            _Claim(274, ('given', 'suffix', 'title'), "dc19a4822c61"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
-            _Claim(1, ('family', 'given'), "970555ace2f9"),
+            _Claim(2, ('family', 'given', 'suffix'), "a3cfff4e78f4"),
         "fix(#296) a dropped prenominal takes the name position it occupies":
             _Claim(3, ('given', 'middle', 'title'), "263d5957cfc1"),
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
-            _Claim(8, ('family', 'middle', 'suffix'), "3b880a916c91"),
+            _Claim(9, ('family', 'middle', 'suffix'), "8d6e9a1b43c0"),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
             _Claim(2, ('family', 'given', 'suffix', 'title'), "3f983ff71dee"),
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(17, ('family', 'given', 'suffix', 'title'), "a7ce53224382"),
-        "fix(#325) a credential run after a one-word family comma reads as suffixes, whole":
-            _Claim(21, ('given', 'suffix', 'title'), "f58fa29941d8"),
+            _Claim(18, ('family', 'given', 'suffix', 'title'), "1f79efa10444"),
+        "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
+            _Claim(6, ('given', 'suffix', 'title'), "7911e0158337"),
+        "fix(#325) a credential run across a second comma reads as suffixes":
+            _Claim(1, ('suffix', 'title'), "f025c5f70a4e"),
         "fix(#367) an inferred title no longer displaces a leading particle either":
             _Claim(1, ('family', 'given', 'middle'), "d8ee9cd5da5f"),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(270, ('family', 'given'), "45cec16f786e"),
+            _Claim(274, ('family', 'given'), "dc19a4822c61"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(1062, ('family', 'given', 'suffix'), "5529d4c5d693"),
+            _Claim(1068, ('family', 'given', 'suffix'), "c0770ee57f2a"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1282,11 +1284,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(cjk-fullwidth-paren-nickname) fullwidth-parenthesis recognition compounds with the CJK order flip":
             _Claim(1, ('family', 'given', 'middle', 'nickname'), "cf370e856ae7"),
         "fix(cjk-comma-honorific-peel) glued honorific peels off a post-comma given name":
-            _Claim(22, ('given', 'suffix'), "1273a0e4e949"),
+            _Claim(23, ('given', 'suffix'), "344de804e2c6"),
         "fix(cjk-comma-compound) comma routing compounds with the CJK order flip":
-            _Claim(22, ('family', 'given', 'middle', 'suffix', 'title'), "1273a0e4e949"),
+            _Claim(23, ('family', 'given', 'middle', 'suffix', 'title'), "344de804e2c6"),
         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix":
-            _Claim(36, ('family', 'given', 'suffix'), "9ba2bdd624de"),
+            _Claim(37, ('family', 'given', 'suffix'), "719c31233502"),
         "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip":
             _Claim(19, ('family', 'given', 'middle', 'suffix'), "aa475ddd4745"),
         "feat(#269) non-Latin titles/conjunctions recognized":
@@ -1344,9 +1346,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
             _Claim(13, ('family', 'middle'), "973617235cda"),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(107, ('_ambiguities', 'family', 'given', 'middle'), "0191ac9143a6"),
+            _Claim(108, ('_ambiguities', 'family', 'given', 'middle'), "9a814f70c2dc"),
         "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into suffix":
-            _Claim(36, ('family', 'given', 'suffix'), "9ba2bdd624de"),
+            _Claim(37, ('family', 'given', 'suffix'), "719c31233502"),
         "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix":
             _Claim(16, ('family', 'given', 'middle', 'suffix'), "6d390e518bd2"),
         "fix(#309) 旧姓 maiden marker consumed, compounding with the CJK order flip":
@@ -1398,23 +1400,27 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
-            _Claim(1, ('family', 'given'), "970555ace2f9"),
+            _Claim(2, ('family', 'given'), "a3cfff4e78f4"),
         "fix(#296) a dropped prenominal takes the name position it occupies":
             _Claim(3, ('_ambiguities', 'given', 'middle', 'title'), "263d5957cfc1"),
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
-            _Claim(8, ('family', 'middle', 'suffix'), "3b880a916c91"),
+            _Claim(9, ('family', 'middle', 'suffix'), "8d6e9a1b43c0"),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
             _Claim(2, ('family', 'given', 'suffix', 'title'), "3f983ff71dee"),
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(17, ('family', 'given', 'suffix', 'title'), "a7ce53224382"),
-        "fix(#325) a credential run after a one-word family comma reads as suffixes, whole":
-            _Claim(21, ('given', 'suffix', 'title'), "f58fa29941d8"),
+            _Claim(18, ('family', 'given', 'suffix', 'title'), "1f79efa10444"),
+        "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
+            _Claim(6, ('given', 'suffix', 'title'), "7911e0158337"),
+        "fix(#325) a credential run across a second comma reads as suffixes":
+            _Claim(1, ('suffix', 'title'), "f025c5f70a4e"),
         "fix(#296) a glued honorific before a lone credential: the credential is the postnominal":
             _Claim(1, ('family', 'suffix', 'title'), "01bf2bd3f895"),
         "fix(#296) do is a name, so it no longer stops the leading-particle scan as a title":
-            _Claim(1, ('family', 'given', 'title'), "faa2c70fc49e"),
+            _Claim(1, ('family', 'given'), "faa2c70fc49e"),
         "fix(#296) dr is not postnominal vocabulary, so 'John Smith, Dr.' keeps its split and its title":
             _Claim(2, ('_ambiguities', 'suffix', 'title'), "34d3d96adb65"),
+        "fix(#296) an ambiguous acronym counts as a suffix only when written with its periods":
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "e13b3c769de4"),
         "fix(#367) an inferred title no longer displaces a leading particle either":
             _Claim(1, ('family', 'given', 'middle'), "d8ee9cd5da5f"),
         "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece":
@@ -1476,23 +1482,27 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
-            _Claim(1, ('family', 'given'), "970555ace2f9"),
+            _Claim(2, ('family', 'given'), "a3cfff4e78f4"),
         "fix(#296) a dropped prenominal takes the name position it occupies":
             _Claim(3, ('_ambiguities', 'given', 'middle', 'title'), "263d5957cfc1"),
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
-            _Claim(8, ('family', 'middle', 'suffix'), "3b880a916c91"),
+            _Claim(9, ('family', 'middle', 'suffix'), "8d6e9a1b43c0"),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
             _Claim(2, ('family', 'given', 'suffix', 'title'), "3f983ff71dee"),
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(17, ('family', 'given', 'suffix', 'title'), "a7ce53224382"),
-        "fix(#325) a credential run after a one-word family comma reads as suffixes, whole":
-            _Claim(21, ('given', 'suffix', 'title'), "f58fa29941d8"),
+            _Claim(18, ('family', 'given', 'suffix', 'title'), "1f79efa10444"),
+        "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
+            _Claim(6, ('given', 'suffix', 'title'), "7911e0158337"),
+        "fix(#325) a credential run across a second comma reads as suffixes":
+            _Claim(1, ('suffix', 'title'), "f025c5f70a4e"),
         "fix(#296) a glued honorific before a lone credential: the credential is the postnominal":
             _Claim(1, ('family', 'suffix', 'title'), "01bf2bd3f895"),
         "fix(#296) do is a name, so it no longer stops the leading-particle scan as a title":
-            _Claim(1, ('family', 'given', 'title'), "faa2c70fc49e"),
+            _Claim(1, ('family', 'given'), "faa2c70fc49e"),
         "fix(#296) dr is not postnominal vocabulary, so 'John Smith, Dr.' keeps its split and its title":
             _Claim(2, ('_ambiguities', 'suffix', 'title'), "34d3d96adb65"),
+        "fix(#296) an ambiguous acronym counts as a suffix only when written with its periods":
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "e13b3c769de4"),
         "fix(#367) an inferred title no longer displaces a leading particle either":
             _Claim(1, ('family', 'given', 'middle'), "d8ee9cd5da5f"),
         "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece":
@@ -1630,7 +1640,8 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         # exclude them and they must stay on the compound rule
         ("Dr 김민준씨, V.", ("family", "given", "suffix")):
             "fix(cjk-comma-compound)",
-        ("田中さん, PhD", ("family", "given", "suffix")):
+        # since #296's audit the title moves too (PhD is the postnominal)
+        ("田中さん, PhD", ("family", "given", "suffix", "title")):
             "fix(cjk-comma-compound)",
         ("田中さん, V.", ("family", "suffix")): "fix(cjk-comma-compound)",
         # #372's suffix-routing split. 'Bob Jones, author' moves NO
