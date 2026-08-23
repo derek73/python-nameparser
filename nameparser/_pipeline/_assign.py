@@ -35,11 +35,10 @@ import dataclasses
 import re
 
 from nameparser._pipeline._vocab import (
-    effective_script, is_suffix_lenient, is_trailing_numeral_suffix,
-    resolve_script_set,
+    effective_script, is_suffix_lenient, resolve_script_set,
 )
 from nameparser._pipeline._group import (
-    _is_suffix_piece, _is_title_piece,
+    _is_suffix_piece, _is_title_piece, peel_trailing,
 )
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
@@ -203,59 +202,27 @@ def _assign_main(seg_idx: int, state: ParseState,
         _set_roles(tokens, pieces[rest[0]], Role.FAMILY)
         return None
     # peel the trailing suffix run: k = first index in rest from which
-    # every piece is a strict suffix (v1's are_suffixes tail rule, with
-    # the roman-numeral special: a final roman numeral after a
-    # non-initial piece is a suffix)
-    # every bare ambiguous acronym the peel had to resolve -- one
-    # coin-flip each, in either direction, so this collects rather than
-    # overwrites. Deferred to after assignment because the wording reads
-    # the role back, and which role "not peeled" means depends on
-    # name_order. (The roman-numeral fork needs no such deferral and is
-    # reported at its trigger below.)
-    ambiguous_picks: list[tuple[int, ...]] = []
-    k = len(rest)
-    while k > 0:
-        piece = pieces[rest[k - 1]]
-        tags = ptags[rest[k - 1]]
-        if _is_suffix_piece(piece, tags, tokens):
-            k -= 1
-            continue
-        # Shared with group's bound-given reserve (#401); the
-        # docstring carries the is_initial_shaped reasoning (#320).
-        if (k == len(rest) and k >= 2 and len(piece) == 1
-                and is_trailing_numeral_suffix(
-                    tokens[piece[0]].text,
-                    tokens[pieces[rest[k - 2]][0]].text)):
-            # a trailing single letter is a name part unless it happens
-            # to be a roman numeral -- and V/X/I are ordinary middle
-            # initials, so taking it as a suffix is a call, not a fact
-            ambiguities.append(PendingAmbiguity(
-                AmbiguityKind.SUFFIX_OR_NAME,
-                f"{tokens[piece[0]].text!r} is a roman numeral, so it "
-                f"reads as a generational suffix; any other single "
-                f"letter there would be a middle initial",
-                tuple(piece)))
-            k -= 1
-            continue
-        # A bare ambiguous acronym ("MA", not "M.A.") is a credential
-        # only when peeling it still leaves a given AND a family name.
-        # With two pieces, "one of them is a credential" is the less
-        # likely reading, so it stays the family name -- "Jack MA" is a
-        # person, "John Smith MA" is a person with a degree. This is
-        # v1's reserve_last narrowed to the ambiguous set: 2.0
-        # deliberately peels UNambiguous suffixes even when nothing is
-        # left ("Smith PhD" -> suffix, a classified fix), because there
-        # the vocabulary is not in doubt.
-        bare_ambiguous = (len(piece) == 1
-                          and "vocab:suffix-ambiguous" in tokens[piece[0]].tags)
-        # k < 2 means it is the only piece left, which is not the fork
-        # this reports.
-        if bare_ambiguous and k >= 2:
-            ambiguous_picks.append(tuple(piece))
-            if k >= 3:            # peeling still leaves given + family
-                k -= 1
-                continue
-        break
+    # every piece is a suffix. The walk is group's peel_trailing since
+    # #425 -- one walk, shared with the bound-given reserve, and
+    # documented there. Every bare ambiguous acronym it had to resolve
+    # is one coin-flip each, in either direction, so the report
+    # collects rather than overwrites. Deferred to after assignment
+    # because the wording reads the role back, and which role "not
+    # peeled" means depends on name_order. (The roman-numeral fork
+    # needs no such deferral and is reported here.)
+    peeled = peel_trailing(rest, pieces, ptags, tokens)
+    if peeled.numeral is not None:
+        # a trailing single letter is a name part unless it happens
+        # to be a roman numeral -- and V/X/I are ordinary middle
+        # initials, so taking it as a suffix is a call, not a fact
+        ambiguities.append(PendingAmbiguity(
+            AmbiguityKind.SUFFIX_OR_NAME,
+            f"{tokens[peeled.numeral[0]].text!r} is a roman numeral, so "
+            f"it reads as a generational suffix; any other single "
+            f"letter there would be a middle initial",
+            peeled.numeral))
+    ambiguous_picks = list(peeled.picks)
+    k = peeled.names
     name_pieces, suffix_pieces = rest[:k], rest[k:]
     if not name_pieces and suffix_pieces:
         # everything suffix-shaped after titles: first one is the name

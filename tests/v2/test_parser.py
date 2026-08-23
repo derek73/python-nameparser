@@ -539,6 +539,41 @@ def test_the_reserve_declines_and_assign_reads_the_unjoined_pieces() -> None:
     assert (n.given, n.family, n.suffix) == ("abdul", "Smith", "V, Ph. D.")
 
 
+def test_the_reserve_spares_the_family_the_acronym_fork_would_take() -> None:
+    # #425: with a suffix word between the pair and a bare ambiguous
+    # acronym, assign peels the acronym (three pieces, words to spare)
+    # and then the suffix, and the family the join left was never
+    # there. The reserve now runs assign's peel over the joined view
+    # and declines, so these read as their ordinary-given twins.
+    for bound, plain in (("abdul Smith Jr Ma", "John Smith Jr Ma"),
+                         ("abdul Rahman PhD MA", "John Rahman PhD MA")):
+        n, m = parse(bound), parse(plain)
+        assert (n.family, n.suffix) == (m.family, m.suffix)
+        assert n.family != ""
+    n = parse("abu Bakar Jr Ed")
+    assert (n.family, n.suffix) == ("Bakar", "Jr, Ed")
+    # and the join never turns a suffix into a name: unjoined, the
+    # acronym is a credential with words to spare, so 'abdul Smith
+    # Ma' reads as 'John Smith Ma' does (1.4.0 parity restored)
+    n, m = parse("abdul Smith Ma"), parse("John Smith Ma")
+    assert (n.family, n.suffix) == (m.family, m.suffix) == ("Smith", "Ma")
+
+
+def test_a_joined_pair_is_never_peeled_as_a_title() -> None:
+    # The conjunction merge derives a title tag for 'Sheikh and Ahmad';
+    # the bound join takes the piece (a mid-name title word is a name
+    # word, as 1.4.0 read it) and the pair must stay the given name,
+    # not inherit the tag and be peeled as a leading title.
+    n = parse("abdul Sheikh and Ahmad Bakar")
+    assert (n.title, n.given, n.family) == \
+        ("", "abdul Sheikh and Ahmad", "Bakar")
+    # the restored-parity class: title words are name words to P5
+    n = parse("abdul Sir Smith Berg")
+    assert (n.given, n.middle, n.family) == ("abdul Sir", "Smith", "Berg")
+    n = parse("Berg, abdul Sir")
+    assert (n.given, n.family) == ("abdul Sir", "Berg")
+
+
 @pytest.mark.parametrize("bound", ["abd", "abu"])
 @pytest.mark.parametrize("numeral", ["I", "X"])
 def test_every_bound_word_spares_the_family_before_every_numeral(

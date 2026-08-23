@@ -18,7 +18,9 @@ group half of M1 (#329: the marker dropped inside EXTRACTED maiden
 content, which M2's pieces walk cannot reach because extract's
 content never enters pieces); each is cited at its code below. Also
 implements rule P5 (cited below at the bound-given join) and ports
-the "Ph. D."-split merge (v1 fix_phd; decisions.md#phd-merge).
+the "Ph. D."-split merge (v1 fix_phd; decisions.md#phd-merge). Houses
+assign's S2 trailing peel (peel_trailing), which P5's reserve runs
+over the view the join would leave (#425).
 """
 from __future__ import annotations
 
@@ -26,6 +28,7 @@ import bisect
 import dataclasses
 from collections.abc import Sequence, Set
 from enum import IntEnum
+from typing import NamedTuple
 
 from nameparser._lexicon import _title_key
 from nameparser._pipeline._state import (
@@ -51,12 +54,13 @@ MaidenTake = tuple[Piece, list[Piece]]
 
 class BoundJoin(IntEnum):
     """v1 _join_bound_first_name's reserve_last, as the three states it
-    actually has. IntEnum: the value IS the non_suffix threshold, so
-    the >= comparison below reads unchanged."""
+    actually has. IntEnum: the value IS the number of name pieces
+    assign's peel must leave in the JOINED view for the join to stand
+    (#425), so the >= comparison below reads unchanged."""
 
     DISABLED = 0   # the FAMILY_COMMA family segment (v1 never joined it)
-    LENIENT = 2    # FAMILY_COMMA's post-comma segment (reserve_last=False)
-    STRICT = 3     # main segments (reserve_last=True: keep a family piece)
+    LENIENT = 1    # FAMILY_COMMA's post-comma segment (reserve_last=False)
+    STRICT = 2     # main segments (reserve_last=True: keep a family piece)
 
 
 # rules.md#H3: "successive title words at the start of the part
@@ -92,6 +96,74 @@ def _is_suffix_piece(piece: Sequence[int], ptags: Set[str],
         return False
     tags = tokens[piece[0]].tags
     return "vocab:suffix" in tags and "initial" not in tags
+
+
+class Peel(NamedTuple):
+    """What assign's trailing peel made of a walk: rest[:names] are
+    the name pieces and rest[names:] the suffixes; `numeral` is the
+    piece the roman-numeral fork took (None when it did not fire);
+    `picks` are the bare ambiguous acronyms the peel had to resolve,
+    in peel order, either way."""
+
+    names: int
+    numeral: tuple[int, ...] | None
+    picks: tuple[tuple[int, ...], ...]
+
+
+# rules.md#S2: "a trailing word of the suffix vocabulary reads as a
+# suffix — generational forms and credential acronyms alike, and an
+# ambiguous acronym written with periods counts unambiguously. A BARE
+# ambiguous acronym is consumed only when the name has words to spare"
+# (v1's are_suffixes tail rule, with the roman-numeral special)
+def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
+                  ptags: Sequence[Set[str]],
+                  tokens: Sequence[WorkToken]) -> Peel:
+    """assign's trailing peel over `rest` -- the indices assign walks:
+    after the leading titles, minus the group-flagged credential
+    pieces. Housed here rather than in assign because assign imports
+    group's piece predicates, and group's bound-given reserve asks the
+    same question of the view the join would leave (#425): one walk,
+    so the reserve and the assignment cannot drift. Pure -- the
+    ambiguities are returned for assign to report, in the order it
+    always reported them."""
+    picks: list[tuple[int, ...]] = []
+    numeral: tuple[int, ...] | None = None
+    k = len(rest)
+    while k > 0:
+        piece = pieces[rest[k - 1]]
+        if _is_suffix_piece(piece, ptags[rest[k - 1]], tokens):
+            k -= 1
+            continue
+        # a final single letter that is a roman numeral, after a piece
+        # that is not initial-shaped; the predicate's docstring carries
+        # the is_initial_shaped reasoning (#320)
+        if (k == len(rest) and k >= 2 and len(piece) == 1
+                and is_trailing_numeral_suffix(
+                    tokens[piece[0]].text,
+                    tokens[pieces[rest[k - 2]][0]].text)):
+            numeral = tuple(piece)
+            k -= 1
+            continue
+        # A bare ambiguous acronym ("MA", not "M.A.") is a credential
+        # only when peeling it still leaves a given AND a family name.
+        # With two pieces, "one of them is a credential" is the less
+        # likely reading, so it stays the family name -- "Jack MA" is a
+        # person, "John Smith MA" is a person with a degree. This is
+        # v1's reserve_last narrowed to the ambiguous set: 2.0
+        # deliberately peels UNambiguous suffixes even when nothing is
+        # left ("Smith PhD" -> suffix, a classified fix), because there
+        # the vocabulary is not in doubt.
+        bare_ambiguous = (len(piece) == 1
+                          and "vocab:suffix-ambiguous" in tokens[piece[0]].tags)
+        # k < 2 means it is the only piece left, which is not the fork
+        # this reports.
+        if bare_ambiguous and k >= 2:
+            picks.append(tuple(piece))
+            if k >= 3:            # peeling still leaves given + family
+                k -= 1
+                continue
+        break
+    return Peel(k, numeral, tuple(picks))
 
 
 # rules.md#M2: "a recognized maiden marker standing after at least
@@ -463,57 +535,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 and len(pieces[first_name_k]) == 1
                 and "vocab:bound-given"
                 in tokens[pieces[first_name_k][0]].tags):
-            # rules.md#P5: "a trailing roman numeral that assign reads as the
-            # suffix (S2) is no word to spare, and is not joined" (history:
-            # decisions.md#P5) -- numeral_k is that piece, or None. Mirrors
-            # assign's fork condition for condition, over the walk assign
-            # makes (#401):
-            #   - flagged credential pieces are out of the walk, so "last"
-            #     and "the piece before" are read over the pieces assign
-            #     keeps ('abdul Smith V Ph. D.');
-            #   - the numeral is last and not the first name piece (rest[0]
-            #     is first_name_k, so len(rest) >= 2) -- NOT "the piece
-            #     before it is not a title": jr is title vocabulary too
-            #     ('abdul Smith Jr V');
-            #   - the piece before it is read as the join would leave it,
-            #     bound word first -- the remap below ('abdul J. V');
-            #   - STRICT only: the post-comma walk has no numeral fork, so
-            #     under LENIENT the reserve counts suffix pieces alone
-            #     ('Berg, abdul V').
-            # Computed once: a per-piece rebuild was quadratic, and the
-            # benchmark's bound_given shape guards it.
-            numeral_k = None
-            if bound_join is BoundJoin.STRICT:
-                rest = [j for j in range(first_name_k, len(pieces))
-                        if "suffix" not in ptags[j]]
-                if len(rest) >= 2 and len(pieces[rest[-1]]) == 1:
-                    prev = rest[-2]
-                    if prev == first_name_k + 1:
-                        prev = first_name_k
-                    if is_trailing_numeral_suffix(
-                            tokens[pieces[rest[-1]][0]].text,
-                            tokens[pieces[prev][0]].text):
-                        numeral_k = rest[-1]
-
-            def reads_as_suffix(k: int) -> bool:
-                return suffix(k) or k == numeral_k
-
-            # first_name_k counts as a name piece even when it is
-            # ALSO suffix vocabulary. The reserve asks whether enough
-            # OTHER words are left to spare, and this piece is the one
-            # the rule has already claimed as a name -- excluding it
-            # made a dual-membership word silently un-joinable --
-            # found while adding 'abd' ("All But Dissertation" as well
-            # as عبد), which this had to be fixed for, though it is
-            # not why the word was excluded. Same shape as the count
-            # #397 describes.
-            #
-            # The words the maiden name took are already gone (#411
-            # excluded them by hand while the pass still ran later).
-            non_suffix = sum(1 for k in range(len(pieces))
-                             if not title(k)
-                             and (k == first_name_k
-                                  or not reads_as_suffix(k)))
+            fk = first_name_k
             # P5 joins the bound word to "the word after it", and a
             # marker is not a name word -- it is the announcement that
             # another name follows. The only marker left by now is one
@@ -522,46 +544,99 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # abdul nee PhD' read given 'abdul nee', and 'Berg, abdul
             # nee' clears the LENIENT reserve the same way. Measured
             # rather than assumed -- dropping this undid #411 on
-            # exactly that row. A suffix piece is not a name word
-            # either (#421) -- rules.md#P5: "nor a word of the suffix
+            # exactly that row. Nor is a suffix piece (#421) --
+            # rules.md#P5: "nor a word of the unambiguous suffix
             # vocabulary (S2), wherever position will then place it"
-            # -- and declining it is also what keeps merge()'s tag
-            # union from making the joined piece a suffix piece. Same
-            # predicate as the reserve, so the two agree about what a
-            # name word is.
-            absorbs_non_name = (marker(first_name_k + 1)
-                                or reads_as_suffix(first_name_k + 1))
-            # A given-name title ahead of the bound word asserts that a
-            # given name follows -- the assertion H1 reads when it
-            # keeps "Sir John" a given name -- so behind one there is
-            # no family to spare and the post-comma reserve applies
-            # (#369). Keyed on the WHOLE title run exactly as
-            # post_rules keys H1, so the two rules cannot disagree
-            # about what one run asserts: a join licensed here that H1
-            # then read as title-plus-family would hand the joined
-            # piece to the family. (post_rules' run also takes H2's
-            # unlisted abbreviations, which no given-name title key
-            # can contain, so the runs match whenever the key does.)
-            # The STRICT test is documentary: DISABLED never reaches
-            # this block, and LENIENT is already the floor, so only
-            # STRICT can move. And the licence lifts the reserve for
-            # two name WORDS: the piece the join would take must be
-            # one word -- a particle chain is the family name P2 built
-            # ("Sir abdul van der Berg" keeps family 'van der Berg' as
-            # the untitled name does). Found in review; the rules.md
-            # example carries it into the rules corpus, so the gate
-            # witnesses it. (That the piece is not a suffix is the
-            # join's own decline above, general since #421.)
-            reserve = bound_join
-            if (bound_join is BoundJoin.STRICT and first_name_k > 0
-                    and len(pieces[first_name_k + 1]) == 1
-                    and _title_key(tokens[i].text
-                                   for k in range(first_name_k)
-                                   for i in pieces[k])
-                    in given_name_titles):
-                reserve = BoundJoin.LENIENT
-            if non_suffix >= reserve and not absorbs_non_name:
-                merge(first_name_k, first_name_k + 2)
+            # -- and declining
+            # it is also what keeps merge()'s tag union from making the
+            # joined piece a suffix piece.
+            if not (marker(fk + 1) or suffix(fk + 1)):
+                # rules.md#P5: "the join is tried on the pieces as it
+                # would leave them, assign's trailing peel (S2) is read
+                # over that, and the name words it leaves are the words
+                # to spare" (history: decisions.md#P5). The view is what
+                # merge() would build -- the pair one piece, its tags
+                # the union -- and the peel is assign's own, so the
+                # reserve and the assignment cannot drift: a trailing
+                # numeral (#401) and a bare acronym with words behind it
+                # (#425) are each no word to spare because assign will
+                # peel them. And the join joins two name words into one
+                # and changes no suffix reading -- rules.md#P5: "a word
+                # the peel reads as a suffix unjoined must read so
+                # joined, or the join declines" -- so the view must leave
+                # exactly one name word fewer than the pieces as they
+                # stand: 'abdul V' is two pieces whose V is the
+                # trailing numeral (#401), joined it would be one piece
+                # the fork cannot fire on; 'abdul Smith Ma' peels the
+                # acronym as a credential with words to spare, joined
+                # it would keep it as the family of a two-piece name.
+                # After a family comma the family is fixed and the pair
+                # is the given whatever follows, so the reserve reads no
+                # peel there and the joined piece alone is what there is
+                # to spare -- deliberately, not because that walk has no
+                # suffix reading: it takes a trailing numeral by a
+                # lenient last-of-two rule, and a mirror of it declined
+                # 'Berg, abdul V' against every baseline (#423).
+                # Each peel runs once per join question;
+                # the benchmark's bound_given shape guards the walk.
+                if bound_join is BoundJoin.STRICT:
+                    rest = [j for j in range(fk, len(pieces))
+                            if "suffix" not in ptags[j]]
+                    before = peel_trailing(rest, pieces, ptags, tokens)
+                    view = (pieces[:fk] + [pieces[fk] + pieces[fk + 1]]
+                            + pieces[fk + 2:])
+                    view_tags = (ptags[:fk]
+                                 + [(ptags[fk] | ptags[fk + 1]) - {"title"}]
+                                 + ptags[fk + 2:])
+                    view_rest = [j for j in range(fk, len(view))
+                                 if "suffix" not in view_tags[j]]
+                    after = peel_trailing(view_rest, view, view_tags,
+                                          tokens)
+                    spare = (after.names
+                             if after.names == before.names - 1 else 0)
+                else:
+                    spare = 1
+                # A given-name title ahead of the bound word asserts
+                # that a given name follows -- the assertion H1 reads
+                # when it keeps "Sir John" a given name -- so behind
+                # one there is no family to spare and the post-comma
+                # reserve applies (#369). Keyed on the WHOLE title run
+                # exactly as post_rules keys H1, so the two rules
+                # cannot disagree about what one run asserts: a join
+                # licensed here that H1 then read as title-plus-family
+                # would hand the joined piece to the family.
+                # (post_rules' run also takes H2's unlisted
+                # abbreviations, which no given-name title key can
+                # contain, so the runs match whenever the key does.)
+                # The STRICT test is documentary: DISABLED never
+                # reaches this block, and LENIENT is already the
+                # floor, so only STRICT can move. And the licence lifts
+                # the reserve for two name WORDS: the piece the join
+                # would take must be one word -- a particle chain is
+                # the family name P2 built ("Sir abdul van der Berg"
+                # keeps family 'van der Berg' as the untitled name
+                # does). Found in review; the rules.md example carries
+                # it into the rules corpus, so the gate witnesses it.
+                reserve = bound_join
+                if (bound_join is BoundJoin.STRICT and fk > 0
+                        and len(pieces[fk + 1]) == 1
+                        and _title_key(tokens[i].text
+                                       for k in range(fk)
+                                       for i in pieces[k])
+                        in given_name_titles):
+                    reserve = BoundJoin.LENIENT
+                if spare >= reserve:
+                    # A title word standing in the name is a name word
+                    # (H3) and the join takes it, as v1 did. The
+                    # conjunction merge derives a `title` piece tag for
+                    # a chain such as "Sheikh and Ahmad", and the tag
+                    # union would hand it to the pair, which assign
+                    # then peels as a leading title: 'abdul Sheikh and
+                    # Ahmad Bakar' read title 'abdul Sheikh and Ahmad'.
+                    # The pair is a given name whatever tag the word
+                    # carried; the view above drops the tag the same
+                    # way. Found by the code review.
+                    merge(fk, fk + 2, drop={"title"})
     return pieces, ptags, taken
 
 
