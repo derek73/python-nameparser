@@ -69,7 +69,7 @@ H2. Rationale: before a name, an abbreviation is almost always a
     family name (C1), so no shape or vocabulary reading makes a
     title there.
       "Xyz. Smith, John"          →  family="Xyz. Smith"
-    history: decisions.md#H2 · interacts: C1 · implemented: nameparser/_pipeline/_assign.py
+    history: decisions.md#H2 · interacts: C1, P4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 
 H3. Rationale: compound titles are written as a run of title words,
     connectives included; a title word standing inside the name is

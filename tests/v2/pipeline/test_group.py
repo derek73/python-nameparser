@@ -788,3 +788,99 @@ def test_the_licence_does_not_lift_the_equality() -> None:
     # by the test review.
     out = _grouped("sir abdul J. V", lexicon=_GIVEN_NAME_TITLE_LEX)
     assert _piece_texts(out) == [["sir", "abdul", "J.", "V"]]
+
+
+# -- #424: the chain and the maiden walk stop where assign's peel begins
+
+
+def test_the_chain_stops_before_the_numeral_assign_reads_as_the_suffix() -> None:
+    # P2's chain ran "until a trailing suffix begins" and asked with
+    # the suffix-piece test, which vetoes a bare 'V' as an initial --
+    # the #401 question at a third site: 'John van der Berg V' read
+    # family 'van der Berg V'. The chain now stops where the S2 peel,
+    # read over the pieces as they stand, begins the trailing run.
+    out = _grouped("John van der Berg V")
+    assert _piece_texts(out) == [["John", "van der Berg", "V"]]
+    out = _grouped("John van der Berg jr")
+    assert _piece_texts(out) == [["John", "van der Berg", "jr"]]
+
+
+def test_the_chain_keeps_a_numeral_the_peel_does_not_take() -> None:
+    # The fork is assign's: a numeral after an initial-shaped piece is
+    # a name word, so the chain takes it as before -- as 'John J. V'
+    # reads the V as a name. And a numeral with a suffix behind it is
+    # not last in the walk.
+    out = _grouped("John van der J. V")
+    assert _piece_texts(out) == [["John", "van der J. V"]]
+    out = _grouped("John van der Berg V jr")
+    assert _piece_texts(out) == [["John", "van der Berg V", "jr"]]
+
+
+def test_the_chain_stops_before_a_bare_acronym_with_words_to_spare() -> None:
+    # S2's other fork, the same way: 'John Smith Ma' peels the acronym
+    # as a credential, so 'John van der Berg Ma' does too -- 1.4.0 read
+    # suffix 'Ma' there, and 2.0 had let the chain take it.
+    out = _grouped("John van der Berg Ma", lexicon=_AMBIGUOUS_LEX)
+    assert _piece_texts(out) == [["John", "van der Berg", "Ma"]]
+
+
+def test_the_maiden_walk_stops_before_the_numeral_too() -> None:
+    # M2's walk takes the words after the marker "up to any trailing
+    # suffix", asked with the same test: 'John née Jones Smith V' took
+    # the V into the maiden name. Read by the peel from the marker on,
+    # the V is the suffix, and the walk stops before it.
+    out = _grouped("John née Jones Smith V")
+    assert [t.text for t in out.tokens if t.role is Role.MAIDEN] == \
+        ["Jones", "Smith"]
+    assert _piece_texts(out) == [["John", "V"]]
+
+
+def test_the_maiden_walk_leaves_the_acronym_fork_to_assign() -> None:
+    # The bare-acronym fork counts pieces, and the walk removes the
+    # pieces it counted: peeled over the pieces as they stand, 'Ma'
+    # would be a credential with words to spare, but once 'Jones
+    # Smith' has left the name it is the family of a two-piece name.
+    # So the walk takes it as maiden text, as it always did, and
+    # stops only at the numeral fork, whose preceding piece the walk
+    # leaves in place.
+    out = _grouped("John née Jones Smith Ma", lexicon=_AMBIGUOUS_LEX)
+    assert [t.text for t in out.tokens if t.role is Role.MAIDEN] == \
+        ["Jones", "Smith", "Ma"]
+
+
+def test_a_marker_followed_only_by_the_numeral_is_just_a_word() -> None:
+    # The peel is read from the marker, so 'née V' is two pieces and
+    # the fork fires on the V: nothing follows the marker but a
+    # suffix, the pass declines, and the marker stays a word -- as
+    # for 'Jane Smith née PhD', and as 1.4.0 read it (suffix 'V').
+    out = _grouped("Jane Smith née V")
+    assert [t.text for t in out.tokens if t.role is Role.MAIDEN] == []
+    assert _piece_texts(out) == [["Jane", "Smith", "née", "V"]]
+
+
+def test_the_walk_stops_only_where_the_numeral_survives_the_take() -> None:
+    # The fork reads the piece before the numeral, and the walk
+    # REMOVES that piece: after the take, what assign sees before the
+    # V is the piece before the marker. Where that is initial-shaped
+    # the fork will not fire, and a walk that stopped anyway handed
+    # the V to the family ('J. née Jones Smith V' read family 'V').
+    # So the walk stops only where the numeral reads as the suffix
+    # both as written and as the take would leave it. Found by both
+    # reviews.
+    out = _grouped("J. née Jones Smith V")
+    assert [t.text for t in out.tokens if t.role is Role.MAIDEN] == \
+        ["Jones", "Smith", "V"]
+
+
+def test_an_unlisted_abbreviation_is_as_transparent_as_a_title() -> None:
+    # #367 keyed the leading-particle exception on the first piece of
+    # the NAME, stepping over titles; assign also peels an unlisted
+    # abbreviation as a title (H2), and the scan here did not, so
+    # 'Xyz. van Johnson' chained where 'Dr. van Johnson' did not --
+    # and 'Xyz. van Berg Ma' chained the given word into the family,
+    # leaving assign two pieces where the acronym fork had counted
+    # three. The scan asks assign's leading-title test now.
+    out = _grouped("Xyz. van Johnson")
+    assert _piece_texts(out) == [["Xyz.", "van", "Johnson"]]
+    out = _grouped("Xyz. van Berg Ma", lexicon=_AMBIGUOUS_LEX)
+    assert _piece_texts(out) == [["Xyz.", "van", "Berg", "Ma"]]

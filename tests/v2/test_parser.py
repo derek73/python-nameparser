@@ -593,6 +593,36 @@ def test_the_licence_does_not_lift_the_equality() -> None:
         assert (n.middle, n.family, n.suffix) == ("J.", "V", "")
 
 
+def test_the_chain_and_the_walk_stop_where_the_peel_begins() -> None:
+    # #424: the third and fourth sites that asked "is this a suffix?"
+    # with the initial-vetoed test. Each reads as its ordinary twin
+    # ('John Smith V', 'John Smith Ma') reads.
+    for text, family, suffix in (
+            ("John van der Berg V", "van der Berg", "V"),
+            ("John van der Berg X", "van der Berg", "X"),
+            ("abdul van der Berg V", "van der Berg", "V"),
+            ("John van der Berg Ma", "van der Berg", "Ma")):
+        n = parse(text)
+        assert (n.family, n.suffix) == (family, suffix), text
+    n = parse("John née Jones Smith V")
+    assert (n.maiden, n.suffix) == ("Jones Smith", "V")
+    n = parse("Jane Smith née Jones V")
+    assert (n.family, n.maiden, n.suffix) == ("Smith", "Jones", "V")
+    # the numeral must read as the suffix as the take leaves the name
+    # too: an initial before the marker vetoes the fork, so the walk
+    # keeps the V as maiden text rather than hand it to the family
+    n = parse("J. née Jones Smith V")
+    assert (n.family, n.maiden, n.suffix) == ("", "Jones Smith V", "")
+    # an unlisted abbreviation is as transparent to the leading
+    # particle as a listed title (H2 meets #367), so the acronym fork
+    # counts the same pieces in group and in assign
+    for abbrev in ("Xyz.", "Dr."):
+        n = parse(f"{abbrev} van Berg MA")
+        assert (n.given, n.family, n.suffix) == ("van", "Berg", "MA"), abbrev
+        n = parse(f"{abbrev} van Johnson")
+        assert (n.given, n.family) == ("van", "Johnson"), abbrev
+
+
 def test_the_numeral_fork_fires_on_the_last_piece_only() -> None:
     # The shared peel's own contract, pinned at the stage that owns
     # it: a numeral with a suffix behind it is a name word, for an

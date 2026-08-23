@@ -1277,6 +1277,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(4, ('given', 'middle', 'title'), "e86eeb13eeb2"),
         "fix(leading-credential) a split 'Ph. D.' before the name stays one unit":
             _Claim(4, ('family', 'given', 'middle', 'suffix', 'title'), "1425d85a2d86"),
+        "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
+            _Claim(1, ('family', 'given'), "ca7b37af6cf8"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
             _Claim(4, ('family', 'given', 'middle'), "ae299117dd60"),
         "fix(#400) abd joins the word after it as one given name":
@@ -1323,6 +1325,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given', 'nickname'), "d4069d459f23"),
         "fix(#298) 间隔号 division changes the comma reading, sending the credential from title to suffix":
             _Claim(1, ('family', 'given', 'suffix', 'title'), "1d45596e6fdb"),
+        "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
+            _Claim(1, ('_ambiguities', 'family', 'given'), "ca7b37af6cf8"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
             _Claim(4, ('family', 'given', 'middle'), "ae299117dd60"),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
@@ -1367,6 +1371,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_2.1.0.toml": {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
             _Claim(11, ('family', 'middle'), "3acdb7d11969"),
+        "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
+            _Claim(1, ('_ambiguities', 'family', 'given'), "ca7b37af6cf8"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
             _Claim(4, ('family', 'given', 'middle'), "ae299117dd60"),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":

@@ -178,6 +178,19 @@ name_regex = "(?i)\\b(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)\\b
 fields = ["family", "maiden"]
 
 [[change]]
+issue = "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle"
+# 'Esq. van Gogh' (corpus_issues): rules.md#P4 -- "An unlisted
+# abbreviation before the particle is as transparent as a listed
+# title, since assign reads it as one (H2)". family 'van Gogh' ->
+# given 'van', family 'Gogh', with the PARTICLE_OR_GIVEN report, as
+# 'Dr. van Gogh' reads since #367. #367 keyed the leading-particle
+# exception on the first piece of the name by group's title test,
+# which does not see H2's abbreviations; the scan asks assign's test
+# now. Literal for the reason the #367 rule gives.
+name_regex = "(?i)^esq\\.\\s+van\\s+gogh$"
+fields = ["given", "family", "_ambiguities"]
+
+[[change]]
 issue = "fix(#367) a title no longer displaces a leading particle out of the leading position"
 # 'Mr. Van Nguyen': a leading particle deliberately does not chain --
 # that is what makes 'Van Nguyen' read as given Van, family Nguyen.
