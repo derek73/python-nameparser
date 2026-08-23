@@ -254,15 +254,23 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     not among the words to spare: they leave the name, so counting
     them asks the question about a name that will not exist. The join
     never absorbs a marker standing as a word of its own — a marker
-    is not a name word (M2) — nor a word of the suffix vocabulary
-    (S2), wherever position will then place it; a marker left as a
-    word that a particle join (P2) has already taken travels with
-    that join. The reserve counts the same words out, and one more
-    that position decides: a trailing roman numeral that assign
-    reads as the suffix (S2) is no word to spare, and is not joined
-    — read as assign will read it, after the join, with the bound
-    word first. After a family comma there is no such fork to read:
-    the reserve there counts suffix words alone.
+    is not a name word (M2) — nor a word of the unambiguous suffix
+    vocabulary (S2), wherever position will then place it; a bare
+    ambiguous acronym is a name word wherever the peel does not take
+    it; a marker left as a word that a particle join (P2) has already
+    taken travels with that join. A title word standing in the name
+    is a name word (H3) and joins like one: the pair is a given name
+    whatever tag the word carried. What there is to spare is what
+    assign will leave: the join is tried on the pieces as it would
+    leave them, assign's trailing peel (S2) is read over that, and
+    the name words it leaves are the words to spare — a trailing
+    roman numeral, or a bare acronym with words behind it, is no
+    word to spare. The join joins two name words into one and
+    changes no suffix reading: a word the peel reads as a suffix
+    unjoined must read so joined, or the join declines. After a
+    family comma the family is fixed and the joined pair is the given
+    whatever follows, so the reserve there reads no peel: the join
+    stands whenever the word after the bound word is a name word.
       "abdul salam ahmed salem"   →  given="abdul salam"
       "abd Allah Smith"           →  given="abd Allah"
       "Salam, abd Allah"          →  given="abd Allah"
@@ -280,7 +288,11 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "abdul Smith V"             →  family="Smith"
       "abdul Smith V"             →  suffix="V"
       "abdul Smith Jr V"          →  family="Smith"
-      "Berg, abdul V"             →  given="abdul V"  · boundary
+      "abdul Smith Jr Ma"         →  family="Smith"
+      "abdul Smith Jr Ma"         →  suffix="Jr, Ma"
+      "abdul Smith Ma"            →  suffix="Ma"
+      "abdul Smith Berg Ma"       →  family="Berg"  · boundary
+      "abdul Sir Smith Berg"      →  given="abdul Sir"
       "abdul Jr Smith Berg"       →  given="abdul"
       "abdul Jr Smith Berg"       →  middle="Jr Smith"
       "abdul Ph. D. Smith Berg"   →  suffix="Ph. D."
@@ -289,6 +301,12 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "abd Allah Smith née Jones" →  given="abd Allah"
       "abd née Jones"             →  given="abd"
       "Berg, abd née Jones"       →  suffix="abd"
+    Accepted: after a family comma the join stands though, unjoined,
+    assign would read the word it takes as the suffix — the family
+    is fixed there and the pair is the given; and a bare ambiguous
+    acronym the peel does not take joins as any name word does.
+      "Berg, abdul V"             →  given="abdul V"
+      "abdul Ma Smith"            →  given="abdul Ma"
     Accepted: a given-name title plus a bound pair leaves the family
     empty, as H1 accepts for "Sir John" — the input names no family.
     Under a family-first order the joined pair is the family and the
@@ -401,7 +419,7 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Jack Wei Ma"               →  suffix="Ma"
       "Jack Wei Ma"               →  ambiguities=("suffix-or-name",)
       "Smith Jr."                 →  family=""
-    implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_vocab.py
+    implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with
     periods; the chunks between the periods are what carry the

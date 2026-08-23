@@ -89,9 +89,10 @@ fields = ["given", "family"]
 issue = "fix(#421) the bound-given join never absorbs a suffix piece"
 # 'abdul Jr Smith Berg': rules.md#P5 -- "the join never absorbs a
 # marker standing as a word of its own -- a marker is not a name word
-# (M2) -- nor a word of the suffix vocabulary (S2), wherever position
-# will then place it". given 'abdul Jr', middle 'Smith' -> given
-# 'abdul', middle 'Jr Smith'. Parity with this baseline until now; a
+# (M2) -- nor a word of the unambiguous suffix vocabulary (S2),
+# wherever position will then place it". given 'abdul Jr', middle
+# 'Smith' -> given 'abdul', middle 'Jr Smith'. Parity with this
+# baseline until now; a
 # rules.md example, since no differential corpus name has the shape.
 name_regex = "(?i)^abdul\\s+jr\\s+smith\\s+berg$"
 fields = ["given", "middle"]
@@ -105,6 +106,22 @@ issue = "fix(#421) the bound-given join never absorbs a split credential"
 # example; no differential corpus name has the shape.
 name_regex = "(?i)^abdul\\s+ph\\.\\s+d\\.\\s+smith\\s+berg$"
 fields = ["given", "middle", "suffix"]
+
+[[change]]
+issue = "fix(#425) the bound-given reserve runs assign's peel over the joined view"
+# 'abdul Smith Jr Ma', 'abdul Smith Ma': rules.md#P5 -- "the join is
+# tried on the pieces as it would leave them, assign's trailing peel
+# (S2) is read over that, and the name words it leaves are the words
+# to spare" and "a word the peel reads as a suffix unjoined must read
+# so joined, or the join declines". given 'abdul Smith', family '' ->
+# given 'abdul', family 'Smith' (the acronym and the suffix peel as
+# they do for 'John Smith Jr Ma'); given 'abdul Smith', family 'Ma'
+# -> given 'abdul', family 'Smith', suffix 'Ma' (the join would have
+# turned a credential into the family). Both 1.4.0 parity, so the
+# 1.4.0 ledger has no twin. Rules.md examples; no differential corpus
+# name has either shape.
+name_regex = "(?i)^abdul\\s+smith\\s+(jr\\s+)?ma$"
+fields = ["given", "family", "suffix"]
 
 [[change]]
 issue = "fix(#369) the bound given-name join takes a particle-and-bound word, so no fork is reported"

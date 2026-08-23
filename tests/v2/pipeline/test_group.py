@@ -706,3 +706,85 @@ def test_the_join_declines_a_suffix_after_a_family_comma_too() -> None:
     # under every reserve.
     out = _grouped("Berg, abdul jr Smith")
     assert _piece_texts(out) == [["Berg"], ["abdul", "jr", "Smith"]]
+
+
+# -- #425: the reserve runs assign's peel over the post-join view
+
+_AMBIGUOUS_LEX = _LEX.add(suffix_acronyms={"ma"},
+                          suffix_acronyms_ambiguous={"ma"})
+
+
+def test_the_reserve_mirrors_the_bare_acronym_fork() -> None:
+    # S2's other positional fork: a bare ambiguous acronym is peeled
+    # only with a given AND a family left. Read over the joined view
+    # 'abdul Smith Jr Ma' is three pieces, so assign peels the acronym,
+    # then the suffix, and one piece remains -- no family. The reserve
+    # now runs that same peel over the view and declines (#425); it
+    # used to count 'Ma' as a name word and join.
+    out = _grouped("abdul Smith jr Ma", lexicon=_AMBIGUOUS_LEX)
+    assert _piece_texts(out) == [["abdul", "Smith", "jr", "Ma"]]
+
+
+def test_the_join_never_turns_a_suffix_into_a_name() -> None:
+    # Unjoined, 'abdul Smith Ma' has words to spare and the peel reads
+    # the acronym as a credential; joined, the view is two pieces and
+    # the fork would keep it as the family. The join joins two name
+    # words and changes nothing else, so it declines -- 1.4.0's
+    # reading, and 'John Smith Ma's. With a family behind it the
+    # acronym peels either way, and the join stands.
+    out = _grouped("abdul Smith Ma", lexicon=_AMBIGUOUS_LEX)
+    assert _piece_texts(out) == [["abdul", "Smith", "Ma"]]
+    out = _grouped("abdul Smith Berg Ma", lexicon=_AMBIGUOUS_LEX)
+    assert _piece_texts(out) == [["abdul Smith", "Berg", "Ma"]]
+
+
+def test_the_join_never_turns_a_name_into_a_suffix_either() -> None:
+    # The same rule from the other side: 'abdul V' is two pieces
+    # whose V the peel reads as the suffix; joined it would be one
+    # piece the fork cannot fire on, so the V would become a name
+    # word. The peel takes the V unjoined and nothing joined -- the
+    # join declines. (Of the numeral pins above, 'abdul J. V'
+    # declines by this comparison; 'abdul Smith V' by the threshold,
+    # one name word being no family to spare.)
+    out = _grouped("abdul V")
+    assert _piece_texts(out) == [["abdul", "V"]]
+
+
+def test_the_joined_pair_is_a_given_name_whatever_tag_the_word_carried() -> None:
+    # A title word standing in the name is a name word (H3) and the
+    # join takes it as v1 did -- but the conjunction merge derives a
+    # `title` piece tag for "mr and mrs", and merge()'s tag union
+    # would hand that tag to the joined pair, which assign then peels
+    # as a leading title: 'abdul Sheikh and Ahmad Bakar Smith' read
+    # title 'abdul Sheikh and Ahmad' on 2.0 and 2.1, and the shorter
+    # 'abdul Sheikh and Ahmad Bakar' would have too once the count's
+    # title exclusion went. The bound join drops the tag: the pair is
+    # a given name. Found by the code review.
+    out = _grouped("abdul mr and mrs Smith Berg")
+    assert _piece_texts(out) == [["abdul mr and mrs", "Smith", "Berg"]]
+    assert "title" not in out.piece_tags[0][0]
+
+
+def test_a_title_word_in_the_name_is_a_name_word_to_the_join() -> None:
+    # The 2.x reserve had excluded title pieces from its count, an
+    # unrecorded deviation from v1, which joined them; assign reads a
+    # mid-name title word as a name word, and the shared peel follows
+    # assign. 1.4.0 parity on every shape here.
+    out = _grouped("abdul mr Smith Berg")
+    assert _piece_texts(out) == [["abdul mr", "Smith", "Berg"]]
+    out = _grouped("abdul Smith mr")
+    assert _piece_texts(out) == [["abdul Smith", "mr"]]
+    out = _grouped("Berg, abdul mr")
+    assert _piece_texts(out) == [["Berg"], ["abdul mr"]]
+
+
+def test_the_licence_does_not_lift_the_equality() -> None:
+    # The one shape where the join would move the numeral fork AND
+    # the licence's threshold of one would let it through: 'sir abdul
+    # J. V' -- unjoined the V is a name word (the fork is suppressed
+    # by the initial-shaped 'J.'), joined it is the suffix: the peel
+    # takes nothing unjoined and the V joined. Declines, as 'Sir John
+    # J. V' reads. A looser comparison passed every other test; found
+    # by the test review.
+    out = _grouped("sir abdul J. V", lexicon=_GIVEN_NAME_TITLE_LEX)
+    assert _piece_texts(out) == [["sir", "abdul", "J.", "V"]]

@@ -493,6 +493,12 @@ def test_a_given_name_title_licenses_the_bound_given_join() -> None:
     plain = parse("Dr. abdul salam")
     assert (plain.title, plain.given, plain.family) == \
         ("Dr.", "abdul", "salam")
+    # and the pair's report: a bound word read as the bound word is
+    # not a fork, so the pick 'Sheik John Ma' reports is not reported
+    # for 'Sheik abdul Ma' (decisions.md#P5, the #369 precedent)
+    assert parse("Sheik abdul Ma").ambiguities == ()
+    assert [a.kind for a in parse("Sheik John Ma").ambiguities] == \
+        [AmbiguityKind.SUFFIX_OR_NAME]
 
 
 def test_the_bound_given_reserve_spares_the_family_assign_will_keep() -> None:
@@ -537,6 +543,64 @@ def test_the_reserve_declines_and_assign_reads_the_unjoined_pieces() -> None:
     # so the V is last in it, the family survives
     n = parse("abdul Smith V Ph. D.")
     assert (n.given, n.family, n.suffix) == ("abdul", "Smith", "V, Ph. D.")
+
+
+def test_the_reserve_spares_the_family_the_acronym_fork_would_take() -> None:
+    # #425: with a suffix word between the pair and a bare ambiguous
+    # acronym, assign peels the acronym (three pieces, words to spare)
+    # and then the suffix, and the family the join left was never
+    # there. The reserve now runs assign's peel over the joined view
+    # and declines, so these read as their ordinary-given twins.
+    for bound, plain in (("abdul Smith Jr Ma", "John Smith Jr Ma"),
+                         ("abdul Rahman PhD MA", "John Rahman PhD MA")):
+        n, m = parse(bound), parse(plain)
+        assert (n.family, n.suffix) == (m.family, m.suffix)
+        assert n.family != ""
+    n = parse("abu Bakar Jr Ed")
+    assert (n.family, n.suffix) == ("Bakar", "Jr, Ed")
+    # and the join never turns a suffix into a name: unjoined, the
+    # acronym is a credential with words to spare, so 'abdul Smith
+    # Ma' reads as 'John Smith Ma' does (1.4.0 parity restored)
+    n, m = parse("abdul Smith Ma"), parse("John Smith Ma")
+    assert (n.family, n.suffix) == (m.family, m.suffix) == ("Smith", "Ma")
+
+
+def test_a_joined_pair_is_never_peeled_as_a_title() -> None:
+    # The conjunction merge derives a title tag for 'Sheikh and Ahmad';
+    # the bound join takes the piece (a mid-name title word is a name
+    # word, as 1.4.0 read it) and the pair must stay the given name,
+    # not inherit the tag and be peeled as a leading title.
+    n = parse("abdul Sheikh and Ahmad Bakar")
+    assert (n.title, n.given, n.family) == \
+        ("", "abdul Sheikh and Ahmad", "Bakar")
+    # the title-word class: name words to P5, as v1 read them --
+    # parity restored for the post-comma shape, never lost for the
+    # main-walk one
+    n = parse("abdul Sir Smith Berg")
+    assert (n.given, n.middle, n.family) == ("abdul Sir", "Smith", "Berg")
+    n = parse("Berg, abdul Sir")
+    assert (n.given, n.family) == ("abdul Sir", "Berg")
+
+
+def test_the_licence_does_not_lift_the_equality() -> None:
+    # Behind a given-name title the reserve needs one name piece, so
+    # "changes no suffix reading" is the only thing between 'Sir abdul
+    # J. V' and a join that turns the V from a name word into the
+    # suffix (#369 had joined it). It reads exactly as 'Sir John J. V'
+    # does.
+    for text in ("Sir abdul J. V", "Sir John J. V"):
+        n = parse(text)
+        assert (n.middle, n.family, n.suffix) == ("J.", "V", "")
+
+
+def test_the_numeral_fork_fires_on_the_last_piece_only() -> None:
+    # The shared peel's own contract, pinned at the stage that owns
+    # it: a numeral with a suffix behind it is a name word, for an
+    # ordinary given name and the bound pair alike.
+    for text, family in (("John Smith V Jr", "V"),
+                         ("abdul Smith V Jr", "V")):
+        n = parse(text)
+        assert (n.family, n.suffix) == (family, "Jr")
 
 
 @pytest.mark.parametrize("bound", ["abd", "abu"])
