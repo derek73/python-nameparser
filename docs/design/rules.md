@@ -269,8 +269,8 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     changes no suffix reading: a word the peel reads as a suffix
     unjoined must read so joined, or the join declines. After a
     family comma the family is fixed and the joined pair is the given
-    whatever follows, so the reserve there reads no peel and counts
-    suffix words alone.
+    whatever follows, so the reserve there reads no peel: the join
+    stands whenever the word after the bound word is a name word.
       "abdul salam ahmed salem"   →  given="abdul salam"
       "abd Allah Smith"           →  given="abd Allah"
       "Salam, abd Allah"          →  given="abd Allah"
@@ -302,7 +302,7 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "abd née Jones"             →  given="abd"
       "Berg, abd née Jones"       →  suffix="abd"
     Accepted: after a family comma the join stands though, unjoined,
-    the peel would read the word it takes as the suffix — the family
+    assign would read the word it takes as the suffix — the family
     is fixed there and the pair is the given; and a bare ambiguous
     acronym the peel does not take joins as any name word does.
       "Berg, abdul V"             →  given="abdul V"
