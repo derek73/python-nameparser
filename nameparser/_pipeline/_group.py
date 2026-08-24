@@ -101,6 +101,32 @@ def _is_leading_title(piece: Sequence[int], ptags: Set[str],
             and bool(_PERIOD_ABBREV.match(tokens[piece[0]].text)))
 
 
+def _segment_holds_no_name(pieces: Sequence[Sequence[int]],
+                           ptags: Sequence[Set[str]],
+                           tokens: Sequence[WorkToken]) -> bool:
+    """The segment is titles and suffixes only ('John Smith, Dr.',
+    'John Smith, Mr. Jr.') -- nothing in it is a name word.
+
+    The FAMILY_COMMA rule "segment 0 is wholly the family name" rests on
+    the writer having said where the family name ends. A comma followed
+    by no name word said no such thing -- 'John Smith, Dr.' is 'Dr. John
+    Smith' with the honorific moved, and 'John Smith, Mr. Jr.' the same
+    with the postnominal along -- so the pre-comma name keeps its
+    positional read instead of being merged. Uses the same
+    _is_leading_title predicate the peel does, period-abbreviation
+    inference included, so the two cannot disagree about what a title
+    is; a suffix piece counts as what it is, so a mixed run like
+    'Smith, Dr. Jr.' is a title and a postnominal, each read where it
+    stands, and never a title run 'Dr. Jr.'. An empty segment
+    ('Doe,, Jr.') holds no title to read by.
+    """
+    if not pieces:
+        return False
+    return all(_is_suffix_piece(pieces[k], ptags[k], tokens)
+               or _is_leading_title(pieces[k], ptags[k], tokens)
+               for k in range(len(pieces)))
+
+
 def _leading_titles(pieces: Sequence[Sequence[int]],
                     ptags: Sequence[Set[str]],
                     tokens: Sequence[WorkToken]) -> int:
