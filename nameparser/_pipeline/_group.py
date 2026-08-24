@@ -862,10 +862,11 @@ def group(state: ParseState) -> ParseState:
         # suppresses it there: the family name is already fixed, so
         # there is no fork left to report.
         tail = tail_start is not None and seg_idx >= tail_start
+        seg_cores = cores if tail else frozenset()
         pieces, ptags, taken = _group_segment(
             seg, additional, tokens, bound_join,
             None if family_comma else ambiguities,
-            cores if tail else frozenset(),
+            seg_cores,
             state.lexicon.given_name_titles)
         # the marker is dropped and the maiden name's tokens become
         # MAIDEN (#274); which pieces those are was settled in
@@ -877,7 +878,21 @@ def group(state: ParseState) -> ParseState:
                 for i in piece:
                     tokens[i] = dataclasses.replace(
                         tokens[i], role=Role.MAIDEN)
-        if tail:
+        # One comma segment is one suffix entry. `tail` answers that by
+        # INDEX, which is right wherever assign reads the segment as
+        # suffixes for the same structural reason -- but not after a
+        # ONE-WORD family comma, where segment 1 is a name slot that
+        # assign re-reads by CONTENT: a segment of nothing but
+        # credentials is the credential run, whole (#296/#325). group
+        # asking the index while assign asked the content is what made
+        # 'Smith, MD PhD' render 'MD, PhD' with a comma the writer
+        # never typed, where the full-name 'John Smith, MD PhD' has
+        # rendered 'MD PhD' since 1.4.0 (#429). Ask assign's own
+        # predicate, over the pieces group just built.
+        one_entry = tail or (
+            family_comma and seg_idx == 1
+            and _segment_holds_no_name(pieces, ptags, tokens))
+        if one_entry:
             # v1 renders each tail COMMA SEGMENT as one suffix entry
             # ('Smith, V MD' -> suffix 'V MD'); a delimiter core inside
             # a segment separates entries and is dropped, but a segment
@@ -885,11 +900,14 @@ def group(state: ParseState) -> ParseState:
             # within a part, never erases a lone part). Continuation
             # tokens within an entry take the stable "joined" tag so
             # the suffix view space-joins them (the fix_phd mechanism).
+            # Core dropping stays keyed on `tail` via seg_cores: the
+            # #191 parity is a TAIL rule, and the one-entry join is the
+            # only half that follows assign's content read.
             entry_open = False
             kept: list[int] = []
             for k in range(len(pieces)):
                 is_core = (len(pieces[k]) == 1
-                           and tokens[pieces[k][0]].text in cores
+                           and tokens[pieces[k][0]].text in seg_cores
                            and len(pieces) > 1)
                 if is_core:
                     dropped.extend(pieces[k])

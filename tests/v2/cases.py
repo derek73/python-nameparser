@@ -388,6 +388,17 @@ CASES: tuple[Case, ...] = (
          notes="v1 made the lone post-comma strict-suffix piece the "
                "given; 2.0 routes it to suffix (same family as the "
                "'Smith, Dr.' row)"),
+    Case("family_comma_suffix_run_renders_unjoined", "Smith, MD PhD",
+         {"family": "Smith", "suffix": "MD PhD"},
+         classification="fix(comma-family)",
+         notes="a space-separated post-nominal run after a ONE-WORD "
+               "family renders with a comma the input never had "
+               "('MD, PhD') because the tail's joined tagging does not "
+               "reach this path, while the full-name 'John Smith, MD "
+               "PhD' has rendered 'MD PhD' since 1.4.0. The roles were "
+               "already right after #428; this is its remaining half "
+               "(#429). Round-tripping is the visible cost -- the "
+               "rendered comma re-segments on re-parse"),
     Case("period_joined_ambiguous_chunk", "John Doe, Msc.Ed.",
          {"given": "John", "family": "Doe", "suffix": "Msc.Ed."},
          notes="chunk-level suffix membership is v1's is_suffix: bare "
@@ -1583,24 +1594,31 @@ CASES: tuple[Case, ...] = (
                "suffix, so the inference does not run"),
     # -- #325: the whole credential run, not the lone piece
     Case("family_comma_split_credential_run", "Smith, Ph. D. Jr.",
-         {"family": "Smith", "suffix": "Ph. D., Jr."},
-         classification="fix(#325)",
+         {"family": "Smith", "suffix": "Ph. D. Jr."},
+         classification="fix(#325) + fix(#429)",
          notes="one word before the comma, the space-split 'Ph. D.' "
                "and a suffix after it: the lone-piece route did not "
                "apply and the merged credential fell through to the "
                "given name (a 1.4.0 regression -- v1 read suffix 'Ph. "
                "D.', title 'Jr.'). A run that is nothing but suffix "
-               "pieces is the credential run C1 describes, whole"),
+               "pieces is the credential run C1 describes, whole -- "
+               "and #429 made it render whole too, where #325 shipped "
+               "it as 'Ph. D., Jr.' with a comma the writer never "
+               "typed. The full-name 'John Smith, Ph. D. Jr.' already "
+               "rendered it unjoined, so this row now agrees with it"),
     Case("family_comma_credential_run_then_numeral", "Smith, Ph. D. III",
-         {"family": "Smith", "suffix": "Ph. D., III"},
-         classification="fix(#325)"),
+         {"family": "Smith", "suffix": "Ph. D. III"},
+         classification="fix(#325) + fix(#429)",
+         notes="the numeral does not end the run; the render lost its "
+               "inserted comma with the rest (#429)"),
     Case("family_comma_two_credentials", "Smith, PhD Jr.",
-         {"family": "Smith", "suffix": "PhD, Jr."},
-         classification="fix(#325)",
+         {"family": "Smith", "suffix": "PhD Jr."},
+         classification="fix(#325) + fix(#429)",
          notes="'PhD' led the run as a title until the audit; the audit "
                "alone would have made it the given name, which is why "
                "the ordering shipped in the same commit. The run is "
-               "suffixes"),
+               "suffixes, and since #429 renders as one entry rather "
+               "than 'PhD, Jr.'"),
     Case("family_comma_run_with_a_name_is_not_a_run", "Smith, John Jr.",
          {"given": "John", "family": "Smith", "suffix": "Jr."},
          notes="the non-flip: a name word in the run makes it the "
