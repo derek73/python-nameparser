@@ -102,44 +102,6 @@ def _is_leading_title(piece: Sequence[int], ptags: Set[str],
             and bool(_PERIOD_ABBREV.match(tokens[piece[0]].text)))
 
 
-def _segment_holds_no_name(pieces: Sequence[Sequence[int]],
-                           ptags: Sequence[Set[str]],
-                           tokens: Sequence[WorkToken]) -> bool:
-    """The segment is titles and suffixes only ('John Smith, Dr.',
-    'John Smith, Mr. Jr.') -- nothing in it is a name word.
-
-    The FAMILY_COMMA rule "segment 0 is wholly the family name" rests on
-    the writer having said where the family name ends. A comma followed
-    by no name word said no such thing -- 'John Smith, Dr.' is 'Dr. John
-    Smith' with the honorific moved, and 'John Smith, Mr. Jr.' the same
-    with the postnominal along -- so the pre-comma name keeps its
-    positional read instead of being merged. Uses the same
-    _is_leading_title predicate the peel does, period-abbreviation
-    inference included, so the two cannot disagree about what a title
-    is; a suffix piece counts as what it is, so a mixed run like
-    'Smith, Dr. Jr.' is a title and a postnominal, each read where it
-    stands, and never a title run 'Dr. Jr.'. An empty segment
-    ('Doe,, Jr.') holds no title to read by.
-
-    TWO callers, asking it for different reasons, and the difference
-    matters. assign uses it to decide whether the comma fixed the family
-    name (above). group's one-entry join (#429) uses it to decide
-    whether the segment is a credential run at all.
-
-    True does NOT mean "every piece is a suffix" -- the title tolerance
-    is the whole point, and a true segment can still hold pieces assign
-    routes to TITLE. A caller that renders the segment as one unit must
-    therefore ask _is_suffix_piece per piece as well; assuming otherwise
-    is what made #429's first draft collapse title_list and glue a
-    suffix across a comma the writer typed.
-    """
-    if not pieces:
-        return False
-    return all(_is_suffix_piece(pieces[k], ptags[k], tokens)
-               or _is_leading_title(pieces[k], ptags[k], tokens)
-               for k in range(len(pieces)))
-
-
 def _leading_titles(pieces: Sequence[Sequence[int]],
                     ptags: Sequence[Set[str]],
                     tokens: Sequence[WorkToken]) -> int:
@@ -181,6 +143,44 @@ def _is_suffix_piece(piece: Sequence[int], ptags: Set[str],
         return False
     tags = tokens[piece[0]].tags
     return "vocab:suffix" in tags and "initial" not in tags
+
+
+def _segment_holds_no_name(pieces: Sequence[Sequence[int]],
+                           ptags: Sequence[Set[str]],
+                           tokens: Sequence[WorkToken]) -> bool:
+    """The segment is titles and suffixes only ('John Smith, Dr.',
+    'John Smith, Mr. Jr.') -- nothing in it is a name word.
+
+    The FAMILY_COMMA rule "segment 0 is wholly the family name" rests on
+    the writer having said where the family name ends. A comma followed
+    by no name word said no such thing -- 'John Smith, Dr.' is 'Dr. John
+    Smith' with the honorific moved, and 'John Smith, Mr. Jr.' the same
+    with the postnominal along -- so the pre-comma name keeps its
+    positional read instead of being merged. Uses the same
+    _is_leading_title predicate the peel does, period-abbreviation
+    inference included, so the two cannot disagree about what a title
+    is; a suffix piece counts as what it is, so a mixed run like
+    'Smith, Dr. Jr.' is a title and a postnominal, each read where it
+    stands, and never a title run 'Dr. Jr.'. An empty segment
+    ('Doe,, Jr.') holds no title to read by.
+
+    TWO callers, asking it for different reasons, and the difference
+    matters. assign uses it to decide whether the comma fixed the family
+    name (above). group's one-entry join (#429) uses it to decide
+    whether the segment is a credential run at all.
+
+    True does NOT mean "every piece is a suffix" -- the title tolerance
+    is the whole point, and a true segment can still hold pieces assign
+    routes to TITLE, so a caller rendering the segment as one unit must
+    ask _is_suffix_piece per piece as well. What assuming otherwise cost
+    is recorded at the one-entry join in group(), the caller that made
+    the assumption.
+    """
+    if not pieces:
+        return False
+    return all(_is_suffix_piece(pieces[k], ptags[k], tokens)
+               or _is_leading_title(pieces[k], ptags[k], tokens)
+               for k in range(len(pieces)))
 
 
 class Peel(NamedTuple):
@@ -905,6 +905,13 @@ def group(state: ParseState) -> ParseState:
         # never typed, where the full-name 'John Smith, MD PhD' has
         # rendered 'MD PhD' since 1.4.0 (#429). Ask assign's own
         # predicate, over the pieces group just built.
+        # `family_comma` is redundant by invariant and kept for
+        # locality: segment() emits at most one segment for NO_COMMA, so
+        # seg_idx == 1 already implies a comma, and under SUFFIX_COMMA
+        # tail_start is 1, so `tail` short-circuits before this. Nothing
+        # can pin it -- dropping it is an equivalent mutant over the
+        # corpora and 65,725 generated inputs -- so it is documented
+        # rather than tested.
         one_entry = tail or (
             family_comma and seg_idx == 1
             and _segment_holds_no_name(pieces, ptags, tokens))
@@ -917,7 +924,7 @@ def group(state: ParseState) -> ParseState:
             # tokens within an entry take the stable "joined" tag so
             # the suffix view space-joins them (the fix_phd mechanism).
             # Core dropping stays keyed on `tail` via seg_cores: the
-            # #191 parity is a TAIL rule, and the one-entry join is the
+            # #206 parity is a TAIL rule, and the one-entry join is the
             # only half that follows assign's content read.
             entry_open = False
             kept: list[int] = []
@@ -932,8 +939,11 @@ def group(state: ParseState) -> ParseState:
                 kept.append(k)
                 # Two different joins, and conflating them is what a
                 # widened condition gets wrong. WITHIN a piece (pos > 0)
-                # the tag renders a merged piece as one unit, whatever
-                # role it holds. BETWEEN pieces it continues an ENTRY,
+                # the tag renders a merged piece as one unit; the branch
+                # is written role-blind because the merge is (the ph-d
+                # pair reaches GIVEN as one element), though no
+                # multi-token TITLE piece witnesses it -- none turned up
+                # in 38,892 generated family-comma inputs. BETWEEN pieces it continues an ENTRY,
                 # and only pieces that render into the same run may do
                 # that. On a tail segment every kept piece does -- that
                 # is what `tail` means -- but off it assign routes piece

@@ -207,6 +207,17 @@ def test_the_joined_tag_never_reaches_a_title(  # #429 regression guard
     k = HumanName("Smith, MD PhD")
     assert k.suffix_list == ["MD PhD"]        # ONE element
 
+    # And the pin for the TAG CONDITION itself, which the three above
+    # miss: they all pin the sticky entry_open update, and the whole
+    # suite stays green with `in_entry and` dropped from the tag test.
+    # This needs a suffix piece FIRST -- opening the entry legitimately
+    # -- and then TWO titles, so the second title is a continuation of
+    # an entry it does not belong to.
+    j = HumanName("Smith, MD Rev. Dr.")
+    assert j.suffix == "MD"
+    assert j.title == "Rev. Dr."             # identical either way
+    assert j.title_list == ["Rev.", "Dr."]   # the mutant gives ['Rev. Dr.']
+
 
 def test_str_uses_string_format_with_v1_cleanup() -> None:
     n = HumanName("Dr. Juan de la Vega III")

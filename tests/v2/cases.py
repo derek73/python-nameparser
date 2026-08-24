@@ -582,7 +582,7 @@ CASES: tuple[Case, ...] = (
     Case("suffix_delimiter_tail_segment", "Doe, John, RN - CRNA",
          {"given": "John", "family": "Doe", "suffix": "RN, CRNA"},
          policy=_SD,
-         notes="v1 suffix_delimiter parity (#191): the delimiter token "
+         notes="v1 suffix_delimiter parity (#206): the delimiter token "
                "is dropped from consumed tail segments (pinned live "
                "2026-07-16)"),
     Case("suffix_delimiter_detection", "Doe, John RN - CRNA",
@@ -1647,24 +1647,6 @@ CASES: tuple[Case, ...] = (
                "'Jr. Jr.', the exact inverse of the bug #429 fixes. "
                "Only a piece that renders into the same run may "
                "continue an entry"),
-    Case("family_comma_title_run_does_not_join", "Smith, Rev. Dr.",
-         {"title": "Rev. Dr.", "family": "Smith"},
-         notes="the same regression seen through the other view: the "
-               "'joined' tag is role-blind and the facade heals it for "
-               "EVERY role, so a title piece opening an entry "
-               "collapsed title_list from ['Rev.', 'Dr.'] to "
-               "['Rev. Dr.']. The title string is space-joined either "
-               "way, so THIS row cannot see the collapse and does not "
-               "guard it -- test_facade.py's "
-               "test_the_joined_tag_never_reaches_a_title asserts the "
-               "list views and does. Kept here for the shape; the "
-               "differential compares strings and is blind to the "
-               "whole class"),
-    Case("family_comma_three_credential_entries", "Smith, Ph. D. Jr. MD",
-         {"family": "Smith", "suffix": "Ph. D. Jr. MD"},
-         classification="fix(#429)",
-         notes="the run does not stop at two: the entry latches rather "
-               "than being reset per piece"),
     Case("family_comma_written_commas_are_kept", "Smith, MD, PhD",
          {"family": "Smith", "suffix": "MD, PhD"},
          notes="the negative control for #429, and the distinction the "

@@ -436,7 +436,7 @@ _DASH = Policy(extra_suffix_delimiters=frozenset({" - "}))
 
 
 def test_a_delimiter_core_in_a_suffix_tail_is_not_maiden_text() -> None:
-    """A tail segment drops its delimiter cores (#191) and the marker
+    """A tail segment drops its delimiter cores (#206) and the marker
     takes what is left, in that order -- the order group() had before
     the marker pass moved ahead of the joins. A core is not a word the
     marker can take: it is structure, like the marker itself."""

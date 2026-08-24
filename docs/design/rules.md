@@ -875,10 +875,17 @@ R1. Rationale: a field is a way of reading the parse, not a stored
     words — O3's fold and, since #379, P6's attached tussenvoegsel —
     which render before the rest of the family wherever they stood in
     the string.
+    Words are separated as the writer separated them. The suffix view
+    is the one place this is visible, because it is the only field
+    that can hold parts the writer comma-separated: a run of
+    post-nominals written with spaces renders with spaces, and one
+    written with commas keeps them.
       "Dr. Juan Q. Xavier de la Vega III"  →  family="de la Vega"
       "Hassan, Mohamad Ahmad Ali"  middle_as_family  →  family="Ahmad Ali Hassan"
       "Hassan, Mohamad Ahmad Ali"          →  family="Hassan"  · boundary
-    implemented: nameparser/_types.py
+      "Smith, MD PhD"                      →  suffix="MD PhD"
+      "John Smith, MD, Bart"               →  suffix="MD, Bart"
+    history: decisions.md#C1 · implemented: nameparser/_types.py
 
 R2. Rationale: callers need the surname with and without its
     particles — sorting wants "Vega", display wants "de la Vega".
