@@ -176,6 +176,38 @@ def test_suffix_list_heals_joined_continuations() -> None:  # v1 fix_phd
     assert n.suffix_list == ["Ph. D."]       # ONE element, v1 parity
 
 
+def test_the_joined_tag_never_reaches_a_title(  # #429 regression guard
+) -> None:
+    """The "joined" tag is role-BLIND and _list_for heals it for every
+    role, so a tag placed for the suffix view is read by the title view
+    too.
+
+    #429 widened the one-entry join off the tail path, where assign
+    routes every piece to SUFFIX, onto the family-comma path, where it
+    does not. Its first draft let any piece open an entry; a title piece
+    doing so tagged the title behind it, and title_list collapsed.
+
+    Asserted on the LIST views because the string views cannot see it --
+    titles render space-joined either way, which is why the case table
+    and the differential (both string-only) stayed green while this was
+    broken.
+    """
+    n = HumanName("Smith, Rev. Dr.")
+    assert n.title == "Rev. Dr."             # unchanged, and why it hid
+    assert n.title_list == ["Rev.", "Dr."]   # TWO elements
+
+    # The other half: with a suffix already standing from the pre-comma
+    # segment, a title opening the entry glued the next suffix backward
+    # across the writer's own comma.
+    m = HumanName("Smith Jr., Mr. Jr.")
+    assert m.suffix == "Jr., Jr."
+    assert m.suffix_list == ["Jr.", "Jr."]
+
+    # The control: where the pieces really are one entry, they DO heal.
+    k = HumanName("Smith, MD PhD")
+    assert k.suffix_list == ["MD PhD"]        # ONE element
+
+
 def test_str_uses_string_format_with_v1_cleanup() -> None:
     n = HumanName("Dr. Juan de la Vega III")
     assert str(n) == "Dr. Juan de la Vega III"

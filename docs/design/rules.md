@@ -649,7 +649,7 @@ C1. Rationale: a credential run after the comma means the name is in
     form alone, and that limitation is kept as parity: "Smith, RN -
     CRNA" reads given "RN" under the policy as without it.
       "John Smith, LEED AP"       →  family="Smith"  deviates: #291 (today: family="John Smith")
-    history: decisions.md#C1 · interacts: H2, P6 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py
+    history: decisions.md#C1 · interacts: H2, P6 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 
 C2. Rationale: text beyond the recognized comma parts should be
     taken in without silent guessing.

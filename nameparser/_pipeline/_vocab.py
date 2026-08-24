@@ -265,7 +265,7 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
         return False
     predicate = (is_suffix_lenient if policy.lenient_comma_suffixes
                  else is_suffix_strict)
-    # v1 expand_suffix_delimiter parity (#191): a configured delimiter
+    # v1 expand_suffix_delimiter parity (#206): a configured delimiter
     # is TRANSPARENT in the all-suffix tests -- v1 split the part string
     # on the delimiter before checking, so the delimiter never counted
     cores = delimiter_cores(policy.extra_suffix_delimiters)

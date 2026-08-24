@@ -269,7 +269,7 @@ def test_initials_do_not_count_as_rootnames_for_conjunction_carveout() -> None:
 
 
 def test_extra_suffix_delimiter_splits_tail_entries() -> None:
-    # v1 expand_suffix_delimiter parity (#191): a configured delimiter
+    # v1 expand_suffix_delimiter parity (#206): a configured delimiter
     # is transparent in a FAMILY_COMMA tail segment -- it separates
     # suffix ENTRIES (each rendered independently) and is itself
     # dropped, rather than becoming a suffix token or fusing the

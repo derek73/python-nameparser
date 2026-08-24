@@ -849,8 +849,8 @@ issue = "fix(#429) a wholly-credential segment after a one-word family renders a
 # agrees with the full-name 'John Smith, MD PhD', which has rendered
 # 'MD PhD' since 1.4.0.
 #
-# The name entered the corpus as the rules.md#C1 boundary example that
-# fix added, so this entry arrives with it rather than explaining a
+# The name entered the corpus as the rules.md#C1 example that fix
+# added, so this entry arrives with it rather than explaining a
 # name that was already there. `family` and `given` are deliberately
 # OUT of the field list: neither moves on this rule, so a regression
 # in either stays loud. Literal-anchored -- the class has no other
