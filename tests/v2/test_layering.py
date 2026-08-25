@@ -178,6 +178,33 @@ def test_layering_contract() -> None:
             )
 
 
+def test_every_pipeline_module_is_keyed_in_allowed() -> None:
+    """ALLOWED is a hand-maintained list, and test_layering_contract
+    iterates ITS keys -- so a module absent from it is not checked
+    loosely, it is not checked AT ALL. Nothing else notices: the suite
+    stays green, and the new module may import whatever it likes.
+
+    Scoped to _pipeline/ because that is what this contract governs. The
+    config/ modules, util.py and _version.py are deliberately unkeyed --
+    they are vocabulary data and packaging, not layers.
+
+    Measured when this was added: all 13 _pipeline modules were keyed,
+    so the gap was latent rather than active. #439's _pieces.py would
+    have been the first to slip through, which is why closing it then
+    cost nothing to clean up.
+    """
+    keyed = set(ALLOWED)
+    shipped = {f"_pipeline/{p.name}" for p in (PKG / "_pipeline").glob("*.py")}
+    missing = sorted(shipped - keyed)
+    assert not missing, (
+        f"pipeline modules absent from ALLOWED, and therefore exempt "
+        f"from the layering contract entirely: {missing}. Add each with "
+        f"the narrowest prefix tuple that admits what it actually "
+        f"imports -- _PIPELINE_STAGE_ALLOWED for a stage, something "
+        f"tighter for a leaf both stages sit on (see _pipeline/_pieces.py)"
+    )
+
+
 def test_lexicon_never_imports_config_package_root_or_parser() -> None:
     for imported in _nameparser_imports(PKG / "_lexicon.py"):
         assert imported != "nameparser.config"
