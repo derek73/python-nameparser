@@ -1239,6 +1239,8 @@ def _claim(rule: dict) -> _Claim:
 #: both is growth into names the rule genuinely describes.
 _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
+        "fix(#432) a dotted numeral behind a name is a middle initial, not the generation":
+            _Claim(1, ('middle', 'suffix'), "e9f282da0d0f"),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
             _Claim(108, ('family', 'given', 'middle'), "9a814f70c2dc"),
         "fix(#274) maiden markers consumed":
@@ -1248,7 +1250,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
             _Claim(13, ('family', 'middle'), "973617235cda"),
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(275, ('given', 'suffix', 'title'), "58f0d640d1d9"),
+            _Claim(278, ('given', 'suffix', 'title'), "2762cb8c5ae9"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -1268,9 +1270,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#367) an inferred title no longer displaces a leading particle either":
             _Claim(1, ('family', 'given', 'middle'), "d8ee9cd5da5f"),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(275, ('family', 'given'), "58f0d640d1d9"),
+            _Claim(278, ('family', 'given'), "2762cb8c5ae9"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(1069, ('family', 'given', 'suffix'), "b1ccb5c7532c"),
+            _Claim(1072, ('family', 'given', 'suffix'), "e3d190ca0541"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1343,6 +1345,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given'), "e62caedec864"),
     },
     "expected_since_2.0.0.toml": {
+        "fix(#430) a credential run does not end at the roman numeral describing it":
+            _Claim(2, ('given', 'suffix'), "3c8fa6bc827a"),
+        "fix(#432) a dotted numeral behind a name is a middle initial, not the generation":
+            _Claim(1, ('middle', 'suffix'), "e9f282da0d0f"),
         "fix(#429) a wholly-credential segment after a one-word family renders as one entry":
             _Claim(1, ('suffix', 'title'), "9e0b9e8d5cbe"),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
@@ -1441,6 +1447,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'maiden'), "2150936a8c55"),
     },
     "expected_since_2.1.0.toml": {
+        "fix(#430) a credential run does not end at the roman numeral describing it":
+            _Claim(2, ('given', 'suffix'), "3c8fa6bc827a"),
+        "fix(#432) a dotted numeral behind a name is a middle initial, not the generation":
+            _Claim(1, ('middle', 'suffix'), "e9f282da0d0f"),
         "fix(#429) a wholly-credential segment after a one-word family renders as one entry":
             _Claim(1, ('suffix', 'title'), "9e0b9e8d5cbe"),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":

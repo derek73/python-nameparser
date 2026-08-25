@@ -1667,6 +1667,50 @@ CASES: tuple[Case, ...] = (
                "segment 1 alone. Dropping that conjunct left the whole "
                "suite green while this shape's suffix silently became "
                "'PhD Jr.' (the mutation matrix found it)"),
+    Case("family_comma_run_ending_in_a_numeral", "Smith, PSM I",
+         {"family": "Smith", "suffix": "PSM I"},
+         classification="fix(#430)",
+         notes="the credential run does not end because its last word "
+               "is a roman numeral: PSM I is Professional Scrum Master "
+               "level I, and the numeral describes the credential "
+               "rather than the person's generation. The run read as "
+               "given 'PSM' + suffix 'I' because the initial veto in "
+               "is_suffix_piece keeps a numeral out of a credential "
+               "run, so the segment did not look like one"),
+    Case("family_comma_run_numeral_ignores_the_period", "Smith, PSM I.",
+         {"family": "Smith", "suffix": "PSM I."},
+         classification="fix(#430)",
+         notes="and the period does not end it either. After a suffix "
+               "word the numeral is describing that suffix, and an "
+               "initial in that position is not a name shape anyone "
+               "writes -- so the abbreviation reading that governs "
+               "#432 does not reach here. The full-name 'John Smith, "
+               "PSM I.' has read it this way all along"),
+    Case("family_comma_run_numeral_after_a_dual_word", "Smith, MD I",
+         {"family": "Smith", "suffix": "MD I"},
+         classification="fix(#430)",
+         notes="the same shape reached through the leading-title peel "
+               "instead: md is TITLES vocabulary too (the #296 "
+               "deviation), so this read title 'MD' + given 'I' where "
+               "'Smith, PSM I' read given 'PSM' + suffix 'I'. Two "
+               "wrong answers, one cause -- a fix verified on PSM "
+               "alone would leave this one broken and look green"),
+    Case("family_comma_numeral_after_a_name_is_an_initial",
+         "Smith, John V.",
+         {"given": "John", "middle": "V.", "family": "Smith"},
+         classification="fix(#432)",
+         notes="the other half of the boundary: after a NAME word the "
+               "period is decisive, because it marks an abbreviation "
+               "and an abbreviation is name material. 'Smith, John B.' "
+               "has always read middle 'B.'; the only thing that made "
+               "V. different is that V is also suffix vocabulary"),
+    Case("family_comma_bare_numeral_after_a_name_is_the_suffix",
+         "Smith, John V",
+         {"given": "John", "family": "Smith", "suffix": "V"},
+         notes="THE BOUNDARY, and v1 parity (#144): with no period "
+               "there is no abbreviation, so the numeral is the "
+               "generation it looks like. This row is what makes "
+               "#432's fix a period test rather than a numeral test"),
     Case("family_comma_run_with_a_name_is_not_a_run", "Smith, John Jr.",
          {"given": "John", "family": "Smith", "suffix": "Jr."},
          notes="the non-flip: a name word in the run makes it the "

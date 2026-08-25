@@ -42,7 +42,7 @@ from enum import IntEnum
 from nameparser._lexicon import _title_key
 from nameparser._pipeline._pieces import (
     is_leading_title, is_suffix_piece, is_title_piece,
-    leading_titles, peel_trailing, peel_walk, segment_holds_no_name,
+    leading_titles, peel_trailing, peel_walk, segment_suffix_reading,
     trailing_start,
 )
 from nameparser._pipeline._state import (
@@ -710,9 +710,9 @@ def group(state: ParseState) -> ParseState:
         # can pin it -- dropping it is an equivalent mutant over the
         # corpora and 65,725 generated inputs -- so it is documented
         # rather than tested.
-        one_entry = tail or (
-            family_comma and seg_idx == 1
-            and segment_holds_no_name(pieces, ptags, tokens))
+        reading = (segment_suffix_reading(pieces, ptags, tokens)
+                   if family_comma and seg_idx == 1 else None)
+        one_entry = tail or reading is not None
         if one_entry:
             # v1 renders each tail COMMA SEGMENT as one suffix entry
             # ('Smith, V MD' -> suffix 'V MD'); a delimiter core inside
@@ -746,15 +746,19 @@ def group(state: ParseState) -> ParseState:
                 # that. On a tail segment every kept piece does -- that
                 # is what `tail` means -- but off it assign routes piece
                 # by piece (_assign.py), so a title piece is not part of
-                # the suffix entry. Letting one continue the entry tags
+                # the suffix entry -- and the reading that says which is
+                # which is assign's own, computed once above rather than
+                # re-derived here: is_suffix_piece alone refuses a
+                # numeral continuing a credential run, which would
+                # render 'Smith, PSM I' as 'PSM, I' (#430). Letting one continue the entry tags
                 # a token the SUFFIX view never joins and the TITLE view
                 # does: 'Smith, Rev. Dr.' collapsed title_list to
                 # ['Rev. Dr.'], and after a pre-comma suffix the tag
                 # glued across the writer's own comma ('Smith Jr., Mr.
                 # Jr.' rendered suffix 'Jr. Jr.') -- the inverse of the
                 # bug this block exists to fix.
-                in_entry = tail or is_suffix_piece(
-                    pieces[k], ptags[k], tokens)
+                in_entry = tail or (reading is not None
+                                    and reading[k])
                 for pos, i in enumerate(pieces[k]):
                     if pos > 0 or (in_entry and entry_open):
                         tokens[i] = dataclasses.replace(

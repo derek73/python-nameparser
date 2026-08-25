@@ -139,11 +139,62 @@ def segment_holds_no_name(pieces: Sequence[Sequence[int]],
     is recorded at the one-entry join in group(), the caller that made
     the assumption.
     """
-    if not pieces:
+    return segment_suffix_reading(pieces, ptags, tokens) is not None
+
+
+def _numeral_behind_the_initial_veto(piece: Sequence[int],
+                                     tokens: Sequence[WorkToken]) -> bool:
+    """Suffix vocabulary that is_suffix_piece refuses because it is
+    also initial-shaped -- the roman numerals I, V and X.
+
+    The veto is right where a numeral could be a middle initial, and
+    wrong where it is describing the suffix in front of it, which is
+    the only place this is asked from.
+    """
+    if len(piece) != 1:
         return False
-    return all(is_suffix_piece(pieces[k], ptags[k], tokens)
-               or is_leading_title(pieces[k], ptags[k], tokens)
-               for k in range(len(pieces)))
+    tags = tokens[piece[0]].tags
+    return "vocab:suffix" in tags and "initial" in tags
+
+
+def segment_suffix_reading(pieces: Sequence[Sequence[int]],
+                           ptags: Sequence[Set[str]],
+                           tokens: Sequence[WorkToken],
+                           ) -> tuple[bool, ...] | None:
+    """How each piece of a no-name segment reads: True a suffix, False
+    a title. None when the segment holds a name word and so is not a
+    credential run at all.
+
+    ONE answer for three readers -- the no-name gate below, assign's
+    router, and group's one-entry join -- because they must agree piece
+    for piece. #429 shipped the inverse of its own fix by deriving that
+    agreement twice (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+
+    rules.md#S2's initial veto keeps a roman numeral out of a suffix
+    reading, which is right after a NAME word: 'Smith, John V.' is a
+    middle initial (#432). After a SUFFIX word the numeral is
+    describing that suffix -- 'PSM I' is Professional Scrum Master
+    level I -- so the run continues through it, period included, an
+    initial there being no shape anyone writes (#430). A title resets
+    that: what follows a bare title is not continuing a credential.
+    """
+    if not pieces:
+        return None
+    out: list[bool] = []
+    after_suffix = False
+    for k in range(len(pieces)):
+        if is_suffix_piece(pieces[k], ptags[k], tokens):
+            after_suffix = True
+            out.append(True)
+        elif after_suffix and _numeral_behind_the_initial_veto(
+                pieces[k], tokens):
+            out.append(True)
+        elif is_leading_title(pieces[k], ptags[k], tokens):
+            after_suffix = False
+            out.append(False)
+        else:
+            return None
+    return tuple(out)
 
 
 class Peel(NamedTuple):

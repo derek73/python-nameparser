@@ -39,11 +39,12 @@ from __future__ import annotations
 import dataclasses
 
 from nameparser._pipeline._vocab import (
-    effective_script, is_suffix_lenient, resolve_script_set,
+    effective_script, is_initial_shaped, is_suffix_lenient,
+    resolve_script_set,
 )
 from nameparser._pipeline._pieces import (
     is_suffix_piece, leading_titles, peel_trailing, peel_walk,
-    segment_holds_no_name,
+    segment_holds_no_name, segment_suffix_reading,
 )
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
@@ -336,11 +337,15 @@ def assign(state: ParseState) -> ParseState:
             # name word in the segment makes it v1's walk ('Smith,
             # John Jr.').
             if no_name:
+                # the reading the gate already computed, not a second
+                # derivation of it: a numeral continuing a credential
+                # run is a suffix here although is_suffix_piece alone
+                # refuses it (#430)
+                reading = segment_suffix_reading(pieces, ptags, tokens)
+                assert reading is not None      # no_name says so
                 for k, piece in enumerate(pieces):
                     _set_roles(tokens, piece,
-                               Role.SUFFIX if is_suffix_piece(
-                                   piece, ptags[k], tokens)
-                               else Role.TITLE)
+                               Role.SUFFIX if reading[k] else Role.TITLE)
                 n = len(pieces)
             else:
                 n = _peel_leading_titles(pieces, ptags, tokens)
@@ -363,10 +368,27 @@ def assign(state: ParseState) -> ParseState:
                 # initial, so strict only
                 last_of_two = (m == len(pieces) - 1
                                and len(state.segments) == 2)
+                text = tokens[pieces[m][0]].text
+                lenient = is_suffix_lenient(text, state.lexicon)
+                if lenient and is_initial_shaped(text) and text.endswith("."):
+                    # A word that could be a middle initial, written
+                    # with the period that marks an abbreviation: the
+                    # abbreviation is name material, so 'Smith, John V.'
+                    # is middle 'V.' where 'Smith, John V' stays suffix
+                    # 'V' (v1 parity, #144). The period is the whole
+                    # test (#432).
+                    #
+                    # NOT is_trailing_numeral_suffix, though it answers
+                    # the period half: it also refuses a numeral behind
+                    # an initial-shaped piece, which is a no-comma rule
+                    # and the opposite of this path's v1 parity --
+                    # 'Chang, Andy C I' is first Andy, middle C, suffix
+                    # I, and asking that predicate here made the numeral
+                    # a middle. decisions.md#S2 records the same fork
+                    # declining to transfer to this walk under LENIENT.
+                    lenient = False
                 if is_suffix_piece(pieces[m], ptags[m], tokens) or (
-                        last_of_two and len(pieces[m]) == 1
-                        and is_suffix_lenient(
-                            tokens[pieces[m][0]].text, state.lexicon)):
+                        last_of_two and len(pieces[m]) == 1 and lenient):
                     _set_roles(tokens, pieces[m], Role.SUFFIX)
                 else:
                     _set_roles(tokens, pieces[m], Role.MIDDLE)

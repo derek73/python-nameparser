@@ -858,3 +858,37 @@ issue = "fix(#429) a wholly-credential segment after a one-word family renders a
 # read once rather than absorbed here.
 name_regex = "(?i)^smith,\\s*md\\s+phd$"
 fields = ["title", "suffix"]
+
+[[change]]
+issue = "fix(#430) a credential run does not end at the roman numeral describing it"
+# 'Smith, PSM I' and 'Smith, PSM I.': the baseline read given 'PSM',
+# suffix 'I' -- the run ended at the numeral because rules.md#S2's
+# initial veto keeps a numeral out of a suffix reading, so the segment
+# did not look like a credential run and fell to the given-and-suffix
+# walk. Behind a SUFFIX the numeral is describing that suffix ('PSM I'
+# is Professional Scrum Master level I), so the run continues through
+# it, period included -- an initial in that position is no shape anyone
+# writes. The full-name 'John Smith, PSM I' has read it this way all
+# along; this brings the one-word family into line.
+#
+# `family` is deliberately OUT of the field list: the family name does
+# not move on this rule, so a regression there stays loud. Anchored to
+# the two example spellings -- the class has no other corpus name, and
+# a harvested one should arrive UNEXPLAINED and be read once.
+name_regex = "(?i)^smith,\\s*psm\\s+i\\.?$"
+fields = ["given", "suffix"]
+
+[[change]]
+issue = "fix(#432) a dotted numeral behind a name is a middle initial, not the generation"
+# 'Smith, John V.': the baseline read suffix 'V.'. Behind a NAME word
+# the period is decisive -- it marks an abbreviation, and an
+# abbreviation is name material -- so the numeral is the middle initial
+# it looks like. 'Smith, John B.' has always read middle 'B.'; the only
+# thing that made V. differ is that V is also suffix vocabulary.
+#
+# The BARE form is the boundary and does not move: 'Smith, John V' is
+# still suffix 'V' (v1 parity, #144), and it is a corpus name, so that
+# half is asserted by the gate rather than by this entry's silence.
+# `given` and `family` are out of the field list; neither moves.
+name_regex = "(?i)^smith,\\s*john\\s+v\\.$"
+fields = ["middle", "suffix"]
