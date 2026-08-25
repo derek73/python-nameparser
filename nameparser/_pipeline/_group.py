@@ -25,6 +25,10 @@ chain and M2's walk read (#425, #424), and assign's leading-title
 test (_is_leading_title, _leading_titles), which the chain's scan
 shares since #424, and its no-name-segment test
 (_segment_holds_no_name), which the one-entry join reads since #429.
+These are here by import direction, not by topic
+(mechanisms.md#ONE-PREDICATE-PER-QUESTION): assign imports group and
+cannot be imported back, so a piece-level predicate both stages ask
+lives here. A text-level one goes to _vocab instead.
 """
 from __future__ import annotations
 
