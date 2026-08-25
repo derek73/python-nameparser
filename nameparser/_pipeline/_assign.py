@@ -41,7 +41,7 @@ import dataclasses
 from nameparser._pipeline._vocab import (
     effective_script, is_suffix_lenient, resolve_script_set,
 )
-from nameparser._pipeline._group import (
+from nameparser._pipeline._pieces import (
     _is_suffix_piece, _leading_titles, _peel_trailing, _peel_walk,
     _segment_holds_no_name,
 )

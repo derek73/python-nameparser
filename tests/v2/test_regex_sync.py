@@ -24,7 +24,7 @@ import pytest
 
 from nameparser.config import regexes as _config
 from nameparser._pipeline import (
-    _assign, _group, _post_rules, _tokenize, _vocab,
+    _assign, _group, _pieces, _post_rules, _tokenize, _vocab,
 )
 from nameparser import _render
 
@@ -46,8 +46,8 @@ def test_period_not_at_end_matches_config() -> None:
 
 def test_period_abbreviation_matches_config() -> None:
     source = _config.REGEXES["period_abbreviation"]
-    assert _group._PERIOD_ABBREV.pattern == source.pattern
-    assert _group._PERIOD_ABBREV.flags == source.flags
+    assert _pieces._PERIOD_ABBREV.pattern == source.pattern
+    assert _pieces._PERIOD_ABBREV.flags == source.flags
 
 
 def test_roman_numeral_matches_config() -> None:
@@ -99,7 +99,7 @@ def test_initial_copies_agree_with_each_other_and_config() -> None:
 # completeness check below: adding a pattern without declaring its
 # source now fails here instead of being silently unpinned.
 _SOURCES: dict[tuple[str, str], str | None] = {
-    ("_group", "_PERIOD_ABBREV"): "period_abbreviation",
+    ("_pieces", "_PERIOD_ABBREV"): "period_abbreviation",
     ("_group", "_D"): None,
     ("_vocab", "_DOTTED"): None,
     ("_group", "_PH"): None,
@@ -123,7 +123,7 @@ _SOURCES: dict[tuple[str, str], str | None] = {
 }
 
 _MODULES = {"_assign": _assign, "_group": _group,
-            "_post_rules": _post_rules,
+            "_pieces": _pieces, "_post_rules": _post_rules,
             "_render": _render, "_tokenize": _tokenize, "_vocab": _vocab}
 
 

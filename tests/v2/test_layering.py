@@ -17,6 +17,7 @@ _MUST_EXIST = {"_types.py", "_lexicon.py", "_policy.py", "_locale.py",
                "_pipeline/_vocab.py", "_pipeline/_script_segment.py",
                "_pipeline/_segment.py",
                "_pipeline/_classify.py", "_pipeline/_group.py",
+               "_pipeline/_pieces.py",
                "_pipeline/_assign.py", "_pipeline/_post_rules.py",
                "_pipeline/_assemble.py", "_parser.py", "_facade.py",
                "_config_shim.py", "locales/__init__.py", "locales/ja.py",
@@ -69,6 +70,16 @@ ALLOWED = {
     "_pipeline/_script_segment.py": _PIPELINE_STAGE_ALLOWED,
     "_pipeline/_segment.py": _PIPELINE_STAGE_ALLOWED,
     "_pipeline/_classify.py": _PIPELINE_STAGE_ALLOWED,
+    # Piece-level predicates shared by group and assign
+    # (mechanisms.md#ONE-PREDICATE-PER-QUESTION). Tighter than the
+    # stage allowance on purpose: it is a leaf both stages sit on,
+    # so it may read the token type and the vocabulary layer and
+    # nothing else. Widening this entry is the tell that a piece
+    # predicate has grown a dependency on a STAGE.
+    "_pipeline/_pieces.py": ("nameparser._types", "nameparser._lexicon",
+                             "nameparser._policy",
+                             "nameparser._pipeline._state",
+                             "nameparser._pipeline._vocab"),
     "_pipeline/_group.py": _PIPELINE_STAGE_ALLOWED,
     "_pipeline/_assign.py": _PIPELINE_STAGE_ALLOWED,
     "_pipeline/_post_rules.py": _PIPELINE_STAGE_ALLOWED,

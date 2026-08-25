@@ -76,7 +76,7 @@ H2. Rationale: before a name, an abbreviation is almost always a
     not open: the vocabulary decides, and "Esq." is the postnominal
     it is.
       "Smith, Esq."               →  suffix="Esq."
-    history: decisions.md#H2 · interacts: C1, P4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
+    history: decisions.md#H2 · interacts: C1, P4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py
 
 H3. Rationale: compound titles are written as a run of title words,
     connectives included; a title word standing inside the name is
@@ -91,7 +91,7 @@ H3. Rationale: compound titles are written as a run of title words,
     Accepted: before a family comma the pre-comma text is wholly the
     family name (C1), title words included.
       "Dr. Smith, John"           →  family="Dr. Smith"
-    interacts: C1 · implemented: nameparser/_pipeline/_group.py
+    interacts: C1 · implemented: nameparser/_pipeline/_pieces.py
 
 ## Particles & surname prefixes (P)
 
@@ -462,7 +462,7 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Jack Wei Ma"               →  suffix="Ma"
       "Jack Wei Ma"               →  ambiguities=("suffix-or-name",)
       "Smith Jr."                 →  family=""
-    implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_vocab.py
+    implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with
     periods; the chunks between the periods are what carry the
