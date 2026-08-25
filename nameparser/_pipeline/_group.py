@@ -18,17 +18,17 @@ group half of M1 (#329: the marker dropped inside EXTRACTED maiden
 content, which M2's pieces walk cannot reach because extract's
 content never enters pieces); each is cited at its code below. Also
 implements rule P5 (cited below at the bound-given join) and ports
-the "Ph. D."-split merge (v1 fix_phd; decisions.md#phd-merge). Houses
-the S2 trailing peel (_peel_walk, _peel_trailing, _trailing_start), a
-piece-level walk that assign applies and that P5's reserve, P2's
-chain and M2's walk read (#425, #424), and assign's leading-title
-test (_is_leading_title, _leading_titles), which the chain's scan
-shares since #424, and its no-name-segment test
-(_segment_holds_no_name), which the one-entry join reads since #429.
-These are here by import direction, not by topic
-(mechanisms.md#ONE-PREDICATE-PER-QUESTION): assign imports group and
-cannot be imported back, so a piece-level predicate both stages ask
-lives here. A text-level one goes to _vocab instead.
+the "Ph. D."-split merge (v1 fix_phd; decisions.md#phd-merge).
+
+The piece-level predicates this stage shares with assign -- the S2
+trailing peel, the leading-title test, the no-name-segment test --
+moved to _pieces in #439. They had collected here by import direction
+rather than by topic (assign imports group and cannot be imported
+back), which is the accumulation
+mechanisms.md#ONE-PREDICATE-PER-QUESTION describes; group imports them
+back like any other caller. What remains here is group's own:
+_is_prefix_piece, _is_conj_piece, _is_rootname and
+_is_maiden_marker_piece.
 """
 from __future__ import annotations
 
