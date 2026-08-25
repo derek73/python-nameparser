@@ -1711,6 +1711,56 @@ CASES: tuple[Case, ...] = (
                "there is no abbreviation, so the numeral is the "
                "generation it looks like. This row is what makes "
                "#432's fix a period test rather than a numeral test"),
+    Case("family_comma_title_resets_the_credential_run", "Smith, PSM Dr. I",
+         {"given": "PSM", "middle": "Dr.", "family": "Smith",
+          "suffix": "I"},
+         notes="THE RESET, and unchanged since 1.4.0. A title ends the "
+               "run: what follows a bare title is not continuing a "
+               "credential, so the numeral behind it does not join and "
+               "the segment is no run at all. Removing that one line "
+               "left the whole suite green while this became title "
+               "'Dr.' + suffix 'PSM I' -- the reset fires 60 times "
+               "across the suite and until this row no input observed "
+               "it, which is the inert-measurement shape"),
+    Case("family_comma_run_numeral_after_a_period_abbreviation",
+         "Smith, Jr. I",
+         {"family": "Smith", "suffix": "Jr. I"},
+         classification="fix(#430)",
+         notes="the third route to the same bug, and the one a writer "
+               "actually produces: 'Jr.' reaches the leading-title peel "
+               "through the period-abbreviation inference rather than "
+               "through TITLES membership like 'MD', so it read title "
+               "'Jr.' + given 'I'. Named in the release log before it "
+               "had a row"),
+    Case("family_comma_run_numeral_after_a_split_credential",
+         "Smith, Ph. D. I",
+         {"family": "Smith", "suffix": "Ph. D. I"},
+         classification="fix(#430)",
+         notes="the numeral continues a run whose head is a MERGED "
+               "piece -- the Ph./D. pair the #325 split-credential "
+               "merge builds, which carries 'suffix' in its piece tags "
+               "rather than on a single token. A structurally different "
+               "pin on the same three readers as the PSM rows, so an "
+               "edit to those cannot quietly unpin the render join"),
+    Case("family_comma_numeral_behind_a_suffix_is_not_an_initial",
+         "Smith, John PhD I.",
+         {"given": "John", "family": "Smith", "suffix": "PhD, I."},
+         notes="THE OTHER BOUNDARY, and parity at every baseline. The "
+               "period makes a numeral name material only behind a NAME "
+               "word; behind a suffix the run owns it, and the first "
+               "draft of #432 read the piece alone and made this middle "
+               "'I.'. Rendered with the comma because the writer typed "
+               "no run here -- the segment holds a name, so it is the "
+               "walk, not the one-entry join"),
+    Case("family_comma_strict_keeps_the_initial_veto",
+         "Smith, PSM I.",
+         {"given": "PSM", "family": "Smith", "suffix": "I."},
+         policy=Policy(lenient_comma_suffixes=False),
+         notes="C1's strict knob still vetoes initial-shaped words, so "
+               "the run ends at the numeral where lenient continues "
+               "through it. #430's first draft read no policy at all "
+               "and silently overrode the one knob a caller sets to "
+               "prevent exactly this; nothing in the suite saw it"),
     Case("family_comma_run_with_a_name_is_not_a_run", "Smith, John Jr.",
          {"given": "John", "family": "Smith", "suffix": "Jr."},
          notes="the non-flip: a name word in the run makes it the "

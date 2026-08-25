@@ -613,12 +613,15 @@ C1. Rationale: a credential run after the comma means the name is in
     more than one name word keeps its positional read, order and
     all. A name word in the part after the comma makes it the
     given name, with titles before it and suffixes after.
-    A roman numeral is read by what stands before it. Behind a
-    suffix it is describing that suffix and continues the run,
-    written with a period or without, an initial being no shape
+    A one-character suffix word — the only kind a reader could take
+    for an initial — is read by what stands before it. Behind
+    another suffix it is describing that suffix and continues the
+    run, written with a period or without, an initial being no shape
     anyone writes there; behind a name word it is the generation
     only when written bare, a period marking it the abbreviation of
-    a name and so a middle initial.
+    a name and so a middle initial. Longer suffix words are not in
+    question either way, and the strict knob above still vetoes the
+    initial-shaped ones, so the run ends at them there.
       "Smith, John"               →  family="Smith"
       "سلمان، محمد"               →  family="سلمان"
       "田中、太郎"                 →  family=""
@@ -631,7 +634,9 @@ C1. Rationale: a credential run after the comma means the name is in
       "Smith, Sr."                →  suffix="Sr."
       "Smith, PSM I"              →  suffix="PSM I"
       "Smith, PSM I."             →  suffix="PSM I."
+      "Smith, PSM I."  strict-comma-suffixes  →  suffix="I."
       "Smith, John V."            →  middle="V."
+      "Smith, John PhD I."        →  suffix="PhD, I."
       "Smith, John V"             →  suffix="V"  · boundary
       "Smith, Ph. D. Jr."         →  suffix="Ph. D. Jr."
       "Smith, MD PhD"             →  suffix="MD PhD"

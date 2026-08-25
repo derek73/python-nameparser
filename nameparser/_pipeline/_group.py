@@ -710,7 +710,9 @@ def group(state: ParseState) -> ParseState:
         # can pin it -- dropping it is an equivalent mutant over the
         # corpora and 65,725 generated inputs -- so it is documented
         # rather than tested.
-        reading = (segment_suffix_reading(pieces, ptags, tokens)
+        reading = (segment_suffix_reading(
+                       pieces, ptags, tokens,
+                       state.policy.lenient_comma_suffixes)
                    if family_comma and seg_idx == 1 else None)
         one_entry = tail or reading is not None
         if one_entry:
