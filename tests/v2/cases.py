@@ -2159,7 +2159,7 @@ CASES: tuple[Case, ...] = (
                "_normalize strips the trailing period, "
                "so the vocabulary sees 씨 either way -- the initial "
                "veto was the only thing rejecting the written form, "
-               "and literally the veto: _is_suffix_piece is "
+               "and literally the veto: is_suffix_piece is "
                "'vocab:suffix' in tags and 'initial' not in tags, and "
                "'씨.' carried both, so the suffix-shaped piece went to "
                "the given. 1.4.0 read this first '씨.' / last 김민준 -- "
@@ -2361,7 +2361,7 @@ CASES: tuple[Case, ...] = (
          classification="fix(#307)",
          notes="the post-comma run is normally the given name -- "
                "'김민준, 태호' gives given 태호 -- and group's "
-               "_is_suffix_piece diverts this one because 씨 is a "
+               "is_suffix_piece diverts this one because 씨 is a "
                "single-token piece carrying vocab:suffix. NOT the "
                "lenient comma gate, which an earlier note named: "
                "measured, lenient_comma_suffixes=False leaves this "
