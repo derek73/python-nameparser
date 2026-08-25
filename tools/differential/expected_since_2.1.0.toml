@@ -770,3 +770,28 @@ issue = "fix(#418) accepted: a suffix word inside the maiden name ends it, conne
 # once rather than absorbed here.
 name_regex = "(?i)^jane\\s+n[eé]e\\s+jr\\s+y\\s+jones$"
 fields = ["middle", "family", "maiden"]
+
+[[change]]
+issue = "fix(#429) a wholly-credential segment after a one-word family renders as one entry"
+# 'Smith, MD PhD': one word before the comma and nothing but
+# credentials after it. The baseline read the leading 'MD' as a title
+# and left suffix 'PhD'; the segment is the credential run rules.md#C1
+# describes and now lands whole in `suffix`.
+#
+# The roles moved in #325; what #429 adds is the RENDER. #325 shipped
+# them as 'MD, PhD' -- a comma the writer never typed -- because group
+# decided "one comma segment is one suffix entry" by segment INDEX
+# while assign decided the same segment by CONTENT. group now asks
+# assign's own predicate, so the run renders as written and this path
+# agrees with the full-name 'John Smith, MD PhD', which has rendered
+# 'MD PhD' since 1.4.0.
+#
+# The name entered the corpus as the rules.md#C1 example that fix
+# added, so this entry arrives with it rather than explaining a
+# name that was already there. `family` and `given` are deliberately
+# OUT of the field list: neither moves on this rule, so a regression
+# in either stays loud. Literal-anchored -- the class has no other
+# corpus name, and a harvested one should arrive UNEXPLAINED and be
+# read once rather than absorbed here.
+name_regex = "(?i)^smith,\\s*md\\s+phd$"
+fields = ["title", "suffix"]

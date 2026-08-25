@@ -42,8 +42,8 @@ from nameparser._pipeline._vocab import (
     effective_script, is_suffix_lenient, resolve_script_set,
 )
 from nameparser._pipeline._group import (
-    _is_leading_title, _is_suffix_piece, _leading_titles, _peel_trailing,
-    _peel_walk,
+    _is_suffix_piece, _leading_titles, _peel_trailing, _peel_walk,
+    _segment_holds_no_name,
 )
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
@@ -254,32 +254,6 @@ def _assign_main(seg_idx: int, state: ParseState,
                 f"particle; read as a {token.role.value} name",
                 tuple(head)))
     return order
-
-
-def _segment_holds_no_name(pieces: tuple[tuple[int, ...], ...],
-                           ptags: tuple[frozenset[str], ...],
-                           tokens: list[WorkToken]) -> bool:
-    """The segment is titles and suffixes only ('John Smith, Dr.',
-    'John Smith, Mr. Jr.') -- nothing in it is a name word.
-
-    The FAMILY_COMMA rule "segment 0 is wholly the family name" rests on
-    the writer having said where the family name ends. A comma followed
-    by no name word said no such thing -- 'John Smith, Dr.' is 'Dr. John
-    Smith' with the honorific moved, and 'John Smith, Mr. Jr.' the same
-    with the postnominal along -- so the pre-comma name keeps its
-    positional read instead of being merged. Uses the same
-    _is_leading_title predicate the peel does, period-abbreviation
-    inference included, so the two cannot disagree about what a title
-    is; a suffix piece counts as what it is, so a mixed run like
-    'Smith, Dr. Jr.' is a title and a postnominal, each read where it
-    stands, and never a title run 'Dr. Jr.'. An empty segment
-    ('Doe,, Jr.') holds no title to read by.
-    """
-    if not pieces:
-        return False
-    return all(_is_suffix_piece(pieces[k], ptags[k], tokens)
-               or _is_leading_title(pieces[k], ptags[k], tokens)
-               for k in range(len(pieces)))
 
 
 def assign(state: ParseState) -> ParseState:

@@ -388,6 +388,17 @@ CASES: tuple[Case, ...] = (
          notes="v1 made the lone post-comma strict-suffix piece the "
                "given; 2.0 routes it to suffix (same family as the "
                "'Smith, Dr.' row)"),
+    Case("family_comma_suffix_run_renders_unjoined", "Smith, MD PhD",
+         {"family": "Smith", "suffix": "MD PhD"},
+         classification="fix(comma-family)",
+         notes="a space-separated post-nominal run after a family "
+               "comma RENDERED with a comma the input never had "
+               "('MD, PhD'), because the one-entry join was asked by "
+               "segment index and this segment is not a tail one. The "
+               "full-name 'John Smith, MD PhD' has rendered 'MD PhD' "
+               "since 1.4.0, and #429 brought this form into line with "
+               "it. The roles were already right after #428; this was "
+               "its remaining half"),
     Case("period_joined_ambiguous_chunk", "John Doe, Msc.Ed.",
          {"given": "John", "family": "Doe", "suffix": "Msc.Ed."},
          notes="chunk-level suffix membership is v1's is_suffix: bare "
@@ -571,7 +582,7 @@ CASES: tuple[Case, ...] = (
     Case("suffix_delimiter_tail_segment", "Doe, John, RN - CRNA",
          {"given": "John", "family": "Doe", "suffix": "RN, CRNA"},
          policy=_SD,
-         notes="v1 suffix_delimiter parity (#191): the delimiter token "
+         notes="v1 suffix_delimiter parity (#206): the delimiter token "
                "is dropped from consumed tail segments (pinned live "
                "2026-07-16)"),
     Case("suffix_delimiter_detection", "Doe, John RN - CRNA",
@@ -1583,24 +1594,79 @@ CASES: tuple[Case, ...] = (
                "suffix, so the inference does not run"),
     # -- #325: the whole credential run, not the lone piece
     Case("family_comma_split_credential_run", "Smith, Ph. D. Jr.",
-         {"family": "Smith", "suffix": "Ph. D., Jr."},
-         classification="fix(#325)",
+         {"family": "Smith", "suffix": "Ph. D. Jr."},
+         classification="fix(#325) + fix(#429)",
          notes="one word before the comma, the space-split 'Ph. D.' "
                "and a suffix after it: the lone-piece route did not "
                "apply and the merged credential fell through to the "
                "given name (a 1.4.0 regression -- v1 read suffix 'Ph. "
                "D.', title 'Jr.'). A run that is nothing but suffix "
-               "pieces is the credential run C1 describes, whole"),
+               "pieces is the credential run C1 describes, whole -- "
+               "and #429 made it render whole too, where #325 shipped "
+               "it as 'Ph. D., Jr.' with a comma the writer never "
+               "typed. The full-name 'John Smith, Ph. D. Jr.' rendered "
+               "it unjoined at 2.0.0 and after -- 1.4.0 rendered "
+               "'Ph. D., Jr.' there too -- so this row now agrees with "
+               "the form it has agreed with since 2.0"),
     Case("family_comma_credential_run_then_numeral", "Smith, Ph. D. III",
-         {"family": "Smith", "suffix": "Ph. D., III"},
-         classification="fix(#325)"),
+         {"family": "Smith", "suffix": "Ph. D. III"},
+         classification="fix(#325) + fix(#429)",
+         notes="the numeral does not end the run; the render lost its "
+               "inserted comma with the rest (#429)"),
     Case("family_comma_two_credentials", "Smith, PhD Jr.",
-         {"family": "Smith", "suffix": "PhD, Jr."},
-         classification="fix(#325)",
+         {"family": "Smith", "suffix": "PhD Jr."},
+         classification="fix(#325) + fix(#429)",
          notes="'PhD' led the run as a title until the audit; the audit "
                "alone would have made it the given name, which is why "
                "the ordering shipped in the same commit. The run is "
-               "suffixes"),
+               "suffixes, and since #429 renders as one entry rather "
+               "than 'PhD, Jr.'"),
+    Case("family_comma_title_led_credential_run", "Smith, Dr. MD PhD",
+         {"title": "Dr.", "family": "Smith", "suffix": "MD PhD"},
+         classification="fix(#429)",
+         notes="the title-led run: assign routes Dr. to TITLE and the "
+               "two credentials to SUFFIX, so the ENTRY is the "
+               "credential run, not the whole segment. 384 inputs of "
+               "this shape moved with #429 and none was pinned until "
+               "the review said so"),
+    Case("family_comma_title_between_credentials", "Smith, MD Dr. PhD",
+         {"title": "Dr.", "family": "Smith", "suffix": "MD PhD"},
+         classification="fix(#429)",
+         notes="the entry is sticky across a piece that is not in it: "
+               "an interleaved title must not split the run it sits "
+               "in, or the render inserts the very comma #429 removes"),
+    Case("family_comma_title_led_run_keeps_the_written_comma",
+         "Smith Jr., Mr. Jr.",
+         {"title": "Mr.", "family": "Smith", "suffix": "Jr., Jr."},
+         notes="THE #429 REGRESSION GUARD, and unchanged since 1.4.0. "
+               "The pre-comma name leaves a suffix, and the segment "
+               "after the comma is title-led. #429's first draft let "
+               "the title piece OPEN the entry, so the following Jr. "
+               "was tagged as a continuation and the view joined it "
+               "backward across the writer's own comma -- suffix "
+               "'Jr. Jr.', the exact inverse of the bug #429 fixes. "
+               "Only a piece that renders into the same run may "
+               "continue an entry"),
+    Case("family_comma_written_commas_are_kept", "Smith, MD, PhD",
+         {"family": "Smith", "suffix": "MD, PhD"},
+         notes="the negative control for #429, and the distinction the "
+               "whole change rests on: the parser renders the run as "
+               "the writer spaced it, and never stops emitting a comma "
+               "the writer typed. Parity at every baseline"),
+    Case("family_comma_run_matches_the_full_name_form", "John Smith, MD PhD",
+         {"given": "John", "family": "Smith", "suffix": "MD PhD"},
+         notes="the full-name twin of family_comma_suffix_run_renders_"
+               "unjoined, and the reference #429 brought the one-word "
+               "form into line with. Unchanged since 1.4.0, so this row "
+               "fails if a future change fixes one form by breaking the "
+               "other"),
+    Case("family_comma_segment_zero_is_not_the_run", "MD PhD Jr., John",
+         {"given": "John", "family": "MD", "suffix": "PhD, Jr."},
+         notes="segment 0 is the family segment even when it is wholly "
+               "credential-shaped, so the one-entry join is asked of "
+               "segment 1 alone. Dropping that conjunct left the whole "
+               "suite green while this shape's suffix silently became "
+               "'PhD Jr.' (the mutation matrix found it)"),
     Case("family_comma_run_with_a_name_is_not_a_run", "Smith, John Jr.",
          {"given": "John", "family": "Smith", "suffix": "Jr."},
          notes="the non-flip: a name word in the run makes it the "

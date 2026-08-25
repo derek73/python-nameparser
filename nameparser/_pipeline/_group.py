@@ -23,7 +23,8 @@ the S2 trailing peel (_peel_walk, _peel_trailing, _trailing_start), a
 piece-level walk that assign applies and that P5's reserve, P2's
 chain and M2's walk read (#425, #424), and assign's leading-title
 test (_is_leading_title, _leading_titles), which the chain's scan
-shares since #424.
+shares since #424, and its no-name-segment test
+(_segment_holds_no_name), which the one-entry join reads since #429.
 """
 from __future__ import annotations
 
@@ -142,6 +143,44 @@ def _is_suffix_piece(piece: Sequence[int], ptags: Set[str],
         return False
     tags = tokens[piece[0]].tags
     return "vocab:suffix" in tags and "initial" not in tags
+
+
+def _segment_holds_no_name(pieces: Sequence[Sequence[int]],
+                           ptags: Sequence[Set[str]],
+                           tokens: Sequence[WorkToken]) -> bool:
+    """The segment is titles and suffixes only ('John Smith, Dr.',
+    'John Smith, Mr. Jr.') -- nothing in it is a name word.
+
+    The FAMILY_COMMA rule "segment 0 is wholly the family name" rests on
+    the writer having said where the family name ends. A comma followed
+    by no name word said no such thing -- 'John Smith, Dr.' is 'Dr. John
+    Smith' with the honorific moved, and 'John Smith, Mr. Jr.' the same
+    with the postnominal along -- so the pre-comma name keeps its
+    positional read instead of being merged. Uses the same
+    _is_leading_title predicate the peel does, period-abbreviation
+    inference included, so the two cannot disagree about what a title
+    is; a suffix piece counts as what it is, so a mixed run like
+    'Smith, Dr. Jr.' is a title and a postnominal, each read where it
+    stands, and never a title run 'Dr. Jr.'. An empty segment
+    ('Doe,, Jr.') holds no title to read by.
+
+    TWO callers, asking it for different reasons, and the difference
+    matters. assign uses it to decide whether the comma fixed the family
+    name (above). group's one-entry join (#429) uses it to decide
+    whether the segment is a credential run at all.
+
+    True does NOT mean "every piece is a suffix" -- the title tolerance
+    is the whole point, and a true segment can still hold pieces assign
+    routes to TITLE, so a caller rendering the segment as one unit must
+    ask _is_suffix_piece per piece as well. What assuming otherwise cost
+    is recorded at the one-entry join in group(), the caller that made
+    the assumption.
+    """
+    if not pieces:
+        return False
+    return all(_is_suffix_piece(pieces[k], ptags[k], tokens)
+               or _is_leading_title(pieces[k], ptags[k], tokens)
+               for k in range(len(pieces)))
 
 
 class Peel(NamedTuple):
@@ -818,7 +857,7 @@ def group(state: ParseState) -> ParseState:
     # v1 parity: additional_parts_count=1 applies only to FAMILY_COMMA
     # parts; the SUFFIX_COMMA pre-comma segment gets 0.
     additional = 1 if state.structure is Structure.FAMILY_COMMA else 0
-    # v1 expand_suffix_delimiter parity (#191): tail segments (wholly
+    # v1 expand_suffix_delimiter parity (#206): tail segments (wholly
     # consumed as suffixes by assign) drop delimiter-core tokens, the
     # same structural mechanism as the maiden marker (taken out in
     # _group_segment, recorded in `dropped` just below)
@@ -836,10 +875,11 @@ def group(state: ParseState) -> ParseState:
         # suppresses it there: the family name is already fixed, so
         # there is no fork left to report.
         tail = tail_start is not None and seg_idx >= tail_start
+        seg_cores = cores if tail else frozenset()
         pieces, ptags, taken = _group_segment(
             seg, additional, tokens, bound_join,
             None if family_comma else ambiguities,
-            cores if tail else frozenset(),
+            seg_cores,
             state.lexicon.given_name_titles)
         # the marker is dropped and the maiden name's tokens become
         # MAIDEN (#274); which pieces those are was settled in
@@ -851,7 +891,31 @@ def group(state: ParseState) -> ParseState:
                 for i in piece:
                     tokens[i] = dataclasses.replace(
                         tokens[i], role=Role.MAIDEN)
-        if tail:
+        # rules.md#C1: "a part that is nothing but suffix words is the
+        # credential run and reads as suffixes, whole" -- WHOLE is this
+        # block's half of the rule, the routing being assign's.
+        # One comma segment is one suffix entry. `tail` answers that by
+        # INDEX, which is right wherever assign reads the segment as
+        # suffixes for the same structural reason -- but not after a
+        # ONE-WORD family comma, where segment 1 is a name slot that
+        # assign re-reads by CONTENT: a segment of nothing but
+        # credentials is the credential run, whole (#296/#325). group
+        # asking the index while assign asked the content is what made
+        # 'Smith, MD PhD' render 'MD, PhD' with a comma the writer
+        # never typed, where the full-name 'John Smith, MD PhD' has
+        # rendered 'MD PhD' since 1.4.0 (#429). Ask assign's own
+        # predicate, over the pieces group just built.
+        # `family_comma` is redundant by invariant and kept for
+        # locality: segment() emits at most one segment for NO_COMMA, so
+        # seg_idx == 1 already implies a comma, and under SUFFIX_COMMA
+        # tail_start is 1, so `tail` short-circuits before this. Nothing
+        # can pin it -- dropping it is an equivalent mutant over the
+        # corpora and 65,725 generated inputs -- so it is documented
+        # rather than tested.
+        one_entry = tail or (
+            family_comma and seg_idx == 1
+            and _segment_holds_no_name(pieces, ptags, tokens))
+        if one_entry:
             # v1 renders each tail COMMA SEGMENT as one suffix entry
             # ('Smith, V MD' -> suffix 'V MD'); a delimiter core inside
             # a segment separates entries and is dropped, but a segment
@@ -859,23 +923,50 @@ def group(state: ParseState) -> ParseState:
             # within a part, never erases a lone part). Continuation
             # tokens within an entry take the stable "joined" tag so
             # the suffix view space-joins them (the fix_phd mechanism).
+            # Core dropping stays keyed on `tail` via seg_cores: the
+            # #206 parity is a TAIL rule, and the one-entry join is the
+            # only half that follows assign's content read.
             entry_open = False
             kept: list[int] = []
             for k in range(len(pieces)):
                 is_core = (len(pieces[k]) == 1
-                           and tokens[pieces[k][0]].text in cores
+                           and tokens[pieces[k][0]].text in seg_cores
                            and len(pieces) > 1)
                 if is_core:
                     dropped.extend(pieces[k])
                     entry_open = False
                     continue
                 kept.append(k)
+                # Two different joins, and conflating them is what a
+                # widened condition gets wrong. WITHIN a piece (pos > 0)
+                # the tag renders a merged piece as one unit; the branch
+                # is written role-blind because the merge is (the ph-d
+                # pair reaches GIVEN as one element), though no
+                # multi-token TITLE piece witnesses it -- none turned up
+                # in 38,892 generated family-comma inputs. BETWEEN pieces it continues an ENTRY,
+                # and only pieces that render into the same run may do
+                # that. On a tail segment every kept piece does -- that
+                # is what `tail` means -- but off it assign routes piece
+                # by piece (_assign.py), so a title piece is not part of
+                # the suffix entry. Letting one continue the entry tags
+                # a token the SUFFIX view never joins and the TITLE view
+                # does: 'Smith, Rev. Dr.' collapsed title_list to
+                # ['Rev. Dr.'], and after a pre-comma suffix the tag
+                # glued across the writer's own comma ('Smith Jr., Mr.
+                # Jr.' rendered suffix 'Jr. Jr.') -- the inverse of the
+                # bug this block exists to fix.
+                in_entry = tail or _is_suffix_piece(
+                    pieces[k], ptags[k], tokens)
                 for pos, i in enumerate(pieces[k]):
-                    if entry_open or pos > 0:
+                    if pos > 0 or (in_entry and entry_open):
                         tokens[i] = dataclasses.replace(
                             tokens[i], tags=tokens[i].tags | {"joined"})
-                # piece-level state: the NEXT piece continues this entry
-                entry_open = True
+                # Sticky across a piece that is not in the entry, so an
+                # interleaved title does not split the run it sits in:
+                # 'Smith, MD Dr. PhD' renders suffix 'MD PhD', not
+                # 'MD, PhD'. A delimiter core still closes the entry
+                # (above) -- that is the one thing that separates two.
+                entry_open = entry_open or in_entry
             if len(kept) != len(pieces):
                 pieces = [pieces[k] for k in kept]
                 ptags = [ptags[k] for k in kept]

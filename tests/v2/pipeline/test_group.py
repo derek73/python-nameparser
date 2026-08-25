@@ -269,7 +269,7 @@ def test_initials_do_not_count_as_rootnames_for_conjunction_carveout() -> None:
 
 
 def test_extra_suffix_delimiter_splits_tail_entries() -> None:
-    # v1 expand_suffix_delimiter parity (#191): a configured delimiter
+    # v1 expand_suffix_delimiter parity (#206): a configured delimiter
     # is transparent in a FAMILY_COMMA tail segment -- it separates
     # suffix ENTRIES (each rendered independently) and is itself
     # dropped, rather than becoming a suffix token or fusing the
@@ -436,7 +436,7 @@ _DASH = Policy(extra_suffix_delimiters=frozenset({" - "}))
 
 
 def test_a_delimiter_core_in_a_suffix_tail_is_not_maiden_text() -> None:
-    """A tail segment drops its delimiter cores (#191) and the marker
+    """A tail segment drops its delimiter cores (#206) and the marker
     takes what is left, in that order -- the order group() had before
     the marker pass moved ahead of the joins. A core is not a word the
     marker can take: it is structure, like the marker itself."""
