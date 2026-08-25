@@ -18,14 +18,17 @@ files that could not import a Python constant if they wanted to. Those
 are pinned in test_ledger_guards.py, which shares nothing with this
 module but the idea (#352).
 """
+import pathlib
 import re
 
 import pytest
 
 from nameparser.config import regexes as _config
 from nameparser._pipeline import (
-    _assign, _group, _post_rules, _tokenize, _vocab,
+    _assemble, _assign, _classify, _extract, _group, _pieces,
+    _post_rules, _script_segment, _segment, _state, _tokenize, _vocab,
 )
+import nameparser._pipeline
 from nameparser import _render
 
 
@@ -46,8 +49,8 @@ def test_period_not_at_end_matches_config() -> None:
 
 def test_period_abbreviation_matches_config() -> None:
     source = _config.REGEXES["period_abbreviation"]
-    assert _group._PERIOD_ABBREV.pattern == source.pattern
-    assert _group._PERIOD_ABBREV.flags == source.flags
+    assert _pieces._PERIOD_ABBREV.pattern == source.pattern
+    assert _pieces._PERIOD_ABBREV.flags == source.flags
 
 
 def test_roman_numeral_matches_config() -> None:
@@ -99,7 +102,7 @@ def test_initial_copies_agree_with_each_other_and_config() -> None:
 # completeness check below: adding a pattern without declaring its
 # source now fails here instead of being silently unpinned.
 _SOURCES: dict[tuple[str, str], str | None] = {
-    ("_group", "_PERIOD_ABBREV"): "period_abbreviation",
+    ("_pieces", "_PERIOD_ABBREV"): "period_abbreviation",
     ("_group", "_D"): None,
     ("_vocab", "_DOTTED"): None,
     ("_group", "_PH"): None,
@@ -122,9 +125,43 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     ("_render", "_COMMA_CHAR"): None,
 }
 
-_MODULES = {"_assign": _assign, "_group": _group,
-            "_post_rules": _post_rules,
-            "_render": _render, "_tokenize": _tokenize, "_vocab": _vocab}
+def test_every_pipeline_module_is_scanned_for_hand_copies() -> None:
+    """The twin of test_layering's completeness check, in the file with
+    the same shape of registry.
+
+    test_every_hand_copied_pattern_is_declared iterates _MODULES, so a
+    module absent from that dict is not scanned loosely -- it is not
+    scanned at all, and an undeclared hand copy of a config regex in it
+    goes unpinned. Measured on a scratch copy: a new pipeline module
+    carrying a wrong copy of the mac pattern passed all 20 tests here.
+
+    Scoped to _pipeline/ for the same reason the layering twin is: it
+    is where a new module is a design decision. The directory is
+    derived from the imported subpackage and the floor is asserted --
+    Path.glob on a missing directory returns empty rather than raising,
+    which would make this pass for every possible _MODULES.
+    """
+    pipeline_dir = pathlib.Path(nameparser._pipeline.__file__).parent
+    shipped = {p.stem for p in pipeline_dir.glob("*.py")
+               if p.stem != "__init__"}
+    assert "_group" in shipped, (
+        f"the glob matched no pipeline modules, so this check can no "
+        f"longer fail: {sorted(shipped)}")
+    missing = sorted(shipped - set(_MODULES))
+    assert not missing, (
+        f"pipeline modules absent from _MODULES, and therefore never "
+        f"scanned for undeclared hand copies of a config regex: "
+        f"{missing}. Add each one; a module with no hand copies costs "
+        f"nothing to scan"
+    )
+
+
+_MODULES = {"_assemble": _assemble, "_assign": _assign,
+            "_classify": _classify, "_extract": _extract,
+            "_group": _group, "_pieces": _pieces,
+            "_post_rules": _post_rules, "_render": _render,
+            "_script_segment": _script_segment, "_segment": _segment,
+            "_state": _state, "_tokenize": _tokenize, "_vocab": _vocab}
 
 
 @pytest.mark.parametrize(

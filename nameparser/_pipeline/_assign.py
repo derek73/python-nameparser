@@ -41,7 +41,7 @@ import dataclasses
 from nameparser._pipeline._vocab import (
     effective_script, is_suffix_lenient, resolve_script_set,
 )
-from nameparser._pipeline._group import (
+from nameparser._pipeline._pieces import (
     _is_suffix_piece, _leading_titles, _peel_trailing, _peel_walk,
     _segment_holds_no_name,
 )
@@ -60,7 +60,7 @@ def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
 # rules.md#H2: "an abbreviation opening the part of the name that
 # carries the given name — the whole name, or the part after a
 # family comma — reads as a title even when unlisted" -- the count is
-# group's _leading_titles since #424 (its test, _is_leading_title, is
+# _pieces._leading_titles since #424 (its test, _is_leading_title, is
 # the leading-particle scan's too); the roles are set here.
 def _peel_leading_titles(pieces: tuple[tuple[int, ...], ...],
                          ptags: tuple[frozenset[str], ...],
@@ -188,7 +188,7 @@ def _assign_main(seg_idx: int, state: ParseState,
         _set_roles(tokens, pieces[rest[0]], Role.FAMILY)
         return None
     # peel the trailing suffix run: k = first index in rest from which
-    # every piece is a suffix. The walk is group's _peel_trailing since
+    # every piece is a suffix. The walk is _pieces._peel_trailing since
     # #425 -- one walk, shared with the bound-given reserve, and
     # documented there. Every bare ambiguous acronym it had to resolve
     # is one coin-flip each, in either direction, so the report
