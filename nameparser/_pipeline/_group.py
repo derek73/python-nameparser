@@ -23,7 +23,7 @@ the "Ph. D."-split merge (v1 fix_phd; decisions.md#phd-merge).
 The piece-level predicates moved to _pieces in #439 -- the S2
 trailing peel, the leading-title and title-piece tests, the
 suffix-piece test, the no-name-segment test. Most are shared with
-assign; _is_title_piece and _trailing_start are group's alone and
+assign; is_title_piece and trailing_start are group's alone and
 travelled because the shared ones call them. They had collected here
 by import direction rather than by topic (assign imported group and
 could not be imported back), which is the accumulation
@@ -41,15 +41,14 @@ from enum import IntEnum
 
 from nameparser._lexicon import _title_key
 from nameparser._pipeline._pieces import (
-    _is_leading_title, _is_suffix_piece, _is_title_piece,
-    _leading_titles, _peel_trailing, _peel_walk, _segment_holds_no_name,
-    _trailing_start,
+    is_leading_title, is_suffix_piece, is_title_piece,
+    leading_titles, peel_trailing, peel_walk, segment_holds_no_name,
+    trailing_start,
 )
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
 )
-from nameparser._pipeline._vocab import D as _D
-from nameparser._pipeline._vocab import PH as _PH
+from nameparser._pipeline._vocab import D, PH
 from nameparser._pipeline._vocab import delimiter_cores
 from nameparser._types import AmbiguityKind, Role
 
@@ -81,7 +80,7 @@ class BoundJoin(IntEnum):
 
 # rules.md#S2: "a trailing word of the suffix vocabulary reads as a
 # suffix" -- group does not decide that; it stops before whatever
-# _trailing_start says the run is, so the chain and the maiden walk
+# trailing_start says the run is, so the chain and the maiden walk
 # end where assign's peel begins (#424).
 # rules.md#P2: "a particle joins the words after it into one name
 # part, the join running until the next particle starts a group of
@@ -163,14 +162,14 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # marker ends the maiden name, and so does the trailing numeral as
     # assign will read it, which the suffix-piece test does not see
     # (#424): 'John née Jones Smith V' took the V as maiden text. The
-    # numeral only -- _trailing_start says why the acronym fork is
+    # numeral only -- trailing_start says why the acronym fork is
     # left to assign here. Read from the MARKER, not after it: a
     # numeral straight after the marker then has the piece before it
     # the fork wants, and 'Jane Smith née V' declines like 'Jane Smith
     # née PhD' -- nothing after the marker but a suffix, so the marker
     # stays a word -- as 1.4.0 read it.
     skip = frozenset(range(len(pieces))) - frozenset(seen)
-    trailing = _trailing_start(seen[m], pieces, ptags, tokens, skip,
+    trailing = trailing_start(seen[m], pieces, ptags, tokens, skip,
                                numeral_only=True)
     # The fork reads the piece before the numeral, and the take
     # REMOVES that piece: afterwards assign sees the piece before the
@@ -187,13 +186,13 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         left = [i for i in seen if i < seen[m] or i >= trailing]
         view = [pieces[i] for i in left]
         view_tags = [ptags[i] for i in left]
-        if _trailing_start(_leading_titles(view, view_tags, tokens),
+        if trailing_start(leading_titles(view, view_tags, tokens),
                            view, view_tags, tokens,
                            numeral_only=True) == len(view):
             trailing = len(pieces)
     j = m + 1
     while (j < len(seen) and seen[j] < trailing
-           and not _is_suffix_piece(pieces[seen[j]], ptags[seen[j]],
+           and not is_suffix_piece(pieces[seen[j]], ptags[seen[j]],
                                     tokens)):
         j += 1
     # j == m + 1 means nothing followed the marker but a suffix, so the
@@ -217,9 +216,9 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
                  tokens: Sequence[WorkToken]) -> bool:
     if len(piece) == 1 and "initial" in tokens[piece[0]].tags:
         return False
-    return not (_is_title_piece(piece, ptags, tokens)
+    return not (is_title_piece(piece, ptags, tokens)
                 or _is_prefix_piece(piece, ptags, tokens)
-                or _is_suffix_piece(piece, ptags, tokens))
+                or is_suffix_piece(piece, ptags, tokens))
 
 
 def _group_segment(seg: tuple[int, ...], additional: int,
@@ -238,13 +237,13 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         ambiguities = []
 
     def title(k: int) -> bool:
-        return _is_title_piece(pieces[k], ptags[k], tokens)
+        return is_title_piece(pieces[k], ptags[k], tokens)
 
     def prefix(k: int) -> bool:
         return _is_prefix_piece(pieces[k], ptags[k], tokens)
 
     def suffix(k: int) -> bool:
-        return _is_suffix_piece(pieces[k], ptags[k], tokens)
+        return is_suffix_piece(pieces[k], ptags[k], tokens)
 
     def conj(k: int) -> bool:
         return _is_conj_piece(pieces[k], ptags[k], tokens)
@@ -302,8 +301,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     while k < len(pieces) - 1:
         a, b = pieces[k], pieces[k + 1]
         if (len(a) == 1 and len(b) == 1
-                and _PH.fullmatch(tokens[a[0]].text)
-                and _D.fullmatch(tokens[b[0]].text)):
+                and PH.fullmatch(tokens[a[0]].text)
+                and D.fullmatch(tokens[b[0]].text)):
             merge(k, k + 2, add={"suffix"})
         else:
             k += 1
@@ -436,7 +435,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # word and left assign two pieces where the fork counted
         # three). The scan asks assign's own test.
         leading = next((k for k in range(len(pieces))
-                        if not _is_leading_title(pieces[k], ptags[k],
+                        if not is_leading_title(pieces[k], ptags[k],
                                                  tokens)
                         or prefix(k)), 0)
         # rules.md#P2: "a trailing suffix begins" -- where it begins
@@ -453,8 +452,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # van der Berg V' read family 'van der Berg V'). The chain
         # takes both forks, and asks again after its merges whether
         # the acronym still has the pieces the fork counted (below).
-        name_start = _leading_titles(pieces, ptags, tokens)
-        tail = len(pieces) - _trailing_start(name_start, pieces, ptags,
+        name_start = leading_titles(pieces, ptags, tokens)
+        tail = len(pieces) - trailing_start(name_start, pieces, ptags,
                                              tokens)
         def chain(tail: int) -> None:
             k = 0
@@ -476,7 +475,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # A fork whose two sides are decided in different stages
                 # needs an emitter in each.
                 #
-                # Narrow, and #367 is why. `all(_is_leading_title(...))`
+                # Narrow, and #367 is why. `all(is_leading_title(...))`
                 # says every piece ahead of this one is a title, and the
                 # loop skipped k == leading, so `leading` is STRICTLY
                 # before k -- and being before k it is one of those titles,
@@ -518,7 +517,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 if (j > k + 1
                         and "vocab:particle-ambiguous"
                         in tokens[pieces[k][0]].tags
-                        and all(_is_leading_title(pieces[x], ptags[x],
+                        and all(is_leading_title(pieces[x], ptags[x],
                                                   tokens)
                                 for x in range(k))):
                     i = pieces[k][0]
@@ -551,8 +550,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             kept = ([list(q) for q in pieces], [set(t) for t in ptags],
                     len(ambiguities))
             chain(tail)
-            left = len(pieces) - _trailing_start(
-                _leading_titles(pieces, ptags, tokens), pieces, ptags,
+            left = len(pieces) - trailing_start(
+                leading_titles(pieces, ptags, tokens), pieces, ptags,
                 tokens)
             if left < tail:
                 pieces[:], ptags[:] = kept[0], kept[1]
@@ -569,7 +568,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # title test does not see H2's unlisted abbreviations, and
         # 'Xyz. abdul John Smith' joined nothing where 'Dr. abdul John
         # Smith' read given 'abdul John'.
-        fk = _leading_titles(pieces, ptags, tokens)
+        fk = leading_titles(pieces, ptags, tokens)
         if (bound_join is not BoundJoin.DISABLED
                 and fk + 1 < len(pieces)
                 and len(pieces[fk]) == 1
@@ -609,14 +608,14 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # nothing joined, 'abdul Smith Ma' peels the acronym
                 # unjoined and keeps it joined. Shapes pinned in
                 # test_group.py.
-                rest = _peel_walk(fk, ptags)
-                before = _peel_trailing(rest, pieces, ptags, tokens)
+                rest = peel_walk(fk, ptags)
+                before = peel_trailing(rest, pieces, ptags, tokens)
                 view, view_tags = list(pieces), list(ptags)
                 view[fk:fk + 2] = [pieces[fk] + pieces[fk + 1]]
                 view_tags[fk:fk + 2] = [joined_tags(fk, fk + 2,
                                                     drop={"title"})]
-                view_rest = _peel_walk(fk, view_tags)
-                after = _peel_trailing(view_rest, view, view_tags, tokens)
+                view_rest = peel_walk(fk, view_tags)
+                after = peel_trailing(view_rest, view, view_tags, tokens)
                 same_suffixes = (
                     [tuple(view[j]) for j in view_rest[after.names:]]
                     == [tuple(pieces[j]) for j in rest[before.names:]])
@@ -713,7 +712,7 @@ def group(state: ParseState) -> ParseState:
         # rather than tested.
         one_entry = tail or (
             family_comma and seg_idx == 1
-            and _segment_holds_no_name(pieces, ptags, tokens))
+            and segment_holds_no_name(pieces, ptags, tokens))
         if one_entry:
             # v1 renders each tail COMMA SEGMENT as one suffix entry
             # ('Smith, V MD' -> suffix 'V MD'); a delimiter core inside
@@ -754,7 +753,7 @@ def group(state: ParseState) -> ParseState:
                 # glued across the writer's own comma ('Smith Jr., Mr.
                 # Jr.' rendered suffix 'Jr. Jr.') -- the inverse of the
                 # bug this block exists to fix.
-                in_entry = tail or _is_suffix_piece(
+                in_entry = tail or is_suffix_piece(
                     pieces[k], ptags[k], tokens)
                 for pos, i in enumerate(pieces[k]):
                     if pos > 0 or (in_entry and entry_open):

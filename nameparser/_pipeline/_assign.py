@@ -42,8 +42,8 @@ from nameparser._pipeline._vocab import (
     effective_script, is_suffix_lenient, resolve_script_set,
 )
 from nameparser._pipeline._pieces import (
-    _is_suffix_piece, _leading_titles, _peel_trailing, _peel_walk,
-    _segment_holds_no_name,
+    is_suffix_piece, leading_titles, peel_trailing, peel_walk,
+    segment_holds_no_name,
 )
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
@@ -60,14 +60,14 @@ def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
 # rules.md#H2: "an abbreviation opening the part of the name that
 # carries the given name — the whole name, or the part after a
 # family comma — reads as a title even when unlisted" -- the count is
-# _pieces._leading_titles since #424 (its test, _is_leading_title, is
+# _pieces.leading_titles since #424 (its test, is_leading_title, is
 # the leading-particle scan's too); the roles are set here.
 def _peel_leading_titles(pieces: tuple[tuple[int, ...], ...],
                          ptags: tuple[frozenset[str], ...],
                          tokens: list[WorkToken]) -> int:
     """Assign TITLE to the leading title pieces and return the first
     non-title index."""
-    n = _leading_titles(pieces, ptags, tokens)
+    n = leading_titles(pieces, ptags, tokens)
     for k in range(n):
         _set_roles(tokens, pieces[k], Role.TITLE)
     return n
@@ -175,7 +175,7 @@ def _assign_main(seg_idx: int, state: ParseState,
     flagged = [k for k in rest if "suffix" in ptags[k]]
     for k in flagged:
         _set_roles(tokens, pieces[k], Role.SUFFIX)
-    rest = _peel_walk(n, ptags)
+    rest = peel_walk(n, ptags)
     if not rest:
         return None
     # rules.md#N3: "a name that is only a nickname and one name word
@@ -188,7 +188,7 @@ def _assign_main(seg_idx: int, state: ParseState,
         _set_roles(tokens, pieces[rest[0]], Role.FAMILY)
         return None
     # peel the trailing suffix run: k = first index in rest from which
-    # every piece is a suffix. The walk is _pieces._peel_trailing since
+    # every piece is a suffix. The walk is _pieces.peel_trailing since
     # #425 -- one walk, shared with the bound-given reserve, and
     # documented there. Every bare ambiguous acronym it had to resolve
     # is one coin-flip each, in either direction, so the report
@@ -196,7 +196,7 @@ def _assign_main(seg_idx: int, state: ParseState,
     # because the wording reads the role back, and which role "not
     # peeled" means depends on name_order. (The roman-numeral fork
     # needs no such deferral and is reported here.)
-    peeled = _peel_trailing(rest, pieces, ptags, tokens)
+    peeled = peel_trailing(rest, pieces, ptags, tokens)
     if peeled.numeral is not None:
         # a trailing single letter is a name part unless it happens
         # to be a roman numeral -- and V/X/I are ordinary middle
@@ -300,15 +300,15 @@ def assign(state: ParseState) -> ParseState:
         # positional read peels a trailing suffix first: 'Smith Jr.,
         # Mr.' has two pieces and one name, and read positionally lost
         # its family (the code review).
-        no_name = _segment_holds_no_name(state.pieces[1],
+        no_name = segment_holds_no_name(state.pieces[1],
                                          state.piece_tags[1], tokens)
         if no_name and sum(
                 1 for k, piece in enumerate(fam_pieces)
-                if not _is_suffix_piece(piece, fam_tags[k], tokens)) > 1:
+                if not is_suffix_piece(piece, fam_tags[k], tokens)) > 1:
             order = _assign_main(0, state, tokens, ambiguities)
         else:
             for k, piece in enumerate(fam_pieces):
-                if k > 0 and _is_suffix_piece(piece, fam_tags[k], tokens):
+                if k > 0 and is_suffix_piece(piece, fam_tags[k], tokens):
                     _set_roles(tokens, piece, Role.SUFFIX)
                 else:
                     _set_roles(tokens, piece, Role.FAMILY)
@@ -338,7 +338,7 @@ def assign(state: ParseState) -> ParseState:
             if no_name:
                 for k, piece in enumerate(pieces):
                     _set_roles(tokens, piece,
-                               Role.SUFFIX if _is_suffix_piece(
+                               Role.SUFFIX if is_suffix_piece(
                                    piece, ptags[k], tokens)
                                else Role.TITLE)
                 n = len(pieces)
@@ -363,7 +363,7 @@ def assign(state: ParseState) -> ParseState:
                 # initial, so strict only
                 last_of_two = (m == len(pieces) - 1
                                and len(state.segments) == 2)
-                if _is_suffix_piece(pieces[m], ptags[m], tokens) or (
+                if is_suffix_piece(pieces[m], ptags[m], tokens) or (
                         last_of_two and len(pieces[m]) == 1
                         and is_suffix_lenient(
                             tokens[pieces[m][0]].text, state.lexicon)):

@@ -13,9 +13,9 @@ Before this module those predicates lived in _group, not because
 grouping owned them but because assign imported group and could not be
 imported back, so group was the only place both stages could reach.
 They arrived there that way across three PRs -- #424 brought
-_is_leading_title, _leading_titles and _trailing_start, #425 the peel
-(_peel_walk, _peel_trailing), #429 _segment_holds_no_name.
-_is_title_piece and _is_suffix_piece are older than any of that: they
+is_leading_title, leading_titles and trailing_start, #425 the peel
+(peel_walk, peel_trailing), #429 segment_holds_no_name.
+is_title_piece and is_suffix_piece are older than any of that: they
 were group's from its first commit, and travel because the others
 call them.
 
@@ -25,11 +25,18 @@ it, and tests/v2/test_layering.py is where it is written down -- a
 piece predicate may not depend on a stage, in either direction.
 
 The S2 trailing peel travels as the unit decisions.md describes --
-_peel_walk, _peel_trailing and _trailing_start together -- though only
+peel_walk, peel_trailing and trailing_start together -- though only
 the first two cross a stage boundary.
 
 Layering: imports _state and _vocab only; _group and _assign import
 it, and neither of the two it imports imports it back.
+
+Naming follows _vocab's: inside an already-private module the leading
+underscore marks module-PRIVATE, so the names other stages call are
+bare and only the internals keep it (_PERIOD_ABBREV here). Getting that
+backwards -- which this module did until the underscores came off --
+costs a reader the one cheap way to tell a shared predicate from a
+helper.
 """
 from __future__ import annotations
 
@@ -44,7 +51,7 @@ from nameparser._pipeline._vocab import is_trailing_numeral_suffix
 # rules.md#H3: "successive title words at the start of the part
 # carrying the given name chain into one title; a title word
 # elsewhere in the name does not"
-def _is_title_piece(piece: Sequence[int], ptags: Set[str],
+def is_title_piece(piece: Sequence[int], ptags: Set[str],
                     tokens: Sequence[WorkToken]) -> bool:
     if "title" in ptags:
         return True
@@ -64,34 +71,34 @@ _PERIOD_ABBREV = re.compile(r'^[^\W\d_]{2,}\.$')
 # carries the given name — the whole name, or the part after a
 # family comma — reads as a title even when unlisted"
 # (history: decisions.md#H2)
-def _is_leading_title(piece: Sequence[int], ptags: Set[str],
+def is_leading_title(piece: Sequence[int], ptags: Set[str],
                       tokens: Sequence[WorkToken]) -> bool:
-    if _is_title_piece(piece, ptags, tokens):
+    if is_title_piece(piece, ptags, tokens):
         return True
     return (len(piece) == 1
             and bool(_PERIOD_ABBREV.match(tokens[piece[0]].text)))
 
 
-def _leading_titles(pieces: Sequence[Sequence[int]],
+def leading_titles(pieces: Sequence[Sequence[int]],
                     ptags: Sequence[Set[str]],
                     tokens: Sequence[WorkToken]) -> int:
     """How many leading pieces assign peels as titles: the first
     non-title index. A title needs a following piece, unless the whole
     segment is one title (v1 parity). One definition, read by assign
     (which sets the roles) and by the chain's trailing-run walk; the
-    leading-particle scan shares the predicate, _is_leading_title,
+    leading-particle scan shares the predicate, is_leading_title,
     but stops at a title-and-particle word (P4, #367, #424)."""
     n = 0
     while n < len(pieces):
         if ((n + 1 < len(pieces) or len(pieces) == 1)
-                and _is_leading_title(pieces[n], ptags[n], tokens)):
+                and is_leading_title(pieces[n], ptags[n], tokens)):
             n += 1
             continue
         break
     return n
 
 
-def _is_suffix_piece(piece: Sequence[int], ptags: Set[str],
+def is_suffix_piece(piece: Sequence[int], ptags: Set[str],
                      tokens: Sequence[WorkToken]) -> bool:
     if "suffix" in ptags:
         return True
@@ -101,7 +108,7 @@ def _is_suffix_piece(piece: Sequence[int], ptags: Set[str],
     return "vocab:suffix" in tags and "initial" not in tags
 
 
-def _segment_holds_no_name(pieces: Sequence[Sequence[int]],
+def segment_holds_no_name(pieces: Sequence[Sequence[int]],
                            ptags: Sequence[Set[str]],
                            tokens: Sequence[WorkToken]) -> bool:
     """The segment is titles and suffixes only ('John Smith, Dr.',
@@ -113,7 +120,7 @@ def _segment_holds_no_name(pieces: Sequence[Sequence[int]],
     Smith' with the honorific moved, and 'John Smith, Mr. Jr.' the same
     with the postnominal along -- so the pre-comma name keeps its
     positional read instead of being merged. Uses the same
-    _is_leading_title predicate the peel does, period-abbreviation
+    is_leading_title predicate the peel does, period-abbreviation
     inference included, so the two cannot disagree about what a title
     is; a suffix piece counts as what it is, so a mixed run like
     'Smith, Dr. Jr.' is a title and a postnominal, each read where it
@@ -128,14 +135,14 @@ def _segment_holds_no_name(pieces: Sequence[Sequence[int]],
     True does NOT mean "every piece is a suffix" -- the title tolerance
     is the whole point, and a true segment can still hold pieces assign
     routes to TITLE, so a caller rendering the segment as one unit must
-    ask _is_suffix_piece per piece as well. What assuming otherwise cost
+    ask is_suffix_piece per piece as well. What assuming otherwise cost
     is recorded at the one-entry join in group(), the caller that made
     the assumption.
     """
     if not pieces:
         return False
-    return all(_is_suffix_piece(pieces[k], ptags[k], tokens)
-               or _is_leading_title(pieces[k], ptags[k], tokens)
+    return all(is_suffix_piece(pieces[k], ptags[k], tokens)
+               or is_leading_title(pieces[k], ptags[k], tokens)
                for k in range(len(pieces)))
 
 
@@ -161,9 +168,9 @@ class Peel(NamedTuple):
 # shape any word can wear and does not. A BARE ambiguous acronym is
 # consumed only when the name has words to spare"
 # (v1's are_suffixes tail rule, with the roman-numeral special)
-def _peel_walk(start: int, ptags: Sequence[Set[str]],
+def peel_walk(start: int, ptags: Sequence[Set[str]],
                skip: Set[int] = frozenset()) -> list[int]:
-    """The indices _peel_trailing walks: `start` to the segment's end,
+    """The indices peel_trailing walks: `start` to the segment's end,
     minus the group-flagged credential pieces (the Ph. D. merge),
     which assign reads as suffixes at any position, and minus `skip`
     -- a tail segment's delimiter cores, which are structure rather
@@ -176,7 +183,7 @@ def _peel_walk(start: int, ptags: Sequence[Set[str]],
             if j not in skip and "suffix" not in ptags[j]]
 
 
-def _trailing_start(start: int, pieces: Sequence[Sequence[int]],
+def trailing_start(start: int, pieces: Sequence[Sequence[int]],
                     ptags: Sequence[Set[str]], tokens: Sequence[WorkToken],
                     skip: Set[int] = frozenset(),
                     numeral_only: bool = False) -> int:
@@ -197,17 +204,17 @@ def _trailing_start(start: int, pieces: Sequence[Sequence[int]],
     piece, the one before the numeral, and _maiden_take re-asks it
     with the piece the take leaves there; the acronym is left to
     assign."""
-    rest = _peel_walk(start, ptags, skip)
-    peeled = _peel_trailing(rest, pieces, ptags, tokens)
+    rest = peel_walk(start, ptags, skip)
+    peeled = peel_trailing(rest, pieces, ptags, tokens)
     if numeral_only:
         return rest[-1] if peeled.numeral is not None else len(pieces)
     return rest[peeled.names] if peeled.names < len(rest) else len(pieces)
 
 
-def _peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
+def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                    ptags: Sequence[Set[str]],
                    tokens: Sequence[WorkToken]) -> Peel:
-    """The S2 trailing peel over `rest`, a _peel_walk list. In the
+    """The S2 trailing peel over `rest`, a peel_walk list. In the
     piece layer rather than in assign because group's bound-given
     reserve asks the same question of the view the join would leave
     (#425): one walk, so the reserve and the assignment cannot drift. Pure -- the ambiguities are
@@ -218,7 +225,7 @@ def _peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     k = len(rest)
     while k > 0:
         piece = pieces[rest[k - 1]]
-        if _is_suffix_piece(piece, ptags[rest[k - 1]], tokens):
+        if is_suffix_piece(piece, ptags[rest[k - 1]], tokens):
             k -= 1
             continue
         # a final single letter that is a roman numeral, after a piece

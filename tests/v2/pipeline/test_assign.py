@@ -366,7 +366,7 @@ def test_positional_segment_zero_reports_the_particle_fork() -> None:
 
 def test_a_credential_run_after_a_family_comma_reads_as_suffixes() -> None:
     # 'Smith, Jr.' -- the peel's whole-segment exception claimed this
-    # even with 'jr' out of TITLES, because _is_leading_title also
+    # even with 'jr' out of TITLES, because is_leading_title also
     # infers a title from the period-abbreviation shape. The slot after
     # a family comma IS postnominal position, so a run that is nothing
     # but suffix pieces is read as one before the peel gets a chance
