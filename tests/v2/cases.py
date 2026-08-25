@@ -1694,7 +1694,14 @@ CASES: tuple[Case, ...] = (
                "deviation), so this read title 'MD' + given 'I' where "
                "'Smith, PSM I' read given 'PSM' + suffix 'I'. Two "
                "wrong answers, one cause -- a fix verified on PSM "
-               "alone would leave this one broken and look green"),
+               "alone would leave this one broken and look green. "
+               "'Smith, Jr. I' is the same story by the other route, "
+               "reaching the peel through the period-abbreviation "
+               "inference rather than TITLES membership, and is the "
+               "spelling a writer actually produces; it had a row of "
+               "its own until the mutation matrix showed the two trace "
+               "identically once fixed -- both heads are suffix pieces "
+               "now, so is_leading_title is never consulted for either"),
     Case("family_comma_numeral_after_a_name_is_an_initial",
          "Smith, John V.",
          {"given": "John", "middle": "V.", "family": "Smith"},
@@ -1722,16 +1729,6 @@ CASES: tuple[Case, ...] = (
                "'Dr.' + suffix 'PSM I' -- the reset fires 60 times "
                "across the suite and until this row no input observed "
                "it, which is the inert-measurement shape"),
-    Case("family_comma_run_numeral_after_a_period_abbreviation",
-         "Smith, Jr. I",
-         {"family": "Smith", "suffix": "Jr. I"},
-         classification="fix(#430)",
-         notes="the third route to the same bug, and the one a writer "
-               "actually produces: 'Jr.' reaches the leading-title peel "
-               "through the period-abbreviation inference rather than "
-               "through TITLES membership like 'MD', so it read title "
-               "'Jr.' + given 'I'. Named in the release log before it "
-               "had a row"),
     Case("family_comma_run_numeral_after_a_split_credential",
          "Smith, Ph. D. I",
          {"family": "Smith", "suffix": "Ph. D. I"},

@@ -138,13 +138,13 @@ def _numeral_behind_the_initial_veto(piece: Sequence[int],
 def segment_suffix_reading(pieces: Sequence[Sequence[int]],
                            ptags: Sequence[Set[str]],
                            tokens: Sequence[WorkToken],
-                           lenient: bool = True,
+                           lenient: bool,
                            ) -> tuple[bool, ...] | None:
     """How each piece of a no-name segment reads: True a suffix, False
     a title. None when the segment holds a name word and so is not a
     credential run at all.
 
-    ONE answer for three readers -- the no-name gate below, assign's
+    ONE answer for three readers -- assign's no-name gate, its
     router, and group's one-entry join -- because they must agree piece
     for piece. #429 shipped the inverse of its own fix by deriving that
     agreement twice (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
@@ -181,16 +181,18 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     if not pieces:
         return None
     out: list[bool] = []
-    after_suffix = False
-    for k in range(len(pieces)):
-        if is_suffix_piece(pieces[k], ptags[k], tokens):
-            after_suffix = True
+    for piece, tags in zip(pieces, ptags):
+        # the verdict just recorded IS "stands behind a suffix" -- keeping
+        # a separate flag meant maintaining that equality by hand at three
+        # sites, and a fourth branch that appended without assigning would
+        # have diverged silently
+        after_suffix = bool(out) and out[-1]
+        if is_suffix_piece(piece, tags, tokens):
             out.append(True)
         elif (lenient and after_suffix
-                and _numeral_behind_the_initial_veto(pieces[k], tokens)):
+                and _numeral_behind_the_initial_veto(piece, tokens)):
             out.append(True)
-        elif is_leading_title(pieces[k], ptags[k], tokens):
-            after_suffix = False
+        elif is_leading_title(piece, tags, tokens):
             out.append(False)
         else:
             return None

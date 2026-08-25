@@ -38,20 +38,25 @@ def test_the_numeral_veto_refuses_a_multi_token_piece() -> None:
     token of a piece rather than for the piece, which is a wrong answer
     where returning False is a safe one.
 
-    Asserted directly because it cannot be asserted through a name.
+    Asserted directly because it cannot be asserted through a name --
+    and with a piece the TAG test would accept, so that only the guard
+    can produce the False. A first version of this test used the merged
+    Ph./D. piece, whose head carries vocab:suffix but not initial: it
+    COVERED the line and pinned nothing, since the tag test answered
+    first and deleting the guard changed no result.
     """
-    state = _through_group("Smith, Ph. D.")
+    state = _through_group("Smith, V PSM")
     tokens = list(state.tokens)
-    merged = next(p for seg in state.pieces for p in seg if len(p) > 1)
-    assert len(merged) > 1, "the Ph./D. merge should give a 2-token piece"
-    assert _numeral_behind_the_initial_veto(merged, tokens) is False
+    head = next(i for i, tok in enumerate(tokens) if tok.text == "V")
+    assert {"vocab:suffix", "initial"} <= tokens[head].tags, (
+        "the probe needs a token the TAG test would accept, or the "
+        "assertion below passes without reaching the guard")
 
-    # and the single-token form it does answer for
-    numeral = _through_group("Smith, PSM I")
-    ntokens = list(numeral.tokens)
-    last = numeral.pieces[1][-1]
-    assert len(last) == 1
-    assert _numeral_behind_the_initial_veto(last, ntokens) is True
+    # one token: the tag test answers, and answers yes
+    assert _numeral_behind_the_initial_veto((head,), tokens) is True
+    # two tokens headed by that same token: only the guard can say no,
+    # so deleting it flips this
+    assert _numeral_behind_the_initial_veto((head, head + 1), tokens) is False
 
 
 def test_the_reading_is_positional_and_total() -> None:
@@ -60,7 +65,7 @@ def test_the_reading_is_positional_and_total() -> None:
     pieces[k]."""
     state = _through_group("Smith, MD PSM I")
     reading = segment_suffix_reading(
-        state.pieces[1], state.piece_tags[1], list(state.tokens))
+        state.pieces[1], state.piece_tags[1], list(state.tokens), True)
     assert reading is not None
     assert len(reading) == len(state.pieces[1])
     assert all(isinstance(v, bool) for v in reading)
@@ -77,11 +82,11 @@ def test_the_reading_does_not_move_when_roles_are_assigned() -> None:
     """
     state = _through_group("Smith, PSM I")
     before = segment_suffix_reading(
-        state.pieces[1], state.piece_tags[1], list(state.tokens))
+        state.pieces[1], state.piece_tags[1], list(state.tokens), True)
     after_state = assign(state)
     after = segment_suffix_reading(
         after_state.pieces[1], after_state.piece_tags[1],
-        list(after_state.tokens))
+        list(after_state.tokens), True)
     assert before == after == (True, True)
 
 
