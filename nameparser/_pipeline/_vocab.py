@@ -1,7 +1,7 @@
 """Shared vocabulary predicates for pipeline stages.
 
-Text-level tests used by more than one stage; token/piece-level
-predicates live with their stage. All take normalized-or-raw text
+Text-level tests used by more than one stage; piece-level ones live
+in _pieces, the sibling layer over tokens-plus-tags. All take normalized-or-raw text
 explicitly -- no state.
 
 is_wholly_suffix departs from that shape twice, deliberately. It is

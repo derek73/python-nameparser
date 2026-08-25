@@ -4,6 +4,7 @@ import ast
 import pathlib
 
 import nameparser
+import nameparser._pipeline
 
 PKG = pathlib.Path(nameparser.__file__).parent
 
@@ -25,8 +26,8 @@ _MUST_EXIST = {"_types.py", "_lexicon.py", "_policy.py", "_locale.py",
 
 _PIPELINE_STAGE_ALLOWED = (
     "nameparser._types", "nameparser._lexicon", "nameparser._policy",
-    # stages share _state plus in-package helpers (_vocab, _group's
-    # piece predicates); the prefix still forbids _render/_locale/_parser
+    # stages share _state plus in-package helpers (_vocab and
+    # _pieces); the prefix still forbids _render/_locale/_parser
     "nameparser._pipeline.",
 )
 
@@ -72,13 +73,15 @@ ALLOWED = {
     "_pipeline/_classify.py": _PIPELINE_STAGE_ALLOWED,
     # Piece-level predicates shared by group and assign
     # (mechanisms.md#ONE-PREDICATE-PER-QUESTION). Tighter than the
-    # stage allowance on purpose: it is a leaf both stages sit on,
-    # so it may read the token type and the vocabulary layer and
-    # nothing else. Widening this entry is the tell that a piece
-    # predicate has grown a dependency on a STAGE.
-    "_pipeline/_pieces.py": ("nameparser._types", "nameparser._lexicon",
-                             "nameparser._policy",
-                             "nameparser._pipeline._state",
+    # stage allowance on purpose: it is a leaf both stages sit on, so
+    # it may read the token type and the vocabulary layer and NOTHING
+    # else -- not even _lexicon, which is the likeliest next reach (a
+    # title predicate wanting _title_key) and so the one this entry
+    # most needs to refuse. Carrying the stage allowance's other
+    # prefixes here would pre-authorise the very widening the entry
+    # exists to make visible. Widening it is the tell that a piece
+    # predicate has grown a dependency on a stage.
+    "_pipeline/_pieces.py": ("nameparser._pipeline._state",
                              "nameparser._pipeline._vocab"),
     "_pipeline/_group.py": _PIPELINE_STAGE_ALLOWED,
     "_pipeline/_assign.py": _PIPELINE_STAGE_ALLOWED,
@@ -184,17 +187,32 @@ def test_every_pipeline_module_is_keyed_in_allowed() -> None:
     loosely, it is not checked AT ALL. Nothing else notices: the suite
     stays green, and the new module may import whatever it likes.
 
-    Scoped to _pipeline/ because that is what this contract governs. The
-    config/ modules, util.py and _version.py are deliberately unkeyed --
-    they are vocabulary data and packaging, not layers.
+    Scoped to _pipeline/ because that is what this contract governs.
+    Unkeyed by choice: the config/ DATA modules (config/__init__.py is
+    keyed, being code), util.py (no internal imports, and it dies with
+    the 1.x layer) and _version.py. nameparser/__init__.py is unkeyed
+    too and is none of those -- it is the export surface, held by
+    test_public_exports instead.
 
     Measured when this was added: all 13 _pipeline modules were keyed,
     so the gap was latent rather than active. #439's _pieces.py would
     have been the first to slip through, which is why closing it then
     cost nothing to clean up.
+
+    The directory comes from the imported subpackage rather than a path
+    literal, so a typo is an AttributeError; and the floor below is not
+    ceremony. Path.glob on a missing directory returns EMPTY rather than
+    raising, so a mistyped pattern would leave this asserting `set() -
+    keyed`, which passes for every possible ALLOWED -- a completeness
+    check measuring nothing, which is the shape of the bug it exists
+    to prevent.
     """
     keyed = set(ALLOWED)
-    shipped = {f"_pipeline/{p.name}" for p in (PKG / "_pipeline").glob("*.py")}
+    pipeline_dir = pathlib.Path(nameparser._pipeline.__file__).parent
+    shipped = {f"_pipeline/{p.name}" for p in pipeline_dir.glob("*.py")}
+    assert "_pipeline/_group.py" in shipped, (
+        f"the glob matched no pipeline modules, so this check can no "
+        f"longer fail: {sorted(shipped)}")
     missing = sorted(shipped - keyed)
     assert not missing, (
         f"pipeline modules absent from ALLOWED, and therefore exempt "

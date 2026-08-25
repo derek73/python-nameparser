@@ -13,22 +13,24 @@ delimiter-core tokens tail segments drop (v1 suffix_delimiter parity)
 registration becomes piece_tags entries -- per-parse state that
 dissolves with the state (v1 kept per-parse sets for the same reason).
 
-Implements rules H3, P2, P3, P4 and M2, and houses H2's test of docs/design/rules.md and the
+Implements rules P2, P3, P4 and M2, and the
 group half of M1 (#329: the marker dropped inside EXTRACTED maiden
 content, which M2's pieces walk cannot reach because extract's
 content never enters pieces); each is cited at its code below. Also
 implements rule P5 (cited below at the bound-given join) and ports
 the "Ph. D."-split merge (v1 fix_phd; decisions.md#phd-merge).
 
-The piece-level predicates this stage shares with assign -- the S2
-trailing peel, the leading-title test, the no-name-segment test --
-moved to _pieces in #439. They had collected here by import direction
-rather than by topic (assign imports group and cannot be imported
-back), which is the accumulation
+The piece-level predicates moved to _pieces in #439 -- the S2
+trailing peel, the leading-title and title-piece tests, the
+suffix-piece test, the no-name-segment test. Most are shared with
+assign; _is_title_piece and _trailing_start are group's alone and
+travelled because the shared ones call them. They had collected here
+by import direction rather than by topic (assign imported group and
+could not be imported back), which is the accumulation
 mechanisms.md#ONE-PREDICATE-PER-QUESTION describes; group imports them
-back like any other caller. What remains here is group's own:
-_is_prefix_piece, _is_conj_piece, _is_rootname and
-_is_maiden_marker_piece.
+back like any other caller, and still does the work H3 and S2 describe
+with them. What remains defined here is group's own: _is_prefix_piece,
+_is_conj_piece, _is_rootname and _is_maiden_marker_piece.
 """
 from __future__ import annotations
 
@@ -77,8 +79,10 @@ class BoundJoin(IntEnum):
     STRICT = 2     # main segments (reserve_last=True: keep a family piece)
 
 
-
-
+# rules.md#S2: "a trailing word of the suffix vocabulary reads as a
+# suffix" -- group does not decide that; it stops before whatever
+# _trailing_start says the run is, so the chain and the maiden walk
+# end where assign's peel begins (#424).
 # rules.md#P2: "a particle joins the words after it into one name
 # part, the join running until the next particle starts a group of
 # its own, a trailing suffix begins" -- and on to the maiden marker
@@ -91,8 +95,6 @@ def _is_prefix_piece(piece: Sequence[int], ptags: Set[str],
     if "prefix" in ptags:
         return True
     return len(piece) == 1 and "particle" in tokens[piece[0]].tags
-
-
 
 
 # rules.md#M2: "a recognized maiden marker standing after at least

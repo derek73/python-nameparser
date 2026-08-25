@@ -1,24 +1,35 @@
 """Shared piece-level predicates for pipeline stages.
 
-How a PIECE reads -- its tokens plus the tags the vocabulary layer left
-on them -- where _vocab answers how a WORD reads. Both are consulted by
-more than one stage; the split is by what the question takes, not by
+How a PIECE reads -- its tokens, plus the tags classify wrote on them
+and the tags group derived for the piece -- where _vocab answers how a
+WORD reads from text alone. Both are consulted by more than one
+stage; the split is by what the question takes, not by
 which stage happens to ask (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
-_vocab says so from its own side: "Text-level tests used by more than
-one stage; token/piece-level predicates live with their stage."
+_vocab points here from its own side: "Text-level tests used by more
+than one stage; piece-level ones live in _pieces, the sibling layer
+over tokens-plus-tags."
 
 Before this module those predicates lived in _group, not because
-grouping owned them but because assign imports group and cannot be
+grouping owned them but because assign imported group and could not be
 imported back, so group was the only place both stages could reach.
-That is a fact about the import graph, and it had accumulated five
-predicates across four PRs (#424, #425, #401/#421, #429).
+They arrived there that way across three PRs -- #424 brought
+_is_leading_title, _leading_titles and _trailing_start, #425 the peel
+(_peel_walk, _peel_trailing), #429 _segment_holds_no_name.
+_is_title_piece and _is_suffix_piece are older than any of that: they
+were group's from its first commit, and travel because the others
+call them.
 
-The S2 trailing peel travels as the unit decisions.md describes it as --
+The import that forced all of it is the one #439 removed: assign no
+longer names _group at all. What still holds is the rule that replaced
+it, and tests/v2/test_layering.py is where it is written down -- a
+piece predicate may not depend on a stage, in either direction.
+
+The S2 trailing peel travels as the unit decisions.md describes --
 _peel_walk, _peel_trailing and _trailing_start together -- though only
 the first two cross a stage boundary.
 
-Layering: imports _state and _vocab only, and nothing in the pipeline
-imports it back.
+Layering: imports _state and _vocab only; _group and _assign import
+it, and neither of the two it imports imports it back.
 """
 from __future__ import annotations
 
@@ -42,8 +53,8 @@ def _is_title_piece(piece: Sequence[int], ptags: Set[str],
 
 # Ported verbatim from v1 (nameparser/config/regexes.py
 # "period_abbreviation") -- layering forbids the config import; keep
-# in sync by hand (tests/v2/test_regex_sync.py). Here rather than in
-# assign since #424: the leading-title test is assign's, and group's
+# in sync by hand (tests/v2/test_regex_sync.py). Out of assign since
+# #424 and in the piece layer since #439: the test is assign's, and group's
 # leading-particle scan and trailing-run walk must start where assign
 # starts.
 _PERIOD_ABBREV = re.compile(r'^[^\W\d_]{2,}\.$')
@@ -158,7 +169,7 @@ def _peel_walk(start: int, ptags: Sequence[Set[str]],
     -- a tail segment's delimiter cores, which are structure rather
     than words (the maiden walk's case, #424). Built here and nowhere
     else, so the walk's input cannot drift between assign and the
-    three group sites that read it: the numeral fork is a last-piece
+    group sites that read it: the numeral fork is a last-piece
     test that reads the piece before as rest[k - 2], which holds only
     over this list."""
     return [j for j in range(start, len(ptags))
@@ -196,11 +207,10 @@ def _trailing_start(start: int, pieces: Sequence[Sequence[int]],
 def _peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                    ptags: Sequence[Set[str]],
                    tokens: Sequence[WorkToken]) -> Peel:
-    """The S2 trailing peel over `rest`, a _peel_walk list. Housed
-    here rather than in assign because assign imports group's piece
-    predicates, and group's bound-given reserve asks the same question
-    of the view the join would leave (#425): one walk, so the reserve
-    and the assignment cannot drift. Pure -- the ambiguities are
+    """The S2 trailing peel over `rest`, a _peel_walk list. In the
+    piece layer rather than in assign because group's bound-given
+    reserve asks the same question of the view the join would leave
+    (#425): one walk, so the reserve and the assignment cannot drift. Pure -- the ambiguities are
     returned for assign to report, in the order it always reported
     them."""
     picks: list[tuple[int, ...]] = []

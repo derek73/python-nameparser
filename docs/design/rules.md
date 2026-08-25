@@ -462,7 +462,7 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Jack Wei Ma"               →  suffix="Ma"
       "Jack Wei Ma"               →  ambiguities=("suffix-or-name",)
       "Smith Jr."                 →  family=""
-    implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with
     periods; the chunks between the periods are what carry the
