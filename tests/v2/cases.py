@@ -18,6 +18,13 @@ still wearing it is a row whose parity is simply unknown.
 The v1 suite's full corpus is extracted into this table by the
 migration plan (facade runner consumes the same rows); this file seeds
 it with the pinned battery.
+
+What earns a row is a FORK: a branch taken for one input and not
+another -- a rule's boundary, a precedence contest between two rules,
+a policy that changes the answer. A row demonstrating one more member
+of a vocabulary set pins nothing its other members do not, and one row
+per entry grows this table without narrowing what can break
+(mechanisms.md#VOCABULARY-EXERCISES-FORKS).
 """
 from __future__ import annotations
 

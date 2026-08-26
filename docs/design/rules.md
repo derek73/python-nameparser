@@ -20,6 +20,7 @@ An `annotation` names a policy, locale (`[ru]`), or extras gate (`[ja+segmenter]
   readings). Language-specific behavior is opt-in configuration. Script-conditional behavior exists only where the script itself settles the convention (see the W section).
 - **Grammatical inflection.** Names inflect in many languages (vocative, genitive); this library neither produces nor consumes inflected forms. CLDR personNames draws the same line.
 - **Validation.** Deciding whether a string IS a person's name is not parsing; `parse()` is total over strings and never rejects input.
+- **Vocabulary completeness.** No shipped wordlist parses every name, and none is meant to. The promise is that every TYPE of vocabulary has a mechanism — markers, particles, titles, suffixes, bound given names — and that callers configure the members their data needs. A missing entry is a configuration answer, not a defect, and what the tests owe is one exercise per behavioral fork rather than one per entry (mechanisms.md#VOCABULARY-EXERCISES-FORKS).
 - **Comparison.** matches()/comparison_key() are a value-API surface, not parsing; their design record is decisions.md#comparison-surface.
 
 ## Titles & honorifics (H)
