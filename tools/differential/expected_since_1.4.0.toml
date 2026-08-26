@@ -67,11 +67,15 @@ issue = "fix(#274) maiden markers consumed"
 # tests/v2/test_ledger_guards.py: every alternative must match at least
 # one entry the config ships, and none may match ordinary name text.
 #
-# Its members reach 4 of the 17 entries -- geb, nee, née, roz -- which
-# is not the same set as the markers the corpora contain (geb, née and
-# 旧姓; only the first two are covered here). Growing it toward the
-# other 12 buys nothing: none appears as a token in any corpus, so
-# there is no diff for them to classify.
+# Its members reach 3 of the 16 entries -- geb, nee, née -- which is
+# not the same set as the markers the corpora contain (geb, nee, née
+# and 旧姓; the first three are covered here). Growing it toward the
+# other 13 buys nothing: none appears as a token in any corpus, so
+# there is no diff for them to classify. The roz alternative was
+# dropped in 2.2 with the vocabulary entry it copied (see
+# maiden_markers.py's Deliberately absent note): no corpus name
+# contains the string in any case or position, so it classified
+# nothing and its removal moved no name.
 #
 # 旧姓 is a different case, and it has been got wrong three times, so
 # state it precisely. Widening this rule to cover it changes no corpus
@@ -126,7 +130,7 @@ issue = "fix(#274) maiden markers consumed"
 # would need the regex to ask a vocabulary question -- suffix or
 # connective membership -- a second alternation this rule cannot
 # spend.
-name_regex = "(?i)(?<![(（])(?<=\\S\\s)\\b(n[ée]e|geb|roz)\\.?(?![)）])(?=\\s+\\S)"
+name_regex = "(?i)(?<![(（])(?<=\\S\\s)\\b(n[ée]e|geb)\\.?(?![)）])(?=\\s+\\S)"
 fields = ["maiden", "middle", "family"]
 
 [[change]]

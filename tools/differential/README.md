@@ -412,10 +412,12 @@ The corpora run under the **default policy**, so any behavior gated
 behind a non-default `Policy` field is invisible here. Default
 *vocabulary* is a different matter: it is fully in EFFECT, never
 gated off the way a `Policy` field is, so a change to it can show up
-here. That is not the same as coverage -- only 4 of the 17 shipped
+here. That is not the same as coverage -- only 4 of the 16 shipped
 `maiden_markers` and 8 of the 15 `honorific_tails` appear anywhere in
 the corpora as whole tokens (re-measured 2026-08-26; the marker count
-was 3 until #414's rules corpus brought in a parenthesized `Nee`), so
+was 3 until #414's rules corpus brought in a parenthesized `Nee`, and
+the denominator was 17 until `roz` left the vocabulary in 2.2 -- it
+appeared in no corpus name, so only the denominator moved), so
 an entry no corpus name exercises is as invisible as an opt-in
 policy.
 
@@ -431,7 +433,7 @@ is opt-in about them is narrower than it looks (rows measured
 Row 1 carries no marker word, so it isolates the delimiter: the
 brackets alone route their content to `maiden`, and only once the
 policy says they do. Row 2 carries no brackets, so it isolates the
-marker: `Lexicon.maiden_markers` ships 17 entries by default, `nee`
+marker: `Lexicon.maiden_markers` ships 16 entries by default, `nee`
 among them, and the bare form needs no configuration at all.
 
 So what is opt-in is neither the marker words nor the delimited path

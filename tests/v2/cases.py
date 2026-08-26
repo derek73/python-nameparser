@@ -784,6 +784,46 @@ CASES: tuple[Case, ...] = (
          {"given": "Jane", "family": "Smith", "maiden": "Jones"},
          classification="fix(#274)",
          notes="v1 mangles to middle='Smith née'"),
+    Case("diminutive_that_was_a_marker_keeps_the_family",
+         "Rosalind Roz Smith",
+         {"given": "Rosalind", "middle": "Roz", "family": "Smith"},
+         notes="'roz', the Czech/Slovak abbreviation, shipped in "
+               "MAIDEN_MARKERS through 2.1 and collided with the "
+               "English diminutive of Rosalind -- matching is "
+               "whole-token, case-folded and period-insensitive, so "
+               "Roz, roz and roz. are one string. This name read "
+               "maiden 'Smith' with NO family name at all (measured on "
+               "the pre-removal tree), because M2 hands the marker "
+               "every word after it. The entry is gone in 2.2, which "
+               "is what this row pins. Nothing to do with the "
+               "delimited path: the defect is M2's, it predates #335, "
+               "and the one-word '(Roz)' spelling was never affected "
+               "since M3 declines a lone marker. Parity, and it is "
+               "RESTORED parity rather than untouched -- 1.4.0 has no "
+               "maiden support and read first Rosalind / middle Roz / "
+               "last Smith (2026-08-26), which is where the removal "
+               "puts this name back"),
+    Case("full_participle_marker_still_consumes",
+         "Anna Nováková rozená Svobodová",
+         {"given": "Anna", "family": "Nováková", "maiden": "Svobodová"},
+         classification="fix(#274)",
+         notes="the other half of the roz removal, and the reason it "
+               "was a removal and not a retreat from Czech: the full "
+               "participle rozená stays, being a word no one is "
+               "called. Pinned because deleting a vocabulary entry "
+               "invites deleting its neighbours, and because nothing "
+               "else in the suite reaches this entry: removing "
+               "rozená from MAIDEN_MARKERS fails exactly this row's "
+               "two tests, one per runner, and nothing else (measured "
+               "2026-08-26) -- the position "
+               "maiden_marker_delimited_unaccented holds for 'nee'. "
+               "The cost the removal accepts is the "
+               "abbreviation: 'Anna Nováková roz. Svobodová' now reads "
+               "middle 'Nováková roz.', family 'Svobodová' (measured), "
+               "which is exactly how 1.4.0 read it. 1.4.0 read this "
+               "row middle 'Nováková rozená' / last Svobodová "
+               "(2026-08-26) -- the marker inside the name, the "
+               "ordinary v1 reading of every marker"),
     Case("maiden_marker_after_particle_chain",
          "Ursula von der Leyen geb. Albrecht",
          {"given": "Ursula", "family": "von der Leyen",
