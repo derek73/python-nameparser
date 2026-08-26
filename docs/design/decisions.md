@@ -324,10 +324,13 @@ Declined (ambiguity kinds for script-resolved names, 2026-07-27):
   suffix} to {family, suffix}, and `classify()` takes the first rule
   whose declared `fields` are a SUPERSET of the observed diff, so a
   shrinking diff kept matching and no run ever named it. A real
-  movement behind a green gate — the third time on this branch that a
-  green gate hid one, which is the lesson worth keeping rather than
-  the specific fix. It is also, being a title, one name word and a
-  suffix, the suffix flavor of this very shape, which three ledger
+  movement behind a green gate, and the second of that kind here: the
+  fields-only `fix(suffix-routing)` catch-all was absorbing three
+  names at 1.4.0 the same way, its heading growing with nothing to
+  announce it. Both are one shape — a rule broader than the diff it
+  explains — and that is the lesson worth keeping rather than either
+  fix. It is also, being a title, one name word and a
+  suffix, the suffix flavor of this very shape, which two ledger
   comments had claimed no corpus carries.
   At 1.4.0 three of the four were being absorbed by the fields-only
   `fix(suffix-routing)` rule (its heading went 14 -> 17) — invisible
@@ -340,10 +343,14 @@ Declined (ambiguity kinds for script-resolved names, 2026-07-27):
   Known gap between the statement and the guard: H1 says "exactly one
   name word" and "that word", but the guard never counts units. It
   tests which ROLES are unoccupied — no middle, no family — and then
-  retags every given token, so a name whose given run is two words
-  reaches it and moves both: `Freiherr de V Jr` reads family 'de V'.
-  Only degenerate inputs get there — a 58,338-name sweep found no
-  corpus name and no rules.md example reaching it — but it is
+  retags every given token, so a name whose given run is two name
+  WORDS (units, not tokens) reaches it and moves both: `Freiherr de V
+  Jr` reads family 'de V'. The distinction matters for reading the
+  claim that follows: a multi-token given run is ordinary — the
+  rules.md example `Freiherr von Richthofen V` has one, its two
+  tokens being a single particle unit — and it is a run of two UNITS
+  that no real input produces. A 58,338-name sweep found no corpus
+  name and no rules.md example with one — but it is
   recorded because decisions.md elsewhere leans on H1's "exactly one
   name word" as a settled scope when narrowing P5's licence, and that
   reading of H1 is stronger than the code behind it. Not fixed here:

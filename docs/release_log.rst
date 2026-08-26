@@ -12,13 +12,15 @@ Release Log
 
     Nothing moved between vocabularies. The rename itself changes no
     parse at all; the parsing changes below are separate fixes, and
-    two of them reach the default name order -- a title no
-    longer changing how the name behind it is read, which moves four
-    names of the differential corpora, and a title-plus-surname name
-    no longer losing its family when an annotation stands beside it,
-    which moves five. Both family-first orders change too,
-    below -- seven of those from the family-first fix, plus the names
-    the title fix moves in every order. The corpora have roughly
+    most of them reach the default name order -- each bullet names
+    the shapes and the corpus names it moves, and the gate output is
+    the source of record. The unusual part is the family-first
+    orders, which change too: seven names from the family-first fix,
+    plus the names #367's title fix moves, which it moves in every
+    order. The other title fix below, #410, is default-order only --
+    under either family-first order the word behind the title is
+    already the family, so the rule is a no-op there and moves
+    nothing (measured over all four corpora). The corpora have roughly
     doubled across this cycle (#414 added the rules doc's examples,
     #413 taught the issue harvester to read backticks), so the counts
     in the bullets below are the classified summary at the time each

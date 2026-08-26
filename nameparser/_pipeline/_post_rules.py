@@ -9,7 +9,7 @@ Reads: Policy.patronymic_rules, Policy.middle_as_family;
 Lexicon.given_name_titles.
 
 Implements rules H1, P1, O1, O2 and O3 of docs/design/rules.md; each
-is cited at its code below, and P1/O1/O2's history lives in
+is cited at its code below, and H1/P1/O1/O2's history lives in
 docs/design/decisions.md.
 """
 from __future__ import annotations
@@ -180,7 +180,8 @@ def post_rules(state: ParseState) -> ParseState:
     # name stands beside it, unless the title is a given-name title,
     # which keeps it the given name" -- counting those three as
     # further name words is what emptied the family (#410)
-    # (v1 handle_firstnames)
+    # (known gap: the guard tests which roles are unoccupied, it does
+    # not count units -- decisions.md#H1) (v1 handle_firstnames)
     if titles and givens and not middles and not families:
         joined = _title_key(tokens[i].text for i in titles)
         if joined not in state.lexicon.given_name_titles:

@@ -435,11 +435,16 @@ issue = "fix(#424) a title-led chain before the numeral is the one name piece"
 # rules.md example.
 #
 # #410 narrowed this diff rather than adding one: {given, family,
-# suffix} before it, {family, suffix} after. `fields` declares the
-# wider set, so the name stayed classified here and no run reported
-# it moving.
+# suffix} before it, {family, suffix} after. `fields` went on
+# declaring the wider set, and because the match is a subset test the
+# rule kept claiming the name as its diff shrank -- a real change of
+# reading crossing a green gate with nothing to name it. The
+# declaration now matches the diff, so `given` moving on this name
+# again would be unexplained rather than absorbed. The general form:
+# a `fields` list wider than the diff it explains silently absorbs
+# whatever else lands inside it.
 name_regex = "(?i)^freiherr\\s+von\\s+richthofen\\s+v$"
-fields = ["given", "family", "suffix", "_ambiguities"]
+fields = ["family", "suffix", "_ambiguities"]
 
 [[change]]
 issue = "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece"
@@ -937,7 +942,10 @@ issue = "fix(#410) a title and one name word name the family, whatever annotatio
 # tests/v2/cases.py::suffix_stays_suffix_title pins that.
 #
 # The change is in the 2.2 cycle, so 2.0.0 sees the same four diffs
-# 2.1.0 does and the rule is shared verbatim with that ledger --
-# checked against this baseline's own run, not assumed from it.
+# 2.1.0 does. The RULE is shared verbatim with that ledger --
+# identical name_regex and fields, identical _CORPUS_CLAIMS digest --
+# and was checked against this baseline's own run rather than assumed
+# from it. These comments are not shared: each ledger says what its
+# own baseline sees.
 name_regex = "(?i)^(?:Senator \"Rick\" Edmonds|Xyz\\. \\(Bud\\) Smith|Dr\\. Smith n[ée]e Jones|'Smitty' Dr\\. Jones)$"
 fields = ["given", "family"]

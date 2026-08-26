@@ -1342,7 +1342,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#424) accepted: the chain keeps an acronym assign will not peel behind a title-and-particle word":
             _Claim(1, ('family', 'given'), "faa4bedda537"),
         "fix(#424) a title-led chain before the numeral is the one name piece":
-            _Claim(1, ('family', 'given', 'suffix'), "5b3a743f9e35"),
+            _Claim(1, ('family', 'suffix'), "5b3a743f9e35"),
         "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece":
             _Claim(1, ('family', 'middle', 'suffix'), "a564b97f7162"),
         "fix(#360) ste moved into the never-given particles with mc":
@@ -1410,7 +1410,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#424) the particle chain stops before a bare acronym with words to spare":
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "3e3aae6a5b4b"),
         "fix(#424) a title-led chain before the numeral is the one name piece":
-            _Claim(1, ('_ambiguities', 'family', 'given', 'suffix'), "5b3a743f9e35"),
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "5b3a743f9e35"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -1500,7 +1500,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#424) the particle chain stops before a bare acronym with words to spare":
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "3e3aae6a5b4b"),
         "fix(#424) a title-led chain before the numeral is the one name piece":
-            _Claim(1, ('_ambiguities', 'family', 'given', 'suffix'), "5b3a743f9e35"),
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "5b3a743f9e35"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -1905,7 +1905,7 @@ def test_a_fields_narrowing_actually_narrows_something() -> None:
 
     Measured: deleting `fields = ["nickname", "middle"]` from the
     ASCII-pairs entry passes every other check in this tree. The entry
-    then refuses ANY diff on the 34 corpus names it captures --
+    then refuses ANY diff on the 46 corpus names it captures --
     including 'Jenny (Johnson) Baker' and 'Lon (Jr.) Williams', whose
     parens are a maiden name and a suffix, both under active
     development. Nothing failed, because none of those names diffs

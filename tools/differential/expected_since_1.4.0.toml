@@ -991,10 +991,15 @@ issue = "fix(#424) a title-led chain before the numeral is the one name piece"
 # still holds. A rules.md example.
 #
 # The diff was {given, family, suffix} before #410 and is {family,
-# suffix} now; `fields` still declares all three, which is why this
-# name never surfaced as a new diff when #410 landed.
+# suffix} after it. `fields` declared all three until this round, and
+# that width is exactly why the movement never surfaced: the subset
+# test kept matching as the diff shrank, so a real change of reading
+# passed through a green run unnamed. The declaration is narrowed to
+# what the diff actually is, which is what makes a future `given`
+# regression on this name loud instead of absorbed. A `fields` list
+# wider than the diff it explains is a silent absorber.
 name_regex = "(?i)^freiherr\\s+von\\s+richthofen\\s+v$"
-fields = ["given", "family", "suffix"]
+fields = ["family", "suffix"]
 
 [[change]]
 issue = "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece"
@@ -1227,7 +1232,8 @@ why = "feat(#273) recognizes TYPOGRAPHIC nickname delimiters; the ASCII pairs we
 # ('"Rick" Edmonds'), medial ('John (Jack) Kennedy') or trailing
 # ('Franklin, Benjamin (Ben)'), with a word character or a period as
 # the inner flank so a middle initial counts ('Cherice J. (Johnson)
-# Williams'). 34 corpus names.
+# Williams'). 46 corpus names (recounted 2026-08-25; the figure is
+# the one test_ledger_guards.py pins as this entry's `captures`).
 #
 # It was medial-only for three rounds, on the theory that the trailing
 # position is where credentials live and that widening would silence
@@ -1255,10 +1261,11 @@ why = "feat(#273) recognizes TYPOGRAPHIC nickname delimiters; the ASCII pairs we
 # '김민준씨 (Jimmy)' {first,last,suffix}. Zero classifications lost.
 #
 # A bare [("'] class is still wrong, for the reason the role
-# narrowing cannot fix: it reaches 47 names, 11 of them on an
-# apostrophe that is part of the surname ("Brian O'connor",
+# narrowing cannot fix: it reaches 63 names, 9 of them on an
+# apostrophe that is part of the word ("Brian O'connor",
 # "Harietta Keopuolani Nahi'ena'ena"), which is not a delimited run at
-# all.
+# all. (Both figures recounted 2026-08-25, against the corpora as they
+# now stand; they were 47 and 11 when first written.)
 #
 # By role: ASCII parens mark nicknames, maiden names, suffixes and
 # credentials alike, and no regex tells them apart. The shape reaches

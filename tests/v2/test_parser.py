@@ -1333,19 +1333,23 @@ def test_a_maiden_clause_changes_nothing_else(name: str) -> None:
     names failed this.
 
     One skip, and it is M2's own boundary: a corpus name that parses
-    to nothing at all ('', '(', '()') gives the appended marker
-    nothing to stand behind, so M2 leaves it a word. A title-only or
-    suffix-only name is NOT in that class -- 'Coach née Jones' reads
-    maiden 'Jones' -- and is asserted like any other. #410's
-    lone-residual shape used to be skipped here too -- 'Dr. Jane'
-    read family 'Jane' and 'Dr. Jane née Smith' given 'Jane' -- and
-    no longer moves, so the assertion now covers every name that
-    parses to anything.
+    to no name word ('', '(', '()') gives the appended marker nothing
+    to stand behind, so M2 leaves it a word. A name that is only a
+    NICKNAME is in that class too, which is why the test below asks
+    about five fields and not about `nickname`: '(Bud)' parses to a
+    nickname alone, and '(Bud) née Jones' reads given 'née', family
+    'Jones' and no maiden at all -- the marker stayed a word, so
+    there is no clause to assert. A title-only or suffix-only name is
+    NOT in that class -- 'Coach née Jones' reads maiden 'Jones' --
+    and is asserted like any other. #410's lone-residual shape used
+    to be skipped here too -- 'Dr. Jane' read family 'Jane' and 'Dr.
+    Jane née Smith' given 'Jane' -- and no longer moves, so the
+    assertion now covers every name that reaches the marker with
+    something to stand behind.
     """
     base = parse(name)
     if not (base.given or base.middle or base.family
-            or base.title or base.suffix or base.nickname
-            or base.maiden):
+            or base.title or base.suffix):
         pytest.skip("nothing before the marker at all: M2 leaves it a word")
     with_clause = parse(name + " née Jones")
     assert with_clause.maiden == "Jones"
