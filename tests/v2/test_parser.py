@@ -1335,6 +1335,17 @@ def _clause_free_latin_corpus_names() -> list[str]:
                         for word in name.split())]
 
 
+def test_the_clause_free_corpus_is_not_empty() -> None:
+    """The invariant below is parametrized over a FILTERED corpus, and
+    an empty parametrization passes as a skip rather than failing --
+    the shape #329 left behind. The filter has been widened once
+    already (the delimiter strip, 2026-08-26, which took it from 637
+    names to 628), so the floor is what says a future widening emptied
+    it. Deliberately far below today's count: this asks whether the
+    filter still selects a corpus, not what the corpus holds."""
+    assert len(_clause_free_latin_corpus_names()) > 100
+
+
 @pytest.mark.parametrize("name", _clause_free_latin_corpus_names())
 def test_a_maiden_clause_changes_nothing_else(name: str) -> None:
     """The grouping rules count and join only the words that remain

@@ -987,3 +987,21 @@ issue = "fix(#335) a marker-led bracketed clause reads as the maiden name, compo
 # is a nickname", which is the distinction the fields above turn on.
 name_regex = "^山田 花子（旧姓 佐藤）$"
 fields = ["given", "family", "nickname", "maiden"]
+
+[[change]]
+issue = "fix(#335) a marker-led clause leaves the one name word its bare reading"
+# 'Smith (née Jones)', which rules.md#N3 carries as an Accepted line.
+# N3 reads a name that is only a nickname plus one name word as "that
+# word is the family name", and a marker-led clause is not a nickname
+# clause, so N3 no longer reaches this shape: the word keeps the
+# reading the bare "Smith née Jones" gives it, which is `given`.
+#
+# Its own rule rather than a sixth alternative in the fix(#335) rule
+# above, for the reason that rule states: this diff moves FOUR fields
+# where those move two, and one rule holding both would have to
+# declare the union, pre-excusing a given/family regression on the
+# five. The empty `family` is not this change's -- the bare spelling
+# reads that way on 2.0.0 and 2.1.0 too -- but it is inside this
+# diff, so the rule declares it.
+name_regex = "^Smith \\(n[\u00e9e]e Jones\\)$"
+fields = ["given", "family", "nickname", "maiden"]

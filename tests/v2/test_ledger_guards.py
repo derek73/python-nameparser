@@ -1260,7 +1260,9 @@ def _claim(rule: dict) -> _Claim:
 #: both is growth into names the rule genuinely describes.
 _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
-        "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
+        "fix(#335) a marker-led clause leaves the one name word its bare reading":
+            _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
+                "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
             _Claim(5, ('maiden', 'nickname'), "a419f74143e3"),
         "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
             _Claim(3, ('family', 'given'), "24d6223e472f"),
@@ -1299,7 +1301,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(279, ('family', 'given'), "28a62b622a48"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(1079, ('family', 'given', 'suffix'), "3cc8bbe00b2d"),
+            _Claim(1080, ('family', 'given', 'suffix'), "0cb2cda1ed6b"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1372,7 +1374,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given'), "e62caedec864"),
     },
     "expected_since_2.0.0.toml": {
-        "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
+        "fix(#335) a marker-led clause leaves the one name word its bare reading":
+            _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
+                "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
             _Claim(5, ('maiden', 'nickname'), "a419f74143e3"),
         "fix(#335) a marker-led bracketed clause reads as the maiden name, compounding with the CJK order flip":
             _Claim(1, ('family', 'given', 'maiden', 'nickname'), "cf370e856ae7"),
@@ -1480,7 +1484,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'maiden'), "2150936a8c55"),
     },
     "expected_since_2.1.0.toml": {
-        "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
+        "fix(#335) a marker-led clause leaves the one name word its bare reading":
+            _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
+                "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
             _Claim(6, ('maiden', 'nickname'), "d0e857deddb2"),
         "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
             _Claim(4, ('family', 'given'), "da1dd1473145"),
@@ -1830,7 +1836,7 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
                   ("fix(comma-family)", "fix(comma-precomma-family)",
                    "fix(suffix-routing)")),
     '(^|[\\w.]\\s+)[("\'][^)"\']+[)"\'](\\s+\\w|\\s*$)':
-        _Excluded(50, "241623062660", ()),
+        _Excluded(51, "770738271273", ()),
 }
 
 

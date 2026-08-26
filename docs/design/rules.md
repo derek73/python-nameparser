@@ -527,7 +527,12 @@ N3. Rationale: a person set down as a nickname plus one name word is
       "'Smitty' Jones Jr."        →  family=""
       "'Smitty' Dr. Jones"        →  family="Jones"
       "'Smitty' Sir John"         →  given="John"
-    history: decisions.md#N3 · interacts: H1 · implemented: nameparser/_pipeline/_assign.py
+    Accepted: a marker-led clause is a maiden clause and not a
+    nickname one (M3), so this rule does not reach a name written
+    that way, and the one name word keeps the reading the bare
+    spelling gives it rather than becoming the family name.
+      "Smith (née Jones)"         →  given="Smith"
+    history: decisions.md#N3 · interacts: H1, M3 · implemented: nameparser/_pipeline/_assign.py
 
 ## Maiden names (M)
 
