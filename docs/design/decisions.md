@@ -140,10 +140,7 @@ the fullwidth-colon marker (旧姓：佐藤 arrives as one word; the head-peel q
 
 - 2026-08-22 #424 — the walk stops before the trailing numeral assign reads as the suffix. "Up to any trailing suffix" was asked with the suffix-piece test, whose initial veto does not see a bare `V`: `John née Jones Smith V` read maiden 'Jones Smith V' where `John Smith V` reads suffix 'V'. The walk now also stops at `_trailing_start` — the S2 peel read from the marker on, over the pieces as they stand, stepping over a tail segment's delimiter cores as the walk does — but at the NUMERAL only. The bare-acronym fork counts pieces, and the walk removes the very pieces it counted: `John née Jones Smith Ma` peeled over the pieces as they stand reads the acronym as a credential with words to spare, and once 'Jones Smith' has left the name it is the family of a two-piece name — maiden 'Jones Smith', family 'Ma', which is worse than the maiden 'Jones Smith Ma' it had always read. The numeral fork reads the piece before the numeral, and the take removes that very piece: afterwards assign sees the piece before the MARKER there, and where that is initial-shaped the fork does not fire — the first draft stopped the walk all the same, and `J. née Jones Smith V` read maiden 'Jones Smith', family 'V' (both reviews found it: 27 of the design-docs review's 144 marker shapes, every one a head ending in an initial; the pool is unrecorded). The walk runs the peel again over the view the take would leave — the pieces before the marker and the numeral on, built as P5's reserve builds its view — so it stops only where the numeral reads as the suffix both as written and as left: `J. née Jones Smith V` keeps maiden 'Jones Smith V', as `J. V` reads the V as a name, and `Dr. née Jones Smith V` keeps maiden 'Jones Smith V', since assign peels the title first and a numeral alone is no fork (the first re-ask checked the preceding piece only and handed that V to the given name — the code review). As written too: `Jane née Jones J. V` keeps maiden 'Jones J. V' though the take would leave `Jane V`, the words as written being what the marker takes; the second docs review found the statement saying only the second half. The acronym is left to assign, recorded as Accepted. The peel is read from the marker rather than after it, so `Jane Smith née V` declines as `Jane Smith née PhD` does — nothing after the marker but a suffix, the marker stays a word, suffix 'V' — which is 1.4.0's reading (the first draft read maiden 'V', and the 1.4.0 gate is what showed it); and `Jane née Jones J. V` keeps maiden 'Jones J. V' (the piece before is initial-shaped). 1.4.0 had no maiden support, so the examples fall under the #274 rule at that baseline where its fields reach, and `J. née Jones Smith V` (v1 read suffix 'V') under an accepted rule of its own; against 2.0.0 and 2.1.0 the examples that move are classified — `John née Jones Smith V` in maiden and suffix, `Jane Smith née V` in the five fields the marker's survival touches — and `J. née Jones Smith V` is 2.x parity.
 
-- 2026-08-25 #410 — the maiden name no longer makes H1 decline; the
-  rule counts name words and a marker-announced name is not one. The
-  decision and its width are recorded at decisions.md#H1, since the
-  term it removed was never maiden-specific.
+- 2026-08-25 #410 — the maiden name no longer makes H1 decline; the rule counts name words and a marker-announced name is not one. The decision and its width are recorded at decisions.md#H1, since the term it removed was never maiden-specific.
 
 ### N3 — the lone-word nickname rule
 
@@ -294,68 +291,7 @@ Declined (ambiguity kinds for script-resolved names, 2026-07-27):
 
 ### H1 — a title and one name word
 
-- 2026-08-25 (#410) — H1's "and nothing else" counted a suffix, a
-  nickname and a maiden name as further name words, so a
-  title-plus-surname name reported no family the moment any of them
-  stood beside it: `Dr. Smith` reads family 'Smith' and
-  `Dr. Smith née Jones` read given 'Smith' with the family empty.
-  #410 reports the maiden flavor; measured, all three roles suppress
-  the rule identically and the fix is one term in one guard, so the
-  term went rather than the maiden role being special-cased. What
-  decided the width is H1's own rationale — a title addresses by
-  surname — which says nothing about what stands BESIDE the name.
-  The rationale is stated for H1 rather than as a doc-wide principle
-  about what a suffix is, deliberately: N3 counts a suffix the other
-  way (`'Smitty' Jones Jr.` reads given 'Jones', family ''), and
-  which of the two readings is right for a nickname-led name is not
-  decided here.
-  #399 is what made this urgent rather than latent: stopping the
-  particle chain at the marker routed the canonical
-  title-and-particle shape (`Freiherr von Richthofen geb. Albrecht`)
-  into H1 for the first time.
-  N3 moves with it, without N3 changing: `'Smitty' Dr. Jones`
-  declines N3's one-piece count as it always did, and H1 now names
-  the family behind it, so it reads family 'Jones' where it read
-  given 'Jones' through 2.1.
-  Five corpus names change reading at every baseline, of which four
-  arrive as new diffs and are classified with the fix. The fifth,
-  `Freiherr von Richthofen V`, was already classified under the
-  `fix(#424)` rule: #410 narrows its diff from {given, family,
-  suffix} to {family, suffix}, and `classify()` takes the first rule
-  whose declared `fields` are a SUPERSET of the observed diff, so a
-  shrinking diff kept matching and no run ever named it. A real
-  movement behind a green gate, and the second of that kind here: the
-  fields-only `fix(suffix-routing)` catch-all was absorbing three
-  names at 1.4.0 the same way, its heading growing with nothing to
-  announce it. Both are one shape — a rule broader than the diff it
-  explains — and that is the lesson worth keeping rather than either
-  fix. It is also, being a title, one name word and a
-  suffix, the suffix flavor of this very shape, which two ledger
-  comments had claimed no corpus carries.
-  At 1.4.0 three of the four were being absorbed by the fields-only
-  `fix(suffix-routing)` rule (its heading went 14 -> 17) — invisible
-  to `_CORPUS_CLAIMS`, which records the whole corpus for a rule with
-  no `name_regex`, so the guard could not see them arrive. They have
-  their own rule now, as #372's names got one off the same catch-all.
-  The v1 suite shipped the nickname reading as a strict xfail
-  (`tests/test_nicknames.py::test_nickname_and_last_name_with_title`),
-  which passes now.
-  Known gap between the statement and the guard: H1 says "exactly one
-  name word" and "that word", but the guard never counts units. It
-  tests which ROLES are unoccupied — no middle, no family — and then
-  retags every given token, so a name whose given run is two name
-  WORDS (units, not tokens) reaches it and moves both: `Freiherr de V
-  Jr` reads family 'de V'. The distinction matters for reading the
-  claim that follows: a multi-token given run is ordinary — the
-  rules.md example `Freiherr von Richthofen V` has one, its two
-  tokens being a single particle unit — and it is a run of two UNITS
-  that no real input produces. A 58,338-name sweep found no corpus
-  name and no rules.md example with one — but it is
-  recorded because decisions.md elsewhere leans on H1's "exactly one
-  name word" as a settled scope when narrowing P5's licence, and that
-  reading of H1 is stronger than the code behind it. Not fixed here:
-  the widening this entry records is about which roles disqualify the
-  rule, not about how it counts.
+- 2026-08-25 (#410) — H1's "and nothing else" counted a suffix, a nickname and a maiden name as further name words, so a title-plus-surname name reported no family the moment any of them stood beside it: `Dr. Smith` reads family 'Smith' and `Dr. Smith née Jones` read given 'Smith' with the family empty. #410 reports the maiden flavor; measured, all three roles suppress the rule identically and the fix is one term in one guard, so the term went rather than the maiden role being special-cased. What decided the width is H1's own rationale — a title addresses by surname — which says nothing about what stands BESIDE the name. The rationale is stated for H1 rather than as a doc-wide principle about what a suffix is, deliberately: N3 counts a suffix the other way (`'Smitty' Jones Jr.` reads given 'Jones', family ''), and which of the two readings is right for a nickname-led name is not decided here. #399 is what made this urgent rather than latent: stopping the particle chain at the marker routed the canonical title-and-particle shape (`Freiherr von Richthofen geb. Albrecht`) into H1 for the first time. N3 moves with it, without N3 changing: `'Smitty' Dr. Jones` declines N3's one-piece count as it always did, and H1 now names the family behind it, so it reads family 'Jones' where it read given 'Jones' through 2.1. Five corpus names change reading at every baseline, of which four arrive as new diffs and are classified with the fix. The fifth, `Freiherr von Richthofen V`, was already classified under the `fix(#424)` rule: #410 narrows its diff from {given, family, suffix} to {family, suffix}, and `classify()` takes the first rule whose declared `fields` are a SUPERSET of the observed diff, so a shrinking diff kept matching and no run ever named it. A real movement behind a green gate, and the second of that kind here: the fields-only `fix(suffix-routing)` catch-all was absorbing three names at 1.4.0 the same way, its heading growing with nothing to announce it. Both are one shape — a rule broader than the diff it explains — and that is the lesson worth keeping rather than either fix. It is also, being a title, one name word and a suffix, the suffix flavor of this very shape, which two ledger comments had claimed no corpus carries. At 1.4.0 three of the four were being absorbed by the fields-only `fix(suffix-routing)` rule (its heading went 14 -> 17) — invisible to `_CORPUS_CLAIMS`, which records the whole corpus for a rule with no `name_regex`, so the guard could not see them arrive. They have their own rule now, as #372's names got one off the same catch-all. The v1 suite shipped the nickname reading as a strict xfail (`tests/test_nicknames.py::test_nickname_and_last_name_with_title`), which passes now. Known gap between the statement and the guard: H1 says "exactly one name word" and "that word", but the guard never counts units. It tests which ROLES are unoccupied — no middle, no family — and then retags every given token, so a name whose given run is two name WORDS (units, not tokens) reaches it and moves both: `Freiherr de V Jr` reads family 'de V'. The distinction matters for reading the claim that follows: a multi-token given run is ordinary — the rules.md example `Freiherr von Richthofen V` has one, its two tokens being a single particle unit — and it is a run of two UNITS that no real input produces. A 58,338-name sweep found no corpus name and no rules.md example with one — but it is recorded because decisions.md elsewhere leans on H1's "exactly one name word" as a settled scope when narrowing P5's licence, and that reading of H1 is stronger than the code behind it. Not fixed here: the widening this entry records is about which roles disqualify the rule, not about how it counts.
 
 ### H2 — the leading-abbreviation title
 
