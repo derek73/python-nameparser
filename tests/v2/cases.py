@@ -24,7 +24,11 @@ another -- a rule's boundary, a precedence contest between two rules,
 a policy that changes the answer. A row demonstrating one more member
 of a vocabulary set pins nothing its other members do not, and one row
 per entry grows this table without narrowing what can break
-(mechanisms.md#VOCABULARY-EXERCISES-FORKS).
+(mechanisms.md#VOCABULARY-EXERCISES-FORKS -- a restatement, and
+nothing checks it against the entry: test_doc_citations verifies an
+excerpt only where the reference is followed by a colon and a quoted
+span, which running prose like this one is not. Read the entry, not
+this paragraph, if the two ever disagree).
 """
 from __future__ import annotations
 
@@ -1383,10 +1387,14 @@ CASES: tuple[Case, ...] = (
                "The empty family is the bare path's, not this "
                "change's: 'Smith née Jones' reads given 'Smith', "
                "family '' on 2.1.0 too, and 1.4.0 read first 'Smith' / "
-               "middle 'née' / last 'Jones' -- the marker as a middle "
-               "name, which is why the sibling fix(#410) rule at 1.4.0 "
-               "declares `middle`. The given side has agreed since "
-               "1.4.0, "
+               "middle 'née' / last 'Jones' -- the marker as a "
+               "middle name. The parallel evidence at 1.4.0 is not "
+               "the fix(#410) maiden-flavor rule, which is keyed on "
+               "the TITLED 'Dr. Smith née Jones', but fix(#274), "
+               "which claims the bare one-word names 'Janey née "
+               "Jones' and 'abd née Jones' and declares `family` for "
+               "exactly the reason this row records. The given side "
+               "has agreed since 1.4.0, "
                "the emptying is 2.x's and is tracked separately as the "
                "#410 analogue. What #335 moves is only the bracketed "
                "spelling: 1.4.0, 2.0.0 and 2.1.0 all read it family "
@@ -1405,11 +1413,16 @@ CASES: tuple[Case, ...] = (
                "the parenthesis, and the fullwidth pair below -- and "
                "the other EIGHT have no row. Measured 2026-08-26 by "
                "disabling the swap one pair at a time: those three "
-               "redden and the eight do not. So this row and the "
-               "fullwidth one fence two ends of the set rather than "
-               "the whole of it; a set-level roster is what would "
-               "cover the rest. 1.4.0 and 2.1.0 both read nickname "
-               "'née Jones'"),
+               "redden and the eight do not. That is a count over a "
+               "wordlist, so read it the way "
+               "mechanisms.md#VOCABULARY-EXERCISES-FORKS says to: the "
+               "eight are not eight gaps, since the pairs fork on "
+               "whether open and close are the same character and on "
+               "the apostrophe carve-out inside that, not on which "
+               "pair. This row is here because a quote pair is the "
+               "same-character branch, and because the release note "
+               "advertises the spelling. 1.4.0 and 2.1.0 both read "
+               "nickname 'née Jones'"),
     Case("maiden_marked_clause_takes_the_suffix_reading_from_s1",
          "Jane Smith (née Jr.)",
          {"given": "Jane", "middle": "Smith", "family": "née",
@@ -1678,15 +1691,14 @@ CASES: tuple[Case, ...] = (
          classification="feat(#273) + fix(#271) + fix(#335)",
          notes="the row above without its policy, and the one "
                "that fences M3 across the delimiter SET rather "
-               "than at the parenthesis: gating the swap to '(' "
-               "and the double quote leaves the entire suite "
-               "green and even the 2.1.0 gate green, its "
-               "fix(#335) rule quietly falling from six names to "
-               "five, and the 1.4.0 and 2.0.0 gates going red while "
-               "2.1.0 stays green (measured 2026-08-26; the 2.0.0 "
-               "ledger gives this name a four-field rule of its own, "
-               "which is what catches it there). The suite catches it "
-               "too, at this row. The fullwidth pair is the "
+               "than at the parenthesis. Measured 2026-08-26 by "
+               "gating the swap to '(' and the double quote: this row "
+               "and its facade twin are the only two failures in the "
+               "suite, and of the gates only 1.4.0 and 2.0.0 redden "
+               "-- 2.1.0 stays green with its fix(#335) rule quietly "
+               "falling from six names to five, while the 2.0.0 "
+               "ledger catches it on the four-field rule it gives "
+               "this name. The fullwidth pair is the "
                "one the maiden_markers docstring and the 2.2 "
                "release note both advertise as newly working "
                "without configuration, so it is the one that "

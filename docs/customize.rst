@@ -298,11 +298,14 @@ listed below.
        no configuration since 2.2 is a clause that opens with a marker
        word AND has a word after it: ``"Jane Smith (née Jones)"`` reads
        maiden ``Jones`` whatever pair encloses it, unless the content is
-       suffix-shaped, which is read as a suffix ahead of both. A marker
-       word opening the enclosed content is dropped from the value
-       either way, but only where that content holds more than one
-       *token* — the same reason a lone ``"(Nee)"`` is a maiden name
-       rather than a marker. Tokens, not words: a marker written
+       suffix-shaped, which is taken ahead of both: the brackets are
+       dropped and the content parses as if written bare, so
+       ``"Jane Smith (née Jr.)"`` gives family ``née``, suffix ``Jr.``
+       rather than a suffix of the whole clause. A marker word opening
+       the enclosed content is dropped from the value either way, but
+       only where that content holds more than one *token* — the same
+       reason a lone ``"(Nee)"`` listed here keeps ``Nee`` as the
+       maiden value rather than reading it as a marker. Tokens, not words: a marker written
        against the name it marks is one token with them, so
        ``"山田花子（旧姓佐藤）"`` keeps its ``旧姓``. Defaults to empty —
        see the routing example below.
@@ -506,8 +509,11 @@ Nicknames, maiden names, and brackets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A delimiter pair carries no meaning of its own, so what a clause reads
-as is settled in steps. Suffix-shaped content is taken first and reads
-as a suffix. Then the content is asked whether it announces itself: a
+as is settled in steps. Suffix-shaped content is taken first: the
+brackets are dropped and what was inside parses as if it had been
+written bare, which is not the same as the clause becoming the suffix
+(``"Jane Smith (née Jr.)"`` gives family ``née``, suffix ``Jr.``).
+Then the content is asked whether it announces itself: a
 clause opening with a recognized maiden marker and carrying a word
 after it is a maiden name whatever encloses it, and needs nothing
 configured. Only for what is left — markerless content, and a lone

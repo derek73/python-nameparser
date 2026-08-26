@@ -424,9 +424,9 @@ Those two numbers count WHOLE TOKENS, delimiters stripped. The strip
 is what earns exactly one of the four: `nee`, which appears in the
 corpora only inside brackets -- `Jane Smith (Nee)` and
 `Jane Smith (Nee) (Jones)` -- where the token carries them until they
-come off. `née` needs no strip, appearing
-bare in thirty-odd names, and `né` is not counted at all -- it occurs
-only as a substring of `née`, never as a token. The convention matters because the neighbouring guard
+come off. `née` needs no strip, appearing bare in many names, and `né`
+is not counted at all: it occurs only as a substring of `née`, never
+as a token. The convention matters because the neighbouring guard
 `tests/v2/test_ledger_guards.py::_carries` deliberately asks a wider
 question -- it also matches a non-ASCII entry anywhere inside a name,
 since 旧姓 is written flush against the name it marks -- and under that

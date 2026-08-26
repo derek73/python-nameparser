@@ -1330,19 +1330,19 @@ def _clause_free_latin_corpus_names() -> list[str]:
     # Every count in this comment quantifies over the corpus, so one
     # added corpus row falsifies it silently. Recount rather than
     # adjust:
-    #     uv run python -c "
-    #     import re, sys; sys.path.insert(0, 'tests')
-    #     from nameparser import DEFAULT_NICKNAME_DELIMITERS as D
-    #     from nameparser.config.maiden_markers import MAIDEN_MARKERS as M
-    #     from v2._differential_fixtures import _CORPUS_NAMES
-    #     base = [n for n in _CORPUS_NAMES
-    #             if re.match(r'^[\x00-\u024f]*$', n) and ',' not in n]
-    #     strip = ''.join({c for p in D for c in p}) + '.'
-    #     keep = lambda f: [n for n in base
-    #                       if not any(f(w) in M for w in n.split())]
-    #     old = keep(lambda w: w.lower().rstrip('.'))
-    #     new = keep(lambda w: w.lower().strip(strip))
-    #     print(len(old), len(new), sorted(set(old) - set(new)))"
+    # The body must sit flush left: `python -c` compiles it as a module,
+    # so an indented first line raises IndentationError on paste.
+    # uv run python -c "
+    # import re, sys; sys.path.insert(0, 'tests')
+    # from nameparser import DEFAULT_NICKNAME_DELIMITERS as D
+    # from nameparser.config.maiden_markers import MAIDEN_MARKERS as M
+    # from v2._differential_fixtures import _CORPUS_NAMES
+    # base = [n for n in _CORPUS_NAMES if re.match(r'^[\x00-\u024f]*$', n) and ',' not in n]
+    # strip = ''.join({c for p in D for c in p}) + '.'
+    # keep = lambda f: [n for n in base if not any(f(w) in M for w in n.split())]
+    # old = keep(lambda w: w.lower().rstrip('.'))
+    # new = keep(lambda w: w.lower().strip(strip))
+    # print(len(old), len(new), sorted(set(old) - set(new)))"
     #
     # Delimiter characters come from the shipped set rather than a
     # literal, so a pair added there cannot quietly reopen this.

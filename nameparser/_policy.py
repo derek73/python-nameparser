@@ -623,9 +623,17 @@ class Policy:
     #: field instead; a pair listed here is dropped from the effective
     #: nickname set (maiden wins, see __post_init__), so
     #: maiden_delimiters=frozenset({("(", ")")}) is the whole recipe (#274).
-    #: A maiden_markers word opening the enclosed content is dropped
-    #: from the value, but only where that content holds more than one
-    #: token: a lone "(Nee)" is a maiden NAME, not a marker (#329).
+    #: Set this for a clause that says nothing about itself, which is
+    #: two kinds and not one: content with no marker word in it, and a
+    #: LONE marker word. Since #335 a clause that opens with a marker
+    #: word AND has a word after it reads as the maiden name whatever
+    #: pair encloses it, so "Jane Smith (née Jones)" needs no
+    #: configuration -- unless the content is suffix-shaped, which is
+    #: taken first, the brackets dropped and the content read as if
+    #: written bare. A maiden_markers word opening the enclosed
+    #: content is dropped from the value, but only where that content
+    #: holds more than one token: a lone "(Nee)" is a maiden NAME,
+    #: not a marker (#329).
     maiden_delimiters: frozenset[tuple[str, str]] = frozenset()
     #: Additional separators that split suffix groups (e.g. " - " for
     #: "Jane Smith, RN - CRNA"). Additive only: the comma always

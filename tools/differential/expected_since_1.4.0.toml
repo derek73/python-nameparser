@@ -134,6 +134,21 @@ issue = "fix(#274) maiden markers consumed"
 # would need the regex to ask a vocabulary question -- suffix or
 # connective membership -- a second alternation this rule cannot
 # spend.
+#
+# revisit when #445 lands, and this is the half of that shape the
+# bracketed fix(#335) rules do NOT cover. This rule declares `family`,
+# and eight names it claims read family '' because the marker takes
+# every word after it -- the bare spelling of exactly what #445 asks
+# about. If #445 lands as "keep the family", their 1.4.0 diff stays a
+# subset of {maiden, middle, family} and this rule keeps explaining
+# them with the gate green, which is the silent absorption the
+# four-field split exists to prevent, on the same field and the same
+# baseline. The checklist to re-measure, all one name word before the
+# marker: 'Janey née Jones' and 'abd née Jones' (the exact N3-parallel
+# shape, one word after the marker too), plus 'Jane née Jones Smith',
+# 'Jane née and Jones Smith', 'John née Jones Smith V',
+# 'John née Jones Smith Ma', 'J. née Jones Smith V' and
+# 'Jane née Jones J. V'.
 name_regex = "(?i)(?<![(（])(?<=\\S\\s)\\b(n[ée]e|geb)\\.?(?![)）])(?=\\s+\\S)"
 fields = ["maiden", "middle", "family"]
 
@@ -1292,11 +1307,21 @@ why = "feat(#273) recognizes TYPOGRAPHIC nickname delimiters; the ASCII pairs we
 # '김민준씨 (Jimmy)' {first,last,suffix}. Zero classifications lost.
 #
 # A bare [("'] class is still wrong, for the reason the role
-# narrowing cannot fix: it reaches 63 names, 9 of them on an
+# narrowing cannot fix: it reaches names whose only match is an
 # apostrophe that is part of the word ("Brian O'connor",
 # "Harietta Keopuolani Nahi'ena'ena"), which is not a delimited run at
-# all. (Both figures recounted 2026-08-25, against the corpora as they
-# now stand; they were 47 and 11 when first written.)
+# all. Both figures moved twice in the #335 delta and are the class
+# this file keeps getting wrong, so recount rather than adjust -- the
+# body sits flush left because `python -c` compiles it as a module:
+#
+# uv run python -c "
+# import glob, json, re
+# names = {json.loads(l) for f in glob.glob('tools/differential/corpus*.jsonl')
+#          for l in open(f, encoding='utf-8') if l.strip()}
+# hit = [n for n in names if re.search(r'[(\"\']', n)]
+# only = [n for n in hit if not re.search(r'[(\"]', n)
+#         and not re.search(r'(^|\\s)\'', n) and re.search(r'\\w\'', n)]
+# print(len(hit), len(only))"
 #
 # By role: ASCII parens mark nicknames, maiden names, suffixes and
 # credentials alike, and no regex tells them apart. The shape reaches

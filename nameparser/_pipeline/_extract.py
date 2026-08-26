@@ -234,10 +234,10 @@ def extract_delimited(state: ParseState) -> ParseState:
                 # role that is not NICKNAME is already MAIDEN and the
                 # assignment would be a no-op either way. It is kept
                 # for the day `order` gains a third bucket, when it
-                # becomes the
-                # difference between M3 claiming that bucket's clauses
-                # and leaving them. Measured 2026-08-26: dropping it
-                # leaves the suite and all three gates green.
+                # becomes the difference between M3 claiming that
+                # bucket's clauses and leaving them. Measured
+                # 2026-08-26: dropping it leaves the suite and all
+                # three gates green.
                 if (role is Role.NICKNAME and _maiden_marked(
                         text[inner.start:inner.end], state.lexicon)):
                     role = Role.MAIDEN
