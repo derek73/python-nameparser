@@ -193,11 +193,69 @@ CASES: tuple[Case, ...] = (
          notes="H1's carve-out is untouched by #410: a given-name "
                "title addresses by given name, so the one name word "
                "stays `given` and the family stays empty, exactly as "
-               "'Sir John' reads. The boundary of the widening, and "
+               "'Sir John' reads -- in the DEFAULT order, which is "
+               "what this row pins: under either family-first order "
+               "the same name reads family 'John', H1 being a no-op "
+               "there because assign has already placed the word. "
+               "The boundary of the widening, and "
                "the row that fails if the retag is made unconditional. "
                "The fix classification is #274's marker consumption, "
                "which is what makes this differ from 1.4.0 (first "
                "'John', middle 'née', last 'Jones')"),
+    Case("title_plus_one_word_comma_suffix", "Dr. King, Jr.",
+         {"title": "Dr.", "family": "King", "suffix": "Jr."},
+         classification="fix(#410)",
+         notes="the most ordinary shape H1's widening touches, and "
+               "the one the suite could least afford to leave "
+               "unpinned: mutating H1 to decline on any name carrying "
+               "a comma left all 5819 tests green. Nothing else sees "
+               "the class -- the corpus-wide maiden-clause property "
+               "test filters commas out of its parametrization "
+               "(_clause_free_latin_corpus_names), and "
+               "'Smith, Dr.' takes its family from the comma rule "
+               "(C1), not from H1. 1.4.0 had the same empty family "
+               "here (title 'Dr.', first 'King', last ''), so this "
+               "row records a v1 bug fixed, not a v2 divergence"),
+    Case("title_plus_one_word_multi_word_maiden",
+         "Dr. Smith née Mary Jones",
+         {"title": "Dr.", "family": "Smith", "maiden": "Mary Jones"},
+         classification="fix(#410)",
+         notes="the maiden name at two words rather than one. H1 "
+               "counts what stands in the NAME, so the arity of the "
+               "clause beside it is irrelevant -- a rule that "
+               "declined on a second maiden token would pass every "
+               "single-word row above. 1.4.0 read first 'Smith', "
+               "middle 'née Mary', last 'Jones'"),
+    Case("given_name_title_plus_one_word_multi_word_maiden",
+         "Sir John née Mary Jones",
+         {"title": "Sir", "given": "John", "maiden": "Mary Jones"},
+         classification="fix(#410)",
+         notes="the carve-out at the same arity: 'whatever maiden "
+               "name stands beside it' has to leave the given-name "
+               "title alone however long the clause is. Without this "
+               "row the `whatever` is asserted only at one word. "
+               "1.4.0 read first 'John', middle 'née Mary', last "
+               "'Jones'"),
+    Case("title_plus_one_word_two_suffixes", "Dr. Smith PhD Jr.",
+         {"title": "Dr.", "family": "Smith", "suffix": "PhD, Jr."},
+         classification="fix(#410)",
+         notes="two suffix pieces, not one. The removed term asked "
+               "whether ANY token carried a suffix role, so a guard "
+               "rebuilt to decline on the SECOND one would look "
+               "correct against every row that carries a single "
+               "credential. 1.4.0 split them, reading first 'Smith', "
+               "last 'PhD', suffix 'Jr.'"),
+    Case("title_plus_one_word_nickname_and_suffix",
+         "Dr. (Bud) Smith Jr.",
+         {"title": "Dr.", "family": "Smith", "suffix": "Jr.",
+          "nickname": "Bud"},
+         classification="fix(#410)",
+         notes="two DIFFERENT annotations at once, which is the "
+               "combination the single-annotation rows cannot reach: "
+               "a guard declining only where a nickname and a suffix "
+               "are both present passes all of them. 1.4.0 read first "
+               "'Smith', last 'Jr.' with nickname 'Bud' -- the "
+               "credential taking the family slot"),
     # The smallest shape in which the two family-first orders can
     # disagree about this rule's leftovers: with one leftover both
     # send it to `given`, and two or more is what separates them (the
