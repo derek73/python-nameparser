@@ -414,12 +414,35 @@ behind a non-default `Policy` field is invisible here. Default
 gated off the way a `Policy` field is, so a change to it can show up
 here. That is not the same as coverage -- only 4 of the 16 shipped
 `maiden_markers` and 8 of the 15 `honorific_tails` appear anywhere in
-the corpora as whole tokens (re-measured 2026-08-26; the marker count
-was 3 until #414's rules corpus brought in a parenthesized `Nee`, and
-the denominator was 17 until `roz` left the vocabulary in 2.2 -- it
-appeared in no corpus name, so only the denominator moved), so
-an entry no corpus name exercises is as invisible as an opt-in
-policy.
+the corpora (re-measured 2026-08-26; the marker count was 3 until
+#414's rules corpus brought in a parenthesized `Nee`, and the
+denominator was 17 until `roz` left the vocabulary in 2.2 -- it
+appeared in no corpus name, so only the denominator moved), so an
+entry no corpus name exercises is as invisible as an opt-in policy.
+
+Those two numbers count WHOLE TOKENS, delimiters stripped: `née`
+counts because `(née` is a token of `Anna Müller (née Jones)` once its
+bracket comes off, and `né` does not, being only a substring of that
+same token. The convention matters because the neighbouring guard
+`tests/v2/test_ledger_guards.py::_carries` deliberately asks a wider
+question -- it also matches a non-ASCII entry anywhere inside a name,
+since 旧姓 is written flush against the name it marks -- and under that
+reading the marker count is 5, not 4. Both are right about different
+questions. Recompute:
+
+```
+uv run python -c "
+import glob, json
+from nameparser import Parser
+from nameparser._lexicon import _normalize
+L = Parser().lexicon
+names = [json.loads(l) for f in glob.glob('tools/differential/corpus*.jsonl') for l in open(f, encoding='utf-8') if l.strip()]
+toks = {_normalize(t.strip('()\'"«»“”„「」『』（）')) for n in names for t in n.split()}
+for s in ('maiden_markers', 'honorific_tails'):
+    v = getattr(L, s)
+    print(s, len(toks & v), 'of', len(v), sorted(toks & v))"
+```
+
 
 Two independent mechanisms put a birth surname in `maiden`, and what
 is opt-in about them is narrower than it looks (rows measured

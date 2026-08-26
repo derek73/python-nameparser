@@ -67,8 +67,8 @@ it splits the clause on WHITESPACE, and "旧姓：佐藤" is one whitespace
 word, so there is no marker word for the clause to open with and by
 default it stays a nickname. The two tests agree here and are
 deliberately not the same test -- see decisions.md#M3. The wholly
-unspaced "山田花子（旧姓佐藤）" reads as one token for the same reason. Peeling a marker off the head of a token is
-#317's job.
+unspaced "山田花子（旧姓佐藤）" reads as one token for the same reason.
+Peeling a marker off the head of a token is #317's job.
 
 Consumed by the 2.0 parser's default lexicon. The 1.x parser does not
 read this module.

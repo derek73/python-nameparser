@@ -622,11 +622,15 @@ M3. Rationale: an enclosure says nothing about whether it means
     maiden and join into one maiden name, leaving no nickname.
       "Jane Smith (née Jones)"    →  maiden="Jones"
       "Jane (née Jones) Smith"    →  family="Smith"
+      "Jane Smith (née Jr.)"      →  suffix="Jr."
       "Jane Smith (née)"          →  nickname="née"  · boundary
     Accepted: the word taken after the marker is not tested for
     being a name word, so unlike M2's bare take this one does not
     stop at a suffix word — the same two words read one way
-    bracketed and another way bare.
+    bracketed and another way bare. This does not contradict the
+    S1 example above: S1 asks whether the WHOLE clause is
+    suffix-shaped, which the trailing period makes true of the one
+    and false of the other, so only the V clause reaches this rule.
       "Jane Smith (née V)"        →  maiden="V"
     history: decisions.md#M3 · interacts: M1, M2, S1, N1 · implemented: nameparser/_pipeline/_extract.py
 
