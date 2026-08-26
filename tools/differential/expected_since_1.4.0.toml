@@ -1286,3 +1286,20 @@ issue = "fix(#418) the connective carve-out counts the name the maiden clause le
 # expected_since_2.1.0.toml copy carries the fuller account.
 name_regex = "(?i)^\\S+\\s+[ye]\\s+\\S+\\s+n[eé]e\\s+\\S+$"
 fields = ["given", "middle", "family", "maiden"]
+
+[[change]]
+issue = "fix(#432) a dotted numeral behind a name is a middle initial, not the generation"
+# 'Smith, John V.': v1 read suffix 'V.'. Behind a NAME word the period
+# is decisive -- it marks an abbreviation, and an abbreviation is name
+# material -- so the numeral is the middle initial it looks like, as
+# 'Smith, John B.' always was. The BARE form is the boundary and is
+# v1 parity either way: 'Smith, John V' stays suffix 'V' (#144), and it
+# is a corpus name, so the gate asserts that half rather than this
+# entry's silence.
+#
+# The #430 half needs no entry at this baseline: 'Smith, PSM I' is
+# already claimed by "fix(comma-family) lone post-comma piece routes to
+# suffix/title, not first", whose fields cover the move. A second rule
+# would be dormant, which the gate reports as EXPLAINED NOTHING.
+name_regex = "(?i)^smith,\\s*john\\s+v\\.$"
+fields = ["middle", "suffix"]

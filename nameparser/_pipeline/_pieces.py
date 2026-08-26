@@ -14,7 +14,8 @@ grouping owned them but because assign imported group and could not be
 imported back, so group was the only place both stages could reach.
 They arrived there that way across three PRs -- #424 brought
 is_leading_title, leading_titles and trailing_start, #425 the peel
-(peel_walk, peel_trailing), #429 segment_holds_no_name.
+(peel_walk, peel_trailing), #429 the no-name-segment test that
+#430 turned into segment_suffix_reading.
 is_title_piece and is_suffix_piece are older than any of that: they
 were group's from its first commit, and travel because the others
 call them.
@@ -108,42 +109,94 @@ def is_suffix_piece(piece: Sequence[int], ptags: Set[str],
     return "vocab:suffix" in tags and "initial" not in tags
 
 
-def segment_holds_no_name(pieces: Sequence[Sequence[int]],
-                           ptags: Sequence[Set[str]],
-                           tokens: Sequence[WorkToken]) -> bool:
-    """The segment is titles and suffixes only ('John Smith, Dr.',
-    'John Smith, Mr. Jr.') -- nothing in it is a name word.
+def _numeral_behind_the_initial_veto(piece: Sequence[int],
+                                     tokens: Sequence[WorkToken]) -> bool:
+    """Suffix vocabulary that is_suffix_piece refuses because it is
+    also initial-shaped: a ONE-CHARACTER entry, bare or with a period.
 
-    The FAMILY_COMMA rule "segment 0 is wholly the family name" rests on
-    the writer having said where the family name ends. A comma followed
-    by no name word said no such thing -- 'John Smith, Dr.' is 'Dr. John
-    Smith' with the honorific moved, and 'John Smith, Mr. Jr.' the same
-    with the postnominal along -- so the pre-comma name keeps its
-    positional read instead of being merged. Uses the same
+    Named for the shape rather than enumerated, because the shape is
+    what the code tests and the enumeration goes stale -- in the
+    shipped lexicon it reaches i, v and 2, and NOT x or ix (roman, but
+    not suffix vocabulary) nor ii/iii/iv (suffix vocabulary, but two
+    characters, so never initial-shaped and never vetoed in the first
+    place). A caller adding a one-character suffix in a script that
+    has initials extends it.
+
+    The veto is right where such a word could be a middle initial, and
+    wrong where it is describing the suffix in front of it, which is
+    the only place this is asked from. The len(piece) != 1 guard is
+    defensive: a merged multi-token piece carries "suffix" in ptags, so
+    is_suffix_piece claims it one branch earlier and no reachable input
+    arrives here with one.
+    """
+    if len(piece) != 1:
+        return False
+    tags = tokens[piece[0]].tags
+    return "vocab:suffix" in tags and "initial" in tags
+
+
+def segment_suffix_reading(pieces: Sequence[Sequence[int]],
+                           ptags: Sequence[Set[str]],
+                           tokens: Sequence[WorkToken],
+                           lenient: bool,
+                           ) -> tuple[bool, ...] | None:
+    """How each piece of a no-name segment reads: True a suffix, False
+    a title. None when the segment holds a name word and so is not a
+    credential run at all.
+
+    ONE answer for three readers -- assign's no-name gate, its
+    router, and group's one-entry join -- because they must agree piece
+    for piece. #429 shipped the inverse of its own fix by deriving that
+    agreement twice (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+
+    rules.md#S2's initial veto keeps a roman numeral out of a suffix
+    reading, which is right after a NAME word: 'Smith, John V.' is a
+    middle initial (#432). After a SUFFIX word the numeral is
+    describing that suffix -- 'PSM I' is Professional Scrum Master
+    level I -- so the run continues through it, period included, an
+    initial there being no shape anyone writes (#430). A title resets
+    that: what follows a bare title is not continuing a credential.
+
+    None covers both ways a segment can fail to be a run: a name word
+    anywhere in it, and no pieces at all ('Doe,, Jr.', which holds no
+    title to read by).
+
+    `lenient` is Policy.lenient_comma_suffixes, and only the numeral
+    continuation consults it. C1: "by default a recognized suffix word
+    counts even written like an initial, while strict mode vetoes
+    initial-shaped words" -- so under strict the veto stands and the
+    run ends where it always did. Reading no policy here silently
+    overrode the one knob a caller sets to prevent exactly this.
+
+    The FAMILY_COMMA rule "segment 0 is wholly the family name" rests
+    on the writer having said where the family name ends. A comma
+    followed by no name word said no such thing -- 'John Smith, Dr.' is
+    'Dr. John Smith' with the honorific moved -- so the pre-comma name
+    keeps its positional read instead of being merged. Uses the same
     is_leading_title predicate the peel does, period-abbreviation
     inference included, so the two cannot disagree about what a title
-    is; a suffix piece counts as what it is, so a mixed run like
-    'Smith, Dr. Jr.' is a title and a postnominal, each read where it
-    stands, and never a title run 'Dr. Jr.'. An empty segment
-    ('Doe,, Jr.') holds no title to read by.
-
-    TWO callers, asking it for different reasons, and the difference
-    matters. assign uses it to decide whether the comma fixed the family
-    name (above). group's one-entry join (#429) uses it to decide
-    whether the segment is a credential run at all.
-
-    True does NOT mean "every piece is a suffix" -- the title tolerance
-    is the whole point, and a true segment can still hold pieces assign
-    routes to TITLE, so a caller rendering the segment as one unit must
-    ask is_suffix_piece per piece as well. What assuming otherwise cost
-    is recorded at the one-entry join in group(), the caller that made
-    the assumption.
+    is; a mixed run like 'Smith, Dr. Jr.' is a title and a postnominal,
+    each read where it stands, never a title run 'Dr. Jr.'.
     """
     if not pieces:
-        return False
-    return all(is_suffix_piece(pieces[k], ptags[k], tokens)
-               or is_leading_title(pieces[k], ptags[k], tokens)
-               for k in range(len(pieces)))
+        return None
+    out: list[bool] = []
+    for piece, tags in zip(pieces, ptags):
+        # the verdict just recorded IS "stands behind a suffix" -- keeping
+        # a separate flag meant maintaining that equality by hand at three
+        # sites, and a fourth branch that appended without assigning would
+        # have diverged silently
+        after_suffix = bool(out) and out[-1]
+        if is_suffix_piece(piece, tags, tokens):
+            out.append(True)
+        elif (lenient and after_suffix
+                and _numeral_behind_the_initial_veto(piece, tokens)):
+            out.append(True)
+        elif is_leading_title(piece, tags, tokens):
+            out.append(False)
+        else:
+            return None
+    return tuple(out)
 
 
 class Peel(NamedTuple):

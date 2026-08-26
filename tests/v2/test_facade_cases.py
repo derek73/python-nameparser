@@ -84,6 +84,9 @@ _CORE_ONLY_IDS = frozenset({
     "maiden_marker_kyusei_delimited",
     "ko_honorific_period_under_strict_comma_suffixes",
     "ja_honorific_glued_family_comma_strict_knob",
+    # the strict knob has no v1 spelling, so the row that pins C1's
+    # initial veto surviving #430 is core-only
+    "family_comma_strict_keeps_the_initial_veto",
     "ja_honorific_glued_family_comma_credential_pair_strict_knob",
 })
 

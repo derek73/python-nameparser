@@ -37,13 +37,15 @@ particle out of that position) -- whatever role name_order assigns.
 from __future__ import annotations
 
 import dataclasses
+from collections.abc import Sequence, Set
 
+from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
     effective_script, is_suffix_lenient, resolve_script_set,
 )
 from nameparser._pipeline._pieces import (
     is_suffix_piece, leading_titles, peel_trailing, peel_walk,
-    segment_holds_no_name,
+    segment_suffix_reading,
 )
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
@@ -256,6 +258,40 @@ def _assign_main(seg_idx: int, state: ParseState,
     return order
 
 
+def _reads_as_a_trailing_suffix(piece: Sequence[int],
+                               prev_piece: Sequence[int],
+                               prev_ptags: Set[str],
+                               tokens: Sequence[WorkToken],
+                               lexicon: Lexicon) -> bool:
+    """The lenient tail test for a trailing one-token piece after a
+    family comma, and #432's carve-out from it.
+
+    A word that could be a middle initial, written with the period that
+    marks an abbreviation, is name material -- so 'Smith, John V.' is
+    middle 'V.' where 'Smith, John V' stays suffix 'V' (v1 parity,
+    #144). Only behind a NAME word: behind a suffix the credential run
+    owns it, and 'Smith, John PhD I.' keeps suffix 'PhD, I.'.
+
+    The period is the whole carve-out. is_initial_shaped would be
+    redundant beside it: the caller only consults this where
+    is_suffix_piece said no, and a lenient single token it refuses is
+    one carrying the `initial` tag, so the shape is already implied.
+
+    NOT is_trailing_numeral_suffix, though it answers the period half:
+    it also refuses a numeral behind an initial-shaped piece, which is
+    a no-comma rule and the opposite of this path's v1 parity --
+    'Chang, Andy C I' is first Andy, middle C, suffix I, and asking
+    that predicate here made the numeral a middle. The #401/#421 entry
+    under decisions.md#P5 records the same fork declining to transfer
+    to this walk under LENIENT.
+    """
+    text = tokens[piece[0]].text
+    if text.endswith(".") and not is_suffix_piece(
+            prev_piece, prev_ptags, tokens):
+        return False
+    return is_suffix_lenient(text, lexicon)
+
+
 def assign(state: ParseState) -> ParseState:
     tokens = list(state.tokens)
     ambiguities = list(state.ambiguities)
@@ -300,9 +336,10 @@ def assign(state: ParseState) -> ParseState:
         # positional read peels a trailing suffix first: 'Smith Jr.,
         # Mr.' has two pieces and one name, and read positionally lost
         # its family (the code review).
-        no_name = segment_holds_no_name(state.pieces[1],
-                                         state.piece_tags[1], tokens)
-        if no_name and sum(
+        reading = segment_suffix_reading(
+            state.pieces[1], state.piece_tags[1], tokens,
+            state.policy.lenient_comma_suffixes)
+        if reading is not None and sum(
                 1 for k, piece in enumerate(fam_pieces)
                 if not is_suffix_piece(piece, fam_tags[k], tokens)) > 1:
             order = _assign_main(0, state, tokens, ambiguities)
@@ -335,12 +372,11 @@ def assign(state: ParseState) -> ParseState:
             # duals ('Smith, Sr.' is Senior, 'Sr. Garcia' Señor). A
             # name word in the segment makes it v1's walk ('Smith,
             # John Jr.').
-            if no_name:
+            if reading is not None:
+                # the gate's own reading (#430)
                 for k, piece in enumerate(pieces):
                     _set_roles(tokens, piece,
-                               Role.SUFFIX if is_suffix_piece(
-                                   piece, ptags[k], tokens)
-                               else Role.TITLE)
+                               Role.SUFFIX if reading[k] else Role.TITLE)
                 n = len(pieces)
             else:
                 n = _peel_leading_titles(pieces, ptags, tokens)
@@ -365,8 +401,9 @@ def assign(state: ParseState) -> ParseState:
                                and len(state.segments) == 2)
                 if is_suffix_piece(pieces[m], ptags[m], tokens) or (
                         last_of_two and len(pieces[m]) == 1
-                        and is_suffix_lenient(
-                            tokens[pieces[m][0]].text, state.lexicon)):
+                        and _reads_as_a_trailing_suffix(
+                            pieces[m], pieces[m - 1], ptags[m - 1],
+                            tokens, state.lexicon)):
                     _set_roles(tokens, pieces[m], Role.SUFFIX)
                 else:
                     _set_roles(tokens, pieces[m], Role.MIDDLE)
