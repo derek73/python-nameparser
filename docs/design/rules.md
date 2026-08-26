@@ -536,7 +536,7 @@ N3. Rationale: a person set down as a nickname plus one name word is
 
 ## Maiden names (M)
 
-Background: a maiden name is written beside the current name, set off by a marker word or by enclosure. Markers are attested across French née/né, German geb./geborene, Dutch geboren, Czech/Slovak rozená (the abbreviation roz. shipped through 2.1 and was removed in 2.2 -- it collides with the English diminutive Roz, and a caller who needs it adds it to their own Lexicon), Scandinavian født/fødd/född, Russian урожд. (both ё and е spellings), and Japanese 旧姓 — both grammatical genders where attested. Japanese more often writes the marker with a fullwidth colon (旧姓：佐藤), which is no separator, so marker and name arrive as a single word. Which enclosures mean "maiden" rather than "nickname" is a caller convention, so the maiden reading of a delimiter pair is opt-in — except where the clause announces itself. A clause of two words or more led by a marker word has said which convention it means, and reads as the maiden name inside a nickname pair as well (M3); a lone marker word has not, and neither has one the colon spelling above glues to the name.
+Background: a maiden name is written beside the current name, set off by a marker word or by enclosure. Markers are attested across French née/né, German geb./geborene, Dutch geboren, Czech/Slovak rozená (the abbreviation roz. shipped through 2.1 and was removed in 2.2 -- it collides with the English diminutive Roz, and a caller who needs it adds it to their own Lexicon), Scandinavian født/fødd/född, Russian урожд. (both ё and е spellings), and Japanese 旧姓 — both grammatical genders where attested. Japanese more often writes the marker with a fullwidth colon (旧姓：佐藤), which is no separator, so marker and name arrive as a single word. Which enclosures mean "maiden" rather than "nickname" is a caller convention, so the maiden reading of a delimiter pair is opt-in — except where the clause announces itself. A clause of two words or more led by a marker word has said which convention it means, and reads as the maiden name inside a nickname pair as well (M3) — unless its content is suffix-shaped, which S1 takes ahead of both. A lone marker word has said nothing, and neither has one the colon spelling above glues to the name.
 
 M1. Rationale: an enclosure the caller has declared to mean maiden
     holds the former family name; a recognized marker word inside it
@@ -552,7 +552,8 @@ M1. Rationale: an enclosure the caller has declared to mean maiden
     what this rule needs for a clause that does not announce itself
     — markerless content, and a lone marker word alike; a clause of
     two words or more led by a recognized marker reads as the maiden
-    name inside a nickname pair as well (M3).
+    name inside a nickname pair as well (M3), the suffix-shaped
+    content S1 takes excepted there as it is here.
       "Jane Smith (née Jones)"  maiden-parens  →  maiden="Jones"
       "Jane Smith (Nee)"  maiden-parens        →  maiden="Nee"  · boundary
       "Jane Smith (Nee) (Jones)"  maiden-parens  →  maiden="Nee Jones"

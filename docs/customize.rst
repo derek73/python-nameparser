@@ -288,15 +288,19 @@ listed below.
    * - ``maiden_delimiters``
      - ``frozenset[tuple[str, str]]``
      - Routes content enclosed by these delimiter pairs to ``maiden``
-       instead, and drops them from the effective nickname set. A
-       marker word opening the enclosed content is dropped from the
-       value, so ``"Jane Smith (née Jones)"`` gives maiden ``Jones``
-       — but only where that content holds more than one *token*,
-       since a lone ``"(Nee)"`` is a maiden name rather than a
-       marker. Tokens, not words: a marker written against the name
-       it marks is one token with them, so ``"山田花子（旧姓佐藤）"``
-       keeps its ``旧姓``. Defaults to empty — see the routing
-       example below.
+       instead, and drops them from the effective nickname set. Set
+       this for clauses that carry no marker word: since 2.2 a clause
+       opening with one reads as a maiden name whatever pair encloses
+       it, so ``"Jane Smith (née Jones)"`` needs no configuration at
+       all, while ``"Cherice J. (Johnson) Williams"`` — the
+       parenthesized birth surname written bare — is what only you
+       can declare. A marker word opening the enclosed content is
+       dropped from the value either way, but only where that content
+       holds more than one *token*, since a lone ``"(Nee)"`` is a
+       maiden name rather than a marker. Tokens, not words: a marker
+       written against the name it marks is one token with them, so
+       ``"山田花子（旧姓佐藤）"`` keeps its ``旧姓``. Defaults to empty —
+       see the routing example below.
    * - ``extra_suffix_delimiters``
      - ``frozenset[str]``
      - Adds separators that split suffix groups, e.g. ``" - "`` for
@@ -496,10 +500,14 @@ off.
 Nicknames, maiden names, and brackets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A delimiter pair routes to exactly one field, and ``maiden_delimiters``
-states the more specific intent — so listing a pair there drops it from
-the effective ``nickname_delimiters`` set automatically, and the
-one-liner is the whole recipe:
+A delimiter pair carries no meaning of its own, so what a clause reads
+as is settled in two steps. The content is asked first: a clause that
+opens with a recognized maiden marker and carries a name word after it
+is a maiden name whatever encloses it, and needs nothing configured.
+Only for the rest does the PAIR decide, and that is what this knob is
+for — listing a pair here drops it from the effective
+``nickname_delimiters`` set automatically, and the one-liner is the
+whole recipe:
 
 .. doctest::
 
