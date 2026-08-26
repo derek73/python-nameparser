@@ -628,7 +628,7 @@ M3. Rationale: an enclosure says nothing about whether it means
     stop at a suffix word — the same two words read one way
     bracketed and another way bare.
       "Jane Smith (née V)"        →  maiden="V"
-    interacts: M1, M2, S1, N1 · implemented: nameparser/_pipeline/_extract.py
+    history: decisions.md#M3 · interacts: M1, M2, S1, N1 · implemented: nameparser/_pipeline/_extract.py
 
 ## Commas & structure (C)
 
