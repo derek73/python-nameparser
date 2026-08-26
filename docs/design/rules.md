@@ -530,7 +530,11 @@ N3. Rationale: a person set down as a nickname plus one name word is
     Accepted: a marker-led clause is a maiden clause and not a
     nickname one (M3), so this rule does not reach a name written
     that way, and the one name word keeps the reading the bare
-    spelling gives it rather than becoming the family name.
+    spelling gives it rather than becoming the family name. The
+    empty family that leaves is the bare spelling's, and #445 tracks
+    whether it is right — 1.4.0 kept the family there, and the same
+    empty family has been repaired twice already, at H1 (#410) and
+    at P5's reserve (#411).
       "Smith (née Jones)"         →  given="Smith"
     history: decisions.md#N3 · interacts: H1, M3 · implemented: nameparser/_pipeline/_assign.py
 
