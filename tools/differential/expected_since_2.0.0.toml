@@ -892,3 +892,34 @@ issue = "fix(#432) a dotted numeral behind a name is a middle initial, not the g
 # `given` and `family` are out of the field list; neither moves.
 name_regex = "(?i)^smith,\\s*john\\s+v\\.$"
 fields = ["middle", "suffix"]
+
+[[change]]
+issue = "fix(#410) a title and one name word name the family, whatever annotation stands beside it"
+# rules.md#H1 reads a title plus exactly one name word as the family
+# ('Mr. Johnson' -> family 'Johnson'). The guard implementing it also
+# declined whenever ANY token carried a suffix, nickname or maiden
+# role, so the very same name with an annotation beside it kept the
+# word in `given` and reported no family at all. None of the three is
+# a name word, so the term went, and the four names below move
+# `given` -> `family` to read as their un-annotated twins already did.
+#
+# Keyed on the four names by literal rather than by shape. The shape
+# is "a title, one name word, and an annotation" -- a parse tree, not
+# a string -- and a fields-only rule standing in for it would classify
+# every future given/family swap in this corpus.
+#
+# `fields` is exactly the pair that moves: no annotation changes hands
+# here, which is the whole point of the fix, so a diff in `nickname`,
+# `maiden` or `suffix` on these names stays loud.
+#
+# These four and no others because they are the corpus's only names of
+# that shape -- two nicknames, one maiden clause, one nickname ahead
+# of the title. The SUFFIX flavor ('Dr. Smith PhD') appears in no
+# corpus and is pinned by tests/v2/cases.py::suffix_stays_suffix_title
+# instead.
+#
+# The change is in the 2.2 cycle, so 2.0.0 sees the same four diffs
+# 2.1.0 does and the rule is shared verbatim with that ledger --
+# checked against this baseline's own run, not assumed from it.
+name_regex = "(?i)^(?:Senator \"Rick\" Edmonds|Xyz\\. \\(Bud\\) Smith|Dr\\. Smith n[ée]e Jones|'Smitty' Dr\\. Jones)$"
+fields = ["given", "family"]

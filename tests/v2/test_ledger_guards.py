@@ -1239,6 +1239,10 @@ def _claim(rule: dict) -> _Claim:
 #: both is growth into names the rule genuinely describes.
 _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
+        "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
+            _Claim(3, ('family', 'given'), "24d6223e472f"),
+        "fix(#410) the maiden flavor, where 1.4.0 read the marker as a middle name":
+            _Claim(1, ('family', 'given', 'maiden', 'middle'), "309e39fc2475"),
         "fix(#432) a dotted numeral behind a name is a middle initial, not the generation":
             _Claim(1, ('middle', 'suffix'), "e9f282da0d0f"),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
@@ -1345,6 +1349,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given'), "e62caedec864"),
     },
     "expected_since_2.0.0.toml": {
+        "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
+            _Claim(4, ('family', 'given'), "da1dd1473145"),
         "fix(#430) a credential run does not end at the roman numeral describing it":
             _Claim(2, ('given', 'suffix'), "3c8fa6bc827a"),
         "fix(#432) a dotted numeral behind a name is a middle initial, not the generation":
@@ -1447,6 +1453,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'maiden'), "2150936a8c55"),
     },
     "expected_since_2.1.0.toml": {
+        "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
+            _Claim(4, ('family', 'given'), "da1dd1473145"),
         "fix(#430) a credential run does not end at the roman numeral describing it":
             _Claim(2, ('given', 'suffix'), "3c8fa6bc827a"),
         "fix(#432) a dotted numeral behind a name is a middle initial, not the generation":
