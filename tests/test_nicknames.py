@@ -153,7 +153,6 @@ class NicknameTestCase(HumanNameTestBase):
         self.m(hn.last, "Edmonds", hn)
         self.m(hn.nickname, "Rick", hn)
 
-    @pytest.mark.xfail
     def test_nickname_and_last_name_with_title(self) -> None:
         hn = HumanName('Senator "Rick" Edmonds')
         self.m(hn.title, "Senator", hn)

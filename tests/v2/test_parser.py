@@ -631,9 +631,9 @@ def test_the_chain_and_the_walk_stop_where_the_peel_begins() -> None:
     # the numeral keeps its three pieces behind the same word, and the
     # chain, now the one name piece, reads as 'Dr. Smith V' reads
     n = parse("Freiherr von Richthofen V")
-    assert (n.given, n.family, n.suffix) == ("von Richthofen", "", "V")
+    assert (n.given, n.family, n.suffix) == ("", "von Richthofen", "V")
     n = parse("Dr. Smith V")
-    assert (n.given, n.family, n.suffix) == ("Smith", "", "V")
+    assert (n.given, n.family, n.suffix) == ("", "Smith", "V")
     # the walk takes the numeral only: an acronym between the maiden
     # name and the numeral is maiden text
     n = parse("Jane Smith née Jones Ma V")
@@ -1332,15 +1332,25 @@ def test_a_maiden_clause_changes_nothing_else(name: str) -> None:
     Before the marker pass moved ahead of the joins, seven of these
     names failed this.
 
-    One boundary, and it is not the grouping stage's: a name whose
-    residual is a single name piece (a title plus one word, 'Dr.
-    Jane') places that piece in `family` alone and in `given` once a
-    maiden name exists -- #410's shape, pre-existing, so those names
-    are stepped over rather than asserted either way.
+    One skip, and it is M2's own boundary: a corpus name that parses
+    to no name word ('', '(', '()') gives the appended marker nothing
+    to stand behind, so M2 leaves it a word. A name that is only a
+    NICKNAME is in that class too, which is why the test below asks
+    about five fields and not about `nickname`: '(Bud)' parses to a
+    nickname alone, and '(Bud) née Jones' reads given 'née', family
+    'Jones' and no maiden at all -- the marker stayed a word, so
+    there is no clause to assert. A title-only or suffix-only name is
+    NOT in that class -- 'Coach née Jones' reads maiden 'Jones' --
+    and is asserted like any other. #410's lone-residual shape used
+    to be skipped here too -- 'Dr. Jane' read family 'Jane' and 'Dr.
+    Jane née Smith' given 'Jane' -- and no longer moves, so the
+    assertion now covers every name that reaches the marker with
+    something to stand behind.
     """
     base = parse(name)
-    if base.given == "":
-        pytest.skip("#410: a lone residual piece moves between fields")
+    if not (base.given or base.middle or base.family
+            or base.title or base.suffix):
+        pytest.skip("nothing before the marker at all: M2 leaves it a word")
     with_clause = parse(name + " née Jones")
     assert with_clause.maiden == "Jones"
     for field in ("title", "given", "middle", "family", "suffix",

@@ -162,6 +162,100 @@ CASES: tuple[Case, ...] = (
                "1b folds the name into the family. 1.4.0 and 2.1 gave "
                "first 'de Mesnil' with no family, because the chain "
                "left 1b nothing standing alone to fire on"),
+    Case("title_plus_one_word_with_maiden", "Dr. Smith née Jones",
+         {"title": "Dr.", "family": "Smith", "maiden": "Jones"},
+         classification="fix(#410)",
+         notes="H1's 'and nothing else' counted a maiden name as a "
+               "further name word, so adding a maiden clause moved the "
+               "surname into `given` and emptied `family`: 'Dr. Smith' "
+               "reads family 'Smith' and 'Dr. Smith née Jones' read "
+               "given 'Smith'. A maiden name is announced beside the "
+               "name, not part of it. 1.4.0 had no maiden SUPPORT -- "
+               "the field exists, but no default marker vocabulary "
+               "routes to it -- and read first 'Smith', middle 'née', "
+               "last 'Jones'"),
+    Case("title_plus_one_word_with_maiden_particle_spelling",
+         "Freiherr von Richthofen geb. Albrecht",
+         {"title": "Freiherr", "family": "von Richthofen",
+          "maiden": "Albrecht"},
+         classification="fix(#410)",
+         ambiguities=("particle-or-given",),
+         notes="the spelling #410 was found through: #399 stopped the "
+               "particle chain at the marker, which routed the "
+               "canonical title-and-particle shape into H1 for the "
+               "first time and so into this bug. 1.4.0 read the whole "
+               "tail as one surname, last 'von Richthofen geb. "
+               "Albrecht'"),
+    Case("given_name_title_plus_one_word_with_maiden",
+         "Sir John née Jones",
+         {"title": "Sir", "given": "John", "maiden": "Jones"},
+         classification="fix(#274)",
+         notes="H1's carve-out is untouched by #410: a given-name "
+               "title addresses by given name, so the one name word "
+               "stays `given` and the family stays empty, exactly as "
+               "'Sir John' reads -- in the DEFAULT order, which is "
+               "what this row pins: under either family-first order "
+               "the same name reads family 'John', H1 being a no-op "
+               "there because assign has already placed the word. "
+               "The boundary of the widening, and "
+               "the row that fails if the retag is made unconditional. "
+               "The fix classification is #274's marker consumption, "
+               "which is what makes this differ from 1.4.0 (first "
+               "'John', middle 'née', last 'Jones')"),
+    Case("title_plus_one_word_comma_suffix", "Dr. King, Jr.",
+         {"title": "Dr.", "family": "King", "suffix": "Jr."},
+         classification="fix(#410)",
+         notes="the most ordinary shape H1's widening touches, and "
+               "the one the suite could least afford to leave "
+               "unpinned: mutating H1 to decline on any name carrying "
+               "a comma left all 5819 tests green. Nothing else sees "
+               "the class -- the corpus-wide maiden-clause property "
+               "test filters commas out of its parametrization "
+               "(_clause_free_latin_corpus_names), and "
+               "'Smith, Dr.' takes its family from the comma rule "
+               "(C1), not from H1. 1.4.0 had the same empty family "
+               "here (title 'Dr.', first 'King', last ''), so this "
+               "row records a v1 bug fixed, not a v2 divergence"),
+    Case("title_plus_one_word_multi_word_maiden",
+         "Dr. Smith née Mary Jones",
+         {"title": "Dr.", "family": "Smith", "maiden": "Mary Jones"},
+         classification="fix(#410)",
+         notes="the maiden name at two words rather than one. H1 "
+               "counts what stands in the NAME, so the arity of the "
+               "clause beside it is irrelevant -- a rule that "
+               "declined on a second maiden token would pass every "
+               "single-word row above. 1.4.0 read first 'Smith', "
+               "middle 'née Mary', last 'Jones'"),
+    Case("given_name_title_plus_one_word_multi_word_maiden",
+         "Sir John née Mary Jones",
+         {"title": "Sir", "given": "John", "maiden": "Mary Jones"},
+         classification="fix(#410)",
+         notes="the carve-out at the same arity: 'whatever maiden "
+               "name stands beside it' has to leave the given-name "
+               "title alone however long the clause is. Without this "
+               "row the `whatever` is asserted only at one word. "
+               "1.4.0 read first 'John', middle 'née Mary', last "
+               "'Jones'"),
+    Case("title_plus_one_word_two_suffixes", "Dr. Smith PhD Jr.",
+         {"title": "Dr.", "family": "Smith", "suffix": "PhD, Jr."},
+         classification="fix(#410)",
+         notes="two suffix pieces, not one. The removed term asked "
+               "whether ANY token carried a suffix role, so a guard "
+               "rebuilt to decline on the SECOND one would look "
+               "correct against every row that carries a single "
+               "credential. 1.4.0 split them, reading first 'Smith', "
+               "last 'PhD', suffix 'Jr.'"),
+    Case("title_plus_one_word_nickname_and_suffix",
+         "Dr. (Bud) Smith Jr.",
+         {"title": "Dr.", "family": "Smith", "suffix": "Jr.",
+          "nickname": "Bud"},
+         classification="fix(#410)",
+         notes="two DIFFERENT annotations at once, which is the "
+               "combination the single-annotation rows cannot reach: "
+               "a guard declining only where a nickname and a suffix "
+               "are both present passes all of them. 1.4.0 read first "
+               "'Smith', last 'Jr.' with nickname 'Bud' -- the "
+               "credential taking the family slot"),
     # The smallest shape in which the two family-first orders can
     # disagree about this rule's leftovers: with one leftover both
     # send it to `given`, and two or more is what separates them (the
@@ -349,7 +443,7 @@ CASES: tuple[Case, ...] = (
                "skipped 'St'/'Do'/'Freiherr' and collapsed the "
                "untitled 'St John Smith' into one given name"),
     Case("titled_ambiguous_particle_no_op_chain", "St Van Jr.",
-         {"title": "St", "given": "Van", "suffix": "Jr."},
+         {"title": "St", "family": "Van", "suffix": "Jr."},
          notes="the piece after the particle is a suffix, so the chain "
                "scan never advances and the merge is a no-op -- nothing "
                "was chained, so there is no fork to report (the emitter "
@@ -367,7 +461,10 @@ CASES: tuple[Case, ...] = (
                "Not parity, and not #367's doing either: 1.4.0 reads "
                "'Do Van Jr.' as first 'Do Van', last 'Jr.', so the "
                "divergence is 2.0's suffix routing plus 'do' being a "
-               "title -- both older than this row's respelling",
+               "title -- both older than this row's respelling"
+               " -- and since #410 the one name word left standing "
+               "behind the title reads as the family, the suffix no "
+               "longer counting as something else in the name",
          classification="fix"),
     Case("initial_shaped_not_conjunction", "john e. smith",
          {"given": "john", "middle": "e.", "family": "smith"},
@@ -532,10 +629,14 @@ CASES: tuple[Case, ...] = (
          notes="suffix-ACRONYM membership alone strips periods (v1 "
                "is_suffix parity)"),
     Case("nickname_rule_counts_whole_segment", "Xyz. (Bud) Smith",
-         {"title": "Xyz.", "given": "Smith", "nickname": "Bud"},
+         {"title": "Xyz.", "family": "Smith", "nickname": "Bud"},
+         classification="fix(#410)",
          notes="v1's lone-piece nickname rule counts the segment "
                "BEFORE title peeling (parser.py:1285, pinned live "
-               "2026-07-17)"),
+               "2026-07-17), which is what this row pins and what "
+               "#410 does not change. The FIELD moved: a nickname is "
+               "not a further name word, so the one name word behind "
+               "the title is the family. 1.4.0 read first 'Smith'"),
     Case("suffix_comma_decided_by_first_segment",
          "Dr. John P. Doe-Ray, CLU, CFP, LUTC",
          {"title": "Dr.", "given": "John", "middle": "P.",
@@ -881,8 +982,9 @@ CASES: tuple[Case, ...] = (
                "now sees the name that remains, so the clause changes "
                "nothing about how the rest of this name reads -- the "
                "reading is 'juan y garcia' plus a maiden name. "
-               "test_parser.py asserts that over the corpus, with "
-               "#410's lone-residual shape as the one boundary"),
+               "test_parser.py asserts that over the corpus, and "
+               "since #410 the only names it steps over are those "
+               "that parse to nothing at all"),
     Case("bound_given_reserve_excludes_a_multi_word_maiden_name",
          "Abd Berg née Mary Jones",
          {"given": "Abd", "family": "Berg", "maiden": "Mary Jones"},
@@ -1379,11 +1481,14 @@ CASES: tuple[Case, ...] = (
                "(first=Johnson last=PhD); v2 keeps recognized "
                "suffixes in suffix"),
     Case("suffix_stays_suffix_title", "Mr. Johnson PhD",
-         {"title": "Mr.", "given": "Johnson", "suffix": "PhD"},
-         classification="fix(suffix-routing)",
-         notes="v1 routes a lone trailing suffix to family "
-               "(title=Mr. first=Johnson last=PhD); v2 keeps "
-               "recognized suffixes in suffix"),
+         {"title": "Mr.", "family": "Johnson", "suffix": "PhD"},
+         classification="fix(#410)",
+         notes="two fixes meet here. v1 routed a lone trailing suffix "
+               "to family (title 'Mr.', first 'Johnson', last 'PhD') "
+               "and v2 keeps recognized suffixes in `suffix` "
+               "(fix(suffix-routing)); that left 'Johnson' in `given` "
+               "with an empty family until #410 stopped counting the "
+               "suffix as a further name word"),
     Case("family_comma_lone_title", "Smith, Dr.",
          {"title": "Dr.", "family": "Smith"},
          classification="fix(comma-family)",

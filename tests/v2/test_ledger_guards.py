@@ -1239,6 +1239,10 @@ def _claim(rule: dict) -> _Claim:
 #: both is growth into names the rule genuinely describes.
 _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
+        "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
+            _Claim(3, ('family', 'given'), "24d6223e472f"),
+        "fix(#410) the maiden flavor, where 1.4.0 read the marker as a middle name":
+            _Claim(1, ('family', 'given', 'maiden', 'middle'), "309e39fc2475"),
         "fix(#432) a dotted numeral behind a name is a middle initial, not the generation":
             _Claim(1, ('middle', 'suffix'), "e9f282da0d0f"),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
@@ -1272,7 +1276,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(279, ('family', 'given'), "28a62b622a48"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(1073, ('family', 'given', 'suffix'), "4109210ea38c"),
+            _Claim(1075, ('family', 'given', 'suffix'), "97934f29bdc8"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1338,13 +1342,15 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#424) accepted: the chain keeps an acronym assign will not peel behind a title-and-particle word":
             _Claim(1, ('family', 'given'), "faa4bedda537"),
         "fix(#424) a title-led chain before the numeral is the one name piece":
-            _Claim(1, ('family', 'given', 'suffix'), "5b3a743f9e35"),
+            _Claim(1, ('family', 'suffix'), "5b3a743f9e35"),
         "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece":
             _Claim(1, ('family', 'middle', 'suffix'), "a564b97f7162"),
         "fix(#360) ste moved into the never-given particles with mc":
             _Claim(1, ('family', 'given'), "e62caedec864"),
     },
     "expected_since_2.0.0.toml": {
+        "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
+            _Claim(4, ('family', 'given'), "da1dd1473145"),
         "fix(#430) a credential run does not end at the roman numeral describing it":
             _Claim(2, ('given', 'suffix'), "3c8fa6bc827a"),
         "fix(#432) a dotted numeral behind a name is a middle initial, not the generation":
@@ -1404,7 +1410,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#424) the particle chain stops before a bare acronym with words to spare":
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "3e3aae6a5b4b"),
         "fix(#424) a title-led chain before the numeral is the one name piece":
-            _Claim(1, ('_ambiguities', 'family', 'given', 'suffix'), "5b3a743f9e35"),
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "5b3a743f9e35"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -1447,6 +1453,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'maiden'), "2150936a8c55"),
     },
     "expected_since_2.1.0.toml": {
+        "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
+            _Claim(4, ('family', 'given'), "da1dd1473145"),
         "fix(#430) a credential run does not end at the roman numeral describing it":
             _Claim(2, ('given', 'suffix'), "3c8fa6bc827a"),
         "fix(#432) a dotted numeral behind a name is a middle initial, not the generation":
@@ -1492,7 +1500,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#424) the particle chain stops before a bare acronym with words to spare":
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "3e3aae6a5b4b"),
         "fix(#424) a title-led chain before the numeral is the one name piece":
-            _Claim(1, ('_ambiguities', 'family', 'given', 'suffix'), "5b3a743f9e35"),
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "5b3a743f9e35"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -1793,7 +1801,7 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
                   ("fix(comma-family)", "fix(comma-precomma-family)",
                    "fix(suffix-routing)")),
     '(^|[\\w.]\\s+)[("\'][^)"\']+[)"\'](\\s+\\w|\\s*$)':
-        _Excluded(44, "203608eec291", ()),
+        _Excluded(46, "71eb2fa94553", ()),
 }
 
 
@@ -1897,7 +1905,7 @@ def test_a_fields_narrowing_actually_narrows_something() -> None:
 
     Measured: deleting `fields = ["nickname", "middle"]` from the
     ASCII-pairs entry passes every other check in this tree. The entry
-    then refuses ANY diff on the 34 corpus names it captures --
+    then refuses ANY diff on the 46 corpus names it captures --
     including 'Jenny (Johnson) Baker' and 'Lon (Jr.) Williams', whose
     parens are a maiden name and a suffix, both under active
     development. Nothing failed, because none of those names diffs

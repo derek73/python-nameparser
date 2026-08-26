@@ -372,7 +372,8 @@ class TitleTestCase(HumanNameTestBase):
     def test_leading_period_abbreviation_with_nickname(self) -> None:
         hn = HumanName("Xyz. (Bud) Smith")
         self.m(hn.title, "Xyz.", hn)
-        self.m(hn.first, "Smith", hn)
+        self.m(hn.first, "", hn)
+        self.m(hn.last, "Smith", hn)
         self.m(hn.nickname, "Bud", hn)
 
     def test_charge_daffaires_chains_as_title(self) -> None:
