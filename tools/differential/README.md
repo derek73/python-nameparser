@@ -412,13 +412,44 @@ The corpora run under the **default policy**, so any behavior gated
 behind a non-default `Policy` field is invisible here. Default
 *vocabulary* is a different matter: it is fully in EFFECT, never
 gated off the way a `Policy` field is, so a change to it can show up
-here. That is not the same as coverage -- only 3 of the 17 shipped
+here. That is not the same as coverage -- only 4 of the 16 shipped
 `maiden_markers` and 8 of the 15 `honorific_tails` appear anywhere in
-the corpora (measured 2026-08-05), so an entry no corpus name
-exercises is as invisible as an opt-in policy.
+the corpora (re-measured 2026-08-26; the marker count was 3 until
+#414's rules corpus brought in a parenthesized `Nee`, and the
+denominator was 17 until `roz` left the vocabulary in 2.2 -- it
+appeared in no corpus name, so only the denominator moved), so an
+entry no corpus name exercises is as invisible as an opt-in policy.
 
-Two independent mechanisms put a birth surname in `maiden`, and only
-one is opt-in (measured 2026-08-05):
+Those two numbers count WHOLE TOKENS, delimiters stripped. The strip
+is what earns exactly one of the four: `nee`, which appears in the
+corpora only inside brackets -- `Jane Smith (Nee)` and
+`Jane Smith (Nee) (Jones)` -- where the token carries them until they
+come off. `née` needs no strip, appearing bare in many names, and `né`
+is not counted at all: it occurs only as a substring of `née`, never
+as a token. The convention matters because the neighbouring guard
+`tests/v2/test_ledger_guards.py::_carries` deliberately asks a wider
+question -- it also matches a non-ASCII entry anywhere inside a name,
+since 旧姓 is written flush against the name it marks -- and under that
+reading the marker count is 5, not 4. Both are right about different
+questions. Recompute:
+
+```
+uv run python -c "
+import glob, json
+from nameparser import Parser
+from nameparser._lexicon import _normalize
+L = Parser().lexicon
+names = [json.loads(l) for f in glob.glob('tools/differential/corpus*.jsonl') for l in open(f, encoding='utf-8') if l.strip()]
+toks = {_normalize(t.strip('()\'"«»“”„「」『』（）')) for n in names for t in n.split()}
+for s in ('maiden_markers', 'honorific_tails'):
+    v = getattr(L, s)
+    print(s, len(toks & v), 'of', len(v), sorted(toks & v))"
+```
+
+
+Two independent mechanisms put a birth surname in `maiden`, and what
+is opt-in about them is narrower than it looks (rows measured
+2026-08-05, re-measured 2026-08-26):
 
 | input | default policy | `maiden_delimiters={("(", ")")}` |
 |---|---|---|
@@ -428,12 +459,36 @@ one is opt-in (measured 2026-08-05):
 Row 1 carries no marker word, so it isolates the delimiter: the
 brackets alone route their content to `maiden`, and only once the
 policy says they do. Row 2 carries no brackets, so it isolates the
-marker: `Lexicon.maiden_markers` ships 17 entries by default, `nee`
+marker: `Lexicon.maiden_markers` ships 16 entries by default, `nee`
 among them, and the bare form needs no configuration at all.
 
-So what is opt-in is not the marker words — it is only the delimited
-path. #329 changed what happens when both are in play (the marker
-inside a delimited clause is now dropped from the value), and this
-gate cannot see it, because the corpora never configure the delimiter.
-Opt-in behavior is covered by `tests/v2/cases.py`, whose rows carry
-their own `policy=`.
+So what is opt-in is neither the marker words nor the delimited path
+as a whole: it is the delimited path for content that does not
+announce itself. Since #335 a clause of two words or more led by a
+marker reads as the maiden name whichever bucket its pair sits in
+(`rules.md#M3`), so `Jane Smith (née Jones)` needs no configuration
+either. Row 1 is exactly the shape that still does — a markerless
+clause — along with a one-word clause like `Jane Smith (Nee)`, where
+nothing in the content says maiden and only a caller who knows the
+data can.
+
+It does NOT put #329 within reach of this gate, and the reason
+generalizes past this one change. #329 governs what a delimited maiden
+clause CONTAINS -- the marker word is dropped from the value -- while
+a ledger rule narrows by which FIELDS move, never by what they hold.
+The six names the 2.1.0 ledger classifies under `fix(#335)` move
+`{nickname, maiden}` whether the marker is dropped or not, so that rule
+absorbs a #329 regression in silence. The field sets are per baseline
+and only that ledger's are uniform: at 2.0.0 the CJK name declares four
+fields and has a rule to itself, and at 1.4.0 it is not a `fix(#335)`
+name at all. Measured 2026-08-26 by reverting the drop pass
+in `_group.py`: `Jane Smith (née Jones)` reads maiden `née Jones`, and
+all three gates still report 0 unexplained. #329 was out of reach
+before #335 too, for a different reason -- under the default policy no
+corpus name reached the drop at all, so the movement on
+`山田 花子（旧姓 佐藤）` between 2.0.0 and 2.1.0 was the East Asian order
+flip rather than #329 (`decisions.md#M1`'s 2026-08-05 entry calls that
+change gate-visible; the 2026-08-26 entry beside it records the
+correction). Value-level coverage for both is `tests/v2/cases.py`,
+whose rows assert values, and whose opt-in rows carry their own
+`policy=`.

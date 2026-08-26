@@ -139,6 +139,24 @@ Contract statement. A worker that must run under a pinned dependency is rendered
 
 Contract statement. A user-supplied pattern is rejected as over-matching by probing it against a small set of inputs sharing no script, vocabulary or punctuation; matching all of them means it targets no behavior family. Measured: `.`, `.+`, `\b` and `[\s\S]` all decline the empty string — the naive probe — and still match every corpus name. Lives in tools/differential/compare.py (_SENTINELS).
 
+### VOCABULARY-EXERCISES-FORKS — pin the branch, not the wordlist
+
+Contract statement. A vocabulary set a caller configures is data; the code that reads it is what has behavior, so a case row earns its place by exercising a FORK — a branch the parser takes for one INPUT and not another — never by covering one more member. The unit is the input, not the member, because most forks are keyed on the shape of the surrounding name rather than on which word appeared. Find them by reading the sites that consult the set and enumerating the branches they take, and expect that enumeration to come back empty: `maiden_markers` is read at exactly two sites (`_classify.py`'s tagging and `_extract.py`'s `_maiden_marked`), both plain whole-token membership after `_normalize`, and every shipped member parses to one structural class in bare, bracketed and lone-bracketed shapes with the marker text normalised out — zero member forks. What earns the maiden rows is clause SHAPE: marker first against marker later, a word after the marker against none, a marker a separator divides from the name against one glued to it. Two adjacent things are NOT forks of this set and do not want rows: the substring-versus-token split is `_carries` in test_ledger_guards.py, a test guard deliberately asking a wider question than the parser (tools/differential/README.md says so), and edge-period normalization lives in `_lexicon._normalize`, applying to every token of every vocabulary, so it discriminates spellings rather than members. Only "a member borne as an ordinary name" is member-keyed (decisions.md#vocabulary-collisions), and it has its own rows. The reduction does NOT carry across to delimiter pairs, and the difference is the line to hold: a pair the library SHIPS is caller-visible behavior, and vocabulary a caller configures is data — deleting `("«", "»")` from the defaults reddens three tests, so cases.py's one-row-per-shipped-pair convention is load-bearing and this criterion is not permission to delete those rows. Within the pairs the code does fork, on whether open and close are the same character (N2) and again inside that class, where `WORD_INTERNAL_DELIMITERS` carves the apostrophe out: `Jane Smith"` reports UNBALANCED_DELIMITER and `Jane Smith'` reports nothing. ASCII against fullwidth is not one of them — swapping `( )` for `（ ）` across every corpus name holding a paren changes no field and no ambiguity kind. A row may also earn its place a second way, with no fork behind it: pinning a name a release note advertises BY NAME, which is a promise to a reader rather than a branch in the parser. It follows that "N of M entries have no test" is not a finding; it reads as one because it carries a number, and it inflates with every entry added, which is the tell that it measures the data. The finding is "this fork has no test". State the argument without present-tense counts over a drifting wordlist — see docs/design/AGENTS.md — and where a count is genuinely wanted, ship the one-liner instead:
+
+```
+uv run python -c "
+from nameparser import parse
+from nameparser.config.maiden_markers import MAIDEN_MARKERS
+shapes = ['Jane Smith {m} Jones', 'Jane Smith ({m} Jones)', 'Jane Smith ({m})']
+cls = {}
+for m in sorted(MAIDEN_MARKERS):
+    sig = tuple(tuple((f, (getattr(parse(s.format(m=m)), f) or '').replace(m, '<M>'))
+                      for f in ('given', 'middle', 'family', 'suffix', 'nickname', 'maiden'))
+                for s in shapes)
+    cls.setdefault(sig, []).append(m)
+print(len(MAIDEN_MARKERS), 'members ->', len(cls), 'structural classes')"
+```
+
 ### FORCE-A-DECISION-TABLE — no silent defaults on growth
 
 Contract statement. Where adding an enum member or a file must not silently inherit a default, a local table's key set is asserted equal to the population, so growth fails the suite until someone decides — against a local table, not the constant under test. Exemplar: tests/v2/pipeline/test_vocab.py's per-script initials check; reused for _CORPUS_FLOORS in tools/differential/compare.py, and for the pack registry (test_registry_is_the_pack_contract: every registered pack must ship DEVIATES and its rotator list or the suite fails structurally — decisions.md#deviates-registry). Known gap it exposes: DEFAULT_SCRIPT_ORDERS has no such guard.

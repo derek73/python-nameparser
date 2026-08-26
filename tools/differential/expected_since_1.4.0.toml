@@ -67,11 +67,19 @@ issue = "fix(#274) maiden markers consumed"
 # tests/v2/test_ledger_guards.py: every alternative must match at least
 # one entry the config ships, and none may match ordinary name text.
 #
-# Its members reach 4 of the 17 entries -- geb, nee, née, roz -- which
-# is not the same set as the markers the corpora contain (geb, née and
-# 旧姓; only the first two are covered here). Growing it toward the
-# other 12 buys nothing: none appears as a token in any corpus, so
-# there is no diff for them to classify.
+# Its members reach 3 of the 16 entries -- geb, nee, née -- which is
+# not the same set as the markers the corpora contain (geb, nee, née
+# and 旧姓; the first three are covered here). Thirteen entries go
+# unreached, and the carve-out in that arithmetic is load-bearing:
+# 旧姓 is one of the thirteen and DOES appear as a corpus token, which
+# is why it has fix(cjk-maiden-marker) of its own below rather than an
+# alternative here. Growing this rule toward the other TWELVE buys
+# nothing: none of them appears as a token in any corpus, so there is
+# no diff for them to classify. The roz alternative was
+# dropped in 2.2 with the vocabulary entry it copied (see
+# maiden_markers.py's Deliberately absent note): no corpus name
+# contains the string in any case or position, so it classified
+# nothing and its removal moved no name.
 #
 # 旧姓 is a different case, and it has been got wrong three times, so
 # state it precisely. Widening this rule to cover it changes no corpus
@@ -126,7 +134,22 @@ issue = "fix(#274) maiden markers consumed"
 # would need the regex to ask a vocabulary question -- suffix or
 # connective membership -- a second alternation this rule cannot
 # spend.
-name_regex = "(?i)(?<![(（])(?<=\\S\\s)\\b(n[ée]e|geb|roz)\\.?(?![)）])(?=\\s+\\S)"
+#
+# revisit when #445 lands, and this is the half of that shape the
+# bracketed fix(#335) rules do NOT cover. This rule declares `family`,
+# and eight names it claims read family '' because the marker takes
+# every word after it -- the bare spelling of exactly what #445 asks
+# about. If #445 lands as "keep the family", their 1.4.0 diff stays a
+# subset of {maiden, middle, family} and this rule keeps explaining
+# them with the gate green, which is the silent absorption the
+# four-field split exists to prevent, on the same field and the same
+# baseline. The checklist to re-measure, all one name word before the
+# marker: 'Janey née Jones' and 'abd née Jones' (the exact N3-parallel
+# shape, one word after the marker too), plus 'Jane née Jones Smith',
+# 'Jane née and Jones Smith', 'John née Jones Smith V',
+# 'John née Jones Smith Ma', 'J. née Jones Smith V' and
+# 'Jane née Jones J. V'.
+name_regex = "(?i)(?<![(（])(?<=\\S\\s)\\b(n[ée]e|geb)\\.?(?![)）])(?=\\s+\\S)"
 fields = ["maiden", "middle", "family"]
 
 [[change]]
@@ -647,6 +670,25 @@ issue = "fix(cjk-fullwidth-paren-nickname) fullwidth-parenthesis recognition com
 # above carry, pinned by the same auto-discovering test. The slug is
 # free-form; the #271/#272 substrings it avoids were a constraint of a
 # selector retired in #333.
+#
+# DORMANT since 2.2, and the reason is a migration rather than a
+# revert. Its one name moved to fix(cjk-maiden-marker) above: under
+# rules.md#M3 the fullwidth clause is read on the strength of the 旧姓
+# inside it, so the clause lands in `maiden` and `nickname` no longer
+# diffs at all -- 1.4 read the brackets as name text and had no
+# nickname here either. The diff is now {given, middle, family,
+# maiden}, which is a subset of that rule's fields and not of this
+# one's, so classify() hands the name over. That is the right home:
+# what the name demonstrates today IS a marker consumption, and the
+# fullwidth pair is only what makes the marker a separate token.
+#
+# Kept rather than deleted because the reasoning below is about the
+# `fields` boundary between this rule and fix(cjk-delimited-nickname),
+# which nothing else records, and because the declaration is load
+# bearing in reverse: if a fullwidth-bracketed CJK NICKNAME diff ever
+# appears again, this rule wakes and the harness says the dormant
+# reason has gone false.
+dormant = "its one name, '山田 花子（旧姓 佐藤）', diffs in `maiden` rather than `nickname` since rules.md#M3 and is claimed by fix(cjk-maiden-marker); no other corpus name pairs a fullwidth bracket with a CJK script"
 name_regex = "(?s)(?=.*[（）])(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
 fields = ["given", "middle", "family", "nickname"]
 
@@ -1232,8 +1274,12 @@ why = "feat(#273) recognizes TYPOGRAPHIC nickname delimiters; the ASCII pairs we
 # ('"Rick" Edmonds'), medial ('John (Jack) Kennedy') or trailing
 # ('Franklin, Benjamin (Ben)'), with a word character or a period as
 # the inner flank so a middle initial counts ('Cherice J. (Johnson)
-# Williams'). 46 corpus names (recounted 2026-08-25; the figure is
-# the one test_ledger_guards.py pins as this entry's `captures`).
+# Williams'). 51 corpus names (recounted 2026-08-26). The figure is
+# the one test_ledger_guards.py pins as this entry's `captures`, so it
+# is not merely stale when it drifts, it contradicts a machine-checked
+# constant: read it there rather than trusting this line, and grep
+# _EXCLUSION_EFFECT for the pattern. It was 46 for three rounds and
+# moved twice in one delta, once per rules-corpus row added.
 #
 # It was medial-only for three rounds, on the theory that the trailing
 # position is where credentials live and that widening would silence
@@ -1261,11 +1307,21 @@ why = "feat(#273) recognizes TYPOGRAPHIC nickname delimiters; the ASCII pairs we
 # '김민준씨 (Jimmy)' {first,last,suffix}. Zero classifications lost.
 #
 # A bare [("'] class is still wrong, for the reason the role
-# narrowing cannot fix: it reaches 63 names, 9 of them on an
+# narrowing cannot fix: it reaches names whose only match is an
 # apostrophe that is part of the word ("Brian O'connor",
 # "Harietta Keopuolani Nahi'ena'ena"), which is not a delimited run at
-# all. (Both figures recounted 2026-08-25, against the corpora as they
-# now stand; they were 47 and 11 when first written.)
+# all. Both figures moved twice in the #335 delta and are the class
+# this file keeps getting wrong, so recount rather than adjust -- the
+# body sits flush left because `python -c` compiles it as a module:
+#
+# uv run python -c "
+# import glob, json, re
+# names = {json.loads(l) for f in glob.glob('tools/differential/corpus*.jsonl')
+#          for l in open(f, encoding='utf-8') if l.strip()}
+# hit = [n for n in names if re.search(r'[(\"\']', n)]
+# only = [n for n in hit if not re.search(r'[(\"]', n)
+#         and not re.search(r'(^|\\s)\'', n) and re.search(r'\\w\'', n)]
+# print(len(hit), len(only))"
 #
 # By role: ASCII parens mark nicknames, maiden names, suffixes and
 # credentials alike, and no regex tells them apart. The shape reaches
@@ -1373,3 +1429,52 @@ issue = "fix(#410) the maiden flavor, where 1.4.0 read the marker as a middle na
 # marker extraction and the H1 fix land together.
 name_regex = "(?i)^Dr\\. Smith n[ée]e Jones$"
 fields = ["given", "middle", "family", "maiden"]
+
+[[change]]
+issue = "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it"
+# 'Jane Smith (née Jones)', 'Jane (née Jones) Smith', 'Jane Smith
+# (née V)', 'Anna Müller (geb. Schmidt)', 'Ursula von der Leyen
+# (geb. Albrecht)': rules.md#M3 reads a bracketed clause whose content
+# opens with a marker word and carries a word after it as the maiden
+# name. 1.4 extracted the same five clauses as NICKNAMES -- v1 knew
+# the parenthesis pair and had no maiden reading to give an
+# undeclared one -- so the diff is the role and only the role.
+#
+# `fields` is exactly the pair that moves. Five names, two fields,
+# measured; the union with what these names move against 2.0.0 would
+# be wider, and declaring a field a diff does not move is what let a
+# real given/family movement hide behind fix(#424) until PR #444.
+#
+# The CJK name is NOT here, unlike in the two 2.x ledgers. Against
+# 1.4 it diffs in {given, middle, family, maiden}: v1 read the
+# fullwidth brackets as name text, so there is no nickname on either
+# side to change hands, and fix(cjk-maiden-marker) above already
+# describes exactly that diff. See the dormancy note on
+# fix(cjk-fullwidth-paren-nickname), which is the rule that used to
+# hold it.
+name_regex = "(?i)^(?:Jane Smith \\(n[ée]e Jones\\)|Jane \\(n[ée]e Jones\\) Smith|Jane Smith \\(n[ée]e V\\)|Anna Müller \\(geb\\. Schmidt\\)|Ursula von der Leyen \\(geb\\. Albrecht\\))$"
+fields = ["nickname", "maiden"]
+
+[[change]]
+issue = "fix(#335) a marker-led clause leaves the one name word its bare reading"
+# 'Smith (née Jones)', which rules.md#N3 carries as an Accepted line.
+# N3 reads a name that is only a nickname plus one name word as "that
+# word is the family name", and a marker-led clause is not a nickname
+# clause, so N3 no longer reaches this shape: the word keeps the
+# reading the bare "Smith née Jones" gives it, which is `given`.
+#
+# Its own rule rather than a sixth alternative in the fix(#335) rule
+# above, for the reason that rule states: this diff moves FOUR fields
+# where those move two, and one rule holding both would have to
+# declare the union, pre-excusing a given/family regression on the
+# five. The empty `family` is not this change's -- the bare spelling
+# reads that way on 2.0.0 and 2.1.0 too -- but it is inside this
+# diff, so the rule declares it.
+#
+# revisit when #445 lands: this rule declares `family`, and `family`
+# is exactly the field #445 would change. Fixing it there moves this
+# diff, and this rule would absorb the change in silence at all three
+# baselines -- the same failure the four-field split exists to avoid,
+# displaced onto a different field. Re-measure this rule then.
+name_regex = "(?i)^Smith \\(n[ée]e Jones\\)$"
+fields = ["given", "family", "nickname", "maiden"]

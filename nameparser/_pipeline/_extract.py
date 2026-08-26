@@ -7,11 +7,16 @@ UNBALANCED_DELIMITER ambiguities for opens with no close.
 A Role.MAIDEN region is the WHOLE inner span, marker word included --
 nothing here strips one. classify tags a marker inside it like any
 other token, and group drops it from a multi-token clause (#329).
-Reads: Policy.nickname_delimiters, Policy.maiden_delimiters, and
+A region reaches that role two ways: the pair that matched sits in
+Policy.maiden_delimiters (M1), or the content itself opens with a
+marker word (M3), which reassigns the role after the match and so is
+the one thing here that a bucket alone does not decide.
+Reads: Policy.nickname_delimiters, Policy.maiden_delimiters,
+Lexicon.maiden_markers, and
 Lexicon.suffix_words / suffix_acronyms / suffix_acronyms_ambiguous
 through _suffix_shaped.
 
-Implements rules N1, N2, S1 and M1 of docs/design/rules.md (the #273
+Implements rules N1, N2, S1, M1 and M3 of docs/design/rules.md (the #273
 matching mechanism); each is cited at its code below. One scan
 mechanic worth stating up front: matching is one left-to-right pass,
 no nesting, and delimiter characters inside a matched region are
@@ -50,6 +55,24 @@ def _suffix_shaped(content: str, lexicon: Lexicon) -> bool:
             or (acronym in lexicon.suffix_acronyms
                 and acronym not in lexicon.suffix_acronyms_ambiguous)
             or content.endswith("."))
+
+
+# rules.md#M3: "a bracketed clause whose content opens with a
+# recognized marker word and carries a word after it reads as the
+# maiden name, whichever bucket the enclosing pair sits in"
+def _maiden_marked(content: str, lexicon: Lexicon) -> bool:
+    """The clause says 'maiden' out loud, so the caller does not have to
+    say it in Policy. Requires a word AFTER the marker: a lone marker in
+    brackets is a word in brackets, and M1 deliberately keeps a one-word
+    clause's word (it may be the surname Nee). The word after is not
+    tested for anything -- M3's Accepted line, and the reason a
+    bracketed '(née V)' reads maiden 'V' where the bare 'née V' gives
+    M2 a suffix. Whitespace-split, so a marker the writer glued to
+    punctuation is not one here ('née,'); the tokenizer splits that
+    comma off and still tags the token, which is what keeps _group's
+    Role.MAIDEN filter reachable."""
+    words = content.split()
+    return len(words) > 1 and _normalize(words[0]) in lexicon.maiden_markers
 
 
 # rules.md#N2: "a quote whose open and close are the same character
@@ -203,6 +226,21 @@ def extract_delimited(state: ParseState) -> ParseState:
             masked.append(Span(j, j + len(close)))
         else:
             if inner.start < inner.end:
+                # M3 upgrades a nickname clause; a configured maiden
+                # pair is M1's and is left alone. The role test is
+                # False whenever a maiden pair matched, but it cannot
+                # change the OUTCOME, and no test can catch its
+                # removal: `order` above holds exactly two roles, so a
+                # role that is not NICKNAME is already MAIDEN and the
+                # assignment would be a no-op either way. It is kept
+                # for the day `order` gains a third bucket, when it
+                # becomes the difference between M3 claiming that
+                # bucket's clauses and leaving them. Measured
+                # 2026-08-26: dropping it leaves the suite and all
+                # three gates green.
+                if (role is Role.NICKNAME and _maiden_marked(
+                        text[inner.start:inner.end], state.lexicon)):
+                    role = Role.MAIDEN
                 extracted.append((role, inner))
             masked.append(Span(i, j + len(close)))
         # position-driven scanning makes overlapping matches

@@ -35,7 +35,7 @@ from typing import NamedTuple
 
 import pytest
 
-from nameparser import _policy
+from nameparser import DEFAULT_NICKNAME_DELIMITERS, _policy
 from nameparser._policy import Script
 # The parser's own fold, imported rather than reimplemented: a
 # hand-written one here stripped commas, parens, brackets and quotes,
@@ -835,8 +835,8 @@ class _LatinCopy(NamedTuple):
 #: by a substring of the rule's `issue`. Kept apart from
 #: _HONORIFIC_SOURCES because the relationship is not set equality:
 #: these members are regex FRAGMENTS, not entries -- "n[ée]e" covers two
-#: markers at once, "geb\.?" and "roz\.?" one each -- so there is no set
-#: to compare against.
+#: markers at once and "geb\.?" one -- so there is no set to compare
+#: against.
 #:
 #: `covers` is recorded rather than equated to the whole vocabulary.
 #: Equality would force a rule to grow alternatives for markers it has
@@ -845,13 +845,15 @@ class _LatinCopy(NamedTuple):
 #: removal: drop an entry a member covers and the snapshot shrinks.
 #:
 #: Three nearby counts differ and are easy to conflate, all for
-#: fix(#274) specifically: MAIDEN_MARKERS ships 17 entries; that rule's
-#: members reach 4 of them; the corpora contain 3 markers in total
-#: (geb, née, 旧姓), only 2 of which it covers.
+#: fix(#274) specifically, and all four numbers moved in 2.2 -- recount
+#: rather than adjust them: MAIDEN_MARKERS ships 16 entries (roz left
+#: the vocabulary); that rule's members reach 3 of them; the corpora
+#: contain 4 markers in total (geb, nee, née, 旧姓 -- nee arrived with
+#: #414's rules corpus), 3 of which it covers.
 _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
     "fix(#274)": _LatinCopy(
         vocabulary=MAIDEN_MARKERS,
-        covers=frozenset({"geb", "nee", "née", "roz"})),
+        covers=frozenset({"geb", "nee", "née"})),
     "ambiguous-surname-acronym": _LatinCopy(
         vocabulary=SUFFIX_ACRONYMS_AMBIGUOUS,
         covers=frozenset({"do", "ma"})),
@@ -1108,16 +1110,50 @@ def _carries(name: str, vocabulary: frozenset[str]) -> bool:
     marker like 旧姓 is written against the name it marks rather than
     spaced off it.
 
-    Note what the isascii() split actually covers: 12 of the 17
+    Note what the isascii() split actually covers: 12 of the 16
     entries, not only the CJK one. `né` is two characters, so the
     substring branch reads `René` as carrying a marker. Every
     over-match here SHRINKS the set of unexplained names and so
     weakens the guard -- the direction this module exists to close --
-    but exactly one corpus name reaches that branch today, and it is
-    the 旧姓 one. Tighten this before admitting a vocabulary whose
-    short non-ASCII entries occur inside ordinary names.
+    but only two corpus names DEPEND on that branch today, meaning the
+    token test below says no and the substring test says yes, and both
+    are 旧姓 ones: the fullwidth-bracketed clause and the
+    fullwidth-colon spelling. Eight depended on it before the
+    delimiter strip below arrived (2026-08-26); that strip moved the
+    parenthesized née names onto the token branch, where the answer
+    does not rest on a substring. Both figures quantify over the
+    corpus and go stale on any row added to it, so recount rather than
+    adjust:
+    The body must sit flush left: `python -c` compiles it as a module,
+    so an indented first line raises IndentationError on paste.
+
+uv run python -c "
+import glob, json
+from nameparser import DEFAULT_NICKNAME_DELIMITERS as D
+from nameparser.config.maiden_markers import MAIDEN_MARKERS as V
+from nameparser._lexicon import _normalize
+names = {json.loads(l) for f in glob.glob('tools/differential/corpus*.jsonl') for l in open(f, encoding='utf-8') if l.strip()}
+strip = ''.join({c for p in D for c in p})
+sub = lambda n: any(e in n for e in V if not e.isascii())
+print(sum(not {_normalize(t.strip(strip)) for t in n.split()} & V and sub(n) for n in names),
+      sum(not {_normalize(t) for t in n.split()} & V and sub(n) for n in names))"
+    Tighten this before admitting a vocabulary whose short non-ASCII
+    entries occur inside ordinary names.
+
+    Delimiter characters come off the token before the membership
+    test, because a marker glued to a bracket is still a marker to the
+    parser: rules.md#M3 reads '(geb. Schmidt)' as a maiden clause on
+    the strength of that very word, and _normalize strips the
+    abbreviating period but not the paren, so 'Anna Müller (geb.
+    Schmidt)' read as carrying no maiden vocabulary at all. This
+    direction is the safe one -- an unstripped token cannot be a
+    vocabulary entry, so the strip only ever finds markers that are
+    really there, and the names it rescues are exactly the ones a
+    maiden rule may legitimately claim.
     """
-    tokens = {_normalize(token) for token in name.split()}
+    delimiters = "".join({ch for pair in DEFAULT_NICKNAME_DELIMITERS
+                          for ch in pair})
+    tokens = {_normalize(token.strip(delimiters)) for token in name.split()}
     return bool(tokens & vocabulary) or any(
         entry in name for entry in vocabulary if not entry.isascii())
 
@@ -1239,6 +1275,10 @@ def _claim(rule: dict) -> _Claim:
 #: both is growth into names the rule genuinely describes.
 _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
+        "fix(#335) a marker-led clause leaves the one name word its bare reading":
+            _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
+        "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
+            _Claim(5, ('maiden', 'nickname'), "a419f74143e3"),
         "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
             _Claim(3, ('family', 'given'), "24d6223e472f"),
         "fix(#410) the maiden flavor, where 1.4.0 read the marker as a middle name":
@@ -1276,7 +1316,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(279, ('family', 'given'), "28a62b622a48"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(1075, ('family', 'given', 'suffix'), "97934f29bdc8"),
+            _Claim(1080, ('family', 'given', 'suffix'), "0cb2cda1ed6b"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1349,6 +1389,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given'), "e62caedec864"),
     },
     "expected_since_2.0.0.toml": {
+        "fix(#335) a marker-led clause leaves the one name word its bare reading":
+            _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
+        "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
+            _Claim(5, ('maiden', 'nickname'), "a419f74143e3"),
+        "fix(#335) a marker-led bracketed clause reads as the maiden name, compounding with the CJK order flip":
+            _Claim(1, ('family', 'given', 'maiden', 'nickname'), "cf370e856ae7"),
         "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
             _Claim(4, ('family', 'given'), "da1dd1473145"),
         "fix(#430) a credential run does not end at the roman numeral describing it":
@@ -1453,6 +1499,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'maiden'), "2150936a8c55"),
     },
     "expected_since_2.1.0.toml": {
+        "fix(#335) a marker-led clause leaves the one name word its bare reading":
+            _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
+        "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
+            _Claim(6, ('maiden', 'nickname'), "d0e857deddb2"),
         "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
             _Claim(4, ('family', 'given'), "da1dd1473145"),
         "fix(#430) a credential run does not end at the roman numeral describing it":
@@ -1801,7 +1851,7 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
                   ("fix(comma-family)", "fix(comma-precomma-family)",
                    "fix(suffix-routing)")),
     '(^|[\\w.]\\s+)[("\'][^)"\']+[)"\'](\\s+\\w|\\s*$)':
-        _Excluded(46, "71eb2fa94553", ()),
+        _Excluded(51, "770738271273", ()),
 }
 
 

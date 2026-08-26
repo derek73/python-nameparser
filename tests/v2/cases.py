@@ -18,6 +18,17 @@ still wearing it is a row whose parity is simply unknown.
 The v1 suite's full corpus is extracted into this table by the
 migration plan (facade runner consumes the same rows); this file seeds
 it with the pinned battery.
+
+What earns a row is a FORK: a branch taken for one input and not
+another -- a rule's boundary, a precedence contest between two rules,
+a policy that changes the answer. A row demonstrating one more member
+of a vocabulary set pins nothing its other members do not, and one row
+per entry grows this table without narrowing what can break
+(mechanisms.md#VOCABULARY-EXERCISES-FORKS -- a restatement, and
+nothing checks it against the entry: test_doc_citations verifies an
+excerpt only where the reference is followed by a colon and a quoted
+span, which running prose like this one is not. Read the entry, not
+this paragraph, if the two ever disagree).
 """
 from __future__ import annotations
 
@@ -784,6 +795,50 @@ CASES: tuple[Case, ...] = (
          {"given": "Jane", "family": "Smith", "maiden": "Jones"},
          classification="fix(#274)",
          notes="v1 mangles to middle='Smith née'"),
+    Case("diminutive_that_was_a_marker_keeps_the_family",
+         "Rosalind Roz Smith",
+         {"given": "Rosalind", "middle": "Roz", "family": "Smith"},
+         notes="'roz', the Czech/Slovak abbreviation, shipped in "
+               "MAIDEN_MARKERS through 2.1 and collided with the "
+               "English diminutive of Rosalind -- matching is "
+               "whole-token, case-folded and period-insensitive, so "
+               "Roz, roz and roz. are one string. This name read "
+               "maiden 'Smith' with NO family name at all (measured on "
+               "the pre-removal tree), because M2 hands the marker "
+               "every word after it. The entry is gone in 2.2, which "
+               "is what this row pins. Nothing to do with the "
+               "delimited path, though M3 would have widened it: "
+               "the defect is M2's and predates #335, and the one-word "
+               "'(Roz)' spelling was never affected since M3 declines "
+               "a lone marker -- but 'Jane Smith (Roz Jones)' reads "
+               "maiden 'Jones' with the entry restored, where 2.1.0 "
+               "read nickname 'Roz Jones' (measured 2026-08-26). "
+               "Parity, and it is "
+               "RESTORED parity rather than untouched -- 1.4.0 has no "
+               "maiden support and read first Rosalind / middle Roz / "
+               "last Smith (2026-08-26), which is where the removal "
+               "puts this name back"),
+    Case("full_participle_marker_still_consumes",
+         "Anna Nováková rozená Svobodová",
+         {"given": "Anna", "family": "Nováková", "maiden": "Svobodová"},
+         classification="fix(#274)",
+         notes="the other half of the roz removal, and the reason it "
+               "was a removal and not a retreat from Czech: the full "
+               "participle rozená stays, being a word no one is "
+               "called. Pinned because deleting a vocabulary entry "
+               "invites deleting its neighbours, and because nothing "
+               "else in the suite reaches this entry: removing "
+               "rozená from MAIDEN_MARKERS fails exactly this row's "
+               "two tests, one per runner, and nothing else (measured "
+               "2026-08-26) -- the position "
+               "maiden_marker_delimited_unaccented holds for 'nee'. "
+               "The cost the removal accepts is the "
+               "abbreviation: 'Anna Nováková roz. Svobodová' now reads "
+               "middle 'Nováková roz.', family 'Svobodová' (measured), "
+               "which is exactly how 1.4.0 read it. 1.4.0 read this "
+               "row middle 'Nováková rozená' / last Svobodová "
+               "(2026-08-26) -- the marker inside the name, the "
+               "ordinary v1 reading of every marker"),
     Case("maiden_marker_after_particle_chain",
          "Ursula von der Leyen geb. Albrecht",
          {"given": "Ursula", "family": "von der Leyen",
@@ -1209,7 +1264,15 @@ CASES: tuple[Case, ...] = (
                "nickname_delimiters.pop('parenthesis'), it gave first "
                "Jane / last Smith / maiden 'née Jones' -- same name "
                "fields, marker still inside the value, which is the "
-               "single field this change moves"),
+               "single field this change moves. Since #335 the same "
+               "input reads identically with NO policy at all "
+               "(maiden_marked_clause_reads_maiden_by_default below), "
+               "which does not make this row redundant: the pair "
+               "sitting in the maiden bucket settles the role before "
+               "M3 is consulted, so this row exercises M1's path and "
+               "that one exercises M3's. Rewriting it to drop the "
+               "policy would delete the configured path's coverage "
+               "rather than move it"),
     Case("maiden_marker_delimited_unaccented", "Jane Smith (nee Jones)",
          {"given": "Jane", "family": "Smith", "maiden": "Jones"},
          policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
@@ -1228,6 +1291,163 @@ CASES: tuple[Case, ...] = (
                "maiden 'nee Jones' (2026-08-03) -- the same diff the "
                "accented row records, which is the point: the two "
                "spellings behave alike on both sides"),
+    Case("maiden_marked_clause_reads_maiden_by_default",
+         "Jane Smith (née Jones)",
+         {"given": "Jane", "family": "Smith", "maiden": "Jones"},
+         classification="fix(#335)",
+         notes="rules.md#M3 -- the clause says 'maiden' out loud, so the "
+               "pair enclosing it does not have to be configured. "
+               "maiden_marker_delimited above is the same input under "
+               "Policy(maiden_delimiters=...) and reads identically -- "
+               "what M3 adds is the DEFAULT reading, where 1.4.0 and "
+               "2.1 alike gave nickname 'née Jones'"),
+    Case("maiden_marked_clause_interior_keeps_the_family",
+         "Jane (née Jones) Smith",
+         {"given": "Jane", "family": "Smith", "maiden": "Jones"},
+         classification="fix(#335)",
+         notes="the row that decides the MECHANISM. Extracting the "
+               "clause as a Role.MAIDEN region keeps the closing "
+               "delimiter as the maiden name's right boundary; masking "
+               "the delimiters and letting M2's bare-marker rule "
+               "consume the content instead would read maiden 'Jones "
+               "Smith' with an empty family, because M2's take runs to "
+               "the end of the name. The parens say where it stops"),
+    Case("maiden_marked_clause_one_word_stays_a_nickname",
+         "Jane Smith (née)",
+         {"given": "Jane", "family": "Smith", "nickname": "née"},
+         notes="M3's boundary: a marker with no word after it is not a "
+               "maiden clause. Without this condition the default "
+               "reading of a lone parenthesized marker would flip to "
+               "maiden 'née', and M1's own (Nee) boundary -- a "
+               "one-word clause keeps its word, which may be the "
+               "surname Nee -- would be contradicted on the "
+               "unconfigured path. Parity: 1.4.0 read nickname 'née'"),
+    Case("markerless_parenthesized_clause_stays_a_nickname",
+         "Cherice J. (Mary Johnson) Williams",
+         {"given": "Cherice", "middle": "J.", "family": "Williams",
+          "nickname": "Mary Johnson"},
+         notes="M3's other boundary, and the reason the maiden "
+               "delimiters remain worth configuring: the parenthesized "
+               "birth surname without a marker is a real US convention "
+               "-- 'Cherice J. (Johnson) Williams' is the corpus name "
+               "(corpus_issues.jsonl) -- but nothing in the clause "
+               "says 'maiden', so it stays a nickname by default. Only "
+               "a caller who knows their data can say otherwise, which "
+               "is what Policy(maiden_delimiters=...) is for. The "
+               "clause is TWO words here, and that is the whole point "
+               "of the row: M3 tests the clause length before it tests "
+               "the vocabulary, so the corpus spelling's one-word "
+               "clause is refused by the length condition and never "
+               "reaches the vocabulary one -- it would duplicate "
+               "maiden_marked_clause_one_word_stays_a_nickname rather "
+               "than fence the other condition. Measured 2026-08-26: "
+               "with the vocabulary test dropped this reads maiden "
+               "'Mary Johnson' -- the WHOLE clause, because #329's "
+               "drop is gated on the first token carrying "
+               "vocab:maiden-marker and 'Mary' does not, so nothing is "
+               "dropped -- and with the vocabulary test in place the "
+               "one-word spelling reads nickname either way. Parity: "
+               "1.4.0 and 2.1.0 both read nickname 'Mary Johnson'"),
+    Case("markerless_one_word_clause_stays_a_nickname",
+         "Cherice J. (Johnson) Williams",
+         {"given": "Cherice", "middle": "J.", "family": "Williams",
+          "nickname": "Johnson"},
+         notes="the corpus spelling (corpus_issues.jsonl) of the row "
+               "above, kept beside it rather than replaced by it. It "
+               "reaches M3's length condition and stops there, so it "
+               "cannot fence the vocabulary one -- which is why the "
+               "row above widens the clause to two words -- but it is "
+               "the name real US data actually carries, and a row for "
+               "the corpus name is worth its two lines. Parity"),
+    Case("maiden_marker_not_first_stays_a_nickname",
+         "Jane Smith (Jones née)",
+         {"given": "Jane", "family": "Smith", "nickname": "Jones née"},
+         notes="the OPENS-WITH half of M3, which nothing else reaches: "
+               "a marker inside the clause but not first leaves the "
+               "clause a nickname. Measured 2026-08-26, widening the "
+               "predicate from the first word to any word left the "
+               "whole suite green and all three gates at 0 unexplained "
+               "-- this row is what closes that. The bracketed twin of "
+               "maiden_marker_delimited_trailing_marker, which pins the "
+               "same asymmetry one layer down, inside a clause already "
+               "routed to maiden by policy: no marker the shipped "
+               "vocabulary carries is written after the name it marks. "
+               "Parity: 1.4.0 and 2.1.0 both read nickname 'Jones née'"),
+    Case("marker_led_clause_with_one_name_word",
+         "Smith (née Jones)",
+         {"given": "Smith", "maiden": "Jones"},
+         classification="fix(#335)",
+         notes="N3's shape meeting M3, and the row exists because the "
+               "two rules disagree about what a clause is. N3 reads a "
+               "name that is only a nickname plus one name word as "
+               "'that word is the family name' -- but a marker-led "
+               "clause is not a nickname clause, so N3 never sees this "
+               "one and 'Smith' keeps the given-name reading the bare "
+               "spelling gives it. Recorded as an N3 Accepted line. "
+               "The empty family is the bare path's, not this "
+               "change's: 'Smith née Jones' reads given 'Smith', "
+               "family '' on 2.1.0 too, and 1.4.0 read first 'Smith' / "
+               "middle 'née' / last 'Jones' -- the marker as a "
+               "middle name. The parallel evidence at 1.4.0 is not "
+               "the fix(#410) maiden-flavor rule, which is keyed on "
+               "the TITLED 'Dr. Smith née Jones', but fix(#274), "
+               "which claims the bare one-word names 'Janey née "
+               "Jones' and 'abd née Jones' and declares `family` for "
+               "exactly the reason this row records. The given side "
+               "has agreed since 1.4.0, "
+               "the emptying is 2.x's and is tracked separately as the "
+               "#410 analogue. What #335 moves is only the bracketed "
+               "spelling: 1.4.0, 2.0.0 and 2.1.0 all read it family "
+               "'Smith', nickname 'née Jones' (measured 2026-08-26)"),
+    Case("marker_led_clause_in_a_quote_pair",
+         'Jane Smith "née Jones"',
+         {"given": "Jane", "family": "Smith", "maiden": "Jones"},
+         classification="fix(#335)",
+         notes="M3 is keyed on the CONTENT, not on which pair matched, "
+               "and this is the row that says so in the commonest "
+               "spelling: a quote pair is how nicknames are usually "
+               "written, and the same clause inside one reads maiden "
+               "exactly as it does inside parentheses. Three of the "
+               "eleven shipped nickname pairs are exercised by a "
+               "marker-led clause anywhere in the suite -- this one, "
+               "the parenthesis, and the fullwidth pair below -- and "
+               "the other EIGHT have no row. Measured 2026-08-26 by "
+               "disabling the swap one pair at a time: those three "
+               "redden and the eight do not. That is a count over a "
+               "wordlist, so read it the way "
+               "mechanisms.md#VOCABULARY-EXERCISES-FORKS says to: the "
+               "eight are not eight gaps, since the pairs fork on "
+               "whether open and close are the same character and on "
+               "the apostrophe carve-out inside that, not on which "
+               "pair. This row is here because a quote pair is the "
+               "same-character branch, and because the release note "
+               "advertises the spelling. 1.4.0 and 2.1.0 both read "
+               "nickname 'née Jones'"),
+    Case("maiden_marked_clause_takes_the_suffix_reading_from_s1",
+         "Jane Smith (née Jr.)",
+         {"given": "Jane", "middle": "Smith", "family": "née",
+          "suffix": "Jr."},
+         notes="S1 takes a suffix-shaped clause before M3 is "
+               "consulted, and the whole reading is here because the "
+               "surprising part is not the suffix: it is that the "
+               "MARKER becomes the family name. S1 drops the brackets "
+               "and lets the content read as if written bare, and "
+               "bare 'Jane Smith née Jr.' has no name word after the "
+               "marker for M2 to take, so 'née' stays an ordinary "
+               "word and lands in the family. rules.md#M3 carries the "
+               "same input as an example line, but the runner checks "
+               "one field per line; this row is the other three. "
+               "Parity, and unchanged by #335 -- 1.4.0 and 2.1.0 read "
+               "it the same way, which is why the corpus row it added "
+               "diffs against no baseline"),
+    Case("maiden_marked_clause_beside_a_nickname",
+         'Jane "Janey" Smith (née Jones)',
+         {"given": "Jane", "family": "Smith", "nickname": "Janey",
+          "maiden": "Jones"},
+         classification="fix(#335)",
+         notes="two clauses, two roles. Through 2.1 both were "
+               "nicknames and the facade joined them into one value, "
+               "'Janey née Jones' -- the merged-nickname half of #335"),
     Case("maiden_marker_delimited_unmarked_content",
          "Jane Smith (Mary Jones)",
          {"given": "Jane", "family": "Smith", "maiden": "Mary Jones"},
@@ -1286,19 +1506,27 @@ CASES: tuple[Case, ...] = (
                "Smith / maiden 'Jones née'"),
     Case("maiden_marker_delimited_beside_a_nickname_clause",
          'Jane "née Janie" Smith {née Jones}',
-         {"given": "Jane", "family": "Smith", "nickname": "née Janie",
-          "maiden": "Jones"},
+         {"given": "Jane", "family": "Smith", "maiden": "Janie Jones"},
          policy=Policy(maiden_delimiters=frozenset({("{", "}")})),
-         classification="fix(#329)",
-         notes="the pass is scoped to MAIDEN clauses, and this is the "
-               "row that says so: two extracted clauses, both opening "
-               "with a marker word, and only the maiden one loses it. "
-               "Braces route to maiden here precisely so the default "
-               "nickname set survives untouched -- the parenthesis "
-               "rows above cannot show this, since Policy's "
-               "maiden-wins canonicalization would take ( ) away from "
-               "nickname. Without the role filter the nickname reads "
-               "'Janie'. 1.4.0 cannot express a brace delimiter at "
+         classification="fix(#335)",
+         notes="#335 took this row's job away, and the row is kept to "
+               "record that. It was the pin for the #329 drop pass "
+               "being scoped to MAIDEN clauses -- two extracted "
+               "clauses, both opening with a marker word, only the "
+               "maiden one losing it, nickname 'née Janie' and maiden "
+               "'Jones'. M3 now reads the QUOTED clause as maiden too, "
+               "since it is marker-led like the braced one and M3 is "
+               "keyed on content rather than on which pair matched, so "
+               "there is no nickname left to contrast: both clauses "
+               "are maiden and M1's independence rule joins them into "
+               "one value. The role filter it used to discriminate "
+               "(the 'role is not Role.MAIDEN' branch of "
+               "_group.group's drop pass) is still reachable and "
+               "still pinned -- "
+               "that job moved to "
+               "marker_glued_to_punctuation_keeps_the_clause_a_nickname "
+               "below, which reaches a marker-led clause M3 declines. "
+               "1.4.0 cannot express a brace delimiter at "
                "all (its buckets hold the NAMES of compiled regexes "
                "and there is no brace one; measured 2026-08-03, "
                "maiden_delimiters['brace'] = ('{', '}') is accepted "
@@ -1308,8 +1536,39 @@ CASES: tuple[Case, ...] = (
                "first Jane / middle 'Smith {née' / last 'Jones}' / "
                "nickname 'née Janie' -- braces as name text, the same "
                "convention maiden_marker_kyusei_delimited uses for a "
-               "knob with no v1 spelling. The nickname agreed even "
-               "there"),
+               "knob with no v1 spelling (re-measured 2026-08-26, "
+               "unchanged)"),
+    Case("marker_glued_to_punctuation_keeps_the_clause_a_nickname",
+         'Jane "née, Janie" Smith (née Jones)',
+         {"given": "Jane", "family": "Smith", "nickname": "née Janie",
+          "maiden": "Jones"},
+         classification="fix(#335)",
+         notes="M3 and the #329 drop pass ask the marker question of "
+               "different things, and this row is where the two "
+               "answers differ. M3 splits the clause on WHITESPACE and "
+               "normalizes the first word: 'née,' normalizes to "
+               "'née,' -- _normalize strips a trailing period but not "
+               "a comma -- so M3 declines and the quoted clause stays "
+               "a nickname. tokenize splits the comma off as a "
+               "separator, so the clause's first TOKEN is 'née' and "
+               "carries vocab:maiden-marker, which is exactly what "
+               "the 'role is not Role.MAIDEN' branch of "
+               "_group.group's drop pass exists to refuse. Measured 2026-08-26: with that "
+               "branch removed this reads nickname 'Janie', the "
+               "marker dropped out of a nickname. BOTH clauses are "
+               "load-bearing -- the drop pass is gated on the name "
+               "holding a MAIDEN region at all, so the same quoted "
+               "clause alone ('Jane \"née, Janie\" Smith') leaves the "
+               "branch unexercised, removing it measurably changes "
+               "nothing there. The paren clause is what opens the "
+               "block, and M3 is what makes it maiden. The comma is "
+               "absent from the nickname VALUE because tokenize "
+               "treats COMMA_CHARS as a separator inside every region "
+               "including an extracted one, which predates #335 and "
+               "is not part of it. 1.4.0 gave first Jane / last Smith "
+               "/ nickname 'née, Janie née Jones' (2026-08-26) -- "
+               "comma kept, both clauses merged into the one field, "
+               "which is the merged-nickname half of #335"),
     Case("maiden_marker_delimited_two_clauses",
          "Jane Smith (Nee) (Jones)",
          {"given": "Jane", "family": "Smith", "maiden": "Nee Jones"},
@@ -1412,10 +1671,46 @@ CASES: tuple[Case, ...] = (
                "ko_honorific_period_under_strict_comma_suffixes uses "
                "for a knob with no v1 spelling. That reading is also "
                "what the differential harness sees, since it runs the "
-               "corpus under the DEFAULT policy where （） is a #273 "
-               "NICKNAME delimiter and nothing in #329 is reachable; "
-               "the diff is classified there under "
-               "fix(cjk-fullwidth-paren-nickname)"),
+               "corpus under the DEFAULT policy. What the harness does "
+               "with it changed in 2.2: through 2.1 the （） pair was a "
+               "#273 NICKNAME delimiter and nothing in #329 was "
+               "reachable, so the diff classified under "
+               "fix(cjk-fullwidth-paren-nickname). Since #335 the marker "
+               "inside the clause is enough on its own, so this name "
+               "reads maiden under the default policy too -- see "
+               "maiden_marked_fullwidth_clause_by_default below -- and "
+               "the diff classifies under fix(#335) at 2.1.0 and 2.0.0 "
+               "while at 1.4.0 it moved to fix(cjk-maiden-marker), "
+               "leaving the fullwidth-paren rule dormant in that ledger. "
+               "This row keeps its policy because M1 still governs a "
+               "configured pair and settles the role before M3 is "
+               "consulted"),
+    Case("maiden_marked_fullwidth_clause_by_default",
+         "山田 花子（旧姓 佐藤）",
+         {"given": "花子", "family": "山田", "maiden": "佐藤"},
+         classification="feat(#273) + fix(#271) + fix(#335)",
+         notes="the row above without its policy, and the one "
+               "that fences M3 across the delimiter SET rather "
+               "than at the parenthesis. Measured 2026-08-26 by "
+               "gating the swap to '(' and the double quote: this row "
+               "and its facade twin are the only two failures in the "
+               "suite, and of the gates only 1.4.0 and 2.0.0 redden "
+               "-- 2.1.0 stays green with its fix(#335) rule quietly "
+               "falling from six names to five, while the 2.0.0 "
+               "ledger catches it on the four-field rule it gives "
+               "this name. The fullwidth pair is the "
+               "one the maiden_markers docstring and the 2.2 "
+               "release note both advertise as newly working "
+               "without configuration, so it is the one that "
+               "most needs a row. Three changes compound in the "
+               "classification: #273 taught the parser the "
+               "fullwidth pair, #271 gives the wholly-Han "
+               "remainder its family-first reading, and #335 "
+               "makes the marker inside the clause enough on its "
+               "own. 1.4.0 read first 山田 / middle '花子（旧姓' / "
+               "last '佐藤）' with the brackets as name text; "
+               "2.1.0 read given 花子 / family 山田 / nickname "
+               "'旧姓 佐藤' (both measured 2026-08-26)"),
     Case("east_slavic", "Сидоров Иван Петрович",
          {"given": "Иван", "middle": "Петрович", "family": "Сидоров"},
          policy=_ES),

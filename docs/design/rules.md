@@ -20,6 +20,7 @@ An `annotation` names a policy, locale (`[ru]`), or extras gate (`[ja+segmenter]
   readings). Language-specific behavior is opt-in configuration. Script-conditional behavior exists only where the script itself settles the convention (see the W section).
 - **Grammatical inflection.** Names inflect in many languages (vocative, genitive); this library neither produces nor consumes inflected forms. CLDR personNames draws the same line.
 - **Validation.** Deciding whether a string IS a person's name is not parsing; `parse()` is total over strings and never rejects input.
+- **Vocabulary completeness.** No shipped wordlist parses every name, and none is meant to. The promise is that every TYPE of vocabulary has a mechanism — markers, particles, titles, suffixes, bound given names — and that callers configure the members their data needs. A missing entry is a configuration answer, not a defect, and what the tests owe is one exercise per behavioral fork rather than one per entry (mechanisms.md#VOCABULARY-EXERCISES-FORKS).
 - **Comparison.** matches()/comparison_key() are a value-API surface, not parsing; their design record is decisions.md#comparison-surface.
 
 ## Titles & honorifics (H)
@@ -527,11 +528,21 @@ N3. Rationale: a person set down as a nickname plus one name word is
       "'Smitty' Jones Jr."        →  family=""
       "'Smitty' Dr. Jones"        →  family="Jones"
       "'Smitty' Sir John"         →  given="John"
-    history: decisions.md#N3 · interacts: H1 · implemented: nameparser/_pipeline/_assign.py
+    Accepted: a marker-led clause is a maiden clause and not a
+    nickname one (M3), so this rule does not reach a name written
+    that way, and the one name word keeps the reading the bare
+    spelling gives it rather than becoming the family name. The
+    empty family that leaves is the bare spelling's, and #445 tracks
+    whether it is right — 1.4.0 read the bare spelling as first
+    Smith, middle née, last Jones, emptying nothing, and the same
+    empty family has been repaired twice already, at H1 (#410) and at
+    P5's reserve (#411).
+      "Smith (née Jones)"         →  given="Smith"
+    history: decisions.md#N3 · interacts: H1, M3 · implemented: nameparser/_pipeline/_assign.py
 
 ## Maiden names (M)
 
-Background: a maiden name is written beside the current name, set off by a marker word or by enclosure. Markers are attested across French née/né, German geb./geborene, Dutch geboren, Czech/Slovak roz./rozená, Scandinavian født/fødd/född, Russian урожд. (both ё and е spellings), and Japanese 旧姓 — both grammatical genders where attested. Japanese more often writes the marker with a fullwidth colon (旧姓：佐藤), which is no separator, so marker and name arrive as a single word. Which enclosures mean "maiden" rather than "nickname" is a caller convention, so the maiden reading of a delimiter pair is opt-in.
+Background: a maiden name is written beside the current name, set off by a marker word or by enclosure. Markers are attested across French née/né, German geb./geborene, Dutch geboren, Czech/Slovak rozená (the abbreviation roz. shipped through 2.1 and was removed in 2.2 -- it collides with the English diminutive Roz, and a caller who needs it adds it to their own Lexicon), Scandinavian født/fødd/född, Russian урожд. (both ё and е spellings), and Japanese 旧姓 — both grammatical genders where attested. Japanese more often writes the marker with a fullwidth colon (旧姓：佐藤), which is no separator, so marker and name arrive as a single word. Which enclosures mean "maiden" rather than "nickname" is a caller convention, so the maiden reading of a delimiter pair is opt-in — except where the clause announces itself. A clause of two words or more led by a marker word has said which convention it means, and reads as the maiden name inside a nickname pair as well (M3) — unless its content is suffix-shaped, which S1 takes ahead of both. A lone marker word has said nothing, and neither has one the colon spelling above glues to the name.
 
 M1. Rationale: an enclosure the caller has declared to mean maiden
     holds the former family name; a recognized marker word inside it
@@ -543,12 +554,17 @@ M1. Rationale: an enclosure the caller has declared to mean maiden
     clause keeps its word, which may itself be a surname (Nee).
     Clauses are independent: two enclosures read as one maiden name,
     each dropping or keeping its own marker. A pair configured for
-    both maiden and nickname reads maiden.
+    both maiden and nickname reads maiden. Configuring the pair is
+    what this rule needs for a clause that does not announce itself
+    — markerless content, and a lone marker word alike; a clause of
+    two words or more led by a recognized marker reads as the maiden
+    name inside a nickname pair as well (M3), the suffix-shaped
+    content S1 takes excepted there as it is here.
       "Jane Smith (née Jones)"  maiden-parens  →  maiden="Jones"
       "Jane Smith (Nee)"  maiden-parens        →  maiden="Nee"  · boundary
       "Jane Smith (Nee) (Jones)"  maiden-parens  →  maiden="Nee Jones"
-      "Jane Smith (née Jones)"                 →  nickname="née Jones"  · boundary
-    history: decisions.md#M1 · interacts: S1, M2 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_group.py
+      "Andrew Perkins (MBA)"  maiden-parens  →  suffix="MBA"  · boundary
+    history: decisions.md#M1 · interacts: S1, M2, M3 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_group.py
 
 M2. Rationale: a maiden marker announces that what follows it is the
     former family name; the marker is an announcement, not a name.
@@ -598,6 +614,37 @@ M2. Rationale: a maiden marker announces that what follows it is the
     very words the marker removes, so the reading is left to assign.
       "John née Jones Smith Ma"        →  maiden="Jones Smith Ma"
     history: decisions.md#M2 · interacts: P2, P3, P5, R2, M1, S2, H1 · implemented: nameparser/_pipeline/_group.py
+
+M3. Rationale: an enclosure says nothing about whether it means
+    maiden, but a recognized marker word inside it does — the clause
+    announces itself, so the caller does not have to declare the
+    pair.
+    A bracketed clause whose content opens with a recognized marker
+    word and carries a word after it reads as the maiden name,
+    whichever bucket the enclosing pair sits in — unless the content
+    is suffix-shaped, which S1 takes first — the marker itself
+    dropped, as M1 drops it. A marker with no word after it is just
+    a word in brackets, and so is a marker no separator divides from
+    the name, the fullwidth-colon spelling M2 records. Where the
+    pair is already configured for maiden names M1 governs and this
+    adds nothing. Being keyed on the content rather than on the
+    pair, this reaches a nickname pair's clause too, and M1's
+    independence then governs what it produces: where a marker-led
+    clause stands beside another marker-led clause, both read as
+    maiden and join into one maiden name, leaving no nickname.
+      "Jane Smith (née Jones)"    →  maiden="Jones"
+      "Jane (née Jones) Smith"    →  family="Smith"
+      "Jane Smith (née Jr.)"      →  suffix="Jr."
+      "Jane Smith (née)"          →  nickname="née"  · boundary
+    Accepted: the word taken after the marker is not tested for
+    being a name word, so unlike M2's bare take this one does not
+    stop at a suffix word — the same two words read one way
+    bracketed and another way bare. This does not contradict the
+    S1 example above: S1 asks whether the WHOLE clause is
+    suffix-shaped, which the trailing period makes true of the one
+    and false of the other, so only the V clause reaches this rule.
+      "Jane Smith (née V)"        →  maiden="V"
+    history: decisions.md#M3 · interacts: M1, M2, S1, N1 · implemented: nameparser/_pipeline/_extract.py
 
 ## Commas & structure (C)
 

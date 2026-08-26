@@ -879,3 +879,57 @@ issue = "fix(#410) a title and one name word name the family, whatever annotatio
 # tests/v2/cases.py::suffix_stays_suffix_title instead.
 name_regex = "(?i)^(?:Senator \"Rick\" Edmonds|Xyz\\. \\(Bud\\) Smith|Dr\\. Smith n[ée]e Jones|'Smitty' Dr\\. Jones)$"
 fields = ["given", "family"]
+
+[[change]]
+issue = "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it"
+# 'Jane Smith (née Jones)', 'Jane (née Jones) Smith', 'Jane Smith
+# (née V)', 'Anna Müller (geb. Schmidt)', 'Ursula von der Leyen
+# (geb. Albrecht)', '山田 花子（旧姓 佐藤）': rules.md#M3 reads a bracketed
+# clause whose content opens with a marker word and carries a word
+# after it as the maiden name, whichever bucket the enclosing pair
+# sits in. Through 2.1 the parenthesis pairs -- ASCII and fullwidth
+# alike -- were NICKNAME delimiters by default and nothing looked
+# inside them, so all six clauses came back as nicknames.
+#
+# `fields` is exactly the pair that moves and not one field more. The
+# clause changes ROLE and nothing else here: the name words around it
+# keep their readings, so a `given`, `middle` or `family` movement on
+# any of these six is a regression and stays loud. Worth stating
+# because the convenient thing is to declare the union of what the
+# same six names move against OTHER baselines -- against 2.0.0 the
+# CJK name also flips given/family -- and PR #444 is what that costs:
+# fix(#424) there declared a field its diff had stopped moving, and a
+# real movement was absorbed silently behind it until #444 narrowed
+# the rule.
+#
+# Keyed on the six names by literal, like the #410 rule above. The
+# shape is "a bracketed clause whose first word is a marker", which is
+# a question about the parse rather than about the string, and a
+# fields-only rule standing in for it would pre-excuse every future
+# nickname/maiden confusion in the corpus.
+name_regex = "(?i)^(?:Jane Smith \\(n[ée]e Jones\\)|Jane \\(n[ée]e Jones\\) Smith|Jane Smith \\(n[ée]e V\\)|Anna Müller \\(geb\\. Schmidt\\)|Ursula von der Leyen \\(geb\\. Albrecht\\)|山田 花子（旧姓 佐藤）)$"
+fields = ["nickname", "maiden"]
+
+[[change]]
+issue = "fix(#335) a marker-led clause leaves the one name word its bare reading"
+# 'Smith (née Jones)', which rules.md#N3 carries as an Accepted line.
+# N3 reads a name that is only a nickname plus one name word as "that
+# word is the family name", and a marker-led clause is not a nickname
+# clause, so N3 no longer reaches this shape: the word keeps the
+# reading the bare "Smith née Jones" gives it, which is `given`.
+#
+# Its own rule rather than a seventh alternative in the fix(#335)
+# rule above, for the reason that rule states: this diff moves FOUR
+# fields where those move two, and one rule holding both would have to
+# declare the union, pre-excusing a given/family regression on the
+# six. The empty `family` is not this change's -- the bare spelling
+# reads that way on 2.0.0 and 2.1.0 too -- but it is inside this
+# diff, so the rule declares it.
+#
+# revisit when #445 lands: this rule declares `family`, and `family`
+# is exactly the field #445 would change. Fixing it there moves this
+# diff, and this rule would absorb the change in silence at all three
+# baselines -- the same failure the four-field split exists to avoid,
+# displaced onto a different field. Re-measure this rule then.
+name_regex = "(?i)^Smith \\(n[ée]e Jones\\)$"
+fields = ["given", "family", "nickname", "maiden"]

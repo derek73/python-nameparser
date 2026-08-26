@@ -655,9 +655,36 @@ instead of relying on the default:
     >>> parse(text).maiden
     'Jones'
 
-Delimited content is not always a nickname. If what's inside is a known
+Delimited content is not always a nickname. If it opens with a marker
+word and has a word after it, the clause is a maiden name, whatever
+pair encloses it and with nothing configured — the clause has said which
+convention it means, so you do not have to:
+
+.. doctest::
+
+    >>> parse("Jane Smith (née Jones)").maiden
+    'Jones'
+    >>> parse('Jane Smith "née Jones"').maiden
+    'Jones'
+    >>> parse("Jane (née Jones) Smith").family
+    'Smith'
+
+A marker with no name after it is just a word in brackets, and a clause
+with no marker at all stays a nickname — the parenthesized birth surname
+is a real convention, but nothing in the clause says so, and only you
+can declare that with ``maiden_delimiters`` (see :doc:`customize`):
+
+.. doctest::
+
+    >>> parse("Jane Smith (née)").nickname
+    'née'
+    >>> parse("Cherice J. (Johnson) Williams").nickname
+    'Johnson'
+
+If what's inside is a known
 suffix, or simply ends in a period, it is read as a suffix instead —
-parenthesized credentials and retired ranks are far more common than
+that reading is taken before the maiden one, and parenthesized
+credentials and retired ranks are far more common than
 parenthesized nicknames that happen to be credentials:
 
 .. doctest::

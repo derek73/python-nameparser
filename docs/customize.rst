@@ -288,15 +288,27 @@ listed below.
    * - ``maiden_delimiters``
      - ``frozenset[tuple[str, str]]``
      - Routes content enclosed by these delimiter pairs to ``maiden``
-       instead, and drops them from the effective nickname set. A
-       marker word opening the enclosed content is dropped from the
-       value, so ``"Jane Smith (née Jones)"`` gives maiden ``Jones``
-       — but only where that content holds more than one *token*,
-       since a lone ``"(Nee)"`` is a maiden name rather than a
-       marker. Tokens, not words: a marker written against the name
-       it marks is one token with them, so ``"山田花子（旧姓佐藤）"``
-       keeps its ``旧姓``. Defaults to empty — see the routing
-       example below.
+       instead, and drops them from the effective nickname set. Set
+       this for a clause that says nothing about itself, which is two
+       kinds of clause and not one: content with no marker word in it
+       (``"Cherice J. (Johnson) Williams"``, the parenthesized birth
+       surname written bare) AND a lone marker word
+       (``"Jane Smith (Nee)"``, which reads nickname ``Nee`` by default
+       and maiden ``Nee`` only with the pair listed here). What needs
+       no configuration since 2.2 is a clause that opens with a marker
+       word AND has a word after it: ``"Jane Smith (née Jones)"`` reads
+       maiden ``Jones`` whatever pair encloses it, unless the content is
+       suffix-shaped, which is taken ahead of both: the brackets are
+       dropped and the content parses as if written bare, so
+       ``"Jane Smith (née Jr.)"`` gives family ``née``, suffix ``Jr.``
+       rather than a suffix of the whole clause. A marker word opening
+       the enclosed content is dropped from the value either way, but
+       only where that content holds more than one *token* — the same
+       reason a lone ``"(Nee)"`` listed here keeps ``Nee`` as the
+       maiden value rather than reading it as a marker. Tokens, not words: a marker written
+       against the name it marks is one token with them, so
+       ``"山田花子（旧姓佐藤）"`` keeps its ``旧姓``. Defaults to empty —
+       see the routing example below.
    * - ``extra_suffix_delimiters``
      - ``frozenset[str]``
      - Adds separators that split suffix groups, e.g. ``" - "`` for
@@ -496,10 +508,19 @@ off.
 Nicknames, maiden names, and brackets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A delimiter pair routes to exactly one field, and ``maiden_delimiters``
-states the more specific intent — so listing a pair there drops it from
-the effective ``nickname_delimiters`` set automatically, and the
-one-liner is the whole recipe:
+A delimiter pair carries no meaning of its own, so what a clause reads
+as is settled in steps. Suffix-shaped content is taken first: the
+brackets are dropped and what was inside parses as if it had been
+written bare, which is not the same as the clause becoming the suffix
+(``"Jane Smith (née Jr.)"`` gives family ``née``, suffix ``Jr.``).
+Then the content is asked whether it announces itself: a
+clause opening with a recognized maiden marker and carrying a word
+after it is a maiden name whatever encloses it, and needs nothing
+configured. Only for what is left — markerless content, and a lone
+marker word — does the PAIR decide, and that is what this knob is for.
+Listing a pair here drops it from the effective
+``nickname_delimiters`` set automatically, and the one-liner is the
+whole recipe:
 
 .. doctest::
 
