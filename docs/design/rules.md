@@ -44,7 +44,7 @@ H1. Rationale: a title normally addresses by surname, so a title
     family empty — the input names no family, and inventing one
     would be worse.
       "Sir John"                  →  family=""
-    interacts: P3, P5, M2, S1, S2, N1, N3 · implemented: nameparser/_pipeline/_post_rules.py
+    history: decisions.md#H1 · interacts: P3, P5, M2, S1, S2, N1, N3 · implemented: nameparser/_pipeline/_post_rules.py
 
 H2. Rationale: before a name, an abbreviation is almost always a
     title — "Rev.", "Ing.", "Mag." — and no vocabulary can list

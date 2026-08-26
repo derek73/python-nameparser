@@ -132,15 +132,18 @@ Open: [#380](https://github.com/derek73/python-nameparser/issues/380) covers "Be
 
   #417's question — whether `van der Berg née` is a family name — is answered by consistency rather than decided: a marker the consumer declines is M2's "just a word" and rides inside whatever join reaches it, which is the reading `Jane van der Berg née` already had. The fields of `Jane van der Berg née Jr Jones` do not change at all (middle 'van der Berg née Jr', family 'Jones'); only the pieces do, which is why its pin is at the piece level. The invariant test that hid the shape now lists it.
 
-  Review added two pins the first cut had left to prose. A corpus-wide assertion that appending a maiden clause moves no other field (tests/v2/test_parser.py), with #410's lone-residual shape as its one boundary — `Dr. Jane` reads family 'Jane' and `Dr. Jane née Smith` given 'Jane', which predates this and is untouched by it, so the claim is stated for names of two or more name words. And a field-level row for the chain-carried marker. One guard is deliberately left without a pin: `_is_maiden_marker_piece`'s lone-piece half has no default-vocabulary input that reaches it now that the pass runs first (dropping it leaves the suite and a 337k-name review sweep identical), and it stays as M2's own definition — "standing as a word of its own" — rather than as a guard a test holds.
+  Review added two pins the first cut had left to prose. A corpus-wide assertion that appending a maiden clause moves no other field (tests/v2/test_parser.py), with #410's lone-residual shape as its one boundary until #410 closed it on 2026-08-25 — `Dr. Jane née Smith` reads family 'Jane' now, as `Dr. Jane` does, so the assertion covers every corpus name that parses to anything, and the only skip left is M2's own (nothing at all before the marker). And a field-level row for the chain-carried marker. One guard is deliberately left without a pin: `_is_maiden_marker_piece`'s lone-piece half has no default-vocabulary input that reaches it now that the pass runs first (dropping it leaves the suite and a 337k-name review sweep identical), and it stays as M2's own definition — "standing as a word of its own" — rather than as a guard a test holds.
 
 Open (M2):
 [#317](https://github.com/derek73/python-nameparser/issues/317)
 the fullwidth-colon marker (旧姓：佐藤 arrives as one word; the head-peel question).
-[#410](https://github.com/derek73/python-nameparser/issues/410)
-a maiden name makes H1 decline, so a title-plus-surname name reports no family — pre-existing, and widened by the stop. (#411, the same empty family from P5's reserve, closed 2026-08-21.)
 
 - 2026-08-22 #424 — the walk stops before the trailing numeral assign reads as the suffix. "Up to any trailing suffix" was asked with the suffix-piece test, whose initial veto does not see a bare `V`: `John née Jones Smith V` read maiden 'Jones Smith V' where `John Smith V` reads suffix 'V'. The walk now also stops at `_trailing_start` — the S2 peel read from the marker on, over the pieces as they stand, stepping over a tail segment's delimiter cores as the walk does — but at the NUMERAL only. The bare-acronym fork counts pieces, and the walk removes the very pieces it counted: `John née Jones Smith Ma` peeled over the pieces as they stand reads the acronym as a credential with words to spare, and once 'Jones Smith' has left the name it is the family of a two-piece name — maiden 'Jones Smith', family 'Ma', which is worse than the maiden 'Jones Smith Ma' it had always read. The numeral fork reads the piece before the numeral, and the take removes that very piece: afterwards assign sees the piece before the MARKER there, and where that is initial-shaped the fork does not fire — the first draft stopped the walk all the same, and `J. née Jones Smith V` read maiden 'Jones Smith', family 'V' (both reviews found it: 27 of the design-docs review's 144 marker shapes, every one a head ending in an initial; the pool is unrecorded). The walk runs the peel again over the view the take would leave — the pieces before the marker and the numeral on, built as P5's reserve builds its view — so it stops only where the numeral reads as the suffix both as written and as left: `J. née Jones Smith V` keeps maiden 'Jones Smith V', as `J. V` reads the V as a name, and `Dr. née Jones Smith V` keeps maiden 'Jones Smith V', since assign peels the title first and a numeral alone is no fork (the first re-ask checked the preceding piece only and handed that V to the given name — the code review). As written too: `Jane née Jones J. V` keeps maiden 'Jones J. V' though the take would leave `Jane V`, the words as written being what the marker takes; the second docs review found the statement saying only the second half. The acronym is left to assign, recorded as Accepted. The peel is read from the marker rather than after it, so `Jane Smith née V` declines as `Jane Smith née PhD` does — nothing after the marker but a suffix, the marker stays a word, suffix 'V' — which is 1.4.0's reading (the first draft read maiden 'V', and the 1.4.0 gate is what showed it); and `Jane née Jones J. V` keeps maiden 'Jones J. V' (the piece before is initial-shaped). 1.4.0 had no maiden support, so the examples fall under the #274 rule at that baseline where its fields reach, and `J. née Jones Smith V` (v1 read suffix 'V') under an accepted rule of its own; against 2.0.0 and 2.1.0 the examples that move are classified — `John née Jones Smith V` in maiden and suffix, `Jane Smith née V` in the five fields the marker's survival touches — and `J. née Jones Smith V` is 2.x parity.
+
+- 2026-08-25 #410 — the maiden name no longer makes H1 decline; the
+  rule counts name words and a marker-announced name is not one. The
+  decision and its width are recorded at decisions.md#H1, since the
+  term it removed was never maiden-specific.
 
 ### N3 — the lone-word nickname rule
 
@@ -288,6 +291,41 @@ Declined (ambiguity kinds for script-resolved names, 2026-07-27):
 
 - A "han-script" zh-vs-ja kind — applying the ZH pack IS the disambiguation; per-name flags after an explicit opt-in are noise.
 - ORDER emission for script-resolved names — native-script order is convention, not a guess; the reserved kind stays unemitted. SEGMENTATION fires only on a genuine multi-split vocabulary fork (夏侯惇, 남궁민수).
+
+### H1 — a title and one name word
+
+- 2026-08-25 (#410) — H1's "and nothing else" counted a suffix, a
+  nickname and a maiden name as further name words, so a
+  title-plus-surname name reported no family the moment any of them
+  stood beside it: `Dr. Smith` reads family 'Smith' and
+  `Dr. Smith née Jones` read given 'Smith' with the family empty.
+  #410 reports the maiden flavor; measured, all three roles suppress
+  the rule identically and the fix is one term in one guard, so the
+  term went rather than the maiden role being special-cased. What
+  decided the width is H1's own rationale — a title addresses by
+  surname — which says nothing about what stands BESIDE the name.
+  The rationale is stated for H1 rather than as a doc-wide principle
+  about what a suffix is, deliberately: N3 counts a suffix the other
+  way (`'Smitty' Jones Jr.` reads given 'Jones', family ''), and
+  which of the two readings is right for a nickname-led name is not
+  decided here.
+  #399 is what made this urgent rather than latent: stopping the
+  particle chain at the marker routed the canonical
+  title-and-particle shape (`Freiherr von Richthofen geb. Albrecht`)
+  into H1 for the first time.
+  N3 moves with it, without N3 changing: `'Smitty' Dr. Jones`
+  declines N3's one-piece count as it always did, and H1 now names
+  the family behind it, so it reads family 'Jones' where it read
+  given 'Jones' through 2.1.
+  Four corpus names move at every baseline. At 1.4.0 three of them
+  were being absorbed by the fields-only `fix(suffix-routing)` rule
+  (its heading went 14 -> 17) — invisible to `_CORPUS_CLAIMS`, which
+  records the whole corpus for a rule with no `name_regex`, so the
+  guard could not see them arrive. They have their own rule now, as
+  #372's names got one off the same catch-all.
+  The v1 suite shipped the nickname reading as a strict xfail
+  (`tests/test_nicknames.py::test_nickname_and_last_name_with_title`),
+  which passes now.
 
 ### H2 — the leading-abbreviation title
 

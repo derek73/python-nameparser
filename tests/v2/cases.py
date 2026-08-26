@@ -924,8 +924,9 @@ CASES: tuple[Case, ...] = (
                "now sees the name that remains, so the clause changes "
                "nothing about how the rest of this name reads -- the "
                "reading is 'juan y garcia' plus a maiden name. "
-               "test_parser.py asserts that over the corpus, with "
-               "#410's lone-residual shape as the one boundary"),
+               "test_parser.py asserts that over the corpus, and "
+               "since #410 the only names it steps over are those "
+               "that parse to nothing at all"),
     Case("bound_given_reserve_excludes_a_multi_word_maiden_name",
          "Abd Berg née Mary Jones",
          {"given": "Abd", "family": "Berg", "maiden": "Mary Jones"},
