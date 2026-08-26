@@ -427,8 +427,17 @@ fields = ["given", "family", "_ambiguities"]
 issue = "fix(#424) a title-led chain before the numeral is the one name piece"
 # 'Freiherr von Richthofen V': rules.md#P2 boundary -- the chain stops
 # before the numeral, and the chain is then the one name piece, which
-# reads as 'Dr. Smith V' reads. family 'von Richthofen V' -> given
-# 'von Richthofen', suffix 'V'. A rules.md example.
+# reads as 'Dr. Smith V' reads. The baseline read family 'von
+# Richthofen V'; #424 split the numeral off as the suffix, and #410
+# then moved the one name piece behind the title out of `given`, so
+# the reading today is family 'von Richthofen', suffix 'V' -- and
+# 'Dr. Smith V' moved with it, so the comparison still holds. A
+# rules.md example.
+#
+# #410 narrowed this diff rather than adding one: {given, family,
+# suffix} before it, {family, suffix} after. `fields` declares the
+# wider set, so the name stayed classified here and no run reported
+# it moving.
 name_regex = "(?i)^freiherr\\s+von\\s+richthofen\\s+v$"
 fields = ["given", "family", "suffix", "_ambiguities"]
 
@@ -912,11 +921,20 @@ issue = "fix(#410) a title and one name word name the family, whatever annotatio
 # here, which is the whole point of the fix, so a diff in `nickname`,
 # `maiden` or `suffix` on these names stays loud.
 #
-# These four and no others because they are the corpus's only names of
-# that shape -- two nicknames, one maiden clause, one nickname ahead
-# of the title. The SUFFIX flavor ('Dr. Smith PhD') appears in no
-# corpus and is pinned by tests/v2/cases.py::suffix_stays_suffix_title
-# instead.
+# Four names are classified here, out of five that move. The one left
+# out is 'Freiherr von Richthofen V', which the fix(#424) rule below
+# has claimed all along; #410 shrinks its diff (the name piece stops
+# moving through `given`) without shrinking it out of that rule's
+# fields, which is why no run ever mentioned it. Left where it is
+# deliberately -- the classification is right, only the counting was
+# wrong.
+#
+# These four are therefore the names of this shape that nothing else
+# explains, not every name of this shape: two with a nickname, one with
+# a maiden clause, one where the nickname leads. That fifth name is
+# also the suffix flavor, so the corpus does carry one; it is the bare
+# 'Dr. Smith PhD' spelling that appears nowhere, and
+# tests/v2/cases.py::suffix_stays_suffix_title pins that.
 #
 # The change is in the 2.2 cycle, so 2.0.0 sees the same four diffs
 # 2.1.0 does and the rule is shared verbatim with that ledger --

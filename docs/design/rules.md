@@ -44,7 +44,7 @@ H1. Rationale: a title normally addresses by surname, so a title
     family empty — the input names no family, and inventing one
     would be worse.
       "Sir John"                  →  family=""
-    history: decisions.md#H1 · interacts: P3, P5, M2, S1, S2, N1, N3 · implemented: nameparser/_pipeline/_post_rules.py
+    history: decisions.md#H1 · interacts: P2, P3, P5, M2, S1, S2, N1, N3 · implemented: nameparser/_pipeline/_post_rules.py
 
 H2. Rationale: before a name, an abbreviation is almost always a
     title — "Rev.", "Ing.", "Mag." — and no vocabulary can list
@@ -521,9 +521,12 @@ N3. Rationale: a person set down as a nickname plus one name word is
     plus one name word plus a suffix reads the name word as given
     and leaves the family empty. A title counts against the count
     too, but H1 then reads the title-plus-one-word name that is
-    left, so the family is named after all.
+    left, so the family is named after all — unless the title is a
+    given-name title, which keeps the word in `given` and leaves no
+    family, exactly as it does anywhere else.
       "'Smitty' Jones Jr."        →  family=""
       "'Smitty' Dr. Jones"        →  family="Jones"
+      "'Smitty' Sir John"         →  given="John"
     history: decisions.md#N3 · interacts: H1 · implemented: nameparser/_pipeline/_assign.py
 
 ## Maiden names (M)

@@ -984,8 +984,15 @@ fields = ["given", "family"]
 issue = "fix(#424) a title-led chain before the numeral is the one name piece"
 # 'Freiherr von Richthofen V': rules.md#P2 boundary -- the chain stops
 # before the numeral, and the chain is then the one name piece, which
-# reads as 'Dr. Smith V' reads. last 'von Richthofen V' -> given 'von
-# Richthofen', suffix 'V'. A rules.md example.
+# reads as 'Dr. Smith V' reads. v1 read last 'von Richthofen V'; #424
+# split the numeral off, and #410 then moved the one name piece behind
+# the title out of `given`, so today it is family 'von Richthofen',
+# suffix 'V' -- 'Dr. Smith V' moved the same way, so the comparison
+# still holds. A rules.md example.
+#
+# The diff was {given, family, suffix} before #410 and is {family,
+# suffix} now; `fields` still declares all three, which is why this
+# name never surfaced as a new diff when #410 landed.
 name_regex = "(?i)^freiherr\\s+von\\s+richthofen\\s+v$"
 fields = ["given", "family", "suffix"]
 
@@ -1325,11 +1332,20 @@ issue = "fix(#410) a title and one name word name the family, whatever annotatio
 # while these move no suffix at all. Same surgery #372 did on the same
 # catch-all, and its heading returns to 14 once this rule takes them.
 #
-# THREE names, not the four the 2.0.0 and 2.1.0 ledgers carry: at this
-# baseline 'Dr. Smith née Jones' also moves `middle` and `maiden`,
-# because 1.4.0 has no maiden support and read the marker as a middle
-# name. It gets the separate rule below rather than widening `fields`
-# here, which would let these three move a maiden name unnoticed.
+# THREE names here, where the 2.0.0 and 2.1.0 ledgers classify four:
+# at this baseline 'Dr. Smith née Jones' also moves `middle` and
+# `maiden`, because 1.4.0 has no maiden support and read the marker as
+# a middle name. It gets the separate rule below rather than widening
+# `fields` here, which would let these three move a maiden name
+# unnoticed.
+#
+# Four classified across the two rules, out of FIVE names that change
+# reading. The fifth is 'Freiherr von Richthofen V' -- a title, one
+# name word and a suffix, so this same shape -- and the fix(#424) rule
+# further down has always claimed it. #410 only narrows its diff, from
+# {given, family, suffix} to {family, suffix}, and that rule declares
+# all three, so the gate stayed green and never named it. It is not
+# moved here; the classification was right and the count was not.
 name_regex = "(?i)^(?:Senator \"Rick\" Edmonds|Xyz\\. \\(Bud\\) Smith|'Smitty' Dr\\. Jones)$"
 fields = ["given", "family"]
 

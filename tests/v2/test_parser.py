@@ -1344,7 +1344,8 @@ def test_a_maiden_clause_changes_nothing_else(name: str) -> None:
     """
     base = parse(name)
     if not (base.given or base.middle or base.family
-            or base.title or base.suffix):
+            or base.title or base.suffix or base.nickname
+            or base.maiden):
         pytest.skip("nothing before the marker at all: M2 leaves it a word")
     with_clause = parse(name + " née Jones")
     assert with_clause.maiden == "Jones"
