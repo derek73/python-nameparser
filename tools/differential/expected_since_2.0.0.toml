@@ -949,3 +949,41 @@ issue = "fix(#410) a title and one name word name the family, whatever annotatio
 # own baseline sees.
 name_regex = "(?i)^(?:Senator \"Rick\" Edmonds|Xyz\\. \\(Bud\\) Smith|Dr\\. Smith n[ée]e Jones|'Smitty' Dr\\. Jones)$"
 fields = ["given", "family"]
+
+[[change]]
+issue = "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it"
+# 'Jane Smith (née Jones)', 'Jane (née Jones) Smith', 'Jane Smith
+# (née V)', 'Anna Müller (geb. Schmidt)', 'Ursula von der Leyen
+# (geb. Albrecht)': rules.md#M3 reads a bracketed clause whose content
+# opens with a marker word and carries a word after it as the maiden
+# name, whichever bucket the enclosing pair sits in. 2.0 read the
+# parenthesis pair as a nickname delimiter and looked no further, so
+# the clause came back a nickname.
+#
+# `fields` is exactly the pair that moves. The five names here are
+# Latin and the clause changes ROLE and nothing else in them, so a
+# `given`, `middle` or `family` movement on any of them is a
+# regression and stays loud.
+name_regex = "(?i)^(?:Jane Smith \\(n[ée]e Jones\\)|Jane \\(n[ée]e Jones\\) Smith|Jane Smith \\(n[ée]e V\\)|Anna Müller \\(geb\\. Schmidt\\)|Ursula von der Leyen \\(geb\\. Albrecht\\))$"
+fields = ["nickname", "maiden"]
+
+[[change]]
+issue = "fix(#335) a marker-led bracketed clause reads as the maiden name, compounding with the CJK order flip"
+# '山田 花子（旧姓 佐藤）', and its own rule rather than a sixth
+# alternative in the one above, for the reason the CJK rules in this
+# file keep restating: it moves FOUR fields where the five Latin names
+# move two. 2.0 read the fullwidth clause as a nickname and the
+# wholly-Han remainder given-first, so consuming the clause flips
+# `given` and `family` (#271) on top of the role change.
+#
+# One rule holding all six would have to declare the union, and the
+# union is a superset for five of them -- a given/family regression on
+# any Latin name here would then pass unreported. That is the shape PR
+# #444 found behind fix(#424) and had to narrow, and it is why this is
+# split rather than widened.
+#
+# The literal is the whole regex: no shape test can separate "the
+# fullwidth clause is a maiden clause now" from "the fullwidth clause
+# is a nickname", which is the distinction the fields above turn on.
+name_regex = "^山田 花子（旧姓 佐藤）$"
+fields = ["given", "family", "nickname", "maiden"]

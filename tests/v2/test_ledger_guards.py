@@ -35,7 +35,7 @@ from typing import NamedTuple
 
 import pytest
 
-from nameparser import _policy
+from nameparser import DEFAULT_NICKNAME_DELIMITERS, _policy
 from nameparser._policy import Script
 # The parser's own fold, imported rather than reimplemented: a
 # hand-written one here stripped commas, parens, brackets and quotes,
@@ -1116,8 +1116,21 @@ def _carries(name: str, vocabulary: frozenset[str]) -> bool:
     but exactly one corpus name reaches that branch today, and it is
     the 旧姓 one. Tighten this before admitting a vocabulary whose
     short non-ASCII entries occur inside ordinary names.
+
+    Delimiter characters come off the token before the membership
+    test, because a marker glued to a bracket is still a marker to the
+    parser: rules.md#M3 reads '(geb. Schmidt)' as a maiden clause on
+    the strength of that very word, and _normalize strips the
+    abbreviating period but not the paren, so 'Anna Müller (geb.
+    Schmidt)' read as carrying no maiden vocabulary at all. This
+    direction is the safe one -- an unstripped token cannot be a
+    vocabulary entry, so the strip only ever finds markers that are
+    really there, and the names it rescues are exactly the ones a
+    maiden rule may legitimately claim.
     """
-    tokens = {_normalize(token) for token in name.split()}
+    delimiters = "".join({ch for pair in DEFAULT_NICKNAME_DELIMITERS
+                          for ch in pair})
+    tokens = {_normalize(token.strip(delimiters)) for token in name.split()}
     return bool(tokens & vocabulary) or any(
         entry in name for entry in vocabulary if not entry.isascii())
 
@@ -1239,6 +1252,8 @@ def _claim(rule: dict) -> _Claim:
 #: both is growth into names the rule genuinely describes.
 _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
+        "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
+            _Claim(5, ('maiden', 'nickname'), "a419f74143e3"),
         "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
             _Claim(3, ('family', 'given'), "24d6223e472f"),
         "fix(#410) the maiden flavor, where 1.4.0 read the marker as a middle name":
@@ -1349,6 +1364,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given'), "e62caedec864"),
     },
     "expected_since_2.0.0.toml": {
+        "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
+            _Claim(5, ('maiden', 'nickname'), "a419f74143e3"),
+        "fix(#335) a marker-led bracketed clause reads as the maiden name, compounding with the CJK order flip":
+            _Claim(1, ('family', 'given', 'maiden', 'nickname'), "cf370e856ae7"),
         "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
             _Claim(4, ('family', 'given'), "da1dd1473145"),
         "fix(#430) a credential run does not end at the roman numeral describing it":
@@ -1453,6 +1472,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'maiden'), "2150936a8c55"),
     },
     "expected_since_2.1.0.toml": {
+        "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
+            _Claim(6, ('maiden', 'nickname'), "d0e857deddb2"),
         "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
             _Claim(4, ('family', 'given'), "da1dd1473145"),
         "fix(#430) a credential run does not end at the roman numeral describing it":

@@ -647,6 +647,25 @@ issue = "fix(cjk-fullwidth-paren-nickname) fullwidth-parenthesis recognition com
 # above carry, pinned by the same auto-discovering test. The slug is
 # free-form; the #271/#272 substrings it avoids were a constraint of a
 # selector retired in #333.
+#
+# DORMANT since 2.2, and the reason is a migration rather than a
+# revert. Its one name moved to fix(cjk-maiden-marker) above: under
+# rules.md#M3 the fullwidth clause is read on the strength of the 旧姓
+# inside it, so the clause lands in `maiden` and `nickname` no longer
+# diffs at all -- 1.4 read the brackets as name text and had no
+# nickname here either. The diff is now {given, middle, family,
+# maiden}, which is a subset of that rule's fields and not of this
+# one's, so classify() hands the name over. That is the right home:
+# what the name demonstrates today IS a marker consumption, and the
+# fullwidth pair is only what makes the marker a separate token.
+#
+# Kept rather than deleted because the reasoning below is about the
+# `fields` boundary between this rule and fix(cjk-delimited-nickname),
+# which nothing else records, and because the declaration is load
+# bearing in reverse: if a fullwidth-bracketed CJK NICKNAME diff ever
+# appears again, this rule wakes and the harness says the dormant
+# reason has gone false.
+dormant = "its one name, '山田 花子（旧姓 佐藤）', diffs in `maiden` rather than `nickname` since rules.md#M3 and is claimed by fix(cjk-maiden-marker); no other corpus name pairs a fullwidth bracket with a CJK script"
 name_regex = "(?s)(?=.*[（）])(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
 fields = ["given", "middle", "family", "nickname"]
 
@@ -1373,3 +1392,28 @@ issue = "fix(#410) the maiden flavor, where 1.4.0 read the marker as a middle na
 # marker extraction and the H1 fix land together.
 name_regex = "(?i)^Dr\\. Smith n[ée]e Jones$"
 fields = ["given", "middle", "family", "maiden"]
+
+[[change]]
+issue = "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it"
+# 'Jane Smith (née Jones)', 'Jane (née Jones) Smith', 'Jane Smith
+# (née V)', 'Anna Müller (geb. Schmidt)', 'Ursula von der Leyen
+# (geb. Albrecht)': rules.md#M3 reads a bracketed clause whose content
+# opens with a marker word and carries a word after it as the maiden
+# name. 1.4 extracted the same five clauses as NICKNAMES -- v1 knew
+# the parenthesis pair and had no maiden reading to give an
+# undeclared one -- so the diff is the role and only the role.
+#
+# `fields` is exactly the pair that moves. Five names, two fields,
+# measured; the union with what these names move against 2.0.0 would
+# be wider, and declaring a field a diff does not move is what let a
+# real given/family movement hide behind fix(#424) until PR #444.
+#
+# The CJK name is NOT here, unlike in the two 2.x ledgers. Against
+# 1.4 it diffs in {given, middle, family, maiden}: v1 read the
+# fullwidth brackets as name text, so there is no nickname on either
+# side to change hands, and fix(cjk-maiden-marker) above already
+# describes exactly that diff. See the dormancy note on
+# fix(cjk-fullwidth-paren-nickname), which is the rule that used to
+# hold it.
+name_regex = "(?i)^(?:Jane Smith \\(n[ée]e Jones\\)|Jane \\(n[ée]e Jones\\) Smith|Jane Smith \\(n[ée]e V\\)|Anna Müller \\(geb\\. Schmidt\\)|Ursula von der Leyen \\(geb\\. Albrecht\\))$"
+fields = ["nickname", "maiden"]
