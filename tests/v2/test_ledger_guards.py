@@ -1118,12 +1118,27 @@ def _carries(name: str, vocabulary: frozenset[str]) -> bool:
     but only two corpus names DEPEND on that branch today, meaning the
     token test below says no and the substring test says yes, and both
     are 旧姓 ones: the fullwidth-bracketed clause and the
-    fullwidth-colon spelling. Seven depended on it before the
+    fullwidth-colon spelling. Eight depended on it before the
     delimiter strip below arrived (2026-08-26); that strip moved the
     parenthesized née names onto the token branch, where the answer
-    does not rest on a substring. Tighten this before admitting a
-    vocabulary whose short non-ASCII entries occur inside ordinary
-    names.
+    does not rest on a substring. Both figures quantify over the
+    corpus and go stale on any row added to it, so recount rather than
+    adjust:
+        uv run python -c "
+        import glob, json
+        from nameparser import DEFAULT_NICKNAME_DELIMITERS as D
+        from nameparser.config.maiden_markers import MAIDEN_MARKERS as V
+        from nameparser._lexicon import _normalize
+        names = {json.loads(l) for f in glob.glob('tools/differential/corpus*.jsonl')
+                 for l in open(f, encoding='utf-8') if l.strip()}
+        strip = ''.join({c for p in D for c in p})
+        sub = lambda n: any(e in n for e in V if not e.isascii())
+        print(sum(not {_normalize(t.strip(strip)) for t in n.split()} & V
+                  and sub(n) for n in names),
+              sum(not {_normalize(t) for t in n.split()} & V
+                  and sub(n) for n in names))"
+    Tighten this before admitting a vocabulary whose short non-ASCII
+    entries occur inside ordinary names.
 
     Delimiter characters come off the token before the membership
     test, because a marker glued to a bracket is still a marker to the
@@ -1262,7 +1277,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
             _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
-                "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
+        "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
             _Claim(5, ('maiden', 'nickname'), "a419f74143e3"),
         "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
             _Claim(3, ('family', 'given'), "24d6223e472f"),
@@ -1376,7 +1391,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_2.0.0.toml": {
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
             _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
-                "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
+        "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
             _Claim(5, ('maiden', 'nickname'), "a419f74143e3"),
         "fix(#335) a marker-led bracketed clause reads as the maiden name, compounding with the CJK order flip":
             _Claim(1, ('family', 'given', 'maiden', 'nickname'), "cf370e856ae7"),
@@ -1486,7 +1501,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_2.1.0.toml": {
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
             _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
-                "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
+        "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
             _Claim(6, ('maiden', 'nickname'), "d0e857deddb2"),
         "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
             _Claim(4, ('family', 'given'), "da1dd1473145"),

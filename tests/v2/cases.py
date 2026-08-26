@@ -1331,9 +1331,23 @@ CASES: tuple[Case, ...] = (
                "maiden_marked_clause_one_word_stays_a_nickname rather "
                "than fence the other condition. Measured 2026-08-26: "
                "with the vocabulary test dropped this reads maiden "
-               "'Johnson', and with it the one-word spelling reads "
-               "nickname either way. Parity: 1.4.0 and 2.1.0 both read "
-               "nickname 'Mary Johnson'"),
+               "'Mary Johnson' -- the WHOLE clause, because #329's "
+               "drop is gated on the first token carrying "
+               "vocab:maiden-marker and 'Mary' does not, so nothing is "
+               "dropped -- and with the vocabulary test in place the "
+               "one-word spelling reads nickname either way. Parity: "
+               "1.4.0 and 2.1.0 both read nickname 'Mary Johnson'"),
+    Case("markerless_one_word_clause_stays_a_nickname",
+         "Cherice J. (Johnson) Williams",
+         {"given": "Cherice", "middle": "J.", "family": "Williams",
+          "nickname": "Johnson"},
+         notes="the corpus spelling (corpus_issues.jsonl) of the row "
+               "above, kept beside it rather than replaced by it. It "
+               "reaches M3's length condition and stops there, so it "
+               "cannot fence the vocabulary one -- which is why the "
+               "row above widens the clause to two words -- but it is "
+               "the name real US data actually carries, and a row for "
+               "the corpus name is worth its two lines. Parity"),
     Case("maiden_marker_not_first_stays_a_nickname",
          "Jane Smith (Jones née)",
          {"given": "Jane", "family": "Smith", "nickname": "Jones née"},
@@ -1362,7 +1376,10 @@ CASES: tuple[Case, ...] = (
                "The empty family is the bare path's, not this "
                "change's: 'Smith née Jones' reads given 'Smith', "
                "family '' on 2.1.0 too, and 1.4.0 read first 'Smith' / "
-               "last 'Jones' -- the given side has agreed since 1.4.0, "
+               "middle 'née' / last 'Jones' -- the marker as a middle "
+               "name, which is why the sibling fix(#410) rule at 1.4.0 "
+               "declares `middle`. The given side has agreed since "
+               "1.4.0, "
                "the emptying is 2.x's and is tracked separately as the "
                "#410 analogue. What #335 moves is only the bracketed "
                "spelling: 1.4.0, 2.0.0 and 2.1.0 all read it family "
@@ -1375,13 +1392,17 @@ CASES: tuple[Case, ...] = (
                "and this is the row that says so in the commonest "
                "spelling: a quote pair is how nicknames are usually "
                "written, and the same clause inside one reads maiden "
-               "exactly as it does inside parentheses. Nine of the "
-               "eleven shipped nickname pairs still have no row of "
-               "their own -- gating the swap to '(' and '\"' leaves "
-               "the whole suite green (measured 2026-08-26) -- so this "
-               "row and the fullwidth one below fence the two ends of "
-               "the set rather than the whole of it. 1.4.0 and 2.1.0 "
-               "both read nickname 'née Jones'"),
+               "exactly as it does inside parentheses. Three of the "
+               "eleven shipped nickname pairs are exercised by a "
+               "marker-led clause anywhere in the suite -- this one, "
+               "the parenthesis, and the fullwidth pair below -- and "
+               "the other EIGHT have no row. Measured 2026-08-26 by "
+               "disabling the swap one pair at a time: those three "
+               "redden and the eight do not. So this row and the "
+               "fullwidth one fence two ends of the set rather than "
+               "the whole of it; a set-level roster is what would "
+               "cover the rest. 1.4.0 and 2.1.0 both read nickname "
+               "'née Jones'"),
     Case("maiden_marked_clause_takes_the_suffix_reading_from_s1",
          "Jane Smith (née Jr.)",
          {"given": "Jane", "middle": "Smith", "family": "née",
@@ -1395,7 +1416,7 @@ CASES: tuple[Case, ...] = (
                "marker for M2 to take, so 'née' stays an ordinary "
                "word and lands in the family. rules.md#M3 carries the "
                "same input as an example line, but the runner checks "
-               "one field per line; this row is the other four. "
+               "one field per line; this row is the other three. "
                "Parity, and unchanged by #335 -- 1.4.0 and 2.1.0 read "
                "it the same way, which is why the corpus row it added "
                "diffs against no baseline"),
@@ -1654,8 +1675,11 @@ CASES: tuple[Case, ...] = (
                "and the double quote leaves the entire suite "
                "green and even the 2.1.0 gate green, its "
                "fix(#335) rule quietly falling from six names to "
-               "five, with only the 1.4.0 gate going red "
-               "(measured 2026-08-26). The fullwidth pair is the "
+               "five, and the 1.4.0 and 2.0.0 gates going red while "
+               "2.1.0 stays green (measured 2026-08-26; the 2.0.0 "
+               "ledger gives this name a four-field rule of its own, "
+               "which is what catches it there). The suite catches it "
+               "too, at this row. The fullwidth pair is the "
                "one the maiden_markers docstring and the 2.2 "
                "release note both advertise as newly working "
                "without configuration, so it is the one that "

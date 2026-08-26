@@ -656,7 +656,7 @@ instead of relying on the default:
     'Jones'
 
 Delimited content is not always a nickname. If it opens with a marker
-word and has a name word after it, the clause is a maiden name, whatever
+word and has a word after it, the clause is a maiden name, whatever
 pair encloses it and with nothing configured — the clause has said which
 convention it means, so you do not have to:
 

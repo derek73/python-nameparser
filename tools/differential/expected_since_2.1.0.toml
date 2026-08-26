@@ -918,12 +918,18 @@ issue = "fix(#335) a marker-led clause leaves the one name word its bare reading
 # clause, so N3 no longer reaches this shape: the word keeps the
 # reading the bare "Smith née Jones" gives it, which is `given`.
 #
-# Its own rule rather than a sixth alternative in the fix(#335) rule
-# above, for the reason that rule states: this diff moves FOUR fields
-# where those move two, and one rule holding both would have to
+# Its own rule rather than a seventh alternative in the fix(#335)
+# rule above, for the reason that rule states: this diff moves FOUR
+# fields where those move two, and one rule holding both would have to
 # declare the union, pre-excusing a given/family regression on the
-# five. The empty `family` is not this change's -- the bare spelling
+# six. The empty `family` is not this change's -- the bare spelling
 # reads that way on 2.0.0 and 2.1.0 too -- but it is inside this
 # diff, so the rule declares it.
-name_regex = "^Smith \\(n[\u00e9e]e Jones\\)$"
+#
+# revisit when #445 lands: this rule declares `family`, and `family`
+# is exactly the field #445 would change. Fixing it there moves this
+# diff, and this rule would absorb the change in silence at all three
+# baselines -- the same failure the four-field split exists to avoid,
+# displaced onto a different field. Re-measure this rule then.
+name_regex = "(?i)^Smith \\(n[ée]e Jones\\)$"
 fields = ["given", "family", "nickname", "maiden"]

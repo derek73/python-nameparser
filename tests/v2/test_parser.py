@@ -1319,14 +1319,33 @@ def _clause_free_latin_corpus_names() -> list[str]:
     # bracket as well as the abbreviating period before it is asked.
     # Stripping only the period admitted every corpus name that
     # brackets its marker, and once rules.md#M3 read such a clause as
-    # the maiden name, five of them had a maiden clause of their own --
+    # the maiden name, six of them had a maiden clause of their own --
     # two clauses, and the appended one no longer the only variable.
-    # The strip turns away NINE names in all (measured 2026-08-26):
-    # those five, plus four M3 declines and which would have been safe
-    # to keep -- the one-word '(Nee)', '(Nee) (Jones)' and '(née)', and
-    # '(née Jr.)', which S1 takes before M3 sees it. Textual, and so
-    # deliberately conservative in exactly that direction. Delimiter characters come from the shipped set rather than
-    # a literal, so a pair added there cannot quietly reopen this.
+    # The strip turns away TEN names in all: those six, plus four that
+    # M3 declines and that would have been safe to keep -- the
+    # one-word '(Nee)', '(Nee) (Jones)' and '(née)', and '(née Jr.)',
+    # which S1 takes before M3 sees it. Textual, and so deliberately
+    # conservative in exactly that direction.
+    #
+    # Every count in this comment quantifies over the corpus, so one
+    # added corpus row falsifies it silently. Recount rather than
+    # adjust:
+    #     uv run python -c "
+    #     import re, sys; sys.path.insert(0, 'tests')
+    #     from nameparser import DEFAULT_NICKNAME_DELIMITERS as D
+    #     from nameparser.config.maiden_markers import MAIDEN_MARKERS as M
+    #     from v2._differential_fixtures import _CORPUS_NAMES
+    #     base = [n for n in _CORPUS_NAMES
+    #             if re.match(r'^[\x00-\u024f]*$', n) and ',' not in n]
+    #     strip = ''.join({c for p in D for c in p}) + '.'
+    #     keep = lambda f: [n for n in base
+    #                       if not any(f(w) in M for w in n.split())]
+    #     old = keep(lambda w: w.lower().rstrip('.'))
+    #     new = keep(lambda w: w.lower().strip(strip))
+    #     print(len(old), len(new), sorted(set(old) - set(new)))"
+    #
+    # Delimiter characters come from the shipped set rather than a
+    # literal, so a pair added there cannot quietly reopen this.
     strip = "".join({ch for pair in DEFAULT_NICKNAME_DELIMITERS
                      for ch in pair}) + "."
     return [name for name in _CORPUS_NAMES
@@ -1339,8 +1358,9 @@ def test_the_clause_free_corpus_is_not_empty() -> None:
     """The invariant below is parametrized over a FILTERED corpus, and
     an empty parametrization passes as a skip rather than failing --
     the shape #329 left behind. The filter has been widened once
-    already (the delimiter strip, 2026-08-26, which took it from 637
-    names to 628), so the floor is what says a future widening emptied
+    already (the delimiter strip, 2026-08-26, which took it from 638
+    names to 628 -- the one-liner in that filter's comment recounts
+    both), so the floor is what says a future widening emptied
     it. Deliberately far below today's count: this asks whether the
     filter still selects a corpus, not what the corpus holds."""
     assert len(_clause_free_latin_corpus_names()) > 100

@@ -421,9 +421,10 @@ appeared in no corpus name, so only the denominator moved), so an
 entry no corpus name exercises is as invisible as an opt-in policy.
 
 Those two numbers count WHOLE TOKENS, delimiters stripped. The strip
-is what earns exactly one of the four: `nee`, whose only corpus
-appearance is the bracketed `Jane Smith (Nee)`, where the token is
-`(Nee)` until the brackets come off. `née` needs no strip, appearing
+is what earns exactly one of the four: `nee`, which appears in the
+corpora only inside brackets -- `Jane Smith (Nee)` and
+`Jane Smith (Nee) (Jones)` -- where the token carries them until they
+come off. `née` needs no strip, appearing
 bare in thirty-odd names, and `né` is not counted at all -- it occurs
 only as a substring of `née`, never as a token. The convention matters because the neighbouring guard
 `tests/v2/test_ledger_guards.py::_carries` deliberately asks a wider
