@@ -29,18 +29,22 @@ Background: an honorific title precedes a name and is not itself part of it; it 
 
 H1. Rationale: a title normally addresses by surname, so a title
     followed by a single name word usually names the family; but a
-    given-name title addresses by given name.
-    A title followed by exactly one name word and nothing else makes
-    that word the family name, unless the title is a given-name
-    title, which keeps it the given name.
+    given-name title addresses by given name. What stands beside
+    that word — a suffix, a nickname, a maiden name — does not make
+    the name any longer, so it does not decide this reading.
+    A title followed by exactly one name word makes that word the
+    family name, whatever suffix, nickname or maiden name stands
+    beside it, unless the title is a given-name title, which keeps
+    it the given name.
       "Mr. Johnson"               →  family="Johnson"
       "Mrs. Garcia"               →  family="Garcia"
+      "Dr. Smith née Jones"       →  family="Smith"
       "Sir John"                  →  given="John"  · boundary
     Accepted: a given-name title plus one name word leaves the
     family empty — the input names no family, and inventing one
     would be worse.
       "Sir John"                  →  family=""
-    interacts: P5 · implemented: nameparser/_pipeline/_post_rules.py
+    interacts: P3, P5, M2, S1, S2, N1, N3 · implemented: nameparser/_pipeline/_post_rules.py
 
 H2. Rationale: before a name, an abbreviation is almost always a
     title — "Rev.", "Ing.", "Mag." — and no vocabulary can list
@@ -513,11 +517,14 @@ N3. Rationale: a person set down as a nickname plus one name word is
     positional reading applies.
       "'Smitty' Jones"            →  family="Jones"
       "'Smitty' John Jones"       →  given="John"  · boundary
-    Accepted: the count does not set suffixes or titles aside, so a
-    nickname plus one name word plus a suffix reads the name word
-    as given and leaves the family empty.
+    Accepted: the count does not set suffixes aside, so a nickname
+    plus one name word plus a suffix reads the name word as given
+    and leaves the family empty. A title counts against the count
+    too, but H1 then reads the title-plus-one-word name that is
+    left, so the family is named after all.
       "'Smitty' Jones Jr."        →  family=""
-    history: decisions.md#N3 · implemented: nameparser/_pipeline/_assign.py
+      "'Smitty' Dr. Jones"        →  family="Jones"
+    history: decisions.md#N3 · interacts: H1 · implemented: nameparser/_pipeline/_assign.py
 
 ## Maiden names (M)
 
@@ -587,7 +594,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
     is maiden text all the same — the count it needs includes the
     very words the marker removes, so the reading is left to assign.
       "John née Jones Smith Ma"        →  maiden="Jones Smith Ma"
-    history: decisions.md#M2 · interacts: P2, P3, P5, R2, M1, S2 · implemented: nameparser/_pipeline/_group.py
+    history: decisions.md#M2 · interacts: P2, P3, P5, R2, M1, S2, H1 · implemented: nameparser/_pipeline/_group.py
 
 ## Commas & structure (C)
 

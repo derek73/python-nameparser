@@ -174,13 +174,14 @@ def post_rules(state: ParseState) -> ParseState:
     givens = _idx(tokens, Role.GIVEN)
     middles = _idx(tokens, Role.MIDDLE)
     families = _idx(tokens, Role.FAMILY)
-    others = any(t.role in (Role.SUFFIX, Role.NICKNAME, Role.MAIDEN)
-                 for t in tokens)
 
-    # rules.md#H1: "a title followed by exactly one name word and
-    # nothing else makes that word the family name, unless the title
-    # is a given-name title" (v1 handle_firstnames)
-    if titles and givens and not middles and not families and not others:
+    # rules.md#H1: "a title followed by exactly one name word makes
+    # that word the family name, whatever suffix, nickname or maiden
+    # name stands beside it, unless the title is a given-name title,
+    # which keeps it the given name" -- counting those three as
+    # further name words is what emptied the family (#410)
+    # (v1 handle_firstnames)
+    if titles and givens and not middles and not families:
         joined = _title_key(tokens[i].text for i in titles)
         if joined not in state.lexicon.given_name_titles:
             for i in givens:
