@@ -1310,12 +1310,26 @@ _LATIN = re.compile(r"^[\x00-\u024f]*$")
 
 
 def _clause_free_latin_corpus_names() -> list[str]:
+    from nameparser import DEFAULT_NICKNAME_DELIMITERS
     from nameparser.config.maiden_markers import MAIDEN_MARKERS
 
     from ._differential_fixtures import _CORPUS_NAMES
+    # A marker glued to a delimiter character is still a marker, and
+    # the membership test is per WORD, so '(geb.' must lose the
+    # bracket as well as the abbreviating period before it is asked.
+    # Stripping only the period admitted the three corpus names that
+    # bracket their marker, and once rules.md#M3 read such a clause as
+    # the maiden name they had one of their own -- two clauses, and
+    # the appended one no longer the only variable. Textual and so
+    # deliberately conservative: it also turns away the one-word
+    # '(Nee)', which M3 declines and which would have been safe to
+    # keep. Delimiter characters come from the shipped set rather than
+    # a literal, so a pair added there cannot quietly reopen this.
+    strip = "".join({ch for pair in DEFAULT_NICKNAME_DELIMITERS
+                     for ch in pair}) + "."
     return [name for name in _CORPUS_NAMES
             if _LATIN.match(name) and "," not in name
-            and not any(word.lower().rstrip(".") in MAIDEN_MARKERS
+            and not any(word.lower().strip(strip) in MAIDEN_MARKERS
                         for word in name.split())]
 
 
