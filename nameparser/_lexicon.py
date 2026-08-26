@@ -366,7 +366,7 @@ class Lexicon:
     #: :data:`~nameparser.config.bound_given_names.BOUND_GIVEN_NAMES`.
     bound_given_names: frozenset[str] = frozenset()
     #: Marker words introducing a birth surname, routed to the maiden
-    #: field ("née", "geb.", "roz.", ...). Full default list:
+    #: field ("née", "geb.", "rozená", ...). Full default list:
     #: :data:`~nameparser.config.maiden_markers.MAIDEN_MARKERS`.
     maiden_markers: frozenset[str] = frozenset()
     #: Family names for the unspaced-name segmentation stage (#271),

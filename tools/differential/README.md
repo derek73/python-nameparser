@@ -420,10 +420,12 @@ denominator was 17 until `roz` left the vocabulary in 2.2 -- it
 appeared in no corpus name, so only the denominator moved), so an
 entry no corpus name exercises is as invisible as an opt-in policy.
 
-Those two numbers count WHOLE TOKENS, delimiters stripped: `née`
-counts because `(née` is a token of `Anna Müller (née Jones)` once its
-bracket comes off, and `né` does not, being only a substring of that
-same token. The convention matters because the neighbouring guard
+Those two numbers count WHOLE TOKENS, delimiters stripped. The strip
+is what earns exactly one of the four: `nee`, whose only corpus
+appearance is the bracketed `Jane Smith (Nee)`, where the token is
+`(Nee)` until the brackets come off. `née` needs no strip, appearing
+bare in thirty-odd names, and `né` is not counted at all -- it occurs
+only as a substring of `née`, never as a token. The convention matters because the neighbouring guard
 `tests/v2/test_ledger_guards.py::_carries` deliberately asks a wider
 question -- it also matches a non-ASCII entry anywhere inside a name,
 since 旧姓 is written flush against the name it marks -- and under that
@@ -473,9 +475,12 @@ It does NOT put #329 within reach of this gate, and the reason
 generalizes past this one change. #329 governs what a delimited maiden
 clause CONTAINS -- the marker word is dropped from the value -- while
 a ledger rule narrows by which FIELDS move, never by what they hold.
-The six names classified under `fix(#335)` move `{nickname, maiden}`
-whether the marker is dropped or not, so that rule absorbs a #329
-regression in silence. Measured 2026-08-26 by reverting the drop pass
+The six names the 2.1.0 ledger classifies under `fix(#335)` move
+`{nickname, maiden}` whether the marker is dropped or not, so that rule
+absorbs a #329 regression in silence. The field sets are per baseline
+and only that ledger's are uniform: at 2.0.0 the CJK name declares four
+fields and has a rule to itself, and at 1.4.0 it is not a `fix(#335)`
+name at all. Measured 2026-08-26 by reverting the drop pass
 in `_group.py`: `Jane Smith (née Jones)` reads maiden `née Jones`, and
 all three gates still report 0 unexplained. #329 was out of reach
 before #335 too, for a different reason -- under the default policy no

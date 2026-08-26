@@ -69,9 +69,13 @@ issue = "fix(#274) maiden markers consumed"
 #
 # Its members reach 3 of the 16 entries -- geb, nee, née -- which is
 # not the same set as the markers the corpora contain (geb, nee, née
-# and 旧姓; the first three are covered here). Growing it toward the
-# other 13 buys nothing: none appears as a token in any corpus, so
-# there is no diff for them to classify. The roz alternative was
+# and 旧姓; the first three are covered here). Thirteen entries go
+# unreached, and the carve-out in that arithmetic is load-bearing:
+# 旧姓 is one of the thirteen and DOES appear as a corpus token, which
+# is why it has fix(cjk-maiden-marker) of its own below rather than an
+# alternative here. Growing this rule toward the other TWELVE buys
+# nothing: none of them appears as a token in any corpus, so there is
+# no diff for them to classify. The roz alternative was
 # dropped in 2.2 with the vocabulary entry it copied (see
 # maiden_markers.py's Deliberately absent note): no corpus name
 # contains the string in any case or position, so it classified

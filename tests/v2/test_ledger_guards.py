@@ -835,8 +835,8 @@ class _LatinCopy(NamedTuple):
 #: by a substring of the rule's `issue`. Kept apart from
 #: _HONORIFIC_SOURCES because the relationship is not set equality:
 #: these members are regex FRAGMENTS, not entries -- "n[ée]e" covers two
-#: markers at once, "geb\.?" and "roz\.?" one each -- so there is no set
-#: to compare against.
+#: markers at once and "geb\.?" one -- so there is no set to compare
+#: against.
 #:
 #: `covers` is recorded rather than equated to the whole vocabulary.
 #: Equality would force a rule to grow alternatives for markers it has
@@ -1110,14 +1110,20 @@ def _carries(name: str, vocabulary: frozenset[str]) -> bool:
     marker like 旧姓 is written against the name it marks rather than
     spaced off it.
 
-    Note what the isascii() split actually covers: 12 of the 17
+    Note what the isascii() split actually covers: 12 of the 16
     entries, not only the CJK one. `né` is two characters, so the
     substring branch reads `René` as carrying a marker. Every
     over-match here SHRINKS the set of unexplained names and so
     weakens the guard -- the direction this module exists to close --
-    but exactly one corpus name reaches that branch today, and it is
-    the 旧姓 one. Tighten this before admitting a vocabulary whose
-    short non-ASCII entries occur inside ordinary names.
+    but only two corpus names DEPEND on that branch today, meaning the
+    token test below says no and the substring test says yes, and both
+    are 旧姓 ones: the fullwidth-bracketed clause and the
+    fullwidth-colon spelling. Seven depended on it before the
+    delimiter strip below arrived (2026-08-26); that strip moved the
+    parenthesized née names onto the token branch, where the answer
+    does not rest on a substring. Tighten this before admitting a
+    vocabulary whose short non-ASCII entries occur inside ordinary
+    names.
 
     Delimiter characters come off the token before the membership
     test, because a marker glued to a bracket is still a marker to the

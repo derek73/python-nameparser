@@ -1317,13 +1317,15 @@ def _clause_free_latin_corpus_names() -> list[str]:
     # A marker glued to a delimiter character is still a marker, and
     # the membership test is per WORD, so '(geb.' must lose the
     # bracket as well as the abbreviating period before it is asked.
-    # Stripping only the period admitted the three corpus names that
-    # bracket their marker, and once rules.md#M3 read such a clause as
-    # the maiden name they had one of their own -- two clauses, and
-    # the appended one no longer the only variable. Textual and so
-    # deliberately conservative: it also turns away the one-word
-    # '(Nee)', which M3 declines and which would have been safe to
-    # keep. Delimiter characters come from the shipped set rather than
+    # Stripping only the period admitted every corpus name that
+    # brackets its marker, and once rules.md#M3 read such a clause as
+    # the maiden name, five of them had a maiden clause of their own --
+    # two clauses, and the appended one no longer the only variable.
+    # The strip turns away NINE names in all (measured 2026-08-26):
+    # those five, plus four M3 declines and which would have been safe
+    # to keep -- the one-word '(Nee)', '(Nee) (Jones)' and '(née)', and
+    # '(née Jr.)', which S1 takes before M3 sees it. Textual, and so
+    # deliberately conservative in exactly that direction. Delimiter characters come from the shipped set rather than
     # a literal, so a pair added there cannot quietly reopen this.
     strip = "".join({ch for pair in DEFAULT_NICKNAME_DELIMITERS
                      for ch in pair}) + "."

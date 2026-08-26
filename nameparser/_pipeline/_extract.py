@@ -227,11 +227,13 @@ def extract_delimited(state: ParseState) -> ParseState:
         else:
             if inner.start < inner.end:
                 # M3 upgrades a nickname clause; a configured maiden
-                # pair is M1's and is left alone. The role test cannot
-                # be false today and no test can catch its removal:
-                # `order` above holds exactly two roles, so a role that
-                # is not NICKNAME is already MAIDEN and the assignment
-                # would be a no-op either way. It is kept for the day
+                # pair is M1's and is left alone. The role test is
+                # False whenever a maiden pair matched, but it cannot
+                # change the OUTCOME, and no test can catch its
+                # removal: `order` above holds exactly two roles, so a
+                # role that is not NICKNAME is already MAIDEN and the
+                # assignment would be a no-op either way. It is kept
+                # for the day
                 # `order` gains a third bucket, when it becomes the
                 # difference between M3 claiming that bucket's clauses
                 # and leaving them. Measured 2026-08-26: dropping it
