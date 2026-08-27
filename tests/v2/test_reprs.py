@@ -44,7 +44,21 @@ def test_parsedname_repr_includes_ambiguities_line_when_present() -> None:
     pn = ParsedName("Van Johnson",
                     (van, Token("Johnson", Span(4, 11), Role.FAMILY)),
                     (Ambiguity(AmbiguityKind.PARTICLE_OR_GIVEN, "d", (van,)),))
-    assert "ambiguities: ['particle-or-given']" in repr(pn)
+    assert "ambiguities: ['particle-or-given: Van']" in repr(pn)
+
+
+def test_parsedname_repr_distinguishes_same_kind_ambiguities_by_token() -> None:
+    # #431: two distinct suffix-or-name ambiguities about different
+    # words must not render as identical list entries.
+    ma = Token("MA", Span(11, 13), Role.SUFFIX)
+    v = Token("V", Span(14, 15), Role.SUFFIX)
+    pn = ParsedName(
+        "John Smith MA V",
+        (Token("John", Span(0, 4), Role.GIVEN),
+         Token("Smith", Span(5, 10), Role.FAMILY), ma, v),
+        (Ambiguity(AmbiguityKind.SUFFIX_OR_NAME, "d1", (ma,)),
+         Ambiguity(AmbiguityKind.SUFFIX_OR_NAME, "d2", (v,))))
+    assert "ambiguities: ['suffix-or-name: MA', 'suffix-or-name: V']" in repr(pn)
 
 
 def test_empty_parsedname_repr() -> None:
