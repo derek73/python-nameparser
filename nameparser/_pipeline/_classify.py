@@ -9,7 +9,13 @@ which is not configuration -- nothing here varies by Policy value).
 Tags emitted -- stable (API): "particle", "conjunction", "initial";
 namespaced (unstable): "vocab:title", "vocab:given-title",
 "vocab:suffix", "vocab:suffix-word", "vocab:suffix-ambiguous",
-"vocab:particle-ambiguous", "vocab:bound-given", "vocab:maiden-marker".
+"vocab:particle-ambiguous", "vocab:bound-given", "vocab:maiden-marker",
+"vocab:maiden-marker-cont".
+"vocab:maiden-marker" tags the HEAD of a maiden marker, which is a
+whole marker whenever the marker is one word; the continuation tag
+carries the rest of a PHRASE marker ("z domu"), so a site asking
+"does a marker start here" reads the same tag it always did and a site
+asking "where does it end" walks the continuations.
 "vocab:suffix" means "counts as a suffix as written": unambiguous
 suffix vocabulary, or an ambiguous acronym written with periods --
 at the TAG level 'M.A.' gets "vocab:suffix" while 'Ma' gets only
@@ -29,7 +35,8 @@ from nameparser._pipeline._state import (
 )
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
-    is_initial, period_joined_vocab, suffix_as_written,
+    _longest_marker, is_initial, maiden_marker_run, period_joined_vocab,
+    suffix_as_written,
 )
 
 
@@ -66,8 +73,11 @@ def _tags_for(token: WorkToken, state: ParseState) -> frozenset[str]:
         tags.add("conjunction")
     if n in lex.bound_given_names:
         tags.add("vocab:bound-given")
-    if n in lex.maiden_markers:
-        tags.add("vocab:maiden-marker")
+    # maiden markers are NOT tagged here: an entry may be a phrase whose
+    # words are not markers on their own, and this function sees one
+    # token with no neighbours. _tag_marker_runs below does the whole
+    # field, single words included, so there is one place that decides
+    # it (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
     if is_initial(token.text):
         tags.add("initial")
     # v1's period-joined derivation (parse_pieces): a token with a
@@ -84,10 +94,54 @@ def _tags_for(token: WorkToken, state: ParseState) -> frozenset[str]:
     return frozenset(tags)
 
 
+def _tag_marker_runs(tokens: tuple[WorkToken, ...],
+                     state: ParseState) -> tuple[WorkToken, ...]:
+    """Tag each maiden marker run: its head "vocab:maiden-marker", the
+    rest "vocab:maiden-marker-cont".
+
+    The one sequence pass in this stage, and it has to be one: a marker
+    entry may be a PHRASE whose words are not markers individually
+    ('z', 'domu'), so no per-token membership test can find it.
+    Left to right, longest first at each position, then skip past what
+    the run claimed -- a second marker cannot start inside the first.
+
+    This is where the tag is DECIDED for the two stages that read it
+    afterwards. group runs later and asks its questions of these tags
+    rather than re-deriving the run (the recorded-answer half of
+    mechanisms.md#ONE-PREDICATE-PER-QUESTION); extract runs EARLIER,
+    before tokens exist, so it calls the predicate itself over the
+    clause's whitespace words.
+    """
+    markers = state.lexicon.maiden_markers
+    # the lookahead the vocabulary actually needs; 0 for an empty set,
+    # which skips the pass entirely
+    cap = _longest_marker(markers)
+    if not cap:
+        return tokens
+    texts = [t.text for t in tokens]
+    out = list(tokens)
+    i = 0
+    while i < len(out):
+        # bounded slice, not texts[i:]: a full-tail slice per token is
+        # quadratic in the token count, and the predicate would ignore
+        # everything past `cap` anyway
+        run = maiden_marker_run(texts[i:i + cap], markers)
+        if not run:
+            i += 1
+            continue
+        for k in range(i, i + run):
+            tag = ("vocab:maiden-marker" if k == i
+                   else "vocab:maiden-marker-cont")
+            out[k] = dataclasses.replace(out[k], tags=out[k].tags | {tag})
+        i += run
+    return tuple(out)
+
+
 def classify(state: ParseState) -> ParseState:
     tokens = tuple(
         dataclasses.replace(t, tags=_tags_for(t, state))
         for t in state.tokens)
+    tokens = _tag_marker_runs(tokens, state)
     # Delimited content whose vocabulary cannot settle it: extract's
     # escape sends an UNambiguous suffix straight through ("(MBA)" ->
     # suffix) and keeps everything else as a nickname, so an AMBIGUOUS

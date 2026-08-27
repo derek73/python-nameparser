@@ -4,9 +4,10 @@ Consumes: ParseState.original.
 Produces: extracted (role + inner span per delimited region), masked
 (full regions incl. delimiter chars, skipped by tokenize),
 UNBALANCED_DELIMITER ambiguities for opens with no close.
-A Role.MAIDEN region is the WHOLE inner span, marker word included --
-nothing here strips one. classify tags a marker inside it like any
-other token, and group drops it from a multi-token clause (#329).
+A Role.MAIDEN region is the WHOLE inner span, marker included (all of
+it, a phrase marker being several words) -- nothing here strips one.
+classify tags a marker inside it like any other token, and group drops
+it from a multi-token clause (#329).
 A region reaches that role two ways: the pair that matched sits in
 Policy.maiden_delimiters (M1), or the content itself opens with a
 marker word (M3), which reassigns the role after the match and so is
@@ -38,6 +39,7 @@ from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline._state import (
     COMMA_CHARS, ParseState, PendingAmbiguity,
 )
+from nameparser._pipeline._vocab import maiden_marker_run
 from nameparser._types import AmbiguityKind, Role, Span
 
 
@@ -64,15 +66,24 @@ def _maiden_marked(content: str, lexicon: Lexicon) -> bool:
     """The clause says 'maiden' out loud, so the caller does not have to
     say it in Policy. Requires a word AFTER the marker: a lone marker in
     brackets is a word in brackets, and M1 deliberately keeps a one-word
-    clause's word (it may be the surname Nee). The word after is not
-    tested for anything -- M3's Accepted line, and the reason a
+    clause's word (it may be the surname Nee). A PHRASE marker is one
+    marker, so the word after is the word after the whole run --
+    '(z domu Nowak)' has one, '(z domu)' has none. The word after is
+    not tested for anything -- M3's Accepted line, and the reason a
     bracketed '(née V)' reads maiden 'V' where the bare 'née V' gives
-    M2 a suffix. Whitespace-split, so a marker the writer glued to
-    punctuation is not one here ('née,'); the tokenizer splits that
-    comma off and still tags the token, which is what keeps _group's
-    Role.MAIDEN filter reachable."""
+    M2 a suffix.
+
+    This stage runs before tokenize, so it calls maiden_marker_run
+    itself rather than reading the tags classify will set. The two
+    questions are deliberately not the same one: this splits on
+    WHITESPACE, so a marker the writer glued to punctuation is not one
+    here ('née,'); the tokenizer splits that comma off and classify
+    still tags the token, which is what keeps _group's Role.MAIDEN
+    filter reachable. Sharing the PREDICATE does not merge the two
+    questions -- each hands it a different sequence of words."""
     words = content.split()
-    return len(words) > 1 and _normalize(words[0]) in lexicon.maiden_markers
+    run = maiden_marker_run(words, lexicon.maiden_markers)
+    return run > 0 and len(words) > run
 
 
 # rules.md#N2: "a quote whose open and close are the same character

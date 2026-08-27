@@ -1,13 +1,16 @@
 import dataclasses
 
+import pytest
+
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._classify import classify
-from nameparser._pipeline._extract import extract_delimited
+from nameparser._pipeline._extract import extract_delimited, _maiden_marked
 from nameparser._pipeline._group import group
 from nameparser._pipeline._script_segment import script_segment
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import ParseState
 from nameparser._pipeline._tokenize import tokenize
+from nameparser._pipeline._vocab import maiden_marker_run
 from nameparser._policy import Policy, Script
 from nameparser._types import Role
 
@@ -937,3 +940,75 @@ def test_an_unlisted_abbreviation_is_as_transparent_as_a_title() -> None:
     assert _piece_texts(out) == [["Xyz.", "abdul John", "Smith"]]
     out = _grouped("Berg, Xyz. abdul van")
     assert _piece_texts(out)[1] == ["Xyz.", "abdul van"]
+
+
+# -- the marker sites' cross-site contract --------------------------
+
+# A maiden marker is asked about at FOUR sites, and _title_key's
+# docstring names what a divergence between two of them costs: "a
+# divergence between them fails silently: the entry simply stops
+# matching". This lexicon carries a word entry, a phrase entry, and a
+# phrase whose FIRST WORD is itself an entry -- the longest-first case,
+# where a site that stopped at the first word would still find a
+# marker and simply find a shorter one.
+_MARKER_LEX = Lexicon(
+    maiden_markers=frozenset({"née", "z domu", "geb", "geb von"}))
+
+
+def _marker_sites(spelling: str) -> dict[str, int]:
+    """Every site's answer to "how many words is the marker here", for
+    a name whose marker is written `spelling`."""
+    clause = spelling.split() + ["Jones"]
+    answers = {"predicate": maiden_marker_run(clause,
+                                              _MARKER_LEX.maiden_markers)}
+
+    def staged(text: str) -> ParseState:
+        return classify(segment(tokenize(extract_delimited(ParseState(
+            original=text, lexicon=_MARKER_LEX, policy=Policy())))))
+
+    # classify: the run it tagged, head plus continuations
+    bare = staged(f"Jane Smith {spelling} Jones")
+    head = next(i for i, t in enumerate(bare.tokens)
+                if "vocab:maiden-marker" in t.tags)
+    run = 1
+    while (head + run < len(bare.tokens)
+           and "vocab:maiden-marker-cont" in bare.tokens[head + run].tags):
+        run += 1
+    answers["classify"] = run
+    # group's piece test and the M2 take built on it: the pass drops
+    # the marker and nothing else, so the count of dropped tokens is
+    # where that walk decided the marker ends
+    answers["group piece walk"] = len(group(bare).dropped)
+    # group's OTHER drop, the one inside an extracted clause (#329) --
+    # a separate site reached only through a delimited name
+    answers["group clause drop"] = len(
+        group(staged(f"Jane Smith ({spelling} Jones)")).dropped)
+    # extract's clause test, which is a boolean: a clause is marker-led
+    # exactly while a word remains past the run, so the LONGEST prefix
+    # it still declines is the run itself. Read this way rather than as
+    # "the first prefix it accepts", which would answer 1 for every
+    # phrase whose first word is also an entry.
+    answers["extract"] = max(
+        k for k in range(len(clause) + 1)
+        if not _maiden_marked(" ".join(clause[:k]), _MARKER_LEX))
+    return answers
+
+
+@pytest.mark.parametrize("spelling", [
+    "née", "Née", "née.",                    # a word entry
+    "z domu", "Z Domu", "z. domu", "z domu.",  # a phrase entry
+    "geb", "geb von",                        # both, longest first
+])
+def test_every_marker_site_ends_the_run_in_the_same_place(
+        spelling: str) -> None:
+    # The contract is AGREEMENT, not four expected numbers: a site that
+    # drifted would keep passing its own tests while disagreeing with
+    # the others about an input neither covers, which is exactly how
+    # the title-run key's two builders could have gone wrong (#369) and
+    # why P5 and H1 have a contract test of their own.
+    answers = _marker_sites(spelling)
+    assert len(set(answers.values())) == 1, answers
+    # never vacuous: the parametrization's own precondition is that
+    # each spelling is WHOLLY a marker, so the agreed answer is its
+    # word count -- an all-zero agreement would otherwise pass
+    assert answers["predicate"] == len(spelling.split())

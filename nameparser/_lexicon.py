@@ -75,6 +75,25 @@ _SUBSET_FIELDS = (
 )
 
 
+#: The fields whose entries may be PHRASES: stored space-joined and
+#: folded per word (_title_key), and exempt from the dead-entry warning
+#: below. Every other field is matched one word at a time, where a
+#: multi-word entry can never match.
+#:
+#: The two are not the same mechanism, and the difference is why the
+#: exemption is a list rather than a rule. A given_name_titles run is
+#: identified per word FIRST -- 'lt' and 'col' are each title
+#: vocabulary -- and only then joined and looked up. A maiden marker
+#: phrase has no such per-word foothold: 'z' and 'domu' are not markers
+#: individually, and adding them separately (which this warning used to
+#: advise) reads 'Maria Kowalska z domu Nowak' as maiden 'domu Nowak'
+#: and strips 'Anna z Nowak' of its family name. So markers are matched
+#: by a genuine multi-token lookahead instead --
+#: _pipeline._vocab.maiden_marker_run, longest first -- and only the
+#: STORAGE rule is shared with titles.
+_PHRASE_FIELDS = ("given_name_titles", "maiden_markers")
+
+
 def _normalize(word: str) -> str:
     """Lowercase, strip whitespace and EDGE periods -- v1's lc()
     semantics. Interior periods survive on purpose: 'J.R.' must not
@@ -192,13 +211,14 @@ def _normset(
             raise TypeError(
                 f"Lexicon.{field_name} entries must be strings, got {w!r}"
             )
-        # given_name_titles is the one field whose entries are matched as
-        # a multi-word run, so it folds per word: stored as the same key
-        # post_rules builds, or 'lt. col' would be kept verbatim and
-        # never match anything (a silent no-op on the config surface).
-        # Every other field holds single words, where the two folds
-        # agree.
-        n = _title_key(w.split()) if field_name == "given_name_titles" \
+        # A phrase field's entries are matched as a multi-word run, so
+        # they fold per word: stored as the same key the match site
+        # builds, or 'lt. col' (and 'z. domu') would be kept verbatim
+        # and never match anything -- a silent no-op on the config
+        # surface. Every other field holds single words, where the two
+        # folds agree. See _PHRASE_FIELDS for how the two differ once
+        # stored.
+        n = _title_key(w.split()) if field_name in _PHRASE_FIELDS \
             else _normalize(w)
         # "." or "" is a data bug (stray split artifact, empty CSV
         # cell); dropping it silently would also let a data-module typo
@@ -208,7 +228,7 @@ def _normset(
                 f"Lexicon.{field_name} entry {w!r} normalizes to empty "
                 f"(lowercase + strip periods/whitespace leaves nothing)"
             )
-        # Every field but given_name_titles is matched one word at a
+        # Every field outside _PHRASE_FIELDS is matched one word at a
         # time, so a multi-word entry can never match -- the library
         # itself shipped eight such dead entries for years (repaired
         # 2026-07-26). Warn, never raise: an inert entry produces
@@ -218,8 +238,10 @@ def _normset(
         # new instance's __post_init__; remove() stores nothing, so
         # warning there would name entries the caller is trying to get
         # RID of, with "split it" advice that makes no sense for a
-        # no-op.
-        if (warn and field_name != "given_name_titles"
+        # no-op. Both invariants are indifferent to WHICH fields are
+        # exempt: the exemption only decides whether a warning exists to
+        # be emitted once or suppressed.
+        if (warn and field_name not in _PHRASE_FIELDS
                 # interior whitespace test; split() covers all Unicode
                 # whitespace
                 and n != "".join(n.split())):
@@ -304,8 +326,12 @@ class Lexicon:
     Entries are normalized at construction -- lowercased, edge periods
     stripped -- so matching is case-insensitive. Vocabulary entries are
     single words -- a multi-word entry warns at construction and can
-    never match (``given_name_titles``, matched as a space-joined run,
-    is the one exception). Field docs below show examples, not full
+    never match. Two fields are exempt, and they differ in HOW they
+    match: ``given_name_titles`` is looked up as the space-joined run
+    of words the parse has ALREADY read as titles, while
+    ``maiden_markers`` is matched by lookahead, longest first, over
+    words that need not be markers on their own (``"z domu"``).
+    Field docs below show examples, not full
     contents; inspect any field's shipped vocabulary directly, e.g.
     ``Lexicon.default().conjunctions``."""
 
@@ -366,7 +392,10 @@ class Lexicon:
     #: :data:`~nameparser.config.bound_given_names.BOUND_GIVEN_NAMES`.
     bound_given_names: frozenset[str] = frozenset()
     #: Marker words introducing a birth surname, routed to the maiden
-    #: field ("née", "geb.", "rozená", ...). Full default list:
+    #: field ("née", "geb.", "rozená", ...). An entry may be a PHRASE
+    #: ("z domu"): entries are matched by lookahead, longest first, so
+    #: a phrase wins where it matches and a word entry that starts one
+    #: still matches on its own everywhere else. Full default list:
     #: :data:`~nameparser.config.maiden_markers.MAIDEN_MARKERS`.
     maiden_markers: frozenset[str] = frozenset()
     #: Family names for the unspaced-name segmentation stage (#271),
