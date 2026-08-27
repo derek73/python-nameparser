@@ -16,26 +16,45 @@ MAIDEN_MARKERS = frozenset({
     'урожденная',
     'урождённый',
     'урожденный',
+    'z domu',
     '旧姓',
 })
 """
-Marker words that introduce a birth surname, e.g. "Jane Smith née Jones"
+Markers that introduce a birth surname, e.g. "Jane Smith née Jones"
 (#274). French née/né/nee, German geb./geborene, Dutch geboren,
 Czech/Slovak rozená, Danish/Norwegian født (Nynorsk fødd), Swedish
 född, Russian урожд./урождённая/урождённый (both ё and е spellings —
 case normalization does not fold them, and running text routinely
-writes е). Both grammatical genders are listed where #274 or review
-attested them (née/né, урождённая/урождённый); Czech masculine rozený
-awaits the same vetting, and would be vetted on its own merits rather
-than following the feminine form in — the abbreviation roz. shared by
-both genders is deliberately absent, below. Entries are stored
-normalized: lowercase, no periods.
+writes е), and Polish "z domu" (#434). Both grammatical genders are
+listed where #274 or review attested them (née/né,
+урождённая/урождённый); Czech masculine rozený awaits the same
+vetting, and would be vetted on its own merits rather than following
+the feminine form in — the abbreviation roz. shared by both genders is
+deliberately absent, below. Entries are stored normalized: lowercase,
+no periods.
+
+An entry may be a PHRASE, and "z domu" ("of the house") is the first
+one shipped. Phrases are stored space-joined and folded per word, and
+matched by lookahead, longest first, over a run of whole tokens that
+stand TOGETHER -- a phrase divided by a bracketed clause or a comma is
+not that phrase, so "Anna z (domu) Nowak" keeps its family name just as
+"Anna z Nowak" does. That mechanism is what makes this entry safe where
+its words are not: z is an ordinary Polish preposition and domu an
+ordinary noun, and the whole-phrase claim never fires on either alone.
+Splitting a phrase into its words is what the library used to advise
+(the dead-entry warning, which no longer fires for this field), and it
+produced exactly the misreadings the phrase avoids:
+maiden "domu Nowak" for "Maria Kowalska z domu Nowak", and no family
+name at all for "Anna z Nowak". A caller who added z and domu
+separately should remove both and let the shipped entry work.
 
 Japanese 旧姓 is here rather than in locales.JA, on the rule that
 admitted the Cyrillic entries: a native-script marker cannot collide
 with a Latin-script name, and matching is whole-token, so it is safe
-as a default. Neither character appears in any shipped surname, title,
-suffix, conjunction, particle or bound-given vocabulary. locales.JA
+as a default. (Whole-token is still the rule for a phrase entry: it
+claims a run of whole tokens, one per word, and no part of one.)
+Neither character appears in any shipped surname, title, suffix,
+conjunction, particle or bound-given vocabulary. locales.JA
 is for what needs the my-data-is-Japanese declaration -- segmentation,
 where a pure-Han string cannot say which language wrote it -- and this
 needs none, since it can only ever match Han text.
@@ -73,8 +92,7 @@ Peeling a marker off the head of a token is #317's job.
 Consumed by the 2.0 parser's default lexicon. The 1.x parser does not
 read this module.
 
-Deliberately absent: Polish "z domu" (a two-token marker; pending the
-2.0 pipeline's multi-token matching decision), the Scandinavian
+Deliberately absent: the Scandinavian
 abbreviation "f." (collides with the initial "F." — only the full
 participles are safe), and the Czech/Slovak abbreviation "roz."
 (shipped through 2.1 and removed in 2.2). Roz is an ordinary English

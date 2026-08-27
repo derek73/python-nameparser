@@ -881,6 +881,47 @@ name_regex = "(?i)^(?:Senator \"Rick\" Edmonds|Xyz\\. \\(Bud\\) Smith|Dr\\. Smit
 fields = ["given", "family"]
 
 [[change]]
+issue = "fix(#434) a multi-word maiden marker takes the maiden name"
+# 'Maria Kowalska z domu Nowak': maiden_markers gained PHRASE entries
+# and the Polish "z domu" is the first one any shipped set holds, so
+# rules.md#M2's take fires on a marker that spans two tokens. Every
+# earlier version read the marker as name text -- middle 'Kowalska z
+# domu', family 'Nowak' -- because neither z nor domu is a marker
+# alone and nothing looked at the pair.
+#
+# `fields` is the three the diff moves and no more. The marker leaves
+# the name, so `middle` empties and `family` moves back one word,
+# which is why this cannot share a rule with the bracketed name below:
+# there the clause changes role and the name words around it do not
+# move at all. One rule over both would have to declare the union and
+# would pre-excuse a middle/family regression on the bracketed
+# spelling -- the #444 failure the fix(#335) rules above spell out.
+#
+# Keyed on the literal, like those rules and for their reason: the
+# shape is "a marker phrase inside a name", a question about the
+# parse, and a fields-only rule standing in for it would pre-excuse
+# every future middle/family/maiden confusion in the corpus.
+name_regex = "(?i)^Maria Kowalska z domu Nowak$"
+fields = ["middle", "family", "maiden"]
+
+[[change]]
+issue = "fix(#434) a multi-word marker leads a bracketed clause to the maiden name"
+# 'Maria Kowalska (z domu Nowak)': the same vocabulary change at the
+# other site. rules.md#M3 reads a marker-led clause as the maiden name
+# whatever pair encloses it, and #335 gave it that reach in 2.2 -- but
+# the reach alone leaves this name a nickname, since M3 asks whether
+# the content opens with a recognized marker and through 2.1 no
+# vocabulary answered yes here. The phrase entry is what moves it, so
+# it is #434's diff and not #335's, and it is deliberately NOT a
+# seventh alternative in that rule's six literals.
+#
+# `fields` is the pair that moves. The clause changes role; the name
+# words keep their readings, so a `given`, `middle` or `family`
+# movement here is a regression and stays loud.
+name_regex = "(?i)^Maria Kowalska \\(z domu Nowak\\)$"
+fields = ["nickname", "maiden"]
+
+[[change]]
 issue = "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it"
 # 'Jane Smith (née Jones)', 'Jane (née Jones) Smith', 'Jane Smith
 # (née V)', 'Anna Müller (geb. Schmidt)', 'Ursula von der Leyen

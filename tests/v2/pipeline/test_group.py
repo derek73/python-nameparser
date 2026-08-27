@@ -1,13 +1,17 @@
+import bisect
 import dataclasses
+
+import pytest
 
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._classify import classify
-from nameparser._pipeline._extract import extract_delimited
-from nameparser._pipeline._group import group
+from nameparser._pipeline._extract import extract_delimited, _maiden_marked
+from nameparser._pipeline._group import group, marker_run_length
 from nameparser._pipeline._script_segment import script_segment
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import ParseState
 from nameparser._pipeline._tokenize import tokenize
+from nameparser._pipeline._vocab import maiden_marker_run
 from nameparser._policy import Policy, Script
 from nameparser._types import Role
 
@@ -937,3 +941,156 @@ def test_an_unlisted_abbreviation_is_as_transparent_as_a_title() -> None:
     assert _piece_texts(out) == [["Xyz.", "abdul John", "Smith"]]
     out = _grouped("Berg, Xyz. abdul van")
     assert _piece_texts(out)[1] == ["Xyz.", "abdul van"]
+
+
+# -- the marker sites' cross-site contract --------------------------
+
+# A maiden marker is asked about at FOUR sites, and _title_key's
+# docstring names what a divergence between two of them costs: "a
+# divergence between them fails silently: the entry simply stops
+# matching". This lexicon carries a word entry, a phrase entry, and a
+# phrase whose FIRST WORD is itself an entry -- the longest-first case,
+# where a site that stopped at the first word would still find a
+# marker and simply find a shorter one.
+_MARKER_LEX = Lexicon(
+    maiden_markers=frozenset({"née", "z domu", "geb", "geb von"}))
+
+
+def _marker_sites(spelling: str) -> dict[str, int]:
+    """Every site's answer to "how many words is the marker here", for
+    a name whose marker is written `spelling`."""
+    clause = spelling.split() + ["Jones"]
+    answers = {"predicate": maiden_marker_run(clause,
+                                              _MARKER_LEX.maiden_markers)}
+
+    def staged(text: str) -> ParseState:
+        return classify(segment(tokenize(extract_delimited(ParseState(
+            original=text, lexicon=_MARKER_LEX, policy=Policy())))))
+
+    # classify: the run it tagged, head plus continuations
+    bare = staged(f"Jane Smith {spelling} Jones")
+    head = next(i for i, t in enumerate(bare.tokens)
+                if "vocab:maiden-marker" in t.tags)
+    answers["classify"] = marker_run_length(
+        t.tags for t in bare.tokens[head + 1:])
+    # group's piece test and the M2 take built on it: the pass drops
+    # the marker and nothing else, so the count of dropped tokens is
+    # where that walk decided the marker ends
+    answers["group piece walk"] = len(group(bare).dropped)
+    # group's OTHER drop, the one inside an extracted clause (#329) --
+    # a separate site reached only through a delimited name
+    answers["group clause drop"] = len(
+        group(staged(f"Jane Smith ({spelling} Jones)")).dropped)
+    # extract's clause test, which is a boolean: a clause is marker-led
+    # exactly while a word remains past the run, so the LONGEST prefix
+    # it still declines is the run itself. Read this way rather than as
+    # "the first prefix it accepts", which would answer 1 for every
+    # phrase whose first word is also an entry.
+    answers["extract"] = max(
+        k for k in range(len(clause) + 1)
+        if not _maiden_marked(" ".join(clause[:k]), _MARKER_LEX))
+    return answers
+
+
+@pytest.mark.parametrize("spelling", [
+    "née", "Née", "née.",                    # a word entry
+    "z domu", "Z Domu", "z. domu", "z domu.",  # a phrase entry
+    "geb", "geb von",                        # both, longest first
+])
+def test_every_marker_site_ends_the_run_in_the_same_place(
+        spelling: str) -> None:
+    # The contract is AGREEMENT, not four expected numbers: a site that
+    # drifted would keep passing its own tests while disagreeing with
+    # the others about an input neither covers, which is exactly how
+    # the title-run key's two builders could have gone wrong (#369) and
+    # why P5 and H1 have a contract test of their own.
+    #
+    # This test varies the marker's SPELLING and holds its PLACEMENT
+    # fixed, so every run it builds is structurally contiguous by
+    # construction. That was a hole: the sites can also disagree
+    # because they walk different token populations, which no spelling
+    # reaches. test_a_tagged_marker_run_is_contiguous_and_drops_whole
+    # below is the placement axis, added after a real disagreement got
+    # through here.
+    answers = _marker_sites(spelling)
+    assert len(set(answers.values())) == 1, answers
+    # never vacuous: the parametrization's own precondition is that
+    # each spelling is WHOLLY a marker, so the agreed answer is its
+    # word count -- an all-zero agreement would otherwise pass
+    assert answers["predicate"] == len(spelling.split())
+
+
+# Placements, not spellings: the axis the test above does not vary. A
+# marker run is tagged over the whole span-sorted token stream and
+# consumed over one SEGMENT, and the two populations differ -- extract
+# gives a delimited clause's tokens a role and _segment.py:31 keeps
+# only role-None tokens, then buckets those by the commas before them.
+# So a run written across a clause edge or a structure comma is one the
+# piece walk cannot see whole. Every row here writes 'z domu' at a
+# different place relative to those boundaries.
+_MARKER_PLACEMENTS = [
+    "Jane Smith z domu Jones",          # contiguous, bare
+    "Jane Smith (z domu Jones)",        # contiguous, wholly inside a clause
+    'Jane Smith "z domu Jones"',        # the same, in the other default pair
+    "Jane z (domu) Jones",              # straddles a clause OPEN
+    "Jane Smith (z) domu Jones",        # straddles a clause CLOSE
+    "Jane z, domu Jones",               # straddles a structure comma
+    "Jane Smith née Jones",             # the one-word control
+    "Jane Smith (née Jones)",           # the one-word control, delimited
+]
+
+
+def _tagged_runs(state: ParseState) -> list[list[int]]:
+    """Every maiden marker run classify tagged, as token indices."""
+    runs = []
+    for i, token in enumerate(state.tokens):
+        if "vocab:maiden-marker" not in token.tags:
+            continue
+        length = marker_run_length(t.tags for t in state.tokens[i + 1:])
+        runs.append(list(range(i, i + length)))
+    return runs
+
+
+@pytest.mark.parametrize("text", _MARKER_PLACEMENTS)
+def test_a_tagged_marker_run_is_contiguous_and_drops_whole(text: str) -> None:
+    state = ParseState(original=text, lexicon=_MARKER_LEX, policy=Policy())
+    classified = classify(segment(tokenize(extract_delimited(state))))
+    runs = _tagged_runs(classified)
+    commas = classified.comma_offsets
+
+    def bucket(i: int) -> int:
+        return bisect.bisect_left(commas, classified.tokens[i].span.start)
+
+    # 1. What classify tags is what a segment can hold: one role and one
+    # comma bucket throughout. _group._marker_run_pieces asserts this in
+    # prose and depends on it in fact -- with a run allowed to straddle,
+    # its walk stops at the boundary and hands M2 a proper PREFIX of the
+    # phrase as if it were the whole marker, which is how
+    # 'Anna z (domu) Nowak' came to read family 'Anna', maiden 'Nowak'.
+    for run in runs:
+        roles = {classified.tokens[i].role for i in run}
+        assert len(roles) == 1, (text, run, roles)
+        assert len({bucket(i) for i in run}) == 1, (text, run)
+
+    # 2. And the consumer takes the whole run or declines it. A count
+    # that disagrees with the tagged length is the cross-site
+    # disagreement itself, whatever produced it.
+    dropped = set(group(classified).dropped)
+    for run in runs:
+        taken = dropped & set(run)
+        assert taken in (set(), set(run)), (text, run, sorted(taken))
+
+
+def test_the_marker_placements_reach_both_answers() -> None:
+    # Neither half of the pin above is vacuous: some placements must
+    # tag a run (or the contiguity assertion quantifies over nothing)
+    # and some must tag none (or the straddling rows have stopped
+    # straddling and the regression they pin is unwatched).
+    tagged = {}
+    for text in _MARKER_PLACEMENTS:
+        state = ParseState(original=text, lexicon=_MARKER_LEX, policy=Policy())
+        runs = _tagged_runs(classify(segment(tokenize(
+            extract_delimited(state)))))
+        tagged[text] = bool(runs)
+    assert sum(tagged.values()) >= 4
+    assert sum(not v for v in tagged.values()) >= 3

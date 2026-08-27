@@ -1311,21 +1311,30 @@ _LATIN = re.compile(r"^[\x00-\u024f]*$")
 
 def _clause_free_latin_corpus_names() -> list[str]:
     from nameparser import DEFAULT_NICKNAME_DELIMITERS
+    from nameparser._pipeline._vocab import maiden_marker_run
     from nameparser.config.maiden_markers import MAIDEN_MARKERS
 
     from ._differential_fixtures import _CORPUS_NAMES
-    # A marker glued to a delimiter character is still a marker, and
-    # the membership test is per WORD, so '(geb.' must lose the
-    # bracket as well as the abbreviating period before it is asked.
-    # Stripping only the period admitted every corpus name that
-    # brackets its marker, and once rules.md#M3 read such a clause as
-    # the maiden name, six of them had a maiden clause of their own --
-    # two clauses, and the appended one no longer the only variable.
-    # The strip turns away TEN names in all: those six, plus four that
-    # M3 declines and that would have been safe to keep -- the
-    # one-word '(Nee)', '(Nee) (Jones)' and '(née)', and '(née Jr.)',
-    # which S1 takes before M3 sees it. Textual, and so deliberately
-    # conservative in exactly that direction.
+    # "Does this name already carry a marker" is the parser's own
+    # question, so it is asked with the parser's own predicate rather
+    # than by word membership. A word test cannot see a PHRASE entry:
+    # no word of 'z domu' is a marker, so 'Maria Kowalska z domu Nowak'
+    # sat in this corpus with a maiden clause of its own and the
+    # appended one was not the only variable
+    # (mechanisms.md#ONE-PREDICATE-PER-QUESTION -- a test guard is as
+    # able to write the mirroring condition as a stage is).
+    #
+    # The strip stays, and runs BEFORE the predicate: a marker glued to
+    # a delimiter character is still a marker, and neither the
+    # predicate nor the vocabulary strips a bracket, so '(geb.' must
+    # lose it before being asked. Stripping only the period admitted
+    # every corpus name that brackets its marker, and once rules.md#M3
+    # read such a clause as the maiden name, six of them had a maiden
+    # clause of their own. The strip turns away TEN names in all: those
+    # six, plus four that M3 declines and that would have been safe to
+    # keep -- the one-word '(Nee)', '(Nee) (Jones)' and '(née)', and
+    # '(née Jr.)', which S1 takes before M3 sees it. Textual, and so
+    # deliberately conservative in exactly that direction.
     #
     # Every count in this comment quantifies over the corpus, so one
     # added corpus row falsifies it silently. Recount rather than
@@ -1335,34 +1344,45 @@ def _clause_free_latin_corpus_names() -> list[str]:
     # uv run python -c "
     # import re, sys; sys.path.insert(0, 'tests')
     # from nameparser import DEFAULT_NICKNAME_DELIMITERS as D
+    # from nameparser._pipeline._vocab import maiden_marker_run as run
     # from nameparser.config.maiden_markers import MAIDEN_MARKERS as M
     # from v2._differential_fixtures import _CORPUS_NAMES
     # base = [n for n in _CORPUS_NAMES if re.match(r'^[\x00-\u024f]*$', n) and ',' not in n]
     # strip = ''.join({c for p in D for c in p}) + '.'
-    # keep = lambda f: [n for n in base if not any(f(w) in M for w in n.split())]
+    # words = lambda n, f: [f(w) for w in n.split()]
+    # keep = lambda f: [n for n in base if not any(w in M for w in words(n, f))]
     # old = keep(lambda w: w.lower().rstrip('.'))
     # new = keep(lambda w: w.lower().strip(strip))
-    # print(len(old), len(new), sorted(set(old) - set(new)))"
+    # ws = lambda n: words(n, lambda w: w.lower().strip(strip))
+    # pred = [n for n in base if not any(run(ws(n)[i:], M) for i in range(len(ws(n))))]
+    # print(len(old), len(new), len(pred), sorted(set(old) - set(new)), sorted(set(new) - set(pred)))"
     #
     # Delimiter characters come from the shipped set rather than a
     # literal, so a pair added there cannot quietly reopen this.
     strip = "".join({ch for pair in DEFAULT_NICKNAME_DELIMITERS
                      for ch in pair}) + "."
+
+    def marked(name: str) -> bool:
+        words = [word.lower().strip(strip) for word in name.split()]
+        return any(maiden_marker_run(words[i:], MAIDEN_MARKERS)
+                   for i in range(len(words)))
+
     return [name for name in _CORPUS_NAMES
-            if _LATIN.match(name) and "," not in name
-            and not any(word.lower().strip(strip) in MAIDEN_MARKERS
-                        for word in name.split())]
+            if _LATIN.match(name) and "," not in name and not marked(name)]
 
 
 def test_the_clause_free_corpus_is_not_empty() -> None:
     """The invariant below is parametrized over a FILTERED corpus, and
     an empty parametrization passes as a skip rather than failing --
-    the shape #329 left behind. The filter has been widened once
-    already (the delimiter strip, 2026-08-26, which took it from 638
-    names to 628 -- the one-liner in that filter's comment recounts
-    both), so the floor is what says a future widening emptied
-    it. Deliberately far below today's count: this asks whether the
-    filter still selects a corpus, not what the corpus holds."""
+    the shape #329 left behind. The filter has been widened twice
+    already -- the delimiter strip, then the move from word
+    membership to the marker predicate, which a phrase entry made
+    necessary -- and the one-liner in that filter's comment recounts
+    every stage: 642 names before either, 632 after the strip, 629
+    once the predicate decides. So the floor is what says a future
+    widening emptied it. Deliberately far below today's count: this
+    asks whether the filter still selects a corpus, not what the
+    corpus holds."""
     assert len(_clause_free_latin_corpus_names()) > 100
 
 
@@ -1405,3 +1425,22 @@ def test_a_maiden_clause_changes_nothing_else(name: str) -> None:
         assert getattr(with_clause, field) == getattr(base, field), (
             f"{name!r}: {field} reads {getattr(base, field)!r} alone and "
             f"{getattr(with_clause, field)!r} with a maiden clause")
+
+
+def test_a_phrase_marker_outranks_the_word_it_starts_with() -> None:
+    # Longest first, and the row cases.py cannot hold: a Case carries a
+    # Policy or a Locale, never a Lexicon, so the one marker fork that
+    # needs two entries at once lives here.
+    #
+    # 'geb' ships and 'geb von' is the caller's addition. The phrase
+    # must win where it matches -- maiden 'Braun', the particle being
+    # part of the marker -- and the bare word must still match
+    # everywhere else. Shortest-first would take 'geb' in both and read
+    # the first as maiden 'von Braun', which is also what the default
+    # vocabulary reads, so the control below is what makes the first
+    # assertion mean anything.
+    configured = Parser(lexicon=Lexicon.default().add(
+        maiden_markers=["geb von"]))
+    assert configured.parse("Jane Smith geb von Braun").maiden == "Braun"
+    assert configured.parse("Jane Smith geb Braun").maiden == "Braun"
+    assert parse("Jane Smith geb von Braun").maiden == "von Braun"

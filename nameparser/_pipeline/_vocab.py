@@ -15,10 +15,17 @@ extra_suffix_delimiters), and threading both past every caller costs
 more than the config parameter saves. Still no state: Policy is frozen
 config, not pipeline state.
 
+maiden_marker_run is run-level for the first of those reasons and not
+the second: a maiden marker may be a PHRASE ('z domu'), so how far one
+reaches is a question about a run of words that no per-word membership
+test can answer, and the vocabulary reaches it as a plain frozenset
+field like every other predicate here.
+
 Layering: imports _lexicon, _types, and _policy only.
 """
 from __future__ import annotations
 
+import functools
 import re
 import unicodedata
 from collections.abc import Callable, Iterable, Sequence
@@ -286,6 +293,108 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
         else:
             k += 1
     return all(counts_as_suffix(t) for t in merged)
+
+
+# The two derived views of a marker vocabulary, cached per-vocabulary
+# on _script_segment._longest_entry's precedent -- same function shape
+# (a scalar derived from a vocabulary frozenset), same key space, and
+# its reasoning for maxsize=16 carries over verbatim: a process holds
+# the default vocabulary plus one per constructed pack parser, so 16
+# bounds many-lexicon churn without ever evicting in normal use.
+# (NOT _extract._delimiter_chars' precedent, which these once cited:
+# that one is consulted once per parse, so it says nothing about a
+# lookup on the per-token path.) Keying on the frozenset costs a
+# cached hash, not a sweep of its contents.
+@functools.lru_cache(maxsize=16)
+def _longest_marker(markers: frozenset[str]) -> int:
+    """How many words the longest entry of `markers` spans -- the
+    lookahead bound, computed from the vocabulary rather than fixed at a
+    literal so a caller's four-word entry works and an all-single-word
+    set leaves the common path at one lookup. Entries are stored
+    space-joined with single separators, so the space count IS the word
+    count."""
+    return max((entry.count(" ") + 1 for entry in markers), default=0)
+
+
+@functools.lru_cache(maxsize=16)
+def _marker_heads(markers: frozenset[str]) -> frozenset[str]:
+    """The first word of every entry -- the set a run can possibly open
+    with. Entries are already stored per-word folded, so an entry's
+    first word is the same fold the lookup builds."""
+    return frozenset(entry.split(" ", 1)[0] for entry in markers)
+
+
+def maiden_marker_head(n: str, markers: frozenset[str]) -> bool:
+    """Could a maiden marker run START here? `n` is _normalize(word),
+    passed in so callers fold once -- suffix_as_written's shape exactly
+    ("`n` is `_normalize(text)`, passed in so callers normalize once"),
+    and with no raw-text sibling for the same reason it has none: every
+    caller is on the per-token path and has the fold in hand already.
+
+    A SUPERSET test. True means only that some entry opens with this
+    word, never that a run matches -- maiden_marker_run is the answer,
+    and it calls this function, so the two cannot drift. Exported
+    because a caller scanning a whole token stream needs to know
+    whether assembling a candidate sequence is worth doing at all, and
+    for almost every token it is not: _classify's pass would otherwise
+    walk structural boundaries once per token to build a lookahead the
+    predicate discards on this very test.
+    """
+    return n in _marker_heads(markers)
+
+
+def maiden_marker_run(words: Sequence[str], markers: frozenset[str]) -> int:
+    """How many of `words` a maiden marker claims, longest first; 0 for
+    none.
+
+    Phrases are stored space-joined and per-word normalized (_title_key's
+    storage rule), so the key is rebuilt the same way here -- normalizing
+    the joined phrase instead would leave interior periods.
+
+    `words` must be words that stand TOGETHER -- one clause's, or one
+    segment's. This answers only what the vocabulary says about the
+    sequence it is handed; whether a sequence is a sequence is the
+    caller's, and classify's contiguity rule is where that is decided
+    for the token stream.
+
+    Longest first, so a caller configuring both 'geb' and 'geb von' gets
+    the phrase where it matches and the bare word everywhere else. The
+    one answer to "does a marker start here, and where does it end": the
+    stages that can call it do (classify over token texts, extract over
+    a clause's whitespace words), and the stage that runs after classify
+    reads the tags classify recorded instead
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+    """
+    # Fast path first: no entry opens with this word, so no length can
+    # match. It cannot hide a match -- every key the loop builds opens
+    # with _normalize(words[0]) unless that word folds away, and a
+    # folded-away first word fails the n-word test below for every
+    # n > 1 and is not a stored entry for n == 1.
+    if not words:
+        return 0
+    head = _normalize(words[0])
+    if not maiden_marker_head(head, markers):
+        return 0
+    cap = min(len(words), _longest_marker(markers))
+    # Fold each word ONCE, then key from a prefix. _title_key(words[:n])
+    # per candidate length re-folds the whole prefix every time, which
+    # is quadratic in cap and makes a one-word hit cost more than a
+    # two-word one -- the longest key is always built and discarded
+    # first, and all but one shipped entry is a single word. The join
+    # below IS _title_key's body over pre-folded words (per-word fold,
+    # empties dropped, space-joined); test_vocab pins that the two
+    # agree, since this is a copy of a fold whose definition lives in
+    # _lexicon.
+    folded = [head] + [_normalize(w) for w in words[1:cap]]
+    for n in range(cap, 0, -1):
+        key = " ".join(filter(None, folded[:n]))
+        # a word that folds away is DROPPED from the key, so 'née'
+        # followed by a lone '.' would key as 'née' and a one-word
+        # marker would claim the period as part of its run. n words in,
+        # n words out: anything else is not this key's n-word phrase.
+        if key.count(" ") == n - 1 and key in markers:
+            return n
+    return 0
 
 
 def _normalized_for_script(text: str) -> str | None:

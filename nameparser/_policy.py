@@ -630,10 +630,12 @@ class Policy:
     #: pair encloses it, so "Jane Smith (née Jones)" needs no
     #: configuration -- unless the content is suffix-shaped, which is
     #: taken first, the brackets dropped and the content read as if
-    #: written bare. A maiden_markers word opening the enclosed
-    #: content is dropped from the value, but only where that content
-    #: holds more than one token: a lone "(Nee)" is a maiden NAME,
-    #: not a marker (#329).
+    #: written bare. A maiden_markers entry opening the enclosed
+    #: content is dropped from the value -- all of it, an entry being
+    #: allowed to span more than one word ("z domu") -- but only where
+    #: a word stands past it: a clause of nothing but its marker keeps
+    #: its words, since a lone "(Nee)" is a maiden NAME and not a
+    #: marker (#329).
     maiden_delimiters: frozenset[tuple[str, str]] = frozenset()
     #: Additional separators that split suffix groups (e.g. " - " for
     #: "Jane Smith, RN - CRNA"). Additive only: the comma always

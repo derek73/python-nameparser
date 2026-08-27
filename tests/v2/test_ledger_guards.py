@@ -43,11 +43,11 @@ from nameparser._policy import Script
 # assert_normalized touches -- looser in the dangerous direction, and a
 # hand copy of a constant with a source of truth, inside the module
 # written to forbid exactly that.
-from nameparser._lexicon import _normalize
+from nameparser._lexicon import _PHRASE_FIELDS, _normalize
 from nameparser.config.conjunctions import CONJUNCTIONS
 from nameparser.config.maiden_markers import MAIDEN_MARKERS
 from nameparser.config.particles import PARTICLES
-from nameparser.config.titles import TITLES
+from nameparser.config.titles import GIVEN_NAME_TITLES, TITLES
 from nameparser.config.suffixes import (
     GLUED_HONORIFICS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_WORDS)
 
@@ -66,6 +66,35 @@ from ._differential_fixtures import (
 # meaning something -- an extra that becomes classified belongs in the
 # table, not in this list.
 _SANCTIONED_EXTRAS = frozenset({(0xFF65, 0xFF65)})
+
+
+@pytest.mark.parametrize("field", _PHRASE_FIELDS)
+def test_a_shipped_phrase_entry_is_stored_as_written(field: str) -> None:
+    """The half of a phrase entry's storage rule config's own
+    assert_normalized cannot see.
+
+    It checks the single-spaced lowercase form; the per-WORD period
+    strip is _lexicon._title_key's, and a data module asserting with
+    the parser's fold would make a constant's hygiene depend on the
+    parser. The question that actually matters is asked here instead,
+    and it is stronger than the fold: does Lexicon store the shipped
+    constant UNCHANGED? An entry written 'z. domu' passes import-time
+    hygiene and is silently rewritten to 'z domu' -- inert as a lookup
+    key nobody wrote, and invisible everywhere until now.
+
+    Over _PHRASE_FIELDS rather than over maiden_markers, so the
+    given_name_titles half is covered by the same assertion and a third
+    phrase field arrives already pinned. Nothing else in the suite pins
+    this equality for any field.
+    """
+    from nameparser import Lexicon
+    shipped = {"maiden_markers": MAIDEN_MARKERS,
+               "given_name_titles": GIVEN_NAME_TITLES}[field]
+    assert getattr(Lexicon.default(), field) == frozenset(shipped), (
+        f"{field}: Lexicon rewrote the shipped constant, so the entries "
+        f"it stores are not the ones the data module wrote -- "
+        f"{sorted(frozenset(shipped) - getattr(Lexicon.default(), field))} "
+        f"were folded away or changed")
 
 
 def test_the_corpus_population_is_not_degenerate() -> None:
@@ -845,11 +874,14 @@ class _LatinCopy(NamedTuple):
 #: removal: drop an entry a member covers and the snapshot shrinks.
 #:
 #: Three nearby counts differ and are easy to conflate, all for
-#: fix(#274) specifically, and all four numbers moved in 2.2 -- recount
-#: rather than adjust them: MAIDEN_MARKERS ships 16 entries (roz left
-#: the vocabulary); that rule's members reach 3 of them; the corpora
-#: contain 4 markers in total (geb, nee, née, 旧姓 -- nee arrived with
-#: #414's rules corpus), 3 of which it covers.
+#: fix(#274) specifically, and every one of them moved in 2.2 -- twice,
+#: so recount rather than adjust them: MAIDEN_MARKERS ships 17 entries
+#: (roz left the vocabulary, z domu joined it); that rule's members
+#: reach 3 of them; the corpora contain 5 markers in total (geb, nee,
+#: née, z domu, 旧姓 -- nee arrived with #414's rules corpus and z domu
+#: with #434's examples), 3 of which it covers. Counting z domu at all
+#: needs the RUN reading _carries uses: it is two tokens, and a
+#: per-token count cannot see it.
 _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
     "fix(#274)": _LatinCopy(
         vocabulary=MAIDEN_MARKERS,
@@ -1153,8 +1185,20 @@ print(sum(not {_normalize(t.strip(strip)) for t in n.split()} & V and sub(n) for
     """
     delimiters = "".join({ch for pair in DEFAULT_NICKNAME_DELIMITERS
                           for ch in pair})
-    tokens = {_normalize(token.strip(delimiters)) for token in name.split()}
-    return bool(tokens & vocabulary) or any(
+    tokens = [_normalize(token.strip(delimiters)) for token in name.split()]
+    # A vocabulary may hold PHRASE entries ('z domu'), which no set of
+    # single tokens can contain: 'Maria Kowalska z domu Nowak' carries
+    # a marker and not one of its words is one. So the membership test
+    # runs over every consecutive token RUN up to the longest entry --
+    # which is the single tokens themselves when no entry is a phrase,
+    # leaving every count above unchanged. Still textual and still
+    # wider than the parser (no longest-first, no fold-away rule):
+    # tools/differential/README.md says that is this helper's job.
+    longest = max((entry.count(" ") + 1 for entry in vocabulary), default=1)
+    runs = {" ".join(tokens[i:i + n])
+            for n in range(1, longest + 1)
+            for i in range(len(tokens) - n + 1)}
+    return bool(runs & vocabulary) or any(
         entry in name for entry in vocabulary if not entry.isascii())
 
 
@@ -1277,6 +1321,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
             _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
+        "fix(#434) a multi-word maiden marker takes the maiden name":
+            _Claim(1, ('family', 'maiden', 'middle'), "c428798fc6ef"),
+        "fix(#434) a multi-word marker leads a bracketed clause to the maiden name":
+            _Claim(1, ('maiden', 'nickname'), "0b3ef183f283"),
         "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
             _Claim(5, ('maiden', 'nickname'), "a419f74143e3"),
         "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
@@ -1316,7 +1364,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(279, ('family', 'given'), "28a62b622a48"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(1080, ('family', 'given', 'suffix'), "0cb2cda1ed6b"),
+            _Claim(1085, ('family', 'given', 'suffix'), "0df8e4a51a54"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1391,6 +1439,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_2.0.0.toml": {
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
             _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
+        "fix(#434) a multi-word maiden marker takes the maiden name":
+            _Claim(1, ('family', 'maiden', 'middle'), "c428798fc6ef"),
+        "fix(#434) a multi-word marker leads a bracketed clause to the maiden name":
+            _Claim(1, ('maiden', 'nickname'), "0b3ef183f283"),
         "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
             _Claim(5, ('maiden', 'nickname'), "a419f74143e3"),
         "fix(#335) a marker-led bracketed clause reads as the maiden name, compounding with the CJK order flip":
@@ -1501,6 +1553,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_2.1.0.toml": {
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
             _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
+        "fix(#434) a multi-word maiden marker takes the maiden name":
+            _Claim(1, ('family', 'maiden', 'middle'), "c428798fc6ef"),
+        "fix(#434) a multi-word marker leads a bracketed clause to the maiden name":
+            _Claim(1, ('maiden', 'nickname'), "0b3ef183f283"),
         "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
             _Claim(6, ('maiden', 'nickname'), "d0e857deddb2"),
         "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
@@ -1851,7 +1907,14 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
                   ("fix(comma-family)", "fix(comma-precomma-family)",
                    "fix(suffix-routing)")),
     '(^|[\\w.]\\s+)[("\'][^)"\']+[)"\'](\\s+\\w|\\s*$)':
-        _Excluded(51, "770738271273", ()),
+        # 51 -> 54 as rules.md gained the bracketed Polish examples
+        # (#434): 'Maria Kowalska (z domu Nowak)', 'Maria Kowalska
+        # (z domu)', and the boundary 'Anna z (domu) Nowak' M2 gained
+        # when the clause-straddling defect was fixed. Growth in the
+        # corpus, not in the exclusion -- its regex is untouched -- and
+        # `absorbed_by` stayed empty, so no rule reaches the protected
+        # shape.
+        _Excluded(54, "e2924f45c9d8", ()),
 }
 
 

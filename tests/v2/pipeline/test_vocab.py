@@ -1,9 +1,12 @@
 import unicodedata
 
-from nameparser._lexicon import Lexicon
+import pytest
+
+from nameparser._lexicon import Lexicon, _normalize, _title_key
 from nameparser._pipeline._vocab import (
     effective_script, is_initial, is_initial_shaped, is_suffix_lenient,
-    is_suffix_strict, is_wholly_suffix, resolve_script_set, single_script,
+    is_suffix_strict, is_wholly_suffix, maiden_marker_run,
+    resolve_script_set, single_script,
 )
 from nameparser._policy import (Policy, Script, _NO_INITIALS,
                                 _SCRIPT_RANGES)
@@ -220,6 +223,84 @@ def test_is_wholly_suffix_is_not_the_plural_of_is_post_nominal() -> None:
     # and the knob moves it: under strict, 'V.' is name text
     assert not is_wholly_suffix(
         ["V."], lex, Policy(lenient_comma_suffixes=False))
+
+
+# Stored form: space-joined, per-word normalized -- what _normset
+# writes for this field. Built as bare frozensets rather than through a
+# Lexicon so these exercise the predicate and nothing else.
+_WORD_ONLY = frozenset({"née"})
+_PHRASE = frozenset({"z domu"})
+_BOTH = frozenset({"geb", "geb von"})
+
+
+def test_maiden_marker_run_has_nothing_to_claim() -> None:
+    assert maiden_marker_run([], _WORD_ONLY) == 0
+    assert maiden_marker_run(["née", "Jones"], frozenset()) == 0
+    assert maiden_marker_run(["Smith", "Jones"], _WORD_ONLY) == 0
+
+
+def test_maiden_marker_run_claims_one_word() -> None:
+    assert maiden_marker_run(["née", "Jones"], _WORD_ONLY) == 1
+    # the marker alone is still a run of one; the caller decides
+    # whether a word has to follow it
+    assert maiden_marker_run(["née"], _WORD_ONLY) == 1
+
+
+def test_maiden_marker_run_claims_a_phrase() -> None:
+    assert maiden_marker_run(["z", "domu", "Nowak"], _PHRASE) == 2
+
+
+def test_maiden_marker_run_takes_the_longest_match_first() -> None:
+    # A caller configuring both a word and a phrase starting with it
+    # gets the phrase where it matches and the bare word everywhere
+    # else. Shortest-first would claim 'geb' and leave 'von' a name
+    # word.
+    assert maiden_marker_run(["geb", "von", "Braun"], _BOTH) == 2
+    assert maiden_marker_run(["geb", "Braun"], _BOTH) == 1
+
+
+def test_maiden_marker_run_declines_a_partial_phrase() -> None:
+    # 'z' alone is not a marker -- the whole point of shipping the
+    # phrase rather than its words. This is the reading the library's
+    # own split-it-into-separate-entries advice produced.
+    assert maiden_marker_run(["z", "Nowak"], _PHRASE) == 0
+    # and a phrase with nothing after its first word cannot match either
+    assert maiden_marker_run(["z"], _PHRASE) == 0
+
+
+def test_maiden_marker_run_folds_per_word() -> None:
+    # _title_key's storage rule, rebuilt at match time: case folds, and
+    # each word loses its own edge periods. Normalizing the JOINED
+    # phrase would leave 'z.' with its period and never match.
+    assert maiden_marker_run(["Z", "Domu", "Nowak"], _PHRASE) == 2
+    assert maiden_marker_run(["z", "domu.", "Nowak"], _PHRASE) == 2
+    assert maiden_marker_run(["z.", "domu", "Nowak"], _PHRASE) == 2
+
+
+@pytest.mark.parametrize("words", [
+    ("z", "domu"), ("Z.", "Domu"), ("née",), ("née", "."), (".", "z"),
+    ("z", "", "domu"), ("GEB", "VON"), (),
+])
+def test_the_marker_key_is_title_keys_own_fold(words: tuple[str, ...]) -> None:
+    """maiden_marker_run builds its lookup key inline so each word is
+    folded once rather than once per candidate length. That makes it a
+    COPY of a fold whose definition lives in _lexicon, and this is the
+    pin that keeps the copy honest: change _title_key and this fails
+    rather than the entry quietly ceasing to match."""
+    assert " ".join(filter(None, (_normalize(w) for w in words))) \
+        == _title_key(words)
+
+
+def test_maiden_marker_run_does_not_claim_a_word_that_folds_away() -> None:
+    # _title_key drops a word that normalizes to nothing, so ['née',
+    # '.'] keys as 'née' -- a one-word entry would match a two-word
+    # run and the drop would take the period with it.
+    assert maiden_marker_run(["née", "."], _WORD_ONLY) == 1
+    # and a word that folds away cannot OPEN a run either -- the
+    # question the head fast path has to answer the same way the loop
+    # would
+    assert maiden_marker_run([".", "née"], _WORD_ONLY) == 0
+    assert maiden_marker_run([".", "z", "domu"], _PHRASE) == 0
 
 
 def test_single_script_requires_every_char_in_one_script() -> None:

@@ -36,7 +36,7 @@ from __future__ import annotations
 
 import bisect
 import dataclasses
-from collections.abc import Sequence, Set
+from collections.abc import Iterable, Sequence, Set
 from enum import IntEnum
 
 from nameparser._lexicon import _title_key
@@ -59,8 +59,9 @@ from nameparser._types import AmbiguityKind, Role
 # wholly-suffix post-comma run, both of which see the merged reading
 
 Piece = list[int]
-#: What the marker pass took out of a segment: the marker piece (to be
-#: dropped) and the maiden-name pieces (to take Role.MAIDEN).
+#: What the marker pass took out of a segment: the marker's tokens (to
+#: be dropped -- more than one where the entry is a phrase, 'z domu')
+#: and the maiden-name pieces (to take Role.MAIDEN).
 MaidenTake = tuple[Piece, list[Piece]]
 
 
@@ -125,12 +126,75 @@ def _is_maiden_marker_piece(piece: Sequence[int],
             and "vocab:maiden-marker" in tokens[piece[0]].tags)
 
 
+# mechanisms.md#ONE-PREDICATE-PER-QUESTION: "where the reader comes
+# AFTER the decider, record the answer on the state instead" -- which is
+# what the marker tags are. classify owns the phrase lookahead; group,
+# running later, reads what it wrote.
+def marker_run_length(following: Iterable[Set[str]]) -> int:
+    """How many tokens a marker run spans, given the tag sets of what
+    FOLLOWS its head, in order: 1 plus the leading continuations.
+
+    One walk for both places group asks -- over pieces below and over
+    token indices in the clause drop at the end of this module, 700
+    lines apart and differing only in index space. `following` is
+    consumed lazily and only until the run ends, so a caller passes a
+    generator over the rest of its sequence rather than materializing
+    one."""
+    run = 1
+    for tags in following:
+        if "vocab:maiden-marker-cont" not in tags:
+            break
+        run += 1
+    return run
+
+
+def _marker_run_pieces(seen: Sequence[int], pieces: Sequence[Sequence[int]],
+                       tokens: Sequence[WorkToken], m: int) -> int:
+    """How many of `seen`'s pieces the marker run at seen[m] spans: 1
+    for a single-word marker, more for a phrase entry ('z domu').
+
+    classify already decided where the run ends and recorded it on the
+    tokens -- "vocab:maiden-marker" on the head,
+    "vocab:maiden-marker-cont" on the rest.
+
+    Each continuation is the NEXT piece and is always in `seen`, and
+    that holds because classify REFUSES to tag a run whose tokens are
+    not structurally contiguous. It is not a property of this walk, and
+    the reasons `seen` can skip a token are wider than they look. No
+    join has run yet, so a piece is one token. `seen` itself skips a
+    tail segment's delimiter cores, and a core between two marker words
+    would be a token between them, which classify would not have tagged
+    as a run. But `pieces` comes from a SEGMENT, and segment keeps only
+    the tokens no stage has given a role, bucketed by the commas before
+    them -- so a run half inside a bracketed clause, or split across a
+    structure comma, is one no segment holds whole. Walking cont tags
+    without classify's refusal read a proper PREFIX of the phrase as
+    the whole marker, and 'Anna z (domu) Nowak' lost its given name to
+    a bare preposition. Any future stage that removes a token from a
+    segment owes this the same refusal.
+
+    What classify guarantees is exactly the main stream's half of that
+    and no more: a run of ROLE-LESS tokens stays inside one segment. It
+    can also tag a run across two adjacent clauses of the same role,
+    which this walk never sees because a role-bearing token is in no
+    segment at all -- see _tag_marker_runs, which states the limit.
+    """
+    return marker_run_length(
+        tokens[pieces[seen[k]][0]].tags for k in range(m + 1, len(seen)))
+
+
 def _maiden_take(pieces: Sequence[Sequence[int]],
                  ptags: Sequence[Set[str]],
                  tokens: Sequence[WorkToken],
-                 cores: Set[str]) -> list[int] | None:
-    """The indices of the pieces the marker pass removes, the marker
-    first, or None.
+                 cores: Set[str]) -> tuple[list[int], list[int]] | None:
+    """The piece indices the marker pass removes, split the way
+    MaidenTake declares them: the MARKER's pieces (one, or several for
+    a phrase entry like 'z domu') and the maiden name's. None when the
+    pass declines.
+
+    Split here rather than by the caller because `run` is known here
+    and nowhere else -- it comes off the continuation tags, which are
+    read to find the walk's starting point in the first place.
 
     Computed before any join (the Ph. D. merge aside), so "up to any
     trailing suffix" means the first suffix WORD after the marker: a
@@ -158,6 +222,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
               if _is_maiden_marker_piece(pieces[seen[v]], tokens)), None)
     if m is None:
         return None
+    # the marker may be a phrase, in which case it is several pieces
+    run = _marker_run_pieces(seen, pieces, tokens, m)
     # "up to any trailing suffix": a suffix WORD anywhere after the
     # marker ends the maiden name, and so does the trailing numeral as
     # assign will read it, which the suffix-piece test does not see
@@ -190,14 +256,18 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                            view, view_tags, tokens,
                            numeral_only=True) == len(view):
             trailing = len(pieces)
-    j = m + 1
+    j = m + run
     while (j < len(seen) and seen[j] < trailing
            and not is_suffix_piece(pieces[seen[j]], ptags[seen[j]],
                                     tokens)):
         j += 1
-    # j == m + 1 means nothing followed the marker but a suffix, so the
-    # pass declines and the marker stays an ordinary word (rules.md#M2).
-    return seen[m:j] if j > m + 1 else None
+    # j == m + run means nothing followed the marker but a suffix, so
+    # the pass declines and the marker stays ordinary words
+    # (rules.md#M2). The walk starts past the WHOLE marker: a phrase's
+    # second word is the marker, not the first word it takes.
+    if j <= m + run:
+        return None
+    return seen[m:m + run], seen[m + run:j]
 
 
 # rules.md#P3: "a recognized connective joins its neighbors into one
@@ -330,8 +400,10 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     taken: MaidenTake | None = None
     take = _maiden_take(pieces, ptags, tokens, cores)
     if take is not None:
-        taken = (pieces[take[0]], [pieces[k] for k in take[1:]])
-        for k in reversed(take):
+        marker_ks, maiden_ks = take
+        taken = ([i for k in marker_ks for i in pieces[k]],
+                 [pieces[k] for k in maiden_ks])
+        for k in reversed(marker_ks + maiden_ks):
             del pieces[k]
             del ptags[k]
 
@@ -791,9 +863,10 @@ def group(state: ParseState) -> ParseState:
                         tokens[i], tags=tokens[i].tags | {"joined"})
         all_pieces.append(tuple(tuple(p) for p in pieces))
         all_ptags.append(tuple(frozenset(t) for t in ptags))
-    # rules.md#M1: "a leading recognized marker word inside a
-    # multi-word clause being dropped; a one-word clause keeps its
-    # word" — a marker inside EXTRACTED maiden content (#329).
+    # rules.md#M1: "a leading recognized marker being dropped where
+    # the clause holds a word past it; a clause of nothing but its
+    # marker keeps its words" — a marker inside EXTRACTED maiden
+    # content (#329).
     # classify tags
     # such a marker like any other token -- what the #274 rule above
     # lacks is not the TAG but the token: extract claims a delimited
@@ -813,13 +886,16 @@ def group(state: ParseState) -> ParseState:
     #   * Separate clauses are separate content. In "(Nee) (Jones)" the
     #     two land as one contiguous run of maiden tokens, so only the
     #     clause bound keeps the lone "(Nee)" intact.
-    # Drop the clause's FIRST token only when the clause holds more
-    # than one: `Nee` is a real surname (Irish Ni/Nee, and a Chinese
-    # romanization), so a one-token "(Nee)" is a maiden name, not a
-    # marker. FIRST token and no more, whatever the clause holds past
-    # it: cases.py's maiden_marker_delimited_three_token_clause is the
-    # row that bounds this in both directions, every other delimited
-    # row having a two-token clause where the two readings agree.
+    # Drop the clause's LEADING MARKER only when the clause holds a
+    # word past it: `Nee` is a real surname (Irish Ni/Nee, and a
+    # Chinese romanization), so a one-token "(Nee)" is a maiden name,
+    # not a marker. The marker and no more, whatever the clause holds
+    # past it: cases.py's maiden_marker_delimited_three_token_clause is
+    # the row that bounds this in both directions, every other
+    # delimited row having a two-token clause where the two readings
+    # agree. The marker is one token for a word entry and the whole run
+    # for a phrase one ('z domu'), which is why the loop below counts
+    # continuation tags rather than assuming one.
     # Spans index the original string by the anti-#100
     # invariant, and script_segment only ever splits a token into
     # sub-slices, so containment stays exact.
@@ -843,15 +919,25 @@ def group(state: ParseState) -> ParseState:
             # first token starting at or after the clause opens; tokens
             # are span-sorted and group never reorders or resizes them
             first = bisect.bisect_left(starts, clause.start)
-            # Testing the SECOND token's end proves BOTH are inside:
-            # tokens do not overlap, so first.end <= second.start, and
-            # bisect already put first.start at or after clause.start.
-            # That is also the "more than one token" test, since the
-            # tokens inside a clause are contiguous in index order.
-            if (first + 1 < len(tokens)
-                    and tokens[first + 1].span.end <= clause.end
-                    and "vocab:maiden-marker" in tokens[first].tags):
-                dropped.append(first)
+            if (first >= len(tokens)
+                    or "vocab:maiden-marker" not in tokens[first].tags):
+                continue
+            # How many tokens the marker is: one, or the whole run of a
+            # phrase entry, as classify recorded it. Same walk the
+            # piece test above makes, in token-index space.
+            run = marker_run_length(
+                tokens[k].tags for k in range(first + 1, len(tokens)))
+            # Testing the end of the token AFTER the run proves the run
+            # AND that token are all inside: tokens do not overlap and
+            # are index-ordered, so every earlier one ends no later,
+            # and bisect already put first.start at or after
+            # clause.start. That is also the "more than the marker"
+            # test, since the tokens inside a clause are contiguous in
+            # index order -- a clause holding nothing but its marker
+            # keeps its words, exactly as a one-token "(Nee)" does.
+            if (first + run < len(tokens)
+                    and tokens[first + run].span.end <= clause.end):
+                dropped.extend(range(first, first + run))
     return dataclasses.replace(
         state, tokens=tuple(tokens), pieces=tuple(all_pieces),
         piece_tags=tuple(all_ptags), dropped=tuple(dropped),
