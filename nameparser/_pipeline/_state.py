@@ -10,6 +10,8 @@ tests/v2/test_layering.py).
 """
 from __future__ import annotations
 
+import bisect
+from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum, auto
 
@@ -22,6 +24,23 @@ from nameparser._types import AmbiguityKind, Role, Segmenter, Span
 # tokenize (separators/segmentation) and extract (close-quote
 # boundaries) cannot drift apart.
 COMMA_CHARS = frozenset({",", "\u060c", "\uff0c"})
+
+
+def comma_bucket(start: int, comma_offsets: Sequence[int]) -> int:
+    """Which comma-delimited part of the name a token starting at
+    `start` falls in: the number of commas before it.
+
+    Shared here for the reason COMMA_CHARS is, and the sharing is
+    load-bearing in the same way. segment BUILDS the segments with this
+    (comma_offsets is sorted and no offset ever equals a token start,
+    so bisect_left counts the commas before the token); classify asks
+    it to decide whether two tokens could be in one segment, which is
+    half of what stops a maiden marker run from spanning a boundary no
+    segment holds. Two tokens agree here iff segment would put them in
+    one segment, and that is an identity rather than a resemblance
+    only while both sides ask this function.
+    """
+    return bisect.bisect_left(comma_offsets, start)
 
 @dataclass(frozen=True, slots=True)
 class WorkToken:

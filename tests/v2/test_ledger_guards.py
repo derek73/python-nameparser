@@ -43,11 +43,11 @@ from nameparser._policy import Script
 # assert_normalized touches -- looser in the dangerous direction, and a
 # hand copy of a constant with a source of truth, inside the module
 # written to forbid exactly that.
-from nameparser._lexicon import _normalize
+from nameparser._lexicon import _PHRASE_FIELDS, _normalize
 from nameparser.config.conjunctions import CONJUNCTIONS
 from nameparser.config.maiden_markers import MAIDEN_MARKERS
 from nameparser.config.particles import PARTICLES
-from nameparser.config.titles import TITLES
+from nameparser.config.titles import GIVEN_NAME_TITLES, TITLES
 from nameparser.config.suffixes import (
     GLUED_HONORIFICS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_WORDS)
 
@@ -66,6 +66,35 @@ from ._differential_fixtures import (
 # meaning something -- an extra that becomes classified belongs in the
 # table, not in this list.
 _SANCTIONED_EXTRAS = frozenset({(0xFF65, 0xFF65)})
+
+
+@pytest.mark.parametrize("field", _PHRASE_FIELDS)
+def test_a_shipped_phrase_entry_is_stored_as_written(field: str) -> None:
+    """The half of a phrase entry's storage rule config's own
+    assert_normalized cannot see.
+
+    It checks the single-spaced lowercase form; the per-WORD period
+    strip is _lexicon._title_key's, and a data module asserting with
+    the parser's fold would make a constant's hygiene depend on the
+    parser. The question that actually matters is asked here instead,
+    and it is stronger than the fold: does Lexicon store the shipped
+    constant UNCHANGED? An entry written 'z. domu' passes import-time
+    hygiene and is silently rewritten to 'z domu' -- inert as a lookup
+    key nobody wrote, and invisible everywhere until now.
+
+    Over _PHRASE_FIELDS rather than over maiden_markers, so the
+    given_name_titles half is covered by the same assertion and a third
+    phrase field arrives already pinned. Nothing else in the suite pins
+    this equality for any field.
+    """
+    from nameparser import Lexicon
+    shipped = {"maiden_markers": MAIDEN_MARKERS,
+               "given_name_titles": GIVEN_NAME_TITLES}[field]
+    assert getattr(Lexicon.default(), field) == frozenset(shipped), (
+        f"{field}: Lexicon rewrote the shipped constant, so the entries "
+        f"it stores are not the ones the data module wrote -- "
+        f"{sorted(frozenset(shipped) - getattr(Lexicon.default(), field))} "
+        f"were folded away or changed")
 
 
 def test_the_corpus_population_is_not_degenerate() -> None:

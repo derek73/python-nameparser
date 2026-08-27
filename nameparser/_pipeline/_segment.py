@@ -16,10 +16,11 @@ decision site below; history in decisions.md#C1.
 """
 from __future__ import annotations
 
-import bisect
 import dataclasses
 
-from nameparser._pipeline._state import ParseState, PendingAmbiguity, Structure
+from nameparser._pipeline._state import (
+    ParseState, PendingAmbiguity, Structure, comma_bucket,
+)
 from nameparser._pipeline._vocab import is_wholly_suffix
 from nameparser._types import AmbiguityKind
 
@@ -37,11 +38,12 @@ def segment(state: ParseState) -> ParseState:
                                    structure=Structure.NO_COMMA)
     buckets: list[list[int]] = [[] for _ in range(len(state.comma_offsets) + 1)]
     for i in main:
-        # comma_offsets is sorted and no offset ever equals a token
-        # start, so bisect_left counts the commas before this token
-        start = state.tokens[i].span.start
-        bucket = bisect.bisect_left(state.comma_offsets, start)
-        buckets[bucket].append(i)
+        # _state.comma_bucket, not a local bisect: classify asks the
+        # same question of the same offsets to keep a marker run inside
+        # one segment, and the two must be one expression rather than
+        # two that agree
+        buckets[comma_bucket(state.tokens[i].span.start,
+                             state.comma_offsets)].append(i)
     groups = [tuple(b) for b in buckets]
     # v1 strips exactly ONE trailing comma as cosmetic (parser.py's
     # collapse_whitespace); every other empty bucket is STRUCTURAL and

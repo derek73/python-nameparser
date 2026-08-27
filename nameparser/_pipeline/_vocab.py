@@ -30,7 +30,7 @@ import re
 import unicodedata
 from collections.abc import Callable, Iterable, Sequence
 
-from nameparser._lexicon import Lexicon, _normalize, _title_key
+from nameparser._lexicon import Lexicon, _normalize
 from nameparser._policy import (Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
                                 _SCRIPT_RANGES, _script_matcher)
 
@@ -295,45 +295,52 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
     return all(counts_as_suffix(t) for t in merged)
 
 
-@functools.lru_cache(maxsize=128)
+# The two derived views of a marker vocabulary, cached per-vocabulary
+# on _script_segment._longest_entry's precedent -- same function shape
+# (a scalar derived from a vocabulary frozenset), same key space, and
+# its reasoning for maxsize=16 carries over verbatim: a process holds
+# the default vocabulary plus one per constructed pack parser, so 16
+# bounds many-lexicon churn without ever evicting in normal use.
+# (NOT _extract._delimiter_chars' precedent, which these once cited:
+# that one is consulted once per parse, so it says nothing about a
+# lookup on the per-token path.) Keying on the frozenset costs a
+# cached hash, not a sweep of its contents.
+@functools.lru_cache(maxsize=16)
 def _longest_marker(markers: frozenset[str]) -> int:
     """How many words the longest entry of `markers` spans -- the
     lookahead bound, computed from the vocabulary rather than fixed at a
     literal so a caller's four-word entry works and an all-single-word
     set leaves the common path at one lookup. Entries are stored
     space-joined with single separators, so the space count IS the word
-    count. Cached on the (hashable) frozenset, like
-    _extract._delimiter_chars: every token of every parse asks, and the
-    answer changes only when the lexicon does.
-    """
+    count."""
     return max((entry.count(" ") + 1 for entry in markers), default=0)
 
 
-@functools.lru_cache(maxsize=128)
+@functools.lru_cache(maxsize=16)
 def _marker_heads(markers: frozenset[str]) -> frozenset[str]:
     """The first word of every entry -- the set a run can possibly open
-    with. Derived from `markers` and used only inside the predicate
-    below, so it is a fast path rather than a second answer: entries are
-    already stored per-word folded, so an entry's first word is the same
-    fold the lookup builds. Cached like _longest_marker, and for the
-    same reason -- this is asked once per token of every parse."""
+    with. Entries are already stored per-word folded, so an entry's
+    first word is the same fold the lookup builds."""
     return frozenset(entry.split(" ", 1)[0] for entry in markers)
 
 
-def maiden_marker_head(word: str, markers: frozenset[str]) -> bool:
-    """Could a maiden marker run START at `word`? A SUPERSET test: True
-    means only that some entry opens with this word, never that a run
-    matches -- maiden_marker_run is the answer.
+def maiden_marker_head(n: str, markers: frozenset[str]) -> bool:
+    """Could a maiden marker run START here? `n` is _normalize(word),
+    passed in so callers fold once -- suffix_as_written's shape exactly
+    ("`n` is `_normalize(text)`, passed in so callers normalize once"),
+    and with no raw-text sibling for the same reason it has none: every
+    caller is on the per-token path and has the fold in hand already.
 
-    This is that predicate's own first test, not a second one: the
-    predicate calls this function, so the two cannot drift. It is
-    exported because a caller scanning a whole token stream needs to
-    know whether assembling a candidate sequence is worth doing at all,
-    and for almost every token it is not -- _classify's pass would
-    otherwise walk structural boundaries once per token to build a
-    lookahead the predicate discards on this very test.
+    A SUPERSET test. True means only that some entry opens with this
+    word, never that a run matches -- maiden_marker_run is the answer,
+    and it calls this function, so the two cannot drift. Exported
+    because a caller scanning a whole token stream needs to know
+    whether assembling a candidate sequence is worth doing at all, and
+    for almost every token it is not: _classify's pass would otherwise
+    walk structural boundaries once per token to build a lookahead the
+    predicate discards on this very test.
     """
-    return _normalize(word) in _marker_heads(markers)
+    return n in _marker_heads(markers)
 
 
 def maiden_marker_run(words: Sequence[str], markers: frozenset[str]) -> int:
@@ -358,29 +365,33 @@ def maiden_marker_run(words: Sequence[str], markers: frozenset[str]) -> int:
     reads the tags classify recorded instead
     (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
     """
-    # Fast path, and the reason this stays affordable at one call per
-    # token: no entry opens with this word, so no length can match. It
-    # cannot hide a match -- every key the loop builds opens with
-    # _normalize(words[0]) unless that word folds away, and a folded-away
-    # first word fails the n-word test below for every n > 1 and is not
-    # a stored entry for n == 1.
-    #
-    # The fold it does is the third on this token in a parse:
-    # _classify._tags_for computes _normalize(text) and discards it,
-    # and _classify's marker pass asks maiden_marker_head, which folds
-    # again before calling this. Threading a normalized text through
-    # would put an extra parameter on the one predicate every site
-    # shares, and the measurement says the whole marker mechanism costs
-    # about 1.6% of a parse with the folds as they are
-    # (decisions.md's #434 entry). Left alone deliberately.
-    if not words or not maiden_marker_head(words[0], markers):
+    # Fast path first: no entry opens with this word, so no length can
+    # match. It cannot hide a match -- every key the loop builds opens
+    # with _normalize(words[0]) unless that word folds away, and a
+    # folded-away first word fails the n-word test below for every
+    # n > 1 and is not a stored entry for n == 1.
+    if not words:
         return 0
-    for n in range(min(len(words), _longest_marker(markers)), 0, -1):
-        key = _title_key(words[:n])
-        # _title_key DROPS a word that folds away, so 'née' followed by
-        # a lone '.' would key as 'née' and a one-word marker would
-        # claim the period as part of its run. n words in, n words out:
-        # anything else is not this key's n-word phrase.
+    head = _normalize(words[0])
+    if not maiden_marker_head(head, markers):
+        return 0
+    cap = min(len(words), _longest_marker(markers))
+    # Fold each word ONCE, then key from a prefix. _title_key(words[:n])
+    # per candidate length re-folds the whole prefix every time, which
+    # is quadratic in cap and makes a one-word hit cost more than a
+    # two-word one -- the longest key is always built and discarded
+    # first, and all but one shipped entry is a single word. The join
+    # below IS _title_key's body over pre-folded words (per-word fold,
+    # empties dropped, space-joined); test_vocab pins that the two
+    # agree, since this is a copy of a fold whose definition lives in
+    # _lexicon.
+    folded = [head] + [_normalize(w) for w in words[1:cap]]
+    for n in range(cap, 0, -1):
+        key = " ".join(filter(None, folded[:n]))
+        # a word that folds away is DROPPED from the key, so 'née'
+        # followed by a lone '.' would key as 'née' and a one-word
+        # marker would claim the period as part of its run. n words in,
+        # n words out: anything else is not this key's n-word phrase.
         if key.count(" ") == n - 1 and key in markers:
             return n
     return 0

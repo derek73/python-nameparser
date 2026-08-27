@@ -21,11 +21,17 @@ edge-clean form, so ``'z  domu'`` and ``'Z domu '`` fail here rather
 than becoming entries nothing can match. The remaining half of a
 phrase's storage rule -- that each WORD is separately stripped of its
 periods, so ``'z. domu'`` is stored ``'z domu'`` -- is
-``_lexicon._title_key``'s and is deliberately NOT checked here: it
-needs the fold this module may not import. An entry written with an
-interior period passes import-time hygiene and is silently rewritten
-by ``Lexicon``, which is the one gap in this check and is recorded
-rather than closed.
+``_lexicon._title_key``'s and is deliberately NOT checked here. The
+reason is altitude, not layering: importing ``_lexicon`` from here
+would in fact work (its config imports are all inside
+``_default_lexicon()``, nothing at module scope), but a data module
+asserting things with the parser's own fold makes the constant's
+hygiene depend on the parser, and the question worth asking is not
+"is this entry pre-folded" but "does ``Lexicon`` store it unchanged".
+That is one assertion over ``_PHRASE_FIELDS`` in
+``tests/v2/test_ledger_guards.py``, the suite that already imports the
+parser's fold for exactly this purpose, and it is where an entry
+written ``'z. domu'`` is caught.
 """
 from __future__ import annotations
 

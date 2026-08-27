@@ -1,6 +1,8 @@
 """Stage: classify.
 
-Consumes: tokens.
+Consumes: tokens, comma_offsets (with token roles, the two halves of
+the structural-boundary test the marker pass applies -- see
+_tag_marker_runs).
 Produces: tokens with vocabulary tags added (text/span/role unchanged).
 Reads: every Lexicon vocabulary field; no Policy FIELD is consulted
 (is_initial does consult the _policy module's _NO_INITIALS constant,
@@ -27,12 +29,12 @@ The initial veto is assign's job, not classify's: 'V' carries both
 """
 from __future__ import annotations
 
-import bisect
 import dataclasses
+from collections.abc import Sequence
 
 from nameparser._lexicon import _normalize
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, WorkToken,
+    ParseState, PendingAmbiguity, WorkToken, comma_bucket,
 )
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
@@ -50,10 +52,17 @@ from nameparser._pipeline._vocab import (
 # abbreviation shape any word can wear and does not. A
 # bare ambiguous acronym is consumed only when the name has words to
 # spare"
-def _tags_for(token: WorkToken, state: ParseState) -> frozenset[str]:
+def _tags_for(token: WorkToken, n: str, state: ParseState,
+              marker_tag: str | None) -> frozenset[str]:
+    """`n` is _normalize(token.text), folded once by the caller and
+    shared with the marker pass; `marker_tag` is what that pass decided
+    for this token, or None. The marker DECISION is entirely
+    _tag_marker_runs'; only the writing happens here, so the two tokens
+    of a phrase are built once rather than replaced twice."""
     lex = state.lexicon
-    n = _normalize(token.text)
     tags = set(token.tags)
+    if marker_tag is not None:
+        tags.add(marker_tag)
     if n in lex.titles:
         tags.add("vocab:title")
     if n in lex.given_name_titles:
@@ -95,10 +104,15 @@ def _tags_for(token: WorkToken, state: ParseState) -> frozenset[str]:
     return frozenset(tags)
 
 
-def _tag_marker_runs(tokens: tuple[WorkToken, ...],
-                     state: ParseState) -> tuple[WorkToken, ...]:
-    """Tag each maiden marker run: its head "vocab:maiden-marker", the
-    rest "vocab:maiden-marker-cont".
+def _tag_marker_runs(state: ParseState,
+                     folded: Sequence[str]) -> dict[int, str]:
+    """Which tokens are maiden marker runs: index -> "vocab:maiden-marker"
+    for a run's head, "vocab:maiden-marker-cont" for the rest.
+
+    Returns the decision rather than rewriting the tokens; classify
+    writes it into the one pass that builds them, so a marker token is
+    not replaced twice. `folded` is _normalize per token, computed once
+    for this pass and the vocabulary tags alike.
 
     The one sequence pass in this stage, and it has to be one: a marker
     entry may be a PHRASE whose words are not markers individually
@@ -113,88 +127,88 @@ def _tag_marker_runs(tokens: tuple[WorkToken, ...],
     before tokens exist, so it calls the predicate itself over the
     clause's whitespace words.
 
-    A run never crosses a STRUCTURAL boundary, and that is a rule about
-    the tag rather than a guard on a consumer. This pass walks the whole
-    span-sorted stream, delimited-clause tokens included, where group
-    walks one segment -- and a segment is neither: _segment.py drops
-    every token extract already gave a role, and buckets what is left by
-    the commas before it. So a run half inside a bracketed clause is a
-    run no piece walk can see whole, and letting it be tagged made
-    'Anna z (domu) Nowak' read family 'Anna', maiden 'Nowak' -- the bare
+    A tagged run is structurally contiguous, and the test is
+    one-directional: a role change IS a clause edge, so no run spans
+    one, but not every clause edge is a role change -- two ADJACENT
+    clauses of the same role are indistinguishable here, and
+    'Jane (z) (domu) Jones' does tag a run across them. Both consumers
+    refuse that run for reasons of their own (the piece walk never sees
+    role-bearing tokens at all; the clause drop is scoped to one
+    clause's span), so no reading depends on it today, and the claim
+    this pass can honestly make is the weaker one. What it does
+    guarantee is what _group._marker_run_pieces needs: a run inside the
+    MAIN stream stays inside one segment. Without it this pass walked
+    the whole span-sorted stream while group walked one segment --
+    _segment keeps only role-less tokens and buckets them by the commas
+    before them -- so a run half inside a bracketed clause was tagged
+    whole and consumed as a proper PREFIX of itself, and
+    'Anna z (domu) Nowak' read family 'Anna', maiden 'Nowak': the bare
     preposition eating the name, which is the exact damage the phrase
-    entry exists to prevent. Refusing to tag it is what keeps
-    _group._marker_run_pieces' "the next piece, always in `seen`" true;
-    truncating the run instead would hand a proper PREFIX of the phrase
-    to M2 as a whole marker, which is the same bug one word shorter.
+    entry exists to prevent. Refusing to tag such a run is the fix;
+    truncating it instead would hand M2 the same wrong prefix one word
+    shorter.
     """
     markers = state.lexicon.maiden_markers
     # the lookahead the vocabulary actually needs; 0 for an empty set,
     # which skips the pass entirely
     cap = _longest_marker(markers)
     if not cap:
-        return tokens
-    texts = [t.text for t in tokens]
-    out = list(tokens)
-    # What "structurally contiguous" is, per token, as two parallel
-    # lists so the walk below compares values rather than recomputing.
-    # Role: tokenize gives every extracted clause's tokens the clause's
-    # role and leaves the main stream None, so a role change IS a
-    # clause edge. Bucket: the count of commas before the token's
-    # start, which is exactly how _segment.py buckets a token into a
-    # segment -- so two tokens agree here iff segment would put them in
-    # one. `None` for the overwhelmingly common comma-free name, which
-    # skips the bisect sweep entirely.
-    commas = state.comma_offsets
-    buckets = ([bisect.bisect_left(commas, t.span.start) for t in out]
-               if commas else None)
-
-    n_tokens = len(out)
+        return {}
+    tokens = state.tokens
+    n_tokens = len(tokens)
+    # Deferred, not computed up front: only the contiguity walk reads
+    # it, only a phrase vocabulary runs that walk, and only at a token
+    # that opens an entry -- so a single-word vocabulary, and a
+    # phrase vocabulary over a name holding no marker, never pay the
+    # sweep at all.
+    buckets: list[int] | None = None
+    tags: dict[int, str] = {}
     i = 0
     while i < n_tokens:
-        # Bounded slice, not texts[i:]: a full-tail slice per token is
-        # quadratic in the token count, and the predicate would ignore
-        # everything past `cap` anyway. Bounded again at the first
-        # structural boundary, so the predicate is asked over the words
-        # that could form one run and answers longest-first WITHIN them
-        # -- a two-word entry refused at a clause edge still leaves a
-        # one-word entry starting there free to match. The walk is
-        # skipped entirely for an all-single-word vocabulary, where cap
-        # is 1 and no lookahead happens at all.
-        # The predicate's own head test first: almost no token opens
-        # any entry, and for those there is nothing to assemble. This
-        # is the same function maiden_marker_run consults, so a token
-        # skipped here is one the predicate would have refused anyway.
-        if not maiden_marker_head(texts[i], markers):
+        # The predicate's own head test first, over the fold the caller
+        # already has: almost no token opens any entry, and for those
+        # there is nothing to assemble. Same function maiden_marker_run
+        # consults, so a token skipped here is one it would refuse.
+        if not maiden_marker_head(folded[i], markers):
             i += 1
             continue
+        # Bound the lookahead at the first structural boundary, so the
+        # predicate is asked over the words that could form one run and
+        # answers longest-first WITHIN them -- a two-word entry refused
+        # at a clause edge still leaves a one-word entry starting there
+        # free to match.
         limit = 1
         if cap > 1:
-            # Walk forward while nothing structural divides the tokens.
-            # Compared against token i rather than pairwise, which is
-            # the same walk: it stops at the first mismatch either way.
-            role = out[i].role
-            bucket = buckets[i] if buckets is not None else 0
+            if buckets is None:
+                buckets = [comma_bucket(t.span.start, state.comma_offsets)
+                           for t in tokens]
+            role, bucket = tokens[i].role, buckets[i]
             while (limit < cap and i + limit < n_tokens
-                   and out[i + limit].role is role
-                   and (buckets is None or buckets[i + limit] == bucket)):
+                   and tokens[i + limit].role is role
+                   and buckets[i + limit] == bucket):
                 limit += 1
-        run = maiden_marker_run(texts[i:i + limit], markers)
+        run = maiden_marker_run(
+            [tokens[k].text for k in range(i, i + limit)], markers)
         if not run:
             i += 1
             continue
-        for k in range(i, i + run):
-            tag = ("vocab:maiden-marker" if k == i
-                   else "vocab:maiden-marker-cont")
-            out[k] = dataclasses.replace(out[k], tags=out[k].tags | {tag})
+        tags[i] = "vocab:maiden-marker"
+        for k in range(i + 1, i + run):
+            tags[k] = "vocab:maiden-marker-cont"
         i += run
-    return tuple(out)
+    return tags
 
 
 def classify(state: ParseState) -> ParseState:
+    # One fold per token, shared by the marker pass and the vocabulary
+    # tags -- the shape suffix_as_written already asks for ("n is
+    # _normalize(text), passed in so callers normalize once").
+    folded = [_normalize(t.text) for t in state.tokens]
+    marker_tags = _tag_marker_runs(state, folded)
     tokens = tuple(
-        dataclasses.replace(t, tags=_tags_for(t, state))
-        for t in state.tokens)
-    tokens = _tag_marker_runs(tokens, state)
+        dataclasses.replace(
+            t, tags=_tags_for(t, folded[i], state, marker_tags.get(i)))
+        for i, t in enumerate(state.tokens))
     # Delimited content whose vocabulary cannot settle it: extract's
     # escape sends an UNambiguous suffix straight through ("(MBA)" ->
     # suffix) and keeps everything else as a nickname, so an AMBIGUOUS

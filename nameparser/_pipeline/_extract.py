@@ -82,6 +82,12 @@ def _maiden_marked(content: str, lexicon: Lexicon) -> bool:
     filter reachable. Sharing the PREDICATE does not merge the two
     questions -- each hands it a different sequence of words."""
     words = content.split()
+    # A one-word clause cannot satisfy the condition whatever the
+    # vocabulary says -- `run > 0 and 1 > run` is unsatisfiable -- so
+    # refuse it before any fold or lookup, as the pre-#434 words[0]
+    # test did for free.
+    if len(words) < 2:
+        return False
     run = maiden_marker_run(words, lexicon.maiden_markers)
     return run > 0 and len(words) > run
 

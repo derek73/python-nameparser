@@ -1,6 +1,8 @@
 import unicodedata
 
-from nameparser._lexicon import Lexicon
+import pytest
+
+from nameparser._lexicon import Lexicon, _normalize, _title_key
 from nameparser._pipeline._vocab import (
     effective_script, is_initial, is_initial_shaped, is_suffix_lenient,
     is_suffix_strict, is_wholly_suffix, maiden_marker_run,
@@ -273,6 +275,20 @@ def test_maiden_marker_run_folds_per_word() -> None:
     assert maiden_marker_run(["Z", "Domu", "Nowak"], _PHRASE) == 2
     assert maiden_marker_run(["z", "domu.", "Nowak"], _PHRASE) == 2
     assert maiden_marker_run(["z.", "domu", "Nowak"], _PHRASE) == 2
+
+
+@pytest.mark.parametrize("words", [
+    ("z", "domu"), ("Z.", "Domu"), ("née",), ("née", "."), (".", "z"),
+    ("z", "", "domu"), ("GEB", "VON"), (),
+])
+def test_the_marker_key_is_title_keys_own_fold(words: tuple[str, ...]) -> None:
+    """maiden_marker_run builds its lookup key inline so each word is
+    folded once rather than once per candidate length. That makes it a
+    COPY of a fold whose definition lives in _lexicon, and this is the
+    pin that keeps the copy honest: change _title_key and this fails
+    rather than the entry quietly ceasing to match."""
+    assert " ".join(filter(None, (_normalize(w) for w in words))) \
+        == _title_key(words)
 
 
 def test_maiden_marker_run_does_not_claim_a_word_that_folds_away() -> None:

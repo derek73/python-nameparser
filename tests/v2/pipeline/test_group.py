@@ -6,7 +6,7 @@ import pytest
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited, _maiden_marked
-from nameparser._pipeline._group import group
+from nameparser._pipeline._group import group, marker_run_length
 from nameparser._pipeline._script_segment import script_segment
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import ParseState
@@ -971,11 +971,8 @@ def _marker_sites(spelling: str) -> dict[str, int]:
     bare = staged(f"Jane Smith {spelling} Jones")
     head = next(i for i, t in enumerate(bare.tokens)
                 if "vocab:maiden-marker" in t.tags)
-    run = 1
-    while (head + run < len(bare.tokens)
-           and "vocab:maiden-marker-cont" in bare.tokens[head + run].tags):
-        run += 1
-    answers["classify"] = run
+    answers["classify"] = marker_run_length(
+        t.tags for t in bare.tokens[head + 1:])
     # group's piece test and the M2 take built on it: the pass drops
     # the marker and nothing else, so the count of dropped tokens is
     # where that walk decided the marker ends
@@ -1049,12 +1046,8 @@ def _tagged_runs(state: ParseState) -> list[list[int]]:
     for i, token in enumerate(state.tokens):
         if "vocab:maiden-marker" not in token.tags:
             continue
-        run = [i]
-        while (run[-1] + 1 < len(state.tokens)
-               and "vocab:maiden-marker-cont"
-               in state.tokens[run[-1] + 1].tags):
-            run.append(run[-1] + 1)
-        runs.append(run)
+        length = marker_run_length(t.tags for t in state.tokens[i + 1:])
+        runs.append(list(range(i, i + length)))
     return runs
 
 
