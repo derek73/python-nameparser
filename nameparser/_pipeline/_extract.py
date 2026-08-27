@@ -60,7 +60,7 @@ def _suffix_shaped(content: str, lexicon: Lexicon) -> bool:
 
 
 # rules.md#M3: "a bracketed clause whose content opens with a
-# recognized marker word and carries a word after it reads as the
+# recognized marker and carries a word after it reads as the
 # maiden name, whichever bucket the enclosing pair sits in"
 def _maiden_marked(content: str, lexicon: Lexicon) -> bool:
     """The clause says 'maiden' out loud, so the caller does not have to

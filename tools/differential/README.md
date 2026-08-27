@@ -412,21 +412,25 @@ The corpora run under the **default policy**, so any behavior gated
 behind a non-default `Policy` field is invisible here. Default
 *vocabulary* is a different matter: it is fully in EFFECT, never
 gated off the way a `Policy` field is, so a change to it can show up
-here. That is not the same as coverage -- only 4 of the 16 shipped
+here. That is not the same as coverage -- only 5 of the 17 shipped
 `maiden_markers` and 8 of the 15 `honorific_tails` appear anywhere in
 the corpora (re-measured 2026-08-26; the marker count was 3 until
-#414's rules corpus brought in a parenthesized `Nee`, and the
-denominator was 17 until `roz` left the vocabulary in 2.2 -- it
-appeared in no corpus name, so only the denominator moved), so an
-entry no corpus name exercises is as invisible as an opt-in policy.
+#414's rules corpus brought in a parenthesized `Nee`, the denominator
+was 17 until `roz` left the vocabulary in 2.2 -- it appeared in no
+corpus name, so only the denominator moved -- and #434's `z domu` then
+put both back up by one), so an entry no corpus name exercises is as
+invisible as an opt-in policy.
 
-Those two numbers count WHOLE TOKENS, delimiters stripped. The strip
-is what earns exactly one of the four: `nee`, which appears in the
-corpora only inside brackets -- `Jane Smith (Nee)` and
-`Jane Smith (Nee) (Jones)` -- where the token carries them until they
-come off. `née` needs no strip, appearing bare in many names, and `né`
-is not counted at all: it occurs only as a substring of `née`, never
-as a token. The convention matters because the neighbouring guard
+Those two numbers count WHOLE TOKENS, delimiters stripped, and
+consecutive RUNS of them: an entry may be a PHRASE (`z domu`), which no
+single token can equal. The run half earns exactly one of the five, and
+it is the reason the count is not simply per word -- `z` and `domu`
+each appear in corpus names that carry no marker at all. The strip
+earns another: `nee`, which appears in the corpora only inside brackets
+-- `Jane Smith (Nee)` and `Jane Smith (Nee) (Jones)` -- where the token
+carries them until they come off. `née` needs no strip, appearing bare
+in many names, and `né` is not counted at all: it occurs only as a
+substring of `née`, never as a token. The convention matters because the neighbouring guard
 `tests/v2/test_ledger_guards.py::_carries` deliberately asks a wider
 question -- it also matches a non-ASCII entry anywhere inside a name,
 since 旧姓 is written flush against the name it marks -- and under that
@@ -440,10 +444,14 @@ from nameparser import Parser
 from nameparser._lexicon import _normalize
 L = Parser().lexicon
 names = [json.loads(l) for f in glob.glob('tools/differential/corpus*.jsonl') for l in open(f, encoding='utf-8') if l.strip()]
-toks = {_normalize(t.strip('()\'"«»“”„「」『』（）')) for n in names for t in n.split()}
 for s in ('maiden_markers', 'honorific_tails'):
     v = getattr(L, s)
-    print(s, len(toks & v), 'of', len(v), sorted(toks & v))"
+    longest = max(e.count(' ') + 1 for e in v)
+    runs = set()
+    for n in names:
+        t = [_normalize(w.strip('()\'"«»“”„「」『』（）')) for w in n.split()]
+        runs |= {' '.join(t[i:i+k]) for k in range(1, longest+1) for i in range(len(t)-k+1)}
+    print(s, len(runs & v), 'of', len(v), sorted(runs & v))"
 ```
 
 

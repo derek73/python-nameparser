@@ -829,9 +829,10 @@ def group(state: ParseState) -> ParseState:
                         tokens[i], tags=tokens[i].tags | {"joined"})
         all_pieces.append(tuple(tuple(p) for p in pieces))
         all_ptags.append(tuple(frozenset(t) for t in ptags))
-    # rules.md#M1: "a leading recognized marker word inside a
-    # multi-word clause being dropped; a one-word clause keeps its
-    # word" — a marker inside EXTRACTED maiden content (#329).
+    # rules.md#M1: "a leading recognized marker being dropped where
+    # the clause holds a word past it; a clause of nothing but its
+    # marker keeps its words" — a marker inside EXTRACTED maiden
+    # content (#329).
     # classify tags
     # such a marker like any other token -- what the #274 rule above
     # lacks is not the TAG but the token: extract claims a delimited

@@ -1153,8 +1153,20 @@ print(sum(not {_normalize(t.strip(strip)) for t in n.split()} & V and sub(n) for
     """
     delimiters = "".join({ch for pair in DEFAULT_NICKNAME_DELIMITERS
                           for ch in pair})
-    tokens = {_normalize(token.strip(delimiters)) for token in name.split()}
-    return bool(tokens & vocabulary) or any(
+    tokens = [_normalize(token.strip(delimiters)) for token in name.split()]
+    # A vocabulary may hold PHRASE entries ('z domu'), which no set of
+    # single tokens can contain: 'Maria Kowalska z domu Nowak' carries
+    # a marker and not one of its words is one. So the membership test
+    # runs over every consecutive token RUN up to the longest entry --
+    # which is the single tokens themselves when no entry is a phrase,
+    # leaving every count above unchanged. Still textual and still
+    # wider than the parser (no longest-first, no fold-away rule):
+    # tools/differential/README.md says that is this helper's job.
+    longest = max((entry.count(" ") + 1 for entry in vocabulary), default=1)
+    runs = {" ".join(tokens[i:i + n])
+            for n in range(1, longest + 1)
+            for i in range(len(tokens) - n + 1)}
+    return bool(runs & vocabulary) or any(
         entry in name for entry in vocabulary if not entry.isascii())
 
 
@@ -1277,6 +1289,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
             _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
+        "fix(#434) a multi-word maiden marker takes the maiden name":
+            _Claim(1, ('family', 'maiden', 'middle'), "c428798fc6ef"),
+        "fix(#434) a multi-word marker leads a bracketed clause to the maiden name":
+            _Claim(1, ('maiden', 'nickname'), "0b3ef183f283"),
         "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
             _Claim(5, ('maiden', 'nickname'), "a419f74143e3"),
         "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
@@ -1316,7 +1332,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(279, ('family', 'given'), "28a62b622a48"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(1080, ('family', 'given', 'suffix'), "0cb2cda1ed6b"),
+            _Claim(1084, ('family', 'given', 'suffix'), "3bb0b59f9130"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1391,6 +1407,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_2.0.0.toml": {
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
             _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
+        "fix(#434) a multi-word maiden marker takes the maiden name":
+            _Claim(1, ('family', 'maiden', 'middle'), "c428798fc6ef"),
+        "fix(#434) a multi-word marker leads a bracketed clause to the maiden name":
+            _Claim(1, ('maiden', 'nickname'), "0b3ef183f283"),
         "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
             _Claim(5, ('maiden', 'nickname'), "a419f74143e3"),
         "fix(#335) a marker-led bracketed clause reads as the maiden name, compounding with the CJK order flip":
@@ -1501,6 +1521,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_2.1.0.toml": {
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
             _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
+        "fix(#434) a multi-word maiden marker takes the maiden name":
+            _Claim(1, ('family', 'maiden', 'middle'), "c428798fc6ef"),
+        "fix(#434) a multi-word marker leads a bracketed clause to the maiden name":
+            _Claim(1, ('maiden', 'nickname'), "0b3ef183f283"),
         "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
             _Claim(6, ('maiden', 'nickname'), "d0e857deddb2"),
         "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
@@ -1851,7 +1875,12 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
                   ("fix(comma-family)", "fix(comma-precomma-family)",
                    "fix(suffix-routing)")),
     '(^|[\\w.]\\s+)[("\'][^)"\']+[)"\'](\\s+\\w|\\s*$)':
-        _Excluded(51, "770738271273", ()),
+        # 51 -> 53 when rules.md gained the two bracketed Polish
+        # examples (#434): 'Maria Kowalska (z domu Nowak)' and 'Maria
+        # Kowalska (z domu)'. Growth in the corpus, not in the
+        # exclusion -- its regex is untouched -- and `absorbed_by`
+        # stayed empty, so no rule reaches the protected shape.
+        _Excluded(53, "2eef6100f37b", ()),
 }
 
 

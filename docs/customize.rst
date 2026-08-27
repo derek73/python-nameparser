@@ -50,11 +50,17 @@ them. Names outside that list, ``TITLES`` among them, are unchanged.
 Every 1.x name still imports, with a ``DeprecationWarning``, until 3.0
 — see :doc:`migrate` for the full mapping.
 
-Vocabulary entries are matched one word at a time (``given_name_titles``
-excepted), so a multi-word entry like ``titles={"grand moff"}`` can
+Vocabulary entries are matched one word at a time, with two
+exceptions, so a multi-word entry like ``titles={"grand moff"}`` can
 never match; the constructor warns when it sees one
 (``capitalization_exceptions`` keys included — they are looked up per
-word too).
+word too). The exceptions are ``given_name_titles``, looked up as the
+space-joined run of words already read as titles, and
+``maiden_markers``, matched by lookahead over the words as written:
+``maiden_markers={"z domu"}`` matches the pair and neither word alone,
+which is how the shipped Polish entry works. Where a phrase entry and a
+word entry starting with it are both configured, the phrase wins where
+it matches and the word matches everywhere else.
 
 Removing works the same way, and drops the word from recognition:
 
