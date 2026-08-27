@@ -1,3 +1,4 @@
+import bisect
 import dataclasses
 
 import pytest
@@ -1006,9 +1007,97 @@ def test_every_marker_site_ends_the_run_in_the_same_place(
     # the others about an input neither covers, which is exactly how
     # the title-run key's two builders could have gone wrong (#369) and
     # why P5 and H1 have a contract test of their own.
+    #
+    # This test varies the marker's SPELLING and holds its PLACEMENT
+    # fixed, so every run it builds is structurally contiguous by
+    # construction. That was a hole: the sites can also disagree
+    # because they walk different token populations, which no spelling
+    # reaches. test_a_tagged_marker_run_is_contiguous_and_drops_whole
+    # below is the placement axis, added after a real disagreement got
+    # through here.
     answers = _marker_sites(spelling)
     assert len(set(answers.values())) == 1, answers
     # never vacuous: the parametrization's own precondition is that
     # each spelling is WHOLLY a marker, so the agreed answer is its
     # word count -- an all-zero agreement would otherwise pass
     assert answers["predicate"] == len(spelling.split())
+
+
+# Placements, not spellings: the axis the test above does not vary. A
+# marker run is tagged over the whole span-sorted token stream and
+# consumed over one SEGMENT, and the two populations differ -- extract
+# gives a delimited clause's tokens a role and _segment.py:31 keeps
+# only role-None tokens, then buckets those by the commas before them.
+# So a run written across a clause edge or a structure comma is one the
+# piece walk cannot see whole. Every row here writes 'z domu' at a
+# different place relative to those boundaries.
+_MARKER_PLACEMENTS = [
+    "Jane Smith z domu Jones",          # contiguous, bare
+    "Jane Smith (z domu Jones)",        # contiguous, wholly inside a clause
+    'Jane Smith "z domu Jones"',        # the same, in the other default pair
+    "Jane z (domu) Jones",              # straddles a clause OPEN
+    "Jane Smith (z) domu Jones",        # straddles a clause CLOSE
+    "Jane z, domu Jones",               # straddles a structure comma
+    "Jane Smith née Jones",             # the one-word control
+    "Jane Smith (née Jones)",           # the one-word control, delimited
+]
+
+
+def _tagged_runs(state: ParseState) -> list[list[int]]:
+    """Every maiden marker run classify tagged, as token indices."""
+    runs = []
+    for i, token in enumerate(state.tokens):
+        if "vocab:maiden-marker" not in token.tags:
+            continue
+        run = [i]
+        while (run[-1] + 1 < len(state.tokens)
+               and "vocab:maiden-marker-cont"
+               in state.tokens[run[-1] + 1].tags):
+            run.append(run[-1] + 1)
+        runs.append(run)
+    return runs
+
+
+@pytest.mark.parametrize("text", _MARKER_PLACEMENTS)
+def test_a_tagged_marker_run_is_contiguous_and_drops_whole(text: str) -> None:
+    state = ParseState(original=text, lexicon=_MARKER_LEX, policy=Policy())
+    classified = classify(segment(tokenize(extract_delimited(state))))
+    runs = _tagged_runs(classified)
+    commas = classified.comma_offsets
+
+    def bucket(i: int) -> int:
+        return bisect.bisect_left(commas, classified.tokens[i].span.start)
+
+    # 1. What classify tags is what a segment can hold: one role and one
+    # comma bucket throughout. _group._marker_run_pieces asserts this in
+    # prose and depends on it in fact -- with a run allowed to straddle,
+    # its walk stops at the boundary and hands M2 a proper PREFIX of the
+    # phrase as if it were the whole marker, which is how
+    # 'Anna z (domu) Nowak' came to read family 'Anna', maiden 'Nowak'.
+    for run in runs:
+        roles = {classified.tokens[i].role for i in run}
+        assert len(roles) == 1, (text, run, roles)
+        assert len({bucket(i) for i in run}) == 1, (text, run)
+
+    # 2. And the consumer takes the whole run or declines it. A count
+    # that disagrees with the tagged length is the cross-site
+    # disagreement itself, whatever produced it.
+    dropped = set(group(classified).dropped)
+    for run in runs:
+        taken = dropped & set(run)
+        assert taken in (set(), set(run)), (text, run, sorted(taken))
+
+
+def test_the_marker_placements_reach_both_answers() -> None:
+    # Neither half of the pin above is vacuous: some placements must
+    # tag a run (or the contiguity assertion quantifies over nothing)
+    # and some must tag none (or the straddling rows have stopped
+    # straddling and the regression they pin is unwatched).
+    tagged = {}
+    for text in _MARKER_PLACEMENTS:
+        state = ParseState(original=text, lexicon=_MARKER_LEX, policy=Policy())
+        runs = _tagged_runs(classify(segment(tokenize(
+            extract_delimited(state)))))
+        tagged[text] = bool(runs)
+    assert sum(tagged.values()) >= 4
+    assert sum(not v for v in tagged.values()) >= 3

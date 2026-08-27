@@ -139,11 +139,23 @@ def _marker_run_pieces(seen: Sequence[int], pieces: Sequence[Sequence[int]],
     tokens -- "vocab:maiden-marker" on the head,
     "vocab:maiden-marker-cont" on the rest.
 
-    Each continuation is the NEXT piece and is always in `seen`: no join
-    has run yet, so a piece is one token, and the run's tokens are
-    adjacent by construction. `seen` skips only a tail segment's
-    delimiter cores, and a core between two marker words would be a
-    TOKEN between them -- classify would have found no run to tag.
+    Each continuation is the NEXT piece and is always in `seen`, and
+    that holds because classify REFUSES to tag a run whose tokens are
+    not structurally contiguous. It is not a property of this walk, and
+    the reasons `seen` can skip a token are wider than they look. No
+    join has run yet, so a piece is one token. `seen` itself skips a
+    tail segment's delimiter cores, and a core between two marker words
+    would be a token between them, which classify would not have tagged
+    as a run. But `pieces` comes from a SEGMENT, and _segment.py:31 is
+    `main = [i for i, t in enumerate(state.tokens) if t.role is None]`
+    -- every token extract already gave a role is absent from every
+    segment, and what is left is bucketed by the commas before it. So a
+    run half inside a bracketed clause, or split across a structure
+    comma, is one no segment holds whole; walking cont tags without
+    classify's refusal read a proper PREFIX of the phrase as the whole
+    marker, and 'Anna z (domu) Nowak' lost its given name to a bare
+    preposition. Any future stage that removes a token from a segment
+    owes this the same refusal.
     """
     run = 1
     while (m + run < len(seen)

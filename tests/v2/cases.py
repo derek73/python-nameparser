@@ -841,6 +841,42 @@ CASES: tuple[Case, ...] = (
                "ordinary word eats the family name, and a phrase entry "
                "is how that is avoided rather than accepted "
                "(decisions.md#vocabulary-collisions). Parity"),
+    Case("phrase_marker_split_by_a_clause_is_not_a_marker",
+         "Anna z (domu) Nowak",
+         {"given": "Anna", "middle": "z", "family": "Nowak",
+          "nickname": "domu"},
+         notes="the fork that is about WHERE a run stands rather than "
+               "how it is spelled: the phrase's two words with a "
+               "bracketed clause between them. A marker run is tagged "
+               "over the whole token stream and consumed over one "
+               "SEGMENT, and a segment holds neither -- extract gives "
+               "a clause's tokens a role and segment keeps only the "
+               "role-less ones -- so a run written across a clause "
+               "edge is one the consuming walk cannot see whole. "
+               "Tagged anyway, the walk read the first word as the "
+               "entire marker and this name came back family 'Anna', "
+               "maiden 'Nowak' (measured 2026-08-26): the bare "
+               "preposition eating the name, which is the exact damage "
+               "the phrase entry exists to prevent. classify refuses "
+               "to tag a run that crosses such a boundary, so the "
+               "clause is an ordinary nickname and nothing else moves. "
+               "Parity: 1.4.0 read first Anna / middle z / last Nowak "
+               "/ nickname domu (2026-08-26)"),
+    Case("phrase_marker_split_by_a_clause_keeps_the_family",
+         "Maria z (domu) Kowalska Nowak",
+         {"given": "Maria", "middle": "z Kowalska", "family": "Nowak",
+          "nickname": "domu"},
+         notes="the row above with a family name to lose, and it is "
+               "kept as its own row for the reason "
+               "preposition_alone_is_not_a_marker is: the two fail the "
+               "same mutation and record different damage from it. "
+               "Where that one shuffles fields, this one came back "
+               "family 'Maria', maiden 'Kowalska Nowak' -- the real "
+               "family name inside the maiden value and gone from its "
+               "own field (measured 2026-08-26). Losing a family name "
+               "is the consequence worth pinning, not the shuffle. "
+               "Parity: 1.4.0 read first Maria / middle 'z Kowalska' / "
+               "last Nowak / nickname domu (2026-08-26)"),
     Case("diminutive_that_was_a_marker_keeps_the_family",
          "Rosalind Roz Smith",
          {"given": "Rosalind", "middle": "Roz", "family": "Smith"},

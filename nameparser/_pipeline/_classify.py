@@ -27,6 +27,7 @@ The initial veto is assign's job, not classify's: 'V' carries both
 """
 from __future__ import annotations
 
+import bisect
 import dataclasses
 
 from nameparser._lexicon import _normalize
@@ -35,8 +36,8 @@ from nameparser._pipeline._state import (
 )
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
-    _longest_marker, is_initial, maiden_marker_run, period_joined_vocab,
-    suffix_as_written,
+    _longest_marker, is_initial, maiden_marker_head, maiden_marker_run,
+    period_joined_vocab, suffix_as_written,
 )
 
 
@@ -111,6 +112,20 @@ def _tag_marker_runs(tokens: tuple[WorkToken, ...],
     mechanisms.md#ONE-PREDICATE-PER-QUESTION); extract runs EARLIER,
     before tokens exist, so it calls the predicate itself over the
     clause's whitespace words.
+
+    A run never crosses a STRUCTURAL boundary, and that is a rule about
+    the tag rather than a guard on a consumer. This pass walks the whole
+    span-sorted stream, delimited-clause tokens included, where group
+    walks one segment -- and a segment is neither: _segment.py drops
+    every token extract already gave a role, and buckets what is left by
+    the commas before it. So a run half inside a bracketed clause is a
+    run no piece walk can see whole, and letting it be tagged made
+    'Anna z (domu) Nowak' read family 'Anna', maiden 'Nowak' -- the bare
+    preposition eating the name, which is the exact damage the phrase
+    entry exists to prevent. Refusing to tag it is what keeps
+    _group._marker_run_pieces' "the next piece, always in `seen`" true;
+    truncating the run instead would hand a proper PREFIX of the phrase
+    to M2 as a whole marker, which is the same bug one word shorter.
     """
     markers = state.lexicon.maiden_markers
     # the lookahead the vocabulary actually needs; 0 for an empty set,
@@ -120,12 +135,50 @@ def _tag_marker_runs(tokens: tuple[WorkToken, ...],
         return tokens
     texts = [t.text for t in tokens]
     out = list(tokens)
+    # What "structurally contiguous" is, per token, as two parallel
+    # lists so the walk below compares values rather than recomputing.
+    # Role: tokenize gives every extracted clause's tokens the clause's
+    # role and leaves the main stream None, so a role change IS a
+    # clause edge. Bucket: the count of commas before the token's
+    # start, which is exactly how _segment.py buckets a token into a
+    # segment -- so two tokens agree here iff segment would put them in
+    # one. `None` for the overwhelmingly common comma-free name, which
+    # skips the bisect sweep entirely.
+    commas = state.comma_offsets
+    buckets = ([bisect.bisect_left(commas, t.span.start) for t in out]
+               if commas else None)
+
+    n_tokens = len(out)
     i = 0
-    while i < len(out):
-        # bounded slice, not texts[i:]: a full-tail slice per token is
+    while i < n_tokens:
+        # Bounded slice, not texts[i:]: a full-tail slice per token is
         # quadratic in the token count, and the predicate would ignore
-        # everything past `cap` anyway
-        run = maiden_marker_run(texts[i:i + cap], markers)
+        # everything past `cap` anyway. Bounded again at the first
+        # structural boundary, so the predicate is asked over the words
+        # that could form one run and answers longest-first WITHIN them
+        # -- a two-word entry refused at a clause edge still leaves a
+        # one-word entry starting there free to match. The walk is
+        # skipped entirely for an all-single-word vocabulary, where cap
+        # is 1 and no lookahead happens at all.
+        # The predicate's own head test first: almost no token opens
+        # any entry, and for those there is nothing to assemble. This
+        # is the same function maiden_marker_run consults, so a token
+        # skipped here is one the predicate would have refused anyway.
+        if not maiden_marker_head(texts[i], markers):
+            i += 1
+            continue
+        limit = 1
+        if cap > 1:
+            # Walk forward while nothing structural divides the tokens.
+            # Compared against token i rather than pairwise, which is
+            # the same walk: it stops at the first mismatch either way.
+            role = out[i].role
+            bucket = buckets[i] if buckets is not None else 0
+            while (limit < cap and i + limit < n_tokens
+                   and out[i + limit].role is role
+                   and (buckets is None or buckets[i + limit] == bucket)):
+                limit += 1
+        run = maiden_marker_run(texts[i:i + limit], markers)
         if not run:
             i += 1
             continue

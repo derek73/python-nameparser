@@ -395,7 +395,9 @@ class Lexicon:
     #: field ("née", "geb.", "rozená", ...). An entry may be a PHRASE
     #: ("z domu"): entries are matched by lookahead, longest first, so
     #: a phrase wins where it matches and a word entry that starts one
-    #: still matches on its own everywhere else. Full default list:
+    #: still matches on its own everywhere else. A phrase matches only
+    #: where its words stand together -- a bracketed clause or a comma
+    #: between them ends the run. Full default list:
     #: :data:`~nameparser.config.maiden_markers.MAIDEN_MARKERS`.
     maiden_markers: frozenset[str] = frozenset()
     #: Family names for the unspaced-name segmentation stage (#271),

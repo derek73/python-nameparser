@@ -542,7 +542,7 @@ N3. Rationale: a person set down as a nickname plus one name word is
 
 ## Maiden names (M)
 
-Background: a maiden name is written beside the current name, set off by a marker word or by enclosure. Markers are attested across French née/né, German geb./geborene, Dutch geboren, Czech/Slovak rozená (the abbreviation roz. shipped through 2.1 and was removed in 2.2 -- it collides with the English diminutive Roz, and a caller who needs it adds it to their own Lexicon), Scandinavian født/fødd/född, Russian урожд. (both ё and е spellings), Japanese 旧姓, and Polish z domu — both grammatical genders where attested. A marker need not be one word. z domu is two, and a phrase marker is recognized only whole: neither of its words is a marker standing alone, which is what makes shipping it safe where shipping its words would not be — z is an ordinary Polish preposition, and a name that merely contains one keeps its family name. Japanese more often writes the marker with a fullwidth colon (旧姓：佐藤), which is no separator, so marker and name arrive as a single word. Which enclosures mean "maiden" rather than "nickname" is a caller convention, so the maiden reading of a delimiter pair is opt-in — except where the clause announces itself. A clause of two words or more led by a marker word has said which convention it means, and reads as the maiden name inside a nickname pair as well (M3) — unless its content is suffix-shaped, which S1 takes ahead of both. A lone marker word has said nothing, and neither has one the colon spelling above glues to the name.
+Background: a maiden name is written beside the current name, set off by a marker word or by enclosure. Markers are attested across French née/né, German geb./geborene, Dutch geboren, Czech/Slovak rozená (the abbreviation roz. shipped through 2.1 and was removed in 2.2 -- it collides with the English diminutive Roz, and a caller who needs it adds it to their own Lexicon), Scandinavian født/fødd/född, Russian урожд. (both ё and е spellings), Japanese 旧姓, and Polish z domu — both grammatical genders where attested. A marker need not be one word. z domu is two, and a phrase marker is recognized only whole and only where its words stand together: neither of its words is a marker standing alone, and neither is the pair once a bracketed clause or a comma divides them. That is what makes shipping it safe where shipping its words would not be — z is an ordinary Polish preposition, and a name that merely contains one keeps its family name. Japanese more often writes the marker with a fullwidth colon (旧姓：佐藤), which is no separator, so marker and name arrive as a single word. Which enclosures mean "maiden" rather than "nickname" is a caller convention, so the maiden reading of a delimiter pair is opt-in — except where the clause announces itself. A clause of two words or more led by a marker word has said which convention it means, and reads as the maiden name inside a nickname pair as well (M3) — unless its content is suffix-shaped, which S1 takes ahead of both. A lone marker word has said nothing, and neither has one the colon spelling above glues to the name.
 
 M1. Rationale: an enclosure the caller has declared to mean maiden
     holds the former family name; a recognized marker word inside it
@@ -579,8 +579,10 @@ M2. Rationale: a maiden marker announces that what follows it is the
     the marker itself is dropped. A marker
     with nothing after it, or nothing before it, is just a word.
     A marker may be more than one word, and is then recognized only
-    whole: its own first word standing without the rest is an
-    ordinary name word and takes nothing.
+    whole and only where its words stand together: its own first word
+    standing without the rest is an ordinary name word and takes
+    nothing, and so is one the writer divided from the rest by a
+    bracketed clause or by a comma.
     A marker taken this way also bounds a particle join arriving from
     its left (P2), so the family name's particles stop at the marker
     instead of absorbing it; a marker left as a word bounds nothing.
@@ -604,6 +606,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "van der Berg, abdul née Jones"  →  maiden="Jones"
       "Maria Kowalska z domu Nowak"     →  maiden="Nowak"
       "Anna z Nowak"                    →  family="Nowak"  · boundary
+      "Anna z (domu) Nowak"             →  family="Nowak"  · boundary
     Accepted: the fullwidth-colon spelling arrives as one word, so
     the marker inside it goes unrecognized; #317 tracks whether it
     should peel.

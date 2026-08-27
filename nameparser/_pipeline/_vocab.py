@@ -320,6 +320,22 @@ def _marker_heads(markers: frozenset[str]) -> frozenset[str]:
     return frozenset(entry.split(" ", 1)[0] for entry in markers)
 
 
+def maiden_marker_head(word: str, markers: frozenset[str]) -> bool:
+    """Could a maiden marker run START at `word`? A SUPERSET test: True
+    means only that some entry opens with this word, never that a run
+    matches -- maiden_marker_run is the answer.
+
+    This is that predicate's own first test, not a second one: the
+    predicate calls this function, so the two cannot drift. It is
+    exported because a caller scanning a whole token stream needs to
+    know whether assembling a candidate sequence is worth doing at all,
+    and for almost every token it is not -- _classify's pass would
+    otherwise walk structural boundaries once per token to build a
+    lookahead the predicate discards on this very test.
+    """
+    return _normalize(word) in _marker_heads(markers)
+
+
 def maiden_marker_run(words: Sequence[str], markers: frozenset[str]) -> int:
     """How many of `words` a maiden marker claims, longest first; 0 for
     none.
@@ -327,6 +343,12 @@ def maiden_marker_run(words: Sequence[str], markers: frozenset[str]) -> int:
     Phrases are stored space-joined and per-word normalized (_title_key's
     storage rule), so the key is rebuilt the same way here -- normalizing
     the joined phrase instead would leave interior periods.
+
+    `words` must be words that stand TOGETHER -- one clause's, or one
+    segment's. This answers only what the vocabulary says about the
+    sequence it is handed; whether a sequence is a sequence is the
+    caller's, and classify's contiguity rule is where that is decided
+    for the token stream.
 
     Longest first, so a caller configuring both 'geb' and 'geb von' gets
     the phrase where it matches and the bare word everywhere else. The
@@ -342,7 +364,16 @@ def maiden_marker_run(words: Sequence[str], markers: frozenset[str]) -> int:
     # _normalize(words[0]) unless that word folds away, and a folded-away
     # first word fails the n-word test below for every n > 1 and is not
     # a stored entry for n == 1.
-    if not words or _normalize(words[0]) not in _marker_heads(markers):
+    #
+    # The fold it does is the third on this token in a parse:
+    # _classify._tags_for computes _normalize(text) and discards it,
+    # and _classify's marker pass asks maiden_marker_head, which folds
+    # again before calling this. Threading a normalized text through
+    # would put an extra parameter on the one predicate every site
+    # shares, and the measurement says the whole marker mechanism costs
+    # about 1.6% of a parse with the folds as they are
+    # (decisions.md's #434 entry). Left alone deliberately.
+    if not words or not maiden_marker_head(words[0], markers):
         return 0
     for n in range(min(len(words), _longest_marker(markers)), 0, -1):
         key = _title_key(words[:n])

@@ -35,11 +35,12 @@ no periods.
 
 An entry may be a PHRASE, and "z domu" ("of the house") is the first
 one shipped. Phrases are stored space-joined and folded per word, and
-matched by lookahead, longest first, over a run of whole tokens. That
-mechanism is what makes this entry safe where its words are not: z is
-an ordinary Polish preposition and domu an ordinary noun, and the
-whole-phrase claim never fires on either alone — "Anna z Nowak" keeps
-its family name. Splitting a phrase into its words is what the library
+matched by lookahead, longest first, over a run of whole tokens that
+stand TOGETHER -- a phrase divided by a bracketed clause or a comma is
+not that phrase, so "Anna z (domu) Nowak" keeps its family name just as
+"Anna z Nowak" does. That mechanism is what makes this entry safe where
+its words are not: z is an ordinary Polish preposition and domu an
+ordinary noun, and the whole-phrase claim never fires on either alone. Splitting a phrase into its words is what the library
 used to advise (the dead-entry warning, which no longer fires for this
 field), and it produced exactly the misreadings the phrase avoids:
 maiden "domu Nowak" for "Maria Kowalska z domu Nowak", and no family

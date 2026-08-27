@@ -58,7 +58,9 @@ word too). The exceptions are ``given_name_titles``, looked up as the
 space-joined run of words already read as titles, and
 ``maiden_markers``, matched by lookahead over the words as written:
 ``maiden_markers={"z domu"}`` matches the pair and neither word alone,
-which is how the shipped Polish entry works. Where a phrase entry and a
+which is how the shipped Polish entry works. The words have to stand
+together — a bracketed clause or a comma between them ends the run, and
+the first word is then an ordinary name word. Where a phrase entry and a
 word entry starting with it are both configured, the phrase wins where
 it matches and the word matches everywhere else.
 
