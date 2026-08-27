@@ -67,15 +67,22 @@ issue = "fix(#274) maiden markers consumed"
 # tests/v2/test_ledger_guards.py: every alternative must match at least
 # one entry the config ships, and none may match ordinary name text.
 #
-# Its members reach 3 of the 16 entries -- geb, nee, née -- which is
-# not the same set as the markers the corpora contain (geb, nee, née
-# and 旧姓; the first three are covered here). Thirteen entries go
-# unreached, and the carve-out in that arithmetic is load-bearing:
-# 旧姓 is one of the thirteen and DOES appear as a corpus token, which
-# is why it has fix(cjk-maiden-marker) of its own below rather than an
-# alternative here. Growing this rule toward the other TWELVE buys
-# nothing: none of them appears as a token in any corpus, so there is
-# no diff for them to classify. The roz alternative was
+# Its members reach 3 of the 17 entries -- geb, nee, née -- which is
+# not the same set as the markers the corpora contain (geb, nee, née,
+# z domu and 旧姓; the first three are covered here). Fourteen entries
+# go unreached, and the carve-outs in that arithmetic are
+# load-bearing: TWO of the fourteen do appear in the corpora and each
+# is classified somewhere other than this alternation. 旧姓 is one,
+# and it has fix(cjk-maiden-marker) of its own below rather than an
+# alternative here. z domu is the other, and it cannot be an
+# alternative here at all: this is a per-WORD regex over a name, and
+# the words of a phrase entry are an ordinary Polish preposition and
+# an ordinary noun -- an alternative matching either would claim names
+# carrying no marker, which is the one thing the pin above forbids.
+# Its two names are classified by the fix(#434) rules, keyed on the
+# literal. Growing this rule toward the other TWELVE buys nothing:
+# none of them appears as a token in any corpus, so there is no diff
+# for them to classify. The roz alternative was
 # dropped in 2.2 with the vocabulary entry it copied (see
 # maiden_markers.py's Deliberately absent note): no corpus name
 # contains the string in any case or position, so it classified

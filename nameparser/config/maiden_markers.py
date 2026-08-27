@@ -40,9 +40,10 @@ stand TOGETHER -- a phrase divided by a bracketed clause or a comma is
 not that phrase, so "Anna z (domu) Nowak" keeps its family name just as
 "Anna z Nowak" does. That mechanism is what makes this entry safe where
 its words are not: z is an ordinary Polish preposition and domu an
-ordinary noun, and the whole-phrase claim never fires on either alone. Splitting a phrase into its words is what the library
-used to advise (the dead-entry warning, which no longer fires for this
-field), and it produced exactly the misreadings the phrase avoids:
+ordinary noun, and the whole-phrase claim never fires on either alone.
+Splitting a phrase into its words is what the library used to advise
+(the dead-entry warning, which no longer fires for this field), and it
+produced exactly the misreadings the phrase avoids:
 maiden "domu Nowak" for "Maria Kowalska z domu Nowak", and no family
 name at all for "Anna z Nowak". A caller who added z and domu
 separately should remove both and let the shipped entry work.
@@ -51,8 +52,9 @@ Japanese 旧姓 is here rather than in locales.JA, on the rule that
 admitted the Cyrillic entries: a native-script marker cannot collide
 with a Latin-script name, and matching is whole-token, so it is safe
 as a default. (Whole-token is still the rule for a phrase entry: it
-claims a run of whole tokens, one per word, and no part of one.) Neither character appears in any shipped surname, title,
-suffix, conjunction, particle or bound-given vocabulary. locales.JA
+claims a run of whole tokens, one per word, and no part of one.)
+Neither character appears in any shipped surname, title, suffix,
+conjunction, particle or bound-given vocabulary. locales.JA
 is for what needs the my-data-is-Japanese declaration -- segmentation,
 where a pure-Han string cannot say which language wrote it -- and this
 needs none, since it can only ever match Han text.

@@ -434,11 +434,16 @@ substring of `née`, never as a token. The convention matters because the neighb
 `tests/v2/test_ledger_guards.py::_carries` deliberately asks a wider
 question -- it also matches a non-ASCII entry anywhere inside a name,
 since 旧姓 is written flush against the name it marks -- and under that
-reading the marker count is 5, not 4. Both are right about different
-questions. Recompute:
+reading the marker count is 6, not 5: it adds `né`, which occurs only
+as a substring of `née` and never as a token of its own. Both are right
+about different questions. Recompute:
+
+A heredoc, not `python -c "..."`: the strip set contains a double
+quote, which closes the `-c` string and leaves the rest to the shell.
+Paste this as it stands.
 
 ```
-uv run python -c "
+uv run python - <<'PY'
 import glob, json
 from nameparser import Parser
 from nameparser._lexicon import _normalize
@@ -451,7 +456,10 @@ for s in ('maiden_markers', 'honorific_tails'):
     for n in names:
         t = [_normalize(w.strip('()\'"«»“”„「」『』（）')) for w in n.split()]
         runs |= {' '.join(t[i:i+k]) for k in range(1, longest+1) for i in range(len(t)-k+1)}
-    print(s, len(runs & v), 'of', len(v), sorted(runs & v))"
+    carries = set(runs & v) | {e for e in v if not e.isascii() and any(e in n for n in names)}
+    print(s, len(runs & v), 'of', len(v), sorted(runs & v),
+          '| _carries reading:', len(carries), sorted(carries))
+PY
 ```
 
 
@@ -467,15 +475,18 @@ is opt-in about them is narrower than it looks (rows measured
 Row 1 carries no marker word, so it isolates the delimiter: the
 brackets alone route their content to `maiden`, and only once the
 policy says they do. Row 2 carries no brackets, so it isolates the
-marker: `Lexicon.maiden_markers` ships 16 entries by default, `nee`
+marker: `Lexicon.maiden_markers` ships 17 entries by default, `nee`
 among them, and the bare form needs no configuration at all.
 
 So what is opt-in is neither the marker words nor the delimited path
 as a whole: it is the delimited path for content that does not
-announce itself. Since #335 a clause of two words or more led by a
-marker reads as the maiden name whichever bucket its pair sits in
+announce itself. Since #335 a clause holding a word past its marker
+reads as the maiden name whichever bucket its pair sits in
 (`rules.md#M3`), so `Jane Smith (née Jones)` needs no configuration
-either. Row 1 is exactly the shape that still does — a markerless
+either. A word past the MARKER, not a second word in the clause: since
+#434 a marker may be a phrase, and `Maria Kowalska (z domu)` is a
+two-word clause that stays a nickname because both its words are the
+marker. Row 1 is exactly the shape that still does — a markerless
 clause — along with a one-word clause like `Jane Smith (Nee)`, where
 nothing in the content says maiden and only a caller who knows the
 data can.

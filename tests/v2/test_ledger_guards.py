@@ -845,11 +845,14 @@ class _LatinCopy(NamedTuple):
 #: removal: drop an entry a member covers and the snapshot shrinks.
 #:
 #: Three nearby counts differ and are easy to conflate, all for
-#: fix(#274) specifically, and all four numbers moved in 2.2 -- recount
-#: rather than adjust them: MAIDEN_MARKERS ships 16 entries (roz left
-#: the vocabulary); that rule's members reach 3 of them; the corpora
-#: contain 4 markers in total (geb, nee, née, 旧姓 -- nee arrived with
-#: #414's rules corpus), 3 of which it covers.
+#: fix(#274) specifically, and every one of them moved in 2.2 -- twice,
+#: so recount rather than adjust them: MAIDEN_MARKERS ships 17 entries
+#: (roz left the vocabulary, z domu joined it); that rule's members
+#: reach 3 of them; the corpora contain 5 markers in total (geb, nee,
+#: née, z domu, 旧姓 -- nee arrived with #414's rules corpus and z domu
+#: with #434's examples), 3 of which it covers. Counting z domu at all
+#: needs the RUN reading _carries uses: it is two tokens, and a
+#: per-token count cannot see it.
 _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
     "fix(#274)": _LatinCopy(
         vocabulary=MAIDEN_MARKERS,

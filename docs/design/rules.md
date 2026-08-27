@@ -432,7 +432,7 @@ P6. Rationale: a particle ending the name has nothing to link
 
 ## Suffixes: generational & credentials (S)
 
-Background: what follows a name is one of two different things — generational suffixes (Jr., III), which attach to the name itself, and credentials (PhD, MD, MBA), which are earned attachments. The suffix sets match one written word at a time: a multi-word entry there can never match anything and is warned about at configuration (the eight that shipped dead for years are the Excluded story in decisions.md), and only two sets are exempt from that -- given_name_titles and, since #434, maiden_markers, neither of which is a suffix set. CLDR personNames keeps them as separate fields (`generation`, `credentials`) and formats them differently; this library currently reports both in one `suffix` field, a merge #326 examines. The vocabulary is largely split already: a generational word list and a credential acronym list, plus a short list of acronyms that are also ordinary names (MA, BA) and so are AMBIGUOUS as bare words.
+Background: what follows a name is one of two different things — generational suffixes (Jr., III), which attach to the name itself, and credentials (PhD, MD, MBA), which are earned attachments. The suffix sets match one written word at a time: a multi-word entry there can never match anything and is warned about at configuration. Only two sets are exempt from that rule -- given_name_titles and, since #434, maiden_markers -- and neither is a suffix set, so within the suffix vocabulary the one-word rule is absolute. The eight multi-word entries that shipped dead for years span the suffix sets and the titles alike and are the Excluded story in decisions.md. CLDR personNames keeps them as separate fields (`generation`, `credentials`) and formats them differently; this library currently reports both in one `suffix` field, a merge #326 examines. The vocabulary is largely split already: a generational word list and a credential acronym list, plus a short list of acronyms that are also ordinary names (MA, BA) and so are AMBIGUOUS as bare words.
 
 S1. Rationale: brackets set off more than nicknames — credentials
     are routinely written parenthesized after a name, and a
@@ -542,7 +542,7 @@ N3. Rationale: a person set down as a nickname plus one name word is
 
 ## Maiden names (M)
 
-Background: a maiden name is written beside the current name, set off by a marker word or by enclosure. Markers are attested across French née/né, German geb./geborene, Dutch geboren, Czech/Slovak rozená (the abbreviation roz. shipped through 2.1 and was removed in 2.2 -- it collides with the English diminutive Roz, and a caller who needs it adds it to their own Lexicon), Scandinavian født/fødd/född, Russian урожд. (both ё and е spellings), Japanese 旧姓, and Polish z domu — both grammatical genders where attested. A marker need not be one word. z domu is two, and a phrase marker is recognized only whole and only where its words stand together: neither of its words is a marker standing alone, and neither is the pair once a bracketed clause or a comma divides them. That is what makes shipping it safe where shipping its words would not be — z is an ordinary Polish preposition, and a name that merely contains one keeps its family name. Japanese more often writes the marker with a fullwidth colon (旧姓：佐藤), which is no separator, so marker and name arrive as a single word. Which enclosures mean "maiden" rather than "nickname" is a caller convention, so the maiden reading of a delimiter pair is opt-in — except where the clause announces itself. A clause of two words or more led by a marker word has said which convention it means, and reads as the maiden name inside a nickname pair as well (M3) — unless its content is suffix-shaped, which S1 takes ahead of both. A lone marker word has said nothing, and neither has one the colon spelling above glues to the name.
+Background: a maiden name is written beside the current name, set off by a marker or by enclosure. Markers are attested across French née/né and the unaccented nee English writing uses for both, German geb./geborene, Dutch geboren, Czech/Slovak rozená (the abbreviation roz. shipped through 2.1 and was removed in 2.2 -- it collides with the English diminutive Roz, and a caller who needs it adds it to their own Lexicon), Scandinavian født/fødd/född, Russian урожд. and its full participles урождённая/урождённый (the participles in both the ё and е spellings, which case normalization does not fold), Japanese 旧姓, and Polish z domu — both grammatical genders where attested. Every one of these is a marker wherever it stands, the unaccented nee included: an enclosure holding a word past it reads as the maiden name and the marker is dropped, so a configured pair reading "(Nee Jones)" gives maiden Jones and not Nee Jones. A marker need not be one word. z domu is two, and a phrase marker is recognized only whole and only where its words stand together: neither of its words is a marker standing alone, and neither is the pair once a bracketed clause or a comma divides them. That is what makes shipping it safe where shipping its words would not be — z is an ordinary Polish preposition, and a name that merely contains one keeps its family name. Japanese more often writes the marker with a fullwidth colon (旧姓：佐藤), which is no separator, so marker and name arrive as a single word. Which enclosures mean "maiden" rather than "nickname" is a caller convention, so the maiden reading of a delimiter pair is opt-in — except where the clause announces itself. A clause of two words or more led by a marker word has said which convention it means, and reads as the maiden name inside a nickname pair as well (M3) — unless its content is suffix-shaped, which S1 takes ahead of both. A lone marker has said nothing, and neither has one the colon spelling above glues to the name.
 
 M1. Rationale: an enclosure the caller has declared to mean maiden
     holds the former family name; a recognized marker word inside it
@@ -557,10 +557,11 @@ M1. Rationale: an enclosure the caller has declared to mean maiden
     each dropping or keeping its own marker. A pair configured for
     both maiden and nickname reads maiden. Configuring the pair is
     what this rule needs for a clause that does not announce itself
-    — markerless content, and a lone marker word alike; a clause of
-    two words or more led by a recognized marker reads as the maiden
-    name inside a nickname pair as well (M3), the suffix-shaped
-    content S1 takes excepted there as it is here.
+    — markerless content, and a lone marker alike, whether that
+    marker is one word or several; a clause holding a word past its
+    marker reads as the maiden name inside a nickname pair as well
+    (M3), the suffix-shaped content S1 takes excepted there as it is
+    here.
       "Jane Smith (née Jones)"  maiden-parens  →  maiden="Jones"
       "Jane Smith (Nee)"  maiden-parens        →  maiden="Nee"  · boundary
       "Jane Smith (Nee) (Jones)"  maiden-parens  →  maiden="Nee Jones"
@@ -580,9 +581,12 @@ M2. Rationale: a maiden marker announces that what follows it is the
     with nothing after it, or nothing before it, is just a word.
     A marker may be more than one word, and is then recognized only
     whole and only where its words stand together: its own first word
-    standing without the rest is an ordinary name word and takes
-    nothing, and so is one the writer divided from the rest by a
-    bracketed clause or by a comma.
+    standing without the rest is not that marker, and neither is one
+    the writer divided from the rest by a bracketed clause or by a
+    comma. Whether the first word takes anything on its own is a
+    separate question with a separate answer — it does exactly when it
+    is a recognized marker in its own right, and the longer entry wins
+    wherever both could match.
     A marker taken this way also bounds a particle join arriving from
     its left (P2), so the family name's particles stop at the marker
     instead of absorbing it; a marker left as a word bounds nothing.

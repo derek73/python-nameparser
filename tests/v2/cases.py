@@ -1409,9 +1409,42 @@ CASES: tuple[Case, ...] = (
                "maiden_marked_clause_one_word_stays_a_nickname holds "
                "the same boundary for a one-word marker, and cannot "
                "reach this one -- a condition written as 'more than "
-               "one word in the clause' satisfies that row and reads "
-               "this one maiden 'domu' (measured 2026-08-26). Parity: "
-               "1.4.0 read nickname 'z domu'"),
+               "one word in the clause' satisfies that row and turns "
+               "this clause into a maiden one. What it produces is "
+               "maiden 'z domu' (measured 2026-08-26): the same two "
+               "words, in the other field, which is the whole of what "
+               "M3 decides here. The VALUE does not move, because the "
+               "#329 drop is a separate site and declines for its own "
+               "reason -- there is no word past the run inside the "
+               "clause -- so this row catches the mutation on the "
+               "field alone. Parity: 1.4.0 read nickname 'z domu'"),
+    Case("phrase_marker_delimited_alone_keeps_its_words",
+         "Maria Kowalska (z domu)",
+         {"given": "Maria", "family": "Kowalska", "maiden": "z domu"},
+         policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
+         notes="the same string as "
+               "phrase_marker_delimited_alone_stays_a_nickname above, "
+               "under the pair M1 governs, and it reaches a branch "
+               "that row cannot: with the pair configured the clause "
+               "IS the maiden name, so the #329 drop runs and has to "
+               "decide whether a word stands past the marker. It does "
+               "not -- both words ARE the marker -- so M1's carve-out "
+               "keeps them, which is what the value shows. That "
+               "containment test spans the whole marker run, and "
+               "reading it one token in instead deletes this clause's "
+               "text: the marker is dropped and nothing is left. "
+               "Measured 2026-08-26, that mutation fails exactly one "
+               "test in the suite, M1's own doc example -- which is a "
+               "doc, edited by the commit that changes behavior, so "
+               "the pin belongs here too (the argument "
+               "build_rules_corpus.py makes for the rules corpus, one "
+               "layer down). Deleting the guard OUTRIGHT is caught by "
+               "the one-word rows instead -- "
+               "maiden_marker_delimited_two_clauses and M1's (Nee) "
+               "examples -- so this row is the phrase half of the "
+               "branch and not the branch. Parity: 1.4.0 under the "
+               "bucket-move idiom read first Maria / last Kowalska / "
+               "maiden 'z domu' (2026-08-26)"),
     Case("maiden_marked_clause_interior_keeps_the_family",
          "Jane (née Jones) Smith",
          {"given": "Jane", "family": "Smith", "maiden": "Jones"},

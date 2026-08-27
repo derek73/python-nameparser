@@ -62,7 +62,9 @@ which is how the shipped Polish entry works. The words have to stand
 together — a bracketed clause or a comma between them ends the run, and
 the first word is then an ordinary name word. Where a phrase entry and a
 word entry starting with it are both configured, the phrase wins where
-it matches and the word matches everywhere else.
+it matches and the word matches everywhere else. No warning is raised
+for a multi-word entry in either of these two fields, since there it is
+not a mistake.
 
 Removing works the same way, and drops the word from recognition:
 
