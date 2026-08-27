@@ -1405,3 +1405,22 @@ def test_a_maiden_clause_changes_nothing_else(name: str) -> None:
         assert getattr(with_clause, field) == getattr(base, field), (
             f"{name!r}: {field} reads {getattr(base, field)!r} alone and "
             f"{getattr(with_clause, field)!r} with a maiden clause")
+
+
+def test_a_phrase_marker_outranks_the_word_it_starts_with() -> None:
+    # Longest first, and the row cases.py cannot hold: a Case carries a
+    # Policy or a Locale, never a Lexicon, so the one marker fork that
+    # needs two entries at once lives here.
+    #
+    # 'geb' ships and 'geb von' is the caller's addition. The phrase
+    # must win where it matches -- maiden 'Braun', the particle being
+    # part of the marker -- and the bare word must still match
+    # everywhere else. Shortest-first would take 'geb' in both and read
+    # the first as maiden 'von Braun', which is also what the default
+    # vocabulary reads, so the control below is what makes the first
+    # assertion mean anything.
+    configured = Parser(lexicon=Lexicon.default().add(
+        maiden_markers=["geb von"]))
+    assert configured.parse("Jane Smith geb von Braun").maiden == "Braun"
+    assert configured.parse("Jane Smith geb Braun").maiden == "Braun"
+    assert parse("Jane Smith geb von Braun").maiden == "von Braun"

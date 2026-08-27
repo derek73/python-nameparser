@@ -795,6 +795,52 @@ CASES: tuple[Case, ...] = (
          {"given": "Jane", "family": "Smith", "maiden": "Jones"},
          classification="fix(#274)",
          notes="v1 mangles to middle='Smith née'"),
+    Case("phrase_marker_takes_the_maiden_name",
+         "Maria Kowalska z domu Nowak",
+         {"given": "Maria", "family": "Kowalska", "maiden": "Nowak"},
+         classification="fix(#434)",
+         notes="the fork a PHRASE entry opens: a marker matched over "
+               "more than one token. 'z domu' is the first multi-word "
+               "entry any shipped vocabulary set holds, so this is the "
+               "row where the multi-token branch of the lookahead is "
+               "taken at all -- and the row that pins how many tokens "
+               "the take drops. With the marker run forced back to one "
+               "piece this reads maiden 'domu Nowak' (measured "
+               "2026-08-26), which is also what the library's former "
+               "advice produced: the dead-entry warning used to say "
+               "'split it into separate entries', and z plus domu as "
+               "two entries gives exactly that. 1.4.0 read first Maria "
+               "/ middle 'Kowalska z domu' / last Nowak (2026-08-26) "
+               "-- the marker inside the name, its ordinary reading of "
+               "every marker. phrase_marker_partial_is_not_a_marker "
+               "and preposition_alone_is_not_a_marker below are the "
+               "boundaries"),
+    Case("phrase_marker_partial_is_not_a_marker",
+         "Maria Kowalska z Nowak",
+         {"given": "Maria", "middle": "Kowalska z", "family": "Nowak"},
+         notes="the boundary above it: the phrase's first word with "
+               "the second one missing. A lookahead that settled for a "
+               "PREFIX of an entry would find a marker here and read "
+               "family Kowalska, maiden Nowak (measured 2026-08-26 "
+               "with the match relaxed to entries starting with the "
+               "key). Nothing about z is marker-ish on its own -- it "
+               "is an ordinary Polish preposition -- which is the "
+               "whole reason the entry is a phrase. Parity"),
+    Case("preposition_alone_is_not_a_marker", "Anna z Nowak",
+         {"given": "Anna", "middle": "z", "family": "Nowak"},
+         notes="the same boundary with only one name word ahead of "
+               "the preposition, which is where the damage of getting "
+               "it wrong is worst: under the split-entry workaround "
+               "the library used to advise, a bare z IS a marker and "
+               "M2 hands it every word after it, so this name reads "
+               "maiden 'Nowak' with NO family name at all (measured "
+               "2026-08-26). This is the row that would have caught "
+               "that advice. It is also the shape "
+               "diminutive_that_was_a_marker_keeps_the_family pins for "
+               "the roz collision -- a marker entry that is also an "
+               "ordinary word eats the family name, and a phrase entry "
+               "is how that is avoided rather than accepted "
+               "(decisions.md#vocabulary-collisions). Parity"),
     Case("diminutive_that_was_a_marker_keeps_the_family",
          "Rosalind Roz Smith",
          {"given": "Rosalind", "middle": "Roz", "family": "Smith"},
@@ -1301,6 +1347,35 @@ CASES: tuple[Case, ...] = (
                "Policy(maiden_delimiters=...) and reads identically -- "
                "what M3 adds is the DEFAULT reading, where 1.4.0 and "
                "2.1 alike gave nickname 'née Jones'"),
+    Case("phrase_marker_delimited_clause",
+         "Maria Kowalska (z domu Nowak)",
+         {"given": "Maria", "family": "Kowalska", "maiden": "Nowak"},
+         classification="fix(#434)",
+         notes="the phrase fork at the OTHER drop site. M3 reads the "
+               "clause and #329's clause pass drops the marker from "
+               "inside it, and that pass counts tokens of its own -- "
+               "phrase_marker_takes_the_maiden_name above exercises "
+               "M2's pieces walk instead, so a count that stayed at "
+               "one token in either place is caught by exactly one of "
+               "the two rows (measured 2026-08-26: forcing the clause "
+               "pass back to a single token moves this row to maiden "
+               "'domu Nowak' and leaves the bare row alone, and "
+               "forcing the pieces walk back does the mirror). 1.4.0 "
+               "read first Maria / last Kowalska / nickname 'z domu "
+               "Nowak' (2026-08-26), the clause a nickname because "
+               "nothing looked inside it"),
+    Case("phrase_marker_delimited_alone_stays_a_nickname",
+         "Maria Kowalska (z domu)",
+         {"given": "Maria", "family": "Kowalska", "nickname": "z domu"},
+         notes="M3's word-after condition, asked of a PHRASE: the word "
+               "must come after the whole marker run, not after the "
+               "clause's first word. "
+               "maiden_marked_clause_one_word_stays_a_nickname holds "
+               "the same boundary for a one-word marker, and cannot "
+               "reach this one -- a condition written as 'more than "
+               "one word in the clause' satisfies that row and reads "
+               "this one maiden 'domu' (measured 2026-08-26). Parity: "
+               "1.4.0 read nickname 'z domu'"),
     Case("maiden_marked_clause_interior_keeps_the_family",
          "Jane (née Jones) Smith",
          {"given": "Jane", "family": "Smith", "maiden": "Jones"},
