@@ -15,15 +15,22 @@ extra_suffix_delimiters), and threading both past every caller costs
 more than the config parameter saves. Still no state: Policy is frozen
 config, not pipeline state.
 
+maiden_marker_run is run-level for the first of those reasons and not
+the second: a maiden marker may be a PHRASE ('z domu'), so how far one
+reaches is a question about a run of words that no per-word membership
+test can answer, and the vocabulary reaches it as a plain frozenset
+field like every other predicate here.
+
 Layering: imports _lexicon, _types, and _policy only.
 """
 from __future__ import annotations
 
+import functools
 import re
 import unicodedata
 from collections.abc import Callable, Iterable, Sequence
 
-from nameparser._lexicon import Lexicon, _normalize
+from nameparser._lexicon import Lexicon, _normalize, _title_key
 from nameparser._policy import (Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
                                 _SCRIPT_RANGES, _script_matcher)
 
@@ -286,6 +293,47 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
         else:
             k += 1
     return all(counts_as_suffix(t) for t in merged)
+
+
+@functools.lru_cache(maxsize=128)
+def _longest_marker(markers: frozenset[str]) -> int:
+    """How many words the longest entry of `markers` spans -- the
+    lookahead bound, computed from the vocabulary rather than fixed at a
+    literal so a caller's four-word entry works and an all-single-word
+    set leaves the common path at one lookup. Entries are stored
+    space-joined with single separators, so the space count IS the word
+    count. Cached on the (hashable) frozenset, like
+    _extract._delimiter_chars: every token of every parse asks, and the
+    answer changes only when the lexicon does.
+    """
+    return max((entry.count(" ") + 1 for entry in markers), default=0)
+
+
+def maiden_marker_run(words: Sequence[str], markers: frozenset[str]) -> int:
+    """How many of `words` a maiden marker claims, longest first; 0 for
+    none.
+
+    Phrases are stored space-joined and per-word normalized (_title_key's
+    storage rule), so the key is rebuilt the same way here -- normalizing
+    the joined phrase instead would leave interior periods.
+
+    Longest first, so a caller configuring both 'geb' and 'geb von' gets
+    the phrase where it matches and the bare word everywhere else. The
+    one answer to "does a marker start here, and where does it end": the
+    stages that can call it do (classify over token texts, extract over
+    a clause's whitespace words), and the stage that runs after classify
+    reads the tags classify recorded instead
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+    """
+    for n in range(min(len(words), _longest_marker(markers)), 0, -1):
+        key = _title_key(words[:n])
+        # _title_key DROPS a word that folds away, so 'née' followed by
+        # a lone '.' would key as 'née' and a one-word marker would
+        # claim the period as part of its run. n words in, n words out:
+        # anything else is not this key's n-word phrase.
+        if key.count(" ") == n - 1 and key in markers:
+            return n
+    return 0
 
 
 def _normalized_for_script(text: str) -> str | None:
