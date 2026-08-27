@@ -603,8 +603,12 @@ class ParsedName:
             if text:
                 lines.append(f"    {role.value}: {text!r}")
         if self.ambiguities:
-            kinds = [a.kind.value for a in self.ambiguities]
-            lines.append(f"    ambiguities: {kinds!r}")
+            items = [
+                f"{a.kind.value}: {'/'.join(t.text for t in a.tokens)}"
+                if a.tokens else a.kind.value
+                for a in self.ambiguities
+            ]
+            lines.append(f"    ambiguities: {items!r}")
         body = "\n".join(lines)
         return f"<ParsedName: [\n{body}\n]>" if lines else "<ParsedName: []>"
 
