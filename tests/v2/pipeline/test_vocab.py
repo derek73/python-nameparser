@@ -280,6 +280,11 @@ def test_maiden_marker_run_does_not_claim_a_word_that_folds_away() -> None:
     # '.'] keys as 'née' -- a one-word entry would match a two-word
     # run and the drop would take the period with it.
     assert maiden_marker_run(["née", "."], _WORD_ONLY) == 1
+    # and a word that folds away cannot OPEN a run either -- the
+    # question the head fast path has to answer the same way the loop
+    # would
+    assert maiden_marker_run([".", "née"], _WORD_ONLY) == 0
+    assert maiden_marker_run([".", "z", "domu"], _PHRASE) == 0
 
 
 def test_single_script_requires_every_char_in_one_script() -> None:

@@ -309,6 +309,17 @@ def _longest_marker(markers: frozenset[str]) -> int:
     return max((entry.count(" ") + 1 for entry in markers), default=0)
 
 
+@functools.lru_cache(maxsize=128)
+def _marker_heads(markers: frozenset[str]) -> frozenset[str]:
+    """The first word of every entry -- the set a run can possibly open
+    with. Derived from `markers` and used only inside the predicate
+    below, so it is a fast path rather than a second answer: entries are
+    already stored per-word folded, so an entry's first word is the same
+    fold the lookup builds. Cached like _longest_marker, and for the
+    same reason -- this is asked once per token of every parse."""
+    return frozenset(entry.split(" ", 1)[0] for entry in markers)
+
+
 def maiden_marker_run(words: Sequence[str], markers: frozenset[str]) -> int:
     """How many of `words` a maiden marker claims, longest first; 0 for
     none.
@@ -325,6 +336,14 @@ def maiden_marker_run(words: Sequence[str], markers: frozenset[str]) -> int:
     reads the tags classify recorded instead
     (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
     """
+    # Fast path, and the reason this stays affordable at one call per
+    # token: no entry opens with this word, so no length can match. It
+    # cannot hide a match -- every key the loop builds opens with
+    # _normalize(words[0]) unless that word folds away, and a folded-away
+    # first word fails the n-word test below for every n > 1 and is not
+    # a stored entry for n == 1.
+    if not words or _normalize(words[0]) not in _marker_heads(markers):
+        return 0
     for n in range(min(len(words), _longest_marker(markers)), 0, -1):
         key = _title_key(words[:n])
         # _title_key DROPS a word that folds away, so 'née' followed by
