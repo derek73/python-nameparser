@@ -272,9 +272,14 @@ issue = "fix(comma-family) a comma followed only by titles keeps the given/famil
 # 'John Smith, Mr.' and 'John Smith, Mr. Jr.': the rules.md#C1 examples
 # of the rule above (first 'John Smith' -> given 'John', family
 # 'Smith'; the title stays where it was; with the postnominal, v1's
-# first 'Jr.' is the suffix). Without this rule the second lands on
-# the fields-only fix(suffix-routing) catch-all below. Its own literal rather than
-# an alternation with 'Bob Jones', which would be no vocabulary.
+# first 'Jr.' is the suffix). Without this rule the second landed on
+# the fields-only fix(suffix-routing) catch-all, back when that
+# catch-all declared `given` as well; once #451 narrowed it to
+# {family, suffix} a {given, family, suffix} diff stopped being a
+# subset of it, and #451 has now deleted it outright. Measured both
+# before and after that deletion: with this rule removed the diff is
+# UNEXPLAINED. Its own literal rather than an alternation with 'Bob
+# Jones', which would be no vocabulary.
 name_regex = "(?i)^john\\s+smith,\\s*mr\\.?(\\s+jr\\.?)?$"
 fields = ["given", "family", "suffix"]
 
@@ -397,9 +402,9 @@ issue = "fix(comma-precomma-family) pre-comma run reads as family, not given"
 # exactly {given, family}.
 #
 # Its own rule because these have nothing to do with suffix routing:
-# they were falling to the fields-only fix(suffix-routing) below, on a
-# rule whose every other name moves a trailing token into `suffix`,
-# while these move no suffix at all (#372).
+# they were falling to the fields-only fix(suffix-routing) catch-all
+# (deleted in #451), on a rule whose every other name moves a trailing
+# token into `suffix`, while these move no suffix at all (#372).
 #
 # Distinct from fix(comma-family) above by fields, not by order: that
 # rule is the lone post-comma piece moving into suffix/title and its
@@ -604,10 +609,18 @@ issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
 # move a token out of it ('Berg, Jan vd' was suffix 'vd' at every
 # baseline and is now family 'vd Berg'). Adding `suffix` to claim it
 # costs three shapes this rule has no business explaining --
-# {family,suffix} taken from fix(suffix-routing), and {middle,suffix}
+# {family,suffix} taken from fix(#380) below, and {middle,suffix}
 # and {middle,family,suffix} taken from UNEXPLAINED, the last two
 # being diffs in which `family` does not move at all. A rule that
 # pre-claims shapes it has never seen is the #372 failure mode.
+# The first name read fix(suffix-routing) until #451 deleted that
+# catch-all, and it was already the wrong name by then: measured, a
+# {family, suffix} diff on 'Berg, Jan vd' goes to fix(#380), which
+# sits BELOW this rule, so claiming `suffix` here would take it from
+# there. On a name this regex reaches that fix(#380)'s does not --
+# 'Vega, Juan de la' -- the same diff went to the catch-all and
+# arrives UNEXPLAINED now. Either way the decision below stands; only
+# the rule the shape would be taken FROM has changed.
 #
 # 'Berg, Jan vd' entered corpus_issues.jsonl and corpus_rules.jsonl
 # after this was written, and it did NOT arrive unexplained -- the
@@ -620,9 +633,13 @@ issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
 # a leading .* this absorbed non-Latin comma names whose diff has
 # another cause -- a Cyrillic 'Smith, de la' moves {family} because the
 # particle's RENDERING ORDER inside the family changed, which no rule
-# in this ledger names, and it classified here. (It now falls to the
-# fields-only catch-all, so the absorption moved rather than vanished;
-# worth a narrower rule if such a name ever appears.) The class is the
+# in this ledger names, and it classified here. (No such name is in
+# any corpus, so this is what WOULD happen. It would now arrive
+# UNEXPLAINED and block the gate until someone read it, which is the
+# right outcome: this ledger has no fields-only rule to absorb it any
+# more. The claim that it "falls to the fields-only catch-all" was
+# true until #451 deleted that rule, and this file now says what its
+# 2.0.0 and 2.1.0 copies have said since 8237b54.) The class is the
 # neighbours' and compare.py's own: U+0000-U+024F, which stops at
 # Latin Extended-B, so a diacritic-bearing 'Nguyen, Van de la' in NFD
 # or Latin Extended Additional is outside it.
@@ -672,41 +689,6 @@ issue = "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not 
 # _MUST_NOT_MATCH probe for this rule: that roster tests the regex,
 # not classify().
 name_regex = "(?i)^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*\\svd\\s*$"
-fields = ["family", "suffix"]
-
-[[change]]
-issue = "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix"
-# 'Smith Jr.' / 'John V' / 'QC MP': v1 routed a lone trailing suffix
-# to family/first (no comma present); 2.0 keeps recognized suffixes in
-# `suffix`.
-#
-# STILL THE ONLY RULE IN ANY LEDGER WITH NO name_regex, and #451 is
-# retiring it. Read that issue before widening anything here. What is
-# left on it after the named rules #451 has added so far: names in
-# several behaviour families, all moving {family, suffix} and no more,
-# which is what this `fields` now says. It declared `given` as well
-# until #451 measured that no name it explains moves that role -- the
-# fix(#424) shape decisions.md#H1 records, a rule matching by superset
-# while the diff beneath it shrinks, with nothing able to see it.
-#
-# The same surgery has been done to it twice. It claimed 25 until
-# #372, on nothing but being the only fields-only rule in any ledger:
-# it sorts after every name_regex rule, so it takes whatever nothing
-# narrower named. #372 gave 21 of those their own rules --
-# fix(cjk-glued-honorific-peel) and the widened
-# fix(cjk-honorific-suffix) below for #312's honorifics,
-# fix(comma-precomma-family) above for the three names that move no
-# suffix at all -- and #451 is doing the rest. Those figures are
-# history and stay written; a count of what the rule explains NOW is
-# not, because nothing recomputes it. The last one read "Four corpus
-# names, and the prose fits all four" while the rule explained
-# fourteen. Run tools/differential/compare.py --baseline 1.4.0 for
-# the live number.
-#
-# Being last is the point of this rule and worth keeping until it is
-# gone. What is not worth keeping is it being the only explanation a
-# name ever gets: when it grows, the question is which narrower rule
-# is missing.
 fields = ["family", "suffix"]
 
 [[change]]
@@ -1011,8 +993,8 @@ issue = "fix(cjk-glued-honorific-peel) glued honorific peels into suffix"
 # '김민준씨' -> 김/민준/씨, '田中さん' -> 田中/さん, 'Andersonさん' ->
 # Anderson/さん: #312's peel, on a name with no space before the
 # honorific and no comma anywhere. 17 corpus names, which fell to the
-# fields-only fix(suffix-routing) above until #372 gave them a rule
-# that names them.
+# fields-only fix(suffix-routing) catch-all (deleted in #451) until
+# #372 gave them a rule that names them.
 #
 # The regex is this file's first hand copy of GLUED_HONORIFICS rather
 # than SUFFIX_WORDS, and that narrower vocabulary is the whole reason
@@ -1046,8 +1028,9 @@ issue = "fix(cjk-honorific-suffix) postnominal honorifics recognized, compoundin
 # honorifics as suffix vocabulary, so a trailing 先生/씨/様 moves to
 # `suffix` where 1.4 read it as a name part -- and the remaining
 # wholly-CJK name simultaneously takes the family-first flip, so a
-# three-token name moves `middle` too, past the fields-only
-# suffix-routing rule. Keyed on the honorific alternation itself
+# three-token name moves `middle` too, which is what carried it past
+# the fields-only suffix-routing rule while that rule existed (#451
+# deleted it). Keyed on the honorific alternation itself
 # (the maiden-marker rule's pattern): the trigger tokens are wholly
 # CJK characters, so the rule matches only a name whose TRAILING
 # token is a listed honorific -- a mostly-Latin name with one
@@ -1064,13 +1047,16 @@ issue = "fix(cjk-honorific-suffix) postnominal honorifics recognized, compoundin
 # GLUED diffs (田中さん, 김민준씨, and the 김씨 that segmentation
 # already reached) never match this rule -- the anchor is judged on
 # the name STRING, and a glued form has no space before its
-# honorific. They fall to the fields-only suffix-routing rule by
+# honorific. They fell to the fields-only suffix-routing rule by
 # their {first, last, suffix} shape (v1 held the whole token in
-# first, so last moves too), which is field-honest even though that
-# rule's prose describes the two-token Latin case. Verified by the
+# first, so last moves too) -- field-honest, even though that rule's
+# prose described the two-token Latin case. Verified by the
 # 2026-07-30 run, not assumed: #308's peel put a dozen glued names
 # in the corpus (Latin+glued like Andersonさん included) and every
-# one classified there -- none carried a middle-field diff.
+# one classified there -- none carried a middle-field diff. They have
+# fix(cjk-glued-honorific-peel) above since #372, and the catch-all
+# they were falling to is gone (#451), so the sentence is history:
+# nothing absorbs a glued diff this rule declines any more.
 name_regex = "(?:^| )(?:씨|박사|박사님|선생님|교수님|군|양|님|先生|女士|小姐|博士|教授|様|氏|殿|さん|さま|くん|ちゃん)\\.?$"
 fields = ["given", "middle", "family", "suffix"]
 
@@ -1179,8 +1165,10 @@ issue = "fix(#369) a given-name title licenses the bound given-name join with on
 # reads given 'Abu Bakar' again with every field byte-identical to
 # this baseline, so no rule names its fields: restored, not moved.
 #
-# Without this rule the name lands on the fields-only
-# fix(suffix-routing) catch-all below, which moves no suffix here.
+# Without this rule the name landed on the fields-only
+# fix(suffix-routing) catch-all, which moved no suffix here. #451
+# deleted that catch-all, so this ledger has no fields-only rule left
+# to absorb anything.
 name_regex = "(?i)^sheik\\s+abdul\\b"
 fields = ["given", "family"]
 
@@ -1197,10 +1185,13 @@ issue = "fix(#401) the bound-given reserve counts the trailing numeral assign re
 # [[never]] shape, and its v1 reading carries the same family loss
 # that entry would then refuse to explain.
 #
-# A rule with fewer fields than this diff silently hands the name to
-# the fields-only fix(suffix-routing) catch-all below, which is how
-# this fix was first recorded as "1.4.0 parity": the catch-all's
-# printout is capped, and EXPLAINED NOTHING is not byte-identical.
+# A rule with fewer fields than this diff silently handed the name to
+# the fields-only fix(suffix-routing) catch-all, which is how this fix
+# was first recorded as "1.4.0 parity": the catch-all's printout was
+# capped, and EXPLAINED NOTHING is not byte-identical. #451 deleted
+# that catch-all, so a narrowed rule here now costs the name its
+# explanation outright instead of hiding it -- louder, and the reason
+# the lesson is worth keeping written down.
 name_regex = "(?i)^abdul\\s+smith\\s+(jr\\s+)?v$"
 fields = ["given", "family", "suffix"]
 
@@ -1270,9 +1261,10 @@ issue = "fix(#424) accepted: the chain keeps an acronym assign will not peel beh
 # and the acronym the fork counted with three pieces meets assign
 # with two; the chain asks the peel again and takes it. first 'von
 # Berg', last 'MA' -> family 'von Berg MA' (master's reading since
-# 2.0). A rules.md example. Without this rule the name lands on the
-# fields-only fix(suffix-routing) catch-all below -- the count is the
-# tell.
+# 2.0). A rules.md example. Without this rule the name landed on the
+# fields-only fix(suffix-routing) catch-all -- the count was the tell.
+# #451 deleted that catch-all, so this ledger has no fields-only rule
+# left to absorb anything.
 name_regex = "(?i)^freiherr\\s+von\\s+berg\\s+ma$"
 fields = ["given", "family"]
 
@@ -1316,8 +1308,10 @@ issue = "fix(#424) the particle chain stops before the trailing numeral"
 # as 'John Smith V' reads. Shipped since 1.x: the chain's stop asked
 # with the suffix-piece test, whose initial veto does not see a bare
 # V. A rules.md example; no differential corpus name has the shape.
-# Without this rule the name lands on the fields-only
-# fix(suffix-routing) catch-all below -- the count is the tell.
+# Without this rule the name landed on the fields-only
+# fix(suffix-routing) catch-all -- the count was the tell. #451
+# deleted that catch-all, so this ledger has no fields-only rule left
+# to absorb anything.
 name_regex = "(?i)^john\\s+van\\s+der\\s+berg\\s+v$"
 fields = ["family", "suffix"]
 
@@ -1414,8 +1408,10 @@ issue = "fix(#424) an unlisted abbreviation is as transparent as a listed title 
 # H2's abbreviations; the scan asks assign's test now. Literal for the
 # reason the #367 rule gives: a regex cannot ask whether a word is a
 # title, and this one cannot ask whether it is unlisted.
-# Without this rule the name lands on the fields-only
-# fix(suffix-routing) catch-all below -- the count is the tell.
+# Without this rule the name landed on the fields-only
+# fix(suffix-routing) catch-all -- the count was the tell. #451
+# deleted that catch-all, so this ledger has no fields-only rule left
+# to absorb anything.
 name_regex = "(?i)^esq\\.\\s+van\\s+gogh$"
 fields = ["given", "family"]
 
@@ -1441,9 +1437,9 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # Three joined through #413's backtick harvest: 'Dr. Van Johnson',
 # 'Sir Van Johnson', 'Jr. Van Johnson'. Widened here as well as in the
 # 2.0 and 2.1 copies -- widening only those left these three landing on
-# the fields-only fix(suffix-routing) below, which is the very
-# absorption this comment describes two paragraphs up. None of them is
-# a two-token name and none moves a suffix.
+# the fields-only fix(suffix-routing) catch-all (deleted in #451),
+# which is the very absorption this comment describes two paragraphs
+# up. None of them is a two-token name and none moves a suffix.
 #
 # The title slot copies TITLES: all four spellings are in it. `jr` is
 # also suffix vocabulary and reads as a title here simply because it
@@ -1479,12 +1475,14 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # rather than be absorbed here.
 #
 # This rule has to exist even though the run already exited 0 without
-# it. The diff was being classified by fix(suffix-routing) below, a
-# fields-only rule whose ["given", "family", "suffix"] is a superset of
-# this diff's ["given", "family"] -- a rule about a trailing credential
-# absorbing a leading-particle change, which is the mis-classification
-# the README warns about. A name_regex rule outranks every fields-only
-# one, so this claims it back.
+# it. The diff was being classified by fix(suffix-routing), a
+# fields-only rule whose ["given", "family", "suffix"] was a superset
+# of this diff's ["given", "family"] -- a rule about a trailing
+# credential absorbing a leading-particle change, which is the
+# mis-classification the README warns about. A name_regex rule
+# outranks every fields-only one, so this claimed it back; #451 has
+# since deleted the catch-all, and no ledger has a fields-only rule
+# for anything to be claimed back from.
 name_regex = "(?i)^(mr|dr|sir)\\.?\\s+van\\b"
 fields = ["given", "middle", "family"]
 
@@ -1703,10 +1701,11 @@ issue = "fix(#410) a title and one name word name the family, whatever annotatio
 # every future given/family swap in this corpus.
 #
 # Its own rule because these have nothing to do with suffix routing:
-# they were falling to the fields-only fix(suffix-routing) below, on a
-# rule whose every other name moves a trailing token into `suffix`,
-# while these move no suffix at all. Same surgery #372 did on the same
-# catch-all, whose heading returned to 14 once this rule took them.
+# they were falling to the fields-only fix(suffix-routing) catch-all
+# (deleted in #451), on a rule whose every other name moves a trailing
+# token into `suffix`, while these move no suffix at all. Same surgery
+# #372 did on the same catch-all, whose heading returned to 14 once
+# this rule took them.
 #
 # THREE names here, where the 2.0.0 and 2.1.0 ledgers classify four:
 # at this baseline 'Dr. Smith née Jones' also moves `middle` and
@@ -1838,14 +1837,16 @@ issue = "fix(#335) a marker-led clause leaves the one name word its bare reading
 # the one shape in #445's class the gates do NOT report, which is
 # why nothing but reading the ledger could catch it.
 #
-# What the narrowing buys differs by ledger, so do not read more into
-# it here than it gives: at 2.0.0 and 2.1.0 a {given, family} diff on
-# this name is now UNEXPLAINED, while at THIS baseline the fields-only
-# fix(suffix-routing) rule below still matches every name with
-# {given, family, suffix} and would take it. That catch-all is
-# long-standing and out of #445's scope; the narrowing removes this
-# rule from the path regardless, which is the part that was in
-# scope.
+# What the narrowing buys was said here to differ by ledger, and it
+# did not. The sentence claimed the fields-only fix(suffix-routing)
+# rule that then stood below "still matches every name with {given,
+# family, suffix} and would take it"; that stopped being true when the
+# same #451 bundle narrowed the catch-all to {family, suffix}, since a
+# {given, family} diff is not a subset of those two. Measured against the
+# ledger as it stood then, this name's {given, family} diff was
+# already UNEXPLAINED at THIS baseline, exactly as at 2.0.0 and
+# 2.1.0. #451 has since deleted the catch-all outright, and the
+# measurement is unchanged.
 name_regex = "(?i)^Smith \\(n[ée]e Jones\\)$"
 fields = ["nickname", "maiden"]
 
@@ -1894,13 +1895,12 @@ issue = "fix(N3) a nickname-led name with a trailing suffix keeps the suffix in 
 # '', suffix 'Jr.'. decisions.md#N3.
 #
 # Its own rule because it is three tokens -- a quoted nickname, one
-# bare name word, one suffix word -- and #451 is retiring the
-# fields-only fix(suffix-routing) catch-all above by giving its names
-# narrower rules; this name was one of that catch-all's nine at the
-# start of this task. No two-token suffix rule exists in this ledger
-# yet to hold it either way: #451 is landing those in a later task,
-# and this shape -- three tokens, a leading nickname -- would not fit
-# one regardless.
+# bare name word, one suffix word -- and #451 retired the fields-only
+# fix(suffix-routing) catch-all by giving its names narrower
+# rules; this name was one of that catch-all's nine when that work
+# started. The two-token suffix rules #451 owed are now the four
+# below, and this shape -- three tokens, a leading nickname -- fits
+# none of them, which is why it kept a rule of its own.
 #
 # Note what is NOT settled here: decisions.md#H1 records that N3 and
 # H1 count a trailing suffix in opposite directions -- H1's
@@ -1911,4 +1911,192 @@ issue = "fix(N3) a nickname-led name with a trailing suffix keeps the suffix in 
 # decided here". This rule classifies only the 1.4-to-2.x movement
 # measured above; it does not endorse either reading.
 name_regex = "(?i)^['\"‘“][^'\"’”]+['\"’”]\\s+\\S+\\s+(jr|sr|ii|iii|iv|v)\\.?$"
+fields = ["family", "suffix"]
+
+# The four rules below are what is left of the fields-only
+# fix(suffix-routing) catch-all, which stood between fix(#380) and
+# fix(#342) above until #451 deleted it. It was the only rule in any
+# ledger with no name_regex, so it sorted after every other rule and
+# took whatever nothing narrower named -- 25 names when #372 first cut
+# it back, six by the time this task began. Those six are the six the
+# four rules below explain, one behaviour family each. The numeral and
+# jr rules reach more corpus names than they explain -- the surplus is
+# claimed by rules above, or does not diff at all, and each of those
+# two comments names its own. _CORPUS_CLAIMS holds the reaches; do not
+# restate them here, because nothing recomputes a number in a comment.
+#
+# They sit at the END of the file on purpose. The catch-all sorted last
+# because it had no name_regex; with regexes these join the regex tier,
+# where _sorted_rules is STABLE and FILE ORDER decides ties. Placing
+# them last reproduces the catch-all's position exactly: every rule
+# above keeps every contest it already won. The numeral rule's regex
+# reaches 'Carod i' and '田中さん II', and _CROSS_RULE_WINNERS pins
+# both -- but only the first is a real contest: measured by moving the
+# numeral rule to the front of the file, 'Carod i' changes hands and
+# '田中さん II' does not, because its diff moves {given, suffix} and
+# these four declare {family, suffix}. File order decides one, the
+# subset test the other, and the roster does not care which.
+
+[[change]]
+issue = "fix(suffix-routing) a two-token name ending in a roman numeral keeps it in `suffix`"
+# 'John V' and 'Mohamad X': v1 routed a lone trailing suffix to
+# family/first (no comma is present in either), and 2.x reads the
+# trailing numeral as the suffix. Whether 1.4 itself read that token as
+# `family` is outside what this ledger's worker can check directly
+# (tools/differential/README.md's warning against reading a v1 release
+# from a cached environment); the diff this rule explains at this
+# baseline moves exactly {family, suffix}, which is consistent with
+# that reading and is what the fields below claim.
+#
+# The numeral does not reach `suffix` through a wordlist. It reaches it
+# through _vocab.is_trailing_numeral_suffix -- "assign's roman-numeral
+# fork, shared with group's bound-given reserve (#401): a FINAL
+# single-token piece that is a roman numeral reads as the suffix when
+# the piece before it does not look like part of an initial run". That
+# is a PATTERN test plus a layout test, and no vocabulary lookup at
+# all: 'x' is in none of SUFFIX_WORDS, SUFFIX_ACRONYMS or their
+# ambiguous subsets, and 'Mohamad X' moves anyway. Which is why this
+# alternation is declared in _NOT_A_VOCABULARY_COPY rather than in
+# _LATIN_ALTERNATION_SOURCES -- there is no vocabulary here to drift
+# from.
+#
+# The alternation is _ROMAN's own body, r"^(X|IX|IV|V?I{0,3})$" in
+# nameparser/_pipeline/_vocab.py, with the EMPTY alternative removed:
+# I{0,3} becomes I{1,3}, and the bare V that change would lose is
+# spelled out beside it. Measured over every string of length 1 to 4
+# drawn from IVXivx, the two patterns accept exactly the same strings
+# with one exception, the empty one, which _ROMAN accepts and this does
+# not. Dropping it is deliberate: behind "^\S+\s+" and before "$" an
+# empty alternative would match a name ending in whitespace. No corpus
+# name does, so this is a latent widening removed rather than a bug
+# fixed -- and it is the reason the two patterns are NOT byte-identical
+# copies of one another, which a reader comparing them should know
+# before "fixing" the difference.
+#
+# 'v' is in SUFFIX_WORDS as well, and the jr rule below deliberately
+# does not spell it: the numeral fork is what actually moves it, and
+# two rules claiming one token would leave file order to decide which
+# explains it.
+#
+# The regex also reaches two corpus names this rule does not explain.
+# 'Carod i' is fix(#397)'s NOT-WANTED rule above -- a real contest,
+# same fields and both regexes matching, decided by nothing but file
+# order -- and '田中さん II' is fix(cjk-glued-honorific-peel)'s, where
+# the diff moves {given, suffix} and this rule's `fields` cannot admit
+# it whatever the order. _CROSS_RULE_WINNERS pins both. That reach is
+# real, so neither is a _MUST_NOT_MATCH probe here: that roster tests
+# the regex, not classify().
+name_regex = "(?i)^\\S+\\s+(X|IX|IV|V?I{1,3}|V)$"
+fields = ["family", "suffix"]
+
+[[change]]
+issue = "fix(suffix-routing) a two-token name ending in the suffix word jr keeps it in `suffix`"
+# 'Smith Jr.': v1 routed a lone trailing suffix to family/first (no
+# comma present) and 2.x keeps a recognized suffix WORD in `suffix`.
+# Whether 1.4 itself read that token as `family` is outside what this
+# ledger's worker can check directly (tools/differential/README.md's
+# warning against reading a v1 release from a cached environment); the
+# diff this rule explains at this baseline moves exactly {family,
+# suffix}, which is consistent with that reading and is what the fields
+# below claim.
+#
+# 'jr' is an entry in SUFFIX_WORDS (nameparser/config/suffixes.py), so
+# unlike the numeral above this one really is a vocabulary claim. It is
+# written as a single LITERAL rather than as a one-member alternation,
+# which is what keeps it off _LATIN_ALTERNATION_SOURCES: that roster is
+# discovered from alternation syntax, and a rule with no alternation
+# owes it nothing. A second suffix word needing this shape should
+# become an alternation and be enrolled against SUFFIX_WORDS then, not
+# be smuggled in as another literal.
+#
+# The regex also reaches four corpus names this rule does not explain.
+# 'Kim, Jr.' and 'Smith, Jr.' are fix(#296)'s lone post-comma
+# credential and '김민준씨 Jr.' is fix(cjk-glued-honorific-peel)'s; all
+# three rules sit above this one and win on file order, which is the
+# whole reason these four rules were appended at the end. The fourth,
+# 'Doe,, Jr.', does not diff against this baseline at all, so it has no
+# winner to lose. That reach is real either way, so none of the four is
+# a _MUST_NOT_MATCH probe here: that roster tests the regex, not
+# classify().
+name_regex = "(?i)^\\S+\\s+jr\\.?$"
+fields = ["family", "suffix"]
+
+[[change]]
+issue = "fix(suffix-routing) a two-token name ending in a credential acronym keeps it in `suffix`"
+# 'Donald mc' and 'QC MP': v1 read the trailing token as a name part
+# and 2.x reads it as the postnominal it is -- 'QC MP' is two
+# credentials and no name at all. Whether 1.4 itself read that token as
+# `family` is outside what this ledger's worker can check directly
+# (tools/differential/README.md's warning against reading a v1 release
+# from a cached environment); the diff this rule explains at this
+# baseline moves exactly {family, suffix}, which is consistent with
+# that reading and is what the fields below claim.
+#
+# Both members are entries in SUFFIX_ACRONYMS, which is a DIFFERENT
+# vocabulary from the jr rule's SUFFIX_WORDS above, and that is why
+# these are two rules rather than one. _LatinCopy carries exactly one
+# `vocabulary`, and
+# test_latin_alternations_mean_something_the_vocabulary_ships asserts
+# exactly one roster key per alternation, so an alternation spanning
+# both sources could not be pinned against either. The split is forced
+# by the guard, not chosen for taste.
+#
+# 'mc' deserves its own paragraph, because it is in SUFFIX_ACRONYMS and
+# in PARTICLES both -- the collision decisions.md#vocabulary-collisions
+# C-ii settled for 'vd' ("the Dutch van der reading, as the more
+# common"), and which its own C-ii note records that 'do' and 'mc'
+# inherit "without being weighed". That decision reaches a written name
+# only through rules.md#P6's attachment, and P6 is scoped: "the COMMA
+# form only, deliberately. [...] Without the comma the written shape is
+# not settled [...] Those keep their positional reading and are not
+# tracked as deviations." 'Donald mc' has no comma, so it is outside
+# P6, and S2's credential reading is what stands -- which is what this
+# rule classifies, and it is the positional reading P6's scope note
+# leaves in place rather than a decision this rule makes.
+#
+# The two neighbouring shapes both already have rules above, and the
+# contrast is the point: 'Mc Donald' has the particle LEADING and folds
+# into the family (fix(#360), #360), and 'Berg, Jan vd' has it trailing
+# WITH a comma, so P6 attaches it to the family (fix(#380), #380).
+# Trailing and comma-less is the third corner, and it is this one.
+name_regex = "(?i)^\\S+\\s+(mc|mp)$"
+fields = ["family", "suffix"]
+
+[[change]]
+issue = "fix(suffix-routing) the dotted M.A. spelling reads as a credential (ma-do)"
+# 'Jack M.A.': v1 read the trailing token as a name part and 2.x reads
+# it as a credential. Whether 1.4 itself read that token as `family` is
+# outside what this ledger's worker can check directly
+# (tools/differential/README.md's warning against reading a v1 release
+# from a cached environment); the diff this rule explains at this
+# baseline moves exactly {family, suffix}, which is consistent with
+# that reading and is what the fields below claim.
+#
+# This is a DECIDED reading, unlike the fix(#342) and fix(#397) rules
+# above, which classify a diff because its cause is known and not
+# because the reading is wanted. decisions.md#ma-do decides it: "ma and
+# do joined the ambiguous acronym set because both are common surnames;
+# the two-word 'Jack Ma' is kept intact by S2's words-to-spare guard,
+# while the periods gate governs the dotted spellings ('M.A.' counts
+# unambiguously)". The bare and dotted spellings of one name therefore
+# read differently ON PURPOSE, which is why both spellings of the bare
+# one are _MUST_NOT_MATCH probes here.
+#
+# Literal-anchored, and it could not be anything else. Measured: the
+# member `m\.?a\.?` matches the fragment 'M.A.' in the corpus, and
+# _normalize leaves that as 'm.a', which is not a SUFFIX_ACRONYMS entry
+# -- so test_latin_alternations_mean_something_the_vocabulary_ships
+# rejects it as an alternation member ("a fragment a member matches has
+# to BE a vocabulary entry"). The ambiguous-surname-acronym rule above
+# records the same finding and answers it the same way: keep the
+# periods out of the members. There is no alternation here at all, so
+# nothing is owed to _LATIN_ALTERNATION_SOURCES.
+#
+# Anchored on 'jack' as well as on the spelling: 'John Smith M.A.' is
+# also a corpus name (it arrived with corpus_rules.jsonl, #414), it is
+# three tokens rather than two, and it does not diff against this
+# baseline at all -- so a rule keyed on the dotted spelling alone would
+# stand ready to explain a future regression on it. It is a
+# _MUST_NOT_MATCH probe for that reason.
+name_regex = "(?i)^jack\\s+m\\.a\\.$"
 fields = ["family", "suffix"]

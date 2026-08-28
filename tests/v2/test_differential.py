@@ -862,10 +862,12 @@ def test_validate_exclusions_accepts_the_shipped_entries() -> None:
 
 def test_classify_refuses_an_excluded_shape() -> None:
     """The whole point: an excluded name reports UNEXPLAINED however
-    many rules would otherwise claim it. Two do, for the shape this
+    many rules would otherwise claim it. Two did, for the shape this
     was built for -- fix(comma-family) on file order, and the
-    fields-only fix(suffix-routing) which has no name_regex at all and
-    so reaches every name."""
+    fields-only fix(suffix-routing) which had no name_regex at all and
+    so reached every name. #451 deleted that second one, and no ledger
+    has a fields-only rule now; the fixture below keeps one because
+    the behaviour it pins is compare.classify's, not any ledger's."""
     rules = [{"issue": "broad", "name_regex": ","},
              {"issue": "broader", "fields": ["given", "suffix"]}]
     never = [{"why": "parity", "name_regex": r"(?i)\bph\.\s*d\.\s*$",
