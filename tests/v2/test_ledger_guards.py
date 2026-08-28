@@ -940,6 +940,31 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # begins, and the alternation is over ANCHORS, not over words --
     # there is no vocabulary here to drift from.
     frozenset({"^", ",\\s*"}),
+    # fix(#445)'s movers, one corpus name per alternative -- a list of
+    # names, not a copy of any wordlist, so there is no vocabulary for
+    # it to drift from. Two sets because the ledgers group the nine
+    # movers differently. At 1.4.0 seven of them move the same four
+    # fields and share the first set; the eighth ('John née Jones
+    # Smith Ma') moves those plus `suffix`, and the ninth ('Smith
+    # (née Jones)') keeps the rule it already had. At 2.0.0/2.1.0 the
+    # second set holds six that move two fields: five of the 1.4
+    # seven, plus that acronym name, whose acronym is no part of the
+    # diff at those baselines. The two the second set drops are the
+    # compounds with #412 and #424, each with a rule of its own.
+    #
+    # Spelled out rather than written as the shape -- one word, then a
+    # marker -- because that shape also matches rules.md#M4's two
+    # carve-outs, 'abd née Jones' and 'J. née Jones Smith V'. A rule
+    # covering those two while declaring `given` would stand ready to
+    # explain the very given -> family move they exist to prevent,
+    # which is the absorption these rosters exist to catch.
+    frozenset({"Janey n[ée]e Jones", "Jane n[ée]e Jones J\\. V",
+               "Jane n[ée]e Jones Smith", "Jane n[ée]e and Jones Smith",
+               "John n[ée]e Jones Smith V", "Smith n[ée]e Jones",
+               "Smith n[ée]e Jones PhD"}),
+    frozenset({"Janey n[ée]e Jones", "Jane n[ée]e Jones J\\. V",
+               "Jane n[ée]e Jones Smith", "John n[ée]e Jones Smith Ma",
+               "Smith n[ée]e Jones", "Smith n[ée]e Jones PhD"}),
 })
 
 def _unjustified_reach(name_regex: str, members: set[str]) -> list[str]:
@@ -1320,7 +1345,7 @@ def _claim(rule: dict) -> _Claim:
 _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
-            _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
+            _Claim(1, ('maiden', 'nickname'), "c09cc7dba88b"),
         "fix(#434) a multi-word maiden marker takes the maiden name":
             _Claim(1, ('family', 'maiden', 'middle'), "c428798fc6ef"),
         "fix(#434) a multi-word marker leads a bracketed clause to the maiden name":
@@ -1336,7 +1361,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
             _Claim(108, ('family', 'given', 'middle'), "9a814f70c2dc"),
         "fix(#274) maiden markers consumed":
-            _Claim(29, ('family', 'maiden', 'middle'), "c0981c1c6557"),
+            _Claim(31, ('family', 'maiden', 'middle'), "67e2280be79d"),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
             _Claim(5, ('family', 'given', 'maiden', 'middle'), "bc0e10dd7ec8"),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
@@ -1364,7 +1389,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(279, ('family', 'given'), "28a62b622a48"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(1085, ('family', 'given', 'suffix'), "0df8e4a51a54"),
+            _Claim(1090, ('family', 'given', 'suffix'), "89e0b6d7f4c8"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1421,8 +1446,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('given', 'middle'), "2010cc79a34d"),
         "fix(#424) the particle chain stops before the trailing numeral":
             _Claim(1, ('family', 'suffix'), "2c99162bc9cf"),
-        "fix(#424) accepted: the maiden walk keeps a bare acronym":
-            _Claim(1, ('family', 'maiden', 'middle', 'suffix'), "f2c6cd2e3001"),
+        "fix(#424/#445) accepted: the maiden walk keeps a bare acronym, and the lone name word is the family":
+            _Claim(1, ('family', 'given', 'maiden', 'middle', 'suffix'), "f2c6cd2e3001"),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example":
             _Claim(1, ('family', 'given'), "42b69cf1b320"),
         "fix(#424) accepted: the maiden walk keeps the numeral an initial before the marker vetoes":
@@ -1435,10 +1460,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'middle', 'suffix'), "a564b97f7162"),
         "fix(#360) ste moved into the never-given particles with mc":
             _Claim(1, ('family', 'given'), "e62caedec864"),
+        "fix(#445) a maiden marker makes the lone name word the family":
+            _Claim(7, ('family', 'given', 'maiden', 'middle'), "3de9ef12b4a8"),
     },
     "expected_since_2.0.0.toml": {
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
-            _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
+            _Claim(1, ('maiden', 'nickname'), "c09cc7dba88b"),
         "fix(#434) a multi-word maiden marker takes the maiden name":
             _Claim(1, ('family', 'maiden', 'middle'), "c428798fc6ef"),
         "fix(#434) a multi-word marker leads a bracketed clause to the maiden name":
@@ -1539,8 +1566,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "a564b97f7162"),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example":
             _Claim(1, ('_ambiguities', 'family', 'given'), "42b69cf1b320"),
-        "fix(#424) the maiden walk stops before the trailing numeral":
-            _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "cbe5bdd97317"),
+        "fix(#424/#445) the maiden walk stops before the trailing numeral, and the lone name word is the family":
+            _Claim(1, ('_ambiguities', 'family', 'given', 'maiden', 'suffix'), "cbe5bdd97317"),
+        "fix(#445) a maiden marker makes the lone name word the family":
+            _Claim(6, ('family', 'given'), "f521c94c79fc"),
+        "fix(#445) the lone name word beside a marker a connective join no longer absorbs":
+            _Claim(1, ('family', 'given', 'maiden', 'middle'), "52544a41dd62"),
         "fix(#424) a marker followed only by the numeral is just a word":
             _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle', 'suffix'), "aaf53040b071"),
         "fix(#369) the bound given-name join takes a particle-and-bound word, so no fork is reported":
@@ -1552,7 +1583,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     },
     "expected_since_2.1.0.toml": {
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
-            _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
+            _Claim(1, ('maiden', 'nickname'), "c09cc7dba88b"),
         "fix(#434) a multi-word maiden marker takes the maiden name":
             _Claim(1, ('family', 'maiden', 'middle'), "c428798fc6ef"),
         "fix(#434) a multi-word marker leads a bracketed clause to the maiden name":
@@ -1637,8 +1668,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "a564b97f7162"),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example":
             _Claim(1, ('_ambiguities', 'family', 'given'), "42b69cf1b320"),
-        "fix(#424) the maiden walk stops before the trailing numeral":
-            _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "cbe5bdd97317"),
+        "fix(#424/#445) the maiden walk stops before the trailing numeral, and the lone name word is the family":
+            _Claim(1, ('_ambiguities', 'family', 'given', 'maiden', 'suffix'), "cbe5bdd97317"),
+        "fix(#445) a maiden marker makes the lone name word the family":
+            _Claim(6, ('family', 'given'), "f521c94c79fc"),
+        "fix(#445) the lone name word beside a marker a connective join no longer absorbs":
+            _Claim(1, ('family', 'given', 'maiden', 'middle'), "52544a41dd62"),
         "fix(#424) a marker followed only by the numeral is just a word":
             _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle', 'suffix'), "aaf53040b071"),
         "fix(#369) the bound given-name join takes a particle-and-bound word, so no fork is reported":
@@ -1910,11 +1945,15 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
         # 51 -> 54 as rules.md gained the bracketed Polish examples
         # (#434): 'Maria Kowalska (z domu Nowak)', 'Maria Kowalska
         # (z domu)', and the boundary 'Anna z (domu) Nowak' M2 gained
-        # when the clause-straddling defect was fixed. Growth in the
-        # corpus, not in the exclusion -- its regex is untouched -- and
-        # `absorbed_by` stayed empty, so no rule reaches the protected
-        # shape.
-        _Excluded(54, "e2924f45c9d8", ()),
+        # when the clause-straddling defect was fixed. 54 -> 55 for
+        # M4's markerless clause example, 'Smith (Jones)' (#445),
+        # which the exclusion costs nothing: under the default facade
+        # the pair is a nickname one, so the name reads family
+        # 'Smith', nickname 'Jones' exactly as 1.4.0 read it and has
+        # no diff to silence. Growth in the corpus, not in the
+        # exclusion -- its regex is untouched -- and `absorbed_by`
+        # stayed empty, so no rule reaches the protected shape.
+        _Excluded(55, "7ad8ff289eb2", ()),
 }
 
 

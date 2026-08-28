@@ -1197,10 +1197,18 @@ CASES: tuple[Case, ...] = (
          {"given": "abd", "maiden": "Jones"},
          classification="fix(#411)",
          notes="the shortest form of the same decision: the very next "
-               "piece is the marker. Empty family is M2's ordinary "
-               "one-name-word behaviour, not a leftover of the join "
-               "-- 'Jane née Jones' reads the same way and always "
-               "has"),
+               "piece is the marker. It is also M4's boundary on the "
+               "vocabulary side, and a corpus name rather than a "
+               "constructed one: 'abd' is a bound given-name word, so "
+               "the vocabulary layer has claimed it as a GIVEN name "
+               "and M4 -- which changes only the positional default "
+               "-- does not reach it (mechanisms.md#TWO-LAYER-ASSIGN). "
+               "Dropping that carve-out reads family 'abd'. The empty "
+               "family is what M4 leaves standing here, not a "
+               "leftover of the join, and not M2's ordinary "
+               "one-name-word behaviour either -- since #445 'Smith "
+               "née Jones' reads family 'Smith', and this row is why "
+               "'abd née Jones' does not"),
     Case("bound_given_reserve_arabic_script",
          "عبد Berg née Jones",
          {"given": "عبد", "family": "Berg", "maiden": "Jones"},
@@ -1229,11 +1237,15 @@ CASES: tuple[Case, ...] = (
                "connective_join_never_reaches_a_taken_marker"),
     Case("maiden_marker_ahead_of_a_conjunction",
          "Jane née and Jones Smith",
-         {"given": "Jane", "maiden": "and Jones Smith"},
-         classification="fix(#412)",
+         {"family": "Jane", "maiden": "and Jones Smith"},
+         classification="fix(#445)",
          notes="M2's greedy reading, with a connective among the "
                "words taken: the same as 'Jane née Jones Smith' with "
-               "'and' inside it. Until #412 closed, P3's join ran "
+               "'and' inside it -- which is why M4 reads it the same "
+               "way too, the take leaving one name word either way "
+               "(the family was empty here until #445; 1.4.0 read "
+               "first 'Jane' / middle 'née and Jones' / last 'Smith', "
+               "measured 2026-08-27). Until #412 closed, P3's join ran "
                "first and produced a marker-HEADED piece 'née and "
                "Jones' that the lone-piece test could not see, so the "
                "name read middle 'née and Jones', family 'Smith'. "
@@ -1519,30 +1531,98 @@ CASES: tuple[Case, ...] = (
                "Parity: 1.4.0 and 2.1.0 both read nickname 'Jones née'"),
     Case("marker_led_clause_with_one_name_word",
          "Smith (née Jones)",
-         {"given": "Smith", "maiden": "Jones"},
-         classification="fix(#335)",
+         {"family": "Smith", "maiden": "Jones"},
+         classification="fix(#445)",
          notes="N3's shape meeting M3, and the row exists because the "
                "two rules disagree about what a clause is. N3 reads a "
                "name that is only a nickname plus one name word as "
                "'that word is the family name' -- but a marker-led "
                "clause is not a nickname clause, so N3 never sees this "
-               "one and 'Smith' keeps the given-name reading the bare "
-               "spelling gives it. Recorded as an N3 Accepted line. "
-               "The empty family is the bare path's, not this "
-               "change's: 'Smith née Jones' reads given 'Smith', "
-               "family '' on 2.1.0 too, and 1.4.0 read first 'Smith' / "
-               "middle 'née' / last 'Jones' -- the marker as a "
-               "middle name. The parallel evidence at 1.4.0 is not "
-               "the fix(#410) maiden-flavor rule, which is keyed on "
-               "the TITLED 'Dr. Smith née Jones', but fix(#274), "
-               "which claims the bare one-word names 'Janey née "
-               "Jones' and 'abd née Jones' and declares `family` for "
-               "exactly the reason this row records. The given side "
-               "has agreed since 1.4.0, "
-               "the emptying is 2.x's and is tracked separately as the "
-               "#410 analogue. What #335 moves is only the bracketed "
-               "spelling: 1.4.0, 2.0.0 and 2.1.0 all read it family "
-               "'Smith', nickname 'née Jones' (measured 2026-08-26)"),
+               "one, and until #445 the word kept the given-name "
+               "reading the bare spelling gives it. M4 now reaches "
+               "both spellings from the other side: the marker "
+               "announces a FORMER surname, so the one name word left "
+               "beside it is the current one. The bracketed spelling "
+               "RESTORES the family EVERY released version read: "
+               "1.4.0, 2.0.0 and 2.1.0 all read this name family "
+               "'Smith', nickname 'née Jones' (measured on the wheels "
+               "2026-08-27), so the clause reading maiden rather than "
+               "nickname is #335's half and the only thing left that "
+               "differs -- at all three baselines alike. Be exact "
+               "about which spelling read `given`, because a ledger "
+               "took the loose wording this note used to carry and "
+               "narrowed one baseline where three needed it: the BARE "
+               "spelling is what read given 'Smith' on 2.0.0, on "
+               "2.1.0 and here until this rule (1.4.0 read it first "
+               "'Smith' / middle 'née' / last 'Jones'). The bracketed "
+               "spelling this row holds never read `given` on any "
+               "released version"),
+    Case("maiden_marker_makes_the_lone_name_word_the_family",
+         "Smith née Jones",
+         {"family": "Smith", "maiden": "Jones"},
+         classification="fix(#445)",
+         notes="the rule, in its bare spelling: a maiden marker marks "
+               "a surname the bearer no longer uses, so it only means "
+               "anything beside one they do. With exactly one name "
+               "word left after the take, that word is the current "
+               "surname, and the positional convention O5 would "
+               "otherwise apply (a lone name word is read given) is "
+               "the thing M4 overrides. Read given 'Smith', family '' "
+               "on 2.0.0 and 2.1.0; 1.4.0 had no maiden support and "
+               "read first 'Smith' / middle 'née' / last 'Jones' "
+               "(measured 2026-08-27), so this is a new reading and "
+               "not a restoration -- the bracketed sibling "
+               "marker_led_clause_with_one_name_word is the "
+               "restoration"),
+    Case("maiden_marker_interior_makes_the_lone_name_word_the_family",
+         "Jane née Jones Smith",
+         {"family": "Jane", "maiden": "Jones Smith"},
+         classification="fix(#445)",
+         notes="the marker standing INSIDE the name, where M2's take "
+               "runs to the end and swallows the rest -- so what is "
+               "left is again one name word, and M4 counts what is "
+               "left rather than where the marker stood. The widest "
+               "half of the rule and the row that pins it: a guard "
+               "that asked for the marker to be trailing would leave "
+               "this one given 'Jane'. A new reading, and the one "
+               "furthest from 1.4.0, which read first 'Jane' / middle "
+               "'née Jones' / last 'Smith' (measured 2026-08-27) -- "
+               "the real surname there is 'Smith', which 2.x reads as "
+               "part of the maiden name (M2's greedy take, unchanged "
+               "here)"),
+    Case("maiden_marker_lone_name_word_with_suffix",
+         "Smith née Jones PhD",
+         {"family": "Smith", "suffix": "PhD", "maiden": "Jones"},
+         classification="fix(#445)",
+         notes="an annotation is not a name word, which is what #410 "
+               "established for H1 and M4 inherits: the credential "
+               "stands beside the name and does not make it any "
+               "longer, so the count that decides this reading is "
+               "one either way. A guard written over roles generally "
+               "rather than the three name roles reads this name as "
+               "two words and declines. 1.4.0 read first 'Smith' / "
+               "middle 'née' / last 'Jones' / suffix 'PhD' (measured "
+               "2026-08-27)"),
+    Case("maiden_marked_lone_initial_stays_given",
+         "J. née Jones Smith V",
+         {"given": "J.", "maiden": "Jones Smith V"},
+         classification="fix(#274)",
+         notes="M4's boundary on the shape side, and a corpus name "
+               "rather than a constructed one: an initial is not a "
+               "family name, so the word the vocabulary layer has "
+               "already claimed as a shape keeps its reading "
+               "(mechanisms.md#TWO-LAYER-ASSIGN -- M4 changes the "
+               "POSITIONAL default and must not reach a word another "
+               "layer has claimed). Dropping the carve-out reads "
+               "family 'J.'. Unchanged by #445, and the maiden value "
+               "is M2's: the trailing 'V' is S2's suffix reading only "
+               "where a name word precedes it, and an initial does "
+               "not count, so the numeral stays maiden text (M2 "
+               "carries the same input as a boundary example). The "
+               "fix classification is #274's marker consumption, "
+               "which is what makes this differ from 1.4.0 (first "
+               "'J.' / middle 'née Jones' / last 'Smith' / suffix "
+               "'V', measured 2026-08-27)"),
     Case("marker_led_clause_in_a_quote_pair",
          'Jane Smith "née Jones"',
          {"given": "Jane", "family": "Smith", "maiden": "Jones"},

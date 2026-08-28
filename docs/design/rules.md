@@ -531,18 +531,19 @@ N3. Rationale: a person set down as a nickname plus one name word is
     Accepted: a marker-led clause is a maiden clause and not a
     nickname one (M3), so this rule does not reach a name written
     that way, and the one name word keeps the reading the bare
-    spelling gives it rather than becoming the family name. The
-    empty family that leaves is the bare spelling's, and #445 tracks
-    whether it is right — 1.4.0 read the bare spelling as first
-    Smith, middle née, last Jones, emptying nothing, and the same
-    empty family has been repaired twice already, at H1 (#410) and at
-    P5's reserve (#411).
-      "Smith (née Jones)"         →  given="Smith"
-    history: decisions.md#N3 · interacts: H1, M3 · implemented: nameparser/_pipeline/_assign.py
+    spelling gives it. Since #445 that reading is the family name
+    all the same, M4 reaching both spellings from the other side.
+    The two rules agree on THIS name and not in general: M4 counts
+    name words alone, so where a suffix stands beside them it fires
+    and this rule declines. The Accepted line above reads a bare
+    nickname-plus-word-plus-suffix name as given with no family, and
+    the same name carrying a maiden clause reads family instead.
+      "Smith (née Jones)"         →  family="Smith"
+    history: decisions.md#N3 · interacts: H1, M3, M4 · implemented: nameparser/_pipeline/_assign.py
 
 ## Maiden names (M)
 
-Background: a maiden name is written beside the current name, set off by a marker or by enclosure. Markers are attested across French née/né and the unaccented nee English writing uses for both, German geb./geborene, Dutch geboren, Czech/Slovak rozená (the abbreviation roz. shipped through 2.1 and was removed in 2.2 -- it collides with the English diminutive Roz, and a caller who needs it adds it to their own Lexicon), Scandinavian født/fødd/född, Russian урожд. and its full participles урождённая/урождённый (the participles in both the ё and е spellings, which case normalization does not fold), Japanese 旧姓, and Polish z domu — both grammatical genders where attested. Every one of these is a marker wherever it stands, the unaccented nee included: an enclosure holding a word past it reads as the maiden name and the marker is dropped, so a configured pair reading "(Nee Jones)" gives maiden Jones and not Nee Jones. A marker need not be one word. z domu is two, and a phrase marker is recognized only whole and only where its words stand together: neither of its words is a marker standing alone, and neither is the pair once a bracketed clause or a comma divides them. That is what makes shipping it safe where shipping its words would not be — z is an ordinary Polish preposition, and a name that merely contains one keeps its family name. Japanese more often writes the marker with a fullwidth colon (旧姓：佐藤), which is no separator, so marker and name arrive as a single word. Which enclosures mean "maiden" rather than "nickname" is a caller convention, so the maiden reading of a delimiter pair is opt-in — except where the clause announces itself. A clause of two words or more led by a marker word has said which convention it means, and reads as the maiden name inside a nickname pair as well (M3) — unless its content is suffix-shaped, which S1 takes ahead of both. A lone marker has said nothing, and neither has one the colon spelling above glues to the name.
+Background: a maiden name is written beside the current name, set off by a marker or by enclosure. Markers are attested across French née/né and the unaccented nee English writing uses for both, German geb./geborene, Dutch geboren, Czech/Slovak rozená (the abbreviation roz. shipped through 2.1 and was removed in 2.2 -- it collides with the English diminutive Roz, and a caller who needs it adds it to their own Lexicon), Scandinavian født/fødd/född, Russian урожд. and its full participles урождённая/урождённый (the participles in both the ё and е spellings, which case normalization does not fold), Japanese 旧姓, and Polish z domu — both grammatical genders where attested. Every one of these is a marker wherever it stands, the unaccented nee included: an enclosure holding a word past it reads as the maiden name and the marker is dropped, so a configured pair reading "(Nee Jones)" gives maiden Jones and not Nee Jones. A marker need not be one word. z domu is two, and a phrase marker is recognized only whole and only where its words stand together: neither of its words is a marker standing alone, and neither is the pair once a bracketed clause or a comma divides them. That is what makes shipping it safe where shipping its words would not be — z is an ordinary Polish preposition, and a name that merely contains one keeps its family name. Japanese more often writes the marker with a fullwidth colon (旧姓：佐藤), which is no separator, so marker and name arrive as a single word. Which enclosures mean "maiden" rather than "nickname" is a caller convention, so the maiden reading of a delimiter pair is opt-in — except where the clause announces itself. A clause of two words or more led by a marker word has said which convention it means, and reads as the maiden name inside a nickname pair as well (M3) — unless its content is suffix-shaped, which S1 takes ahead of both. A lone marker has said nothing, and neither has one the colon spelling above glues to the name. A marker also says something about the name standing beside it: it announces a surname the bearer no longer uses, and that is only worth writing where there is a current one to tell it apart from (M4).
 
 M1. Rationale: an enclosure the caller has declared to mean maiden
     holds the former family name; a recognized marker word inside it
@@ -567,7 +568,7 @@ M1. Rationale: an enclosure the caller has declared to mean maiden
       "Jane Smith (Nee) (Jones)"  maiden-parens  →  maiden="Nee Jones"
       "Andrew Perkins (MBA)"  maiden-parens  →  suffix="MBA"  · boundary
       "Maria Kowalska (z domu)"  maiden-parens  →  maiden="z domu"  · boundary
-    history: decisions.md#M1 · interacts: S1, M2, M3 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_group.py
+    history: decisions.md#M1 · interacts: S1, M2, M3, M4 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_group.py
 
 M2. Rationale: a maiden marker announces that what follows it is the
     former family name; the marker is an announcement, not a name.
@@ -661,6 +662,44 @@ M3. Rationale: an enclosure says nothing about whether it means
     and false of the other, so only the V clause reaches this rule.
       "Jane Smith (née V)"        →  maiden="V"
     history: decisions.md#M3 · interacts: M1, M2, S1, N1 · implemented: nameparser/_pipeline/_extract.py
+
+M4. Rationale: a maiden name is a FORMER family name, and a former
+    one only means something beside a current one — nobody announces
+    the surname they used to carry where there is no surname beside
+    it to tell it apart from. So where a maiden name has been read
+    out of a name and a single name word is left standing, that word
+    is the surname the bearer uses now; writing the clause at all is
+    what rules out the given-name reading O5's convention would
+    otherwise leave it with. How the maiden name was written does
+    not enter into it — a marker taking the words after it (M2), a
+    marker-led clause (M3), and a clause in a pair the caller
+    declared to mean maiden (M1) announce the same thing, and the
+    last of those carries no marker at all.
+    A maiden name standing beside exactly one name word makes that
+    word the family name, whatever suffix or nickname stands beside
+    it — an annotation beside the name is no part of the name, which
+    is how H1 reads the same shape. Two kinds of word are beyond its
+    reach, for one reason: the rule changes what POSITION would have
+    decided, so it cannot overrule what a word already IS
+    (mechanisms.md#TWO-LAYER-ASSIGN). A word the vocabulary has
+    claimed as a given name keeps that reading, and so does a word
+    written as an initial, which is nobody's family name. A name
+    carrying a TITLE is H1's rather than this rule's, H1's
+    given-name-title carve-out included, which keeps the word a
+    given name. A nickname holds nothing off: where N3 has already
+    named the family this rule finds nothing left to move, and where
+    N3 declined — its count does not set a suffix aside — this rule
+    names it. Where the maiden name stood does not matter, only what
+    is left beside it: a marker inside the name takes the rest of it
+    (M2), and one name word left that way is one name word.
+      "Smith née Jones"           →  family="Smith"
+      "Smith (née Jones)"         →  family="Smith"
+      "Smith (Jones)"  maiden-parens  →  family="Smith"
+      "Jane née Jones Smith"      →  family="Jane"
+      "Smith née Jones PhD"       →  family="Smith"
+      "abd née Jones"             →  given="abd"  · boundary
+      "J. née Jones Smith V"      →  given="J."  · boundary
+    history: decisions.md#M4 · interacts: M1, M2, M3, H1, N3, O5 · implemented: nameparser/_pipeline/_post_rules.py
 
 ## Commas & structure (C)
 
@@ -809,6 +848,40 @@ O4. Rationale: what no vocabulary claims can only be read by where
     no-boundary: this is the default reading every other rule carves
     exceptions from; its boundaries are the other rules.
     implemented: nameparser/_pipeline/_assign.py
+
+O5. Rationale: O4 reads a name by comparing where its words stand,
+    and a name of exactly one name word gives it nothing to compare
+    — the first name word is also the last, so the rule that decides
+    every longer name is silent here. Nothing in such an input says
+    whether the word is a given name or a family name: both readings
+    fit it equally well, and the library still has to report one.
+    A name of one name word that nothing else has decided reads that
+    word as the given name under the default given-first order, and
+    as the family name under a declared family-first one. That is a
+    convention rather than a determination — the same input has to
+    read the same way every time, so one of two equally consistent
+    readings is fixed in advance — and it is not evidence about the
+    word. Every rule that DOES decide such a name outranks it, and
+    each of them carves out a case it declines to decide — where the
+    convention is what is left. A title makes the word the family
+    name (H1), except a given-name title, which addresses by given
+    name; a nickname beside it does the same (N3), except where a
+    suffix stands beside them too, which its count does not set
+    aside; and a maiden name beside it does the same (M4), except
+    where the vocabulary or the word's own shape has claimed the
+    word already. What the library should SAY about a reading it
+    merely fixed — whether the convention is worth reporting as an
+    ambiguity — is open, and #449 holds the measurement that makes
+    it a design question rather than an implementation one.
+      "Smith"                     →  given="Smith"
+      "Garcia"  family-first      →  family="Garcia"
+      "Sir John"                  →  given="John"
+      "'Smitty' Jones Jr."        →  given="Jones"
+      "abd née Jones"             →  given="abd"
+      "Mr. Johnson"               →  family="Johnson"  · boundary
+      "'Smitty' Jones"            →  family="Jones"  · boundary
+      "Smith née Jones"           →  family="Smith"  · boundary
+    interacts: O4, H1, N3, M4 · implemented: nameparser/_pipeline/_assign.py
 
 ## Scripts & writing systems (W)
 
