@@ -535,6 +535,42 @@ name_regex = "^\\S*\u00b7\\S*\uc528$"
 fields = ["given", "middle", "family", "suffix"]
 
 [[change]]
+issue = "fix(emoji-boundary) an emoji inside a token divides it"
+# 'John😀Smith': 1.4 dropped the emoji and read one token
+# (first='JohnSmith'); 2.x treats it as a division, so the name reads
+# given 'John', family 'Smith'. rules.md#T1 documents both this and the
+# keep-emoji policy reading.
+#
+# The emoji must stand BETWEEN two non-space characters, which is the
+# behavior: it divides a token. A bare character class was the first
+# draft and is rejected -- measured, it reaches four corpus names, and
+# the three it adds carry a spaced or trailing emoji, are byte-identical
+# on both sides today, and would be pre-excused by a rule that claims
+# them. Pre-claiming shapes it has never seen is the #372 failure mode
+# the fix(#379) comment names.
+#
+# The class is the ASTRAL HALF of _tokenize.py's _EMOJI_RANGES, hand
+# copied and pinned by test_the_emoji_boundary_rule_copies_the_dividing_ranges.
+# A single \U0001F300-\U0001FAFF span was the first draft and is wrong
+# in the dangerous direction: it covers U+1F650-U+1F67F and
+# U+1F700-U+1FAFF, where the parser does NOT divide, so the rule's own
+# prose is false for about a thousand codepoints it would claim.
+# 'John\U0001FA70Smith' reads given 'John\U0001FA70Smith' with no family --
+# a future {given, family} diff on such a name, with some other cause,
+# would classify here as intended. That is the same #372 shape this
+# comment invokes against the bare class.
+#
+# The BMP half (U+2600-U+26FF, U+2700-U+27BF) is deliberately left out
+# rather than copied: no corpus name reaches it once the token anchor
+# is on, and a rule should be no wider than the diffs it must explain.
+# A name that needs it will arrive unclassified and be read once. That
+# omission also keeps the pattern free of \uXXXX-\uXXXX span text, so
+# _SPAN_BEARING_RULES has nothing to declare about a rule that is not
+# script-scoped.
+name_regex = "\\S[\\U0001F300-\\U0001F64F\\U0001F680-\\U0001F6FF]\\S"
+fields = ["given", "family"]
+
+[[change]]
 issue = "fix(nickname-typographic-pairs) two typographic quote spans read as one nickname set"
 # 'Hans „Erster“ und “Zweiter” Müller': 2.0 extracts typographically
 # quoted nicknames, which v1 did not, and this name carries TWO spans

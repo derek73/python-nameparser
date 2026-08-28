@@ -530,6 +530,57 @@ def test_nickname_delimiter_sets_are_deliberate() -> None:
         "passing vacuously")
 
 
+def test_the_emoji_boundary_rule_copies_the_dividing_ranges() -> None:
+    """The emoji rule's character class is a HAND COPY of the ranges
+    the tokenizer actually divides on, and this is what keeps the two
+    in step.
+
+    The rule promises "an emoji inside a token divides it". Only
+    _EMOJI_RANGES decides that, so a class wider than those ranges
+    makes the promise false for every codepoint in the gap -- and the
+    rule would then claim a {given, family} diff whose cause is
+    something else entirely. The first draft had exactly that bug: one
+    \\U0001F300-\\U0001FAFF span, covering U+1F650-U+1F67F and
+    U+1F700-U+1FAFF, where the parser leaves the token whole.
+
+    Only the ASTRAL half is copied. The BMP half (U+2600-U+26FF,
+    U+2700-U+27BF) is out because no corpus name reaches it through
+    the rule's \\S...\\S anchor, and a rule should be no wider than the
+    diffs it must explain -- so this asserts a SUBSET relationship in
+    that direction, not equality. What it refuses is the other
+    direction: a class reaching a codepoint the tokenizer does not
+    divide on.
+    """
+    from nameparser._pipeline._tokenize import _EMOJI_RANGES
+
+    divides = {c for lo, hi in _EMOJI_RANGES for c in range(lo, hi + 1)}
+    found = 0
+    for ledger in _LEDGERS:
+        for rule in _rules(ledger):
+            if "emoji-boundary" not in rule["issue"]:
+                continue
+            found += 1
+            pattern = rule["name_regex"]
+            claimed = {c for c in range(0x1F000, 0x20000)
+                       if re.search(pattern, f"a{chr(c)}b")}
+            stray = sorted(claimed - divides)
+            assert not stray, (
+                f"{ledger.name}: {rule['issue']!r} claims "
+                f"{len(stray)} codepoint(s) the tokenizer does not "
+                f"divide on, e.g. {[hex(c) for c in stray[:3]]}. Its "
+                f"prose says an emoji inside a token divides it, which "
+                f"is false for those -- so a diff with another cause "
+                f"would classify here as intended. Copy from "
+                f"_EMOJI_RANGES rather than widening the span.")
+            assert claimed, (
+                f"{ledger.name}: {rule['issue']!r} claims no astral "
+                f"codepoint at all; the class or the anchor is broken "
+                f"and the rule can explain nothing")
+    assert found, (
+        "no emoji-boundary rule in any ledger; this pin is passing "
+        "vacuously")
+
+
 def test_cjk_corpus_matches_the_case_table() -> None:
     """corpus_cjk.jsonl is GENERATED, not curated (#295): every
     distinct case-table text bearing a codepoint the script table
@@ -1424,6 +1475,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(11, ('given', 'middle'), "1eaed91fc574"),
         "fix(#272/#308) nakaguro division and a glued hangul honorific in one name":
             _Claim(1, ('family', 'given', 'middle', 'suffix'), "2fbf1a94f122"),
+        "fix(emoji-boundary) an emoji inside a token divides it":
+            _Claim(1, ('family', 'given'), "efa60ca42d4a"),
         "fix(nickname-typographic-pairs) two typographic quote spans read as one nickname set":
             _Claim(1, ('family', 'given', 'middle', 'nickname'), "3cf566c78800"),
         "fix(#411) the bound-given reserve stops counting words the maiden name takes":
