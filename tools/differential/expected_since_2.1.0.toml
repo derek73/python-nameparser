@@ -698,14 +698,18 @@ issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
 # Fields are {middle, family}: the given name does not move. `suffix`
 # is deliberately NOT here, though the #380 half of the change does
 # move a token out of it ('Berg, Jan vd' was suffix 'vd' at every
-# baseline and is now family 'vd Berg'). No corpus name exercises that
-# shape, and adding `suffix` to claim it costs three shapes this rule
-# has no business explaining -- {family,suffix} taken from
-# fix(suffix-routing), and {middle,suffix} and {middle,family,suffix}
-# taken from UNEXPLAINED, the last two being diffs in which `family`
-# does not move at all. A rule that pre-claims shapes it has never seen
-# is the #372 failure mode. If a vd-shaped name ever enters the corpus
-# it should arrive unexplained and be read once.
+# baseline and is now family 'vd Berg'). Adding `suffix` to claim it
+# costs three shapes this rule has no business explaining --
+# {family,suffix} taken from fix(suffix-routing), and {middle,suffix}
+# and {middle,family,suffix} taken from UNEXPLAINED, the last two
+# being diffs in which `family` does not move at all. A rule that
+# pre-claims shapes it has never seen is the #372 failure mode.
+#
+# 'Berg, Jan vd' is a corpus name, and it did not arrive unexplained
+# here either: fix(#380) above already claims {family, suffix} for
+# exactly this shape, in this same ledger, so there was never a gap
+# for a future rule to fill at this baseline the way there was at
+# 1.4.0's.
 #
 # Latin-anchored over the WHOLE name, not just the trailing word: with
 # a leading .* this absorbed non-Latin comma names whose diff has

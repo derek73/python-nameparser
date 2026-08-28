@@ -602,14 +602,19 @@ issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
 # Fields are {middle, family}: the given name does not move. `suffix`
 # is deliberately NOT here, though the #380 half of the change does
 # move a token out of it ('Berg, Jan vd' was suffix 'vd' at every
-# baseline and is now family 'vd Berg'). No corpus name exercises that
-# shape, and adding `suffix` to claim it costs three shapes this rule
-# has no business explaining -- {family,suffix} taken from
-# fix(suffix-routing), and {middle,suffix} and {middle,family,suffix}
-# taken from UNEXPLAINED, the last two being diffs in which `family`
-# does not move at all. A rule that pre-claims shapes it has never seen
-# is the #372 failure mode. If a vd-shaped name ever enters the corpus
-# it should arrive unexplained and be read once.
+# baseline and is now family 'vd Berg'). Adding `suffix` to claim it
+# costs three shapes this rule has no business explaining --
+# {family,suffix} taken from fix(suffix-routing), and {middle,suffix}
+# and {middle,family,suffix} taken from UNEXPLAINED, the last two
+# being diffs in which `family` does not move at all. A rule that
+# pre-claims shapes it has never seen is the #372 failure mode.
+#
+# 'Berg, Jan vd' entered corpus_issues.jsonl and corpus_rules.jsonl
+# after this was written, and it did NOT arrive unexplained -- the
+# fields-only catch-all took it, and _CROSS_RULE_WINNERS recorded the
+# absorption rather than closing it. It has fix(#380)'s own rule now
+# (#451, below). The declining was right; what was missing was the
+# rule beside it.
 #
 # Latin-anchored over the WHOLE name, not just the trailing word: with
 # a leading .* this absorbed non-Latin comma names whose diff has
@@ -629,6 +634,45 @@ issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
 # that does NOT move -- would classify as intended.
 name_regex = "(?i)^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*\\s(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)(\\s+(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu))*\\s*$"
 fields = ["middle", "family"]
+
+[[change]]
+issue = "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal"
+# 'Berg, Jan vd': the tree reads it given 'Jan', family 'vd Berg',
+# suffix '' -- the trailing 'vd' attaches to the family the comma
+# already named, the same P6 precedence fix(#379) states above for the
+# leading-particle shapes. Whether 1.4 itself read the trailing word
+# as `suffix` is outside what this ledger's worker can check directly
+# (tools/differential/README.md's warning against reading a v1 release
+# from a cached environment); the diff this rule explains at this
+# baseline moves exactly {family, suffix}, which is consistent with
+# that reading and is what the fields below claim.
+#
+# decisions.md#vocabulary-collisions C-ii records the word itself:
+# "vd is the live case: never-given particle AND credential acronym
+# (the British Volunteer Decoration), neither of them a name.
+# Decision: the Dutch van der reading, as the more common." #380 is
+# named there as the trailing-orphan half that decision unblocks.
+#
+# The {family, suffix} companion to fix(#379) above, which claims
+# {middle, family} and deliberately declined `suffix` -- that
+# comment's own accounting of what claiming it would have cost stands
+# as written; this rule is the piece it left out, not a widening of
+# it.
+#
+# Ported verbatim from expected_since_2.0.0.toml, issue text and regex
+# included, so the _MUST_NOT_MATCH "fix(#380)" key that already guards
+# the 2.x copies guards this one too. Latin-anchored over the whole
+# name for fix(#379)'s reason: with a leading .* it would absorb
+# non-Latin comma names whose diff has another cause.
+#
+# The regex also reaches 'Berg, abdul vd', which fix(comma-precomma-family)
+# above claims on {family, given} -- a different diff shape, so this
+# rule's {family, suffix} fields never match it and it is not claimed
+# here. That reach is real, so 'Berg, abdul vd' is NOT a
+# _MUST_NOT_MATCH probe for this rule: that roster tests the regex,
+# not classify().
+name_regex = "(?i)^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*\\svd\\s*$"
+fields = ["family", "suffix"]
 
 [[change]]
 issue = "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix"
