@@ -1344,6 +1344,8 @@ def _claim(rule: dict) -> _Claim:
 #: both is growth into names the rule genuinely describes.
 _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
+        "fix(A2) content-free input names nobody, so every role empties":
+            _Claim(5, ('given',), "1af8d718688b"),
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
             _Claim(1, ('maiden', 'nickname'), "c09cc7dba88b"),
         "fix(#434) a multi-word maiden marker takes the maiden name":
@@ -1849,6 +1851,13 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
             "fix(cjk-glued-honorific-peel)",
         ("김민준 씨.", ("family", "given", "suffix")):
             "fix(cjk-honorific-suffix)",
+        # '.,' moved off `fix(comma-family) lone post-comma piece
+        # routes to suffix/title, not first`, whose Latin-range comma
+        # regex reaches it, onto the A2 rule that describes it (#451).
+        # Recorded because only file order separates the two rules --
+        # they are in the same tier and both reach the name -- and a
+        # later edit that moves either one silently hands it back.
+        (".,", ("given",)): "fix(A2) content-free input names nobody, so every role empties",
     },
 }
 

@@ -221,6 +221,40 @@ name_regex = "(?i)^[\\u0000-\\u024f]*,\\s*jr\\.?\\s+ph\\.?\\s*d\\.?\\s*$"
 fields = ["suffix"]
 
 [[change]]
+issue = "fix(A2) content-free input names nobody, so every role empties"
+# '(' / '.,': v1 kept a punctuation-only string as a name -- parse('.')
+# read first='.' -- and 2.0 empties input with no name content in it.
+# decisions.md#A2. Five corpus names are content-free ('', '()', ',',
+# '(', '.,'); two of them diff at this baseline and the other three
+# were already empty on both sides.
+#
+# Written ABOVE `fix(comma-family) lone post-comma piece routes to
+# suffix/title, not first` deliberately -- that rule, well down the
+# file, and NOT the comma-family rule sitting immediately below this
+# one, which is anchored to a literal name and cannot reach '.,' at
+# all. Both carry a name_regex so they share a tier, where
+# _sorted_rules' stable sort leaves file order deciding, and that
+# rule's Latin-range comma regex reaches '.,' -- which is how a comma
+# rule came to explain an emptying that has nothing to do with commas.
+# (Its regex was a bare ',' until #372; the Latin anchoring it has
+# now reaches '.,' just the same. That rule's own comment owns the
+# story of what the anchoring keeps off it, and the count with it --
+# restating either here is how one copy goes stale while the other
+# does not.) _CROSS_RULE_WINNERS pins the reassignment.
+#
+# `\W` rather than a punctuation class, because it IS A2's own
+# predicate: _assemble.py decides the emptying with `not
+# any(c.isalnum() ...)`, and across all of Unicode `\w` and isalnum
+# diverge on exactly one codepoint -- U+005F, which A2 empties and
+# this rule does not claim. So the rule is a strict SUBSET of the
+# behavior it names, by construction rather than by measurement: it
+# cannot claim a name A2 leaves alone. Being Unicode-aware, it also
+# puts any name carrying a letter or digit in any script outside
+# itself, which is why it matches none of validate_rules' sentinels.
+name_regex = "^\\W*$"
+fields = ["given"]
+
+[[change]]
 issue = "fix(comma-family) a comma followed only by titles keeps the given/family split"
 # 'Bob Jones, author' / 'Bob Jones, compositeur': the comma is followed
 # by nothing but a title word, which said nothing about where the
