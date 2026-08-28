@@ -299,20 +299,25 @@ history rather than being edited into the next one's.
 
 Each `[[change]]` entry needs `issue` (a short label, ideally an
 issue number or `fix(<slug>)` matching a `tests/v2/cases.py`
-classification) and may narrow its match with `name_regex` (searched
-against the raw input string) and/or `fields` (the diffing rule
-matches only if the observed diff fields are a subset of this list).
-Keep both as tight as the actual diff allows -- a loose rule can mask
-a real regression.
+classification) and `name_regex` (searched against the raw input
+string). It may narrow further with `fields` (the diffing rule matches
+only if the observed diff fields are a subset of this list). Keep both
+as tight as the actual diff allows -- a loose rule can mask a real
+regression. `name_regex` is REQUIRED since #451: `validate_rules`
+rejects a rule carrying `fields` and no `name_regex`, as it already
+rejected one carrying neither.
 
-Rules are sorted most-specific-first before matching: a `name_regex`
-rule outranks a `fields`-only one (which is broad by construction)
-wherever both match. **Within a tier, file order decides.** That is
-not a detail -- every rule in `expected_since_2.0.0.toml` carries a
-`name_regex`, so they all sit in one tier and the order they are
-written in settles every tie between them. Append a rule to the bottom
-of a file only after checking that nothing above it already claims the
-diff you meant it for.
+**File order decides.** That is not a detail -- every rule in every
+ledger carries a `name_regex`, so they all sit in one tier, the sort
+is stable, and the order they are written in settles every tie between
+them. Append a rule to the bottom of a file only after checking that
+nothing above it already claims the diff you meant it for.
+
+`_sorted_rules` still sorts `name_regex` rules ahead of `fields`-only
+ones, and is now the identity on every ledger that loads. It is kept
+as a defence for a reader that does not call `validate_rules` first --
+a future tool, a REPL, a test fixture -- rather than as a second tier
+any ledger can reach; its docstring in `compare.py` says why.
 
 Some entries in `expected_since_1.4.0.toml` are for behavior families that
 a corpus happens to contain no example of (e.g. custom suffix-delimiter
