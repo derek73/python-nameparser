@@ -1378,12 +1378,16 @@ def test_the_clause_free_corpus_is_not_empty() -> None:
     already -- the delimiter strip, then the move from word
     membership to the marker predicate, which a phrase entry made
     necessary -- and the one-liner in that filter's comment recounts
-    every stage: 645 names before either, 635 after the strip, 631
-    once the predicate decides. Recounted 2026-08-27 by pasting it:
-    the four rules-corpus rows #445 added move the last stage by two
-    (the other two carry a marker), and the first two figures were
-    already one low before that -- a corpus row landed without the
-    recount the comment asks for. So the floor is what says a future
+    every stage: 646 names before either, 636 after the strip, 632
+    once the predicate decides. Recounted 2026-08-27 by pasting it,
+    and recounted AGAIN in the review round, which is the point of
+    shipping the one-liner: the first recount was taken before the
+    last of #445's rules-corpus rows existed and came out one low at
+    every stage. #445 adds five rows in all, of which three clear the
+    marker predicate ('Garcia', 'Smith', 'Smith (Jones)'), so every
+    stage moves by three -- and the first two figures were already
+    one low before any of it, a corpus row having landed without the
+    recount this comment asks for. So the floor is what says a future
     widening emptied it. Deliberately far below today's count: this
     asks whether the filter still selects a corpus, not what the
     corpus holds."""

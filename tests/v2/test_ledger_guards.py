@@ -942,10 +942,15 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     frozenset({"^", ",\\s*"}),
     # fix(#445)'s movers, one corpus name per alternative -- a list of
     # names, not a copy of any wordlist, so there is no vocabulary for
-    # it to drift from. Two sets because the two field shapes split
-    # differently: the 1.4 ledger's seven names all move four fields,
-    # while at 2.0.0/2.1.0 six of them move two and the other two are
-    # compounds with rules of their own.
+    # it to drift from. Two sets because the ledgers group the nine
+    # movers differently. At 1.4.0 seven of them move the same four
+    # fields and share the first set; the eighth ('John née Jones
+    # Smith Ma') moves those plus `suffix`, and the ninth ('Smith
+    # (née Jones)') keeps the rule it already had. At 2.0.0/2.1.0 the
+    # second set holds six that move two fields: five of the 1.4
+    # seven, plus that acronym name, whose acronym is no part of the
+    # diff at those baselines. The two the second set drops are the
+    # compounds with #412 and #424, each with a rule of its own.
     #
     # Spelled out rather than written as the shape -- one word, then a
     # marker -- because that shape also matches rules.md#M4's two
@@ -1460,7 +1465,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     },
     "expected_since_2.0.0.toml": {
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
-            _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
+            _Claim(1, ('maiden', 'nickname'), "c09cc7dba88b"),
         "fix(#434) a multi-word maiden marker takes the maiden name":
             _Claim(1, ('family', 'maiden', 'middle'), "c428798fc6ef"),
         "fix(#434) a multi-word marker leads a bracketed clause to the maiden name":
@@ -1578,7 +1583,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     },
     "expected_since_2.1.0.toml": {
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
-            _Claim(1, ('family', 'given', 'maiden', 'nickname'), "c09cc7dba88b"),
+            _Claim(1, ('maiden', 'nickname'), "c09cc7dba88b"),
         "fix(#434) a multi-word maiden marker takes the maiden name":
             _Claim(1, ('family', 'maiden', 'middle'), "c428798fc6ef"),
         "fix(#434) a multi-word marker leads a bracketed clause to the maiden name":

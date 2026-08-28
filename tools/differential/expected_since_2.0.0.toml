@@ -1054,31 +1054,41 @@ issue = "fix(#335) a marker-led clause leaves the one name word its bare reading
 # the same reading from the other side.
 #
 # Its own rule rather than a sixth alternative in the fix(#335) rule
-# above, for the reason that rule states: this diff moves FOUR fields
-# where those move two, and one rule holding both would have to
-# declare the union, pre-excusing a given/family regression on the
-# five. The empty `family` is not this change's -- the bare spelling
-# reads that way on 2.0.0 and 2.1.0 too -- but it is inside this
-# diff, so the rule declares it.
+# above: one rule holding both would have to declare the union of two
+# different diffs and would pre-excuse whatever else landed inside
+# it. (The two now move the same two fields, but for different
+# reasons -- that rule's names keep a family name throughout, while
+# this one's gained one back from #445 -- and merging them would
+# re-declare `given` over both.)
 #
-# The revisit note this block carried was answered on 2026-08-27, and
-# re-measured rather than reasoned about. #445 does change the bare
-# reading -- the one name word beside a maiden clause is the family
-# now (rules.md#M4) -- but this rule's diff is unchanged AT THIS
-# BASELINE, because the baseline is what read `given` and the
-# baseline cannot move. All four fields still differ, so the
-# declaration stands as written. What did move is the 1.4.0 twin of
-# this rule, where the baseline read family 'Smith' and the diff
-# shrank to {nickname, maiden}; that ledger narrows it there.
+# The revisit note this block carried was answered on 2026-08-27 and
+# answered WRONG, which the review round caught and this text
+# records. The first answer said the diff was unchanged at this
+# baseline "because the baseline is what read `given`". It did not:
+# 2.0.0 and 2.1.0 both read 'Smith (née Jones)' as family 'Smith',
+# nickname 'née Jones' (measured on the wheels, 2026-08-27) -- only
+# the BARE spelling ever read `given`, and this rule is the
+# bracketed one. So `given` is empty on both sides, `family` agrees
+# again since #445, and the diff here shrank to {nickname, maiden}
+# exactly as it did at 1.4.0.
+#
+# Narrowed to those two fields, which is what the revisit note asked
+# for. Left at four, this rule stood over a two-field diff and
+# classify's subset test would have explained a `given`/`family`
+# regression on this name in silence -- the absorption the note was
+# written to prevent, surviving the round that answered it. Verified
+# after narrowing: the name is still explained, and a {given, family}
+# diff on it is now UNEXPLAINED.
 name_regex = "(?i)^Smith \\(n[ée]e Jones\\)$"
-fields = ["given", "family", "nickname", "maiden"]
+fields = ["nickname", "maiden"]
 
 [[change]]
 issue = "fix(#445) a maiden marker makes the lone name word the family"
 # rules.md#M4 -- "a maiden name standing beside exactly one name word
 # makes that word the family name". A maiden name is a FORMER family
 # name, which only means something beside a current one, so the word
-# left standing beside it is the surname the bearer uses now: 'Smith née Jones' read given 'Smith' with an
+# left standing beside it is the surname the bearer uses now:
+# 'Smith née Jones' read given 'Smith' with an
 # empty family on this baseline and reads family 'Smith' here.
 #
 # Two fields and no more. The marker consumption these names also

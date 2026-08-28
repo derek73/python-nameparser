@@ -137,13 +137,19 @@ issue = "fix(#274) maiden markers consumed"
 # today's corpus, which has grown since. Today it explains 12
 # (measured 2026-08-27, after #445).
 #
-# Four claimed names still do not move, recorded rather than excluded:
-# 'Jane Smith, nee Jones' (post-comma, M2's remaining Accepted limit),
-# 'Jane van der Berg nee PhD' (only a suffix follows, so the consumer
-# declines), and the connective and bound-given joins (#412). Each
-# would need the regex to ask a vocabulary question -- suffix or
-# connective membership -- a second alternation this rule cannot
-# spend.
+# Five claimed names still do not move, recorded rather than
+# excluded: 'Jane Smith, née Jones' (post-comma, M2's remaining
+# Accepted limit), 'Jane van der Berg née PhD' and 'Jane Smith née V'
+# (only a suffix follows, so the consumer declines), and
+# 'Jane née Jr y Jones' and 'Jane van der Berg née Jr Jones' (the
+# connective and bound-given joins, #412). Each would need the regex
+# to ask a vocabulary question -- suffix or connective membership --
+# a second alternation this rule cannot spend. The count said four
+# until the review round re-measured it: the corpus grew and the
+# sentence did not, which is this file's standing hazard and the
+# reason every count in it carries the date it was taken. Measured
+# 2026-08-27 against the 1.4.0 wheel, name by name over all 31 the
+# regex claims.
 #
 # #445 landed 2026-08-27, and the prediction this note used to carry
 # was wrong in a way worth keeping on the record. It reasoned that a
@@ -161,13 +167,20 @@ issue = "fix(#274) maiden markers consumed"
 # Six of the eight moved: five by the fix(#445) rule at the end of
 # this file, and 'John née Jones Smith Ma' by the fix(#424/#445)
 # acronym rule above it, its diff carrying the suffix v1 read as
-# well. The other two still belong here, and they are
-# rules.md#M4's own carve-outs: 'abd née Jones', whose word the
-# bound-given vocabulary has claimed, and 'J. née Jones Smith V',
-# whose word is an initial. Their diffs are unchanged to the field,
-# which is what makes them a boundary rather than an oversight -- if
-# either ever gains a `given` move it lands UNEXPLAINED, since this
-# rule does not declare that field. The two other fix(#445) names,
+# well. The other two are rules.md#M4's own carve-outs, and their
+# diffs are unchanged to the field, which is what makes them a
+# boundary rather than an oversight. 'abd née Jones' -- whose word
+# the bound-given vocabulary has claimed -- is still this rule's.
+# 'J. née Jones Smith V' -- whose word is an initial -- is NOT, and
+# never was: its 1.4.0 diff carries `suffix`, which these three
+# fields cannot hold, so 'fix(#424) accepted: the maiden walk keeps
+# the numeral an initial before the marker vetoes' is what explains
+# it (asked of classify directly, 2026-08-27, rather than read off
+# the regexes). The safety argument holds through that rule instead:
+# it declares no `given` either, so a `given` move on either
+# carve-out lands UNEXPLAINED rather than absorbed.
+#
+# The two other fix(#445) names,
 # 'Smith née Jones' and 'Smith née Jones PhD', are corpus rows M4's
 # own example lines added.
 name_regex = "(?i)(?<![(（])(?<=\\S\\s)\\b(n[ée]e|geb)\\.?(?![)）])(?=\\s+\\S)"
@@ -1550,10 +1563,21 @@ issue = "fix(#335) a marker-led clause leaves the one name word its bare reading
 # changes hands. The declaration is narrowed to the two fields that
 # still move, which is what the note asked for: a `given` or `family`
 # move on this name is UNEXPLAINED from here on rather than absorbed.
-# Measured, not reasoned -- this name is the one shape in #445's
-# class that the gates do NOT report, and its diff at 2.0.0 and
-# 2.1.0, where the baseline read `given`, is unchanged at four
-# fields.
+# Measured, not reasoned -- and the first pass got the 2.x half of
+# that sentence wrong, saying those baselines read `given` when they
+# read family 'Smith', nickname 'née Jones' like this one. Both are
+# narrowed to two fields now (2026-08-27 review round). This name is
+# the one shape in #445's class the gates do NOT report, which is
+# why nothing but reading the ledger could catch it.
+#
+# What the narrowing buys differs by ledger, so do not read more into
+# it here than it gives: at 2.0.0 and 2.1.0 a {given, family} diff on
+# this name is now UNEXPLAINED, while at THIS baseline the fields-only
+# fix(suffix-routing) rule below still matches every name with
+# {given, family, suffix} and would take it. That catch-all is
+# long-standing and out of #445's scope; the narrowing removes this
+# rule from the path regardless, which is the part that was in
+# scope.
 name_regex = "(?i)^Smith \\(n[ée]e Jones\\)$"
 fields = ["nickname", "maiden"]
 
@@ -1562,7 +1586,8 @@ issue = "fix(#445) a maiden marker makes the lone name word the family"
 # rules.md#M4 -- "a maiden name standing beside exactly one name word
 # makes that word the family name". A maiden name is a FORMER family
 # name, which only means something beside a current one, so the word
-# left standing beside it is the surname the bearer uses now. Seven names, one field set: 'Smith née Jones'
+# left standing beside it is the surname the bearer uses now. Seven
+# names, one field set: 'Smith née Jones'
 # read first 'Smith', middle 'née', last 'Jones' on 1.4.0 and reads
 # family 'Smith', maiden 'Jones' here.
 #

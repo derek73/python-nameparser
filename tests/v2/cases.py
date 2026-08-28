@@ -1543,13 +1543,20 @@ CASES: tuple[Case, ...] = (
                "both spellings from the other side: the marker "
                "announces a FORMER surname, so the one name word left "
                "beside it is the current one. The bracketed spelling "
-               "RESTORES 1.4.0's family, which read family 'Smith', "
-               "nickname 'née Jones' (measured 2026-08-26) -- the "
-               "clause reading maiden rather than nickname is #335's "
-               "half and the only thing left that differs. Was "
-               "given 'Smith' on 1.4.0's bare spelling (first "
-               "'Smith' / middle 'née' / last 'Jones'), on 2.0.0, on "
-               "2.1.0 and here until this rule"),
+               "RESTORES the family EVERY released version read: "
+               "1.4.0, 2.0.0 and 2.1.0 all read this name family "
+               "'Smith', nickname 'née Jones' (measured on the wheels "
+               "2026-08-27), so the clause reading maiden rather than "
+               "nickname is #335's half and the only thing left that "
+               "differs -- at all three baselines alike. Be exact "
+               "about which spelling read `given`, because a ledger "
+               "took the loose wording this note used to carry and "
+               "narrowed one baseline where three needed it: the BARE "
+               "spelling is what read given 'Smith' on 2.0.0, on "
+               "2.1.0 and here until this rule (1.4.0 read it first "
+               "'Smith' / middle 'née' / last 'Jones'). The bracketed "
+               "spelling this row holds never read `given` on any "
+               "released version"),
     Case("maiden_marker_makes_the_lone_name_word_the_family",
          "Smith née Jones",
          {"family": "Smith", "maiden": "Jones"},
