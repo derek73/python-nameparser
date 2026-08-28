@@ -700,7 +700,7 @@ issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
 # move a token out of it ('Berg, Jan vd' was suffix 'vd' at every
 # baseline and is now family 'vd Berg'). Adding `suffix` to claim it
 # costs three shapes this rule has no business explaining --
-# {family,suffix} taken from fix(suffix-routing), and {middle,suffix}
+# {family,suffix} taken from fix(#380) above, and {middle,suffix}
 # and {middle,family,suffix} taken from UNEXPLAINED, the last two
 # being diffs in which `family` does not move at all. A rule that
 # pre-claims shapes it has never seen is the #372 failure mode.
@@ -715,9 +715,12 @@ issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
 # a leading .* this absorbed non-Latin comma names whose diff has
 # another cause -- a Cyrillic 'Smith, de la' moves {family} because the
 # particle's RENDERING ORDER inside the family changed, which no rule
-# in this ledger names, and it classified here. (It now falls to the
-# fields-only catch-all, so the absorption moved rather than vanished;
-# worth a narrower rule if such a name ever appears.) The class is the
+# in this ledger names, and it classified here. (No such name is in
+# any corpus, so this is what WOULD happen. It would now arrive
+# UNEXPLAINED and block the gate until someone read it, which is the
+# right outcome: this ledger has no fields-only rule to absorb it.
+# The claim that it "falls to the fields-only catch-all" was copied
+# from the 1.4 ledger, where there is one -- #451.) The class is the
 # neighbours' and compare.py's own: U+0000-U+024F, which stops at
 # Latin Extended-B, so a diacritic-bearing 'Nguyen, Van de la' in NFD
 # or Latin Extended Additional is outside it.
