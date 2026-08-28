@@ -632,23 +632,38 @@ fields = ["middle", "family"]
 
 [[change]]
 issue = "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix"
-# 'Johnson PhD' / 'Smith Jr.' / 'John V' / 'QC MP': v1 routed a lone
-# trailing suffix to family/first (no comma present); 2.0 keeps
-# recognized suffixes in `suffix`. Four corpus names, and the prose
-# fits all four.
+# 'Smith Jr.' / 'John V' / 'QC MP': v1 routed a lone trailing suffix
+# to family/first (no comma present); 2.0 keeps recognized suffixes in
+# `suffix`.
 #
-# It claimed 25 until #372, on nothing but being the only fields-only
-# rule in any ledger: it sorts after every name_regex rule, so it
-# takes whatever nothing narrower named. The other 21 have their own
-# rules now -- fix(cjk-glued-honorific-peel) and the widened
+# STILL THE ONLY RULE IN ANY LEDGER WITH NO name_regex, and #451 is
+# retiring it. Read that issue before widening anything here. What is
+# left on it after the named rules #451 has added so far: names in
+# several behaviour families, all moving {family, suffix} and no more,
+# which is what this `fields` now says. It declared `given` as well
+# until #451 measured that no name it explains moves that role -- the
+# fix(#424) shape decisions.md#H1 records, a rule matching by superset
+# while the diff beneath it shrinks, with nothing able to see it.
+#
+# The same surgery has been done to it twice. It claimed 25 until
+# #372, on nothing but being the only fields-only rule in any ledger:
+# it sorts after every name_regex rule, so it takes whatever nothing
+# narrower named. #372 gave 21 of those their own rules --
+# fix(cjk-glued-honorific-peel) and the widened
 # fix(cjk-honorific-suffix) below for #312's honorifics,
 # fix(comma-precomma-family) above for the three names that move no
-# suffix at all.
+# suffix at all -- and #451 is doing the rest. Those figures are
+# history and stay written; a count of what the rule explains NOW is
+# not, because nothing recomputes it. The last one read "Four corpus
+# names, and the prose fits all four" while the rule explained
+# fourteen. Run tools/differential/compare.py --baseline 1.4.0 for
+# the live number.
 #
-# Being last is the point of this rule and worth keeping. What is not
-# worth keeping is it being the only explanation a name ever gets:
-# when it grows, the question is which narrower rule is missing.
-fields = ["given", "family", "suffix"]
+# Being last is the point of this rule and worth keeping until it is
+# gone. What is not worth keeping is it being the only explanation a
+# name ever gets: when it grows, the question is which narrower rule
+# is missing.
+fields = ["family", "suffix"]
 
 [[change]]
 issue = "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole"
