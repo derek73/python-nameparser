@@ -1136,6 +1136,54 @@ name_regex = "(?i)^ste\\s+\\S+$"
 fields = ["given", "family"]
 
 [[change]]
+issue = "fix(#360) mc moved into the never-given particles, so it folds into the family"
+# 'Mc Donald': mc became a never-given particle, so the leading token
+# stops being read as the given name and folds into the family instead
+# ('Mc' + 'Donald' -> family 'Mc Donald'). The twin of the ste rule
+# above, and written beside it for that reason.
+#
+# In `(?i)^mc\s+\S+$` the `mc` is a LITERAL anchored at the start,
+# followed by whitespace and then exactly one token to the string's
+# end. `\S+$`, not a `\b`, is what closes it: the pattern carries no
+# word boundary at all. 'McDonald, Ronald' and 'Mcintyre Smith Jr.'
+# fail on the whitespace, having none after 'mc'; 'Ste Marie' and
+# 'Los Santos' fail earlier still, opening with neither letter. None
+# of the four is this rule's to claim, whatever else explains it --
+# and if one ever needs explaining, it needs a rule of its own. Do
+# not widen this one to reach it: a rule claiming names its prose
+# does not describe is what #451 is retiring.
+#
+# Ported verbatim from expected_since_2.0.0.toml, minus `_ambiguities`:
+# below baseline 2.0 there is no v2 surface, so no diff can carry that
+# pseudo-field and naming it would narrow by something unreachable.
+# Until this port the name fell to the fields-only catch-all, which
+# _CROSS_RULE_WINNERS recorded rather than closed (#451).
+name_regex = "(?i)^mc\\s+\\S+$"
+fields = ["given", "family"]
+
+[[change]]
+issue = "fix(#367) a title no longer displaces a leading never-given particle"
+# 'Sir de Mesnil': the title stops pushing the particle out of the
+# leading position, so the particle run reads as the family rather
+# than the given name. The `de` sibling of the two #367 `van` rules
+# below.
+#
+# `(?i)^sir\s+de\b` is anchored at the start, and its `\b` is real
+# work rather than decoration: it is what keeps 'Sir Denis Smith' and
+# 'Sir del Rio' out. The roster's own probes fail earlier -- 'John Sir
+# de Mesnil' and 'Smith, Sir de Vaux' on the anchor, 'sir' opening
+# neither string, and 'Sir Smith' on the literal 'de'. None of the
+# three is this rule's to claim, whatever else explains it, and a name
+# of that shape that ever needs explaining wants its own rule rather
+# than a widening of this one (#451).
+#
+# Ported verbatim from expected_since_2.0.0.toml, whose copy already
+# reads fields = ["given", "family"] and carries nothing to drop --
+# unlike the #360 rule above, this one never claimed `_ambiguities`.
+name_regex = "(?i)^sir\\s+de\\b"
+fields = ["given", "family"]
+
+[[change]]
 issue = "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle"
 # 'Esq. van Gogh' (corpus_issues): rules.md#P4 -- "An unlisted
 # abbreviation before the particle is as transparent as a listed
@@ -1438,7 +1486,7 @@ issue = "fix(#410) a title and one name word name the family, whatever annotatio
 # they were falling to the fields-only fix(suffix-routing) below, on a
 # rule whose every other name moves a trailing token into `suffix`,
 # while these move no suffix at all. Same surgery #372 did on the same
-# catch-all, and its heading returns to 14 once this rule takes them.
+# catch-all, whose heading returned to 14 once this rule took them.
 #
 # THREE names here, where the 2.0.0 and 2.1.0 ledgers classify four:
 # at this baseline 'Dr. Smith née Jones' also moves `middle` and

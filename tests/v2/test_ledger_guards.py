@@ -1460,6 +1460,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'middle', 'suffix'), "a564b97f7162"),
         "fix(#360) ste moved into the never-given particles with mc":
             _Claim(1, ('family', 'given'), "e62caedec864"),
+        "fix(#360) mc moved into the never-given particles, so it folds into the family":
+            _Claim(1, ('family', 'given'), "ee4339908f4d"),
+        "fix(#367) a title no longer displaces a leading never-given particle":
+            _Claim(1, ('family', 'given'), "db724fb9c779"),
         "fix(#445) a maiden marker makes the lone name word the family":
             _Claim(7, ('family', 'given', 'maiden', 'middle'), "3de9ef12b4a8"),
     },
@@ -1776,21 +1780,20 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
 #: a diff shape that shifted is a finding, not a number to update.
 _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
     "expected_since_1.4.0.toml": {
-        # Three behaviours that got named rules in the 2.0 and 2.1
-        # ledgers but not this one, so here they fall to the fields-only
-        # catch-all. Recorded because the assignment is incidental
-        # rather than argued: 'Berg, Jan vd' is reachable by three
-        # named rules and wins none of them (their `fields` do not
-        # match), while 'Mc Donald' and 'Sir de Mesnil' are reachable
-        # by NO named rule at all. Being absorbed by the catch-all is
-        # the recoverable direction, but a rule added later that takes
-        # one of them silently would change what the 1.4 summary
-        # attributes -- and AGENTS.md names that summary as the source
-        # for the release log's Behavior Changes section. #380, #360
-        # and #367 respectively.
+        # One behaviour that got a named rule in the 2.0 and 2.1 ledgers
+        # but not this one, so here it falls to the fields-only
+        # catch-all. The other two -- 'Mc Donald' (#360) and
+        # 'Sir de Mesnil' (#367) -- had their rules ported into this
+        # ledger by #451, which is why those rows are gone.
+        # Recorded because the assignment is incidental rather than
+        # argued: 'Berg, Jan vd' is reachable by three named rules and
+        # wins none of them (their `fields` do not match). Being
+        # absorbed by the catch-all is the recoverable direction, but a
+        # rule added later that takes it silently would change what the
+        # 1.4 summary attributes -- and AGENTS.md names that summary as
+        # the source for the release log's Behavior Changes section.
+        # #380.
         ("Berg, Jan vd", ("family", "suffix")): "fix(suffix-routing)",
-        ("Mc Donald", ("family", "given")): "fix(suffix-routing)",
-        ("Sir de Mesnil", ("family", "given")): "fix(suffix-routing)",
         ("Andrews, M.D.", ("given", "suffix")): "fix(comma-family)",
         ("田中, 太郎さん", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
         ("김, 민준씨", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
