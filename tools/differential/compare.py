@@ -112,6 +112,21 @@ def _sorted_rules(rules: list[dict[str, object]]) -> list[dict[str, object]]:
     one tier and the order they are written in settles every tie among
     them -- three names match both honorific rules and are labelled by
     whichever comes first.
+
+    SINCE #451 THAT IS EVERY LEDGER, and this function is the identity
+    on all of them. validate_rules now rejects a rule carrying `fields`
+    and no `name_regex`, which is the only shape that could occupy the
+    second tier -- so no ledger that loads can reach it, and file order
+    settles every tie there is. Verified against all three shipped
+    ledgers at the time of writing.
+
+    Kept rather than deleted, deliberately. It is the defence that
+    makes the ban SAFE to state: a ledger read by anything that does
+    not call validate_rules first -- a future tool, a REPL session, a
+    test fixture -- still gets the tier ordering rather than silently
+    letting a regexless rule shadow the file. Deleting it would move
+    the guarantee from the code into a convention, which is the trade
+    #451 was filed to undo.
     """
     return sorted(rules, key=lambda r: not isinstance(r.get("name_regex"), str))
 
@@ -375,6 +390,21 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
     buy a precise message rather than safety; they are here because the
     family is easier to reason about whole than split by direction.
 
+    The `fields`-without-`name_regex` check belongs to the dangerous
+    direction, and it is the family's sharpest example: no other
+    malformed shape can widen invisibly. #451 is the rule that lived
+    it -- no name narrowing, so it claimed every name whose diff fit
+    its `fields`, and _CORPUS_CLAIMS (the guard tracking each rule's
+    reach) recorded that reach as the whole corpus from the start, so
+    growth could never trip it. It grew from 4 explained names to 14
+    across six unrelated behavior families before anyone noticed, with
+    every guard green throughout. A specificity FLOOR on role count was
+    proposed and declined as vacuous (#372/#373): that one rule named
+    3 of 7 roles, and no floor rejecting it matches anything else. This
+    check rejects the SHAPE instead -- no name narrowing at all -- which
+    is a different proposal and costs no migration, since no rule in
+    any shipped ledger has it.
+
     The TYPE and VALUE checks are the quiet ones, not the presence
     check: `classify` skips a `name_regex` that is not a str and a
     `fields` that is not a list, so a mistyped or misspelled key does
@@ -435,6 +465,18 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
             raise SystemExit(
                 f"{where} has neither 'name_regex' nor 'fields' -- it "
                 f"would match every diff and shadow every later rule")
+        if has_fields and not has_regex:
+            raise SystemExit(
+                f"{where} has 'fields' but no 'name_regex' (#451). With "
+                f"no name narrowing, the rule claims every name whose "
+                f"diff fits its 'fields' -- and no guard can see that "
+                f"grow: _CORPUS_CLAIMS records a regexless rule's reach "
+                f"as the WHOLE CORPUS, so it starts at its maximum and "
+                f"arrivals never move it. The one rule ever shaped this "
+                f"way grew from 4 explained names to 14, across six "
+                f"unrelated behavior families, with every guard green "
+                f"the whole time. Narrow by name instead, or split this "
+                f"into the rules the diffs actually need")
         if has_regex:
             pattern = rule["name_regex"]
             if not isinstance(pattern, str):
