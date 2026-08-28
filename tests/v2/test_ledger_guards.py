@@ -677,6 +677,12 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # missing is fix(#399)'s or fix(#412)'s
     "fix(#418) accepted": ("Jane née Jr Jones", "Jane née y Jones",
                            "Jane van der Berg née Jr Jones"),
+    # decisions.md#H1's own nickname-plus-title-plus-name shape, kept
+    # out on purpose: this rule is anchored to a trailing suffix word,
+    # not a title, and a two-token name (with or without the suffix)
+    # has no third token for the regex to require.
+    "fix(N3) a nickname-led name with a trailing suffix keeps the suffix in `suffix`":
+        ("'Smitty' Jones", "Jones Jr.", "'Smitty' Dr. Jones"),
 }
 
 
@@ -978,6 +984,9 @@ _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
         covers=frozenset({"de", "del", "den", "der", "di", "do", "dos",
                           "du", "la", "le", "los", "mc", "van", "vd",
                           "von", "zu"})),
+    "fix(N3) a nickname-led name with a trailing suffix keeps the suffix in `suffix`":
+        _LatinCopy(vocabulary=SUFFIX_WORDS,
+                   covers=frozenset({"jr", "sr", "ii", "iii", "iv", "v"})),
 }
 
 #: Alternations that copy no vocabulary, so discovery must not demand a
@@ -1523,6 +1532,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given'), "db724fb9c779"),
         "fix(#445) a maiden marker makes the lone name word the family":
             _Claim(7, ('family', 'given', 'maiden', 'middle'), "3de9ef12b4a8"),
+        "fix(N3) a nickname-led name with a trailing suffix keeps the suffix in `suffix`":
+            _Claim(1, ('family', 'suffix'), "570f265a2f46"),
     },
     "expected_since_2.0.0.toml": {
         "fix(#335) a marker-led clause leaves the one name word its bare reading":

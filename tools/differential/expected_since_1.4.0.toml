@@ -1789,3 +1789,35 @@ issue = "fix(#445) a maiden marker makes the lone name word the family"
 # above listed as the checklist to re-measure.
 name_regex = "(?i)^(?:Janey n[ée]e Jones|Jane n[ée]e Jones J\\. V|Jane n[ée]e Jones Smith|Jane n[ée]e and Jones Smith|John n[ée]e Jones Smith V|Smith n[ée]e Jones|Smith n[ée]e Jones PhD)$"
 fields = ["given", "middle", "family", "maiden"]
+
+[[change]]
+issue = "fix(N3) a nickname-led name with a trailing suffix keeps the suffix in `suffix`"
+# "'Smitty' Jones Jr.": the diff against 1.4.0 moves exactly {family,
+# suffix} -- `given` is 'Jones' at both baselines, which is what the
+# N3 lone-word nickname rule already gives it once the nickname and
+# suffix are set aside. Whether 1.4 itself read the trailing word as
+# `family` is outside what this ledger's worker can check directly
+# (tools/differential/README.md's warning against reading a v1
+# release from a cached environment); the diff shape is consistent
+# with that reading, and 2.x reads this name given 'Jones', family
+# '', suffix 'Jr.'. decisions.md#N3.
+#
+# Its own rule because it is three tokens -- a quoted nickname, one
+# bare name word, one suffix word -- and #451 is retiring the
+# fields-only fix(suffix-routing) catch-all above by giving its names
+# narrower rules; this name was one of that catch-all's nine at the
+# start of this task. No two-token suffix rule exists in this ledger
+# yet to hold it either way: #451 is landing those in a later task,
+# and this shape -- three tokens, a leading nickname -- would not fit
+# one regardless.
+#
+# Note what is NOT settled here: decisions.md#H1 records that N3 and
+# H1 count a trailing suffix in opposite directions -- H1's
+# title-plus-one-word rule declines the moment a suffix stands beside
+# it, while "N3 counts a suffix the other way (`'Smitty' Jones Jr.`
+# reads given 'Jones', family '')" -- and H1 states plainly that
+# "which of the two readings is right for a nickname-led name is not
+# decided here". This rule classifies only the 1.4-to-2.x movement
+# measured above; it does not endorse either reading.
+name_regex = "(?i)^['\"‘“][^'\"’”]+['\"’”]\\s+\\S+\\s+(jr|sr|ii|iii|iv|v)\\.?$"
+fields = ["family", "suffix"]
