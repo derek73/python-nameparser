@@ -318,7 +318,7 @@ name_regex = "(?i)^john\\s+van\\s+der\\s+berg\\s+ma$"
 fields = ["family", "suffix", "_ambiguities"]
 
 [[change]]
-issue = "fix(#424) the maiden walk stops before the trailing numeral"
+issue = "fix(#424/#445) the maiden walk stops before the trailing numeral, and the lone name word is the family"
 # 'John née Jones Smith V': rules.md#M2 -- "takes the words after it
 # -- up to any suffix word, or the trailing roman numeral assign
 # reads as the suffix (S2) -- as the maiden name". maiden 'Jones
@@ -326,8 +326,18 @@ issue = "fix(#424) the maiden walk stops before the trailing numeral"
 # with the suffix-piece test too. No 1.4.0 twin: v1 had no maiden
 # support, and the fix(#274) rule carries the name there. A rules.md
 # example; no differential corpus name has the shape.
+#
+# Renamed for #445 (2026-08-27) rather than widened in place, because
+# the diff has two causes now and one rule has to explain the whole
+# of it. The walk leaves a single name word, and rules.md#M4 makes
+# that word the family: given 'John' -> family 'John' joins the three
+# fields above. Attributing that to #424 would be false, and leaving
+# the declaration at three fields left this rule explaining nothing
+# while the name went UNEXPLAINED -- which is how the gate reported
+# it before this edit, at 2.0.0 and 2.1.0 alike. No 1.4.0 twin to
+# rename: the fix(#445) rule there carries this name.
 name_regex = "(?i)^john\\s+n[ée]e\\s+jones\\s+smith\\s+v$"
-fields = ["suffix", "maiden", "_ambiguities"]
+fields = ["given", "family", "suffix", "maiden", "_ambiguities"]
 
 [[change]]
 issue = "fix(#424) a marker followed only by the numeral is just a word"
@@ -731,6 +741,13 @@ issue = "fix(#412) a connective join no longer absorbs the maiden marker beside 
 #
 # Checked against this baseline's own run, not copied: both names
 # arrive UNEXPLAINED here and at 2.0.0 alike, and nothing else does.
+# Since #445 (2026-08-27) this rule explains only the first of the
+# two: the marker in 'Jane née and Jones Smith' takes the rest of the
+# name and leaves one name word, so `given` empties into `family` and
+# the diff outgrew these three fields. It has a rule of its own at
+# the end of this file. The names were split rather than the fields
+# widened, because 'Jane van der Berg née y Jones' keeps a given name
+# and adding `given` here would have pre-excused its loss.
 # At 1.4.0 fix(#274) already classifies them -- v1 has no maiden
 # field, so every marker-bearing name is a diff there.
 #
@@ -957,7 +974,9 @@ issue = "fix(#335) a marker-led clause leaves the one name word its bare reading
 # N3 reads a name that is only a nickname plus one name word as "that
 # word is the family name", and a marker-led clause is not a nickname
 # clause, so N3 no longer reaches this shape: the word keeps the
-# reading the bare "Smith née Jones" gives it, which is `given`.
+# reading the bare "Smith née Jones" gives it -- `given` when this
+# rule was written, and `family` since #445 gave the bare spelling
+# the same reading from the other side.
 #
 # Its own rule rather than a seventh alternative in the fix(#335)
 # rule above, for the reason that rule states: this diff moves FOUR
@@ -967,10 +986,64 @@ issue = "fix(#335) a marker-led clause leaves the one name word its bare reading
 # reads that way on 2.0.0 and 2.1.0 too -- but it is inside this
 # diff, so the rule declares it.
 #
-# revisit when #445 lands: this rule declares `family`, and `family`
-# is exactly the field #445 would change. Fixing it there moves this
-# diff, and this rule would absorb the change in silence at all three
-# baselines -- the same failure the four-field split exists to avoid,
-# displaced onto a different field. Re-measure this rule then.
+# The revisit note this block carried was answered on 2026-08-27, and
+# re-measured rather than reasoned about. #445 does change the bare
+# reading -- the one name word beside a maiden clause is the family
+# now (rules.md#M4) -- but this rule's diff is unchanged AT THIS
+# BASELINE, because the baseline is what read `given` and the
+# baseline cannot move. All four fields still differ, so the
+# declaration stands as written. What did move is the 1.4.0 twin of
+# this rule, where the baseline read family 'Smith' and the diff
+# shrank to {nickname, maiden}; that ledger narrows it there.
 name_regex = "(?i)^Smith \\(n[ée]e Jones\\)$"
 fields = ["given", "family", "nickname", "maiden"]
+
+[[change]]
+issue = "fix(#445) a maiden marker makes the lone name word the family"
+# rules.md#M4 -- "a maiden name standing beside exactly one name word
+# makes that word the family name". A maiden name is a FORMER family
+# name, which only means something beside a current one, so the word
+# left standing beside it is the surname the bearer uses now: 'Smith née Jones' read given 'Smith' with an
+# empty family on this baseline and reads family 'Smith' here.
+#
+# Two fields and no more. The marker consumption these names also
+# carry is this baseline's reading already, so `given` and `family`
+# are the whole diff -- which is what makes them one rule, and what
+# keeps out the two names whose diffs are compounds (the connective
+# join below, the trailing numeral above).
+#
+# Anchored, and spelled out one name per alternative, for the reason
+# M4 itself gives. The shape regex a reader would write first -- one
+# word, then a marker -- also matches M4's two carve-outs
+# ('abd née Jones', 'J. née Jones Smith V', both corpus names and
+# neither moving), and a rule declaring `given` over those two would
+# stand ready to explain the very given -> family move the carve-outs
+# exist to prevent.
+#
+# 'Smith née Jones' and 'Smith née Jones PhD' are corpus rows this
+# change itself added, being M4's own example lines.
+# 'John née Jones Smith Ma' sits here rather than with an acronym
+# rule of its own: this baseline already reads it maiden 'Jones Smith
+# Ma', so the acronym is no part of the diff. At 1.4.0, where v1 read
+# suffix 'Ma', it is the one name of this class that needs one.
+name_regex = "(?i)^(?:Janey n[ée]e Jones|Jane n[ée]e Jones J\\. V|Jane n[ée]e Jones Smith|John n[ée]e Jones Smith Ma|Smith n[ée]e Jones|Smith n[ée]e Jones PhD)$"
+fields = ["given", "family"]
+
+[[change]]
+issue = "fix(#445) the lone name word beside a marker a connective join no longer absorbs"
+# 'Jane née and Jones Smith', whose diff is a compound of #412 and
+# #445 and so cannot sit in either's plain rule. #412 stopped the
+# connective join from swallowing the marker, so the marker is taken
+# and 'and Jones Smith' is the maiden name; what that leaves is one
+# name word, and rules.md#M4 makes it the family. middle
+# 'née and Jones', family 'Smith' -> family 'Jane', maiden
+# 'and Jones Smith'.
+#
+# Its own rule rather than a widening of the fix(#412) rule above,
+# which claims two names: the other one keeps a given name, and one
+# rule holding both would have to declare `given` for both and
+# pre-excuse its loss where losing it would be a regression. At 1.4.0
+# the fix(#445) rule carries this name with the same four fields, v1
+# having read the marker as a middle word.
+name_regex = "(?i)^Jane n[ée]e and Jones Smith$"
+fields = ["given", "middle", "family", "maiden"]

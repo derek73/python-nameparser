@@ -146,6 +146,14 @@ def _name_positions(order: tuple[Role, Role, Role],
     family, middles..., given. One piece takes order[0]'s role; two
     pieces take order[0] and the other primary."""
     first, second = order[0], order[1]
+    # rules.md#O5: "a name of one name word that nothing else has
+    # decided reads that word as the given name under the default
+    # given-first order, and as the family name under a declared
+    # family-first one" -- a convention, not a determination: O4 has
+    # no positions to compare at one word, so this line is where the
+    # library picks one of two equally consistent readings and picks
+    # it the same way every time. The rules that DO decide such a
+    # name (H1, N3, M4) run after this and retag.
     if count == 1:
         return [first]
     if first is Role.GIVEN:                      # GIVEN_FIRST

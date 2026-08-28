@@ -8,8 +8,8 @@ Produces: tokens with roles adjusted by the post rules.
 Reads: Policy.patronymic_rules, Policy.middle_as_family;
 Lexicon.given_name_titles.
 
-Implements rules H1, P1, O1, O2 and O3 of docs/design/rules.md; each
-is cited at its code below, and H1/P1/O1/O2's history lives in
+Implements rules H1, M4, P1, O1, O2 and O3 of docs/design/rules.md;
+each is cited at its code below, and H1/P1/O1/O2's history lives in
 docs/design/decisions.md.
 """
 from __future__ import annotations
@@ -39,6 +39,11 @@ _TURKIC_CYR = re.compile(
 
 
 _NAME_ROLES = (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
+
+#: M4's two carve-outs, as the tags classify recorded them: a bound
+#: given-name word is vocabulary claiming the word as a given name,
+#: and `initial` is the shape claim. Neither is a predicate M4 owns.
+_NEVER_FLIPPED = frozenset({"vocab:bound-given", "initial"})
 
 
 def _idx(tokens: list[WorkToken], role: Role) -> list[int]:
@@ -193,6 +198,46 @@ def post_rules(state: ParseState) -> ParseState:
             givens = _idx(tokens, Role.GIVEN)
             middles = _idx(tokens, Role.MIDDLE)
             families = _idx(tokens, Role.FAMILY)
+
+    # rules.md#M4: "a maiden name standing beside exactly one name
+    # word makes that word the family name, whatever suffix or
+    # nickname stands beside it" (#445) -- the MAIDEN role, not a
+    # marker: M1's configured pair produces one with no marker
+    # anywhere ("Smith (Jones)" under maiden_delimiters), and the
+    # rationale carries over unchanged, so the rule is keyed on the
+    # maiden name as the statement is.
+    #
+    # H1's sibling, and placed under it so the interaction the rule
+    # states is decidable by reading: where H1 fired, `givens` is
+    # empty here and this cannot fire; where H1 declined because the
+    # title addresses by given name, `titles` is what keeps this rule
+    # off the same word. A titled name is H1's at both outcomes.
+    #
+    # Sibling EXCEPT in what it counts, and that is a known gap
+    # rather than a boundary: this guard counts GIVEN tokens where
+    # H1 counts nothing (it tests which roles are unoccupied), so a
+    # name word another rule joined counts as several here and the
+    # rule declines -- `Dr. Dean of Chemistry` reads family, while
+    # `Dean of Chemistry née Jones` keeps given 'Dean of Chemistry'.
+    # rules.md#P3 says a joined part is one name word wherever
+    # another rule counts them, so the two disagree; widening moves
+    # no corpus name and is not this change's to make
+    # (decisions.md#M4).
+    # rules.md#M4: "a word the vocabulary has claimed as a given name
+    # keeps that reading, and so does a word written as an initial"
+    # -- read off the tags classify already recorded rather than a
+    # predicate of this rule's own, because this rule changes what
+    # POSITION decided and must not reach what a word IS
+    # (mechanisms.md#TWO-LAYER-ASSIGN).
+    if (not titles and len(givens) == 1 and not middles and not families
+            and any(t.role is Role.MAIDEN for t in tokens)
+            and not (_NEVER_FLIPPED & tokens[givens[0]].tags)):
+        _retag(tokens, givens[0], Role.FAMILY)
+        # recomputed for H1's reason, stated at H1: a stale index list
+        # is the bug shape #359 fixed
+        givens = _idx(tokens, Role.GIVEN)
+        middles = _idx(tokens, Role.MIDDLE)
+        families = _idx(tokens, Role.FAMILY)
 
     # rules.md#P1: "a never-given particle standing alone where the
     # given name would go — or opening the name — marks the name as

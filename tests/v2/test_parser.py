@@ -1378,8 +1378,12 @@ def test_the_clause_free_corpus_is_not_empty() -> None:
     already -- the delimiter strip, then the move from word
     membership to the marker predicate, which a phrase entry made
     necessary -- and the one-liner in that filter's comment recounts
-    every stage: 642 names before either, 632 after the strip, 629
-    once the predicate decides. So the floor is what says a future
+    every stage: 645 names before either, 635 after the strip, 631
+    once the predicate decides. Recounted 2026-08-27 by pasting it:
+    the four rules-corpus rows #445 added move the last stage by two
+    (the other two carry a marker), and the first two figures were
+    already one low before that -- a corpus row landed without the
+    recount the comment asks for. So the floor is what says a future
     widening emptied it. Deliberately far below today's count: this
     asks whether the filter still selects a corpus, not what the
     corpus holds."""
@@ -1413,15 +1417,52 @@ def test_a_maiden_clause_changes_nothing_else(name: str) -> None:
     Jane née Smith' given 'Jane' -- and no longer moves, so the
     assertion now covers every name that reaches the marker with
     something to stand behind.
+
+    One class of name moves ON PURPOSE, and is asserted MOVING rather
+    than skipped: rules.md#M4 makes the clause decide a name that
+    holds exactly one name word, because a marker announces a former
+    surname and only means anything beside a current one. Fourteen
+    of these names are in that class ('Smith', 'Smith Jr.', "'Smitty'
+    Jones Jr.", 'John V', 'de' ...), and the flip they assert is
+    exactly given -> family with every other field standing still --
+    which is the whole of what #445 changed, checked over the corpus
+    rather than at the six rows cases.py carries.
+
+    The `flips` predicate below is a second reading of M4's guard, and
+    that is a maintenance cost taken deliberately rather than the
+    silent-drift hazard it resembles: it fails LOUDLY in both
+    directions -- narrow M4 and the flip assertion fails, widen it and
+    the stands-still assertion does. What it buys is the carve-out
+    witness. Review offered the cheaper form, asserting only that
+    (given, family) is either unchanged or moved wholesale, with no
+    predicate at all; under that form a name whose word the vocabulary
+    claims would be free to flip, and dropping the `vocab:bound-given`
+    carve-out would stop failing here on 'abdul'. The corpus is the
+    only place that name is asked.
     """
     base = parse(name)
     if not (base.given or base.middle or base.family
             or base.title or base.suffix):
         pytest.skip("nothing before the marker at all: M2 leaves it a word")
+    # M4's guard, read off the base parse: one GIVEN token, no other
+    # name word, no title (a titled name is H1's), and neither
+    # carve-out tag. Tokens rather than fields because the rule counts
+    # tokens -- a joined 'de la Vega' in `given` is one field and
+    # three of them.
+    givens = [t for t in base.tokens if t.role is Role.GIVEN]
+    flips = (len(givens) == 1 and not base.middle and not base.family
+             and not base.title
+             and not ({"initial", "vocab:bound-given"} & givens[0].tags))
     with_clause = parse(name + " née Jones")
     assert with_clause.maiden == "Jones"
-    for field in ("title", "given", "middle", "family", "suffix",
-                  "nickname"):
+    moved = ("title", "middle", "suffix", "nickname") if flips else (
+        "title", "given", "middle", "family", "suffix", "nickname")
+    if flips:
+        assert (with_clause.family, with_clause.given) == (base.given, ""), (
+            f"{name!r}: one name word beside a maiden clause is the "
+            f"family name (rules.md#M4), but it reads family "
+            f"{with_clause.family!r} / given {with_clause.given!r}")
+    for field in moved:
         assert getattr(with_clause, field) == getattr(base, field), (
             f"{name!r}: {field} reads {getattr(base, field)!r} alone and "
             f"{getattr(with_clause, field)!r} with a maiden clause")

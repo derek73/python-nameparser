@@ -356,9 +356,9 @@ _SENTINELS = ("John Smith", "田中さん", "Хосе Сантос", "x")
 #: decision when a corpus is added, the way the Script tables do.
 _CORPUS_FLOORS = {
     "corpus.jsonl": 480,        # 486 today, from v1's banks at a pinned ref
-    "corpus_cjk.jsonl": 95,     # 97 today, generated from the case table
+    "corpus_cjk.jsonl": 95,     # 98 today, generated from the case table
     "corpus_issues.jsonl": 370,  # 381 today, harvested and append-only
-    "corpus_rules.jsonl": 150,  # 175 today, generated from rules.md
+    "corpus_rules.jsonl": 150,  # 234 today, generated from rules.md
 }
 
 
