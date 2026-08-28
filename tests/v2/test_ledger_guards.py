@@ -683,6 +683,14 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # has no third token for the regex to require.
     "fix(N3) a nickname-led name with a trailing suffix keeps the suffix in `suffix`":
         ("'Smitty' Jones", "Jones Jr.", "'Smitty' Dr. Jones"),
+    # #451's two NOT-WANTED rules, literal-anchored to one corpus name
+    # apiece: a three-token name with a rootname before or after is a
+    # different diff shape (or, for 'Carod i Rovira' and 'Lluis Carod
+    # i', no diff at all -- #397's still-open enhancement, not a
+    # 1.4-to-2.x regression), and 'Rai'/'Jane Rai Smith' have no
+    # 'aishwarya' to anchor on.
+    "fix(#342)": ("Aishwarya Rai Bachchan", "Rai", "Jane Rai Smith"),
+    "fix(#397)": ("Carod i Rovira", "Josep Carod i Rovira", "Lluis Carod i"),
 }
 
 
@@ -1454,6 +1462,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(279, ('family', 'given'), "28a62b622a48"),
         "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
             _Claim(1090, ('family', 'suffix'), "89e0b6d7f4c8"),
+        "fix(#342) NOT WANTED: a bare trailing 'Rai' is read as a post-nominal suffix and the family is lost":
+            _Claim(1, ('family', 'suffix'), "694fd06a2e9a"),
+        "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":
+            _Claim(1, ('family', 'suffix'), "498602f3cfd0"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":

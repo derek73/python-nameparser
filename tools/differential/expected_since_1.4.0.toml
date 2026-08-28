@@ -710,6 +710,97 @@ issue = "fix(suffix-routing) two-token name with unambiguous trailing suffix sta
 fields = ["family", "suffix"]
 
 [[change]]
+issue = "fix(#342) NOT WANTED: a bare trailing 'Rai' is read as a post-nominal suffix and the family is lost"
+# 'Aishwarya Rai': the tree reads given 'Aishwarya', family '', suffix
+# 'Rai'. 'rai' is a bare entry in SUFFIX_ACRONYMS
+# (nameparser/config/suffixes.py -- not SUFFIX_ACRONYMS_AMBIGUOUS,
+# not SUFFIX_WORDS), so the credential reading outranks the surname
+# reading with nothing to arbitrate them.
+# #342 (OPEN, milestone v2.2, bug) reports this: Rai, in the issue's
+# own words, is "a common surname across Hindi- and Bengali-speaking
+# regions," and the bulk 2019-12-11 wikipedia post-nominal import
+# (af5bdab) that added it was never reviewed against that collision.
+#
+# Whether 1.4 itself read the trailing word as `family` is outside
+# what this ledger's worker can check directly
+# (tools/differential/README.md's warning against reading a v1 release
+# from a cached environment); the diff this rule explains at this
+# baseline moves exactly {family, suffix}, which is consistent with
+# that reading and is what the fields below claim.
+#
+# Classified because the cause is known and recorded, NOT because the
+# reading is wanted -- decisions.md#P5's 2026-08-22 #369 entry
+# attributes that exact wording, quoted verbatim, to the previous
+# fix(#369) ledger rules (since rewritten, because #369 itself was
+# fixed). A [[never]] exclusion was considered and rejected: an
+# excluded name reports UNEXPLAINED and exits non-zero, which would
+# redden the 1.4.0 gate and block every release until #342 lands --
+# and #342 lists two candidate fixes that trade different corpus
+# names against each other, so which one lands is not yet decided.
+#
+# DELETE THIS RULE when #342 lands. The gate then reports it as
+# 'EXPLAINED NOTHING', which is the reminder.
+#
+# Literal-anchored to the one corpus name that reaches this shape. A
+# rule keyed on the SUFFIX_ACRONYMS collision itself, rather than the
+# literal name, would claim every trailing acronym-shaped surname and
+# pre-excuse regressions on names nobody has looked at.
+name_regex = "(?i)^aishwarya\\s+rai$"
+fields = ["family", "suffix"]
+
+[[change]]
+issue = "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost"
+# 'Carod i': the tree reads given 'Carod', family '', suffix 'i'. 'i'
+# is a bare entry in SUFFIX_WORDS (nameparser/config/suffixes.py --
+# the Roman-numeral generation markers i/ii/iii/iv/v, not
+# SUFFIX_ACRONYMS), so a two-word name ending in it reads as a
+# name plus a trailing generation rather than a two-word family link.
+# #397 (OPEN, milestone v2.2, enhancement) reports that Catalan and
+# Polish link two surnames with 'i' functioning as a conjunction, the
+# way Spanish already links them with 'y' ("Juan Garcia y Lopez" reads
+# family 'Garcia y Lopez'); nameparser's CONJUNCTIONS vocabulary does
+# not include 'i', so nothing there joins the link, and SUFFIX_WORDS'
+# numeral reading is what actually claims the trailing word instead.
+#
+# Whether 1.4 itself read the trailing word as `family` is outside
+# what this ledger's worker can check directly
+# (tools/differential/README.md's warning against reading a v1 release
+# from a cached environment); the diff this rule explains at this
+# baseline moves exactly {family, suffix}, which is consistent with
+# that reading and is what the fields below claim.
+#
+# Classified because the cause is known and recorded, NOT because the
+# reading is wanted -- the same standing fix(#342) above claims, from
+# decisions.md#P5's 2026-08-22 #369 entry. A [[never]] exclusion was
+# considered and rejected for the same reason as fix(#342) above: an
+# excluded name reports UNEXPLAINED and exits non-zero, and #397's own
+# "What needs deciding" section leaves open both whether 'i' joins
+# CONJUNCTIONS at all and how the join's rootname carve-out should
+# treat a word that is both a conjunction and suffix vocabulary --
+# unresolved, so the fix is not yet in hand.
+#
+# DELETE THIS RULE when #397 lands. The gate then reports it as
+# 'EXPLAINED NOTHING', which is the reminder.
+#
+# Literal-anchored to the one corpus name that reaches this shape, for
+# fix(#342) above's reason: a rule keyed on "two-word name, trailing
+# single letter" would pre-excuse every generation-marker regression,
+# not just this one. Measured, the four longer corpus names in the
+# same family produce no diff at this baseline at all, so none of them
+# reaches classify() and none needs a rule here: 'Carod i Rovira',
+# 'Josep Carod i Rovira' and 'Josep Lluis Carod i Rovira' read 'i' into
+# `middle` with `family` already the tail word ('Rovira'), and 'Lluis
+# Carod i' reads it into `suffix` with `family` already populated
+# ('Carod') -- unlike 'Carod i' above, none of the four has an empty
+# `family`, and all four read this way at every baseline this ledger's
+# worker can reach. That is #397's open enhancement (the family link
+# is still one word short of what a Catalan reader wants), not a
+# 1.4-to-2.x regression, so it is out of scope for a ledger that only
+# records diffs FROM 1.4.0.
+name_regex = "(?i)^carod\\s+i$"
+fields = ["family", "suffix"]
+
+[[change]]
 issue = "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole"
 # Only fires when a custom suffix delimiter is configured (Policy /
 # Constants.suffix_delimiters); the corpus runs with default policy, so
