@@ -465,18 +465,6 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
             raise SystemExit(
                 f"{where} has neither 'name_regex' nor 'fields' -- it "
                 f"would match every diff and shadow every later rule")
-        if has_fields and not has_regex:
-            raise SystemExit(
-                f"{where} has 'fields' but no 'name_regex' (#451). With "
-                f"no name narrowing, the rule claims every name whose "
-                f"diff fits its 'fields' -- and no guard can see that "
-                f"grow: _CORPUS_CLAIMS records a regexless rule's reach "
-                f"as the WHOLE CORPUS, so it starts at its maximum and "
-                f"arrivals never move it. The one rule ever shaped this "
-                f"way grew from 4 explained names to 14, across six "
-                f"unrelated behavior families, with every guard green "
-                f"the whole time. Narrow by name instead, or split this "
-                f"into the rules the diffs actually need")
         if has_regex:
             pattern = rule["name_regex"]
             if not isinstance(pattern, str):
@@ -527,6 +515,27 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
                     f"below baseline 2.0: there the seven ARE the whole "
                     f"vocabulary, and a rule listing them would have "
                     f"claimed every diff in the 1.4 ledger")
+        # LAST of the family, deliberately. This rejects a
+        # WELL-FORMED `fields` that simply has no name beside it, so it
+        # must not pre-empt the three checks above, each of which buys a
+        # precise message for a `fields` that is malformed -- empty, not
+        # a list, not roles. Written directly under the neither-key
+        # check (where the shapes are cousins) it did exactly that: an
+        # empty `fields` reported #451 instead of "empty 'fields'", and
+        # the parametrized cases pinning those messages had to grow a
+        # name_regex to keep reaching them (#453 review).
+        if has_fields and not has_regex:
+            raise SystemExit(
+                f"{where} has 'fields' but no 'name_regex' (#451). With "
+                f"no name narrowing, the rule claims every name whose "
+                f"diff fits its 'fields' -- and no guard can see that "
+                f"grow: _CORPUS_CLAIMS records a regexless rule's reach "
+                f"as the WHOLE CORPUS, so it starts at its maximum and "
+                f"arrivals never move it. The one rule ever shaped this "
+                f"way grew from 4 explained names to 14, across six "
+                f"unrelated behavior families, with every guard green "
+                f"the whole time. Narrow by name instead, or split this "
+                f"into the rules the diffs actually need")
 
 
 def validate_exclusions(entries: list[dict[str, object]],

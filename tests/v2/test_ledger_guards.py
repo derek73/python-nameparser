@@ -1420,9 +1420,10 @@ class _Claim(NamedTuple):
     comma rule kept its `,` regex and its 236 names while going from
     explaining 6 of the corpus to 242.
     """
-    #: corpus names the name_regex reaches; the whole corpus when a
-    #: rule has none, which is the most unbounded shape validate_rules
-    #: permits and the one most worth writing down
+    #: corpus names the name_regex reaches. The whole corpus when a
+    #: rule has none -- a shape validate_rules REJECTED in #451, so no
+    #: ledger can carry one now; the fallback stays because this
+    #: module reads ledgers without validating them first
     names: int
     #: the roles it narrows by, sorted; () when it narrows by regex alone
     roles: tuple[str, ...]
@@ -1899,9 +1900,10 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
             f"{sorted({i for i in issues if issues.count(i) > 1})}. Every "
             f"roster here keys on it, so one of them would go unmeasured")
         # A rule with no name_regex narrows by `fields` alone and so
-        # reaches EVERY name -- the most unbounded shape validate_rules
-        # permits, and the one most worth recording. Counting it as the
-        # whole corpus is not a placeholder; it is what it claims.
+        # reaches EVERY name. #451 made that shape a startup error, so
+        # no ledger reaching this line has one -- but _rules() does not
+        # validate, so counting it as the whole corpus stays correct
+        # rather than becoming dead. It is what such a rule claims.
         actual = {rule["issue"]: _claim(rule)
                   for rule in _rules(ledger)}
         moved = {issue: (recorded.get(issue), count)
@@ -2134,7 +2136,18 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
                   # SHRANK is the safe direction -- one fewer rule stands
                   # ready to claim a protected reading -- which is why this
                   # roster's message warns only about growth.
-                  ("fix(comma-family)", "fix(comma-precomma-family)")),
+                  # FULL issue strings, not `fix(tag)` prefixes. The
+                  # #453 review measured what the truncation cost: this
+                  # ledger carries three rules beginning "fix(comma-family)"
+                  # and, since #451, four beginning "fix(suffix-routing)",
+                  # so a tag-keyed tuple sits at its maximum for that tag
+                  # -- any of the siblings could widen onto a protected
+                  # reading and this roster would stay green. The same
+                  # identity-free weakness _SPAN_BEARING_RULES records.
+                  ("fix(comma-family) lone post-comma piece routes to "
+                   "suffix/title, not first",
+                   "fix(comma-precomma-family) pre-comma run reads as "
+                   "family, not given")),
     '(^|[\\w.]\\s+)[("\'][^)"\']+[)"\'](\\s+\\w|\\s*$)':
         # 51 -> 54 as rules.md gained the bracketed Polish examples
         # (#434): 'Maria Kowalska (z domu Nowak)', 'Maria Kowalska
@@ -2210,7 +2223,7 @@ def test_every_exclusion_silences_what_is_recorded() -> None:
                             continue
                         claimed = compare.classify(example, diff, rules)
                         if claimed:
-                            absorbed.add(claimed.split(")")[0] + ")")
+                            absorbed.add(claimed)
             actual[entry["name_regex"]] = _Excluded(
                 len(captured),
                 hashlib.sha256(
@@ -2318,9 +2331,12 @@ def test_a_rule_reaching_no_corpus_name_says_why_it_is_kept() -> None:
         for rule in _rules(ledger):
             if "dormant" in rule:
                 continue
-            # fields-only rules reach every name by construction, so only
-            # a name_regex can be statically silent -- see _claim(), which
-            # counts them as the whole corpus for the same reason
+            # Every rule has a name_regex since #451, so this skip is
+            # unreachable for a ledger that loads; kept because _rules()
+            # does not validate. A fields-only rule would reach every
+            # name by construction and so could never be statically
+            # silent -- see _claim(), which counts one as the whole
+            # corpus for the same reason
             regex = rule.get("name_regex")
             if not isinstance(regex, str):
                 continue
@@ -2333,5 +2349,5 @@ def test_a_rule_reaching_no_corpus_name_says_why_it_is_kept() -> None:
         f"with the reason the rule is worth keeping, or delete it.")
     assert checked, (
         "no rule was examined, so this guard is passing vacuously -- "
-        "every rule either declares `dormant` or narrows by `fields` "
-        "alone")
+        "every rule declares `dormant`, or (impossible since #451) "
+        "narrows by `fields` alone")

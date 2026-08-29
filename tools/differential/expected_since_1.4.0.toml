@@ -1982,10 +1982,13 @@ issue = "fix(suffix-routing) a two-token name ending in a roman numeral keeps it
 # The alternation is _ROMAN's own body, r"^(X|IX|IV|V?I{0,3})$" in
 # nameparser/_pipeline/_vocab.py, with the EMPTY alternative removed:
 # I{0,3} becomes I{1,3}, and the bare V that change would lose is
-# spelled out beside it. Measured over every string of length 1 to 4
-# drawn from IVXivx, the two patterns accept exactly the same strings
-# with one exception, the empty one, which _ROMAN accepts and this does
-# not. Dropping it is deliberate: behind "^\S+\s+" and before "$" an
+# spelled out beside it. Measured over every string of length 0 to 4
+# drawn from IVXivx -- length 0 included on purpose, since the empty
+# string is the whole difference -- the two accept exactly the same
+# strings but that one, which _ROMAN takes and this does not. Dropping
+# it is a latent widening removed: with the `^\S+\s+` prefix the empty
+# alternative would match a name ending in whitespace, which no corpus
+# name is today. Dropping it is deliberate: behind "^\S+\s+" and before "$" an
 # empty alternative would match a name ending in whitespace. No corpus
 # name does, so this is a latent widening removed rather than a bug
 # fixed -- and it is the reason the two patterns are NOT byte-identical
@@ -2030,8 +2033,9 @@ issue = "fix(suffix-routing) a two-token name ending in the suffix word jr keeps
 #
 # The regex also reaches four corpus names this rule does not explain.
 # 'Kim, Jr.' and 'Smith, Jr.' are fix(#296)'s lone post-comma
-# credential and '김민준씨 Jr.' is fix(cjk-glued-honorific-peel)'s; all
-# three rules sit above this one and win on file order, which is the
+# credential and '김민준씨 Jr.' is fix(cjk-glued-honorific-peel)'s.
+# Three names, two rules, and both sit above this one and win on file
+# order, which is the
 # whole reason these four rules were appended at the end. The fourth,
 # 'Doe,, Jr.', does not diff against this baseline at all, so it has no
 # winner to lose. That reach is real either way, so none of the four is
@@ -2114,8 +2118,9 @@ issue = "fix(suffix-routing) the dotted M.A. spelling reads as a credential (ma-
 # member `m\.?a\.?` matches the fragment 'M.A.' in the corpus, and
 # _normalize leaves that as 'm.a', which is not a SUFFIX_ACRONYMS entry
 # -- so test_latin_alternations_mean_something_the_vocabulary_ships
-# rejects it as an alternation member ("a fragment a member matches has
-# to BE a vocabulary entry"). The ambiguous-surname-acronym rule above
+# rejects it as an alternation member -- its helper
+# _reaches_non_vocabulary puts the rule as "every fragment a member
+# matches must BE an entry". The ambiguous-surname-acronym rule above
 # records the same finding and answers it the same way: keep the
 # periods out of the members. There is no alternation here at all, so
 # nothing is owed to _LATIN_ALTERNATION_SOURCES.

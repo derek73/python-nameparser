@@ -307,6 +307,19 @@ regression. `name_regex` is REQUIRED since #451: `validate_rules`
 rejects a rule carrying `fields` and no `name_regex`, as it already
 rejected one carrying neither.
 
+**That closes the SHAPE, not the property.** A required `name_regex`
+is not a bound on how much a rule reaches: the only width check is the
+sentinel probe, which rejects a pattern matching all four of
+`_SENTINELS` and nothing narrower. Measured over the 1090-name corpus,
+`name_regex = "[a-z]"` passes validation and reaches 941 names, `" "`
+reaches 1027 -- the old catch-all with a fig leaf. What #451 changed is
+that such a rule now has a `_CORPUS_CLAIMS` reach and digest to record,
+so its breadth is visible ONCE, to whoever reviews that number, instead
+of being invisible forever. That roster is by its own docstring "inert
+for a brand-new rule", so the review is the check. A reach ceiling is
+the mechanism that would bound this; it is proposed on
+[#452](https://github.com/derek73/python-nameparser/issues/452).
+
 **File order decides.** That is not a detail -- every rule in every
 ledger carries a `name_regex`, so they all sit in one tier, the sort
 is stable, and the order they are written in settles every tie between
