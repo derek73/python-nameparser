@@ -360,7 +360,7 @@ Declined:
 
 Excluded (the never-given / ambiguous particle line, nameparser/config/particles.py — #360 owns the vocabulary question):
 
-- Only 9 of the 39 ambiguous members were ever individually justified; the rest sit there by the conservative default (ambiguous unless argued never-given).
+- Only 9 of the ambiguous members were ever individually justified; the rest sit there by the conservative default (ambiguous unless argued never-given).
 - mc, ste — measured misparses ("Mc Donald" → given "Mc"), tracked in #360; st is inert at the head because TITLES claims it first; mac must stay ambiguous because Mac is a real given name.
 - Encoding rationale (#293, predating #360's membership questions): the data layer stores the NEVER-GIVEN set and derives the ambiguous one, because that is safe-by-default for new particles — a one-place addition — and the v1 shim translates by one-directional complement. And the constants are FROZEN specifically to kill the cached-Lexicon.default()-vs-fresh- Constants desync that runtime module-constant mutation caused.
 - Load-bearing dependency: TITLES ∩ ambiguous — {do, freiherr, st} until #296's audit, {freiherr, st} since — is what keeps the particle-or-given ambiguity emitter reachable at all; moving them all would leave the shipped vocabulary unable to reach it, which is why test_the_chained_emitter_is_reachable_by_construction (tests/v2/test_parser.py) pins reachability by construction rather than by shipped vocabulary — an empty intersection fails no test and does not mean the emitter is unreachable.

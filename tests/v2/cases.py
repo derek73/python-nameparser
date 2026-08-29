@@ -515,7 +515,7 @@ CASES: tuple[Case, ...] = (
          notes="the piece after the particle is a suffix, so the chain "
                "scan never advances and the merge is a no-op -- nothing "
                "was chained, so there is no fork to report (the emitter "
-               "fired here for all 39 ambiguous particles, and _assign "
+               "fired here for all ambiguous particles, and _assign "
                "double-reported the same token). Spelled with 'St' "
                "since #296's audit took 'do' out of TITLES; before that "
                "with 'Do', and before 2.2 with 'Dr.': "
