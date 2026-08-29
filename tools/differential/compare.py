@@ -373,7 +373,7 @@ _CORPUS_FLOORS = {
     "corpus.jsonl": 480,        # 486 today, from v1's banks at a pinned ref
     "corpus_cjk.jsonl": 95,     # 98 today, generated from the case table
     "corpus_issues.jsonl": 370,  # 381 today, harvested and append-only
-    "corpus_rules.jsonl": 150,  # 240 today, generated from rules.md
+    "corpus_rules.jsonl": 150,  # 241 today, generated from rules.md
 }
 
 

@@ -1,10 +1,11 @@
 # Ledger for baseline 2.0.0 -- what changes for a user upgrading from
 # the previous minor. Same rule grammar as expected_since_1.4.0.toml:
-# every rule needs `issue` and `name_regex`; `fields` narrows further
-# and is optional. Since #451 validate_rules REJECTS a rule carrying
-# `fields` and no `name_regex`, as it already rejected one with
-# neither. File order is therefore load-bearing; the note below says
-# how it falls out here.
+# `issue`, `name_regex` and `fields` are all mandatory, none of them
+# optional any more. A rule may not narrow on one axis alone:
+# validate_rules has refused `fields` without a `name_regex` since
+# #451 and refuses `name_regex` without a `fields` since #456. Since
+# every rule therefore carries a `name_regex`, file order is
+# load-bearing; the note below says how it falls out here.
 #
 # `fields` names roles the way Role does, for BOTH compared surfaces,
 # plus the pseudo-field `_ambiguities`. The roster is deliberately not

@@ -367,13 +367,17 @@ class AmbiguityKind(StrEnum):
     #: family name remains; "Jack MA" keeps it as the name because none
     #: would) and a trailing roman numeral, which is a suffix where any
     #: other single letter would be a name ("John Smith V" vs "John
-    #: Smith B"). Which name part was declined depends on position and
+    #: Smith B"). It also covers a family-comma listing, where a
+    #: trailing abbreviation that is both a post-nominal and a surname
+    #: particle joins the surname the comma already named: "Berg, Jan
+    #: vd" takes ``vd`` for *van der* and declines the decoration.
+    #: Which name part was declined depends on position and
     #: ``name_order``, so ``detail`` names it rather than the kind.
     SUFFIX_OR_NAME = "suffix-or-name"
-    #: An ambiguous particle at the head of a name is either a
-    #: particle or a name in its own right -- "Van Johnson" is the
-    #: actor's given name, a bare "Van Buren" the presidential
-    #: surname, and the two-word shape cannot distinguish them. Two
+    #: An ambiguous particle is either a particle or a name in its own
+    #: right -- "Van Johnson" is the actor's given name, a bare
+    #: "Van Buren" the presidential surname, and the two-word shape
+    #: cannot distinguish them. Three
     #: shapes report this kind, decided in different stages, and
     #: ``detail`` is what tells them apart. A particle left standing
     #: alone chained nothing and was assigned a role, which ``detail``
@@ -389,6 +393,13 @@ class AmbiguityKind(StrEnum):
     #: and what remains is a leading word that is both a title and a
     #: particle, so it stays a name piece and the particle behind it is
     #: genuinely not leading ("Freiherr von Richthofen").
+    #: The third shape is at the TAIL rather than the head: a family
+    #: comma names the surname, and a particle written behind the given
+    #: name after it -- "Beethoven, Ludwig van", the Dutch and Flemish
+    #: filing convention -- is attached to that surname, over its
+    #: reading as an ordinary name word. The comma settles which piece
+    #: is the family and nothing about this, so the fork is real and
+    #: ``detail`` names the word it turned on.
     PARTICLE_OR_GIVEN = "particle-or-given"
     #: A nickname/maiden delimiter opened without closing (or closed
     #: without opening); the text was kept as literal name content, so
