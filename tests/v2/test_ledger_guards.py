@@ -49,7 +49,8 @@ from nameparser.config.maiden_markers import MAIDEN_MARKERS
 from nameparser.config.particles import PARTICLES
 from nameparser.config.titles import GIVEN_NAME_TITLES, TITLES
 from nameparser.config.suffixes import (
-    GLUED_HONORIFICS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_WORDS)
+    GLUED_HONORIFICS, SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS,
+    SUFFIX_WORDS)
 
 from ._differential_fixtures import (
     _CORPUS_NAMES, _LEDGERS, _TOOLS, _UNCLASSIFIED_NAMES, _claimed,
@@ -530,6 +531,66 @@ def test_nickname_delimiter_sets_are_deliberate() -> None:
         "passing vacuously")
 
 
+def test_the_emoji_boundary_rule_copies_the_dividing_ranges() -> None:
+    """The emoji rule's character class is a HAND COPY of the ranges
+    the tokenizer actually divides on, and this is what keeps the two
+    in step.
+
+    The rule promises "an emoji inside a token divides it". Only
+    _EMOJI_RANGES decides that, so a class wider than those ranges
+    makes the promise false for every codepoint in the gap -- and the
+    rule would then claim a {given, family} diff whose cause is
+    something else entirely. The first draft had exactly that bug: one
+    \\U0001F300-\\U0001FAFF span, covering U+1F650-U+1F67F and
+    U+1F700-U+1FAFF, where the parser leaves the token whole.
+
+    Only the ASTRAL half is copied. The BMP half (U+2600-U+26FF,
+    U+2700-U+27BF) is out because no corpus name reaches it through
+    the rule's \\S...\\S anchor, and a rule should be no wider than the
+    diffs it must explain -- so this asserts a SUBSET relationship in
+    that direction, not equality. What it refuses is the other
+    direction: a class reaching a codepoint the tokenizer does not
+    divide on.
+    """
+    from nameparser._pipeline._tokenize import _EMOJI_RANGES
+
+    divides = {c for lo, hi in _EMOJI_RANGES for c in range(lo, hi + 1)}
+    found = 0
+    for ledger in _LEDGERS:
+        for rule in _rules(ledger):
+            if "emoji-boundary" not in rule["issue"]:
+                continue
+            found += 1
+            pattern = rule["name_regex"]
+            # EVERY codepoint, not just the astral plane. Scanned
+            # 0x1F000-0x20000 until the #453 review measured what that
+            # missed: a bare '-' or a \u2B00-\u2BFF span appended to
+            # the class left this guard GREEN while the rule stood
+            # ready to explain a {given, family} regression on 22
+            # hyphenated corpus names. The docstring promises to
+            # refuse a class reaching a codepoint the tokenizer does
+            # not divide on; a scan narrower than that promise is the
+            # #451 shape one level down. Costs 0.3s.
+            claimed = {c for c in range(0x20, 0x110000)
+                       if re.search(pattern, f"a{chr(c)}b")}
+            stray = sorted(claimed - divides)
+            assert not stray, (
+                f"{ledger.name}: {rule['issue']!r} claims "
+                f"{len(stray)} codepoint(s) the tokenizer does not "
+                f"divide on, e.g. {[hex(c) for c in stray[:3]]}. Its "
+                f"prose says an emoji inside a token divides it, which "
+                f"is false for those -- so a diff with another cause "
+                f"would classify here as intended. Copy from "
+                f"_EMOJI_RANGES rather than widening the span.")
+            assert claimed, (
+                f"{ledger.name}: {rule['issue']!r} claims no codepoint "
+                f"at all; the class or the anchor is broken and the "
+                f"rule can explain nothing")
+    assert found, (
+        "no emoji-boundary rule in any ledger; this pin is passing "
+        "vacuously")
+
+
 def test_cjk_corpus_matches_the_case_table() -> None:
     """corpus_cjk.jsonl is GENERATED, not curated (#295): every
     distinct case-table text bearing a codepoint the script table
@@ -626,6 +687,48 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # missing is fix(#399)'s or fix(#412)'s
     "fix(#418) accepted": ("Jane née Jr Jones", "Jane née y Jones",
                            "Jane van der Berg née Jr Jones"),
+    # decisions.md#H1's own nickname-plus-title-plus-name shape, kept
+    # out on purpose: this rule is anchored to a trailing suffix word,
+    # not a title, and a two-token name (with or without the suffix)
+    # has no third token for the regex to require.
+    "fix(N3) a nickname-led name with a trailing suffix keeps the suffix in `suffix`":
+        ("'Smitty' Jones", "Jones Jr.", "'Smitty' Dr. Jones"),
+    # #451's two NOT-WANTED rules, literal-anchored to one corpus name
+    # apiece: a three-token name with a rootname before or after is a
+    # different diff shape (or, for 'Carod i Rovira' and 'Lluis Carod
+    # i', no diff at all -- #397's still-open enhancement, not a
+    # 1.4-to-2.x regression), and 'Rai'/'Jane Rai Smith' have no
+    # 'aishwarya' to anchor on.
+    "fix(#342)": ("Aishwarya Rai Bachchan", "Rai", "Jane Rai Smith"),
+    "fix(#397)": ("Carod i Rovira", "Josep Carod i Rovira", "Lluis Carod i"),
+    # #451's four replacements for the fields-only catch-all. Each is
+    # anchored to a two-token name, so the probes are a third token and
+    # each other's vocabulary: the four exist BECAUSE one rule could not
+    # carry all six names, and a rule that quietly grew to reach a
+    # sibling's name would put the split back where it started.
+    #
+    # 'Carod i' and '田中さん II' are deliberately NOT probes for the
+    # numeral rule: its regex really does reach both, and rules above it
+    # win them -- 'Carod i' on file order, '田中さん II' on the subset
+    # test, its diff moving {given, suffix} where the numeral rule
+    # declares {family, suffix}. _CROSS_RULE_WINNERS pins both instead;
+    # this roster tests the regex, not classify().
+    "fix(suffix-routing) a two-token name ending in a roman numeral keeps it in `suffix`":
+        ("Mohamad X Surname", "Smith Jr.", "Donald mc", "Aishwarya Rai"),
+    "fix(suffix-routing) a two-token name ending in the suffix word jr keeps it in `suffix`":
+        ("John Smith Jr.", "Smith Jr. PhD", "John V", "Jack Ma"),
+    # 'Mc Donald' is the leading-particle shape fix(#360) claims and
+    # 'Berg, Jan vd' the comma shape P6 gives to fix(#380); this rule is
+    # the third corner, trailing and comma-less, and must not reach
+    # either of the others.
+    "fix(suffix-routing) a two-token name ending in a credential acronym keeps it in `suffix`":
+        ("Mc Donald", "Berg, Jan vd", "John Smith MP", "Jack Ma"),
+    # decisions.md#ma-do turns on the BARE spelling keeping its surname
+    # while the dotted one reads as a credential, so both spellings of
+    # the bare one are probes here -- and 'Jack Ma' is a probe for the
+    # acronym rule above as well, since 'ma' is acronym vocabulary too.
+    "fix(suffix-routing) the dotted M.A. spelling reads as a credential (ma-do)":
+        ("Jack Ma", "Jack MA", "John Smith M.A."),
 }
 
 
@@ -927,6 +1030,24 @@ _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
         covers=frozenset({"de", "del", "den", "der", "di", "do", "dos",
                           "du", "la", "le", "los", "mc", "van", "vd",
                           "von", "zu"})),
+    "fix(N3) a nickname-led name with a trailing suffix keeps the suffix in `suffix`":
+        _LatinCopy(vocabulary=SUFFIX_WORDS,
+                   covers=frozenset({"jr", "sr", "ii", "iii", "iv", "v"})),
+    # #451's credential-acronym rule, one of the four that replaced the
+    # fields-only fix(suffix-routing) catch-all. Two members, because
+    # 'Donald mc' and 'QC MP' are the two corpus names in that shape;
+    # partial for fix(#379)'s reason, SUFFIX_ACRONYMS running to
+    # hundreds of entries that nobody writes after a bare name word.
+    #
+    # This is the roster entry that FORCED #451's split into four rules
+    # rather than one: the sibling rule's `jr` is a SUFFIX_WORDS entry,
+    # _LatinCopy carries exactly one `vocabulary`, and the test below
+    # asserts exactly one roster key per alternation -- so an
+    # alternation spanning both vocabularies could not be pinned
+    # against either, and had to become two rules.
+    "fix(suffix-routing) a two-token name ending in a credential acronym keeps it in `suffix`":
+        _LatinCopy(vocabulary=SUFFIX_ACRONYMS,
+                   covers=frozenset({"mc", "mp"})),
 }
 
 #: Alternations that copy no vocabulary, so discovery must not demand a
@@ -965,6 +1086,26 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     frozenset({"Janey n[ée]e Jones", "Jane n[ée]e Jones J\\. V",
                "Jane n[ée]e Jones Smith", "John n[ée]e Jones Smith Ma",
                "Smith n[ée]e Jones", "Smith n[ée]e Jones PhD"}),
+    # #451's roman-numeral rule copies _ROMAN -- the pattern in
+    # nameparser/_pipeline/_vocab.py that _vocab.is_trailing_numeral_suffix
+    # matches a final piece against -- and NOT a wordlist. There is no
+    # vocabulary here to drift from: 'x' is in none of SUFFIX_WORDS,
+    # SUFFIX_ACRONYMS or their ambiguous subsets, and 'Mohamad X' moves
+    # to `suffix` all the same, which is the whole reason the rule
+    # cannot be an entry in _LATIN_ALTERNATION_SOURCES.
+    #
+    # The members are _ROMAN's body with the EMPTY alternative removed
+    # (I{0,3} -> I{1,3}, plus the bare V that would otherwise be lost).
+    # Measured over every string of length 1..4 from IVXivx, the two
+    # accept the same strings apart from the empty one. Nothing pins
+    # the ledger's copy against _ROMAN: test_regex_sync pins _ROMAN
+    # against _config.REGEXES["roman_numeral"], which is the parser's
+    # two copies of it, and a hand copy in a toml is outside that pair.
+    # What holds this one is _CORPUS_CLAIMS' reach and digest plus the
+    # _MUST_NOT_MATCH probes, the same wall every other literal rule
+    # here stands behind. This roster records only that a wordlist is
+    # not what is copied.
+    frozenset({"X", "IX", "IV", "V?I{1,3}", "V"}),
 })
 
 def _unjustified_reach(name_regex: str, members: set[str]) -> list[str]:
@@ -1279,9 +1420,10 @@ class _Claim(NamedTuple):
     comma rule kept its `,` regex and its 236 names while going from
     explaining 6 of the corpus to 242.
     """
-    #: corpus names the name_regex reaches; the whole corpus when a
-    #: rule has none, which is the most unbounded shape validate_rules
-    #: permits and the one most worth writing down
+    #: corpus names the name_regex reaches. The whole corpus when a
+    #: rule has none -- a shape validate_rules REJECTED in #451, so no
+    #: ledger can carry one now; the fallback stays because this
+    #: module reads ledgers without validating them first
     names: int
     #: the roles it narrows by, sorted; () when it narrows by regex alone
     roles: tuple[str, ...]
@@ -1344,6 +1486,8 @@ def _claim(rule: dict) -> _Claim:
 #: both is growth into names the rule genuinely describes.
 _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
+        "fix(A2) content-free input names nobody, so every role empties":
+            _Claim(5, ('given',), "1af8d718688b"),
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
             _Claim(1, ('maiden', 'nickname'), "c09cc7dba88b"),
         "fix(#434) a multi-word maiden marker takes the maiden name":
@@ -1366,6 +1510,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(5, ('family', 'given', 'maiden', 'middle'), "bc0e10dd7ec8"),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
             _Claim(13, ('family', 'middle'), "973617235cda"),
+        "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
+            _Claim(2, ('family', 'suffix'), "ec0d45289dc1"),
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
             _Claim(279, ('given', 'suffix', 'title'), "28a62b622a48"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
@@ -1388,8 +1534,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given', 'middle'), "d8ee9cd5da5f"),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(279, ('family', 'given'), "28a62b622a48"),
-        "fix(suffix-routing) two-token name with unambiguous trailing suffix stays suffix":
-            _Claim(1090, ('family', 'given', 'suffix'), "89e0b6d7f4c8"),
+        "fix(#342) NOT WANTED: a bare trailing 'Rai' is read as a post-nominal suffix and the family is lost":
+            _Claim(1, ('family', 'suffix'), "694fd06a2e9a"),
+        "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":
+            _Claim(1, ('family', 'suffix'), "498602f3cfd0"),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc"),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
@@ -1422,6 +1570,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(11, ('given', 'middle'), "1eaed91fc574"),
         "fix(#272/#308) nakaguro division and a glued hangul honorific in one name":
             _Claim(1, ('family', 'given', 'middle', 'suffix'), "2fbf1a94f122"),
+        "fix(emoji-boundary) an emoji inside a token divides it":
+            _Claim(1, ('family', 'given'), "efa60ca42d4a"),
         "fix(nickname-typographic-pairs) two typographic quote spans read as one nickname set":
             _Claim(1, ('family', 'given', 'middle', 'nickname'), "3cf566c78800"),
         "fix(#411) the bound-given reserve stops counting words the maiden name takes":
@@ -1460,8 +1610,29 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'middle', 'suffix'), "a564b97f7162"),
         "fix(#360) ste moved into the never-given particles with mc":
             _Claim(1, ('family', 'given'), "e62caedec864"),
+        "fix(#360) mc moved into the never-given particles, so it folds into the family":
+            _Claim(1, ('family', 'given'), "ee4339908f4d"),
+        "fix(#367) a title no longer displaces a leading never-given particle":
+            _Claim(1, ('family', 'given'), "db724fb9c779"),
         "fix(#445) a maiden marker makes the lone name word the family":
             _Claim(7, ('family', 'given', 'maiden', 'middle'), "3de9ef12b4a8"),
+        "fix(N3) a nickname-led name with a trailing suffix keeps the suffix in `suffix`":
+            _Claim(1, ('family', 'suffix'), "570f265a2f46"),
+        # #451's four replacements for the fields-only catch-all, whose
+        # own entry recorded the whole 1090-name corpus -- a rule with no
+        # name_regex reaches everything, so its reach could never move and
+        # this roster could not see names arrive on it. The numeral and jr
+        # rules reach more names than they explain, and rules above them
+        # take the surplus, which is why the four are last in the file;
+        # the acronym and M.A. rules reach exactly what they explain.
+        "fix(suffix-routing) a two-token name ending in a roman numeral keeps it in `suffix`":
+            _Claim(4, ('family', 'suffix'), "fc52089dfa8e"),
+        "fix(suffix-routing) a two-token name ending in the suffix word jr keeps it in `suffix`":
+            _Claim(5, ('family', 'suffix'), "602e2d83a23b"),
+        "fix(suffix-routing) a two-token name ending in a credential acronym keeps it in `suffix`":
+            _Claim(2, ('family', 'suffix'), "ed72c9672214"),
+        "fix(suffix-routing) the dotted M.A. spelling reads as a credential (ma-do)":
+            _Claim(1, ('family', 'suffix'), "17379620526b"),
     },
     "expected_since_2.0.0.toml": {
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
@@ -1729,9 +1900,10 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
             f"{sorted({i for i in issues if issues.count(i) > 1})}. Every "
             f"roster here keys on it, so one of them would go unmeasured")
         # A rule with no name_regex narrows by `fields` alone and so
-        # reaches EVERY name -- the most unbounded shape validate_rules
-        # permits, and the one most worth recording. Counting it as the
-        # whole corpus is not a placeholder; it is what it claims.
+        # reaches EVERY name. #451 made that shape a startup error, so
+        # no ledger reaching this line has one -- but _rules() does not
+        # validate, so counting it as the whole corpus stays correct
+        # rather than becoming dead. It is what such a rule claims.
         actual = {rule["issue"]: _claim(rule)
                   for rule in _rules(ledger)}
         moved = {issue: (recorded.get(issue), count)
@@ -1776,21 +1948,6 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
 #: a diff shape that shifted is a finding, not a number to update.
 _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
     "expected_since_1.4.0.toml": {
-        # Three behaviours that got named rules in the 2.0 and 2.1
-        # ledgers but not this one, so here they fall to the fields-only
-        # catch-all. Recorded because the assignment is incidental
-        # rather than argued: 'Berg, Jan vd' is reachable by three
-        # named rules and wins none of them (their `fields` do not
-        # match), while 'Mc Donald' and 'Sir de Mesnil' are reachable
-        # by NO named rule at all. Being absorbed by the catch-all is
-        # the recoverable direction, but a rule added later that takes
-        # one of them silently would change what the 1.4 summary
-        # attributes -- and AGENTS.md names that summary as the source
-        # for the release log's Behavior Changes section. #380, #360
-        # and #367 respectively.
-        ("Berg, Jan vd", ("family", "suffix")): "fix(suffix-routing)",
-        ("Mc Donald", ("family", "given")): "fix(suffix-routing)",
-        ("Sir de Mesnil", ("family", "given")): "fix(suffix-routing)",
         ("Andrews, M.D.", ("given", "suffix")): "fix(comma-family)",
         ("田中, 太郎さん", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
         ("김, 민준씨", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
@@ -1826,7 +1983,25 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         ("MD, PHD", ("family", "given", "suffix", "title")):
             "fix(#296) a credential-only comma string reads a name and "
             "its postnominal",
-        ("Smith Jr.", ("family", "suffix")): "fix(suffix-routing)",
+        ("Smith Jr.", ("family", "suffix")):
+            "fix(suffix-routing) a two-token name ending in the suffix "
+            "word jr keeps it in `suffix`",
+        # #451's two contests with the numeral rule, whose regex reaches
+        # both of these names from the very end of the file. Only the
+        # first is decided by order: 'Carod i' diffs {family, suffix},
+        # which both rules declare, so nothing but _sorted_rules'
+        # stability inside the name_regex tier keeps it with fix(#397).
+        # '田中さん II' diffs {given, suffix}, which the numeral rule's
+        # `fields` cannot admit at any position. Both are recorded
+        # because a later edit that moves either rule, or widens the
+        # numeral rule's `fields`, would take one silently -- exactly the
+        # absorption #451 exists to end.
+        ("Carod i", ("family", "suffix")):
+            "fix(#397) NOT WANTED: a trailing Catalan/Polish linking "
+            "'i' is read as a generation marker and the family is lost",
+        ("田中さん II", ("given", "suffix")):
+            "fix(cjk-glued-honorific-peel) glued honorific peels into "
+            "suffix",
         # the glued/spaced boundary. 'Andersonさん' and '김민준씨' left
         # suffix-routing for a rule that names them; '김민준 씨.' is
         # spaced and stays on the spaced rule, which #372 taught to
@@ -1836,16 +2011,44 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         # SUFFIX_WORDS: 양 is absent from the glued set, so no rule
         # NAMED for honorifics can claim a suffix diff on a given name
         # that merely ends in one. The fields-only fix(suffix-routing)
-        # still would -- measured -- which is unchanged by #372 and is
+        # still would -- measured -- which was unchanged by #372 and was
         # the residual cost of having a last-resort tier at all. Being
         # absorbed by the catch-all is recoverable; being labelled
-        # 'recognized honorific' by a specific rule is not.
+        # 'recognized honorific' by a specific rule is not. #451 deleted
+        # that catch-all, so there is no last-resort tier left in any
+        # ledger and the residual cost went with it: all four rules that
+        # replaced it carry a name_regex.
         ("Andersonさん", ("given", "suffix")):
             "fix(cjk-glued-honorific-peel)",
         ("김민준씨", ("family", "given", "suffix")):
             "fix(cjk-glued-honorific-peel)",
         ("김민준 씨.", ("family", "given", "suffix")):
             "fix(cjk-honorific-suffix)",
+        # '.,' moved off `fix(comma-family) lone post-comma piece
+        # routes to suffix/title, not first`, whose Latin-range comma
+        # regex reaches it, onto the A2 rule that describes it (#451).
+        # Recorded because only file order separates the two rules --
+        # they are in the same tier and both reach the name -- and a
+        # later edit that moves either one silently hands it back.
+        (".,", ("given",)): "fix(A2) content-free input names nobody, so every role empties",
+        # The jr rule's surplus, added by the #453 review. Its regex
+        # reaches these three and does not explain them; `fields` is
+        # what makes it ineligible -- none of the shapes below is a
+        # subset of its {family, suffix} -- and file order is only the
+        # second line. Recorded because handing one over takes TWO
+        # edits (widen `fields`, move the rule up) and nothing else
+        # here would report the pair: reach is per-rule, and the jr
+        # rule's own _CORPUS_CLAIMS count of 5 does not move when a
+        # name inside it changes hands. Shapes measured against the
+        # 1.4.0 wheel, not guessed. 'Doe,, Jr.' is the fourth name the
+        # regex reaches and has no row: it does not diff at this
+        # baseline, so there is no winner to pin.
+        ("Kim, Jr.", ("family", "given", "suffix", "title")):
+            "fix(#296) a lone post-comma credential is a suffix",
+        ("Smith, Jr.", ("family", "given", "suffix", "title")):
+            "fix(#296) a lone post-comma credential is a suffix",
+        ("김민준씨 Jr.", ("family", "given", "suffix")):
+            "fix(cjk-glued-honorific-peel) glued honorific peels into suffix",
     },
 }
 
@@ -1853,12 +2056,16 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
 def test_the_recorded_rule_still_wins_each_contested_name() -> None:
     """Who explains what, which nothing else here asks.
 
-    Measured: narrowing fix(cjk-comma-compound)'s script class sends
-    three of these names to fix(suffix-routing) -- a fields-only
-    catch-all whose prose is about two-token Latin names -- and the
-    gate still reports 108 intentional / 0 unexplained. Reach is
-    per-rule, the total is per-corpus; neither notices a name changing
-    hands.
+    Measured when this was written: narrowing fix(cjk-comma-compound)'s
+    script class sent three of these names to fix(suffix-routing) -- a
+    fields-only catch-all whose prose was about two-token Latin names --
+    and the gate still reported 108 intentional / 0 unexplained. Reach
+    is per-rule, the total is per-corpus; neither notices a name
+    changing hands. #451 has since deleted that catch-all, so the same
+    narrowing would now send those three to UNEXPLAINED and the gate
+    would say so -- but only because a fields-only rule happened to be
+    what absorbed them. File order inside the name_regex tier hides a
+    handover just as completely, which is what the #451 rows below pin.
 
     A failure here is not necessarily a regression: it can equally mean
     a rule was narrowed correctly and its names found a better home. It
@@ -1935,12 +2142,30 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
                   # fix(comma-precomma-family) JOINED this tuple in #372,
                   # it did not replace anything: it claims the {given,
                   # family} readings, which it legitimately describes for a
-                  # Latin comma name, while fix(suffix-routing) still
-                  # claims the readings outside its two fields. The
-                  # exclusion refuses the name before any of the three is
-                  # reached; this records what would happen without it.
-                  ("fix(comma-family)", "fix(comma-precomma-family)",
-                   "fix(suffix-routing)")),
+                  # Latin comma name, while fix(suffix-routing) claimed the
+                  # readings outside its two fields. The exclusion refuses
+                  # the name before either is reached; this records what
+                  # would happen without it.
+                  #
+                  # fix(suffix-routing) LEFT the tuple in #451, which
+                  # deleted the fields-only catch-all of that name: the
+                  # four rules that replaced it are two-token literals and
+                  # none of them reaches a trailing 'Ph. D.'. A tuple that
+                  # SHRANK is the safe direction -- one fewer rule stands
+                  # ready to claim a protected reading -- which is why this
+                  # roster's message warns only about growth.
+                  # FULL issue strings, not `fix(tag)` prefixes. The
+                  # #453 review measured what the truncation cost: this
+                  # ledger carries three rules beginning "fix(comma-family)"
+                  # and, since #451, four beginning "fix(suffix-routing)",
+                  # so a tag-keyed tuple sits at its maximum for that tag
+                  # -- any of the siblings could widen onto a protected
+                  # reading and this roster would stay green. The same
+                  # identity-free weakness _SPAN_BEARING_RULES records.
+                  ("fix(comma-family) lone post-comma piece routes to "
+                   "suffix/title, not first",
+                   "fix(comma-precomma-family) pre-comma run reads as "
+                   "family, not given")),
     '(^|[\\w.]\\s+)[("\'][^)"\']+[)"\'](\\s+\\w|\\s*$)':
         # 51 -> 54 as rules.md gained the bracketed Polish examples
         # (#434): 'Maria Kowalska (z domu Nowak)', 'Maria Kowalska
@@ -2016,7 +2241,7 @@ def test_every_exclusion_silences_what_is_recorded() -> None:
                             continue
                         claimed = compare.classify(example, diff, rules)
                         if claimed:
-                            absorbed.add(claimed.split(")")[0] + ")")
+                            absorbed.add(claimed)
             actual[entry["name_regex"]] = _Excluded(
                 len(captured),
                 hashlib.sha256(
@@ -2053,7 +2278,13 @@ def test_a_fields_narrowing_actually_narrows_something() -> None:
     recorded pin, which is then asked about every reading rather than
     the three the key covers, and sees rules claim them. Measured:
     deleting this entry's `fields` grows its `absorbed_by` from () to
-    ('fix(suffix-routing)',).
+    ('fix(comma-family)', 'fix(comma-precomma-family)'). Re-measured
+    for #451, and the figure it replaces was wrong in both halves: it
+    read ('fix(suffix-routing)',) where the answer was a three-tuple
+    with those two comma rules in it, and #451's deletion of the
+    fields-only fix(suffix-routing) catch-all then took the third
+    entry away. The point the sentence is making is unchanged -- the
+    hypothetical is still caught, by more rules than it named.
 
     Measured: deleting `fields = ["nickname", "middle"]` from the
     ASCII-pairs entry passes every other check in this tree. The entry
@@ -2118,9 +2349,12 @@ def test_a_rule_reaching_no_corpus_name_says_why_it_is_kept() -> None:
         for rule in _rules(ledger):
             if "dormant" in rule:
                 continue
-            # fields-only rules reach every name by construction, so only
-            # a name_regex can be statically silent -- see _claim(), which
-            # counts them as the whole corpus for the same reason
+            # Every rule has a name_regex since #451, so this skip is
+            # unreachable for a ledger that loads; kept because _rules()
+            # does not validate. A fields-only rule would reach every
+            # name by construction and so could never be statically
+            # silent -- see _claim(), which counts one as the whole
+            # corpus for the same reason
             regex = rule.get("name_regex")
             if not isinstance(regex, str):
                 continue
@@ -2133,5 +2367,5 @@ def test_a_rule_reaching_no_corpus_name_says_why_it_is_kept() -> None:
         f"with the reason the rule is worth keeping, or delete it.")
     assert checked, (
         "no rule was examined, so this guard is passing vacuously -- "
-        "every rule either declares `dormant` or narrows by `fields` "
-        "alone")
+        "every rule declares `dormant`, or (impossible since #451) "
+        "narrows by `fields` alone")

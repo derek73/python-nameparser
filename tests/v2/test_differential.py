@@ -212,6 +212,68 @@ def test_malformed_rule_error_names_the_ledger_it_came_from() -> None:
         compare.validate_rules([{}], "expected_since_1.4.0.toml")
 
 
+def test_a_rule_with_fields_and_no_regex_is_rejected() -> None:
+    """The shape #451 retired, closed so it cannot return.
+
+    A rule with no `name_regex` claims every name whose diff fits its
+    `fields`, and _CORPUS_CLAIMS records its reach as the whole corpus
+    -- already at maximum, so arrivals never move it. The one rule with
+    this shape grew from 4 explained names to 14 across six behavior
+    families with every guard green.
+    """
+    with pytest.raises(SystemExit, match="no 'name_regex'"):
+        compare.validate_rules(
+            [{"issue": "fix(x) a rule with no name narrowing",
+              "fields": ["given", "family", "suffix"]}],
+            "test_ledger.toml")
+
+
+def test_dormant_does_not_buy_an_exemption_from_the_ban() -> None:
+    """`dormant` says a rule explains nothing; it does not say the rule
+    may be unbounded.
+
+    The two are independent, and conflating them is the plausible
+    future edit: "it is declared idle, so its reach cannot matter."
+    It can. `dormant` is a claim about TODAY's corpus, and #372's
+    lesson is that a rule's reach is what it will claim tomorrow --
+    the retired catch-all explained four names when it was written.
+    A regexless rule declared dormant would sit at the whole corpus
+    the moment one diffing name arrived, and its `dormant` reason
+    would then be false as well as its bound missing.
+
+    Pinned because check ORDER is what makes this hold: the dormancy
+    check runs before the #451 one, so a malformed `dormant` still
+    reports its own message, and a well-formed one falls through to
+    the ban. Nothing else asserts that a valid `dormant` does not
+    short-circuit it (#453 review).
+    """
+    with pytest.raises(SystemExit, match="no 'name_regex'"):
+        compare.validate_rules(
+            [{"issue": "fix(x) idle and unbounded",
+              "fields": ["given", "family"],
+              "dormant": "a reason nobody could fault"}],
+            "test_ledger.toml")
+    # the other order still holds: a malformed `dormant` reports its
+    # own defect rather than the ban's, because it is checked first
+    with pytest.raises(SystemExit, match="'dormant' that is not a"):
+        compare.validate_rules(
+            [{"issue": "fix(x) idle and unbounded",
+              "fields": ["given", "family"], "dormant": ""}],
+            "test_ledger.toml")
+
+
+def test_a_rule_with_a_regex_and_no_fields_or_both_stays_legal() -> None:
+    """The neighbouring shapes #451 did NOT retire. `name_regex` alone
+    still narrows by name; `name_regex` plus `fields` narrows by both.
+    Only the fields-only shape -- no name narrowing at all -- is new
+    to reject."""
+    compare.validate_rules(
+        [{"issue": "x", "name_regex": "Smith"}], "test_ledger.toml")
+    compare.validate_rules(
+        [{"issue": "x", "name_regex": "Smith", "fields": ["given"]}],
+        "test_ledger.toml")
+
+
 def test_classify_declines_a_diff_touching_a_field_the_rule_omits() -> None:
     """The subset check is the tightness mechanism of every `fields`
     rule -- a rule claims a diff only when EVERY changed field is one it
@@ -266,19 +328,24 @@ def test_v2_fields_matches_the_Role_enum() -> None:
     ({"issue": "x", "name_regex": r"\b"}, "matches every one of"),
     ({"issue": "x", "name_regex": r"[\s\S]"}, "matches every one of"),
     # seven roles without _ambiguities: below baseline 2.0 that IS the
-    # whole vocabulary, so it claims every diff
-    ({"issue": "x", "fields": ["title", "given", "middle", "family",
-                               "suffix", "nickname", "maiden"]},
+    # whole vocabulary, so it claims every diff. name_regex is along
+    # for the ride so this pins the roles check, not the #451 one.
+    ({"issue": "x", "name_regex": "Smith",
+      "fields": ["title", "given", "middle", "family",
+                 "suffix", "nickname", "maiden"]},
      "all seven roles"),
     # uncompilable: without this it raises mid-run, after the worker
     ({"issue": "x", "name_regex": "Smith("}, "invalid 'name_regex'"),
-    ({"issue": "x", "fields": []}, "empty 'fields'"),
-    ({"issue": "x", "fields": ["famly"]}, "not roles"),
+    ({"issue": "x", "name_regex": "Smith", "fields": []}, "empty 'fields'"),
+    ({"issue": "x", "name_regex": "Smith", "fields": ["famly"]},
+     "not roles"),
     # facade vocabulary is not role vocabulary; it would never match
-    ({"issue": "x", "fields": ["first"]}, "not roles"),
-    ({"issue": "x", "fields": ["title", "given", "middle", "family",
-                               "suffix", "nickname", "maiden",
-                               "_ambiguities"]}, "all seven roles"),
+    ({"issue": "x", "name_regex": "Smith", "fields": ["first"]},
+     "not roles"),
+    ({"issue": "x", "name_regex": "Smith",
+      "fields": ["title", "given", "middle", "family",
+                 "suffix", "nickname", "maiden",
+                 "_ambiguities"]}, "all seven roles"),
     ({"issue": "x", "fields": ["given"], "dormant": ""}, "not a non-empty"),
     ({"issue": "x", "fields": ["given"], "dormant": True}, "not a non-empty"),
     # widening _RULE_KEYS is exactly the edit that could let a near-miss
@@ -353,7 +420,8 @@ def test_ambiguities_is_a_legal_field_name() -> None:
     this pseudo-field is the only name that can classify it -- and the
     2.0 ledger's first rule depends on it."""
     compare.validate_rules(
-        [{"issue": "x", "fields": ["_ambiguities"]}], "ledger.toml")
+        [{"issue": "x", "name_regex": "Smith", "fields": ["_ambiguities"]}],
+        "ledger.toml")
 
 
 #: What _run_worker was asked for, so a test can prove main forwarded
@@ -454,7 +522,8 @@ def test_main_exits_0_when_every_diff_is_claimed(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     code, out = _run_main(
         tmp_path, monkeypatch,
-        '[[change]]\nissue = "claimed"\nfields = ["family"]\n', _DIFFERS)
+        '[[change]]\nissue = "claimed"\nname_regex = "Smith"\n'
+        'fields = ["family"]\n', _DIFFERS)
     assert code == 0
     assert "UNEXPLAINED" not in out
     assert "## claimed (1)" in out
@@ -470,26 +539,28 @@ def test_main_validates_the_ledger_before_running_anything(
                   '[[change]]\nissue = "wide"\nname_regex = ""\n', _DIFFERS)
 
 
-def test_main_sorts_a_name_regex_rule_ahead_of_a_fields_only_one(
+def test_main_rejects_a_broad_fields_only_rule_before_running_anything(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A broad fields-only rule written FIRST must not claim a diff the
-    specific name_regex rule below it owns. Deleting main's
-    _sorted_rules call leaves _sorted_rules' own test passing.
-
-    'broad' is declared dormant because in THIS fixture -- one corpus
-    name, always won by 'specific' -- it is permanently shadowed by
-    construction, which is exactly the case main()'s dormancy report
-    (#372) now calls out. Without the declaration this test would be
-    pinning main's sort order and main's dormancy report at once, and a
-    failure could not tell which one broke.
+    """This used to pin main's _sorted_rules call: a broad fields-only
+    rule written FIRST could not claim a diff a specific name_regex
+    rule below it owned, because _sorted_rules puts every name_regex
+    rule ahead of every fields-only one. That scenario is retired by
+    #451 -- a fields-only rule is rejected at validate_rules, so main()
+    never reaches _sorted_rules with one. What is left to pin here is
+    that main() still validates before running, for this shape too,
+    the same composition fact test_main_validates_the_ledger_before_
+    running_anything covers for a different malformed shape. The
+    tier-sort mechanism itself stays pinned directly by
+    test_name_regex_rules_sort_ahead_of_fields_only_rules and
+    test_rule_sort_is_stable_within_a_tier, which call _sorted_rules
+    without going through validate_rules.
     """
-    _, out = _run_main(
-        tmp_path, monkeypatch,
-        '[[change]]\nissue = "broad"\nfields = ["family"]\n'
-        'dormant = "always shadowed by \'specific\' below, by construction '
-        'of this fixture"\n'
-        '[[change]]\nissue = "specific"\nname_regex = "Smith"\n', _DIFFERS)
-    assert "## specific (1)" in out and "broad" not in out
+    with pytest.raises(SystemExit, match="no 'name_regex'"):
+        _run_main(
+            tmp_path, monkeypatch,
+            '[[change]]\nissue = "broad"\nfields = ["family"]\n'
+            '[[change]]\nissue = "specific"\nname_regex = "Smith"\n',
+            _DIFFERS)
 
 
 def test_main_exits_1_and_names_a_rule_that_explained_nothing(
@@ -503,7 +574,8 @@ def test_main_exits_1_and_names_a_rule_that_explained_nothing(
     """
     code, out = _run_main(
         tmp_path, monkeypatch,
-        '[[change]]\nissue = "explains-it"\nfields = ["family"]\n'
+        '[[change]]\nissue = "explains-it"\nname_regex = "Smith"\n'
+        'fields = ["family"]\n'
         '[[change]]\nissue = "idle"\nname_regex = "ZZNOSUCHNAME"\n'
         'fields = ["family"]\n', _DIFFERS)
     assert code == 1
@@ -529,7 +601,8 @@ def test_main_only_feeds_diffing_names_to_the_dormancy_check(
     """
     code, out = _run_main(
         tmp_path, monkeypatch,
-        '[[change]]\nissue = "explains-it"\nfields = ["family"]\n'
+        '[[change]]\nissue = "explains-it"\nname_regex = "Smith"\n'
+        'fields = ["family"]\n'
         '[[change]]\nissue = "idle"\nname_regex = "Jones"\n'
         'fields = ["family"]\n', _DIFFERS,
         extra=[("Alice Jones",
@@ -551,7 +624,8 @@ def test_main_exits_1_when_a_declared_dormant_rule_wakes_up(
     a false statement in the ledger, so it fails the run too."""
     code, out = _run_main(
         tmp_path, monkeypatch,
-        '[[change]]\nissue = "awake"\nfields = ["family"]\n'
+        '[[change]]\nissue = "awake"\nname_regex = "Smith"\n'
+        'fields = ["family"]\n'
         'dormant = "claims to be idle, but explains the only diff here"\n',
         _DIFFERS)
     assert code == 1
@@ -735,7 +809,8 @@ def test_main_claims_an_ambiguity_only_diff_when_a_rule_names_it(
     v2 = {**_SAME_V2, "_ambiguities": ["SEGMENTATION"]}
     code, out = _run_main(
         tmp_path, monkeypatch,
-        '[[change]]\nissue = "seg"\nfields = ["_ambiguities"]\n',
+        '[[change]]\nissue = "seg"\nname_regex = "Smith"\n'
+        'fields = ["_ambiguities"]\n',
         _SAME_FACADE, baseline="2.0.0", baseline_v2=v2)
     assert code == 0 and "## seg (1)" in out
 
@@ -862,10 +937,12 @@ def test_validate_exclusions_accepts_the_shipped_entries() -> None:
 
 def test_classify_refuses_an_excluded_shape() -> None:
     """The whole point: an excluded name reports UNEXPLAINED however
-    many rules would otherwise claim it. Two do, for the shape this
+    many rules would otherwise claim it. Two did, for the shape this
     was built for -- fix(comma-family) on file order, and the
-    fields-only fix(suffix-routing) which has no name_regex at all and
-    so reaches every name."""
+    fields-only fix(suffix-routing) which had no name_regex at all and
+    so reached every name. #451 deleted that second one, and no ledger
+    has a fields-only rule now; the fixture below keeps one because
+    the behaviour it pins is compare.classify's, not any ledger's."""
     rules = [{"issue": "broad", "name_regex": ","},
              {"issue": "broader", "fields": ["given", "suffix"]}]
     never = [{"why": "parity", "name_regex": r"(?i)\bph\.\s*d\.\s*$",
@@ -949,7 +1026,8 @@ def test_validate_rules_accepts_a_declared_dormant_rule() -> None:
     """`dormant` is a legal key, so a rule that declares one is not
     rejected as a misspelling."""
     compare.validate_rules(
-        [{"issue": "x", "fields": ["given"], "dormant": "no corpus name"}],
+        [{"issue": "x", "name_regex": "ZZNOSUCHNAME", "fields": ["given"],
+          "dormant": "no corpus name"}],
         "expected_since_1.4.0.toml")
 
 

@@ -1,7 +1,10 @@
 # Ledger for baseline 2.0.0 -- what changes for a user upgrading from
 # the previous minor. Same rule grammar as expected_since_1.4.0.toml:
-# every rule needs `issue`; optional `name_regex` and `fields` narrow
-# it, and compare.py sorts name_regex rules ahead of fields-only ones.
+# every rule needs `issue` and `name_regex`; `fields` narrows further
+# and is optional. Since #451 validate_rules REJECTS a rule carrying
+# `fields` and no `name_regex`, as it already rejected one with
+# neither. File order is therefore load-bearing; the note below says
+# how it falls out here.
 #
 # `fields` names roles the way Role does, for BOTH compared surfaces,
 # plus the pseudo-field `_ambiguities`. The roster is deliberately not
@@ -792,22 +795,33 @@ issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
 # Fields are {middle, family}: the given name does not move. `suffix`
 # is deliberately NOT here, though the #380 half of the change does
 # move a token out of it ('Berg, Jan vd' was suffix 'vd' at every
-# baseline and is now family 'vd Berg'). No corpus name exercises that
-# shape, and adding `suffix` to claim it costs three shapes this rule
-# has no business explaining -- {family,suffix} taken from
-# fix(suffix-routing), and {middle,suffix} and {middle,family,suffix}
-# taken from UNEXPLAINED, the last two being diffs in which `family`
-# does not move at all. A rule that pre-claims shapes it has never seen
-# is the #372 failure mode. If a vd-shaped name ever enters the corpus
-# it should arrive unexplained and be read once.
+# baseline and is now family 'vd Berg'). Adding `suffix` to claim it
+# costs three shapes this rule has no business explaining --
+# {family,suffix} taken from fix(#380) above, and {middle,suffix} and
+# {middle,family,suffix} taken from UNEXPLAINED, the last two being
+# diffs in which `family` does not move at all. A rule that pre-claims
+# shapes it has never seen is the #372 failure mode.
+#
+# 'Berg, Jan vd' is a corpus name, and it did not arrive unexplained
+# here: fix(#380) above already claims {family, suffix} for exactly
+# this shape, in this same ledger, so there was never a gap for a
+# future rule to fill at this baseline the way there was at 1.4.0's.
+# The two sentences this replaces -- "No corpus name exercises that
+# shape" and "If a vd-shaped name ever enters the corpus it should
+# arrive unexplained" -- were copied from the 1.4 ledger and were
+# false here from the day fix(#380) was written above them (#451).
 #
 # Latin-anchored over the WHOLE name, not just the trailing word: with
 # a leading .* this absorbed non-Latin comma names whose diff has
 # another cause -- a Cyrillic 'Smith, de la' moves {family} because the
 # particle's RENDERING ORDER inside the family changed, which no rule
-# in this ledger names, and it classified here. (It now falls to the
-# fields-only catch-all, so the absorption moved rather than vanished;
-# worth a narrower rule if such a name ever appears.) The class is the
+# in this ledger names, and it classified here. (No such name is in
+# any corpus, so this is what WOULD happen. It would now arrive
+# UNEXPLAINED and block the gate until someone read it, which is the
+# right outcome: this ledger has no fields-only rule to absorb it.
+# The claim that it "falls to the fields-only catch-all" was copied
+# from the 1.4 ledger, where one existed until #451 deleted it.)
+# The class is the
 # neighbours' and compare.py's own: U+0000-U+024F, which stops at
 # Latin Extended-B, so a diacritic-bearing 'Nguyen, Van de la' in NFD
 # or Latin Extended Additional is outside it.
