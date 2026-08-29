@@ -1152,12 +1152,25 @@ def test_over_declared_rules_accepts_exactly_exercised_fields() -> None:
 
 
 def test_over_declared_rules_skips_a_dormant_rule() -> None:
-    """A dormant rule explains nothing by declaration, so there is no
-    union to compare against -- dormant_rules checks that claim in both
-    directions, and this must not duplicate or contradict it."""
+    """A `dormant` rule is this check's business never, even when it
+    HAS explained something.
+
+    The input matters, and the obvious one is vacuous: passing an empty
+    `roles_by_issue` is caught by the `if not moved` guard whether or
+    not the dormant clause exists, so the test would pass on its
+    deletion -- mutation-tested, and the reason this row is written the
+    way it is (#452 review). The separating input is a dormant rule
+    that DID explain a diff, which is also the only interesting one: it
+    is exactly the state dormant_rules reports as NO LONGER DORMANT.
+    That is one defect with one remedy -- remove the `dormant` key --
+    and reporting it here as well would demand a second, contradictory
+    one: narrow `fields` on a rule whose real problem is that its
+    dormancy claim went false.
+    """
     rules = [{"issue": "fix(x) idle", "name_regex": "Smith",
               "fields": ["given", "family"], "dormant": "no corpus name"}]
-    assert compare.over_declared_rules(rules, {}) == ()
+    assert compare.over_declared_rules(
+        rules, {"fix(x) idle": {"family"}}) == ()
 
 
 def test_over_declared_rules_skips_a_rule_with_no_fields() -> None:

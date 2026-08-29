@@ -1474,8 +1474,13 @@ def _claim(rule: dict) -> _Claim:
 #: That is the intended cost: a corpus name added under an existing
 #: rule is a real change in what that rule explains, and it should be
 #: read once rather than absorbed silently.
-#: Twenty of these moved at once when corpus_rules.jsonl landed
-#: (#414), which is a lot of re-recording to review. The jumps are all
+#: Seventeen of these moved at once when corpus_rules.jsonl landed
+#: (#414) and fourteen more were added, which is a lot of re-recording
+#: to review. The figure read "Twenty" until #452 measured it: parse
+#: this roster out of `7a10689^` and `7a10689` with ast and diff the
+#: per-entry dumps -- 30 entries before, 44 after, 17 changed. The same
+#: three ways (that commit, the whole of PR #415, the backtick-harvest
+#: commit after it) all give 17. The jumps are all
 #: one cause -- 113 names arriving -- and the ones worth naming are
 #: the broad rules: the fields-only catch-alls grew to the whole
 #: corpus (751 -> 864), the comma rules 215 -> 236, fix(#274) 4 -> 11
