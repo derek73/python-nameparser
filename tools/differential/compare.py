@@ -390,9 +390,13 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
     buy a precise message rather than safety; they are here because the
     family is easier to reason about whole than split by direction.
 
-    The `fields`-without-`name_regex` check belongs to the dangerous
-    direction, and it is the family's sharpest example: no other
-    malformed shape can widen invisibly. #451 is the rule that lived
+    Two checks belong to the dangerous direction and are the family's
+    sharpest examples, one per missing key -- #451 for a `fields` with
+    no `name_regex`, #456 for a `name_regex` with no `fields`. An
+    earlier version of this paragraph said the first was the only shape
+    that could widen invisibly; #456 falsified that, and worse, since
+    over_declared_rules skips a fieldless rule so nothing narrows it
+    either. #451 is the rule that lived
     it -- no name narrowing, so it claimed every name whose diff fit
     its `fields`, and _CORPUS_CLAIMS (the guard tracking each rule's
     reach) recorded that reach as the whole corpus from the start, so
@@ -536,6 +540,24 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
                 f"unrelated behavior families, with every guard green "
                 f"the whole time. Narrow by name instead, or split this "
                 f"into the rules the diffs actually need")
+        if has_regex and not has_fields:
+            raise SystemExit(
+                f"{where} has 'name_regex' but no 'fields' (#456). It "
+                f"narrows by name and by nothing else, so on any name "
+                f"its regex reaches it claims EVERY diff shape there is -- "
+                f"255 of them from baseline 2.0 on, where `_ambiguities` "
+                f"joins the seven roles, and 127 below it. #452 makes "
+                f"that worse than it looks: "
+                f"over_declared_rules skips a rule with no 'fields', "
+                f"correctly, since one declaring no roles cannot "
+                f"over-declare them -- so deleting the line is the "
+                f"cheapest way to silence an OVER-DECLARED failure and "
+                f"the most permissive thing you can do to the rule at "
+                f"the same time. Name the roles the diffs actually "
+                f"move. Do NOT reach for the other shape instead: a "
+                f"'fields' with no 'name_regex' is banned by #451 for "
+                f"the mirror-image reason, and the two bans are each "
+                f"other's obvious wrong answer")
 
 
 def validate_exclusions(entries: list[dict[str, object]],
@@ -675,8 +697,9 @@ def classify(name: str, diff_fields: set[str],
     rules -- so a new entry's blast radius is exactly the set of names
     it captures, independent of rule order.
 
-    An exclusion narrows by `name_regex` and optionally by `fields`,
-    exactly as a rule does. Without `fields` it refuses any diff on a
+    An exclusion narrows by `name_regex` and optionally by `fields`.
+    The optionality is the exclusion's alone since #456: a RULE must
+    now carry both. Without `fields` it refuses any diff on a
     matching name; with them it refuses only the reading it names, so a
     name whose parens mark a nickname to one rule and a suffix to
     another stays classifiable on the reading the exclusion is not
@@ -824,8 +847,10 @@ def over_declared_rules(
     can have one, and the test that pins this skip uses exactly that
     input, because the empty-union input cannot discriminate.) A rule
     with no `fields` declares no roles and so has nothing to
-    over-declare; one with `fields` and no `name_regex` cannot exist
-    since #451. And a rule that explained nothing is dormant_rules'
+    over-declare -- and cannot exist since #456, which banned that
+    shape precisely because this skip made deleting `fields` the
+    cheapest way to silence the check. One with `fields` and no
+    `name_regex` cannot exist since #451. And a rule that explained nothing is dormant_rules'
     too, which is the third `continue` below.
 
     What this does NOT bound is a diff shape no single name produced.
