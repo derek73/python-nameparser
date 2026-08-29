@@ -267,7 +267,8 @@ def test_a_rule_with_a_regex_and_no_fields_is_rejected() -> None:
 
     A rule with no `fields` narrows by name and by nothing else, so on
     any name its regex reaches it claims every diff shape there is --
-    measured, 127 of 127. #452 made that worse than it looks by giving
+    measured, every one of the 255 shapes
+    eight roles allow at a 2.x baseline. #452 made that worse than it looks by giving
     the shape a second job: over_declared_rules skips a rule with no
     `fields`, correctly, since one declaring no roles cannot
     over-declare them. So deleting the `fields` line is the response to
@@ -276,11 +277,28 @@ def test_a_rule_with_a_regex_and_no_fields_is_rejected() -> None:
 
     Free to enforce, on the same terms as #451's: no rule in any
     shipped ledger has the shape, so the ban costs no migration.
+
+    This assertion is an INVERSION. Its other half pinned the
+    regex-only shape as LEGAL when #451 landed -- "the neighbouring
+    shapes #451 did NOT retire" -- and #456 retired it. Inverted rather
+    than deleted, so the change of status is visible to a `git log -L`
+    on the assertion rather than vanishing with the test.
     """
     with pytest.raises(SystemExit, match="no 'fields'"):
         compare.validate_rules(
             [{"issue": "fix(x) a rule with no role narrowing",
               "name_regex": "Smith"}],
+            "test_ledger.toml")
+    # `dormant` buys no exemption here either, for the reason it buys
+    # none from #451's ban: it is a claim about today's corpus, not a
+    # bound on reach, and a regex-only rule sits at every diff shape
+    # the moment one matching name arrives -- at which point its
+    # dormancy claim is false too. Pinned because disabling the check
+    # otherwise fails exactly one test (#457 review).
+    with pytest.raises(SystemExit, match="no 'fields'"):
+        compare.validate_rules(
+            [{"issue": "fix(x) idle and unbounded",
+              "name_regex": "Smith", "dormant": "a reason nobody faults"}],
             "test_ledger.toml")
 
 
@@ -289,10 +307,8 @@ def test_a_rule_carrying_both_keys_is_the_only_legal_shape() -> None:
 
     `validate_rules` rejects neither key (it would match every diff),
     `fields` without `name_regex` (#451, no name narrowing), and
-    `name_regex` without `fields` (#456, no role narrowing). This
-    pinned the regex-only shape as LEGAL when #451 landed; #456
-    retired it, and the test is inverted rather than deleted so the
-    change of status is visible in the history rather than silent.
+    `name_regex` without `fields` (#456, no role narrowing). One
+    shape survives all three, and this is it.
     """
     compare.validate_rules(
         [{"issue": "x", "name_regex": "Smith", "fields": ["given"]}],
@@ -865,7 +881,13 @@ def test_main_compares_the_v2_surface_from_baseline_2_0(
     v2 = {**_SAME_V2, "_ambiguities": ["SEGMENTATION"]}
     code, out = _run_main(
         tmp_path, monkeypatch,
-        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\nfields = ["family"]\n',
+        # `_ambiguities`, not `family`: this test's diff IS the
+        # ambiguity-only one, and a `family` declaration refuses that
+        # shape -- which left the rule inert even with name narrowing
+        # disabled, costing this test the mutation it was written to
+        # catch (#457 review). Declare the role the diff moves.
+        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\n'
+        'fields = ["_ambiguities"]\n',
         _SAME_FACADE, baseline="2.0.0", baseline_v2=v2)
     assert code == 1, "an ambiguity-only regression must not exit 0"
     assert "UNEXPLAINED 'John Smith'" in out

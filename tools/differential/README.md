@@ -300,17 +300,16 @@ history rather than being edited into the next one's.
 Each `[[change]]` entry needs `issue` (a short label, ideally an
 issue number or `fix(<slug>)` matching a `tests/v2/cases.py`
 classification) and `name_regex` (searched against the raw input
-string). It may narrow further with `fields` (the diffing rule matches
-only if the observed diff fields are a subset of this list), which
-since #452 must also name EXACTLY the roles that rule's own diffs move
--- see below. Keep both as tight as the actual diff allows -- a loose
+string) AND `fields` (the diffing rule matches only if the observed
+diff fields are a subset of this list), which since #452 must also
+name EXACTLY the roles that rule's own diffs move -- see below. Keep both as tight as the actual diff allows -- a loose
 rule can mask a real regression. **Both keys are REQUIRED**, and each
 ban has its own issue: `validate_rules` rejects a rule carrying
 neither (it would match every diff), one carrying `fields` and no
 `name_regex` (#451 -- no name narrowing, so it claims every name whose
 diff fits its roles), and one carrying `name_regex` and no `fields`
 (#456 -- no role narrowing, so on any name its regex reaches it claims
-every diff shape there is, measured 127 of 127). The three are one
+every diff shape there is, measured, 255 of them from baseline 2.0 on and 127 below it). The three are one
 rule with one reason: a rule narrows by name AND by role, or it is not
 a rule. Note the two bans are each other's obvious wrong answer --
 deleting `fields` to silence an over-declaration failure lands on
