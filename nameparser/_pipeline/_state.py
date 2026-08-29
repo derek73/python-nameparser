@@ -98,12 +98,14 @@ class ParseState:
     in the segment runs shifts by n); classify -> token tags; group ->
     pieces/piece_tags/dropped AND maiden token roles;
     assign -> the remaining token roles AND `order`, the effective
-    order it read them under; post_rules -> roles again.
+    order it read them under; post_rules -> roles again, and the
+    ambiguity P6's attachment reports.
     Ambiguities are recorded by every stage that DECIDES one --
     extract (resolved to a token index by tokenize), segment,
     script_segment, classify,
-    group, and assign -- since a fork whose branches are taken in
-    different stages needs an emitter in each. Post-group, segments
+    group, assign, and post_rules -- since a fork whose branches are
+    taken in different stages needs an emitter in each. Post-group,
+    segments
     may retain indices of dropped tokens -- assign iterates pieces,
     never segments. This ownership map is pinned by
     tests/v2/pipeline/test_state.py.

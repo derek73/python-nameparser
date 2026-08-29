@@ -397,11 +397,19 @@ P6. Rationale: a particle ending the name has nothing to link
     traditions write the same string.
       "Nguyen, Thi Van"           →  family="Van Nguyen"
       "Nguyễn, Thị Vân"           →  family="Nguyễn"
-    Accepted: no ambiguity is reported for that collision, which A1
-    would call for. The fork is decided here, and assign's emitter is
-    scoped to the no-comma shapes on the reasoning that a comma has
-    fixed the family — true of the family, not of the particle behind
-    it. Tracked at #405.
+    The fork is reported, in the kind naming the reading this
+    attachment OVERRODE — what the run was read as before it fired,
+    not what its words are. Where the run was read as a post-nominal,
+    which is the S2 reading this rule outranks, the report is
+    suffix-or-name. Otherwise, where the run holds an ambiguous
+    particle, the reading overridden is that word as a name word, and
+    the report is particle-or-given. Where the attachment overrode
+    neither — a never-given particle read as a name word, which it
+    could never have been — nothing was decided and nothing is
+    reported.
+      "Nguyen, Thi Van"           →  ambiguities=("particle-or-given",)
+      "Berg, Jan vd"              →  ambiguities=("suffix-or-name",)
+      "Jong, Piet de"             →  ambiguities=()  · boundary
     Accepted: the colliding spelling has a format that reads
     correctly, and it is ONE order, not both: FAMILY_FIRST still
     sends the given name to the middle, and only
@@ -421,14 +429,20 @@ P6. Rationale: a particle ending the name has nothing to link
     weighed; mc inherits it, which is the shape's cost and is
     tracked with the other contested memberships. `do` sits in the
     AMBIGUOUS acronym half and was already read as a name word
-    there, so the precedence decides nothing for it.
+    there, so the precedence decides nothing for it — and because
+    the report names the reading OVERRIDDEN, `do` reports
+    particle-or-given while vd and mc report suffix-or-name. The
+    same distinction decides a run of several words: a run read as
+    name words reports on its ambiguous member if it has one and
+    otherwise reports nothing, whatever its words could have been
+    read as standing alone. Both are pinned in tests/v2/cases.py.
     Accepted: a bound given word ahead of the trailing particle takes
     it as its pair first (P5), so the attachment never sees it —
     unless the particle is of the unambiguous suffix vocabulary too
     (vd, mc), which the join declines and the attachment then takes.
       "Berg, abdul van"           →  given="abdul van"
       "Berg, abdul vd"            →  family="vd Berg"
-    history: decisions.md#P6 · interacts: C1, P1, S2, P5 · implemented: nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P6 · interacts: A1, C1, P1, S2, P5 · implemented: nameparser/_pipeline/_post_rules.py
 
 ## Suffixes: generational & credentials (S)
 

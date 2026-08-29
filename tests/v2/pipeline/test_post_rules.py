@@ -595,3 +595,35 @@ def test_a_bound_pair_survives_the_leading_particle_stop(
                          lexicon=Lexicon.default(), policy=policy))
     assert _by_role(out, Role.FAMILY) == "de Mesnil"
     assert _by_role(out, Role.GIVEN) == "abd Allah"
+
+
+def test_a_dual_membership_word_decides_rather_than_raising() -> None:
+    # P6's report has two arms, and the plan that added them (#405)
+    # recorded them as disjoint by construction -- "a suffix-vocabulary
+    # particle arrives suffix-roled and IS the whole run". That is true
+    # of the SHIPPED vocabulary and not of the rule: `vd` and `mc` are
+    # the only words in both the particle and the unambiguous suffix
+    # sets, and neither is ambiguous particle vocabulary, so no shipped
+    # input reaches both arms. A caller's Lexicon can put one word in
+    # both, and an `assert` written on that premise DID fire here
+    # before this test existed -- rules.md#A1 says parsing never fails
+    # on any input, and an AssertionError out of a stage is exactly the
+    # failure it forbids.
+    #
+    # So the arms are ORDERED and the suffix one wins: assign had read
+    # the word as a post-nominal, so the name-word reading was never on
+    # the table for the attachment to decline
+    # (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE -- report the
+    # branch actually taken).
+    lex = dataclasses.replace(
+        _LEX,
+        particles=frozenset(_LEX.particles | {"zz"}),
+        particles_ambiguous=frozenset(_LEX.particles_ambiguous | {"zz"}),
+        suffix_acronyms=frozenset(_LEX.suffix_acronyms | {"zz"}))
+    out = run(ParseState(original="Berg, Jan zz", lexicon=lex,
+                         policy=Policy()))
+    # token order, so the attachment shows as the run joining the
+    # family rather than as the family view's rendered order
+    assert _by_role(out, Role.FAMILY) == "Berg zz"
+    assert _by_role(out, Role.GIVEN) == "Jan"
+    assert [a.kind.value for a in out.ambiguities] == ["suffix-or-name"]

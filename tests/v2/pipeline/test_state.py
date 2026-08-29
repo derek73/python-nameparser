@@ -76,7 +76,11 @@ def test_stage_field_ownership() -> None:
         # assign also records `order`: the effective order it read the
         # name under, which post_rules needs and must not re-derive
         "assign": {"tokens", "ambiguities", "order"},
-        "post_rules": {"tokens"},
+        # post_rules also emits PARTICLE_OR_GIVEN and SUFFIX_OR_NAME:
+        # P6's attachment takes the family branch of a fork whose other
+        # branches assign and group take, so each stage reports the
+        # side it decides
+        "post_rules": {"tokens", "ambiguities"},
     }
     assert {s.__name__ for s in STAGES} == set(ownership)
     # Within the tokens themselves the contract is finer: texts and

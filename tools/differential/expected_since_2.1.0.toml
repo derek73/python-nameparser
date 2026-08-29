@@ -602,8 +602,20 @@ issue = "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not 
 # corpus name exercises it -- so an mc-after-comma name should arrive
 # UNEXPLAINED and be read once, the same discipline that produced this
 # rule.
+#
+# `_ambiguities` joined the diff in #405, which made the attachment
+# report the fork it decides. Measured on THIS ledger's run: both names
+# this rule explains -- 'Berg, Jan vd' and 'Berg, abdul vd' -- move
+# {family, suffix, _ambiguities}, each gaining SUFFIX_OR_NAME, the kind
+# that names the post-nominal reading the attachment declined. Neither
+# name moves a field it did not move before, so the widening admits one
+# more role and no more names; the union over the two is exactly the
+# three declared. A separate fix(#405) rule was tried first and cannot
+# work: classify matches on `fields` being a SUPERSET of the whole
+# diff, so an `_ambiguities`-only rule matches neither name and this
+# rule would go dormant with both of them unexplained.
 name_regex = "(?i)^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*\\svd\\s*$"
-fields = ["family", "suffix"]
+fields = ["family", "suffix", "_ambiguities"]
 
 [[change]]
 issue = "fix(#399) a maiden marker bounds the particle chain that swallowed it"
@@ -807,8 +819,25 @@ issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
 # naming tradition, so a future {middle,family} regression on
 # 'Nguyen, Van' -- one of the two corpus names it reaches, and the one
 # that does NOT move -- would classify as intended.
+#
+# `_ambiguities` joined the diff in #405, which made the attachment
+# report the fork it decides. Measured on THIS ledger's run, the seven
+# names split: five move {middle, family, _ambiguities} -- 'Vega, Juan
+# de la', 'Beethoven, Ludwig van', 'Berg, Jan van der', 'der, y van'
+# and 'Nguyen, Thi Van', each gaining PARTICLE_OR_GIVEN, their particle
+# being vocabulary that could have been a name word -- and two still
+# move {middle, family} alone: 'Jong, Anke de' and 'Jong, Piet de',
+# whose `de` can be no name in any reading, so nothing was declined and
+# nothing is reported. The union over the seven is the three fields
+# declared, which is what the over-declaration check asks for; narrowing
+# to {middle, family} would orphan the five. A separate fix(#405) rule
+# cannot take them instead: classify matches on `fields` being a
+# SUPERSET of the whole diff, so an `_ambiguities`-only rule matches
+# none of the five, and any rule wide enough to match them is this rule
+# plus a role -- which then also claims the two silent names and leaves
+# this one dormant.
 name_regex = "(?i)^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*\\s(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)(\\s+(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu))*\\s*$"
-fields = ["middle", "family"]
+fields = ["middle", "family", "_ambiguities"]
 
 [[change]]
 issue = "fix(#412) a connective join no longer absorbs the maiden marker beside it"

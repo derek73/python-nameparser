@@ -324,26 +324,40 @@ CASES: tuple[Case, ...] = (
     Case("tussenvoegsel_after_family_comma", "Beethoven, Ludwig van",
          {"given": "Ludwig", "family": "van Beethoven"},
          classification="fix(#379)",
+         ambiguities=("particle-or-given",),
          notes="1.4.0 gives middle 'van', last 'Beethoven'. The "
                "particle attaches to the family the comma already "
                "named and renders before it, so the derived views "
                "move with it -- family_particles 'van', family_base "
-               "'Beethoven', which is what #130 asked for"),
+               "'Beethoven', which is what #130 asked for. The "
+               "textbook-correct Dutch listing reports the fork all "
+               "the same (#405): the parser cannot tell it from "
+               "'Nguyen, Thi Van', which is the same string shape"),
     Case("tussenvoegsel_multiword", "Berg, Jan van der",
          {"given": "Jan", "family": "van der Berg"},
          classification="fix(#379)",
-         notes="the whole run attaches, not just its last word"),
+         ambiguities=("particle-or-given",),
+         notes="the whole run attaches, not just its last word -- and "
+               "one report covers the whole run, named for 'van', the "
+               "word that is ambiguous vocabulary ('der' is never a "
+               "given name)"),
     Case("tussenvoegsel_outranks_the_suffix_reading", "Berg, Jan vd",
          {"given": "Jan", "family": "vd Berg"},
          classification="fix(#380)",
+         ambiguities=("suffix-or-name",),
          notes="'vd' is particle AND suffix vocabulary, and assign "
                "read the trailing one as a post-nominal (1.4.0 and "
                "2.1 alike gave suffix 'vd'). After a family comma the "
                "tussenvoegsel abbreviation is far more often the "
-               "reading meant; P6 states that precedence over S2"),
+               "reading meant; P6 states that precedence over S2. "
+               "The declined post-nominal is what the report names "
+               "(#405), so the kind is suffix-or-name and not "
+               "particle-or-given -- 'vd' is no given name in either "
+               "reading"),
     Case("tussenvoegsel_behind_a_post_nominal", "Berg, Jan van Jr.",
          {"given": "Jan", "family": "van Berg", "suffix": "Jr."},
          classification="fix(#379)",
+         ambiguities=("particle-or-given",),
          notes="the credential sits BEHIND the tussenvoegsel in this "
                "listing, so the run is found by walking past it. "
                "Without that walk the same name parsed two ways on "
@@ -367,6 +381,7 @@ CASES: tuple[Case, ...] = (
          "Berg, Jan van, Jr.",
          {"given": "Jan", "family": "van Berg", "suffix": "Jr."},
          classification="fix(#379)",
+         ambiguities=("particle-or-given",),
          notes="the credential in its own comma segment, which is the "
                "spelling the no-comma row is defined against -- both "
                "must read the same, and gating the rule on a two"
@@ -374,6 +389,7 @@ CASES: tuple[Case, ...] = (
     Case("tussenvoegsel_behind_a_title", "Berg, Dr. Jan van",
          {"title": "Dr.", "given": "Jan", "family": "van Berg"},
          classification="fix(#379)",
+         ambiguities=("particle-or-given",),
          notes="the words-to-spare test asks whether ANY word ahead "
                "of the run holds a given role, not whether all of "
                "them do: the title does not, and the rule must still "
@@ -381,13 +397,54 @@ CASES: tuple[Case, ...] = (
     Case("tussenvoegsel_takes_the_vietnamese_reading", "Nguyen, Thi Van",
          {"given": "Thi", "family": "Van Nguyen"},
          classification="fix(#379)",
+         ambiguities=("particle-or-given",),
          notes="the accepted cost, pinned so it cannot move without "
                "someone deciding to move it: Nguyen Thi Van is "
                "family-middle-given, so the given name Van is lost "
                "here. The listing is identical to the Dutch one and "
                "nothing separates them. The comma-LESS family-first "
                "spelling reads it correctly, which is what makes the "
-               "loss acceptable -- see rules.md#P6"),
+               "loss acceptable -- see rules.md#P6. Since #405 the "
+               "loss is at least REPORTED: 'Van' is ambiguous "
+               "vocabulary, so the attachment declines a live reading "
+               "as a name word and says so"),
+    Case("tussenvoegsel_report_names_the_reading_overridden",
+         "Berg, Jan do",
+         {"given": "Jan", "family": "do Berg"},
+         classification="fix(#379)",
+         ambiguities=("particle-or-given",),
+         notes="`do` is the third word in BOTH the particle and the "
+               "suffix vocabularies, and it reports the OTHER kind "
+               "from vd and mc. The report names what the attachment "
+               "overrode, not what the word is: `do` sits in the "
+               "AMBIGUOUS acronym half, which already left it a name "
+               "word, so assign never read it as a post-nominal and "
+               "there was no credential reading to decline (#405). A "
+               "rule keyed on 'is also suffix vocabulary' would say "
+               "suffix-or-name here and be wrong for the one word "
+               "that most looks like it should"),
+    Case("tussenvoegsel_multiword_run_reports_on_its_reading",
+         "Berg, Jan de vd",
+         {"given": "Jan", "family": "de vd Berg"},
+         classification="fix(#379)",
+         notes="the same point from the other side: `vd` IS suffix "
+               "vocabulary, but behind `de` the run is read as name "
+               "words rather than as a post-nominal, so nothing was "
+               "declined and nothing is reported -- where the lone "
+               "`Berg, Jan vd` reports suffix-or-name. Neither word "
+               "is ambiguous vocabulary either, so no arm fires. The "
+               "arms turn on the READING assign made, which is the "
+               "only thing that makes them a fork"),
+    Case("tussenvoegsel_never_given_reports_nothing", "Jong, Piet de",
+         {"given": "Piet", "family": "de Jong"},
+         classification="fix(#379)",
+         notes="the reporting boundary (#405): 'de' is never-given "
+               "particle vocabulary and is not suffix vocabulary "
+               "either, so the attachment declines no reading the "
+               "parse could have taken and stays SILENT. A single "
+               "kind covering every attachment would assert "
+               "'particle or given' about a word that is no given "
+               "name in any reading"),
     Case("tussenvoegsel_needs_a_given_word_to_spare", "Nguyen, Van",
          {"given": "Van", "family": "Nguyen"},
          classification="parity",
@@ -1058,7 +1115,7 @@ CASES: tuple[Case, ...] = (
                "something. An ungated marker stop made the chain merge "
                "nothing for a DIFFERENT reason than the guard assumes, "
                "silencing the report while still deciding the fork -- "
-               "the shape A1 forbids and #405 tracks. Pinned because "
+               "the shape A1 forbids and #405 closed at P6. Pinned because "
                "removing a report a caller already sees is worse than "
                "never emitting one"),
     Case("maiden_marker_particles_on_both_sides",
