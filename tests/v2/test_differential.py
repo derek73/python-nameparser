@@ -1124,6 +1124,60 @@ def test_dormant_rules_sorts_before_diagnosing() -> None:
     assert report.undeclared[0].detail == "specific"
 
 
+def test_over_declared_rules_flags_a_role_nothing_explains() -> None:
+    """The #452 shape: `fields` wider than every diff beneath it.
+
+    classify() admits a rule when the diff is a SUBSET of `fields`, so
+    the excess is not inert -- it lets the rule keep claiming a name
+    whose diff shrank out of the declared role, which is what #410
+    found on fix(#424) with no run saying so.
+    """
+    rules = [{"issue": "fix(x) wide", "name_regex": "Smith",
+              "fields": ["given", "family", "suffix"]}]
+    found = compare.over_declared_rules(
+        rules, {"fix(x) wide": {"family", "suffix"}})
+    assert len(found) == 1
+    assert found[0].issue == "fix(x) wide"
+    assert found[0].unused == ("given",)
+    assert found[0].observed == ("family", "suffix")
+
+
+def test_over_declared_rules_accepts_exactly_exercised_fields() -> None:
+    """Equality, not superset: `fields` may name every role its diffs
+    move and no more."""
+    rules = [{"issue": "fix(x) exact", "name_regex": "Smith",
+              "fields": ["family", "suffix"]}]
+    assert compare.over_declared_rules(
+        rules, {"fix(x) exact": {"family", "suffix"}}) == ()
+
+
+def test_over_declared_rules_skips_a_dormant_rule() -> None:
+    """A dormant rule explains nothing by declaration, so there is no
+    union to compare against -- dormant_rules checks that claim in both
+    directions, and this must not duplicate or contradict it."""
+    rules = [{"issue": "fix(x) idle", "name_regex": "Smith",
+              "fields": ["given", "family"], "dormant": "no corpus name"}]
+    assert compare.over_declared_rules(rules, {}) == ()
+
+
+def test_over_declared_rules_skips_a_rule_with_no_fields() -> None:
+    """A regex-only rule declares no roles, so it has nothing to
+    over-declare. (`fields` with no name_regex cannot exist since
+    #451.)"""
+    rules = [{"issue": "fix(x) regex only", "name_regex": "Smith"}]
+    assert compare.over_declared_rules(
+        rules, {"fix(x) regex only": {"family"}}) == ()
+
+
+def test_over_declared_rules_skips_a_rule_that_explained_nothing() -> None:
+    """Explaining nothing is dormancy's finding, not this one. Reporting
+    it here too would make one defect fail twice with two different
+    remedies."""
+    rules = [{"issue": "fix(x) silent", "name_regex": "Smith",
+              "fields": ["given", "family"]}]
+    assert compare.over_declared_rules(rules, {}) == ()
+
+
 def test_validate_rules_rejects_two_rules_sharing_an_issue() -> None:
     """The dormancy check identifies a rule by its `issue`, so a
     duplicate lets one rule hide behind the other -- it can explain

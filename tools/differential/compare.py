@@ -781,6 +781,65 @@ def dormant_rules(rules: list[dict[str, object]], explained: set[str],
     return _Dormancy(tuple(undeclared), tuple(awake))
 
 
+class _OverDeclared(NamedTuple):
+    """One rule declaring a role nothing it explains moves.
+
+    `unused` is the defect. `observed` is the repair -- the union of the
+    diffs the rule explained, which is what `fields` should say.
+    """
+    issue: str
+    #: declared roles no explained diff moves, sorted
+    unused: tuple[str, ...]
+    #: the union of the diffs it explains, sorted; the correct `fields`
+    observed: tuple[str, ...]
+
+
+def over_declared_rules(
+        rules: list[dict[str, object]],
+        roles_by_issue: dict[str, set[str]]) -> tuple[_OverDeclared, ...]:
+    """Rules whose declared `fields` exceed every diff they explain.
+
+    classify() takes the first rule whose `fields` are a SUPERSET of the
+    observed diff, so a rule keeps matching when the diff beneath it
+    SHRINKS -- and shrinking is the common direction, most parser fixes
+    moving fewer roles rather than more. #410 narrowed
+    'Freiherr von Richthofen V' from three roles to two while the
+    fix(#424) rule declaring all three kept claiming it, and no run
+    named the movement (decisions.md#H1). That rule was narrowed by
+    hand; this is what would have said so.
+
+    The statement is exact rather than heuristic. classify() REQUIRES
+    `declared >= union(explained diffs)` -- declaring less would stop
+    the rule matching a name it explains -- so the only possible error
+    is the other direction, and `declared == union` is the whole check.
+    The union is also the repair, and narrowing to it cannot orphan a
+    name: every name the rule explains contributed to it.
+
+    Two rules are skipped, neither as an exemption. A rule declaring
+    `dormant` explains nothing by declaration, so there is no union to
+    compare against, and dormant_rules already checks that claim in both
+    directions. A rule with no `fields` declares no roles and so has
+    nothing to over-declare; one with `fields` and no `name_regex`
+    cannot exist since #451.
+
+    Pure, like dormant_rules: it needs only values main() already
+    derives, so it is testable without a corpus or a baseline worker.
+    """
+    found: list[_OverDeclared] = []
+    for rule in rules:
+        declared = rule.get("fields")
+        if "dormant" in rule or not isinstance(declared, list):
+            continue
+        moved = roles_by_issue.get(str(rule["issue"]))
+        if not moved:
+            continue        # explains nothing -- dormant_rules owns it
+        unused = tuple(sorted(set(declared) - moved))
+        if unused:
+            found.append(_OverDeclared(
+                str(rule["issue"]), unused, tuple(sorted(moved))))
+    return tuple(found)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     # Every corpus by default: they have different blind spots (see
