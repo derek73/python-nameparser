@@ -932,6 +932,10 @@ def main() -> int:
     tell, old_rows = _run_worker(baseline, want_v2, corpus)
     print(f"baseline: nameparser {tell['__version__']} ({tell['__file__']})")
     by_issue: dict[str, list[str]] = {}
+    #: the union of the diffs each rule explained, for over_declared_rules.
+    #: Kept beside by_issue rather than inside it: the summary printout
+    #: and `changed` both read by_issue as a list of names.
+    roles_by_issue: dict[str, set[str]] = {}
     # BOTH surfaces' old/new are retained, not just the facade's. A diff
     # can exist on the v2 surface alone -- an _ambiguities-only change is
     # facade-identical by construction, and is the case _surfaces_for
@@ -967,6 +971,7 @@ def main() -> int:
                 (name, old["facade"], new, old.get("v2", {}), new_v2))
         else:
             by_issue.setdefault(issue, []).append(name)
+            roles_by_issue.setdefault(issue, set()).update(diff)
 
     changed = [n for names in by_issue.values() for n in names] \
         + [row[0] for row in unexplained]
@@ -989,6 +994,17 @@ def main() -> int:
               f"this run, so its `dormant` reason is now false -- remove "
               f"the key")
     if dormancy.undeclared or dormancy.awake:
+        print()
+    overwide = over_declared_rules(rules, roles_by_issue)
+    for wide in overwide:
+        print(f"OVER-DECLARED {wide.issue!r}\n    "
+              f"declares {list(wide.unused)}, which no diff it explains "
+              f"moves; every one fits {list(wide.observed)}. Narrow "
+              f"`fields` to that. classify() matches by SUBSET, so the "
+              f"excess is not inert -- it lets this rule keep claiming a "
+              f"name whose diff shrinks out of the extra role, with "
+              f"nothing to say so (#452)")
+    if overwide:
         print()
     if unexplained:
         print("Field names below are Role's, matching what a ledger "
@@ -1016,8 +1032,13 @@ def main() -> int:
                       f"   [v2 surface only]")
     # A rule explaining nothing is as much a broken contract as an
     # unexplained diff: both mean the ledger no longer describes what the
-    # code does. Same exit code, so neither can be the one nobody noticed.
-    return 1 if unexplained or dormancy.undeclared or dormancy.awake else 0
+    # code does. A rule explaining LESS than it declares is the third
+    # way that happens -- it still matches, so nothing here looks
+    # broken, but the `fields` it names are no longer what the code
+    # moves. Same exit code for all three, so none of them is the one
+    # nobody noticed.
+    return 1 if unexplained or dormancy.undeclared or dormancy.awake \
+        or overwide else 0
 
 
 if __name__ == "__main__":
