@@ -46,7 +46,7 @@ _POINTER_PART_RE = re.compile(
 ASSERTABLE_FIELDS = frozenset({
     "title", "given", "middle", "family", "suffix", "nickname", "maiden",
     "family_base", "family_particles", "surnames", "given_names",
-    "initials", "capitalized",
+    "initials", "capitalized", "capitalized_forced",
     "ambiguities", "pieces", "warns", "raises"})
 
 

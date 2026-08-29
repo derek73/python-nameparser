@@ -1105,7 +1105,24 @@ R4. Rationale: case repair is a display concern, applied only on
     already-correct name comes back unchanged.
       "juan mcdonald"             →  capitalized="Juan McDonald"
       "Juan McDonald"             →  capitalized="Juan McDonald"  · boundary
-    implemented: nameparser/_render.py
+    interacts: R5 · implemented: nameparser/_render.py
+
+R5. Rationale: mixed case is evidence that the writer cased the name
+    deliberately, and a repair cannot tell a deliberate spelling from
+    a mistaken one. A name written wholly in one case leaves the
+    repair no such evidence to read either way — the writer who
+    always writes lowercase is indistinguishable from the writer who
+    could not be bothered — so repair proceeds there, which is a
+    choice about how to act absent evidence rather than a claim that
+    nothing can be lost by it.
+    Case repair acts only on a name written entirely in one case. A
+    name written in more than one case is kept as it was written,
+    and whether that casing is right does not enter into it, unless
+    repair regardless of how the name is cased was asked for.
+      "juan mcdonald"             →  capitalized="Juan McDonald"
+      "Shirley Maclaine"          →  capitalized="Shirley Maclaine"
+      "Shirley Maclaine"          →  capitalized_forced="Shirley MacLaine"  · boundary
+    history: decisions.md#R5 · interacts: R4 · implemented: nameparser/_render.py
 
 ## Construction & configuration diagnostics (D)
 

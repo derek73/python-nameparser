@@ -117,6 +117,10 @@ def _run(example: Example) -> object:
         return parsed.initials()
     if example.field == "capitalized":
         return str(parsed.capitalized())
+    # R5: the gate returns mixed-case input untouched, so an example
+    # asserting what the REPAIR does must ask for it regardless
+    if example.field == "capitalized_forced":
+        return str(parsed.capitalized(force=True))
     return getattr(parsed, example.field)
 
 

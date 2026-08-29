@@ -170,6 +170,8 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
         raise TypeError(f"lexicon must be a Lexicon or None, got {lexicon!r}")
     lex = Lexicon.default() if lexicon is None else lexicon
     joined = " ".join(t.text for t in name.tokens)
+    # rules.md#R5: "case repair acts only on a name written entirely
+    # in one case"
     if not force and joined not in (joined.upper(), joined.lower()):
         return name
     new_tokens = tuple(
