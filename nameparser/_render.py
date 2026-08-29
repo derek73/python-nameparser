@@ -123,13 +123,26 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
     return _format_spec(spec, values, "initials", _INITIALS_KEYS)
 
 
-def _cap_word(word: str, role: Role, lex: Lexicon) -> str:
+def _cap_word(word: str, role: Role, tags: frozenset[str],
+              lex: Lexicon) -> str:
     # v1 cap_word order: particle/conjunction rule first, then the
     # exceptions map, then Mac/Mc, then str.capitalize
     normalized = _normalize(word)
+    # rules.md#R4: "a part whose every word is particle vocabulary is
+    # repaired as ordinary name words, since none of them is doing a
+    # particle's work there" -- UNJOINED_TAG is that mark (#407).
+    # Only the PARTICLE conjunct is gated on it, and gating the other
+    # would be a NO-OP rather than a mistake: the mark is applied to a
+    # part only when every word in it carries "particle" (_post_rules
+    # and _types._remarked both), a conjunction carries "conjunction"
+    # instead, and the two vocabularies are disjoint -- so a part
+    # holding a conjunction is never marked and no conjunction token
+    # can carry the mark. Left ungated because that is the smaller
+    # predicate, not because a case turns on it.
     # v1's is_conjunction excludes initials: 'E.' in 'Scott E. Werner'
     # is an initial, not the conjunction 'e' (pinned live 2026-07-17)
-    if ((normalized in lex.particles and role in (Role.MIDDLE, Role.FAMILY))
+    if ((normalized in lex.particles and role in (Role.MIDDLE, Role.FAMILY)
+            and UNJOINED_TAG not in tags)
             or (normalized in lex.conjunctions
                 and not _INITIAL.fullmatch(word))):
         return word.lower()
@@ -146,14 +159,15 @@ def _cap_word(word: str, role: Role, lex: Lexicon) -> str:
     return word.capitalize()
 
 
-def _cap_text(text: str, role: Role, lex: Lexicon) -> str:
+def _cap_text(text: str, role: Role, tags: frozenset[str],
+              lex: Lexicon) -> str:
     # word-by-word within the token text: hyphenated names capitalize
     # both sides ("macdole-eisenhower" -> "MacDole-Eisenhower")
-    return _WORD.sub(lambda m: _cap_word(m.group(0), role, lex), text)
+    return _WORD.sub(lambda m: _cap_word(m.group(0), role, tags, lex), text)
 
 
-# rules.md#R4: "case repair returns a repaired copy — vocabulary
-# exceptions (McDonald) included — and never mutates the parse"
+# rules.md#R4: "case repair returns a repaired copy and never mutates
+# the parse"
 def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
                 force: bool) -> ParsedName:
     """Case-fixing transform -> new ParsedName, same spans, new token
@@ -175,7 +189,7 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     if not force and joined not in (joined.upper(), joined.lower()):
         return name
     new_tokens = tuple(
-        Token(_cap_text(t.text, t.role, lex), t.span, t.role, t.tags)
+        Token(_cap_text(t.text, t.role, t.tags, lex), t.span, t.role, t.tags)
         for t in name.tokens)
     # equal tokens (possible only for synthetic span=None duplicates)
     # collapse to one mapping entry -- benign: the rebuilt ambiguity

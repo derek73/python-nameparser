@@ -98,10 +98,10 @@ STABLE_TAGS = frozenset({"particle", "conjunction", "initial", "joined"})
 
 #: A name part whose every word is particle vocabulary is a part
 #: where none of them is doing a particle's work -- nothing joins them
-#: to a name -- so THREE views read them as ordinary name words: they
-#: anchor `family_base`, drop out of `family_particles`, and
-#: contribute initials (rules.md#R2). Capitalization does not consult
-#: the mark and still lowercases them, which #407 tracks.
+#: to a name -- so FOUR views read them as ordinary name words: they
+#: anchor `family_base`, drop out of `family_particles`, contribute
+#: initials (rules.md#R2), and capitalize like any other name word
+#: rather than being lowercased as particles (#407).
 #: MARKED rather than untagged: `particle` is stable API and says the
 #: word IS particle vocabulary wherever it lands, which stays true, and
 #: keeping it leaves a later rule free to report the fork this decides.

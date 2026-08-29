@@ -1100,12 +1100,25 @@ R3. Rationale: initials abbreviate the person's name words; titles,
 
 R4. Rationale: case repair is a display concern, applied only on
     request and never destructively.
-    Case repair returns a repaired copy — vocabulary exceptions
-    (McDonald) included — and never mutates the parse; an
-    already-correct name comes back unchanged.
+    Case repair returns a repaired copy and never mutates the parse.
+    Where it acts at all — R5 decides where — the copy honors the
+    casing a vocabulary entry records (Ph.D.) and the Mac/Mc surname
+    convention (McDonald), not only ordinary word-by-word casing, and
+    a part whose every word is particle vocabulary is repaired as
+    ordinary name words, since none of them is doing a particle's
+    work there (R2). A name already written the way repair would
+    write it comes back unchanged, measured by repair's own
+    conventions rather than by the bearer's. A spelling written in a
+    single case is repaired even where its bearer meant it, because
+    nothing in the text marks it as a choice; where the text does
+    mark one, R5 defers to it.
       "juan mcdonald"             →  capitalized="Juan McDonald"
-      "Juan McDonald"             →  capitalized="Juan McDonald"  · boundary
-    interacts: R5 · implemented: nameparser/_render.py
+      "Juan McDonald"             →  capitalized_forced="Juan McDonald"
+      "ANH DO"                    →  capitalized="Anh Do"
+      "anh van do"                →  capitalized="Anh Van Do"
+      "john smith phd"            →  capitalized="John Smith Ph.D."
+      "juan de la vega"           →  capitalized="Juan de la Vega"  · boundary
+    history: decisions.md#R4 · interacts: R2, R3, R5 · implemented: nameparser/_render.py
 
 R5. Rationale: mixed case is evidence that the writer cased the name
     deliberately, and a repair cannot tell a deliberate spelling from
@@ -1118,8 +1131,9 @@ R5. Rationale: mixed case is evidence that the writer cased the name
     Case repair acts only on a name written entirely in one case. A
     name written in more than one case is kept as it was written,
     and whether that casing is right does not enter into it, unless
-    repair regardless of how the name is cased was asked for.
+    repair was asked for anyway.
       "juan mcdonald"             →  capitalized="Juan McDonald"
+      "SHIRLEY MACLAINE"          →  capitalized="Shirley MacLaine"
       "Shirley Maclaine"          →  capitalized="Shirley Maclaine"
       "Shirley Maclaine"          →  capitalized_forced="Shirley MacLaine"  · boundary
     history: decisions.md#R5 · interacts: R4 · implemented: nameparser/_render.py
