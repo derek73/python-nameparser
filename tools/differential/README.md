@@ -301,11 +301,12 @@ Each `[[change]]` entry needs `issue` (a short label, ideally an
 issue number or `fix(<slug>)` matching a `tests/v2/cases.py`
 classification) and `name_regex` (searched against the raw input
 string). It may narrow further with `fields` (the diffing rule matches
-only if the observed diff fields are a subset of this list). Keep both
-as tight as the actual diff allows -- a loose rule can mask a real
-regression. `name_regex` is REQUIRED since #451: `validate_rules`
-rejects a rule carrying `fields` and no `name_regex`, as it already
-rejected one carrying neither.
+only if the observed diff fields are a subset of this list), which
+since #452 must also name EXACTLY the roles that rule's own diffs move
+-- see below. Keep both as tight as the actual diff allows -- a loose
+rule can mask a real regression. `name_regex` is REQUIRED since #451:
+`validate_rules` rejects a rule carrying `fields` and no `name_regex`,
+as it already rejected one carrying neither.
 
 **That closes the SHAPE, not the property.** A required `name_regex`
 is not a bound on how much a rule reaches: the only width check is the
@@ -317,8 +318,44 @@ that such a rule now has a `_CORPUS_CLAIMS` reach and digest to record,
 so its breadth is visible ONCE, to whoever reviews that number, instead
 of being invisible forever. That roster is by its own docstring "inert
 for a brand-new rule", so the review is the check. A reach ceiling is
-the mechanism that would bound this; it is proposed on
-[#452](https://github.com/derek73/python-nameparser/issues/452).
+the mechanism that would bound this; it is still proposed on
+[#452](https://github.com/derek73/python-nameparser/issues/452), whose
+other half -- the declared-fields check below -- has landed.
+
+**`fields` must be EXACT, not merely a bound.** A rule's declaration
+must equal the union of the diffs it actually explains, and
+`compare.py` recomputes that union at the end of every run: a rule
+declaring a role none of its diffs moves is reported `OVER-DECLARED`
+and exits the run non-zero, like an unexplained diff or a dormant rule
+that explained one. The excess is not inert. `classify()` admits a
+rule when the observed diff is a SUBSET of `fields`, so a role nothing
+moves is a standing claim on every future diff that shrinks into it --
+which is how `fix(#424)` kept explaining 'Freiherr von Richthofen V'
+after #410 narrowed that diff from three roles to two, with no run
+ever naming it (see decisions.md#H1). The check is exact rather than
+heuristic, and cheap for the same reason: `classify()` already
+requires `declared >= union` for the rule to match the names it
+matches, so the only possible error is the other direction, and the
+union is simultaneously the check and the repair. Narrowing a rule to
+it cannot orphan a name, since every name the rule explains
+contributed to it.
+
+Width is BASELINE-RELATIVE, so measure each ledger on its own run
+rather than copying an edit across the three. `fix(#296) a lone
+post-comma credential is a suffix` declares all four of `{family,
+given, suffix, title}` at 1.4.0, where v1 reads the pre-comma word as
+`first` and every one of those roles moves, and only `{suffix, title}`
+at both 2.x baselines, where the same behaviour moves nothing else.
+One rule with two different field lists across the three files is
+correct there, not drift.
+
+Two shapes are skipped, neither as an exemption: a rule declaring
+`dormant` explains nothing by declaration, and the dormancy check
+below owns that finding in both directions; a rule with no `fields`
+declares no roles to exceed. There is no third way out, by decision
+rather than by omission -- a rule that genuinely needs a wider
+declaration must argue for a key of its own, the way `dormant` was
+argued for in #373.
 
 **File order decides.** That is not a detail -- every rule in every
 ledger carries a `name_regex`, so they all sit in one tier, the sort
@@ -380,7 +417,8 @@ can safely delete -- plus `name_regex` and `examples`. The examples are
 required, not decoration: a protected shape need not appear in any
 corpus, so the entry has to carry its own test data. `fields` is
 optional and narrows WHICH READING is protected, by the same subset
-test the rules use.
+test the rules use -- but only that test. An exclusion explains no
+diff, so the exactness requirement above is not asked of it.
 
 That last key earns its keep on the ASCII pairs. Parens mark nicknames,
 maiden names, suffixes and credentials alike, and no regex tells them
