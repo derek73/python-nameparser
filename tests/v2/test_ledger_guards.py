@@ -1531,7 +1531,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#325) a credential run across a second comma reads as suffixes":
             _Claim(1, ('suffix', 'title'), "f025c5f70a4e"),
         "fix(#367) an inferred title no longer displaces a leading particle either":
-            _Claim(1, ('family', 'given', 'middle'), "d8ee9cd5da5f"),
+            _Claim(1, ('family', 'given'), "d8ee9cd5da5f"),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(279, ('family', 'given'), "28a62b622a48"),
         "fix(#342) NOT WANTED: a bare trailing 'Rai' is read as a post-nominal suffix and the family is lost":
@@ -1553,7 +1553,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(cjk-comma-honorific-peel) glued honorific peels off a post-comma given name":
             _Claim(23, ('given', 'suffix'), "344de804e2c6"),
         "fix(cjk-comma-compound) comma routing compounds with the CJK order flip":
-            _Claim(23, ('family', 'given', 'middle', 'suffix', 'title'), "344de804e2c6"),
+            _Claim(23, ('family', 'given', 'suffix', 'title'), "344de804e2c6"),
         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix":
             _Claim(37, ('family', 'given', 'suffix'), "719c31233502"),
         "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip":
@@ -1565,7 +1565,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
             _Claim(1, ('family', 'given'), "ca7b37af6cf8"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
-            _Claim(3, ('family', 'given', 'middle'), "724967a4a117"),
+            _Claim(3, ('family', 'given'), "724967a4a117"),
         "fix(#400) abd joins the word after it as one given name":
             _Claim(11, ('given', 'middle'), "1eaed91fc574"),
         "fix(#272/#308) nakaguro division and a glued hangul honorific in one name":
@@ -2031,6 +2031,20 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         # they are in the same tier and both reach the name -- and a
         # later edit that moves either one silently hands it back.
         (".,", ("given",)): "fix(A2) content-free input names nobody, so every role empties",
+        # The one exception the cjk-comma-compound rule's `middle`
+        # argument turns on, added by #452's review. That comment says
+        # ten of the eleven names it explains have a single-token
+        # post-comma tail and this is the eleventh, escaping `middle`
+        # only because v1's fix_phd merges the split credential before
+        # parsing. Pinned because the count itself is not: _claim
+        # measures regex REACH (23 here), which does not move when a
+        # name inside it changes hands -- so if this name ever went to
+        # another rule, the argument would go false with nothing
+        # saying so. Shape measured against the 1.4.0 tag: v1 reads
+        # first '田中さん', suffix 'Ph. D.'; the tree reads family
+        # '田中', suffix 'さん, Ph. D.'.
+        ("田中さん, Ph. D.", ("family", "given", "suffix")):
+            "fix(cjk-comma-compound) comma routing compounds with the CJK order flip",
         # The jr rule's surplus, added by the #453 review. Its regex
         # reaches these three and does not explain them; `fields` is
         # what makes it ineligible -- none of the shapes below is a
