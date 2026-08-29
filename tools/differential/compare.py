@@ -536,6 +536,22 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
                 f"unrelated behavior families, with every guard green "
                 f"the whole time. Narrow by name instead, or split this "
                 f"into the rules the diffs actually need")
+        if has_regex and not has_fields:
+            raise SystemExit(
+                f"{where} has 'name_regex' but no 'fields' (#456). It "
+                f"narrows by name and by nothing else, so on any name "
+                f"its regex reaches it claims EVERY diff shape there is "
+                f"-- 127 of them. #452 makes that worse than it looks: "
+                f"over_declared_rules skips a rule with no 'fields', "
+                f"correctly, since one declaring no roles cannot "
+                f"over-declare them -- so deleting the line is the "
+                f"cheapest way to silence an OVER-DECLARED failure and "
+                f"the most permissive thing you can do to the rule at "
+                f"the same time. Name the roles the diffs actually "
+                f"move. Do NOT reach for the other shape instead: a "
+                f"'fields' with no 'name_regex' is banned by #451 for "
+                f"the mirror-image reason, and the two bans are each "
+                f"other's obvious wrong answer")
 
 
 def validate_exclusions(entries: list[dict[str, object]],

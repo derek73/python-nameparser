@@ -262,13 +262,38 @@ def test_dormant_does_not_buy_an_exemption_from_the_ban() -> None:
             "test_ledger.toml")
 
 
-def test_a_rule_with_a_regex_and_no_fields_or_both_stays_legal() -> None:
-    """The neighbouring shapes #451 did NOT retire. `name_regex` alone
-    still narrows by name; `name_regex` plus `fields` narrows by both.
-    Only the fields-only shape -- no name narrowing at all -- is new
-    to reject."""
-    compare.validate_rules(
-        [{"issue": "x", "name_regex": "Smith"}], "test_ledger.toml")
+def test_a_rule_with_a_regex_and_no_fields_is_rejected() -> None:
+    """#451's ban in mirror image (#456).
+
+    A rule with no `fields` narrows by name and by nothing else, so on
+    any name its regex reaches it claims every diff shape there is --
+    measured, 127 of 127. #452 made that worse than it looks by giving
+    the shape a second job: over_declared_rules skips a rule with no
+    `fields`, correctly, since one declaring no roles cannot
+    over-declare them. So deleting the `fields` line is the response to
+    an OVER-DECLARED failure that takes the least thought, and it both
+    silences the check and makes the rule maximally permissive.
+
+    Free to enforce, on the same terms as #451's: no rule in any
+    shipped ledger has the shape, so the ban costs no migration.
+    """
+    with pytest.raises(SystemExit, match="no 'fields'"):
+        compare.validate_rules(
+            [{"issue": "fix(x) a rule with no role narrowing",
+              "name_regex": "Smith"}],
+            "test_ledger.toml")
+
+
+def test_a_rule_carrying_both_keys_is_the_only_legal_shape() -> None:
+    """What is left after the three bans, and there is exactly one.
+
+    `validate_rules` rejects neither key (it would match every diff),
+    `fields` without `name_regex` (#451, no name narrowing), and
+    `name_regex` without `fields` (#456, no role narrowing). This
+    pinned the regex-only shape as LEGAL when #451 landed; #456
+    retired it, and the test is inverted rather than deleted so the
+    change of status is visible in the history rather than silent.
+    """
     compare.validate_rules(
         [{"issue": "x", "name_regex": "Smith", "fields": ["given"]}],
         "test_ledger.toml")
@@ -502,7 +527,7 @@ def test_main_exits_1_and_reports_an_unclassified_diff(
     exiting 0 forever -- read by exit code, that is silence."""
     code, out = _run_main(
         tmp_path, monkeypatch,
-        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\n', _DIFFERS)
+        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\nfields = ["family"]\n', _DIFFERS)
     assert code == 1
     assert "UNEXPLAINED 'John Smith'" in out
 
@@ -514,7 +539,7 @@ def test_main_reports_the_unexplained_field_under_its_role_name(
     this role `last`; a rule saying `last` never matches."""
     _, out = _run_main(
         tmp_path, monkeypatch,
-        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\n', _DIFFERS)
+        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\nfields = ["family"]\n', _DIFFERS)
     assert "family:" in out and "last:" not in out
 
 
@@ -536,7 +561,7 @@ def test_main_validates_the_ledger_before_running_anything(
     rule shadows the ledger."""
     with pytest.raises(SystemExit, match="matches every one of"):
         _run_main(tmp_path, monkeypatch,
-                  '[[change]]\nissue = "wide"\nname_regex = ""\n', _DIFFERS)
+                  '[[change]]\nissue = "wide"\nname_regex = ""\nfields = ["family"]\n', _DIFFERS)
 
 
 def test_main_rejects_a_broad_fields_only_rule_before_running_anything(
@@ -559,7 +584,7 @@ def test_main_rejects_a_broad_fields_only_rule_before_running_anything(
         _run_main(
             tmp_path, monkeypatch,
             '[[change]]\nissue = "broad"\nfields = ["family"]\n'
-            '[[change]]\nissue = "specific"\nname_regex = "Smith"\n',
+            '[[change]]\nissue = "specific"\nname_regex = "Smith"\nfields = ["family"]\n',
             _DIFFERS)
 
 
@@ -705,7 +730,7 @@ def test_main_aborts_when_the_tree_side_is_not_the_checkout(
     monkeypatch.setattr(compare, "REPO_ROOT", tmp_path)
     with pytest.raises(SystemExit, match="not from this checkout's source"):
         _run_main(tmp_path, monkeypatch,
-                  '[[change]]\nissue = "x"\nname_regex = "ZZZ"\n', _DIFFERS)
+                  '[[change]]\nissue = "x"\nname_regex = "ZZZ"\nfields = ["family"]\n', _DIFFERS)
 
 
 def test_worker_env_strips_the_import_path_overrides(
@@ -840,7 +865,7 @@ def test_main_compares_the_v2_surface_from_baseline_2_0(
     v2 = {**_SAME_V2, "_ambiguities": ["SEGMENTATION"]}
     code, out = _run_main(
         tmp_path, monkeypatch,
-        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\n',
+        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\nfields = ["family"]\n',
         _SAME_FACADE, baseline="2.0.0", baseline_v2=v2)
     assert code == 1, "an ambiguity-only regression must not exit 0"
     assert "UNEXPLAINED 'John Smith'" in out
@@ -867,7 +892,7 @@ def test_main_reports_a_role_once_when_both_surfaces_moved(
     change shows on each; printing it twice would read as two findings."""
     _, out = _run_main(
         tmp_path, monkeypatch,
-        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\n',
+        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\nfields = ["family"]\n',
         {**_SAME_FACADE, "last": "SMYTHE"}, baseline="2.0.0",
         baseline_v2={**_SAME_V2, "family": "SMYTHE"})
     assert out.count("family:") == 1
@@ -878,7 +903,7 @@ def test_main_forwards_the_baseline_and_corpus_to_the_worker(
     """Otherwise main could read the 2.0 ledger while comparing against
     1.4, or compare a truncated corpus, and every other test would pass."""
     _run_main(tmp_path, monkeypatch,
-              '[[change]]\nissue = "x"\nname_regex = "ZZZ"\n',
+              '[[change]]\nissue = "x"\nname_regex = "ZZZ"\nfields = ["family"]\n',
               _SAME_FACADE, baseline="2.0.0", baseline_v2=_SAME_V2)
     assert _WORKER_CALL == {"version": "2.0.0", "want_v2": True,
                             "names": ["John Smith"]}
@@ -887,7 +912,7 @@ def test_main_forwards_the_baseline_and_corpus_to_the_worker(
 def test_main_asks_for_the_facade_alone_below_2_0(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     _run_main(tmp_path, monkeypatch,
-              '[[change]]\nissue = "x"\nname_regex = "ZZZ"\n', _SAME_FACADE)
+              '[[change]]\nissue = "x"\nname_regex = "ZZZ"\nfields = ["family"]\n', _SAME_FACADE)
     assert _WORKER_CALL["want_v2"] is False
 
 
@@ -928,7 +953,7 @@ def test_main_aborts_on_a_truncated_corpus(
     """A corpus below its floor must stop the run, not shrink it."""
     with pytest.raises(SystemExit, match="below its floor"):
         _run_main(tmp_path, monkeypatch,
-                  '[[change]]\nissue = "x"\nname_regex = "ZZZ"\n',
+                  '[[change]]\nissue = "x"\nname_regex = "ZZZ"\nfields = ["family"]\n',
                   _SAME_FACADE, floor=50)
 
 
@@ -939,7 +964,7 @@ def test_main_aborts_on_a_corpus_with_no_floor(
     tables use."""
     with pytest.raises(SystemExit, match="no entry in _CORPUS_FLOORS"):
         _run_main(tmp_path, monkeypatch,
-                  '[[change]]\nissue = "x"\nname_regex = "ZZZ"\n',
+                  '[[change]]\nissue = "x"\nname_regex = "ZZZ"\nfields = ["family"]\n',
                   _SAME_FACADE, floor=None)
 
 
