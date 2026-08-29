@@ -585,6 +585,52 @@ def test_main_exits_1_and_names_a_rule_that_explained_nothing(
     assert "unexplained: 0" in out
 
 
+def test_main_exits_1_and_names_an_over_declared_rule(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The #452 gate. `wide` explains the only diff here and declares
+    two roles it never moves -- the run must say so and fail, even
+    though every diff IS explained and no rule is idle.
+
+    Nothing else pins this, which is the same gap _run_main's own
+    docstring names for the dormancy check: five unit tests prove
+    over_declared_rules WORKS and none proved main() calls it.
+    Measured on mutants built outside the repo -- deleting the
+    `roles_by_issue` accumulator, deleting this report loop, or
+    dropping `or overwide` from main's return each leaves the whole
+    suite green (#455 review).
+    """
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "wide"\nname_regex = "Smith"\n'
+        'fields = ["family", "given", "suffix"]\n', _DIFFERS)
+    assert code == 1
+    # the ledger is named before the issue: this rule's correct
+    # `fields` differ per baseline, so the file is part of the finding
+    assert "OVER-DECLARED" in out and "'wide'" in out
+    assert out.count(".toml: 'wide'") == 1
+    assert "['given', 'suffix']" in out      # the roles nothing moves
+    assert "['family']" in out               # the repair
+    # the diff itself was explained; this failure is only about the rule
+    assert "unexplained: 0" in out
+
+
+def test_main_accepts_a_rule_declaring_exactly_what_it_moves(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The other direction, so the #452 check cannot pass by being
+    unconditional. `exact` declares the one role the one diff moves,
+    and the run is silent and exits 0.
+
+    Its partner above would still pass if over_declared_rules reported
+    every rule; this is what makes that impossible.
+    """
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "exact"\nname_regex = "Smith"\n'
+        'fields = ["family"]\n', _DIFFERS)
+    assert code == 0
+    assert "OVER-DECLARED" not in out
+
+
 def test_main_only_feeds_diffing_names_to_the_dormancy_check(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """If a non-diffing name reached `diffing`, a rule matching only

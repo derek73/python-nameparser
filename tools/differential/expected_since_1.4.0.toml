@@ -1015,13 +1015,30 @@ issue = "fix(cjk-comma-compound) comma routing compounds with the CJK order flip
 # actually claims -- now falls out of this rule instead of being
 # silently absorbed, and should arrive UNEXPLAINED and be read once
 # rather than get a widened rule pre-built for it (#452). That
-# promise does not cover every shape, though: a diff that moves ONLY
-# {given, middle, family} -- the order flip with no comma routing at
-# all -- still classifies above, on fix(#271/#272/#298), whose bare
-# CJK-codepoint regex sits ahead of this one and whose fields were
-# never narrowed. `middle` alongside `title` or `suffix` is the
-# combination #452 protects here; `middle` alone is
-# fix(#271/#272/#298)'s to explain, as it always was.
+# promise does not cover every shape, and the exceptions are per
+# SHAPE and per NAME rather than per role -- measured with classify()
+# over the 23 names this regex reaches, not reasoned from which role
+# grew:
+#
+#   {given, middle, family}  all 23  -> fix(#271/#272/#298), the order
+#                                      flip with no comma routing, whose
+#                                      bare CJK regex sits ahead of this
+#                                      rule and whose fields were never
+#                                      narrowed
+#   {middle, suffix}         4 of 23 -> '田中さん, Dr.' to fix(#296), and
+#                                      '田中さん, 様.', '김민준, 씨',
+#                                      '김민준, 씨.' to
+#                                      fix(cjk-honorific-suffix)
+#   {middle, title}          none    -> unclassified
+#   {middle, suffix, title}  none    -> unclassified
+#
+# So what #452 buys here is narrower than "middle alongside title or
+# suffix": it is the shapes in the last two rows, plus {middle, suffix}
+# on the nineteen names the honorific rules do not reach. An earlier
+# draft of this paragraph claimed the whole `title`-or-`suffix`
+# combination and was falsified by driving classify() over the reach --
+# the method decisions.md#differential-ledger names as the only one
+# that answers this question.
 name_regex = "(?s)(?=.*,)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
 fields = ["given", "family", "title", "suffix"]
 
@@ -1514,17 +1531,24 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # `fields` is what keeps those wider shapes out, NOT the regex --
 # measured, `^(mr|dr|sir)\.?\s+van\b` has no end anchor and does
 # reach 'Mr. Van Johnson nee Brown' and 'Mr. Van Johnson Middle';
-# only 'Dr. St John Smith' is outside it. The diff on the three names
-# this rule actually claims (given in the next paragraph) is
-# {given, family} alone, and `fields` names those two roles and no
+# only 'Dr. St John Smith' is outside it. The three names this rule
+# actually claims are 'Mr. Van Nguyen', 'Dr. Van Johnson' and
+# 'Sir Van Johnson' -- NOT the trio two paragraphs up, which includes
+# 'Jr. Van Johnson', the next rule's one name -- and each diffs
+# {given, family} alone. `fields` names those two roles and no
 # others, so `title`, `maiden` and `middle` are left out on purpose.
 # classify() admits by subset, so leaving a role out is not passive:
 # a diff that grows to include one of them falls out of THIS rule
 # instead of being silently absorbed. Where it lands then is a
-# separate question -- a `maiden` diff on the nee name above goes to
-# fix(#274), which is its right home; a `middle` or `title` one is
-# claimed by nothing and arrives unclassified, to be read once rather
-# than have a widened rule pre-built for it (#452).
+# separate question, and it depends on the SHAPE rather than the role.
+# Measured on the nee name above: {family, maiden} goes to fix(#274),
+# which is its right home, but {given, family, maiden} -- the shape
+# this rule would actually grow into, since it already moves `given`
+# -- is claimed by nothing, because fix(#274)'s own `fields` stop at
+# maiden/middle/family and its comment says why. A `middle` or `title`
+# growth is likewise claimed by nothing. So the honest statement is
+# per shape, not per role: drive classify() rather than reasoning from
+# which role moved (#452).
 #
 # This rule has to exist even though the run already exited 0 without
 # it. The diff was being classified by fix(suffix-routing), a

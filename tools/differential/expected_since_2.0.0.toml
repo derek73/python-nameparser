@@ -804,8 +804,10 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # fields-only rule exists here, so this file's copy is the plain
 # classification.
 #
-# `middle` is OUT too, the same excess the paragraphs above already
-# argue for `title` and `maiden`: the diff on the three names this rule
+# The paragraph above already argues `middle` out alongside `title`
+# and `maiden`; what follows is the measurement behind it, kept
+# because the names are worth naming: the diff on the three names this
+# rule
 # actually claims here -- 'Mr. Van Nguyen', 'Dr. Van Johnson', 'Sir Van
 # Johnson' -- is {given, family} alone at this baseline, checked
 # directly against the released 2.0.0 and the tree (none of the three

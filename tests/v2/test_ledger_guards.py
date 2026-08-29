@@ -1039,12 +1039,19 @@ _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
     # partial for fix(#379)'s reason, SUFFIX_ACRONYMS running to
     # hundreds of entries that nobody writes after a bare name word.
     #
-    # This is the roster entry that FORCED #451's split into four rules
-    # rather than one: the sibling rule's `jr` is a SUFFIX_WORDS entry,
-    # _LatinCopy carries exactly one `vocabulary`, and the test below
-    # asserts exactly one roster key per alternation -- so an
-    # alternation spanning both vocabularies could not be pinned
-    # against either, and had to become two rules.
+    # This is the roster entry behind one of #451's three splits, and
+    # it forces that split only GIVEN THE ROSTER AS WRITTEN: the
+    # sibling rule's `jr` is a SUFFIX_WORDS entry, _LatinCopy carries
+    # exactly one `vocabulary`, and the test below asserts exactly one
+    # roster key per alternation -- so an alternation spanning both
+    # vocabularies cannot be pinned against either AS DECLARED HERE.
+    # `vocabulary` is a hand-supplied frozenset, though: declaring
+    # SUFFIX_WORDS | SUFFIX_ACRONYMS would let `(jr\.?|v|mp|mc)` pass
+    # the member checks, measured. Declining to write a union is a
+    # judgement -- an alternation should name one wordlist a reader can
+    # go and check -- and decisions.md records it as one rather than as
+    # a constraint. An earlier version of this comment said FORCED
+    # flatly and was walked back (#452 review).
     "fix(suffix-routing) a two-token name ending in a credential acronym keeps it in `suffix`":
         _LatinCopy(vocabulary=SUFFIX_ACRONYMS,
                    covers=frozenset({"mc", "mp"})),
@@ -2069,6 +2076,39 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         ("김민준씨 Jr.", ("family", "given", "suffix")):
             "fix(cjk-glued-honorific-peel) glued honorific peels into suffix",
     },
+    # The two 2.x ledgers had NO section here until #452, and the
+    # coverage assertion below was `<=`, so their absence read as "no
+    # contest to pin" rather than "nobody looked". The #452 narrowings
+    # are what made that expensive: shrinking a rule's `fields` hands
+    # every shape it no longer admits to whatever claims it next, and
+    # measured across the fourteen, that moved shapes in both files.
+    # Neither _CORPUS_CLAIMS nor the gate's totals can see a handover --
+    # reach is regex-only and the total is per-corpus -- so these rows
+    # are the only thing that would.
+    "expected_since_2.0.0.toml": {
+        # fix(#296) lost `family` and `given`; {family} on this name is
+        # one of the shapes it stopped admitting, and fix(#379) takes it.
+        # The right home -- a tussenvoegsel attaching to the family is
+        # exactly what that rule is about -- which is not the point: the
+        # point is that a later edit sends it somewhere else in silence.
+        ("Nguyen, Van", ("family",)):
+            "fix(#379) a tussenvoegsel after a family comma attaches to the family",
+        # fix(#412) lost `middle`; this shape went to fix(#445), which
+        # sits BEHIND it in file order, so the handover was decided by
+        # the narrowing rather than by position.
+        ("Jane née and Jones Smith", ("family", "maiden", "middle")):
+            "fix(#445) the lone name word beside a marker a connective join no longer absorbs",
+    },
+    "expected_since_2.1.0.toml": {
+        # The same two handovers, measured against this baseline's own
+        # run rather than copied from the 2.0.0 rows -- the ledgers
+        # differ, and #452's own lesson is that a claim true in one file
+        # is not thereby true in its siblings.
+        ("Nguyen, Van", ("family",)):
+            "fix(#379) a tussenvoegsel after a family comma attaches to the family",
+        ("Jane née and Jones Smith", ("family", "maiden", "middle")):
+            "fix(#445) the lone name word beside a marker a connective join no longer absorbs",
+    },
 }
 
 
@@ -2107,9 +2147,17 @@ def test_the_recorded_rule_still_wins_each_contested_name() -> None:
                 f"describe is #372, and it stays green everywhere else")
             checked += 1
     assert checked, "no contested name was checked, so this pin is vacuous"
-    assert set(_CROSS_RULE_WINNERS) <= {led.name for led in _LEDGERS}, (
-        f"_CROSS_RULE_WINNERS names ledgers that do not exist: "
-        f"{sorted(set(_CROSS_RULE_WINNERS) - {L.name for L in _LEDGERS})}")
+    assert set(_CROSS_RULE_WINNERS) == {led.name for led in _LEDGERS}, (
+        f"_CROSS_RULE_WINNERS must name every ledger on disk, with an "
+        f"explicit empty mapping for one that genuinely has no contest. "
+        f"Missing: {sorted({L.name for L in _LEDGERS} - set(_CROSS_RULE_WINNERS))}; "
+        f"unknown: {sorted(set(_CROSS_RULE_WINNERS) - {L.name for L in _LEDGERS})}. "
+        f"This was `<=` until #452, which made a ledger with no rows "
+        f"indistinguishable from one needing none -- and the #452 "
+        f"narrowings moved shapes between rules in the two 2.x ledgers "
+        f"that had no section at all. Both sibling rosters "
+        f"(_CORPUS_CLAIMS, _SPAN_BEARING_RULES) use equality; this one "
+        f"was the odd one out.")
 
 
 class _Excluded(NamedTuple):

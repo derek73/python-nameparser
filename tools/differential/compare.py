@@ -815,12 +815,32 @@ def over_declared_rules(
     The union is also the repair, and narrowing to it cannot orphan a
     name: every name the rule explains contributed to it.
 
-    Two rules are skipped, neither as an exemption. A rule declaring
-    `dormant` explains nothing by declaration, so there is no union to
-    compare against, and dormant_rules already checks that claim in both
-    directions. A rule with no `fields` declares no roles and so has
-    nothing to over-declare; one with `fields` and no `name_regex`
-    cannot exist since #451.
+    Three rules are skipped, none as an exemption. A rule declaring
+    `dormant` is dormant_rules' finding in BOTH directions -- including
+    when it has explained a diff, which that check reports as NO LONGER
+    DORMANT: one defect with one remedy (remove the key), where
+    reporting it here too would demand a second, contradictory one.
+    (Do not say "a dormant rule has no union to compare against" -- it
+    can have one, and the test that pins this skip uses exactly that
+    input, because the empty-union input cannot discriminate.) A rule
+    with no `fields` declares no roles and so has nothing to
+    over-declare; one with `fields` and no `name_regex` cannot exist
+    since #451. And a rule that explained nothing is dormant_rules'
+    too, which is the third `continue` below.
+
+    What this does NOT bound is a diff shape no single name produced.
+    A rule declaring {family, suffix} where one name moves `family`
+    and another moves `suffix` passes -- the union is both -- while
+    still standing ready to claim a name diffing the two together. The
+    union is a per-RULE bound, not a per-name one, and narrowing
+    further would orphan one of the two. The #452 hazard survives in
+    that reduced form by choice.
+
+    One caveat for a partial run: under `--corpus` the union is
+    computed over the names actually compared, so a subset run can
+    report a rule that is correctly declared for the full gate, with a
+    `observed` repair that would orphan a name on the next full run.
+    The report says so.
 
     Pure, like dormant_rules: it needs only values main() already
     derives, so it is testable without a corpus or a baseline worker.
@@ -831,8 +851,13 @@ def over_declared_rules(
         if "dormant" in rule or not isinstance(declared, list):
             continue
         moved = roles_by_issue.get(str(rule["issue"]))
-        if not moved:
-            continue        # explains nothing -- dormant_rules owns it
+        if moved is None:
+            # explains nothing -- dormant_rules owns that finding.
+            # `is None` rather than falsy: an empty union cannot reach
+            # this dict today (main() skips a name with no diff), and if
+            # that ever changes an empty one should be REPORTED rather
+            # than silently skipped.
+            continue
         unused = tuple(sorted(set(declared) - moved))
         if unused:
             found.append(_OverDeclared(
@@ -997,13 +1022,23 @@ def main() -> int:
         print()
     overwide = over_declared_rules(rules, roles_by_issue)
     for wide in overwide:
-        print(f"OVER-DECLARED {wide.issue!r}\n    "
+        # The ledger is NAMED, unlike the two blocks above, because this
+        # rule's correct `fields` differ per baseline -- fix(#296) is
+        # exactly exercised at 1.4.0 and over-declared at both 2.x -- so
+        # a message without the file sends the reader to edit a rule
+        # that is not the broken one, which is validate_rules' own
+        # stated reason for carrying `ledger`.
+        print(f"OVER-DECLARED {ledger.name}: {wide.issue!r}\n    "
               f"declares {list(wide.unused)}, which no diff it explains "
               f"moves; every one fits {list(wide.observed)}. Narrow "
               f"`fields` to that. classify() matches by SUBSET, so the "
               f"excess is not inert -- it lets this rule keep claiming a "
               f"name whose diff shrinks out of the extra role, with "
-              f"nothing to say so (#452)")
+              f"nothing to say so (#452)."
+              + (" NOTE: this run used --corpus, so the union above is "
+                 "over a SUBSET and the repair may orphan a name the "
+                 "full gate compares -- confirm before narrowing."
+                 if args.corpus else ""))
     if overwide:
         print()
     if unexplained:
