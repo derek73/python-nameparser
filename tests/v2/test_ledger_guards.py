@@ -2031,6 +2031,24 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         # they are in the same tier and both reach the name -- and a
         # later edit that moves either one silently hands it back.
         (".,", ("given",)): "fix(A2) content-free input names nobody, so every role empties",
+        # The jr rule's surplus, added by the #453 review. Its regex
+        # reaches these three and does not explain them; `fields` is
+        # what makes it ineligible -- none of the shapes below is a
+        # subset of its {family, suffix} -- and file order is only the
+        # second line. Recorded because handing one over takes TWO
+        # edits (widen `fields`, move the rule up) and nothing else
+        # here would report the pair: reach is per-rule, and the jr
+        # rule's own _CORPUS_CLAIMS count of 5 does not move when a
+        # name inside it changes hands. Shapes measured against the
+        # 1.4.0 wheel, not guessed. 'Doe,, Jr.' is the fourth name the
+        # regex reaches and has no row: it does not diff at this
+        # baseline, so there is no winner to pin.
+        ("Kim, Jr.", ("family", "given", "suffix", "title")):
+            "fix(#296) a lone post-comma credential is a suffix",
+        ("Smith, Jr.", ("family", "given", "suffix", "title")):
+            "fix(#296) a lone post-comma credential is a suffix",
+        ("김민준씨 Jr.", ("family", "given", "suffix")):
+            "fix(cjk-glued-honorific-peel) glued honorific peels into suffix",
     },
 }
 

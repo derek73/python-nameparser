@@ -228,6 +228,40 @@ def test_a_rule_with_fields_and_no_regex_is_rejected() -> None:
             "test_ledger.toml")
 
 
+def test_dormant_does_not_buy_an_exemption_from_the_ban() -> None:
+    """`dormant` says a rule explains nothing; it does not say the rule
+    may be unbounded.
+
+    The two are independent, and conflating them is the plausible
+    future edit: "it is declared idle, so its reach cannot matter."
+    It can. `dormant` is a claim about TODAY's corpus, and #372's
+    lesson is that a rule's reach is what it will claim tomorrow --
+    the retired catch-all explained four names when it was written.
+    A regexless rule declared dormant would sit at the whole corpus
+    the moment one diffing name arrived, and its `dormant` reason
+    would then be false as well as its bound missing.
+
+    Pinned because check ORDER is what makes this hold: the dormancy
+    check runs before the #451 one, so a malformed `dormant` still
+    reports its own message, and a well-formed one falls through to
+    the ban. Nothing else asserts that a valid `dormant` does not
+    short-circuit it (#453 review).
+    """
+    with pytest.raises(SystemExit, match="no 'name_regex'"):
+        compare.validate_rules(
+            [{"issue": "fix(x) idle and unbounded",
+              "fields": ["given", "family"],
+              "dormant": "a reason nobody could fault"}],
+            "test_ledger.toml")
+    # the other order still holds: a malformed `dormant` reports its
+    # own defect rather than the ban's, because it is checked first
+    with pytest.raises(SystemExit, match="'dormant' that is not a"):
+        compare.validate_rules(
+            [{"issue": "fix(x) idle and unbounded",
+              "fields": ["given", "family"], "dormant": ""}],
+            "test_ledger.toml")
+
+
 def test_a_rule_with_a_regex_and_no_fields_or_both_stays_legal() -> None:
     """The neighbouring shapes #451 did NOT retire. `name_regex` alone
     still narrows by name; `name_regex` plus `fields` narrows by both.

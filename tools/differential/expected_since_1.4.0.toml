@@ -2034,11 +2034,16 @@ issue = "fix(suffix-routing) a two-token name ending in the suffix word jr keeps
 # The regex also reaches four corpus names this rule does not explain.
 # 'Kim, Jr.' and 'Smith, Jr.' are fix(#296)'s lone post-comma
 # credential and '김민준씨 Jr.' is fix(cjk-glued-honorific-peel)'s.
-# Three names, two rules, and both sit above this one and win on file
-# order, which is the
-# whole reason these four rules were appended at the end. The fourth,
-# 'Doe,, Jr.', does not diff against this baseline at all, so it has no
-# winner to lose. That reach is real either way, so none of the four is
+# Three names, two rules, and what keeps them there is `fields`, not
+# file order: measured, they diff {family, given, suffix, title} and
+# {family, given, suffix}, and neither is a subset of the two roles
+# below, so this rule is INELIGIBLE for all three wherever it sits.
+# Order is the second line of defence, not the first -- a widening of
+# `fields` alone would still lose to the rules above, and it would
+# take a widening AND a move to hand any of them over.
+# _CROSS_RULE_WINNERS pins all three against that pair of edits. The
+# fourth, 'Doe,, Jr.', does not diff against this baseline at all, so
+# it has no winner to lose and no row. That reach is real either way, so none of the four is
 # a _MUST_NOT_MATCH probe here: that roster tests the regex, not
 # classify().
 name_regex = "(?i)^\\S+\\s+jr\\.?$"
