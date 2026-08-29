@@ -99,7 +99,10 @@ uv run sphinx-build -b html docs dist/docs
 # 1. Run the differential gate at EVERY baseline that has a ledger with rules,
 #    and confirm each exits 0. The dynamic check only runs for the ledger
 #    matching the baseline being run, so a ledger left out here gets no
-#    dynamic dormancy check at all -- see tools/differential/README.md:
+#    dynamic dormancy check AND no over-declaration check (#452) at all
+#    -- and neither is hypothetical: #452 found 3, 5 and 6 stale
+#    declarations sitting in the three files. See
+#    tools/differential/README.md:
 #    uv run python tools/differential/compare.py --baseline 1.4.0   # the v1 compat contract
 #    uv run python tools/differential/compare.py                    # the previous minor
 #    uv run python tools/differential/compare.py --baseline 2.0.0   # 2.0.0's ledger has rules too

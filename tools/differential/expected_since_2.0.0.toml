@@ -520,8 +520,24 @@ issue = "fix(#296) a credential-only comma string reads a name and its postnomin
 # name; with 'phd' out of TITLES the comma structure reads it as a
 # one-word name plus a postnominal -- a reading of a string nobody
 # writes as a name, and the honest one for it.
+#
+# `given` and `family` are OUT here: by 2.0.0 the comma-family rule
+# has already moved the pre-comma word from `first` to `last`, so
+# both names diff {title, suffix} alone at this baseline -- checked
+# against the released 2.0.0 and the tree directly, 'Jr., PhD' reads
+# last 'Jr.' on both sides and only title 'PhD' -> suffix 'PhD' moves.
+# The 1.4.0 copy of this same rule keeps `given`/`family`: there the
+# pre-comma word is still v1's `first`, so the same names diff all
+# four roles at that baseline and the wider declaration is exercised,
+# not excess. classify() admits by subset, so leaving the two roles
+# out here is not passive -- a future diff on either name that grows
+# to move `given` or `family` falls out of this rule instead of being
+# silently absorbed; measured against the narrowed ledger, no other
+# rule claims a {given, family, title, suffix} diff on these two names
+# either, so it would arrive unclassified rather than pre-claimed
+# (#452).
 name_regex = "(?i)^[a-z]{2,3}\\.?,\\s*phd$"
-fields = ["title", "given", "family", "suffix"]
+fields = ["title", "suffix"]
 
 [[change]]
 issue = "fix(#296) a lone post-comma credential is a suffix"
@@ -535,8 +551,21 @@ issue = "fix(#296) a lone post-comma credential is a suffix"
 # so the postnominal position is read first now: a post-comma run
 # that is nothing but suffix pieces is suffixes. A one-word name, a
 # comma, one short word: the reach is pinned by the guards.
+#
+# `given` and `family` are OUT here for the same reason as the
+# credential-only rule above: the comma-family move already landed by
+# 2.0.0, so 'Smith, Jr.' reads last 'Smith' on both the 2.0.0 release
+# and the tree and diffs {title, suffix} alone -- checked directly.
+# The 1.4.0 copy of this same rule keeps `given`/`family` because
+# there the pre-comma word is still moving `first` -> `last`, the
+# larger diff that baseline actually produces. classify() admits by
+# subset, so a future diff here that grows to move `given` or `family`
+# falls out of this rule instead of being silently absorbed; measured
+# against the narrowed ledger, nothing else in this file claims a
+# {given, family, title, suffix} diff on these names, so it would
+# arrive unclassified (#452).
 name_regex = "(?i)^[a-z]+,\\s*[a-z]{2,6}\\.?$"
-fields = ["title", "given", "family", "suffix"]
+fields = ["title", "suffix"]
 
 [[change]]
 issue = "fix(#296) a glued honorific before a lone credential: the credential is the postnominal"
@@ -755,11 +784,18 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # as well: un-chaining lets a marker standing behind the particle be
 # seen at all, so 'Mr. Van Johnson nee Brown' goes from family
 # 'Van Johnson nee Brown' with no maiden name to given 'Van', family
-# 'Johnson', maiden 'Brown'. `suffix` and `nickname` are the two that
-# genuinely never move. Naming three roles anyway is deliberate, for
-# the reason the regex names only `van`: a corpus name that moves
-# `title` or `maiden` should arrive UNEXPLAINED and be read once,
-# rather than be absorbed here.
+# 'Johnson', maiden 'Brown'. `suffix` and `nickname` are the two roles
+# that genuinely never move.
+#
+# `fields` names the two this rule's diffs DO move and no others, so
+# `title`, `maiden` and `middle` are all left out on purpose, for the
+# reason the regex names only `van`. It is `fields` that keeps the
+# wider shapes out rather than the regex: `^(mr|dr|sir)\.?\s+van\b`
+# has no end anchor and does reach 'Mr. Van Johnson nee Brown'. A diff
+# growing into one of the three left out falls out of this rule --
+# measured, {given, family, middle} on any of the three names it
+# claims is claimed by nothing and arrives unclassified, to be read
+# once rather than have a widened rule pre-built for it (#452).
 #
 # The 1.4 ledger carries the same rule, where it also has a second job:
 # there the diff was already being absorbed by that file's fields-only
@@ -767,8 +803,23 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # ["given", "family", "suffix"] is a superset of this diff's fields. No
 # fields-only rule exists here, so this file's copy is the plain
 # classification.
+#
+# The paragraph above already argues `middle` out alongside `title`
+# and `maiden`; what follows is the measurement behind it, kept
+# because the names are worth naming: the diff on the three names this
+# rule
+# actually claims here -- 'Mr. Van Nguyen', 'Dr. Van Johnson', 'Sir Van
+# Johnson' -- is {given, family} alone at this baseline, checked
+# directly against the released 2.0.0 and the tree (none of the three
+# has a third name piece, so `middle` reads empty on both sides).
+# classify() admits by subset, so leaving it out is not passive: a
+# diff that grows to move `middle` falls out of this rule instead of
+# being silently absorbed. Measured against the narrowed ledger,
+# nothing else in this file claims a {given, family, middle} diff on
+# any of the three names either, so it would arrive unclassified and
+# be read once rather than have a widened rule pre-built for it (#452).
 name_regex = "(?i)^(mr|dr|sir)\\.?\\s+van\\b"
-fields = ["given", "middle", "family"]
+fields = ["given", "family"]
 
 [[change]]
 issue = "fix(#367) an inferred title no longer displaces a leading particle either"
@@ -779,8 +830,19 @@ issue = "fix(#367) an inferred title no longer displaces a leading particle eith
 # member would now reach a word the vocabulary does not ship, and the
 # shape gets its literal. The reading is unchanged: 'Jr.' is still a
 # title by shape, and Van is still the leading name piece.
+#
+# `middle` was declared here too, the same excess the 'Mr./Dr./Sir'
+# rule above drops and for the same reason: this rule's one name,
+# 'Jr. Van Johnson', diffs {given, family} alone at this baseline,
+# checked directly against the released 2.0.0 and the tree. classify()
+# admits by subset, so leaving `middle` out means a diff that grows to
+# include it falls out of this rule instead of being silently
+# absorbed. Measured against the narrowed ledger, nothing else claims
+# a {given, family, middle} diff on this rule's name either, so it
+# arrives unclassified and is read once rather than have a widened
+# rule pre-built for it (#452).
 name_regex = "(?i)^jr\\.\\s+van\\b"
-fields = ["given", "middle", "family"]
+fields = ["given", "family"]
 
 [[change]]
 issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
@@ -853,8 +915,19 @@ issue = "fix(#412) a connective join no longer absorbs the maiden marker beside 
 # Jones'; the other name is left with one name word once the marker
 # takes the rest, so its diff gained `given` and it has a rule of its
 # own at the end of this file, as it does at 2.1.0.
+#
+# `middle` is OUT: checked directly against the released 2.0.0 and the
+# tree, the one name this rule now explains diffs {family, maiden}
+# alone -- `given` 'Jane' and `middle` (empty on both sides) are
+# unmoved; only `last` shrinks from 'van der Berg née y Jones' to
+# 'van der Berg' and `maiden` fills with 'y Jones'. classify() admits
+# by subset, so declaring `middle` here was not inert: a diff that
+# grows to move it falls out of this rule instead of being silently
+# claimed. Measured against the narrowed ledger, nothing else in this
+# file claims a {family, maiden, middle} diff on this name either, so
+# it would arrive unclassified (#452).
 name_regex = "(?i)\\bn[eé]e\\s+(y|and)\\b"
-fields = ["middle", "family", "maiden"]
+fields = ["family", "maiden"]
 
 [[change]]
 issue = "fix(#418) the connective carve-out counts the name the maiden clause leaves behind"

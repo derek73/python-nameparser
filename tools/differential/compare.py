@@ -781,6 +781,90 @@ def dormant_rules(rules: list[dict[str, object]], explained: set[str],
     return _Dormancy(tuple(undeclared), tuple(awake))
 
 
+class _OverDeclared(NamedTuple):
+    """One rule declaring a role nothing it explains moves.
+
+    `unused` is the defect. `observed` is the repair -- the union of the
+    diffs the rule explained, which is what `fields` should say.
+    """
+    issue: str
+    #: declared roles no explained diff moves, sorted
+    unused: tuple[str, ...]
+    #: the union of the diffs it explains, sorted; the correct `fields`
+    observed: tuple[str, ...]
+
+
+def over_declared_rules(
+        rules: list[dict[str, object]],
+        roles_by_issue: dict[str, set[str]]) -> tuple[_OverDeclared, ...]:
+    """Rules whose declared `fields` exceed every diff they explain.
+
+    classify() takes the first rule whose `fields` are a SUPERSET of the
+    observed diff, so a rule keeps matching when the diff beneath it
+    SHRINKS -- and shrinking is the common direction, most parser fixes
+    moving fewer roles rather than more. #410 narrowed
+    'Freiherr von Richthofen V' from three roles to two while the
+    fix(#424) rule declaring all three kept claiming it, and no run
+    named the movement (decisions.md#H1). That rule was narrowed by
+    hand; this is what would have said so.
+
+    The statement is exact rather than heuristic. classify() REQUIRES
+    `declared >= union(explained diffs)` -- declaring less would stop
+    the rule matching a name it explains -- so the only possible error
+    is the other direction, and `declared == union` is the whole check.
+    The union is also the repair, and narrowing to it cannot orphan a
+    name: every name the rule explains contributed to it.
+
+    Three rules are skipped, none as an exemption. A rule declaring
+    `dormant` is dormant_rules' finding in BOTH directions -- including
+    when it has explained a diff, which that check reports as NO LONGER
+    DORMANT: one defect with one remedy (remove the key), where
+    reporting it here too would demand a second, contradictory one.
+    (Do not say "a dormant rule has no union to compare against" -- it
+    can have one, and the test that pins this skip uses exactly that
+    input, because the empty-union input cannot discriminate.) A rule
+    with no `fields` declares no roles and so has nothing to
+    over-declare; one with `fields` and no `name_regex` cannot exist
+    since #451. And a rule that explained nothing is dormant_rules'
+    too, which is the third `continue` below.
+
+    What this does NOT bound is a diff shape no single name produced.
+    A rule declaring {family, suffix} where one name moves `family`
+    and another moves `suffix` passes -- the union is both -- while
+    still standing ready to claim a name diffing the two together. The
+    union is a per-RULE bound, not a per-name one, and narrowing
+    further would orphan one of the two. The #452 hazard survives in
+    that reduced form by choice.
+
+    One caveat for a partial run: under `--corpus` the union is
+    computed over the names actually compared, so a subset run can
+    report a rule that is correctly declared for the full gate, with a
+    `observed` repair that would orphan a name on the next full run.
+    The report says so.
+
+    Pure, like dormant_rules: it needs only values main() already
+    derives, so it is testable without a corpus or a baseline worker.
+    """
+    found: list[_OverDeclared] = []
+    for rule in rules:
+        declared = rule.get("fields")
+        if "dormant" in rule or not isinstance(declared, list):
+            continue
+        moved = roles_by_issue.get(str(rule["issue"]))
+        if moved is None:
+            # explains nothing -- dormant_rules owns that finding.
+            # `is None` rather than falsy: an empty union cannot reach
+            # this dict today (main() skips a name with no diff), and if
+            # that ever changes an empty one should be REPORTED rather
+            # than silently skipped.
+            continue
+        unused = tuple(sorted(set(declared) - moved))
+        if unused:
+            found.append(_OverDeclared(
+                str(rule["issue"]), unused, tuple(sorted(moved))))
+    return tuple(found)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     # Every corpus by default: they have different blind spots (see
@@ -873,6 +957,10 @@ def main() -> int:
     tell, old_rows = _run_worker(baseline, want_v2, corpus)
     print(f"baseline: nameparser {tell['__version__']} ({tell['__file__']})")
     by_issue: dict[str, list[str]] = {}
+    #: the union of the diffs each rule explained, for over_declared_rules.
+    #: Kept beside by_issue rather than inside it: the summary printout
+    #: and `changed` both read by_issue as a list of names.
+    roles_by_issue: dict[str, set[str]] = {}
     # BOTH surfaces' old/new are retained, not just the facade's. A diff
     # can exist on the v2 surface alone -- an _ambiguities-only change is
     # facade-identical by construction, and is the case _surfaces_for
@@ -908,6 +996,7 @@ def main() -> int:
                 (name, old["facade"], new, old.get("v2", {}), new_v2))
         else:
             by_issue.setdefault(issue, []).append(name)
+            roles_by_issue.setdefault(issue, set()).update(diff)
 
     changed = [n for names in by_issue.values() for n in names] \
         + [row[0] for row in unexplained]
@@ -930,6 +1019,27 @@ def main() -> int:
               f"this run, so its `dormant` reason is now false -- remove "
               f"the key")
     if dormancy.undeclared or dormancy.awake:
+        print()
+    overwide = over_declared_rules(rules, roles_by_issue)
+    for wide in overwide:
+        # The ledger is NAMED, unlike the two blocks above, because this
+        # rule's correct `fields` differ per baseline -- fix(#296) is
+        # exactly exercised at 1.4.0 and over-declared at both 2.x -- so
+        # a message without the file sends the reader to edit a rule
+        # that is not the broken one, which is validate_rules' own
+        # stated reason for carrying `ledger`.
+        print(f"OVER-DECLARED {ledger.name}: {wide.issue!r}\n    "
+              f"declares {list(wide.unused)}, which no diff it explains "
+              f"moves; every one fits {list(wide.observed)}. Narrow "
+              f"`fields` to that. classify() matches by SUBSET, so the "
+              f"excess is not inert -- it lets this rule keep claiming a "
+              f"name whose diff shrinks out of the extra role, with "
+              f"nothing to say so (#452)."
+              + (" NOTE: this run used --corpus, so the union above is "
+                 "over a SUBSET and the repair may orphan a name the "
+                 "full gate compares -- confirm before narrowing."
+                 if args.corpus else ""))
+    if overwide:
         print()
     if unexplained:
         print("Field names below are Role's, matching what a ledger "
@@ -957,8 +1067,13 @@ def main() -> int:
                       f"   [v2 surface only]")
     # A rule explaining nothing is as much a broken contract as an
     # unexplained diff: both mean the ledger no longer describes what the
-    # code does. Same exit code, so neither can be the one nobody noticed.
-    return 1 if unexplained or dormancy.undeclared or dormancy.awake else 0
+    # code does. A rule explaining LESS than it declares is the third
+    # way that happens -- it still matches, so nothing here looks
+    # broken, but the `fields` it names are no longer what the code
+    # moves. Same exit code for all three, so none of them is the one
+    # nobody noticed.
+    return 1 if unexplained or dormancy.undeclared or dormancy.awake \
+        or overwide else 0
 
 
 if __name__ == "__main__":

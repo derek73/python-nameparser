@@ -1039,12 +1039,19 @@ _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
     # partial for fix(#379)'s reason, SUFFIX_ACRONYMS running to
     # hundreds of entries that nobody writes after a bare name word.
     #
-    # This is the roster entry that FORCED #451's split into four rules
-    # rather than one: the sibling rule's `jr` is a SUFFIX_WORDS entry,
-    # _LatinCopy carries exactly one `vocabulary`, and the test below
-    # asserts exactly one roster key per alternation -- so an
-    # alternation spanning both vocabularies could not be pinned
-    # against either, and had to become two rules.
+    # This is the roster entry behind one of #451's three splits, and
+    # it forces that split only GIVEN THE ROSTER AS WRITTEN: the
+    # sibling rule's `jr` is a SUFFIX_WORDS entry, _LatinCopy carries
+    # exactly one `vocabulary`, and the test below asserts exactly one
+    # roster key per alternation -- so an alternation spanning both
+    # vocabularies cannot be pinned against either AS DECLARED HERE.
+    # `vocabulary` is a hand-supplied frozenset, though: declaring
+    # SUFFIX_WORDS | SUFFIX_ACRONYMS would let `(jr\.?|v|mp|mc)` pass
+    # the member checks, measured. Declining to write a union is a
+    # judgement -- an alternation should name one wordlist a reader can
+    # go and check -- and decisions.md records it as one rather than as
+    # a constraint. An earlier version of this comment said FORCED
+    # flatly and was walked back (#452 review).
     "fix(suffix-routing) a two-token name ending in a credential acronym keeps it in `suffix`":
         _LatinCopy(vocabulary=SUFFIX_ACRONYMS,
                    covers=frozenset({"mc", "mp"})),
@@ -1474,8 +1481,13 @@ def _claim(rule: dict) -> _Claim:
 #: That is the intended cost: a corpus name added under an existing
 #: rule is a real change in what that rule explains, and it should be
 #: read once rather than absorbed silently.
-#: Twenty of these moved at once when corpus_rules.jsonl landed
-#: (#414), which is a lot of re-recording to review. The jumps are all
+#: Seventeen of these moved at once when corpus_rules.jsonl landed
+#: (#414) and fourteen more were added, which is a lot of re-recording
+#: to review. The figure read "Twenty" until #452 measured it: parse
+#: this roster out of `7a10689^` and `7a10689` with ast and diff the
+#: per-entry dumps -- 30 entries before, 44 after, 17 changed. The same
+#: three ways (that commit, the whole of PR #415, the backtick-harvest
+#: commit after it) all give 17. The jumps are all
 #: one cause -- 113 names arriving -- and the ones worth naming are
 #: the broad rules: the fields-only catch-alls grew to the whole
 #: corpus (751 -> 864), the comma rules 215 -> 236, fix(#274) 4 -> 11
@@ -1531,7 +1543,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#325) a credential run across a second comma reads as suffixes":
             _Claim(1, ('suffix', 'title'), "f025c5f70a4e"),
         "fix(#367) an inferred title no longer displaces a leading particle either":
-            _Claim(1, ('family', 'given', 'middle'), "d8ee9cd5da5f"),
+            _Claim(1, ('family', 'given'), "d8ee9cd5da5f"),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(279, ('family', 'given'), "28a62b622a48"),
         "fix(#342) NOT WANTED: a bare trailing 'Rai' is read as a post-nominal suffix and the family is lost":
@@ -1553,7 +1565,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(cjk-comma-honorific-peel) glued honorific peels off a post-comma given name":
             _Claim(23, ('given', 'suffix'), "344de804e2c6"),
         "fix(cjk-comma-compound) comma routing compounds with the CJK order flip":
-            _Claim(23, ('family', 'given', 'middle', 'suffix', 'title'), "344de804e2c6"),
+            _Claim(23, ('family', 'given', 'suffix', 'title'), "344de804e2c6"),
         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix":
             _Claim(37, ('family', 'given', 'suffix'), "719c31233502"),
         "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip":
@@ -1565,7 +1577,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
             _Claim(1, ('family', 'given'), "ca7b37af6cf8"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
-            _Claim(3, ('family', 'given', 'middle'), "724967a4a117"),
+            _Claim(3, ('family', 'given'), "724967a4a117"),
         "fix(#400) abd joins the word after it as one given name":
             _Claim(11, ('given', 'middle'), "1eaed91fc574"),
         "fix(#272/#308) nakaguro division and a glued hangul honorific in one name":
@@ -1670,7 +1682,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ca7b37af6cf8"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
-            _Claim(3, ('family', 'given', 'middle'), "724967a4a117"),
+            _Claim(3, ('family', 'given'), "724967a4a117"),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
             _Claim(2, ('family', 'suffix'), "ec0d45289dc1"),
         "fix(#399) a maiden marker bounds the particle chain that swallowed it":
@@ -1686,7 +1698,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#411) the bound-given reserve stops counting words the maiden name takes":
             _Claim(1, ('given', 'maiden', 'middle'), "7515923c9613"),
         "fix(#412) a connective join no longer absorbs the maiden marker beside it":
-            _Claim(2, ('family', 'maiden', 'middle'), "51c0eb36b5c5"),
+            _Claim(2, ('family', 'maiden'), "51c0eb36b5c5"),
         "fix(#418) the connective carve-out counts the name the maiden clause leaves behind":
             _Claim(1, ('family', 'given', 'middle'), "7923e6d3c5a7"),
         "fix(#418) accepted: a suffix word inside the maiden name ends it, connective or not":
@@ -1716,9 +1728,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
             _Claim(9, ('family', 'middle', 'suffix'), "8d6e9a1b43c0"),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
-            _Claim(2, ('family', 'given', 'suffix', 'title'), "3f983ff71dee"),
+            _Claim(2, ('suffix', 'title'), "3f983ff71dee"),
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(18, ('family', 'given', 'suffix', 'title'), "1f79efa10444"),
+            _Claim(18, ('suffix', 'title'), "1f79efa10444"),
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
             _Claim(6, ('given', 'suffix', 'title'), "7911e0158337"),
         "fix(#325) a credential run across a second comma reads as suffixes":
@@ -1732,7 +1744,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#296) an ambiguous acronym counts as a suffix only when written with its periods":
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "e13b3c769de4"),
         "fix(#367) an inferred title no longer displaces a leading particle either":
-            _Claim(1, ('family', 'given', 'middle'), "d8ee9cd5da5f"),
+            _Claim(1, ('family', 'given'), "d8ee9cd5da5f"),
         "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "a564b97f7162"),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example":
@@ -1774,7 +1786,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ca7b37af6cf8"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
-            _Claim(3, ('family', 'given', 'middle'), "724967a4a117"),
+            _Claim(3, ('family', 'given'), "724967a4a117"),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
             _Claim(2, ('family', 'suffix'), "ec0d45289dc1"),
         "fix(#399) a maiden marker bounds the particle chain that swallowed it":
@@ -1788,7 +1800,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#411) the bound-given reserve stops counting words the maiden name takes":
             _Claim(1, ('given', 'maiden', 'middle'), "7515923c9613"),
         "fix(#412) a connective join no longer absorbs the maiden marker beside it":
-            _Claim(2, ('family', 'maiden', 'middle'), "51c0eb36b5c5"),
+            _Claim(2, ('family', 'maiden'), "51c0eb36b5c5"),
         "fix(#418) the connective carve-out counts the name the maiden clause leaves behind":
             _Claim(1, ('family', 'given', 'middle'), "7923e6d3c5a7"),
         "fix(#418) accepted: a suffix word inside the maiden name ends it, connective or not":
@@ -1818,15 +1830,15 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
             _Claim(9, ('family', 'middle', 'suffix'), "8d6e9a1b43c0"),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
-            _Claim(2, ('family', 'given', 'suffix', 'title'), "3f983ff71dee"),
+            _Claim(2, ('suffix', 'title'), "3f983ff71dee"),
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(18, ('family', 'given', 'suffix', 'title'), "1f79efa10444"),
+            _Claim(18, ('suffix', 'title'), "1f79efa10444"),
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
             _Claim(6, ('given', 'suffix', 'title'), "7911e0158337"),
         "fix(#325) a credential run across a second comma reads as suffixes":
             _Claim(1, ('suffix', 'title'), "f025c5f70a4e"),
         "fix(#296) a glued honorific before a lone credential: the credential is the postnominal":
-            _Claim(1, ('family', 'suffix', 'title'), "01bf2bd3f895"),
+            _Claim(1, ('suffix', 'title'), "01bf2bd3f895"),
         "fix(#296) do is a name, so it no longer stops the leading-particle scan as a title":
             _Claim(1, ('family', 'given'), "faa2c70fc49e"),
         "fix(#296) dr is not postnominal vocabulary, so 'John Smith, Dr.' keeps its split and its title":
@@ -1834,7 +1846,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#296) an ambiguous acronym counts as a suffix only when written with its periods":
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "e13b3c769de4"),
         "fix(#367) an inferred title no longer displaces a leading particle either":
-            _Claim(1, ('family', 'given', 'middle'), "d8ee9cd5da5f"),
+            _Claim(1, ('family', 'given'), "d8ee9cd5da5f"),
         "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "a564b97f7162"),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example":
@@ -2031,6 +2043,20 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         # they are in the same tier and both reach the name -- and a
         # later edit that moves either one silently hands it back.
         (".,", ("given",)): "fix(A2) content-free input names nobody, so every role empties",
+        # The one exception the cjk-comma-compound rule's `middle`
+        # argument turns on, added by #452's review. That comment says
+        # ten of the eleven names it explains have a single-token
+        # post-comma tail and this is the eleventh, escaping `middle`
+        # only because v1's fix_phd merges the split credential before
+        # parsing. Pinned because the count itself is not: _claim
+        # measures regex REACH (23 here), which does not move when a
+        # name inside it changes hands -- so if this name ever went to
+        # another rule, the argument would go false with nothing
+        # saying so. Shape measured against the 1.4.0 tag: v1 reads
+        # first '田中さん', suffix 'Ph. D.'; the tree reads family
+        # '田中', suffix 'さん, Ph. D.'.
+        ("田中さん, Ph. D.", ("family", "given", "suffix")):
+            "fix(cjk-comma-compound) comma routing compounds with the CJK order flip",
         # The jr rule's surplus, added by the #453 review. Its regex
         # reaches these three and does not explain them; `fields` is
         # what makes it ineligible -- none of the shapes below is a
@@ -2049,6 +2075,39 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
             "fix(#296) a lone post-comma credential is a suffix",
         ("김민준씨 Jr.", ("family", "given", "suffix")):
             "fix(cjk-glued-honorific-peel) glued honorific peels into suffix",
+    },
+    # The two 2.x ledgers had NO section here until #452, and the
+    # coverage assertion below was `<=`, so their absence read as "no
+    # contest to pin" rather than "nobody looked". The #452 narrowings
+    # are what made that expensive: shrinking a rule's `fields` hands
+    # every shape it no longer admits to whatever claims it next, and
+    # measured across the fourteen, that moved shapes in both files.
+    # Neither _CORPUS_CLAIMS nor the gate's totals can see a handover --
+    # reach is regex-only and the total is per-corpus -- so these rows
+    # are the only thing that would.
+    "expected_since_2.0.0.toml": {
+        # fix(#296) lost `family` and `given`; {family} on this name is
+        # one of the shapes it stopped admitting, and fix(#379) takes it.
+        # The right home -- a tussenvoegsel attaching to the family is
+        # exactly what that rule is about -- which is not the point: the
+        # point is that a later edit sends it somewhere else in silence.
+        ("Nguyen, Van", ("family",)):
+            "fix(#379) a tussenvoegsel after a family comma attaches to the family",
+        # fix(#412) lost `middle`; this shape went to fix(#445), which
+        # sits BEHIND it in file order, so the handover was decided by
+        # the narrowing rather than by position.
+        ("Jane née and Jones Smith", ("family", "maiden", "middle")):
+            "fix(#445) the lone name word beside a marker a connective join no longer absorbs",
+    },
+    "expected_since_2.1.0.toml": {
+        # The same two handovers, measured against this baseline's own
+        # run rather than copied from the 2.0.0 rows -- the ledgers
+        # differ, and #452's own lesson is that a claim true in one file
+        # is not thereby true in its siblings.
+        ("Nguyen, Van", ("family",)):
+            "fix(#379) a tussenvoegsel after a family comma attaches to the family",
+        ("Jane née and Jones Smith", ("family", "maiden", "middle")):
+            "fix(#445) the lone name word beside a marker a connective join no longer absorbs",
     },
 }
 
@@ -2088,9 +2147,17 @@ def test_the_recorded_rule_still_wins_each_contested_name() -> None:
                 f"describe is #372, and it stays green everywhere else")
             checked += 1
     assert checked, "no contested name was checked, so this pin is vacuous"
-    assert set(_CROSS_RULE_WINNERS) <= {led.name for led in _LEDGERS}, (
-        f"_CROSS_RULE_WINNERS names ledgers that do not exist: "
-        f"{sorted(set(_CROSS_RULE_WINNERS) - {L.name for L in _LEDGERS})}")
+    assert set(_CROSS_RULE_WINNERS) == {led.name for led in _LEDGERS}, (
+        f"_CROSS_RULE_WINNERS must name every ledger on disk, with an "
+        f"explicit empty mapping for one that genuinely has no contest. "
+        f"Missing: {sorted({L.name for L in _LEDGERS} - set(_CROSS_RULE_WINNERS))}; "
+        f"unknown: {sorted(set(_CROSS_RULE_WINNERS) - {L.name for L in _LEDGERS})}. "
+        f"This was `<=` until #452, which made a ledger with no rows "
+        f"indistinguishable from one needing none -- and the #452 "
+        f"narrowings moved shapes between rules in the two 2.x ledgers "
+        f"that had no section at all. Both sibling rosters "
+        f"(_CORPUS_CLAIMS, _SPAN_BEARING_RULES) use equality; this one "
+        f"was the odd one out.")
 
 
 class _Excluded(NamedTuple):

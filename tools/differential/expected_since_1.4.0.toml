@@ -996,8 +996,51 @@ issue = "fix(cjk-comma-compound) comma routing compounds with the CJK order flip
 # above, which names that shape and whose fields exclude `family` so
 # the two cannot compete. Until #372 they landed on fix(comma-family)
 # instead, on nothing but file order.
+#
+# `middle` was in that fields list too, on the strength of the
+# mechanism paragraph above -- the CJK order flip CAN move a middle
+# name for a three-token pre-comma run. None of the 11 names this
+# rule actually explains has one: ten have a single-token post-comma
+# tail, and the eleventh, '田中さん, Ph. D.', has two ('Ph.' and
+# 'D.') but fix_phd merges them into one suffix unit before v1's
+# comma split can turn the second token into `middle` the way an
+# untreated two-token tail does at 1.4.0 ('Smith, John Middle' reads
+# first 'John', middle 'Middle'). So no diff this rule claims has
+# ever moved `middle`, for that reason rather than pre-comma token
+# count.
+#
+# classify() admits by subset, so leaving `middle` out is not
+# passive: a future diff that grows to include it alongside `title`
+# or `suffix` -- the two roles this rule's comma-routing half
+# actually claims -- now falls out of this rule instead of being
+# silently absorbed, and should arrive UNEXPLAINED and be read once
+# rather than get a widened rule pre-built for it (#452). That
+# promise does not cover every shape, and the exceptions are per
+# SHAPE and per NAME rather than per role -- measured with classify()
+# over the 23 names this regex reaches, not reasoned from which role
+# grew:
+#
+#   {given, middle, family}  all 23  -> fix(#271/#272/#298), the order
+#                                      flip with no comma routing, whose
+#                                      bare CJK regex sits ahead of this
+#                                      rule and whose fields were never
+#                                      narrowed
+#   {middle, suffix}         4 of 23 -> '田中さん, Dr.' to fix(#296), and
+#                                      '田中さん, 様.', '김민준, 씨',
+#                                      '김민준, 씨.' to
+#                                      fix(cjk-honorific-suffix)
+#   {middle, title}          none    -> unclassified
+#   {middle, suffix, title}  none    -> unclassified
+#
+# So what #452 buys here is narrower than "middle alongside title or
+# suffix": it is the shapes in the last two rows, plus {middle, suffix}
+# on the nineteen names the honorific rules do not reach. An earlier
+# draft of this paragraph claimed the whole `title`-or-`suffix`
+# combination and was falsified by driving classify() over the reach --
+# the method decisions.md#differential-ledger names as the only one
+# that answers this question.
 name_regex = "(?s)(?=.*,)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
-fields = ["given", "middle", "family", "title", "suffix"]
+fields = ["given", "family", "title", "suffix"]
 
 [[change]]
 issue = "fix(cjk-glued-honorific-peel) glued honorific peels into suffix"
@@ -1472,20 +1515,40 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # before. (`\.?` was inert into the bargain: `\S+` is greedy, so it
 # had already taken the period.)
 #
-# `fields` is what carries the rest of the tightness -- and it is narrower
-# than the change rather than a description of it. The change moves
-# `title` as well: a word in BOTH vocabularies stops the transparency
-# scan and stays a title piece instead of being chained onto the name,
-# so 'Dr. St John Smith' goes from title 'Dr.', family 'St John Smith'
-# to title 'Dr. St', given 'John', family 'Smith'. It moves `maiden`
-# as well: un-chaining lets a marker standing behind the particle be
-# seen at all, so 'Mr. Van Johnson nee Brown' goes from family
-# 'Van Johnson nee Brown' with no maiden name to given 'Van', family
-# 'Johnson', maiden 'Brown'. `suffix` and `nickname` are the two that
-# genuinely never move. Naming three roles anyway is deliberate, for
-# the reason the regex names only `van`: a corpus name that moves
-# `title` or `maiden` should arrive UNEXPLAINED and be read once,
-# rather than be absorbed here.
+# `fields` is what carries the rest of the tightness -- and it is
+# narrower than the change rather than a description of it. The wider
+# mechanism moves more than `given`/`family`: un-chaining reveals
+# whatever was hidden behind the particle, so 'Dr. St John Smith'
+# moves `title` (title 'Dr.', family 'St John Smith' -> title
+# 'Dr. St', given 'John', family 'Smith'), 'Mr. Van Johnson nee Brown'
+# moves `maiden` (family 'Van Johnson nee Brown' with no maiden ->
+# given 'Van', family 'Johnson', maiden 'Brown'), and a third token
+# after the particle moves `middle` the same way ('Mr. Van Johnson
+# Middle': v1 gives it all to `last`; the un-chained reading gives
+# given 'Van', middle 'Johnson', last 'Middle'). `suffix` and
+# `nickname` are the two roles that genuinely never move.
+#
+# `fields` is what keeps those wider shapes out, NOT the regex --
+# measured, `^(mr|dr|sir)\.?\s+van\b` has no end anchor and does
+# reach 'Mr. Van Johnson nee Brown' and 'Mr. Van Johnson Middle';
+# only 'Dr. St John Smith' is outside it. The three names this rule
+# actually claims are 'Mr. Van Nguyen', 'Dr. Van Johnson' and
+# 'Sir Van Johnson' -- NOT the trio two paragraphs up, which includes
+# 'Jr. Van Johnson', the next rule's one name -- and each diffs
+# {given, family} alone. `fields` names those two roles and no
+# others, so `title`, `maiden` and `middle` are left out on purpose.
+# classify() admits by subset, so leaving a role out is not passive:
+# a diff that grows to include one of them falls out of THIS rule
+# instead of being silently absorbed. Where it lands then is a
+# separate question, and it depends on the SHAPE rather than the role.
+# Measured on the nee name above: {family, maiden} goes to fix(#274),
+# which is its right home, but {given, family, maiden} -- the shape
+# this rule would actually grow into, since it already moves `given`
+# -- is claimed by nothing, because fix(#274)'s own `fields` stop at
+# maiden/middle/family and its comment says why. A `middle` or `title`
+# growth is likewise claimed by nothing. So the honest statement is
+# per shape, not per role: drive classify() rather than reasoning from
+# which role moved (#452).
 #
 # This rule has to exist even though the run already exited 0 without
 # it. The diff was being classified by fix(suffix-routing), a
@@ -1497,7 +1560,7 @@ issue = "fix(#367) a title no longer displaces a leading particle out of the lea
 # since deleted the catch-all, and no ledger has a fields-only rule
 # for anything to be claimed back from.
 name_regex = "(?i)^(mr|dr|sir)\\.?\\s+van\\b"
-fields = ["given", "middle", "family"]
+fields = ["given", "family"]
 
 [[change]]
 issue = "fix(#367) an inferred title no longer displaces a leading particle either"
@@ -1508,8 +1571,17 @@ issue = "fix(#367) an inferred title no longer displaces a leading particle eith
 # member would now reach a word the vocabulary does not ship, and the
 # shape gets its literal. The reading is unchanged: 'Jr.' is still a
 # title by shape, and Van is still the leading name piece.
+#
+# `middle` was declared here too, the same excess the 'Mr./Dr./Sir.'
+# rule above drops and for the same reason: this rule's one name,
+# 'Jr. Van Johnson', diffs {given, family} alone. classify() admits
+# by subset, so leaving `middle` out means a diff that grows to
+# include it falls out of this rule instead of being silently
+# absorbed. Measured, nothing else claims a `middle` diff on this
+# rule's name either, so it arrives unclassified and is read once
+# rather than have a widened rule pre-built for it (#452).
 name_regex = "(?i)^jr\\.\\s+van\\b"
-fields = ["given", "middle", "family"]
+fields = ["given", "family"]
 
 # Shapes that must never be explained. A [[change]] rule says "this
 # diff is intended, and here is what changed"; there was no rule
