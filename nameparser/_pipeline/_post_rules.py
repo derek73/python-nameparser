@@ -433,6 +433,18 @@ def post_rules(state: ParseState) -> ParseState:
             # parse actually took: assign had read the word as a
             # post-nominal, so the name-word reading was never on the
             # table for the attachment to decline.
+            #
+            # Both details name the ATTACHMENT and stop there. What
+            # P6 decides is that the run joins the family the comma
+            # named instead of standing on its own; how the joined
+            # words then READ is R2's call, taken by the UNJOINED_TAG
+            # loop at the end of this stage. The two can disagree:
+            # `de la, Jan van` attaches `van` and leaves an
+            # all-particle family, which R2 marks, so every other view
+            # -- `family_base`, the initials, case repair -- reads
+            # those words as ordinary name words ('Jan Van De La'
+            # forced). A detail promising "read as the family's
+            # particle" would contradict all three.
             ambiguous = [i for i in run
                          if "vocab:particle-ambiguous" in tokens[i].tags]
             declined_suffix = [i for i in run
@@ -443,8 +455,8 @@ def post_rules(state: ParseState) -> ParseState:
                     AmbiguityKind.SUFFIX_OR_NAME,
                     f"{text!r} written without periods is both a "
                     f"post-nominal and a family-name particle; after a "
-                    f"family comma it is read as the particle rather "
-                    f"than as a post-nominal",
+                    f"family comma it joins the family the comma named "
+                    f"rather than standing as a post-nominal",
                     tuple(run)))
             elif ambiguous:
                 word = tokens[ambiguous[0]].text
@@ -452,8 +464,8 @@ def post_rules(state: ParseState) -> ParseState:
                     AmbiguityKind.PARTICLE_OR_GIVEN,
                     f"{word!r} is both a family-name particle and an "
                     f"ordinary given name; after a family comma "
-                    f"{text!r} is read as the family's particle "
-                    f"rather than as a name word",
+                    f"{text!r} joins the family the comma named "
+                    f"rather than standing as a name word of its own",
                     tuple(run)))
             for i in run:
                 tokens[i] = dataclasses.replace(

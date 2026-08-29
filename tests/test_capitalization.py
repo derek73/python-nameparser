@@ -183,14 +183,20 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # gives 'y van der' -- but it is worth being exact about what it
     # does NOT pin, since a reviewer proposed it for that. It cannot
     # witness the conjunction conjunct being left ungated, and neither
-    # can any other name: the mark is applied to a part only where
-    # EVERY word in it carries "particle" (_pipeline/_post_rules and
-    # _types._remarked alike), `particles` and `conjunctions` are
-    # disjoint sets, and so a part holding a conjunction is never
-    # marked and no conjunction token can ever carry the mark. Gating
-    # that conjunct too would be a semantic no-op, which is why
-    # mutating it kills nothing. The `y` here is a GIVEN-part word
-    # besides, not a word of the all-particle family.
+    # can any other name parsed with the SHIPPED vocabulary: the mark
+    # is applied to a part only where EVERY word in it carries
+    # "particle" (_pipeline/_post_rules and _types._remarked alike),
+    # and `particles` and `conjunctions` are disjoint in the default
+    # lexicon and in all four locale packs, so no shipped conjunction
+    # ever sits inside a marked part. That is a property of the
+    # shipped DATA, not an invariant -- both sets are public API, and
+    # `Lexicon.default().add(particles={'y'})` parses `anh y van` to
+    # an all-particle family whose `y` carries the mark, giving
+    # 'Anh y Van' where gating the conjunct too would give
+    # 'Anh Y Van'. So the ungated conjunct decides something: it is
+    # rules.md#R4's stated carve-out, matching R3's for initials,
+    # rather than a no-op. The `y` here is a GIVEN-part word besides,
+    # not a word of the all-particle family.
     def test_capitalize_all_particle_family_beside_a_conjunction(self) -> None:
         hn = HumanName('der, y van')
         hn.capitalize()
@@ -204,14 +210,22 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     #
     # Measured over the 1094-name differential corpus (2026-08-29),
     # because the promise is nearly true and the exceptions are the
-    # whole story. `capitalize(force=True)` differs from uppercasing
-    # the input and calling `capitalize()` for 63 of 1094 names, and
-    # from lowercasing it for 16 -- so UPPERCASE IS THE WORSE
-    # DIRECTION, not the clean one. Nor are the misses merely
-    # parse-level: of the 63, only 25 move a role, and the other 38
-    # parse byte-identically and differ inside the repair itself.
-    # Recompute by running both forms over the four corpus files
-    # deduped and diffing.
+    # whole story. On THIS surface -- `HumanName.capitalize()` and
+    # `str()`, which is what the test below uses -- forcing repair
+    # differs from uppercasing the input and calling `capitalize()`
+    # for 62 of the 1094, and from lowercasing it for 16, so
+    # UPPERCASE IS THE WORSE DIRECTION, not the clean one. Nor are
+    # the misses merely parse-level: of the 62, only 25 move a role,
+    # and the other 37 parse byte-identically and differ inside the
+    # repair itself. Through the v2 core --
+    # `parse(n).capitalized(force=True)`, rendering all seven roles
+    # -- the counts are 63 and 38, which is what decisions.md#R5
+    # states. The one name the facade cannot see is
+    # `Jane van der Berg nee y Jones`, whose conjunction sits in the
+    # MAIDEN name: `str(HumanName)` renders the default spec, and
+    # that spec omits the field. Recompute by running both forms over
+    # the four corpus files deduped and diffing, on whichever surface
+    # you name.
     #
     # The mechanism is v1's initial carve-out, which _cap_word
     # documents a few lines from the predicate: a conjunction is not

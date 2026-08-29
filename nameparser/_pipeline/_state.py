@@ -102,13 +102,11 @@ class ParseState:
     ambiguity P6's attachment reports.
     Ambiguities are recorded by every stage that DECIDES one --
     extract (resolved to a token index by tokenize), segment,
-    script_segment, classify,
-    group, assign, and post_rules -- since a fork whose branches are
-    taken in different stages needs an emitter in each. Post-group,
-    segments
-    may retain indices of dropped tokens -- assign iterates pieces,
-    never segments. This ownership map is pinned by
-    tests/v2/pipeline/test_state.py.
+    script_segment, classify, group, assign, and post_rules -- since a
+    fork whose branches are taken in different stages needs an emitter
+    in each. Post-group, segments may retain indices of dropped tokens
+    -- assign iterates pieces, never segments. This ownership map is
+    pinned by tests/v2/pipeline/test_state.py.
 
     segmenter belongs to no stage: like original/lexicon/policy it is
     passed in at construction by Parser.parse and only ever READ (by

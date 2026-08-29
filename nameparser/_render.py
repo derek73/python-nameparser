@@ -131,14 +131,23 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # rules.md#R4: "a part whose every word is particle vocabulary is
     # repaired as ordinary name words, since none of them is doing a
     # particle's work there" -- UNJOINED_TAG is that mark (#407).
-    # Only the PARTICLE conjunct is gated on it, and gating the other
-    # would be a NO-OP rather than a mistake: the mark is applied to a
-    # part only when every word in it carries "particle" (_post_rules
-    # and _types._remarked both), a conjunction carries "conjunction"
-    # instead, and the two vocabularies are disjoint -- so a part
-    # holding a conjunction is never marked and no conjunction token
-    # can carry the mark. Left ungated because that is the smaller
-    # predicate, not because a case turns on it.
+    # Only the PARTICLE conjunct is gated on it, and that is the rule
+    # rather than an omission: rules.md#R4 carries the carve-out R3
+    # already states for initials -- "A CONJUNCTION never initials, so
+    # a base that is one contributes nothing even then" -- so a
+    # conjunction keeps conjunction treatment even inside a part the
+    # mark has turned into ordinary name words.
+    # No SHIPPED name witnesses the difference: `particles` and
+    # `conjunctions` are disjoint in the default vocabulary and in
+    # every locale pack, so no shipped conjunction can sit in an
+    # all-particle part and carry the mark. That is a property of the
+    # shipped DATA, not an invariant -- both sets are public,
+    # configurable API, and a caller's Lexicon may put one word in
+    # both, the way _pipeline/_post_rules.py's arms allow for. Measured:
+    # under `Lexicon.default().add(particles={'y'})`, `anh y van` has
+    # an all-particle family whose `y` carries both tags and the mark,
+    # and gives 'Anh y Van'; gating this conjunct too would give
+    # 'Anh Y Van'.
     # v1's is_conjunction excludes initials: 'E.' in 'Scott E. Werner'
     # is an initial, not the conjunction 'e' (pinned live 2026-07-17)
     if ((normalized in lex.particles and role in (Role.MIDDLE, Role.FAMILY)
@@ -175,6 +184,14 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     touched unless force=True; the gate reads the joined token texts
     (not render() output -- the case gate stays decoupled from spec
     formatting and the #254 collapse).
+    The repair reads token TAGS as well as texts: a part whose every
+    word is particle vocabulary is repaired as ordinary name words,
+    and the mark saying so comes from the pipeline. A hand-built
+    token, or one replace() splices in, carries no tags and is
+    repaired as a plain particle instead: a family set that way to
+    'de la' stays 'de la' where the same words parsed give 'De La'.
+    Parser.revise() is the edit that classifies the value, and gives
+    'De La' (rules.md#R4's Accepted boundary).
     Idempotent: without force, a capitalized result is mixed-case and
     the gate returns it unchanged; with force, every _cap_word rule is
     a fixpoint on its own output."""

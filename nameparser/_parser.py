@@ -161,19 +161,20 @@ class Parser:
         """:meth:`ParsedName.replace` with this parser's vocabulary:
         each value is tokenized and classified by a full sub-parse, so
         the stable tags survive and the tag-driven views
-        (family_particles, initials(), the suffix join) behave as if
-        the text had been parsed. The value is classified ON ITS OWN,
-        though -- a word whose reading depends on surrounding context
-        may classify differently than it would in place (a standalone
-        "B. S." reads as initials, not a suffix run). The sub-parse's
-        role choices and ambiguities are discarded -- every harvested
-        token takes the named field's role -- and its structural
-        behavior applies: delimiter characters do not become tokens,
-        and a maiden marker is consumed as in parsing -- mid-value
-        always, and leading a DELIMITED value under a policy routing
-        that pair to maiden, where "(née Jones)" revises to "Jones"
-        while the bare "née Jones" keeps its marker, a leading marker
-        in an undelimited value being no marker at all (#329).
+        (family_particles, initials(), the suffix join, and since #407
+        capitalized()) behave as if the text had been parsed. The
+        value is classified ON ITS OWN, though -- a word whose reading
+        depends on surrounding context may classify differently than
+        it would in place (a standalone "B. S." reads as initials, not
+        a suffix run). The sub-parse's role choices and ambiguities
+        are discarded -- every harvested token takes the named field's
+        role -- and its structural behavior applies: delimiter
+        characters do not become tokens, and a maiden marker is
+        consumed as in parsing -- mid-value always, and leading a
+        DELIMITED value under a policy routing that pair to maiden,
+        where "(née Jones)" revises to "Jones" while the bare
+        "née Jones" keeps its marker, a leading marker in an
+        undelimited value being no marker at all (#329).
         Tokens are synthetic (span=None); original is unchanged; a
         value with no name content (empty, whitespace, or punctuation
         only) clears the field; ambiguities referencing replaced

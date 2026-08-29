@@ -1116,11 +1116,13 @@ R4. Rationale: case repair is a display concern, applied only on
     request and never destructively.
     Case repair returns a repaired copy and never mutates the parse.
     Where it acts at all — R5 decides where — the copy honors the
-    casing a vocabulary entry records (Ph.D.) and the Mac/Mc surname
+    casing a vocabulary entry records (Ph.D.) and the Mac/Mc
     convention (McDonald), not only ordinary word-by-word casing, and
     a part whose every word is particle vocabulary is repaired as
     ordinary name words, since none of them is doing a particle's
-    work there (R2). A name already written the way repair would
+    work there (R2). A CONJUNCTION keeps its lowercase even inside
+    such a part, being no name word in any part — the carve-out R3
+    states for initials. A name already written the way repair would
     write it comes back unchanged, measured by repair's own
     conventions rather than by the bearer's. A spelling written in a
     single case is repaired even where its bearer meant it, because
@@ -1132,6 +1134,17 @@ R4. Rationale: case repair is a display concern, applied only on
       "anh van do"                →  capitalized="Anh Van Do"
       "john smith phd"            →  capitalized="John Smith Ph.D."
       "juan de la vega"           →  capitalized="Juan de la Vega"  · boundary
+    Accepted: the clause reaches a part the parser read. A field
+    spliced in as raw text after the parse carries no reading of its
+    own, so a family set that way to "de la" stays lowercase where
+    those same two words parsed from a name are repaired to "De La".
+    That is the boundary between splicing text into a field and
+    revising a field through the parser — revise() classifies the
+    value, so the repair follows it — rather than a gap between them.
+    It is also a limit and not a regression: a spliced-in family was
+    repaired exactly this way before the clause existed. Stated
+    without an example line because every line here names an input
+    string, and this shape needs a field edited after the parse.
     history: decisions.md#R4 · interacts: R2, R3, R5 · implemented: nameparser/_render.py
 
 R5. Rationale: mixed case is evidence that the writer cased the name
