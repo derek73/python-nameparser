@@ -562,7 +562,16 @@ def test_the_emoji_boundary_rule_copies_the_dividing_ranges() -> None:
                 continue
             found += 1
             pattern = rule["name_regex"]
-            claimed = {c for c in range(0x1F000, 0x20000)
+            # EVERY codepoint, not just the astral plane. Scanned
+            # 0x1F000-0x20000 until the #453 review measured what that
+            # missed: a bare '-' or a \u2B00-\u2BFF span appended to
+            # the class left this guard GREEN while the rule stood
+            # ready to explain a {given, family} regression on 22
+            # hyphenated corpus names. The docstring promises to
+            # refuse a class reaching a codepoint the tokenizer does
+            # not divide on; a scan narrower than that promise is the
+            # #451 shape one level down. Costs 0.3s.
+            claimed = {c for c in range(0x20, 0x110000)
                        if re.search(pattern, f"a{chr(c)}b")}
             stray = sorted(claimed - divides)
             assert not stray, (
@@ -574,9 +583,9 @@ def test_the_emoji_boundary_rule_copies_the_dividing_ranges() -> None:
                 f"would classify here as intended. Copy from "
                 f"_EMOJI_RANGES rather than widening the span.")
             assert claimed, (
-                f"{ledger.name}: {rule['issue']!r} claims no astral "
-                f"codepoint at all; the class or the anchor is broken "
-                f"and the rule can explain nothing")
+                f"{ledger.name}: {rule['issue']!r} claims no codepoint "
+                f"at all; the class or the anchor is broken and the "
+                f"rule can explain nothing")
     assert found, (
         "no emoji-boundary rule in any ledger; this pin is passing "
         "vacuously")

@@ -820,7 +820,8 @@ issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
 # UNEXPLAINED and block the gate until someone read it, which is the
 # right outcome: this ledger has no fields-only rule to absorb it.
 # The claim that it "falls to the fields-only catch-all" was copied
-# from the 1.4 ledger, where there is one -- #451.) The class is the
+# from the 1.4 ledger, where one existed until #451 deleted it.)
+# The class is the
 # neighbours' and compare.py's own: U+0000-U+024F, which stops at
 # Latin Extended-B, so a diacritic-bearing 'Nguyen, Van de la' in NFD
 # or Latin Extended Additional is outside it.

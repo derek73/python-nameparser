@@ -576,9 +576,13 @@ issue = "fix(emoji-boundary) an emoji inside a token divides it"
 # rather than copied: no corpus name reaches it once the token anchor
 # is on, and a rule should be no wider than the diffs it must explain.
 # A name that needs it will arrive unclassified and be read once. That
-# omission also keeps the pattern free of \uXXXX-\uXXXX span text, so
-# _SPAN_BEARING_RULES has nothing to declare about a rule that is not
-# script-scoped.
+# omission also leaves the pattern free of \uXXXX-\uXXXX span text.
+# That is a CONSEQUENCE, not a safeguard, and the #453 review was
+# right to say so: _SPAN reads the 4-hex spelling only, so the class
+# below rides past _unrecognized_class_content whatever it contains.
+# What actually bounds it is the guard named above, which probes every
+# codepoint in Unicode against _EMOJI_RANGES, plus _CORPUS_CLAIMS'
+# reach and digest.
 name_regex = "\\S[\\U0001F300-\\U0001F64F\\U0001F680-\\U0001F6FF]\\S"
 fields = ["given", "family"]
 
@@ -1894,9 +1898,12 @@ fields = ["given", "middle", "family", "maiden"]
 [[change]]
 issue = "fix(N3) a nickname-led name with a trailing suffix keeps the suffix in `suffix`"
 # "'Smitty' Jones Jr.": the diff against 1.4.0 moves exactly {family,
-# suffix} -- `given` is 'Jones' at both baselines, which is what the
-# N3 lone-word nickname rule already gives it once the nickname and
-# suffix are set aside. Whether 1.4 itself read the trailing word as
+# suffix} -- `given` is 'Jones' at both baselines, and it is `given`
+# BECAUSE N3 declines: N3's one-piece count does not set a trailing
+# suffix aside, so the suffix disqualifies the rule and the positional
+# read applies. Set the suffix aside and N3 does fire --
+# "'Smitty' Jones" reads family 'Jones' (rules.md#N3's own example).
+# Whether 1.4 itself read the trailing word as
 # `family` is outside what this ledger's worker can check directly
 # (tools/differential/README.md's warning against reading a v1
 # release from a cached environment); the diff shape is consistent
@@ -1912,9 +1919,12 @@ issue = "fix(N3) a nickname-led name with a trailing suffix keeps the suffix in 
 # none of them, which is why it kept a rule of its own.
 #
 # Note what is NOT settled here: decisions.md#H1 records that N3 and
-# H1 count a trailing suffix in opposite directions -- H1's
-# title-plus-one-word rule declines the moment a suffix stands beside
-# it, while "N3 counts a suffix the other way (`'Smitty' Jones Jr.`
+# H1 count a trailing suffix in opposite directions. H1 IGNORES one --
+# rules.md#H1 makes the lone word the family "whatever suffix,
+# nickname or maiden name stands beside it", so 'Dr. Smith Jr.' reads
+# family 'Smith' (the declining term was there until #410 took it
+# out, which is what that entry is recording). N3 counts one, and so
+# declines: "N3 counts a suffix the other way (`'Smitty' Jones Jr.`
 # reads given 'Jones', family '')" -- and H1 states plainly that
 # "which of the two readings is right for a nickname-led name is not
 # decided here". This rule classifies only the 1.4-to-2.x movement
@@ -2055,13 +2065,22 @@ issue = "fix(suffix-routing) a two-token name ending in a credential acronym kee
 # C-ii settled for 'vd' ("the Dutch van der reading, as the more
 # common"), and which its own C-ii note records that 'do' and 'mc'
 # inherit "without being weighed". That decision reaches a written name
-# only through rules.md#P6's attachment, and P6 is scoped: "the COMMA
-# form only, deliberately. [...] Without the comma the written shape is
-# not settled [...] Those keep their positional reading and are not
-# tracked as deviations." 'Donald mc' has no comma, so it is outside
-# P6, and S2's credential reading is what stands -- which is what this
-# rule classifies, and it is the positional reading P6's scope note
-# leaves in place rather than a decision this rule makes.
+# only through P6's attachment, which is scoped to the comma form --
+# decisions.md#P6: "the COMMA form only, deliberately. [...] Without
+# the comma the written shape is not settled [...] Those keep their
+# positional reading and are not tracked as deviations." 'Donald mc'
+# has no comma, so P6 never reaches it.
+#
+# What stands instead is rules.md#S2: "an unambiguous suffix is
+# consumed even when that leaves no family name at all". That is the
+# authority here, and NOT P6's scope note, which does not support it:
+# P6 promises the comma-less shapes keep their POSITIONAL reading, and
+# for the words that are both particle and suffix vocabulary it does
+# not hold. Measured, 'Jong de' and 'Smith do' keep theirs (family
+# 'de', family 'do') while 'Donald mc' and 'Smith vd' lose the family
+# entirely to `suffix`. decisions.md#P6's own arc entry records that as
+# a rules.md defect rather than a ledger one; this rule classifies the
+# movement on S2's statement and settles nothing about P6.
 #
 # The two neighbouring shapes both already have rules above, and the
 # contrast is the point: 'Mc Donald' has the particle LEADING and folds
