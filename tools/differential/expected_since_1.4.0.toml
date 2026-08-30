@@ -1,7 +1,9 @@
-# Every rule needs `issue` and `name_regex`; `fields` narrows further
-# and is optional. Since #451 validate_rules REJECTS a rule carrying
-# `fields` and no `name_regex`, as it already rejected one with
-# neither. An unexplained diff is a release blocker until classified
+# Every rule needs all three of `issue`, `name_regex` and `fields`.
+# `fields` stopped being optional on 2026-08-29: validate_rules had
+# refused a rule carrying `fields` and no `name_regex` since #451, and
+# #456 closed the mirror shape, so a half-declared rule is now a
+# startup error whichever key is the missing one. An unexplained diff
+# is a release blocker until classified
 # (tools/differential/README.md). The citation here used to name a
 # gitignored spec requirement, and passed the armed legacy-citation
 # guard only because the line wrapped between the two words.

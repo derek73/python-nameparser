@@ -1666,7 +1666,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#429) a wholly-credential segment after a one-word family renders as one entry":
             _Claim(1, ('suffix', 'title'), "9e0b9e8d5cbe"),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(13, ('family', 'middle'), "973617235cda"),
+            _Claim(13, ('_ambiguities', 'family', 'middle'), "973617235cda"),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
             _Claim(108, ('_ambiguities', 'family', 'given', 'middle'), "9a814f70c2dc"),
         "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into suffix":
@@ -1684,7 +1684,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
             _Claim(3, ('family', 'given'), "724967a4a117"),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
-            _Claim(2, ('family', 'suffix'), "ec0d45289dc1"),
+            _Claim(2, ('_ambiguities', 'family', 'suffix'), "ec0d45289dc1"),
         "fix(#399) a maiden marker bounds the particle chain that swallowed it":
             _Claim(5, ('family', 'maiden'), "15ec75a89f07"),
         "fix(#360) mc moved into the never-given particles, so it folds into the family":
@@ -1782,13 +1782,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#429) a wholly-credential segment after a one-word family renders as one entry":
             _Claim(1, ('suffix', 'title'), "9e0b9e8d5cbe"),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(13, ('family', 'middle'), "973617235cda"),
+            _Claim(13, ('_ambiguities', 'family', 'middle'), "973617235cda"),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ca7b37af6cf8"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
             _Claim(3, ('family', 'given'), "724967a4a117"),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
-            _Claim(2, ('family', 'suffix'), "ec0d45289dc1"),
+            _Claim(2, ('_ambiguities', 'family', 'suffix'), "ec0d45289dc1"),
         "fix(#399) a maiden marker bounds the particle chain that swallowed it":
             _Claim(5, ('family', 'maiden'), "15ec75a89f07"),
         "fix(#360) mc moved into the never-given particles, so it folds into the family":

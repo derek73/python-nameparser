@@ -4,7 +4,8 @@ Consumes: tokens (roles assigned), plus pieces and structure -- the
 particle fold reads the opening piece of segment 0, or of segment 1
 under a family comma (#359). structure was always read here, for the
 rotation gate.
-Produces: tokens with roles adjusted by the post rules.
+Produces: tokens with roles adjusted by the post rules, plus the
+ambiguity P6's attachment reports for the fork it decides (#405).
 Reads: Policy.patronymic_rules, Policy.middle_as_family;
 Lexicon.given_name_titles.
 
@@ -19,9 +20,13 @@ import re
 
 from nameparser._lexicon import _title_key
 from nameparser._pipeline._assign import _name_positions
-from nameparser._pipeline._state import ParseState, Structure, WorkToken
+from nameparser._pipeline._state import (
+    ParseState, PendingAmbiguity, Structure, WorkToken,
+)
 from nameparser._policy import PatronymicRule
-from nameparser._types import FOLDED_TAG, UNJOINED_TAG, Role
+from nameparser._types import (
+    FOLDED_TAG, UNJOINED_TAG, AmbiguityKind, Role,
+)
 
 # Ported verbatim from v1 (nameparser/config/regexes.py) -- layering
 # forbids the config import; keep in sync by hand.
@@ -175,6 +180,7 @@ def _is_lone_never_given_particle(site: tuple[int, ...],
 
 def post_rules(state: ParseState) -> ParseState:
     tokens = list(state.tokens)
+    ambiguities = list(state.ambiguities)
     titles = _idx(tokens, Role.TITLE)
     givens = _idx(tokens, Role.GIVEN)
     middles = _idx(tokens, Role.MIDDLE)
@@ -400,11 +406,71 @@ def post_rules(state: ParseState) -> ParseState:
             # generated multi-piece runs: `end - k` is never above 1
             # where the guard passes. Written as a range because the
             # guard, not this loop, is what bounds it.
-            for piece in seg[k:end]:
-                for i in piece:
-                    tokens[i] = dataclasses.replace(
-                        tokens[i], role=Role.FAMILY,
-                        tags=tokens[i].tags | {FOLDED_TAG})
+            run = [i for piece in seg[k:end] for i in piece]
+            # mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE: "Emit at
+            # the site that takes the branch, not where an ambiguous
+            # tag sits" -- this attachment is where the fork is
+            # decided, so the report is raised here rather than in
+            # assign, whose own emitter is scoped to the no-comma
+            # shapes (#405).
+            #
+            # Two arms, keyed on what the attachment OVERRODE rather
+            # than on what the words are, so each names a branch the
+            # parse actually weighed. `declined_suffix` reads the role
+            # assign gave the run, which is why both lists are built
+            # BEFORE the re-roling loop below overwrites it.
+            #
+            # ORDERED, not asserted disjoint. The two cannot both hold
+            # under the shipped vocabulary -- `vd` and `mc` are the
+            # only words in both the particle and the unambiguous
+            # suffix vocabularies, and neither is ambiguous particle
+            # vocabulary -- but a caller's Lexicon may put one word in
+            # both, and rules.md#A1 says parsing never fails on any
+            # input, so this decides instead of raising. (Measured: an
+            # assert here DID fire on `Berg, Jan zz` under a Lexicon
+            # adding `zz` to particles_ambiguous and suffix_acronyms.)
+            # The suffix arm wins because it names the reading the
+            # parse actually took: assign had read the word as a
+            # post-nominal, so the name-word reading was never on the
+            # table for the attachment to decline.
+            #
+            # Both details name the ATTACHMENT and stop there. What
+            # P6 decides is that the run joins the family the comma
+            # named instead of standing on its own; how the joined
+            # words then READ is R2's call, taken by the UNJOINED_TAG
+            # loop at the end of this stage. The two can disagree:
+            # `de la, Jan van` attaches `van` and leaves an
+            # all-particle family, which R2 marks, so every other view
+            # -- `family_base`, the initials, case repair -- reads
+            # those words as ordinary name words ('Jan Van De La'
+            # forced). A detail promising "read as the family's
+            # particle" would contradict all three.
+            ambiguous = [i for i in run
+                         if "vocab:particle-ambiguous" in tokens[i].tags]
+            declined_suffix = [i for i in run
+                               if tokens[i].role is Role.SUFFIX]
+            text = " ".join(tokens[i].text for i in run)
+            if declined_suffix:
+                ambiguities.append(PendingAmbiguity(
+                    AmbiguityKind.SUFFIX_OR_NAME,
+                    f"{text!r} written without periods is both a "
+                    f"post-nominal and a family-name particle; after a "
+                    f"family comma it joins the family the comma named "
+                    f"rather than standing as a post-nominal",
+                    tuple(run)))
+            elif ambiguous:
+                word = tokens[ambiguous[0]].text
+                ambiguities.append(PendingAmbiguity(
+                    AmbiguityKind.PARTICLE_OR_GIVEN,
+                    f"{word!r} is both a family-name particle and an "
+                    f"ordinary given name; after a family comma "
+                    f"{text!r} joins the family the comma named "
+                    f"rather than standing as a name word of its own",
+                    tuple(run)))
+            for i in run:
+                tokens[i] = dataclasses.replace(
+                    tokens[i], role=Role.FAMILY,
+                    tags=tokens[i].tags | {FOLDED_TAG})
 
     # rules.md#O3: "every middle word joins the family name and is
     # rendered before it" (v1 handle_middle_name_as_last). v1
@@ -440,4 +506,5 @@ def post_rules(state: ParseState) -> ParseState:
             for i in part:
                 tokens[i] = dataclasses.replace(
                     tokens[i], tags=tokens[i].tags | {UNJOINED_TAG})
-    return dataclasses.replace(state, tokens=tuple(tokens))
+    return dataclasses.replace(state, tokens=tuple(tokens),
+                               ambiguities=tuple(ambiguities))

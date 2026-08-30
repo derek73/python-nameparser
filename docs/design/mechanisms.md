@@ -105,7 +105,7 @@ Problem shape. A retired default rides in on old pickles, but a user may have de
 
 Problem shape. An ambiguity report should fire exactly when the parse chose between live readings — no more, no less — and the choosing happens in code, not in vocabulary. Contract statement. Emit at the site that takes the branch, not where an ambiguous tag sits; when a fork's two branches are decided in different stages, EVERY deciding stage carries an emitter; and a branch that runs but changes nothing is not a decision and must not report. How it works. PARTICLE_OR_GIVEN fires from assignment for a lone leading particle and from grouping when a title shifts it off the front — for two years only the first site emitted. And keying on
 "the code got here" instead of "the outcome differed" once reported
-a fork for all 39 ambiguous particles on "Dr. Van Jr.". Lives in. The AmbiguityKind emitters across _pipeline/ (rule A1 is the observable contract). Reach for it when. Adding any ambiguous vocabulary or any new fork — count the deciding sites, then count the emitters.
+a fork for all ambiguous particles on "Dr. Van Jr.". Lives in. The AmbiguityKind emitters across _pipeline/ (rule A1 is the observable contract). Reach for it when. Adding any ambiguous vocabulary or any new fork — count the deciding sites, then count the emitters.
 
 ## MAKE-WRONG-STATES-UNREPRESENTABLE — the house meta-pattern
 

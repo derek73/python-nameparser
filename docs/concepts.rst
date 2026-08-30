@@ -180,10 +180,13 @@ call it and says so.
 An empty ``ambiguities`` is therefore not a certificate of certainty.
 Reporting is deliberately partial: :class:`~nameparser.AmbiguityKind`
 lists the forks worth flagging, and even those are not reported
-everywhere they occur — the comma paths stay quiet on purpose, since a
-comma usually settles the structure before the question arises.
-Coverage grows over releases. Treat a non-empty ``ambiguities`` as a
-signal to act on; do not read an empty one as a guarantee.
+everywhere they occur. What a comma buys is narrower than it looks —
+it names which words are the surname, and stays quiet about that
+much, but it leaves the rest of the name to be read as usual, so
+``"Beethoven, Ludwig van"`` still reports the trailing ``van`` it had
+to call. Coverage grows over releases. Treat a non-empty
+``ambiguities`` as a signal to act on; do not read an empty one as a
+guarantee.
 
 :class:`Tokens <nameparser.Token>` also carry tags — a second, independent label alongside their
 role, recording how a token was classified rather than what part of

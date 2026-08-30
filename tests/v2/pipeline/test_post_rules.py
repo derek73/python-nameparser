@@ -9,7 +9,7 @@ from nameparser._pipeline._state import ParseState
 from nameparser._policy import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
                                 GIVEN_FIRST, PatronymicRule, Policy,
                                 Script)
-from nameparser._types import STABLE_TAGS, Role
+from nameparser._types import STABLE_TAGS, AmbiguityKind, Role
 
 # A reduced lexicon, the convention in every pipeline stage module: a
 # stage test should not move when shipped vocabulary does. What it must
@@ -22,10 +22,13 @@ from nameparser._types import STABLE_TAGS, Role
 _LEX = Lexicon(
     titles=frozenset({"mr", "sir", "dr", "md"}),
     given_name_titles=frozenset({"sir"}),
-    particles=frozenset({"de", "der", "ibn", "la", "van"}),
+    particles=frozenset({"de", "der", "ibn", "la", "van", "vd"}),
     particles_ambiguous=frozenset({"la", "van"}),
     suffix_words=frozenset({"jr"}),
-    suffix_acronyms=frozenset({"md"}),
+    # `vd` mirrors its shipped dual membership -- particle AND
+    # UNAMBIGUOUS suffix acronym -- which is what puts a name on P6's
+    # suffix arm below.
+    suffix_acronyms=frozenset({"md", "vd"}),
     conjunctions=frozenset({"y"}),
     bound_given_names=frozenset({"abdul"}),
 )
@@ -595,3 +598,86 @@ def test_a_bound_pair_survives_the_leading_particle_stop(
                          lexicon=Lexicon.default(), policy=policy))
     assert _by_role(out, Role.FAMILY) == "de Mesnil"
     assert _by_role(out, Role.GIVEN) == "abd Allah"
+
+
+def test_a_dual_membership_word_decides_rather_than_raising() -> None:
+    # P6's report has two arms, and the plan that added them (#405)
+    # recorded them as disjoint by construction -- "a suffix-vocabulary
+    # particle arrives suffix-roled and IS the whole run". That is true
+    # of the SHIPPED vocabulary and not of the rule: `vd` and `mc` are
+    # the only words in both the particle and the unambiguous suffix
+    # sets, and neither is ambiguous particle vocabulary, so no shipped
+    # input reaches both arms. A caller's Lexicon can put one word in
+    # both, and an `assert` written on that premise DID fire here
+    # before this test existed -- rules.md#A1 says parsing never fails
+    # on any input, and an AssertionError out of a stage is exactly the
+    # failure it forbids.
+    #
+    # So the arms are ORDERED and the suffix one wins: assign had read
+    # the word as a post-nominal, so the name-word reading was never on
+    # the table for the attachment to decline
+    # (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE -- report the
+    # branch actually taken).
+    lex = dataclasses.replace(
+        _LEX,
+        particles=frozenset(_LEX.particles | {"zz"}),
+        particles_ambiguous=frozenset(_LEX.particles_ambiguous | {"zz"}),
+        suffix_acronyms=frozenset(_LEX.suffix_acronyms | {"zz"}))
+    out = run(ParseState(original="Berg, Jan zz", lexicon=lex,
+                         policy=Policy()))
+    # token order, so the attachment shows as the run joining the
+    # family rather than as the family view's rendered order
+    assert _by_role(out, Role.FAMILY) == "Berg zz"
+    assert _by_role(out, Role.GIVEN) == "Jan"
+    assert [a.kind.value for a in out.ambiguities] == ["suffix-or-name"]
+
+
+def test_the_attachment_report_names_the_whole_run_it_moved() -> None:
+    # Both arms' detail text and the reported token span, asserted
+    # here because neither was: mutation-checked before this test
+    # existed, replacing either f-string with a constant left the
+    # full suite green, and so did reporting `run[:1]` instead of the
+    # whole run. _types.py says PARTICLE_OR_GIVEN now has three
+    # shapes and that `detail` is what tells them apart, and the two
+    # older shapes DO assert their detail verbatim (test_assign.py),
+    # so this one owed the same.
+    #
+    # A TWO-token run, so the span assertion has something to lose:
+    # the report is named for `van`, the word that is ambiguous
+    # vocabulary, and covers `der` with it. cases.py says "one report
+    # covers the whole run" and nothing pinned it.
+    #
+    # The detail names the ATTACHMENT and stops there -- what P6
+    # decides is that the run joins the family the comma named. It
+    # deliberately does not promise how the joined words then READ,
+    # which is R2's call taken later in the same stage and can go the
+    # other way ("de la, Jan van" leaves an all-particle family whose
+    # words every other view reads as name words).
+    out = _parsed("Berg, Jan van der")
+    assert _by_role(out, Role.FAMILY) == "Berg van der"
+    (amb,) = out.ambiguities
+    assert amb.kind is AmbiguityKind.PARTICLE_OR_GIVEN
+    assert amb.detail == (
+        "'van' is both a family-name particle and an ordinary given "
+        "name; after a family comma 'van der' joins the family the "
+        "comma named rather than standing as a name word of its own")
+    assert [out.tokens[i].text for i in amb.indices] == ["van", "der"]
+
+
+def test_the_suffix_arm_report_names_the_post_nominal_it_declined() -> None:
+    # The other arm, verbatim for the same reason. `vd` is particle
+    # AND unambiguous suffix vocabulary, so assign read the trailing
+    # one as a post-nominal and the attachment overrode that reading
+    # -- which is the branch the kind names (#405), and the detail
+    # follows _assign.py's "written without periods" template for the
+    # same fork.
+    out = _parsed("Berg, Jan vd")
+    assert _by_role(out, Role.FAMILY) == "Berg vd"
+    (amb,) = out.ambiguities
+    assert amb.kind is AmbiguityKind.SUFFIX_OR_NAME
+    assert amb.detail == (
+        "'vd' written without periods is both a post-nominal and a "
+        "family-name particle; after a family comma it joins the "
+        "family the comma named rather than standing as a "
+        "post-nominal")
+    assert [out.tokens[i].text for i in amb.indices] == ["vd"]

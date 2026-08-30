@@ -397,11 +397,19 @@ P6. Rationale: a particle ending the name has nothing to link
     traditions write the same string.
       "Nguyen, Thi Van"           →  family="Van Nguyen"
       "Nguyễn, Thị Vân"           →  family="Nguyễn"
-    Accepted: no ambiguity is reported for that collision, which A1
-    would call for. The fork is decided here, and assign's emitter is
-    scoped to the no-comma shapes on the reasoning that a comma has
-    fixed the family — true of the family, not of the particle behind
-    it. Tracked at #405.
+    The fork is reported, in the kind naming the reading this
+    attachment OVERRODE — what the run was read as before it fired,
+    not what its words are. Where the run was read as a post-nominal,
+    which is the S2 reading this rule outranks, the report is
+    suffix-or-name. Otherwise, where the run holds an ambiguous
+    particle, the reading overridden is that word as a name word, and
+    the report is particle-or-given. Where the attachment overrode
+    neither — a never-given particle read as a name word, which it
+    could never have been — nothing was decided and nothing is
+    reported.
+      "Nguyen, Thi Van"           →  ambiguities=("particle-or-given",)
+      "Berg, Jan vd"              →  ambiguities=("suffix-or-name",)
+      "Jong, Piet de"             →  ambiguities=()  · boundary
     Accepted: the colliding spelling has a format that reads
     correctly, and it is ONE order, not both: FAMILY_FIRST still
     sends the given name to the middle, and only
@@ -421,14 +429,20 @@ P6. Rationale: a particle ending the name has nothing to link
     weighed; mc inherits it, which is the shape's cost and is
     tracked with the other contested memberships. `do` sits in the
     AMBIGUOUS acronym half and was already read as a name word
-    there, so the precedence decides nothing for it.
+    there, so the precedence decides nothing for it — and because
+    the report names the reading OVERRIDDEN, `do` reports
+    particle-or-given while vd and mc report suffix-or-name. The
+    same distinction decides a run of several words: a run read as
+    name words reports on its ambiguous member if it has one and
+    otherwise reports nothing, whatever its words could have been
+    read as standing alone. Both are pinned in tests/v2/cases.py.
     Accepted: a bound given word ahead of the trailing particle takes
     it as its pair first (P5), so the attachment never sees it —
     unless the particle is of the unambiguous suffix vocabulary too
     (vd, mc), which the join declines and the attachment then takes.
       "Berg, abdul van"           →  given="abdul van"
       "Berg, abdul vd"            →  family="vd Berg"
-    history: decisions.md#P6 · interacts: C1, P1, S2, P5 · implemented: nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P6 · interacts: A1, C1, P1, S2, P5 · implemented: nameparser/_pipeline/_post_rules.py
 
 ## Suffixes: generational & credentials (S)
 
@@ -1100,12 +1114,56 @@ R3. Rationale: initials abbreviate the person's name words; titles,
 
 R4. Rationale: case repair is a display concern, applied only on
     request and never destructively.
-    Case repair returns a repaired copy — vocabulary exceptions
-    (McDonald) included — and never mutates the parse; an
-    already-correct name comes back unchanged.
+    Case repair returns a repaired copy and never mutates the parse.
+    Where it acts at all — R5 decides where — the copy honors the
+    casing a vocabulary entry records (Ph.D.) and the Mac/Mc
+    convention (McDonald), not only ordinary word-by-word casing, and
+    a part whose every word is particle vocabulary is repaired as
+    ordinary name words, since none of them is doing a particle's
+    work there (R2). A CONJUNCTION keeps its lowercase even inside
+    such a part, being no name word in any part — the carve-out R3
+    states for initials. A name already written the way repair would
+    write it comes back unchanged, measured by repair's own
+    conventions rather than by the bearer's. A spelling written in a
+    single case is repaired even where its bearer meant it, because
+    nothing in the text marks it as a choice; where the text does
+    mark one, R5 defers to it.
       "juan mcdonald"             →  capitalized="Juan McDonald"
-      "Juan McDonald"             →  capitalized="Juan McDonald"  · boundary
-    implemented: nameparser/_render.py
+      "Juan McDonald"             →  capitalized_forced="Juan McDonald"
+      "ANH DO"                    →  capitalized="Anh Do"
+      "anh van do"                →  capitalized="Anh Van Do"
+      "john smith phd"            →  capitalized="John Smith Ph.D."
+      "juan de la vega"           →  capitalized="Juan de la Vega"  · boundary
+    Accepted: the clause reaches a part the parser read. A field
+    spliced in as raw text after the parse carries no reading of its
+    own, so a family set that way to "de la" stays lowercase where
+    those same two words parsed from a name are repaired to "De La".
+    That is the boundary between splicing text into a field and
+    revising a field through the parser — revise() classifies the
+    value, so the repair follows it — rather than a gap between them.
+    It is also a limit and not a regression: a spliced-in family was
+    repaired exactly this way before the clause existed. Stated
+    without an example line because every line here names an input
+    string, and this shape needs a field edited after the parse.
+    history: decisions.md#R4 · interacts: R2, R3, R5 · implemented: nameparser/_render.py
+
+R5. Rationale: mixed case is evidence that the writer cased the name
+    deliberately, and a repair cannot tell a deliberate spelling from
+    a mistaken one. A name written wholly in one case leaves the
+    repair no such evidence to read either way — the writer who
+    always writes lowercase is indistinguishable from the writer who
+    could not be bothered — so repair proceeds there, which is a
+    choice about how to act absent evidence rather than a claim that
+    nothing can be lost by it.
+    Case repair acts only on a name written entirely in one case. A
+    name written in more than one case is kept as it was written,
+    and whether that casing is right does not enter into it, unless
+    repair was asked for anyway.
+      "juan mcdonald"             →  capitalized="Juan McDonald"
+      "SHIRLEY MACLAINE"          →  capitalized="Shirley MacLaine"
+      "Shirley Maclaine"          →  capitalized="Shirley Maclaine"
+      "Shirley Maclaine"          →  capitalized_forced="Shirley MacLaine"  · boundary
+    history: decisions.md#R5 · interacts: R4 · implemented: nameparser/_render.py
 
 ## Construction & configuration diagnostics (D)
 

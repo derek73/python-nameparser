@@ -1,10 +1,11 @@
 # Ledger for baseline 2.0.0 -- what changes for a user upgrading from
 # the previous minor. Same rule grammar as expected_since_1.4.0.toml:
-# every rule needs `issue` and `name_regex`; `fields` narrows further
-# and is optional. Since #451 validate_rules REJECTS a rule carrying
-# `fields` and no `name_regex`, as it already rejected one with
-# neither. File order is therefore load-bearing; the note below says
-# how it falls out here.
+# `issue`, `name_regex` and `fields` are all mandatory, none of them
+# optional any more. A rule may not narrow on one axis alone:
+# validate_rules has refused `fields` without a `name_regex` since
+# #451 and refuses `name_regex` without a `fields` since #456. Since
+# every rule therefore carries a `name_regex`, file order is
+# load-bearing; the note below says how it falls out here.
 #
 # `fields` names roles the way Role does, for BOTH compared surfaces,
 # plus the pseudo-field `_ambiguities`. The roster is deliberately not
@@ -240,8 +241,16 @@ issue = "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not 
 # named (rules.md#P6) where 2.0 read it as a post-nominal. Arrived via
 # corpus_rules.jsonl (#414), which is the arrival fix(#379) below
 # predicted in writing.
+#
+# `_ambiguities` joined the diff in #405. Checked against THIS ledger's
+# own run rather than copied from the 2.1 one: the two names this rule
+# explains here are the same pair -- 'Berg, Jan vd' and 'Berg, abdul
+# vd' -- and each moves {family, suffix, _ambiguities}, gaining
+# SUFFIX_OR_NAME. 2.0 read the trailing `vd` as a post-nominal exactly
+# as 2.1 did, so the diff shape is identical at both baselines; that is
+# a measurement here, not an inference from the copy above.
 name_regex = "(?i)^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*\\svd\\s*$"
-fields = ["family", "suffix"]
+fields = ["family", "suffix", "_ambiguities"]
 
 [[change]]
 issue = "fix(#399) a maiden marker bounds the particle chain that swallowed it"
@@ -893,8 +902,20 @@ issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
 # naming tradition, so a future {middle,family} regression on
 # 'Nguyen, Van' -- one of the two corpus names it reaches, and the one
 # that does NOT move -- would classify as intended.
+#
+# `_ambiguities` joined the diff in #405. Measured on THIS ledger's own
+# run: the same seven names classify here as at 2.1, and they split the
+# same way -- five move {middle, family, _ambiguities} ('Vega, Juan de
+# la', 'Beethoven, Ludwig van', 'Berg, Jan van der', 'der, y van',
+# 'Nguyen, Thi Van', each gaining PARTICLE_OR_GIVEN) and two move
+# {middle, family} alone ('Jong, Anke de', 'Jong, Piet de', whose `de`
+# declines no reading and so reports nothing). The identical split is
+# what a run at this baseline shows, not what the 2.1 rule says: 2.0
+# read the trailing run as a middle name as 2.1 did, and no ambiguity
+# surface changed between them. The union over the seven is the three
+# fields declared.
 name_regex = "(?i)^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*\\s(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)(\\s+(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu))*\\s*$"
-fields = ["middle", "family"]
+fields = ["middle", "family", "_ambiguities"]
 
 [[change]]
 issue = "fix(#412) a connective join no longer absorbs the maiden marker beside it"

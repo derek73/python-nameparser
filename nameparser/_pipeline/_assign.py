@@ -317,7 +317,11 @@ def assign(state: ParseState) -> ParseState:
         # wholly-family read: after a comma that fixed the family, a
         # leading given-position particle is not meaningfully
         # ambiguous, and script_orders is not consulted for the parallel
-        # reason. The positional read below (a comma followed by no
+        # reason. Scoped, not silent: the comma fixed WHICH PIECE is the
+        # family and said nothing about a particle trailing the given
+        # name, so P6's attachment in post_rules decides that fork and
+        # reports it there, at the site that takes the branch (#405).
+        # The positional read below (a comma followed by no
         # name word) emits and consults both, being the no-comma read
         # of segment 0; group's chain emitter still does not, since
         # group runs before assign decides which read applies (recorded
