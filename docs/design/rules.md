@@ -1060,7 +1060,7 @@ R1. Rationale: a field is a way of reading the parse, not a stored
       "Hassan, Mohamad Ahmad Ali"          →  family="Hassan"  · boundary
       "Smith, MD PhD"                      →  suffix="MD PhD"
       "John Smith, MD, Bart"               →  suffix="MD, Bart"
-    history: decisions.md#C1 · implemented: nameparser/_types.py
+    history: decisions.md#C1 · interacts: O3, P6, R3 · implemented: nameparser/_types.py
 
 R2. Rationale: callers need the surname with and without its
     particles — sorting wants "Vega", display wants "de la Vega".
@@ -1112,9 +1112,21 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     one per joined name word under the carve-out. Until that is
     decided the given group's answer is pinned-but-undocumented
     rather than specified, and no line below asserts it.
+    Which words a group contributes is one question; the ORDER they
+    contribute in is a second, and its answer is the field's. Each
+    group initials in the order its field reads — written order,
+    except folded family words, which initial before the rest of the
+    family exactly as they render before it (R1). Stated here rather
+    than left to R1, whose subject is every FIELD and which this view
+    is not: what the view takes from the field is the ORDER it reads,
+    and about order the two never disagree. Membership is the first
+    question above and they can differ there — the family field of
+    the first example line below is de la Vega, where the initials
+    take its base — so this clause settles order and nothing else.
       "Dr. Juan Q. Xavier de la Vega III"  →  initials="J. Q. X. V."
       "Anh Do"                    →  initials="A. D."
       "Nguyen, Van Le"            →  initials="V. L. N."
+      "Hassan, Mohamad Ahmad Ali"  middle_as_family  →  initials="M. A. A. H."
       "Sean O'Connor"             →  initials="S. O."  · boundary
     A family that is ALL particles therefore contributes its words
     rather than nothing: they are the base (R2), so they initial.
@@ -1145,7 +1157,7 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     the parser to it. #461 asks the neighbouring question about the
     all-particle base and does not own this one; decisions.md#R2
     carries the population and the measurements.
-    history: decisions.md#R2 · interacts: P3, R2, R4 · implemented: nameparser/_render.py, nameparser/_facade.py
+    history: decisions.md#R3 · interacts: O3, P3, P6, R1, R2, R4 · implemented: nameparser/_render.py, nameparser/_facade.py
 
 R4. Rationale: case repair is a display concern, applied only on
     request and never destructively.

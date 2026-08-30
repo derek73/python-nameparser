@@ -110,9 +110,10 @@ UNJOINED_TAG = "vocab:unjoined-particle"
 #: The one sanctioned view-reorder marker (namespaced = unstable API).
 #: Tokens cannot reorder (span order is validated), so a role fold that
 #: must render BEFORE the role's original tokens tags them with this;
-#: _text_for and the facade lists prepend carriers. Single-sourced here
-#: so the emitter (_pipeline/_post_rules) and the consumers cannot
-#: drift.
+#: _text_for, _render.initials and the facade lists all prepend the
+#: carriers. Single-sourced here so the emitter (_pipeline/_post_rules)
+#: and the consumers cannot drift -- initials() was the consumer that
+#: did drift, walking written order until #408.
 FOLDED_TAG = "vocab:folded-middle"
 
 #: Raw text spliced into a field after the parse, which no parse ever
@@ -859,6 +860,9 @@ class ParsedName:
                  delimiter: str = ".", separator: str = " ") -> str:
         """Initials per group; v1's initials_format/_delimiter/_separator
         become call-site arguments instead of Config-wide settings.
+        Each group is ordered the way its own field is ordered, so a
+        name whose middle words fold into the family initials them
+        before the family's own words, as `family` renders them.
         Valid spec keys: given, middle, family."""
         import nameparser._render as _render
         return _render.initials(self, spec, delimiter, separator)

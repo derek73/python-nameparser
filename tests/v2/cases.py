@@ -102,8 +102,12 @@ CASES: tuple[Case, ...] = (
          {"given": "Mohamad", "family": "Ahmad Ali Hassan"},
          policy=Policy(middle_as_family=True),
          notes="v1 PREPENDED middle_list to last_list; folded tokens "
-               "carry vocab:folded-middle and the family view orders "
-               "them first (spans cannot reorder)"),
+               "carry vocab:folded-middle and every view of them orders "
+               "them first (spans cannot reorder). This table has no "
+               "initials column, so the half #408 moved is pinned in "
+               "rules.md#R3 and tests/v2/test_render.py: initials were "
+               "'M. H. A. A.' here and are 'M. A. A. H.' now, which is "
+               "also 1.4.0's answer"),
     Case("ambiguous_surname_acronyms", "Jack MA",
          {"given": "Jack", "family": "MA"},
          ambiguities=("suffix-or-name",),
