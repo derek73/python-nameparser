@@ -35,9 +35,13 @@ _INITIALS_KEYS = (Role.GIVEN.value, Role.MIDDLE.value, Role.FAMILY.value)
 #: Tags whose tokens contribute no initial outside the given group --
 #: unless the token also carries UNJOINED_TAG, i.e. the whole part is
 #: particles, in which case they are the part's only words and do
-#: contribute (rules.md#R3, #404).
+#: contribute (rules.md#R3, #404). The mark readmits the PARTICLE tag
+#: alone: it says those particles are not acting as particles here and
+#: nothing about a conjunction, which rules.md#R3 excludes "even then"
+#: (#461).
 #: Not STABLE_TAGS -- that also contains "initial", which must contribute.
 _SKIP_TAGS = frozenset({"particle", "conjunction"})
+
 
 def _collapse(rendered: str) -> str:
     """The #254 collapse: empty fields substitute '' and every artifact
@@ -85,9 +89,11 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
     """First letter of each contributing token per group, v1 semantics:
     delimiter follows each initial, separator sits between initials
     within a group. Tokens tagged particle/conjunction contribute no
-    initial in middle/family (given-name tokens always contribute);
-    tags come from the pipeline -- hand-built untagged tokens all
-    contribute. Valid spec keys: given, middle, family."""
+    initial in middle/family (given-name tokens always contribute),
+    and the unjoined mark readmits the particles of an all-particle
+    part but never a conjunction standing in one; tags come from the
+    pipeline -- hand-built untagged tokens all contribute. Valid spec
+    keys: given, middle, family."""
     if not isinstance(delimiter, str):
         raise TypeError(f"delimiter must be a str, got {delimiter!r}")
     if not isinstance(separator, str):
@@ -97,9 +103,14 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
         role = Role(key)
         tokens = name.tokens_for(role)
         if role is not Role.GIVEN:
+            # rules.md#R3: "A CONJUNCTION never initials, so a base
+            # that is one contributes nothing even then" -- "even
+            # then" being the all-particle part the mark names, so the
+            # override is narrowed to the tag the mark is about (#461)
             tokens = tuple(t for t in tokens
                            if not (_SKIP_TAGS & t.tags)
-                           or UNJOINED_TAG in t.tags)
+                           or (UNJOINED_TAG in t.tags
+                               and "conjunction" not in t.tags))
         values[key] = separator.join(
             t.text[0] + delimiter for t in tokens)
     return _format_spec(spec, values, "initials", _INITIALS_KEYS)
@@ -129,7 +140,10 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # under `Lexicon.default().add(particles={'y'})`, `anh y van` has
     # an all-particle family whose `y` carries both tags and the mark,
     # and gives 'Anh y Van'; gating this conjunct too would give
-    # 'Anh Y Van'.
+    # 'Anh Y Van'. That is pinned, on the same parse as the initials()
+    # half it matches, by test_initials_and_repair_agree_on_a_
+    # conjunction_in_a_particle_part (#461) -- until which gating it
+    # passed the whole suite.
     # That conjunct reads the TAG, not the word (#458). classify takes
     # the conjunction-versus-initial decision once, over the whole
     # token -- v1's is_conjunction excludes initials, so 'E.' in

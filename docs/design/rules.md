@@ -1110,6 +1110,15 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     rather than nothing: they are the base (R2), so they initial.
       "Juan van der"              →  initials="J. v. d."
       "Juan de y"                 →  initials="J."
+    The conjunction half of that carries no example line, and the
+    reason is a limit of this document rather than a choice: every
+    line here names an input string parsed with the default
+    vocabulary, over which particles and conjunctions are disjoint —
+    in the defaults and in every locale pack — so no string can put a
+    conjunction inside an all-particle part. It takes a caller's own
+    vocabulary, where "Juan de y" is that part and initials "J. d."
+    while the "y" still contributes nothing, and it is pinned in
+    tests/v2/test_render.py.
     history: decisions.md#R2 · interacts: R2 · implemented: nameparser/_render.py, nameparser/_facade.py
 
 R4. Rationale: case repair is a display concern, applied only on

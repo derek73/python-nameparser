@@ -1,8 +1,10 @@
 import pytest
 
+from nameparser import Parser
 from nameparser._lexicon import Lexicon
 from nameparser._render import _collapse, render
-from nameparser._types import Ambiguity, AmbiguityKind, ParsedName, Role, Span, Token
+from nameparser._types import (UNJOINED_TAG, Ambiguity, AmbiguityKind,
+                               ParsedName, Role, Span, Token)
 
 
 def test_collapse_is_the_254_algorithm() -> None:
@@ -122,6 +124,51 @@ def test_initials_skips_tagged_particles_outside_given() -> None:
         Token("Smith", Span(13, 18), Role.FAMILY),
     ])
     assert pn.initials("{family}") == "S."
+
+
+def test_initials_and_repair_agree_on_a_conjunction_in_a_particle_part() -> None:
+    """#461, and the one shape that needs a caller's own Lexicon.
+
+    The unjoined mark readmits the words of an all-particle part
+    because none of them is acting as a particle there -- but it says
+    nothing about a conjunction, which rules.md#R3 excludes "even
+    then". Reaching that needs a word in `particles` AND
+    `conjunctions`; the shipped sets are disjoint, in the default
+    vocabulary and in every locale pack, so no input string can
+    witness it and rules.md can carry no example line for it.
+
+    This is also where the two views can be shown to agree, which is
+    the whole point of the carve-out: before #461, `Anh y Van`
+    capitalized as `Anh y Van` and initialed as `A. y. V.` -- one
+    token, two views, opposite readings. The `capitalized` assertions
+    here are what pins case repair's ungated conjunction conjunct
+    (rules.md#R4); gating it on the mark passed the entire suite until
+    this test existed, since no shipped name reaches it either.
+    """
+    # mechanisms.md#VOCABULARY-OVERLAP-AS-PRECONDITION: "assert the
+    # intersection as a precondition" -- built here rather than found,
+    # so what has to hold is the half not being added.
+    assert "y" in Lexicon.default().conjunctions, (
+        "'y' left the default conjunctions; this test builds the "
+        "particle/conjunction overlap it needs from the other side and "
+        "no longer has one. Pick another shipped conjunction.")
+    lex = Lexicon.default().add(particles={"y"})
+    p = Parser(lexicon=lex)
+
+    van = p.parse("Anh y Van")
+    tags = [t.tags for t in van.tokens if t.text == "y"][0]
+    assert {"conjunction", "particle", UNJOINED_TAG} <= tags, sorted(tags)
+    assert van.initials() == "A. V."
+    assert van.capitalized(lex, force=True).family == "y Van"
+
+    # R3's own example line, under a lexicon that makes `de y` the
+    # all-particle part the default vocabulary cannot: `de` initials
+    # as the ordinary name word R2 makes it, `y` still does not.
+    assert p.parse("Juan de y").initials() == "J. d."
+    # and a base that IS the conjunction contributes nothing at all
+    assert p.parse("johnny y").initials() == "j."
+    # unchanged where the part is particles alone
+    assert p.parse("Juan van der").initials() == "J. v. d."
 
 
 def test_initials_custom_delimiter_and_separator() -> None:
