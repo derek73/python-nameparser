@@ -369,8 +369,9 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
 P6. Rationale: a particle ending the name has nothing to link
     forward to, so it is not doing a particle's work there. What it
     is doing instead is decided by what the WRITING says, not by the
-    word: where something has already named the family — a comma, or
-    a declared family-first order — the particle belongs to that
+    word: where something has already named the family AND left the
+    particle in a position that means nothing — after a family comma,
+    or in the middle of a FAMILY_FIRST reading — it belongs to that
     family, which is how Dutch and Flemish names are listed
     ("Beethoven, Ludwig van", the tussenvoegsel trailing the given
     name but belonging to the surname). Where nothing has, it is
@@ -402,19 +403,27 @@ P6. Rationale: a particle ending the name has nothing to link
       "Nguyen, Van"               →  given="Van"  · boundary
     Without a comma, a declared family-first order has named the
     family in the same way and the attachment fires there too — but
-    only where the run landed in a MIDDLE, which is the one position
-    that means nothing for it. Middles are further given names and a
-    particle is not one. FAMILY_FIRST is the only order that puts a
-    trailing piece there: FAMILY_FIRST_GIVEN_LAST puts it in GIVEN,
-    where the caller's declaration says it IS the given name, and the
-    default order puts it in FAMILY, where it already is one.
+    only where the run ENDS the name and stands in a MIDDLE — the one
+    position that means nothing for it, middles being further given
+    names, which a particle is not. Those two together name the
+    order without asking it: the default order ends with the FAMILY
+    and FAMILY_FIRST_GIVEN_LAST with the GIVEN name, so only
+    FAMILY_FIRST can put a name's last word in a middle at all.
+    Ending the name is not implied by the slot and has to be said. A
+    draft that tested the slot alone fired on 52 default-order names,
+    where a conjunction stops a particle's forward chain and leaves it
+    standing in a middle, and on 366 FAMILY_FIRST_GIVEN_LAST middles
+    with the given name still behind them.
     Nothing is asked about the WORD, and that is what lets one rule
     read both traditions: the same vocabulary that spells the Dutch
     tussenvoegsel spells the Vietnamese given name, and the declared
-    order separates them where a comma cannot.
-    Nothing is re-laid-out either — under that order the roles run
-    family, given, middle, middle…, so dropping a trailing middle
-    leaves every other piece where it was. The family must hold a
+    order separates them where a comma cannot — one order, not both,
+    as the Accepted clause below records.
+    Nothing is re-laid-out either — under the order this can reach,
+    the roles run family, given, middle, middle…, so dropping a
+    trailing middle leaves every other piece where it was. That is a
+    property of FAMILY_FIRST alone, and it is the second thing the
+    two tests above secure. The family must hold a
     base of its own, since a family that is all particles is not a
     family written beside anything (R2).
       "Jong Anke de"  family-first  →  family="de Jong"
@@ -425,8 +434,12 @@ P6. Rationale: a particle ending the name has nothing to link
       "Ménil Christophe de"  family-first-given-last  →  given="de"
       "Berg Jan de Jr."  family-first  →  family="de Berg"
       "Berg Jan de Jr."  family-first  →  suffix="Jr."
-      "van Berg Jan de"  family-first  →  given="Berg"  · boundary
+      "van Berg Jan de"  family-first  →  family="van"  · boundary
+      "Maria Luisa y de la Cruz"  →  family="la Cruz"  · boundary
+      "de Anke van y"  family-first-given-last  →  middle="van"  · boundary
       "Ménil de"  family-first  →  given="de"  · boundary
+      "Beethoven Ludwig van"  family-first  →  ambiguities=("particle-or-given",)
+      "Jong Anke de"  family-first  →  ambiguities=()  · boundary
     Accepted: an ambiguous particle attaches on the same terms as a
     never-given one, so a Vietnamese name written in this listing
     loses its given name — but only in the UNACCENTED
@@ -458,11 +471,11 @@ P6. Rationale: a particle ending the name has nothing to link
     keeping (#470).
       "Nguyen Thi Van"  family-first-given-last  →  family="Nguyen"
       "Nguyen Thi Van"  family-first-given-last  →  given="Van"
-    Accepted: without a family comma the name's written shape is not
-    settled — "Jong Anke de" may be a misformatted listing, and a
-    bare "Jong de" may be a given name beside a particle — so the
-    attachment is scoped to the comma form, and the comma-less
-    shapes keep their positional reading.
+    Accepted: under the DEFAULT order a comma-less name's written
+    shape is not settled — "Jong Anke de" may be a misformatted
+    listing, and a bare "Jong de" may be a given name beside a
+    particle — so nothing there names the family, the positional
+    reading stands, and the same input reports family "de" here.
       "Jong Anke de"              →  family="de"
     Accepted: the precedence over S2 is stated for the shape, so it
     sweeps in every word that is both particle and suffix

@@ -371,8 +371,8 @@ class Lexicon:
     #: decides is what becomes of that piece afterwards. Under ANY
     #: ``name_order`` a member records a particle-or-given ambiguity
     #: and a non-member records none, and a non-member is additionally
-    #: folded back into the family name once roles exist, so the whole
-    #: name is the surname ("de Mesnil" -- a bare "de", with nothing to
+    #: folded back into the family name once roles exist WHERE IT OPENS
+    #: THE NAME, so the whole name is the surname ("de Mesnil" -- a bare "de", with nothing to
     #: fold into, is left alone). That fold is order-independent too
     #: (#359) -- not because the word could not be a given name, which
     #: it can where position forces it (``parse("de")`` reports given
