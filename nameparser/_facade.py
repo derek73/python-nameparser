@@ -32,7 +32,8 @@ import nameparser._render as _render
 from nameparser._config_shim import CONSTANTS, Constants, _cached_parser
 from nameparser._lexicon import _normalize
 from nameparser._parser import Parser
-from nameparser._types import FOLDED_TAG, ParsedName, Role, Token
+from nameparser._types import (FOLDED_TAG, UNCLASSIFIED_TAG, ParsedName,
+                               Role, Token)
 
 _V2_FIELD = {"first": "given", "last": "family"}  # v1 name -> v2 name
 _V1_SPELLING = {v2: v1 for v1, v2 in _V2_FIELD.items()}
@@ -746,8 +747,17 @@ class HumanName:
                         f"nameparser"
                     )
                 for position, word in enumerate(entry.split()):
-                    tokens.append(Token(
-                        word, None, role,
-                        frozenset({"joined"}) if position else frozenset()))
+                    # UNCLASSIFIED_TAG for the same reason replace()
+                    # stamps it: a pickle carries the *_list STRINGS
+                    # and no tags, so nothing here was read by a parse
+                    # and case repair must ask the vocabulary rather
+                    # than read an absent conjunction tag. Without it a
+                    # restored "juan ortega y gasset" repairs to
+                    # "Ortega Y Gasset", which is neither v1's answer
+                    # nor the same name's unpickled one.
+                    tags = {UNCLASSIFIED_TAG}
+                    if position:
+                        tags.add("joined")
+                    tokens.append(Token(word, None, role, frozenset(tags)))
         self._parsed = ParsedName(
             original=str(state.get("original", "")), tokens=tuple(tokens))

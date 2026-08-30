@@ -1101,7 +1101,17 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     contribute nothing — except the particles of a part whose every
     word is one, which are not acting as particles there (R2) and
     initial like any other name word. A CONJUNCTION never initials,
-    so a base that is one contributes nothing even then.
+    so a base that is one contributes nothing even then. That
+    carve-out is stated for the middle and base family words; the
+    GIVEN group is not settled here. A conjunction written among
+    given names does initial today, and this document does not yet
+    say whether it should — because two of its own rules answer
+    differently and neither answer has been taken: this rule counts
+    name words, while P3 makes a connective and its neighbours ONE
+    name word, so a joined given group owes one initial under P3 and
+    one per joined name word under the carve-out. Until that is
+    decided the given group's answer is pinned-but-undocumented
+    rather than specified, and no line below asserts it.
       "Dr. Juan Q. Xavier de la Vega III"  →  initials="J. Q. X. V."
       "Anh Do"                    →  initials="A. D."
       "Nguyen, Van Le"            →  initials="V. L. N."
@@ -1110,7 +1120,32 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     rather than nothing: they are the base (R2), so they initial.
       "Juan van der"              →  initials="J. v. d."
       "Juan de y"                 →  initials="J."
-    history: decisions.md#R2 · interacts: R2 · implemented: nameparser/_render.py, nameparser/_facade.py
+    Accepted: this rule reads a part the parser read. A field set as
+    raw text after the parse carries no reading, and this view is
+    handed no vocabulary to supply one — it takes a format spec and
+    two separators and nothing else — so every word of such a field
+    initials, particles and conjunctions alike: a family set that way
+    to "de la vega" gives "j. d. l. v." where parsing the same
+    name gives "j. v.". Case repair IS handed a vocabulary, so it falls
+    back for the one question a word can answer on its own, and R4
+    says which. Revising the field through the parser classifies it
+    and matches the parse in both views. Stated without an example
+    line because every line here names an input string, and this
+    shape needs a field edited after the parse.
+    Accepted: the unsettled given-group answer above is neither rare
+    nor hypothetical — 25 of the corpus names carry a conjunction
+    among the given names, every one of them reachable from the
+    default vocabulary, and it has initialed since 1.4.0. It carries
+    no marked deviation, for the reason that mechanism exists: a
+    marker states the INTENDED value, and one name, "John and Jane
+    Smith", has four candidates. Today gives "J. a. J. S."; the
+    carve-out read as written gives "J. J. S."; P3's one-name-word
+    join gives just "J. S."; and 1.4.0 gave "J a J. S.". Marking it
+    would put an invented value in a normative document and hold
+    the parser to it. #461 asks the neighbouring question about the
+    all-particle base and does not own this one; decisions.md#R2
+    carries the population and the measurements.
+    history: decisions.md#R2 · interacts: P3, R2, R4 · implemented: nameparser/_render.py, nameparser/_facade.py
 
 R4. Rationale: case repair is a display concern, applied only on
     request and never destructively.
@@ -1145,6 +1180,27 @@ R4. Rationale: case repair is a display concern, applied only on
     repaired exactly this way before the clause existed. Stated
     without an example line because every line here names an input
     string, and this shape needs a field edited after the parse.
+    Accepted, and the reason the boundary is drawn per question
+    rather than per field: the conjunction carve-out reaches a word
+    the parse read as a conjunction, and where the parse read nothing
+    at all it reaches what the vocabulary says. A word of that
+    vocabulary standing inside a longer written word is not a
+    conjunction, because the parse read that word as one ordinary
+    name word — but a field spliced in as raw text was read by
+    nobody, so repair asks the vocabulary and a family set to "de y"
+    keeps its "y" lowercase. Whether a word is the conjunction or an
+    initial is a property of the word, which a vocabulary can answer;
+    whether a particle is acting as a particle is a property of the
+    whole part, which the parse settles and records; re-deriving it
+    needs a reading on every word of the part, and a spliced field
+    has none on any, so that half falls through to particle treatment
+    and the "de la" boundary above stands. Initials are the contrast
+    worth knowing, and R3 states it: that view is handed no
+    vocabulary at all, so it falls back on neither question and a
+    spliced field's every word initials. revise() classifies the
+    value and crosses both questions, in both views: a middle revised
+    to "e-f" repairs to "E-F" as the parsed name does, where splicing
+    the same text in gives "e-F".
     history: decisions.md#R4 · interacts: R2, R3, R5 · implemented: nameparser/_render.py
 
 R5. Rationale: mixed case is evidence that the writer cased the name

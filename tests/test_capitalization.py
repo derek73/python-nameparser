@@ -1,3 +1,7 @@
+# pickle here round-trips an object this test just built; the library's
+# own pickle support is what is under test, and no foreign data is read.
+import pickle
+
 import pytest
 
 from nameparser import HumanName
@@ -227,10 +231,12 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # the four corpus files deduped and diffing, on whichever surface
     # you name.
     #
-    # The mechanism is v1's initial carve-out, which _cap_word
-    # documents a few lines from the predicate: a conjunction is not
-    # lowercased where it is written initial-shaped, and
-    # initial-shaped means one CAPITAL letter. Uppercase a name and
+    # The mechanism is v1's initial carve-out, taken in the PARSE
+    # since #458 and read off the tag by the repair: a word of the
+    # conjunction vocabulary is not tagged one where it is written
+    # initial-shaped, and initial-shaped means one CAPITAL letter
+    # (nameparser/_pipeline/_classify.py, and the tests beside it --
+    # the repair no longer asks). Uppercase a name and
     # every one-letter conjunction becomes an initial; lowercase one
     # and a middle initial `E` becomes the Italian conjunction. So
     # the property is pinned over names carrying no single-letter
@@ -262,3 +268,77 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         uppered.capitalize()
         # 'Y' is initial-shaped, so the conjunction rule declines it
         self.m(str(uppered), 'Juan Y Garcia', uppered)
+
+    # The v1 parity this rests on, at the surface v1 users have. An
+    # ASSIGNED field is spliced in as raw text and never classified, so
+    # there is no tag to read and repair asks the vocabulary -- which is
+    # what v1 always did, everywhere. Measured on the released 1.4.0
+    # wheel and on 2.1.0, all four: 'John Velasquez y Garcia',
+    # 'John Smith y Jones', 'John E. Smith', 'John Smith-y'. Reading the
+    # tag alone (no fallback) capitalizes every one of these conjunctions
+    # -- the regression #458's review caught before it shipped.
+    def test_an_assigned_field_keeps_v1_conjunction_repair(self) -> None:
+        for field, value, want in (
+                ('last', 'velasquez y garcia', 'John Velasquez y Garcia'),
+                ('last', 'smith y jones', 'John Smith y Jones'),
+                # the initial carve-out: an assigned middle initial is
+                # an initial, not the Italian conjunction
+                ('middle', 'e.', 'John E. Smith'),
+                # v1 asks per WORD of the assigned text, so the
+                # conjunction inside a hyphenated word IS lowered here
+                # -- the opposite of the parsed reading pinned below,
+                # and the difference is that one carries a reading
+                ('last', 'smith-y', 'John Smith-y')):
+            hn = HumanName('john smith')
+            setattr(hn, field, value)
+            hn.capitalize(force=True)
+            self.m(str(hn), want, hn)
+
+    # The other half of #458, and the half that MOVED: the decision is
+    # the whole token's, so a conjunction word inside a longer token is
+    # not one. `e` is the Italian conjunction and `e-f` is a middle
+    # name; before #458 the repair re-ran the test over each word of a
+    # token's text and gave 'Juan e-F Smith'. The uppercase spelling is
+    # here to show the old answer was not even self-consistent: it read
+    # `E` as initial-shaped and capitalized, so the same name repaired
+    # to two different strings depending on how it was written.
+    def test_a_conjunction_inside_a_longer_token_is_a_name_word(self) -> None:
+        lowered = HumanName('juan e-f smith')
+        lowered.capitalize(force=True)
+        self.m(str(lowered), 'Juan E-F Smith', lowered)
+        uppered = HumanName('JUAN E-F SMITH')
+        uppered.capitalize()
+        self.m(str(uppered), 'Juan E-F Smith', uppered)
+
+    # The third producer of never-classified text, and the one that is
+    # not an assignment: __getstate__ pickles the *_list STRINGS and
+    # nothing else (mechanisms.md#FACADE-CONTRACT -- components come
+    # back exactly as pickled, never re-parsed), so a load rebuilds
+    # tokens with no tags on them. They are marked UNCLASSIFIED_TAG for
+    # the same reason an assigned field is: reading the absent
+    # conjunction tag as "not a conjunction" would repair a restored
+    # 'juan ortega y gasset' to 'Juan Ortega Y Gasset', which is
+    # neither 1.4.0's answer nor the same object's before pickling.
+    def test_a_restored_pickle_keeps_v1_conjunction_repair(self) -> None:
+        for text, want in (('juan ortega y gasset', 'Juan Ortega y Gasset'),
+                           ('john de la vega', 'John de la Vega'),
+                           ('juan y garcia', 'Juan y Garcia')):
+            restored = pickle.loads(pickle.dumps(HumanName(text)))
+            restored.capitalize(force=True)
+            self.m(str(restored), want, restored)
+
+    # The ONE name a pickle round trip does change, pinned so it is not
+    # rediscovered as a bug. #458 moved the conjunction-versus-initial
+    # decision into the parse, and a pickle carries no tags, so the
+    # restored name is repaired the way 1.4.0 repaired everything --
+    # per word of the text, giving the Italian conjunction inside a
+    # hyphenated middle name. It is the pickle contract (strings only,
+    # never a re-parse) meeting the tag read, not a defect in either.
+    # 1.4.0 gave 'Juan e-F Smith' both ways.
+    def test_a_pickle_round_trip_loses_the_e_f_reading(self) -> None:
+        direct = HumanName('juan e-f smith')
+        direct.capitalize(force=True)
+        self.m(str(direct), 'Juan E-F Smith', direct)
+        restored = pickle.loads(pickle.dumps(HumanName('juan e-f smith')))
+        restored.capitalize(force=True)
+        self.m(str(restored), 'Juan e-F Smith', restored)

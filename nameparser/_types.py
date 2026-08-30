@@ -115,6 +115,24 @@ UNJOINED_TAG = "vocab:unjoined-particle"
 #: drift.
 FOLDED_TAG = "vocab:folded-middle"
 
+#: Raw text spliced into a field after the parse, which no parse ever
+#: read: `ParsedName.replace()` stamps it, and so does the facade's
+#: v1 pickle load, which rebuilds a name from `*_list` strings alone.
+#: A view that is HANDED a vocabulary falls back to it for a token
+#: carrying this -- there is no decision to honor -- and reads every
+#: other token by its tags (mechanisms.md#RENDER-HONORS-THE-PARSE).
+#: `capitalized(lexicon=...)` is the one such view; `initials()` takes
+#: no lexicon and so honors tags alone, marked or not.
+#: The absence of a SPAN is not that signal and was tried as one: a
+#: span-less token is SYNTHETIC, which `Parser.revise()` also builds,
+#: from a full sub-parse whose tags it deliberately keeps. Keying the
+#: fallback on the span overrode exactly those tags. Absence of TAGS is
+#: not the signal either -- an ordinary parsed name word carries none.
+UNCLASSIFIED_TAG = "vocab:unclassified"
+
+#: The one-element tag set its two producers stamp, built once.
+_UNCLASSIFIED = frozenset({UNCLASSIFIED_TAG})
+
 _E = TypeVar("_E", bound=Enum)
 
 
@@ -737,14 +755,19 @@ class ParsedName:
         empty value clears the field. original is unchanged (provenance).
         Ambiguities referencing replaced tokens are dropped.
 
-        Replacement tokens carry NO tags, so tag-driven views degrade:
-        family_particles empties, particles regain their initials, and
-        a multi-word suffix is comma-joined. Parser.revise() is the
-        tag-preserving alternative.
+        Replacement tokens carry no STABLE tag, so tag-driven views
+        degrade: family_particles empties, particles regain their
+        initials, and a multi-word suffix is comma-joined.
+        Parser.revise() is the tag-preserving alternative.
+        They do carry UNCLASSIFIED_TAG, which says the text was never
+        read rather than that it was read and found plain: a view
+        holding a vocabulary falls back to it for these and to the tags
+        for everything else.
         """
         replaced = _validated_field_strings(fields)
         synthetic = {
-            role: tuple(Token(word, None, role) for word in value.split())
+            role: tuple(Token(word, None, role, _UNCLASSIFIED)
+                        for word in value.split())
             for role, value in replaced.items()
         }
         return self._with_field_tokens(synthetic)

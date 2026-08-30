@@ -81,6 +81,14 @@ def test_initial_copies_agree_with_each_other_and_config() -> None:
     # documented relationship to the config source, so a future edit to
     # either side that breaks the relationship fails loudly here
     # instead of silently drifting.
+    # The two copies stopped answering the same question in #458 and
+    # the agreement matters MORE for it, not less: _vocab's asks what
+    # the parse decided about a token, _render's what it would have
+    # decided about text spliced into a field afterwards, and the
+    # second is only right while it answers as the first would. This
+    # test is what says so. (#458 briefly deleted _render's copy, when
+    # nothing read it; the unparsed-text fallback gave it a reader
+    # again -- see _render._reads_as_conjunction.)
     assert _vocab._INITIAL.pattern == _render._INITIAL.pattern
     source = _config.REGEXES["initial"]
     # config's pattern is the pipeline copy with an extra "?" spliced in
