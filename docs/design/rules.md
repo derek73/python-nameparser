@@ -1154,7 +1154,7 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     the parser to it. #461 asks the neighbouring question about the
     all-particle base and does not own this one; decisions.md#R2
     carries the population and the measurements.
-    history: decisions.md#R2 · interacts: O3, P3, P6, R1, R2, R4 · implemented: nameparser/_render.py, nameparser/_facade.py
+    history: decisions.md#R3 · interacts: O3, P3, P6, R1, R2, R4 · implemented: nameparser/_render.py, nameparser/_facade.py
 
 R4. Rationale: case repair is a display concern, applied only on
     request and never destructively.

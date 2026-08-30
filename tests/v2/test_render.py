@@ -256,16 +256,22 @@ def test_initials_folds_in_every_role_it_renders() -> None:
     producer that ever folded into another part would otherwise
     reopen #408 there, silently, with nothing to fail.
     """
-    pn = _pn("Ann Bea Cyd", [
+    pn = _pn("Ann Bea Cyd Dee", [
         Token("Ann", Span(0, 3), Role.GIVEN),
-        Token("Bea", Span(4, 7), Role.MIDDLE, frozenset({FOLDED_TAG})),
+        Token("Bea", Span(4, 7), Role.MIDDLE),
         Token("Cyd", Span(8, 11), Role.GIVEN, frozenset({FOLDED_TAG})),
+        Token("Dee", Span(12, 15), Role.MIDDLE, frozenset({FOLDED_TAG})),
     ])
-    # the field already orders this way; the view now agrees
+    # the fields already order this way; the view now agrees. Each
+    # role carries TWO tokens on purpose: a one-token group makes the
+    # partition the identity, so a single folded middle would have
+    # left this arm asserted and unpinned (the shape the mutation
+    # below caught -- scoping the partition to GIVEN and FAMILY
+    # passed the whole suite against an earlier draft of this test).
     assert pn.given == "Cyd Ann"
     assert pn.initials("{given}") == "C. A."
-    assert pn.middle == "Bea"
-    assert pn.initials("{middle}") == "B."
+    assert pn.middle == "Dee Bea"
+    assert pn.initials("{middle}") == "D. B."
 
 
 def test_initials_custom_delimiter_and_separator() -> None:
