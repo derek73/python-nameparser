@@ -233,6 +233,16 @@ def test_initials_order_folded_words_first_like_the_family_field() -> None:
     hassan = maf.parse("Hassan, Mohamad Ahmad Ali")
     assert hassan.family == "Ahmad Ali Hassan"
     assert hassan.initials() == "M. A. A. H."
+    # The folded RUN needs two elements too, and distinguishable
+    # ones: hassan's run is `Ahmad Ali`, which both initial to
+    # `A.`, so reversing the folded half alone passes every test
+    # above. Same arity trap as the fixture drafts, one level
+    # down -- the partition BUILDS a group, and that group needs
+    # the treatment too (mechanisms.md#TWO-ELEMENT-GROUPS).
+    doe2 = maf.parse("Doe, John A. Kenneth")
+    assert doe2.family == "A. Kenneth Doe"
+    assert doe2.initials() == "J. A. K. D."
+
     doe = maf.parse("Doe, Dr. John A.")
     assert doe.family == "A. Doe"
     assert doe.initials() == "J. A. D."
