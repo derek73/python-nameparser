@@ -6,10 +6,13 @@ from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
 #: name has no given name -- the whole thing is a surname (e.g. "de Mesnil"
 #: -> family name "de Mesnil") -- and that reading holds under EVERY
 #: ``name_order`` (#359). It is not scoped to the default order the way the
-#: rest of the positional read is: ``name_order`` says which side of the
-#: name the family sits on, and a word that can never be a given name
-#: leaves it nothing to decide, so ``Policy(name_order=FAMILY_FIRST)``
-#: reads "de Mesnil" as the family name too. What is asked about is the
+#: rest of the positional read is: what settles it is that a particle
+#: opening the name has the rest of the name to JOIN FORWARD TO, which
+#: is evidence about the writing rather than about the word, so
+#: ``Policy(name_order=FAMILY_FIRST)`` reads "de Mesnil" as the family
+#: name too. Membership here does NOT mean the word can never be a
+#: given name -- where position forces the reading it is one, and every
+#: member of this set reports given "de"-style for a bare parse. What is asked about is the
 #: opening *piece*, not the first word of the string: a particle that has
 #: already chained onto the word behind it is part of that piece rather
 #: than standing alone.

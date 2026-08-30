@@ -358,14 +358,17 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     history: decisions.md#P5 · interacts: S2, M2, H1, P2, P4, P6 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P6. Rationale: a particle ending the name has nothing to link
-    forward to, so it is not doing a particle's work there. A
-    never-given particle in that position cannot be a name at all
-    and must belong to the family written beside it; an ambiguous
-    particle could genuinely be the name (Vietnamese "Van"), and
-    after a comma there is no signal that separates the two
-    readings. Dutch and Flemish names are listed exactly
-    this way ("Beethoven, Ludwig van"), the tussenvoegsel trailing
-    the given name but belonging to the surname.
+    forward to, so it is not doing a particle's work there. What it
+    is doing instead is decided by what the WRITING says, not by the
+    word: where something has already named the family — a comma, or
+    a declared family-first order — the particle belongs to that
+    family, which is how Dutch and Flemish names are listed
+    ("Beethoven, Ludwig van", the tussenvoegsel trailing the given
+    name but belonging to the surname). Where nothing has, it is
+    read where it stands, and a particle CAN be a given name there:
+    the never-given vocabulary supplies the reading position leaves
+    open, and forbids nothing (parse("de") reports given "de", and
+    so does every other word in that set).
     Where a family comma has already named the family, a particle
     ending the name attaches to that family name and is written
     before it — provided at least one given word remains, so that a
