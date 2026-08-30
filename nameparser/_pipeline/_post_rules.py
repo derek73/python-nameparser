@@ -2,15 +2,18 @@
 
 Consumes: tokens (roles assigned), plus pieces and structure -- the
 particle fold reads the opening piece of segment 0, or of segment 1
-under a family comma (#359). structure was always read here, for the
-rotation gate.
+under a family comma (#359), and P6's no-comma site reads the
+TRAILING pieces of segment 0 (#365). structure was always read here,
+for the rotation gate.
 Produces: tokens with roles adjusted by the post rules, plus the
 ambiguity P6's attachment reports for the fork it decides (#405).
 Reads: Policy.patronymic_rules, Policy.middle_as_family;
 Lexicon.given_name_titles.
 
-Implements rules H1, M4, P1, O1, O2 and O3 of docs/design/rules.md;
-each is cited at its code below, and H1/P1/O1/O2's history lives in
+Implements rules H1, M4, P1, P6, O1, O2, O3 and R2 of
+docs/design/rules.md; each is cited at its code below. P6 is here at
+TWO sites, one on each side of P1 -- see the comment at the first for
+why neither can move to the other. H1/P1/O1/O2/P6's history lives in
 docs/design/decisions.md.
 """
 from __future__ import annotations
@@ -171,13 +174,14 @@ def _fold_reach(tokens: list[WorkToken], name_idx: list[int]) -> int:
     return i + len(_units(tokens, name_idx[i:])[0])
 
 
-def _is_name_word(token: WorkToken) -> bool:
-    """A token holding a name role that no particle vocabulary claims
-    -- the base a particle can attach to. No citation: R2 states "a
-    particle needs a base to attach to" in an Accepted clause, and
-    the excerpt test can only verify the part of a rule ahead of its
-    first example."""
-    return token.role in _NAME_ROLES and "particle" not in token.tags
+def _has_base(piece: tuple[int, ...], tokens: list[WorkToken]) -> bool:
+    """Whether a PIECE holds a word no particle vocabulary claims --
+    the base a particle can attach to. Callers pass a piece that
+    already holds a name role, which is why the role is not re-asked
+    here. No citation: R2 states "a particle needs a base to attach
+    to" in an Accepted clause, and the excerpt test can only verify
+    the part of a rule ahead of its first example."""
+    return any("particle" not in tokens[i].tags for i in piece)
 
 
 def _is_never_given_particle(token: WorkToken) -> bool:
@@ -264,9 +268,8 @@ def post_rules(state: ParseState) -> ParseState:
     # family name and is written before it" -- P6's other
     # precondition. A family comma names the family; so does a
     # declared family-first order, and the same Dutch listing is
-    # written both ways, so the two read alike: "Beethoven, Ludwig
-    # van" and "Beethoven Ludwig van" under FAMILY_FIRST both give
-    # family "van Beethoven" (#365).
+    # written both ways: "Jong, Anke de" and "Jong Anke de" under
+    # FAMILY_FIRST both give family "de Jong" (#365).
     #
     # NEVER-GIVEN vocabulary only, where the comma path takes
     # ambiguous particles too. P6 rests that on the comma leaving "no
@@ -275,33 +278,62 @@ def post_rules(state: ParseState) -> ParseState:
     # "an ambiguous particle keeps whatever reading its position
     # gives it". That is what leaves the Vietnamese listing alone:
     # "Nguyen Thi Van" under family-first-given-last keeps given
-    # "Van", P6's own example, where "Nguyen, Thi Van" loses it.
+    # "Van", P6's own example, where "Nguyen, Thi Van" loses it. The
+    # cost is the Dutch flagship word: `van` is ambiguous vocabulary,
+    # so "Beethoven Ludwig van" keeps middle "van" where the comma
+    # form gives family "van Beethoven". The two forms agree for the
+    # never-given half of the tussenvoegsel set and not for the rest.
     #
     # The suffix override is the comma path's alone for the same
     # reason -- a trailing `vd` or `mc` is a post-nominal until a
     # comma makes the tussenvoegsel commoner -- so the run is found
     # among the pieces that hold a NAME role, and a piece holding
-    # none is walked past as it is there ("Berg Jan de Jr.").
+    # none is walked past ("Berg Jan de Jr."). Not quite as the comma
+    # path walks: its loop refuses to step over an all-particle piece,
+    # which is how a suffix-roled `vd` stays part of the run there.
+    #
+    # THREE THINGS MUST REMAIN, and each was a defect in review
+    # before it was a condition (decisions.md#P6, 2026-08-30):
+    # a name word BESIDES the family, which is P6's own words-to-spare
+    # test in the shape a positional read needs -- without it
+    # "Jong de" attaches where "Jong, de" declines, and the two
+    # writings of one listing disagree about word order; a BASE in the
+    # piece that will be the family, since a family that is all
+    # particles is not a family written beside anything -- without it
+    # "van Berg Jan de" loses its given name outright, the leftover
+    # collapsing to a single unit; and no SUFFIX WORD stranded at the
+    # end, since assign left one in a name position only because the
+    # particle followed it, and the re-layout does not re-run assign's
+    # trailing peel -- without it "Berg Jan Jr. de" reports given
+    # "Jr." under FAMILY_FIRST_GIVEN_LAST.
     #
     # Placed BEFORE P1, which is why P6 lands at two code sites. P1's
-    # given-position site takes this same run under a family-first
+    # given-position site takes the same run under a family-first
     # order and takes it with the other reading -- the whole given
     # slot into the family, in written order, leaving no given name
     # ("Mesnil Garcia de" -> family "Mesnil Garcia de"). Attaching
-    # first leaves that site nothing to fire on: every corpus firing
-    # of it that the leading site does not also take is one of these
-    # runs (6 of 1094 names x 3 orders, all trailing, measured
-    # 2026-08-30). The COMMA path cannot move up here with it -- it
-    # reads the roles P1 settles, for the reason stated there.
+    # first leaves it the runs this site declines, which is what
+    # "Mesnil de" and "van der" still reach it for. The COMMA path
+    # cannot move up here with it: it reads the roles P1 settles, for
+    # the reason recorded at that site below.
+    #
+    # No structure test. A real family comma records no order, so
+    # `state.order is not None` excludes it already; testing the
+    # structure as well excludes only the comma that fixed NOTHING --
+    # segment 1 holding no name word, assign reading segment 0
+    # positionally (#296) -- where #365's symptom survives verbatim
+    # ("Mesnil Garcia de, Dr."). Segment 0 is this site's for the same
+    # reason, which is _leading_name_piece's rule read at `order is
+    # not None`.
     #
     # What is left is a shorter name of the same order, and unlike
     # P1's fold the family is NOT among the pieces already placed, so
     # the remaining units take the positions _name_positions gives
-    # them outright. That is what makes the two family-first orders
-    # agree here: "Mesnil Garcia de" leaves [Mesnil][Garcia] under
-    # both, and two pieces are family-then-given in either.
-    if (state.structure is not Structure.FAMILY_COMMA
-            and state.order is not None
+    # them outright. At TWO of them that is family-then-given in
+    # either family-first order, which is why the orders agree on
+    # #365's shape; at three they differ again, and the declared
+    # order is what decides given from middle.
+    if (state.order is not None
             and state.order[0] is Role.FAMILY
             and state.pieces):
         seg = state.pieces[0]
@@ -324,8 +356,12 @@ def post_rules(state: ParseState) -> ParseState:
         # ordinary name words is not a thing any rule does.
         # P1's accepted "de" -> given="de" is the same test at one
         # piece.
-        if end > k and any(_is_name_word(tokens[i])
-                           for piece in seg[:k] for i in piece):
+        kept_pieces = [piece for piece in seg[:k]
+                       if any(tokens[i].role in _NAME_ROLES for i in piece)]
+        if (end > k and len(kept_pieces) > 1
+                and _has_base(kept_pieces[0], tokens)
+                and not all("vocab:suffix" in tokens[i].tags
+                            for i in kept_pieces[-1])):
             for piece in seg[k:end]:
                 for i in piece:
                     tokens[i] = dataclasses.replace(
@@ -388,8 +424,7 @@ def post_rules(state: ParseState) -> ParseState:
             # family-first order). FOLDED_TAG is that site's alone
             # here -- O3's fold and P6's comma path both run later in
             # this stage.
-            name_idx = [i for i in sorted(givens + middles + families)
-                        if FOLDED_TAG not in tokens[i].tags]
+            name_idx = sorted(givens + middles + families)
             cut = _fold_reach(tokens, name_idx)
             for i in name_idx[:cut]:
                 _retag(tokens, i, Role.FAMILY)

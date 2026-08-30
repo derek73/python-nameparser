@@ -122,12 +122,16 @@ P1. Rationale: a never-given particle standing alone cannot be
     the name, under a family-first order, it takes exactly ONE —
     declaring that order asserts that what follows the family is not
     more surname. Opening the name under the default order, or
-    standing in the given position with name words still after it,
-    it takes the rest of the name: nothing there marks where the
-    surname ends. Standing in the given position with nothing after
-    it, under a family-first order, it is not this rule's at all: the
-    declared order has named the family, and P6 attaches it there and
-    writes it before the base. One name
+    standing in the given position under any order, it takes the rest
+    of the name: nothing there marks where the surname ends. One
+    case of that second position is P6's rather than this rule's,
+    and only one: a particle ENDING the name under a declared
+    family-first order, where a family with a base and a name word
+    besides it both remain. P6 attaches it to that family and writes
+    it before the base. Everything else in the given position is
+    still this rule's fold, including the name that has nothing left
+    once the particle is taken — which is why "Mesnil de" reports
+    family "Mesnil de" here and not P6's "de Mesnil". One name
     word means one UNIT — a particle chain (P2), a conjunction join
     (P3) or a bound given-name pair (P5) is taken whole or not at
     all. A title does not move the opening position (P4), but a
@@ -140,7 +144,7 @@ P1. Rationale: a never-given particle standing alone cannot be
     the family slot being already filled.
       "de la Vega"                →  family="de la Vega"
       "Sir de Mesnil"             →  family="de Mesnil"
-      "Mesnil de"  family-first   →  family="de Mesnil"
+      "Mesnil de"  family-first   →  family="Mesnil de"
       "de Mesnil Juan"            →  family="de Mesnil Juan"
       "de Mesnil Juan"  family-first  →  family="de Mesnil"
       "de Mesnil Juan"  family-first  →  given="Juan"
@@ -395,27 +399,41 @@ P6. Rationale: a particle ending the name has nothing to link
       "Beethoven, Ludwig van"     →  family_particles="van"
       "Nguyen, Van"               →  given="Van"  · boundary
     Without a comma, a declared family-first order has named the
-    family in the same way and the attachment fires there too, with
-    two differences the comma is what licensed. Only a NEVER-GIVEN
-    particle attaches, an ambiguous one keeping whatever reading its
-    position gives it (P1). And the suffix reading stands: a
-    trailing abbreviation is a post-nominal until a comma makes the
-    tussenvoegsel commoner, so the run is found among the pieces
-    that hold a name, looking past a trailing piece that holds none
-    as the comma form does. What must remain ahead of the run is a
-    name word no particle vocabulary claims — the base the particle
-    attaches to (R2) — so a name that is nothing but particles keeps
-    the reading its position gave it. The pieces left over are laid
-    out in the declared order for their own number, which is what
-    makes the two family-first orders agree.
+    family in the same way and the attachment fires there too. The
+    words-to-spare test is the same one, in the shape a positional
+    read needs it: a name word must remain ahead of the run BESIDES
+    the family it attaches to, so the one-given-word listing keeps
+    the reading it has either way — "Jong, de" and "Jong de" under a
+    family-first order both report family "Jong de", which is P1's
+    fold and not this rule. Two conditions are the comma's alone.
+    Only a NEVER-GIVEN particle attaches, an ambiguous one keeping
+    whatever reading its position gives it (P1). And the suffix
+    reading stands: a trailing abbreviation is a post-nominal until
+    a comma makes the tussenvoegsel commoner, so the run is found
+    among the pieces that hold a name, a trailing piece holding none
+    being walked past as it is there. The family the run attaches to
+    must have a base of its own — a word no particle vocabulary
+    claims (R2) — since a family that is all particles is not a
+    family written beside anything.
+    The pieces left over are laid out in the declared order for
+    their own number. At two of them that is family-then-given in
+    either family-first order, which is why the orders agree on the
+    shape this rule was filed for; at three they still differ, the
+    declared order being what decides given from middle.
       "Jong Anke de"  family-first  →  family="de Jong"
       "Jong Anke de"  family-first  →  given="Anke"
       "Mesnil Garcia de"  family-first  →  family="de Mesnil"
       "Mesnil Garcia de"  family-first  →  given="Garcia"
       "Mesnil Garcia de"  family-first-given-last  →  family="de Mesnil"
       "Mesnil Garcia de"  family-first-given-last  →  given="Garcia"
+      "Berg Jan de Jr."  family-first  →  family="de Berg"
+      "Berg Jan de Jr."  family-first  →  suffix="Jr."
+      "Mesnil Garcia Carlos de"  family-first  →  given="Garcia"
+      "Mesnil Garcia Carlos de"  family-first-given-last  →  given="Carlos"
       "Berg Jan vd"  family-first  →  suffix="vd"
       "van der"  family-first  →  family="van der"  · boundary
+      "Mesnil de"  family-first  →  family="Mesnil de"  · boundary
+      "van Berg Jan de"  family-first  →  given="Berg"  · boundary
     Accepted: an ambiguous particle attaches on the same terms as a
     never-given one, so a Vietnamese name written in this listing
     loses its given name — but only in the UNACCENTED
@@ -460,7 +478,6 @@ P6. Rationale: a particle ending the name has nothing to link
     is the ONE format that reads the unaccented Vietnamese spelling
     correctly, and an attachment taking ambiguous particles without
     a comma would take that format too.
-      "Beethoven, Ludwig van"     →  family="van Beethoven"
       "Beethoven Ludwig van"  family-first  →  middle="van"
     Accepted: the precedence over S2 is stated for the shape, so it
     sweeps in every word that is both particle and suffix
@@ -479,6 +496,9 @@ P6. Rationale: a particle ending the name has nothing to link
     it as its pair first (P5), so the attachment never sees it —
     unless the particle is of the unambiguous suffix vocabulary too
     (vd, mc), which the join declines and the attachment then takes.
+    That last exception is the COMMA site's: without a comma the
+    suffix reading stands, so a family-first `Berg abdul vd` reports
+    suffix `vd` where `Berg, abdul vd` reports family `vd Berg`.
       "Berg, abdul van"           →  given="abdul van"
       "Berg, abdul vd"            →  family="vd Berg"
     history: decisions.md#P6 · interacts: A1, C1, P1, S2, P5 · implemented: nameparser/_pipeline/_post_rules.py

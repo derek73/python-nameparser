@@ -307,7 +307,7 @@ def test_family_comma_fold_is_order_independent(policy: Policy) -> None:
 
 
 @pytest.mark.parametrize("policy", _FAMILY_FIRST)
-def test_lone_never_given_particle_in_given_position_attaches(
+def test_lone_never_given_particle_in_given_position_folds(
         policy: Policy) -> None:
     # The opening-position test alone does not carry the rule: under a
     # family-first order the given position is the TRAILING piece, and
@@ -317,15 +317,15 @@ def test_lone_never_given_particle_in_given_position_attaches(
     # the rule as leading-particle-only drops exactly this shape,
     # silently and under a non-default order (#359 review).
     #
-    # It is P6's site that takes it now, not P1's fold (#365), so the
-    # role is not the whole assertion: the run carries FOLDED_TAG and
-    # renders BEFORE the base ('de Mesnil'). Without the tag half this
-    # test passes on either rule -- `_by_role` reads written order, and
-    # both leave the same two tokens FAMILY in the same sequence.
+    # Still P1's fold, and the negative assertion is what says so:
+    # P6's no-comma site (#365) declines here because nothing would
+    # remain beside the family, so the run is folded in WRITTEN order
+    # rather than attached and rendered before the base. `_by_role`
+    # reads written order and cannot tell those two apart on its own.
     out = _parsed("Mesnil de", policy)
     assert _by_role(out, Role.FAMILY) == "Mesnil de"
     assert not _by_role(out, Role.GIVEN)
-    assert _folded(out) == "de"
+    assert not _folded(out)
 
 
 def _folded(state: ParseState) -> str:
@@ -400,14 +400,138 @@ def test_p1_given_position_site_still_has_a_shape_to_fire_on() -> None:
     assert not _folded(out)
 
 
-def test_the_fold_does_not_take_back_what_the_attachment_placed() -> None:
-    # P1's family-first lead branch lays out what is LEFT of the name,
-    # and a word P6's site has already placed is not left. Without the
-    # FOLDED_TAG exclusion the redistribution hands the attached
-    # particle straight back to the given slot it was taken out of.
+def test_the_two_particle_sites_cannot_both_fire() -> None:
+    # P1's lead site fires only on a leading LONE never-given
+    # particle, which is a family piece with no base -- exactly what
+    # P6's no-comma site requires there. So the two are mutually
+    # exclusive by construction (measured over 61,854 generated
+    # parses, 2026-08-30), and P1's redistribution needs no exclusion
+    # for tokens the attachment has already placed.
+    #
+    # Guarded because an earlier draft DID need one: with a looser
+    # base test the attachment fired here, and P1's lead branch then
+    # handed the particle straight back to the given slot it had been
+    # taken out of. The `given` this leaves is P1's own gap and not
+    # this rule's -- P1 says a never-given particle never stands as
+    # the given name, and its fold produces one here -- so it is
+    # asserted as it is rather than as it should be.
     out = _parsed("de la Vega de", Policy(name_order=FAMILY_FIRST))
-    assert not _by_role(out, Role.GIVEN)
+    assert _by_role(out, Role.FAMILY) == "de la Vega"
+    assert _by_role(out, Role.GIVEN) == "de"
+    assert not _folded(out)
+
+
+@pytest.mark.parametrize("policy", _FAMILY_FIRST)
+def test_the_run_needs_a_name_word_besides_the_family(
+        policy: Policy) -> None:
+    # P6's words-to-spare test, in the shape a positional read needs
+    # it. The comma form declines "Jong, de" for the same reason, so
+    # without this the two writings of a one-given-word listing
+    # disagree about word order -- 'Jong de' with the comma and
+    # 'de Jong' without it.
+    out = _parsed("Mesnil de", policy)
+    assert not _folded(out)
+
+
+def test_the_family_the_run_attaches_to_must_have_a_base() -> None:
+    # A name word must remain AND the family must be the piece that
+    # holds one. Testing only "a name word remains somewhere ahead"
+    # passes here and loses the given name: the leftover is one UNIT,
+    # the leading particle chaining over every word after it, so the
+    # whole name becomes the family and `Berg` stops being a given
+    # name at all.
+    #
+    # FAMILY_FIRST only, deliberately. Under FAMILY_FIRST_GIVEN_LAST
+    # the trailing particle lands in the given slot and P1's fold
+    # takes the whole name anyway, so that order has no given name to
+    # lose and cannot witness the defect.
+    out = _parsed("van Berg Jan de", Policy(name_order=FAMILY_FIRST))
+    assert _by_role(out, Role.GIVEN) == "Berg"
+    assert not _folded(out)
+
+
+@pytest.mark.parametrize("policy", _FAMILY_FIRST)
+def test_a_title_does_not_supply_the_base(policy: Policy) -> None:
+    # The base test reads a NAME role as well as the vocabulary. On
+    # the vocabulary alone a title ahead of an all-particle family
+    # passes it, and 'van der' is reordered to 'der van' -- two words
+    # R2 reads as ordinary name words.
+    out = _parsed("Mr. van der", policy)
+    assert _by_role(out, Role.FAMILY) == "van der"
+    assert not _folded(out)
+
+
+@pytest.mark.parametrize("policy", _FAMILY_FIRST)
+def test_the_run_is_found_past_a_trailing_post_nominal(
+        policy: Policy) -> None:
+    # The walk over trailing pieces that hold no name, in the
+    # direction that FIRES. Pinned separately from the `vd` case,
+    # which pins it only where the rule declines: a site that refused
+    # to fire once the walk had moved would pass that one and restore
+    # both of #365's symptoms here.
+    out = _parsed("Berg Jan de Jr.", policy)
+    assert _by_role(out, Role.GIVEN) == "Jan"
+    assert _by_role(out, Role.SUFFIX) == "Jr."
     assert _folded(out) == "de"
+
+
+@pytest.mark.parametrize("policy", _FAMILY_FIRST)
+def test_the_run_does_not_strand_a_suffix_word_in_a_name_role(
+        policy: Policy) -> None:
+    # assign left 'Jr.' in a name position only because the particle
+    # followed it. Take the particle away and the leftover is not the
+    # same name one word shorter, so the rule declines rather than
+    # promoting a post-nominal into a name: the re-layout does not
+    # re-run assign's trailing peel, and under
+    # FAMILY_FIRST_GIVEN_LAST 'Jr.' would take the given slot.
+    out = _parsed("Berg Jan Jr. de", policy)
+    assert not _folded(out)
+    assert _by_role(out, Role.GIVEN) != "Jr."
+
+
+def test_a_comma_that_fixed_nothing_still_reaches_the_site() -> None:
+    # structure is FAMILY_COMMA but the comma named no family --
+    # segment 1 holds no name word, so assign read segment 0
+    # positionally and recorded the order (#296). A guard on the
+    # STRUCTURE excludes exactly this shape and nothing else, since
+    # `state.order` is None wherever a comma really did name the
+    # family. #365's symptom survived here in the first draft.
+    out = _parsed("Mesnil Garcia de, Dr.",
+                  Policy(name_order=FAMILY_FIRST))
+    assert _by_role(out, Role.GIVEN) == "Garcia"
+    assert not _by_role(out, Role.MIDDLE)
+    assert _folded(out) == "de"
+
+
+def test_the_leftover_keeps_the_units_other_rules_built() -> None:
+    # The leftover is partitioned into UNITS, not words and not
+    # pieces: a conjunction join and a bound given-name pair each
+    # count as one name word wherever another rule counts them (P3,
+    # P5). Per-word the conjunction becomes the given name; by piece
+    # the bound pair splits, P5's join never having built one (it
+    # joins only where the bound word is the first non-title piece).
+    ff = Policy(name_order=FAMILY_FIRST)
+    joined = _parsed("Garcia y Santos Juan de", ff)
+    assert _by_role(joined, Role.GIVEN) == "Juan"
+    bound = _parsed("Rahman abdul Juan de", ff)
+    assert _by_role(bound, Role.GIVEN) == "abdul Juan"
+
+
+def test_three_leftover_pieces_still_read_by_the_declared_order() -> None:
+    # The two family-first orders agree on #365's shape because
+    # _name_positions gives family-then-given at TWO leftover pieces
+    # in both. At three they diverge again, which is the declared
+    # order doing its job -- and this is the only fixture where the
+    # order argument to the re-layout is observable at all.
+    ff = _parsed("Mesnil Garcia Carlos de",
+                 Policy(name_order=FAMILY_FIRST))
+    gl = _parsed("Mesnil Garcia Carlos de",
+                 Policy(name_order=FAMILY_FIRST_GIVEN_LAST))
+    assert _by_role(ff, Role.GIVEN) == "Garcia"
+    assert _by_role(ff, Role.MIDDLE) == "Carlos"
+    assert _by_role(gl, Role.GIVEN) == "Carlos"
+    assert _by_role(gl, Role.MIDDLE) == "Garcia"
+    assert _folded(ff) == _folded(gl) == "de"
 
 
 def test_lone_never_given_particle_needs_no_repair_by_default() -> None:
