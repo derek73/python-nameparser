@@ -860,6 +860,9 @@ class ParsedName:
                  delimiter: str = ".", separator: str = " ") -> str:
         """Initials per group; v1's initials_format/_delimiter/_separator
         become call-site arguments instead of Config-wide settings.
+        Each group is ordered the way its own field is ordered, so a
+        name whose middle words fold into the family initials them
+        before the family's own words, as `family` renders them.
         Valid spec keys: given, middle, family."""
         import nameparser._render as _render
         return _render.initials(self, spec, delimiter, separator)
