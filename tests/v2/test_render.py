@@ -217,7 +217,9 @@ def test_initials_order_folded_words_first_like_the_family_field() -> None:
     regression that reordered BOTH would still be caught by the
     literal, and one that reordered neither by the pairing.
     """
-    # P6's attachment, the one name the DEFAULT policy moves
+    # P6's attachment, the one CORPUS name the default policy moves
+    # -- constructed ones move too (`de la, y van`, `der, e van`),
+    # so the count is the corpus's reach and not the rule's
     van_der = parse("der, y van")
     assert van_der.family == "van der"
     assert van_der.initials() == "y. v. d."
@@ -255,6 +257,36 @@ def test_initials_order_folded_words_first_like_the_family_field() -> None:
     assert vega.initials() == "J. V. S."
 
 
+def test_folded_tag_lands_only_on_family_today() -> None:
+    """The guard under the per-role claim three prose sites make.
+
+    `_render.initials`, its sibling test and mechanics.md#FOLDED_TAG all
+    say the pipeline puts the tag on FAMILY tokens alone, which is why
+    the GIVEN and MIDDLE arms of the partition are uniformity rather
+    than reachable behavior. That claim was true and tested nowhere: a
+    rule that ever folded into another part would falsify all three
+    silently, and turn `initials()`'s "would otherwise reopen #408
+    there" from a hypothetical into a live gap with nothing to fail.
+    """
+    from .cases import CASES
+    seen = 0
+    for policy in (Policy(), Policy(middle_as_family=True)):
+        p = Parser(policy=policy)
+        for case in CASES:
+            if case.locale is not None:
+                continue
+            for tok in p.parse(case.text).tokens:
+                if FOLDED_TAG in tok.tags:
+                    seen += 1
+                    assert tok.role is Role.FAMILY, (
+                        f"{case.text!r}: {tok.text!r} carries FOLDED_TAG in "
+                        f"{tok.role}. Both producers re-role to FAMILY today; "
+                        f"if that changed on purpose, the per-role claims in "
+                        f"_render.initials, its sibling test and "
+                        f"mechanisms.md#FOLDED_TAG all move with it")
+    assert seen, "no case row exercises the fold; this guard is inert"
+
+
 def test_initials_folds_in_every_role_it_renders() -> None:
     """The partition is applied per role, exactly as _text_for applies
     it -- not scoped to FAMILY, where the pipeline's two producers put
@@ -279,10 +311,11 @@ def test_initials_folds_in_every_role_it_renders() -> None:
     # mechanisms.md#TWO-ELEMENT-GROUPS: "on a one-element group a
     # partition is the identity" and the mutation that should expose
     # it passes. Two drafts got this wrong in the same way one role
-    # apart: the first gave MIDDLE one token, and skipping the
+    # apart, the first carrying both misses: it gave MIDDLE one token,
+    # and skipping the
     # partition for MIDDLE alone passed the whole suite; the second
     # gave FAMILY none, so skipping it for FAMILY passed THIS test
-    # and was caught only by its siblings. A group with zero elements
+    # and was caught only by its siblings and by R3's example line. A group with zero elements
     # is the identity too, and reads even less like a gap.
     assert pn.given == "Cyd Ann"
     assert pn.initials("{given}") == "C. A."
