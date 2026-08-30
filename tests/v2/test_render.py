@@ -441,8 +441,8 @@ def test_initials_has_no_lexicon_so_a_spliced_field_is_all_name_words()\
     read one from, so every word of it initials.
 
     That disagrees with the facade and with the same name parsed, and
-    it is a 2.0-core defect rather than a decision -- see the issue
-    filed for giving `Parser` an `initials` crossing. A fallback to
+    it is a 2.0-core defect rather than a decision -- see #464, filed
+    for giving `Parser` an `initials` crossing. A fallback to
     `Lexicon.default()` was written and dropped: it guesses a
     vocabulary, and under a caller's own the guess erases a whole
     field (`Lexicon.default().add(particles={'y'})`, family 'de y').

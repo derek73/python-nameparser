@@ -132,8 +132,9 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
     that text: `replace(family='de la vega')` initials every word of
     that field where the same name parsed gives 'j. v.'
     (rules.md#R3's Accepted
-    clause, and decisions.md under R3 for why the fallback was tried
-    and dropped). Valid spec keys: given, middle, family."""
+    clause, and decisions.md#R4 for why the fallback was tried
+    and dropped -- #464 is the crossing that would make it
+    answerable). Valid spec keys: given, middle, family."""
     if not isinstance(delimiter, str):
         raise TypeError(f"delimiter must be a str, got {delimiter!r}")
     if not isinstance(separator, str):
