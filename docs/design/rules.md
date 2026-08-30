@@ -1168,12 +1168,13 @@ R4. Rationale: case repair is a display concern, applied only on
     keeps its "y" lowercase. Whether a word is the conjunction or an
     initial is a property of the word, which a vocabulary can answer;
     whether a particle is acting as a particle is a property of the
-    whole part, and repair reads one word at a time, so that half
-    falls through to particle treatment and the "de la" boundary above
-    stands. Initials are the contrast worth knowing, and R3 states it:
-    that view is handed no vocabulary at all, so it falls back on
-    neither question and a spliced field's every word initials.
-    revise() classifies the
+    whole part, which the parse settles and records; re-deriving it
+    needs a reading on every word of the part, and a spliced field
+    has none on any, so that half falls through to particle treatment
+    and the "de la" boundary above stands. Initials are the contrast
+    worth knowing, and R3 states it: that view is handed no
+    vocabulary at all, so it falls back on neither question and a
+    spliced field's every word initials. revise() classifies the
     value and crosses both questions, in both views: a middle revised
     to "e-f" repairs to "E-F" as the parsed name does, where splicing
     the same text in gives "e-F".
