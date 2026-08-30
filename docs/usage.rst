@@ -891,13 +891,19 @@ text is not there. The views that read those tags degrade: the parser
 no longer knows ``de la`` are particles, so ``family_particles``
 empties and ``family_base`` takes the whole field.
 
-A view that is handed a vocabulary can fall back to it, since a token
-the parse never saw carries no decision to honor —
-:meth:`~nameparser.ParsedName.initials` and
-:meth:`~nameparser.ParsedName.capitalized` do that, and answer as a
-parse would. ``family_particles`` and ``family_base`` are properties
-on the parsed name, which holds no vocabulary of its own, so they have
-nothing to fall back to.
+A token the parse never saw carries no decision to honor, so a view
+that is *handed* a vocabulary can fall back to it —
+:meth:`~nameparser.ParsedName.capitalized` is the one that is, and it
+falls back for one question only: whether a word is a conjunction or
+an initial, which a word answers on its own. Whether a particle is
+acting as a particle is a fact about the whole part, and there is no
+reading on any word of a spliced field to derive it from, so a family
+set to ``de la`` stays lowercase where the same words parsed are
+repaired to ``De La``. :meth:`~nameparser.ParsedName.initials` takes
+no vocabulary at all, so it falls back on neither question and every
+word of a spliced field contributes an initial. ``family_particles``
+and ``family_base`` are properties on the parsed name, which holds no
+vocabulary of its own either.
 
 .. doctest::
 
@@ -909,7 +915,9 @@ nothing to fall back to.
     >>> replaced.family_base
     'de la Vega Smith'
     >>> replaced.initials()
-    'J. V. S.'
+    'J. d. l. V. S.'
+    >>> name.replace(family="de la").capitalized(force=True).family
+    'de la'
 
 :meth:`Parser.revise() <nameparser.Parser.revise>` is the same
 operation with each value classified by the parser's vocabulary, so

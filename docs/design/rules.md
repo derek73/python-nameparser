@@ -1110,17 +1110,19 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     rather than nothing: they are the base (R2), so they initial.
       "Juan van der"              →  initials="J. v. d."
       "Juan de y"                 →  initials="J."
-    Accepted: this rule reads a part the parser read, and where a
-    field was set as raw text after the parse it reads that text as
-    the parser would have — the words of the part are all in hand
-    here, so the every-word-is-particle-vocabulary test is answerable
-    without them. A family set to "de la vega" therefore initials just
-    its "V.", and one set to "de la" initials both its words, matching
-    the same names parsed. Stated without an example line because
-    every line here names an input string, and this shape needs a
-    field edited after the parse. Case repair is the view that cannot
-    do this, and R4 says why.
-    history: decisions.md#R2 · interacts: R2 · implemented: nameparser/_render.py, nameparser/_facade.py
+    Accepted: this rule reads a part the parser read. A field set as
+    raw text after the parse carries no reading, and this view is
+    handed no vocabulary to supply one — it takes a format spec and
+    two separators and nothing else — so every word of such a field
+    initials, particles and conjunctions alike: a family set that way
+    to "de la vega" gives "j. d. l. v." where parsing the same
+    name gives "j. v.". Case repair IS handed a vocabulary, so it falls
+    back for the one question a word can answer on its own, and R4
+    says which. Revising the field through the parser classifies it
+    and matches the parse in this view. Stated without an example
+    line because every line here names an input string, and this
+    shape needs a field edited after the parse.
+    history: decisions.md#R2 · interacts: R2, R4 · implemented: nameparser/_render.py, nameparser/_facade.py
 
 R4. Rationale: case repair is a display concern, applied only on
     request and never destructively.
@@ -1169,9 +1171,11 @@ R4. Rationale: case repair is a display concern, applied only on
     whole part, and repair reads one word at a time, so that half
     falls through to particle treatment and the "de la" boundary above
     stands. Initials are the contrast worth knowing, and R3 states it:
-    that view holds every word of the part at once, so it answers the
-    part question for a spliced field too. revise() classifies the
-    value and crosses both.
+    that view is handed no vocabulary at all, so it falls back on
+    neither question and a spliced field's every word initials.
+    revise() classifies the value and crosses the part question; the
+    word question it does not, a middle revised to "e-f" repairing
+    to "e-F" where the parsed name gives "E-F".
     history: decisions.md#R4 · interacts: R2, R3, R5 · implemented: nameparser/_render.py
 
 R5. Rationale: mixed case is evidence that the writer cased the name

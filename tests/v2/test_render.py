@@ -1,6 +1,6 @@
 import pytest
 
-from nameparser import Parser, parse
+from nameparser import HumanName, Parser, parse
 from nameparser._lexicon import Lexicon
 from nameparser._render import _collapse, render
 from nameparser._types import (UNJOINED_TAG, Ambiguity, AmbiguityKind,
@@ -341,24 +341,14 @@ def test_capitalized_lowers_the_words_the_parse_tagged_conjunction() -> None:
     assert hyphenated.capitalized(force=True).middle == "E-F"
 
 
-def test_views_fall_back_to_the_vocabulary_for_text_never_parsed() -> None:
-    """A token with no span was never classified, so there is no
-    decision to honor and the views ask the vocabulary instead --
-    getting the answer the parser would have given, v1's initial
-    carve-out included. Both views, on one parse: `replace()` splices
-    raw text into a field, and reading it two ways is what #458's
-    review found.
+def test_case_repair_falls_back_for_text_the_parse_never_read() -> None:
+    """A token the parse never read carries no decision to honor, so
+    case repair -- which is handed a lexicon -- asks the vocabulary
+    instead, getting the answer the parser would have given, v1's
+    initial carve-out included.
 
-    The two views ask it of different scopes, and that is the whole of
-    the asymmetry. Case repair walks one word at a time and never sees
-    the part, so it answers the per-WORD question (conjunction or
-    initial?) and leaves the per-PART one (is this particle acting as
-    a particle?) to fall through to particle treatment -- widening it
-    there would reverse rules.md#R4's Accepted boundary, whose crossing
-    is revise(), which the `de la` capitalization assertions pin.
-    initials() DOES hold the part -- every token of the role is in hand
-    -- so it answers both, by _types._remarked's own test with the
-    vocabulary standing in for the tags a spliced token never got.
+    ONE view falls back. `initials()` takes no lexicon, so it has none
+    to ask; the sibling test below pins what that costs.
     """
     p = Parser()
     base = p.parse("john smith")
@@ -366,72 +356,52 @@ def test_views_fall_back_to_the_vocabulary_for_text_never_parsed() -> None:
     spliced = base.replace(family="velasquez y garcia")
     assert [t.span for t in spliced.tokens[1:]] == [None, None, None]
     assert spliced.capitalized(force=True).family == "Velasquez y Garcia"
-    assert spliced.initials() == "j. v. g."
     # the carve-out rides along: an assigned middle initial is an
-    # initial, not the Italian conjunction, in either view
+    # initial, not the Italian conjunction
     assert base.replace(middle="e.").capitalized(force=True).middle == "E."
-    assert base.replace(middle="E.").initials() == "j. E. s."
-    assert base.replace(family="velasquez Y garcia").initials() == "j. v. Y. g."
 
-    # the per-part question, which initials() can answer: a spliced
-    # family with a name word in it has its particles skipped, and one
-    # that is nothing but particles has them all contribute (R2/R3).
-    # Each is what the facade and the parse both give.
-    assert base.replace(family="de la vega").initials() == "j. v."
-    assert base.replace(family="van der berg").initials() == "j. b."
-    assert base.replace(family="de la").initials() == "j. d. l."
-    assert p.parse("john de la").initials() == "j. d. l."
-    assert base.replace(family="smith").initials() == "j. s."
-
-    # unchanged: the boundary a spliced particle keeps in CASE REPAIR,
-    # which cannot see the part
+    # the per-part particle question is NOT asked: re-deriving it needs
+    # a reading on every word of the part and these words have none, so
+    # it falls through to plain particle treatment
     assert base.replace(family="de la").capitalized(force=True).family == "de la"
     assert (base.replace(family="de la vega")
             .capitalized(force=True).family == "de la Vega")
-    # ... and revise(), which classifies, still crosses it
+    # ... and revise(), which classifies, crosses it
     assert p.revise(base, family="de la").capitalized(force=True).family == "De La"
     assert (p.revise(base, family="velasquez y garcia")
             .capitalized(force=True).family == "Velasquez y Garcia")
 
-    # unchanged: a token the parse DID see is decided by its tags, so
-    # a hyphenated word it read as one ordinary name word stays one
+    # a token the parse DID see is decided by its tags, so a hyphenated
+    # word it read as one ordinary name word stays one
     assert p.parse("juan e-f smith").capitalized(force=True).middle == "E-F"
 
-    # A role holding both is not reachable through replace(), which
-    # replaces a role whole (measured), but is constructible: each
-    # token answers with its best evidence, which is what _remarked
-    # would have computed had the spliced half been classified. Here
-    # the parsed 'de' is particle-TAGGED and the spliced 'la' is only
-    # particle vocabulary, so the part is all particles and both
-    # contribute; swap in a name word and neither does.
-    mixed = _pn("john de la", [
-        Token("john", Span(0, 4), Role.GIVEN),
-        Token("de", Span(5, 7), Role.FAMILY, frozenset({"particle"})),
-        Token("la", None, Role.FAMILY),
-    ])
-    assert mixed.initials() == "j. d. l."
-    with_name_word = _pn("john de la", [
-        Token("john", Span(0, 4), Role.GIVEN),
-        Token("de", Span(5, 7), Role.FAMILY, frozenset({"particle"})),
-        Token("vega", None, Role.FAMILY),
-    ])
-    assert with_name_word.initials() == "j. v."
 
-    # Scoped per ROLE, not per name: a role the parse classified whole
-    # keeps its tags as the answer however the other roles were built.
-    # The family here is all particle vocabulary and carries no mark,
-    # which is the parse saying those words are doing a particle's work
-    # -- a spliced middle beside it does not reopen that. Hand-built
-    # because every edit path recomputes the mark (_types._remarked)
-    # and would agree with the vocabulary by construction; per-NAME
-    # scoping passes every other test in the suite and fails here.
-    other_role_spliced = _pn("john van der", [
-        Token("john", Span(0, 4), Role.GIVEN),
-        Token("q", None, Role.MIDDLE),
-        Token("van", Span(5, 8), Role.FAMILY, frozenset({"particle"})),
-        Token("der", Span(9, 12), Role.FAMILY, frozenset({"particle"})),
-    ])
-    assert other_role_spliced.initials() == "j. q."
+def test_initials_has_no_lexicon_so_a_spliced_field_is_all_name_words()\
+        -> None:
+    """The accepted cost of `initials()` taking no lexicon: a field
+    spliced in as raw text has no reading, and this view has nothing to
+    read one from, so every word of it initials.
+
+    That disagrees with the facade and with the same name parsed, and
+    it is a 2.0-core defect rather than a decision -- see the issue
+    filed for giving `Parser` an `initials` crossing. A fallback to
+    `Lexicon.default()` was written and dropped: it guesses a
+    vocabulary, and under a caller's own the guess erases a whole
+    field (`Lexicon.default().add(particles={'y'})`, family 'de y').
+    """
+    p = Parser()
+    base = p.parse("john smith")
+
+    assert base.replace(family="de la vega").initials() == "j. d. l. v."
+    assert p.parse("john de la vega").initials() == "j. v."
+    assert HumanName("john de la vega").initials() == "j. v."
+
+    # the vocabulary a fallback would have had to guess, and the field
+    # it erased when it guessed wrong
+    y_lex = Lexicon.default().add(particles={"y"})
+    py = Parser(lexicon=y_lex)
+    assert py.parse("Juan de y").initials() == "J. d. y."
+    assert py.parse("Juan Perez").replace(family="de y").initials() == "J. d. y."
 
 
 def test_capitalized_rebuilds_ambiguity_tokens() -> None:

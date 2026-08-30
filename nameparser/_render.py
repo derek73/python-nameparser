@@ -124,91 +124,29 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
     within a group. Tokens tagged particle/conjunction contribute no
     initial in middle/family (given-name tokens always contribute),
     and the unjoined mark readmits the words of an all-particle part
-    whichever of those tags they carry; tags come from the
-    pipeline. A token with no span was never classified -- replace()
-    splices one in -- so its role's words are read from the default
-    vocabulary instead, all-particle test included. Valid spec keys:
-    given, middle, family."""
+    whichever of those tags they carry; tags come from the pipeline --
+    hand-built untagged tokens all contribute, and so do the words of
+    a field spliced in by replace(), which the parse never read.
+    This view takes NO lexicon, so it has none to fall back to for
+    that text: `replace(family='de la vega')` initials all four words
+    where the same name parsed gives 'j. v.' (rules.md#R3's Accepted
+    clause, and decisions.md under R3 for why the fallback was tried
+    and dropped). Valid spec keys: given, middle, family."""
     if not isinstance(delimiter, str):
         raise TypeError(f"delimiter must be a str, got {delimiter!r}")
     if not isinstance(separator, str):
         raise TypeError(f"separator must be a str, got {separator!r}")
-    # Only pay for the vocabulary where there is unclassified text to
-    # ask about; Lexicon.default() is cached, the scan is not.
-    unparsed_lex = (Lexicon.default()
-                    if any(t.span is None for t in name.tokens) else None)
     values: dict[str, str] = {}
     for key in _INITIALS_KEYS:
         role = Role(key)
         tokens = name.tokens_for(role)
         if role is not Role.GIVEN:
-            # per ROLE, not per name: a role the parse classified whole
-            # is decided by its tags however the other roles were built
-            lex = (unparsed_lex if unparsed_lex is not None
-                   and any(t.span is None for t in tokens) else None)
-            unjoined = lex is not None and _all_particles(tokens, lex)
             tokens = tuple(t for t in tokens
-                           if _initials_from(t, lex, unjoined))
+                           if not (_SKIP_TAGS & t.tags)
+                           or UNJOINED_TAG in t.tags)
         values[key] = separator.join(
             t.text[0] + delimiter for t in tokens)
     return _format_spec(spec, values, "initials", _INITIALS_KEYS)
-
-
-def _is_particle_word(token: Token, lex: Lexicon) -> bool:
-    """Particle vocabulary, by the tag where the parse left one and by
-    the vocabulary where it did not."""
-    return ("particle" in token.tags
-            or (token.span is None
-                and _normalize(token.text) in lex.particles))
-
-
-def _all_particles(tokens: tuple[Token, ...], lex: Lexicon) -> bool:
-    """_types._remarked's own test -- every word of the part carries
-    "particle" -- with the vocabulary standing in for the tags a
-    spliced token never got.
-
-    _remarked recomputes the unjoined mark from TAGS after every edit,
-    so a spliced part is never marked however particle-shaped it is.
-    That is right for the mark (which says what the parse decided) and
-    wrong for the view, which then reads an all-particle part as if it
-    were something else. Asking the vocabulary here answers as the
-    parse would have. A role holding parsed and spliced tokens at once
-    -- not reachable through replace(), which replaces a role whole,
-    but constructible by hand -- gets each token's best evidence, which
-    is again what _remarked would have computed.
-    """
-    return bool(tokens) and all(_is_particle_word(t, lex) for t in tokens)
-
-
-def _initials_from(token: Token, lex: Lexicon | None,
-                   unjoined: bool) -> bool:
-    """Whether a middle/family token contributes an initial (R3).
-
-    `lex` is None for a role the parse classified whole, where the tags
-    ARE the answer; it is the fallback vocabulary for a role holding
-    text the parse never saw, where the same two questions are answered
-    from tags where there are any and from the vocabulary where there
-    are none. The two paths agree wherever both apply: `unjoined` is
-    _remarked's own test, so a fully parsed role recomputes the mark it
-    already carries.
-    """
-    if lex is None:
-        # the mark readmits a skip-tagged token whichever of the two
-        # tags it carries: inside an all-particle part none of the
-        # words is doing the work its tag names -- a conjunction with
-        # nothing to join no more than a particle with nothing to join
-        # (R2) -- so they are the part's name words and initial.
-        if _SKIP_TAGS & token.tags:
-            return UNJOINED_TAG in token.tags
-        return True
-    # the same two questions, answered from the vocabulary where the
-    # token carries no tags, and reaching the same answer: both skip
-    # words are readmitted by the mark and by nothing else
-    if ("conjunction" in token.tags
-            or (token.span is None and _reads_as_conjunction(token.text, lex))
-            or _is_particle_word(token, lex)):
-        return unjoined
-    return True
 
 
 def _cap_word(word: str, role: Role, tags: frozenset[str],
