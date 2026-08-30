@@ -42,6 +42,39 @@ _INITIALS_KEYS = (Role.GIVEN.value, Role.MIDDLE.value, Role.FAMILY.value)
 #: Not STABLE_TAGS -- that also contains "initial", which must contribute.
 _SKIP_TAGS = frozenset({"particle", "conjunction"})
 
+# Ported verbatim from v1 (nameparser/config/regexes.py "initial", minus
+# the empty alternative) -- layering forbids importing the pipeline here;
+# keep in sync with _pipeline/_vocab.py by hand.
+# Its one reader is _reads_as_conjunction below, and that reader only
+# ever sees text the parse never classified: for anything the
+# parser DID see, the tag is the answer and this pattern is not asked.
+# So the two copies no longer decide the same question about the same
+# token -- _vocab's says what the parse decided, this one says what it
+# WOULD have decided about text spliced in afterwards -- which is why
+# they must keep answering alike, and why test_regex_sync pins the
+# patterns against each other and against config.
+# Deliberately NOT composed with _vocab's repertoire test (#320):
+# layering forbids the import. The divergence is reachable only for a
+# caller-added CJK conjunction spliced into a field, since no shipped
+# vocabulary carries one; there it costs nothing in case repair (CJK is
+# caseless, so lower() and capitalize() return the same string) and
+# would let such a word initial where a parsed one would not.
+_INITIAL = re.compile(r"^(\w\.|[A-Z])$")
+
+
+def _reads_as_conjunction(word: str, lex: Lexicon) -> bool:
+    """v1's is_conjunction, asked only of text the parse never saw.
+
+    A token with a span was classified, so its tags are the answer and
+    this is not consulted. A token without one was spliced into a field
+    by replace() and carries no reading, so the views fall back to the
+    vocabulary -- which gives the answer the parser would have given,
+    the initial carve-out included ('E.' assigned to middle is an
+    initial, not the Italian conjunction).
+    """
+    return bool(_normalize(word) in lex.conjunctions
+                and not _INITIAL.fullmatch(word))
+
 
 def _collapse(rendered: str) -> str:
     """The #254 collapse: empty fields substitute '' and every artifact
@@ -92,32 +125,91 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
     initial in middle/family (given-name tokens always contribute),
     and the unjoined mark readmits the particles of an all-particle
     part but never a conjunction standing in one; tags come from the
-    pipeline -- hand-built untagged tokens all contribute. Valid spec
-    keys: given, middle, family."""
+    pipeline. A token with no span was never classified -- replace()
+    splices one in -- so its role's words are read from the default
+    vocabulary instead, all-particle test included. Valid spec keys:
+    given, middle, family."""
     if not isinstance(delimiter, str):
         raise TypeError(f"delimiter must be a str, got {delimiter!r}")
     if not isinstance(separator, str):
         raise TypeError(f"separator must be a str, got {separator!r}")
+    # Only pay for the vocabulary where there is unclassified text to
+    # ask about; Lexicon.default() is cached, the scan is not.
+    unparsed_lex = (Lexicon.default()
+                    if any(t.span is None for t in name.tokens) else None)
     values: dict[str, str] = {}
     for key in _INITIALS_KEYS:
         role = Role(key)
         tokens = name.tokens_for(role)
         if role is not Role.GIVEN:
-            # rules.md#R3: "A CONJUNCTION never initials, so a base
-            # that is one contributes nothing even then" -- "even
-            # then" being the all-particle part the mark names, so the
-            # override is narrowed to the tag the mark is about (#461)
+            # per ROLE, not per name: a role the parse classified whole
+            # is decided by its tags however the other roles were built
+            lex = (unparsed_lex if unparsed_lex is not None
+                   and any(t.span is None for t in tokens) else None)
+            unjoined = lex is not None and _all_particles(tokens, lex)
             tokens = tuple(t for t in tokens
-                           if not (_SKIP_TAGS & t.tags)
-                           or (UNJOINED_TAG in t.tags
-                               and "conjunction" not in t.tags))
+                           if _initials_from(t, lex, unjoined))
         values[key] = separator.join(
             t.text[0] + delimiter for t in tokens)
     return _format_spec(spec, values, "initials", _INITIALS_KEYS)
 
 
+def _is_particle_word(token: Token, lex: Lexicon) -> bool:
+    """Particle vocabulary, by the tag where the parse left one and by
+    the vocabulary where it did not."""
+    return ("particle" in token.tags
+            or (token.span is None
+                and _normalize(token.text) in lex.particles))
+
+
+def _all_particles(tokens: tuple[Token, ...], lex: Lexicon) -> bool:
+    """_types._remarked's own test -- every word of the part carries
+    "particle" -- with the vocabulary standing in for the tags a
+    spliced token never got.
+
+    _remarked recomputes the unjoined mark from TAGS after every edit,
+    so a spliced part is never marked however particle-shaped it is.
+    That is right for the mark (which says what the parse decided) and
+    wrong for the view, which then reads an all-particle part as if it
+    were something else. Asking the vocabulary here answers as the
+    parse would have. A role holding parsed and spliced tokens at once
+    -- not reachable through replace(), which replaces a role whole,
+    but constructible by hand -- gets each token's best evidence, which
+    is again what _remarked would have computed.
+    """
+    return bool(tokens) and all(_is_particle_word(t, lex) for t in tokens)
+
+
+def _initials_from(token: Token, lex: Lexicon | None,
+                   unjoined: bool) -> bool:
+    """Whether a middle/family token contributes an initial (R3).
+
+    `lex` is None for a role the parse classified whole, where the tags
+    ARE the answer; it is the fallback vocabulary for a role holding
+    text the parse never saw, where the same two questions are answered
+    from tags where there are any and from the vocabulary where there
+    are none. The two paths agree wherever both apply: `unjoined` is
+    _remarked's own test, so a fully parsed role recomputes the mark it
+    already carries.
+    """
+    if lex is None:
+        # rules.md#R3: "A CONJUNCTION never initials, so a base that is
+        # one contributes nothing even then" -- "even then" being the
+        # all-particle part the mark names, so the mark readmits the
+        # tag it is about and not the other one (#461)
+        if _SKIP_TAGS & token.tags:
+            return UNJOINED_TAG in token.tags and "conjunction" not in token.tags
+        return True
+    if ("conjunction" in token.tags
+            or (token.span is None and _reads_as_conjunction(token.text, lex))):
+        return False
+    if _is_particle_word(token, lex):
+        return unjoined
+    return True
+
+
 def _cap_word(word: str, role: Role, tags: frozenset[str],
-              lex: Lexicon) -> str:
+              lex: Lexicon, *, parsed: bool) -> str:
     # v1 cap_word order: particle/conjunction rule first, then the
     # exceptions map, then Mac/Mc, then str.capitalize
     normalized = _normalize(word)
@@ -153,15 +245,15 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # stages test tags"). Asking again was not even the same question:
     # the copy of the initial pattern that stood here was the SHAPE
     # half alone, and it re-decided per WORD of a token's text, so
-    # 'juan e-f smith' capitalized to 'Juan e-F Smith'. What moves the
-    # other way is a token the parse never saw: one hand-built, or
-    # spliced in by replace(), carries no decision to honor and is
-    # repaired as an ordinary name word -- rules.md#R4's Accepted
-    # boundary, which the particle conjunct above draws in the opposite
-    # direction because it still asks the vocabulary itself.
+    # 'juan e-f smith' capitalized to 'Juan e-F Smith'. A token the
+    # parse never saw has no decision to honor, so the vocabulary
+    # answers for it instead -- _reads_as_conjunction above, which is
+    # v1's predicate over v1's own input class, keeping every assigned
+    # field exactly as 1.4.0 repaired it.
     if ((normalized in lex.particles and role in (Role.MIDDLE, Role.FAMILY)
             and UNJOINED_TAG not in tags)
-            or "conjunction" in tags):
+            or "conjunction" in tags
+            or (not parsed and _reads_as_conjunction(word, lex))):
         return word.lower()
     # v1 cap_word tries the edge-stripped form, then the period-free
     # form ('Ph.D.' -> 'ph.d' -> 'phd' hits the exceptions map)
@@ -177,10 +269,14 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
 
 
 def _cap_text(text: str, role: Role, tags: frozenset[str],
-              lex: Lexicon) -> str:
+              lex: Lexicon, *, parsed: bool) -> str:
     # word-by-word within the token text: hyphenated names capitalize
-    # both sides ("macdole-eisenhower" -> "MacDole-Eisenhower")
-    return _WORD.sub(lambda m: _cap_word(m.group(0), role, tags, lex), text)
+    # both sides ("macdole-eisenhower" -> "MacDole-Eisenhower"). The
+    # per-word walk is also why an UNPARSED token gets the vocabulary
+    # asked per word: the parse would have made one token per word of
+    # that text, so this is the granularity its answer would have had.
+    return _WORD.sub(
+        lambda m: _cap_word(m.group(0), role, tags, lex, parsed=parsed), text)
 
 
 # rules.md#R4: "case repair returns a repaired copy and never mutates
@@ -196,13 +292,15 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     word is particle vocabulary is repaired as ordinary name words,
     and the mark saying so comes from the pipeline, as does the
     reading that a word is a conjunction rather than an initial. A
-    hand-built token, or one replace() splices in, carries no tags:
-    it is repaired as a plain particle, and as no conjunction at all.
-    A family set that way to 'de la' stays 'de la' where the same
-    words parsed give 'De La', while one set to 'de y' gives 'de Y'
-    where the parse would keep the conjunction lowercase.
-    Parser.revise() is the edit that classifies the value, and gives
-    'De La' (rules.md#R4's Accepted boundary).
+    token replace() splices in has no span and no tags, so it was
+    never read: the vocabulary answers the per-word conjunction
+    question for it, and the per-part particle question -- which the
+    vocabulary cannot answer, the part being what a spliced field
+    lost -- falls through to plain particle treatment. A family set
+    that way to 'de la' stays 'de la' where the same words parsed give
+    'De La'; one set to 'de y' keeps the 'y' lowercase, as the parse
+    does and as 1.4.0 did. Parser.revise() is the edit that classifies
+    the value, and gives 'De La' (rules.md#R4's Accepted boundary).
     Idempotent: without force, a capitalized result is mixed-case and
     the gate returns it unchanged; with force, every _cap_word rule is
     a fixpoint on its own output."""
@@ -217,7 +315,9 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     if not force and joined not in (joined.upper(), joined.lower()):
         return name
     new_tokens = tuple(
-        Token(_cap_text(t.text, t.role, t.tags, lex), t.span, t.role, t.tags)
+        Token(_cap_text(t.text, t.role, t.tags, lex,
+                        parsed=t.span is not None),
+              t.span, t.role, t.tags)
         for t in name.tokens)
     # equal tokens (possible only for synthetic span=None duplicates)
     # collapse to one mapping entry -- benign: the rebuilt ambiguity

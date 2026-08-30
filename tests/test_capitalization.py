@@ -265,6 +265,31 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         # 'Y' is initial-shaped, so the conjunction rule declines it
         self.m(str(uppered), 'Juan Y Garcia', uppered)
 
+    # The v1 parity this rests on, at the surface v1 users have. An
+    # ASSIGNED field is spliced in as raw text and never classified, so
+    # there is no tag to read and repair asks the vocabulary -- which is
+    # what v1 always did, everywhere. Measured on the released 1.4.0
+    # wheel and on 2.1.0, all four: 'John Velasquez y Garcia',
+    # 'John Smith y Jones', 'John E. Smith', 'John Smith-y'. Reading the
+    # tag alone (no fallback) capitalizes every one of these conjunctions
+    # -- the regression #458's review caught before it shipped.
+    def test_an_assigned_field_keeps_v1_conjunction_repair(self) -> None:
+        for field, value, want in (
+                ('last', 'velasquez y garcia', 'John Velasquez y Garcia'),
+                ('last', 'smith y jones', 'John Smith y Jones'),
+                # the initial carve-out: an assigned middle initial is
+                # an initial, not the Italian conjunction
+                ('middle', 'e.', 'John E. Smith'),
+                # v1 asks per WORD of the assigned text, so the
+                # conjunction inside a hyphenated word IS lowered here
+                # -- the opposite of the parsed reading pinned below,
+                # and the difference is that one carries a reading
+                ('last', 'smith-y', 'John Smith-y')):
+            hn = HumanName('john smith')
+            setattr(hn, field, value)
+            hn.capitalize(force=True)
+            self.m(str(hn), want, hn)
+
     # The other half of #458, and the half that MOVED: the decision is
     # the whole token's, so a conjunction word inside a longer token is
     # not one. `e` is the Italian conjunction and `e-f` is a middle

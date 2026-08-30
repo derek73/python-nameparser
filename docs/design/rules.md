@@ -1119,6 +1119,16 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     vocabulary, where "Juan de y" is that part and initials "J. d."
     while the "y" still contributes nothing, and it is pinned in
     tests/v2/test_render.py.
+    Accepted: this rule reads a part the parser read, and where a
+    field was set as raw text after the parse it reads that text as
+    the parser would have — the words of the part are all in hand
+    here, so the every-word-is-particle-vocabulary test is answerable
+    without them. A family set to "de la vega" therefore initials just
+    its "V.", and one set to "de la" initials both its words, matching
+    the same names parsed. Stated without an example line because
+    every line here names an input string, and this shape needs a
+    field edited after the parse. Case repair is the view that cannot
+    do this, and R4 says why.
     history: decisions.md#R2 · interacts: R2 · implemented: nameparser/_render.py, nameparser/_facade.py
 
 R4. Rationale: case repair is a display concern, applied only on
@@ -1154,15 +1164,23 @@ R4. Rationale: case repair is a display concern, applied only on
     repaired exactly this way before the clause existed. Stated
     without an example line because every line here names an input
     string, and this shape needs a field edited after the parse.
-    Accepted, the same boundary read the other way: the conjunction
-    carve-out reaches a word the parse read as a conjunction, and
-    nothing else. A word of that vocabulary standing inside a longer
-    written word is not one, and neither is one spliced into a field
-    after the parse — a family set that way to "de y" repairs to "de
-    Y" where the parsed name keeps the "y" as written. The two
-    directions are one fact: repair honors the reading the parse
-    recorded and takes none of its own. revise() classifies the value
-    here too, so it agrees with the parse in both directions.
+    Accepted, and the reason the boundary is drawn per question
+    rather than per field: the conjunction carve-out reaches a word
+    the parse read as a conjunction, and where the parse read nothing
+    at all it reaches what the vocabulary says. A word of that
+    vocabulary standing inside a longer written word is not a
+    conjunction, because the parse read that word as one ordinary
+    name word — but a field spliced in as raw text was read by
+    nobody, so repair asks the vocabulary and a family set to "de y"
+    keeps its "y" lowercase. Whether a word is the conjunction or an
+    initial is a property of the word, which a vocabulary can answer;
+    whether a particle is acting as a particle is a property of the
+    whole part, and repair reads one word at a time, so that half
+    falls through to particle treatment and the "de la" boundary above
+    stands. Initials are the contrast worth knowing, and R3 states it:
+    that view holds every word of the part at once, so it answers the
+    part question for a spliced field too. revise() classifies the
+    value and crosses both.
     history: decisions.md#R4 · interacts: R2, R3, R5 · implemented: nameparser/_render.py
 
 R5. Rationale: mixed case is evidence that the writer cased the name
