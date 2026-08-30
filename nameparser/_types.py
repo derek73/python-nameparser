@@ -118,9 +118,11 @@ FOLDED_TAG = "vocab:folded-middle"
 #: Raw text spliced into a field after the parse, which no parse ever
 #: read: `ParsedName.replace()` stamps it, and so does the facade's
 #: v1 pickle load, which rebuilds a name from `*_list` strings alone.
-#: A view that HOLDS a vocabulary falls back to it for a token carrying
-#: this -- there is no decision to honor -- and reads every other token
-#: by its tags (mechanisms.md#RENDER-HONORS-THE-PARSE).
+#: A view that is HANDED a vocabulary falls back to it for a token
+#: carrying this -- there is no decision to honor -- and reads every
+#: other token by its tags (mechanisms.md#RENDER-HONORS-THE-PARSE).
+#: `capitalized(lexicon=...)` is the one such view; `initials()` takes
+#: no lexicon and so honors tags alone, marked or not.
 #: The absence of a SPAN is not that signal and was tried as one: a
 #: span-less token is SYNTHETIC, which `Parser.revise()` also builds,
 #: from a full sub-parse whose tags it deliberately keeps. Keying the

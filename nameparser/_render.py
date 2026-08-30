@@ -129,8 +129,9 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
     hand-built untagged tokens all contribute, and so do the words of
     a field spliced in by replace(), which the parse never read.
     This view takes NO lexicon, so it has none to fall back to for
-    that text: `replace(family='de la vega')` initials all four words
-    where the same name parsed gives 'j. v.' (rules.md#R3's Accepted
+    that text: `replace(family='de la vega')` initials every word of
+    that field where the same name parsed gives 'j. v.'
+    (rules.md#R3's Accepted
     clause, and decisions.md under R3 for why the fallback was tried
     and dropped). Valid spec keys: given, middle, family."""
     if not isinstance(delimiter, str):
