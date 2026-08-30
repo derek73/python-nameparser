@@ -1118,8 +1118,11 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     except folded family words, which initial before the rest of the
     family exactly as they render before it (R1). Stated here rather
     than left to R1, whose subject is every FIELD and which this view
-    is not: initials abbreviate a field, so the two read one parse
-    and never disagree about it.
+    is not: what the view takes from the field is the ORDER it reads,
+    and about order the two never disagree. Membership is the first
+    question above and they can differ there — the family field of
+    the first example line below is de la Vega, where the initials
+    take its base — so this clause settles order and nothing else.
       "Dr. Juan Q. Xavier de la Vega III"  →  initials="J. Q. X. V."
       "Anh Do"                    →  initials="A. D."
       "Nguyen, Van Le"            →  initials="V. L. N."
