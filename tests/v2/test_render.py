@@ -256,22 +256,30 @@ def test_initials_folds_in_every_role_it_renders() -> None:
     producer that ever folded into another part would otherwise
     reopen #408 there, silently, with nothing to fail.
     """
-    pn = _pn("Ann Bea Cyd Dee", [
+    pn = _pn("Ann Bea Cyd Dee Eve Fay", [
         Token("Ann", Span(0, 3), Role.GIVEN),
         Token("Bea", Span(4, 7), Role.MIDDLE),
         Token("Cyd", Span(8, 11), Role.GIVEN, frozenset({FOLDED_TAG})),
         Token("Dee", Span(12, 15), Role.MIDDLE, frozenset({FOLDED_TAG})),
+        Token("Eve", Span(16, 19), Role.FAMILY),
+        Token("Fay", Span(20, 23), Role.FAMILY, frozenset({FOLDED_TAG})),
     ])
-    # the fields already order this way; the view now agrees. Each
-    # role carries TWO tokens on purpose, per
+    # the fields already order this way; the view now agrees. All
+    # THREE roles carry two tokens, per
     # mechanisms.md#TWO-ELEMENT-GROUPS: "on a one-element group a
     # partition is the identity" and the mutation that should expose
-    # it passes. An earlier draft gave MIDDLE one token, and skipping
-    # the partition for MIDDLE alone passed the whole suite.
+    # it passes. Two drafts got this wrong in the same way one role
+    # apart: the first gave MIDDLE one token, and skipping the
+    # partition for MIDDLE alone passed the whole suite; the second
+    # gave FAMILY none, so skipping it for FAMILY passed THIS test
+    # and was caught only by its siblings. A group with zero elements
+    # is the identity too, and reads even less like a gap.
     assert pn.given == "Cyd Ann"
     assert pn.initials("{given}") == "C. A."
     assert pn.middle == "Dee Bea"
     assert pn.initials("{middle}") == "D. B."
+    assert pn.family == "Fay Eve"
+    assert pn.initials("{family}") == "F. E."
 
 
 def test_initials_custom_delimiter_and_separator() -> None:
