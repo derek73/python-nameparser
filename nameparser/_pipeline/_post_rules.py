@@ -173,8 +173,10 @@ def _fold_reach(tokens: list[WorkToken], name_idx: list[int]) -> int:
 
 def _is_name_word(token: WorkToken) -> bool:
     """A token holding a name role that no particle vocabulary claims
-    -- the base a particle can attach to (rules.md#R2's "a particle
-    needs a base to attach to", decisions.md#R2)."""
+    -- the base a particle can attach to. No citation: R2 states "a
+    particle needs a base to attach to" in an Accepted clause, and
+    the excerpt test can only verify the part of a rule ahead of its
+    first example."""
     return token.role in _NAME_ROLES and "particle" not in token.tags
 
 
