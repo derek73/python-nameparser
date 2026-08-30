@@ -263,11 +263,11 @@ def test_initials_folds_in_every_role_it_renders() -> None:
         Token("Dee", Span(12, 15), Role.MIDDLE, frozenset({FOLDED_TAG})),
     ])
     # the fields already order this way; the view now agrees. Each
-    # role carries TWO tokens on purpose: a one-token group makes the
-    # partition the identity, so a single folded middle would have
-    # left this arm asserted and unpinned (the shape the mutation
-    # below caught -- scoping the partition to GIVEN and FAMILY
-    # passed the whole suite against an earlier draft of this test).
+    # role carries TWO tokens on purpose, per
+    # mechanisms.md#TWO-ELEMENT-GROUPS: "on a one-element group a
+    # partition is the identity" and the mutation that should expose
+    # it passes. An earlier draft gave MIDDLE one token, and skipping
+    # the partition for MIDDLE alone passed the whole suite.
     assert pn.given == "Cyd Ann"
     assert pn.initials("{given}") == "C. A."
     assert pn.middle == "Dee Bea"
