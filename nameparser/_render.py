@@ -240,15 +240,19 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # the conjunction-versus-initial decision once, over the whole
     # token -- v1's is_conjunction excludes initials, so 'E.' in
     # 'Scott E. Werner' is an initial and is never tagged (pinned live
-    # 2026-07-17) -- and a view honors that decision rather than taking
-    # it again from the spelling (mechanisms.md#VOCAB-TAGS: "later
-    # stages test tags"). Asking again was not even the same question:
+    # 2026-07-17) -- and a view honors that decision rather than
+    # taking it again from the spelling
+    # (mechanisms.md#RENDER-HONORS-THE-PARSE: "the render views honor
+    # those decisions and never re-evaluate them"), the tags being
+    # classify's record of it (mechanisms.md#VOCAB-TAGS: "later stages
+    # test tags"). Asking again was not even the same question:
     # the copy of the initial pattern that stood here was the SHAPE
     # half alone, and it re-decided per WORD of a token's text, so
-    # 'juan e-f smith' capitalized to 'Juan e-F Smith'. A token the
-    # parse never saw has no decision to honor, so the vocabulary
-    # answers for it instead -- _reads_as_conjunction above, which is
-    # v1's predicate over v1's own input class, keeping every assigned
+    # 'juan e-f smith' capitalized to 'Juan e-F Smith'.
+    # mechanisms.md#RENDER-HONORS-THE-PARSE: "a token the parse never
+    # saw carries no decision to honor, so a view falls back to the
+    # vocabulary" -- _reads_as_conjunction above, which is v1's
+    # predicate over v1's own input class, keeping every assigned
     # field exactly as 1.4.0 repaired it.
     if ((normalized in lex.particles and role in (Role.MIDDLE, Role.FAMILY)
             and UNJOINED_TAG not in tags)
