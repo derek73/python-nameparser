@@ -1,10 +1,10 @@
 import pytest
 
-from nameparser import HumanName, Parser, parse
+from nameparser import HumanName, Parser, Policy, parse
 from nameparser._lexicon import Lexicon
 from nameparser._render import _collapse, render
-from nameparser._types import (UNJOINED_TAG, Ambiguity, AmbiguityKind,
-                               ParsedName, Role, Span, Token)
+from nameparser._types import (UNCLASSIFIED_TAG, UNJOINED_TAG, Ambiguity,
+                               AmbiguityKind, ParsedName, Role, Span, Token)
 
 
 def test_collapse_is_the_254_algorithm() -> None:
@@ -342,10 +342,10 @@ def test_capitalized_lowers_the_words_the_parse_tagged_conjunction() -> None:
 
 
 def test_case_repair_falls_back_for_text_the_parse_never_read() -> None:
-    """A token the parse never read carries no decision to honor, so
-    case repair -- which is handed a lexicon -- asks the vocabulary
-    instead, getting the answer the parser would have given, v1's
-    initial carve-out included.
+    """A token carrying UNCLASSIFIED_TAG holds raw text no parse read,
+    so there is no decision to honor and case repair -- which is handed
+    a lexicon -- asks the vocabulary instead, getting the answer the
+    parser would have given, v1's initial carve-out included.
 
     ONE view falls back. `initials()` takes no lexicon, so it has none
     to ask; the sibling test below pins what that costs.
@@ -354,7 +354,7 @@ def test_case_repair_falls_back_for_text_the_parse_never_read() -> None:
     base = p.parse("john smith")
 
     spliced = base.replace(family="velasquez y garcia")
-    assert [t.span for t in spliced.tokens[1:]] == [None, None, None]
+    assert all(UNCLASSIFIED_TAG in t.tags for t in spliced.tokens[1:])
     assert spliced.capitalized(force=True).family == "Velasquez y Garcia"
     # the carve-out rides along: an assigned middle initial is an
     # initial, not the Italian conjunction
@@ -374,6 +374,64 @@ def test_case_repair_falls_back_for_text_the_parse_never_read() -> None:
     # a token the parse DID see is decided by its tags, so a hyphenated
     # word it read as one ordinary name word stays one
     assert p.parse("juan e-f smith").capitalized(force=True).middle == "E-F"
+
+
+def test_the_mark_and_not_the_span_says_a_token_was_never_read() -> None:
+    """`span is None` means SYNTHETIC, which is a wider set than
+    unclassified, and keying the fallback on it was a measured
+    regression (#463 review).
+
+    `Parser.revise()` builds span-less tokens too, from a full
+    sub-parse whose tags it keeps on purpose, and its docstring
+    promises the tag-driven views "behave as if the text had been
+    parsed". Under the span discriminator the fallback overrode exactly
+    those tags: `revise(middle='e-f')` repaired to 'e-F' where the same
+    words parsed gave 'E-F'. A HAND-BUILT span-less token is not marked
+    either, so it takes the tag path like every other token in the
+    library -- tag-driven semantics, not span-driven.
+    """
+    p = Parser()
+    base = p.parse("john smith")
+
+    revised = p.revise(base, middle="e-f")
+    assert [t.span for t in revised.tokens if t.role is Role.MIDDLE] == [None]
+    assert UNCLASSIFIED_TAG not in revised.tokens_for(Role.MIDDLE)[0].tags
+    # both sides of the pair the span discriminator split
+    assert p.parse("john e-f smith").capitalized(force=True).middle == "E-F"
+    assert revised.capitalized(force=True).middle == "E-F"
+
+    # the initials half of the same regression, which needs a lexicon
+    # holding no particles at all to witness -- under the default one
+    # 'de la vega' is particle vocabulary and the parse skips it too.
+    # segment_scripts off because a from-scratch Lexicon covers no
+    # script the default policy activates, and the warning is an error
+    # under this suite's filters.
+    empty = Parser(lexicon=Lexicon(),
+                   policy=Policy(segment_scripts=frozenset()))
+    assert (empty.parse("john de la vega").initials()
+            == empty.revise(empty.parse("john smith"),
+                            family="de la vega").initials()
+            == "j. d. l. v.")
+
+    # hand-built, span-less, untagged: classified by default
+    handbuilt = _pn("john de la vega", [
+        Token("john", None, Role.GIVEN),
+        Token("de", None, Role.FAMILY),
+        Token("la", None, Role.FAMILY),
+        Token("vega", None, Role.FAMILY),
+    ])
+    assert handbuilt.initials() == "j. d. l. v."
+    assert handbuilt.capitalized(force=True).family == "de la Vega"
+    # ... and the same tokens MARKED take the fallback, which is the
+    # only thing that moves them
+    marked = _pn("john de la vega", [
+        Token("john", None, Role.GIVEN),
+        Token("de", None, Role.FAMILY),
+        Token("la", None, Role.FAMILY),
+        Token("y", None, Role.FAMILY, frozenset({UNCLASSIFIED_TAG})),
+        Token("vega", None, Role.FAMILY),
+    ])
+    assert marked.capitalized(force=True).family == "de la y Vega"
 
 
 def test_initials_has_no_lexicon_so_a_spliced_field_is_all_name_words()\

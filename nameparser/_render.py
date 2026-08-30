@@ -15,8 +15,8 @@ from __future__ import annotations
 import re
 
 from nameparser._lexicon import Lexicon, _normalize
-from nameparser._types import (UNJOINED_TAG, Ambiguity, ParsedName, Role,
-                               Token)
+from nameparser._types import (UNCLASSIFIED_TAG, UNJOINED_TAG, Ambiguity,
+                               ParsedName, Role, Token)
 
 _SPACES = re.compile(r"\s+")
 _SPACE_BEFORE_COMMA = re.compile(r"\s+,")
@@ -56,21 +56,22 @@ _SKIP_TAGS = frozenset({"particle", "conjunction"})
 # Deliberately NOT composed with _vocab's repertoire test (#320):
 # layering forbids the import. The divergence is reachable only for a
 # caller-added CJK conjunction spliced into a field, since no shipped
-# vocabulary carries one; there it costs nothing in case repair (CJK is
-# caseless, so lower() and capitalize() return the same string) and
-# would let such a word initial where a parsed one would not.
+# vocabulary carries one, and it costs nothing there: CJK is caseless,
+# so the carve-out's lower() and the fall-through's capitalize() return
+# the same string, and case repair is now this pattern's only reader.
 _INITIAL = re.compile(r"^(\w\.|[A-Z])$")
 
 
 def _reads_as_conjunction(word: str, lex: Lexicon) -> bool:
     """v1's is_conjunction, asked only of text the parse never saw.
 
-    A token with a span was classified, so its tags are the answer and
-    this is not consulted. A token without one was spliced into a field
-    by replace() and carries no reading, so the views fall back to the
-    vocabulary -- which gives the answer the parser would have given,
-    the initial carve-out included ('E.' assigned to middle is an
-    initial, not the Italian conjunction).
+    A token the parse classified carries its reading in its tags and
+    this is not consulted. A token carrying UNCLASSIFIED_TAG was
+    spliced into a field as raw text -- by replace(), or by the
+    facade's v1 pickle load -- and carries no reading, so case repair
+    falls back to the vocabulary, which gives the answer the parser
+    would have given, the initial carve-out included ('E.' assigned to
+    middle is an initial, not the Italian conjunction).
     """
     return bool(_normalize(word) in lex.conjunctions
                 and not _INITIAL.fullmatch(word))
@@ -150,7 +151,7 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
 
 
 def _cap_word(word: str, role: Role, tags: frozenset[str],
-              lex: Lexicon, *, parsed: bool) -> str:
+              lex: Lexicon) -> str:
     # v1 cap_word order: particle/conjunction rule first, then the
     # exceptions map, then Mac/Mc, then str.capitalize
     normalized = _normalize(word)
@@ -200,12 +201,24 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # mechanisms.md#RENDER-HONORS-THE-PARSE: "a token the parse never
     # saw carries no decision to honor, so a view falls back to the
     # vocabulary" -- _reads_as_conjunction above, which is v1's
-    # predicate over v1's own input class, keeping every assigned
-    # field exactly as 1.4.0 repaired it.
+    # predicate applied over TODAY's vocabulary rather than 1.4.0's.
+    # That is the honest claim and it is narrower than parity: the two
+    # vocabularies differ, so an assigned field can repair differently
+    # from 1.4.0 without this predicate differing at all. Measured on
+    # the released wheel: `h.last = "хосе и мария сантос"` gives
+    # 'Хосе И Мария Сантос' on 1.4.0 and 'Хосе и Мария Сантос' here,
+    # the Cyrillic `и` being a 2.x conjunction and not a 1.4.0 one;
+    # `h.last = "de la vega"` gives 'de la Vega' there and here.
+    # The mark, not the SPAN, is what says the text was never read:
+    # Parser.revise() also builds span-less tokens, from a sub-parse
+    # whose tags it keeps on purpose, and keying this on `span is None`
+    # overrode them -- `revise(middle='e-f')` repaired to 'e-F' where
+    # the same words parsed gave 'E-F' (#463 review).
     if ((normalized in lex.particles and role in (Role.MIDDLE, Role.FAMILY)
             and UNJOINED_TAG not in tags)
             or "conjunction" in tags
-            or (not parsed and _reads_as_conjunction(word, lex))):
+            or (UNCLASSIFIED_TAG in tags
+                and _reads_as_conjunction(word, lex))):
         return word.lower()
     # v1 cap_word tries the edge-stripped form, then the period-free
     # form ('Ph.D.' -> 'ph.d' -> 'phd' hits the exceptions map)
@@ -221,14 +234,14 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
 
 
 def _cap_text(text: str, role: Role, tags: frozenset[str],
-              lex: Lexicon, *, parsed: bool) -> str:
+              lex: Lexicon) -> str:
     # word-by-word within the token text: hyphenated names capitalize
     # both sides ("macdole-eisenhower" -> "MacDole-Eisenhower"). The
-    # per-word walk is also why an UNPARSED token gets the vocabulary
-    # asked per word: the parse would have made one token per word of
-    # that text, so this is the granularity its answer would have had.
-    return _WORD.sub(
-        lambda m: _cap_word(m.group(0), role, tags, lex, parsed=parsed), text)
+    # per-word walk is also why an UNCLASSIFIED token gets the
+    # vocabulary asked per word: the parse would have made one token
+    # per word of that text, so this is the granularity its answer
+    # would have had.
+    return _WORD.sub(lambda m: _cap_word(m.group(0), role, tags, lex), text)
 
 
 # rules.md#R4: "case repair returns a repaired copy and never mutates
@@ -244,15 +257,16 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     word is particle vocabulary is repaired as ordinary name words,
     and the mark saying so comes from the pipeline, as does the
     reading that a word is a conjunction rather than an initial. A
-    token replace() splices in has no span and no tags, so it was
-    never read: the vocabulary answers the per-word conjunction
-    question for it, and the per-part particle question -- which the
-    vocabulary cannot answer, the part being what a spliced field
-    lost -- falls through to plain particle treatment. A family set
-    that way to 'de la' stays 'de la' where the same words parsed give
-    'De La'; one set to 'de y' keeps the 'y' lowercase, as the parse
-    does and as 1.4.0 did. Parser.revise() is the edit that classifies
-    the value, and gives 'De La' (rules.md#R4's Accepted boundary).
+    token carrying UNCLASSIFIED_TAG -- replace() splices those in, and
+    so does the facade's v1 pickle load -- was never read: the
+    vocabulary answers the per-word conjunction question for it, and
+    the per-part particle question is left to plain particle treatment,
+    since re-deriving the part answer needs a tag on every word of the
+    part and these have none. A family set that way to 'de la' stays
+    'de la' where the same words parsed give 'De La'; one set to
+    'de y' keeps the 'y' lowercase, as the parse does and as 1.4.0
+    did. Parser.revise() is the edit that classifies the value, and
+    gives 'De La' (rules.md#R4's Accepted boundary).
     Idempotent: without force, a capitalized result is mixed-case and
     the gate returns it unchanged; with force, every _cap_word rule is
     a fixpoint on its own output."""
@@ -267,9 +281,7 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     if not force and joined not in (joined.upper(), joined.lower()):
         return name
     new_tokens = tuple(
-        Token(_cap_text(t.text, t.role, t.tags, lex,
-                        parsed=t.span is not None),
-              t.span, t.role, t.tags)
+        Token(_cap_text(t.text, t.role, t.tags, lex), t.span, t.role, t.tags)
         for t in name.tokens)
     # equal tokens (possible only for synthetic span=None duplicates)
     # collapse to one mapping entry -- benign: the rebuilt ambiguity

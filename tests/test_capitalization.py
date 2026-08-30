@@ -1,3 +1,7 @@
+# pickle here round-trips an object this test just built; the library's
+# own pickle support is what is under test, and no foreign data is read.
+import pickle
+
 import pytest
 
 from nameparser import HumanName
@@ -305,3 +309,20 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         uppered = HumanName('JUAN E-F SMITH')
         uppered.capitalize()
         self.m(str(uppered), 'Juan E-F Smith', uppered)
+
+    # The third producer of never-classified text, and the one that is
+    # not an assignment: __getstate__ pickles the *_list STRINGS and
+    # nothing else (mechanisms.md#FACADE-CONTRACT -- components come
+    # back exactly as pickled, never re-parsed), so a load rebuilds
+    # tokens with no tags on them. They are marked UNCLASSIFIED_TAG for
+    # the same reason an assigned field is: reading the absent
+    # conjunction tag as "not a conjunction" would repair a restored
+    # 'juan ortega y gasset' to 'Juan Ortega Y Gasset', which is
+    # neither 1.4.0's answer nor the same object's before pickling.
+    def test_a_restored_pickle_keeps_v1_conjunction_repair(self) -> None:
+        for text, want in (('juan ortega y gasset', 'Juan Ortega y Gasset'),
+                           ('john de la vega', 'John de la Vega'),
+                           ('juan y garcia', 'Juan y Garcia')):
+            restored = pickle.loads(pickle.dumps(HumanName(text)))
+            restored.capitalize(force=True)
+            self.m(str(restored), want, restored)

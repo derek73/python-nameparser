@@ -1119,7 +1119,7 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     name gives "j. v.". Case repair IS handed a vocabulary, so it falls
     back for the one question a word can answer on its own, and R4
     says which. Revising the field through the parser classifies it
-    and matches the parse in this view. Stated without an example
+    and matches the parse in both views. Stated without an example
     line because every line here names an input string, and this
     shape needs a field edited after the parse.
     history: decisions.md#R2 · interacts: R2, R4 · implemented: nameparser/_render.py, nameparser/_facade.py
@@ -1173,9 +1173,10 @@ R4. Rationale: case repair is a display concern, applied only on
     stands. Initials are the contrast worth knowing, and R3 states it:
     that view is handed no vocabulary at all, so it falls back on
     neither question and a spliced field's every word initials.
-    revise() classifies the value and crosses the part question; the
-    word question it does not, a middle revised to "e-f" repairing
-    to "e-F" where the parsed name gives "E-F".
+    revise() classifies the
+    value and crosses both questions, in both views: a middle revised
+    to "e-f" repairs to "E-F" as the parsed name does, where splicing
+    the same text in gives "e-F".
     history: decisions.md#R4 · interacts: R2, R3, R5 · implemented: nameparser/_render.py
 
 R5. Rationale: mixed case is evidence that the writer cased the name
