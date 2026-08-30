@@ -1,10 +1,11 @@
 import pytest
 
-from nameparser import HumanName, Parser, Policy, parse
+from nameparser import FAMILY_FIRST, HumanName, Parser, Policy, parse
 from nameparser._lexicon import Lexicon
 from nameparser._render import _collapse, render
-from nameparser._types import (UNCLASSIFIED_TAG, UNJOINED_TAG, Ambiguity,
-                               AmbiguityKind, ParsedName, Role, Span, Token)
+from nameparser._types import (FOLDED_TAG, UNCLASSIFIED_TAG, UNJOINED_TAG,
+                               Ambiguity, AmbiguityKind, ParsedName, Role,
+                               Span, Token)
 
 
 def test_collapse_is_the_254_algorithm() -> None:
@@ -200,6 +201,71 @@ def test_initials_readmits_a_conjunction_in_a_particle_part() -> None:
     # including under the default vocabulary, where 'y' is no particle
     # and the family is therefore not all-particle
     assert parse("Juan de y").initials() == "J."
+
+
+def test_initials_order_folded_words_first_like_the_family_field() -> None:
+    """#408: the view and the field must read one parse the same way.
+
+    O3's fold and P6's attachment both tag rather than move (spans
+    cannot reorder), and the family field reads that tag. `initials()`
+    walked tokens in written order and did not, so the two views
+    disagreed about the same parse -- 'der, y van' gave family
+    'van der' and initials 'y. d. v.'
+    (mechanisms.md#RENDER-HONORS-THE-PARSE names #408 as that shape).
+
+    Each assertion pairs the field with the view deliberately: a
+    regression that reordered BOTH would still be caught by the
+    literal, and one that reordered neither by the pairing.
+    """
+    # P6's attachment, the one name the DEFAULT policy moves
+    van_der = parse("der, y van")
+    assert van_der.family == "van der"
+    assert van_der.initials() == "y. v. d."
+    # and the facade, which reached this answer by its own route
+    # (its *_list views prepend the carriers) -- so the core view was
+    # the one out of step
+    assert HumanName("der, y van").initials() == "y. v. d."
+
+    # O3's fold, which is where the reach is (71 of the corpus's 1094
+    # names move under this policy at the default order, measured
+    # 2026-08-30)
+    maf = Parser(policy=Policy(middle_as_family=True))
+    hassan = maf.parse("Hassan, Mohamad Ahmad Ali")
+    assert hassan.family == "Ahmad Ali Hassan"
+    assert hassan.initials() == "M. A. A. H."
+    doe = maf.parse("Doe, Dr. John A.")
+    assert doe.family == "A. Doe"
+    assert doe.initials() == "J. A. D."
+
+    # under a non-default order too: the fold is not order-specific
+    ff = Parser(policy=Policy(name_order=FAMILY_FIRST,
+                              middle_as_family=True))
+    vega = ff.parse("Smith Juan Vega")
+    assert vega.family == "Vega Smith"
+    assert vega.initials() == "J. V. S."
+
+
+def test_initials_folds_in_every_role_it_renders() -> None:
+    """The partition is applied per role, exactly as _text_for applies
+    it -- not scoped to FAMILY, where the pipeline's two producers put
+    the tag today.
+
+    Both producers (O3's fold, P6's attachment) re-role to FAMILY, so
+    no input string reaches this and it is pinned from a hand-built
+    name instead. Uniformity with the mechanism is the point: a
+    producer that ever folded into another part would otherwise
+    reopen #408 there, silently, with nothing to fail.
+    """
+    pn = _pn("Ann Bea Cyd", [
+        Token("Ann", Span(0, 3), Role.GIVEN),
+        Token("Bea", Span(4, 7), Role.MIDDLE, frozenset({FOLDED_TAG})),
+        Token("Cyd", Span(8, 11), Role.GIVEN, frozenset({FOLDED_TAG})),
+    ])
+    # the field already orders this way; the view now agrees
+    assert pn.given == "Cyd Ann"
+    assert pn.initials("{given}") == "C. A."
+    assert pn.middle == "Bea"
+    assert pn.initials("{middle}") == "B."
 
 
 def test_initials_custom_delimiter_and_separator() -> None:

@@ -15,8 +15,8 @@ from __future__ import annotations
 import re
 
 from nameparser._lexicon import Lexicon, _normalize
-from nameparser._types import (UNCLASSIFIED_TAG, UNJOINED_TAG, Ambiguity,
-                               ParsedName, Role, Token)
+from nameparser._types import (FOLDED_TAG, UNCLASSIFIED_TAG, UNJOINED_TAG,
+                               Ambiguity, ParsedName, Role, Token)
 
 _SPACES = re.compile(r"\s+")
 _SPACE_BEFORE_COMMA = re.compile(r"\s+,")
@@ -122,7 +122,10 @@ def render(name: ParsedName, spec: str) -> str:
 def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str:
     """First letter of each contributing token per group, v1 semantics:
     delimiter follows each initial, separator sits between initials
-    within a group. Tokens tagged particle/conjunction contribute no
+    within a group. Each group is ordered the way its FIELD is
+    ordered -- written order, except folded words, which initial
+    before the rest of the group (#408). Tokens tagged
+    particle/conjunction contribute no
     initial in middle/family (given-name tokens always contribute),
     and the unjoined mark readmits the words of an all-particle part
     whichever of those tags they carry; tags come from the pipeline --
@@ -147,6 +150,22 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
             tokens = tuple(t for t in tokens
                            if not (_SKIP_TAGS & t.tags)
                            or UNJOINED_TAG in t.tags)
+        # mechanisms.md#FOLDED_TAG: "a rule that needs different
+        # rendering order tags the token, and the rendering views
+        # consult the tag" -- this is a rendering view, so it reads
+        # the tag the same way _types._text_for does, and for the same
+        # reason: the fold is an ORDER the parse recorded, not one the
+        # view is free to take again
+        # (mechanisms.md#RENDER-HONORS-THE-PARSE: "the parse decides
+        # it; the render views honor those decisions and never
+        # re-evaluate them"). Applied to every role this view renders,
+        # exactly as _text_for applies it -- the pipeline puts the tag
+        # on FAMILY tokens alone today, so GIVEN and MIDDLE are
+        # uniformity with the mechanism rather than reachable
+        # behavior; a producer that ever folds into another part would
+        # otherwise reopen #408 there.
+        tokens = (tuple(t for t in tokens if FOLDED_TAG in t.tags)
+                  + tuple(t for t in tokens if FOLDED_TAG not in t.tags))
         values[key] = separator.join(
             t.text[0] + delimiter for t in tokens)
     return _format_spec(spec, values, "initials", _INITIALS_KEYS)
