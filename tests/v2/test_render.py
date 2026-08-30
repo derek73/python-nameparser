@@ -1,6 +1,6 @@
 import pytest
 
-from nameparser import Parser
+from nameparser import Parser, parse
 from nameparser._lexicon import Lexicon
 from nameparser._render import _collapse, render
 from nameparser._types import (UNJOINED_TAG, Ambiguity, AmbiguityKind,
@@ -126,24 +126,22 @@ def test_initials_skips_tagged_particles_outside_given() -> None:
     assert pn.initials("{family}") == "S."
 
 
-def test_initials_and_repair_agree_on_a_conjunction_in_a_particle_part() -> None:
-    """#461, and the one shape that needs a caller's own Lexicon.
+def test_repair_keeps_a_conjunction_lowercase_in_a_particle_part() -> None:
+    """rules.md#R4's conjunction carve-out, which no shipped name reaches.
 
-    The unjoined mark readmits the words of an all-particle part
-    because none of them is acting as a particle there -- but it says
-    nothing about a conjunction, which rules.md#R3 excludes "even
-    then". Reaching that needs a word in `particles` AND
+    The unjoined mark makes the words of an all-particle part
+    ordinary name words, since none of them is acting as a particle
+    there -- but repair's conjunction conjunct is deliberately UNGATED
+    on that mark, R4 keeping a conjunction lowercase "even inside such
+    a part". Witnessing it needs a word in `particles` AND
     `conjunctions`; the shipped sets are disjoint, in the default
     vocabulary and in every locale pack, so no input string can
-    witness it and rules.md can carry no example line for it.
+    witness it and rules.md can carry no example line for it. Gating
+    the conjunct on the mark passed the entire suite until this test
+    existed.
 
-    This is also where the two views can be shown to agree, which is
-    the whole point of the carve-out: before #461, `Anh y Van`
-    capitalized as `Anh y Van` and initialed as `A. y. V.` -- one
-    token, two views, opposite readings. The `capitalized` assertions
-    here are what pins case repair's ungated conjunction conjunct
-    (rules.md#R4); gating it on the mark passed the entire suite until
-    this test existed, since no shipped name reaches it either.
+    Only the FORCED call gets here: R5's gate returns a mixed-case
+    name before any of this is consulted.
     """
     # mechanisms.md#VOCABULARY-OVERLAP-AS-PRECONDITION: "assert the
     # intersection as a precondition" -- built here rather than found,
@@ -158,17 +156,50 @@ def test_initials_and_repair_agree_on_a_conjunction_in_a_particle_part() -> None
     van = p.parse("Anh y Van")
     tags = [t.tags for t in van.tokens if t.text == "y"][0]
     assert {"conjunction", "particle", UNJOINED_TAG} <= tags, sorted(tags)
-    assert van.initials() == "A. V."
     assert van.capitalized(lex, force=True).family == "y Van"
 
-    # R3's own example line, under a lexicon that makes `de y` the
-    # all-particle part the default vocabulary cannot: `de` initials
-    # as the ordinary name word R2 makes it, `y` still does not.
-    assert p.parse("Juan de y").initials() == "J. d."
-    # and a base that IS the conjunction contributes nothing at all
-    assert p.parse("johnny y").initials() == "j."
-    # unchanged where the part is particles alone
-    assert p.parse("Juan van der").initials() == "J. v. d."
+
+def test_initials_readmits_a_conjunction_in_a_particle_part() -> None:
+    """Today's answer on an OPEN question (#461), pinned as such.
+
+    rules.md#R3 says a conjunction never initials "even then" -- even
+    inside the all-particle part R2 turns into ordinary name words --
+    and `initials()` does not do that: the mark readmits the part's
+    words whichever skip tag they carry. #461 made the code match the
+    clause and was backed out, the clause rather than the code being
+    what is now in question (decisions.md, under R2).
+
+    So this pins what a `deviates:` marker would pin if one could
+    hang here -- TODAY's output, strictly, so that settling #461
+    fails the suite until this moves with it. It cannot be a marker:
+    markers hang on rules.md example lines and every line there names
+    an input string parsed with the DEFAULT vocabulary, over which
+    `particles` and `conjunctions` are disjoint and no string reaches
+    this shape. It is also what keeps the values quoted in prose by
+    decisions.md, mechanisms.md#RENDER-HONORS-THE-PARSE and
+    `_render.py` from going stale unnoticed.
+    """
+    assert "y" in Lexicon.default().conjunctions, (
+        "'y' left the default conjunctions; this test builds the "
+        "particle/conjunction overlap it needs from the other side and "
+        "no longer has one. Pick another shipped conjunction.")
+    p = Parser(lexicon=Lexicon.default().add(particles={"y"}))
+
+    # the part the mark has turned into name words: every word of it
+    # initials, the conjunction included, and the base agrees
+    de_y = p.parse("Juan de y")
+    assert de_y.family_base == "de y"
+    assert de_y.initials() == "J. d. y."
+    assert p.parse("Anh y Van").initials() == "A. y. V."
+    assert p.parse("johnny y").initials() == "j. y."
+
+    # and OUTSIDE such a part the skip stands, joining or not --
+    # these are what the readmission must not reach
+    assert p.parse("Juan Velasquez y Garcia").initials() == "J. V. G."
+    assert p.parse("Juan y Garcia").initials() == "J. G."
+    # including under the default vocabulary, where 'y' is no particle
+    # and the family is therefore not all-particle
+    assert parse("Juan de y").initials() == "J."
 
 
 def test_initials_custom_delimiter_and_separator() -> None:

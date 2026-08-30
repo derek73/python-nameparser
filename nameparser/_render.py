@@ -35,10 +35,10 @@ _INITIALS_KEYS = (Role.GIVEN.value, Role.MIDDLE.value, Role.FAMILY.value)
 #: Tags whose tokens contribute no initial outside the given group --
 #: unless the token also carries UNJOINED_TAG, i.e. the whole part is
 #: particles, in which case they are the part's only words and do
-#: contribute (rules.md#R3, #404). The mark readmits the PARTICLE tag
-#: alone: it says those particles are not acting as particles here and
-#: nothing about a conjunction, which rules.md#R3 excludes "even then"
-#: (#461).
+#: contribute (rules.md#R3, #404). The mark readmits a token carrying
+#: EITHER tag: a conjunction with nothing to join is not acting as a
+#: conjunction any more than a particle with nothing to join is acting
+#: as a particle, so it is a name word of the part like the rest.
 #: Not STABLE_TAGS -- that also contains "initial", which must contribute.
 _SKIP_TAGS = frozenset({"particle", "conjunction"})
 
@@ -123,8 +123,8 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
     delimiter follows each initial, separator sits between initials
     within a group. Tokens tagged particle/conjunction contribute no
     initial in middle/family (given-name tokens always contribute),
-    and the unjoined mark readmits the particles of an all-particle
-    part but never a conjunction standing in one; tags come from the
+    and the unjoined mark readmits the words of an all-particle part
+    whichever of those tags they carry; tags come from the
     pipeline. A token with no span was never classified -- replace()
     splices one in -- so its role's words are read from the default
     vocabulary instead, all-particle test included. Valid spec keys:
@@ -193,17 +193,20 @@ def _initials_from(token: Token, lex: Lexicon | None,
     already carries.
     """
     if lex is None:
-        # rules.md#R3: "A CONJUNCTION never initials, so a base that is
-        # one contributes nothing even then" -- "even then" being the
-        # all-particle part the mark names, so the mark readmits the
-        # tag it is about and not the other one (#461)
+        # the mark readmits a skip-tagged token whichever of the two
+        # tags it carries: inside an all-particle part none of the
+        # words is doing the work its tag names -- a conjunction with
+        # nothing to join no more than a particle with nothing to join
+        # (R2) -- so they are the part's name words and initial.
         if _SKIP_TAGS & token.tags:
-            return UNJOINED_TAG in token.tags and "conjunction" not in token.tags
+            return UNJOINED_TAG in token.tags
         return True
+    # the same two questions, answered from the vocabulary where the
+    # token carries no tags, and reaching the same answer: both skip
+    # words are readmitted by the mark and by nothing else
     if ("conjunction" in token.tags
-            or (token.span is None and _reads_as_conjunction(token.text, lex))):
-        return False
-    if _is_particle_word(token, lex):
+            or (token.span is None and _reads_as_conjunction(token.text, lex))
+            or _is_particle_word(token, lex)):
         return unjoined
     return True
 
@@ -217,11 +220,10 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # repaired as ordinary name words, since none of them is doing a
     # particle's work there" -- UNJOINED_TAG is that mark (#407).
     # Only the PARTICLE conjunct is gated on it, and that is the rule
-    # rather than an omission: rules.md#R4 carries the carve-out R3
-    # already states for initials -- "A CONJUNCTION never initials, so
-    # a base that is one contributes nothing even then" -- so a
-    # conjunction keeps conjunction treatment even inside a part the
-    # mark has turned into ordinary name words.
+    # rather than an omission -- rules.md#R4: "A CONJUNCTION keeps its
+    # lowercase even inside such a part, being no name word in any
+    # part" -- so a conjunction keeps conjunction treatment even
+    # inside a part the mark has turned into ordinary name words.
     # No SHIPPED name witnesses the difference: `particles` and
     # `conjunctions` are disjoint in the default vocabulary and in
     # every locale pack, so no shipped conjunction can sit in an
@@ -232,10 +234,18 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # under `Lexicon.default().add(particles={'y'})`, `anh y van` has
     # an all-particle family whose `y` carries both tags and the mark,
     # and gives 'Anh y Van'; gating this conjunct too would give
-    # 'Anh Y Van'. That is pinned, on the same parse as the initials()
-    # half it matches, by test_initials_and_repair_agree_on_a_
-    # conjunction_in_a_particle_part (#461) -- until which gating it
-    # passed the whole suite.
+    # 'Anh Y Van'. That is pinned by test_repair_keeps_a_conjunction_
+    # lowercase_in_a_particle_part -- until which gating it passed the
+    # whole suite.
+    # initials() does NOT match this carve-out, and the mismatch is
+    # recorded rather than fixed: #461 made it match and was backed
+    # out, the mark being a statement about a whole PART that #461
+    # honored for some of the part's words and not for one of them,
+    # so what is in question is R3's "even then" clause rather than
+    # the code (decisions.md, under R2). Under that same lexicon
+    # `Anh y Van` repairs to 'Anh y Van' and initials 'A. y. V.',
+    # pinned by
+    # test_initials_readmits_a_conjunction_in_a_particle_part.
     # That conjunct reads the TAG, not the word (#458). classify takes
     # the conjunction-versus-initial decision once, over the whole
     # token -- v1's is_conjunction excludes initials, so 'E.' in
