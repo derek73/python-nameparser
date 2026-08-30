@@ -72,16 +72,19 @@ def test_patronymic_patterns_match_config() -> None:
         assert copy.flags == source.flags, key
 
 
-def test_initial_copies_agree_with_each_other_and_config() -> None:
-    # _vocab._INITIAL and _render._INITIAL are both v1's "initial"
-    # pattern minus its trailing "?" (documented at _render.py's
-    # _INITIAL definition: the two call sites always fullmatch a
+def test_initial_copy_matches_config_minus_the_empty_alternative() -> None:
+    # _vocab._INITIAL is v1's "initial" pattern minus its trailing "?"
+    # (documented at the definition: its callers always fullmatch a
     # non-empty token, so the empty-string alternative is dropped on
-    # purpose). Assert both the internal-copy agreement and the exact,
-    # documented relationship to the config source, so a future edit to
-    # either side that breaks the relationship fails loudly here
-    # instead of silently drifting.
-    assert _vocab._INITIAL.pattern == _render._INITIAL.pattern
+    # purpose). Assert the exact, documented relationship to the config
+    # source, so a future edit to either side that breaks the
+    # relationship fails loudly here instead of silently drifting.
+    # There was a second copy, in _render, and this test also asserted
+    # the two agreed. It went with #458: case repair stopped asking
+    # whether a word is initial-shaped -- classify records that, and a
+    # view reads the tag -- leaving the constant with no reader. A copy
+    # kept alive for its own sync assertion pins nothing about
+    # behavior, so it was deleted rather than commented.
     source = _config.REGEXES["initial"]
     # config's pattern is the pipeline copy with an extra "?" spliced in
     # just before the trailing "$", making the whole group optional.
@@ -118,8 +121,7 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     ("_vocab", "_PERIOD_NOT_AT_END"): "period_not_at_end",
     # Deliberately NOT a straight copy -- pinned by the dedicated tests
     # above, which assert the documented RELATIONSHIP instead:
-    ("_render", "_INITIAL"): None,      # config's pattern minus one "?"
-    ("_vocab", "_INITIAL"): None,       # same
+    ("_vocab", "_INITIAL"): None,       # config's pattern minus one "?"
     ("_tokenize", "_BIDI"): None,       # re_bidi, not a REGEXES key
     # Mirrors _pipeline._state.COMMA_CHARS, not nameparser.config
     ("_render", "_COMMA_CHAR"): None,

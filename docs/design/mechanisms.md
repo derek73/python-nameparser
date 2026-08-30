@@ -21,7 +21,7 @@ Problem shape. A rule wants words to RENDER in a different order than they sit i
 
 Problem shape. A later stage needs to know what the vocabulary knew about a word. Contract statement. classify tags every token with what the vocabulary knows about it, and later stages test tags — they never re-look a word up. How it works. One lookup site means one answer: a stage that re-derived vocabulary facts could disagree with the stage before it. Stable tags ("particle", "conjunction", "initial") are API;
 "vocab:"-namespaced ones are not.
-Lives in. nameparser/_pipeline/_classify.py (producer); consumers throughout _group/_assign/_post_rules. Reach for it when. A stage is about to import Lexicon to ask about a word classify already saw.
+Lives in. nameparser/_pipeline/_classify.py (producer); consumers throughout _group/_assign/_post_rules, and nameparser/_render.py, which is not a stage but reads the same tags to decide what a view shows (#458 moved case repair's conjunction test onto the tag; initials() had read them since 2.0). Reach for it when. A stage is about to import Lexicon to ask about a word classify already saw — or a view is, which is the harder one to notice, since a view legitimately holds a Lexicon for the questions classify never answered.
 
 ## PIECES — joining structure survives assignment
 

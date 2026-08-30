@@ -211,11 +211,12 @@ def test_capitalized_with_explicit_lexicon() -> None:
     assert out.suffix == "Phd"
 
 
-def test_capitalized_lowers_conjunctions_but_not_initial_shapes() -> None:
-    # v1's is_conjunction excludes initial-shaped words: a lowercase
-    # 'y' lowers, but an uppercase 'Y' looks like an initial and
-    # capitalizes ('JOSE ORTEGA Y GASSET' -> 'Jose Ortega Y Gasset',
-    # pinned live against v1.4 2026-07-17)
+def test_capitalized_lowers_the_words_the_parse_tagged_conjunction() -> None:
+    # #458: whether a word is the conjunction or an initial is
+    # classify's decision, recorded as the tag; repair honors the tag
+    # and never asks the word. Both halves of that are asserted here,
+    # since a repair that lowered every conjunction-vocabulary word
+    # would pass the first alone.
     #  01234567890123456789
     pn = _pn("juan ortega y gasset", [
         Token("juan", Span(0, 4), Role.GIVEN),
@@ -225,13 +226,41 @@ def test_capitalized_lowers_conjunctions_but_not_initial_shapes() -> None:
     ])
     out = pn.capitalized(force=True)
     assert out.family == "Ortega y Gasset"
+    # v1's is_conjunction excludes initial-shaped words, so classify
+    # withholds the tag from an uppercase 'Y' and repair capitalizes it
+    # ('JOSE ORTEGA Y GASSET' -> 'Jose Ortega Y Gasset', pinned live
+    # against v1.4 2026-07-17 and pinned end to end in
+    # tests/test_capitalization.py). These tokens are what a parse of
+    # the uppercase name builds.
     upper = _pn("JUAN ORTEGA Y GASSET", [
+        Token("JUAN", Span(0, 4), Role.GIVEN),
+        Token("ORTEGA", Span(5, 11), Role.FAMILY),
+        Token("Y", Span(12, 13), Role.FAMILY),
+        Token("GASSET", Span(14, 20), Role.FAMILY),
+    ])
+    assert upper.capitalized(force=True).family == "Ortega Y Gasset"
+    # The tag decides even against the shape: a token tagged
+    # conjunction lowers however it is written. Nothing shipped builds
+    # this token -- that is the point, since the old predicate could
+    # not have honored it.
+    tagged = _pn("JUAN ORTEGA Y GASSET", [
         Token("JUAN", Span(0, 4), Role.GIVEN),
         Token("ORTEGA", Span(5, 11), Role.FAMILY),
         Token("Y", Span(12, 13), Role.FAMILY, frozenset({"conjunction"})),
         Token("GASSET", Span(14, 20), Role.FAMILY),
     ])
-    assert upper.capitalized(force=True).family == "Ortega Y Gasset"
+    assert tagged.capitalized(force=True).family == "Ortega y Gasset"
+    # ... and an untagged word of the conjunction vocabulary is an
+    # ordinary name word. The reachable shape is a token whose text is
+    # more than one word, since the repair walks a token's words while
+    # the tag is the whole token's: 'juan e-f smith' capitalized to
+    # 'Juan e-F Smith' while the old predicate re-decided per word.
+    hyphenated = _pn("juan e-f smith", [
+        Token("juan", Span(0, 4), Role.GIVEN),
+        Token("e-f", Span(5, 8), Role.MIDDLE),
+        Token("smith", Span(9, 14), Role.FAMILY),
+    ])
+    assert hyphenated.capitalized(force=True).middle == "E-F"
 
 
 def test_capitalized_rebuilds_ambiguity_tokens() -> None:

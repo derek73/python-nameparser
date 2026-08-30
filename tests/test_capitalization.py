@@ -227,10 +227,12 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # the four corpus files deduped and diffing, on whichever surface
     # you name.
     #
-    # The mechanism is v1's initial carve-out, which _cap_word
-    # documents a few lines from the predicate: a conjunction is not
-    # lowercased where it is written initial-shaped, and
-    # initial-shaped means one CAPITAL letter. Uppercase a name and
+    # The mechanism is v1's initial carve-out, taken in the PARSE
+    # since #458 and read off the tag by the repair: a word of the
+    # conjunction vocabulary is not tagged one where it is written
+    # initial-shaped, and initial-shaped means one CAPITAL letter
+    # (nameparser/_pipeline/_classify.py, and the tests beside it --
+    # the repair no longer asks). Uppercase a name and
     # every one-letter conjunction becomes an initial; lowercase one
     # and a middle initial `E` becomes the Italian conjunction. So
     # the property is pinned over names carrying no single-letter
@@ -262,3 +264,19 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         uppered.capitalize()
         # 'Y' is initial-shaped, so the conjunction rule declines it
         self.m(str(uppered), 'Juan Y Garcia', uppered)
+
+    # The other half of #458, and the half that MOVED: the decision is
+    # the whole token's, so a conjunction word inside a longer token is
+    # not one. `e` is the Italian conjunction and `e-f` is a middle
+    # name; before #458 the repair re-ran the test over each word of a
+    # token's text and gave 'Juan e-F Smith'. The uppercase spelling is
+    # here to show the old answer was not even self-consistent: it read
+    # `E` as initial-shaped and capitalized, so the same name repaired
+    # to two different strings depending on how it was written.
+    def test_a_conjunction_inside_a_longer_token_is_a_name_word(self) -> None:
+        lowered = HumanName('juan e-f smith')
+        lowered.capitalize(force=True)
+        self.m(str(lowered), 'Juan E-F Smith', lowered)
+        uppered = HumanName('JUAN E-F SMITH')
+        uppered.capitalize()
+        self.m(str(uppered), 'Juan E-F Smith', uppered)

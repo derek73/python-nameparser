@@ -1145,6 +1145,15 @@ R4. Rationale: case repair is a display concern, applied only on
     repaired exactly this way before the clause existed. Stated
     without an example line because every line here names an input
     string, and this shape needs a field edited after the parse.
+    Accepted, the same boundary read the other way: the conjunction
+    carve-out reaches a word the parse read as a conjunction, and
+    nothing else. A word of that vocabulary standing inside a longer
+    written word is not one, and neither is one spliced into a field
+    after the parse — a family set that way to "de y" repairs to "de
+    Y" where the parsed name keeps the "y" as written. The two
+    directions are one fact: repair honors the reading the parse
+    recorded and takes none of its own. revise() classifies the value
+    here too, so it agrees with the parse in both directions.
     history: decisions.md#R4 · interacts: R2, R3, R5 · implemented: nameparser/_render.py
 
 R5. Rationale: mixed case is evidence that the writer cased the name

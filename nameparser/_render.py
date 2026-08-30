@@ -39,24 +39,6 @@ _INITIALS_KEYS = (Role.GIVEN.value, Role.MIDDLE.value, Role.FAMILY.value)
 #: Not STABLE_TAGS -- that also contains "initial", which must contribute.
 _SKIP_TAGS = frozenset({"particle", "conjunction"})
 
-# Ported verbatim from v1 (nameparser/config/regexes.py "initial",
-# minus the empty alternative) -- layering forbids importing the
-# pipeline here; keep in sync with _pipeline/_vocab.py by hand.
-# Deliberately NOT composed with that module's repertoire test (#320):
-# layering forbids the import, and nothing here needs it. The only use
-# is v1's conjunction carve-out in _cap_word below, which this pattern
-# can only reach once `normalized in lex.conjunctions` already holds --
-# and no CJK token reaches that, the shipped vocabulary carrying no CJK
-# conjunction or particle in the default lexicon or in any locale pack.
-# That is a property of the shipped DATA, not an invariant -- conjunctions
-# is public, configurable API -- but the divergence stays harmless if a
-# user adds one: CJK is caseless, so the carve-out's word.lower() and the
-# fall-through's word.capitalize() return the same string either way.
-# So the two copies keep identical PATTERNS and divergent PREDICATES;
-# test_regex_sync pins the patterns, which is the promise being kept.
-_INITIAL = re.compile(r"^(\w\.|[A-Z])$")
-
-
 def _collapse(rendered: str) -> str:
     """The #254 collapse: empty fields substitute '' and every artifact
     of that is removed -- dangling empty-nickname wrappers, space runs,
@@ -148,12 +130,24 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # an all-particle family whose `y` carries both tags and the mark,
     # and gives 'Anh y Van'; gating this conjunct too would give
     # 'Anh Y Van'.
-    # v1's is_conjunction excludes initials: 'E.' in 'Scott E. Werner'
-    # is an initial, not the conjunction 'e' (pinned live 2026-07-17)
+    # That conjunct reads the TAG, not the word (#458). classify takes
+    # the conjunction-versus-initial decision once, over the whole
+    # token -- v1's is_conjunction excludes initials, so 'E.' in
+    # 'Scott E. Werner' is an initial and is never tagged (pinned live
+    # 2026-07-17) -- and a view honors that decision rather than taking
+    # it again from the spelling (mechanisms.md#VOCAB-TAGS: "later
+    # stages test tags"). Asking again was not even the same question:
+    # the copy of the initial pattern that stood here was the SHAPE
+    # half alone, and it re-decided per WORD of a token's text, so
+    # 'juan e-f smith' capitalized to 'Juan e-F Smith'. What moves the
+    # other way is a token the parse never saw: one hand-built, or
+    # spliced in by replace(), carries no decision to honor and is
+    # repaired as an ordinary name word -- rules.md#R4's Accepted
+    # boundary, which the particle conjunct above draws in the opposite
+    # direction because it still asks the vocabulary itself.
     if ((normalized in lex.particles and role in (Role.MIDDLE, Role.FAMILY)
             and UNJOINED_TAG not in tags)
-            or (normalized in lex.conjunctions
-                and not _INITIAL.fullmatch(word))):
+            or "conjunction" in tags):
         return word.lower()
     # v1 cap_word tries the edge-stripped form, then the period-free
     # form ('Ph.D.' -> 'ph.d' -> 'phd' hits the exceptions map)
@@ -186,10 +180,13 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     formatting and the #254 collapse).
     The repair reads token TAGS as well as texts: a part whose every
     word is particle vocabulary is repaired as ordinary name words,
-    and the mark saying so comes from the pipeline. A hand-built
-    token, or one replace() splices in, carries no tags and is
-    repaired as a plain particle instead: a family set that way to
-    'de la' stays 'de la' where the same words parsed give 'De La'.
+    and the mark saying so comes from the pipeline, as does the
+    reading that a word is a conjunction rather than an initial. A
+    hand-built token, or one replace() splices in, carries no tags:
+    it is repaired as a plain particle, and as no conjunction at all.
+    A family set that way to 'de la' stays 'de la' where the same
+    words parsed give 'De La', while one set to 'de y' gives 'de Y'
+    where the parse would keep the conjunction lowercase.
     Parser.revise() is the edit that classifies the value, and gives
     'De La' (rules.md#R4's Accepted boundary).
     Idempotent: without force, a capitalized result is mixed-case and
