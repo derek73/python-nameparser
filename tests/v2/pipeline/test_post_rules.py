@@ -9,7 +9,8 @@ from nameparser._pipeline._state import ParseState
 from nameparser._policy import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
                                 GIVEN_FIRST, PatronymicRule, Policy,
                                 Script)
-from nameparser._types import STABLE_TAGS, AmbiguityKind, Role
+from nameparser._types import (FOLDED_TAG, STABLE_TAGS, AmbiguityKind,
+                               Role)
 
 # A reduced lexicon, the convention in every pipeline stage module: a
 # stage test should not move when shipped vocabulary does. What it must
@@ -306,18 +307,107 @@ def test_family_comma_fold_is_order_independent(policy: Policy) -> None:
 
 
 @pytest.mark.parametrize("policy", _FAMILY_FIRST)
-def test_lone_never_given_particle_in_given_position_folds(
+def test_lone_never_given_particle_in_given_position_attaches(
         policy: Policy) -> None:
     # The opening-position test alone does not carry the rule: under a
     # family-first order the given position is the TRAILING piece, and
-    # a lone 'de' landing there has to fold into the family beside it
-    # or the parse leaves the whole given name as a word the vocabulary
-    # says is never a given name. Guarded here because a refactor that
-    # reads the rule as leading-particle-only drops exactly this shape,
+    # a lone 'de' landing there has to join the family beside it or the
+    # parse leaves the whole given name as a word the vocabulary says
+    # is never a given name. Guarded here because a refactor that reads
+    # the rule as leading-particle-only drops exactly this shape,
     # silently and under a non-default order (#359 review).
+    #
+    # It is P6's site that takes it now, not P1's fold (#365), so the
+    # role is not the whole assertion: the run carries FOLDED_TAG and
+    # renders BEFORE the base ('de Mesnil'). Without the tag half this
+    # test passes on either rule -- `_by_role` reads written order, and
+    # both leave the same two tokens FAMILY in the same sequence.
     out = _parsed("Mesnil de", policy)
     assert _by_role(out, Role.FAMILY) == "Mesnil de"
     assert not _by_role(out, Role.GIVEN)
+    assert _folded(out) == "de"
+
+
+def _folded(state: ParseState) -> str:
+    return " ".join(t.text for t in state.tokens if FOLDED_TAG in t.tags)
+
+
+@pytest.mark.parametrize("policy", _FAMILY_FIRST)
+def test_trailing_particle_attaches_under_both_family_first_orders(
+        policy: Policy) -> None:
+    # #365: the two orders permute which role the trailing particle
+    # falls into -- GIVEN under one, MIDDLE under the other -- and only
+    # one of those was inspected, so `FAMILY_FIRST` stranded 'de' as a
+    # standalone middle name while `FAMILY_FIRST_GIVEN_LAST` folded the
+    # whole given slot away. Both now attach the run and lay the rest
+    # out for its own number, which is what makes them agree.
+    out = _parsed("Mesnil Garcia de", policy)
+    assert _by_role(out, Role.FAMILY) == "Mesnil de"
+    assert _by_role(out, Role.GIVEN) == "Garcia"
+    assert not _by_role(out, Role.MIDDLE)
+    assert _folded(out) == "de"
+
+
+@pytest.mark.parametrize("policy", _FAMILY_FIRST)
+def test_trailing_particle_needs_a_base_to_attach_to(
+        policy: Policy) -> None:
+    # The words-to-spare test is a name word no particle vocabulary
+    # claims, not merely a name PIECE. With the wider reading this name
+    # attaches 'der' to 'van' and renders 'der van' -- reordering two
+    # words R2 reads as ordinary name words, which no rule does.
+    out = _parsed("van der", policy)
+    assert _by_role(out, Role.FAMILY) == "van der"
+    assert not _folded(out)
+
+
+@pytest.mark.parametrize("policy", _FAMILY_FIRST)
+def test_trailing_ambiguous_particle_keeps_its_position(
+        policy: Policy) -> None:
+    # Never-given vocabulary only, where the comma path takes ambiguous
+    # particles too. This is the Vietnamese listing P6 records as the
+    # ONE format that reads correctly: taking 'van' here would give
+    # family 'van Nguyen' and take that format away.
+    out = _parsed("Nguyen Thi van", policy)
+    assert _by_role(out, Role.FAMILY) == "Nguyen"
+    assert not _folded(out)
+
+
+@pytest.mark.parametrize("policy", _FAMILY_FIRST)
+def test_trailing_suffix_particle_keeps_the_post_nominal_reading(
+        policy: Policy) -> None:
+    # The S2 precedence is the comma form's alone: a trailing `vd` is a
+    # post-nominal until a comma makes the tussenvoegsel commoner. The
+    # same input WITH the comma reads family 'vd Berg' (P6's example),
+    # so this pins the half of the rule that did not widen.
+    out = _parsed("Berg Jan vd", policy)
+    assert _by_role(out, Role.SUFFIX) == "vd"
+    assert _by_role(out, Role.FAMILY) == "Berg"
+    assert not _folded(out)
+
+
+def test_p1_given_position_site_still_has_a_shape_to_fire_on() -> None:
+    # P6's site takes the TRAILING run, which is every corpus firing of
+    # P1's given-position site that the leading site does not also take
+    # (6 of 1094 names x 3 orders, measured 2026-08-30). The site is
+    # kept because it is still reachable, and this is the shape that
+    # reaches it: a suffix piece breaks the particle chain, leaving a
+    # lone 'de' in the given slot with a name word still after it. If
+    # this ever stops firing, P1's statement should lose the clause,
+    # not keep a site nothing can reach.
+    out = _parsed("Mesnil de Jr. Garcia",
+                  Policy(name_order=FAMILY_FIRST))
+    assert _by_role(out, Role.GIVEN) == ""
+    assert not _folded(out)
+
+
+def test_the_fold_does_not_take_back_what_the_attachment_placed() -> None:
+    # P1's family-first lead branch lays out what is LEFT of the name,
+    # and a word P6's site has already placed is not left. Without the
+    # FOLDED_TAG exclusion the redistribution hands the attached
+    # particle straight back to the given slot it was taken out of.
+    out = _parsed("de la Vega de", Policy(name_order=FAMILY_FIRST))
+    assert not _by_role(out, Role.GIVEN)
+    assert _folded(out) == "de"
 
 
 def test_lone_never_given_particle_needs_no_repair_by_default() -> None:

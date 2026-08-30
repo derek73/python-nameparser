@@ -122,8 +122,12 @@ P1. Rationale: a never-given particle standing alone cannot be
     the name, under a family-first order, it takes exactly ONE —
     declaring that order asserts that what follows the family is not
     more surname. Opening the name under the default order, or
-    standing in the given position under any order, it takes the rest
-    of the name: nothing there marks where the surname ends. One name
+    standing in the given position with name words still after it,
+    it takes the rest of the name: nothing there marks where the
+    surname ends. Standing in the given position with nothing after
+    it, under a family-first order, it is not this rule's at all: the
+    declared order has named the family, and P6 attaches it there and
+    writes it before the base. One name
     word means one UNIT — a particle chain (P2), a conjunction join
     (P3) or a bound given-name pair (P5) is taken whole or not at
     all. A title does not move the opening position (P4), but a
@@ -136,7 +140,7 @@ P1. Rationale: a never-given particle standing alone cannot be
     the family slot being already filled.
       "de la Vega"                →  family="de la Vega"
       "Sir de Mesnil"             →  family="de Mesnil"
-      "Mesnil de"  family-first   →  family="Mesnil de"
+      "Mesnil de"  family-first   →  family="de Mesnil"
       "de Mesnil Juan"            →  family="de Mesnil Juan"
       "de Mesnil Juan"  family-first  →  family="de Mesnil"
       "de Mesnil Juan"  family-first  →  given="Juan"
@@ -365,7 +369,9 @@ P6. Rationale: a particle ending the name has nothing to link
     after a comma there is no signal that separates the two
     readings. Dutch and Flemish names are listed exactly
     this way ("Beethoven, Ludwig van"), the tussenvoegsel trailing
-    the given name but belonging to the surname.
+    the given name but belonging to the surname. The comma is not
+    the only thing that names the family: a declared family-first
+    order says the same, and the same listing is written both ways.
     Where a family comma has already named the family, a particle
     ending the name attaches to that family name and is written
     before it — provided at least one given word remains, so that a
@@ -388,6 +394,28 @@ P6. Rationale: a particle ending the name has nothing to link
       "Beethoven, Ludwig van"     →  family_base="Beethoven"
       "Beethoven, Ludwig van"     →  family_particles="van"
       "Nguyen, Van"               →  given="Van"  · boundary
+    Without a comma, a declared family-first order has named the
+    family in the same way and the attachment fires there too, with
+    two differences the comma is what licensed. Only a NEVER-GIVEN
+    particle attaches, an ambiguous one keeping whatever reading its
+    position gives it (P1). And the suffix reading stands: a
+    trailing abbreviation is a post-nominal until a comma makes the
+    tussenvoegsel commoner, so the run is found among the pieces
+    that hold a name, looking past a trailing piece that holds none
+    as the comma form does. What must remain ahead of the run is a
+    name word no particle vocabulary claims — the base the particle
+    attaches to (R2) — so a name that is nothing but particles keeps
+    the reading its position gave it. The pieces left over are laid
+    out in the declared order for their own number, which is what
+    makes the two family-first orders agree.
+      "Jong Anke de"  family-first  →  family="de Jong"
+      "Jong Anke de"  family-first  →  given="Anke"
+      "Mesnil Garcia de"  family-first  →  family="de Mesnil"
+      "Mesnil Garcia de"  family-first  →  given="Garcia"
+      "Mesnil Garcia de"  family-first-given-last  →  family="de Mesnil"
+      "Mesnil Garcia de"  family-first-given-last  →  given="Garcia"
+      "Berg Jan vd"  family-first  →  suffix="vd"
+      "van der"  family-first  →  family="van der"  · boundary
     Accepted: an ambiguous particle attaches on the same terms as a
     never-given one, so a Vietnamese name written in this listing
     loses its given name — but only in the UNACCENTED
@@ -417,12 +445,23 @@ P6. Rationale: a particle ending the name has nothing to link
       "Nguyen Thi Van"  family-first-given-last  →  family="Nguyen"
       "Nguyen Thi Van"  family-first-given-last  →  given="Van"
       "Nguyen Thi Van"  family-first  →  middle="Van"
-    Accepted: without a family comma the name's written shape is not
-    settled — "Jong Anke de" may be a misformatted listing, and a
-    bare "Jong de" may be a given name beside a particle — so the
-    attachment is scoped to the comma form, and the comma-less
-    shapes keep their positional reading.
+    Accepted: under the DEFAULT order a comma-less name's written
+    shape is not settled — "Jong Anke de" may be a misformatted
+    listing, and a bare "Jong de" may be a given name beside a
+    particle — so nothing there names the family and the positional
+    reading stands. What the attachment needs is not the comma but
+    what the comma says; a declared family-first order says it, and
+    the default order says nothing.
       "Jong Anke de"              →  family="de"
+    Accepted: the never-given restriction cuts across the Dutch
+    tussenvoegsel set, so the two formats agree for the never-given
+    `de` and not for the ambiguous `van`. The Accepted clause above
+    is what decides it: the comma-less family-first-given-last form
+    is the ONE format that reads the unaccented Vietnamese spelling
+    correctly, and an attachment taking ambiguous particles without
+    a comma would take that format too.
+      "Beethoven, Ludwig van"     →  family="van Beethoven"
+      "Beethoven Ludwig van"  family-first  →  middle="van"
     Accepted: the precedence over S2 is stated for the shape, so it
     sweeps in every word that is both particle and suffix
     vocabulary — today vd, do and mc. Only vd's reading was
