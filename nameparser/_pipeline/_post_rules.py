@@ -245,11 +245,10 @@ def post_rules(state: ParseState) -> ParseState:
         middles = _idx(tokens, Role.MIDDLE)
         families = _idx(tokens, Role.FAMILY)
 
-    # rules.md#P1: "a never-given particle standing alone where the
-    # given name would go — or opening the name — marks the name as
-    # surname-only: the particle run and the name words it attaches
-    # to are the family." (v1 handle_non_first_name_prefix; history:
-    # decisions.md#P1)
+    # rules.md#P1: "A never-given particle opening the name marks the
+    # name as surname-only: the particle run and the name words it
+    # attaches to are the family." (v1 handle_non_first_name_prefix;
+    # history: decisions.md#P1)
     # How far the fold reaches depends on the order the name was READ
     # under (#395; decisions.md#P1, 2026-08-17): declaring a
     # family-first order asserts that what follows the family is not
@@ -266,15 +265,22 @@ def post_rules(state: ParseState) -> ParseState:
     # having already fixed the surname, so `order is None` here.
     # Anything that later gives that path an order turns the
     # narrowing on for it.
-    # Code-local: a lone PIECE is the test at both sites, so a
-    # particle group already chained forward is not a lone particle,
-    # and rule H1 above cannot be what produces the fold's family
-    # reading -- H1 is gated on `not families`.
+    # ONE site, the opening piece. A particle standing in the GIVEN
+    # position was a second site until #467, and it was the parser
+    # overriding a declaration rather than reading one: under a
+    # family-first order that slot holds what the caller SAID is the
+    # given name, and the never-given vocabulary supplies a default
+    # where position leaves the question open, not a veto over an
+    # answer position already gave. So "Menil de" under either
+    # family-first order reports given "de" -- P6 takes the trailing
+    # particle only where it landed in a MIDDLE, which means nothing.
+    # Code-local: a lone PIECE is the test, so a particle group
+    # already chained forward is not a lone particle, and rule H1
+    # above cannot be what produces the fold's family reading -- H1 is
+    # gated on `not families`.
     lead = _leading_name_piece(state, tokens)
     lead_fires = _is_lone_never_given_particle(lead, tokens)
-    sites_fire = lead_fires or _is_lone_never_given_particle(
-        tuple(givens), tokens)
-    if len(givens) + len(middles) + len(families) > 1 and sites_fire:
+    if len(givens) + len(middles) + len(families) > 1 and lead_fires:
         order = state.order
         if lead_fires and order is not None and order[0] is Role.FAMILY:
             # `state.order`, not policy.name_order: a script_orders
@@ -334,6 +340,62 @@ def post_rules(state: ParseState) -> ParseState:
             _retag(tokens, m2, Role.MIDDLE)
             _retag(tokens, f, Role.MIDDLE)
             _retag(tokens, g, Role.FAMILY)
+    # rules.md#P6: "a particle ending the name attaches to that family
+    # name and is written before it" -- the no-comma site (#467).
+    # A comma is not the only thing that names the family; a declared
+    # family-first order does too, and the same listing is written
+    # both ways ("Jong, Anke de" and "Jong Anke de" under
+    # FAMILY_FIRST both give family "de Jong").
+    #
+    # Keyed on the SLOT the run landed in, not on its vocabulary.
+    # MIDDLE is the one position that means nothing here: middles are
+    # further given names, and a particle is not one. Only
+    # FAMILY_FIRST puts a trailing piece there --
+    # FAMILY_FIRST_GIVEN_LAST puts it in GIVEN, where the caller's own
+    # declaration says it IS the given name, and P1's site above no
+    # longer overrides that either.
+    #
+    # Which is why no vocabulary test appears here and none is wanted.
+    # The comma path needs one because a comma cannot separate the
+    # Dutch reading from the Vietnamese; the declared ORDER can, and
+    # does it for both at once: "Beethoven Ludwig van" under
+    # FAMILY_FIRST gives family "van Beethoven" though `van` is
+    # ambiguous vocabulary, and "Nguyen Thi Van" under
+    # FAMILY_FIRST_GIVEN_LAST keeps given "Van" though the same word
+    # is in the same set. A never-given test here would have excluded
+    # 37 ambiguous particles -- von, di, da, del, le and `van` itself,
+    # the flagship word of the listing this rule is named for.
+    #
+    # NO RE-LAYOUT, and that is a property of the order rather than a
+    # simplification: under FAMILY_FIRST the roles run family, given,
+    # middle, middle..., so dropping a trailing MIDDLE leaves every
+    # other piece's role untouched. An earlier draft (#466) removed a
+    # piece and re-laid the leftover out, which lost a given name
+    # outright on "van Berg Jan de" and promoted a post-nominal into
+    # the given slot on "Berg Jan Jr. de".
+    #
+    # The family must still hold a base of its own: attaching to an
+    # all-particle family renders one particle in front of another
+    # ("van Berg Jan de" -> family 'de van'), and R2 reads those words
+    # as ordinary name words, which no rule reorders.
+    mids = _idx(tokens, Role.MIDDLE)
+    if mids and families and state.order is not None:
+        run: list[int] = []
+        i = len(mids)
+        while i and "particle" in tokens[mids[i - 1]].tags:
+            i -= 1
+            run.append(mids[i])
+        if run and any("particle" not in tokens[j].tags for j in families):
+            for j in run:
+                tokens[j] = dataclasses.replace(
+                    tokens[j], role=Role.FAMILY,
+                    tags=tokens[j].tags | {FOLDED_TAG})
+            # recomputed for H1's reason, stated at H1: a stale index
+            # list is the bug shape #359 fixed
+            givens = _idx(tokens, Role.GIVEN)
+            middles = _idx(tokens, Role.MIDDLE)
+            families = _idx(tokens, Role.FAMILY)
+
     # rules.md#P6: "a particle ending the name attaches to that family
     # name and is written before it" -- where a family comma has
     # already named the family, and provided at least one given word

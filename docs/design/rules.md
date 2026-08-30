@@ -102,28 +102,37 @@ H3. Rationale: compound titles are written as a run of title words,
 
 Background: particles ("de", "la", "van", "von", "bin") link forward to a surname and are written as part of it. Some are never anyone's given name; others ("Van", "Bin") are ordinary given names in some cultures, so the vocabulary distinguishes never-given particles from ambiguous ones, and only the never-given ones license special treatment. A separate small vocabulary binds forward to a GIVEN name instead: words like "abdul" that are not complete given names alone (P5). Which particles fall on which side of the never-given line is its own open question (#360).
 
-P1. Rationale: a never-given particle standing alone cannot be
-    someone's given name; a name that opens with one, or offers only
-    one as the given name, is a surname written out in full.
-    A never-given particle standing alone where the given name would
-    go — or opening the name — marks the name as surname-only: the
-    particle run and the name words it attaches to are the family. It
-    needs another name word to attach to. The run is every particle
-    in sequence, never-given and ambiguous alike ("de la Vega" is
-    one group, not "de" plus a separate "la Vega"). An ambiguous particle keeps
-    whatever reading its position gives it. That the particle claims
-    the FAMILY rather than a given name holds under every order: a
-    never-given particle is evidence about how the name is written,
-    and a declared order governs only what no vocabulary has claimed
-    (O4) — the same precedence the script license takes in W4.
+P1. Rationale: a particle OPENING a name has the whole rest of the
+    name to link forward to, so it is doing a particle's work and the
+    piece it heads is a surname written out in full. That is evidence
+    about the writing, not about the word, which is why no declared
+    order contradicts it.
+    A never-given particle opening the name marks the name as
+    surname-only: the particle run and the name words it attaches to
+    are the family. It needs another name word to attach to. The run
+    is every particle in sequence, never-given and ambiguous alike
+    ("de la Vega" is one group, not "de" plus a separate "la Vega").
+    An ambiguous particle keeps whatever reading its position gives
+    it. That the particle claims the FAMILY rather than a given name
+    holds under every order: this is evidence about how the name is
+    written, and a declared order governs only what no vocabulary has
+    claimed (O4) — the same precedence the script license takes in W4.
+    The OPENING position is the whole of this rule's subject. A
+    particle standing where the given name would go was a second site
+    until #467, and dropping it is a correction rather than a
+    narrowing: that slot holds what the caller DECLARED to be the
+    given name, and the never-given vocabulary supplies a reading
+    where position leaves the question open rather than vetoing one
+    position has already given. A particle ending the name is P6's,
+    and only where it landed in a MIDDLE.
 
-    How MANY name words it attaches to depends on the order, and on
-    which of the two positions above the particle stands in. Opening
-    the name, under a family-first order, it takes exactly ONE —
-    declaring that order asserts that what follows the family is not
-    more surname. Opening the name under the default order, or
-    standing in the given position under any order, it takes the rest
-    of the name: nothing there marks where the surname ends. One name
+    How MANY name words it attaches to depends on the order. Under a
+    family-first order it takes exactly ONE — declaring that order
+    asserts that what follows the family is not more surname. Under
+    the default order it takes the rest of the name: nothing there
+    marks where the surname ends. Whether the default order should
+    narrow the same way is #471 — today `de Mesnil Juan` reports the
+    whole string as the family, and that reach is 1.4.0's. One name
     word means one UNIT — a particle chain (P2), a conjunction join
     (P3) or a bound given-name pair (P5) is taken whole or not at
     all. A title does not move the opening position (P4), but a
@@ -136,7 +145,7 @@ P1. Rationale: a never-given particle standing alone cannot be
     the family slot being already filled.
       "de la Vega"                →  family="de la Vega"
       "Sir de Mesnil"             →  family="de Mesnil"
-      "Mesnil de"  family-first   →  family="Mesnil de"
+      "Mesnil de"  family-first   →  given="de"
       "de Mesnil Juan"            →  family="de Mesnil Juan"
       "de Mesnil Juan"  family-first  →  family="de Mesnil"
       "de Mesnil Juan"  family-first  →  given="Juan"
@@ -391,6 +400,33 @@ P6. Rationale: a particle ending the name has nothing to link
       "Beethoven, Ludwig van"     →  family_base="Beethoven"
       "Beethoven, Ludwig van"     →  family_particles="van"
       "Nguyen, Van"               →  given="Van"  · boundary
+    Without a comma, a declared family-first order has named the
+    family in the same way and the attachment fires there too — but
+    only where the run landed in a MIDDLE, which is the one position
+    that means nothing for it. Middles are further given names and a
+    particle is not one. FAMILY_FIRST is the only order that puts a
+    trailing piece there: FAMILY_FIRST_GIVEN_LAST puts it in GIVEN,
+    where the caller's declaration says it IS the given name, and the
+    default order puts it in FAMILY, where it already is one.
+    Nothing is asked about the WORD, and that is what lets one rule
+    read both traditions: the same vocabulary that spells the Dutch
+    tussenvoegsel spells the Vietnamese given name, and the declared
+    order separates them where a comma cannot.
+    Nothing is re-laid-out either — under that order the roles run
+    family, given, middle, middle…, so dropping a trailing middle
+    leaves every other piece where it was. The family must hold a
+    base of its own, since a family that is all particles is not a
+    family written beside anything (R2).
+      "Jong Anke de"  family-first  →  family="de Jong"
+      "Jong Anke de"  family-first  →  given="Anke"
+      "Ménil Christophe de"  family-first  →  family="de Ménil"
+      "Ménil Christophe de"  family-first  →  given="Christophe"
+      "Beethoven Ludwig van"  family-first  →  family="van Beethoven"
+      "Ménil Christophe de"  family-first-given-last  →  given="de"
+      "Berg Jan de Jr."  family-first  →  family="de Berg"
+      "Berg Jan de Jr."  family-first  →  suffix="Jr."
+      "van Berg Jan de"  family-first  →  given="Berg"  · boundary
+      "Ménil de"  family-first  →  given="de"  · boundary
     Accepted: an ambiguous particle attaches on the same terms as a
     never-given one, so a Vietnamese name written in this listing
     loses its given name — but only in the UNACCENTED
@@ -414,12 +450,14 @@ P6. Rationale: a particle ending the name has nothing to link
       "Berg, Jan vd"              →  ambiguities=("suffix-or-name",)
       "Jong, Piet de"             →  ambiguities=()  · boundary
     Accepted: the colliding spelling has a format that reads
-    correctly, and it is ONE order, not both: FAMILY_FIRST still
-    sends the given name to the middle, and only
-    FAMILY_FIRST_GIVEN_LAST recovers it.
+    correctly, and it is ONE order, not both — FAMILY_FIRST_GIVEN_LAST,
+    which is the order this name is written in. A line asserting what
+    it does under FAMILY_FIRST stood here until #467 and was removed
+    rather than updated: the name is not written in that format, so
+    its reading there is wrong by construction and pins nothing worth
+    keeping (#470).
       "Nguyen Thi Van"  family-first-given-last  →  family="Nguyen"
       "Nguyen Thi Van"  family-first-given-last  →  given="Van"
-      "Nguyen Thi Van"  family-first  →  middle="Van"
     Accepted: without a family comma the name's written shape is not
     settled — "Jong Anke de" may be a misformatted listing, and a
     bare "Jong de" may be a given name beside a particle — so the
