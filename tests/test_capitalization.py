@@ -326,3 +326,19 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
             restored = pickle.loads(pickle.dumps(HumanName(text)))
             restored.capitalize(force=True)
             self.m(str(restored), want, restored)
+
+    # The ONE name a pickle round trip does change, pinned so it is not
+    # rediscovered as a bug. #458 moved the conjunction-versus-initial
+    # decision into the parse, and a pickle carries no tags, so the
+    # restored name is repaired the way 1.4.0 repaired everything --
+    # per word of the text, giving the Italian conjunction inside a
+    # hyphenated middle name. It is the pickle contract (strings only,
+    # never a re-parse) meeting the tag read, not a defect in either.
+    # 1.4.0 gave 'Juan e-F Smith' both ways.
+    def test_a_pickle_round_trip_loses_the_e_f_reading(self) -> None:
+        direct = HumanName('juan e-f smith')
+        direct.capitalize(force=True)
+        self.m(str(direct), 'Juan E-F Smith', direct)
+        restored = pickle.loads(pickle.dumps(HumanName('juan e-f smith')))
+        restored.capitalize(force=True)
+        self.m(str(restored), 'Juan e-F Smith', restored)
