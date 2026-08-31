@@ -122,9 +122,24 @@ def test_a_suffix_shaped_leading_piece_is_not_stepped_over() -> None:
     # become three -- which puts Van in the middle name rather than the
     # family once roles exist. See _group.py for why that reading is
     # worse rather than merely different.
-    assert _piece_texts(_grouped("Ph. D. Van Johnson")) == \
-        [["Ph. D.", "Van Johnson"]]
+    #
+    # "Ph. D. Van Johnson" left this test with #371: the pair is no
+    # longer merged at the head, so there is no suffix-shaped leading
+    # piece there to step over or not. The scan's decision is the same
+    # and "II Van Johnson" still witnesses it -- a numeral needs no
+    # merge to be suffix vocabulary.
     assert _piece_texts(_grouped("II Van Johnson")) == [["II", "Van Johnson"]]
+
+
+def test_the_phd_merge_declines_at_the_head_of_a_name() -> None:
+    # A suffix never begins a name (S2, and #371). The merge is what
+    # made a leading "Ph." "D." a credential at all, and it emptied the
+    # family doing it. Segment 0 only: after a family comma the run
+    # legitimately opens its segment, which C1 reads as a listing.
+    assert _piece_texts(_grouped("Ph. D. Van Johnson")) == \
+        [["Ph.", "D.", "Van Johnson"]]
+    assert _piece_texts(_grouped("Smith, Ph. D. Jr.")) == \
+        [["Smith"], ["Ph. D.", "Jr."]]
 
 
 def test_von_und_zu_bridges() -> None:

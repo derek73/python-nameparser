@@ -297,6 +297,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                    ambiguities: list[PendingAmbiguity] | None = None,
                    cores: Set[str] = frozenset(),
                    given_name_titles: Set[str] = frozenset(),
+                   opens_the_name: bool = False,
                    ) -> tuple[list[Piece], list[set[str]], MaidenTake | None]:
     pieces: list[Piece] = [[i] for i in seg]
     ptags: list[set[str]] = [set() for _ in seg]
@@ -367,10 +368,24 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # ph-d merge first: "Ph." "D." adjacent -> one suffix piece
     # (decisions.md#phd-merge; v1 fix_phd did this by regex on the
     # raw string)
+    # A suffix never BEGINS a name: position outranks the vocabulary
+    # match (#371). This merge is what makes a leading "Ph." "D." a
+    # credential at all -- every other suffix-shaped word standing
+    # first already falls out as a title (H2's abbreviation clause, or
+    # TITLES membership) or as a name word, so the pair is the only
+    # shape that reaches the defect, and it reached it by emptying the
+    # family: "Ph. D. Van Johnson" read given 'Van Johnson' with no
+    # surname at all.
+    #
+    # OPENING THE NAME is not "opening a piece list". A credential run
+    # legitimately opens segment 1 after a family comma ("Smith,
+    # Ph. D. Jr."), which is C1's listing form rather than a name
+    # beginning, so the caller passes the distinction in.
     k = 0
     while k < len(pieces) - 1:
         a, b = pieces[k], pieces[k + 1]
-        if (len(a) == 1 and len(b) == 1
+        if (not (opens_the_name and k == 0)
+                and len(a) == 1 and len(b) == 1
                 and PH.fullmatch(tokens[a[0]].text)
                 and D.fullmatch(tokens[b[0]].text)):
             merge(k, k + 2, add={"suffix"})
@@ -750,7 +765,8 @@ def group(state: ParseState) -> ParseState:
             seg, additional, tokens, bound_join,
             None if family_comma else ambiguities,
             seg_cores,
-            state.lexicon.given_name_titles)
+            state.lexicon.given_name_titles,
+            opens_the_name=(seg_idx == 0 and not family_comma))
         # the marker is dropped and the maiden name's tokens become
         # MAIDEN (#274); which pieces those are was settled in
         # _group_segment, before the joins

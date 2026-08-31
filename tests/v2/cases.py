@@ -2044,7 +2044,8 @@ CASES: tuple[Case, ...] = (
          {"title": "Dr.", "given": "John", "family": "Smith",
           "suffix": "Ph. D."}),
     Case("phd_split_leading", "Ph. D. John Smith",
-         {"given": "John", "family": "Smith", "suffix": "Ph. D."},
+         {"title": "Ph.", "given": "D.", "middle": "John",
+          "family": "Smith"},
          classification="fix",
          notes="v1 healed 'Ph.'+'D.' only when trailing; leading it "
                "split them (title 'Ph.', given 'D.', real given name "

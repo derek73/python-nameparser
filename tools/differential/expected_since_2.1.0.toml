@@ -1182,3 +1182,31 @@ issue = "fix(#445) the lone name word beside a marker a connective join no longe
 # having read the marker as a middle word.
 name_regex = "(?i)^Jane n[ée]e and Jones Smith$"
 fields = ["given", "middle", "family", "maiden"]
+
+[[change]]
+issue = "fix(#371) a suffix never begins a name: the Ph./D. merge declines at the head"
+# 'Ph. D. Van Johnson', 'Ph. D. John Smith', 'Ph. D.', 'Ph. D., Jr.':
+# rules.md#S2 -- "A suffix never BEGINS a name: position outranks the
+# vocabulary match". The v1 fix_phd merge joined the pair wherever it
+# stood, which is what made a leading credential possible at all, and
+# it emptied the family doing it: 'Ph. D. Van Johnson' read given
+# 'Van Johnson' with no surname. Declining at the head of segment 0
+# leaves 'Ph.' to H2's abbreviation clause (title) and 'D.' to the
+# positional read.
+#
+# RESTORES 1.4.0 on all four, exactly, which is why this ledger gains
+# a rule while expected_since_1.4.0 LOSES three names: v1 matched the
+# pair by regex mid-string and never merged it at the head either, so
+# what shipped in 2.0 was a regression rather than a reading. Measured
+# on the released 1.4.0 wheel: 'Ph. D. Van Johnson' -> title 'Ph.',
+# first 'D.', last 'Van Johnson'; 'Ph. D. John Smith' -> title 'Ph.',
+# first 'D.', middle 'John', last 'Smith'; 'Ph. D.' -> title 'Ph.',
+# last 'D.'; 'Ph. D., Jr.' -> title 'Ph.', first 'D.', suffix 'Jr.'
+# (three of four fields there -- v1 kept first 'D.' where the comma
+# path now leaves it empty, which predates this change).
+#
+# `fields` is the union over the four names and nothing wider: title
+# and suffix move on all four, given on two, family on three, middle
+# on one.
+name_regex = "(?i)^Ph\\. D\\.( John Smith| Van Johnson|, Jr\\.)?$"
+fields = ["title", "given", "middle", "family", "suffix"]

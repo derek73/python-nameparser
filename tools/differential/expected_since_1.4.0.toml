@@ -1138,30 +1138,15 @@ name_regex = "[\\u0400-\\u04FF]"
 fields = ["title", "given", "middle"]
 
 
-[[change]]
-issue = "fix(leading-credential) a split 'Ph. D.' before the name stays one unit"
-# 'Ph. D. John Smith'. v1 healed the adjacent 'Ph.'/'D.' pair only when
-# it TRAILED; leading, it split them -- title 'Ph.', given 'D.', and
-# the real given name pushed to middle. 2.0 keeps the credential whole
-# and routes it to `suffix`, which is the post-nominal field, so a
-# leading credential lands there rather than in `title`. Slightly odd
-# positionally, and still strictly better than manufacturing a given
-# name out of 'D.'.
-#
-# Anchored to the START on purpose. Trailing 'Ph. D.' is PARITY and
-# stays unclassified below; widening this regex would mask a
-# regression in the shape that is the whole reason fix_phd exists.
-#
-# `family` joined the roles when #413's harvest brought three names
-# into this rule's reach, two of which move it: a bare 'Ph. D.' (1.4
-# read family 'D.', now suffix) and 'Ph. D. Van Johnson' (1.4 read
-# family 'Van Johnson', now given). Both move `family` for the same reason the other roles
-# move -- the credential stops being split into a title and a given
-# name, and everything behind it shifts one place. The REGEX is
-# untouched; only the roles the same shape was always going to move
-# are now recorded.
-name_regex = "^Ph\\. ?D\\."
-fields = ["title", "given", "middle", "family", "suffix"]
+# The fix(leading-credential) rule that stood here is GONE, and its
+# absence is the record: it explained 2.0 routing a leading split
+# 'Ph. D.' to `suffix` where v1 read title 'Ph.' and given 'D.'. #371
+# restored v1 on all four names of that shape, so the rule explained
+# nothing and the gate said so (EXPLAINED NOTHING is an error, which
+# is how a parity restoration announces itself here). What v1 did --
+# heal the pair only when it TRAILS -- is what the parser does again;
+# rules.md#S2 now states it as a rule rather than a regex accident.
+
 
 # Deliberately NOT a [[change]] rule: TRAILING 'Ph. D.' split-token
 # healing ('John Ph. D.', 'John Smith, Ph. D.') is PARITY, not a 2.0

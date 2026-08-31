@@ -1068,6 +1068,11 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # begins, and the alternation is over ANCHORS, not over words --
     # there is no vocabulary here to drift from.
     frozenset({"^", ",\\s*"}),
+    # fix(#371)'s alternation is the three corpus names that carry a
+    # leading 'Ph. D.' -- a list of names, not a copy of any wordlist.
+    # The vocabulary the rule turns on is `ph`/`d`, which the regex
+    # spells out in the anchored stem rather than in the alternation.
+    frozenset({" John Smith", " Van Johnson", ", Jr\\."}),
     # fix(#445)'s movers, one corpus name per alternative -- a list of
     # names, not a copy of any wordlist, so there is no vocabulary for
     # it to drift from. Two sets because the ledgers group the nine
@@ -1572,8 +1577,6 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(19, ('family', 'given', 'middle', 'suffix'), "aa475ddd4745"),
         "feat(#269) non-Latin titles/conjunctions recognized":
             _Claim(4, ('given', 'middle', 'title'), "e86eeb13eeb2"),
-        "fix(leading-credential) a split 'Ph. D.' before the name stays one unit":
-            _Claim(4, ('family', 'given', 'middle', 'suffix', 'title'), "1425d85a2d86"),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
             _Claim(1, ('family', 'given'), "ca7b37af6cf8"),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
@@ -1763,8 +1766,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'given'), "e62caedec864"),
         "fix(#399) a maiden marker bounds the particle chain: the geb. spelling":
             _Claim(1, ('family', 'maiden'), "2150936a8c55"),
+        "fix(#371) a suffix never begins a name: the Ph./D. merge declines at the head":
+            _Claim(4, ('family', 'given', 'middle', 'suffix', 'title'), "1425d85a2d86"),
     },
     "expected_since_2.1.0.toml": {
+        "fix(#371) a suffix never begins a name: the Ph./D. merge declines at the head":
+            _Claim(4, ('family', 'given', 'middle', 'suffix', 'title'), "1425d85a2d86"),
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
             _Claim(1, ('maiden', 'nickname'), "c09cc7dba88b"),
         "fix(#434) a multi-word maiden marker takes the maiden name":
