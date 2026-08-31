@@ -66,6 +66,26 @@ it matches and the word matches everywhere else. No warning is raised
 for a multi-word entry in either of these two fields, since there it is
 not a mistake.
 
+The limit is on *storage*, not on the shape a name can have. Adjacent
+suffix words are reassembled after they match, so a multi-word
+credential is reachable as its component words even though the phrase
+itself cannot be stored:
+
+.. doctest::
+
+    >>> from nameparser import parse
+    >>> parse("John Smith, MD PhD").suffix
+    'MD PhD'
+
+That has held since 1.4.0. A credential whose words are not in the
+default vocabulary is reached by adding those words, not the phrase:
+
+.. doctest::
+
+    >>> lex = Lexicon.default().add(suffix_acronyms={"leed", "ap"})
+    >>> Parser(lexicon=lex).parse("John Smith, LEED AP").suffix
+    'LEED AP'
+
 Removing works the same way, and drops the word from recognition:
 
 .. doctest::
