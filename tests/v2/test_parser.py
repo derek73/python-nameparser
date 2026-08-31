@@ -826,10 +826,12 @@ def test_revise_preserves_particle_tags() -> None:
 def test_revise_takes_a_spaced_credential_literally() -> None:
     # The Ph./D. merge is a HEAD-POSITION rule (#371) and a field value
     # has no head: revise() runs a full sub-parse of the string it is
-    # given, so "Ph. D." there is two initials, not one credential.
+    # given, so "Ph. D." there is two separate suffix pieces -- `Ph.`
+    # by vocabulary, `D.` as an initial -- which the suffix view
+    # renders comma-joined, rather than one healed credential.
     # Deliberate -- the merge exists for a credential someone TYPED
     # after a name, and a caller who writes the spaced form into the
-    # suffix field is taken at their word.
+    # suffix field gets it read as two suffix items.
     p = Parser()
     n = p.parse("John Smith Ph.D.")
     r = p.revise(n, suffix="Ph. D.")

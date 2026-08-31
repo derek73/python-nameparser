@@ -1068,10 +1068,12 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # begins, and the alternation is over ANCHORS, not over words --
     # there is no vocabulary here to drift from.
     frozenset({"^", ",\\s*"}),
-    # fix(#371)'s alternation is the three corpus names that carry a
-    # leading 'Ph. D.' -- a list of names, not a copy of any wordlist.
-    # The vocabulary the rule turns on is `ph`/`d`, which the regex
-    # spells out in the anchored stem rather than in the alternation.
+    # fix(#371)'s alternation holds the TAILS of the four corpus names
+    # that carry a leading 'Ph. D.' -- three tails plus the bare stem
+    # on the `?`. A list of names, not a copy of any wordlist. And the
+    # pair the rule turns on is not vocabulary at all: _vocab.PH and
+    # _vocab.D are fixed regexes, so there is no wordlist here for the
+    # alternation to drift from.
     frozenset({" John Smith", " Van Johnson", ", Jr\\."}),
     # fix(#445)'s movers, one corpus name per alternative -- a list of
     # names, not a copy of any wordlist, so there is no vocabulary for
@@ -1529,8 +1531,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(13, ('family', 'middle'), "973617235cda"),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
             _Claim(2, ('family', 'suffix'), "ec0d45289dc1"),
+        # 279 -> 280 with #371, and the growth is corpus, not behavior:
+        # that PR added `Ph. D., John` as a rules.md example, so the
+        # regex matches one more corpus name. The name does not diff at
+        # this baseline (v1 and HEAD both read first 'John', last
+        # 'Ph. D.'), so nothing was absorbed.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(279, ('given', 'suffix', 'title'), "28a62b622a48"),
+            _Claim(280, ('given', 'suffix', 'title'), "019315da85b9"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -1550,7 +1557,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#367) an inferred title no longer displaces a leading particle either":
             _Claim(1, ('family', 'given'), "d8ee9cd5da5f"),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(279, ('family', 'given'), "28a62b622a48"),
+            _Claim(280, ('family', 'given'), "019315da85b9"),
         "fix(#342) NOT WANTED: a bare trailing 'Rai' is read as a post-nominal suffix and the family is lost":
             _Claim(1, ('family', 'suffix'), "694fd06a2e9a"),
         "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":

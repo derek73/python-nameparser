@@ -377,14 +377,39 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # family: "Ph. D. Van Johnson" read given 'Van Johnson' with no
     # surname at all.
     #
-    # OPENING THE NAME is not "opening a piece list". A credential run
-    # legitimately opens segment 1 after a family comma ("Smith,
-    # Ph. D. Jr."), which is C1's listing form rather than a name
-    # beginning, so the caller passes the distinction in.
+    # WHERE THE INPUT BEGINS, and that is v1's own boundary rather
+    # than a new one: fix_phd was a regex requiring a preceding space
+    # (`\s(ph\.?\s+d\.?)`), so it could never fire at the head of the
+    # string and fired everywhere else -- mid-name as readily as
+    # trailing. Three tests, because "the head" has three meanings
+    # here and only one of them is v1's:
+    #   `k == 0`     the first PIECE, which is not the first word --
+    #                extract_delimited removes a bracketed or quoted
+    #                clause before segment runs, so `"Bob" Ph. D. John
+    #                Smith` reaches this with the pair at k == 0 and a
+    #                word standing before it in the input. v1 merges
+    #                there; declining broke parity on 112 measured
+    #                names, every one opening with a quote or bracket.
+    #   `a[0] == 0`  the first TOKEN, which is v1's boundary.
+    #   seg_idx 0    and not after a family comma: a credential run
+    #                legitimately opens segment 1 ("Smith, Ph. D.
+    #                Jr.", C1's listing form), and segment 0 before a
+    #                comma is the family the comma named, where v1
+    #                merges too ("Ph. D., John" reads last 'Ph. D.').
+    #
+    # A leading TITLE is therefore NOT stepped over, unlike the #367
+    # scan below, and the two disagree on purpose: that scan asks
+    # where the NAME begins, this asks where the STRING does. `Sir
+    # Ph. D. Van Johnson` keeps suffix 'Ph. D.' with an empty family,
+    # which is #371's symptom surviving one word to the left -- 1.4.0
+    # parity, stated as a boundary in rules.md#S2 rather than fixed
+    # here, because "the first piece of the name" cannot be computed
+    # before this merge: `is_leading_title` is true of `Ph.` itself,
+    # so the scan would step over the very piece being judged.
     k = 0
     while k < len(pieces) - 1:
         a, b = pieces[k], pieces[k + 1]
-        if (not (opens_the_name and k == 0)
+        if (not (opens_the_name and k == 0 and a[0] == 0)
                 and len(a) == 1 and len(b) == 1
                 and PH.fullmatch(tokens[a[0]].text)
                 and D.fullmatch(tokens[b[0]].text)):
@@ -483,10 +508,12 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         #
         # Suffix pieces are deliberately NOT skipped, and the reason is
         # what skipping them WOULD do rather than what it would cost.
-        # A credential written with spaces already parses without a
-        # family name -- "Ph. D. Van Johnson" is given 'Van Johnson',
-        # suffix 'Ph. D.', family '' -- and skipping the suffix piece
-        # would actually give it one (given 'Van', family 'Johnson').
+        # (The "Ph. D. Van Johnson" example that opened this argument
+        # left it with #371: the pair no longer merges at the head of
+        # the input, so there is no suffix-shaped leading piece there
+        # to skip or not. "Dr. Ph. D. Van Johnson" is the replacement
+        # -- family 'Van Johnson' as shipped, family 'Johnson' with
+        # the skip.)
         # The shapes that decide it are the ones whose leading piece
         # lands in `given` instead: "Ph.D. Van Johnson", "II Van
         # Johnson" and "Msc.Ed. Van Johnson" each read given
