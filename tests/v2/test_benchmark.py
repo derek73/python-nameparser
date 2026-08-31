@@ -19,6 +19,7 @@ because the stage is gated on an opt-in Policy field that bare parse()
 leaves empty. A shape guards nothing if the default policy cannot
 reach the code under it.
 """
+import sys
 import time
 from collections.abc import Callable
 
@@ -28,26 +29,82 @@ from nameparser import Parser, parse
 from nameparser._policy import Policy
 
 
-def test_parse_thousand_names_under_a_second() -> None:
+#: What one parse of the reference name is allowed to cost, counted in
+#: Python function calls rather than seconds (#475). A wall-clock bound
+#: cannot separate a 1% change from a busy CI runner: the 1.0s version
+#: of these two tests failed four times across #466 and #474 at 1.01 to
+#: 1.08s while master re-ran green each time, and three local
+#: measurement methods -- uninstrumented, coverage-instrumented, and
+#: the whole file under --cov -- disagreed with CI and with each other.
+#: Call counts are deterministic, so the same tree gives the same
+#: number on any machine, and growth is visible in the diff.
+#:
+#: Set 2026-08-31 at 408.4 (parse) and 445.4 (facade) with 15% headroom.
+#: Raising a ceiling is a decision to record in decisions.md, not a
+#: maintenance chore -- see the entry for what the 2.2 cycle spent.
+_CALL_BUDGET = {"parse": 470, "facade": 512}
+
+
+def _calls_per_parse(fn: Callable[[str], object], n: int = 200) -> float:
+    """Mean Python function calls for one parse of the reference name.
+
+    `sys.setprofile` counts every call in the interpreter, so this
+    measures the work the parser DOES rather than how fast the machine
+    did it. Deterministic for a given tree: the reference name is
+    fixed, the caches are warm, and nothing here samples a clock.
+    """
+    fn("warm up the caches")
+    calls = 0
+
+    def counter(frame: object, event: str, arg: object) -> None:
+        nonlocal calls
+        if event == "call":
+            calls += 1
+
+    sys.setprofile(counter)
+    try:
+        for i in range(n):
+            fn(f"Dr. Juan{i} de la Vega III")
+    finally:
+        sys.setprofile(None)
+    return calls / n
+
+
+def test_parse_cost_stays_within_its_call_budget() -> None:
+    actual = _calls_per_parse(parse)
+    assert actual <= _CALL_BUDGET["parse"], (
+        f"parse() costs {actual:.1f} calls/name, budget "
+        f"{_CALL_BUDGET['parse']}. Either make it cheaper or raise the "
+        f"budget deliberately -- see _CALL_BUDGET")
+
+
+def test_facade_cost_stays_within_its_call_budget() -> None:
+    # the legacy-API path (what all existing users call): snapshot
+    # resolution must stay generation-cached, not rebuilt per instance
+    from nameparser import HumanName
+
+    actual = _calls_per_parse(HumanName)
+    assert actual <= _CALL_BUDGET["facade"], (
+        f"HumanName() costs {actual:.1f} calls/name, budget "
+        f"{_CALL_BUDGET['facade']}. Either make it cheaper or raise the "
+        f"budget deliberately -- see _CALL_BUDGET")
+
+
+def test_a_thousand_names_still_parse_in_reasonable_time() -> None:
+    """The order-of-magnitude backstop the call budgets do not give.
+
+    Call counts cannot see a stage that gets slower without calling
+    anything more -- a regex that starts backtracking, a data structure
+    that turns quadratic inside one frame. This keeps that reachable,
+    with a bound loose enough that runner variance cannot reach it: the
+    failures that motivated #475 were at 1.01-1.08s against 1.0.
+    """
     parse("warm up the default parser cache")
     start = time.perf_counter()
     for i in range(1000):
         parse(f"Dr. Juan{i} de la Vega III")
     elapsed = time.perf_counter() - start
-    assert elapsed < 1.0, f"1000 parses took {elapsed:.2f}s"
-
-
-def test_facade_thousand_names_under_a_second() -> None:
-    # the legacy-API path (what all existing users call): snapshot
-    # resolution must stay generation-cached, not rebuilt per instance
-    from nameparser import HumanName
-
-    HumanName("warm up the caches")
-    start = time.perf_counter()
-    for i in range(1000):
-        HumanName(f"Dr. Juan{i} de la Vega III")
-    elapsed = time.perf_counter() - start
-    assert elapsed < 1.0, f"1000 facade parses took {elapsed:.2f}s"
+    assert elapsed < 5.0, f"1000 parses took {elapsed:.2f}s"
 
 
 # Pathological shapes: each repeats a unit that drives one stage's inner
