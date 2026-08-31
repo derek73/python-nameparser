@@ -10,31 +10,56 @@ from __future__ import annotations
 import importlib
 import inspect
 import pathlib
+import sys
 import warnings
+from typing import NamedTuple
 
 import pytest
 
 import nameparser
 
-#: (old module, old name, new module, new name), one row per alias.
+
+class _Alias(NamedTuple):
+    """One retired 1.x vocabulary name and the 2.2 name serving it.
+
+    Four same-typed strings whose order carries all the meaning, which
+    is what makes a bare tuple the wrong shape here: ``for m, n, _, _ in
+    ALIASES`` appeared six times below and reads correctly only if you
+    remember which end is which. Named after ``_LatinCopy`` in
+    ``test_ledger_guards.py`` (#356).
+    """
+    old_module: str
+    old_name: str
+    new_module: str
+    new_name: str
+
+
+def _id(alias: _Alias) -> str:
+    return f"{alias.old_module.rsplit('.', 1)[-1]}.{alias.old_name}"
+
+
+#: One row per alias.
 ALIASES = [
-    ("nameparser.config.prefixes", "PREFIXES",
-     "nameparser.config.particles", "PARTICLES"),
-    ("nameparser.config.prefixes", "NON_FIRST_NAME_PREFIXES",
-     "nameparser.config.particles", "NON_GIVEN_NAME_PARTICLES"),
-    ("nameparser.config.bound_first_names", "BOUND_FIRST_NAMES",
-     "nameparser.config.bound_given_names", "BOUND_GIVEN_NAMES"),
-    ("nameparser.config.titles", "FIRST_NAME_TITLES",
-     "nameparser.config.titles", "GIVEN_NAME_TITLES"),
-    ("nameparser.config.suffixes", "SUFFIX_NOT_ACRONYMS",
-     "nameparser.config.suffixes", "SUFFIX_WORDS"),
+    _Alias("nameparser.config.prefixes", "PREFIXES",
+           "nameparser.config.particles", "PARTICLES"),
+    _Alias("nameparser.config.prefixes", "NON_FIRST_NAME_PREFIXES",
+           "nameparser.config.particles", "NON_GIVEN_NAME_PARTICLES"),
+    _Alias("nameparser.config.bound_first_names", "BOUND_FIRST_NAMES",
+           "nameparser.config.bound_given_names", "BOUND_GIVEN_NAMES"),
+    _Alias("nameparser.config.titles", "FIRST_NAME_TITLES",
+           "nameparser.config.titles", "GIVEN_NAME_TITLES"),
+    _Alias("nameparser.config.suffixes", "SUFFIX_NOT_ACRONYMS",
+           "nameparser.config.suffixes", "SUFFIX_WORDS"),
 ]
+
+#: Old module paths, one per shim, for the per-module parametrizations.
+OLD_MODULES = sorted({a.old_module for a in ALIASES})
 
 
 @pytest.mark.parametrize(
     ("old_module", "old_name", "new_module", "new_name"),
     ALIASES,
-    ids=[f"{m.rsplit('.', 1)[-1]}.{n}" for m, n, _, _ in ALIASES],
+    ids=[_id(a) for a in ALIASES],
 )
 def test_old_name_warns_and_resolves_to_the_new_constant(
     old_module: str, old_name: str, new_module: str, new_name: str,
@@ -65,12 +90,26 @@ def test_warning_points_at_the_line_that_read_the_name() -> None:
     assert (record[0].filename, record[0].lineno) == (__file__, expected_lineno)
 
 
-def test_from_import_is_attributed_to_the_importing_module() -> None:
+@pytest.mark.parametrize(
+    ("old_module", "old_name"),
+    [(a.old_module, a.old_name) for a in ALIASES],
+    ids=[_id(a) for a in ALIASES],
+)
+def test_from_import_is_attributed_to_the_importing_module(
+    old_module: str, old_name: str,
+) -> None:
     """The form the ``stacklevel`` comment singles out, and the one most
     callers use. ``from x import Y`` resolves the alias while the
     importing module's frame is on top, so the report names the file
-    holding the import -- the line that has to be edited."""
-    code = compile("from nameparser.config.prefixes import PREFIXES\n",
+    holding the import -- the line that has to be edited.
+
+    Every alias, not the one ``prefixes`` row this covered until #356.
+    The two that KEPT their module are a structurally different shape:
+    their table sits at the bottom of a module that is mid-execution
+    during its own import, so a regression could reach those two and not
+    the moved ones.
+    """
+    code = compile(f"from {old_module} import {old_name}\n",
                    "caller_module.py", "exec")
     with pytest.warns(DeprecationWarning) as record:
         exec(code, {"__name__": "caller_module"})
@@ -79,8 +118,8 @@ def test_from_import_is_attributed_to_the_importing_module() -> None:
 
 @pytest.mark.parametrize(
     ("old_module", "old_name"),
-    [(m, n) for m, n, _, _ in ALIASES],
-    ids=[f"{m.rsplit('.', 1)[-1]}.{n}" for m, n, _, _ in ALIASES],
+    [(a.old_module, a.old_name) for a in ALIASES],
+    ids=[_id(a) for a in ALIASES],
 )
 def test_old_name_warns_once_per_read_location(
     old_module: str, old_name: str,
@@ -120,7 +159,7 @@ def test_old_name_warns_once_per_read_location(
 
 
 @pytest.mark.parametrize(
-    "old_module", sorted({m for m, _, _, _ in ALIASES}))
+    "old_module", OLD_MODULES)
 def test_unknown_attribute_still_raises(old_module: str) -> None:
     module = importlib.import_module(old_module)
     with pytest.raises(AttributeError, match="NOT_A_CONSTANT"):
@@ -129,11 +168,30 @@ def test_unknown_attribute_still_raises(old_module: str) -> None:
 
 @pytest.mark.parametrize(
     ("old_module", "old_name"),
-    [(m, n) for m, n, _, _ in ALIASES],
-    ids=[f"{m.rsplit('.', 1)[-1]}.{n}" for m, n, _, _ in ALIASES],
+    [(a.old_module, a.old_name) for a in ALIASES],
+    ids=[_id(a) for a in ALIASES],
 )
 def test_dir_advertises_the_old_names(old_module: str, old_name: str) -> None:
     assert old_name in dir(importlib.import_module(old_module))
+
+
+@pytest.mark.parametrize("old_module", OLD_MODULES)
+def test_dir_survives_the_module_being_dropped_from_sys_modules(
+    old_module: str, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """``dir()`` may raise ``AttributeError``; it may not raise ``KeyError``.
+
+    The override reads the module back out of ``sys.modules`` to reach
+    the live names, and a subscript there made ``dir(module)`` raise
+    ``KeyError`` for anyone holding a reference to a module that had
+    been dropped -- a package reload, a plugin teardown. The aliases
+    live in the closure and are still nameable, so they are what a
+    degraded listing can honestly offer (#356).
+    """
+    module = importlib.import_module(old_module)
+    retired = {a.old_name for a in ALIASES if a.old_module == old_module}
+    monkeypatch.delitem(sys.modules, old_module)
+    assert set(dir(module)) == retired
 
 
 def test_dir_lists_the_live_names_as_well_as_the_retired_ones() -> None:
@@ -154,7 +212,7 @@ def test_dir_lists_the_live_names_as_well_as_the_retired_ones() -> None:
     """
     live_seen = []
     dropped = {}
-    for old_module in sorted({m for m, _, _, _ in ALIASES}):
+    for old_module in OLD_MODULES:
         module = importlib.import_module(old_module)
         missing = set(vars(module)) - set(dir(module))
         if missing:
@@ -174,7 +232,7 @@ def test_dir_lists_the_live_names_as_well_as_the_retired_ones() -> None:
 
 
 @pytest.mark.parametrize(
-    "old_module", sorted({m for m, _, _, _ in ALIASES}))
+    "old_module", OLD_MODULES)
 def test_every_alias_table_row_reaches_star_import(old_module: str) -> None:
     """The direction the star-import test cannot see.
 
@@ -200,14 +258,14 @@ def test_every_alias_table_row_reaches_star_import(old_module: str) -> None:
         f"{old_module} serves {sorted(set(table) - exported)} through "
         f"__getattr__ but omits it from __all__, so `from {old_module} "
         f"import *` drops the name silently")
-    assert set(table) == {n for m, n, _, _ in ALIASES if m == old_module}, (
+    assert set(table) == {a.old_name for a in ALIASES if a.old_module == old_module}, (
         f"{old_module}'s alias table and this file's ALIASES disagree; "
         f"the literal table here is what proves the bridge points where "
         f"the migration guide says, so it has to cover every row")
 
 
 @pytest.mark.parametrize(
-    "old_module", sorted({m for m, _, _, _ in ALIASES}))
+    "old_module", OLD_MODULES)
 def test_star_import_binds_exactly_the_live_and_retired_names(
     old_module: str,
 ) -> None:
@@ -226,7 +284,7 @@ def test_star_import_binds_exactly_the_live_and_retired_names(
     kept in step by the same person who forgot ``__all__``.
     """
     module = importlib.import_module(old_module)
-    retired = {n for m, n, _, _ in ALIASES if m == old_module}
+    retired = {a.old_name for a in ALIASES if a.old_module == old_module}
     # A retired name is served by __getattr__ and never written into the
     # module, so vars() holds the live constants -- plus whatever else
     # the file imported. The type test is what separates the two:
@@ -244,6 +302,21 @@ def test_star_import_binds_exactly_the_live_and_retired_names(
 
     bound = {n for n in namespace if not n.startswith("__")}
     assert bound == live | retired
+    # NAMES alone would pass with an __all__ entry routed to the wrong
+    # constant -- the set is the same either way. Each retired name is
+    # checked against its destination and each live one against the
+    # module, so a mis-wired row fails here rather than in whatever
+    # parses differently three releases later (#356).
+    for alias in (a for a in ALIASES if a.old_module == old_module):
+        destination = getattr(
+            importlib.import_module(alias.new_module), alias.new_name)
+        assert namespace[alias.old_name] is destination, (
+            f"`from {old_module} import *` bound {alias.old_name} to "
+            f"something other than {alias.new_module}.{alias.new_name}")
+    for name in live:
+        assert namespace[name] is vars(module)[name], (
+            f"`from {old_module} import *` bound {name} to something "
+            f"other than the module's own constant")
     # the helper the bridge is built from is not vocabulary; before
     # __all__ it was the only thing a star import bound here
     assert "alias_getattr" not in bound
@@ -279,14 +352,18 @@ def test_star_import_binds_exactly_the_live_and_retired_names(
 #:   ``TITLE_PREFIXES`` reports as ``PREFIXES``. Renaming is the wrong
 #:   advice there, so the failure message offers this allow-list as the
 #:   other remedy.
+#: DERIVED from ``ALIASES``, not listed again: the allow-listed file is
+#: always the module that serves the name -- for the three that moved
+#: because that is where the alias table sits, and for the two that kept
+#: their module because the table sits at the bottom of the file whose
+#: constant it renames. A second hand-written copy of the same five
+#: names in the same file is drift surface: a sixth alias added to one
+#: list and not the other would silently exempt that name from the scan
+#: below rather than failing (#356).
 _RETIRED_NAMES = {
-    "PREFIXES": ("config/prefixes.py",),
-    "NON_FIRST_NAME_PREFIXES": ("config/prefixes.py",),
-    "BOUND_FIRST_NAMES": ("config/bound_first_names.py",),
-    # these two kept their module; the exemption is for the alias table
-    # at the bottom of the file, which names them as strings
-    "FIRST_NAME_TITLES": ("config/titles.py",),
-    "SUFFIX_NOT_ACRONYMS": ("config/suffixes.py",),
+    a.old_name: (
+        a.old_module.removeprefix("nameparser.").replace(".", "/") + ".py",)
+    for a in ALIASES
 }
 
 

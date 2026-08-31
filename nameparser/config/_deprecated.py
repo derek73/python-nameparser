@@ -118,7 +118,15 @@ def alias_getattr(
         # of tab completion and every getattr-free member scan --
         # autodoc's included. Pinned by test_config_aliases
         # ::test_dir_lists_the_live_names_as_well_as_the_retired_ones.
-        return sorted(set(vars(sys.modules[module])) | set(aliases))
+        #
+        # .get, not [...]: a module dropped from sys.modules -- a test
+        # that reloads the package, a plugin teardown -- would otherwise
+        # make dir() raise KeyError, which is not among the things dir()
+        # may do to a caller. The aliases are held in the closure and
+        # are still nameable, so they are what is left to list (#356).
+        live = sys.modules.get(module)
+        names = set(vars(live)) if live is not None else set()
+        return sorted(names | set(aliases))
 
     # The table itself, reachable without tripping a warning. __all__ is
     # hand-written per module (it must stay in SOURCE order for autodoc,
