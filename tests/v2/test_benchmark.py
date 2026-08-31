@@ -30,28 +30,62 @@ from nameparser._policy import Policy
 
 
 #: What one parse of the reference name is allowed to cost, counted in
-#: Python function calls rather than seconds (#475). A wall-clock bound
+#: Python frame entries rather than seconds (#475). A wall-clock bound
 #: cannot separate a 1% change from a busy CI runner: the 1.0s version
-#: of these two tests failed four times across #466 and #474 at 1.01 to
-#: 1.08s while master re-ran green each time, and three local
-#: measurement methods -- uninstrumented, coverage-instrumented, and
-#: the whole file under --cov -- disagreed with CI and with each other.
-#: Call counts are deterministic, so the same tree gives the same
-#: number on any machine, and growth is visible in the diff.
+#: of these tests failed four times across #466 and #474 at 1.01-1.08s
+#: while master re-ran green each time, and three local measurement
+#: methods disagreed with CI and with each other. Frame counts do not
+#: move under load, and -- measured -- do not move under `pytest --cov`
+#: either, though coverage costs 3x on the clock.
 #:
-#: Set 2026-08-31 at 408.4 (parse) and 445.4 (facade) with 15% headroom.
-#: Raising a ceiling is a decision to record in decisions.md, not a
-#: maintenance chore -- see the entry for what the 2.2 cycle spent.
-_CALL_BUDGET = {"parse": 470, "facade": 512}
+#: PER INTERPRETER, because the count is not machine-independent: PEP
+#: 709 inlined the comprehension frames 3.11 counts, and 3.13 added
+#: others back. A version with no row here fails loudly with its own
+#: number rather than passing unguarded -- recording it is the point.
+#:
+#: A BAND, not a ceiling. A ceiling with headroom is another threshold
+#: that happens to break, which is the failure this replaced: the 2.2
+#: cycle's +67 calls arrived across a dozen PRs at roughly five each,
+#: and no ceiling loose enough to be safe can see five. The band is
+#: +/-2%, so a single PR's worth of growth lands in a diff with a
+#: reason beside it. A DROP is a signal too, and trips the same test.
+#:
+#: Raising or lowering a row is a decision to record in
+#: decisions.md#parse-cost, not a maintenance chore. Recompute with
+#: `uv run python tools/perf/call_count.py`, which is the harness every
+#: number in that entry comes from.
+#:
+#: Measured 2026-08-31 on this tree with that harness. 3.11 and 3.14
+#: are the two interpreters on the author's machine; 3.12, 3.13 and
+#: 3.15 are CI's, seeded from a review measurement and confirmed by
+#: the first green run -- a wrong seed fails with the real number.
+_CALL_BASELINE = {
+    (3, 11): {"parse": 410, "facade": 447},
+    (3, 12): {"parse": 388, "facade": 425},
+    (3, 13): {"parse": 406, "facade": 443},
+    (3, 14): {"parse": 406, "facade": 443},
+    (3, 15): {"parse": 406, "facade": 443},
+}
+_BAND = 0.02
+
+#: The reference name is fixed WIDTH, not merely fixed: an incrementing
+#: counter grows a digit and costs one more call when it does, which
+#: made the first draft's "mean over n names" a function of n rather
+#: than of the parser.
+_REFERENCE = "Dr. Juan{i:04d} de la Vega III"
 
 
-def _calls_per_parse(fn: Callable[[str], object], n: int = 200) -> float:
-    """Mean Python function calls for one parse of the reference name.
+def _calls_per_parse(fn: Callable[[str], object], n: int = 50) -> float:
+    """Mean Python frame entries for one parse of the reference name.
 
-    `sys.setprofile` counts every call in the interpreter, so this
-    measures the work the parser DOES rather than how fast the machine
-    did it. Deterministic for a given tree: the reference name is
-    fixed, the caches are warm, and nothing here samples a clock.
+    `sys.setprofile` counts Python frame entries -- NOT C calls, and not
+    the interpreter's own work inside one frame -- so this measures the
+    work the parser does rather than how fast the machine did it. Per
+    parse there are roughly 575 `c_call` events this cannot see.
+
+    Deterministic for a given tree AND interpreter: verified identical
+    across repeated calls, fresh processes, PYTHONHASHSEED values, and
+    with or without coverage installed.
     """
     fn("warm up the caches")
     calls = 0
@@ -64,47 +98,85 @@ def _calls_per_parse(fn: Callable[[str], object], n: int = 200) -> float:
     sys.setprofile(counter)
     try:
         for i in range(n):
-            fn(f"Dr. Juan{i} de la Vega III")
+            fn(_REFERENCE.format(i=i))
     finally:
         sys.setprofile(None)
     return calls / n
 
 
-def test_parse_cost_stays_within_its_call_budget() -> None:
-    actual = _calls_per_parse(parse)
-    assert actual <= _CALL_BUDGET["parse"], (
-        f"parse() costs {actual:.1f} calls/name, budget "
-        f"{_CALL_BUDGET['parse']}. Either make it cheaper or raise the "
-        f"budget deliberately -- see _CALL_BUDGET")
+def _check_budget(kind: str, fn: Callable[[str], object]) -> None:
+    """Assert one entry point sits inside its band.
+
+    Skips rather than clobbers when something else owns the profile
+    slot: `sys.setprofile(None)` in the helper CLEARS the hook, and a
+    maintainer profiling the parser -- the very workflow that produced
+    decisions.md#parse-cost -- would otherwise get silently truncated
+    data. Restoring is not an option: `sys.getprofile()` hands back a
+    `Profile` object that `sys.setprofile()` then refuses.
+    """
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    version = sys.version_info[:2]
+    if version not in _CALL_BASELINE:
+        actual = _calls_per_parse(fn)
+        pytest.fail(
+            f"no call baseline for Python {version[0]}.{version[1]}; "
+            f"{kind} measures {actual:.1f} here. Add the row to "
+            f"_CALL_BASELINE and record it in decisions.md#parse-cost")
+    baseline = _CALL_BASELINE[version][kind]
+    actual = _calls_per_parse(fn)
+    low, high = baseline * (1 - _BAND), baseline * (1 + _BAND)
+    assert low <= actual <= high, (
+        f"{kind} costs {actual:.1f} calls/name on Python "
+        f"{version[0]}.{version[1]}, band {low:.0f}-{high:.0f} around a "
+        f"baseline of {baseline}. Growth and shrinkage are both signals: "
+        f"recompute with tools/perf/call_count.py, then either make it "
+        f"cheaper or move the baseline deliberately -- see "
+        f"decisions.md#parse-cost")
 
 
-def test_facade_cost_stays_within_its_call_budget() -> None:
+def test_parse_cost_stays_within_its_band() -> None:
+    _check_budget("parse", parse)
+
+
+def test_facade_cost_stays_within_its_band() -> None:
     # the legacy-API path (what all existing users call): snapshot
-    # resolution must stay generation-cached, not rebuilt per instance
+    # resolution must stay generation-cached, not rebuilt per instance.
+    # Measured: defeating that cache costs 4826 calls against this
+    # band, while taking only 0.93s per 1000 -- which the 1.0s
+    # wall-clock test this replaced would have PASSED.
     from nameparser import HumanName
 
-    actual = _calls_per_parse(HumanName)
-    assert actual <= _CALL_BUDGET["facade"], (
-        f"HumanName() costs {actual:.1f} calls/name, budget "
-        f"{_CALL_BUDGET['facade']}. Either make it cheaper or raise the "
-        f"budget deliberately -- see _CALL_BUDGET")
+    _check_budget("facade", HumanName)
 
 
-def test_a_thousand_names_still_parse_in_reasonable_time() -> None:
-    """The order-of-magnitude backstop the call budgets do not give.
+@pytest.mark.parametrize("kind,fn", [
+    ("parse", parse),
+    ("facade", lambda name: __import__("nameparser").HumanName(name)),
+])
+def test_a_thousand_names_still_parse_in_reasonable_time(
+        kind: str, fn: Callable[[str], object]) -> None:
+    """The order-of-magnitude backstop the call bands do not give.
 
-    Call counts cannot see a stage that gets slower without calling
-    anything more -- a regex that starts backtracking, a data structure
-    that turns quadratic inside one frame. This keeps that reachable,
-    with a bound loose enough that runner variance cannot reach it: the
-    failures that motivated #475 were at 1.01-1.08s against 1.0.
+    Frame counts cannot see work that happens without entering a Python
+    frame: a compiled regex that starts backtracking emits no `call`
+    event at all, and neither does a C-level structure turning
+    quadratic. (A quadratic inside a comprehension or generator IS
+    visible -- `call` fires once per generator resume.) Both entry
+    points are covered, because both failures that motivated #475 were
+    on the facade and the first draft of this replacement guarded only
+    `parse`.
+
+    The bound is loose enough that runner variance cannot reach it: the
+    failures were at 1.01-1.08s against 1.0, and coverage costs about
+    3x, so 5s leaves roughly 5x of margin on the CI runner that failed.
     """
-    parse("warm up the default parser cache")
+    fn("warm up the caches")
     start = time.perf_counter()
     for i in range(1000):
-        parse(f"Dr. Juan{i} de la Vega III")
+        fn(_REFERENCE.format(i=i))
     elapsed = time.perf_counter() - start
-    assert elapsed < 5.0, f"1000 parses took {elapsed:.2f}s"
+    assert elapsed < 5.0, f"1000 {kind} parses took {elapsed:.2f}s"
 
 
 # Pathological shapes: each repeats a unit that drives one stage's inner
