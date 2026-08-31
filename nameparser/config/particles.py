@@ -1,24 +1,28 @@
 from nameparser.config._invariants import assert_normalized
 from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
 
-#: The sub-set of :py:data:`PARTICLES` that are *never* a standalone given
-#: name. Where one of these stands ALONE as the piece opening a name, that
+#: The sub-set of :py:data:`PARTICLES` that no culture uses as a standalone
+#: given name. Where one of these stands ALONE as the piece opening a name, that
 #: name has no given name -- the whole thing is a surname (e.g. "de Mesnil"
 #: -> family name "de Mesnil") -- and that reading holds under EVERY
 #: ``name_order`` (#359). It is not scoped to the default order the way the
-#: rest of the positional read is: ``name_order`` says which side of the
-#: name the family sits on, and a word that can never be a given name
-#: leaves it nothing to decide, so ``Policy(name_order=FAMILY_FIRST)``
-#: reads "de Mesnil" as the family name too. What is asked about is the
+#: rest of the positional read is: what settles it is that a particle
+#: opening the name has the rest of the name to JOIN FORWARD TO, which
+#: is evidence about the writing rather than about the word, so
+#: ``Policy(name_order=FAMILY_FIRST)`` reads "de Mesnil" as the family
+#: name too. Membership here does NOT mean the word can never be a
+#: given name -- where position forces the reading it is one, and every
+#: member of this set reports given "de"-style for a bare parse. What is asked about is the
 #: opening *piece*, not the first word of the string: a particle that has
 #: already chained onto the word behind it is part of that piece rather
 #: than standing alone.
-#: Opening the name is only the commonest shape. The rule enforcing it
-#: (rules.md#P1; the pre-2.2 docstrings called it rule 1b) reaches a
-#: member standing alone as a piece in
-#: the given position too, folding it into the family beside it, so that
-#: neither shape leaves a given name behind -- as long as there is another
-#: name token to fold into. A bare "de" stays as it is. Where a chain is
+#: OPENING the name is the whole of that rule's subject (rules.md#P1;
+#: the pre-2.2 docstrings called it rule 1b). A member standing alone
+#: where a declared order puts the GIVEN name was a second site until
+#: #467, and is not one now: that slot holds what the caller declared,
+#: so ``Policy(name_order=FAMILY_FIRST)`` reads "Mesnil de" as family
+#: "Mesnil", given "de". A member ENDING the name under a family-first
+#: order is rules.md#P6's, which joins it to the family. A bare "de" stays as it is. Where a chain is
 #: reported as the given name anyway it is because the member is no
 #: longer standing alone: under ``Policy(name_order=FAMILY_FIRST)`` the
 #: given position of "Juan de la Vega" holds the whole three-token

@@ -9,7 +9,8 @@ from nameparser._pipeline._state import ParseState
 from nameparser._policy import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
                                 GIVEN_FIRST, PatronymicRule, Policy,
                                 Script)
-from nameparser._types import STABLE_TAGS, AmbiguityKind, Role
+from nameparser._types import (FOLDED_TAG, STABLE_TAGS, AmbiguityKind,
+                               Role)
 
 # A reduced lexicon, the convention in every pipeline stage module: a
 # stage test should not move when shipped vocabulary does. What it must
@@ -306,18 +307,153 @@ def test_family_comma_fold_is_order_independent(policy: Policy) -> None:
 
 
 @pytest.mark.parametrize("policy", _FAMILY_FIRST)
-def test_lone_never_given_particle_in_given_position_folds(
+def test_lone_never_given_particle_in_given_position_is_the_given_name(
         policy: Policy) -> None:
-    # The opening-position test alone does not carry the rule: under a
-    # family-first order the given position is the TRAILING piece, and
-    # a lone 'de' landing there has to fold into the family beside it
-    # or the parse leaves the whole given name as a word the vocabulary
-    # says is never a given name. Guarded here because a refactor that
-    # reads the rule as leading-particle-only drops exactly this shape,
-    # silently and under a non-default order (#359 review).
+    # The reverse of what this file asserted until #467. A particle
+    # standing where the declared order puts the GIVEN name is the
+    # given name: the never-given vocabulary supplies a reading where
+    # position leaves the question open, and vetoes none that position
+    # has already given. `Mesnil de` has two pieces under either
+    # family-first order, so `de` lands in GIVEN and stays there.
+    #
+    # P6's no-comma site does not reach it either, and the negative
+    # assertion says so: that site takes a trailing particle only out
+    # of a MIDDLE, which two pieces never produce.
     out = _parsed("Mesnil de", policy)
-    assert _by_role(out, Role.FAMILY) == "Mesnil de"
-    assert not _by_role(out, Role.GIVEN)
+    assert _by_role(out, Role.FAMILY) == "Mesnil"
+    assert _by_role(out, Role.GIVEN) == "de"
+    assert not _folded(out)
+
+
+# --- P6's no-comma site (#467) ------------------------------------
+
+
+def _folded(state: ParseState) -> str:
+    return " ".join(t.text for t in state.tokens if FOLDED_TAG in t.tags)
+
+
+@pytest.mark.parametrize("policy", _FAMILY_FIRST)
+def test_trailing_particle_out_of_a_middle_joins_the_family(
+        policy: Policy) -> None:
+    # #467: three pieces put the trailing particle in MIDDLE under
+    # FAMILY_FIRST and in GIVEN under FAMILY_FIRST_GIVEN_LAST, and the
+    # slot is the whole criterion -- a middle is a further given name,
+    # which a particle is not, so only that one is reinterpreted.
+    out = _parsed("Mesnil Garcia de", policy)
+    if policy.name_order[1] is Role.GIVEN:          # FAMILY_FIRST
+        assert _by_role(out, Role.FAMILY) == "Mesnil de"
+        assert _by_role(out, Role.GIVEN) == "Garcia"
+        assert _folded(out) == "de"
+    else:                                           # FAMILY_FIRST_GIVEN_LAST
+        assert _by_role(out, Role.FAMILY) == "Mesnil"
+        assert _by_role(out, Role.GIVEN) == "de"
+        assert not _folded(out)
+
+
+def test_the_slot_test_reads_both_traditions_without_asking_the_word() -> None:
+    # The same vocabulary spells the Dutch tussenvoegsel and the
+    # Vietnamese given name, and `van` is in it. A never-given test
+    # here would have to lose one of these two; the declared order
+    # loses neither, which is why no vocabulary test appears at that
+    # site. Such a test would also have excluded every other ambiguous
+    # particle -- von, di, da, del, le.
+    dutch = _parsed("Beethoven Ludwig van", Policy(name_order=FAMILY_FIRST))
+    assert _by_role(dutch, Role.FAMILY) == "Beethoven van"
+    assert _folded(dutch) == "van"
+    viet = _parsed("Nguyen Thi Van",
+                   Policy(name_order=FAMILY_FIRST_GIVEN_LAST))
+    assert _by_role(viet, Role.GIVEN) == "Van"
+    assert not _folded(viet)
+
+
+def test_the_family_the_run_joins_must_have_a_base() -> None:
+    # Attaching to an all-particle family renders one particle in
+    # front of another ('de van'), and R2 reads those words as
+    # ordinary name words, which no rule reorders.
+    #
+    # FAMILY_FIRST only: under FAMILY_FIRST_GIVEN_LAST this name puts
+    # `de` in GIVEN, so the run is empty for an unrelated reason and
+    # the guard is never consulted. `family` is asserted as well as the
+    # tag, because inverting the guard retags the run to FAMILY without
+    # the tag -- which `_folded` alone cannot see.
+    out = _parsed("van Berg Jan de", Policy(name_order=FAMILY_FIRST))
+    assert _by_role(out, Role.FAMILY) == "van"
+    assert _by_role(out, Role.MIDDLE) == "Jan de"
+    assert not _folded(out)
+
+
+def test_no_leftover_is_re_laid_out() -> None:
+    # Under FAMILY_FIRST the roles run family, given, middle, middle...,
+    # so dropping a trailing middle leaves every other piece where it
+    # was. NOT under FAMILY_FIRST_GIVEN_LAST (family, middle..., given),
+    # which is one of the two reasons the site tests the order.
+    #
+    # An earlier draft (#466) removed the piece and re-laid the leftover
+    # out. The whole role map is asserted because that draft failed in
+    # two directions: it lost a given name outright on "van Berg Jan de"
+    # and promoted a post-nominal into the given slot here. A test on
+    # `GIVEN != "Jr."` alone passes on an EMPTY given, which is the
+    # first of those.
+    out = _parsed("Berg Jan Jr. de", Policy(name_order=FAMILY_FIRST))
+    assert _by_role(out, Role.GIVEN) == "Jan"
+    assert _by_role(out, Role.MIDDLE) == "Jr."
+    assert _by_role(out, Role.FAMILY) == "Berg de"
+    assert _folded(out) == "de"
+
+
+@pytest.mark.parametrize("policy", _FAMILY_FIRST)
+def test_a_multi_token_run_is_taken_whole(policy: Policy) -> None:
+    # `van de` and `van der` are the commonest real tussenvoegsels and
+    # the shape this rule exists for, and every other fixture here runs
+    # the walk for a single token -- so a walk that took only the last
+    # particle passed the entire suite when review mutated it in.
+    out = _parsed("Jong Anke van de", policy)
+    if policy.name_order[1] is Role.GIVEN:          # FAMILY_FIRST
+        assert _by_role(out, Role.FAMILY) == "Jong van de"
+        assert _folded(out) == "van de"
+        assert not _by_role(out, Role.MIDDLE)
+    else:
+        assert not _folded(out)
+
+
+def test_the_run_must_end_the_name() -> None:
+    # The trailing MIDDLE is not the trailing NAME word under
+    # FAMILY_FIRST_GIVEN_LAST, where the given name stands behind the
+    # middles. Without this test the rule hoists a particle in front of
+    # a base it was written after, with a given name still following it
+    # -- 366 such folds over a generated sweep, all of them shapes where
+    # a conjunction stopped the particle's forward chain.
+    out = _parsed("de Anke van y", Policy(name_order=FAMILY_FIRST_GIVEN_LAST))
+    assert _by_role(out, Role.MIDDLE) == "van"
+    assert _by_role(out, Role.FAMILY) == "de Anke"
+    assert not _folded(out)
+
+
+def test_the_site_reports_the_fork_it_decides() -> None:
+    # decisions.md#P6 (#405): the attachment reports the fork it
+    # decides. The state that decision fixed is the one this site
+    # would otherwise recreate -- the comma writing reporting while
+    # the comma-less writing decides the identical fork in silence.
+    # ONE arm, since the suffix reading stands without a comma.
+    ff = _parsed("Beethoven Ludwig van", Policy(name_order=FAMILY_FIRST))
+    kinds = [a.kind for a in ff.ambiguities]
+    assert kinds == [AmbiguityKind.PARTICLE_OR_GIVEN]
+    # a never-given run overrides no live reading, so it stays silent
+    quiet = _parsed("Jong Anke de", Policy(name_order=FAMILY_FIRST))
+    assert not quiet.ambiguities
+
+
+def test_the_default_order_is_not_reached() -> None:
+    # The site reads `state.order`, which is recorded under EVERY
+    # no-comma order, so the order itself must be tested -- the slot
+    # does not imply it. A conjunction stops a particle's forward chain
+    # and leaves it standing in a middle under the default order too:
+    # measured, 52 names moved before this test was added, and the
+    # differential corpus holds no instance of the shape, so the gate
+    # reported none of them.
+    out = _parsed("Maria Luisa y de la Cruz")
+    assert _by_role(out, Role.FAMILY) == "la Cruz"
+    assert not _folded(out)
 
 
 def test_lone_never_given_particle_needs_no_repair_by_default() -> None:
@@ -488,9 +624,6 @@ def test_the_two_family_first_orders_differ_at_two_leftovers() -> None:
     # positional read for a declared order to narrow (state.order is
     # None on this path)
     ("Smith, de Mesnil", "Smith de Mesnil"),
-    # the particle stands in the GIVEN slot rather than opening the
-    # name -- the second fold site, and not a leading run
-    ("Juan de", "Juan de"),
 ])
 def test_shapes_the_stop_does_not_reach(
         policy: Policy, text: str, family: str) -> None:
