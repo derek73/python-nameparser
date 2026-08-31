@@ -66,9 +66,10 @@ else does.
 This is the whole parser in two sentences, and it explains its
 character. A word nameparser has never seen still gets a sensible role,
 because the positional layer does not need to recognize anything. The
-same word can play different parts in different places — ``Dr.`` is a
-title before a name and a suffix after it, which is why the field names
-``title`` and ``suffix`` are really "pre-nominal" and "post-nominal".
+same word can play different parts in different places — ``Lt.`` is a
+title before a name and a post-nominal after it, which is why the field
+names ``title`` and ``suffix`` are really "pre-nominal" and
+"post-nominal".
 And nothing is statistical: there is no model and no training data, so
 the same input always parses the same way, and a parse that is wrong is
 wrong reproducibly, which is what makes it fixable by configuration.

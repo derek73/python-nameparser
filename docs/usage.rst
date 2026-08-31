@@ -424,8 +424,8 @@ discard the only one there is.
 So ``田中さん, V.`` and ``田中さん, Ph. D.`` give さん up exactly as
 ``田中さん, PhD`` does. Where the credential itself lands is the
 comma's business rather than the peel's, and still differs by
-spelling: ``title`` for ``PhD``, ``given`` for ``V.``, and ``Ph. D.``
-in ``suffix`` beside さん.
+spelling: ``given`` for ``V.``, while ``PhD`` and ``Ph. D.`` join さん
+in ``suffix``.
 
 Spacing, and where the name divides
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
