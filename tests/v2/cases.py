@@ -2043,10 +2043,29 @@ CASES: tuple[Case, ...] = (
     Case("phd_split_mid_name", "Dr. John Ph. D. Smith",
          {"title": "Dr.", "given": "John", "family": "Smith",
           "suffix": "Ph. D."}),
+    Case("phd_split_leading_van_johnson", "Ph. D. Van Johnson",
+         {"title": "Ph.", "given": "D.", "family": "Van Johnson"},
+         classification="parity",
+         notes="#371's own subject: the leading pair read given "
+               "'Van Johnson' with an EMPTY family until the merge "
+               "learned to decline at the head of the input. A Case "
+               "row rather than a rules.md line because the empty "
+               "fields are the symptom -- test_case asserts the whole "
+               "dict, so `suffix` and `middle` being empty is pinned "
+               "here and nowhere else"),
+    Case("phd_split_leading_bare", "Ph. D.",
+         {"title": "Ph.", "family": "D."},
+         classification="parity",
+         notes="a bare credential yields a family name, which is "
+               "surprising and is 1.4.0's reading exactly. Pinned "
+               "because nothing else in the suite says so -- the "
+               "ledger reaches it, and the ledger is an out-of-band "
+               "tool run"),
     Case("phd_split_leading", "Ph. D. John Smith",
-         {"given": "John", "family": "Smith", "suffix": "Ph. D."},
-         classification="fix",
-         notes="v1 healed 'Ph.'+'D.' only when trailing; leading it "
+         {"title": "Ph.", "given": "D.", "middle": "John",
+          "family": "Smith"},
+         classification="parity",
+         notes="v1's fix_phd regex required a preceding space, so it "
                "split them (title 'Ph.', given 'D.', real given name "
                "pushed to middle). Surfaced by the issue-tracker "
                "corpus, which is where this shape existed at all."),

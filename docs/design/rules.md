@@ -515,6 +515,18 @@ S1. Rationale: brackets set off more than nicknames — credentials
 S2. Rationale: generational suffixes and credentials are recognized
     by vocabulary; an acronym that is also an ordinary name is only
     unmistakably a credential when its periods are written.
+    A suffix never OPENS THE STRING: position outranks the
+    vocabulary match, so a suffix-shaped word written before anything
+    else reads as whatever its position and shape make it — a title
+    where it wears the abbreviation shape (H2), an ordinary name word
+    otherwise — and never as a credential belonging to a name that
+    has not been written yet. The string, not the name: a title, a
+    nickname or a bracketed clause standing first leaves the
+    credential reading intact, which is the ONE place this document
+    says "opening" and does not mean what P4 and the H Background
+    mean by it. A family comma is the other boundary: the comma has
+    already named the family, so a credential run may open the part
+    after it (C1), and the part before it is that family.
     A trailing word of the suffix vocabulary reads as a suffix —
     generational forms and credential acronyms alike, and an
     ambiguous acronym written with its periods, one after each
@@ -528,6 +540,20 @@ S2. Rationale: generational suffixes and credentials are recognized
       "John Smith PhD"            →  suffix="PhD"
       "John Ma"                   →  family="Ma"  · boundary
       "Jack Ma."                  →  family="Ma."  · boundary
+      "Ph. D. Van Johnson"        →  family="Van Johnson"
+      "Ph. D. Van Johnson"        →  title="Ph."
+      "Smith, Ph. D. Jr."         →  suffix="Ph. D. Jr."
+      "II Van Johnson"            →  given="II"  · boundary
+      "Sir Ph. D. Van Johnson"    →  suffix="Ph. D."  · boundary
+      "Ph. D., John"              →  family="Ph. D."  · boundary
+    Accepted: a title before the credential keeps it a credential,
+    and the name loses its surname exactly as it did before this
+    clause — `Sir Ph. D. Van Johnson` reads given `Van Johnson` with
+    an empty family. That is 1.4.0's reading, and the clause cannot
+    reach it: the first piece of the NAME is not computable before
+    this decision, since the abbreviation test H2 uses is true of
+    `Ph.` itself, so a scan that stepped over titles would step over
+    the very piece being judged.
     Accepted: with words to spare, a bare ambiguous acronym reads
     as a suffix even beside an East Asian surname it more likely
     belongs to; and an unambiguous suffix is consumed even when

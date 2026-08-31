@@ -122,9 +122,43 @@ def test_a_suffix_shaped_leading_piece_is_not_stepped_over() -> None:
     # become three -- which puts Van in the middle name rather than the
     # family once roles exist. See _group.py for why that reading is
     # worse rather than merely different.
-    assert _piece_texts(_grouped("Ph. D. Van Johnson")) == \
-        [["Ph. D.", "Van Johnson"]]
+    #
+    # "Ph. D. Van Johnson" left this test with #371: the pair is no
+    # longer merged at the head, so there is no suffix-shaped leading
+    # piece there to step over or not.
+    #
+    # `PhD` is the replacement witness and `II` is NOT one, which is
+    # the trap this file's reduced lexicon sets: `_LEX` ships
+    # suffix_acronyms={"phd"} and no roman numerals, so `II` is not a
+    # suffix piece HERE however the shipped vocabulary reads it, and
+    # the assertion below survives the very mutation this test is
+    # named for. Measured: with suffix pieces added to the scan,
+    # "PhD Van Johnson" moves and "II Van Johnson" does not.
+    assert _piece_texts(_grouped("PhD Van Johnson")) == [["PhD", "Van Johnson"]]
     assert _piece_texts(_grouped("II Van Johnson")) == [["II", "Van Johnson"]]
+
+
+def test_the_phd_merge_declines_at_the_head_of_a_name() -> None:
+    # A suffix never begins a name (S2, and #371). The merge is what
+    # made a leading "Ph." "D." a credential at all, and it emptied the
+    # family doing it. Segment 0 only: after a family comma the run
+    # legitimately opens its segment, which C1 reads as a listing.
+    assert _piece_texts(_grouped("Ph. D. Van Johnson")) == \
+        [["Ph.", "D.", "Van Johnson"]]
+    assert _piece_texts(_grouped("Smith, Ph. D. Jr.")) == \
+        [["Smith"], ["Ph. D.", "Jr."]]
+    # segment 0 BEFORE a family comma is the family the comma named,
+    # and v1 merges there too ("Ph. D., John" reads last 'Ph. D.'), so
+    # the `not family_comma` half of the flag has its own witness --
+    # without it this name declines and the family splits.
+    assert _piece_texts(_grouped("Ph. D., John")) == \
+        [["Ph. D."], ["John"]]
+    # the first PIECE is not the first word: a quoted clause leaves the
+    # token stream before grouping, so the pair reaches k == 0 with a
+    # word ahead of it in the input. v1 merges (its regex needed a
+    # preceding space); declining here broke parity on 112 names.
+    assert _piece_texts(_grouped('"Bob" Ph. D. John Smith')) == \
+        [["Ph. D.", "John", "Smith"]]
 
 
 def test_von_und_zu_bridges() -> None:
