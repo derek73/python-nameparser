@@ -2892,7 +2892,8 @@ CASES: tuple[Case, ...] = (
                "in script_segment on the other structures only, before "
                "group or assign can say this comma fixed nothing -- so "
                "the honorific stays glued, joining master's '田中さん, "
-               "Mr.'. Master peeled it through the suffix-comma route"),
+               "Mr.'. Master peeled it through the suffix-comma route",
+         tolerated=True),
     Case("title_word_trailing_is_not_a_title_mr", "John Smith Mr.",
          {"given": "John", "middle": "Smith", "family": "Mr."}),
 
@@ -2902,13 +2903,19 @@ CASES: tuple[Case, ...] = (
          classification="fix(#271)",
          notes="hangul is unambiguously Korean: census surnames ship "
                "as default vocabulary and HANGUL segmentation is "
-               "default-on"),
+               "default-on. Shape 6's bare Family Given arrangement, "
+               "written unspaced, the floor the other shape-6 rows "
+               "vary from",
+         shape=6),
     Case("ko_two_syllable_surname_default", "남궁민수",
          {"family": "남궁", "given": "민수"},
          classification="fix(#271)",
          ambiguities=("segmentation",),
          notes="남 is itself a shipped surname; longest-first takes "
-               "남궁 and records the decided fork"),
+               "남궁 and records the decided fork. Shape 6's Family "
+               "slot at two syllables, where the arrangement's own "
+               "boundary is what has to be found",
+         shape=6),
     Case("ko_bare_two_syllable_surname", "남궁",
          {"family": "남궁"},
          classification="fix(#271)",
@@ -2922,18 +2929,23 @@ CASES: tuple[Case, ...] = (
          notes="the comma already decided the family: segmentation "
                "is inert under FAMILY_COMMA (comma doctrine -- see "
                "the script_segment stage docstring, which uses this "
-               "exact example)"),
+               "exact example)",
+         tolerated=True),
     Case("ko_suffix_comma_name_part_splits", "Dr 김민준, Jr.",
          {"title": "Dr", "family": "김", "given": "민준", "suffix": "Jr."},
          classification="fix(#271)",
          notes="the one comma structure where segmentation still "
                "fires: a second word before the comma makes it "
                "SUFFIX_COMMA, and the name part is a full positional "
-               "name"),
+               "name",
+         tolerated=True),
     Case("ko_spaced_family_first_default", "김 민준",
          {"family": "김", "given": "민준"},
          classification="fix(#271)",
-         notes="script_orders, no segmentation involved"),
+         notes="script_orders, no segmentation involved. Shape 6's "
+               "Family Given with the space written, the spelling "
+               "ko_unspaced_default reaches by segmenting instead",
+         shape=6),
     Case("han_spaced_family_first_default", "毛 泽东",
          {"family": "毛", "given": "泽东"},
          classification="fix(#271)",
@@ -2999,7 +3011,10 @@ CASES: tuple[Case, ...] = (
          classification="fix(#272)",
          notes="hiragana identifies Japanese as certainly as hangul "
                "identifies Korean; kana-licensed names read "
-               "family-first by default"),
+               "family-first by default. Shape 6's Family Given in "
+               "kana rather than hangul -- the arrangement is one "
+               "shape across the scripts that carry it",
+         shape=6),
     Case("ja_kanji_katakana_pieces", "山田 エミ",
          {"family": "山田", "given": "エミ"},
          classification="fix(#272)",
@@ -3022,7 +3037,10 @@ CASES: tuple[Case, ...] = (
          notes="the katakana middle dot is the transcription's own "
                "part divider: it separates like whitespace, the "
                "license declines each katakana token, and the "
-               "positional default keeps the source-language order"),
+               "positional default keeps the source-language order. "
+               "Shape 7's katakana-transcription half, the arrangement "
+               "admitted by the script rather than by the 间隔号",
+         shape=7),
     Case("ja_nakaguro_han_takes_the_han_order", "高橋・一郎",
          {"family": "高橋", "given": "一郎"},
          classification="fix(#272)",
@@ -3084,7 +3102,9 @@ CASES: tuple[Case, ...] = (
                "keeps source order -- the B7 is the transcription "
                "marker, playing the role pure katakana plays in the "
                "kana license; it divides only between classified "
-               "characters"),
+               "characters. Shape 7's Given·Family with the 间隔号 "
+               "itself written, the divider half of the notation",
+         shape=7),
     Case("zh_interpunct_nakaguro_typed_stays_roster", "威廉・莎士比亚",
          {"given": "莎士比亚", "family": "威廉"},
          classification="fix(#272)",
@@ -3127,7 +3147,8 @@ CASES: tuple[Case, ...] = (
          {"given": "威廉", "family": "莎士比亚", "suffix": "PhD"},
          classification="fix(#298)",
          notes="the transcription reading composes with a suffix "
-               "comma: the marker is structure-independent"),
+               "comma: the marker is structure-independent",
+         tolerated=True),
     Case("zh_interpunct_half_flanked_stays", "王·Smith",
          {"given": "王·Smith"},
          notes="one classified neighbor is not enough: the guard "
@@ -3139,7 +3160,15 @@ CASES: tuple[Case, ...] = (
          notes="CJK honorifics FOLLOW the name; a spaced 先生 (Mr.) is "
                "a suffix, and recognizing it must come before the "
                "family-first order hands it a role -- unrecognized it "
-               "read as the GIVEN name under the 2.1 defaults"),
+               "read as the GIVEN name under the 2.1 defaults. NOT "
+               "tagged shape 6, though it looks like the Han spelling "
+               "of one: no DEFAULT segmenter divides 王小明, so the "
+               "fields here are an undivided name plus an honorific "
+               "and the arrangement's Given slot is never filled -- "
+               "the same reason han_unspaced_unsegmented_default "
+               "(毛泽东) carries no tag. The zh pack is what splits "
+               "the token (zh_honorific_glued_given), and a pack row "
+               "exercises a locale fork rather than an input shape"),
     Case("ko_honorific_ssi", "김민준 씨",
          {"family": "김", "given": "민준", "suffix": "씨"},
          classification="fix(#307) + fix(#271)",
@@ -3184,7 +3213,8 @@ CASES: tuple[Case, ...] = (
                "the token behind it. Half of the pair that pins "
                "_is_post_nominal's use of is_suffix_STRICT -- the "
                "other half is the row below, and swapping in "
-               "is_suffix_lenient changes that one and not this one"),
+               "is_suffix_lenient changes that one and not this one",
+         tolerated=True),
     Case("ja_honorific_glued_before_an_initial", "田中さん V.",
          {"given": "田中さん", "family": "V."},
          notes="the strict/lenient discriminator, and the reason "
@@ -3198,7 +3228,8 @@ CASES: tuple[Case, ...] = (
                "'V.', which is these fields under the 2.0 names. "
                "Classification agrees with what classify does with "
                "the same token downstream -- 'V.' is a middle "
-               "initial, not a post-nominal"),
+               "initial, not a post-nominal",
+         tolerated=True),
     Case("ja_honorific_with_a_period_no_comma", "田中さん 様.",
          {"family": "田中", "suffix": "さん, 様."},
          classification="fix(#320)",
@@ -3270,7 +3301,8 @@ CASES: tuple[Case, ...] = (
                "1.4.0 read "
                "this first '様.' / last 田中さん, which is exactly what "
                "2.0 produced before this change -- the row sat at "
-               "parity until #320 moved it"),
+               "parity until #320 moved it",
+         tolerated=True),
     Case("ja_sama_glued", "山田太郎様",
          {"family": "山田太郎", "suffix": "様"},
          classification="fix(#308) + fix(#271)",
@@ -3298,7 +3330,8 @@ CASES: tuple[Case, ...] = (
                "'씨.' carried both, so the suffix-shaped piece went to "
                "the given. 1.4.0 read this first '씨.' / last 김민준 -- "
                "the same fields 2.0 gave before this change, so the row "
-               "was at parity and #320 is what moves it"),
+               "was at parity and #320 is what moves it",
+         tolerated=True),
     Case("ko_honorific_period_under_strict_comma_suffixes", "김민준, 씨.",
          {"family": "김민준", "suffix": "씨."},
          policy=Policy(lenient_comma_suffixes=False),
@@ -3328,7 +3361,8 @@ CASES: tuple[Case, ...] = (
                "(the facade runner skips this row), so the "
                "classification compares against 1.4.0's single "
                "reading, first '씨.' / last 김민준 -- the same fields "
-               "2.0 gave under EITHER setting before this change"),
+               "2.0 gave under EITHER setting before this change",
+         tolerated=True),
     Case("ko_honorific_with_a_period_no_comma", "김민준 씨.",
          {"given": "민준", "family": "김", "suffix": "씨."},
          classification="fix(#320)",
@@ -3504,7 +3538,8 @@ CASES: tuple[Case, ...] = (
                "also why this row stays single-issue while the rest of "
                "the block is compound with fix(#271): measured, the "
                "order table and the segmenter both leave it alone, "
-               "because the comma already decided the family"),
+               "because the comma already decided the family",
+         tolerated=True),
     Case("ko_honorific_glued_given", "김민준씨",
          {"family": "김", "given": "민준", "suffix": "씨"},
          classification="fix(#308) + fix(#271)",
@@ -3512,7 +3547,10 @@ CASES: tuple[Case, ...] = (
                "replaces (ko_honorific_glued_given_stays) pinned the "
                "old boundary: 씨 peels off the last token first, and "
                "the remainder 김민준 then segments as usual -- peel "
-               "and split compose, in that order"),
+               "and split compose, in that order. Shape 6's optional "
+               "Honorific slot glued, the everyday spelling next to "
+               "zh_honorific_suffix_spaced's spaced one",
+         shape=6),
     Case("ko_honorific_glued_given_trailing_suffix", "김민준씨 Jr.",
          {"family": "김", "given": "민준", "suffix": "씨, Jr."},
          classification="fix(#308) + fix(#271)",
@@ -3520,7 +3558,8 @@ CASES: tuple[Case, ...] = (
                "post-nominal, so an unrelated trailing suffix cannot "
                "hide it -- this now agrees with the comma-written "
                "'Dr 김민준씨, Jr.', where the suffix comma had "
-               "already put 씨 within reach"),
+               "already put 씨 within reach",
+         tolerated=True),
     Case("ko_honorific_glued_given_suffix_comma", "Dr 김민준씨, Jr.",
          {"title": "Dr", "family": "김", "given": "민준",
           "suffix": "씨, Jr."},
@@ -3532,7 +3571,8 @@ CASES: tuple[Case, ...] = (
                "name across two runs, #312). Pairs with "
                "ko_honorific_glued_given_trailing_suffix, whose "
                "comma-less spelling of the same name reaches the same "
-               "answer by the scan-back instead"),
+               "answer by the scan-back instead",
+         tolerated=True),
     Case("ko_honorific_glued_given_nickname", "김민준씨 (Jimmy)",
          {"family": "김", "given": "민준", "suffix": "씨",
           "nickname": "Jimmy"},
@@ -3544,7 +3584,8 @@ CASES: tuple[Case, ...] = (
                "the site -- it is no post-nominal -- and lose the peel "
                "entirely, with 씨 back in the given name. Nothing else "
                "pins that choice: under NO_COMMA the two are otherwise "
-               "the same run"),
+               "the same run",
+         tolerated=True),
     Case("ko_honorific_glued_given_nickname_family_comma",
          "김, 민준씨 (Jimmy)",
          {"family": "김", "given": "민준", "suffix": "씨",
@@ -3556,7 +3597,8 @@ CASES: tuple[Case, ...] = (
                "agree. Here the peel has to cross the comma AND still "
                "not reach Jimmy, so declining to cross whenever "
                "extract_delimited claimed something passes the row "
-               "above and fails only here"),
+               "above and fails only here",
+         tolerated=True),
     Case("ja_honorific_glued_family_comma", "田中さん, PhD",
          {"family": "田中", "suffix": "さん, PhD"},
          classification="fix(#312)",
@@ -3568,7 +3610,8 @@ CASES: tuple[Case, ...] = (
                "since #296's audit took 'phd' out of TITLES -- this row "
                "carried title 'PhD' until then, which was the title "
                "peel claiming a credential because v1's lists put it "
-               "where v1's parser needed it"),
+               "where v1's parser needed it",
+         tolerated=True),
     Case("ja_honorific_glued_family_comma_suffixy_second_run",
          "田中さん, V.",
          {"given": "V.", "family": "田中", "suffix": "さん"},
@@ -3603,7 +3646,8 @@ CASES: tuple[Case, ...] = (
                "(first V., last 田中さん) until this change, which is "
                "what moves it; the 1.4.0 fields are still reachable "
                "through Policy(lenient_comma_suffixes=False), pinned "
-               "by ja_honorific_glued_family_comma_strict_knob below"),
+               "by ja_honorific_glued_family_comma_strict_knob below",
+         tolerated=True),
     Case("ja_honorific_glued_family_comma_credential_pair",
          "田中さん, Ph. D.",
          {"family": "田中", "suffix": "さん, Ph. D."},
@@ -3634,7 +3678,8 @@ CASES: tuple[Case, ...] = (
                "ja_honorific_glued_family_comma above the expectation "
                "carries TWO deviations -- the peel is #319's, first -> "
                "family is comma-family's, which 2.0 already had before "
-               "this change (family 田中さん / suffix 'Ph. D.')"),
+               "this change (family 田中さん / suffix 'Ph. D.')",
+         tolerated=True),
     Case("ja_honorific_glued_family_comma_strict_knob", "田中さん, V.",
          {"family": "田中さん", "given": "V."},
          policy=Policy(lenient_comma_suffixes=False),
@@ -3668,7 +3713,8 @@ CASES: tuple[Case, ...] = (
                "text, as the other exercise of the knob named above "
                "does: measured, 1.4.0 gave first 'V.' / last "
                "田中さん, which is field for field what the knob holds "
-               "here -- parity, and the point of the knob"),
+               "here -- parity, and the point of the knob",
+         tolerated=True),
     Case("ja_honorific_glued_family_comma_credential_pair_strict_knob",
          "田中さん, Ph. D.",
          {"family": "田中", "suffix": "さん, Ph. D."},
@@ -3693,7 +3739,8 @@ CASES: tuple[Case, ...] = (
                "'Ph. D.'), which is also why the knob cannot be judged "
                "against a v1 spelling here -- there is none, so the "
                "facade runner skips this row as it does the other two "
-               "knob rows"),
+               "knob rows",
+         tolerated=True),
     Case("ko_honorific_glued_family_comma_suffixy_second_run",
          "김민준씨, V.",
          {"given": "V.", "family": "김민준", "suffix": "씨"},
@@ -3708,7 +3755,8 @@ CASES: tuple[Case, ...] = (
                "stays 김민준 undivided -- the FAMILY comma gates the "
                "surname split off, so hangul segmentation never runs "
                "here and only the peel acts. 1.4.0 gave first 'V.' / "
-               "last 김민준씨, peeling nothing"),
+               "last 김민준씨, peeling nothing",
+         tolerated=True),
     Case("zh_honorific_glued_family_comma_suffixy_second_run",
          "王先生, V.",
          {"given": "V.", "family": "王", "suffix": "先生"},
@@ -3720,7 +3768,8 @@ CASES: tuple[Case, ...] = (
                "Policy.segment_scripts, and HAN is not activated here "
                "(the family is what the peel left behind, not a "
                "vocabulary split). 1.4.0 gave first 'V.' / last "
-               "王先生"),
+               "王先生",
+         tolerated=True),
     Case("ko_honorific_glued_family_comma_site_only_beyond_the_comma",
          "이, J.씨",
          {"given": "J.", "family": "이", "suffix": "씨"},
@@ -3747,7 +3796,8 @@ CASES: tuple[Case, ...] = (
                "settings call this run wholly suffix. 1.4.0 gave first "
                "'J.씨' / last 이 -- it peels nothing, so the deviation "
                "here is #312's crossing, which is what puts the site on "
-               "'J.씨' in the first place"),
+               "'J.씨' in the first place",
+         tolerated=True),
     Case("ko_honorific_glued_family_comma_site_in_both_runs",
          "김민준씨, J.씨",
          {"family": "김민준", "suffix": "씨, J.씨"},
@@ -3768,7 +3818,8 @@ CASES: tuple[Case, ...] = (
                "junk-tail reach "
                "ko_honorific_glued_given_suffix_comma_initial's note "
                "names under a suffix comma. 1.4.0 gave first 'J.씨' / "
-               "last 김민준씨, peeling neither"),
+               "last 김민준씨, peeling neither",
+         tolerated=True),
     Case("ko_honorific_glued_family_comma_lone_post_nominal_before_it",
          "선생님, J.씨",
          {"given": "J.", "family": "선생님", "suffix": "씨"},
@@ -3787,18 +3838,21 @@ CASES: tuple[Case, ...] = (
                "shape of that divergence is reachable from the gate, "
                "which is why this row is one token before the comma; "
                "_peel_site's docstring derives the bound. "
-               "1.4.0 gave first 'J.씨' / last 선생님"),
+               "1.4.0 gave first 'J.씨' / last 선생님",
+         tolerated=True),
     Case("ko_honorific_glued_given_after_family_comma", "김, 민준씨",
          {"family": "김", "given": "민준", "suffix": "씨"},
          classification="fix(#312)",
          notes="under a family comma the name spans both segments and "
                "the honorific is on the GIVEN side, where the peel "
                "never looked before #312. Agrees with the spaced "
-               "김 민준씨"),
+               "김 민준씨",
+         tolerated=True),
     Case("ja_honorific_glued_given_after_family_comma", "田中, 太郎さん",
          {"family": "田中", "given": "太郎", "suffix": "さん"},
          classification="fix(#312)",
-         notes="the Han twin of the row above"),
+         notes="the Han twin of the row above",
+         tolerated=True),
     Case("zh_interpunct_transcription_glued_honorific", "威廉·莎士比亚さん",
          {"given": "威廉", "family": "莎士比亚", "suffix": "さん"},
          classification="fix(#312)",
@@ -3813,7 +3867,8 @@ CASES: tuple[Case, ...] = (
                "the site is the last NON-POST-NOMINAL token, which is "
                "太郎, so nothing peels -- exactly as in the spaced "
                "田中さん 太郎. #312 was originally filed naming this "
-               "pair as a disagreement; it never was one"),
+               "pair as a disagreement; it never was one",
+         tolerated=True),
     Case("ko_honorific_glued_given_suffix_comma_initial", "Dr 김민준씨, V.",
          {"title": "Dr", "family": "김", "given": "민준",
           "suffix": "씨, V."},
@@ -3841,7 +3896,8 @@ CASES: tuple[Case, ...] = (
                "row is still the only SUFFIX comma among the three. "
                "Its comma-less twin ja_honorific_glued_before_an_initial "
                "shows the same veto from the other side, where 'V.' is "
-               "in the name's own run and so IS the site"),
+               "in the name's own run and so IS the site",
+         tolerated=True),
     Case("zh_honorific_glued_surname", "王先生",
          {"family": "王", "suffix": "先生"},
          locale="zh",

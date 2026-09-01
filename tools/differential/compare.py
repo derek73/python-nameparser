@@ -506,8 +506,13 @@ _CORPUS_FLOORS = {
     "corpus_cjk.jsonl": 95,     # 98 today, generated from the case table
     "corpus_issues.jsonl": 370,  # 381 today, harvested and append-only
     "corpus_rules.jsonl": 150,  # 252 today, generated from rules.md
-    "corpus_shapes.jsonl": 27,  # 30 today, generated from shape-tagged
-                                # case rows
+    "corpus_shapes.jsonl": 35,  # 37 today, generated from shape-tagged
+                                # case rows. Ratcheted 27 -> 35 on
+                                # 2026-09-01 with the shape 6/7
+                                # exemplars (7 CJK names, already in
+                                # corpus_cjk.jsonl and deduped against
+                                # it by (name, order) -- the file grew,
+                                # the comparison did not)
 }
 
 #: Tier per corpus file, fail-closed like the floors above. CONTRACT
