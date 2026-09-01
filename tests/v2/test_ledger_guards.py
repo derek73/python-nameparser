@@ -1345,7 +1345,8 @@ import glob, json
 from nameparser import DEFAULT_NICKNAME_DELIMITERS as D
 from nameparser.config.maiden_markers import MAIDEN_MARKERS as V
 from nameparser._lexicon import _normalize
-names = {json.loads(l) for f in glob.glob('tools/differential/corpus*.jsonl') for l in open(f, encoding='utf-8') if l.strip()}
+def _n(x): return x if isinstance(x, str) else x['name']
+names = {_n(json.loads(l)) for f in glob.glob('tools/differential/corpus*.jsonl') for l in open(f, encoding='utf-8') if l.strip()}
 strip = ''.join({c for p in D for c in p})
 sub = lambda n: any(e in n for e in V if not e.isascii())
 print(sum(not {_normalize(t.strip(strip)) for t in n.split()} & V and sub(n) for n in names),

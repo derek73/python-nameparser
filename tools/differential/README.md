@@ -286,15 +286,45 @@ operation on this worktree's own log; it does not check out, stash, or
 otherwise mutate anything.
 
 The AST extraction over-collects on purpose (string literals passed as
-`HumanName(...)`'s first argument, plus string members of module-level
-list/dict/tuple banks that contain a space) -- more candidate strings
-is more coverage, and the corpus is deduplicated. Obvious non-names
-(strings containing `{`, `@`, or a backslash -- format placeholders,
-decorator/email-shaped fixtures, escape sequences) are dropped.
+`HumanName(...)`'s first argument, plus string members of list/dict/
+tuple banks that contain a space) -- more candidate strings is more
+coverage, and the corpus is deduplicated. Obvious non-names (strings
+containing `{`, `@`, or a backslash -- format placeholders, decorator/
+email-shaped fixtures, escape sequences) are dropped.
 
-Regenerate the corpus only if the v1 test banks are revisited again at
-a still-earlier point in history; otherwise leave the checked-in file
-alone so the harness stays comparable run to run.
+Each line is `{"name": ..., "tests": [...]}`: `tests` is the sorted
+labels the name appeared under at the pinned ref -- the shape context
+(`test_title_with_conjunction` and kin) the original bare-string scrape
+kept the string but threw away. A `HumanName(...)` call is labelled by
+its nearest enclosing test method, falling back to the source filename
+(e.g. `test_titles.py`) for a call at module scope; a list/dict/tuple
+bank is labelled by its variable name, prefixed `bank:` so it reads
+apart from a test method at a glance (`bank:<unnamed>` when the
+assignment target isn't a plain name). Labels merge across files: two
+files sharing a method name (e.g. two `test_basic_parsing`s) produce
+one merged label set on any name both contribute, which is accepted --
+the merged labels still describe the same string. `compare.py`
+surfaces these as `[v1: ...]` tags on radar rows.
+
+Regenerate the corpus only (a) at the same ref, as a format-only
+enrichment, with the name set proven identical to the previous file by
+set comparison, or (b) if the v1 test banks are revisited again at a
+still-earlier point in history; otherwise leave the checked-in file
+alone so the harness stays comparable run to run. For (a):
+
+```
+uv run python tools/differential/build_corpus.py --ref 2d5d8c2 > /tmp/corpus-new.jsonl
+uv run python -c "
+import json, subprocess
+def _n(x): return x if isinstance(x, str) else x['name']
+old = {_n(json.loads(l)) for l in subprocess.run(
+    ['git', 'show', 'HEAD:tools/differential/corpus.jsonl'],
+    capture_output=True, text=True, check=True).stdout.splitlines() if l.strip()}
+new = {_n(json.loads(l)) for l in open('/tmp/corpus-new.jsonl', encoding='utf-8') if l.strip()}
+if old != new: raise SystemExit(sorted(old ^ new))
+print(f'identical: {len(old)} names')"
+cp /tmp/corpus-new.jsonl tools/differential/corpus.jsonl
+```
 
 `corpus_issues.jsonl` is built by `build_issues_corpus.py` from the
 issue tracker (`gh issue list --state all`), taking `HumanName("...")`
@@ -530,7 +560,8 @@ import glob, json
 from nameparser import Parser
 from nameparser._lexicon import _normalize
 L = Parser().lexicon
-names = [json.loads(l) for f in glob.glob('tools/differential/corpus*.jsonl') for l in open(f, encoding='utf-8') if l.strip()]
+def _n(x): return x if isinstance(x, str) else x['name']
+names = [_n(json.loads(l)) for f in glob.glob('tools/differential/corpus*.jsonl') for l in open(f, encoding='utf-8') if l.strip()]
 for s in ('maiden_markers', 'honorific_tails'):
     v = getattr(L, s)
     longest = max(e.count(' ') + 1 for e in v)

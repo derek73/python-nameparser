@@ -647,10 +647,11 @@ def test_a_corpus_without_a_tier_is_a_hard_error(
 
 def test_object_corpus_lines_are_read_and_labels_printed(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A corpus line may be {"name": ..., "tests": [...]} (the
-    label-bearing format a later task generates); the name is compared
-    and the labels ride into the radar report, which is what they are
-    for."""
+    """A corpus line may be {"name": ..., "tests": [...]} -- the
+    label-bearing format corpus.jsonl ships in (the other three
+    corpora stay bare strings; both shapes are legal on any corpus
+    file). The name is compared and the labels ride into the radar
+    report, which is what they are for."""
     import json as _json
     corpus = tmp_path / "corpus_x.jsonl"
     corpus.write_text(_json.dumps(

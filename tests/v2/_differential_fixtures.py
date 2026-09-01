@@ -29,6 +29,17 @@ _TOOLS = Path(__file__).parents[2] / "tools" / "differential"
 #: release -- see AGENTS.md's release step 8.
 _LEDGERS = sorted(_TOOLS.glob("expected_since_*.toml"))
 
+
+def _entry_name(raw: object) -> str:
+    """A corpus line's name, whichever format the line uses. Mirrors
+    compare.py's _load_entries: a line is a bare JSON string or an
+    object carrying "name"."""
+    if isinstance(raw, str):
+        return raw
+    assert isinstance(raw, dict) and isinstance(raw.get("name"), str), raw
+    return raw["name"]
+
+
 #: Every name the harness classifies, deduplicated. The ledgers exist
 #: to explain diffs on THESE strings and no others, so "what does this
 #: rule claim?" is answerable here without parsing anything -- a plain
@@ -40,7 +51,7 @@ _LEDGERS = sorted(_TOOLS.glob("expected_since_*.toml"))
 #: actually matters; a rule cannot widen its corpus reach and still
 #: answer this one the same way, however it is spelled.
 _CORPUS_NAMES = sorted({
-    json.loads(line)
+    _entry_name(json.loads(line))
     for path in sorted(_TOOLS.glob("corpus*.jsonl"))
     for line in path.read_text(encoding="utf-8").splitlines() if line.strip()})
 

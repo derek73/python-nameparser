@@ -12,6 +12,8 @@ code never reads shared CONSTANTS") had stopped being true.
 import json
 from pathlib import Path
 
+from ._differential_fixtures import _entry_name
+
 
 def differential_corpus() -> list[str]:
     """Every name the differential harness compares, from all of its
@@ -30,7 +32,7 @@ def differential_corpus() -> list[str]:
     corpus_dir = Path(__file__).parents[2] / "tools" / "differential"
     paths = sorted(corpus_dir.glob("corpus*.jsonl"))
     assert paths, f"no corpus*.jsonl in {corpus_dir}"
-    names = [json.loads(line)
+    names = [_entry_name(json.loads(line))
              for path in paths
              for line in path.read_text().splitlines() if line.strip()]
     return list(dict.fromkeys(names))

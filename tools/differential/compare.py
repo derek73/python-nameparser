@@ -951,9 +951,10 @@ def _load_entries(path: Path) -> list[dict[str, object]]:
     string (the original format) or an object with a "name" plus
     optional metadata -- "tests" labels from build_corpus.py, later a
     "shape" from build_shapes_corpus.py. Tolerating both means
-    compare.py itself never needs a flag day across its five corpus
-    files; the fixtures that still assume bare strings are a separate,
-    later migration.
+    compare.py itself never needs a flag day across its four corpus
+    files: corpus.jsonl is labelled (object lines), the other three
+    are still bare strings, and both shapes stay legal everywhere a
+    corpus line is read.
 
     Only "tests" is checked here, and only its type -- an unknown key
     is passed through rather than rejected, because "shape" arrives

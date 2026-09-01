@@ -1713,7 +1713,8 @@ why = "feat(#273) recognizes TYPOGRAPHIC nickname delimiters; the ASCII pairs we
 #
 # uv run python -c "
 # import glob, json, re
-# names = {json.loads(l) for f in glob.glob('tools/differential/corpus*.jsonl')
+# def _n(x): return x if isinstance(x, str) else x['name']
+# names = {_n(json.loads(l)) for f in glob.glob('tools/differential/corpus*.jsonl')
 #          for l in open(f, encoding='utf-8') if l.strip()}
 # hit = [n for n in names if re.search(r'[(\"\']', n)]
 # only = [n for n in hit if not re.search(r'[(\"]', n)
