@@ -1599,13 +1599,35 @@ fields = ["given", "family"]
 # reports UNEXPLAINED however many rules would claim it.
 #
 # `examples` is not decoration. A protected shape need not appear in
-# any corpus -- 'John "Jack" Kennedy' does not -- so the entry carries
+# any corpus -- 'John (Jack) Kennedy' does not -- so the entry carries
 # its own test data, which tests/v2/test_ledger_guards.py runs against
 # every non-empty subset of the fields a rule may name: the seven
 # roles and the `_ambiguities` pseudo-field. An entry carrying
 # `fields` is asked only about the subsets those cover -- 3 for the
 # ASCII pairs, not 255 -- which is where the 387 in that file comes
 # from.
+#
+# The illustration was 'John "Jack" Kennedy' until #486's shape 1-3
+# variation matrix gave that string's existing case row a shape tag --
+# the row (tests/v2/cases.py 'nickname_quotes') long predates that
+# work; only the tag is new -- which put it in corpus_shapes.jsonl.
+# The sentence is about the KEY, not about that name, so it moved to
+# the sibling example still in no corpus at all; of the four, the
+# remaining two ('"Rick" Edmonds', 'Franklin, Benjamin (Ben)') are
+# corpus names in radar files. That an example can be promoted this
+# way is the point of the key rather than a problem with it --
+# nothing about the entry depends on which side of the corpus its
+# test data sits on.
+#
+# The replacement is one tag from the same fate, and whoever writes
+# that tag should read this: 'John (Jack) Kennedy' is itself a case
+# row's text ('nickname_parens', the medial-paren sibling of the row
+# above), so tagging it with shape 1 puts it in corpus_shapes.jsonl
+# and falsifies this sentence exactly as the last tag did. There is
+# no example left that is not a corpus name or a case row, which is
+# the honest state of it: repoint the sentence at whichever example
+# is still outside, or restate it as "examples are not required to be
+# corpus names" and stop naming one.
 
 [[never]]
 why = "trailing 'Ph. D.' split-token healing is PARITY, not a 2.0 change: v1 healed the adjacent pair too, so a diff here is a regression"
@@ -1671,12 +1693,16 @@ why = "feat(#273) recognizes TYPOGRAPHIC nickname delimiters; the ASCII pairs we
 # ('"Rick" Edmonds'), medial ('John (Jack) Kennedy') or trailing
 # ('Franklin, Benjamin (Ben)'), with a word character or a period as
 # the inner flank so a middle initial counts ('Cherice J. (Johnson)
-# Williams'). 51 corpus names (recounted 2026-08-26). The figure is
-# the one test_ledger_guards.py pins as this entry's `captures`, so it
-# is not merely stale when it drifts, it contradicts a machine-checked
-# constant: read it there rather than trusting this line, and grep
-# _EXCLUSION_EFFECT for the pattern. It was 46 for three rounds and
-# moved twice in one delta, once per rules-corpus row added.
+# Williams'). HOW MANY corpus names that is has a single home, and it
+# is not this line: tests/v2/test_ledger_guards.py pins it as this
+# entry's `captures` -- grep _EXCLUSION_EFFECT for the pattern above
+# and read the number there, where a change fails CI. This comment
+# carried a copy of it for several rounds (34, then 46, then 51) and
+# the copy was stale more often than not, since the figure moves
+# whenever the CORPORA move and not only when the entry does -- it
+# never caught up to 55, which the pin was already holding when the
+# copy still read 51, and that lag is the whole argument for deleting
+# the copy rather than correcting it a fourth time.
 #
 # It was medial-only for three rounds, on the theory that the trailing
 # position is where credentials live and that widening would silence

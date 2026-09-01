@@ -134,22 +134,33 @@ _SD = Policy(extra_suffix_delimiters=frozenset({" - "}))
 
 CASES: tuple[Case, ...] = (
     Case("plain", "John Smith", {"given": "John", "family": "Smith"},
+         notes="shape 1's bare Given Family arrangement, the floor the "
+               "other shape-1 rows vary from",
          shape=1),
     Case("family_comma", "Smith, John",
-         {"given": "John", "family": "Smith"}, shape=2),
+         {"given": "John", "family": "Smith"},
+         notes="shape 2's bare Family, Given arrangement",
+         shape=2),
     Case("suffix_comma", "John Smith, PhD",
-         {"given": "John", "family": "Smith", "suffix": "PhD"}, shape=3),
+         {"given": "John", "family": "Smith", "suffix": "PhD"},
+         notes="shape 3's bare Given Family, Suffix arrangement",
+         shape=3),
     Case("bound_given_pairwise_only", "Salem, Abdul Rahman Ahmed",
          {"given": "Abdul Rahman", "middle": "Ahmed", "family": "Salem"},
          notes="the bound-given join is PAIRWISE (one merge, v1 "
-               "parity): the third piece stays a middle name",
+               "parity): the third piece stays a middle name. Shape "
+               "2's post-comma given slot, at the arity where the "
+               "join stops",
          shape=2),
     Case("family_comma_three_part_trailing_strict", "Smith, John V, Jr.",
          {"given": "John", "middle": "V", "family": "Smith",
           "suffix": "Jr."},
          notes="the lenient trailing test applies only to TWO-part "
                "names; a third comma part makes the trailing token a "
-               "middle initial (v1 parity, pinned live 2026-07-17)",
+               "middle initial (v1 parity, pinned live 2026-07-17). "
+               "Shape 2's trailing suffix WITH the optional comma "
+               "written; family_comma_run_with_a_name_is_not_a_run is "
+               "the spelling without it",
          shape=2),
     Case("triple_trailing_commas", "Doe,,,",
          {"family": "Doe"},
@@ -411,7 +422,10 @@ CASES: tuple[Case, ...] = (
                "'Beethoven', which is what #130 asked for. The "
                "textbook-correct Dutch listing reports the fork all "
                "the same (#405): the parser cannot tell it from "
-               "'Nguyen, Thi Van', which is the same string shape",
+               "'Nguyen, Thi Van', which is the same string shape. "
+               "Shape 2's particle slot in the tussenvoegsel "
+               "spelling, where the particle stands behind the given "
+               "name rather than before the family",
          shape=2),
     Case("tussenvoegsel_multiword", "Berg, Jan van der",
          {"given": "Jan", "family": "van der Berg"},
@@ -565,7 +579,9 @@ CASES: tuple[Case, ...] = (
          classification="parity",
          notes="the boundary the row above needs: here the particles "
                "DO join a name word, so they stay particles -- base "
-               "'Vega', particles 'de la', initials 'J. V.'"),
+               "'Vega', particles 'de la', initials 'J. V.'. Shape "
+               "1's particle-bearing family slot",
+         shape=1),
     Case("suffix_word_title_ambiguous_particle", "Jr. Van Johnson",
          {"title": "Jr.", "given": "Van", "family": "Johnson"},
          classification="fix(#367)",
@@ -688,6 +704,19 @@ CASES: tuple[Case, ...] = (
          notes="v1 renders each tail comma segment as ONE suffix "
                "entry; words within an entry space-join via the "
                "'joined' tag"),
+    Case("inline_suffix_then_comma_suffix", "John Smith Jr., PhD",
+         {"given": "John", "family": "Smith", "suffix": "Jr., PhD"},
+         classification="parity",
+         notes="shape 3's optional inline suffix standing WITH a comma "
+               "suffix, which no other row writes: the two compose "
+               "rather than one displacing the other. C1 decides on "
+               "the part after the comma alone -- wholly suffix words, "
+               "more than one word before it -- so the trailing-suffix "
+               "mode fires with 'Jr.' already inside the name part, "
+               "and the written comma survives between the pieces. "
+               "'John Smith, PhD' is the comma half alone and "
+               "'John Smith Jr.' the inline half",
+         shape=3),
     Case("maiden_delimiters_win_when_shared",
          'Baker (Johnson), Jenny',
          {"given": "Jenny", "family": "Baker", "maiden": "Johnson"},
@@ -767,7 +796,9 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith", "suffix": "Jr."},
          notes="v1: the family part may have suffixes in it "
                "(parser.py:1368); the first piece is always the family "
-               "(pinned live 2026-07-17)"),
+               "(pinned live 2026-07-17). Shape 2's pre-comma "
+               "[Suffix] slot",
+         shape=2),
     Case("family_segment_multiple_suffixes", "Smith Jr. MD, John",
          {"given": "John", "family": "Smith", "suffix": "Jr., MD"}),
     Case("family_segment_particle_chain_suffix", "de la Vega III, Juan",
@@ -796,7 +827,15 @@ CASES: tuple[Case, ...] = (
          ambiguities=("comma-structure",),
          notes="only parts[1] decides the suffix-comma structure "
                "(v1 parser.py:1318); 'lutc' is not in the vocabulary "
-               "but rides along (v1 parity, pinned live 2026-07-16)"),
+               "but rides along (v1 parity, pinned live 2026-07-16). "
+               "Deliberately the COMPOUND shape-3 exemplar: it is the "
+               "only row filling Title, Middle and the repeated "
+               "[, Suffix] at once, and it carries the corpus's "
+               "hyphenated family besides, so a diff on it is not "
+               "attributable to any one slot -- read it as the "
+               "notation's fullest form rather than as a witness for "
+               "whichever slot the failure seems to be about",
+         shape=3),
     Case("suffix_comma_nonsuffix_tail_flagged", "John Smith, MD, Xyzzy",
          {"given": "John", "family": "Smith", "suffix": "MD, Xyzzy"},
          ambiguities=("comma-structure",),
@@ -870,10 +909,15 @@ CASES: tuple[Case, ...] = (
          ambiguities=("comma-structure",),
          notes="post-comma segments land in suffix even when not "
                "suffix-shaped; the ambiguity flags the guess (v1 "
-               "parity, pinned live 2026-07-13)"),
+               "parity, pinned live 2026-07-13). Shape 2's repeated "
+               "[, Suffix] slot, the double trailing suffix",
+         shape=2),
     Case("delavega", "Dr. Juan de la Vega III",
          {"title": "Dr.", "given": "Juan", "family": "de la Vega",
-          "suffix": "III"}),
+          "suffix": "III"},
+         notes="shape 1's Title and trailing Suffix slots paired, the "
+               "arrangement written end to end",
+         shape=1),
     Case("prefix_chain_to_end", "Juan de la Vega Martinez",
          {"given": "Juan", "family": "de la Vega Martinez"}),
     Case("van_johnson", "Van Johnson",
@@ -881,7 +925,9 @@ CASES: tuple[Case, ...] = (
          ambiguities=("particle-or-given",),
          notes="v2 surfaces #121's irreducible ambiguity"),
     Case("family_comma_particles", "de la Vega, Juan",
-         {"given": "Juan", "family": "de la Vega"}),
+         {"given": "Juan", "family": "de la Vega"},
+         notes="shape 2's particle-bearing family, before the comma",
+         shape=2),
     Case("paren_suffix_escapes_nickname", "Andrew Perkins (MBA)",
          {"given": "Andrew", "family": "Perkins", "suffix": "MBA"},
          notes="v1 parse_nicknames: suffix-shaped delimited content is "
@@ -890,12 +936,36 @@ CASES: tuple[Case, ...] = (
     Case("paren_period_escapes_nickname", "Andrew Perkins (Ret.)",
          {"given": "Andrew", "family": "Perkins", "suffix": "Ret."}),
     Case("nickname_quotes", 'John "Jack" Kennedy',
-         {"given": "John", "family": "Kennedy", "nickname": "Jack"}),
+         {"given": "John", "family": "Kennedy", "nickname": "Jack"},
+         notes="shape 1's double-quoted Nickname slot, which is the "
+               "spelling its notation writes",
+         shape=1),
     Case("nickname_parens", "John (Jack) Kennedy",
          {"given": "John", "family": "Kennedy", "nickname": "Jack"}),
     Case("sir_bob", "Sir Bob Andrew Dole",
          {"title": "Sir", "given": "Bob", "middle": "Andrew",
-          "family": "Dole"}),
+          "family": "Dole"},
+         notes="shape 1's first Middle slot; middle_run_at_two_words "
+               "below is the second",
+         shape=1),
+    Case("middle_run_at_two_words", "John Jack Andrew Kennedy",
+         {"given": "John", "middle": "Jack Andrew", "family": "Kennedy"},
+         classification="parity",
+         notes="shape 1's SECOND Middle slot, which sir_bob above "
+               "leaves unwritten: everything standing between the "
+               "given name and the family is middle, at any arity, and "
+               "the pieces render space-joined. The row that fails if "
+               "the middle run is ever capped at one word",
+         shape=1),
+    Case("family_comma_paren_nickname", "Kennedy, John (Jack)",
+         {"given": "John", "family": "Kennedy", "nickname": "Jack"},
+         classification="parity",
+         notes="shape 2's (Nickname) slot: the clause is lifted out "
+               "before the comma structure is read, so what reaches "
+               "C1 is the bare 'Kennedy, John' and the listing form "
+               "still wins. nickname_parens above is the same clause "
+               "in the medial position of shape 1",
+         shape=2),
     Case("long_title", "President of the United States Barack Obama",
          {"title": "President of the United States",
           "given": "Barack", "family": "Obama"}),
@@ -903,7 +973,10 @@ CASES: tuple[Case, ...] = (
          {"title": "The Secretary of State", "given": "Hillary",
           "family": "Clinton"}),
     Case("comma_middle_initial", "Doe, John A.",
-         {"given": "John", "middle": "A.", "family": "Doe"}),
+         {"given": "John", "middle": "A.", "family": "Doe"},
+         notes="shape 2's post-comma Middle slot, in the form it is "
+               "usually written after a family comma -- an initial",
+         shape=2),
     Case("single", "John", {"given": "John"}),
     Case("title_only", "Dr.", {"title": "Dr."}),
     Case("double_comma_suffix", "Smith, John, Jr.",
@@ -921,11 +994,17 @@ CASES: tuple[Case, ...] = (
                "roman numeral; V/X/I are also ordinary middle initials, "
                "so the reading is reported"),
     Case("initial_not_suffix", "John V. Smith",
-         {"given": "John", "middle": "V.", "family": "Smith"}),
+         {"given": "John", "middle": "V.", "family": "Smith"},
+         notes="shape 1's Middle slot filled by an initial-shaped "
+               "word, which is the branch a numeral spelling would "
+               "otherwise take to the suffix",
+         shape=1),
     Case("lenient_after_comma", "John Ingram, V",
          {"given": "John", "family": "Ingram", "suffix": "V"}),
     Case("comma_then_title", "Smith, Dr. John",
-         {"title": "Dr.", "given": "John", "family": "Smith"}),
+         {"title": "Dr.", "given": "John", "family": "Smith"},
+         notes="shape 2's post-comma Title slot",
+         shape=2),
     Case("nickname_single_name", "John (Jack)",
          {"family": "John", "nickname": "Jack"}),
     Case("nickname_only", "(Jack)", {"nickname": "Jack"}),
@@ -2214,7 +2293,14 @@ CASES: tuple[Case, ...] = (
                "Muhammad (#343/#345's corpus rows), a prenominal use "
                "the 'postnominal only' disposition did not consider; "
                "'MD' after the name is the degree. Position decides, "
-               "as for 'sr'"),
+               "as for 'sr'. The shape-1 tag rides on that disposition "
+               "-- 'md' is the ONE deviation from the approved "
+               "2026-07-30 audit table (decisions.md#comma-suffix-arc, "
+               "where #291 is still unshipped), so if the deviation is "
+               "ever reversed this row stops being a Title Given "
+               "Family arrangement and the tag has to move to another "
+               "row rather than the expectations being edited under it",
+         shape=1),
     Case("audit_md_after_comma_is_the_degree", "Smith, MD",
          {"family": "Smith", "suffix": "MD"},
          classification="fix(#296)",
@@ -2241,7 +2327,10 @@ CASES: tuple[Case, ...] = (
     Case("audit_phd_trailing_unchanged", "John Smith PhD",
          {"given": "John", "family": "Smith", "suffix": "PhD"}),
     Case("audit_jr_trailing_unchanged", "John Smith Jr.",
-         {"given": "John", "family": "Smith", "suffix": "Jr."}),
+         {"given": "John", "family": "Smith", "suffix": "Jr."},
+         notes="shape 1's trailing Suffix slot, written without a "
+               "comma",
+         shape=1),
     Case("audit_lt_leading_stays_a_title", "Lt. Smith",
          {"title": "Lt.", "family": "Smith"},
          notes="'lt' KEPT its dual membership -- a prenominal rank with "
@@ -2547,7 +2636,11 @@ CASES: tuple[Case, ...] = (
     Case("family_comma_run_with_a_name_is_not_a_run", "Smith, John Jr.",
          {"given": "John", "family": "Smith", "suffix": "Jr."},
          notes="the non-flip: a name word in the run makes it the "
-               "given-and-suffix walk v1 had"),
+               "given-and-suffix walk v1 had. Shape 2's trailing "
+               "suffix with the optional comma OMITTED; "
+               "family_comma_three_part_trailing_strict is the "
+               "spelling that writes it",
+         shape=2),
     Case("family_comma_title_then_suffix", "Smith, Dr. Jr.",
          {"title": "Dr.", "family": "Smith", "suffix": "Jr."},
          classification="fix(comma-family)",
