@@ -152,7 +152,10 @@ def test_entries_below_their_shapes_min_baseline_are_skipped(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A 1.4 worker must never see an order it cannot honor; the
     skip is printed so a shrunken comparison is never silent."""
-    import json as _json, sys, io, contextlib
+    import contextlib
+    import io
+    import json as _json
+    import sys
     corpus = tmp_path / "corpus_x.jsonl"
     corpus.write_text(
         _json.dumps({"name": "Ménil Christophe du", "shape": 4},
@@ -164,7 +167,8 @@ def test_entries_below_their_shapes_min_baseline_are_skipped(
     monkeypatch.setattr(compare, "HERE", tmp_path)
     sent: dict = {}
 
-    def _fake(v, w, entries):
+    def _fake(v: str, w: bool,
+              entries: list[dict[str, object]]) -> tuple[dict, list[dict]]:
         sent["entries"] = list(entries)
         return ({"__version__": v,
                  "__file__": "/wheel/nameparser/__init__.py"},
@@ -211,7 +215,10 @@ def test_order_bearing_entry_reaches_the_worker_and_compares_on_v2_alone(
     but the v2 fields, proving the branch that skips the facade
     comparison for these rows actually runs rather than crashing or
     silently defaulting to the facade path."""
-    import json as _json, sys, io, contextlib
+    import contextlib
+    import io
+    import json as _json
+    import sys
     name = "Ménil Christophe du"
     corpus = tmp_path / "corpus_x.jsonl"
     corpus.write_text(
@@ -224,7 +231,8 @@ def test_order_bearing_entry_reaches_the_worker_and_compares_on_v2_alone(
     v2_row = _tree_v2_row(name, "FAMILY_FIRST")
     sent: dict = {}
 
-    def _fake(v, w, entries):
+    def _fake(v: str, w: bool,
+              entries: list[dict[str, object]]) -> tuple[dict, list[dict]]:
         sent["entries"] = list(entries)
         return ({"__version__": v,
                  "__file__": "/wheel/nameparser/__init__.py"},
@@ -259,7 +267,10 @@ def test_order_bearing_diff_row_tags_its_order_and_hides_v2_only(
     means "the facade was compared and agreed", which is false for an
     order-bearing row: its facade was never consulted, so the tag must
     not appear on either header."""
-    import json as _json, sys, io, contextlib
+    import contextlib
+    import io
+    import json as _json
+    import sys
     name = "Ménil Christophe du"
     corpus = tmp_path / "corpus_x.jsonl"
     corpus.write_text(
@@ -272,7 +283,8 @@ def test_order_bearing_diff_row_tags_its_order_and_hides_v2_only(
     v2_row = _tree_v2_row(name, "FAMILY_FIRST")
     v2_row["family"] = v2_row["family"] + "X"  # force a diff on `family`
 
-    def _fake(v, w, entries):
+    def _fake(v: str, w: bool,
+              entries: list[dict[str, object]]) -> tuple[dict, list[dict]]:
         return ({"__version__": v,
                  "__file__": "/wheel/nameparser/__init__.py"},
                 [{"v2": v2_row}])
@@ -840,7 +852,9 @@ def test_object_corpus_lines_are_read_and_labels_printed(
         lambda v, w, entries: ({"__version__": v,
                                 "__file__": "/wheel/nameparser/__init__.py"},
                                [{"facade": _DIFFERS}]))
-    import sys, io, contextlib
+    import contextlib
+    import io
+    import sys
     monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", "1.4.0",
                                       "--corpus", str(corpus)])
     buf = io.StringIO()
@@ -889,7 +903,9 @@ def test_cross_tier_dedup_keeps_the_contract_reading(
         lambda v, w, entries: ({"__version__": v,
                                 "__file__": "/wheel/nameparser/__init__.py"},
                                [{"facade": _DIFFERS}]))
-    import sys, io, contextlib
+    import contextlib
+    import io
+    import sys
     monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", "1.4.0",
                                       "--corpus", str(radar_file),
                                       "--corpus", str(contract_file)])
