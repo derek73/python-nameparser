@@ -14,7 +14,8 @@ from pathlib import Path
 
 import pytest
 
-from ._differential_fixtures import _TOOLS, load_tool
+from ._differential_fixtures import (
+    _LEDGERS, _TOOLS, _claimed, _rules, load_tool)
 
 compare = load_tool("compare")
 shapes = load_tool("shapes")
@@ -398,6 +399,150 @@ def test_an_order_blind_rule_absorbing_an_order_bearing_diff_is_reported(
     assert code == 0
     assert "ORDER-BLIND" in out
     assert "'blind'" in out and "FAMILY_FIRST" in out
+
+
+def test_one_string_tagged_with_two_shapes_is_two_comparisons(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The dedup key is (name, order), not name. Regressing it to the
+    name alone drops the second reading silently: the run compares one
+    of the two orders, prints a corpus count one smaller, and exits 0
+    -- and nothing above this pins it, because every other order test
+    uses a single-shape corpus where the two keys agree."""
+    import contextlib
+    import io
+    import json as _json
+    import sys
+    name = "Ménil Christophe du"
+    corpus = tmp_path / "corpus_x.jsonl"
+    corpus.write_text("".join(
+        _json.dumps({"name": name, "shape": s}, ensure_ascii=False) + "\n"
+        for s in (4, 5)), encoding="utf-8")
+    (tmp_path / "expected_since_2.0.0.toml").write_text("", encoding="utf-8")
+    monkeypatch.setitem(compare._CORPUS_FLOORS, corpus.name, 1)
+    monkeypatch.setitem(compare._CORPUS_TIERS, corpus.name, "contract")
+    monkeypatch.setattr(compare, "HERE", tmp_path)
+    sent: dict = {}
+
+    def _fake(v: str, w: bool,
+              entries: list[dict[str, object]]) -> tuple[dict, list[dict]]:
+        sent["entries"] = list(entries)
+        return ({"__version__": v,
+                 "__file__": "/wheel/nameparser/__init__.py"},
+                [{"v2": _tree_v2_row(name, str(e["order"]))}
+                 for e in entries])
+
+    monkeypatch.setattr(compare, "_run_worker", _fake)
+    monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", "2.0.0",
+                                      "--corpus", str(corpus)])
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = compare.main()
+    assert code == 0
+    assert [e["name"] for e in sent["entries"]] == [name, name]
+    assert [e["order"] for e in sent["entries"]] == [
+        "FAMILY_FIRST", "FAMILY_FIRST_GIVEN_LAST"]
+    assert "corpus: 2 names" in buf.getvalue()
+
+
+def test_every_order_scoped_rule_declines_the_default_order() -> None:
+    """Swept over the shipped ledgers rather than pinned per rule: a
+    rule whose `orders` omits "DEFAULT" is saying its diffs come from
+    declared orders alone, and the whole value of that statement is
+    that the default-order reading of the same string stays somebody
+    else's business -- unclaimed, and so still able to report
+    UNEXPLAINED.
+
+    Asked over the names the rule's own regex reaches, so it is the
+    rule's real population and not a fixture's. Both directions, since
+    a narrowing that declined everything would pass the first half."""
+    checked = 0
+    for ledger in _LEDGERS:
+        for rule in _rules(ledger):
+            orders = rule.get("orders")
+            if not isinstance(orders, list) or "DEFAULT" in orders:
+                continue
+            fields = set(rule["fields"])
+            examples = _claimed(rule["name_regex"])
+            assert examples, (
+                f"{ledger.name}: {rule['issue']!r} is order-scoped but its "
+                f"regex reaches no corpus name, so this sweep would check "
+                f"it vacuously")
+            for example in examples:
+                assert not compare._entry_matches(
+                    rule, example, fields, None), (
+                    f"{ledger.name}: {rule['issue']!r} scopes to {orders} "
+                    f"yet claims the DEFAULT-order diff on {example!r}")
+                assert any(compare._entry_matches(rule, example, fields, o)
+                           for o in orders), (
+                    f"{ledger.name}: {rule['issue']!r} claims nothing under "
+                    f"any order it lists, on {example!r}")
+            checked += 1
+    assert checked >= 4, (
+        f"only {checked} order-scoped rules were swept; the shipped 2.x "
+        f"ledgers carry four each, so this pin is passing vacuously")
+
+
+def test_the_worker_reads_an_order_bearing_line_as_the_tree_does() -> None:
+    """The generated worker's order branch, RUN rather than compiled.
+    test_worker_source_compiles proves it parses and
+    test_run_worker_sends_the_name_and_resolved_order_on_the_wire
+    proves what goes in; between them the branch that resolves an order
+    constant, builds a Parser for it and emits a v2-only row was
+    covered by nothing that executes it.
+
+    exec'd in-process on purpose: the template's `import nameparser`
+    then resolves to this checkout, so the row it emits is the tree's
+    own reading and can be compared against the tree's own Parser.
+    That is exactly the equality a real run depends on -- the worker
+    and main()'s tree side must build the same row from the same parse
+    -- and it is what makes a diff mean a behavior change rather than
+    a protocol one."""
+    import contextlib
+    import io
+    import json as _json
+    import sys
+    import nameparser
+    name = "Ménil Christophe du"
+    source = compare._worker_source(nameparser.__version__, want_v2=True)
+    stdin = io.StringIO(_json.dumps(
+        {"name": name, "order": "FAMILY_FIRST"}, ensure_ascii=False) + "\n")
+    real_stdin, buf = sys.stdin, io.StringIO()
+    try:
+        sys.stdin = stdin
+        with contextlib.redirect_stdout(buf):
+            exec(compile(source, "baseline_worker.py", "exec"), {})
+    finally:
+        sys.stdin = real_stdin
+    lines = buf.getvalue().splitlines()
+    # the version tell is the first line, always -- a reader that
+    # forgets it compares the tell against a parse and sees nothing
+    tell, row = (_json.loads(line) for line in lines)
+    assert tell["__version__"] == nameparser.__version__
+    assert row == {"v2": _tree_v2_row(name, "FAMILY_FIRST")}
+    # the facade is never consulted for an order-bearing entry, so the
+    # key must be absent rather than empty: main() branches on it
+    assert "facade" not in row
+
+
+def test_dormancy_diagnoses_a_reverted_scoped_rule_as_reverted() -> None:
+    """An order-scoped rule that stops explaining anything has had its
+    behavior reverted, and must say so even when another rule explains
+    the SAME NAME under the default order. Read order-blind, the scoped
+    rule matches that default-order diff, sees the other rule win it
+    and reports `shadowed` -- which sends someone to delete a rule that
+    is not redundant, while the family-first behavior it described
+    stays gone."""
+    rules = [{"issue": "fix(default)", "name_regex": "^de la Cruz$",
+              "fields": ["family"], "orders": ["DEFAULT"]},
+             {"issue": "feat(scoped)", "name_regex": "^de la Cruz$",
+              "fields": ["family"], "orders": ["FAMILY_FIRST"]}]
+    # only the default-order comparison diffs: the family-first one the
+    # scoped rule describes has been reverted
+    report = compare.dormant_rules(
+        rules, {"fix(default)"}, [("de la Cruz", {"family"}, None)])
+    assert [d.issue for d in report.undeclared] == ["feat(scoped)"]
+    assert report.undeclared[0].kind == "reverted"
+    assert report.undeclared[0].detail == ""
 
 
 def test_a_scoped_rule_absorbing_its_own_order_is_not_reported(
