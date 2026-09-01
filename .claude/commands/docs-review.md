@@ -15,9 +15,9 @@ Base ref: `${1:-master}`
    both are empty, say so and stop — do not review an empty diff.
 2. Confirm the suite is green first, so the agent can assume the
    machine-checked layer holds: `uv run --frozen pytest -q`. If it
-   fails, report that and stop; a red suite makes the agent's
-   "assume these pass" section false and it will waste effort
-   rediscovering known breakage.
+   fails, report that and stop; a red suite falsifies the
+   machine-checked layer docs/design/AGENTS.md tells the agent to
+   assume, and it will waste effort rediscovering known breakage.
 3. Dispatch the `design-docs-reviewer` agent with the base ref and
    the changed-file list. Let it run its own axes — do not
    pre-summarize the diff for it, and do not tell it what you think

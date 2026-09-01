@@ -1,6 +1,6 @@
 ---
 name: design-docs-reviewer
-description: Reviews changes to docs/design/ (rules.md, decisions.md, mechanisms.md) for the failure modes that this doc system's own tests cannot catch — unreproducible measurements, rules that contradict the decision entries they rest on, statements that contradict their own examples, and prose edits that change what the doc parsers see. Use before merging any PR that touches docs/design/, and after distilling a design session into those files.
+description: Reviews changes to docs/design/ (rules.md, decisions.md, mechanisms.md, and AGENTS.md itself, which carries the conventions the other three rest on) for the failure modes that this doc system's own tests cannot catch — unreproducible measurements, rules that contradict the decision entries they rest on, statements that contradict their own examples, and prose edits that change what the doc parsers see. Use before merging any PR that touches docs/design/, and after distilling a design session into those files.
 tools: Bash, Read, Grep, Glob
 ---
 
