@@ -612,6 +612,30 @@ def test_cjk_corpus_matches_the_case_table() -> None:
         "`uv run python tools/differential/build_cjk_corpus.py`")
 
 
+def test_case_shape_ids_exist_in_the_inventory() -> None:
+    """cases.py cannot import tools/, so Case.__post_init__ validates
+    every shape tag against its own hand copy of the inventory's id
+    set (cases._SHAPE_IDS). This is the cross-file half, in two parts.
+    The equality holds the copy itself honest: a shape added to or
+    removed from shapes.py without updating cases._SHAPE_IDS fails
+    here, whichever side changed. The subset check catches a
+    different drift -- a row tagged under a stale _SHAPE_IDS before
+    this test last ran -- so it stays even though __post_init__ would
+    refuse the same tag today."""
+    from tests.v2 import cases
+    shapes = load_tool("shapes")
+    tagged = {c.shape for c in cases.CASES if c.shape is not None}
+    assert tagged <= set(shapes.SHAPES), (
+        f"tests/v2/cases.py tags shape id(s) "
+        f"{sorted(tagged - set(shapes.SHAPES))} that are not in "
+        f"tools/differential/shapes.py's SHAPES; add the shape there "
+        f"or fix the tag in cases.py")
+    assert cases._SHAPE_IDS == set(shapes.SHAPES), (
+        f"cases._SHAPE_IDS {sorted(cases._SHAPE_IDS)} != shapes.py's "
+        f"{sorted(shapes.SHAPES)}; they are hand copies of one "
+        f"inventory -- update whichever side is stale")
+
+
 #: Names each rule MUST NOT match, keyed by a substring of its `issue`.
 #:
 #: A wall, not a change detector, and that is the point. _CORPUS_CLAIMS

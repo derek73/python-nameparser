@@ -1,5 +1,7 @@
 """Core runner over the shared case table. The facade
 runner (migration plan) consumes the same CASES."""
+from typing import Any
+
 import pytest
 
 from nameparser import Parser, Policy, Role, locales, parser_for
@@ -70,3 +72,41 @@ def test_the_family_partitions_into_particles_and_base(
         (pn.family_particles + " " + pn.family_base).split()), (
         f"{case.text!r}: family={pn.family!r} is not partitioned by "
         f"particles={pn.family_particles!r} + base={pn.family_base!r}")
+
+
+#: Case.__post_init__'s shape checks, each probed for the one message it
+#: alone raises. A row here is a Case that must fail to construct, not
+#: one that ever joins CASES -- unlike test_case above, this exercises
+#: the dataclass's own validation rather than the parser.
+@pytest.mark.parametrize("kwargs, match", [
+    pytest.param(
+        dict(text="Beethoven, Ludwig van", shape=2, locale="nl_NL"),
+        "needs the row's own policy",
+        id="shape-plus-locale-has-no-order-to-check"),
+    pytest.param(
+        dict(text="田中さん, Jr. Ph. D.", shape=1),
+        "cannot tag CJK text",
+        id="cjk-text-is-corpus-cjk-jsonl-ground-not-a-shape"),
+    pytest.param(
+        dict(text="John Smith", shape=4),
+        "declares no policy",
+        id="family-first-shape-needs-a-family-first-policy"),
+    pytest.param(
+        dict(text="John Smith", shape=4,
+             policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST)),
+        "the row's policy declares FAMILY_FIRST_GIVEN_LAST",
+        id="shape-order-disagrees-with-the-rows-own-policy"),
+    pytest.param(
+        dict(text="John Smith", shape=6),
+        "unknown shape",
+        id="shape-id-outside-the-inventory"),
+    pytest.param(
+        dict(text="田中太郎", shape=4,
+             policy=Policy(name_order=FAMILY_FIRST)),
+        "cannot tag CJK text",
+        id="cjk-refusal-survives-a-matching-order"),
+])
+def test_case_construction_rejects_a_bad_shape_tag(
+        kwargs: dict[str, Any], match: str) -> None:
+    with pytest.raises(ValueError, match=match):
+        Case(id="probe", expect={}, **kwargs)

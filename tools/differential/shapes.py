@@ -9,6 +9,14 @@ it and simply not at all below min_baseline -- "we don't care what
 they do in other orders" is structural, not a ledger exception
 (name_order and both constants shipped in 2.0.0).
 
+The notations are canonical SKELETONS, not exhaustive grammars: which
+bucket a written word lands in (a lone post-comma credential reading
+as Suffix, a trailing particle joining the Family) is the parser's
+vocabulary question, not this table's. Tagging a case row with a
+shape asserts that the row instantiates the shape's ARRANGEMENT under
+its declared order -- not that every word-level reading the notation
+could admit is pinned here.
+
 The CJK arrangement is deliberately absent: whether it is a third
 family-first shape is #469's open question, and corpus_cjk.jsonl
 covers that ground meanwhile.
