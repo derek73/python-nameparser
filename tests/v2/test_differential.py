@@ -17,6 +17,7 @@ import pytest
 from ._differential_fixtures import _TOOLS, load_tool
 
 compare = load_tool("compare")
+shapes = load_tool("shapes")
 
 
 def test_parse_version_pads_a_short_release_to_three_parts() -> None:
@@ -113,6 +114,179 @@ def test_worker_source_gates_the_v2_import_on_the_baseline() -> None:
     the worker die on import rather than report a clean facade diff."""
     assert "WANT_V2 = False" in compare._worker_source("1.4.0", want_v2=False)
     assert "WANT_V2 = True" in compare._worker_source("2.0.0", want_v2=True)
+
+
+def test_every_shape_orders_resolve_and_bound_sanely() -> None:
+    """The inventory's two contracts: an `order` is a public constant
+    name on the installed tree that Policy actually accepts as a
+    name_order -- hasattr alone would admit "HumanName" or any other
+    real attribute, failing only at runtime inside the worker -- and a
+    shape with an order cannot claim a pre-2.0 baseline -- Policy
+    shipped in 2.0.0, so an earlier min_baseline would send an order
+    to a worker with no Policy to apply it.
+
+    `_parse_version(shape.min_baseline)` is called for EVERY shape,
+    not just ordered ones, so a typo'd min on shapes 1-3 (whose order
+    is None and so skips the >= (2, 0, 0) check) is still caught --
+    an unparsable string raises SystemExit on its own.
+    """
+    import nameparser
+    from nameparser import Policy
+    for sid, shape in shapes.SHAPES.items():
+        parsed_min = compare._parse_version(shape.min_baseline)
+        if shape.order is not None:
+            assert hasattr(nameparser, shape.order), (sid, shape.order)
+            Policy(name_order=getattr(nameparser, shape.order))
+            assert parsed_min >= (2, 0, 0), sid
+
+
+def test_worker_reads_entry_objects_and_applies_an_order() -> None:
+    """The template must parse {"name","order"} lines and build the
+    order's parser; rendering is checked textually the way
+    test_worker_source_carries_the_requested_pin does."""
+    src = compare._worker_source("2.2.0", want_v2=True)
+    assert '"order"' in src and "getattr(nameparser, order)" in src
+
+
+def test_entries_below_their_shapes_min_baseline_are_skipped(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A 1.4 worker must never see an order it cannot honor; the
+    skip is printed so a shrunken comparison is never silent."""
+    import json as _json, sys, io, contextlib
+    corpus = tmp_path / "corpus_x.jsonl"
+    corpus.write_text(
+        _json.dumps({"name": "Ménil Christophe du", "shape": 4},
+                    ensure_ascii=False) + "\n"
+        + _json.dumps("John Smith") + "\n", encoding="utf-8")
+    (tmp_path / "expected_since_1.4.0.toml").write_text("", encoding="utf-8")
+    monkeypatch.setitem(compare._CORPUS_FLOORS, corpus.name, 1)
+    monkeypatch.setitem(compare._CORPUS_TIERS, corpus.name, "contract")
+    monkeypatch.setattr(compare, "HERE", tmp_path)
+    sent: dict = {}
+
+    def _fake(v, w, entries):
+        sent["entries"] = list(entries)
+        return ({"__version__": v,
+                 "__file__": "/wheel/nameparser/__init__.py"},
+                [{"facade": {"title": "", "first": "John", "middle": "",
+                             "last": "Smith", "suffix": "", "nickname": "",
+                             "maiden": ""}}])
+
+    monkeypatch.setattr(compare, "_run_worker", _fake)
+    monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", "1.4.0",
+                                      "--corpus", str(corpus)])
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = compare.main()
+    assert code == 0
+    assert [e["name"] for e in sent["entries"]] == ["John Smith"]
+    out = buf.getvalue()
+    assert ("skipped 1 name tagged shape(s) [4]: baseline 1.4.0 predates "
+            "their minimum (2.0.0)") in out
+    assert "corpus_x.jsonl (2, 1 skipped)" in out
+
+
+def _tree_v2_row(name: str, order: str) -> dict:
+    """The tree's own v2 reading of `name` under `order`, built the
+    same way main()'s tree side and the worker template's _v2_row both
+    build it. Used to fabricate a baseline row that agrees (or, with a
+    field mutated, disagrees) with the tree, without needing a real
+    baseline wheel."""
+    from nameparser import Parser, Policy
+    import nameparser as _np
+    p = Parser(policy=Policy(name_order=getattr(_np, order))).parse(name)
+    row = {f: (getattr(p, f, "") or "") for f in compare.V2_FIELDS}
+    row["_ambiguities"] = sorted(
+        {a.kind.name for a in getattr(p, "ambiguities", ())})
+    return row
+
+
+def test_order_bearing_entry_reaches_the_worker_and_compares_on_v2_alone(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Mutating the shape resolution to always leave e["order"] = None
+    must not leave this suite green: a shape-4 entry must reach the
+    worker with order == "FAMILY_FIRST" (not None), and a baseline row
+    that carries no "facade" key at all -- exactly what an
+    order-bearing worker row looks like -- must diff against nothing
+    but the v2 fields, proving the branch that skips the facade
+    comparison for these rows actually runs rather than crashing or
+    silently defaulting to the facade path."""
+    import json as _json, sys, io, contextlib
+    name = "Ménil Christophe du"
+    corpus = tmp_path / "corpus_x.jsonl"
+    corpus.write_text(
+        _json.dumps({"name": name, "shape": 4}, ensure_ascii=False) + "\n",
+        encoding="utf-8")
+    (tmp_path / "expected_since_2.0.0.toml").write_text("", encoding="utf-8")
+    monkeypatch.setitem(compare._CORPUS_FLOORS, corpus.name, 1)
+    monkeypatch.setitem(compare._CORPUS_TIERS, corpus.name, "contract")
+    monkeypatch.setattr(compare, "HERE", tmp_path)
+    v2_row = _tree_v2_row(name, "FAMILY_FIRST")
+    sent: dict = {}
+
+    def _fake(v, w, entries):
+        sent["entries"] = list(entries)
+        return ({"__version__": v,
+                 "__file__": "/wheel/nameparser/__init__.py"},
+                [{"v2": v2_row}])
+
+    monkeypatch.setattr(compare, "_run_worker", _fake)
+    monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", "2.0.0",
+                                      "--corpus", str(corpus)])
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = compare.main()
+    assert sent["entries"][0]["order"] == "FAMILY_FIRST"
+    assert code == 0
+    assert "UNEXPLAINED" not in buf.getvalue()
+
+
+@pytest.mark.parametrize("tier,header,want_code", [
+    ("contract", "UNEXPLAINED", 1),
+    # radar tier: same order tag, but never fatal (#468) -- exit 0
+    ("radar", "UNCLASSIFIED (radar)", 0),
+])
+def test_order_bearing_diff_row_tags_its_order_and_hides_v2_only(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+        tier: str, header: str, want_code: int) -> None:
+    """Both the UNEXPLAINED and UNCLASSIFIED (radar) headers must say
+    which order produced a diff -- a family-first regression and a
+    default-order regression on the same name are otherwise
+    indistinguishable in the report. Both draw the tag from the same
+    _order_tag helper, so this parametrization pins BOTH call sites --
+    deleting either inline copy used to leave the suite green for
+    whichever one this test didn't cover. And "[v2 surface only]"
+    means "the facade was compared and agreed", which is false for an
+    order-bearing row: its facade was never consulted, so the tag must
+    not appear on either header."""
+    import json as _json, sys, io, contextlib
+    name = "Ménil Christophe du"
+    corpus = tmp_path / "corpus_x.jsonl"
+    corpus.write_text(
+        _json.dumps({"name": name, "shape": 4}, ensure_ascii=False) + "\n",
+        encoding="utf-8")
+    (tmp_path / "expected_since_2.0.0.toml").write_text("", encoding="utf-8")
+    monkeypatch.setitem(compare._CORPUS_FLOORS, corpus.name, 1)
+    monkeypatch.setitem(compare._CORPUS_TIERS, corpus.name, tier)
+    monkeypatch.setattr(compare, "HERE", tmp_path)
+    v2_row = _tree_v2_row(name, "FAMILY_FIRST")
+    v2_row["family"] = v2_row["family"] + "X"  # force a diff on `family`
+
+    def _fake(v, w, entries):
+        return ({"__version__": v,
+                 "__file__": "/wheel/nameparser/__init__.py"},
+                [{"v2": v2_row}])
+
+    monkeypatch.setattr(compare, "_run_worker", _fake)
+    monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", "2.0.0",
+                                      "--corpus", str(corpus)])
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = compare.main()
+    assert code == want_code
+    out = buf.getvalue()
+    assert f"{header} {name!r}" in out and "[order: FAMILY_FIRST]" in out
+    assert "[v2 surface only]" not in out
 
 
 _WHEEL = "/Users/x/.cache/uv/environments-v2/w/lib/python3.11/" \
@@ -507,8 +681,8 @@ def _run_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ledger_body: str,
         rows.append({"facade": facade})
     _WORKER_CALL.clear()
 
-    def _fake(v: str, w: bool, n: list[str]) -> tuple[dict, list[dict]]:
-        _WORKER_CALL.update(version=v, want_v2=w, names=list(n))
+    def _fake(v: str, w: bool, n: list[dict]) -> tuple[dict, list[dict]]:
+        _WORKER_CALL.update(version=v, want_v2=w, names=[e["name"] for e in n])
         return ({"__version__": v,
                  "__file__": "/wheel/nameparser/__init__.py"}, rows)
 
@@ -688,8 +862,6 @@ def test_a_malformed_tests_label_is_a_hard_error(
     corpus.write_text(_json.dumps(
         {"name": "John Smith", "tests": "not_a_list"}) + "\n",
         encoding="utf-8")
-    monkeypatch.setitem(compare._CORPUS_FLOORS, corpus.name, 1)
-    monkeypatch.setitem(compare._CORPUS_TIERS, corpus.name, "radar")
     with pytest.raises(SystemExit, match="'tests' must be a list"):
         compare._load_entries(corpus)
 
@@ -958,7 +1130,7 @@ def test_run_worker_strips_the_import_path_overrides_from_the_child(
     with an unproved call site."""
     monkeypatch.setenv("PYTHONPATH", "/shadow")
     _fake_popen(monkeypatch, f"{_TELL}\n{_ROW}\n")
-    compare._run_worker("1.4.0", False, ["John Smith"])
+    compare._run_worker("1.4.0", False, [{"name": "John Smith"}])
     env = _FakePopen.last["env"]
     assert "PYTHONPATH" not in env and "PYTHONHOME" not in env
 
@@ -967,14 +1139,14 @@ def test_run_worker_aborts_on_a_nonzero_exit(
         monkeypatch: pytest.MonkeyPatch) -> None:
     _fake_popen(monkeypatch, "", rc=3)
     with pytest.raises(SystemExit, match="exited 3"):
-        compare._run_worker("1.4.0", False, ["John Smith"])
+        compare._run_worker("1.4.0", False, [{"name": "John Smith"}])
 
 
 def test_run_worker_aborts_on_empty_output(
         monkeypatch: pytest.MonkeyPatch) -> None:
     _fake_popen(monkeypatch, "")
     with pytest.raises(SystemExit, match="not even a version tell"):
-        compare._run_worker("1.4.0", False, ["John Smith"])
+        compare._run_worker("1.4.0", False, [{"name": "John Smith"}])
 
 
 def test_run_worker_aborts_when_fewer_results_than_names(
@@ -982,8 +1154,9 @@ def test_run_worker_aborts_when_fewer_results_than_names(
     """The guard behind main's zip(), which truncates silently. This is
     the comparing-fewer-names-than-you-think failure."""
     _fake_popen(monkeypatch, f"{_TELL}\n{_ROW}\n")
-    with pytest.raises(SystemExit, match="1 results for 2 corpus names"):
-        compare._run_worker("1.4.0", False, ["John Smith", "Jane Doe"])
+    with pytest.raises(SystemExit, match="1 results for 2 corpus entries"):
+        compare._run_worker("1.4.0", False,
+                            [{"name": "John Smith"}, {"name": "Jane Doe"}])
 
 
 def test_run_worker_checks_the_tell_before_returning_results(
@@ -992,7 +1165,36 @@ def test_run_worker_checks_the_tell_before_returning_results(
              '"__file__": "/wheel/nameparser/__init__.py"}')
     _fake_popen(monkeypatch, f"{wrong}\n{_ROW}\n")
     with pytest.raises(SystemExit, match="not the requested"):
-        compare._run_worker("1.4.0", False, ["John Smith"])
+        compare._run_worker("1.4.0", False, [{"name": "John Smith"}])
+
+
+def test_run_worker_sends_the_name_and_resolved_order_on_the_wire(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The wire format is the whole contract between compare.py and the
+    generated worker; nothing else pins it, so a resolution bug -- e.g.
+    forgetting to set e["order"] before calling this -- would leave
+    every other test in this file green while the worker silently
+    received the wrong order for every name. _FakePopen.communicate
+    already records the payload it was given; this reads it back."""
+    _fake_popen(monkeypatch, f"{_TELL}\n{_ROW}\n{_ROW}\n")
+    compare._run_worker(
+        "1.4.0", False,
+        [{"name": "John Smith", "order": None},
+         {"name": "Ménil Christophe du", "order": "FAMILY_FIRST"}])
+    lines = _FakePopen.last["stdin"].splitlines()
+    assert lines[0] == '{"name": "John Smith", "order": null}'
+    assert lines[1] == \
+        '{"name": "Ménil Christophe du", "order": "FAMILY_FIRST"}'
+
+
+@pytest.mark.parametrize("want_v2", [True, False])
+def test_worker_source_compiles(want_v2: bool) -> None:
+    """A syntax error in the rendered template currently surfaces only
+    as 'worker exited 1' after a multi-minute uv install; this catches
+    it at test time instead, for both renderings (WANT_V2 gates a
+    def-inside-if that is easy to misindent)."""
+    compile(compare._worker_source("2.2.0", want_v2=want_v2),
+            "<worker>", "exec")
 
 
 @pytest.mark.parametrize("rel", [
