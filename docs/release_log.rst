@@ -2,20 +2,21 @@ Release Log
 ===========
 * 2.2.0 - Unreleased
 
-    nameparser 2.2 finishes the 2.0 rename at the layer it never
-    reached. The word lists in ``nameparser.config`` were still named
-    for v1's fields — prefixes, first names — while the ``Lexicon``
-    they feed has spoken of particles and given names since 2.0. They
-    now agree, and the lists are frozen, which retires editing one in
-    place as a way to change a default.
+    nameparser 2.2 is a rename plus about thirty parsing fixes.
 
-    Nothing moved between vocabularies, and the rename itself changes
-    no parse. The parsing changes below are separate fixes. Most reach
-    the default name order; a bullet says so where its change is
-    family-first only or default-order only. Each names the shapes it
-    moves, the issue it closes carries the full measurement, and the
-    differential gate's output is the source of record for how many
-    names move.
+    The ``nameparser.config`` word lists were still named for v1's
+    fields — ``PREFIXES``, ``BOUND_FIRST_NAMES``, ``FIRST_NAME_TITLES``
+    — while the ``Lexicon`` they feed has used particles and given
+    names since 2.0. They now agree, and the lists are frozen, which
+    retires editing one in place as a way to change a default. The
+    rename itself changes no parse.
+
+    The fixes cluster around surname particles, largely what a declared
+    ``name_order`` means for Latin-script names, which this release
+    settles; then maiden-name clauses, Arabic bound given names, and
+    credentials after a comma. Most reach the default name order, and a
+    bullet says so where its change is family-first only. Each names the
+    shapes it moves, and the issue it closes carries the measurement.
 
     What breaks is code that *writes* to a default word list. Code
     that imports one by its 1.x name has until 3.0.
