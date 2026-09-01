@@ -134,22 +134,33 @@ _SD = Policy(extra_suffix_delimiters=frozenset({" - "}))
 
 CASES: tuple[Case, ...] = (
     Case("plain", "John Smith", {"given": "John", "family": "Smith"},
+         notes="shape 1's bare Given Family arrangement, the floor the "
+               "other shape-1 rows vary from",
          shape=1),
     Case("family_comma", "Smith, John",
-         {"given": "John", "family": "Smith"}, shape=2),
+         {"given": "John", "family": "Smith"},
+         notes="shape 2's bare Family, Given arrangement",
+         shape=2),
     Case("suffix_comma", "John Smith, PhD",
-         {"given": "John", "family": "Smith", "suffix": "PhD"}, shape=3),
+         {"given": "John", "family": "Smith", "suffix": "PhD"},
+         notes="shape 3's bare Given Family, Suffix arrangement",
+         shape=3),
     Case("bound_given_pairwise_only", "Salem, Abdul Rahman Ahmed",
          {"given": "Abdul Rahman", "middle": "Ahmed", "family": "Salem"},
          notes="the bound-given join is PAIRWISE (one merge, v1 "
-               "parity): the third piece stays a middle name",
+               "parity): the third piece stays a middle name. Shape "
+               "2's post-comma given slot, at the arity where the "
+               "join stops",
          shape=2),
     Case("family_comma_three_part_trailing_strict", "Smith, John V, Jr.",
          {"given": "John", "middle": "V", "family": "Smith",
           "suffix": "Jr."},
          notes="the lenient trailing test applies only to TWO-part "
                "names; a third comma part makes the trailing token a "
-               "middle initial (v1 parity, pinned live 2026-07-17)",
+               "middle initial (v1 parity, pinned live 2026-07-17). "
+               "Shape 2's trailing suffix WITH the optional comma "
+               "written; family_comma_run_with_a_name_is_not_a_run is "
+               "the spelling without it",
          shape=2),
     Case("triple_trailing_commas", "Doe,,,",
          {"family": "Doe"},
@@ -411,7 +422,10 @@ CASES: tuple[Case, ...] = (
                "'Beethoven', which is what #130 asked for. The "
                "textbook-correct Dutch listing reports the fork all "
                "the same (#405): the parser cannot tell it from "
-               "'Nguyen, Thi Van', which is the same string shape",
+               "'Nguyen, Thi Van', which is the same string shape. "
+               "Shape 2's particle slot in the tussenvoegsel "
+               "spelling, where the particle stands behind the given "
+               "name rather than before the family",
          shape=2),
     Case("tussenvoegsel_multiword", "Berg, Jan van der",
          {"given": "Jan", "family": "van der Berg"},
@@ -565,7 +579,8 @@ CASES: tuple[Case, ...] = (
          classification="parity",
          notes="the boundary the row above needs: here the particles "
                "DO join a name word, so they stay particles -- base "
-               "'Vega', particles 'de la', initials 'J. V.'",
+               "'Vega', particles 'de la', initials 'J. V.'. Shape "
+               "1's particle-bearing family slot",
          shape=1),
     Case("suffix_word_title_ambiguous_particle", "Jr. Van Johnson",
          {"title": "Jr.", "given": "Van", "family": "Johnson"},
@@ -781,7 +796,8 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith", "suffix": "Jr."},
          notes="v1: the family part may have suffixes in it "
                "(parser.py:1368); the first piece is always the family "
-               "(pinned live 2026-07-17)",
+               "(pinned live 2026-07-17). Shape 2's pre-comma "
+               "[Suffix] slot",
          shape=2),
     Case("family_segment_multiple_suffixes", "Smith Jr. MD, John",
          {"given": "John", "family": "Smith", "suffix": "Jr., MD"}),
@@ -893,11 +909,14 @@ CASES: tuple[Case, ...] = (
          ambiguities=("comma-structure",),
          notes="post-comma segments land in suffix even when not "
                "suffix-shaped; the ambiguity flags the guess (v1 "
-               "parity, pinned live 2026-07-13)",
+               "parity, pinned live 2026-07-13). Shape 2's repeated "
+               "[, Suffix] slot, the double trailing suffix",
          shape=2),
     Case("delavega", "Dr. Juan de la Vega III",
          {"title": "Dr.", "given": "Juan", "family": "de la Vega",
           "suffix": "III"},
+         notes="shape 1's Title and trailing Suffix slots paired, the "
+               "arrangement written end to end",
          shape=1),
     Case("prefix_chain_to_end", "Juan de la Vega Martinez",
          {"given": "Juan", "family": "de la Vega Martinez"}),
@@ -907,6 +926,7 @@ CASES: tuple[Case, ...] = (
          notes="v2 surfaces #121's irreducible ambiguity"),
     Case("family_comma_particles", "de la Vega, Juan",
          {"given": "Juan", "family": "de la Vega"},
+         notes="shape 2's particle-bearing family, before the comma",
          shape=2),
     Case("paren_suffix_escapes_nickname", "Andrew Perkins (MBA)",
          {"given": "Andrew", "family": "Perkins", "suffix": "MBA"},
@@ -917,12 +937,16 @@ CASES: tuple[Case, ...] = (
          {"given": "Andrew", "family": "Perkins", "suffix": "Ret."}),
     Case("nickname_quotes", 'John "Jack" Kennedy',
          {"given": "John", "family": "Kennedy", "nickname": "Jack"},
+         notes="shape 1's double-quoted Nickname slot, which is the "
+               "spelling its notation writes",
          shape=1),
     Case("nickname_parens", "John (Jack) Kennedy",
          {"given": "John", "family": "Kennedy", "nickname": "Jack"}),
     Case("sir_bob", "Sir Bob Andrew Dole",
          {"title": "Sir", "given": "Bob", "middle": "Andrew",
           "family": "Dole"},
+         notes="shape 1's first Middle slot; middle_run_at_two_words "
+               "below is the second",
          shape=1),
     Case("middle_run_at_two_words", "John Jack Andrew Kennedy",
          {"given": "John", "middle": "Jack Andrew", "family": "Kennedy"},
@@ -950,6 +974,8 @@ CASES: tuple[Case, ...] = (
           "family": "Clinton"}),
     Case("comma_middle_initial", "Doe, John A.",
          {"given": "John", "middle": "A.", "family": "Doe"},
+         notes="shape 2's post-comma Middle slot, in the form it is "
+               "usually written after a family comma -- an initial",
          shape=2),
     Case("single", "John", {"given": "John"}),
     Case("title_only", "Dr.", {"title": "Dr."}),
@@ -969,11 +995,15 @@ CASES: tuple[Case, ...] = (
                "so the reading is reported"),
     Case("initial_not_suffix", "John V. Smith",
          {"given": "John", "middle": "V.", "family": "Smith"},
+         notes="shape 1's Middle slot filled by an initial-shaped "
+               "word, which is the branch a numeral spelling would "
+               "otherwise take to the suffix",
          shape=1),
     Case("lenient_after_comma", "John Ingram, V",
          {"given": "John", "family": "Ingram", "suffix": "V"}),
     Case("comma_then_title", "Smith, Dr. John",
          {"title": "Dr.", "given": "John", "family": "Smith"},
+         notes="shape 2's post-comma Title slot",
          shape=2),
     Case("nickname_single_name", "John (Jack)",
          {"family": "John", "nickname": "Jack"}),
@@ -2298,6 +2328,8 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith", "suffix": "PhD"}),
     Case("audit_jr_trailing_unchanged", "John Smith Jr.",
          {"given": "John", "family": "Smith", "suffix": "Jr."},
+         notes="shape 1's trailing Suffix slot, written without a "
+               "comma",
          shape=1),
     Case("audit_lt_leading_stays_a_title", "Lt. Smith",
          {"title": "Lt.", "family": "Smith"},
@@ -2604,7 +2636,10 @@ CASES: tuple[Case, ...] = (
     Case("family_comma_run_with_a_name_is_not_a_run", "Smith, John Jr.",
          {"given": "John", "family": "Smith", "suffix": "Jr."},
          notes="the non-flip: a name word in the run makes it the "
-               "given-and-suffix walk v1 had",
+               "given-and-suffix walk v1 had. Shape 2's trailing "
+               "suffix with the optional comma OMITTED; "
+               "family_comma_three_part_trailing_strict is the "
+               "spelling that writes it",
          shape=2),
     Case("family_comma_title_then_suffix", "Smith, Dr. Jr.",
          {"title": "Dr.", "family": "Smith", "suffix": "Jr."},

@@ -1608,14 +1608,26 @@ fields = ["given", "family"]
 # from.
 #
 # The illustration was 'John "Jack" Kennedy' until #486's shape 1-3
-# variation matrix gave that string a case row and a shape tag, which
-# put it in corpus_shapes.jsonl. The sentence is about the KEY, not
-# about that name, so it moved to the sibling example still in no
-# corpus at all; of the four, the remaining two ('"Rick" Edmonds',
-# 'Franklin, Benjamin (Ben)') are corpus names in radar files. That
-# an example can be promoted this way is the point of the key rather
-# than a problem with it -- nothing about the entry depends on which
-# side of the corpus its test data sits on.
+# variation matrix gave that string's existing case row a shape tag --
+# the row (tests/v2/cases.py 'nickname_quotes') long predates that
+# work; only the tag is new -- which put it in corpus_shapes.jsonl.
+# The sentence is about the KEY, not about that name, so it moved to
+# the sibling example still in no corpus at all; of the four, the
+# remaining two ('"Rick" Edmonds', 'Franklin, Benjamin (Ben)') are
+# corpus names in radar files. That an example can be promoted this
+# way is the point of the key rather than a problem with it --
+# nothing about the entry depends on which side of the corpus its
+# test data sits on.
+#
+# The replacement is one tag from the same fate, and whoever writes
+# that tag should read this: 'John (Jack) Kennedy' is itself a case
+# row's text ('nickname_parens', the medial-paren sibling of the row
+# above), so tagging it with shape 1 puts it in corpus_shapes.jsonl
+# and falsifies this sentence exactly as the last tag did. There is
+# no example left that is not a corpus name or a case row, which is
+# the honest state of it: repoint the sentence at whichever example
+# is still outside, or restate it as "examples are not required to be
+# corpus names" and stop naming one.
 
 [[never]]
 why = "trailing 'Ph. D.' split-token healing is PARITY, not a 2.0 change: v1 healed the adjacent pair too, so a diff here is a regression"
@@ -1685,9 +1697,12 @@ why = "feat(#273) recognizes TYPOGRAPHIC nickname delimiters; the ASCII pairs we
 # is not this line: tests/v2/test_ledger_guards.py pins it as this
 # entry's `captures` -- grep _EXCLUSION_EFFECT for the pattern above
 # and read the number there, where a change fails CI. This comment
-# carried a copy of it for several rounds (46, then 51, then 55) and
+# carried a copy of it for several rounds (34, then 46, then 51) and
 # the copy was stale more often than not, since the figure moves
-# whenever the CORPORA move and not only when the entry does.
+# whenever the CORPORA move and not only when the entry does -- it
+# never caught up to 55, which the pin was already holding when the
+# copy still read 51, and that lag is the whole argument for deleting
+# the copy rather than correcting it a fourth time.
 #
 # It was medial-only for three rounds, on the theory that the trailing
 # position is where credentials live and that widening would silence
