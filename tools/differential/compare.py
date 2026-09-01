@@ -1,6 +1,10 @@
 """Differential harness: a released baseline vs
-the working tree over the corpora. Every diff must classify against
-that baseline's ledger or the run fails.
+the working tree over the corpora. Every diff on a CONTRACT corpus
+must classify against that baseline's ledger or the run fails; a
+RADAR corpus reports its unmatched diffs instead of failing on them.
+A `[[never]]` exclusion is fatal on EITHER tier -- it was chosen, the
+same way a rule was, so it belongs to the contract regardless of
+which corpus the name it refuses happens to sit in.
 
     uv run python tools/differential/compare.py [--baseline VERSION]
 
@@ -331,6 +335,35 @@ def _canonical_field(field: str) -> str:
     return _V1_TO_ROLE.get(field, field)
 
 
+def _print_field_diffs(old_facade: dict[str, str], new: dict[str, str],
+                       old_v2: dict[str, object],
+                       new_v2: dict[str, object]) -> None:
+    """Print each moved field under one name, Role's, whichever
+    surface(s) moved it. Shared by the UNEXPLAINED and UNCLASSIFIED
+    (radar) blocks in main() -- one copy rather than two that can
+    drift apart, the same reason _entry_matches is "one predicate
+    rather than three copies".
+
+    Role's names, not the facade's: both report blocks exist to be
+    turned into a ledger rule, and a rule naming the facade's `first`
+    is rejected by validate_rules at startup. Both surfaces are
+    walked, and a field is reported once even when both moved, since
+    one rule covers it.
+    """
+    seen: set[str] = set()
+    for f in FIELDS:
+        if old_facade.get(f, "") != new.get(f, ""):
+            seen.add(_canonical_field(f))
+            print(f"    {_canonical_field(f)}: "
+                  f"{old_facade.get(f, '')!r} -> {new.get(f, '')!r}")
+    for f in (*V2_FIELDS, "_ambiguities"):
+        if old_v2.get(f, "") != new_v2.get(f, "") \
+                and _canonical_field(f) not in seen:
+            print(f"    {_canonical_field(f)}: "
+                  f"{old_v2.get(f, '')!r} -> {new_v2.get(f, '')!r}"
+                  f"   [v2 surface only]")
+
+
 def _is_latin_only(name: str) -> bool:
     """Every character below U+0250 -- Latin, ASCII punctuation and
     Latin-1 accents.
@@ -374,6 +407,29 @@ _CORPUS_FLOORS = {
     "corpus_cjk.jsonl": 95,     # 98 today, generated from the case table
     "corpus_issues.jsonl": 370,  # 381 today, harvested and append-only
     "corpus_rules.jsonl": 150,  # 241 today, generated from rules.md
+}
+
+#: Tier per corpus file, fail-closed like the floors above. CONTRACT
+#: corpora hold names someone chose -- an unmatched diff on one is
+#: UNEXPLAINED and fails the run, today's discipline. RADAR corpora
+#: hold scraped/harvested names (#468): their diffs still classify
+#: against the ledger (release notes want the grouping) but an
+#: unmatched one prints under UNCLASSIFIED (radar) and cannot fail
+#: the run or demand a rule. Promotion is a cases.py row plus a
+#: shape tag -- a name enters the contract by being chosen.
+#:
+#: A `[[never]]` exclusion is the same kind of choice, and stays fatal
+#: on a name in a radar file for exactly that reason: someone wrote
+#: the entry, its `why`, and its `examples`, so the shape it refuses
+#: was chosen the same way a rule is -- unlike the rest of a radar
+#: file, which nobody has looked at name by name. The tier split
+#: governs names nobody chose; a [[never]] entry is the opposite of
+#: that, so it outranks the tier the name happens to sit in.
+_CORPUS_TIERS = {
+    "corpus.jsonl": "radar",
+    "corpus_cjk.jsonl": "contract",
+    "corpus_issues.jsonl": "radar",
+    "corpus_rules.jsonl": "contract",
 }
 
 
@@ -890,6 +946,46 @@ def over_declared_rules(
     return tuple(found)
 
 
+def _load_entries(path: Path) -> list[dict[str, object]]:
+    """Corpus lines as entry dicts. A line is either a bare JSON
+    string (the original format) or an object with a "name" plus
+    optional metadata -- "tests" labels from build_corpus.py, later a
+    "shape" from build_shapes_corpus.py. Tolerating both means
+    compare.py itself never needs a flag day across its five corpus
+    files; the fixtures that still assume bare strings are a separate,
+    later migration.
+
+    Only "tests" is checked here, and only its type -- an unknown key
+    is passed through rather than rejected, because "shape" arrives
+    with a later task and this function should not need editing again
+    to accept it. A malformed "tests" is different: it is read only
+    when printing the radar report, so left unchecked it would crash
+    at report time, after the multi-minute worker pass -- exactly what
+    validate_rules' compile-at-startup paragraph exists to prevent.
+    """
+    entries: list[dict[str, object]] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        raw = json.loads(line)
+        if isinstance(raw, str):
+            entries.append({"name": raw})
+        elif isinstance(raw, dict) and isinstance(raw.get("name"), str):
+            tests = raw.get("tests")
+            if tests is not None and (
+                    not isinstance(tests, list)
+                    or not all(isinstance(t, str) for t in tests)):
+                raise SystemExit(
+                    f"{path.name}: a corpus line's 'tests' must be a "
+                    f"list of strings, not {tests!r}: {line!r}")
+            entries.append(dict(raw))
+        else:
+            raise SystemExit(
+                f"{path.name}: corpus line is neither a JSON string "
+                f"nor an object with a string 'name': {line!r}")
+    return entries
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     # Every corpus by default: they have different blind spots (see
@@ -937,12 +1033,23 @@ def main() -> int:
                 f"{missing}. A corpus that vanishes shrinks the "
                 f"comparison silently -- restore it, or drop its floor "
                 f"if it is meant to be gone")
+    # Contract files load FIRST so the (name, order) dedup below keeps
+    # the contract reading of a string both tiers hold.
+    paths = sorted(paths, key=lambda p: (
+        _CORPUS_TIERS.get(p.name) != "contract", p.name))
     per_file = {}
-    corpus = []
+    entries: list[dict[str, object]] = []
     for path in paths:
-        names = [json.loads(line)
-                 for line in path.read_text().splitlines() if line.strip()]
-        if not names:
+        tier = _CORPUS_TIERS.get(path.name)
+        if tier is None:
+            raise SystemExit(
+                f"{path.name} has no entry in _CORPUS_TIERS. Every "
+                f"corpus must choose: 'contract' (an unmatched diff "
+                f"fails the run) or 'radar' (an unmatched diff is "
+                f"reported and cannot fail). A default here would let "
+                f"a new corpus pick one by accident")
+        file_entries = _load_entries(path)
+        if not file_entries:
             raise SystemExit(f"{path.name} is empty; comparison aborted")
         floor = _CORPUS_FLOORS.get(path.name)
         if floor is None:
@@ -951,17 +1058,27 @@ def main() -> int:
                 f"a little under its size: without a floor a corpus can "
                 f"shrink to a handful of names and the run still exits "
                 f"0, having compared far less than it reports")
-        if len(names) < floor:
+        if len(file_entries) < floor:
             raise SystemExit(
-                f"{path.name} holds {len(names)} names, below its floor "
-                f"of {floor} -- it has shrunk or been truncated. The run "
-                f"would still exit 0 while comparing a fraction of what "
-                f"it claims. Restore the file, or lower the floor "
-                f"deliberately if names were removed on purpose")
-        per_file[path.name] = len(names)
-        corpus.extend(names)
-    # dedupe across files, keeping first-seen order stable for output
-    corpus = list(dict.fromkeys(corpus))
+                f"{path.name} holds {len(file_entries)} names, below its "
+                f"floor of {floor} -- it has shrunk or been truncated. "
+                f"The run would still exit 0 while comparing a fraction "
+                f"of what it claims. Restore the file, or lower the "
+                f"floor deliberately if names were removed on purpose")
+        per_file[path.name] = len(file_entries)
+        for e in file_entries:
+            e["tier"] = tier
+        entries.extend(file_entries)
+    # dedupe on (name, order): the same string tagged with two shapes
+    # is two comparisons, not a duplicate. First-seen wins, and
+    # contract files were loaded first. ("order" is always absent
+    # until the shapes corpus lands; the key is written for it now so
+    # the dedup does not change shape twice.)
+    by_key: dict[tuple, dict[str, object]] = {}
+    for e in entries:
+        by_key.setdefault((e["name"], e.get("order")), e)
+    entries = list(by_key.values())
+    corpus = [e["name"] for e in entries]
     # per-file counts, not just the total: a corpus that shrinks or
     # vanishes is only visible if its own number is printed
     print("corpora: " + ", ".join(f"{name} ({n})"
@@ -993,10 +1110,13 @@ def main() -> int:
     # facade dicts would print such a name under UNEXPLAINED with no
     # field lines under it at all: a failure nobody can act on.
     unexplained: list[_Unexplained] = []
+    # radar-tier equivalent of unexplained: reported, never fatal (#468)
+    radar: list[tuple[dict, _Unexplained]] = []
     # every name that diffed, with its diff, so dormant_rules can ask
     # which rule WOULD have claimed one that no rule did
     diffing: list[tuple[str, set[str]]] = []
-    for name, old in zip(corpus, old_rows):
+    for entry, old in zip(entries, old_rows):
+        name = entry["name"]
         new = {k: v or "" for k, v in HumanName(name).as_dict().items()
                if k in FIELDS}
         # canonicalized on the way in: the ledger speaks Role's names,
@@ -1017,18 +1137,30 @@ def main() -> int:
         diffing.append((name, diff))
         issue = classify(name, diff, rules, exclusions)
         if issue is None:
-            unexplained.append(
-                (name, old["facade"], new, old.get("v2", {}), new_v2))
+            row = (name, old["facade"], new, old.get("v2", {}), new_v2)
+            # classify() returns None for two different reasons: no
+            # rule matched, or a [[never]] entry refused the name --
+            # and only the first belongs to the tier split. An
+            # exclusion was chosen (see _CORPUS_TIERS), so it is fatal
+            # on a radar name exactly as it is on a contract one.
+            excluded = any(_entry_matches(x, name, diff)
+                           for x in exclusions)
+            if entry["tier"] == "radar" and not excluded:
+                radar.append((entry, row))
+            else:
+                unexplained.append(row)
         else:
             by_issue.setdefault(issue, []).append(name)
             roles_by_issue.setdefault(issue, set()).update(diff)
 
     changed = [n for names in by_issue.values() for n in names] \
-        + [row[0] for row in unexplained]
+        + [row[0] for row in unexplained] \
+        + [e["name"] for e, _ in radar]
     latin = sum(1 for n in changed if _is_latin_only(n))
     print(f"corpus: {len(corpus)} names; "
           f"intentional diffs: {sum(map(len, by_issue.values()))}; "
           f"unexplained: {len(unexplained)}; "
+          f"radar unclassified: {len(radar)}; "
           f"{latin} of {len(changed)} changed names are Latin-only\n")
     for issue, names in sorted(by_issue.items()):
         print(f"## {issue} ({len(names)})")
@@ -1071,25 +1203,16 @@ def main() -> int:
               "`fields` rule must say.\n")
     for name, old_facade, new, old_v2, new_v2 in unexplained:
         print(f"UNEXPLAINED {name!r}")
-        # Role's names, not the facade's: this block exists to be turned
-        # into a ledger rule, and a rule naming the facade's `first`
-        # is rejected by validate_rules at startup. (Before that guard
-        # existed it parsed, validated and silently never matched --
-        # which is why the label printed here has to be the label a
-        # rule needs.) Both surfaces are walked, and a field is
-        # reported once even when both moved, since one rule covers it.
-        seen: set[str] = set()
-        for f in FIELDS:
-            if old_facade.get(f, "") != new.get(f, ""):
-                seen.add(_canonical_field(f))
-                print(f"    {_canonical_field(f)}: "
-                      f"{old_facade.get(f, '')!r} -> {new.get(f, '')!r}")
-        for f in (*V2_FIELDS, "_ambiguities"):
-            if old_v2.get(f, "") != new_v2.get(f, "") \
-                    and _canonical_field(f) not in seen:
-                print(f"    {_canonical_field(f)}: "
-                      f"{old_v2.get(f, '')!r} -> {new_v2.get(f, '')!r}"
-                      f"   [v2 surface only]")
+        _print_field_diffs(old_facade, new, old_v2, new_v2)
+    if radar:
+        print("\nRadar tier (scraped/harvested names, #468): shown, "
+              "never blocking. Promote a name that matters via a "
+              "cases.py row + shape tag.\n")
+    for entry, (name, old_facade, new, old_v2, new_v2) in radar:
+        labels = entry.get("tests")
+        tag = f"   [v1: {', '.join(labels)}]" if labels else ""
+        print(f"UNCLASSIFIED (radar) {name!r}{tag}")
+        _print_field_diffs(old_facade, new, old_v2, new_v2)
     # A rule explaining nothing is as much a broken contract as an
     # unexplained diff: both mean the ledger no longer describes what the
     # code does. A rule explaining LESS than it declares is the third

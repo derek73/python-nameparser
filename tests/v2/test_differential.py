@@ -475,7 +475,8 @@ def _run_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ledger_body: str,
               extra: list[tuple[str, dict]] | None = None,
               baseline: str = "1.4.0",
               baseline_v2: dict | None = None,
-              floor: int | None = 1) -> tuple[int, str]:
+              floor: int | None = 1,
+              tier: str | None = "contract") -> tuple[int, str]:
     """Drive main() end to end with a faked baseline worker.
 
     No uv, no network. The helper exists because every unit test above
@@ -516,6 +517,11 @@ def _run_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ledger_body: str,
     # a corpus arrives without one.
     if floor is not None:
         monkeypatch.setitem(compare._CORPUS_FLOORS, corpus.name, floor)
+    # The fixture corpus needs a tier like any other. `tier=None`
+    # leaves it unregistered, for the test that pins the fail-closed
+    # roster.
+    if tier is not None:
+        monkeypatch.setitem(compare._CORPUS_TIERS, corpus.name, tier)
     monkeypatch.setattr(compare, "HERE", tmp_path)
     monkeypatch.setattr(compare, "_run_worker", _fake)
     monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", baseline,
@@ -568,6 +574,158 @@ def test_main_exits_0_when_every_diff_is_claimed(
     assert code == 0
     assert "UNEXPLAINED" not in out
     assert "## claimed (1)" in out
+
+
+def test_radar_diff_with_no_rule_exits_0_and_is_reported(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The tier split's entire point (#468): a harvested name's diff
+    is shown, not owed a ledger rule. The heading is pinned because it
+    is what a release reader greps for.
+
+    An empty ledger, not the usual 'unrelated'/ZZZ decoy rule: that
+    decoy matches no diffing name in a single-name corpus and so is
+    itself EXPLAINED NOTHING (dormant_rules' "reverted" case) --
+    orthogonal to the tier split and would fail this run for a reason
+    that has nothing to do with what it is pinning."""
+    code, out = _run_main(tmp_path, monkeypatch, "", _DIFFERS, tier="radar")
+    assert code == 0
+    assert "UNCLASSIFIED (radar) 'John Smith'" in out
+    assert "family:" in out
+    assert "UNEXPLAINED" not in out
+
+
+def test_radar_diff_matching_a_rule_still_classifies(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Radar names keep feeding the release-note grouping, and a rule
+    explaining only radar diffs is NOT dormant -- exit 0 with no
+    EXPLAINED NOTHING block is the pin for both at once."""
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "claimed"\nname_regex = "Smith"\nfields = ["family"]\n',
+        _DIFFERS, tier="radar")
+    assert code == 0
+    assert "## claimed (1)" in out
+    assert "EXPLAINED NOTHING" not in out
+
+
+def test_contract_diff_still_fails_under_the_tier_roster(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The split must not loosen the tier that keeps the old promise."""
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\nfields = ["family"]\n',
+        _DIFFERS, tier="contract")
+    assert code == 1
+    assert "UNEXPLAINED 'John Smith'" in out
+
+
+def test_radar_name_refused_by_an_exclusion_still_fails(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A [[never]] entry is chosen -- someone wrote its `why` and its
+    `examples` -- so it belongs to the contract even when the name it
+    refuses sits in a radar file. classify() returns None for both
+    'no rule matched' and 'an exclusion refused this', and only the
+    first is the tier split's business: an excluded shape must stay
+    UNEXPLAINED and exit 1 on every tier, matching what
+    validate_exclusions' docstring and every 1.4.0 `why` promise."""
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[never]]\nwhy = "test exclusion"\nname_regex = "Smith"\n'
+        'examples = ["John Smith"]\n',
+        _DIFFERS, tier="radar")
+    assert code == 1
+    assert "UNEXPLAINED 'John Smith'" in out
+    assert "UNCLASSIFIED" not in out
+
+
+def test_a_corpus_without_a_tier_is_a_hard_error(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Fail-closed like _CORPUS_FLOORS: a new corpus must choose."""
+    with pytest.raises(SystemExit, match="_CORPUS_TIERS"):
+        _run_main(tmp_path, monkeypatch, "", _DIFFERS, tier=None)
+
+
+def test_object_corpus_lines_are_read_and_labels_printed(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A corpus line may be {"name": ..., "tests": [...]} (the
+    label-bearing format a later task generates); the name is compared
+    and the labels ride into the radar report, which is what they are
+    for."""
+    import json as _json
+    corpus = tmp_path / "corpus_x.jsonl"
+    corpus.write_text(_json.dumps(
+        {"name": "John Smith", "tests": ["test_two_word_name"]}) + "\n",
+        encoding="utf-8")
+    (tmp_path / "expected_since_1.4.0.toml").write_text("", encoding="utf-8")
+    monkeypatch.setitem(compare._CORPUS_FLOORS, corpus.name, 1)
+    monkeypatch.setitem(compare._CORPUS_TIERS, corpus.name, "radar")
+    monkeypatch.setattr(compare, "HERE", tmp_path)
+    monkeypatch.setattr(
+        compare, "_run_worker",
+        lambda v, w, entries: ({"__version__": v,
+                                "__file__": "/wheel/nameparser/__init__.py"},
+                               [{"facade": _DIFFERS}]))
+    import sys, io, contextlib
+    monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", "1.4.0",
+                                      "--corpus", str(corpus)])
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = compare.main()
+    assert code == 0
+    assert "test_two_word_name" in buf.getvalue()
+
+
+def test_a_malformed_tests_label_is_a_hard_error(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Caught at load time, not report time: a 'tests' label is read
+    only when printing the radar block, after the multi-minute worker
+    pass, so a bad one left unchecked would crash there instead --
+    the failure mode validate_rules' compile-at-startup paragraph
+    exists to avoid."""
+    import json as _json
+    corpus = tmp_path / "corpus_x.jsonl"
+    corpus.write_text(_json.dumps(
+        {"name": "John Smith", "tests": "not_a_list"}) + "\n",
+        encoding="utf-8")
+    monkeypatch.setitem(compare._CORPUS_FLOORS, corpus.name, 1)
+    monkeypatch.setitem(compare._CORPUS_TIERS, corpus.name, "radar")
+    with pytest.raises(SystemExit, match="'tests' must be a list"):
+        compare._load_entries(corpus)
+
+
+def test_cross_tier_dedup_keeps_the_contract_reading(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """'John Smith' really does sit in both corpus.jsonl (radar) and
+    corpus_rules.jsonl (contract). Nothing above the dedup itself
+    would catch a regression here, so this is the one guard that pins
+    contract-first loading rather than just describing it: an
+    unmatched diff on the shared name must still be UNEXPLAINED and
+    fail the run, whichever way the sort key is written."""
+    import json as _json
+    radar_file = tmp_path / "corpus.jsonl"
+    contract_file = tmp_path / "corpus_rules.jsonl"
+    radar_file.write_text(_json.dumps("John Smith") + "\n", encoding="utf-8")
+    contract_file.write_text(
+        _json.dumps("John Smith") + "\n", encoding="utf-8")
+    (tmp_path / "expected_since_1.4.0.toml").write_text("", encoding="utf-8")
+    monkeypatch.setitem(compare._CORPUS_FLOORS, radar_file.name, 1)
+    monkeypatch.setitem(compare._CORPUS_FLOORS, contract_file.name, 1)
+    monkeypatch.setattr(compare, "HERE", tmp_path)
+    monkeypatch.setattr(
+        compare, "_run_worker",
+        lambda v, w, entries: ({"__version__": v,
+                                "__file__": "/wheel/nameparser/__init__.py"},
+                               [{"facade": _DIFFERS}]))
+    import sys, io, contextlib
+    monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", "1.4.0",
+                                      "--corpus", str(radar_file),
+                                      "--corpus", str(contract_file)])
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = compare.main()
+    out = buf.getvalue()
+    assert code == 1
+    assert "UNEXPLAINED 'John Smith'" in out
 
 
 def test_main_validates_the_ledger_before_running_anything(
@@ -968,6 +1126,16 @@ def test_a_floor_names_a_corpus_that_exists() -> None:
     that can never fire, and reads as coverage that is not there."""
     on_disk = {p.name for p in _TOOLS.glob("corpus*.jsonl")}
     assert set(compare._CORPUS_FLOORS) <= on_disk
+
+
+def test_every_corpus_with_a_floor_also_has_a_tier() -> None:
+    """The two rosters are meant to name the same files. A corpus in
+    one but not the other reopens the vanished-file hole the floors
+    were added to close: main() only checks _CORPUS_FLOORS' keys
+    against the files on disk (see the 'missing' check above the
+    loading loop), so a file present in _CORPUS_TIERS alone, or in
+    _CORPUS_FLOORS alone, would not be caught there."""
+    assert set(compare._CORPUS_TIERS) == set(compare._CORPUS_FLOORS)
 
 
 def test_main_aborts_on_a_truncated_corpus(

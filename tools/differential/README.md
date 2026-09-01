@@ -31,13 +31,16 @@ name as a line of JSON, and diffs the two sides field by field. Every
 diff is checked against that baseline's ledger:
 
 - Matches a rule -> counted as an intentional, classified change.
-- Matches no rule -> printed under `UNEXPLAINED` and the run exits 1.
+- Matches no rule -> reported, and what happens next depends on the
+  name's tier (see below): on a CONTRACT corpus it prints under
+  `UNEXPLAINED` and the run exits 1; on a RADAR corpus it prints under
+  `UNCLASSIFIED (radar)` and the run keeps exiting 0.
 
-An unexplained diff means either a real parity bug (fix it, don't
-allowlist it) or a known change whose ledger rule needs widening. The
-run must exit 0 at every baseline you claim before a release; the
-classified summary it prints is the source for the "Behavior Changes"
-section of `docs/release_log.rst`.
+An unexplained diff on the contract tier means either a real parity
+bug (fix it, don't allowlist it) or a known change whose ledger rule
+needs widening. The run must exit 0 at every baseline you claim before
+a release; the classified summary it prints is the source for the
+"Behavior Changes" section of `docs/release_log.rst`.
 
 ## Baselines
 
@@ -173,18 +176,34 @@ Why this is easy to miss when probing by hand: from the repo root,
 the checkout wins and the trap does not reproduce. Only the script
 invocation shows it.
 
-## The three corpora
+## The corpora and their tiers
 
 `compare.py` reads **every** `corpus*.jsonl` beside it by default
 (deduped), because a corpus you have to ask for by name is a corpus
 that stops being run. Pass `--corpus PATH` (repeatable) to narrow it.
 
-| File | Source | Blind to |
-|---|---|---|
-| `corpus.jsonl` | v1's own test suite at a pinned ref | anything 2.0 added — v1's authors had no reason to test a typographic nickname delimiter or a Cyrillic title |
-| `corpus_issues.jsonl` | name-like strings harvested from the GitHub issue tracker | anything nobody ever reported |
-| `corpus_cjk.jsonl` | the CJK-bearing rows of `tests/v2/cases.py`, via `build_cjk_corpus.py` (#295) | anything the case table itself missed — it re-witnesses reviewed expectations at the baseline boundary rather than discovering new shapes |
-| `corpus_rules.jsonl` | every example in `docs/design/rules.md`, via `build_rules_corpus.py` (#414) | anything the rules doc has no example for — it re-witnesses the normative examples at the baseline boundary |
+| File | Source | Tier | Blind to |
+|---|---|---|---|
+| `corpus.jsonl` | v1's own test suite at a pinned ref | radar | anything 2.0 added — v1's authors had no reason to test a typographic nickname delimiter or a Cyrillic title |
+| `corpus_issues.jsonl` | name-like strings harvested from the GitHub issue tracker | radar | anything nobody ever reported |
+| `corpus_cjk.jsonl` | the CJK-bearing rows of `tests/v2/cases.py`, via `build_cjk_corpus.py` (#295) | contract | anything the case table itself missed — it re-witnesses reviewed expectations at the baseline boundary rather than discovering new shapes |
+| `corpus_rules.jsonl` | every example in `docs/design/rules.md`, via `build_rules_corpus.py` (#414) | contract | anything the rules doc has no example for — it re-witnesses the normative examples at the baseline boundary |
+
+Since the v2.3 tier split (#468), a corpus is CONTRACT or RADAR --
+the roster is `_CORPUS_TIERS` in compare.py, fail-closed like the
+floors. Contract corpora hold names someone chose, and an unmatched
+diff on one is UNEXPLAINED and fails the run. Radar corpora hold the
+scraped and harvested names: their diffs still classify against the
+ledger, so intended changes keep their release-note grouping, but an
+unmatched radar diff prints under UNCLASSIFIED (radar) and cannot
+fail the run or demand a ledger rule. Nothing is deleted to keep the
+gate quiet -- a meaningless string in radar costs one parse and a
+report line. To promote a radar name, give it a tests/v2/cases.py row
+and a shape tag: it enters the contract by being chosen. A
+`[[never]]` exclusion outranks the tier either way: it was chosen too
+-- someone wrote its `why` and its `examples` -- so a name it refuses
+stays UNEXPLAINED and fails the run even when the name itself sits in
+a radar file.
 
 They are deliberately separate rather than merged: `corpus.jsonl` is
 reproducible forever from an immutable git ref, while the issue
