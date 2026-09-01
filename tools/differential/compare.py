@@ -1300,17 +1300,30 @@ def main() -> int:
     # order alone (true today, since every order-bearing shape's
     # minimum is 2.0.0) -- a future order-None shape carrying a higher
     # minimum than an order-bearing duplicate would make survival, and
-    # so the skip decision, depend on which file loaded first.
+    # so the skip decision, depend on which file loaded first. That
+    # future is now real -- shapes 6/7 are order-None with a later
+    # minimum (2.1.0) than shapes 1-3's (1.4.0) -- but still
+    # unreachable as an actual duplicate: shapes 1-5's purity check
+    # refuses CJK text and shapes 6/7's requires it, so no string can
+    # ever carry two order-None shape tags with different minimums,
+    # whichever file loaded first.
     by_key: dict[tuple[str, str | None], dict[str, object]] = {}
     for e in entries:
         by_key.setdefault((e["name"], e.get("order")), e)
     entries = list(by_key.values())
-    # an order-bearing entry must never reach a worker whose baseline
+    # an ORDER-BEARING entry must never reach a worker whose baseline
     # cannot honor it (no Policy below 2.0.0) -- skip it and say so,
-    # rather than shrink the comparison silently. Skips are also
-    # counted PER FILE: per_file above records pre-skip counts, so a
-    # shapes corpus fully skipped at an old baseline would otherwise
-    # print at full size while contributing nothing.
+    # rather than shrink the comparison silently. An order-NONE
+    # shape's min_baseline is documentary, not a skip trigger: the
+    # default policy exists at every baseline, so a name tagged with
+    # such a shape compares just fine below its min_baseline -- the
+    # resulting diff (if any) is an ordinary classified one, not a gap
+    # the skip needs to hide. Only an unhonorable ORDER forces a skip
+    # (shapes.py's docstring states the same asymmetry against shapes
+    # 4/5). Skips are also counted PER FILE: per_file above records
+    # pre-skip counts, so a shapes corpus fully skipped at an old
+    # baseline would otherwise print at full size while contributing
+    # nothing.
     kept = []
     dropped = 0
     dropped_by_file: dict[str, int] = {}
@@ -1318,8 +1331,10 @@ def main() -> int:
     dropped_minimums: set[str] = set()
     for e in entries:
         shape = e.get("shape")
-        if shape is not None and _parse_version(baseline) \
-                < _parse_version(shapes_by_id[shape].min_baseline):
+        if (shape is not None
+                and shapes_by_id[shape].order is not None
+                and _parse_version(baseline)
+                < _parse_version(shapes_by_id[shape].min_baseline)):
             dropped += 1
             dropped_by_file[e["file"]] = dropped_by_file.get(e["file"], 0) + 1
             dropped_shape_ids.add(shape)

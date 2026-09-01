@@ -97,7 +97,7 @@ def test_the_family_partitions_into_particles_and_base(
         "the row's policy declares FAMILY_FIRST_GIVEN_LAST",
         id="shape-order-disagrees-with-the-rows-own-policy"),
     pytest.param(
-        dict(text="John Smith", shape=6),
+        dict(text="John Smith", shape=8),
         "unknown shape",
         id="shape-id-outside-the-inventory"),
     pytest.param(
@@ -105,8 +105,89 @@ def test_the_family_partitions_into_particles_and_base(
              policy=Policy(name_order=FAMILY_FIRST)),
         "cannot tag CJK text",
         id="cjk-refusal-survives-a-matching-order"),
+    pytest.param(
+        dict(text="김민준, 지훈", shape=6),
+        "refuses a comma",
+        id="shape-6-refuses-a-comma"),
+    pytest.param(
+        dict(text="김민준 V", shape=6),
+        "refuses a Latin letter",
+        id="shape-6-refuses-a-latin-letter"),
+    pytest.param(
+        dict(text="김민준·지훈", shape=6),
+        "belongs to shape 7",
+        id="shape-6-refuses-the-interpunct"),
+    pytest.param(
+        dict(text="マイケル・ジャクソン", shape=6),
+        "belongs to shape 7",
+        id="shape-6-refuses-the-nakaguro"),
+    pytest.param(
+        dict(text="マイケルジャクソン", shape=6),
+        "belongs to shape 7",
+        id="shape-6-refuses-wholly-katakana-text"),
+    pytest.param(
+        dict(text="John Smith", shape=6),
+        "requires a classified codepoint",
+        id="shape-6-requires-cjk-text"),
+    pytest.param(
+        dict(text="김민준", shape=7),
+        r"requires U\+00B7 or wholly-katakana",
+        id="shape-7-requires-a-divider-or-katakana"),
+    pytest.param(
+        dict(text="김민준, 지훈", shape=7),
+        "refuses a comma",
+        id="shape-7-refuses-a-comma-too"),
+    pytest.param(
+        dict(text="高橋・一郎", shape=7),
+        r"requires U\+00B7 or wholly-katakana",
+        id="shape-7-refuses-a-nakaguro-on-non-katakana-text"),
+    pytest.param(
+        dict(text="김민준", shape=6, locale="zh"),
+        "carry neither policy nor locale",
+        id="shape-6-refuses-a-locale"),
+    pytest.param(
+        dict(text="김민준", shape=6, tolerated=True),
+        "mutually exclusive with shape",
+        id="tolerated-and-shape-are-mutually-exclusive"),
+    pytest.param(
+        dict(text="John Smith", tolerated=True),
+        "tolerated requires CJK text",
+        id="tolerated-requires-cjk-text"),
 ])
 def test_case_construction_rejects_a_bad_shape_tag(
         kwargs: dict[str, Any], match: str) -> None:
     with pytest.raises(ValueError, match=match):
         Case(id="probe", expect={}, **kwargs)
+
+
+#: The constructions the battery above proves nothing rejects: a pure
+#: shape-6 row, a Han shape-6 row divided by a nakaguro that does NOT
+#: mark it as source order (U+30FB is not a divider outside katakana
+#: -- decisions.md#T3; this is family-first per
+#: ja_nakaguro_han_takes_the_han_order), an interpunct-divided shape-7
+#: row, a SPACED wholly-katakana shape-7 row (the subtler admission --
+#: a transcription with no U+00B7 at all is still a shape, not a
+#: demotion, as long as every non-space character is katakana), and a
+#: tolerated row built from the SAME text a shape probe above refuses
+#: as a comma -- the boundary reading the pair as intended: what a
+#: shape tag refuses, tolerated=True admits. Each must construct
+#: cleanly -- the purity rule is a REFUSAL rule, not a requirement
+#: that admits nothing.
+@pytest.mark.parametrize("kwargs", [
+    pytest.param(dict(text="김민준", shape=6), id="pure-shape-6-constructs"),
+    pytest.param(dict(text="高橋・一郎", shape=6),
+                 id="han-nakaguro-shape-6-constructs"),
+    pytest.param(dict(text="威廉·莎士比亚", shape=7),
+                 id="interpunct-shape-7-constructs"),
+    pytest.param(dict(text="マイケル ジャクソン", shape=7),
+                 id="spaced-wholly-katakana-shape-7-constructs"),
+    pytest.param(dict(text="김민준, 지훈", tolerated=True),
+                 id="tolerated-accepts-the-comma-text-a-shape-tag-refuses"),
+])
+def test_case_construction_accepts_a_valid_shape_or_tolerated_tag(
+        kwargs: dict[str, Any]) -> None:
+    case = Case(id="probe", expect={}, **kwargs)
+    if "shape" in kwargs:
+        assert case.shape == kwargs["shape"]
+    else:
+        assert case.tolerated is True

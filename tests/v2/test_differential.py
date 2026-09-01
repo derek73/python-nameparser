@@ -191,6 +191,59 @@ def test_entries_below_their_shapes_min_baseline_are_skipped(
     assert "corpus_x.jsonl (2, 1 skipped)" in out
 
 
+def test_an_order_none_shapes_later_minimum_does_not_skip_the_entry(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The companion to test_entries_below_their_shapes_min_baseline_
+    are_skipped, pinning the other half of the same branch: shape 6's
+    min_baseline (2.1.0) is DOCUMENTARY, not a skip trigger, because
+    `order` is None -- the default policy already exists at 1.4.0, so
+    there is no order for that baseline's worker to fail to honor.
+    Without the `shapes_by_id[shape].order is not None` gate in
+    compare.py's skip loop, this entry would be silently dropped the
+    same way an order-bearing one correctly is above -- this proves
+    the gate actually distinguishes the two rather than reverting to
+    shape-blind or, worse, always-skip behavior."""
+    import contextlib
+    import io
+    import json as _json
+    import sys
+    from nameparser import HumanName
+    name = "김민준"
+    corpus = tmp_path / "corpus_x.jsonl"
+    corpus.write_text(
+        _json.dumps({"name": name, "shape": 6}, ensure_ascii=False) + "\n",
+        encoding="utf-8")
+    (tmp_path / "expected_since_1.4.0.toml").write_text("", encoding="utf-8")
+    monkeypatch.setitem(compare._CORPUS_FLOORS, corpus.name, 1)
+    monkeypatch.setitem(compare._CORPUS_TIERS, corpus.name, "contract")
+    monkeypatch.setattr(compare, "HERE", tmp_path)
+    # The tree's own facade reading, used as the "1.4.0" side too --
+    # this test is about the skip decision, not about what the parse
+    # produces, so an old/new facade that agree by construction keeps
+    # a real diff from muddying the assertion.
+    old_facade = {k: (v or "") for k, v in HumanName(name).as_dict().items()}
+    sent: dict = {}
+
+    def _fake(v: str, w: bool,
+              entries: list[dict[str, object]]) -> tuple[dict, list[dict]]:
+        sent["entries"] = list(entries)
+        return ({"__version__": v,
+                 "__file__": "/wheel/nameparser/__init__.py"},
+                [{"facade": old_facade}])
+
+    monkeypatch.setattr(compare, "_run_worker", _fake)
+    monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", "1.4.0",
+                                      "--corpus", str(corpus)])
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = compare.main()
+    assert code == 0
+    assert [e["name"] for e in sent["entries"]] == [name]
+    out = buf.getvalue()
+    assert "skipped" not in out
+    assert "corpus_x.jsonl (1)" in out
+
+
 def _tree_v2_row(name: str, order: str) -> dict:
     """The tree's own v2 reading of `name` under `order`, built the
     same way main()'s tree side and the worker template's _v2_row both

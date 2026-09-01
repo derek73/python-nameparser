@@ -37,15 +37,43 @@ from dataclasses import dataclass
 from nameparser import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
                          Policy)
 # Not in nameparser.__all__: _order_repr renders a name_order for an
-# error message, and _SCRIPT_RANGES/_script_matcher build the same
-# borrowed predicate build_cjk_corpus.py uses to find CJK text.
-from nameparser._policy import (PatronymicRule, _SCRIPT_RANGES, _order_repr,
-                               _script_matcher)
+# error message, Script/_SCRIPT_RANGES/_script_matcher build the same
+# borrowed predicates build_cjk_corpus.py uses to find CJK text.
+from nameparser._policy import (PatronymicRule, Script, _SCRIPT_RANGES,
+                               _order_repr, _script_matcher)
 
 #: mirrors tools/differential/shapes.py's SHAPES keys;
 #: test_case_shape_ids_exist_in_the_inventory (test_ledger_guards.py)
 #: holds the two equal, since this file cannot import tools/.
-_SHAPE_IDS = frozenset({1, 2, 3, 4, 5})
+_SHAPE_IDS = frozenset({1, 2, 3, 4, 5, 6, 7})
+
+
+def _has_ascii_letter(text: str) -> bool:
+    """True when text contains an ASCII a-z/A-Z letter. Shapes 6/7's
+    purity check calls this ALONGSIDE a separate comma test -- this
+    function tests neither a comma nor a non-ASCII Latin letter on its
+    own. The ASCII restriction is deliberate: a diacritic or a letter
+    outside a-z/A-Z is not what a Latin WRAPPER around CJK text looks
+    like in the corpus today (title/credential vocabulary is ASCII),
+    and widening this is a call for whichever future row needs it."""
+    return any(c.isascii() and c.isalpha() for c in text)
+
+
+#: Shape 7's other admission besides an explicit divider: a
+#: transcription written wholly in katakana with no dividing
+#: punctuation at all (e.g. "マイケルジャクソン" or the spaced
+#: "マイケル ジャクソン"). Built on the parser's own predicate --
+#: _script_matcher(Script.KATAKANA, whole=True) -- rather than a
+#: hand-copied codepoint range, so the KATAKANA span lives in exactly
+#: one place (nameparser._policy._SCRIPT_RANGES). That table's choice,
+#: not this file's: halfwidth katakana (a different Unicode block,
+#: U+FF65-U+FF9F, per _policy.py's own comment) is out of scope.
+#: Applied to the text with whitespace stripped, so a spaced
+#: transcription still counts as wholly katakana; a whitespace-only
+#: string never reaches this predicate in practice, since the purity
+#: check's _has_cjk gate (a real classified codepoint) has already
+#: run by the time shape 7 consults it.
+_wholly_katakana = _script_matcher(Script.KATAKANA, whole=True)
 
 #: Whether a text carries a codepoint the parser's script table
 #: classifies -- built once, same idiom as build_cjk_corpus.py's
@@ -73,6 +101,21 @@ class Case:
     #: exercising a policy fork rather than an input shape stays
     #: untagged.
     shape: int | None = None
+    #: Marks a row's text as TOLERATED input (2026-09-01 CJK demotion):
+    #: parsed best-effort and contract-exempt, the opposite of a shape
+    #: tag -- mutually exclusive with `shape`, since a shape ADMITS a
+    #: text to the contract and tolerated deliberately does not. Every
+    #: composed/wrapped CJK form (a comma listing, a Latin title or
+    #: credential around a CJK name) is this table's ground for it,
+    #: not shapes 6/7's. Restricted to CJK-bearing text (`_has_cjk`):
+    #: it exists to demote composed/wrapped CJK forms specifically, and
+    #: a Latin row asking for it is a smell until some future arc
+    #: argues otherwise. Intent, not yet current behavior: the
+    #: generator split that actually routes a tolerated row to its own
+    #: radar-tier corpus file (rather than today's corpus_cjk.jsonl)
+    #: lands with a later task in the 2026-09-01 plan -- this flag is
+    #: the row-level declaration that split will read.
+    tolerated: bool = False
 
     def __post_init__(self) -> None:
         if self.policy is not None and self.locale is not None:
@@ -84,48 +127,146 @@ class Case:
         if self.shape is not None:
             if self.shape not in _SHAPE_IDS:
                 raise ValueError(f"{self.id}: unknown shape {self.shape}")
-            # A locale carries an order too (script_orders), but as a
-            # LOOKUP this table cannot see -- cases.py stays
-            # import-light and stores only the locale CODE. Faking
-            # "declared" as GIVEN_FIRST for a locale row would let a
-            # tag validate against an order nobody here can name.
-            if self.locale is not None:
+            if self.shape in (6, 7):
+                self._check_cjk_shape_purity()
+            else:
+                self._check_latin_shape_order()
+        # tolerated is the opposite of a shape tag: a reviewed act
+        # admitting a composed/wrapped CJK form to the radar corpus
+        # rather than the contract one. Checked regardless of which
+        # branch above ran (or whether shape was tagged at all), so a
+        # row cannot smuggle both declarations onto one text.
+        if self.tolerated:
+            if self.shape is not None:
                 raise ValueError(
-                    f"{self.id}: a shape tag needs the row's own "
-                    f"policy; a locale carries an order this table "
-                    f"cannot see")
-            # corpus_cjk.jsonl already claims this ground: _has_cjk is
-            # the same predicate build_cjk_corpus.py selects with, so
-            # a shape tag would double-admit the text (shapes 1-5 are
-            # the Latin-order arrangements; CJK is deliberately absent
-            # from shapes.py, #469's open question). Order alone
-            # cannot stand in for this check -- DEFAULT_SCRIPT_ORDERS
-            # forces HAN/HANGUL/HIRAGANA to FAMILY_FIRST but leaves
-            # KATAKANA unmapped, so a pure-katakana text can carry a
-            # GIVEN_FIRST name_order and still be CJK ground, not a
-            # shape.
-            if _has_cjk(self.text):
+                    f"{self.id}: tolerated is mutually exclusive with "
+                    f"shape; a tolerated row is the opposite of admitted")
+            if not _has_cjk(self.text):
                 raise ValueError(
-                    f"{self.id}: shape {self.shape} cannot tag CJK "
-                    f"text; that ground is corpus_cjk.jsonl's, and "
-                    f"whether a family-first CJK shape exists is "
-                    f"#469's open question")
-            declared = (self.policy.name_order if self.policy is not None
-                        else GIVEN_FIRST)
-            wanted = {4: FAMILY_FIRST, 5: FAMILY_FIRST_GIVEN_LAST}.get(
-                self.shape, GIVEN_FIRST)
-            if declared != wanted:
-                if self.policy is not None:
-                    declared_desc = (
-                        f"the row's policy declares {_order_repr(declared)}")
-                else:
-                    declared_desc = ("this row declares no policy, so it "
-                                      "is GIVEN_FIRST")
+                    f"{self.id}: tolerated requires CJK text (a "
+                    f"classified codepoint _has_cjk recognizes); it "
+                    f"exists for the CJK comma demotion, and a Latin "
+                    f"row asking for it is a smell until some future "
+                    f"arc argues otherwise")
+
+    def _check_latin_shape_order(self) -> None:
+        """Shapes 1-5: the Latin-order arrangements, each implying a
+        name_order the row's own policy (or its absence) must agree
+        with, and each refusing CJK text outright."""
+        # Contract: only called from the `if self.shape is not None`
+        # branch above -- restated here (not just implied by the call
+        # site) because it also narrows the type for mypy, which
+        # cannot see across the method boundary on its own.
+        assert self.shape is not None
+        # A locale carries an order too (script_orders), but as a
+        # LOOKUP this table cannot see -- cases.py stays
+        # import-light and stores only the locale CODE. Faking
+        # "declared" as GIVEN_FIRST for a locale row would let a
+        # tag validate against an order nobody here can name.
+        if self.locale is not None:
+            raise ValueError(
+                f"{self.id}: a shape tag needs the row's own "
+                f"policy; a locale carries an order this table "
+                f"cannot see")
+        # corpus_cjk.jsonl already claims this ground: _has_cjk is
+        # the same predicate build_cjk_corpus.py selects with, so
+        # a shape tag would double-admit the text (shapes 1-5 are
+        # the Latin-order arrangements; shapes 6/7 are the CJK
+        # arrangements, #469's now-settled third-shape question).
+        # Order alone cannot stand in for this check --
+        # DEFAULT_SCRIPT_ORDERS forces HAN/HANGUL/HIRAGANA to
+        # FAMILY_FIRST but leaves KATAKANA unmapped, so a pure-
+        # katakana text can carry a GIVEN_FIRST name_order and
+        # still be CJK ground, not a shape.
+        if _has_cjk(self.text):
+            raise ValueError(
+                f"{self.id}: shape {self.shape} cannot tag CJK "
+                f"text; that ground belongs to shapes 6/7 "
+                f"(corpus_cjk.jsonl), not this shape")
+        declared = (self.policy.name_order if self.policy is not None
+                    else GIVEN_FIRST)
+        wanted = {4: FAMILY_FIRST, 5: FAMILY_FIRST_GIVEN_LAST}.get(
+            self.shape, GIVEN_FIRST)
+        if declared != wanted:
+            if self.policy is not None:
+                declared_desc = (
+                    f"the row's policy declares {_order_repr(declared)}")
+            else:
+                declared_desc = ("this row declares no policy, so it "
+                                  "is GIVEN_FIRST")
+            raise ValueError(
+                f"{self.id}: shape {self.shape} implies name_order "
+                f"{_order_repr(wanted)}, but {declared_desc}; add "
+                f"policy=Policy(name_order={_order_repr(wanted)}) or "
+                f"drop the tag")
+
+    def _check_cjk_shape_purity(self) -> None:
+        """Shapes 6/7 (2026-09-01): the CJK arrangements, admitted
+        wholly classified-script text only -- no comma, no Latin
+        letter. Every composed/wrapped form is tolerated=True's
+        ground, not a shape tag's, so this REFUSES rather than
+        requires a particular arrangement beyond that purity test
+        (plus shape 7's divider/katakana requirement, and shape 6's
+        interpunct refusal, below)."""
+        # Contract: only called from the `if self.shape in (6, 7)`
+        # branch above -- restated here (not just implied by the call
+        # site) because it also narrows the type for mypy, which
+        # cannot see across the method boundary on its own.
+        assert self.shape in (6, 7)
+        # A zh-pack row exercises a locale FORK (the segmenter, an
+        # opt-in policy choice), not an input shape: the default-
+        # policy reading of the same string is what the shape admits,
+        # so shape 6/7 rows carry neither. (Nothing separately checks
+        # self.policy here because shapes 6/7's order is None --
+        # there is no order for a policy to agree or disagree with --
+        # so a stray policy would silently do nothing; refusing both
+        # together keeps the row's intent legible.)
+        if self.policy is not None or self.locale is not None:
+            raise ValueError(
+                f"{self.id}: shape {self.shape} rows carry neither "
+                f"policy nor locale; a zh-pack row exercises a locale "
+                f"fork, not an input shape")
+        if not _has_cjk(self.text):
+            raise ValueError(
+                f"{self.id}: shape {self.shape} requires a classified "
+                f"codepoint (CJK text); {self.text!r} carries none")
+        if "," in self.text:
+            raise ValueError(
+                f"{self.id}: shape {self.shape} refuses a comma; "
+                f"composed comma forms belong under tolerated=True, "
+                f"not a shape tag")
+        if _has_ascii_letter(self.text):
+            raise ValueError(
+                f"{self.id}: shape {self.shape} refuses a Latin "
+                f"letter; Latin-wrapped compositions belong under "
+                f"tolerated=True, not a shape tag")
+        # U+00B7 (间隔号) marks a name transcription in SOURCE order
+        # (W1 Accepted) -- shape 7's ground, not shape 6's family-
+        # first one. The fullwidth nakaguro U+30FB is NOT a source-
+        # order marker on its own: decisions.md#T3 scopes that reading
+        # to the codepoint, so U+30FB on non-katakana text is an
+        # ordinary Han/Hangul separator and the text reads family-
+        # first (cases.py's own ja_nakaguro_han_takes_the_han_order,
+        # '高橋・一郎', pins exactly this). A wholly-katakana text
+        # DOES read as a transcription regardless of whether it
+        # happens to contain U+30FB internally -- that admission comes
+        # from being wholly katakana, not from the nakaguro -- so
+        # _wholly_katakana already covers the katakana case and U+30FB
+        # is not tested as a divider here at all.
+        has_divider = "·" in self.text
+        stripped = "".join(self.text.split())
+        is_transcription = has_divider or _wholly_katakana(stripped)
+        if self.shape == 6:
+            if is_transcription:
                 raise ValueError(
-                    f"{self.id}: shape {self.shape} implies name_order "
-                    f"{_order_repr(wanted)}, but {declared_desc}; add "
-                    f"policy=Policy(name_order={_order_repr(wanted)}) or "
-                    f"drop the tag")
+                    f"{self.id}: shape 6 refuses U+00B7 and wholly-"
+                    f"katakana text; that reads source order and "
+                    f"belongs to shape 7")
+        else:
+            if not is_transcription:
+                raise ValueError(
+                    f"{self.id}: shape 7 requires U+00B7 or wholly-"
+                    f"katakana text; {self.text!r} has neither")
 
 
 _ES = Policy(patronymic_rules=frozenset({PatronymicRule.EAST_SLAVIC}))
