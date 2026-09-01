@@ -67,8 +67,9 @@ class Case:
     notes: str = ""
     #: input-shape id from tools/differential/shapes.py (#468/#469).
     #: Tagging a row admits its text to the differential's CONTRACT
-    #: corpus (see tools/differential/shapes.py; the generator lands
-    #: beside it) under the shape's name_order. Optional: a row
+    #: corpus (see tools/differential/shapes.py, projected into
+    #: corpus_shapes.jsonl by build_shapes_corpus.py beside it) under
+    #: the shape's name_order. Optional: a row
     #: exercising a policy fork rather than an input shape stays
     #: untagged.
     shape: int | None = None
@@ -2605,21 +2606,41 @@ CASES: tuple[Case, ...] = (
     Case("family_comma_no_name_word_family_first", "de Mesnil Jean, Dr.",
          {"title": "Dr.", "given": "Jean", "family": "de Mesnil"},
          policy=Policy(name_order=FAMILY_FIRST),
-         notes="as 'de Mesnil Jean' reads under the same order; master "
-               "read it through the suffix-comma route ('dr' was "
-               "suffix vocabulary) and got the fold that way",
+         classification="feat(#395)",
+         notes="core-only: name_order has no v1 spelling, so 'parity' "
+               "(this field's default) could never have been true of "
+               "this row. The differential compares it at 2.0.0 and "
+               "2.1.0 under its own order instead, where it moves: "
+               "#395's fold takes 'de Mesnil' where both read family "
+               "'de', and the #296 half turns the post-comma 'Dr.' "
+               "from a suffix into a title. As 'de Mesnil Jean' reads "
+               "under the same order; master read it through the "
+               "suffix-comma route ('dr' was suffix vocabulary) and "
+               "got the fold that way",
          shape=4),
     Case("family_comma_no_name_word_family_first_given_last",
          "de la Cruz Juan Carlos, Dr.",
          {"title": "Dr.", "given": "Carlos", "middle": "Juan",
           "family": "de la Cruz"},
          policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         classification="feat(#395)",
+         notes="core-only: name_order has no v1 spelling. The row "
+               "above with two leftovers instead of one, which is the "
+               "only shape in which the two family-first orders can "
+               "disagree about the distribution -- 'Juan' is the "
+               "middle name here and the given name there",
          shape=5),
     Case("family_comma_no_name_word_family_first_plain", "John Smith, Dr.",
          {"title": "Dr.", "given": "Smith", "family": "John"},
          policy=Policy(name_order=FAMILY_FIRST),
-         notes="the declared order applies to the pre-comma name as it "
-               "does to 'John Smith' alone -- deliberate",
+         classification="fix(#296)",
+         notes="core-only: name_order has no v1 spelling, but the "
+               "CHANGE here is the vocabulary half alone -- no "
+               "particle, so nothing folds, and the diff against 2.0.0 "
+               "is the {title, suffix} move 'dr' leaving the suffix "
+               "sets produces under every order. The declared order "
+               "applies to the pre-comma name as it does to 'John "
+               "Smith' alone -- deliberate",
          shape=4),
     Case("title_word_trailing_is_not_a_title", "John Smith Prof.",
          {"given": "John", "middle": "Smith", "family": "Prof."},

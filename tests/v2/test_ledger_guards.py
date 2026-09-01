@@ -612,6 +612,22 @@ def test_cjk_corpus_matches_the_case_table() -> None:
         "`uv run python tools/differential/build_cjk_corpus.py`")
 
 
+def test_shapes_corpus_matches_the_case_table() -> None:
+    """corpus_shapes.jsonl is GENERATED from the shape-tagged case
+    rows -- the same promise test_cjk_corpus_matches_the_case_table
+    makes one function up, for the tag predicate instead of the
+    codepoint one: a row tagged without regenerating fails HERE
+    instead of silently keeping the contract tier narrower than the
+    table says it is."""
+    module = load_tool("build_shapes_corpus")
+    checked_in = [json.loads(line) for line in
+                  (_TOOLS / "corpus_shapes.jsonl")
+                  .read_text(encoding="utf-8").splitlines() if line.strip()]
+    assert checked_in == module.selected(), (
+        "corpus_shapes.jsonl is stale: regenerate with "
+        "`uv run python tools/differential/build_shapes_corpus.py`")
+
+
 def test_case_shape_ids_exist_in_the_inventory() -> None:
     """cases.py cannot import tools/, so Case.__post_init__ validates
     every shape tag against its own hand copy of the inventory's id
@@ -1550,7 +1566,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
             _Claim(108, ('family', 'given', 'middle'), "9a814f70c2dc"),
         "fix(#274) maiden markers consumed":
-            _Claim(31, ('family', 'maiden', 'middle'), "67e2280be79d"),
+            _Claim(32, ('family', 'maiden', 'middle'), "06d199ceb249"),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
             _Claim(5, ('family', 'given', 'maiden', 'middle'), "bc0e10dd7ec8"),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
@@ -1563,7 +1579,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # this baseline (v1 and HEAD both read first 'John', last
         # 'Ph. D.'), so nothing was absorbed.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(280, ('given', 'suffix', 'title'), "c85e12fa5d66"),
+            _Claim(284, ('given', 'suffix', 'title'), "8b046fbdb1a1"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -1571,7 +1587,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#296) a dropped prenominal takes the name position it occupies":
             _Claim(3, ('given', 'middle', 'title'), "263d5957cfc1"),
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
-            _Claim(9, ('family', 'middle', 'suffix'), "8d6e9a1b43c0"),
+            _Claim(11, ('family', 'middle', 'suffix'), "b9cfc0d88bf6"),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
             _Claim(2, ('family', 'given', 'suffix', 'title'), "3f983ff71dee"),
         "fix(#296) a lone post-comma credential is a suffix":
@@ -1583,7 +1599,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#367) an inferred title no longer displaces a leading particle either":
             _Claim(1, ('family', 'given'), "d8ee9cd5da5f"),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(280, ('family', 'given'), "c85e12fa5d66"),
+            _Claim(284, ('family', 'given'), "8b046fbdb1a1"),
         "fix(#342) NOT WANTED: a bare trailing 'Rai' is read as a post-nominal suffix and the family is lost":
             _Claim(1, ('family', 'suffix'), "694fd06a2e9a"),
         "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":
@@ -1722,7 +1738,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
             _Claim(2, ('_ambiguities', 'family', 'suffix'), "ec0d45289dc1"),
         "fix(#399) a maiden marker bounds the particle chain that swallowed it":
-            _Claim(5, ('family', 'maiden'), "15ec75a89f07"),
+            _Claim(6, ('family', 'maiden'), "89e1f4afdd2a"),
         "fix(#360) mc moved into the never-given particles, so it folds into the family":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ee4339908f4d"),
         "fix(#400) abd joins the word after it as one given name":
@@ -1762,7 +1778,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#296) a dropped prenominal takes the name position it occupies":
             _Claim(3, ('_ambiguities', 'given', 'middle', 'title'), "263d5957cfc1"),
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
-            _Claim(9, ('family', 'middle', 'suffix'), "8d6e9a1b43c0"),
+            _Claim(11, ('family', 'middle', 'suffix'), "b9cfc0d88bf6"),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
             _Claim(2, ('suffix', 'title'), "3f983ff71dee"),
         "fix(#296) a lone post-comma credential is a suffix":
@@ -1801,6 +1817,14 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'maiden'), "2150936a8c55"),
         "fix(#371) a suffix never begins a name: the Ph./D. merge declines at the head":
             _Claim(4, ('family', 'given', 'middle', 'suffix', 'title'), "1425d85a2d86"),
+        "feat(#395) a leading never-given particle bounds the family under a declared family-first order":
+            _Claim(1, ('family', 'given', 'middle'), "47dcff268731"),
+        "fix(#399)/feat(#395) a consumed maiden marker leaves the family-first fold no given name":
+            _Claim(1, ('family', 'given', 'maiden'), "504eb466e347"),
+        "feat(#395)/fix(#296) a comma followed only by a title leaves the pre-comma name to the declared order's fold":
+            _Claim(1, ('family', 'given', 'middle', 'suffix', 'title'), "fc6bc9e605e1"),
+        "feat(#395)/fix(#296) a comma followed only by a title leaves the pre-comma name to the declared order's fold, the given-last spelling":
+            _Claim(1, ('family', 'given', 'middle', 'suffix', 'title'), "3e43a2be022e"),
     },
     "expected_since_2.2.0.toml": {},   # open cycle, no rules yet
     "expected_since_2.1.0.toml": {
@@ -1831,7 +1855,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
             _Claim(2, ('_ambiguities', 'family', 'suffix'), "ec0d45289dc1"),
         "fix(#399) a maiden marker bounds the particle chain that swallowed it":
-            _Claim(5, ('family', 'maiden'), "15ec75a89f07"),
+            _Claim(6, ('family', 'maiden'), "89e1f4afdd2a"),
         "fix(#360) mc moved into the never-given particles, so it folds into the family":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ee4339908f4d"),
         "fix(#400) abd joins the word after it as one given name":
@@ -1869,7 +1893,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#296) a dropped prenominal takes the name position it occupies":
             _Claim(3, ('_ambiguities', 'given', 'middle', 'title'), "263d5957cfc1"),
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
-            _Claim(9, ('family', 'middle', 'suffix'), "8d6e9a1b43c0"),
+            _Claim(11, ('family', 'middle', 'suffix'), "b9cfc0d88bf6"),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
             _Claim(2, ('suffix', 'title'), "3f983ff71dee"),
         "fix(#296) a lone post-comma credential is a suffix":
@@ -1908,6 +1932,14 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'maiden'), "2150936a8c55"),
         "fix(#399) a maiden marker bounds the particle chain: a native-script marker":
             _Claim(1, ('family', 'maiden'), "f016cc61ca43"),
+        "feat(#395) a leading never-given particle bounds the family under a declared family-first order":
+            _Claim(1, ('family', 'given', 'middle'), "47dcff268731"),
+        "fix(#399)/feat(#395) a consumed maiden marker leaves the family-first fold no given name":
+            _Claim(1, ('family', 'given', 'maiden'), "504eb466e347"),
+        "feat(#395)/fix(#296) a comma followed only by a title leaves the pre-comma name to the declared order's fold":
+            _Claim(1, ('family', 'given', 'middle', 'suffix', 'title'), "fc6bc9e605e1"),
+        "feat(#395)/fix(#296) a comma followed only by a title leaves the pre-comma name to the declared order's fold, the given-last spelling":
+            _Claim(1, ('family', 'given', 'middle', 'suffix', 'title'), "3e43a2be022e"),
     },
 }
 
@@ -1999,6 +2031,12 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
 #: The diff shapes are measured against the 1.4.0 wheel, not guessed.
 #: Re-measure rather than adjust them if a parser change moves one:
 #: a diff shape that shifted is a finding, not a number to update.
+#:
+#: Blind spot since `orders` (#468): every row is recomputed at
+#: comparison order None, so a contest that exists only under a
+#: declared order is not recorded here -- true today because no
+#: recorded winner is order-scoped, and it stops being true the day one
+#: is.
 _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
     "expected_since_2.2.0.toml": {},   # open cycle, no rules and so no contest
     "expected_since_1.4.0.toml": {
@@ -2202,6 +2240,64 @@ def test_the_recorded_rule_still_wins_each_contested_name() -> None:
         f"was the odd one out.")
 
 
+def test_the_family_first_fold_is_not_explained_under_the_default_order(
+        ) -> None:
+    """The hazard the `orders` key exists for, pinned against the
+    shipped 2.x ledgers rather than a fixture.
+
+    'de la Cruz Juan Carlos' is compared three times: twice from
+    corpus_shapes.jsonl under the two family-first orders, where #395's
+    fold is the intended reading, and once from corpus_rules.jsonl
+    under the DEFAULT order, where rules.md#P1 says the whole string is
+    the family. If the fold ever leaked into the default order it would
+    move {family, given, middle} -- the same three roles, on the same
+    string -- so an order-blind rule would claim the leak, label it
+    feat(#395), and exit 0. That is #372's failure mode aimed at the
+    most plausible regression of the very change the rule describes.
+
+    Both directions again: declining the default-order diff is the
+    point, but a rule that declined its OWN orders too would be
+    silently dormant and this pin would pass on a broken ledger.
+
+    The default-order assertion runs on EVERY ledger, before the
+    scoped-rule search decides whether there is anything else to check.
+    Guarding it behind that search is what made an earlier draft weak:
+    dropping `orders` from one 2.x ledger takes that ledger through the
+    `continue` while the other keeps `checked` above zero, and the
+    suite stays green with one ledger absorbing the leak. On a ledger
+    whose rules do not reach this name at all -- 1.4.0, the open cycle
+    -- the assertion is trivially true, which costs nothing.
+    """
+    compare = load_tool("compare")
+    name, moved = "de la Cruz Juan Carlos", {"family", "given", "middle"}
+    checked = 0
+    for ledger in _LEDGERS:
+        rules = compare._sorted_rules(_rules(ledger))
+        never = _exclusions(ledger)
+        assert compare.classify(name, moved, rules, never) is None, (
+            f"{ledger.name}: a DEFAULT-order diff moving {sorted(moved)} "
+            f"on {name!r} is explained by "
+            f"{compare.classify(name, moved, rules, never)!r}. That is "
+            f"the family-first fold firing where P1 forbids it, and the "
+            f"rule describing the fold must not absorb it -- scope it "
+            f"with `orders`")
+        scoped = [r for r in rules
+                  if isinstance(r.get("orders"), list)
+                  and re.search(str(r["name_regex"]), name)
+                  and moved <= set(r["fields"])]
+        for rule in scoped:
+            for order in rule["orders"]:
+                assert compare.classify(
+                    name, moved, rules, never, order) == rule["issue"], (
+                    f"{ledger.name}: {rule['issue']!r} declares order "
+                    f"{order} and does not explain its own diff under "
+                    f"it; the rule is dormant and the pin above is "
+                    f"passing for the wrong reason")
+                checked += 1
+    assert checked, ("no orders-scoped rule reaches this name in any "
+                     "ledger, so this pin is vacuous")
+
+
 class _Excluded(NamedTuple):
     """What a [[never]] entry silences, in the two dimensions that can
     change under it."""
@@ -2245,6 +2341,12 @@ class _Excluded(NamedTuple):
 #: answers those subsets is invisible here. A rule reaching a
 #: protected READING is caught; a rule shadowed by an existing one on
 #: every subset it claims is not.
+#:
+#: A second, newer limit: `absorbed_by` is recomputed at comparison
+#: order None, so an absorption that happens only under a declared
+#: order is invisible to it -- true today because no exclusion
+#: protects a shape that reads differently under one, and something to
+#: revisit the day one does.
 _EXCLUSION_EFFECT: dict[str, _Excluded] = {
     "(?i)^(?!\\s*ph\\.)(?![^\\s,]+\\s*,\\s*ph\\.\\s*d\\.\\s*$)(?![\\u0000-\\u024f]*\\b(?:jr|sr|ii|iii|iv)\\.?\\s+ph\\.\\s*d\\.\\s*$)[\\u0000-\\u024f]*\\bph\\.\\s*d\\.\\s*$":
         _Excluded(3, "5a12a8117651",

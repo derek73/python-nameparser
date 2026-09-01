@@ -301,6 +301,49 @@ def test_order_bearing_diff_row_tags_its_order_and_hides_v2_only(
     assert "[v2 surface only]" not in out
 
 
+def test_classified_order_bearing_diff_tags_its_order(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The `## issue` block carries the order tag too. Without it, one
+    string compared under two orders lists twice under the same issue
+    with nothing telling the two lines apart -- and the release note
+    written from that block would claim a default-order change the
+    run never made."""
+    import contextlib
+    import io
+    import json as _json
+    import sys
+    name = "Ménil Christophe du"
+    corpus = tmp_path / "corpus_x.jsonl"
+    corpus.write_text(
+        _json.dumps({"name": name, "shape": 4}, ensure_ascii=False) + "\n",
+        encoding="utf-8")
+    (tmp_path / "expected_since_2.0.0.toml").write_text(
+        '[[change]]\nissue = "claimed"\nname_regex = "Ménil"\n'
+        'fields = ["family"]\n', encoding="utf-8")
+    monkeypatch.setitem(compare._CORPUS_FLOORS, corpus.name, 1)
+    monkeypatch.setitem(compare._CORPUS_TIERS, corpus.name, "contract")
+    monkeypatch.setattr(compare, "HERE", tmp_path)
+    v2_row = _tree_v2_row(name, "FAMILY_FIRST")
+    v2_row["family"] = v2_row["family"] + "X"  # force a diff on `family`
+
+    def _fake(v: str, w: bool,
+              entries: list[dict[str, object]]) -> tuple[dict, list[dict]]:
+        return ({"__version__": v,
+                 "__file__": "/wheel/nameparser/__init__.py"},
+                [{"v2": v2_row}])
+
+    monkeypatch.setattr(compare, "_run_worker", _fake)
+    monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", "2.0.0",
+                                      "--corpus", str(corpus)])
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = compare.main()
+    out = buf.getvalue()
+    assert code == 0
+    assert "## claimed (1)" in out
+    assert f"  {name!r}   [order: FAMILY_FIRST]" in out
+
+
 _WHEEL = "/Users/x/.cache/uv/environments-v2/w/lib/python3.11/" \
          "site-packages/nameparser/__init__.py"
 
@@ -511,6 +554,75 @@ def test_classify_declines_a_diff_touching_a_field_the_rule_omits() -> None:
     rules = [{"issue": "given-only", "fields": ["given"]}]
     assert compare.classify("x", {"given"}, rules) == "given-only"
     assert compare.classify("x", {"given", "suffix"}, rules) is None
+
+
+def test_classify_scopes_a_rule_to_the_orders_it_declares() -> None:
+    """`orders` is the third narrowing, and the one a name compared
+    twice needs: the SAME string and the SAME moved roles mean
+    different things under a declared family-first order (the #395
+    fold, intended) and under the default order (that fold leaking
+    where it must not). Order-blind, one rule claims both and the
+    leak reports as an intentional change.
+
+    Both directions are pinned. A rule with `orders` must decline the
+    default-order diff -- comparison order None is never a member,
+    since the members are constant NAMES -- and must still claim the
+    diff under each order it lists. A rule without the key stays
+    order-blind, which is what every rule written before shape-tagged
+    entries existed relies on."""
+    scoped = [{"issue": "family-first only", "name_regex": "Cruz",
+               "fields": ["family"],
+               "orders": ["FAMILY_FIRST", "FAMILY_FIRST_GIVEN_LAST"]}]
+    assert compare.classify("de la Cruz", {"family"}, scoped) is None
+    assert compare.classify("de la Cruz", {"family"}, scoped,
+                            order="FAMILY_FIRST") == "family-first only"
+    assert compare.classify(
+        "de la Cruz", {"family"}, scoped,
+        order="FAMILY_FIRST_GIVEN_LAST") == "family-first only"
+    blind = [{"issue": "any order", "name_regex": "Cruz",
+              "fields": ["family"]}]
+    assert compare.classify("de la Cruz", {"family"}, blind) == "any order"
+    assert compare.classify("de la Cruz", {"family"}, blind,
+                            order="FAMILY_FIRST") == "any order"
+
+
+@pytest.mark.parametrize("orders,message", [
+    (["NO_SUCH_ORDER"], "shapes.py declares for no shape"),
+    ([], "empty 'orders'"),
+    ("FAMILY_FIRST", "not a list of strings"),
+    ([1], "not a list of strings"),
+])
+def test_validate_rules_rejects_a_bad_orders_narrowing(
+        orders: object, message: str) -> None:
+    """Each way an `orders` can stop meaning what its author wrote.
+    The two type failures are the dangerous direction -- _entry_matches
+    ignores a non-list, so a mistyped key silently returns the rule to
+    claiming every order, which is the scoping it was added to undo --
+    and the other two can only ever match nothing, which is loud but
+    reads as a dormant rule rather than as a typo."""
+    with pytest.raises(SystemExit, match=message):
+        compare.validate_rules(
+            [{"issue": "fix(x) scoped", "name_regex": "Smith",
+              "fields": ["given"], "orders": orders}],
+            "test_ledger.toml")
+
+
+def test_validate_rules_takes_the_order_names_from_the_shape_inventory(
+        ) -> None:
+    """The legal set is BORROWED, not hand-copied: every order any
+    shape declares is legal and nothing else is, so an order added to
+    shapes.py is usable in a rule the same day, and one removed stops
+    validating without anyone remembering a second list. An order no
+    shape declares is an order no comparison runs under, so a rule
+    naming it could only ever be dormant."""
+    assert compare._legal_orders() == {
+        shape.order for shape in shapes.SHAPES.values()
+        if shape.order is not None}
+    for order in compare._legal_orders():
+        compare.validate_rules(
+            [{"issue": "fix(x) scoped", "name_regex": "Smith",
+              "fields": ["given"], "orders": [order]}],
+            "test_ledger.toml")
 
 
 def test_v2_fields_matches_the_Role_enum() -> None:
@@ -1517,7 +1629,7 @@ def test_dormant_rules_reports_a_rule_whose_behavior_vanished() -> None:
     rules = [{"issue": "fix(a)", "name_regex": "Smith", "fields": ["given"]},
              {"issue": "fix(b)", "name_regex": "Jones", "fields": ["given"]}]
     report = compare.dormant_rules(
-        rules, {"fix(a)"}, [("John Smith", {"given"})])
+        rules, {"fix(a)"}, [("John Smith", {"given"}, None)])
     assert report.awake == ()
     assert [d.issue for d in report.undeclared] == ["fix(b)"]
     assert report.undeclared[0].kind == "reverted"
@@ -1533,7 +1645,7 @@ def test_dormant_rules_names_the_rule_that_shadows_one() -> None:
              {"issue": "fix(narrow)", "name_regex": "John Smith",
               "fields": ["given"]}]
     report = compare.dormant_rules(
-        rules, {"fix(broad)"}, [("John Smith", {"given"})])
+        rules, {"fix(broad)"}, [("John Smith", {"given"}, None)])
     assert [d.issue for d in report.undeclared] == ["fix(narrow)"]
     assert report.undeclared[0].kind == "shadowed"
     assert report.undeclared[0].detail == "fix(broad)"
@@ -1546,7 +1658,7 @@ def test_dormant_rules_distinguishes_an_excluded_shape() -> None:
     rules = [{"issue": "fix(a)", "name_regex": "Smith", "fields": ["given"]}]
     never = [{"why": "protected", "name_regex": "Smith"}]
     report = compare.dormant_rules(
-        rules, set(), [("John Smith", {"given"})], never)
+        rules, set(), [("John Smith", {"given"}, None)], never)
     assert [d.issue for d in report.undeclared] == ["fix(a)"]
     assert report.undeclared[0].kind == "excluded"
 
@@ -1564,7 +1676,7 @@ def test_dormant_rules_reports_a_declared_rule_that_woke_up() -> None:
     this tree checks both directions or it checks nothing."""
     rules = [{"issue": "fix(a)", "fields": ["given"], "dormant": "was idle"}]
     report = compare.dormant_rules(
-        rules, {"fix(a)"}, [("John Smith", {"given"})])
+        rules, {"fix(a)"}, [("John Smith", {"given"}, None)])
     assert report.awake == ("fix(a)",)
     assert report.undeclared == ()
 
@@ -1579,8 +1691,8 @@ def test_dormant_rules_names_the_shadower_that_does_the_shadowing() -> None:
               "fields": ["given"]}]
     report = compare.dormant_rules(
         rules, {"fix(a)", "fix(z)"},
-        [("Alpha One", {"given"}), ("Zeta One", {"given"}),
-         ("Zeta Two", {"given"}), ("Zeta Three", {"given"})])
+        [("Alpha One", {"given"}, None), ("Zeta One", {"given"}, None),
+         ("Zeta Two", {"given"}, None), ("Zeta Three", {"given"}, None)])
     assert [d.issue for d in report.undeclared] == ["fix(idle)"]
     assert report.undeclared[0].detail == "fix(z)"
 
@@ -1599,7 +1711,7 @@ def test_dormant_rules_sorts_before_diagnosing() -> None:
              {"issue": "specific", "name_regex": "Smith",
               "fields": ["given"]}]
     report = compare.dormant_rules(
-        rules, {"specific"}, [("John Smith", {"given"})])
+        rules, {"specific"}, [("John Smith", {"given"}, None)])
     assert [d.issue for d in report.undeclared] == ["broad"]
     assert report.undeclared[0].detail == "specific"
 

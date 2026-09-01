@@ -449,7 +449,23 @@ def _is_latin_only(name: str) -> bool:
 #: ambiguity entry is legal and load-bearing -- a SEGMENTATION-only diff
 #: is facade-identical, so this is the one name that can classify it.
 _RULE_FIELDS = frozenset((*V2_FIELDS, "_ambiguities"))
-_RULE_KEYS = frozenset(("issue", "name_regex", "fields", "dormant"))
+_RULE_KEYS = frozenset(("issue", "name_regex", "fields", "dormant", "orders"))
+
+
+def _legal_orders() -> frozenset[str]:
+    """The order-constant names a rule's `orders` may name: exactly the
+    ones shapes.py's inventory declares.
+
+    Borrowed rather than hand-copied, the same way build_cjk_corpus.py
+    borrows the script table: an order no shape declares is an order no
+    comparison can run under, so a rule scoped to it could only ever be
+    dormant, and a typo in one would be a rule that silently explains
+    nothing.
+    """
+    return frozenset(shape.order for shape in _load_shapes().values()
+                     if shape.order is not None)
+
+
 #: Probe names for the over-match check, chosen to share no script, no
 #: vocabulary and no punctuation. A `name_regex` matching ALL of them is
 #: not targeting a behavior family, it is matching everything -- and
@@ -475,6 +491,8 @@ _CORPUS_FLOORS = {
     "corpus_cjk.jsonl": 95,     # 98 today, generated from the case table
     "corpus_issues.jsonl": 370,  # 381 today, harvested and append-only
     "corpus_rules.jsonl": 150,  # 241 today, generated from rules.md
+    "corpus_shapes.jsonl": 11,  # 13 today, generated from shape-tagged
+                                # case rows
 }
 
 #: Tier per corpus file, fail-closed like the floors above. CONTRACT
@@ -498,6 +516,7 @@ _CORPUS_TIERS = {
     "corpus_cjk.jsonl": "contract",
     "corpus_issues.jsonl": "radar",
     "corpus_rules.jsonl": "contract",
+    "corpus_shapes.jsonl": "contract",
 }
 
 
@@ -588,6 +607,31 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
                     f"is expected to explain nothing, and the reason is "
                     f"the whole safeguard -- an exemption nobody can "
                     f"justify means the rule should be deleted instead")
+        if "orders" in rule:
+            orders = rule["orders"]
+            if not isinstance(orders, list) \
+                    or not all(isinstance(o, str) for o in orders):
+                raise SystemExit(
+                    f"{where} has an 'orders' that is not a list of "
+                    f"strings ({orders!r}); _entry_matches would ignore "
+                    f"it and the rule would go back to claiming a diff "
+                    f"under EVERY order, which is the scoping this key "
+                    f"exists to undo")
+            if not orders:
+                raise SystemExit(
+                    f"{where} has an empty 'orders', which no comparison "
+                    f"can be run under -- a rule that can never match. "
+                    f"Omit the key to stay order-blind")
+            legal = _legal_orders()
+            bad = sorted(set(orders) - legal)
+            if bad:
+                raise SystemExit(
+                    f"{where} names {bad} in 'orders', which shapes.py "
+                    f"declares for no shape; expected from "
+                    f"{sorted(legal)}. No comparison runs under an order "
+                    f"no shape asks for, so the rule would explain "
+                    f"nothing and report as dormant instead of saying "
+                    f"the name is wrong")
         has_regex, has_fields = "name_regex" in rule, "fields" in rule
         if not has_regex and not has_fields:
             raise SystemExit(
@@ -781,19 +825,34 @@ def validate_exclusions(entries: list[dict[str, object]],
 
 
 def _entry_matches(rule: dict[str, object], name: str,
-                   diff_fields: set[str]) -> bool:
+                   diff_fields: set[str], order: str | None = None) -> bool:
     """Does this entry's narrowing admit this diff?
 
     Called twice in classify() -- once for exclusions, once for rules --
-    and again in dormant_rules(). All three narrow on the same two keys,
+    and again in dormant_rules(). All three narrow on the same keys,
     and the dormancy diagnosis is only meaningful if it asks the
     question classify asks, so there is one predicate rather than three
     copies of it.
 
-    A non-str `name_regex` or non-list `fields` is IGNORED rather than
-    rejected here: validate_rules and validate_exclusions reject both at
-    startup, and duplicating that judgement in the hot path would put the
-    two in a position to disagree.
+    `order` is the name_order the COMPARISON ran under (None = the
+    default order), and a rule carrying `orders` admits only the orders
+    it lists. Without that narrowing a rule is order-blind, which is
+    what every rule written before shape-tagged entries existed is: the
+    key is optional and its absence is today's behavior. It matters
+    because a name can be compared twice, once per order, and the two
+    diffs can have the SAME fields for opposite reasons -- the
+    feat(#395) fold moving {family, given, middle} under a declared
+    family-first order is intended, and the same three roles moving on
+    the same string under the DEFAULT order would be that fold leaking
+    where it must not, which an order-blind rule would absorb and call
+    intentional (#372's failure mode, on the most plausible regression
+    of the very change the rule describes).
+
+    A non-str `name_regex`, non-list `fields` or non-list `orders` is
+    IGNORED rather than rejected here: validate_rules and
+    validate_exclusions reject them at startup, and duplicating that
+    judgement in the hot path would put the two in a position to
+    disagree.
     """
     name_regex = rule.get("name_regex")
     if isinstance(name_regex, str) and not re.search(name_regex, name):
@@ -801,12 +860,16 @@ def _entry_matches(rule: dict[str, object], name: str,
     fields = rule.get("fields")
     if isinstance(fields, list) and not diff_fields <= set(fields):
         return False
+    orders = rule.get("orders")
+    if isinstance(orders, list) and order not in orders:
+        return False
     return True
 
 
 def classify(name: str, diff_fields: set[str],
              rules: list[dict[str, object]],
-             exclusions: list[dict[str, object]] | None = None) -> str | None:
+             exclusions: list[dict[str, object]] | None = None,
+             order: str | None = None) -> str | None:
     """Which rule explains this diff, or None if nothing does.
 
     Exclusions are consulted FIRST and win outright. They are the
@@ -828,12 +891,21 @@ def classify(name: str, diff_fields: set[str],
     name whose parens mark a nickname to one rule and a suffix to
     another stays classifiable on the reading the exclusion is not
     about.
+
+    `order` is the name_order this comparison ran under and narrows the
+    RULES alone: exclusions have no `orders` key (validate_exclusions
+    rejects one as unknown), so they stay order-blind, deliberately.
+    An over-wide exclusion is loud rather than silent -- refusal is
+    monotone, so the widest thing it can do is make a name report
+    UNEXPLAINED and fail the run -- and no exclusion on the books
+    protects a shape that reads differently under a declared order. The
+    key can be given to them the day one does.
     """
     for entry in exclusions or ():
         if _entry_matches(entry, name, diff_fields):
             return None
     for rule in rules:
-        if _entry_matches(rule, name, diff_fields):
+        if _entry_matches(rule, name, diff_fields, order):
             return rule["issue"]  # type: ignore[return-value]
     return None
 
@@ -874,7 +946,7 @@ class _Dormancy(NamedTuple):
 
 
 def dormant_rules(rules: list[dict[str, object]], explained: set[str],
-                  diffing: list[tuple[str, set[str]]],
+                  diffing: list[tuple[str, set[str], str | None]],
                   exclusions: list[dict[str, object]] | None = None,
                   ) -> _Dormancy:
     """Which rules explained nothing, and which kind of nothing.
@@ -913,11 +985,16 @@ def dormant_rules(rules: list[dict[str, object]], explained: set[str],
             continue
         if declared:
             continue
-        matched = [(n, d) for n, d in diffing
-                   if _entry_matches(rule, n, d)]
+        # each diff carries the ORDER its comparison ran under, so a
+        # rule scoped by `orders` is asked the question classify asks
+        # it: a rule that would claim a name only under FAMILY_FIRST is
+        # not "shadowed" by whatever explains that name's default-order
+        # diff
+        matched = [(n, d, o) for n, d, o in diffing
+                   if _entry_matches(rule, n, d, o)]
         winners = Counter(
-            c for c in (classify(n, d, ordered, exclusions)
-                        for n, d in matched) if c is not None)
+            c for c in (classify(n, d, ordered, exclusions, o)
+                        for n, d, o in matched) if c is not None)
         if not matched:
             undeclared.append(_Dormant(issue, "reverted", ""))
         elif winners:
@@ -1244,10 +1321,16 @@ def main() -> int:
 
     tell, old_rows = _run_worker(baseline, want_v2, entries)
     print(f"baseline: nameparser {tell['__version__']} ({tell['__file__']})")
-    by_issue: dict[str, list[str]] = {}
+    #: (name, order) pairs, not names: one string compared under two
+    #: orders is two entries, and the report renders the order tag from
+    #: the pair. Rendering at print time rather than storing the line
+    #: keeps the bare name available to the Latin-only stat below,
+    #: which would otherwise need a second list to drift out of step
+    #: with this one.
+    by_issue: dict[str, list[tuple[str, str | None]]] = {}
     #: the union of the diffs each rule explained, for over_declared_rules.
     #: Kept beside by_issue rather than inside it: the summary printout
-    #: and `changed` both read by_issue as a list of names.
+    #: reads by_issue as a list of pairs.
     roles_by_issue: dict[str, set[str]] = {}
     # BOTH surfaces' old/new are retained, not just the facade's. A diff
     # can exist on the v2 surface alone -- an _ambiguities-only change is
@@ -1258,9 +1341,11 @@ def main() -> int:
     unexplained: list[_Unexplained] = []
     # radar-tier equivalent of unexplained: reported, never fatal (#468)
     radar: list[tuple[dict, _Unexplained]] = []
-    # every name that diffed, with its diff, so dormant_rules can ask
-    # which rule WOULD have claimed one that no rule did
-    diffing: list[tuple[str, set[str]]] = []
+    # every name that diffed, with its diff AND the order its
+    # comparison ran under, so dormant_rules can ask which rule WOULD
+    # have claimed one that no rule did -- the same question classify
+    # asks, order included
+    diffing: list[tuple[str, set[str], str | None]] = []
     for entry, old in zip(entries, old_rows):
         name = entry["name"]
         order = entry.get("order")
@@ -1292,8 +1377,8 @@ def main() -> int:
                      if old.get("v2", {}).get(f, "") != new_v2.get(f, "")}
         if not diff:
             continue
-        diffing.append((name, diff))
-        issue = classify(name, diff, rules, exclusions)
+        diffing.append((name, diff, order))
+        issue = classify(name, diff, rules, exclusions, order)
         if issue is None:
             row = (name, old.get("facade", {}), new, old.get("v2", {}),
                    new_v2, order)
@@ -1309,10 +1394,13 @@ def main() -> int:
             else:
                 unexplained.append(row)
         else:
-            by_issue.setdefault(issue, []).append(name)
+            by_issue.setdefault(issue, []).append((name, order))
             roles_by_issue.setdefault(issue, set()).update(diff)
 
-    changed = [n for names in by_issue.values() for n in names] \
+    # the bare halves of by_issue's pairs: _is_latin_only reads the
+    # string as a name, so it must never see the rendered order tag. A
+    # string compared under two orders counts twice here, accepted.
+    changed = [n for pairs in by_issue.values() for n, _ in pairs] \
         + [row[0] for row in unexplained] \
         + [e["name"] for e, _ in radar]
     latin = sum(1 for n in changed if _is_latin_only(n))
@@ -1323,8 +1411,8 @@ def main() -> int:
           f"{latin} of {len(changed)} changed names are Latin-only\n")
     for issue, names in sorted(by_issue.items()):
         print(f"## {issue} ({len(names)})")
-        for n in names[:10]:
-            print(f"  {n!r}")
+        for n, o in names[:10]:
+            print(f"  {n!r}{_order_tag(o)}")
         print()
     dormancy = dormant_rules(rules, set(by_issue), diffing, exclusions)
     for dormant in dormancy.undeclared:

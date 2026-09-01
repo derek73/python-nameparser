@@ -27,8 +27,11 @@ uv run python tools/differential/compare.py   # bare = DEFAULT_BASELINE, the las
 ```
 
 `compare.py` spawns the worker as a subprocess, feeds it every corpus
-name as a line of JSON, and diffs the two sides field by field. Every
-diff is checked against that baseline's ledger:
+entry as a line of JSON -- `{"name": ..., "order": ...}`, where `order`
+names the `name_order` constant the entry is parsed under on both
+sides and is `null` for an entry carrying no order -- and diffs the two
+sides field by field. Every diff is checked against that baseline's
+ledger:
 
 - Matches a rule -> counted as an intentional, classified change.
 - Matches no rule -> reported, and what happens next depends on the
@@ -181,6 +184,11 @@ invocation shows it.
 `compare.py` reads **every** `corpus*.jsonl` beside it by default
 (deduped), because a corpus you have to ask for by name is a corpus
 that stops being run. Pass `--corpus PATH` (repeatable) to narrow it.
+The run's `corpora:` line names each file with its entry count, and
+with `(N, K skipped)` where K entries were left out of this baseline's
+comparison (see the shape key below). Each file also needs an entry in
+`_CORPUS_FLOORS`, a minimum set a little under its real size: a corpus
+that silently shrinks to nothing would otherwise report a green run.
 
 | File | Source | Tier | Blind to |
 |---|---|---|---|
@@ -188,6 +196,7 @@ that stops being run. Pass `--corpus PATH` (repeatable) to narrow it.
 | `corpus_issues.jsonl` | name-like strings harvested from the GitHub issue tracker | radar | anything nobody ever reported |
 | `corpus_cjk.jsonl` | the CJK-bearing rows of `tests/v2/cases.py`, via `build_cjk_corpus.py` (#295) | contract | anything the case table itself missed — it re-witnesses reviewed expectations at the baseline boundary rather than discovering new shapes |
 | `corpus_rules.jsonl` | every example in `docs/design/rules.md`, via `build_rules_corpus.py` (#414) | contract | anything the rules doc has no example for — it re-witnesses the normative examples at the baseline boundary |
+| `corpus_shapes.jsonl` | shape-tagged rows of `tests/v2/cases.py`, via `build_shapes_corpus.py` (#468) | contract | anything no one has tagged a row for |
 
 Since the v2.3 tier split (#468), a corpus is CONTRACT or RADAR --
 the roster is `_CORPUS_TIERS` in compare.py, fail-closed like the
@@ -204,6 +213,39 @@ and a shape tag: it enters the contract by being chosen. A
 -- someone wrote its `why` and its `examples` -- so a name it refuses
 stays UNEXPLAINED and fails the run even when the name itself sits in
 a radar file.
+
+A corpus line is a bare JSON string or an object carrying `name` and,
+optionally, `shape` -- the input-shape id from
+`tools/differential/shapes.py`, which is where each shape's notation,
+the `name_order` it is an input shape FOR, and the oldest baseline
+whose worker can honor that order are written down. `compare.py`
+resolves every entry's shape through that table: an entry whose shape
+declares an order is parsed under that order on both sides and
+compared on the v2 surface alone (the facade is the v1-compat surface,
+and a family-first name is not a v1 contract), and an entry whose run
+predates its shape's `min_baseline` is left out of the comparison --
+reported as `skipped N names tagged shape(s) [...]` and counted in the
+`corpora:` line, so a shrunken comparison is never silent. That a
+family-first name is not compared under the default order is
+structural, not a ledger exception: its shape says what the name is an
+input FOR.
+
+`corpus_shapes.jsonl` is the corpus of those entries: every distinct
+(shape, name) pair from the shape-tagged rows of the case table, so a
+name tagged under two orders is two entries and two comparisons.
+Regenerate it after tagging or editing a tagged row; `--coverage`
+prints names-per-shape instead of writing, which is the "which shapes,
+how many names deep" answer:
+
+```
+uv run python tools/differential/build_shapes_corpus.py
+uv run python tools/differential/build_shapes_corpus.py --coverage
+```
+
+It is pinned exactly as the CJK corpus is -- `tests/v2/test_ledger_guards.py`
+holds the checked-in file equal to the generator's selection, so a row
+tagged without regenerating fails the suite instead of leaving the
+contract tier narrower than the case table says it is.
 
 They are deliberately separate rather than merged: `corpus.jsonl` is
 reproducible forever from an immutable git ref, while the issue
@@ -363,6 +405,30 @@ rule with one reason: a rule narrows by name AND by role, or it is not
 a rule. Note the two bans are each other's obvious wrong answer --
 deleting `fields` to silence an over-declaration failure lands on
 #456's, and adding `fields` while dropping the regex lands on #451's.
+
+**`orders` is the optional third narrowing** (#468). A rule may carry
+`orders = ["FAMILY_FIRST", ...]` -- public order-constant names, taken
+from the ones `shapes.py` declares, so `validate_rules` rejects a name
+no shape asks for rather than letting the rule sit dormant. A rule
+carrying it matches only diffs from comparisons run under one of those
+orders; a comparison under the default order (`order` is `None`) never
+matches such a rule. Omit the key and the rule is order-blind, which
+is what every rule written before shape-tagged entries existed is.
+
+It exists because a name can now be compared more than once, and the
+two diffs can move the SAME roles for opposite reasons.
+`de la Cruz Juan Carlos` is compared under both family-first orders
+from `corpus_shapes.jsonl`, where #395's fold reads family
+`de la Cruz` and distributes the leftovers, and under the default
+order from `corpus_rules.jsonl`, where rules.md#P1 says the whole
+string is the family. If that fold ever leaked into the default order
+it would move `{family, given, middle}` -- exactly what the
+`feat(#395)` rule declares -- so an order-blind rule would claim the
+leak, label it intentional and exit 0: #372's failure mode aimed at
+the most plausible regression of the very change the rule describes.
+Exclusions stay order-blind for now; refusal is monotone, so the worst
+an over-wide one can do is make a name report `UNEXPLAINED`, which is
+loud.
 
 **That closes the SHAPE, not the property.** A required `name_regex`
 is not a bound on how much a rule reaches: the only width check is the
