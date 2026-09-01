@@ -76,7 +76,7 @@ _A_CALL = re.compile(r"""[A-Za-z_]\w*\(""")
 # 'TypeError: a bytes-like object is required'. None of '*#~;_:'
 # appears in a name; the colon alone accounts for three error messages
 # and a PyPI trove classifier, and none of the six characters occurs in
-# any name across the four corpora. The one existing entry this drops,
+# any name across all five corpora. The one existing entry this drops,
 # 'St. ___', is a placeholder, not a name.
 _NOT_A_NAME = set('{}<>=/\\|*#~;_:')
 

@@ -1,17 +1,12 @@
 """Regenerate corpus_rules.jsonl from the examples in docs/design/rules.md.
 
-The fourth corpus, with the fourth provenance (#414). The other three
-each have a blind spot the others cover, and this one closes a blind
-spot none of them was built to have:
-
-- corpus.jsonl comes from v1's own test suite at a pinned git ref, so
-  it is structurally blind to anything 2.0 added.
-- corpus_issues.jsonl comes from what users reported, which is the
-  adversarial half.
-- corpus_cjk.jsonl comes from the CJK rows of the case table, because
-  neither of the above can carry an unspaced CJK name.
-- this file comes from the NORMATIVE RULES -- the names the project
-  has written down as defining its behavior.
+A corpus with its own provenance (#414). Each corpus covers a blind
+spot the others have -- the roster, with each file's source and the
+blind spot it leaves, is the table in tools/differential/README.md.
+This one comes from the NORMATIVE RULES: the names the project has
+written down as defining its behavior, which is a blind spot no
+corpus built from test suites, issue reports or case rows was made
+to cover.
 
 Why the rules doc needs a corpus when its examples are already tests.
 `test_rules_doc.py` executes every example, which pins them harder

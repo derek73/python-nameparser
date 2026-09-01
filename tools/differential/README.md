@@ -215,7 +215,7 @@ stays UNEXPLAINED and fails the run even when the name itself sits in
 a radar file.
 
 A corpus line is a bare JSON string or an object carrying `name` and,
-optionally, `shape` -- the input-shape id from
+optionally, `tests` or `shape` -- the input-shape id from
 `tools/differential/shapes.py`, which is where each shape's notation,
 the `name_order` it is an input shape FOR, and the oldest baseline
 whose worker can honor that order are written down. `compare.py`
@@ -287,7 +287,7 @@ the moment a `<suffix> Ph. D.` name appeared.
 
 Backticks prompted a second look at prose, and the same change added
 two screens neither branch had: `:` joins the structural characters (it
-appears in no name across all four corpora, and accounts for three
+appears in no name across all five corpora, and accounts for three
 error messages and a PyPI trove classifier), and a short list of English function words
 rejects capitalized sentences the character screen cannot see —
 `What this gate does not cover` is well-formed as a phrase. That list
