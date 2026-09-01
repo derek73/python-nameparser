@@ -21,7 +21,9 @@ venv/
 env/
 
 # tools
-.claude/
+.claude/*
+!.claude/agents/
+!.claude/commands/
 .codex/
 .gemini/
 .pytest_cache/
