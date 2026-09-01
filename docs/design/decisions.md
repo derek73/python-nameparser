@@ -32,7 +32,7 @@ the 2026-08-16 entries below. The survivor is the degenerate bare
 - 2026-08 #367 — titles are transparent to the fold: "Sir de Mesnil" now reads like "de Mesnil". Fixed by removing the title→particle chain in grouping, not by touching this rule.
 - 2026-08-16 (order-precedence keystone; #364, #365, #368) — the stage split is the decision, and the three issues are one question seen from three angles. GROUPING is vocabulary's job and is order-independent: a particle joins forward through consecutive particles and stops at the first non-particle, and no name_order moves that stopping point. ASSIGNMENT is name_order's job: groups take roles by the declared order. The bugs existed because the implementation runs the two in the opposite dependency — `assign` hands out positions from `_effective_order` and `post_rules` then inspects a fixed list of ROLES, so P1's fold sites and P2's chain had coverage that varied with the declared order by accident. Consequences, each recorded in its own right below: the fold takes only the particle's own group (#364); the middle position needs no third site once grouping is order-independent (#365); and #368 reverses.
 - 2026-08-16 #364 — the fold takes the particle RUN and the ONE name word it attaches to, not every remaining word.
-  "de Mesnil Jean" is family="de Mesnil" plus given="Juan". Run,
+  "de Mesnil Jean" is family="de Mesnil" plus given="Jean". Run,
   not particle: "de la Vega" is two particles onto one word, and an earlier wording here said "the particle", which its own example contradicted (rule-vs-decision-record review). Nothing ever argued for
   "takes everything"; it was the shape of v1's
   handle_non_first_name_prefix, not a decision. Measured before deciding, over every name in the three differential corpora with NO string prefilter: exactly ONE family holds words beyond its particle's group — "de Mesnil Garcia".
@@ -66,7 +66,7 @@ Declined:
   "not a title or a prefix".
 - 2026-08-16 — deleting P4 so a leading particle chains and is then positioned, which is the only way to make "de Mesnil Jean" vary by declared order. It avoids given="de" (the group would be
   [de Mesnil]) but breaks "de la Vega": measured, a single group is
-  positioned by the declared order — "Cher" reads given under GIVEN_FIRST — so "de la Vega" would read given="de la Vega" unless a further rule forced a particle-headed group into the family. Add that rule and [de Mesnil][Juan] yields the #364 reading anyway, so the deletion buys nothing and costs P4.
+  positioned by the declared order — "Cher" reads given under GIVEN_FIRST — so "de la Vega" would read given="de la Vega" unless a further rule forced a particle-headed group into the family. Add that rule and [de Mesnil][Jean] yields the #364 reading anyway, so the deletion buys nothing and costs P4.
 
 Open: [#360](https://github.com/derek73/python-nameparser/issues/360) which particles count as never-given (the criterion is settled at decisions.md#vocabulary-collisions; the 39-member application is not).
 
