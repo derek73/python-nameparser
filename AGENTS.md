@@ -139,20 +139,34 @@ uv run sphinx-build -b html docs dist/docs
 #    so a copy spelled some other way is not undeclared but unseen. What
 #    covers those is _CORPUS_CLAIMS, which records what every rule claims
 #    -- its regex's corpus reach, its roles, and which names -- and so
-#    needs no notion of how a copy is spelled. Enrol the new ledger in
-#    _CORPUS_CLAIMS always, and in the others where they apply:
+#    needs no notion of how a copy is spelled.
+#    THREE rosters are keyed by FILENAME and checked by EQUALITY, so a new
+#    ledger must be enrolled in every one of them on the day it lands, even
+#    empty -- each fails loudly and names itself, but that is three separate
+#    red runs if you add them one at a time. Two more are keyed by rule
+#    CONTENT and apply only where such a rule exists.
+#    Required, by filename:
 #      - _SPAN_BEARING_RULES: add the filename, mapped to the set of issue
 #        tags whose rules carry a script-span class (empty set if none).
+#      - _CORPUS_CLAIMS: a ledger with no entry hard-fails. Add the
+#        filename mapped to {} while the ledger is empty, then one _Claim
+#        per rule as rules land. The test prints the values to record. A
+#        _Claim's digest moves whenever the corpus text does, so a pure
+#        RENAME of a corpus name lands here as names-unchanged,
+#        roles-unchanged, digest-moved; a count that GREW means the rule
+#        absorbed something.
+#      - _CROSS_RULE_WINNERS: add the filename mapped to {} while the
+#        ledger has no contested name. Equality since #452, which found
+#        that a ledger with no rows had been indistinguishable from one
+#        needing none -- the two 2.x ledgers whose shapes #452 moved
+#        between rules had no section at all.
+#    Conditional, by rule content:
 #      - _HONORIFIC_SOURCES: if the ledger has a CJK honorific rule, add a
 #        substring of its issue (keyed that way, not by tag) mapped to the
 #        constant it copies -- but only if no existing key already matches
 #        that issue. A retroactive ledger can repeat an older one's rule
 #        verbatim (fix(#271/#272/#298) is in both today), and every rule
 #        must match exactly one key.
-#      - _CORPUS_CLAIMS: REQUIRED, not conditional -- a ledger with no
-#        entry hard-fails. Add the filename mapped to {} while the ledger
-#        is empty, then one _Claim per rule as rules land. The test prints
-#        the values to record.
 #      - _LATIN_ALTERNATION_SOURCES: same, for a rule copying a Latin
 #        vocabulary (maiden markers, ambiguous acronyms). An alternation
 #        matching no key fails as undeclared -- add it, or record it in

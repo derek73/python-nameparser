@@ -352,7 +352,8 @@ _SPAN_BEARING_RULES: dict[str, frozenset[str]] = {
         "fix(#271/#272/#298)",              # the canonical class
         "fix(#298)",                        # the 间隔号 lookahead
     }),
-    "expected_since_2.1.0.toml": frozenset(),   # open cycle, no rules yet
+    "expected_since_2.1.0.toml": frozenset(),   # 2.2 cycle: no span-bearing rule
+    "expected_since_2.2.0.toml": frozenset(),   # open cycle, no rules yet
 }
 
 #: The leading `fix(...)`/`feat(...)` tag of a rule's `issue`, which is
@@ -1776,6 +1777,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#371) a suffix never begins a name: the Ph./D. merge declines at the head":
             _Claim(4, ('family', 'given', 'middle', 'suffix', 'title'), "1425d85a2d86"),
     },
+    "expected_since_2.2.0.toml": {},   # open cycle, no rules yet
     "expected_since_2.1.0.toml": {
         "fix(#371) a suffix never begins a name: the Ph./D. merge declines at the head":
             _Claim(4, ('family', 'given', 'middle', 'suffix', 'title'), "1425d85a2d86"),
@@ -1973,6 +1975,7 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
 #: Re-measure rather than adjust them if a parser change moves one:
 #: a diff shape that shifted is a finding, not a number to update.
 _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
+    "expected_since_2.2.0.toml": {},   # open cycle, no rules and so no contest
     "expected_since_1.4.0.toml": {
         ("Andrews, M.D.", ("given", "suffix")): "fix(comma-family)",
         ("田中, 太郎さん", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
