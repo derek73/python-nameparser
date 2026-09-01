@@ -991,6 +991,87 @@ def test_a_malformed_tests_label_is_a_hard_error(
         compare._load_entries(corpus)
 
 
+def test_a_misspelled_corpus_key_is_a_hard_error(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """'shpae' is not 'shape', and an ignored key is a narrowing that
+    silently did not happen: the line compares under the default order
+    while its author believes they declared a family-first one. The
+    message names the FILE, like every other loader error here, because
+    five corpora are read in one run."""
+    import json as _json
+    corpus = tmp_path / "corpus_x.jsonl"
+    corpus.write_text(_json.dumps(
+        {"name": "John Smith", "shpae": 4}) + "\n", encoding="utf-8")
+    with pytest.raises(SystemExit, match=r"corpus_x\.jsonl.*'shpae'"):
+        compare._load_entries(corpus)
+
+
+def test_a_corpus_line_writing_a_computed_key_is_a_hard_error(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """'order' is the key the WIRE protocol documents, so it is the one
+    a corpus author is likeliest to write by hand -- and main() computes
+    it from `shape` and overwrites whatever the line said. Rejected
+    rather than obeyed: honoring it would let a corpus line name an
+    order no shape declares, which is the check `orders` rules get."""
+    import json as _json
+    corpus = tmp_path / "corpus_x.jsonl"
+    corpus.write_text(_json.dumps(
+        {"name": "John Smith", "order": "FAMILY_FIRST"}) + "\n",
+        encoding="utf-8")
+    with pytest.raises(SystemExit, match=r"corpus_x\.jsonl.*'order'"):
+        compare._load_entries(corpus)
+
+
+@pytest.mark.parametrize("shape", [True, "4"])
+def test_a_malformed_shape_id_is_a_hard_error(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+        shape: object) -> None:
+    """`true` is the dangerous one: bool is an int subclass and
+    hash(True) == hash(1), so an unchecked {"shape": true} resolves
+    against shapes.py's entry 1 and the line is compared under THAT
+    shape's order -- a wrong comparison that reports as a passing one.
+    The string spelling is the honest typo beside it."""
+    import json as _json
+    corpus = tmp_path / "corpus_x.jsonl"
+    corpus.write_text(_json.dumps(
+        {"name": "John Smith", "shape": shape}) + "\n", encoding="utf-8")
+    with pytest.raises(SystemExit, match="'shape' must be an int"):
+        compare._load_entries(corpus)
+
+
+def test_a_corpus_line_that_is_neither_shape_is_a_hard_error(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A bare number, or an object with no string 'name', carries no
+    name to compare. Skipping it would shrink the comparison by one
+    name and print a summary that reads exactly like a full run."""
+    import json as _json
+    corpus = tmp_path / "corpus_x.jsonl"
+    corpus.write_text(_json.dumps({"nmae": "John Smith"}) + "\n",
+                      encoding="utf-8")
+    with pytest.raises(SystemExit, match="neither a JSON string"):
+        compare._load_entries(corpus)
+
+
+def test_a_shape_id_shapes_py_does_not_define_is_a_hard_error(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """_load_entries checks the TYPE; only main() has shapes.py loaded,
+    so resolvability is its check. Unchecked, the entry would compare
+    under whatever `.get` returned rather than the order it declared."""
+    import json as _json
+    import sys
+    corpus = tmp_path / "corpus_x.jsonl"
+    corpus.write_text(_json.dumps(
+        {"name": "John Smith", "shape": 9999}) + "\n", encoding="utf-8")
+    (tmp_path / "expected_since_2.0.0.toml").write_text("", encoding="utf-8")
+    monkeypatch.setitem(compare._CORPUS_FLOORS, corpus.name, 1)
+    monkeypatch.setitem(compare._CORPUS_TIERS, corpus.name, "contract")
+    monkeypatch.setattr(compare, "HERE", tmp_path)
+    monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", "2.0.0",
+                                      "--corpus", str(corpus)])
+    with pytest.raises(SystemExit, match="shapes.py does not define"):
+        compare.main()
+
+
 def test_cross_tier_dedup_keeps_the_contract_reading(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """'John Smith' really does sit in both corpus.jsonl (radar) and

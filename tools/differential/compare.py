@@ -1101,16 +1101,32 @@ def _load_entries(path: Path) -> list[dict[str, object]]:
     lines, the other three are still bare strings, and both shapes
     stay legal everywhere a corpus line is read.
 
-    "shape" now has a consumer: main() resolves it against shapes.py
-    into the "order" the worker protocol sends, so a malformed one is
-    checked here too, the same reason "tests" is -- both are read
-    only well after this function returns (the shape resolution loop
-    and the radar report, respectively), so left unchecked either
-    would crash mid-run instead of at load time, exactly what
+    A "tests" label is read only when the radar block prints, well
+    after the multi-minute worker pass, so a malformed one left
+    unchecked would crash there rather than here -- exactly what
     validate_rules' compile-at-startup paragraph exists to prevent.
-    Only the TYPE is checked here; an unresolvable shape id is
-    main()'s to catch, since only it has shapes.py loaded.
+
+    "shape" is checked for a different hazard. main() resolves it
+    against shapes.py into the "order" the worker protocol sends, and
+    that loop runs BEFORE the worker, so a bad id is not a late crash:
+    it is a wrong comparison that reports as a passing one. `true`
+    passes isinstance(shape, int) and hash(True) == hash(1), so an
+    unchecked one resolves against shapes.py's entry 1 and the line is
+    compared under that shape's order, silently. Only the TYPE is
+    checked here; an unresolvable id is main()'s to catch, since only
+    it has shapes.py loaded.
+
+    Unknown keys are rejected the way validate_rules rejects them, and
+    for the same reason: a misspelled key is not ignored, it drops the
+    narrowing the line meant to declare, and the line then compares
+    under the default order with nothing saying so. "order", "tier" and
+    "file" are rejected rather than obeyed -- the comparison computes
+    all three per entry and overwrites whatever a line said, so a line
+    writing one would be silently discarded. "order" in particular is
+    the key the WIRE protocol documents, which makes it the one a
+    corpus author is likeliest to reach for.
     """
+    allowed = {"name", "tests", "shape"}
     entries: list[dict[str, object]] = []
     for line in path.read_text(encoding="utf-8").splitlines():
         if not line.strip():
@@ -1119,6 +1135,17 @@ def _load_entries(path: Path) -> list[dict[str, object]]:
         if isinstance(raw, str):
             entries.append({"name": raw})
         elif isinstance(raw, dict) and isinstance(raw.get("name"), str):
+            unknown = sorted(set(raw) - allowed)
+            if unknown:
+                raise SystemExit(
+                    f"{path.name}: a corpus line has unknown key(s) "
+                    f"{unknown}; expected only {sorted(allowed)}: "
+                    f"{line!r}. A misspelled key is not ignored -- it "
+                    f"drops the narrowing the line declares, and the "
+                    f"name is then compared under the default order "
+                    f"with nothing saying so. 'order', 'tier' and "
+                    f"'file' are computed by the comparison itself, so "
+                    f"a line writing one would be overwritten")
             tests = raw.get("tests")
             if tests is not None and (
                     not isinstance(tests, list)
