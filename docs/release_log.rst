@@ -1,5 +1,7 @@
 Release Log
 ===========
+* 2.3.0 - Unreleased
+
 * 2.2.0 - August 31, 2026
 
     nameparser 2.2 is a rename plus about thirty parsing fixes.

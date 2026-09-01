@@ -1,0 +1,34 @@
+# Ledger for baseline 2.2.0 -- what changes for a user upgrading from
+# the previous minor. Same rule grammar as the other ledgers: `issue`,
+# `name_regex` and `fields` are every one of them required. Neither
+# narrowing key may stand on its own -- #451 banned a rule with
+# `fields` and no regex, #456 banned the reverse -- so a rule here
+# narrows by name AND by role, never by just one.
+#
+# Opened empty the day 2.2.0 shipped (AGENTS.md release step 8), and it
+# is opened before it has anything to say because DEFAULT_BASELINE and
+# the ledger are coupled: _allowlist_for treats a missing file as a
+# hard error, on the reasoning that an absent ledger classifies nothing
+# and would make every diff report as unexplained. So the baseline
+# could not advance to 2.2.0 without this file.
+#
+# Do not copy rules across from expected_since_2.1.0.toml: that ledger
+# classifies what 2.2 changed on top of 2.1, and a rule copied without
+# checking either over-matches -- hiding a real 2.3 regression behind a
+# 2.2-era label -- or never fires at all. Where a 2.3 change is visible
+# from several baselines the rule may legitimately appear in more than
+# one file, but each copy is checked against its own run rather than
+# assumed.
+#
+# tests/v2/test_differential.py permits exactly one empty ledger, the
+# one DEFAULT_BASELINE names -- which is this file, for as long as the
+# 2.3 cycle moves no corpus name at the default order.
+#
+# tests/v2/test_ledger_guards.py records this file in
+# _SPAN_BEARING_RULES with an empty set and in _CORPUS_CLAIMS with an
+# empty mapping. The first rule that hand-copies _SCRIPT_RANGES has to
+# be recorded in the former or the sweep fails.
+#
+# There is deliberately no `change = []` line. TOML forbids appending a
+# [[change]] table to a statically defined array, so that line would
+# block the first entry.
