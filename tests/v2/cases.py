@@ -565,7 +565,8 @@ CASES: tuple[Case, ...] = (
          classification="parity",
          notes="the boundary the row above needs: here the particles "
                "DO join a name word, so they stay particles -- base "
-               "'Vega', particles 'de la', initials 'J. V.'"),
+               "'Vega', particles 'de la', initials 'J. V.'",
+         shape=1),
     Case("suffix_word_title_ambiguous_particle", "Jr. Van Johnson",
          {"title": "Jr.", "given": "Van", "family": "Johnson"},
          classification="fix(#367)",
@@ -767,7 +768,8 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith", "suffix": "Jr."},
          notes="v1: the family part may have suffixes in it "
                "(parser.py:1368); the first piece is always the family "
-               "(pinned live 2026-07-17)"),
+               "(pinned live 2026-07-17)",
+         shape=2),
     Case("family_segment_multiple_suffixes", "Smith Jr. MD, John",
          {"given": "John", "family": "Smith", "suffix": "Jr., MD"}),
     Case("family_segment_particle_chain_suffix", "de la Vega III, Juan",
@@ -796,7 +798,8 @@ CASES: tuple[Case, ...] = (
          ambiguities=("comma-structure",),
          notes="only parts[1] decides the suffix-comma structure "
                "(v1 parser.py:1318); 'lutc' is not in the vocabulary "
-               "but rides along (v1 parity, pinned live 2026-07-16)"),
+               "but rides along (v1 parity, pinned live 2026-07-16)",
+         shape=3),
     Case("suffix_comma_nonsuffix_tail_flagged", "John Smith, MD, Xyzzy",
          {"given": "John", "family": "Smith", "suffix": "MD, Xyzzy"},
          ambiguities=("comma-structure",),
@@ -870,10 +873,12 @@ CASES: tuple[Case, ...] = (
          ambiguities=("comma-structure",),
          notes="post-comma segments land in suffix even when not "
                "suffix-shaped; the ambiguity flags the guess (v1 "
-               "parity, pinned live 2026-07-13)"),
+               "parity, pinned live 2026-07-13)",
+         shape=2),
     Case("delavega", "Dr. Juan de la Vega III",
          {"title": "Dr.", "given": "Juan", "family": "de la Vega",
-          "suffix": "III"}),
+          "suffix": "III"},
+         shape=1),
     Case("prefix_chain_to_end", "Juan de la Vega Martinez",
          {"given": "Juan", "family": "de la Vega Martinez"}),
     Case("van_johnson", "Van Johnson",
@@ -881,7 +886,8 @@ CASES: tuple[Case, ...] = (
          ambiguities=("particle-or-given",),
          notes="v2 surfaces #121's irreducible ambiguity"),
     Case("family_comma_particles", "de la Vega, Juan",
-         {"given": "Juan", "family": "de la Vega"}),
+         {"given": "Juan", "family": "de la Vega"},
+         shape=2),
     Case("paren_suffix_escapes_nickname", "Andrew Perkins (MBA)",
          {"given": "Andrew", "family": "Perkins", "suffix": "MBA"},
          notes="v1 parse_nicknames: suffix-shaped delimited content is "
@@ -890,12 +896,14 @@ CASES: tuple[Case, ...] = (
     Case("paren_period_escapes_nickname", "Andrew Perkins (Ret.)",
          {"given": "Andrew", "family": "Perkins", "suffix": "Ret."}),
     Case("nickname_quotes", 'John "Jack" Kennedy',
-         {"given": "John", "family": "Kennedy", "nickname": "Jack"}),
+         {"given": "John", "family": "Kennedy", "nickname": "Jack"},
+         shape=1),
     Case("nickname_parens", "John (Jack) Kennedy",
          {"given": "John", "family": "Kennedy", "nickname": "Jack"}),
     Case("sir_bob", "Sir Bob Andrew Dole",
          {"title": "Sir", "given": "Bob", "middle": "Andrew",
-          "family": "Dole"}),
+          "family": "Dole"},
+         shape=1),
     Case("long_title", "President of the United States Barack Obama",
          {"title": "President of the United States",
           "given": "Barack", "family": "Obama"}),
@@ -903,7 +911,8 @@ CASES: tuple[Case, ...] = (
          {"title": "The Secretary of State", "given": "Hillary",
           "family": "Clinton"}),
     Case("comma_middle_initial", "Doe, John A.",
-         {"given": "John", "middle": "A.", "family": "Doe"}),
+         {"given": "John", "middle": "A.", "family": "Doe"},
+         shape=2),
     Case("single", "John", {"given": "John"}),
     Case("title_only", "Dr.", {"title": "Dr."}),
     Case("double_comma_suffix", "Smith, John, Jr.",
@@ -921,11 +930,13 @@ CASES: tuple[Case, ...] = (
                "roman numeral; V/X/I are also ordinary middle initials, "
                "so the reading is reported"),
     Case("initial_not_suffix", "John V. Smith",
-         {"given": "John", "middle": "V.", "family": "Smith"}),
+         {"given": "John", "middle": "V.", "family": "Smith"},
+         shape=1),
     Case("lenient_after_comma", "John Ingram, V",
          {"given": "John", "family": "Ingram", "suffix": "V"}),
     Case("comma_then_title", "Smith, Dr. John",
-         {"title": "Dr.", "given": "John", "family": "Smith"}),
+         {"title": "Dr.", "given": "John", "family": "Smith"},
+         shape=2),
     Case("nickname_single_name", "John (Jack)",
          {"family": "John", "nickname": "Jack"}),
     Case("nickname_only", "(Jack)", {"nickname": "Jack"}),
@@ -2214,7 +2225,8 @@ CASES: tuple[Case, ...] = (
                "Muhammad (#343/#345's corpus rows), a prenominal use "
                "the 'postnominal only' disposition did not consider; "
                "'MD' after the name is the degree. Position decides, "
-               "as for 'sr'"),
+               "as for 'sr'",
+         shape=1),
     Case("audit_md_after_comma_is_the_degree", "Smith, MD",
          {"family": "Smith", "suffix": "MD"},
          classification="fix(#296)",
@@ -2241,7 +2253,8 @@ CASES: tuple[Case, ...] = (
     Case("audit_phd_trailing_unchanged", "John Smith PhD",
          {"given": "John", "family": "Smith", "suffix": "PhD"}),
     Case("audit_jr_trailing_unchanged", "John Smith Jr.",
-         {"given": "John", "family": "Smith", "suffix": "Jr."}),
+         {"given": "John", "family": "Smith", "suffix": "Jr."},
+         shape=1),
     Case("audit_lt_leading_stays_a_title", "Lt. Smith",
          {"title": "Lt.", "family": "Smith"},
          notes="'lt' KEPT its dual membership -- a prenominal rank with "
@@ -2547,7 +2560,8 @@ CASES: tuple[Case, ...] = (
     Case("family_comma_run_with_a_name_is_not_a_run", "Smith, John Jr.",
          {"given": "John", "family": "Smith", "suffix": "Jr."},
          notes="the non-flip: a name word in the run makes it the "
-               "given-and-suffix walk v1 had"),
+               "given-and-suffix walk v1 had",
+         shape=2),
     Case("family_comma_title_then_suffix", "Smith, Dr. Jr.",
          {"title": "Dr.", "family": "Smith", "suffix": "Jr."},
          classification="fix(comma-family)",

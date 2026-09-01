@@ -1,8 +1,22 @@
+{"name": "Dr. Juan de la Vega III", "shape": 1}
+{"name": "John \"Jack\" Kennedy", "shape": 1}
 {"name": "John Smith", "shape": 1}
+{"name": "John Smith Jr.", "shape": 1}
+{"name": "John V. Smith", "shape": 1}
+{"name": "Juan de la Vega", "shape": 1}
+{"name": "Md Abdul Karim", "shape": 1}
+{"name": "Sir Bob Andrew Dole", "shape": 1}
 {"name": "Beethoven, Ludwig van", "shape": 2}
+{"name": "Doe, John A.", "shape": 2}
 {"name": "Salem, Abdul Rahman Ahmed", "shape": 2}
+{"name": "Smith Jr., John", "shape": 2}
+{"name": "Smith, Dr. John", "shape": 2}
 {"name": "Smith, John", "shape": 2}
+{"name": "Smith, John Jr.", "shape": 2}
 {"name": "Smith, John V, Jr.", "shape": 2}
+{"name": "Smith, John, Extra, Jr.", "shape": 2}
+{"name": "de la Vega, Juan", "shape": 2}
+{"name": "Dr. John P. Doe-Ray, CLU, CFP, LUTC", "shape": 3}
 {"name": "John Smith, PhD", "shape": 3}
 {"name": "John Smith, Dr.", "shape": 4}
 {"name": "de Mesnil Jean, Dr.", "shape": 4}

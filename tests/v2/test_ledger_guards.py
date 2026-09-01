@@ -1591,8 +1591,18 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # regex matches one more corpus name. The name does not diff at
         # this baseline (v1 and HEAD both read first 'John', last
         # 'Ph. D.'), so nothing was absorbed.
+        #
+        # 284 -> 286 with the shape 1-3 variation matrix (#486), and
+        # the growth is corpus again: 'Smith, John Jr.' and
+        # 'Smith, John, Extra, Jr.' were case-table rows in no corpus
+        # until their shape tags put them in corpus_shapes.jsonl. Both
+        # are parity rows, so neither diffs at this baseline and this
+        # rule absorbs nothing new -- the same reach-not-behavior
+        # growth the paragraph above records, from the other source.
+        # It moves this rule and fix(comma-precomma-family) below by
+        # the same two names, both matching on the bare comma.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(284, ('given', 'suffix', 'title'), "8b046fbdb1a1", None),
+            _Claim(286, ('given', 'suffix', 'title'), "4c13e7f8c5de", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -1612,7 +1622,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#367) an inferred title no longer displaces a leading particle either":
             _Claim(1, ('family', 'given'), "d8ee9cd5da5f", None),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(284, ('family', 'given'), "8b046fbdb1a1", None),
+            _Claim(286, ('family', 'given'), "4c13e7f8c5de", None),
         "fix(#342) NOT WANTED: a bare trailing 'Rai' is read as a post-nominal suffix and the family is lost":
             _Claim(1, ('family', 'suffix'), "694fd06a2e9a", None),
         "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":
@@ -2402,7 +2412,13 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
         # no diff to silence. Growth in the corpus, not in the
         # exclusion -- its regex is untouched -- and `absorbed_by`
         # stayed empty, so no rule reaches the protected shape.
-        _Excluded(55, "7ad8ff289eb2", ()),
+        # 55 -> 56 for the shape-1 variation matrix (#486): tagging
+        # 'John "Jack" Kennedy' promoted this entry's own second
+        # `examples` string out of the radar corpora and into
+        # corpus_shapes.jsonl. It costs the entry nothing either --
+        # 1.4.0 reads the quoted clause as a nickname exactly as the
+        # tree does, so there is no diff to silence.
+        _Excluded(56, "bbacf2a45c51", ()),
 }
 
 
