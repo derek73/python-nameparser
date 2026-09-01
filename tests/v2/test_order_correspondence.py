@@ -15,8 +15,11 @@ agreed before the #467 change and 603 of 630 after. The 27 failures
 are the particle-and-suffix trio -- vd, mc, do -- a real limit and
 not noise (rules.md#P6, restated as a third bullet below); this
 module's own parametrized sweep below excludes that trio on purpose
-and covers 96 pairs of its own, a SEPARATE, smaller count that must
-never be quoted as the 630 measurement or vice versa. decisions.md
+and covers 2 x 1 x 3 x 4 x 2 x 2 pairs of its own -- families,
+givens, middles, particles, titles, suffixes -- a SEPARATE, smaller
+count that must never be quoted as the 630 measurement or vice versa.
+Written as the product rather than as a figure because the figure was
+the thing that went stale: the tuples below are what decides it. decisions.md
 #two-input-invariants recomputes the same correspondence a second
 way -- a 6x6 spread of families and givens per particle rather than
 3x3 -- and gets 67 of 70 particles agreeing on all 36 of their pairs,
@@ -45,9 +48,14 @@ corrected 603/630 measurement:
 - Form 5 has no comma twin: no comma format puts the given name
   last, which is why FAMILY_FIRST_GIVEN_LAST appears nowhere in this
   file.
-- Where a word is both particle and suffix vocabulary, the particle
-  attachment outranks the suffix reading and the correspondence
-  genuinely fails -- not a bug, but rules.md#P6 stating it plainly:
+- Where a word is both particle and suffix vocabulary, the two
+  writings read it differently and the correspondence genuinely
+  fails. It is the ASYMMETRY that breaks it, not a precedence
+  applying to both sides: the attachment outranks the suffix reading
+  on the COMMA side, which is the scope rules.md#P6 states it in, so
+  `Ménil, Christophe vd` reads family `vd Ménil` while the
+  family-first `Ménil Christophe vd` reads family `Ménil` and suffix
+  `vd`. Not a bug, but rules.md#P6 stating it plainly:
   "the word is BOTH a particle and suffix vocabulary, this
   attachment outranks the suffix reading (S2): a trailing
   abbreviation after a family comma is the tussenvoegsel far more
@@ -95,13 +103,12 @@ GIVENS = ("Christophe",)
 MIDDLES = (None, "Marie", "Marie Louise")  # shape 4's notation names
                                             # Middle Middle; "Marie Louise"
                                             # is the one pair generating two
-PARTICLES = (None, "de", "van", "van der")  # never-given (de), ambiguous
-                                             # (van), and a multi-token run
-                                             # (van der) -- a last-particle
-                                             # -only walk once survived the
-                                             # whole suite on a single-token
-                                             # fixture alone
-                                             # (test_post_rules.py:405-409)
+# never-given (de), ambiguous (van), and a multi-token run (van der).
+# The multi-token member is not decoration: a last-particle-only walk
+# once survived the whole suite on single-token fixtures alone, and
+# tests/v2/pipeline/test_post_rules.py::test_a_multi_token_run_is_taken_whole
+# is the pin that now owns that shape at the rule layer.
+PARTICLES = (None, "de", "van", "van der")
 TITLES = (None, "Dr.")
 SUFFIXES = (None, "Jr.")
 

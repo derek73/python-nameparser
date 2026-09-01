@@ -389,8 +389,7 @@ def _order_tag(order: str | None) -> str:
     """The `   [order: X]` header suffix, or "" for a default-order
     entry. Shared by the UNEXPLAINED and UNCLASSIFIED (radar) headers
     in main() -- one copy for the same reason _print_field_diffs is:
-    two copies can drift, and only one of the two prior inline copies
-    was ever pinned by a test."""
+    two copies can drift."""
     return f"   [order: {order}]" if order is not None else ""
 
 
@@ -506,7 +505,7 @@ _CORPUS_FLOORS = {
     "corpus.jsonl": 480,        # 486 today, from v1's banks at a pinned ref
     "corpus_cjk.jsonl": 95,     # 98 today, generated from the case table
     "corpus_issues.jsonl": 370,  # 381 today, harvested and append-only
-    "corpus_rules.jsonl": 150,  # 241 today, generated from rules.md
+    "corpus_rules.jsonl": 150,  # 252 today, generated from rules.md
     "corpus_shapes.jsonl": 11,  # 13 today, generated from shape-tagged
                                 # case rows
 }
@@ -1521,7 +1520,10 @@ def main() -> int:
                  if args.corpus else ""))
     if overwide:
         print()
-    if unexplained:
+    # the radar rows below print the same Role-named field lines, so
+    # the legend belongs to both blocks or the radar reader is told
+    # nothing about the vocabulary they are reading
+    if unexplained or radar:
         print("Field names below are Role's, matching what a ledger "
               "`fields` rule must say.\n")
     for name, old_facade, new, old_v2, new_v2, order in unexplained:

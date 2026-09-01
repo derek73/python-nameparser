@@ -452,7 +452,7 @@ commas, ``Policy(name_order=FAMILY_FIRST)`` reads them the way the
 comma format is already read. Measured over the whole particle
 vocabulary — every particle nameparser ships, crossed with three
 families and three given names, 630 generated pairs in all — 603 of
-630 agree (2026-08-30); the executable form of this measurement is
+630 agree (2026-08-30); the executable form of this correspondence is
 ``tests/v2/test_order_correspondence.py``.
 
 Three limits keep that statement honest.
@@ -462,10 +462,15 @@ comma-deletion in general: a name whose shape changes when the comma
 is removed — a title or suffix crossing to a different position —
 parses as the shape it becomes, not as a disagreeing reading of form
 2. Where the trailing word is both particle and suffix vocabulary,
-the particle attachment outranks the suffix reading, so a listing
-ending in one of those three words does not correspond between the
-two writings — this is the whole of the 27 disagreeing pairs, not
-scatter. And ``FAMILY_FIRST`` is the only order the correspondence
+the two writings read it differently, and it is that ASYMMETRY rather
+than a precedence that breaks the correspondence. The particle
+attachment outranks the suffix reading on the comma side alone —
+that is the scope the rule is stated in — so
+``parse("Ménil, Christophe vd")`` reads family ``vd Ménil``, while
+``family_first.parse("Ménil Christophe vd")`` reads family ``Ménil``
+and suffix ``vd``. A listing ending in one of those three words
+therefore does not correspond between the two writings — this is the
+whole of the 27 disagreeing pairs, not scatter. And ``FAMILY_FIRST`` is the only order the correspondence
 reaches at all, because it is the only one that puts a trailing piece
 in the *middle*, where a particle means nothing; ``FAMILY_FIRST_GIVEN_LAST``
 puts it in the given slot, where your own declaration already says

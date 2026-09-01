@@ -262,9 +262,9 @@ def test_order_bearing_diff_row_tags_its_order_and_hides_v2_only(
     which order produced a diff -- a family-first regression and a
     default-order regression on the same name are otherwise
     indistinguishable in the report. Both draw the tag from the same
-    _order_tag helper, so this parametrization pins BOTH call sites --
-    deleting either inline copy used to leave the suite green for
-    whichever one this test didn't cover. And "[v2 surface only]"
+    _order_tag helper, so this parametrization pins BOTH call sites:
+    a test covering one header alone says nothing about the other.
+    And "[v2 surface only]"
     means "the facade was compared and agreed", which is false for an
     order-bearing row: its facade was never consulted, so the tag must
     not appear on either header."""
