@@ -433,7 +433,7 @@ particle *ends* the name there is nothing ahead of it to join, and what
 it belongs to is decided by what the writing says rather than by the
 word. Two things say it, and both amount to someone stating that the
 family name came first — a family comma, and a declared family-first
-order — so a Dutch listing reads the same either way:
+order:
 
 .. doctest::
 
@@ -442,10 +442,36 @@ order — so a Dutch listing reads the same either way:
     >>> family_first.parse("Jong Anke de").family      # the order says so
     'de Jong'
 
-``FAMILY_FIRST`` is the only order this arises under, because it is the
-only one that puts a trailing piece in the *middle*, where a particle
-means nothing. ``FAMILY_FIRST_GIVEN_LAST`` puts it in the given slot,
-where your own declaration says it is the given name, so it stays one:
+That pair is not a coincidence but one shape written two ways: form 4
+(``Title Family Given Middle Middle [Particle] [, Suffix]``) is form 2
+(``Family [Suffix], Title Given (Nickname) Middle Middle[,] Suffix [,
+Suffix]``) with the comma removed and the family folded inline —
+titles included, so a title that form 2 writes after the comma leads
+the name in form 4 instead. If your records are family-first without
+commas, ``Policy(name_order=FAMILY_FIRST)`` reads them the way the
+comma format is already read. Measured over the whole particle
+vocabulary — every particle nameparser ships, crossed with three
+families and three given names, 630 generated pairs in all — 603 of
+630 agree (2026-08-30); the executable form of this measurement is
+``tests/v2/test_order_correspondence.py``.
+
+Three limits keep that statement honest.
+
+The correspondence covers one shape written two ways, not
+comma-deletion in general: a name whose shape changes when the comma
+is removed — a title or suffix crossing to a different position —
+parses as the shape it becomes, not as a disagreeing reading of form
+2. Where the trailing word is both particle and suffix vocabulary,
+the particle attachment outranks the suffix reading, so a listing
+ending in one of those three words does not correspond between the
+two writings — this is the whole of the 27 disagreeing pairs, not
+scatter. And ``FAMILY_FIRST`` is the only order the correspondence
+reaches at all, because it is the only one that puts a trailing piece
+in the *middle*, where a particle means nothing; ``FAMILY_FIRST_GIVEN_LAST``
+puts it in the given slot, where your own declaration already says
+it is the given name, and no comma format writes the given name
+last, so form 5 has no comma twin to correspond to in the first
+place:
 
 .. doctest::
 

@@ -51,10 +51,20 @@ given-then-family:
     >>> parse("John Doe, Jr.").family                    # form 3
     'Doe'
 
-For family-first input *without* a comma — common outside Europe — set
-``name_order``; see :doc:`customize`. Names written in Han or Hangul,
-and Japanese names written in kanji and kana, are the exception that
-needs no setting at all: see `East Asian names`_ below.
+Two more arrangements apply only when ``name_order`` declares
+family-first input — common outside Europe; see :doc:`customize`:
+
+4. ``Title Family Given Middle Middle [Particle] [, Suffix]``  (``FAMILY_FIRST``)
+5. ``Title Family Middle Middle Given [, Suffix]``  (``FAMILY_FIRST_GIVEN_LAST``)
+
+A trailing particle earns a slot in form 4 alone because it is
+displaced from the family name it belongs to; form 5's trailing word
+is the given name by the caller's declaration, so there is nothing
+there to reinterpret.
+
+Names written in Han or Hangul, and Japanese names written in kanji
+and kana, are the exception that needs no setting at all: see `East
+Asian names`_ below.
 
 Words that attach to their neighbors
 --------------------------------------
