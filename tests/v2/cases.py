@@ -689,6 +689,19 @@ CASES: tuple[Case, ...] = (
          notes="v1 renders each tail comma segment as ONE suffix "
                "entry; words within an entry space-join via the "
                "'joined' tag"),
+    Case("inline_suffix_then_comma_suffix", "John Smith Jr., PhD",
+         {"given": "John", "family": "Smith", "suffix": "Jr., PhD"},
+         classification="parity",
+         notes="shape 3's optional inline suffix standing WITH a comma "
+               "suffix, which no other row writes: the two compose "
+               "rather than one displacing the other. C1 decides on "
+               "the part after the comma alone -- wholly suffix words, "
+               "more than one word before it -- so the trailing-suffix "
+               "mode fires with 'Jr.' already inside the name part, "
+               "and the written comma survives between the pieces. "
+               "'John Smith, PhD' is the comma half alone and "
+               "'John Smith Jr.' the inline half",
+         shape=3),
     Case("maiden_delimiters_win_when_shared",
          'Baker (Johnson), Jenny',
          {"given": "Jenny", "family": "Baker", "maiden": "Johnson"},
@@ -904,6 +917,24 @@ CASES: tuple[Case, ...] = (
          {"title": "Sir", "given": "Bob", "middle": "Andrew",
           "family": "Dole"},
          shape=1),
+    Case("middle_run_at_two_words", "John Jack Andrew Kennedy",
+         {"given": "John", "middle": "Jack Andrew", "family": "Kennedy"},
+         classification="parity",
+         notes="shape 1's SECOND Middle slot, which sir_bob above "
+               "leaves unwritten: everything standing between the "
+               "given name and the family is middle, at any arity, and "
+               "the pieces render space-joined. The row that fails if "
+               "the middle run is ever capped at one word",
+         shape=1),
+    Case("family_comma_paren_nickname", "Kennedy, John (Jack)",
+         {"given": "John", "family": "Kennedy", "nickname": "Jack"},
+         classification="parity",
+         notes="shape 2's (Nickname) slot: the clause is lifted out "
+               "before the comma structure is read, so what reaches "
+               "C1 is the bare 'Kennedy, John' and the listing form "
+               "still wins. nickname_parens above is the same clause "
+               "in the medial position of shape 1",
+         shape=2),
     Case("long_title", "President of the United States Barack Obama",
          {"title": "President of the United States",
           "given": "Barack", "family": "Obama"}),

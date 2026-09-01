@@ -1600,9 +1600,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # rule absorbs nothing new -- the same reach-not-behavior
         # growth the paragraph above records, from the other source.
         # It moves this rule and fix(comma-precomma-family) below by
-        # the same two names, both matching on the bare comma.
+        # the same two names, both matching on the bare comma. 286 ->
+        # 288 in the commit after it, for the two comma-bearing rows
+        # #486 had to AUTHOR -- 'John Smith Jr., PhD' and
+        # 'Kennedy, John (Jack)' -- and neither diffs at this baseline
+        # either, so all four names are reach without absorption.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(286, ('given', 'suffix', 'title'), "4c13e7f8c5de", None),
+            _Claim(288, ('given', 'suffix', 'title'), "10c78dd0f2d2", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -1622,7 +1626,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#367) an inferred title no longer displaces a leading particle either":
             _Claim(1, ('family', 'given'), "d8ee9cd5da5f", None),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(286, ('family', 'given'), "4c13e7f8c5de", None),
+            _Claim(288, ('family', 'given'), "10c78dd0f2d2", None),
         "fix(#342) NOT WANTED: a bare trailing 'Rai' is read as a post-nominal suffix and the family is lost":
             _Claim(1, ('family', 'suffix'), "694fd06a2e9a", None),
         "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":
@@ -2417,8 +2421,11 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
         # `examples` string out of the radar corpora and into
         # corpus_shapes.jsonl. It costs the entry nothing either --
         # 1.4.0 reads the quoted clause as a nickname exactly as the
-        # tree does, so there is no diff to silence.
-        _Excluded(56, "bbacf2a45c51", ()),
+        # tree does, so there is no diff to silence. 56 -> 57 for the
+        # shape-2 slot the same matrix opened, 'Kennedy, John (Jack)',
+        # which is the paren spelling of that clause after a family
+        # comma and costs the entry nothing for the same reason.
+        _Excluded(57, "35ac9a8c4195", ()),
 }
 
 

@@ -506,7 +506,7 @@ _CORPUS_FLOORS = {
     "corpus_cjk.jsonl": 95,     # 98 today, generated from the case table
     "corpus_issues.jsonl": 370,  # 381 today, harvested and append-only
     "corpus_rules.jsonl": 150,  # 252 today, generated from rules.md
-    "corpus_shapes.jsonl": 24,  # 27 today, generated from shape-tagged
+    "corpus_shapes.jsonl": 27,  # 30 today, generated from shape-tagged
                                 # case rows
 }
 
