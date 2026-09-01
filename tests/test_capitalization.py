@@ -310,6 +310,26 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         uppered.capitalize()
         self.m(str(uppered), 'Juan E-F Smith', uppered)
 
+    # The same shape on a real name, which is what the release note
+    # cites: Ortega y Gasset is routinely hyphenated in catalogues, and
+    # `y` is conjunction vocabulary. Before #458 the two spellings
+    # repaired to 'Jose Ortega-y-Gasset' and 'Jose Ortega-Y-Gasset'
+    # (measured on the pre-#458 tree). The SPACED form is the contrast
+    # and is untouched -- there `y` is a token of its own and IS the
+    # conjunction, so it keeps the lowercase Spanish convention.
+    def test_a_hyphenated_compound_surname_capitalizes_its_conjunction(
+        self,
+    ) -> None:
+        lowered = HumanName('jose ortega-y-gasset')
+        lowered.capitalize(force=True)
+        self.m(str(lowered), 'Jose Ortega-Y-Gasset', lowered)
+        uppered = HumanName('JOSE ORTEGA-Y-GASSET')
+        uppered.capitalize()
+        self.m(str(uppered), 'Jose Ortega-Y-Gasset', uppered)
+        spaced = HumanName('jose ortega y gasset')
+        spaced.capitalize(force=True)
+        self.m(str(spaced), 'Jose Ortega y Gasset', spaced)
+
     # The third producer of never-classified text, and the one that is
     # not an assignment: __getstate__ pickles the *_list STRINGS and
     # nothing else (mechanisms.md#FACADE-CONTRACT -- components come

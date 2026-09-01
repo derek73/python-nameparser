@@ -262,3 +262,14 @@ assert NON_GIVEN_NAME_PARTICLES <= PARTICLES, \
 assert not (NON_GIVEN_NAME_PARTICLES & BOUND_GIVEN_NAMES), \
     "NON_GIVEN_NAME_PARTICLES must stay disjoint from BOUND_GIVEN_NAMES"
 assert_normalized("PARTICLES", PARTICLES)
+
+# Star imports read __all__ and never the module __getattr__ -- see the
+# note in prefixes.py. This module has no retired name of its own to
+# serve; what __all__ buys here is the other half of that note's point,
+# which the shim modules got in #354 and the destinations did not:
+# without it a star import binds every module-level name, so
+# `assert_normalized` and BOUND_GIVEN_NAMES -- imported only for the
+# invariants below, and owned by another module -- landed in the
+# caller's namespace as though they were vocabulary (#356).
+# Source order, not alphabetical -- see the note in suffixes.py.
+__all__ = ["NON_GIVEN_NAME_PARTICLES", "PARTICLES"]

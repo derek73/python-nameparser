@@ -7,9 +7,11 @@ Produces: pieces + piece_tags per segment (runs of token indices --
 tokens are NEVER joined into strings: the anti-#100 invariant); maiden
 tail tokens get role=MAIDEN; marker tokens land in dropped.
 Reads: token tags (from classify), Lexicon.given_name_titles (the
-P5 licence, #369), and Policy.extra_suffix_delimiters, whose
-delimiter-core tokens tail segments drop (v1 suffix_delimiter parity)
--- no other Policy field. The v1 "derived titles/prefixes"
+P5 licence, #369), Policy.extra_suffix_delimiters, whose
+delimiter-core tokens tail segments drop (v1 suffix_delimiter parity),
+and Policy.lenient_comma_suffixes, which segment_suffix_reading takes
+to pick the strict or lenient token test (#430/#432) -- no other Policy
+field. The v1 "derived titles/prefixes"
 registration becomes piece_tags entries -- per-parse state that
 dissolves with the state (v1 kept per-parse sets for the same reason).
 
