@@ -2525,10 +2525,10 @@ CASES: tuple[Case, ...] = (
     # -- the positional read keeps its ORDER, so the family-first fold
     # (P1) reaches a particle-led pre-comma name as it does without
     # the comma (the test review found it reading family 'de')
-    Case("family_comma_no_name_word_family_first", "de Mesnil Juan, Dr.",
-         {"title": "Dr.", "given": "Juan", "family": "de Mesnil"},
+    Case("family_comma_no_name_word_family_first", "de Mesnil Jean, Dr.",
+         {"title": "Dr.", "given": "Jean", "family": "de Mesnil"},
          policy=Policy(name_order=FAMILY_FIRST),
-         notes="as 'de Mesnil Juan' reads under the same order; master "
+         notes="as 'de Mesnil Jean' reads under the same order; master "
                "read it through the suffix-comma route ('dr' was "
                "suffix vocabulary) and got the fold that way"),
     Case("family_comma_no_name_word_family_first_given_last",

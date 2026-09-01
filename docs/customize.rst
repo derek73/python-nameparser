@@ -460,12 +460,12 @@ follows the family is not more surname, which settles it:
 
 .. doctest::
 
-    >>> parse("de Mesnil Juan").family                 # nothing says where it ends
-    'de Mesnil Juan'
-    >>> family_first.parse("de Mesnil Juan").family    # the order does
+    >>> parse("de Mesnil Jean").family                 # nothing says where it ends
+    'de Mesnil Jean'
+    >>> family_first.parse("de Mesnil Jean").family    # the order does
     'de Mesnil'
-    >>> family_first.parse("de Mesnil Juan").given
-    'Juan'
+    >>> family_first.parse("de Mesnil Jean").given
+    'Jean'
 
 In the default order, write the comma for that reading. The run stops
 after one name *word* rather than one token, so it cannot cut inside a

@@ -131,7 +131,7 @@ P1. Rationale: a particle OPENING a name has the whole rest of the
     asserts that what follows the family is not more surname. Under
     the default order it takes the rest of the name: nothing there
     marks where the surname ends. Whether the default order should
-    narrow the same way is #471 — today `de Mesnil Juan` reports the
+    narrow the same way is #471 — today `de Mesnil Jean` reports the
     whole string as the family, and that reach is 1.4.0's. One name
     word means one UNIT — a particle chain (P2), a conjunction join
     (P3) or a bound given-name pair (P5) is taken whole or not at
@@ -146,10 +146,10 @@ P1. Rationale: a particle OPENING a name has the whole rest of the
       "de la Vega"                →  family="de la Vega"
       "Sir de Mesnil"             →  family="de Mesnil"
       "Mesnil de"  family-first   →  given="de"
-      "de Mesnil Juan"            →  family="de Mesnil Juan"
-      "de Mesnil Juan"  family-first  →  family="de Mesnil"
-      "de Mesnil Juan"  family-first  →  given="Juan"
-      "Smith, de Mesnil Juan"  family-first  →  family="Smith de Mesnil Juan"
+      "de Mesnil Jean"            →  family="de Mesnil Jean"
+      "de Mesnil Jean"  family-first  →  family="de Mesnil"
+      "de Mesnil Jean"  family-first  →  given="Jean"
+      "Smith, de Mesnil Jean"  family-first  →  family="Smith de Mesnil Jean"
       "de la Vega y Santos Juan"  family-first  →  family="de la Vega y Santos"
       "ibn Awf abdul Rahman"  family-first  →  given="abdul Rahman"
       "de la Cruz Juan Carlos"  family-first-given-last  →  given="Carlos"

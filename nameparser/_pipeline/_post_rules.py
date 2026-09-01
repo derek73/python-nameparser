@@ -257,7 +257,7 @@ def post_rules(state: ParseState) -> ParseState:
     # name word; under the default order it keeps taking the rest of
     # the name, nothing having marked where the surname ends. Note what
     # actually holds the family-comma shape back, since it is NOT
-    # that test -- "Smith, de Mesnil Juan" DOES fire the leading site,
+    # that test -- "Smith, de Mesnil Jean" DOES fire the leading site,
     # segment 1 opening with the particle. It keeps the old reach
     # because assign records no order after a family comma, the comma
     # having already fixed the surname, so `order is None` here.

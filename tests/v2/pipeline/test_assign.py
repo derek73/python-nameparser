@@ -331,7 +331,7 @@ def test_the_positional_segment_zero_records_its_order() -> None:
     # post_rules' family-first fold and its leading-piece scan key on
     # "assign records no order after a family comma"; the positional
     # read is the path that gives one (the test review found the fold
-    # missing 'de Mesnil Juan, Dr.' under a family-first order)
+    # missing 'de Mesnil Jean, Dr.' under a family-first order)
     out = _assigned("John Smith, Dr.")
     assert out.order is not None
     out = _assigned("Smith, Dr. John")

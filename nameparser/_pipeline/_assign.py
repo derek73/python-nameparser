@@ -338,7 +338,7 @@ def assign(state: ParseState) -> ParseState:
         # fold (P1) and its leading-piece scan key on: "assign records
         # no order after a family comma" is the invariant those rules
         # rest on, and this is the path that gives one, so they read
-        # segment 0 as the name it is ('de Mesnil Juan, Dr.' under a
+        # segment 0 as the name it is ('de Mesnil Jean, Dr.' under a
         # family-first order keeps family 'de Mesnil'; the test review
         # found the fold missing it). The wholly-family branch below
         # suppresses all three precisely because the comma HAD fixed

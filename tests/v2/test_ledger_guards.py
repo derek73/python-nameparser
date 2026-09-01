@@ -1537,7 +1537,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # this baseline (v1 and HEAD both read first 'John', last
         # 'Ph. D.'), so nothing was absorbed.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(280, ('given', 'suffix', 'title'), "019315da85b9"),
+            _Claim(280, ('given', 'suffix', 'title'), "c85e12fa5d66"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -1557,7 +1557,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#367) an inferred title no longer displaces a leading particle either":
             _Claim(1, ('family', 'given'), "d8ee9cd5da5f"),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(280, ('family', 'given'), "019315da85b9"),
+            _Claim(280, ('family', 'given'), "c85e12fa5d66"),
         "fix(#342) NOT WANTED: a bare trailing 'Rai' is read as a post-nominal suffix and the family is lost":
             _Claim(1, ('family', 'suffix'), "694fd06a2e9a"),
         "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":
