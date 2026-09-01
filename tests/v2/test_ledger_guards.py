@@ -2417,9 +2417,13 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
         # exclusion -- its regex is untouched -- and `absorbed_by`
         # stayed empty, so no rule reaches the protected shape.
         # 55 -> 56 for the shape-1 variation matrix (#486): tagging
-        # 'John "Jack" Kennedy' promoted this entry's own second
-        # `examples` string out of the radar corpora and into
-        # corpus_shapes.jsonl. It costs the entry nothing either --
+        # 'John "Jack" Kennedy' put this entry's own FIRST `examples`
+        # string into a corpus for the first time. It was in none
+        # before -- the radar corpora hold the smart-quote spelling
+        # 'John “Jack” Kennedy' and not this one, which is why the
+        # two read differently at 1.4.0 (feat(#273) classifies the
+        # typographic pair; the ASCII pair is what this entry promises
+        # was already recognized). It costs the entry nothing either --
         # 1.4.0 reads the quoted clause as a nickname exactly as the
         # tree does, so there is no diff to silence. 56 -> 57 for the
         # shape-2 slot the same matrix opened, 'Kennedy, John (Jack)',
@@ -2535,7 +2539,9 @@ def test_a_fields_narrowing_actually_narrows_something() -> None:
 
     Measured: deleting `fields = ["nickname", "middle"]` from the
     ASCII-pairs entry passes every other check in this tree. The entry
-    then refuses ANY diff on the 46 corpus names it captures --
+    then refuses ANY diff on every corpus name it captures -- the
+    count is _EXCLUSION_EFFECT's `captures` for that pattern, above,
+    which is where it is checked and where it stays current --
     including 'Jenny (Johnson) Baker' and 'Lon (Jr.) Williams', whose
     parens are a maiden name and a suffix, both under active
     development. Nothing failed, because none of those names diffs

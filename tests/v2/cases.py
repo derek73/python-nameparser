@@ -811,7 +811,14 @@ CASES: tuple[Case, ...] = (
          ambiguities=("comma-structure",),
          notes="only parts[1] decides the suffix-comma structure "
                "(v1 parser.py:1318); 'lutc' is not in the vocabulary "
-               "but rides along (v1 parity, pinned live 2026-07-16)",
+               "but rides along (v1 parity, pinned live 2026-07-16). "
+               "Deliberately the COMPOUND shape-3 exemplar: it is the "
+               "only row filling Title, Middle and the repeated "
+               "[, Suffix] at once, and it carries the corpus's "
+               "hyphenated family besides, so a diff on it is not "
+               "attributable to any one slot -- read it as the "
+               "notation's fullest form rather than as a witness for "
+               "whichever slot the failure seems to be about",
          shape=3),
     Case("suffix_comma_nonsuffix_tail_flagged", "John Smith, MD, Xyzzy",
          {"given": "John", "family": "Smith", "suffix": "MD, Xyzzy"},
@@ -2256,7 +2263,13 @@ CASES: tuple[Case, ...] = (
                "Muhammad (#343/#345's corpus rows), a prenominal use "
                "the 'postnominal only' disposition did not consider; "
                "'MD' after the name is the degree. Position decides, "
-               "as for 'sr'",
+               "as for 'sr'. The shape-1 tag rides on that disposition "
+               "-- 'md' is the ONE deviation from the approved "
+               "2026-07-30 audit table (decisions.md#comma-suffix-arc, "
+               "where #291 is still unshipped), so if the deviation is "
+               "ever reversed this row stops being a Title Given "
+               "Family arrangement and the tag has to move to another "
+               "row rather than the expectations being edited under it",
          shape=1),
     Case("audit_md_after_comma_is_the_degree", "Smith, MD",
          {"family": "Smith", "suffix": "MD"},

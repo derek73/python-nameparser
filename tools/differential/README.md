@@ -570,7 +570,10 @@ ambiguity, which is why `feat(#273)`'s own rule can be a bare character
 class and its exclusion cannot.
 
 The ASCII-pairs entry is narrowed by role ALONE, and covers a delimited
-run in any position -- 34 corpus names. It was medial-only for three
+run in any position; how many corpus names that reaches is pinned as
+its `captures` in `tests/v2/test_ledger_guards.py`'s
+`_EXCLUSION_EFFECT`, which is the one place the number is checked and
+so the one place it is worth reading. It was medial-only for three
 rounds on the theory that trailing parens are credentials to be kept
 out; 1.4.0 says otherwise, reading a trailing `(JD)` as a nickname just
 as it reads `(Ben)`. Where 1.4 did read parens as a credential it put
