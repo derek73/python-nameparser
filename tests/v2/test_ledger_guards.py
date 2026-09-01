@@ -1487,17 +1487,26 @@ class _Claim(NamedTuple):
     #: still fails. Unreadable by design -- the count above is what a
     #: reviewer reads, and the failure message prints what moved.
     digest: str
+    #: the comparison orders it narrows by, sorted; None when it carries
+    #: no `orders` key at all. The three above are all blind to the
+    #: third narrowing: deleting `orders` from a shipped rule widens it
+    #: to every order while its regex reaches the same names, narrows by
+    #: the same roles, and digests identically. No default, so a new
+    #: entry has to state which one it is.
+    orders: tuple[str, ...] | None
 
 
 def _claim(rule: dict) -> _Claim:
     regex = rule.get("name_regex")
     names = (_claimed(regex) if isinstance(regex, str) else list(_CORPUS_NAMES))
     fields = rule.get("fields")
+    orders = rule.get("orders")
     return _Claim(
         names=len(names),
         roles=tuple(sorted(fields)) if isinstance(fields, list) else (),
         digest=hashlib.sha256(
-            "\n".join(names).encode("utf-8")).hexdigest()[:12])
+            "\n".join(names).encode("utf-8")).hexdigest()[:12],
+        orders=tuple(sorted(orders)) if isinstance(orders, list) else None)
 
 
 #: How many corpus names each rule's name_regex matches, per ledger.
@@ -1508,9 +1517,13 @@ def _claim(rule: dict) -> _Claim:
 #: a rule outside whichever category the last fix had covered. The
 #: categories are the test's, not the ledger's. What every rule shares
 #: is what it claims: how much corpus its regex reaches, which roles
-#: it narrows by, and WHICH names those are. Scoped to the corpus --
+#: it narrows by, which comparison ORDERS it admits, and WHICH names
+#: those are. The orders entry closes a widening none of the other
+#: three can see: deleting `orders` from a shipped rule returns it to
+#: claiming every order while its reach, its roles and its digest all
+#: stand still. Scoped to the corpus --
 #: and only there -- a widening cannot change what a rule explains
-#: without moving one of the three. Restoring 'born' moves none of
+#: without moving one of the four. Restoring 'born' moves none of
 #: them, because no corpus name contains it; the member guards catch
 #: that, which is why this does not replace them.
 #:
@@ -1548,140 +1561,140 @@ def _claim(rule: dict) -> _Claim:
 _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
         "fix(A2) content-free input names nobody, so every role empties":
-            _Claim(5, ('given',), "1af8d718688b"),
+            _Claim(5, ('given',), "1af8d718688b", None),
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
-            _Claim(1, ('maiden', 'nickname'), "c09cc7dba88b"),
+            _Claim(1, ('maiden', 'nickname'), "c09cc7dba88b", None),
         "fix(#434) a multi-word maiden marker takes the maiden name":
-            _Claim(1, ('family', 'maiden', 'middle'), "c428798fc6ef"),
+            _Claim(1, ('family', 'maiden', 'middle'), "c428798fc6ef", None),
         "fix(#434) a multi-word marker leads a bracketed clause to the maiden name":
-            _Claim(1, ('maiden', 'nickname'), "0b3ef183f283"),
+            _Claim(1, ('maiden', 'nickname'), "0b3ef183f283", None),
         "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
-            _Claim(5, ('maiden', 'nickname'), "a419f74143e3"),
+            _Claim(5, ('maiden', 'nickname'), "a419f74143e3", None),
         "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
-            _Claim(3, ('family', 'given'), "24d6223e472f"),
+            _Claim(3, ('family', 'given'), "24d6223e472f", None),
         "fix(#410) the maiden flavor, where 1.4.0 read the marker as a middle name":
-            _Claim(1, ('family', 'given', 'maiden', 'middle'), "309e39fc2475"),
+            _Claim(1, ('family', 'given', 'maiden', 'middle'), "309e39fc2475", None),
         "fix(#432) a dotted numeral behind a name is a middle initial, not the generation":
-            _Claim(1, ('middle', 'suffix'), "e9f282da0d0f"),
+            _Claim(1, ('middle', 'suffix'), "e9f282da0d0f", None),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(108, ('family', 'given', 'middle'), "9a814f70c2dc"),
+            _Claim(108, ('family', 'given', 'middle'), "9a814f70c2dc", None),
         "fix(#274) maiden markers consumed":
-            _Claim(32, ('family', 'maiden', 'middle'), "06d199ceb249"),
+            _Claim(32, ('family', 'maiden', 'middle'), "06d199ceb249", None),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
-            _Claim(5, ('family', 'given', 'maiden', 'middle'), "bc0e10dd7ec8"),
+            _Claim(5, ('family', 'given', 'maiden', 'middle'), "bc0e10dd7ec8", None),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(13, ('family', 'middle'), "973617235cda"),
+            _Claim(13, ('family', 'middle'), "973617235cda", None),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
-            _Claim(2, ('family', 'suffix'), "ec0d45289dc1"),
+            _Claim(2, ('family', 'suffix'), "ec0d45289dc1", None),
         # 279 -> 280 with #371, and the growth is corpus, not behavior:
         # that PR added `Ph. D., John` as a rules.md example, so the
         # regex matches one more corpus name. The name does not diff at
         # this baseline (v1 and HEAD both read first 'John', last
         # 'Ph. D.'), so nothing was absorbed.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(284, ('given', 'suffix', 'title'), "8b046fbdb1a1"),
+            _Claim(284, ('given', 'suffix', 'title'), "8b046fbdb1a1", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
-            _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
+            _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
-            _Claim(2, ('family', 'given', 'suffix'), "a3cfff4e78f4"),
+            _Claim(2, ('family', 'given', 'suffix'), "a3cfff4e78f4", None),
         "fix(#296) a dropped prenominal takes the name position it occupies":
-            _Claim(3, ('given', 'middle', 'title'), "263d5957cfc1"),
+            _Claim(3, ('given', 'middle', 'title'), "263d5957cfc1", None),
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
-            _Claim(11, ('family', 'middle', 'suffix'), "b9cfc0d88bf6"),
+            _Claim(11, ('family', 'middle', 'suffix'), "b9cfc0d88bf6", None),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
-            _Claim(2, ('family', 'given', 'suffix', 'title'), "3f983ff71dee"),
+            _Claim(2, ('family', 'given', 'suffix', 'title'), "3f983ff71dee", None),
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(18, ('family', 'given', 'suffix', 'title'), "1f79efa10444"),
+            _Claim(18, ('family', 'given', 'suffix', 'title'), "1f79efa10444", None),
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
-            _Claim(6, ('given', 'suffix', 'title'), "7911e0158337"),
+            _Claim(6, ('given', 'suffix', 'title'), "7911e0158337", None),
         "fix(#325) a credential run across a second comma reads as suffixes":
-            _Claim(1, ('suffix', 'title'), "f025c5f70a4e"),
+            _Claim(1, ('suffix', 'title'), "f025c5f70a4e", None),
         "fix(#367) an inferred title no longer displaces a leading particle either":
-            _Claim(1, ('family', 'given'), "d8ee9cd5da5f"),
+            _Claim(1, ('family', 'given'), "d8ee9cd5da5f", None),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(284, ('family', 'given'), "8b046fbdb1a1"),
+            _Claim(284, ('family', 'given'), "8b046fbdb1a1", None),
         "fix(#342) NOT WANTED: a bare trailing 'Rai' is read as a post-nominal suffix and the family is lost":
-            _Claim(1, ('family', 'suffix'), "694fd06a2e9a"),
+            _Claim(1, ('family', 'suffix'), "694fd06a2e9a", None),
         "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":
-            _Claim(1, ('family', 'suffix'), "498602f3cfd0"),
+            _Claim(1, ('family', 'suffix'), "498602f3cfd0", None),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
-            _Claim(0, ('suffix',), "e3b0c44298fc"),
+            _Claim(0, ('suffix',), "e3b0c44298fc", None),
         "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stays nickname":
-            _Claim(0, ('nickname', 'suffix'), "e3b0c44298fc"),
+            _Claim(0, ('nickname', 'suffix'), "e3b0c44298fc", None),
         "feat(#269) Arabic بن prefix chains onto family (non-Latin new-recognition)":
-            _Claim(2, ('family', 'middle'), "3e2b5c6d1f4d"),
+            _Claim(2, ('family', 'middle'), "3e2b5c6d1f4d", None),
         "feat(#273) typographic nickname delimiters recognized by default":
-            _Claim(8, ('middle', 'nickname'), "968bd4162257"),
+            _Claim(8, ('middle', 'nickname'), "968bd4162257", None),
         "fix(cjk-delimited-nickname) delimiter recognition compounds with the CJK order flip":
-            _Claim(6, ('family', 'given', 'nickname'), "ae1dffa01608"),
+            _Claim(6, ('family', 'given', 'nickname'), "ae1dffa01608", None),
         "fix(cjk-fullwidth-paren-nickname) fullwidth-parenthesis recognition compounds with the CJK order flip":
-            _Claim(1, ('family', 'given', 'middle', 'nickname'), "cf370e856ae7"),
+            _Claim(1, ('family', 'given', 'middle', 'nickname'), "cf370e856ae7", None),
         "fix(cjk-comma-honorific-peel) glued honorific peels off a post-comma given name":
-            _Claim(23, ('given', 'suffix'), "344de804e2c6"),
+            _Claim(23, ('given', 'suffix'), "344de804e2c6", None),
         "fix(cjk-comma-compound) comma routing compounds with the CJK order flip":
-            _Claim(23, ('family', 'given', 'suffix', 'title'), "344de804e2c6"),
+            _Claim(23, ('family', 'given', 'suffix', 'title'), "344de804e2c6", None),
         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix":
-            _Claim(37, ('family', 'given', 'suffix'), "719c31233502"),
+            _Claim(37, ('family', 'given', 'suffix'), "719c31233502", None),
         "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip":
-            _Claim(19, ('family', 'given', 'middle', 'suffix'), "aa475ddd4745"),
+            _Claim(19, ('family', 'given', 'middle', 'suffix'), "aa475ddd4745", None),
         "feat(#269) non-Latin titles/conjunctions recognized":
-            _Claim(4, ('given', 'middle', 'title'), "e86eeb13eeb2"),
+            _Claim(4, ('given', 'middle', 'title'), "e86eeb13eeb2", None),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
-            _Claim(1, ('family', 'given'), "ca7b37af6cf8"),
+            _Claim(1, ('family', 'given'), "ca7b37af6cf8", None),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
-            _Claim(3, ('family', 'given'), "724967a4a117"),
+            _Claim(3, ('family', 'given'), "724967a4a117", None),
         "fix(#400) abd joins the word after it as one given name":
-            _Claim(11, ('given', 'middle'), "1eaed91fc574"),
+            _Claim(11, ('given', 'middle'), "1eaed91fc574", None),
         "fix(#272/#308) nakaguro division and a glued hangul honorific in one name":
-            _Claim(1, ('family', 'given', 'middle', 'suffix'), "2fbf1a94f122"),
+            _Claim(1, ('family', 'given', 'middle', 'suffix'), "2fbf1a94f122", None),
         "fix(emoji-boundary) an emoji inside a token divides it":
-            _Claim(1, ('family', 'given'), "efa60ca42d4a"),
+            _Claim(1, ('family', 'given'), "efa60ca42d4a", None),
         "fix(nickname-typographic-pairs) two typographic quote spans read as one nickname set":
-            _Claim(1, ('family', 'given', 'middle', 'nickname'), "3cf566c78800"),
+            _Claim(1, ('family', 'given', 'middle', 'nickname'), "3cf566c78800", None),
         "fix(#411) the bound-given reserve stops counting words the maiden name takes":
-            _Claim(1, ('given', 'maiden', 'middle'), "7515923c9613"),
+            _Claim(1, ('given', 'maiden', 'middle'), "7515923c9613", None),
         "fix(#400/#274) bound-given join and maiden consumption in one name":
-            _Claim(1, ('family', 'given', 'maiden', 'middle'), "6bed6d349342"),
+            _Claim(1, ('family', 'given', 'maiden', 'middle'), "6bed6d349342", None),
         "fix(#411/S2) a declining bound-given join leaves the suffix reading after a family comma":
-            _Claim(1, ('given', 'maiden', 'middle', 'suffix'), "0f8ed9db0a32"),
+            _Claim(1, ('given', 'maiden', 'middle', 'suffix'), "0f8ed9db0a32", None),
         "fix(#418) the connective carve-out counts the name the maiden clause leaves behind":
-            _Claim(1, ('family', 'given', 'maiden', 'middle'), "7923e6d3c5a7"),
+            _Claim(1, ('family', 'given', 'maiden', 'middle'), "7923e6d3c5a7", None),
         "fix(credential-pair-order) a split credential and a suffix render in written order":
-            _Claim(1, ('suffix',), "6f6eef764248"),
+            _Claim(1, ('suffix',), "6f6eef764248", None),
         "fix(#369) a given-name title licenses the bound given-name join with one word to spare":
-            _Claim(3, ('family', 'given'), "724be3e6b926"),
+            _Claim(3, ('family', 'given'), "724be3e6b926", None),
         "fix(#401) the bound-given reserve counts the trailing numeral assign reads as the suffix":
-            _Claim(2, ('family', 'given', 'suffix'), "5713d4c0bd68"),
+            _Claim(2, ('family', 'given', 'suffix'), "5713d4c0bd68", None),
         "fix(#421) the bound-given join never absorbs a suffix piece":
-            _Claim(1, ('given', 'middle'), "9523e518e6ec"),
+            _Claim(1, ('given', 'middle'), "9523e518e6ec", None),
         "fix(#421) the bound-given join never absorbs a split credential":
-            _Claim(1, ('given', 'middle'), "228abe0f32ef"),
+            _Claim(1, ('given', 'middle'), "228abe0f32ef", None),
         "fix(#425) accepted: a bare ambiguous acronym the peel does not take joins as a name word":
-            _Claim(1, ('given', 'middle'), "2010cc79a34d"),
+            _Claim(1, ('given', 'middle'), "2010cc79a34d", None),
         "fix(#424) the particle chain stops before the trailing numeral":
-            _Claim(1, ('family', 'suffix'), "2c99162bc9cf"),
+            _Claim(1, ('family', 'suffix'), "2c99162bc9cf", None),
         "fix(#424/#445) accepted: the maiden walk keeps a bare acronym, and the lone name word is the family":
-            _Claim(1, ('family', 'given', 'maiden', 'middle', 'suffix'), "f2c6cd2e3001"),
+            _Claim(1, ('family', 'given', 'maiden', 'middle', 'suffix'), "f2c6cd2e3001", None),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example":
-            _Claim(1, ('family', 'given'), "42b69cf1b320"),
+            _Claim(1, ('family', 'given'), "42b69cf1b320", None),
         "fix(#424) accepted: the maiden walk keeps the numeral an initial before the marker vetoes":
-            _Claim(1, ('family', 'maiden', 'middle', 'suffix'), "08c0158c8d3f"),
+            _Claim(1, ('family', 'maiden', 'middle', 'suffix'), "08c0158c8d3f", None),
         "fix(#424) accepted: the chain keeps an acronym assign will not peel behind a title-and-particle word":
-            _Claim(1, ('family', 'given'), "faa4bedda537"),
+            _Claim(1, ('family', 'given'), "faa4bedda537", None),
         "fix(#424) a title-led chain before the numeral is the one name piece":
-            _Claim(1, ('family', 'suffix'), "5b3a743f9e35"),
+            _Claim(1, ('family', 'suffix'), "5b3a743f9e35", None),
         "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece":
-            _Claim(1, ('family', 'middle', 'suffix'), "a564b97f7162"),
+            _Claim(1, ('family', 'middle', 'suffix'), "a564b97f7162", None),
         "fix(#360) ste moved into the never-given particles with mc":
-            _Claim(1, ('family', 'given'), "e62caedec864"),
+            _Claim(1, ('family', 'given'), "e62caedec864", None),
         "fix(#360) mc moved into the never-given particles, so it folds into the family":
-            _Claim(1, ('family', 'given'), "ee4339908f4d"),
+            _Claim(1, ('family', 'given'), "ee4339908f4d", None),
         "fix(#367) a title no longer displaces a leading never-given particle":
-            _Claim(1, ('family', 'given'), "db724fb9c779"),
+            _Claim(1, ('family', 'given'), "db724fb9c779", None),
         "fix(#445) a maiden marker makes the lone name word the family":
-            _Claim(7, ('family', 'given', 'maiden', 'middle'), "3de9ef12b4a8"),
+            _Claim(7, ('family', 'given', 'maiden', 'middle'), "3de9ef12b4a8", None),
         "fix(N3) a nickname-led name with a trailing suffix keeps the suffix in `suffix`":
-            _Claim(1, ('family', 'suffix'), "570f265a2f46"),
+            _Claim(1, ('family', 'suffix'), "570f265a2f46", None),
         # #451's four replacements for the fields-only catch-all, whose
         # own entry recorded the whole 1090-name corpus -- a rule with no
         # name_regex reaches everything, so its reach could never move and
@@ -1690,256 +1703,256 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # take the surplus, which is why the four are last in the file;
         # the acronym and M.A. rules reach exactly what they explain.
         "fix(suffix-routing) a two-token name ending in a roman numeral keeps it in `suffix`":
-            _Claim(4, ('family', 'suffix'), "fc52089dfa8e"),
+            _Claim(4, ('family', 'suffix'), "fc52089dfa8e", None),
         "fix(suffix-routing) a two-token name ending in the suffix word jr keeps it in `suffix`":
-            _Claim(5, ('family', 'suffix'), "602e2d83a23b"),
+            _Claim(5, ('family', 'suffix'), "602e2d83a23b", None),
         "fix(suffix-routing) a two-token name ending in a credential acronym keeps it in `suffix`":
-            _Claim(2, ('family', 'suffix'), "ed72c9672214"),
+            _Claim(2, ('family', 'suffix'), "ed72c9672214", None),
         "fix(suffix-routing) the dotted M.A. spelling reads as a credential (ma-do)":
-            _Claim(1, ('family', 'suffix'), "17379620526b"),
+            _Claim(1, ('family', 'suffix'), "17379620526b", None),
     },
     "expected_since_2.0.0.toml": {
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
-            _Claim(1, ('maiden', 'nickname'), "c09cc7dba88b"),
+            _Claim(1, ('maiden', 'nickname'), "c09cc7dba88b", None),
         "fix(#434) a multi-word maiden marker takes the maiden name":
-            _Claim(1, ('family', 'maiden', 'middle'), "c428798fc6ef"),
+            _Claim(1, ('family', 'maiden', 'middle'), "c428798fc6ef", None),
         "fix(#434) a multi-word marker leads a bracketed clause to the maiden name":
-            _Claim(1, ('maiden', 'nickname'), "0b3ef183f283"),
+            _Claim(1, ('maiden', 'nickname'), "0b3ef183f283", None),
         "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
-            _Claim(5, ('maiden', 'nickname'), "a419f74143e3"),
+            _Claim(5, ('maiden', 'nickname'), "a419f74143e3", None),
         "fix(#335) a marker-led bracketed clause reads as the maiden name, compounding with the CJK order flip":
-            _Claim(1, ('family', 'given', 'maiden', 'nickname'), "cf370e856ae7"),
+            _Claim(1, ('family', 'given', 'maiden', 'nickname'), "cf370e856ae7", None),
         "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
-            _Claim(4, ('family', 'given'), "da1dd1473145"),
+            _Claim(4, ('family', 'given'), "da1dd1473145", None),
         "fix(#430) a credential run does not end at the roman numeral describing it":
-            _Claim(2, ('given', 'suffix'), "3c8fa6bc827a"),
+            _Claim(2, ('given', 'suffix'), "3c8fa6bc827a", None),
         "fix(#432) a dotted numeral behind a name is a middle initial, not the generation":
-            _Claim(1, ('middle', 'suffix'), "e9f282da0d0f"),
+            _Claim(1, ('middle', 'suffix'), "e9f282da0d0f", None),
         "fix(#429) a wholly-credential segment after a one-word family renders as one entry":
-            _Claim(1, ('suffix', 'title'), "9e0b9e8d5cbe"),
+            _Claim(1, ('suffix', 'title'), "9e0b9e8d5cbe", None),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(13, ('_ambiguities', 'family', 'middle'), "973617235cda"),
+            _Claim(13, ('_ambiguities', 'family', 'middle'), "973617235cda", None),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(108, ('_ambiguities', 'family', 'given', 'middle'), "9a814f70c2dc"),
+            _Claim(108, ('_ambiguities', 'family', 'given', 'middle'), "9a814f70c2dc", None),
         "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into suffix":
-            _Claim(37, ('family', 'given', 'suffix'), "719c31233502"),
+            _Claim(37, ('family', 'given', 'suffix'), "719c31233502", None),
         "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix":
-            _Claim(16, ('family', 'given', 'middle', 'suffix'), "6d390e518bd2"),
+            _Claim(16, ('family', 'given', 'middle', 'suffix'), "6d390e518bd2", None),
         "fix(#309) 旧姓 maiden marker consumed, compounding with the CJK order flip":
-            _Claim(5, ('family', 'given', 'maiden', 'middle'), "bc0e10dd7ec8"),
+            _Claim(5, ('family', 'given', 'maiden', 'middle'), "bc0e10dd7ec8", None),
         "fix(#272) nakaguro inside delimited content renders as a space, compounding with the CJK order flip":
-            _Claim(1, ('family', 'given', 'nickname'), "d4069d459f23"),
+            _Claim(1, ('family', 'given', 'nickname'), "d4069d459f23", None),
         "fix(#298) 间隔号 division changes the comma reading, sending the credential from title to suffix":
-            _Claim(1, ('family', 'given', 'suffix', 'title'), "1d45596e6fdb"),
+            _Claim(1, ('family', 'given', 'suffix', 'title'), "1d45596e6fdb", None),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
-            _Claim(1, ('_ambiguities', 'family', 'given'), "ca7b37af6cf8"),
+            _Claim(1, ('_ambiguities', 'family', 'given'), "ca7b37af6cf8", None),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
-            _Claim(3, ('family', 'given'), "724967a4a117"),
+            _Claim(3, ('family', 'given'), "724967a4a117", None),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
-            _Claim(2, ('_ambiguities', 'family', 'suffix'), "ec0d45289dc1"),
+            _Claim(2, ('_ambiguities', 'family', 'suffix'), "ec0d45289dc1", None),
         "fix(#399) a maiden marker bounds the particle chain that swallowed it":
-            _Claim(6, ('family', 'maiden'), "89e1f4afdd2a"),
+            _Claim(6, ('family', 'maiden'), "89e1f4afdd2a", ('DEFAULT',)),
         "fix(#360) mc moved into the never-given particles, so it folds into the family":
-            _Claim(1, ('_ambiguities', 'family', 'given'), "ee4339908f4d"),
+            _Claim(1, ('_ambiguities', 'family', 'given'), "ee4339908f4d", None),
         "fix(#400) abd joins the word after it as one given name":
-            _Claim(11, ('given', 'middle'), "1eaed91fc574"),
+            _Claim(11, ('given', 'middle'), "1eaed91fc574", None),
         "fix(#367) a title no longer displaces a leading never-given particle":
-            _Claim(1, ('family', 'given'), "db724fb9c779"),
+            _Claim(1, ('family', 'given'), "db724fb9c779", None),
         "fix(#272/#308) nakaguro division and a glued hangul honorific in one name":
-            _Claim(1, ('family', 'given', 'middle', 'suffix'), "2fbf1a94f122"),
+            _Claim(1, ('family', 'given', 'middle', 'suffix'), "2fbf1a94f122", None),
         "fix(#411) the bound-given reserve stops counting words the maiden name takes":
-            _Claim(1, ('given', 'maiden', 'middle'), "7515923c9613"),
+            _Claim(1, ('given', 'maiden', 'middle'), "7515923c9613", None),
         "fix(#412) a connective join no longer absorbs the maiden marker beside it":
-            _Claim(2, ('family', 'maiden'), "51c0eb36b5c5"),
+            _Claim(2, ('family', 'maiden'), "51c0eb36b5c5", None),
         "fix(#418) the connective carve-out counts the name the maiden clause leaves behind":
-            _Claim(1, ('family', 'given', 'middle'), "7923e6d3c5a7"),
+            _Claim(1, ('family', 'given', 'middle'), "7923e6d3c5a7", None),
         "fix(#418) accepted: a suffix word inside the maiden name ends it, connective or not":
-            _Claim(1, ('family', 'maiden', 'middle'), "bedc18423d2a"),
+            _Claim(1, ('family', 'maiden', 'middle'), "bedc18423d2a", None),
         "fix(#369) a given-name title licenses the bound given-name join with one word to spare":
-            _Claim(3, ('family', 'given'), "724be3e6b926"),
+            _Claim(3, ('family', 'given'), "724be3e6b926", None),
         "fix(#401) the bound-given reserve counts the trailing numeral assign reads as the suffix":
-            _Claim(2, ('family', 'given'), "5713d4c0bd68"),
+            _Claim(2, ('family', 'given'), "5713d4c0bd68", None),
         "fix(#421) the bound-given join never absorbs a suffix piece":
-            _Claim(1, ('given', 'middle'), "9523e518e6ec"),
+            _Claim(1, ('given', 'middle'), "9523e518e6ec", None),
         "fix(#421) the bound-given join never absorbs a split credential":
-            _Claim(1, ('given', 'middle', 'suffix'), "228abe0f32ef"),
+            _Claim(1, ('given', 'middle', 'suffix'), "228abe0f32ef", None),
         "fix(#425) the bound-given reserve runs assign's peel over the joined view":
-            _Claim(2, ('family', 'given', 'suffix'), "ef1ab03b617e"),
+            _Claim(2, ('family', 'given', 'suffix'), "ef1ab03b617e", None),
         "fix(#424) the particle chain stops before the trailing numeral":
-            _Claim(1, ('_ambiguities', 'family', 'suffix'), "2c99162bc9cf"),
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "2c99162bc9cf", None),
         "fix(#424) the particle chain stops before a bare acronym with words to spare":
-            _Claim(1, ('_ambiguities', 'family', 'suffix'), "3e3aae6a5b4b"),
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "3e3aae6a5b4b", None),
         "fix(#424) a title-led chain before the numeral is the one name piece":
-            _Claim(1, ('_ambiguities', 'family', 'suffix'), "5b3a743f9e35"),
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "5b3a743f9e35", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
-            _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
+            _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
-            _Claim(2, ('family', 'given'), "a3cfff4e78f4"),
+            _Claim(2, ('family', 'given'), "a3cfff4e78f4", None),
         "fix(#296) a dropped prenominal takes the name position it occupies":
-            _Claim(3, ('_ambiguities', 'given', 'middle', 'title'), "263d5957cfc1"),
+            _Claim(3, ('_ambiguities', 'given', 'middle', 'title'), "263d5957cfc1", None),
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
-            _Claim(11, ('family', 'middle', 'suffix'), "b9cfc0d88bf6"),
+            _Claim(11, ('family', 'middle', 'suffix'), "b9cfc0d88bf6", None),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
-            _Claim(2, ('suffix', 'title'), "3f983ff71dee"),
+            _Claim(2, ('suffix', 'title'), "3f983ff71dee", None),
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(18, ('suffix', 'title'), "1f79efa10444"),
+            _Claim(18, ('suffix', 'title'), "1f79efa10444", None),
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
-            _Claim(6, ('given', 'suffix', 'title'), "7911e0158337"),
+            _Claim(6, ('given', 'suffix', 'title'), "7911e0158337", None),
         "fix(#325) a credential run across a second comma reads as suffixes":
-            _Claim(1, ('suffix', 'title'), "f025c5f70a4e"),
+            _Claim(1, ('suffix', 'title'), "f025c5f70a4e", None),
         "fix(#296) a glued honorific before a lone credential: the credential is the postnominal":
-            _Claim(1, ('family', 'suffix', 'title'), "01bf2bd3f895"),
+            _Claim(1, ('family', 'suffix', 'title'), "01bf2bd3f895", None),
         "fix(#296) do is a name, so it no longer stops the leading-particle scan as a title":
-            _Claim(1, ('family', 'given'), "faa2c70fc49e"),
+            _Claim(1, ('family', 'given'), "faa2c70fc49e", None),
         "fix(#296) dr is not postnominal vocabulary, so 'John Smith, Dr.' keeps its split and its title":
-            _Claim(2, ('_ambiguities', 'suffix', 'title'), "34d3d96adb65"),
+            _Claim(2, ('_ambiguities', 'suffix', 'title'), "34d3d96adb65", ('DEFAULT', 'FAMILY_FIRST')),
         "fix(#296) an ambiguous acronym counts as a suffix only when written with its periods":
-            _Claim(1, ('_ambiguities', 'family', 'suffix'), "e13b3c769de4"),
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "e13b3c769de4", None),
         "fix(#367) an inferred title no longer displaces a leading particle either":
-            _Claim(1, ('family', 'given'), "d8ee9cd5da5f"),
+            _Claim(1, ('family', 'given'), "d8ee9cd5da5f", None),
         "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece":
-            _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "a564b97f7162"),
+            _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "a564b97f7162", None),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example":
-            _Claim(1, ('_ambiguities', 'family', 'given'), "42b69cf1b320"),
+            _Claim(1, ('_ambiguities', 'family', 'given'), "42b69cf1b320", None),
         "fix(#424/#445) the maiden walk stops before the trailing numeral, and the lone name word is the family":
-            _Claim(1, ('_ambiguities', 'family', 'given', 'maiden', 'suffix'), "cbe5bdd97317"),
+            _Claim(1, ('_ambiguities', 'family', 'given', 'maiden', 'suffix'), "cbe5bdd97317", None),
         "fix(#445) a maiden marker makes the lone name word the family":
-            _Claim(6, ('family', 'given'), "f521c94c79fc"),
+            _Claim(6, ('family', 'given'), "f521c94c79fc", None),
         "fix(#445) the lone name word beside a marker a connective join no longer absorbs":
-            _Claim(1, ('family', 'given', 'maiden', 'middle'), "52544a41dd62"),
+            _Claim(1, ('family', 'given', 'maiden', 'middle'), "52544a41dd62", None),
         "fix(#424) a marker followed only by the numeral is just a word":
-            _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle', 'suffix'), "aaf53040b071"),
+            _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle', 'suffix'), "aaf53040b071", None),
         "fix(#369) the bound given-name join takes a particle-and-bound word, so no fork is reported":
-            _Claim(1, ('_ambiguities',), "81cf02ffdb33"),
+            _Claim(1, ('_ambiguities',), "81cf02ffdb33", None),
         "fix(#360) ste moved into the never-given particles with mc":
-            _Claim(1, ('_ambiguities', 'family', 'given'), "e62caedec864"),
+            _Claim(1, ('_ambiguities', 'family', 'given'), "e62caedec864", None),
         "fix(#399) a maiden marker bounds the particle chain: the geb. spelling":
-            _Claim(1, ('family', 'maiden'), "2150936a8c55"),
+            _Claim(1, ('family', 'maiden'), "2150936a8c55", None),
         "fix(#371) a suffix never begins a name: the Ph./D. merge declines at the head":
-            _Claim(4, ('family', 'given', 'middle', 'suffix', 'title'), "1425d85a2d86"),
+            _Claim(4, ('family', 'given', 'middle', 'suffix', 'title'), "1425d85a2d86", None),
         "feat(#395) a leading never-given particle bounds the family under a declared family-first order":
-            _Claim(1, ('family', 'given', 'middle'), "47dcff268731"),
+            _Claim(1, ('family', 'given', 'middle'), "47dcff268731", ('FAMILY_FIRST', 'FAMILY_FIRST_GIVEN_LAST')),
         "fix(#399)/feat(#395) a consumed maiden marker leaves the family-first fold no given name":
-            _Claim(1, ('family', 'given', 'maiden'), "504eb466e347"),
+            _Claim(1, ('family', 'given', 'maiden'), "504eb466e347", ('FAMILY_FIRST', 'FAMILY_FIRST_GIVEN_LAST')),
         "feat(#395)/fix(#296) a comma followed only by a title leaves the pre-comma name to the declared order's fold":
-            _Claim(1, ('family', 'given', 'middle', 'suffix', 'title'), "fc6bc9e605e1"),
+            _Claim(1, ('family', 'given', 'middle', 'suffix', 'title'), "fc6bc9e605e1", ('FAMILY_FIRST',)),
         "feat(#395)/fix(#296) a comma followed only by a title leaves the pre-comma name to the declared order's fold, the given-last spelling":
-            _Claim(1, ('family', 'given', 'middle', 'suffix', 'title'), "3e43a2be022e"),
+            _Claim(1, ('family', 'given', 'middle', 'suffix', 'title'), "3e43a2be022e", ('FAMILY_FIRST_GIVEN_LAST',)),
     },
     "expected_since_2.2.0.toml": {},   # open cycle, no rules yet
     "expected_since_2.1.0.toml": {
         "fix(#371) a suffix never begins a name: the Ph./D. merge declines at the head":
-            _Claim(4, ('family', 'given', 'middle', 'suffix', 'title'), "1425d85a2d86"),
+            _Claim(4, ('family', 'given', 'middle', 'suffix', 'title'), "1425d85a2d86", None),
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
-            _Claim(1, ('maiden', 'nickname'), "c09cc7dba88b"),
+            _Claim(1, ('maiden', 'nickname'), "c09cc7dba88b", None),
         "fix(#434) a multi-word maiden marker takes the maiden name":
-            _Claim(1, ('family', 'maiden', 'middle'), "c428798fc6ef"),
+            _Claim(1, ('family', 'maiden', 'middle'), "c428798fc6ef", None),
         "fix(#434) a multi-word marker leads a bracketed clause to the maiden name":
-            _Claim(1, ('maiden', 'nickname'), "0b3ef183f283"),
+            _Claim(1, ('maiden', 'nickname'), "0b3ef183f283", None),
         "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
-            _Claim(6, ('maiden', 'nickname'), "d0e857deddb2"),
+            _Claim(6, ('maiden', 'nickname'), "d0e857deddb2", None),
         "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
-            _Claim(4, ('family', 'given'), "da1dd1473145"),
+            _Claim(4, ('family', 'given'), "da1dd1473145", None),
         "fix(#430) a credential run does not end at the roman numeral describing it":
-            _Claim(2, ('given', 'suffix'), "3c8fa6bc827a"),
+            _Claim(2, ('given', 'suffix'), "3c8fa6bc827a", None),
         "fix(#432) a dotted numeral behind a name is a middle initial, not the generation":
-            _Claim(1, ('middle', 'suffix'), "e9f282da0d0f"),
+            _Claim(1, ('middle', 'suffix'), "e9f282da0d0f", None),
         "fix(#429) a wholly-credential segment after a one-word family renders as one entry":
-            _Claim(1, ('suffix', 'title'), "9e0b9e8d5cbe"),
+            _Claim(1, ('suffix', 'title'), "9e0b9e8d5cbe", None),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(13, ('_ambiguities', 'family', 'middle'), "973617235cda"),
+            _Claim(13, ('_ambiguities', 'family', 'middle'), "973617235cda", None),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
-            _Claim(1, ('_ambiguities', 'family', 'given'), "ca7b37af6cf8"),
+            _Claim(1, ('_ambiguities', 'family', 'given'), "ca7b37af6cf8", None),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
-            _Claim(3, ('family', 'given'), "724967a4a117"),
+            _Claim(3, ('family', 'given'), "724967a4a117", None),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
-            _Claim(2, ('_ambiguities', 'family', 'suffix'), "ec0d45289dc1"),
+            _Claim(2, ('_ambiguities', 'family', 'suffix'), "ec0d45289dc1", None),
         "fix(#399) a maiden marker bounds the particle chain that swallowed it":
-            _Claim(6, ('family', 'maiden'), "89e1f4afdd2a"),
+            _Claim(6, ('family', 'maiden'), "89e1f4afdd2a", ('DEFAULT',)),
         "fix(#360) mc moved into the never-given particles, so it folds into the family":
-            _Claim(1, ('_ambiguities', 'family', 'given'), "ee4339908f4d"),
+            _Claim(1, ('_ambiguities', 'family', 'given'), "ee4339908f4d", None),
         "fix(#400) abd joins the word after it as one given name":
-            _Claim(11, ('given', 'middle'), "1eaed91fc574"),
+            _Claim(11, ('given', 'middle'), "1eaed91fc574", None),
         "fix(#367) a title no longer displaces a leading never-given particle":
-            _Claim(1, ('family', 'given'), "db724fb9c779"),
+            _Claim(1, ('family', 'given'), "db724fb9c779", None),
         "fix(#411) the bound-given reserve stops counting words the maiden name takes":
-            _Claim(1, ('given', 'maiden', 'middle'), "7515923c9613"),
+            _Claim(1, ('given', 'maiden', 'middle'), "7515923c9613", None),
         "fix(#412) a connective join no longer absorbs the maiden marker beside it":
-            _Claim(2, ('family', 'maiden'), "51c0eb36b5c5"),
+            _Claim(2, ('family', 'maiden'), "51c0eb36b5c5", None),
         "fix(#418) the connective carve-out counts the name the maiden clause leaves behind":
-            _Claim(1, ('family', 'given', 'middle'), "7923e6d3c5a7"),
+            _Claim(1, ('family', 'given', 'middle'), "7923e6d3c5a7", None),
         "fix(#418) accepted: a suffix word inside the maiden name ends it, connective or not":
-            _Claim(1, ('family', 'maiden', 'middle'), "bedc18423d2a"),
+            _Claim(1, ('family', 'maiden', 'middle'), "bedc18423d2a", None),
         "fix(#369) a given-name title licenses the bound given-name join with one word to spare":
-            _Claim(3, ('family', 'given'), "724be3e6b926"),
+            _Claim(3, ('family', 'given'), "724be3e6b926", None),
         "fix(#401) the bound-given reserve counts the trailing numeral assign reads as the suffix":
-            _Claim(2, ('family', 'given'), "5713d4c0bd68"),
+            _Claim(2, ('family', 'given'), "5713d4c0bd68", None),
         "fix(#421) the bound-given join never absorbs a suffix piece":
-            _Claim(1, ('given', 'middle'), "9523e518e6ec"),
+            _Claim(1, ('given', 'middle'), "9523e518e6ec", None),
         "fix(#421) the bound-given join never absorbs a split credential":
-            _Claim(1, ('given', 'middle', 'suffix'), "228abe0f32ef"),
+            _Claim(1, ('given', 'middle', 'suffix'), "228abe0f32ef", None),
         "fix(#425) the bound-given reserve runs assign's peel over the joined view":
-            _Claim(2, ('family', 'given', 'suffix'), "ef1ab03b617e"),
+            _Claim(2, ('family', 'given', 'suffix'), "ef1ab03b617e", None),
         "fix(#424) the particle chain stops before the trailing numeral":
-            _Claim(1, ('_ambiguities', 'family', 'suffix'), "2c99162bc9cf"),
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "2c99162bc9cf", None),
         "fix(#424) the particle chain stops before a bare acronym with words to spare":
-            _Claim(1, ('_ambiguities', 'family', 'suffix'), "3e3aae6a5b4b"),
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "3e3aae6a5b4b", None),
         "fix(#424) a title-led chain before the numeral is the one name piece":
-            _Claim(1, ('_ambiguities', 'family', 'suffix'), "5b3a743f9e35"),
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "5b3a743f9e35", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
-            _Claim(2, ('family', 'given'), "5bd9c6d96c38"),
+            _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
-            _Claim(2, ('family', 'given'), "a3cfff4e78f4"),
+            _Claim(2, ('family', 'given'), "a3cfff4e78f4", None),
         "fix(#296) a dropped prenominal takes the name position it occupies":
-            _Claim(3, ('_ambiguities', 'given', 'middle', 'title'), "263d5957cfc1"),
+            _Claim(3, ('_ambiguities', 'given', 'middle', 'title'), "263d5957cfc1", None),
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
-            _Claim(11, ('family', 'middle', 'suffix'), "b9cfc0d88bf6"),
+            _Claim(11, ('family', 'middle', 'suffix'), "b9cfc0d88bf6", None),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
-            _Claim(2, ('suffix', 'title'), "3f983ff71dee"),
+            _Claim(2, ('suffix', 'title'), "3f983ff71dee", None),
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(18, ('suffix', 'title'), "1f79efa10444"),
+            _Claim(18, ('suffix', 'title'), "1f79efa10444", None),
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
-            _Claim(6, ('given', 'suffix', 'title'), "7911e0158337"),
+            _Claim(6, ('given', 'suffix', 'title'), "7911e0158337", None),
         "fix(#325) a credential run across a second comma reads as suffixes":
-            _Claim(1, ('suffix', 'title'), "f025c5f70a4e"),
+            _Claim(1, ('suffix', 'title'), "f025c5f70a4e", None),
         "fix(#296) a glued honorific before a lone credential: the credential is the postnominal":
-            _Claim(1, ('suffix', 'title'), "01bf2bd3f895"),
+            _Claim(1, ('suffix', 'title'), "01bf2bd3f895", None),
         "fix(#296) do is a name, so it no longer stops the leading-particle scan as a title":
-            _Claim(1, ('family', 'given'), "faa2c70fc49e"),
+            _Claim(1, ('family', 'given'), "faa2c70fc49e", None),
         "fix(#296) dr is not postnominal vocabulary, so 'John Smith, Dr.' keeps its split and its title":
-            _Claim(2, ('_ambiguities', 'suffix', 'title'), "34d3d96adb65"),
+            _Claim(2, ('_ambiguities', 'suffix', 'title'), "34d3d96adb65", ('DEFAULT', 'FAMILY_FIRST')),
         "fix(#296) an ambiguous acronym counts as a suffix only when written with its periods":
-            _Claim(1, ('_ambiguities', 'family', 'suffix'), "e13b3c769de4"),
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "e13b3c769de4", None),
         "fix(#367) an inferred title no longer displaces a leading particle either":
-            _Claim(1, ('family', 'given'), "d8ee9cd5da5f"),
+            _Claim(1, ('family', 'given'), "d8ee9cd5da5f", None),
         "fix(#424) accepted: a particle of the suffix vocabulary opening the trailing run is a suffix piece":
-            _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "a564b97f7162"),
+            _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "a564b97f7162", None),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example":
-            _Claim(1, ('_ambiguities', 'family', 'given'), "42b69cf1b320"),
+            _Claim(1, ('_ambiguities', 'family', 'given'), "42b69cf1b320", None),
         "fix(#424/#445) the maiden walk stops before the trailing numeral, and the lone name word is the family":
-            _Claim(1, ('_ambiguities', 'family', 'given', 'maiden', 'suffix'), "cbe5bdd97317"),
+            _Claim(1, ('_ambiguities', 'family', 'given', 'maiden', 'suffix'), "cbe5bdd97317", None),
         "fix(#445) a maiden marker makes the lone name word the family":
-            _Claim(6, ('family', 'given'), "f521c94c79fc"),
+            _Claim(6, ('family', 'given'), "f521c94c79fc", None),
         "fix(#445) the lone name word beside a marker a connective join no longer absorbs":
-            _Claim(1, ('family', 'given', 'maiden', 'middle'), "52544a41dd62"),
+            _Claim(1, ('family', 'given', 'maiden', 'middle'), "52544a41dd62", None),
         "fix(#424) a marker followed only by the numeral is just a word":
-            _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle', 'suffix'), "aaf53040b071"),
+            _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle', 'suffix'), "aaf53040b071", None),
         "fix(#369) the bound given-name join takes a particle-and-bound word, so no fork is reported":
-            _Claim(1, ('_ambiguities',), "81cf02ffdb33"),
+            _Claim(1, ('_ambiguities',), "81cf02ffdb33", None),
         "fix(#360) ste moved into the never-given particles with mc":
-            _Claim(1, ('_ambiguities', 'family', 'given'), "e62caedec864"),
+            _Claim(1, ('_ambiguities', 'family', 'given'), "e62caedec864", None),
         "fix(#399) a maiden marker bounds the particle chain: the geb. spelling":
-            _Claim(1, ('family', 'maiden'), "2150936a8c55"),
+            _Claim(1, ('family', 'maiden'), "2150936a8c55", None),
         "fix(#399) a maiden marker bounds the particle chain: a native-script marker":
-            _Claim(1, ('family', 'maiden'), "f016cc61ca43"),
+            _Claim(1, ('family', 'maiden'), "f016cc61ca43", None),
         "feat(#395) a leading never-given particle bounds the family under a declared family-first order":
-            _Claim(1, ('family', 'given', 'middle'), "47dcff268731"),
+            _Claim(1, ('family', 'given', 'middle'), "47dcff268731", ('FAMILY_FIRST', 'FAMILY_FIRST_GIVEN_LAST')),
         "fix(#399)/feat(#395) a consumed maiden marker leaves the family-first fold no given name":
-            _Claim(1, ('family', 'given', 'maiden'), "504eb466e347"),
+            _Claim(1, ('family', 'given', 'maiden'), "504eb466e347", ('FAMILY_FIRST', 'FAMILY_FIRST_GIVEN_LAST')),
         "feat(#395)/fix(#296) a comma followed only by a title leaves the pre-comma name to the declared order's fold":
-            _Claim(1, ('family', 'given', 'middle', 'suffix', 'title'), "fc6bc9e605e1"),
+            _Claim(1, ('family', 'given', 'middle', 'suffix', 'title'), "fc6bc9e605e1", ('FAMILY_FIRST',)),
         "feat(#395)/fix(#296) a comma followed only by a title leaves the pre-comma name to the declared order's fold, the given-last spelling":
-            _Claim(1, ('family', 'given', 'middle', 'suffix', 'title'), "3e43a2be022e"),
+            _Claim(1, ('family', 'given', 'middle', 'suffix', 'title'), "3e43a2be022e", ('FAMILY_FIRST_GIVEN_LAST',)),
     },
 }
 
