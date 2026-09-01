@@ -425,6 +425,62 @@ no order of its own — so it applies only where you set it, and there
 is no ``vn`` locale pack yet (issue `#146
 <https://github.com/derek73/python-nameparser/issues/146>`_).
 
+Declaring the order settles where a surname ends
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A surname particle joins forward, onto the word after it. Where a
+particle *ends* the name there is nothing ahead of it to join, and what
+it belongs to is decided by what the writing says rather than by the
+word. Two things say it, and both amount to someone stating that the
+family name came first — a family comma, and a declared family-first
+order — so a Dutch listing reads the same either way:
+
+.. doctest::
+
+    >>> parse("Jong, Anke de").family                  # the comma says so
+    'de Jong'
+    >>> family_first.parse("Jong Anke de").family      # the order says so
+    'de Jong'
+
+``FAMILY_FIRST`` is the only order this arises under, because it is the
+only one that puts a trailing piece in the *middle*, where a particle
+means nothing. ``FAMILY_FIRST_GIVEN_LAST`` puts it in the given slot,
+where your own declaration says it is the given name, so it stays one:
+
+.. doctest::
+
+    >>> given_last.parse("Nguyen Thi Van").given
+    'Van'
+
+The declaration also bounds how far a *leading* particle run reaches.
+With no order declared, nothing marks where the surname ends and a
+particle followed by several words really can be all surname, so the
+whole name is read as one. Declaring family-first asserts that what
+follows the family is not more surname, which settles it:
+
+.. doctest::
+
+    >>> parse("de Mesnil Juan").family                 # nothing says where it ends
+    'de Mesnil Juan'
+    >>> family_first.parse("de Mesnil Juan").family    # the order does
+    'de Mesnil'
+    >>> family_first.parse("de Mesnil Juan").given
+    'Juan'
+
+In the default order, write the comma for that reading. The run stops
+after one name *word* rather than one token, so it cannot cut inside a
+conjunction-joined run or a bound given-name pair —
+``"de la Vega y Santos Juan"`` keeps family ``de la Vega y Santos``.
+Where two or more words are left over, the two family-first orders
+differ from each other:
+
+.. doctest::
+
+    >>> family_first.parse("de la Cruz Juan Carlos").middle
+    'Carlos'
+    >>> given_last.parse("de la Cruz Juan Carlos").middle
+    'Juan'
+
 Two cautions, both places where the vocabulary layer answers before
 ``name_order`` is consulted at all.
 
