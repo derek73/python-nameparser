@@ -496,6 +496,13 @@ P6. Rationale: a particle ending the name has nothing to link
     (vd, mc), which the join declines and the attachment then takes.
       "Berg, abdul van"           →  given="abdul van"
       "Berg, abdul vd"            →  family="vd Berg"
+    The comma site above and the no-comma family-first site earlier
+    in this rule are checked against each other directly, as a pair,
+    rather than only against their own examples: tests/v2/test_order_correspondence.py
+    generates both writings and asserts they parse alike, plus a
+    negative-control sweep pinning the disagreeing set the precedence
+    bullet above names. A change that breaks one side of that pair
+    should expect that test, not this file, to say so first.
     history: decisions.md#P6 · interacts: A1, C1, P1, S2, P5 · implemented: nameparser/_pipeline/_post_rules.py
 
 ## Suffixes: generational & credentials (S)

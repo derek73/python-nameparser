@@ -1,6 +1,10 @@
 """Differential harness: a released baseline vs
-the working tree over the corpora. Every diff must classify against
-that baseline's ledger or the run fails.
+the working tree over the corpora. Every diff on a CONTRACT corpus
+must classify against that baseline's ledger or the run fails; a
+RADAR corpus reports its unmatched diffs instead of failing on them.
+A `[[never]]` exclusion is fatal on EITHER tier -- it was chosen, the
+same way a rule was, so it belongs to the contract regardless of
+which corpus the name it refuses happens to sit in.
 
     uv run python tools/differential/compare.py [--baseline VERSION]
 
@@ -11,6 +15,7 @@ Redirect to a file rather than piping: under zsh, `| tail` replaces the
 exit code with tail's, so a failing run reads as a passing one.
 """
 import argparse
+import importlib.util
 import json
 import os
 import re
@@ -39,11 +44,13 @@ V2_FIELDS = ("title", "given", "middle", "family", "suffix", "nickname",
 _V1_TO_ROLE = {"first": "given", "last": "family"}
 
 #: An unclassified diff, carrying BOTH surfaces' before/after:
-#: (name, old_facade, new_facade, old_v2, new_v2). Both halves are kept
-#: because a diff can exist on the v2 surface alone, and a report that
-#: named such a diff without showing it would be unactionable.
+#: (name, old_facade, new_facade, old_v2, new_v2, order). Both halves
+#: are kept because a diff can exist on the v2 surface alone, and a
+#: report that named such a diff without showing it would be
+#: unactionable. `order` rides along so the report can say which
+#: order produced the diff -- None for the default order.
 _Unexplained = tuple[str, dict[str, str], dict[str, str],
-                     dict[str, object], dict[str, object]]
+                     dict[str, object], dict[str, object], str | None]
 
 
 def _parse_version(text: str) -> tuple[int, int, int]:
@@ -101,6 +108,23 @@ def _allowlist_for(version: str) -> Path:
     return path
 
 
+_SHAPES_PATH = Path(__file__).resolve().parent / "shapes.py"
+
+
+def _load_shapes() -> dict:
+    """SHAPES from shapes.py beside this script, loaded by path so it
+    works both run-as-script and under tests' load_tool. Resolved
+    against the script's own directory, not HERE: shapes.py is code,
+    not corpus data -- a --corpus override or a test's HERE patch must
+    not change which inventory loads."""
+    spec = importlib.util.spec_from_file_location(
+        "differential_shapes", _SHAPES_PATH)
+    assert spec is not None and spec.loader is not None, _SHAPES_PATH
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.SHAPES
+
+
 def _sorted_rules(rules: list[dict[str, object]]) -> list[dict[str, object]]:
     """Most-specific-first: a name_regex rule outranks a fields-only
     rule wherever both match, so file order does not decide BETWEEN THE
@@ -140,11 +164,18 @@ _WORKER_TEMPLATE = '''\
 there, not a copy of this.
 
 Writes a VERSION TELL as its first stdout line, then one result per
-input name. The tell exists because the alternative failure is
+input entry. The tell exists because the alternative failure is
 invisible: a worker that silently resolved to the checkout answers
 every query as the working tree while the run is labelled with the
 baseline, so every diff vanishes and the run reports parity -- the
 precise opposite of the truth.
+
+Input lines are {"name": ..., "order": null | "<CONSTANT>"}. An order
+names a public nameparser constant; only workers whose baseline
+supports it are ever sent one (compare.py skips below the shape's
+min_baseline), and an order-bearing entry is compared on the v2
+surface alone -- the facade is the v1-compat surface, and a
+family-first name is not a v1 contract.
 """
 import json
 import sys
@@ -162,22 +193,43 @@ print(json.dumps({"__version__": nameparser.__version__,
                   "__file__": nameparser.__file__}), flush=True)
 
 if WANT_V2:
-    from nameparser import parse
+    from nameparser import Parser, Policy, parse
+    _parsers = {}
+
+    def _parser_for(order):
+        if order not in _parsers:
+            _parsers[order] = Parser(policy=Policy(
+                name_order=getattr(nameparser, order)))
+        return _parsers[order]
+
+
+def _v2_row(p):
+    # must stay identical to main()'s tree-side row (compare.py) --
+    # duplicated rather than shared across the process boundary
+    row = {f: (getattr(p, f, "") or "") for f in V2_FIELDS}
+    row["_ambiguities"] = sorted(
+        {a.kind.name for a in getattr(p, "ambiguities", ())})
+    return row
+
 
 for line in sys.stdin:
     line = line.strip()
     if not line:
         continue
-    name = json.loads(line)
+    entry = json.loads(line)
+    name = entry["name"]
+    order = entry.get("order")
+    if order is not None:
+        # never reaches a worker without WANT_V2; see the docstring
+        print(json.dumps(
+            {"v2": _v2_row(_parser_for(order).parse(name))},
+            ensure_ascii=False), flush=True)
+        continue
     row = {"facade": {k: v or ""
                       for k, v in HumanName(name).as_dict().items()
                       if k in V1_FIELDS}}
     if WANT_V2:
-        p = parse(name)
-        v2 = {f: (getattr(p, f, "") or "") for f in V2_FIELDS}
-        v2["_ambiguities"] = sorted(
-            {a.kind.name for a in getattr(p, "ambiguities", ())})
-        row["v2"] = v2
+        row["v2"] = _v2_row(parse(name))
     print(json.dumps(row, ensure_ascii=False), flush=True)
 '''
 
@@ -283,7 +335,7 @@ def _check_tree(module_file: str) -> Path:
 
 
 def _run_worker(version: str, want_v2: bool,
-                names: list[str]) -> tuple[dict[str, str], list[dict]]:
+                entries: list[dict]) -> tuple[dict[str, str], list[dict]]:
     """Run the baseline worker from a temp dir OUTSIDE the worktree.
 
     The placement is the safety mechanism, not plumbing. uv reads
@@ -301,8 +353,10 @@ def _run_worker(version: str, want_v2: bool,
             ["uv", "run", "--no-project", str(script)],
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True,
             cwd=tmp, env=_worker_env())
-        payload = "".join(json.dumps(n, ensure_ascii=False) + "\n"
-                          for n in names)
+        payload = "".join(
+            json.dumps({"name": e["name"], "order": e.get("order")},
+                       ensure_ascii=False) + "\n"
+            for e in entries)
         out, _ = proc.communicate(payload)
     # hard checks, not asserts: -O must not turn a crashed worker into
     # a truncated-but-green comparison
@@ -317,10 +371,10 @@ def _run_worker(version: str, want_v2: bool,
     tell = json.loads(lines[0])
     _check_tell(tell, version)
     results = [json.loads(x) for x in lines[1:]]
-    if len(results) != len(names):
+    if len(results) != len(entries):
         raise SystemExit(
-            f"worker returned {len(results)} results for {len(names)} "
-            f"corpus names; comparison aborted")
+            f"worker returned {len(results)} results for {len(entries)} "
+            f"corpus entries; comparison aborted")
     return tell, results
 
 
@@ -329,6 +383,52 @@ def _canonical_field(field: str) -> str:
     diffs from BOTH surfaces, so it must be a no-op on names that are
     already canonical."""
     return _V1_TO_ROLE.get(field, field)
+
+
+def _order_tag(order: str | None) -> str:
+    """The `   [order: X]` header suffix, or "" for a default-order
+    entry. Shared by the UNEXPLAINED and UNCLASSIFIED (radar) headers
+    in main() -- one copy for the same reason _print_field_diffs is:
+    two copies can drift."""
+    return f"   [order: {order}]" if order is not None else ""
+
+
+def _print_field_diffs(old_facade: dict[str, str], new: dict[str, str],
+                       old_v2: dict[str, object],
+                       new_v2: dict[str, object],
+                       order: str | None = None) -> None:
+    """Print each moved field under one name, Role's, whichever
+    surface(s) moved it. Shared by the UNEXPLAINED and UNCLASSIFIED
+    (radar) blocks in main() -- one copy rather than two that can
+    drift apart, the same reason _entry_matches is "one predicate
+    rather than three copies".
+
+    Role's names, not the facade's: both report blocks exist to be
+    turned into a ledger rule, and a rule naming the facade's `first`
+    is rejected by validate_rules at startup. Both surfaces are
+    walked, and a field is reported once even when both moved, since
+    one rule covers it.
+
+    `order` is None for a default-order entry, else the order both
+    surfaces were read under. The "[v2 surface only]" tag means "the
+    facade was compared and agreed" -- untrue for an order-bearing
+    entry, whose facade is never consulted at all (main() passes empty
+    dicts for it), so the tag is suppressed there rather than printed
+    with a meaning it does not have.
+    """
+    seen: set[str] = set()
+    for f in FIELDS:
+        if old_facade.get(f, "") != new.get(f, ""):
+            seen.add(_canonical_field(f))
+            print(f"    {_canonical_field(f)}: "
+                  f"{old_facade.get(f, '')!r} -> {new.get(f, '')!r}")
+    for f in (*V2_FIELDS, "_ambiguities"):
+        if old_v2.get(f, "") != new_v2.get(f, "") \
+                and _canonical_field(f) not in seen:
+            tag = "" if order is not None else "   [v2 surface only]"
+            print(f"    {_canonical_field(f)}: "
+                  f"{old_v2.get(f, '')!r} -> {new_v2.get(f, '')!r}"
+                  f"{tag}")
 
 
 def _is_latin_only(name: str) -> bool:
@@ -348,7 +448,39 @@ def _is_latin_only(name: str) -> bool:
 #: ambiguity entry is legal and load-bearing -- a SEGMENTATION-only diff
 #: is facade-identical, so this is the one name that can classify it.
 _RULE_FIELDS = frozenset((*V2_FIELDS, "_ambiguities"))
-_RULE_KEYS = frozenset(("issue", "name_regex", "fields", "dormant"))
+_RULE_KEYS = frozenset(("issue", "name_regex", "fields", "dormant", "orders"))
+
+
+#: The `orders` member naming the DEFAULT order -- the comparison whose
+#: `order` is None, run under no declared name_order at all. A sentinel
+#: rather than a constant name because there is no constant to borrow:
+#: the default order is the absence of one, no shape declares it, and
+#: TOML has no null to put inside an array. Without it a rule that
+#: explains only default-order diffs cannot say so and has to stay
+#: order-blind, which is the leak running the OTHER way from the one
+#: `orders` was added for: an order-blind rule sorted ahead of the
+#: scoped ones absorbs a family-first regression on a name its regex
+#: happens to reach.
+_DEFAULT_ORDER = "DEFAULT"
+
+
+def _legal_orders() -> frozenset[str]:
+    """The names a rule's `orders` may carry: every order shapes.py's
+    inventory declares, plus the "DEFAULT" sentinel.
+
+    The constants are borrowed rather than hand-copied, the same way
+    build_cjk_corpus.py borrows the script table: an order no shape
+    declares is an order no comparison can run under, so a rule scoped
+    to it could only ever be dormant, and a typo in one would be a rule
+    that silently explains nothing.
+
+    "DEFAULT" is the one member that cannot be borrowed, since it names
+    the absence of a declared order rather than a shape.
+    """
+    return frozenset(shape.order for shape in _load_shapes().values()
+                     if shape.order is not None) | {_DEFAULT_ORDER}
+
+
 #: Probe names for the over-match check, chosen to share no script, no
 #: vocabulary and no punctuation. A `name_regex` matching ALL of them is
 #: not targeting a behavior family, it is matching everything -- and
@@ -373,7 +505,33 @@ _CORPUS_FLOORS = {
     "corpus.jsonl": 480,        # 486 today, from v1's banks at a pinned ref
     "corpus_cjk.jsonl": 95,     # 98 today, generated from the case table
     "corpus_issues.jsonl": 370,  # 381 today, harvested and append-only
-    "corpus_rules.jsonl": 150,  # 241 today, generated from rules.md
+    "corpus_rules.jsonl": 150,  # 252 today, generated from rules.md
+    "corpus_shapes.jsonl": 11,  # 13 today, generated from shape-tagged
+                                # case rows
+}
+
+#: Tier per corpus file, fail-closed like the floors above. CONTRACT
+#: corpora hold names someone chose -- an unmatched diff on one is
+#: UNEXPLAINED and fails the run, today's discipline. RADAR corpora
+#: hold scraped/harvested names (#468): their diffs still classify
+#: against the ledger (release notes want the grouping) but an
+#: unmatched one prints under UNCLASSIFIED (radar) and cannot fail
+#: the run or demand a rule. Promotion is a cases.py row plus a
+#: shape tag -- a name enters the contract by being chosen.
+#:
+#: A `[[never]]` exclusion is the same kind of choice, and stays fatal
+#: on a name in a radar file for exactly that reason: someone wrote
+#: the entry, its `why`, and its `examples`, so the shape it refuses
+#: was chosen the same way a rule is -- unlike the rest of a radar
+#: file, which nobody has looked at name by name. The tier split
+#: governs names nobody chose; a [[never]] entry is the opposite of
+#: that, so it outranks the tier the name happens to sit in.
+_CORPUS_TIERS = {
+    "corpus.jsonl": "radar",
+    "corpus_cjk.jsonl": "contract",
+    "corpus_issues.jsonl": "radar",
+    "corpus_rules.jsonl": "contract",
+    "corpus_shapes.jsonl": "contract",
 }
 
 
@@ -464,6 +622,32 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
                     f"is expected to explain nothing, and the reason is "
                     f"the whole safeguard -- an exemption nobody can "
                     f"justify means the rule should be deleted instead")
+        if "orders" in rule:
+            orders = rule["orders"]
+            if not isinstance(orders, list) \
+                    or not all(isinstance(o, str) for o in orders):
+                raise SystemExit(
+                    f"{where} has an 'orders' that is not a list of "
+                    f"strings ({orders!r}); _entry_matches would ignore "
+                    f"it and the rule would go back to claiming a diff "
+                    f"under EVERY order, which is the scoping this key "
+                    f"exists to undo")
+            if not orders:
+                raise SystemExit(
+                    f"{where} has an empty 'orders', which no comparison "
+                    f"can be run under -- a rule that can never match. "
+                    f"Omit the key to stay order-blind")
+            legal = _legal_orders()
+            bad = sorted(set(orders) - legal)
+            if bad:
+                raise SystemExit(
+                    f"{where} names {bad} in 'orders', which shapes.py "
+                    f"declares for no shape and which is not the "
+                    f"{_DEFAULT_ORDER!r} sentinel; expected from "
+                    f"{sorted(legal)}. No comparison runs under an order "
+                    f"no shape asks for, so the rule would explain "
+                    f"nothing and report as dormant instead of saying "
+                    f"the name is wrong")
         has_regex, has_fields = "name_regex" in rule, "fields" in rule
         if not has_regex and not has_fields:
             raise SystemExit(
@@ -657,19 +841,40 @@ def validate_exclusions(entries: list[dict[str, object]],
 
 
 def _entry_matches(rule: dict[str, object], name: str,
-                   diff_fields: set[str]) -> bool:
+                   diff_fields: set[str], order: str | None = None) -> bool:
     """Does this entry's narrowing admit this diff?
 
     Called twice in classify() -- once for exclusions, once for rules --
-    and again in dormant_rules(). All three narrow on the same two keys,
+    and again in dormant_rules(). All three narrow on the same keys,
     and the dormancy diagnosis is only meaningful if it asks the
     question classify asks, so there is one predicate rather than three
     copies of it.
 
-    A non-str `name_regex` or non-list `fields` is IGNORED rather than
-    rejected here: validate_rules and validate_exclusions reject both at
-    startup, and duplicating that judgement in the hot path would put the
-    two in a position to disagree.
+    `order` is the name_order the COMPARISON ran under (None = the
+    default order), and a rule carrying `orders` admits only the orders
+    it lists. A comparison under the default order is matched by the
+    "DEFAULT" sentinel, there being no constant to name and no null to
+    put in a TOML array. Without that narrowing a rule is order-blind,
+    which is what every rule written before shape-tagged entries
+    existed is: the key is optional and its absence is today's
+    behavior -- and the absence is not free, since an order-blind rule
+    reaching an order-bearing name absorbs that name's order-only
+    regressions (main() prints an ORDER-BLIND notice where it sees
+    that happen). It matters
+    because a name can be compared twice, once per order, and the two
+    diffs can have the SAME fields for opposite reasons -- the
+    feat(#395) fold moving {family, given, middle} under a declared
+    family-first order is intended, and the same three roles moving on
+    the same string under the DEFAULT order would be that fold leaking
+    where it must not, which an order-blind rule would absorb and call
+    intentional (#372's failure mode, on the most plausible regression
+    of the very change the rule describes).
+
+    A non-str `name_regex`, non-list `fields` or non-list `orders` is
+    IGNORED rather than rejected here: validate_rules and
+    validate_exclusions reject them at startup, and duplicating that
+    judgement in the hot path would put the two in a position to
+    disagree.
     """
     name_regex = rule.get("name_regex")
     if isinstance(name_regex, str) and not re.search(name_regex, name):
@@ -677,12 +882,17 @@ def _entry_matches(rule: dict[str, object], name: str,
     fields = rule.get("fields")
     if isinstance(fields, list) and not diff_fields <= set(fields):
         return False
+    orders = rule.get("orders")
+    if isinstance(orders, list) \
+            and (_DEFAULT_ORDER if order is None else order) not in orders:
+        return False
     return True
 
 
 def classify(name: str, diff_fields: set[str],
              rules: list[dict[str, object]],
-             exclusions: list[dict[str, object]] | None = None) -> str | None:
+             exclusions: list[dict[str, object]] | None = None,
+             order: str | None = None) -> str | None:
     """Which rule explains this diff, or None if nothing does.
 
     Exclusions are consulted FIRST and win outright. They are the
@@ -704,12 +914,21 @@ def classify(name: str, diff_fields: set[str],
     name whose parens mark a nickname to one rule and a suffix to
     another stays classifiable on the reading the exclusion is not
     about.
+
+    `order` is the name_order this comparison ran under and narrows the
+    RULES alone: exclusions have no `orders` key (validate_exclusions
+    rejects one as unknown), so they stay order-blind, deliberately.
+    An over-wide exclusion is loud rather than silent -- refusal is
+    monotone, so the widest thing it can do is make a name report
+    UNEXPLAINED and fail the run -- and no exclusion on the books
+    protects a shape that reads differently under a declared order. The
+    key can be given to them the day one does.
     """
     for entry in exclusions or ():
         if _entry_matches(entry, name, diff_fields):
             return None
     for rule in rules:
-        if _entry_matches(rule, name, diff_fields):
+        if _entry_matches(rule, name, diff_fields, order):
             return rule["issue"]  # type: ignore[return-value]
     return None
 
@@ -750,7 +969,7 @@ class _Dormancy(NamedTuple):
 
 
 def dormant_rules(rules: list[dict[str, object]], explained: set[str],
-                  diffing: list[tuple[str, set[str]]],
+                  diffing: list[tuple[str, set[str], str | None]],
                   exclusions: list[dict[str, object]] | None = None,
                   ) -> _Dormancy:
     """Which rules explained nothing, and which kind of nothing.
@@ -789,11 +1008,16 @@ def dormant_rules(rules: list[dict[str, object]], explained: set[str],
             continue
         if declared:
             continue
-        matched = [(n, d) for n, d in diffing
-                   if _entry_matches(rule, n, d)]
+        # each diff carries the ORDER its comparison ran under, so a
+        # rule scoped by `orders` is asked the question classify asks
+        # it: a rule that would claim a name only under FAMILY_FIRST is
+        # not "shadowed" by whatever explains that name's default-order
+        # diff
+        matched = [(n, d, o) for n, d, o in diffing
+                   if _entry_matches(rule, n, d, o)]
         winners = Counter(
-            c for c in (classify(n, d, ordered, exclusions)
-                        for n, d in matched) if c is not None)
+            c for c in (classify(n, d, ordered, exclusions, o)
+                        for n, d, o in matched) if c is not None)
         if not matched:
             undeclared.append(_Dormant(issue, "reverted", ""))
         elif winners:
@@ -890,6 +1114,86 @@ def over_declared_rules(
     return tuple(found)
 
 
+def _load_entries(path: Path) -> list[dict[str, object]]:
+    """Corpus lines as entry dicts. A line is either a bare JSON
+    string (the original format) or an object with a "name" plus
+    optional metadata -- "tests" labels from build_corpus.py, and a
+    "shape" id from build_shapes_corpus.py (#469). Tolerating both
+    means compare.py itself never needs a flag day across its five
+    corpus files: corpus.jsonl and corpus_shapes.jsonl carry object
+    lines, the other three are still bare strings, and both shapes
+    stay legal everywhere a corpus line is read.
+
+    A "tests" label is read only when the radar block prints, well
+    after the multi-minute worker pass, so a malformed one left
+    unchecked would crash there rather than here -- exactly what
+    validate_rules' compile-at-startup paragraph exists to prevent.
+
+    "shape" is checked for a different hazard. main() resolves it
+    against shapes.py into the "order" the worker protocol sends, and
+    that loop runs BEFORE the worker, so a bad id is not a late crash:
+    it is a wrong comparison that reports as a passing one. `true`
+    passes isinstance(shape, int) and hash(True) == hash(1), so an
+    unchecked one resolves against shapes.py's entry 1 and the line is
+    compared under that shape's order, silently. Only the TYPE is
+    checked here; an unresolvable id is main()'s to catch, since only
+    it has shapes.py loaded.
+
+    Unknown keys are rejected the way validate_rules rejects them, and
+    for the same reason: a misspelled key is not ignored, it drops the
+    narrowing the line meant to declare, and the line then compares
+    under the default order with nothing saying so. "order", "tier" and
+    "file" are rejected rather than obeyed -- the comparison computes
+    all three per entry and overwrites whatever a line said, so a line
+    writing one would be silently discarded. "order" in particular is
+    the key the WIRE protocol documents, which makes it the one a
+    corpus author is likeliest to reach for.
+    """
+    allowed = {"name", "tests", "shape"}
+    entries: list[dict[str, object]] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        raw = json.loads(line)
+        if isinstance(raw, str):
+            entries.append({"name": raw})
+        elif isinstance(raw, dict) and isinstance(raw.get("name"), str):
+            unknown = sorted(set(raw) - allowed)
+            if unknown:
+                raise SystemExit(
+                    f"{path.name}: a corpus line has unknown key(s) "
+                    f"{unknown}; expected only {sorted(allowed)}: "
+                    f"{line!r}. A misspelled key is not ignored -- it "
+                    f"drops the narrowing the line declares, and the "
+                    f"name is then compared under the default order "
+                    f"with nothing saying so. 'order', 'tier' and "
+                    f"'file' are computed by the comparison itself, so "
+                    f"a line writing one would be overwritten")
+            tests = raw.get("tests")
+            if tests is not None and (
+                    not isinstance(tests, list)
+                    or not all(isinstance(t, str) for t in tests)):
+                raise SystemExit(
+                    f"{path.name}: a corpus line's 'tests' must be a "
+                    f"list of strings, not {tests!r}: {line!r}")
+            shape = raw.get("shape")
+            # bool is an int subclass in Python, and hash(True) == hash(1)
+            # -- unexcluded, {"shape": true} would pass isinstance(shape,
+            # int) and silently resolve to shape 1's order
+            if shape is not None and (
+                    not isinstance(shape, int) or isinstance(shape, bool)):
+                raise SystemExit(
+                    f"{path.name}: a corpus line's 'shape' must be an "
+                    f"int naming a shapes.py entry, not {shape!r}: "
+                    f"{line!r}")
+            entries.append(dict(raw))
+        else:
+            raise SystemExit(
+                f"{path.name}: corpus line is neither a JSON string "
+                f"nor an object with a string 'name': {line!r}")
+    return entries
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     # Every corpus by default: they have different blind spots (see
@@ -937,12 +1241,23 @@ def main() -> int:
                 f"{missing}. A corpus that vanishes shrinks the "
                 f"comparison silently -- restore it, or drop its floor "
                 f"if it is meant to be gone")
+    # Contract files load FIRST so the (name, order) dedup below keeps
+    # the contract reading of a string both tiers hold.
+    paths = sorted(paths, key=lambda p: (
+        _CORPUS_TIERS.get(p.name) != "contract", p.name))
     per_file = {}
-    corpus = []
+    entries: list[dict[str, object]] = []
     for path in paths:
-        names = [json.loads(line)
-                 for line in path.read_text().splitlines() if line.strip()]
-        if not names:
+        tier = _CORPUS_TIERS.get(path.name)
+        if tier is None:
+            raise SystemExit(
+                f"{path.name} has no entry in _CORPUS_TIERS. Every "
+                f"corpus must choose: 'contract' (an unmatched diff "
+                f"fails the run) or 'radar' (an unmatched diff is "
+                f"reported and cannot fail). A default here would let "
+                f"a new corpus pick one by accident")
+        file_entries = _load_entries(path)
+        if not file_entries:
             raise SystemExit(f"{path.name} is empty; comparison aborted")
         floor = _CORPUS_FLOORS.get(path.name)
         if floor is None:
@@ -951,21 +1266,86 @@ def main() -> int:
                 f"a little under its size: without a floor a corpus can "
                 f"shrink to a handful of names and the run still exits "
                 f"0, having compared far less than it reports")
-        if len(names) < floor:
+        if len(file_entries) < floor:
             raise SystemExit(
-                f"{path.name} holds {len(names)} names, below its floor "
-                f"of {floor} -- it has shrunk or been truncated. The run "
-                f"would still exit 0 while comparing a fraction of what "
-                f"it claims. Restore the file, or lower the floor "
-                f"deliberately if names were removed on purpose")
-        per_file[path.name] = len(names)
-        corpus.extend(names)
-    # dedupe across files, keeping first-seen order stable for output
-    corpus = list(dict.fromkeys(corpus))
+                f"{path.name} holds {len(file_entries)} names, below its "
+                f"floor of {floor} -- it has shrunk or been truncated. "
+                f"The run would still exit 0 while comparing a fraction "
+                f"of what it claims. Restore the file, or lower the "
+                f"floor deliberately if names were removed on purpose")
+        per_file[path.name] = len(file_entries)
+        for e in file_entries:
+            e["tier"] = tier
+            e["file"] = path.name
+        entries.extend(file_entries)
+    # resolve each entry's optional "shape" to the "order" the worker
+    # protocol actually sends -- a public nameparser constant name, or
+    # None for the default order
+    shapes_by_id = _load_shapes()
+    for e in entries:
+        shape = e.get("shape")
+        if shape is None:
+            e["order"] = None
+            continue
+        if shape not in shapes_by_id:
+            raise SystemExit(
+                f"corpus entry {e['name']!r} declares shape {shape!r}, "
+                f"which shapes.py does not define")
+        e["order"] = shapes_by_id[shape].order
+    # dedupe on (name, order): the same string tagged with two shapes
+    # is two comparisons, not a duplicate -- each order is compared
+    # under its own reading. First-seen wins, and contract files were
+    # loaded first. The min-baseline skip below reads the SURVIVOR's
+    # shape, which is safe only while min_baseline is a function of
+    # order alone (true today, since every order-bearing shape's
+    # minimum is 2.0.0) -- a future order-None shape carrying a higher
+    # minimum than an order-bearing duplicate would make survival, and
+    # so the skip decision, depend on which file loaded first.
+    by_key: dict[tuple[str, str | None], dict[str, object]] = {}
+    for e in entries:
+        by_key.setdefault((e["name"], e.get("order")), e)
+    entries = list(by_key.values())
+    # an order-bearing entry must never reach a worker whose baseline
+    # cannot honor it (no Policy below 2.0.0) -- skip it and say so,
+    # rather than shrink the comparison silently. Skips are also
+    # counted PER FILE: per_file above records pre-skip counts, so a
+    # shapes corpus fully skipped at an old baseline would otherwise
+    # print at full size while contributing nothing.
+    kept = []
+    dropped = 0
+    dropped_by_file: dict[str, int] = {}
+    dropped_shape_ids: set[int] = set()
+    dropped_minimums: set[str] = set()
+    for e in entries:
+        shape = e.get("shape")
+        if shape is not None and _parse_version(baseline) \
+                < _parse_version(shapes_by_id[shape].min_baseline):
+            dropped += 1
+            dropped_by_file[e["file"]] = dropped_by_file.get(e["file"], 0) + 1
+            dropped_shape_ids.add(shape)
+            dropped_minimums.add(shapes_by_id[shape].min_baseline)
+            continue
+        kept.append(e)
+    if dropped:
+        ids = ", ".join(str(i) for i in sorted(dropped_shape_ids))
+        minimums = ", ".join(sorted(dropped_minimums, key=_parse_version))
+        print(f"skipped {dropped} name{'s' if dropped > 1 else ''} "
+              f"tagged shape(s) [{ids}]: baseline {baseline} predates "
+              f"their minimum ({minimums})")
+    entries = kept
+    corpus = [e["name"] for e in entries]
     # per-file counts, not just the total: a corpus that shrinks or
-    # vanishes is only visible if its own number is printed
-    print("corpora: " + ", ".join(f"{name} ({n})"
-                                  for name, n in per_file.items()))
+    # vanishes is only visible if its own number is printed. A file
+    # with skips ALSO prints its skip count, not just its final size --
+    # otherwise a shapes corpus skipped to zero reads as a corpus that
+    # was simply never that large. N is pre-dedup and K counts only
+    # the baseline-minimum skip, so N - K is NOT "how many from this
+    # file were compared" -- an entry the cross-file dedup dropped is
+    # in neither number.
+    print("corpora: " + ", ".join(
+        f"{name} ({n}, {dropped_by_file[name]} skipped)"
+        if dropped_by_file.get(name) else f"{name} ({n})"
+        for name, n in per_file.items()))
 
     # The tree is checked BEFORE the worker runs. It depends on nothing
     # the worker produces, and validate_rules' own reasoning applies: a
@@ -978,13 +1358,29 @@ def main() -> int:
 
     want_v2 = "v2" in surfaces
     if want_v2:
-        from nameparser import parse
-    tell, old_rows = _run_worker(baseline, want_v2, corpus)
+        from nameparser import Parser, Policy, parse
+    tree_parsers: dict[str, object] = {}
+
+    def _tree_parse(name: str, order: str | None) -> object:
+        if order is None:
+            return parse(name)
+        if order not in tree_parsers:
+            tree_parsers[order] = Parser(policy=Policy(
+                name_order=getattr(nameparser, order)))
+        return tree_parsers[order].parse(name)
+
+    tell, old_rows = _run_worker(baseline, want_v2, entries)
     print(f"baseline: nameparser {tell['__version__']} ({tell['__file__']})")
-    by_issue: dict[str, list[str]] = {}
+    #: (name, order) pairs, not names: one string compared under two
+    #: orders is two entries, and the report renders the order tag from
+    #: the pair. Rendering at print time rather than storing the line
+    #: keeps the bare name available to the Latin-only stat below,
+    #: which would otherwise need a second list to drift out of step
+    #: with this one.
+    by_issue: dict[str, list[tuple[str, str | None]]] = {}
     #: the union of the diffs each rule explained, for over_declared_rules.
     #: Kept beside by_issue rather than inside it: the summary printout
-    #: and `changed` both read by_issue as a list of names.
+    #: reads by_issue as a list of pairs.
     roles_by_issue: dict[str, set[str]] = {}
     # BOTH surfaces' old/new are retained, not just the facade's. A diff
     # can exist on the v2 surface alone -- an _ambiguities-only change is
@@ -993,47 +1389,105 @@ def main() -> int:
     # facade dicts would print such a name under UNEXPLAINED with no
     # field lines under it at all: a failure nobody can act on.
     unexplained: list[_Unexplained] = []
-    # every name that diffed, with its diff, so dormant_rules can ask
-    # which rule WOULD have claimed one that no rule did
-    diffing: list[tuple[str, set[str]]] = []
-    for name, old in zip(corpus, old_rows):
-        new = {k: v or "" for k, v in HumanName(name).as_dict().items()
-               if k in FIELDS}
-        # canonicalized on the way in: the ledger speaks Role's names,
-        # and the facade is the surface whose vocabulary differs
-        diff = {_canonical_field(f) for f in FIELDS
-                if old["facade"].get(f, "") != new.get(f, "")}
+    # radar-tier equivalent of unexplained: reported, never fatal (#468)
+    radar: list[tuple[dict, _Unexplained]] = []
+    # every name that diffed, with its diff AND the order its
+    # comparison ran under, so dormant_rules can ask which rule WOULD
+    # have claimed one that no rule did -- the same question classify
+    # asks, order included
+    diffing: list[tuple[str, set[str], str | None]] = []
+    #: (issue, name, order) for each diff an order-blind rule explained
+    #: under a declared order. Informational, never fatal.
+    order_blind: list[tuple[str, str, str]] = []
+    #: classify() returns an issue; the notice needs the rule behind it.
+    #: Keyed by issue because validate_rules has already refused two
+    #: rules sharing one.
+    rules_by_issue = {str(r["issue"]): r for r in rules}
+    for entry, old in zip(entries, old_rows):
+        name = entry["name"]
+        order = entry.get("order")
+        if order is None:
+            new = {k: v or "" for k, v in HumanName(name).as_dict().items()
+                   if k in FIELDS}
+            # canonicalized on the way in: the ledger speaks Role's
+            # names, and the facade is the surface whose vocabulary
+            # differs
+            diff = {_canonical_field(f) for f in FIELDS
+                    if old["facade"].get(f, "") != new.get(f, "")}
+        else:
+            # order-bearing entries are compared on the v2 surface
+            # alone -- the facade is the v1-compat surface, and a
+            # family-first name is not a v1 contract
+            new = {}
+            diff = set()
         new_v2: dict[str, object] = {}
         if want_v2:
-            p = parse(name)
+            p = _tree_parse(name, order)
+            # must stay identical to the worker template's _v2_row
+            # (_WORKER_TEMPLATE, this file) -- duplicated rather than
+            # shared across the process boundary
             new_v2 = {f: (getattr(p, f, "") or "") for f in V2_FIELDS}
             new_v2["_ambiguities"] = sorted(
                 {a.kind.name for a in getattr(p, "ambiguities", ())})
             diff |= {_canonical_field(f)
                      for f in (*V2_FIELDS, "_ambiguities")
-                     if old["v2"].get(f, "") != new_v2.get(f, "")}
+                     if old.get("v2", {}).get(f, "") != new_v2.get(f, "")}
         if not diff:
             continue
-        diffing.append((name, diff))
-        issue = classify(name, diff, rules, exclusions)
+        diffing.append((name, diff, order))
+        issue = classify(name, diff, rules, exclusions, order)
         if issue is None:
-            unexplained.append(
-                (name, old["facade"], new, old.get("v2", {}), new_v2))
+            row = (name, old.get("facade", {}), new, old.get("v2", {}),
+                   new_v2, order)
+            # classify() returns None for two different reasons: no
+            # rule matched, or a [[never]] entry refused the name --
+            # and only the first belongs to the tier split. An
+            # exclusion was chosen (see _CORPUS_TIERS), so it is fatal
+            # on a radar name exactly as it is on a contract one.
+            excluded = any(_entry_matches(x, name, diff)
+                           for x in exclusions)
+            if entry["tier"] == "radar" and not excluded:
+                radar.append((entry, row))
+            else:
+                unexplained.append(row)
         else:
-            by_issue.setdefault(issue, []).append(name)
+            by_issue.setdefault(issue, []).append((name, order))
             roles_by_issue.setdefault(issue, set()).update(diff)
+            if order is not None and "orders" not in rules_by_issue[issue]:
+                order_blind.append((issue, name, order))
 
-    changed = [n for names in by_issue.values() for n in names] \
-        + [row[0] for row in unexplained]
+    # the bare halves of by_issue's pairs: _is_latin_only reads the
+    # string as a name, so it must never see the rendered order tag. A
+    # string compared under two orders counts twice here, accepted.
+    changed = [n for pairs in by_issue.values() for n, _ in pairs] \
+        + [row[0] for row in unexplained] \
+        + [e["name"] for e, _ in radar]
     latin = sum(1 for n in changed if _is_latin_only(n))
     print(f"corpus: {len(corpus)} names; "
           f"intentional diffs: {sum(map(len, by_issue.values()))}; "
           f"unexplained: {len(unexplained)}; "
+          f"radar unclassified: {len(radar)}; "
           f"{latin} of {len(changed)} changed names are Latin-only\n")
     for issue, names in sorted(by_issue.items()):
         print(f"## {issue} ({len(names)})")
-        for n in names[:10]:
-            print(f"  {n!r}")
+        for n, o in names[:10]:
+            print(f"  {n!r}{_order_tag(o)}")
+        print()
+    # Informational, and deliberately outside the exit code: an
+    # order-blind rule is legal, and every rule written before shape
+    # tags is one. What the block buys is that the absorption stops
+    # being invisible -- a rule sorted ahead of the scoped ones can
+    # reach an order-bearing name its author never considered, and an
+    # order-only regression on that name would then classify as an
+    # intentional change.
+    if order_blind:
+        print("ORDER-BLIND (informational, not in the exit code): a rule "
+              "carrying no `orders` key explained a diff from an "
+              "order-bearing comparison. Consider scoping it with "
+              "`orders` -- including the \"DEFAULT\" sentinel if it "
+              "explains default-order diffs too.\n")
+        for issue, name, tagged in order_blind:
+            print(f"  {issue!r} explained {name!r}{_order_tag(tagged)}")
         print()
     dormancy = dormant_rules(rules, set(by_issue), diffing, exclusions)
     for dormant in dormancy.undeclared:
@@ -1066,30 +1520,27 @@ def main() -> int:
                  if args.corpus else ""))
     if overwide:
         print()
-    if unexplained:
+    # the radar rows below print the same Role-named field lines, so
+    # the legend belongs to both blocks or the radar reader is told
+    # nothing about the vocabulary they are reading
+    if unexplained or radar:
         print("Field names below are Role's, matching what a ledger "
               "`fields` rule must say.\n")
-    for name, old_facade, new, old_v2, new_v2 in unexplained:
-        print(f"UNEXPLAINED {name!r}")
-        # Role's names, not the facade's: this block exists to be turned
-        # into a ledger rule, and a rule naming the facade's `first`
-        # is rejected by validate_rules at startup. (Before that guard
-        # existed it parsed, validated and silently never matched --
-        # which is why the label printed here has to be the label a
-        # rule needs.) Both surfaces are walked, and a field is
-        # reported once even when both moved, since one rule covers it.
-        seen: set[str] = set()
-        for f in FIELDS:
-            if old_facade.get(f, "") != new.get(f, ""):
-                seen.add(_canonical_field(f))
-                print(f"    {_canonical_field(f)}: "
-                      f"{old_facade.get(f, '')!r} -> {new.get(f, '')!r}")
-        for f in (*V2_FIELDS, "_ambiguities"):
-            if old_v2.get(f, "") != new_v2.get(f, "") \
-                    and _canonical_field(f) not in seen:
-                print(f"    {_canonical_field(f)}: "
-                      f"{old_v2.get(f, '')!r} -> {new_v2.get(f, '')!r}"
-                      f"   [v2 surface only]")
+    for name, old_facade, new, old_v2, new_v2, order in unexplained:
+        # the order tag distinguishes a family-first regression from a
+        # default-order one on the same name -- otherwise indistinguishable
+        # in the report
+        print(f"UNEXPLAINED {name!r}{_order_tag(order)}")
+        _print_field_diffs(old_facade, new, old_v2, new_v2, order)
+    if radar:
+        print("\nRadar tier (scraped/harvested names, #468): shown, "
+              "never blocking. Promote a name that matters via a "
+              "cases.py row + shape tag.\n")
+    for entry, (name, old_facade, new, old_v2, new_v2, order) in radar:
+        labels = entry.get("tests")
+        tag = f"   [v1: {', '.join(labels)}]" if labels else ""
+        print(f"UNCLASSIFIED (radar) {name!r}{tag}{_order_tag(order)}")
+        _print_field_diffs(old_facade, new, old_v2, new_v2, order)
     # A rule explaining nothing is as much a broken contract as an
     # unexplained diff: both mean the ledger no longer describes what the
     # code does. A rule explaining LESS than it declares is the third

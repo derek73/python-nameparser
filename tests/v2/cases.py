@@ -34,9 +34,23 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from nameparser import Policy
-from nameparser._policy import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
-                               PatronymicRule)
+from nameparser import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
+                         Policy)
+# Not in nameparser.__all__: _order_repr renders a name_order for an
+# error message, and _SCRIPT_RANGES/_script_matcher build the same
+# borrowed predicate build_cjk_corpus.py uses to find CJK text.
+from nameparser._policy import (PatronymicRule, _SCRIPT_RANGES, _order_repr,
+                               _script_matcher)
+
+#: mirrors tools/differential/shapes.py's SHAPES keys;
+#: test_case_shape_ids_exist_in_the_inventory (test_ledger_guards.py)
+#: holds the two equal, since this file cannot import tools/.
+_SHAPE_IDS = frozenset({1, 2, 3, 4, 5})
+
+#: Whether a text carries a codepoint the parser's script table
+#: classifies -- built once, same idiom as build_cjk_corpus.py's
+#: module-scope `_has_cjk`.
+_has_cjk = _script_matcher(*_SCRIPT_RANGES)
 
 
 @dataclass(frozen=True)
@@ -51,11 +65,67 @@ class Case:
     classification: str = "parity"
     ambiguities: tuple[str, ...] = ()   # expected AmbiguityKind values
     notes: str = ""
+    #: input-shape id from tools/differential/shapes.py (#468/#469).
+    #: Tagging a row admits its text to the differential's CONTRACT
+    #: corpus (see tools/differential/shapes.py, projected into
+    #: corpus_shapes.jsonl by build_shapes_corpus.py beside it) under
+    #: the shape's name_order. Optional: a row
+    #: exercising a policy fork rather than an input shape stays
+    #: untagged.
+    shape: int | None = None
 
     def __post_init__(self) -> None:
         if self.policy is not None and self.locale is not None:
             raise ValueError(
                 f"{self.id}: policy and locale are mutually exclusive")
+        # A shape CARRIES its order (the 2026-09-01 corpus design), so
+        # a tag that disagrees with the row's own policy would admit a
+        # name to the corpus under an order the row never asserted.
+        if self.shape is not None:
+            if self.shape not in _SHAPE_IDS:
+                raise ValueError(f"{self.id}: unknown shape {self.shape}")
+            # A locale carries an order too (script_orders), but as a
+            # LOOKUP this table cannot see -- cases.py stays
+            # import-light and stores only the locale CODE. Faking
+            # "declared" as GIVEN_FIRST for a locale row would let a
+            # tag validate against an order nobody here can name.
+            if self.locale is not None:
+                raise ValueError(
+                    f"{self.id}: a shape tag needs the row's own "
+                    f"policy; a locale carries an order this table "
+                    f"cannot see")
+            # corpus_cjk.jsonl already claims this ground: _has_cjk is
+            # the same predicate build_cjk_corpus.py selects with, so
+            # a shape tag would double-admit the text (shapes 1-5 are
+            # the Latin-order arrangements; CJK is deliberately absent
+            # from shapes.py, #469's open question). Order alone
+            # cannot stand in for this check -- DEFAULT_SCRIPT_ORDERS
+            # forces HAN/HANGUL/HIRAGANA to FAMILY_FIRST but leaves
+            # KATAKANA unmapped, so a pure-katakana text can carry a
+            # GIVEN_FIRST name_order and still be CJK ground, not a
+            # shape.
+            if _has_cjk(self.text):
+                raise ValueError(
+                    f"{self.id}: shape {self.shape} cannot tag CJK "
+                    f"text; that ground is corpus_cjk.jsonl's, and "
+                    f"whether a family-first CJK shape exists is "
+                    f"#469's open question")
+            declared = (self.policy.name_order if self.policy is not None
+                        else GIVEN_FIRST)
+            wanted = {4: FAMILY_FIRST, 5: FAMILY_FIRST_GIVEN_LAST}.get(
+                self.shape, GIVEN_FIRST)
+            if declared != wanted:
+                if self.policy is not None:
+                    declared_desc = (
+                        f"the row's policy declares {_order_repr(declared)}")
+                else:
+                    declared_desc = ("this row declares no policy, so it "
+                                      "is GIVEN_FIRST")
+                raise ValueError(
+                    f"{self.id}: shape {self.shape} implies name_order "
+                    f"{_order_repr(wanted)}, but {declared_desc}; add "
+                    f"policy=Policy(name_order={_order_repr(wanted)}) or "
+                    f"drop the tag")
 
 
 _ES = Policy(patronymic_rules=frozenset({PatronymicRule.EAST_SLAVIC}))
@@ -63,21 +133,24 @@ _TK = Policy(patronymic_rules=frozenset({PatronymicRule.TURKIC}))
 _SD = Policy(extra_suffix_delimiters=frozenset({" - "}))
 
 CASES: tuple[Case, ...] = (
-    Case("plain", "John Smith", {"given": "John", "family": "Smith"}),
+    Case("plain", "John Smith", {"given": "John", "family": "Smith"},
+         shape=1),
     Case("family_comma", "Smith, John",
-         {"given": "John", "family": "Smith"}),
+         {"given": "John", "family": "Smith"}, shape=2),
     Case("suffix_comma", "John Smith, PhD",
-         {"given": "John", "family": "Smith", "suffix": "PhD"}),
+         {"given": "John", "family": "Smith", "suffix": "PhD"}, shape=3),
     Case("bound_given_pairwise_only", "Salem, Abdul Rahman Ahmed",
          {"given": "Abdul Rahman", "middle": "Ahmed", "family": "Salem"},
          notes="the bound-given join is PAIRWISE (one merge, v1 "
-               "parity): the third piece stays a middle name"),
+               "parity): the third piece stays a middle name",
+         shape=2),
     Case("family_comma_three_part_trailing_strict", "Smith, John V, Jr.",
          {"given": "John", "middle": "V", "family": "Smith",
           "suffix": "Jr."},
          notes="the lenient trailing test applies only to TWO-part "
                "names; a third comma part makes the trailing token a "
-               "middle initial (v1 parity, pinned live 2026-07-17)"),
+               "middle initial (v1 parity, pinned live 2026-07-17)",
+         shape=2),
     Case("triple_trailing_commas", "Doe,,,",
          {"family": "Doe"},
          notes="one trailing comma is cosmetic; the rest are "
@@ -307,7 +380,8 @@ CASES: tuple[Case, ...] = (
                "stops at 'Cruz' because the declared order says what "
                "follows the family is not more surname. It reaches "
                "'Cruz' THROUGH ambiguous 'la', which is the chain a "
-               "stop keyed on never-given membership would break"),
+               "stop keyed on never-given membership would break",
+         shape=4),
     Case("leading_never_given_particle_two_leftovers_"
          "family_first_given_last",
          "de la Cruz Juan Carlos",
@@ -321,7 +395,8 @@ CASES: tuple[Case, ...] = (
                "PR #394 put the placing in grouping, its review found "
                "the whole suite passed with name_order discarded from "
                "it; on this branch the same mutation fails three "
-               "tests, this row among them"),
+               "tests, this row among them",
+         shape=5),
     # The Dutch alphabetized listing: "Beethoven, Ludwig van" is how
     # "Ludwig van Beethoven" is filed, the tussenvoegsel moved behind
     # the given name but belonging to the surname (#379).
@@ -336,7 +411,8 @@ CASES: tuple[Case, ...] = (
                "'Beethoven', which is what #130 asked for. The "
                "textbook-correct Dutch listing reports the fork all "
                "the same (#405): the parser cannot tell it from "
-               "'Nguyen, Thi Van', which is the same string shape"),
+               "'Nguyen, Thi Van', which is the same string shape",
+         shape=2),
     Case("tussenvoegsel_multiword", "Berg, Jan van der",
          {"given": "Jan", "family": "van der Berg"},
          classification="fix(#379)",
@@ -1058,7 +1134,8 @@ CASES: tuple[Case, ...] = (
                "leftover given slot, so this read given 'née' / middle "
                "'Vega'. Consumed and dropped, it never reaches the "
                "placement. No given name at all is the right answer "
-               "for family-plus-maiden input"),
+               "for family-plus-maiden input",
+         shape=4),
     Case("maiden_marker_leaves_family_all_particles",
          "Jane de la née Jones",
          {"given": "Jane", "family": "de la", "maiden": "Jones"},
@@ -1156,7 +1233,8 @@ CASES: tuple[Case, ...] = (
                "leaves no leftover to distribute, so the reading that "
                "distinguishes them has nothing to work on. Before "
                "#399 they differed -- given 'Vega' middle 'née' here "
-               "against given 'née' middle 'Vega' under FAMILY_FIRST"),
+               "against given 'née' middle 'Vega' under FAMILY_FIRST",
+         shape=5),
     Case("connective_join_never_reaches_a_taken_marker",
          "Jane van der Berg née y Jones",
          {"given": "Jane", "family": "van der Berg",
@@ -2528,19 +2606,42 @@ CASES: tuple[Case, ...] = (
     Case("family_comma_no_name_word_family_first", "de Mesnil Jean, Dr.",
          {"title": "Dr.", "given": "Jean", "family": "de Mesnil"},
          policy=Policy(name_order=FAMILY_FIRST),
-         notes="as 'de Mesnil Jean' reads under the same order; master "
-               "read it through the suffix-comma route ('dr' was "
-               "suffix vocabulary) and got the fold that way"),
+         classification="feat(#395)",
+         notes="core-only: name_order has no v1 spelling, so 'parity' "
+               "(this field's default) could never have been true of "
+               "this row. The differential compares it at 2.0.0 and "
+               "2.1.0 under its own order instead, where it moves: "
+               "#395's fold takes 'de Mesnil' where both read family "
+               "'de', and the #296 half turns the post-comma 'Dr.' "
+               "from a suffix into a title. As 'de Mesnil Jean' reads "
+               "under the same order; master read it through the "
+               "suffix-comma route ('dr' was suffix vocabulary) and "
+               "got the fold that way",
+         shape=4),
     Case("family_comma_no_name_word_family_first_given_last",
          "de la Cruz Juan Carlos, Dr.",
          {"title": "Dr.", "given": "Carlos", "middle": "Juan",
           "family": "de la Cruz"},
-         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST)),
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         classification="feat(#395)",
+         notes="core-only: name_order has no v1 spelling. The row "
+               "above with two leftovers instead of one, which is the "
+               "only shape in which the two family-first orders can "
+               "disagree about the distribution -- 'Juan' is the "
+               "middle name here and the given name there",
+         shape=5),
     Case("family_comma_no_name_word_family_first_plain", "John Smith, Dr.",
          {"title": "Dr.", "given": "Smith", "family": "John"},
          policy=Policy(name_order=FAMILY_FIRST),
-         notes="the declared order applies to the pre-comma name as it "
-               "does to 'John Smith' alone -- deliberate"),
+         classification="fix(#296)",
+         notes="core-only: name_order has no v1 spelling, but the "
+               "CHANGE here is the vocabulary half alone -- no "
+               "particle, so nothing folds, and the diff against 2.0.0 "
+               "is the {title, suffix} move 'dr' leaving the suffix "
+               "sets produces under every order. The declared order "
+               "applies to the pre-comma name as it does to 'John "
+               "Smith' alone -- deliberate",
+         shape=4),
     Case("title_word_trailing_is_not_a_title", "John Smith Prof.",
          {"given": "John", "middle": "Smith", "family": "Prof."},
          notes="the pre-existing behavior the audit_dr_trailing and "

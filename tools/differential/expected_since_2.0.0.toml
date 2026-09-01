@@ -267,6 +267,13 @@ issue = "fix(#399) a maiden marker bounds the particle chain that swallowed it"
 # per rule. See the 2.1 ledger's copy for the argument.
 name_regex = "(?i)^(?![^\\n]*,)[^\\n]*\\b(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)\\b.*?\\sn[e\u00e9]e\\s+\\S+$"
 fields = ["family", "maiden"]
+# Scoped to the DEFAULT order: every diff this rule explains is a
+# default-order one. The regex reaches 'de la Cruz n\u00e9e Vega', which
+# corpus_shapes.jsonl tags under both family-first orders, and this
+# rule sorts ahead of the two rules written for that name -- so
+# order-blind it would absorb a family-first regression there and call
+# it intentional.
+orders = ["DEFAULT"]
 
 [[change]]
 issue = "fix(#360) mc moved into the never-given particles, so it folds into the family"
@@ -607,8 +614,21 @@ issue = "fix(#296) dr is not postnominal vocabulary, so 'John Smith, Dr.' keeps 
 # is suffix by position) and moves only by gaining the
 # COMMA_STRUCTURE report C2 gives a third part that is not suffix
 # words.
+#
+# The two-part spelling is ALSO compared under FAMILY_FIRST, as shape
+# 4 of corpus_shapes.jsonl: the declared order applies to the
+# pre-comma name on both sides, so the split does not move and the
+# diff is the same {title, suffix} one from the same cause. That is
+# why the name lists twice in this rule's block, once order-tagged --
+# and why this rule's `orders` names exactly those two: unlike the
+# four rules at the foot of this file it genuinely explains the
+# default-order diff too, and unlike an order-blind rule it stops
+# there. FAMILY_FIRST_GIVEN_LAST is not listed because no shape tags
+# this string under it, so a diff arriving there would be one nobody
+# has looked at.
 name_regex = "(?i)^john,?\\s+smith,\\s*dr\\.?$"
 fields = ["title", "suffix", "_ambiguities"]
+orders = ["DEFAULT", "FAMILY_FIRST"]
 
 [[change]]
 issue = "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes"
@@ -1272,3 +1292,91 @@ issue = "fix(#371) a suffix never begins a name: the Ph./D. merge declines at th
 # on one.
 name_regex = "(?i)^Ph\\. D\\.( John Smith| Van Johnson|, Jr\\.)?$"
 fields = ["title", "given", "middle", "family", "suffix"]
+
+# -- the four rules below are the shape-tagged contract corpus's
+# arrival (#468): corpus_shapes.jsonl compares each tagged name under
+# its shape's declared order from baseline 2.0.0 up, so these are
+# comparisons no run before it made, and every one of them reads
+# [order: ...] in the report. The same four stand in
+# expected_since_2.1.0.toml -- both baselines predate the 2.2 cycle
+# where #395 and #399 landed, and a ledger's rules are its own
+# baseline's history.
+
+[[change]]
+issue = "feat(#395) a leading never-given particle bounds the family under a declared family-first order"
+# 'de la Cruz Juan Carlos', compared under FAMILY_FIRST and under
+# FAMILY_FIRST_GIVEN_LAST -- one rule for both, since the fold moves
+# the same three roles either way. This baseline read family 'de',
+# given 'la Cruz Juan Carlos': the leading chain took the particle
+# alone and everything after it was one given name. #395 lets the
+# chain reach 'Cruz' THROUGH ambiguous 'la' and stop there, because a
+# declared family-first order says what follows the family is not more
+# surname; the leftovers then distribute by the order -- given 'Juan'
+# middle 'Carlos' under FAMILY_FIRST, the reverse under
+# FAMILY_FIRST_GIVEN_LAST. The DEFAULT order is untouched, which is
+# why the untagged sibling case row reads family 'de la Cruz Juan
+# Carlos' at every baseline: with no order declared, 'Juan Carlos'
+# really can be more surname.
+name_regex = "^de la Cruz Juan Carlos$"
+fields = ["family", "given", "middle"]
+# Scoped, and this is the rule the key exists for: the same string is
+# also compared under the DEFAULT order (corpus_rules.jsonl carries
+# it), where the fold must NOT fire -- and if it leaked there it would
+# move these same three roles. Order-blind, this rule would absorb
+# that regression and call it intentional.
+orders = ["FAMILY_FIRST", "FAMILY_FIRST_GIVEN_LAST"]
+
+[[change]]
+issue = "fix(#399)/feat(#395) a consumed maiden marker leaves the family-first fold no given name"
+# 'de la Cruz née Vega' under both family-first orders. Two changes
+# compound: #395 bounds the family at 'Cruz' (this baseline read
+# family 'de'), and #399 consumes the marker before anything can place
+# it, so 'Vega' is the maiden name rather than a leftover competing
+# for the given slot. What is left is no given name at all, the right
+# answer for family-plus-maiden input -- and the two orders AGREE
+# after it, having nothing to distribute.
+#
+# Its own rule rather than a widening of `fix(#399) a maiden marker
+# bounds the particle chain that swallowed it` above: that rule
+# already reaches this name by regex and declines it on `fields`
+# (family+maiden, no `given`), and widening it would pre-excuse a lost
+# given name on the names it explains today.
+name_regex = "^de la Cruz née Vega$"
+fields = ["family", "given", "maiden"]
+# both family-first orders diff identically here, the marker having
+# left them nothing to distribute; the default-order reading of this
+# string is another rule's business
+orders = ["FAMILY_FIRST", "FAMILY_FIRST_GIVEN_LAST"]
+
+[[change]]
+issue = "feat(#395)/fix(#296) a comma followed only by a title leaves the pre-comma name to the declared order's fold"
+# 'de Mesnil Jean, Dr.' under FAMILY_FIRST. Two changes compound, and
+# the case row carries no tag of its own (cases.py's default), so the
+# rule names them: with 'dr' out of the suffix vocabulary (#296) the
+# comma is followed by nothing but titles, so the pre-comma run is
+# read as a name under the declared order -- and #395's fold then
+# takes it. suffix 'Dr.' -> title 'Dr.', family 'de' -> 'de Mesnil',
+# given 'Mesnil' middle 'Jean' -> given 'Jean'.
+#
+# The default-order sibling 'John Smith, Dr.' is NOT here: no
+# particle, so nothing folds, and its title/suffix move rides under
+# `fix(#296) ... keeps its split and its title` above, whose block now
+# lists that name twice -- once tagged [order: FAMILY_FIRST].
+name_regex = "^de Mesnil Jean, Dr\\.$"
+fields = ["title", "given", "middle", "family", "suffix"]
+orders = ["FAMILY_FIRST"]
+
+[[change]]
+issue = "feat(#395)/fix(#296) a comma followed only by a title leaves the pre-comma name to the declared order's fold, the given-last spelling"
+# 'de la Cruz Juan Carlos, Dr.' under FAMILY_FIRST_GIVEN_LAST: the
+# rule above's story with two leftovers instead of one, which is the
+# only shape in which the two family-first orders can disagree about
+# the distribution. suffix 'Dr.' -> title 'Dr.', family 'de' -> 'de la
+# Cruz', given 'la Cruz Juan Carlos' -> middle 'Juan' given 'Carlos'.
+#
+# A separate rule rather than an alternation with the one above: these
+# are two chosen names, and a literal-anchored regex per name is what
+# keeps a rule from reaching a string nobody wrote down.
+name_regex = "^de la Cruz Juan Carlos, Dr\\.$"
+fields = ["title", "given", "middle", "family", "suffix"]
+orders = ["FAMILY_FIRST_GIVEN_LAST"]

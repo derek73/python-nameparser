@@ -228,7 +228,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # `Jane van der Berg nee y Jones`, whose conjunction sits in the
     # MAIDEN name: `str(HumanName)` renders the default spec, and
     # that spec omits the field. Recompute by running both forms over
-    # the four corpus files deduped and diffing, on whichever surface
+    # the corpus files deduped and diffing, on whichever surface
     # you name.
     #
     # The mechanism is v1's initial carve-out, taken in the PARSE

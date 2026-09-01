@@ -1,7 +1,13 @@
 """Extract every plausible test-name string from the v1 test suite:
 string literals passed as the first argument to HumanName(...) calls,
-plus string elements/keys of module-level list/dict banks. Dev tooling
--- over-collection is fine, the comparator just parses more names.
+plus string elements/keys of list/dict banks. Dev tooling -- over-
+collection is fine, the comparator just parses more names. Output is
+one JSON object per line, `{"name": ..., "tests": [...]}`, where
+`tests` is the sorted v1 test method names (bare) or bank variable
+names (prefixed `bank:`) the string appeared in at the pinned ref --
+the shape context the original scrape kept the string but threw away.
+A `HumanName(...)` call is labelled by its NEAREST enclosing function,
+falling back to the source filename for one at module scope.
 
 PROVENANCE: the checked-in tools/differential/corpus.jsonl was built
 against commit 2d5d8c2 ("Trim constant-factor waste on the tokenize
@@ -36,23 +42,55 @@ def _is_name_like(value: str) -> bool:
     return not any(ch in value for ch in _NOISE_CHARS)
 
 
-def _strings_from(tree: ast.Module) -> set[str]:
-    found: set[str] = set()
-    for node in ast.walk(tree):
+def _labelled_strings_from(
+        tree: ast.Module, module_label: str) -> dict[str, set[str]]:
+    """name -> the v1 test methods (or bank variables) it appeared in.
+    This is the metadata the original scrape discarded: v1's test
+    names say what shape each name exercised
+    (test_title_with_conjunction), and #468's whole complaint is that
+    nothing recorded it.
+
+    Single recursive walk, tracking the NEAREST enclosing
+    FunctionDef/AsyncFunctionDef as the current label (falling back to
+    `module_label`, the source filename, for a HumanName(...) call at
+    module scope) -- ast.walk's flat iteration cannot express nearest-
+    enclosing, and doing two separate module-wide sweeps double-labels
+    a call inside a nested function with both the inner and outer
+    names. The bank branch is untouched by this label: a list/dict
+    assignment is labelled by its own target name (prefixed `bank:` to
+    read apart from a test method at a glance) regardless of what
+    function, if any, encloses it.
+    """
+    found: dict[str, set[str]] = {}
+
+    def _add(value: str, label: str) -> None:
+        found.setdefault(value, set()).add(label)
+
+    def _walk(node: ast.AST, label: str) -> None:
         if (isinstance(node, ast.Call)
                 and getattr(node.func, "id", getattr(
                     node.func, "attr", "")) == "HumanName"
                 and node.args
                 and isinstance(node.args[0], ast.Constant)
                 and isinstance(node.args[0].value, str)):
-            found.add(node.args[0].value)
+            _add(node.args[0].value, label)
         if isinstance(node, ast.Assign) and isinstance(
                 node.value, (ast.List, ast.Tuple, ast.Dict)):
+            target_name = getattr(node.targets[0], "id", None)
+            bank_label = f"bank:{target_name}" if target_name \
+                else "bank:<unnamed>"
             for c in ast.walk(node.value):
                 if isinstance(c, ast.Constant) and isinstance(c.value, str) \
                         and " " in c.value and "\n" not in c.value:
-                    found.add(c.value)
-    return {n for n in found if _is_name_like(n)}
+                    _add(c.value, bank_label)
+        for child in ast.iter_child_nodes(node):
+            if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                _walk(child, child.name)
+            else:
+                _walk(child, label)
+
+    _walk(tree, module_label)
+    return {n: labels for n, labels in found.items() if _is_name_like(n)}
 
 
 def _working_tree_sources() -> dict[str, str]:
@@ -89,17 +127,19 @@ def main() -> None:
     args = ap.parse_args()
 
     sources = _ref_sources(args.ref) if args.ref else _working_tree_sources()
-    names: set[str] = set()
+    names: dict[str, set[str]] = {}
     for filename, text in sources.items():
         try:
             tree = ast.parse(text, filename=filename)
         except SyntaxError as e:
             print(f"skipping {filename}: {e}", file=sys.stderr)
             continue
-        names |= _strings_from(tree)
+        for value, labels in _labelled_strings_from(tree, filename).items():
+            names.setdefault(value, set()).update(labels)
 
     for name in sorted(names):
-        print(json.dumps(name, ensure_ascii=False))
+        print(json.dumps({"name": name, "tests": sorted(names[name])},
+                         ensure_ascii=False))
     print(f"{len(names)} names", file=sys.stderr)
 
 
