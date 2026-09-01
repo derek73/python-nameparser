@@ -411,9 +411,25 @@ deleting `fields` to silence an over-declaration failure lands on
 from the ones `shapes.py` declares, so `validate_rules` rejects a name
 no shape asks for rather than letting the rule sit dormant. A rule
 carrying it matches only diffs from comparisons run under one of those
-orders; a comparison under the default order (`order` is `None`) never
-matches such a rule. Omit the key and the rule is order-blind, which
-is what every rule written before shape-tagged entries existed is.
+orders. Omit the key and the rule is order-blind, which is what every
+rule written before shape-tagged entries existed is.
+
+`"DEFAULT"` is the one member `shapes.py` does not supply, and cannot:
+it names the comparison run under no declared order (`order` is
+`None`), which is the absence of a shape rather than one of them. It
+exists because TOML has no null to put inside an array, so without it
+a rule explaining only default-order diffs had no way to SAY so and
+had to stay order-blind -- and an order-blind rule leaks the other
+way from the leak the key was added for, absorbing an order-bearing
+diff on any name its regex happens to reach. `orders = ["DEFAULT"]`
+is a default-order-only rule; `orders = ["DEFAULT", "FAMILY_FIRST"]`
+is a rule that genuinely explains both and stops there.
+
+A run PRINTS the order-blind absorptions it sees: when a rule with no
+`orders` key explains a diff from an order-bearing comparison, the
+report carries an `ORDER-BLIND` block naming the issue, the name and
+the order. It is informational and outside the exit code -- order-blind
+rules stay legal -- but the absorption is no longer invisible.
 
 It exists because a name can now be compared more than once, and the
 two diffs can move the SAME roles for opposite reasons.

@@ -452,18 +452,34 @@ _RULE_FIELDS = frozenset((*V2_FIELDS, "_ambiguities"))
 _RULE_KEYS = frozenset(("issue", "name_regex", "fields", "dormant", "orders"))
 
 
-def _legal_orders() -> frozenset[str]:
-    """The order-constant names a rule's `orders` may name: exactly the
-    ones shapes.py's inventory declares.
+#: The `orders` member naming the DEFAULT order -- the comparison whose
+#: `order` is None, run under no declared name_order at all. A sentinel
+#: rather than a constant name because there is no constant to borrow:
+#: the default order is the absence of one, no shape declares it, and
+#: TOML has no null to put inside an array. Without it a rule that
+#: explains only default-order diffs cannot say so and has to stay
+#: order-blind, which is the leak running the OTHER way from the one
+#: `orders` was added for: an order-blind rule sorted ahead of the
+#: scoped ones absorbs a family-first regression on a name its regex
+#: happens to reach.
+_DEFAULT_ORDER = "DEFAULT"
 
-    Borrowed rather than hand-copied, the same way build_cjk_corpus.py
-    borrows the script table: an order no shape declares is an order no
-    comparison can run under, so a rule scoped to it could only ever be
-    dormant, and a typo in one would be a rule that silently explains
-    nothing.
+
+def _legal_orders() -> frozenset[str]:
+    """The names a rule's `orders` may carry: every order shapes.py's
+    inventory declares, plus the "DEFAULT" sentinel.
+
+    The constants are borrowed rather than hand-copied, the same way
+    build_cjk_corpus.py borrows the script table: an order no shape
+    declares is an order no comparison can run under, so a rule scoped
+    to it could only ever be dormant, and a typo in one would be a rule
+    that silently explains nothing.
+
+    "DEFAULT" is the one member that cannot be borrowed, since it names
+    the absence of a declared order rather than a shape.
     """
     return frozenset(shape.order for shape in _load_shapes().values()
-                     if shape.order is not None)
+                     if shape.order is not None) | {_DEFAULT_ORDER}
 
 
 #: Probe names for the over-match check, chosen to share no script, no
@@ -627,7 +643,8 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
             if bad:
                 raise SystemExit(
                     f"{where} names {bad} in 'orders', which shapes.py "
-                    f"declares for no shape; expected from "
+                    f"declares for no shape and which is not the "
+                    f"{_DEFAULT_ORDER!r} sentinel; expected from "
                     f"{sorted(legal)}. No comparison runs under an order "
                     f"no shape asks for, so the rule would explain "
                     f"nothing and report as dormant instead of saying "
@@ -836,9 +853,15 @@ def _entry_matches(rule: dict[str, object], name: str,
 
     `order` is the name_order the COMPARISON ran under (None = the
     default order), and a rule carrying `orders` admits only the orders
-    it lists. Without that narrowing a rule is order-blind, which is
-    what every rule written before shape-tagged entries existed is: the
-    key is optional and its absence is today's behavior. It matters
+    it lists. A comparison under the default order is matched by the
+    "DEFAULT" sentinel, there being no constant to name and no null to
+    put in a TOML array. Without that narrowing a rule is order-blind,
+    which is what every rule written before shape-tagged entries
+    existed is: the key is optional and its absence is today's
+    behavior -- and the absence is not free, since an order-blind rule
+    reaching an order-bearing name absorbs that name's order-only
+    regressions (main() prints an ORDER-BLIND notice where it sees
+    that happen). It matters
     because a name can be compared twice, once per order, and the two
     diffs can have the SAME fields for opposite reasons -- the
     feat(#395) fold moving {family, given, middle} under a declared
@@ -861,7 +884,8 @@ def _entry_matches(rule: dict[str, object], name: str,
     if isinstance(fields, list) and not diff_fields <= set(fields):
         return False
     orders = rule.get("orders")
-    if isinstance(orders, list) and order not in orders:
+    if isinstance(orders, list) \
+            and (_DEFAULT_ORDER if order is None else order) not in orders:
         return False
     return True
 
@@ -1373,6 +1397,13 @@ def main() -> int:
     # have claimed one that no rule did -- the same question classify
     # asks, order included
     diffing: list[tuple[str, set[str], str | None]] = []
+    #: (issue, name, order) for each diff an order-blind rule explained
+    #: under a declared order. Informational, never fatal.
+    order_blind: list[tuple[str, str, str]] = []
+    #: classify() returns an issue; the notice needs the rule behind it.
+    #: Keyed by issue because validate_rules has already refused two
+    #: rules sharing one.
+    rules_by_issue = {str(r["issue"]): r for r in rules}
     for entry, old in zip(entries, old_rows):
         name = entry["name"]
         order = entry.get("order")
@@ -1423,6 +1454,8 @@ def main() -> int:
         else:
             by_issue.setdefault(issue, []).append((name, order))
             roles_by_issue.setdefault(issue, set()).update(diff)
+            if order is not None and "orders" not in rules_by_issue[issue]:
+                order_blind.append((issue, name, order))
 
     # the bare halves of by_issue's pairs: _is_latin_only reads the
     # string as a name, so it must never see the rendered order tag. A
@@ -1440,6 +1473,22 @@ def main() -> int:
         print(f"## {issue} ({len(names)})")
         for n, o in names[:10]:
             print(f"  {n!r}{_order_tag(o)}")
+        print()
+    # Informational, and deliberately outside the exit code: an
+    # order-blind rule is legal, and every rule written before shape
+    # tags is one. What the block buys is that the absorption stops
+    # being invisible -- a rule sorted ahead of the scoped ones can
+    # reach an order-bearing name its author never considered, and an
+    # order-only regression on that name would then classify as an
+    # intentional change.
+    if order_blind:
+        print("ORDER-BLIND (informational, not in the exit code): a rule "
+              "carrying no `orders` key explained a diff from an "
+              "order-bearing comparison. Consider scoping it with "
+              "`orders` -- including the \"DEFAULT\" sentinel if it "
+              "explains default-order diffs too.\n")
+        for issue, name, tagged in order_blind:
+            print(f"  {issue!r} explained {name!r}{_order_tag(tagged)}")
         print()
     dormancy = dormant_rules(rules, set(by_issue), diffing, exclusions)
     for dormant in dormancy.undeclared:

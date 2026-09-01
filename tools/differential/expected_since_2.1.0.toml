@@ -309,11 +309,15 @@ issue = "fix(#296) dr is not postnominal vocabulary, so 'John Smith, Dr.' keeps 
 # pre-comma name on both sides, so the split does not move and the
 # diff is the same {title, suffix} one from the same cause. That is
 # why the name lists twice in this rule's block, once order-tagged --
-# and why this rule takes no `orders` key: unlike the four rules at
-# the foot of this file, it genuinely explains the default-order diff
-# too.
+# and why this rule's `orders` names exactly those two: unlike the
+# four rules at the foot of this file it genuinely explains the
+# default-order diff too, and unlike an order-blind rule it stops
+# there. FAMILY_FIRST_GIVEN_LAST is not listed because no shape tags
+# this string under it, so a diff arriving there would be one nobody
+# has looked at.
 name_regex = "(?i)^john,?\\s+smith,\\s*dr\\.?$"
 fields = ["title", "suffix", "_ambiguities"]
+orders = ["DEFAULT", "FAMILY_FIRST"]
 
 [[change]]
 issue = "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes"
@@ -637,8 +641,10 @@ issue = "fix(#399) a maiden marker bounds the particle chain that swallowed it"
 # kept both the marker and the maiden name. rules.md#M2 states the
 # stop; decisions.md#M2 records it.
 #
-# Fields are {family, maiden}: the given name does not move, and no
-# corpus name puts this shape under a non-default name_order.
+# Fields are {family, maiden}: the given name does not move. The
+# `orders` key below says the rest of it -- this shape IS compared
+# under a declared order, on a name this regex reaches, and the rule
+# has nothing to say about that reading.
 #
 # The rule requires a PARTICLE ahead of the marker because that IS the
 # defect -- a marker with no particle in front of it was always
@@ -672,6 +678,13 @@ issue = "fix(#399) a maiden marker bounds the particle chain that swallowed it"
 # arrive UNEXPLAINED rather than be absorbed.
 name_regex = "(?i)^(?![^\\n]*,)[^\\n]*\\b(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)\\b.*?\\sn[e\u00e9]e\\s+\\S+$"
 fields = ["family", "maiden"]
+# Scoped to the DEFAULT order: every diff this rule explains is a
+# default-order one. The regex reaches 'de la Cruz n\u00e9e Vega', which
+# corpus_shapes.jsonl tags under both family-first orders, and this
+# rule sorts ahead of the two rules written for that name -- so
+# order-blind it would absorb a family-first regression there and call
+# it intentional.
+orders = ["DEFAULT"]
 
 [[change]]
 issue = "fix(#360) mc moved into the never-given particles, so it folds into the family"

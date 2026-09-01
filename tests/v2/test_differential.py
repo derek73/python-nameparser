@@ -344,6 +344,76 @@ def test_classified_order_bearing_diff_tags_its_order(
     assert f"  {name!r}   [order: FAMILY_FIRST]" in out
 
 
+def _order_bearing_run(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+        ledger_body: str) -> tuple[int, str]:
+    """One shape-4 (FAMILY_FIRST) entry whose v2 reading disagrees on
+    `family`, run against `ledger_body`. The order-bearing sibling of
+    _run_main, which can only build default-order comparisons."""
+    import contextlib
+    import io
+    import json as _json
+    import sys
+    name = "Ménil Christophe du"
+    corpus = tmp_path / "corpus_x.jsonl"
+    corpus.write_text(
+        _json.dumps({"name": name, "shape": 4}, ensure_ascii=False) + "\n",
+        encoding="utf-8")
+    (tmp_path / "expected_since_2.0.0.toml").write_text(
+        ledger_body, encoding="utf-8")
+    monkeypatch.setitem(compare._CORPUS_FLOORS, corpus.name, 1)
+    monkeypatch.setitem(compare._CORPUS_TIERS, corpus.name, "contract")
+    monkeypatch.setattr(compare, "HERE", tmp_path)
+    v2_row = _tree_v2_row(name, "FAMILY_FIRST")
+    v2_row["family"] = v2_row["family"] + "X"  # force a diff on `family`
+
+    def _fake(v: str, w: bool,
+              entries: list[dict[str, object]]) -> tuple[dict, list[dict]]:
+        return ({"__version__": v,
+                 "__file__": "/wheel/nameparser/__init__.py"},
+                [{"v2": v2_row}])
+
+    monkeypatch.setattr(compare, "_run_worker", _fake)
+    monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", "2.0.0",
+                                      "--corpus", str(corpus)])
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = compare.main()
+    return code, buf.getvalue()
+
+
+def test_an_order_blind_rule_absorbing_an_order_bearing_diff_is_reported(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The leak this notice makes visible runs the OTHER way from the
+    one `orders` was added for: a legacy rule carries no `orders`, so
+    it claims a family-first diff its author never considered, and an
+    order-only regression there reports as an intentional change. The
+    notice is informational -- order-blind rules stay legal, and a
+    ledger full of them is what every baseline before shape tags
+    has -- so it must NOT move the exit code."""
+    code, out = _order_bearing_run(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "blind"\nname_regex = "Ménil"\n'
+        'fields = ["family"]\n')
+    assert code == 0
+    assert "ORDER-BLIND" in out
+    assert "'blind'" in out and "FAMILY_FIRST" in out
+
+
+def test_a_scoped_rule_absorbing_its_own_order_is_not_reported(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Scoping is the fix the notice asks for, so a scoped rule must
+    print nothing -- otherwise the block is noise on every ledger that
+    took the advice, and a reader stops reading it."""
+    code, out = _order_bearing_run(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "scoped"\nname_regex = "Ménil"\n'
+        'fields = ["family"]\norders = ["FAMILY_FIRST"]\n')
+    assert code == 0
+    assert "## scoped (1)" in out
+    assert "ORDER-BLIND" not in out
+
+
 _WHEEL = "/Users/x/.cache/uv/environments-v2/w/lib/python3.11/" \
          "site-packages/nameparser/__init__.py"
 
@@ -586,6 +656,30 @@ def test_classify_scopes_a_rule_to_the_orders_it_declares() -> None:
                             order="FAMILY_FIRST") == "any order"
 
 
+def test_the_default_order_sentinel_scopes_a_rule_to_the_default_order(
+        ) -> None:
+    """"DEFAULT" is a sentinel and not an order constant: no shape
+    declares it, because it names the absence of a declared order. It
+    exists because TOML has no null inside an array, so a rule that
+    explains only default-order diffs had no way to say so and had to
+    stay order-blind -- which is the leak running the other way from
+    the one `orders` was added for."""
+    scoped = [{"issue": "default only", "name_regex": "Cruz",
+               "fields": ["family"], "orders": ["DEFAULT"]}]
+    assert compare.classify("de la Cruz", {"family"},
+                            scoped) == "default only"
+    assert compare.classify("de la Cruz", {"family"}, scoped,
+                            order="FAMILY_FIRST") is None
+    both = [{"issue": "default and one order", "name_regex": "Cruz",
+             "fields": ["family"], "orders": ["DEFAULT", "FAMILY_FIRST"]}]
+    assert compare.classify("de la Cruz", {"family"},
+                            both) == "default and one order"
+    assert compare.classify("de la Cruz", {"family"}, both,
+                            order="FAMILY_FIRST") == "default and one order"
+    assert compare.classify("de la Cruz", {"family"}, both,
+                            order="FAMILY_FIRST_GIVEN_LAST") is None
+
+
 @pytest.mark.parametrize("orders,message", [
     (["NO_SUCH_ORDER"], "shapes.py declares for no shape"),
     ([], "empty 'orders'"),
@@ -614,10 +708,13 @@ def test_validate_rules_takes_the_order_names_from_the_shape_inventory(
     shapes.py is usable in a rule the same day, and one removed stops
     validating without anyone remembering a second list. An order no
     shape declares is an order no comparison runs under, so a rule
-    naming it could only ever be dormant."""
+    naming it could only ever be dormant.
+
+    "DEFAULT" is the one member shapes.py does not supply, and cannot:
+    it names the absence of a declared order, which is not a shape."""
     assert compare._legal_orders() == {
         shape.order for shape in shapes.SHAPES.values()
-        if shape.order is not None}
+        if shape.order is not None} | {"DEFAULT"}
     for order in compare._legal_orders():
         compare.validate_rules(
             [{"issue": "fix(x) scoped", "name_regex": "Smith",
