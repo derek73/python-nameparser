@@ -1241,6 +1241,56 @@ def order_contests(rules: list[dict[str, object]],
     return found
 
 
+def _declared_over(rule: dict[str, object]) -> frozenset[str]:
+    """Issues this rule declares precedence over (#382).
+
+    Shape is validate_rules' business; this reads leniently so it stays
+    usable on hand-built rule lists, and a malformed entry simply
+    declares nothing -- which REPORTS the contest rather than hiding
+    it, the safe direction. A stricter reader here would turn a typo
+    inside an exemption block into a silently retired hazard, which is
+    the one outcome the whole check exists to prevent.
+    """
+    declared = rule.get("precedes_narrower")
+    if not isinstance(declared, list):
+        return frozenset()
+    return frozenset(
+        e["issue"] for e in declared
+        if isinstance(e, dict) and isinstance(e.get("issue"), str))
+
+
+def undeclared_contests(rules: list[dict[str, object]],
+                        names: list[str]) -> list[_Contest]:
+    """Contests whose earlier rule does not declare the later one (#382).
+
+    The declaration is read off the rule that WINS the pair, which is
+    the earlier one: an exemption is that rule saying it means to
+    outrank its narrower neighbour, so it is the only rule whose word
+    can retire the pair.
+    """
+    by_issue = {str(r.get("issue")): r for r in rules}
+    return [c for c in order_contests(rules, names)
+            if c.later not in _declared_over(by_issue.get(c.earlier, {}))]
+
+
+def vacant_exemptions(rules: list[dict[str, object]],
+                      names: list[str]) -> list[tuple[str, str]]:
+    """Declared precedences over a pair that is NOT a contest (#382).
+
+    A rule narrowed until it no longer overlaps its neighbour leaves
+    its exemption behind, and the file then carries a justification for
+    a hazard that is gone -- indistinguishable, to a reader, from one
+    that is live. Same shape as `dormant`'s awake check: the ledger
+    states a condition, and the harness refuses to let it go on
+    standing after the condition stops holding.
+    """
+    live = {(c.earlier, c.later) for c in order_contests(rules, names)}
+    return [(str(rule.get("issue", "")), later)
+            for rule in rules
+            for later in sorted(_declared_over(rule))
+            if (str(rule.get("issue", "")), later) not in live]
+
+
 def _entry_matches(rule: dict[str, object], name: str,
                    diff_fields: set[str], order: str | None = None) -> bool:
     """Does this entry's narrowing admit this diff?

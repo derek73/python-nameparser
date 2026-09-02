@@ -1420,6 +1420,78 @@ def test_a_well_formed_exemption_is_accepted() -> None:
         "test_ledger.toml")
 
 
+#: A wide-first pair: same regex, and the later rule's `fields` a
+#: strict subset of the earlier one's, so file order alone decides
+#: which of them classify() hands a {given, family} diff to (#382).
+_CONTESTED: list[dict[str, object]] = [
+    {"issue": "fix(wide) the compound behavior",
+     "name_regex": "Smith", "fields": ["given", "family", "suffix"]},
+    {"issue": "fix(narrow) one half of it",
+     "name_regex": "Smith", "fields": ["given", "family"]},
+]
+
+
+def test_a_wide_first_pair_is_reported_until_it_is_declared() -> None:
+    """What `precedes_narrower` buys, and only what it buys.
+
+    The declaration is read off the EARLIER rule and names the later
+    one, so a pair stays on the roster until the rule that wins it
+    says in writing that it means to. Reading it off the wrong rule
+    would exempt pairs nobody declared.
+
+    The malformed entry at the end pins the lenient direction. This
+    reader is deliberately not a second copy of validate_rules' shape
+    checks: an entry it cannot make sense of declares nothing, so the
+    contest is REPORTED. Failing the other way would let a typo inside
+    an exemption block silently retire a live hazard.
+    """
+    names = ["Smith, Jr."]
+    assert [(c.earlier, c.later) for c
+            in compare.undeclared_contests(_CONTESTED, names)] == [
+        ("fix(wide) the compound behavior", "fix(narrow) one half of it")]
+    declared = [dict(_CONTESTED[0], precedes_narrower=[
+        {"issue": "fix(narrow) one half of it", "why": "wide describes both"}]),
+        _CONTESTED[1]]
+    assert compare.undeclared_contests(declared, names) == []
+
+    for malformed in ("fix(narrow) one half of it",
+                      [{"why": "a reason, and no rule it is a reason for"}],
+                      ["fix(narrow) one half of it"]):
+        broken = [dict(_CONTESTED[0], precedes_narrower=malformed),
+                  _CONTESTED[1]]
+        assert len(compare.undeclared_contests(broken, names)) == 1
+
+
+def test_a_pair_whose_regexes_share_no_name_is_no_contest() -> None:
+    """Condition 4 carries the whole check. Without it the same scan
+    reports 657 wide-first pairs across the shipped ledgers -- of 1350
+    nested one way or the other -- against the 11 the full predicate
+    finds, so fields-subset alone is not a usable predicate. Measured
+    2026-09-02.
+
+    The control for this one is the assertion above, which reports the
+    same fixture when the two regexes DO share a corpus name."""
+    apart = [dict(_CONTESTED[0], name_regex="Smith"),
+             dict(_CONTESTED[1], name_regex="Jones")]
+    assert compare.order_contests(apart, ["Smith, Jr.", "Jones, Jr."]) == []
+
+
+def test_an_exemption_for_a_pair_that_is_no_contest_is_vacant() -> None:
+    """The `dormant`-awake precedent: a narrowing that ends a contest
+    must not leave a permission nobody re-earned."""
+    apart = [dict(_CONTESTED[0], name_regex="Smith", precedes_narrower=[
+        {"issue": "fix(narrow) one half of it", "why": "stale"}]),
+        dict(_CONTESTED[1], name_regex="Jones")]
+    assert compare.vacant_exemptions(apart, ["Smith, Jr.", "Jones, Jr."]) == [
+        ("fix(wide) the compound behavior", "fix(narrow) one half of it")]
+
+    # ... and the live pair, which is what makes the assertion above a
+    # measurement: a function that simply listed every declaration
+    # would read identically on the vacant pair alone.
+    live = [dict(apart[0]), dict(apart[1], name_regex="Smith")]
+    assert compare.vacant_exemptions(live, ["Smith, Jr.", "Jones, Jr."]) == []
+
+
 #: What _run_worker was asked for, so a test can prove main forwarded
 #: the baseline and the corpus rather than defaults of its own.
 _WORKER_CALL: dict = {}
