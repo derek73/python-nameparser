@@ -54,7 +54,7 @@ from nameparser.config.suffixes import (
 
 from ._differential_fixtures import (
     _CORPUS_NAMES, _LEDGERS, _TOOLS, _UNCLASSIFIED_NAMES, _claimed,
-    _exclusions, _rules, _unclassified_names, load_tool)
+    _entry_name, _exclusions, _rules, _unclassified_names, load_tool)
 
 
 # The one sanctioned divergence between the differential rules'
@@ -932,6 +932,24 @@ def test_rules_corpus_matches_the_rules_doc() -> None:
         f"that never had any")
 
 
+def _tolerated_only_texts(rules: list) -> set[str]:
+    """Example texts a `tolerated:` rule carries and no normative rule
+    does -- the subtraction the demotion guards below both scope by.
+
+    Shared rather than written twice because the two guards must agree
+    on WHICH texts a demotion is about: one asserts they left the
+    contract corpus, the other that they are still watched somewhere,
+    and a pair disagreeing about the set would leave a text neither
+    enforced nor watched while both stayed green. An example some
+    normative rule also carries is in the contract on that rule's
+    account -- demoting one rule cannot take another's name away.
+    """
+    normative = {e.text for r in rules if r.tolerated is None
+                 for e in r.examples if e.text}
+    return {e.text for r in rules if r.tolerated is not None
+            for e in r.examples if e.text} - normative
+
+
 def test_a_tolerated_rule_puts_no_name_in_the_rules_corpus() -> None:
     """A rule marked `tolerated:` in rules.md contributes no example
     to the CONTRACT corpus (2026-09-01, the CJK comma demotion).
@@ -944,11 +962,12 @@ def test_a_tolerated_rule_puts_no_name_in_the_rules_corpus() -> None:
     rule cannot take another's name away, so the check subtracts them
     rather than failing on them.
 
-    What it does NOT check, deliberately: that the demoted names are
-    still watched somewhere. That is a different promise, and it is
-    the tolerated case rows plus corpus_cjk_tolerated.jsonl that keep
-    it -- pinned by test_tolerated_cjk_corpus_matches_the_case_table
-    above, and measured by the gate's own claims record.
+    What it does NOT check: that the demoted names are still watched
+    somewhere. That is the opposite promise and it has its own guard,
+    the next one down -- this pair is a floor and a ceiling on the
+    same set of texts, and each is vacuous without the other. Deleting
+    an example satisfies this one; adding an unwatched one satisfies
+    that one; only together do they say what a demotion is.
     """
     from .rules_doc import parse_rules_doc
     rules = parse_rules_doc(
@@ -960,20 +979,147 @@ def test_a_tolerated_rule_puts_no_name_in_the_rules_corpus() -> None:
         "carried one since 2026-09-01. If a demotion was reversed, "
         "delete this guard in that commit rather than leaving it "
         "asserting nothing")
-    normative_texts = {e.text for r in rules if r.tolerated is None
-                       for e in r.examples if e.text}
     in_corpus = {json.loads(line) for line in
                  (_TOOLS / "corpus_rules.jsonl")
                  .read_text(encoding="utf-8").splitlines()}
-    leaked = sorted({e.text for r in tolerated for e in r.examples
-                     if e.text and e.text not in normative_texts}
-                    & in_corpus)
+    leaked = sorted(_tolerated_only_texts(rules) & in_corpus)
     assert not leaked, (
         f"corpus_rules.jsonl carries example texts belonging only to "
         f"tolerated rules {[r.rule_id for r in tolerated]}: {leaked}. "
         f"A tolerated rule's examples illustrate current behavior; "
         f"enforcing them against released baselines is the promise "
         f"the marker withdrew")
+
+
+def test_a_tolerated_rules_examples_are_still_watched_somewhere() -> None:
+    """Every text a tolerated rule alone carries is in SOME corpus the
+    harness loads, so it is still compared at every released baseline
+    -- the half of the demotion the marker did not withdraw.
+
+    The failure this closes, verified by injection rather than
+    reasoned about (the negative control below runs it): a sixth comma
+    example added to W3 with no `tolerated` row in tests/v2/cases.py.
+    Nothing in the suite notices. The doc parses, test_rules_doc.py
+    executes the example and it passes, build_rules_corpus.py skips
+    the whole rule so the contract pin above stays equal, and
+    build_cjk_corpus.py projects the CASE TABLE -- it never sees a
+    name nobody wrote a row for. The text is executed at HEAD and
+    compared at no baseline, with every suite green. That is exactly
+    the state the demotion was written to avoid: "we still watch it,
+    we no longer enforce it" costs the watching, or it costs nothing
+    and means nothing.
+
+    Membership is asked of the UNION of the corpora rather than of
+    corpus_cjk_tolerated.jsonl by name, because the union is what this
+    can honestly promise: the requirement is that the name reaches the
+    comparison, and which file carries it is the projection's business
+    (a future tolerated rule outside the CJK sections would have no
+    business in a CJK file at all). Today every one of them arrives
+    through corpus_cjk_tolerated.jsonl -- W3's four comma texts, its
+    fifth example being W1's normative one and subtracted here -- and
+    that file's equality with the case table is pinned separately by
+    test_tolerated_cjk_corpus_matches_the_case_table.
+    """
+    from .rules_doc import parse_rules_doc
+    doc = (_TOOLS.parents[1] / "docs" / "design" / "rules.md").read_text(
+        encoding="utf-8")
+    rules = parse_rules_doc(doc)
+    demoted = _tolerated_only_texts(rules)
+    # Anti-vacuity, the same shape the guard above carries: with no
+    # marked rule, or with the subtraction eating everything, the
+    # assertion below is a truth about the empty set.
+    assert demoted, (
+        "no rule in rules.md carries a `tolerated:` marker with an "
+        "example text of its own; W3 has carried four since "
+        "2026-09-01. If a demotion was reversed, delete this guard in "
+        "that commit rather than leaving it asserting nothing")
+    unwatched = sorted(demoted - set(_CORPUS_NAMES))
+    assert not unwatched, (
+        f"tolerated rules in rules.md carry example texts no corpus "
+        f"holds: {unwatched}. Each is executed at HEAD and compared "
+        f"at no baseline. Give it a `tolerated=True` row in "
+        f"tests/v2/cases.py and regenerate "
+        f"(`uv run python tools/differential/build_cjk_corpus.py`), or "
+        f"take the example out of the doc")
+
+    # The negative control, run rather than described: the doc with
+    # one extra example on the tolerated rule -- a text no case row
+    # produces -- and the same question asked again. It must find it.
+    # Without this, a subtraction that quietly emptied `demoted` would
+    # leave the assertion above green forever.
+    probe = "조, 은우"
+    assert probe not in _CORPUS_NAMES, (
+        f"{probe!r} was chosen because no corpus holds it; a row was "
+        f"added for it, so pick another string for the injection")
+    lines = doc.splitlines()
+    # Anchored on the marker line, not on one of the rule's example
+    # texts: W3's first example is a text W1 also carries, so a search
+    # by text lands in W1's block and injects a NORMATIVE example --
+    # which the subtraction then removes, and the control passes by
+    # doing nothing. The marker is in the tolerated rule's block by
+    # definition.
+    at = next(i for i, line in enumerate(lines)
+              if re.match(r"^\s*tolerated:", line))
+    lines.insert(at, f'      "{probe}"  →  family="조"')
+    injected = _tolerated_only_texts(parse_rules_doc("\n".join(lines)))
+    assert sorted(injected - set(_CORPUS_NAMES)) == [probe]
+
+
+def _corpus_texts(filename: str) -> set[str]:
+    """One corpus file's names, in whichever line format it uses."""
+    return {_entry_name(json.loads(line)) for line in
+            (_TOOLS / filename).read_text(encoding="utf-8").splitlines()
+            if line.strip()}
+
+
+def test_the_tolerated_corpus_is_disjoint_from_the_contract_ones() -> None:
+    """No text is in corpus_cjk_tolerated.jsonl and in a CONTRACT
+    corpus at the same time.
+
+    Overlap does not error anywhere -- it reads as a demotion that did
+    not happen. compare.py's dedup loads contract files first and
+    keeps the contract reading, so a text both tiers hold is still
+    enforced: an unmatched diff on it fails the run, exactly as before
+    the flag was set. Meanwhile everything that describes it says
+    otherwise -- the case row says `tolerated`, README's tier table
+    says radar, the release notes group it as watched-not-enforced.
+    The name is enforced and documented as demoted, which is the one
+    combination nobody is reading for.
+
+    _CORPUS_TIERS's own comment states the rule this asserts: a file
+    entry demotes the file, and a text some contract corpus also holds
+    reads contract no matter what the entry says. Five texts did on
+    the day the file was created; the same day's rules.md edits took
+    all five out of corpus_rules.jsonl. This keeps that true instead
+    of leaving it a fact about one afternoon.
+
+    Either resolution is deliberate and neither is this test's to
+    pick: clear the `tolerated` flag (the name was never demoted), or
+    take the text out of the contract corpus that still holds it (it
+    was). The tier list is read from compare.py rather than copied,
+    so a new contract corpus is covered by existing here, not by
+    someone remembering to add it.
+    """
+    tiers = load_tool("compare")._CORPUS_TIERS
+    contract = sorted(name for name, tier in tiers.items()
+                      if tier == "contract")
+    assert len(contract) >= 3, (
+        f"_CORPUS_TIERS lists {contract} as contract; corpus_cjk, "
+        f"corpus_rules and corpus_shapes have been contract since the "
+        f"#468 tier split. A shorter list means this guard is asking "
+        f"about fewer files than it reads as")
+    demoted = _corpus_texts("corpus_cjk_tolerated.jsonl")
+    assert demoted, "corpus_cjk_tolerated.jsonl is empty"
+    for filename in contract:
+        overlap = sorted(demoted & _corpus_texts(filename))
+        assert not overlap, (
+            f"{filename} (contract) and corpus_cjk_tolerated.jsonl "
+            f"(radar) both hold {overlap}. compare.py's dedup keeps "
+            f"the contract reading, so these names are still enforced "
+            f"at released baselines while their case rows, the README "
+            f"tier table and the release notes all call them demoted. "
+            f"Clear the `tolerated` flag, or take the text out of "
+            f"{filename}")
 
 
 #: Which vocabulary constant each ledger rule's alternation is a hand

@@ -146,6 +146,15 @@ def test_the_family_partitions_into_particles_and_base(
         "carry neither policy nor locale",
         id="shape-6-refuses-a-locale"),
     pytest.param(
+        # The other arm of the same `or`. The locale row above passes
+        # with `self.policy is not None` deleted, so without this one
+        # a shape-6 row could carry a policy fork -- the refusal's own
+        # comment says a stray policy on shapes 6/7 would silently do
+        # nothing, which is exactly why it must not be admitted.
+        dict(text="김민준", shape=6, policy=Policy(middle_as_family=True)),
+        "carry neither policy nor locale",
+        id="shape-6-refuses-a-policy"),
+    pytest.param(
         dict(text="김민준", shape=6, tolerated=True),
         "mutually exclusive with shape",
         id="tolerated-and-shape-are-mutually-exclusive"),

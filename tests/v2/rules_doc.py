@@ -21,8 +21,12 @@ test_rules_doc.py still executes them — but
 tools/differential/build_rules_corpus.py skips a rule carrying it, so
 a tolerated rule's examples illustrate current behavior without
 entering the contract corpus that enforces it at released baselines.
-The reason is free text and unvalidated; what is machine-read is that
-the line is present.
+The reason is free text, but it must be there: a marker with no reason
+is a hard error, the same way a malformed example is. What is
+machine-read is that the line is present, so a near miss on the
+spelling — ``Tolerated:``, ``tolerated :``, a bare ``tolerated:`` —
+fails loudly too, rather than leaving the rule normative and its
+examples under contract.
 
 Inside a rule block, any line whose first non-space character is a
 double quote (or an opening bracket, the D-section subject form) is an
@@ -51,6 +55,14 @@ _EXAMPLE_RE = re.compile(
     r"\s*$")
 _NO_BOUNDARY_RE = re.compile(r"^\s*no-boundary:\s+(?P<reason>\S.*)$")
 _TOLERATED_RE = re.compile(r"^\s*tolerated:\s+(?P<reason>\S.*)$")
+#: A line that was MEANT to be the marker above. Everything the strict
+#: form rejects -- any casing of the word, a space before the colon, a
+#: reason that is empty or all whitespace -- lands here and raises,
+#: because the silent alternative is the dangerous one (see the raise
+#: below). Case-insensitive rather than just `[Tt]`: an author
+#: shouting the word is making the same mistake as one capitalizing
+#: it, and no line in a rule block legitimately opens with it.
+_NEAR_TOLERATED_RE = re.compile(r"^\s*tolerated\b", re.IGNORECASE)
 _POINTER_RE = re.compile(r"^\s*(history|interacts|implemented|tracked):")
 _POINTER_PART_RE = re.compile(
     r"(history|interacts|implemented|tracked):\s*([^·]+)")
@@ -209,6 +221,21 @@ def parse_rules_doc(text: str) -> list[Rule]:
         if tol:
             current.tolerated = tol.group("reason")
             continue
+        if _NEAR_TOLERATED_RE.match(line):
+            raise ValueError(
+                f"{current.rule_id}: line {lineno} looks like a "
+                f"`tolerated:` marker but does not parse: {stripped!r}. "
+                f"The spelling is `tolerated: <reason>` -- lowercase, "
+                f"no space before the colon, and a reason that is not "
+                f"empty. A near miss fails in the worst direction if it "
+                f"is allowed through: the rule stays NORMATIVE, so "
+                f"build_rules_corpus.py harvests its examples into "
+                f"corpus_rules.jsonl and enforces them at every "
+                f"released baseline -- the opposite of what the line "
+                f"was written to say, and green in every suite. The "
+                f"reason is unvalidated free text but required, because "
+                f"a demotion nobody had to justify is the one nobody "
+                f"reviews")
         if _POINTER_RE.match(line):
             for key, val in _POINTER_PART_RE.findall(line):
                 items = tuple(v.strip() for v in val.split(",") if v.strip())

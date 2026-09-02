@@ -354,7 +354,9 @@ listed below.
        glued-honorific peel asks before crossing a family comma
        (#319), so the setting reaches CJK names too: ``"田中さん,
        V."`` gives family ``田中``, suffix ``さん`` when ``True``, and
-       family ``田中さん``, given ``V.`` when ``False``.
+       family ``田中さん``, given ``V.`` when ``False`` — though a
+       comma around a CJK name is tolerated input
+       (``rules.md#W3``) and this reading can change.
    * - ``strip_emoji``
      - ``bool``
      - Excludes emoji from tokenization — they appear in no field or

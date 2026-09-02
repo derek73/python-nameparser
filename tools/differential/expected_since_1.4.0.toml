@@ -67,6 +67,15 @@ issue = "fix(#271/#272/#298) native-script CJK: family-first order, hangul segme
 # two corpora have by construction: v1's banks had no reason to test
 # CJK, and build_issues_corpus.py requires an internal space, which
 # unspaced names never have.
+#
+# Since 2026-09-01 that one harvest writes TWO files, not one: rows
+# carrying `tolerated` go to corpus_cjk_tolerated.jsonl and the rest
+# to corpus_cjk.jsonl. The never-dormant conclusion above survives
+# the split unchanged, because both files load in every real run --
+# what the split changed is the TIER (corpus_cjk_tolerated.jsonl is
+# radar, so an unmatched diff on one of its names reports instead of
+# failing), and a rule fires on names it is given regardless of what
+# an unmatched diff would then cost.
 name_regex = "[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65]"
 fields = ["given", "middle", "family"]
 

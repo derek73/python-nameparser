@@ -118,6 +118,48 @@ def test_a_normative_rule_carries_no_tolerated_marker() -> None:
     assert all(r.tolerated is None for r in parse_rules_doc(DOC))
 
 
+#: Spellings an author reaching for `tolerated:` can plausibly write,
+#: none of which _TOLERATED_RE accepts. Each is a near miss, and the
+#: point of the parametrization is that every one of them RAISES: the
+#: silent reading leaves the rule normative, which means
+#: build_rules_corpus.py harvests its examples into the contract
+#: corpus and enforces at released baselines exactly the claim the
+#: line was written to withdraw -- with the whole suite green, since
+#: the doc still parses and the examples still pass.
+#:
+#: The empty-reason row is a decision, not an oversight: the reason is
+#: unvalidated free text, but a demotion nobody had to justify is the
+#: one nobody reviews, so the validators' house rule (a reason is the
+#: whole safeguard) applies here too.
+@pytest.mark.parametrize("marker", [
+    pytest.param("    Tolerated: capital T, otherwise well formed.",
+                 id="capitalized-marker"),
+    pytest.param("    tolerated : a space before the colon.",
+                 id="space-before-the-colon"),
+    pytest.param("    tolerated:", id="no-reason-at-all"),
+    pytest.param("    tolerated:    ", id="whitespace-only-reason"),
+    pytest.param("    toleraTED: shouting the middle.",
+                 id="mixed-case-marker"),
+])
+def test_a_near_miss_tolerated_marker_is_an_error(marker: str) -> None:
+    doc = ('X1. Statement the parser only describes.\n'
+           '      "Smith, John"  →  family="Smith"\n'
+           f'{marker}\n'
+           '    no-boundary: illustrative, not normative.\n')
+    with pytest.raises(ValueError, match="X1"):
+        parse_rules_doc(doc)
+
+
+def test_the_near_miss_lint_leaves_the_real_marker_alone() -> None:
+    """The negative control for the battery above: the accepted
+    spelling still parses to a reason, so the lint is rejecting near
+    misses rather than the marker itself."""
+    doc = ('X1. Statement the parser only describes.\n'
+           '      "Smith, John"  →  family="Smith"\n'
+           '    tolerated: reason.\n')
+    assert parse_rules_doc(doc)[0].tolerated == "reason."
+
+
 def test_registry_resolves_policies_and_gates() -> None:
     from tests.v2.rules_doc import resolve_annotation
     kind, obj = resolve_annotation("family-first")

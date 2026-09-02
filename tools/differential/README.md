@@ -203,10 +203,11 @@ Since the v2.3 tier split (#468), a corpus is CONTRACT or RADAR --
 the roster is `_CORPUS_TIERS` in compare.py, fail-closed like the
 floors. Contract corpora hold names someone chose, and an unmatched
 diff on one is UNEXPLAINED and fails the run. Radar corpora hold the
-scraped and harvested names: their diffs still classify against the
-ledger, so intended changes keep their release-note grouping, but an
-unmatched radar diff prints under UNCLASSIFIED (radar) and cannot
-fail the run or demand a ledger rule. Nothing is deleted to keep the
+names the contract does not answer for -- the scraped and harvested
+ones, and since 2026-09-01 the deliberately demoted ones too: their
+diffs still classify against the ledger, so intended changes keep
+their release-note grouping, but an unmatched radar diff prints under
+UNCLASSIFIED (radar) and cannot fail the run or demand a ledger rule. Nothing is deleted to keep the
 gate quiet -- a meaningless string in radar costs one parse and a
 report line. To promote a radar name, give it a tests/v2/cases.py row
 and a shape tag: it enters the contract by being chosen. A
