@@ -87,7 +87,7 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.last, "Smith", hn)
         self.m(hn.suffix, "III, Jr", hn)
 
-    @pytest.mark.xfail
+    @pytest.mark.xfail(reason="#490")
     def test_two_initials_conflict_with_conjunction(self) -> None:
         # Supporting this seems to screw up titles with periods in them like M.B.A.
         hn = HumanName('E.T. Smith')
@@ -213,7 +213,7 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.title, "His Excellency Lord", hn)
         self.m(hn.last, "Duncan", hn)
 
-    @pytest.mark.xfail
+    @pytest.mark.xfail(reason="#489")
     def test_conjunction_in_an_address_with_a_first_name_title(self) -> None:
         hn = HumanName("Her Majesty Queen Elizabeth")
         self.m(hn.title, "Her Majesty Queen", hn)

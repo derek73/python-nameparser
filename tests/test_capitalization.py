@@ -17,7 +17,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
 
     # FIXME: this test does not pass due to a known issue
     # http://code.google.com/p/python-nameparser/issues/detail?id=22
-    @pytest.mark.xfail
+    @pytest.mark.xfail(reason="#492")
     def test_capitalization_exception_for_already_capitalized_III_KNOWN_FAILURE(self) -> None:
         hn = HumanName('juan garcia III')
         hn.capitalize()
