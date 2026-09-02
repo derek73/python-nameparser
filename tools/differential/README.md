@@ -69,13 +69,21 @@ prints it on a `tree:` line — see the third trap below for why a bare
 import was not enough.
 
 A rule's `fields` names roles the way `Role` does, whichever surface
-the diff came from, plus the pseudo-field `_ambiguities` for a change
-in reported `AmbiguityKind`s. The roster is not restated here: it is
-`Role`'s members, `validate_rules` rejects anything outside them, and
-a copy in prose is a copy that goes stale when a role is added. The
-facade reports `first`/`last`; those are canonicalized on the way in,
-and the `UNEXPLAINED` block prints the canonical name so what you read
-is what you write.
+the diff came from, plus two pseudo-fields. `_ambiguities` carries a
+change in reported `AmbiguityKind`s. `_initials` (#484) carries a
+change in `initials()` -- the facade's at every baseline, the core's
+from 2.0 on -- and enters a name's diff ONLY when every role and the
+ambiguity kinds agree on every compared surface: a role move drags
+its initials with it, so that movement is the role diff's consequence
+and is neither compared nor printed, while an initials change with
+the fields identical is render-layer drift the field comparison
+cannot see. A rule that lists `_initials` therefore lists nothing
+else; `validate_rules` refuses the mix as silently dead. The roster is
+not restated here: it is `Role`'s members, `validate_rules` rejects
+anything outside them, and a copy in prose is a copy that goes stale
+when a role is added. The facade reports `first`/`last`; those are
+canonicalized on the way in, and the `UNEXPLAINED` block prints the
+canonical name so what you read is what you write.
 
 ## The three invocation traps
 
@@ -436,11 +444,19 @@ neither (it would match every diff), one carrying `fields` and no
 `name_regex` (#451 -- no name narrowing, so it claims every name whose
 diff fits its roles), and one carrying `name_regex` and no `fields`
 (#456 -- no role narrowing, so on any name its regex reaches it claims
-every diff shape there is, measured, 255 of them from baseline 2.0 on and 127 below it). The three are one
+every diff shape there is, measured, 256 of them from baseline 2.0 on and 128 below it). The three are one
 rule with one reason: a rule narrows by name AND by role, or it is not
 a rule. Note the two bans are each other's obvious wrong answer --
 deleting `fields` to silence an over-declaration failure lands on
 #456's, and adding `fields` while dropping the regex lands on #451's.
+
+**`fields = ["_initials"]` is a rule of its own kind** (#484). It
+classifies a change in the derived `initials()` view on a name whose
+seven roles did not move, and nothing else -- `main()` never puts
+`_initials` into a diff beside a role, so a rule mixing the two is
+refused at startup. Such rules close the 1.4.0 ledger, and each 2.x
+ledger carries the subset visible from its baseline; their comments
+say which view change each one names.
 
 **`orders` is the optional third narrowing** (#468). A rule may carry
 `orders = ["FAMILY_FIRST", ...]` -- public order-constant names, taken

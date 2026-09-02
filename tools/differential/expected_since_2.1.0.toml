@@ -1324,3 +1324,51 @@ issue = "feat(#395)/fix(#296) a comma followed only by a title leaves the pre-co
 name_regex = "^de la Cruz Juan Carlos, Dr\\.$"
 fields = ["title", "given", "middle", "family", "suffix"]
 orders = ["FAMILY_FIRST_GIVEN_LAST"]
+
+# ---------------------------------------------------------------------
+# The `_initials` rules (#484) -- see the block of the same name at the
+# end of expected_since_1.4.0.toml for what the pseudo-field is. Only
+# view changes AFTER this baseline are visible from it: the per-word
+# grouping predates it (2.0.0) and is classified at 1.4.0 alone.
+# fix(#462), below, is the 2.3 facade fix, visible from every 2.x
+# baseline.
+
+[[change]]
+issue = "fix(#385/#402) an all-particle name part initials its words (R2)"
+# 'Anh Do' -> 'A. D.', 'Juan van der' -> 'J. v. d.': rules.md#R2/#R3,
+# shipped in 2.2.0, decisions.md#R2. Fields identical at this
+# baseline; only the view moved. The same 27-name literal list as the
+# 1.4.0 rule, for the same reason.
+name_regex = "(?i)^(?:anh do|smith van der|yin le|yin a le|vai la|jong van der|jong, van der|juan van der|mesnil garcia de|mesnil garcia van|mesnil de|sander van|van ma van|anh van do|beethoven ludwig van|berg jan de jr\\.|john van mc|jong anke de|juan de|ménil christophe de|ménil de|nguyen thi van|nguyen, van le|van berg jan de)$"
+fields = ["_initials"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#360) los joined the particles, so it no longer initials"
+# 'de los Santos': 'l. S.' -> 'S.' once #360 (2.2) made 'los' a
+# particle. One name, literal.
+name_regex = "(?i)^de los santos$"
+fields = ["_initials"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#462) the facade keeps an initial-shaped conjunction letter"
+# 'Scott E. Werner', 'Amy E Maid', 'Jose E. Maria Santos':
+# HumanName.initials() dropped a dotted or bare-capital E/Y in the
+# middle or family group because the 2.0 facade tested conjunction
+# membership alone, where 1.4.0's is_conjunction also required "NOT
+# is_an_initial". 'S. W.' -> 'S. E. W.', restoring 1.4.0; the core's
+# initials() was already right. Fields identical -- the parse never
+# read E as a conjunction, only the facade's render did -- so this is
+# `_initials` alone (#484). The shape: a bare capital E or Y, or a
+# dotted E./Y. of either case, standing as its own word. Lowercase
+# bare e/y is the connective and does not move. The regex reaches 18
+# corpus names, of which 14 diffed when the rule was written
+# (2026-09-02). The four it reaches and does not move are what the
+# gap IS, and the invariant behind it is a GROUP rather than a count:
+# they carry the E/Y in the GIVEN group, which has always initialed
+# every word it holds whatever the vocabulary says, so there was
+# nothing for the fix to restore.
+name_regex = "(?:^|[\\s,])(?:[EY]|[EeYy]\\.)(?=[\\s,]|$)"
+fields = ["_initials"]
+orders = ["DEFAULT"]

@@ -512,16 +512,32 @@ class HumanName:
     # -- initials -------------------------------------------------------------
 
     def _process_initial(self, name_part: str, firstname: bool = False) -> str:
-        # v1 parser.py:427 verbatim: particles/conjunctions are filtered
-        # from initials unless the part is a first name. split() rather
-        # than split(" "): *_list attributes assigned directly bypass
-        # whitespace normalization, and split(" ") yields empty strings
-        # for repeated spaces (#232).
+        # after v1 parser.py:427, not verbatim: particles and
+        # conjunctions are filtered from initials unless the part is a
+        # first name. split() rather than split(" ") because split(" ")
+        # yields '' between repeated spaces and `part[0]` below would
+        # raise IndexError on it (#232). v1 stated the reason as
+        # `*_list` attributes bypassing whitespace normalization, which
+        # no longer holds -- the `*_list` properties are read-only in
+        # 2.x, and assignment through `hn.middle = ...` normalizes --
+        # but a doubled space anywhere in a part still reaches here.
         parts = name_part.split()
         initials = []
         for part in parts:
-            if not (self._is_particle(part)
-                    or self._is_conjunction(part)) or firstname:
+            # v1 parser.py:771 (1.4.0): is_conjunction was "in the
+            # conjunctions set AND NOT is_an_initial", so a dotted or
+            # bare-capital E/Y is the initial it looks like rather
+            # than the connective. The 2.0 facade dropped that half
+            # and lost the middle initial of 'Scott E. Werner' (#462).
+            # _render._INITIAL is v1's `initial` shape, kept in step
+            # with the pipeline's copy by tests/v2/test_regex_sync.py;
+            # the facade may import _render but not _pipeline
+            # (tests/v2/test_layering.py). Scoped here rather than in
+            # _is_conjunction: this is the only caller, and a future
+            # one should not inherit a decision made for initials.
+            conjunction = (self._is_conjunction(part)
+                           and not _render._INITIAL.fullmatch(part))
+            if not (self._is_particle(part) or conjunction) or firstname:
                 initials.append(part[0])
         if len(initials) > 0:
             return self.initials_separator.join(initials)
@@ -554,11 +570,14 @@ class HumanName:
             # -- nothing survived
             # the filter, so the whole group is particles. The
             # facade's twin of the core's
-            # UNJOINED_TAG. NOT pinned against it: both case runners
-            # compare the seven role fields only, and Case carries no
-            # initials column, so the one covering test is
-            # tests/test_initials.py::test_initials_middle_name_all_prefixes. _split_last already applies the same guard to
-            # the base, which is why last_base was never empty here.
+            # UNJOINED_TAG. NOT pinned against it by the case runners,
+            # which compare the seven role fields only (Case carries
+            # no initials column); the covering test is
+            # tests/test_initials.py::test_initials_middle_name_all_prefixes,
+            # and since #484 the differential compares initials() on
+            # both surfaces for names whose roles agree. _split_last
+            # already applies the same guard to the base, which is why
+            # last_base was never empty here.
             return [w[0] for w in words]
         return (group_initials(self.first_list, True),
                 group_initials(self.middle_list),

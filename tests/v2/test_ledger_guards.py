@@ -44,6 +44,7 @@ from nameparser._policy import Script
 # hand copy of a constant with a source of truth, inside the module
 # written to forbid exactly that.
 from nameparser._lexicon import _PHRASE_FIELDS, _normalize
+from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
 from nameparser.config.conjunctions import CONJUNCTIONS
 from nameparser.config.maiden_markers import MAIDEN_MARKERS
 from nameparser.config.particles import PARTICLES
@@ -353,7 +354,9 @@ _SPAN_BEARING_RULES: dict[str, frozenset[str]] = {
         "fix(#298)",                        # the 间隔号 lookahead
     }),
     "expected_since_2.1.0.toml": frozenset(),   # 2.2 cycle: no span-bearing rule
-    "expected_since_2.2.0.toml": frozenset(),   # open cycle, no rules yet
+    # open cycle: its one rule, fix(#462), is a Latin letter shape and
+    # copies no script range
+    "expected_since_2.2.0.toml": frozenset(),
 }
 
 #: The leading `fix(...)`/`feat(...)` tag of a rule's `issue`, which is
@@ -835,6 +838,24 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # acronym rule above as well, since 'ma' is acronym vocabulary too.
     "fix(suffix-routing) the dotted M.A. spelling reads as a credential (ma-do)":
         ("Jack Ma", "Jack MA", "John Smith M.A."),
+    # #484: the connective rule is case-sensitive on the single letters
+    # so that the #462 shapes -- a capital or dotted E that is an
+    # INITIAL the facade drops -- are never claimed as the per-word
+    # grouping change. Since the facade fix these names AGREE with
+    # 1.4.0 and diff only against the 2.x baselines, where fix(#462)
+    # claims them, so a #462 REGRESSION is the only way they can diff
+    # at this baseline again -- and it must surface as UNEXPLAINED
+    # rather than be absorbed as per-word grouping. That is what the
+    # case-sensitivity buys, and it is why this roster keeps probing
+    # for it after the bug is gone.
+    "a connective run initials": ("Jose E Maria Santos",
+                                  "JOSE E MARIA SANTOS",
+                                  "Scott E. Werner", "Amy E Maid"),
+    # fix(#462)'s boundary: lowercase bare e/y is the connective;
+    # 'E.T.' is a run of initials the rule has no view on; a bare I
+    # is not conjunction vocabulary at all.
+    "fix(#462)": ("john e smith", "maria y lopez", "E.T. Smith",
+                  "Maier, Amy I, Jr."),
 }
 
 
@@ -1351,6 +1372,27 @@ _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
     "fix(suffix-routing) a two-token name ending in a credential acronym keeps it in `suffix`":
         _LatinCopy(vocabulary=SUFFIX_ACRONYMS,
                    covers=frozenset({"mc", "mp"})),
+    # #484's per-word rules copy one vocabulary EACH, which is why the
+    # 98 names take three rules: the roster keys a rule to a single
+    # source. B1 is case-sensitive on purpose (its comment says why),
+    # so both spellings of `and` are members and cover one entry.
+    "a connective run initials": _LatinCopy(
+        vocabulary=CONJUNCTIONS,
+        covers=frozenset({"y", "e", "&", "and", "of", "the"})),
+    "a bound-given run initials": _LatinCopy(
+        vocabulary=BOUND_GIVEN_NAMES,
+        covers=frozenset({"abdul", "abu"})),
+    # Three entries, not the five the chain names: this roster keys ONE
+    # vocabulary per rule, and the rule's first draft carried a second
+    # alternation (`(?:\s+(?:der|la))?`) that this test would have had
+    # to pin against the same entry. It could not: `covers` is one set,
+    # and the two alternations cover disjoint halves of it. The draft
+    # group was inert -- same 107 names, same digest, with and without
+    # it -- so the ledger dropped it rather than the roster growing a
+    # second shape. The rule's comment records the measurement.
+    "a particle chain inside": _LatinCopy(
+        vocabulary=PARTICLES,
+        covers=frozenset({"van", "von", "de"})),
 }
 
 #: Alternations that copy no vocabulary, so discovery must not demand a
@@ -1416,6 +1458,30 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # here stands behind. This roster records only that a wordlist is
     # not what is copied.
     frozenset({"X", "IX", "IV", "V?I{1,3}", "V"}),
+    # #484: the anchor groups of the `_initials` rules -- start-of-name
+    # or whitespace, start-of-name or whitespace-or-comma. Anchors, not
+    # words; the same reason as fix(#400)'s pair above.
+    frozenset({"^", "\\s"}),
+    frozenset({"^", "[\\s,]"}),
+    # fix(#385/#402)'s 24 spellings: the 27 corpus names whose
+    # all-particle part moved, listed because "a part of nothing but
+    # particles" is not a property a regex over the raw string can
+    # state. A list of names, the fix(#445) precedent -- that rule and
+    # fix(#410) and fix(#335) are the 1.4.0 ledger's literal lists.
+    frozenset({"anh do", "smith van der", "yin le", "yin a le", "vai la",
+               "jong van der", "jong, van der", "juan van der",
+               "mesnil garcia de", "mesnil garcia van", "mesnil de",
+               "sander van", "van ma van", "anh van do",
+               "beethoven ludwig van", "berg jan de jr\\.", "john van mc",
+               "jong anke de", "juan de", "ménil christophe de",
+               "ménil de", "nguyen thi van", "nguyen, van le",
+               "van berg jan de"}),
+    # fix(#462)'s letter shape: a bare capital E/Y or a dotted E./Y.
+    # It is the initial SHAPE (v1's `initial` regex, _render._INITIAL)
+    # intersected with the single-letter conjunctions, not a copy of
+    # CONJUNCTIONS -- "e." is no entry, and matching it against the
+    # vocabulary would be a false claim of correspondence.
+    frozenset({"[EY]", "[EeYy]\\."}),
 })
 
 def _unjustified_reach(name_regex: str, members: set[str]) -> list[str]:
@@ -1979,6 +2045,33 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('family', 'suffix'), "ed72c9672214", None),
         "fix(suffix-routing) the dotted M.A. spelling reads as a credential (ma-do)":
             _Claim(1, ('family', 'suffix'), "17379620526b", None),
+        # #484's six `_initials` rules. Four of them reach far more
+        # than they explain, and the gap is the pseudo-field's own
+        # doing rather than a widening: `_initials` enters a diff ONLY
+        # when the seven roles and the ambiguity kinds all agree, so a
+        # name whose regex the rule matches contributes nothing unless
+        # its parse is otherwise identical across the two surfaces.
+        # Reach against explained, measured 2026-09-02 at baseline
+        # 1.4.0 -- a snapshot of that run, not a standing count:
+        # 27/27, 1/1, 96/66, 41/19, 107/11, 18/2. The reach half is
+        # what this roster holds; the explained half moves with the
+        # corpus and is re-read from the gate. The phd rule's 18 is the widest
+        # gap and the most literal regex -- `\bph\. d\.` matches every
+        # spelling of the fragment the corpora carry, and the trailing
+        # ones are protected by the [[never]] entry above, which is
+        # what _EXCLUSION_EFFECT's grown `absorbed_by` records.
+        "fix(#385/#402) an all-particle name part initials its words (R2)":
+            _Claim(27, ('_initials',), "6b242c287db8", ('DEFAULT',)),
+        "fix(#360) los joined the particles, so it no longer initials":
+            _Claim(1, ('_initials',), "cd721215f463", ('DEFAULT',)),
+        "fix(initials-per-word) a connective run initials each word (facade, since 2.0.0)":
+            _Claim(96, ('_initials',), "fa69850d2cd4", ('DEFAULT',)),
+        "fix(initials-per-word) a bound-given run initials each word (facade, since 2.0.0)":
+            _Claim(41, ('_initials',), "e99f56c955d5", ('DEFAULT',)),
+        "fix(initials-per-word) a particle chain inside a name part initials each word (facade, since 2.0.0)":
+            _Claim(107, ('_initials',), "bdc4da864f59", ('DEFAULT',)),
+        "fix(initials-per-word) the Ph. D. merge initials each word (facade, since 2.0.0)":
+            _Claim(18, ('_initials',), "f67d8ebddd56", ('DEFAULT',)),
     },
     "expected_since_2.0.0.toml": {
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
@@ -2107,8 +2200,35 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given', 'middle', 'suffix', 'title'), "fc6bc9e605e1", ('FAMILY_FIRST',)),
         "feat(#395)/fix(#296) a comma followed only by a title leaves the pre-comma name to the declared order's fold, the given-last spelling":
             _Claim(1, ('family', 'given', 'middle', 'suffix', 'title'), "3e43a2be022e", ('FAMILY_FIRST_GIVEN_LAST',)),
+        # #484's two `_initials` rules. Both are literal name lists, so
+        # reach equals what they explain here -- 27 and 1 -- and both
+        # digests match the 1.4.0 ledger's, which is the point of
+        # copying the list verbatim rather than restating it.
+        "fix(#385/#402) an all-particle name part initials its words (R2)":
+            _Claim(27, ('_initials',), "6b242c287db8", ('DEFAULT',)),
+        "fix(#360) los joined the particles, so it no longer initials":
+            _Claim(1, ('_initials',), "cd721215f463", ('DEFAULT',)),
+        # fix(#462)'s reach is 18 where it explains 14. Its regex is a
+        # letter SHAPE rather than a name list, and the four extra --
+        # 'E Anne D', 'E Jones', 'E Maria', 'Y. L.' -- carry the E/Y in
+        # the GIVEN group, which has always initialed every word it
+        # holds whatever the vocabulary says, so the fix does not move
+        # them. The discriminator is the GROUP and not the position:
+        # 'E Anne D,Leonardo' also leads with the E, but its comma
+        # re-roles the whole run into the FAMILY group, and it is one
+        # of the 14 that move.
+        # The digest is the same in all three 2.x ledgers because the
+        # regex is the same string in each.
+        "fix(#462) the facade keeps an initial-shaped conjunction letter":
+            _Claim(18, ('_initials',), "3dd0e0276be6", ('DEFAULT',)),
     },
-    "expected_since_2.2.0.toml": {},   # open cycle, no rules yet
+    # The 2.3 cycle's first rule, and a facade-only render fix: every
+    # role is identical, so `_initials` alone. Reach and digest as in
+    # the 2.0.0 mapping above, the same regex classifying the same 14.
+    "expected_since_2.2.0.toml": {
+        "fix(#462) the facade keeps an initial-shaped conjunction letter":
+            _Claim(18, ('_initials',), "3dd0e0276be6", ('DEFAULT',)),
+    },
     "expected_since_2.1.0.toml": {
         "fix(#371) a suffix never begins a name: the Ph./D. merge declines at the head":
             _Claim(4, ('family', 'given', 'middle', 'suffix', 'title'), "1425d85a2d86", None),
@@ -2222,6 +2342,19 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given', 'middle', 'suffix', 'title'), "fc6bc9e605e1", ('FAMILY_FIRST',)),
         "feat(#395)/fix(#296) a comma followed only by a title leaves the pre-comma name to the declared order's fold, the given-last spelling":
             _Claim(1, ('family', 'given', 'middle', 'suffix', 'title'), "3e43a2be022e", ('FAMILY_FIRST_GIVEN_LAST',)),
+        # #484's two, the same pair as the 2.0.0 ledger's: the change
+        # shipped in 2.2.0, so it is equally visible from either 2.x
+        # baseline, and the reaches and digests agree because the two
+        # files carry the same literal list.
+        "fix(#385/#402) an all-particle name part initials its words (R2)":
+            _Claim(27, ('_initials',), "6b242c287db8", ('DEFAULT',)),
+        "fix(#360) los joined the particles, so it no longer initials":
+            _Claim(1, ('_initials',), "cd721215f463", ('DEFAULT',)),
+        # fix(#462), reach and digest as in the 2.0.0 mapping: the same
+        # regex over the same corpora, and the facade bug it fixes is
+        # in every 2.x wheel, so the baseline makes no difference.
+        "fix(#462) the facade keeps an initial-shaped conjunction letter":
+            _Claim(18, ('_initials',), "3dd0e0276be6", ('DEFAULT',)),
     },
 }
 
@@ -2320,7 +2453,8 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
 #: recorded winner is order-scoped, and it stops being true the day one
 #: is.
 _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
-    "expected_since_2.2.0.toml": {},   # open cycle, no rules and so no contest
+    # open cycle: one rule, so nothing for a second one to contest
+    "expected_since_2.2.0.toml": {},
     "expected_since_1.4.0.toml": {
         ("Andrews, M.D.", ("given", "suffix")): "fix(comma-family)",
         ("田中, 太郎さん", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
@@ -2376,6 +2510,21 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         ("田中さん II", ("given", "suffix")):
             "fix(cjk-glued-honorific-peel) glued honorific peels into "
             "suffix",
+        # #484's three `_initials` contests with a literal rule on one
+        # side. fix(initials-per-word)'s particle-chain rule reaches all
+        # three, declares the same lone `_initials` field, and loses
+        # only because both literal rules are written ahead of it --
+        # file order, which _sorted_rules leaves untouched now that
+        # every rule carries a name_regex. Each of the three really does
+        # diff on initials, so narrowing or deleting a literal rule
+        # would hand its name to the per-word rule rather than surface
+        # it: the handover this row exists to catch.
+        ("de los Santos", ("_initials",)):
+            "fix(#360) los joined the particles, so it no longer initials",
+        ("van Berg Jan de", ("_initials",)):
+            "fix(#385/#402) an all-particle name part initials its words (R2)",
+        ("van ma van", ("_initials",)):
+            "fix(#385/#402) an all-particle name part initials its words (R2)",
         # the glued/spaced boundary. 'Andersonさん' and '김민준씨' left
         # suffix-routing for a rule that names them; '김민준 씨.' is
         # spaced and stays on the spaced rule, which #372 taught to
@@ -2437,6 +2586,34 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
             "fix(#296) a lone post-comma credential is a suffix",
         ("김민준씨 Jr.", ("family", "given", "suffix")):
             "fix(cjk-glued-honorific-peel) glued honorific peels into suffix",
+        # #484's per-word rules. Measured over the corpus, exactly ONE
+        # name is reached by two of them AND diffs on `_initials`:
+        # 'de la Vega y Santos Juan' carries both a connective and a
+        # particle chain, and the connective rule wins it on file
+        # order alone -- the two declare the same single field, so
+        # `fields` cannot separate them and only position does. Five
+        # more names are reached by two ('Jane van der Berg née y
+        # Jones', 'Maria Luisa y de la Cruz', 'Sir abdul van der
+        # Berg', 'abdul Ph. D. Smith Berg', 'van der Berg, abdul née
+        # Jones') and none of them has an `_initials` diff to pin:
+        # three move ROLES, so the pseudo-field never enters, and two
+        # do not diff at all.
+        ("de la Vega y Santos Juan", ("_initials",)):
+            "fix(initials-per-word) a connective run",
+        # Not contested today -- the bound-given rule is the only one
+        # of the four whose regex reaches these three -- and recorded
+        # anyway, because the bound rule sits BEHIND the connective
+        # one in file order and the two vocabularies are one widened
+        # alternation apart. A connective rule grown to reach 'Abu'
+        # or a particle rule grown to reach a trailing 'van' takes
+        # these names silently: reach is per-rule and the gate's total
+        # is per-corpus, so nothing else here would say so.
+        ("Abu Bakr Al Baghdadi, MD", ("_initials",)):
+            "fix(initials-per-word) a bound-given run",
+        ("abu bakr al baghdadi", ("_initials",)):
+            "fix(initials-per-word) a bound-given run",
+        ("Berg, abdul van", ("_initials",)):
+            "fix(initials-per-word) a bound-given run",
     },
     # The two 2.x ledgers had NO section here until #452, and the
     # coverage assertion below was `<=`, so their absence read as "no
@@ -2655,10 +2832,37 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
                   # -- any of the siblings could widen onto a protected
                   # reading and this roster would stay green. The same
                   # identity-free weakness _SPAN_BEARING_RULES records.
+                  #
+                  # #484's phd-merge initials rule JOINED the tuple,
+                  # and it is the first entrant that reaches a
+                  # protected shape through the `_initials`
+                  # pseudo-field rather than through a role: its
+                  # `fields` is exactly ["_initials"], so the only
+                  # subset it can claim is the singleton, and
+                  # _protectable_fields builds that subset because it
+                  # reads compare._RULE_FIELDS rather than Role.
+                  #
+                  # Decided rather than absorbed. The rule's regex is
+                  # the bare fragment `\bph\. d\.`, which reaches all
+                  # 18 corpus spellings while explaining the two
+                  # LEADING ones it is named for; a trailing 'Ph. D.'
+                  # is what this entry protects, and the exclusion
+                  # refuses those names before any rule is consulted,
+                  # so the rule claims nothing there in a real run.
+                  # What the growth records is that it now STANDS
+                  # READY to -- delete this entry and the initials
+                  # reading of a trailing 'Ph. D.' would classify
+                  # under a rule whose prose is about the merge at
+                  # the front of a name. Narrowing the regex to the
+                  # leading spelling would empty this tuple again and
+                  # is the alternative on the table if the exclusion
+                  # is ever retired.
                   ("fix(comma-family) lone post-comma piece routes to "
                    "suffix/title, not first",
                    "fix(comma-precomma-family) pre-comma run reads as "
-                   "family, not given")),
+                   "family, not given",
+                   "fix(initials-per-word) the Ph. D. merge initials "
+                   "each word (facade, since 2.0.0)")),
     '(^|[\\w.]\\s+)[("\'][^)"\']+[)"\'](\\s+\\w|\\s*$)':
         # 51 -> 54 as rules.md gained the bracketed Polish examples
         # (#434): 'Maria Kowalska (z domu Nowak)', 'Maria Kowalska

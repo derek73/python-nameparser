@@ -347,7 +347,10 @@ CASES: tuple[Case, ...] = (
                "initials column, so the half #408 moved is pinned in "
                "rules.md#R3 and tests/v2/test_render.py: initials were "
                "'M. H. A. A.' here and are 'M. A. A. H.' now, which is "
-               "also 1.4.0's answer"),
+               "also 1.4.0's answer. Since #484 the differential compares "
+               "initials() too, for names whose roles are identical -- "
+               "but only under the policies it runs, and middle_as_family "
+               "is not one, so this row stays pinned here"),
     Case("ambiguous_surname_acronyms", "Jack MA",
          {"given": "Jack", "family": "MA"},
          ambiguities=("suffix-or-name",),

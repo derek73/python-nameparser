@@ -44,13 +44,19 @@ V2_FIELDS = ("title", "given", "middle", "family", "suffix", "nickname",
 _V1_TO_ROLE = {"first": "given", "last": "family"}
 
 #: An unclassified diff, carrying BOTH surfaces' before/after:
-#: (name, old_facade, new_facade, old_v2, new_v2, order). Both halves
-#: are kept because a diff can exist on the v2 surface alone, and a
-#: report that named such a diff without showing it would be
-#: unactionable. `order` rides along so the report can say which
-#: order produced the diff -- None for the default order.
+#: (name, old_facade, new_facade, old_v2, new_v2, order,
+#: initials_only). Both halves are kept because a diff can exist on
+#: the v2 surface alone, and a report that named such a diff without
+#: showing it would be unactionable. `order` rides along so the report
+#: can say which order produced the diff -- None for the default
+#: order. `initials_only` is main()'s own verdict on the diff set
+#: (#484): it rides along so _print_field_diffs can be TOLD whether
+#: the derived view belongs in the block rather than re-deriving it
+#: from the rows, which is the shape two copies of one rule take just
+#: before they drift.
 _Unexplained = tuple[str, dict[str, str], dict[str, str],
-                     dict[str, object], dict[str, object], str | None]
+                     dict[str, object], dict[str, object], str | None,
+                     bool]
 
 
 def _parse_version(text: str) -> tuple[int, int, int]:
@@ -209,6 +215,8 @@ def _v2_row(p):
     row = {f: (getattr(p, f, "") or "") for f in V2_FIELDS}
     row["_ambiguities"] = sorted(
         {a.kind.name for a in getattr(p, "ambiguities", ())})
+    # #484: a derived view, compared only where the roles agree
+    row["_initials"] = p.initials() or ""
     return row
 
 
@@ -225,9 +233,12 @@ for line in sys.stdin:
             {"v2": _v2_row(_parser_for(order).parse(name))},
             ensure_ascii=False), flush=True)
         continue
+    hn = HumanName(name)
     row = {"facade": {k: v or ""
-                      for k, v in HumanName(name).as_dict().items()
+                      for k, v in hn.as_dict().items()
                       if k in V1_FIELDS}}
+    # #484: HumanName.initials() exists at every baseline, 1.4.0 included
+    row["facade"]["_initials"] = hn.initials() or ""
     if WANT_V2:
         row["v2"] = _v2_row(parse(name))
     print(json.dumps(row, ensure_ascii=False), flush=True)
@@ -396,7 +407,8 @@ def _order_tag(order: str | None) -> str:
 def _print_field_diffs(old_facade: dict[str, str], new: dict[str, str],
                        old_v2: dict[str, object],
                        new_v2: dict[str, object],
-                       order: str | None = None) -> None:
+                       order: str | None = None, *,
+                       initials_only: bool) -> None:
     """Print each moved field under one name, Role's, whichever
     surface(s) moved it. Shared by the UNEXPLAINED and UNCLASSIFIED
     (radar) blocks in main() -- one copy rather than two that can
@@ -406,8 +418,9 @@ def _print_field_diffs(old_facade: dict[str, str], new: dict[str, str],
     Role's names, not the facade's: both report blocks exist to be
     turned into a ledger rule, and a rule naming the facade's `first`
     is rejected by validate_rules at startup. Both surfaces are
-    walked, and a field is reported once even when both moved, since
-    one rule covers it.
+    walked, and a ROLE is reported once even when both moved, since
+    one rule covers it. `_initials` is the exception, and the last
+    paragraph is why.
 
     `order` is None for a default-order entry, else the order both
     surfaces were read under. The "[v2 surface only]" tag means "the
@@ -415,6 +428,35 @@ def _print_field_diffs(old_facade: dict[str, str], new: dict[str, str],
     entry, whose facade is never consulted at all (main() passes empty
     dicts for it), so the tag is suppressed there rather than printed
     with a meaning it does not have.
+
+    `initials_only` is main()'s VERDICT on the diff set, not a hint:
+    the derived `_initials` view is printed only when it is what the
+    diff consists of. Taking the answer rather than re-deriving it
+    from the rows is the point -- main()'s roles-identical guard and
+    this print cannot drift apart, so a block always pastes into a
+    rule validate_rules accepts (`fields = ["family", "_initials"]` is
+    refused, and a block showing that pair would invite exactly it).
+
+    The facade's initials() and the core's are INDEPENDENT
+    implementations -- the facade builds its string from
+    `_initials_lists`, not from `_render.initials` -- so unlike a role
+    the two can legitimately move to different strings, and the roles'
+    print-it-once convention would hide the core's movement behind the
+    facade's. So the v2 line is suppressed only when it would REPEAT
+    the facade's: it prints whenever the core moved to a different
+    (old, new) pair, tagged "[v2 surface]" to say both surfaces were
+    compared and moved differently. One rule still covers both, the
+    field name being the same -- but a block showing the facade's
+    movement alone would have that rule written in the belief the core
+    agreed. Read a bare facade line for what it says, then: the
+    absence of a v2 line means the core did not move to a DIFFERENT
+    pair -- it moved identically, or it did not move at all -- and
+    never that the core agreed. The tag needs no order check to stay
+    honest, because `facade_moved` can only be true where the facade
+    was CONSULTED: main() passes empty dicts for an order-bearing
+    entry, so the facade pair is ('', '') there, `facade_moved` is
+    False, and the v2 line falls to the order-aware branch, which
+    suppresses the tag.
     """
     seen: set[str] = set()
     for f in FIELDS:
@@ -429,6 +471,23 @@ def _print_field_diffs(old_facade: dict[str, str], new: dict[str, str],
             print(f"    {_canonical_field(f)}: "
                   f"{old_v2.get(f, '')!r} -> {new_v2.get(f, '')!r}"
                   f"{tag}")
+    # #484: the derived view, printed exactly as main() compares it --
+    # per surface, facade first, and twice when the two surfaces moved
+    # DIFFERENTLY, which a role cannot do (see the docstring).
+    if initials_only:
+        facade_pair = (old_facade.get("_initials", ""),
+                       new.get("_initials", ""))
+        v2_pair = (old_v2.get("_initials", ""), new_v2.get("_initials", ""))
+        facade_moved = facade_pair[0] != facade_pair[1]
+        v2_moved = v2_pair[0] != v2_pair[1]
+        if facade_moved:
+            print(f"    _initials: {facade_pair[0]!r} -> {facade_pair[1]!r}")
+        if v2_moved and (not facade_moved or v2_pair != facade_pair):
+            if facade_moved:
+                tag = "   [v2 surface]"
+            else:
+                tag = "" if order is not None else "   [v2 surface only]"
+            print(f"    _initials: {v2_pair[0]!r} -> {v2_pair[1]!r}{tag}")
 
 
 def _is_latin_only(name: str) -> bool:
@@ -444,10 +503,14 @@ def _is_latin_only(name: str) -> bool:
 
 
 #: Every legal entry in a rule's `fields`: the seven roles under Role's
-#: names, plus the pseudo-field carrying reported AmbiguityKinds. The
-#: ambiguity entry is legal and load-bearing -- a SEGMENTATION-only diff
-#: is facade-identical, so this is the one name that can classify it.
-_RULE_FIELDS = frozenset((*V2_FIELDS, "_ambiguities"))
+#: names, plus two pseudo-fields. `_ambiguities` carries reported
+#: AmbiguityKinds -- a SEGMENTATION-only diff is facade-identical, so
+#: this is the one name that can classify it -- and cannot enter a diff
+#: below baseline 2.0. `_initials` (#484) carries the derived
+#: initials() view and CAN enter one at 1.4.0, through the facade; it
+#: enters only when every role and the ambiguity kinds agree (main()),
+#: so a rule listing it lists nothing else (validate_rules).
+_RULE_FIELDS = frozenset((*V2_FIELDS, "_ambiguities", "_initials"))
 _RULE_KEYS = frozenset(("issue", "name_regex", "fields", "dormant", "orders"))
 
 
@@ -760,16 +823,46 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
                     f"roles; expected from {sorted(_RULE_FIELDS)}. A "
                     f"name outside that set never matches, so the rule "
                     f"is silently dead")
+            # `others` rather than len(fields) > 1: fields =
+            # ["_initials", "_initials"] is longer than one and yet
+            # mixes nothing, so the length test fired and printed an
+            # empty list -- a refusal naming no second field, which is
+            # the one thing the message exists to name. Nothing here
+            # rejects a repeated field name, and this check is not the
+            # place to start: it is about the MIX.
+            dups = sorted({f for f in fields if fields.count(f) > 1})
+            if dups:
+                raise SystemExit(
+                    f"{where} repeats {dups} in 'fields'. classify() "
+                    f"reads 'fields' as a set, so the repeat changes "
+                    f"nothing it matches -- it is a copy-paste slip that "
+                    f"would otherwise pass every check below silently, "
+                    f"and the '_initials' check in particular would read "
+                    f"['_initials', '_initials'] as '_initials' alone")
+            others = sorted(set(fields) - {"_initials"})
+            if "_initials" in fields and others:
+                raise SystemExit(
+                    f"{where} lists '_initials' beside "
+                    f"{others} in 'fields'. "
+                    f"'_initials' enters a diff only when every role and "
+                    f"the ambiguity kinds agree (#484), so no diff can "
+                    f"carry it with another field: the '_initials' half "
+                    f"of this rule is silently dead. Give the "
+                    f"initials-only shape its own rule with "
+                    f"fields = ['_initials']")
             if set(V2_FIELDS) <= set(fields):
                 raise SystemExit(
                     f"{where} lists all seven roles in 'fields', so the "
-                    f"subset test admits every diff -- the narrowing is "
-                    f"not narrowing anything. Checked against the seven "
-                    f"roles rather than against every legal entry, "
-                    f"because '_ambiguities' cannot enter a diff at all "
-                    f"below baseline 2.0: there the seven ARE the whole "
-                    f"vocabulary, and a rule listing them would have "
-                    f"claimed every diff in the 1.4 ledger")
+                    f"subset test admits every ROLE diff -- the "
+                    f"narrowing is not narrowing anything. Checked "
+                    f"against the seven roles rather than against every "
+                    f"legal entry, because the roles are the only names "
+                    f"that ever co-occur in one diff: '_ambiguities' "
+                    f"cannot appear below baseline 2.0, and '_initials' "
+                    f"only ever appears alone (#484's roles-identical "
+                    f"guard in main()). So all seven is already the "
+                    f"widest a rule can be, and that is the widening "
+                    f"this check refuses")
         # LAST of the family, deliberately. This rejects a
         # WELL-FORMED `fields` that simply has no name beside it, so it
         # must not pre-empt the three checks above, each of which buys a
@@ -796,8 +889,9 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
                 f"{where} has 'name_regex' but no 'fields' (#456). It "
                 f"narrows by name and by nothing else, so on any name "
                 f"its regex reaches it claims EVERY diff shape there is -- "
-                f"255 of them from baseline 2.0 on, where `_ambiguities` "
-                f"joins the seven roles, and 127 below it. #452 makes "
+                f"256 of them from baseline 2.0 on, where `_ambiguities` "
+                f"joins the seven roles and `_initials` adds the one "
+                f"shape that stands alone, and 128 below it. #452 makes "
                 f"that worse than it looks: "
                 f"over_declared_rules skips a rule with no 'fields', "
                 f"correctly, since one declaring no roles cannot "
@@ -900,6 +994,29 @@ def validate_exclusions(entries: list[dict[str, object]],
                 raise SystemExit(
                     f"{where} names {bad} in 'fields', which are not "
                     f"roles; expected from {sorted(_RULE_FIELDS)}")
+            # `others` rather than len(fields) > 1, as in
+            # validate_rules: a repeated '_initials' is longer than
+            # one and mixes nothing, and printed an empty list.
+            dups = sorted({f for f in fields if fields.count(f) > 1})
+            if dups:
+                raise SystemExit(
+                    f"{where} repeats {dups} in 'fields'. classify() "
+                    f"reads 'fields' as a set, so the repeat changes "
+                    f"nothing it matches -- it is a copy-paste slip that "
+                    f"would otherwise pass every check below silently, "
+                    f"and the '_initials' check in particular would read "
+                    f"['_initials', '_initials'] as '_initials' alone")
+            others = sorted(set(fields) - {"_initials"})
+            if "_initials" in fields and others:
+                raise SystemExit(
+                    f"{where} lists '_initials' beside "
+                    f"{others} in 'fields'. "
+                    f"'_initials' enters a diff only when every role and "
+                    f"the ambiguity kinds agree (#484), so no diff can "
+                    f"carry it with another field: the '_initials' half "
+                    f"of this entry is silently dead. Give the "
+                    f"initials-only shape its own exclusion with "
+                    f"fields = ['_initials']")
             if set(V2_FIELDS) <= set(fields):
                 raise SystemExit(
                     f"{where} lists all seven roles in 'fields', which "
@@ -1489,8 +1606,11 @@ def main() -> int:
         name = entry["name"]
         order = entry.get("order")
         if order is None:
-            new = {k: v or "" for k, v in HumanName(name).as_dict().items()
+            hn = HumanName(name)
+            new = {k: v or "" for k, v in hn.as_dict().items()
                    if k in FIELDS}
+            # must stay identical to the worker template's facade row
+            new["_initials"] = hn.initials() or ""
             # canonicalized on the way in: the ledger speaks Role's
             # names, and the facade is the surface whose vocabulary
             # differs
@@ -1511,16 +1631,33 @@ def main() -> int:
             new_v2 = {f: (getattr(p, f, "") or "") for f in V2_FIELDS}
             new_v2["_ambiguities"] = sorted(
                 {a.kind.name for a in getattr(p, "ambiguities", ())})
+            new_v2["_initials"] = p.initials() or ""
             diff |= {_canonical_field(f)
                      for f in (*V2_FIELDS, "_ambiguities")
                      if old.get("v2", {}).get(f, "") != new_v2.get(f, "")}
+        # #484: initials() is a DERIVED view. It enters the diff only
+        # when every role and the ambiguity kinds agree on every
+        # compared surface -- render-layer drift, the one shape the
+        # field comparison cannot see. When a role moved, the initials
+        # movement is that move's consequence, not drift: it is neither
+        # compared nor printed, and the rule that explains the role
+        # diff explains it (decisions.md, "the initials view"). Strict
+        # subset semantics were measured and rejected there: they would
+        # have put `_initials` onto a long tail of existing rules for
+        # no added discrimination.
+        if not diff and (
+                old.get("facade", {}).get("_initials", "")
+                != new.get("_initials", "")
+                or old.get("v2", {}).get("_initials", "")
+                != new_v2.get("_initials", "")):
+            diff = {"_initials"}
         if not diff:
             continue
         diffing.append((name, diff, order))
         issue = classify(name, diff, rules, exclusions, order)
         if issue is None:
             row = (name, old.get("facade", {}), new, old.get("v2", {}),
-                   new_v2, order)
+                   new_v2, order, diff == {"_initials"})
             # classify() returns None for two different reasons: no
             # rule matched, or a [[never]] entry refused the name --
             # and only the first belongs to the tier split. An
@@ -1608,22 +1745,26 @@ def main() -> int:
     if unexplained or radar:
         print("Field names below are Role's, matching what a ledger "
               "`fields` rule must say.\n")
-    for name, old_facade, new, old_v2, new_v2, order in unexplained:
+    for (name, old_facade, new, old_v2, new_v2, order,
+         initials_only) in unexplained:
         # the order tag distinguishes a family-first regression from a
         # default-order one on the same name -- otherwise indistinguishable
         # in the report
         print(f"UNEXPLAINED {name!r}{_order_tag(order)}")
-        _print_field_diffs(old_facade, new, old_v2, new_v2, order)
+        _print_field_diffs(old_facade, new, old_v2, new_v2, order,
+                           initials_only=initials_only)
     if radar:
         print("\nRadar tier (names the contract does not answer for, "
               "#468): shown, never blocking. Promote a name that "
               "matters via a cases.py row + shape tag, or -- for a "
               "demoted one -- by clearing `tolerated` on its rows.\n")
-    for entry, (name, old_facade, new, old_v2, new_v2, order) in radar:
+    for entry, (name, old_facade, new, old_v2, new_v2, order,
+                initials_only) in radar:
         labels = entry.get("tests")
         tag = f"   [v1: {', '.join(labels)}]" if labels else ""
         print(f"UNCLASSIFIED (radar) {name!r}{tag}{_order_tag(order)}")
-        _print_field_diffs(old_facade, new, old_v2, new_v2, order)
+        _print_field_diffs(old_facade, new, old_v2, new_v2, order,
+                           initials_only=initials_only)
     # A rule explaining nothing is as much a broken contract as an
     # unexplained diff: both mean the ledger no longer describes what the
     # code does. A rule explaining LESS than it declares is the third

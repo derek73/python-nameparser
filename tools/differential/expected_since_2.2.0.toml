@@ -21,14 +21,39 @@
 # assumed.
 #
 # tests/v2/test_differential.py permits exactly one empty ledger, the
-# one DEFAULT_BASELINE names -- which is this file, for as long as the
-# 2.3 cycle moves no corpus name at the default order.
+# one DEFAULT_BASELINE names -- which is this file. That latitude went
+# unused: the first entry arrived with fix(#462), the 2.3 cycle's first
+# change to move a corpus name at the default order.
 #
 # tests/v2/test_ledger_guards.py records this file in
-# _SPAN_BEARING_RULES with an empty set and in _CORPUS_CLAIMS with an
-# empty mapping. The first rule that hand-copies _SCRIPT_RANGES has to
-# be recorded in the former or the sweep fails.
+# _SPAN_BEARING_RULES with an empty set and in _CORPUS_CLAIMS with the
+# one rule below. The empty set still holds: fix(#462)'s regex is a
+# letter shape, not a hand copy of _SCRIPT_RANGES. The first rule that
+# does copy a script range has to be recorded in the former or the
+# sweep fails.
 #
 # There is deliberately no `change = []` line. TOML forbids appending a
 # [[change]] table to a statically defined array, so that line would
 # block the first entry.
+
+[[change]]
+issue = "fix(#462) the facade keeps an initial-shaped conjunction letter"
+# 'Scott E. Werner', 'Amy E Maid', 'Jose E. Maria Santos':
+# HumanName.initials() dropped a dotted or bare-capital E/Y in the
+# middle or family group because the 2.0 facade tested conjunction
+# membership alone, where 1.4.0's is_conjunction also required "NOT
+# is_an_initial". 'S. W.' -> 'S. E. W.', restoring 1.4.0; the core's
+# initials() was already right. Fields identical -- the parse never
+# read E as a conjunction, only the facade's render did -- so this is
+# `_initials` alone (#484). The shape: a bare capital E or Y, or a
+# dotted E./Y. of either case, standing as its own word. Lowercase
+# bare e/y is the connective and does not move. The regex reaches 18
+# corpus names, of which 14 diffed when the rule was written
+# (2026-09-02). The four it reaches and does not move are what the
+# gap IS, and the invariant behind it is a GROUP rather than a count:
+# they carry the E/Y in the GIVEN group, which has always initialed
+# every word it holds whatever the vocabulary says, so there was
+# nothing for the fix to restore.
+name_regex = "(?:^|[\\s,])(?:[EY]|[EeYy]\\.)(?=[\\s,]|$)"
+fields = ["_initials"]
+orders = ["DEFAULT"]
