@@ -1525,7 +1525,8 @@ def _run_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ledger_body: str,
               baseline: str = "1.4.0",
               baseline_v2: dict | None = None,
               floor: int | None = 1,
-              tier: str | None = "contract") -> tuple[int, str]:
+              tier: str | None = "contract",
+              corpus_flag: bool = True) -> tuple[int, str]:
     """Drive main() end to end with a faked baseline worker.
 
     No uv, no network. The helper exists because every unit test above
@@ -1540,6 +1541,15 @@ def _run_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ledger_body: str,
     in order, alongside the fixture's own 'John Smith'. It exists so a
     test can mix a diffing and a non-diffing name -- the single-name
     corpus below is structurally incapable of that.
+
+    `corpus_flag=False` drops `--corpus` from argv, so main() globs its
+    corpora the way a FULL gate run does. It is the only way to reach
+    main()'s `if not args.corpus` branches from a test, and there are
+    two of them -- the missing-floor roster and, since #382, the
+    vacant-exemption refusal, which a partial run must only NOTE. The
+    fixture corpus is the only file in the patched HERE, so the floor
+    roster is replaced wholesale rather than added to: left intact it
+    would name every real corpus as missing.
     """
     import json
     import sys
@@ -1604,7 +1614,11 @@ def _run_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ledger_body: str,
     # leaves it unregistered, for the test that pins what happens when
     # a corpus arrives without one.
     if floor is not None:
-        monkeypatch.setitem(compare._CORPUS_FLOORS, corpus.name, floor)
+        if corpus_flag:
+            monkeypatch.setitem(compare._CORPUS_FLOORS, corpus.name, floor)
+        else:
+            monkeypatch.setattr(
+                compare, "_CORPUS_FLOORS", {corpus.name: floor})
     # The fixture corpus needs a tier like any other. `tier=None`
     # leaves it unregistered, for the test that pins the fail-closed
     # roster.
@@ -1612,8 +1626,9 @@ def _run_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ledger_body: str,
         monkeypatch.setitem(compare._CORPUS_TIERS, corpus.name, tier)
     monkeypatch.setattr(compare, "HERE", tmp_path)
     monkeypatch.setattr(compare, "_run_worker", _fake)
-    monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", baseline,
-                                      "--corpus", str(corpus)])
+    monkeypatch.setattr(sys, "argv",
+                        ["compare.py", "--baseline", baseline]
+                        + (["--corpus", str(corpus)] if corpus_flag else []))
     import io
     import contextlib
     buf = io.StringIO()
@@ -1715,25 +1730,65 @@ def test_main_refuses_an_undeclared_contest_without_running_the_worker(
         "main() spawned the worker before refusing the ledger")
 
 
+#: The same pair with the exemption declared and the two regexes pulled
+#: apart, so the declaration has nothing left to permit (#382).
+_VACANT_LEDGER = _CONTESTED_LEDGER.replace(
+    'fields = ["given", "family"]\n',
+    'fields = ["given", "family"]\n'
+    '[[change.precedes_narrower]]\n'
+    'issue = "fix(narrow) one half of it"\nwhy = "stale"\n'
+).replace('name_regex = "Smith"\nfields = ["family"]',
+          'name_regex = "Jones"\nfields = ["family"]')
+
+
 def test_main_refuses_a_vacant_exemption_without_running_the_worker(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The other half: a declaration left behind by a narrowing. The
-    fixture's two rules no longer share a name, so the exemption on the
-    earlier one has nothing left to permit."""
-    ledger = _CONTESTED_LEDGER.replace(
-        'fields = ["given", "family"]\n',
-        'fields = ["given", "family"]\n'
-        '[[change.precedes_narrower]]\n'
-        'issue = "fix(narrow) one half of it"\nwhy = "stale"\n'
-    ).replace('name_regex = "Smith"\nfields = ["family"]',
-              'name_regex = "Jones"\nfields = ["family"]')
+    """The other half, on a FULL run -- `corpus_flag=False`, because
+    that is the only run whose name set can tell a stale declaration
+    from one this run simply did not reach."""
     with pytest.raises(SystemExit) as exc:
-        _run_main(tmp_path, monkeypatch, ledger, _DIFFERS)
+        _run_main(tmp_path, monkeypatch, _VACANT_LEDGER, _DIFFERS,
+                  corpus_flag=False)
     message = str(exc.value)
     assert "fix(narrow) one half of it" in message
     assert "Delete the exemption" in message
     assert not _WORKER_CALL, (
         "main() spawned the worker before refusing the ledger")
+
+
+def test_main_only_notes_a_vacant_exemption_under_corpus(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The same ledger under `--corpus` must NOTE, never refuse.
+
+    Narrowing the corpus removes contests, and the two checks read that
+    in opposite directions: fewer contests is fewer things to declare
+    (fail-closed for `undeclared`), but a live declaration whose names
+    are outside this run reads as vacant. A refusal here tells a
+    contributor to delete an exemption the full gate still needs.
+    """
+    code, out = _run_main(tmp_path, monkeypatch, _VACANT_LEDGER, _DIFFERS)
+    assert "--corpus" in out and "not evidence" in out
+    assert "Delete the exemption" not in out
+    assert code in (0, 1)
+
+
+def test_a_corpus_narrowing_does_not_refuse_the_shipped_1_4_ledger(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The regression itself, on the file it was measured against.
+
+    Every one of the six real corpora, run alone against
+    expected_since_1.4.0.toml, reported vacancies -- 11 of the 11
+    exemptions for three of them -- so `--corpus` refused every
+    narrowing the README documents. A fixture ledger cannot show that:
+    it would keep passing if the shipped exemptions were deleted, which
+    is exactly the repair the refusal wrongly asked for.
+    """
+    ledger = (_TOOLS / "expected_since_1.4.0.toml").read_text(
+        encoding="utf-8")
+    code, out = _run_main(tmp_path, monkeypatch, ledger, _DIFFERS)
+    assert "Delete the exemption" not in out
+    assert "not evidence" in out
+    assert code in (0, 1)
 
 
 def test_radar_diff_with_no_rule_exits_0_and_is_reported(

@@ -1802,10 +1802,34 @@ def main() -> int:
     # too late (#382).
     #
     # The names are the LOADED entries, not the corpus*.jsonl glob the
-    # unit guard in tests/v2/test_ledger_guards.py reads. That
-    # divergence is deliberate -- `--corpus` narrows what this run
-    # actually compares, and a run must be judged on the names it
-    # compared, while the guard judges every corpus on disk.
+    # unit guard in tests/v2/test_ledger_guards.py reads: `--corpus`
+    # narrows what this run compares, and a run is judged on the names
+    # it read, while the guard judges every corpus on disk.
+    #
+    # LOADED, precisely -- this sits ahead of the baseline-minimum
+    # shape skip below, so `corpus_names` holds names an old baseline
+    # will not actually compare (1120 here against the 1113 the 1.4.0
+    # run reports; the 7 are order-bearing shape-4/5 names). Kept ahead
+    # of it on purpose: the check then asks the same question at every
+    # baseline, as the unit guard does, and moving it after `kept`
+    # would make a ledger's acceptability depend on which release it is
+    # being compared against.
+    #
+    # THE TWO CHECKS READ A SMALLER NAME SET IN OPPOSITE DIRECTIONS,
+    # which is the whole reason only one of them refuses below. Dropping
+    # names can only remove contests. For `undeclared` that is
+    # fail-closed: fewer contests is fewer pairs anyone owes a
+    # declaration, so a partial run is strictly more lenient and can
+    # never invent a refusal. For `vacant` it INVERTS -- a live
+    # declaration whose contested names are outside this run reads
+    # exactly like a stale one. Measured: every one of the six corpora,
+    # run alone against expected_since_1.4.0.toml, reports vacancies
+    # (11 of the 11 exemptions for three of them). So a partial run
+    # NOTES that count and does not act on it, the way over_declared_rules
+    # handles its identical subset hazard, and for the reason the
+    # corpus-floor roster above is skipped under `--corpus`: narrowing
+    # is the point of the flag. Do not fold the two branches back into
+    # one shape.
     #
     # `rules` here is _sorted_rules' output, which is intentional and
     # harmless: since #451 every rule carries a name_regex, so the sort
@@ -1828,12 +1852,20 @@ def main() -> int:
                f"  on {len(c.names)} name(s), e.g. {list(c.names[:3])}"
                for c in undeclared]))
     vacant = vacant_exemptions(rules, corpus_names)
-    if vacant:
+    if vacant and args.corpus:
+        print(f"NOTE: this run used --corpus, and over that SUBSET "
+              f"{len(vacant)} exemption(s) in {ledger.name} declare "
+              f"precedence over a pair nothing here contests. That "
+              f"count is not evidence of a stale exemption -- narrowing "
+              f"removes contests, so a declaration the full gate needs "
+              f"reads the same way. Re-run without --corpus before "
+              f"touching any of them.\n")
+    elif vacant:
         raise SystemExit("\n".join(
             [f"{ledger.name} carries {len(vacant)} exemption(s) over a "
-             f"pair that is not contested over this corpus. Delete the "
-             f"exemption -- a justification for a hazard that is gone "
-             f"reads exactly like one for a hazard that is live:"]
+             f"pair that is not contested over the full corpus. Delete "
+             f"the exemption -- a justification for a hazard that is "
+             f"gone reads exactly like one for a hazard that is live:"]
             + [f"  {v.earlier!r}\n  declares precedence over {v.later!r}"
                for v in vacant]))
     # an ORDER-BEARING entry must never reach a worker whose baseline
