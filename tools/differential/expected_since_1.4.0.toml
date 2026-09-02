@@ -304,13 +304,27 @@ fields = ["given", "family", "suffix"]
 [[change.precedes_narrower]]
 issue = "fix(comma-precomma-family) pre-comma run reads as family, not given"
 why = """
-the one live pair of the eleven where the narrower rule would be
-WRONG rather than merely partial. 'John Smith, Mr.' diffs
-{given, family}, which the precomma rule admits, so nothing but file
-order keeps it here -- and measured, its pre-comma run KEEPS its split
-(1.4 first 'John Smith'; 2.x given 'John', family 'Smith'), which is
-the negation of "pre-comma run reads as family". Every name that rule
-does explain has a one-word pre-comma piece with no split to keep.
+LIVE -- one of the two live pairs in this file, and the one where the
+narrower rule would be actively WRONG rather than merely partial.
+'John Smith, Mr.' diffs {given, family}, which the precomma rule
+admits, so nothing but file order keeps it here.
+
+The discriminator is what becomes of the pre-comma run. Measured, 2.x
+CREATES a split across it where 1.4 had none: 1.4 read first 'John
+Smith' with no family at all, and the tree reads given 'John', family
+'Smith'. So the precomma rule's stated behaviour -- the pre-comma run
+reads as family -- is half true of this name and no more: 'Smith'
+becomes the family, 'John' does not. This rule describes the split;
+that one describes the whole run moving, which is not what happens
+here.
+
+That claim is about THIS name and is deliberately not generalised to
+the precomma rule's other names. 'Dr. Do Van Johnson, MD' is one of
+its seven and its pre-comma run splits too, so "that rule only ever
+explains whole-run moves" would be false -- which is the shape of
+argument to distrust here, since nothing recomputes a claim about
+another rule's names.
+
 'John Smith, Mr. Jr.' sits beside it latently: {given, family,
 suffix} is outside the precomma rule's fields at any position.
 _CROSS_RULE_WINNERS has no row for either name. It pins the sibling
@@ -488,9 +502,11 @@ issue = "fix(comma-precomma-family) pre-comma run reads as family, not given"
 # SPLIT into given/family rather than move whole; 'Berg, abdul vd'
 # hands a trailing particle to the family; 'Smith, de Mesnil Jean'
 # re-orders the family run with `first` empty on both sides. Measured,
-# every one of the seven moves {given, family} and nothing else -- no
-# title and no suffix moves in any -- so the title above names the
-# majority reading and the fields below are the actual boundary.
+# all seven move `family` and six move `given` with it; the seventh is
+# 'Smith, de Mesnil Jean', which moves `family` ALONE -- `first` is
+# empty on both sides, so there is no given name for it to move. No
+# title and no suffix moves in any of the seven. So the fields below
+# are the boundary and the title above names the majority reading.
 #
 # Its own rule because these have nothing to do with suffix routing:
 # they were falling to the fields-only fix(suffix-routing) catch-all
@@ -535,11 +551,13 @@ reaches a rule whose prose scopes it to the comma-LESS two-token name.
 Nothing that rule says is true of 'Smith, Jr.' or 'Kim, Jr.'.
 
 LATENT as well: both move {title, given, family, suffix} against the
-jr rule's {family, suffix}, which is the argument the ledger already
-makes a few rules below -- "what keeps them there is `fields`, not
-file order". Declared anyway, because a fields widening would undo the
-fields argument and leave only the accident, and an accident is a
-worse reason to hold a name than a description is.
+jr rule's {family, suffix}. The jr rule's OWN comment already argues
+this from the other side and names these two names -- "what keeps them
+there is `fields`, not file order... Order is the second line of
+defence, not the first". This entry is that second line written down:
+a widening of the jr rule's `fields` would spend the fields argument
+and leave nothing but the accident holding the names, and an accident
+is a worse reason to hold a name than a description is.
 _CROSS_RULE_WINNERS pins both names to this rule."""
 
 [[change]]
@@ -1217,9 +1235,20 @@ fields = ["given", "family", "title", "suffix"]
 issue = "fix(cjk-glued-honorific-peel) glued honorific peels into suffix"
 why = """
 LIVE, and the least comfortable of the declarations in this file.
-Seventeen names reach both rules; nine of them have a diff the peel
-rule's {family, given, suffix} admits, so position alone is what keeps
-those nine here. The order stays because the peel rule scopes itself
+Seventeen names reach both regexes and FIFTEEN have a diff the peel
+rule's {family, given, suffix} admits -- but six of those fifteen are
+taken by rules written above both, and so are not this pair's to
+decide: '田中, 太郎さん', '김, 민준씨', '김, 민준씨 (Jimmy)',
+'선생님, J.씨' and '이, J.씨' go to fix(cjk-comma-honorific-peel), and
+'田中さん, Dr.' to fix(#271/#272/#298). That leaves NINE this rule
+holds and the peel rule could take, and position alone is what keeps
+those nine here. Of the two names outside the fifteen, '田中さん, PhD'
+lands here as well but moves `title` too, so the peel rule is
+ineligible for it wherever it sits, and '田中さん, 太郎' does not diff
+at all. All three counts are classify() over the seventeen, recomputed
+rather than carried over.
+
+The order stays because the peel rule scopes itself
 to a name with NO COMMA ANYWHERE, and promoting it would put that
 label on '田中さん, 様.' and '김민준씨, J.씨', which do route a
 post-comma piece and are the comma compound this rule is named for.
@@ -1298,10 +1327,13 @@ why = """
 the same script-blindness one rule further down: the jr rule's leading
 non-space run matches hangul as readily as Latin, while the rule is
 written for 'Smith Jr.' -- one Latin name word, one suffix word, no
-comma. And the trailing 'Jr.' is not what moves anything in
-'김민준씨 Jr.': the glued 씨 peels off and drags the family
-segmentation with it, which is this rule's subject and none of the jr
-rule's.
+comma. The trailing 'Jr.' does move here -- 1.4 read it as the family,
+the tree reads suffix '씨, Jr.' -- and that half of the diff is the
+{family, suffix} the jr rule is named for. What that rule cannot
+describe is the OTHER token: the glued 씨 peels off '김민준씨' and
+segments what is left into given '민준', family '김'. `given` is that
+segmentation, it is this rule's subject, and it is where the diff
+leaves the jr rule's reach.
 
 LATENT, the diff being {family, given, suffix} against the jr rule's
 {family, suffix}. _CROSS_RULE_WINNERS pins the name here, on a shape
