@@ -413,11 +413,34 @@ fields = ["given", "title", "suffix"]
 
 [[change]]
 issue = "fix(comma-precomma-family) pre-comma run reads as family, not given"
-# 'Bob Jones, author' / 'MD, PHD': the post-comma piece is a title on
+# 'Smith, Dr.' / 'Smith, Prof.': the post-comma piece is a title on
 # BOTH sides -- it does not move, and no suffix moves either. What
 # changes is the pre-comma run: 1.4 read it as `first`, 2.x reads it
 # as `last`, because pre-comma is definitionally family. Diff is
 # exactly {given, family}.
+#
+# This comment opened on 'Bob Jones, author' / 'MD, PHD' until #382's
+# sweep, and the rule explains neither any more. Since #296's audit
+# 'Bob Jones, author' KEEPS its pre-comma split (first 'Bob Jones' ->
+# 'Bob', last '' -> 'Jones') and goes to `fix(comma-family) a comma
+# followed only by titles keeps the given/family split`, and 'MD, PHD'
+# reads as a one-word name plus a postnominal -- a four-field diff
+# this rule's fields cannot admit -- and goes to `fix(#296) a
+# credential-only comma string reads a name and its postnominal`. Both
+# handovers are pinned in _CROSS_RULE_WINNERS and both winners are
+# written above this rule, so nothing about this rule changed; only
+# the example did. Nothing recomputes a name in a comment, which is
+# how this one stayed wrong through two audits.
+#
+# The seven it does explain are not all the pure shape, and `fields`
+# is what the rule actually claims. 'Smith, Ph. D.' and 'Ph. D., Jr.'
+# are the pure move; 'Dr. Do Van Johnson, MD' has its pre-comma run
+# SPLIT into given/family rather than move whole; 'Berg, abdul vd'
+# hands a trailing particle to the family; 'Smith, de Mesnil Jean'
+# re-orders the family run with `first` empty on both sides. Measured,
+# every one of the seven moves {given, family} and nothing else -- no
+# title and no suffix moves in any -- so the title above names the
+# majority reading and the fields below are the actual boundary.
 #
 # Its own rule because these have nothing to do with suffix routing:
 # they were falling to the fields-only fix(suffix-routing) catch-all
