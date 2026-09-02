@@ -1,5 +1,3 @@
-import pytest
-
 from nameparser import HumanName
 
 from tests.base import HumanNameTestBase
@@ -141,9 +139,36 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.suffix, "III, Jr", hn)
 
     # https://github.com/derek73/python-nameparser/issues/27
-    @pytest.mark.xfail
     def test_king(self) -> None:
+        # v1 aspired to read "Dr King Jr" as title 'Dr', family 'King',
+        # suffix 'Jr', and shipped this as an xfail.
+        # Two halves, and this pin means different things about each.
+        # DECIDED 2026-09-01 (v1-xfail triage, decisions.md#v1-xfail-triage):
+        # 'king' stays in the titles vocabulary, because removing it breaks
+        # the addressing forms it is there for ("King Charles").
+        # decisions.md#vocabulary-collisions cuts toward keeping it, so the
+        # title chain takes 'Dr King'. The comma format is the road to the
+        # surname reading, pinned below.
+        # RECORDED, NOT ENDORSED: what becomes of the leftover 'Jr'.
+        # rules.md#S2 has a trailing suffix-vocabulary word read as a suffix,
+        # and its Accepted clause consumes one even when that leaves no family
+        # at all, so S2 predicts suffix 'Jr', family ''. Once the title
+        # chain has eaten two words, H1 claims the one that remains and it
+        # reads family 'Jr' instead. Compare 'Dr Smith Jr', which reads
+        # family 'Smith', suffix 'Jr' exactly as S2 states. A change moving
+        # this toward S2's prediction is an IMPROVEMENT that updates this
+        # pin, not a regression.
         hn = HumanName("Dr King Jr")
+        self.m(hn.title, "Dr King", hn)
+        self.m(hn.first, "", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "Jr", hn)
+        self.m(hn.suffix, "", hn)
+
+    def test_king_as_a_family_name_via_the_comma_format(self) -> None:
+        # The workaround test_king's decision rests on: writing the family
+        # first defeats the title chain and reads 'King' as the family.
+        hn = HumanName("King, Dr Jr")
         self.m(hn.title, "Dr", hn)
         self.m(hn.last, "King", hn)
         self.m(hn.suffix, "Jr", hn)
@@ -200,14 +225,28 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.last, "Chang", hn)
         self.m(hn.suffix, "I", hn)
 
-    @pytest.mark.xfail
-    def test_roman_numeral_i_with_explicit_suffix_comma_known_limitation(self) -> None:
-        # When an explicit suffix comma is present (len(parts)==3), the trailing 'I'
-        # is conservatively left in middle to avoid misclassifying true initials.
-        # This is a known limitation of the lastname-comma lenient-suffix
-        # guard in parse_full_name (issue #144).
+    def test_roman_numeral_i_with_explicit_suffix_comma_stays_a_middle_initial(self) -> None:
+        # v1 aspired to read the trailing 'I' as an ordinal joining the explicit
+        # suffix ("I, Jr."), and shipped this as an xfail.
+        # NOT FIXED, decided 2026-09-01 (v1-xfail triage,
+        # decisions.md#v1-xfail-triage): a middle initial 'I' is far more common
+        # than an ordinal I borne without a Sr./Jr.-style companion, so when an
+        # explicit suffix comma has already named the suffix, the trailing 'I'
+        # stays a middle initial. The commonality reasoning is the
+        # vocabulary-collision criterion (decisions.md#vocabulary-collisions)
+        # applied to a shape rather than to a word.
+        # Contrast test_roman_numeral_i_after_single_initial_lastname_comma_format
+        # above, where no explicit suffix comma is present and the 'I' does go to
+        # suffix.
+        # rules.md#C1 gained a qualifier with this triage: where a further
+        # comma has already named the suffix, the trailing single letter has
+        # no generation left to be. C1 carries no example line for it (see the
+        # Accepted note there), so this pair of tests is its witness.
         hn = HumanName("Maier, Amy I, Jr.")
-        self.m(hn.suffix, "I, Jr.", hn)
+        self.m(hn.first, "Amy", hn)
+        self.m(hn.middle, "I", hn)
+        self.m(hn.last, "Maier", hn)
+        self.m(hn.suffix, "Jr.", hn)
 
     def test_suffix_delimiter_default_on_constants(self) -> None:
         from nameparser.config import CONSTANTS

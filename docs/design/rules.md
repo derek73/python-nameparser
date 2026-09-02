@@ -572,7 +572,22 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Jack Wei Ma"               →  suffix="Ma"
       "Jack Wei Ma"               →  ambiguities=("suffix-or-name",)
       "Smith Jr."                 →  family=""
-    implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    Note, DESCRIPTIVE and not promised: where a title chain consumes
+    every word but one, the word left over is claimed by H1's
+    one-word reading before this rule's trailing-suffix reading
+    reaches it — as the family ordinarily, as the given name behind
+    a given-name title (`Sir Jr` reads given `Jr`). `Dr King
+    Jr` reads title `Dr King`, family `Jr`, empty suffix — not the
+    suffix `Jr` with an empty family the Accepted clause above
+    predicts — because `king` is title vocabulary and H1 then takes
+    the one remaining word. The contrast that isolates the cause is
+    `Dr Smith Jr`, which reads family `Smith`, suffix `Jr` as
+    stated. Only the vocabulary half is decided
+    (decisions.md#v1-xfail-triage: `king` stays a title, for the
+    addressing forms); the leftover reading is recorded as today's
+    rather than endorsed, and a change moving it toward this rule's
+    prediction is an improvement, to be argued here.
+    interacts: H1, H2, C1 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with
     periods; the chunks between the periods are what carry the
@@ -836,9 +851,17 @@ C1. Rationale: a credential run after the comma means the name is in
     run, written with a period or without, an initial being no shape
     anyone writes there; behind a name word it is the generation
     only when written bare, a period marking it the abbreviation of
-    a name and so a middle initial. Longer suffix words are not in
-    question either way, and the strict knob above still vetoes the
-    initial-shaped ones, so the run ends at them there.
+    a name and so a middle initial. Both branches then ask that the
+    generation slot still be open: where a further comma has already
+    named the suffix, a single letter ending the GIVEN part has no
+    generation left to be, and stays a middle initial — with a
+    period or without, and whether a name word or another suffix
+    word stands before it. Only the given part is touched; a part
+    after the comma that is nothing but suffix words is the
+    credential run, and a letter in it continues that run up to the
+    further comma. Longer suffix words are not in question either
+    way, and the strict knob above still vetoes the initial-shaped
+    ones, so the run ends at them there.
       "Smith, John"               →  family="Smith"
       "سلمان، محمد"               →  family="سلمان"
       "田中、太郎"                 →  family=""
@@ -885,6 +908,19 @@ C1. Rationale: a credential run after the comma means the name is in
     form alone, and that limitation is kept as parity: "Smith, RN -
     CRNA" reads given "RN" under the policy as without it.
       "John Smith, LEED AP"       →  family="Smith"  deviates: #291 (today: family="John Smith")
+    Accepted: the further-comma qualifier carries no example line of
+    its own. It discriminates PAIRS and spans both branches, so
+    exemplifying it means a with-comma partner for each — every one
+    of them a name entering the rules corpus for behavior that has
+    not moved since v1. Its executable witness is instead the pair
+    already standing in the v1-style bank,
+    tests/test_suffixes.py's
+    test_roman_numeral_i_after_single_initial_lastname_comma_format
+    and test_roman_numeral_i_with_explicit_suffix_comma_stays_a_middle_initial.
+    Read the examples above with the qualifier in hand: `Smith, John
+    V` reads the suffix and `Smith, John PhD I.` continues the run,
+    while adding a suffix comma after either turns that same letter
+    into the middle initial.
     history: decisions.md#C1 · interacts: H2, P6, W3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 
 C2. Rationale: text beyond the recognized comma parts should be

@@ -61,7 +61,7 @@ class TitleTestCase(HumanNameTestBase):
     # chain never starts (an interim 2.0 build that stripped interior
     # periods made this pass, but that normalization wrongly turned
     # 'J.R.' into the title 'jr'; v1 parity won)
-    @pytest.mark.xfail
+    @pytest.mark.xfail(reason="#490")
     def test_chained_title_first_name_title_is_initials(self) -> None:
         hn = HumanName("U.S. District Judge Marc Thomas Treadwell")
         self.m(hn.title, "U.S. District Judge", hn)
@@ -97,10 +97,20 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.last, "Davis", hn)
         self.m(hn.suffix, "III", hn)
 
-    @pytest.mark.xfail
     def test_title_multiple_titles_with_apostrophe_s(self) -> None:
+        # v1 aspired to read the whole string as one title, and shipped this
+        # as an xfail.
+        # NOT FIXED, decided 2026-09-01 (v1-xfail triage,
+        # decisions.md#v1-xfail-triage): this is a name parser, not a title
+        # parser. Handed an input that is all titles, it assumes the last
+        # title-word is the name, so 'Division' becomes the family. Accepted
+        # convention rather than a defect; #491 tracks reporting the guess.
         hn = HumanName("The Right Hon. the President of the Queen's Bench Division")
-        self.m(hn.title, "The Right Hon. the President of the Queen's Bench Division", hn)
+        self.m(hn.title, "The Right Hon. the President of the Queen's Bench", hn)
+        self.m(hn.first, "", hn)
+        self.m(hn.middle, "", hn)
+        self.m(hn.last, "Division", hn)
+        self.m(hn.suffix, "", hn)
 
     def test_title_starts_with_conjunction(self) -> None:
         hn = HumanName("The Rt Hon John Jones")
@@ -187,12 +197,21 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.suffix, "V, Jr.", hn)
 
     # 'ben' was removed from the particle set (then PREFIXES) in v0.2.5
-    # this test could re-enable this test if we decide to support 'ben' as a prefix
-    @pytest.mark.xfail
-    def test_ben_as_conjunction(self) -> None:
+    def test_ben_is_not_a_particle(self) -> None:
+        # v1 aspired to read 'ben' as a particle joining the family
+        # ("ben Husain"), and shipped this as an xfail.
+        # NOT FIXED, decided 2026-09-01 (v1-xfail triage,
+        # decisions.md#v1-xfail-triage): the question was already settled in
+        # v0.2.5, when 'ben' was removed from the prefixes. 'ben' collides with
+        # the given name Ben, which is the same criterion
+        # (decisions.md#vocabulary-collisions) that keeps it out today.
+        # test_ben_as_first_name below is the collision it protects.
         hn = HumanName("Ahmad ben Husain")
+        self.m(hn.title, "", hn)
         self.m(hn.first, "Ahmad", hn)
-        self.m(hn.last, "ben Husain", hn)
+        self.m(hn.middle, "ben", hn)
+        self.m(hn.last, "Husain", hn)
+        self.m(hn.suffix, "", hn)
 
     def test_ben_as_first_name(self) -> None:
         hn = HumanName("Ben Johnson")
