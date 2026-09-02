@@ -512,11 +512,12 @@ class HumanName:
     # -- initials -------------------------------------------------------------
 
     def _process_initial(self, name_part: str, firstname: bool = False) -> str:
-        # v1 parser.py:427 verbatim: particles/conjunctions are filtered
-        # from initials unless the part is a first name. split() rather
-        # than split(" "): *_list attributes assigned directly bypass
-        # whitespace normalization, and split(" ") yields empty strings
-        # for repeated spaces (#232).
+        # after v1 parser.py:427, not verbatim: particles and
+        # conjunctions are filtered from initials unless the part is a
+        # first name. split() rather than split(" "): *_list
+        # attributes assigned directly bypass whitespace normalization,
+        # and split(" ") yields empty strings for repeated spaces
+        # (#232).
         parts = name_part.split()
         initials = []
         for part in parts:

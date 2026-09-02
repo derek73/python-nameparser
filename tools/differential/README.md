@@ -454,8 +454,9 @@ deleting `fields` to silence an over-declaration failure lands on
 classifies a change in the derived `initials()` view on a name whose
 seven roles did not move, and nothing else -- `main()` never puts
 `_initials` into a diff beside a role, so a rule mixing the two is
-refused at startup. Six such rules close the 1.4.0 ledger and two the
-2.x ledgers; their comments say which view change each one names.
+refused at startup. Such rules close the 1.4.0 ledger, and each 2.x
+ledger carries the subset visible from its baseline; their comments
+say which view change each one names.
 
 **`orders` is the optional third narrowing** (#468). A rule may carry
 `orders = ["FAMILY_FIRST", ...]` -- public order-constant names, taken

@@ -2299,12 +2299,26 @@ issue = "fix(initials-per-word) a connective run initials each word (facade, sin
 # "the initials view"). Strip periods and spaces and every name here
 # agrees with 1.4.0 letter for letter.
 #
-# CASE-SENSITIVE on the single letters, deliberately: the #462 names
-# ('Amy E Maid', 'Jose E. Maria Santos') carry a CAPITAL or dotted E
-# and diff on initials at this baseline for a different reason -- a
-# facade regression, fixed by #462's rule in the 2.x ledgers -- and
-# this rule must not claim them. `and`/`And` because 'Rob And Beth
-# Edmunds' is a corpus name.
+# CASE-SENSITIVE, the whole alternation, deliberately -- and it is the
+# SINGLE LETTERS the case decides, because a capital `E`/`Y` is an
+# initial and so is a dotted `E.`/`Y.`/`e.`/`y.`. The dotted spellings
+# are kept out by the PERIOD rather than by the case: the alternation
+# wants whitespace after the letter, so 'john e. smith' and
+# 'scott e. werner' cannot match whatever their case. The bare capital
+# is kept out by the case alone, and that is the half worth keeping.
+# The #462 names ('Amy E Maid', 'Jose E Maria Santos') AGREE with
+# 1.4.0 since the facade fix and diff only against the 2.x baselines,
+# where fix(#462) claims them. What the two exclusions buy is
+# unconditional and outlives that fix: any future facade initials
+# change touching these shapes must report UNEXPLAINED here rather
+# than be absorbed as per-word grouping.
+# `and`/`And` because both spellings are corpus names and 'Rob And
+# Beth Edmunds' carries no lowercase alternation word to be reached
+# by. `of`/`the` have no capital variant because no name in this
+# cluster needs one -- a corpus fact and not a shape claim: a capital
+# `Of` occurs nowhere in the corpora, and the two cluster names
+# carrying a capital `The` ('part1 of The part2 ...' and its `And`
+# twin) are already reached through their own lowercase `of`/`the`.
 name_regex = "(?:^|\\s)(?:y|e|&|and|And|of|the)(?=\\s)"
 fields = ["_initials"]
 
@@ -2315,8 +2329,18 @@ issue = "fix(initials-per-word) a bound-given run initials each word (facade, si
 # initialed the element as one group ('A S. H.'); the 2.0 facade
 # initials each word ('A. S. H.'). Same change as the rule above, on
 # the BOUND_GIVEN_NAMES words the corpora carry. Written before the
-# particle rule below: three names carry both a bound word and a
-# particle chain, and this is the narrower reading.
+# particle rule below DEFENSIVELY, not to win a live contest: nothing
+# is contested yet. Two corpus names carry both a bound word and a
+# particle chain -- 'Sir abdul van der Berg', which does not diff at
+# all, and 'van der Berg, abdul née Jones', whose diff is ROLES and so
+# never reaches the pseudo-field -- and the one name this rule shares
+# with the Ph. D. rule ('abdul Ph. D. Smith Berg') moves roles too.
+# _CROSS_RULE_WINNERS' comment lists the same three and says why none
+# of them is pinned there (its rows under this rule are other names). So the position decides
+# nothing today; it is the narrower reading, which is this file's
+# write-the-narrower-rule-first convention (the header above, and
+# #382's open question about separating such a pair by a predicate
+# instead), and it is what would decide a future contest.
 name_regex = "(?i)(?:^|[\\s,])(?:abdul|abu)\\s"
 fields = ["_initials"]
 

@@ -418,8 +418,9 @@ def _print_field_diffs(old_facade: dict[str, str], new: dict[str, str],
     Role's names, not the facade's: both report blocks exist to be
     turned into a ledger rule, and a rule naming the facade's `first`
     is rejected by validate_rules at startup. Both surfaces are
-    walked, and a field is reported once even when both moved, since
-    one rule covers it.
+    walked, and a ROLE is reported once even when both moved, since
+    one rule covers it. `_initials` is the exception, and the last
+    paragraph is why.
 
     `order` is None for a default-order entry, else the order both
     surfaces were read under. The "[v2 surface only]" tag means "the
@@ -439,9 +440,22 @@ def _print_field_diffs(old_facade: dict[str, str], new: dict[str, str],
     The facade's initials() and the core's are INDEPENDENT
     implementations -- the facade builds its string from
     `_initials_lists`, not from `_render.initials` -- so unlike a role
-    the two can legitimately move to different strings. The v2 line is
-    still suppressed when the facade line printed, since one rule
-    covers both: the same convention the roles follow.
+    the two can legitimately move to different strings, and the roles'
+    print-it-once convention would hide the core's movement behind the
+    facade's. So the v2 line is suppressed only when it would REPEAT
+    the facade's: it prints whenever the core moved to a different
+    (old, new) pair, tagged "[v2 surface]" to say both surfaces were
+    compared and moved differently. One rule still covers both, the
+    field name being the same -- but a block showing the facade's
+    movement alone would have that rule written in the belief the core
+    agreed. Read a bare facade line for what it says, then: the
+    absence of a v2 line means the core did not move to a DIFFERENT
+    pair -- it moved identically, or it did not move at all -- and
+    never that the core agreed. The tag needs no order check to stay
+    honest, because `facade_moved` can only be true where the facade
+    was CONSULTED: main() passes empty dicts for an order-bearing
+    entry, so the facade pair is ('', '') there and the v2 line takes
+    the order-blind branch.
     """
     seen: set[str] = set()
     for f in FIELDS:
@@ -457,17 +471,22 @@ def _print_field_diffs(old_facade: dict[str, str], new: dict[str, str],
                   f"{old_v2.get(f, '')!r} -> {new_v2.get(f, '')!r}"
                   f"{tag}")
     # #484: the derived view, printed exactly as main() compares it --
-    # per surface, facade first, and once even when both moved.
+    # per surface, facade first, and twice when the two surfaces moved
+    # DIFFERENTLY, which a role cannot do (see the docstring).
     if initials_only:
-        if old_facade.get("_initials", "") != new.get("_initials", ""):
-            seen.add("_initials")
-            print(f"    _initials: {old_facade.get('_initials', '')!r} -> "
-                  f"{new.get('_initials', '')!r}")
-        if old_v2.get("_initials", "") != new_v2.get("_initials", "") \
-                and "_initials" not in seen:
-            tag = "" if order is not None else "   [v2 surface only]"
-            print(f"    _initials: {old_v2.get('_initials', '')!r} -> "
-                  f"{new_v2.get('_initials', '')!r}{tag}")
+        facade_pair = (old_facade.get("_initials", ""),
+                       new.get("_initials", ""))
+        v2_pair = (old_v2.get("_initials", ""), new_v2.get("_initials", ""))
+        facade_moved = facade_pair[0] != facade_pair[1]
+        v2_moved = v2_pair[0] != v2_pair[1]
+        if facade_moved:
+            print(f"    _initials: {facade_pair[0]!r} -> {facade_pair[1]!r}")
+        if v2_moved and (not facade_moved or v2_pair != facade_pair):
+            if facade_moved:
+                tag = "   [v2 surface]"
+            else:
+                tag = "" if order is not None else "   [v2 surface only]"
+            print(f"    _initials: {v2_pair[0]!r} -> {v2_pair[1]!r}{tag}")
 
 
 def _is_latin_only(name: str) -> bool:

@@ -6,7 +6,7 @@ Release Log
 
     **Behavior Changes**
 
-    - **Fix HumanName.initials() dropping a middle initial that is also a one-letter conjunction.** ``HumanName("Scott E. Werner").initials()`` gives ``S. E. W.`` again where 2.0.0 through 2.2.0 gave ``S. W.``; ``Juan Y. Garcia`` and a bare capital ``John E Smith`` likewise. v1 excluded initial-shaped words from its conjunction test and the 2.0 facade had not; ``parse(...).initials()`` was already right and is unchanged. A bare lowercase ``john e smith`` still reads the ``e`` as the connective. See the ``R3`` entry of ``docs/design/decisions.md`` (closes #462)
+    - **Fix HumanName.initials() dropping a middle initial that is also a one-letter conjunction.** ``HumanName("Scott E. Werner").initials()`` gives ``S. E. W.`` again where 2.0.0 through 2.2.0 gave ``S. W.``; ``Juan Y. Garcia`` and a bare ASCII capital ``John E Smith`` likewise. v1 excluded initial-shaped words from its conjunction test and the 2.0 facade had not; ``parse(...).initials()`` was already right and is unchanged. A bare lowercase ``john e smith`` still reads the ``e`` as the connective. See the ``R3`` entry of ``docs/design/decisions.md`` (closes #462)
 
     - **Record a 2.0.0 change to HumanName.initials() that no release note had classified:** since 2.0.0 the facade initials each WORD of a name part, where 1.4.0 initialed a joined run as one group -- ``HumanName("Juan Velasquez y Garcia").initials()`` is ``J. V. G.`` and was ``J. V G.``; ``Abdul Salam Hassan`` is ``A. S. H.`` and was ``A S. H.``. Nothing changes in 2.3.0; the differential gate now compares ``initials()`` (#484) and this is what it found. See the ``differential-ledger, the initials view`` entry of ``docs/design/decisions.md``
 

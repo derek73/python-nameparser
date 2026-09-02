@@ -841,8 +841,13 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # #484: the connective rule is case-sensitive on the single letters
     # so that the #462 shapes -- a capital or dotted E that is an
     # INITIAL the facade drops -- are never claimed as the per-word
-    # grouping change. They diff at 1.4.0 for a different reason and
-    # belong to fix(#462) in the 2.x ledgers.
+    # grouping change. Since the facade fix these names AGREE with
+    # 1.4.0 and diff only against the 2.x baselines, where fix(#462)
+    # claims them, so a #462 REGRESSION is the only way they can diff
+    # at this baseline again -- and it must surface as UNEXPLAINED
+    # rather than be absorbed as per-word grouping. That is what the
+    # case-sensitivity buys, and it is why this roster keeps probing
+    # for it after the bug is gone.
     "a connective run initials": ("Jose E Maria Santos",
                                   "JOSE E MARIA SANTOS",
                                   "Scott E. Werner", "Amy E Maid"),

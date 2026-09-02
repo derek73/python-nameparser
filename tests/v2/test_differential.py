@@ -1937,6 +1937,43 @@ def test_main_reports_a_v2_only_initials_diff_with_the_surface_tag(
     assert "_initials: 'J. X.' -> 'J. S.'   [v2 surface only]" in out
 
 
+def test_main_prints_both_initials_lines_when_the_surfaces_moved_differently(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The facade's and the core's initials() are independent
+    implementations, so unlike a role they can move to different
+    strings; a block that showed only the facade's movement would
+    have a rule written for it in the belief the core agreed."""
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\n'
+        'fields = ["family"]\n',
+        {**_SAME_FACADE, "_initials": "J. X."}, baseline="2.0.0",
+        baseline_v2={**_SAME_V2, "_initials": "J. Y."})
+    assert code == 1
+    assert "_initials: 'J. X.' -> 'J. S.'" in out
+    assert "_initials: 'J. Y.' -> 'J. S.'   [v2 surface]" in out
+    assert out.count("_initials:") == 2
+
+
+def test_main_prints_one_initials_line_when_both_surfaces_moved_alike(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The print-once convention, kept for the case it was written
+    for: two surfaces moving to the SAME pair are one movement and one
+    rule, so the facade line stands for both and carries no surface
+    tag. Without the pair comparison beside `facade_moved` the v2 line
+    prints here too, and the sibling above passes either way."""
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\n'
+        'fields = ["family"]\n',
+        {**_SAME_FACADE, "_initials": "J. X."}, baseline="2.0.0",
+        baseline_v2={**_SAME_V2, "_initials": "J. X."})
+    assert code == 1
+    assert "_initials: 'J. X.' -> 'J. S.'" in out
+    assert out.count("_initials:") == 1
+    assert "[v2 surface" not in out
+
+
 def test_main_compares_the_v2_surface_from_baseline_2_0(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A SEGMENTATION-only diff is facade-identical by construction, so
