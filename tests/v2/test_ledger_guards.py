@@ -819,8 +819,9 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # 'Carod i' and '田中さん II' are deliberately NOT probes for the
     # numeral rule: its regex really does reach both, and rules above it
     # win them -- 'Carod i' on file order, '田中さん II' on the subset
-    # test, its diff moving {given, suffix} where the numeral rule
-    # declares {family, suffix}. _CROSS_RULE_WINNERS pins both instead;
+    # test, its diff moving {family, given, suffix} where the numeral
+    # rule declares {family, suffix} and so cannot admit the `given`
+    # move. _CROSS_RULE_WINNERS pins both instead;
     # this roster tests the regex, not classify().
     "fix(suffix-routing) a two-token name ending in a roman numeral keeps it in `suffix`":
         ("Mohamad X Surname", "Smith Jr.", "Donald mc", "Aishwarya Rai"),
@@ -2499,7 +2500,9 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         # first is decided by order: 'Carod i' diffs {family, suffix},
         # which both rules declare, so nothing but _sorted_rules'
         # stability inside the name_regex tier keeps it with fix(#397).
-        # '田中さん II' diffs {given, suffix}, which the numeral rule's
+        # '田中さん II' diffs {family, given, suffix} -- 1.4 read it
+        # 'first 田中さん / last II', 2.x reads 'last 田中 / suffix
+        # さん, II' -- and `given` is the field the numeral rule's
         # `fields` cannot admit at any position. Both are recorded
         # because a later edit that moves either rule, or widens the
         # numeral rule's `fields`, would take one silently -- exactly the
@@ -2507,7 +2510,7 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         ("Carod i", ("family", "suffix")):
             "fix(#397) NOT WANTED: a trailing Catalan/Polish linking "
             "'i' is read as a generation marker and the family is lost",
-        ("田中さん II", ("given", "suffix")):
+        ("田中さん II", ("family", "given", "suffix")):
             "fix(cjk-glued-honorific-peel) glued honorific peels into "
             "suffix",
         # #484's three `_initials` contests with a literal rule on one

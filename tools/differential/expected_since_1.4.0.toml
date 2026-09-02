@@ -2061,8 +2061,9 @@ fields = ["family", "suffix"]
 # reaches 'Carod i' and '田中さん II', and _CROSS_RULE_WINNERS pins
 # both -- but only the first is a real contest: measured by moving the
 # numeral rule to the front of the file, 'Carod i' changes hands and
-# '田中さん II' does not, because its diff moves {given, suffix} and
-# these four declare {family, suffix}. File order decides one, the
+# '田中さん II' does not, because its diff moves {family, given,
+# suffix} and these four declare {family, suffix}, so the `given` move
+# is outside them wherever they sit. File order decides one, the
 # subset test the other, and the roster does not care which.
 
 [[change]]
@@ -2113,8 +2114,9 @@ issue = "fix(suffix-routing) a two-token name ending in a roman numeral keeps it
 # 'Carod i' is fix(#397)'s NOT-WANTED rule above -- a real contest,
 # same fields and both regexes matching, decided by nothing but file
 # order -- and '田中さん II' is fix(cjk-glued-honorific-peel)'s, where
-# the diff moves {given, suffix} and this rule's `fields` cannot admit
-# it whatever the order. _CROSS_RULE_WINNERS pins both. That reach is
+# the diff moves {family, given, suffix} and this rule's `fields`
+# cannot admit the `given` move whatever the order.
+# _CROSS_RULE_WINNERS pins both. That reach is
 # real, so neither is a _MUST_NOT_MATCH probe here: that roster tests
 # the regex, not classify().
 name_regex = "(?i)^\\S+\\s+(X|IX|IV|V?I{1,3}|V)$"
