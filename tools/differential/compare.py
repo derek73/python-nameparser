@@ -512,7 +512,9 @@ def _is_latin_only(name: str) -> bool:
 #: enters only when every role and the ambiguity kinds agree (main()),
 #: so a rule listing it lists nothing else (validate_rules).
 _RULE_FIELDS = frozenset((*V2_FIELDS, "_ambiguities", "_initials"))
-_RULE_KEYS = frozenset(("issue", "name_regex", "fields", "dormant", "orders"))
+_RULE_KEYS = frozenset((
+    "issue", "name_regex", "fields", "dormant", "orders",
+    "precedes_narrower"))
 
 
 #: The `orders` member naming the DEFAULT order -- the comparison whose
@@ -779,6 +781,72 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
                     f"no shape asks for, so the rule would explain "
                     f"nothing and report as dormant instead of saying "
                     f"the name is wrong")
+        if "precedes_narrower" in rule:
+            # #382. Where this rule deliberately outranks a NARROWER one
+            # it would otherwise lose nothing by yielding to. Legal, and
+            # never silent: `fields` cannot say that a wider rule
+            # describes a compound behavior its component rule does
+            # not, so the reason is the only place that fact can live.
+            declared = rule["precedes_narrower"]
+            if not isinstance(declared, list) or not declared \
+                    or not all(isinstance(e, dict) for e in declared):
+                raise SystemExit(
+                    f"{where} has a 'precedes_narrower' that is not a "
+                    f"non-empty list of tables ({declared!r}). Write it "
+                    f"as [[change.precedes_narrower]] blocks under the "
+                    f"rule; an empty one declares nothing and should be "
+                    f"deleted instead")
+            positions: dict[str, int] = {}
+            for k, other in enumerate(rules):
+                other_issue = other.get("issue")
+                if isinstance(other_issue, str):
+                    positions.setdefault(other_issue, k)
+            for entry in declared:
+                unknown = set(entry) - {"issue", "why"}
+                if unknown:
+                    raise SystemExit(
+                        f"{where} has {sorted(unknown)} inside a "
+                        f"'precedes_narrower' entry, where only 'issue' "
+                        f"and 'why' belong. If that key belongs to the "
+                        f"RULE, move it ABOVE the "
+                        f"[[change.precedes_narrower]] block: TOML binds "
+                        f"every bare key after that header to the "
+                        f"exemption, so a rule key written below it is "
+                        f"silently dropped from the rule -- an 'orders' "
+                        f"landing here deletes the rule's order "
+                        f"narrowing and nothing else would notice")
+                target, why = entry.get("issue"), entry.get("why")
+                if not isinstance(target, str) or not target:
+                    raise SystemExit(
+                        f"{where} has a 'precedes_narrower' entry with "
+                        f"no string 'issue': {entry!r}. An exemption "
+                        f"names the ONE rule it outranks -- a blanket "
+                        f"opt-out would be inherited by every narrower "
+                        f"rule added later, which is the widening this "
+                        f"check exists to refuse")
+                if not isinstance(why, str) or not why.strip():
+                    raise SystemExit(
+                        f"{where} declares precedence over {target!r} "
+                        f"with no 'why' ({why!r}). The reason is the "
+                        f"whole safeguard, as it is for 'dormant': an "
+                        f"exemption nobody had to justify is the one "
+                        f"nobody reviews")
+                if target not in positions:
+                    raise SystemExit(
+                        f"{where} declares precedence over {target!r}, "
+                        f"which names no rule in this ledger. A rule's "
+                        f"issue string is its identity here; a renamed "
+                        f"or deleted rule leaves an exemption that "
+                        f"protects nothing")
+                if positions[target] <= i:
+                    raise SystemExit(
+                        f"{where} declares precedence over {target!r}, "
+                        f"which sits EARLIER in the file (rule "
+                        f"#{positions[target] + 1}). An exemption names "
+                        f"the narrower rule this one outranks, and that "
+                        f"rule is by definition the later one -- so this "
+                        f"is a copy-paste of the wrong issue string, "
+                        f"sitting in the file reading as a justification")
         has_regex, has_fields = "name_regex" in rule, "fields" in rule
         if not has_regex and not has_fields:
             raise SystemExit(

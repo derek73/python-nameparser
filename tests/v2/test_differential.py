@@ -1305,6 +1305,77 @@ def test_initials_mixed_with_another_field_is_rejected(
               "fields": fields}], "ledger.toml")
 
 
+def _rule(issue: str, **extra: object) -> dict[str, object]:
+    """A minimal well-formed ledger rule, for the checks below."""
+    return {"issue": issue, "name_regex": "x", "fields": ["given"], **extra}
+
+
+def test_an_exemption_naming_an_unknown_rule_is_rejected() -> None:
+    with pytest.raises(SystemExit, match="names no rule in this ledger"):
+        compare.validate_rules(
+            [_rule("fix(a) first", precedes_narrower=[
+                {"issue": "fix(ghost) not in this file", "why": "because"}])],
+            "test_ledger.toml")
+
+
+def test_an_exemption_pointing_backwards_is_rejected() -> None:
+    """An exemption names the rule it OUTRANKS, which sits later.
+
+    Pointing at an earlier rule describes a pair where the declaring
+    rule is already the loser, so it protects nothing -- and the
+    likeliest way to write one is a copy-paste of the wrong issue
+    string, which would otherwise sit in the file reading as a
+    justification.
+    """
+    with pytest.raises(SystemExit, match="sits EARLIER"):
+        compare.validate_rules(
+            [_rule("fix(a) first"),
+             _rule("fix(b) second", precedes_narrower=[
+                 {"issue": "fix(a) first", "why": "because"}])],
+            "test_ledger.toml")
+
+
+def test_an_exemption_without_a_reason_is_rejected() -> None:
+    """`dormant`'s precedent: the reason is the whole safeguard."""
+    with pytest.raises(SystemExit, match="'why'"):
+        compare.validate_rules(
+            [_rule("fix(a) first", precedes_narrower=[
+                {"issue": "fix(b) second", "why": "   "}]),
+             _rule("fix(b) second")],
+            "test_ledger.toml")
+
+
+def test_a_rule_key_misplaced_into_an_exemption_is_rejected() -> None:
+    """The trap the TOML shape carries.
+
+    `precedes_narrower` is a nested array-of-tables, so once its block
+    opens EVERY later bare `key = value` in the rule binds to the
+    exemption instead of the rule. An author appending `orders` after
+    an exemption silently deletes that rule's order narrowing -- and
+    the unknown-key check on the rule cannot see it, because the key
+    never lands in the rule dict at all. This is the same quiet
+    widening #451 and #456 close, arriving through new syntax rather
+    than through a misspelling.
+    """
+    with pytest.raises(SystemExit, match="belongs to the RULE"):
+        compare.validate_rules(
+            [_rule("fix(a) first", precedes_narrower=[
+                {"issue": "fix(b) second", "why": "because",
+                 "orders": ["FAMILY_FIRST"]}]),
+             _rule("fix(b) second")],
+            "test_ledger.toml")
+
+
+def test_a_well_formed_exemption_is_accepted() -> None:
+    """The positive control: the four refusals above must not be
+    refusing every exemption for some unrelated reason."""
+    compare.validate_rules(
+        [_rule("fix(a) first", precedes_narrower=[
+            {"issue": "fix(b) second", "why": "a is the compound rule"}]),
+         _rule("fix(b) second")],
+        "test_ledger.toml")
+
+
 #: What _run_worker was asked for, so a test can prove main forwarded
 #: the baseline and the corpus rather than defaults of its own.
 _WORKER_CALL: dict = {}
