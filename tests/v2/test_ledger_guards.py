@@ -3081,3 +3081,79 @@ def test_a_rule_reaching_no_corpus_name_says_why_it_is_kept() -> None:
         "no rule was examined, so this guard is passing vacuously -- "
         "every rule declares `dormant`, or (impossible since #451) "
         "narrows by `fields` alone")
+
+
+#: Every order-decided contest in every shipped ledger, measured with
+#: exemptions IGNORED: the earlier rule's issue, the later rule's, and
+#: how many corpus names their regexes both reach.
+#:
+#: The recorded negative control for the guard below (the
+#: _EXCLUSION_EFFECT shape AGENTS.md asks of every guard): it is the
+#: answer with the mechanism switched off, stored as data. Without it,
+#: `precedes_narrower` could be deleted from every rule and the live
+#: guard would keep passing if the predicate had quietly stopped
+#: finding anything.
+#:
+#: 11 pairs, all in the 1.4 ledger; 6 are contested over contract-tier
+#: names and 5 only over radar (#488's demotion) -- see #495. Measured
+#: 2026-09-02. A row that MOVES is a finding, not a number to update:
+#: re-measure before editing it.
+_ORDER_EXEMPTION_EFFECT: dict[str, list[tuple[str, str, int]]] = {
+    "expected_since_1.4.0.toml": [
+        ("fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example",
+         "fix(comma-precomma-family) pre-comma run reads as family, not given", 2),
+        ("fix(#296) a credential-only comma string reads a name and its postnominal",
+         "fix(comma-family) lone post-comma piece routes to suffix/title, not first", 2),
+        ("fix(#296) a credential-only comma string reads a name and its postnominal",
+         "fix(comma-precomma-family) pre-comma run reads as family, not given", 2),
+        ("fix(#296) a lone post-comma credential is a suffix",
+         "fix(suffix-routing) a two-token name ending in the suffix word jr keeps it in `suffix`", 2),
+        ("fix(#400/#274) bound-given join and maiden consumption in one name",
+         "fix(#400) abd joins the word after it as one given name", 1),
+        ("fix(#411/S2) a declining bound-given join leaves the suffix reading after a family comma",
+         "fix(#400) abd joins the word after it as one given name", 1),
+        ("fix(#272/#308) nakaguro division and a glued hangul honorific in one name",
+         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix", 1),
+        ("fix(nickname-typographic-pairs) two typographic quote spans read as one nickname set",
+         "feat(#273) typographic nickname delimiters recognized by default", 1),
+        ("fix(cjk-comma-compound) comma routing compounds with the CJK order flip",
+         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix", 17),
+        ("fix(cjk-glued-honorific-peel) glued honorific peels into suffix",
+         "fix(suffix-routing) a two-token name ending in a roman numeral keeps it in `suffix`", 1),
+        ("fix(cjk-glued-honorific-peel) glued honorific peels into suffix",
+         "fix(suffix-routing) a two-token name ending in the suffix word jr keeps it in `suffix`", 1),
+    ],
+    "expected_since_2.0.0.toml": [],
+    "expected_since_2.1.0.toml": [],
+    "expected_since_2.2.0.toml": [],
+}
+
+
+def test_the_recorded_order_contests_are_what_the_ledgers_hold() -> None:
+    """The negative control: every contest, exemptions ignored.
+
+    A contest is two same-tier rules where the LATER one's `fields` are
+    a strict subset of the earlier one's and both regexes reach a
+    common corpus name. Every diff fitting the narrower `fields` is
+    then admitted by both, and file order alone picks the winner.
+
+    This roster is deliberately blind to `precedes_narrower`: it
+    records the hazard, not whether it has been declared away.
+    """
+    compare = load_tool("compare")
+    assert set(_ORDER_EXEMPTION_EFFECT) == {led.name for led in _LEDGERS}, (
+        f"_ORDER_EXEMPTION_EFFECT must name every ledger on disk, with "
+        f"an explicit empty list for one that genuinely has no contest. "
+        f"Missing: {sorted({L.name for L in _LEDGERS} - set(_ORDER_EXEMPTION_EFFECT))}; "
+        f"unknown: {sorted(set(_ORDER_EXEMPTION_EFFECT) - {L.name for L in _LEDGERS})}")
+    for ledger in _LEDGERS:
+        found = [(c.earlier, c.later, len(c.names))
+                 for c in compare.order_contests(_rules(ledger), _CORPUS_NAMES)]
+        assert found == _ORDER_EXEMPTION_EFFECT[ledger.name], (
+            f"{ledger.name}: the order-decided contests are no longer "
+            f"what this roster records.\n  found:    {found}\n"
+            f"  recorded: {_ORDER_EXEMPTION_EFFECT[ledger.name]}\n"
+            f"A contest that appeared is a new rule pair whose winner "
+            f"file order is deciding; one that vanished means a rule "
+            f"was narrowed or a corpus name left. Re-measure and read "
+            f"the pair before editing this roster.")

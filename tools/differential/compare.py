@@ -16,6 +16,7 @@ exit code with tail's, so a failing run reads as a passing one.
 """
 import argparse
 import importlib.util
+import itertools
 import json
 import os
 import re
@@ -1022,6 +1023,85 @@ def validate_exclusions(entries: list[dict[str, object]],
                     f"{where} lists all seven roles in 'fields', which "
                     f"is what omitting the key already means. omit "
                     f"'fields' to exclude any diff on a matching name")
+
+
+class _Contest(NamedTuple):
+    """Two rules that file order alone separates.
+
+    `earlier` outranks `later` purely by position: every diff fitting
+    the narrower `fields` is admitted by both, so `classify()` returns
+    the first one it reaches.
+    """
+    #: issue of the earlier, WIDER rule -- the one that wins today
+    earlier: str
+    #: issue of the later, NARROWER rule
+    later: str
+    #: corpus names both `name_regex`es reach, sorted
+    names: tuple[str, ...]
+
+
+def _prepared(rules: list[dict[str, object]], names: list[str]
+              ) -> list[tuple[str, frozenset, frozenset] | None]:
+    """Per rule: its issue, its `fields`, and the corpus names it reaches.
+
+    None for a rule this check cannot reason about -- a missing or
+    mistyped `name_regex` or `fields`, or an empty `fields`. Every one
+    of those is already refused by validate_rules with a better
+    message; skipping rather than raising keeps this function usable on
+    the hand-built rule lists the tests pass it, and an empty `fields`
+    is skipped for a second reason: the empty set is a strict subset of
+    every other, so admitting it would report a contest against every
+    rule in the file.
+    """
+    out: list[tuple[str, frozenset, frozenset] | None] = []
+    for rule in rules:
+        pattern, fields = rule.get("name_regex"), rule.get("fields")
+        if (not isinstance(pattern, str) or not isinstance(fields, list)
+                or not fields or not all(isinstance(f, str) for f in fields)):
+            out.append(None)
+            continue
+        matcher = re.compile(pattern)
+        out.append((str(rule.get("issue", "")), frozenset(fields),
+                    frozenset(n for n in names if matcher.search(n))))
+    return out
+
+
+def order_contests(rules: list[dict[str, object]],
+                   names: list[str]) -> list[_Contest]:
+    """Every pair whose winner file order decides, exemptions IGNORED.
+
+    The predicate needs no diff shapes and that is what makes it cheap.
+    Where the later rule's `fields` are a STRICT subset of the earlier
+    one's, every diff D fitting the narrower set is admitted by both
+    rules -- the subset relation supplies the contested shape's
+    EXISTENCE -- so all that is left to establish is that some name can
+    reach both, which the corpus supplies. Computing the real per-name
+    diffs would need the pinned-wheel worker pass, and would only ever
+    remove pairs from this list, never add one.
+
+    Equal `fields` are deliberately not a contest: neither rule is
+    narrower, so "narrow-first" says nothing about the pair and
+    _CROSS_RULE_WINNERS stays the instrument there.
+
+    Read `precedes_narrower` through undeclared_contests, not here.
+    This function is what the recorded negative control measures, and a
+    control that consulted the mechanism it controls for measures
+    nothing.
+    """
+    prepared = _prepared(rules, names)
+    found: list[_Contest] = []
+    for i, j in itertools.combinations(range(len(rules)), 2):
+        a, b = prepared[i], prepared[j]
+        if a is None or b is None:
+            continue
+        issue_a, fields_a, reach_a = a
+        issue_b, fields_b, reach_b = b
+        if not fields_b < fields_a:
+            continue
+        shared = reach_a & reach_b
+        if shared:
+            found.append(_Contest(issue_a, issue_b, tuple(sorted(shared))))
+    return found
 
 
 def _entry_matches(rule: dict[str, object], name: str,
