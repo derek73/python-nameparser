@@ -720,18 +720,23 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
     about a rule's matching semantics drifting, but about an opt-out
     carrying a justification someone can review.
     """
-    seen: set[str] = set()
-    for rule in rules:
+    # A dict rather than a set because `precedes_narrower` (#382) needs
+    # each rule's POSITION to check that an exemption points forward.
+    # The membership test is the same one the dedupe check was written
+    # with, and a rule's issue is unique by the time this loop ends, so
+    # the index it records is unambiguous.
+    positions: dict[str, int] = {}
+    for k, rule in enumerate(rules):
         issue = rule.get("issue")
         if not isinstance(issue, str):
             continue  # the per-rule loop below rejects it with a better message
-        if issue in seen:
+        if issue in positions:
             raise SystemExit(
                 f"{ledger} has two rules sharing the issue {issue!r}. The "
                 f"dormancy check identifies a rule by its issue, so the "
                 f"second would hide behind the first: it could explain "
                 f"nothing and never be reported")
-        seen.add(issue)
+        positions[issue] = k
     for i, rule in enumerate(rules):
         where = f"{ledger} rule #{i + 1}"
         issue = rule.get("issue")
@@ -787,6 +792,17 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
             # never silent: `fields` cannot say that a wider rule
             # describes a compound behavior its component rule does
             # not, so the reason is the only place that fact can live.
+            #
+            # "Sits later in the file" means "loses to this rule" only
+            # because #451 and #456 force every rule to carry BOTH
+            # narrowing keys, which leaves one tier and makes
+            # _sorted_rules the identity on any ledger that validates.
+            # Relaxing either ban breaks the forward-only check below
+            # rather than merely widening it: a fields-only rule at
+            # position 1 could declare precedence over a name_regex rule
+            # at position 5 and be accepted here, while _sorted_rules
+            # puts the name_regex rule first and it is the one that
+            # actually wins.
             declared = rule["precedes_narrower"]
             if not isinstance(declared, list) or not declared \
                     or not all(isinstance(e, dict) for e in declared):
@@ -794,13 +810,10 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
                     f"{where} has a 'precedes_narrower' that is not a "
                     f"non-empty list of tables ({declared!r}). Write it "
                     f"as [[change.precedes_narrower]] blocks under the "
-                    f"rule; an empty one declares nothing and should be "
-                    f"deleted instead")
-            positions: dict[str, int] = {}
-            for k, other in enumerate(rules):
-                other_issue = other.get("issue")
-                if isinstance(other_issue, str):
-                    positions.setdefault(other_issue, k)
+                    f"rule -- single-bracket [change.precedes_narrower] "
+                    f"makes ONE table rather than a list of them -- and "
+                    f"delete the key rather than leaving an empty one, "
+                    f"which declares nothing")
             for entry in declared:
                 unknown = set(entry) - {"issue", "why"}
                 if unknown:
@@ -838,7 +851,14 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
                         f"issue string is its identity here; a renamed "
                         f"or deleted rule leaves an exemption that "
                         f"protects nothing")
-                if positions[target] <= i:
+                if positions[target] == i:
+                    raise SystemExit(
+                        f"{where} declares precedence over ITSELF. An "
+                        f"exemption names the OTHER rule this one "
+                        f"outranks; no rule contests itself, so this is "
+                        f"the declaring rule's own issue string copied "
+                        f"where the narrower rule's belongs")
+                if positions[target] < i:
                     raise SystemExit(
                         f"{where} declares precedence over {target!r}, "
                         f"which sits EARLIER in the file (rule "
@@ -847,6 +867,19 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
                         f"rule is by definition the later one -- so this "
                         f"is a copy-paste of the wrong issue string, "
                         f"sitting in the file reading as a justification")
+            # The same copy-paste slip the `fields` duplicate check
+            # refuses, and worse here: the second entry exempts a pair
+            # already exempted, so it changes nothing -- but two reasons
+            # for one pair means one of them is stale, and a reviewer
+            # reading the ledger cannot tell which.
+            targets = [e["issue"] for e in declared]
+            dups = sorted({t for t in targets if targets.count(t) > 1})
+            if dups:
+                raise SystemExit(
+                    f"{where} declares precedence over {dups} more than "
+                    f"once in 'precedes_narrower'. One pair takes one "
+                    f"exemption, so the repeat exempts nothing new; keep "
+                    f"the reason that is still true and delete the rest")
         has_regex, has_fields = "name_regex" in rule, "fields" in rule
         if not has_regex and not has_fields:
             raise SystemExit(

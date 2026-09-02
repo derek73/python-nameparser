@@ -1204,6 +1204,34 @@ def test_v2_fields_matches_the_Role_enum() -> None:
     ({"issue": "x", "fields": ["given"], "dormnat": "typo"}, "unknown key"),
     # a dormant declaration is not a pass for the rest of the checks
     ({"issue": "x", "dormant": "reason"}, "neither 'name_regex' nor 'fields'"),
+    # #382's shape failures. The key is an array-of-tables, so every
+    # other shape is a rule that reads as an exemption and declares
+    # none: [] says nothing, a bare table is the single-bracket
+    # [change.precedes_narrower] slip, and a list of strings is the
+    # reason written where the table belongs.
+    ({"issue": "x", "name_regex": "Smith", "fields": ["given"],
+      "precedes_narrower": []}, "not a non-empty list of tables"),
+    ({"issue": "x", "name_regex": "Smith", "fields": ["given"],
+      "precedes_narrower": {"issue": "y", "why": "r"}},
+     "not a non-empty list of tables"),
+    ({"issue": "x", "name_regex": "Smith", "fields": ["given"],
+      "precedes_narrower": ["y"]}, "not a non-empty list of tables"),
+    # an entry naming no rule exempts nothing, and 'entry with' is
+    # load-bearing in the match: a bare "no string 'issue'" would also
+    # match the RULE-level message and pin nothing here
+    ({"issue": "x", "name_regex": "Smith", "fields": ["given"],
+      "precedes_narrower": [{"why": "r"}]}, "entry with no string 'issue'"),
+    # the reason is the whole safeguard, absent as well as blank
+    ({"issue": "x", "name_regex": "Smith", "fields": ["given"],
+      "precedes_narrower": [{"issue": "y"}]}, "with no 'why'"),
+    ({"issue": "x", "name_regex": "Smith", "fields": ["given"],
+      "precedes_narrower": [{"issue": "y", "why": 3}]}, "with no 'why'"),
+    # a rule cannot outrank itself; reported as itself rather than as
+    # the backwards-pointing case, which would tell the reader the rule
+    # sits earlier in the file than itself
+    ({"issue": "x", "name_regex": "Smith", "fields": ["given"],
+      "precedes_narrower": [{"issue": "x", "why": "r"}]},
+     "precedence over ITSELF"),
 ])
 def test_validate_rules_rejects_a_rule_that_would_silently_widen(
         rule: dict, expect: str) -> None:
@@ -1362,6 +1390,22 @@ def test_a_rule_key_misplaced_into_an_exemption_is_rejected() -> None:
             [_rule("fix(a) first", precedes_narrower=[
                 {"issue": "fix(b) second", "why": "because",
                  "orders": ["FAMILY_FIRST"]}]),
+             _rule("fix(b) second")],
+            "test_ledger.toml")
+
+
+def test_the_same_rule_exempted_twice_is_rejected() -> None:
+    """Two reasons for one pair, and no way to tell which is stale.
+
+    A row in the table above cannot carry this: a repeat only reaches
+    the check once both entries name a rule that exists, which takes a
+    second rule in the ledger.
+    """
+    with pytest.raises(SystemExit, match="more than once"):
+        compare.validate_rules(
+            [_rule("fix(a) first", precedes_narrower=[
+                {"issue": "fix(b) second", "why": "a is the compound rule"},
+                {"issue": "fix(b) second", "why": "b was reverted"}]),
              _rule("fix(b) second")],
             "test_ledger.toml")
 
