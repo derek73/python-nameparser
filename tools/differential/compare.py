@@ -503,7 +503,20 @@ _SENTINELS = ("John Smith", "田中さん", "Хосе Сантос", "x")
 #: decision when a corpus is added, the way the Script tables do.
 _CORPUS_FLOORS = {
     "corpus.jsonl": 480,        # 486 today, from v1's banks at a pinned ref
-    "corpus_cjk.jsonl": 95,     # 98 today, generated from the case table
+    "corpus_cjk.jsonl": 70,     # 73 today, generated from the case table.
+                                # LOWERED 95 -> 70 on 2026-09-01,
+                                # deliberately: the CJK comma demotion
+                                # moved 25 tolerated texts out of this
+                                # file into corpus_cjk_tolerated.jsonl
+                                # below. Nothing left the harness --
+                                # the names are compared and classified
+                                # exactly as before, on the radar tier
+    "corpus_cjk_tolerated.jsonl": 22,  # 25 today, the tolerated half of
+                                # the same generator: composed and
+                                # wrapped CJK forms (comma listings,
+                                # Latin titles and credentials) whose
+                                # handling the contract stopped
+                                # promising on 2026-09-01
     "corpus_issues.jsonl": 370,  # 381 today, harvested and append-only
     "corpus_rules.jsonl": 150,  # 252 today, generated from rules.md
     "corpus_shapes.jsonl": 35,  # 37 today, generated from shape-tagged
@@ -518,22 +531,45 @@ _CORPUS_FLOORS = {
 #: Tier per corpus file, fail-closed like the floors above. CONTRACT
 #: corpora hold names someone chose -- an unmatched diff on one is
 #: UNEXPLAINED and fails the run, today's discipline. RADAR corpora
-#: hold scraped/harvested names (#468): their diffs still classify
-#: against the ledger (release notes want the grouping) but an
-#: unmatched one prints under UNCLASSIFIED (radar) and cannot fail
-#: the run or demand a rule. Promotion is a cases.py row plus a
-#: shape tag -- a name enters the contract by being chosen.
+#: hold the names the contract does not answer for (#468) -- scraped
+#: and harvested ones, and since 2026-09-01 the deliberately demoted
+#: ones too: their diffs still classify against the ledger (release
+#: notes want the grouping) but an unmatched one prints under
+#: UNCLASSIFIED (radar) and cannot fail the run or demand a rule.
+#: Promotion is a cases.py row plus a shape tag -- a name enters the
+#: contract by being chosen -- or, for a demoted name that already
+#: has rows, clearing `tolerated` on them (a shape tag is not
+#: available to it: shapes 6/7 refuse composed and wrapped text, and
+#: that refusal is why the name was demoted).
 #:
 #: A `[[never]]` exclusion is the same kind of choice, and stays fatal
 #: on a name in a radar file for exactly that reason: someone wrote
 #: the entry, its `why`, and its `examples`, so the shape it refuses
-#: was chosen the same way a rule is -- unlike the rest of a radar
-#: file, which nobody has looked at name by name. The tier split
-#: governs names nobody chose; a [[never]] entry is the opposite of
-#: that, so it outranks the tier the name happens to sit in.
+#: was chosen the same way a rule is -- unlike most of a radar file,
+#: which nobody has looked at name by name. The tier split governs
+#: what the contract answers for; a [[never]] entry declares a shape
+#: nobody may explain away, so it outranks the tier the name happens
+#: to sit in.
 _CORPUS_TIERS = {
     "corpus.jsonl": "radar",
     "corpus_cjk.jsonl": "contract",
+    # The one radar file whose names WERE looked at one by one: the
+    # 2026-09-01 demotion moved them here by a reviewed flag on their
+    # case rows, not by scraping. The tier still fits, and for the
+    # reason the flag was written -- these are composed and wrapped
+    # CJK forms (a comma listing, a Latin title or credential around a
+    # CJK name) that native CJK writing does not contain, so the
+    # differential stops answering for them. Radar is what "we still
+    # watch it, we no longer enforce it" costs; the case rows still
+    # assert every one of these parses in the suite.
+    #
+    # This entry demotes the FILE, which is not the same as demoting
+    # every text in it: the dedup above loads contract files first and
+    # keeps the contract reading, so a text some contract corpus also
+    # holds reads contract no matter what this says. Five do today,
+    # as rules.md examples in corpus_rules.jsonl; the demotion of
+    # those texts is complete only when no contract corpus holds them.
+    "corpus_cjk_tolerated.jsonl": "radar",
     "corpus_issues.jsonl": "radar",
     "corpus_rules.jsonl": "contract",
     "corpus_shapes.jsonl": "contract",
@@ -1553,9 +1589,10 @@ def main() -> int:
         print(f"UNEXPLAINED {name!r}{_order_tag(order)}")
         _print_field_diffs(old_facade, new, old_v2, new_v2, order)
     if radar:
-        print("\nRadar tier (scraped/harvested names, #468): shown, "
-              "never blocking. Promote a name that matters via a "
-              "cases.py row + shape tag.\n")
+        print("\nRadar tier (names the contract does not answer for, "
+              "#468): shown, never blocking. Promote a name that "
+              "matters via a cases.py row + shape tag, or -- for a "
+              "demoted one -- by clearing `tolerated` on its rows.\n")
     for entry, (name, old_facade, new, old_v2, new_v2, order) in radar:
         labels = entry.get("tests")
         tag = f"   [v1: {', '.join(labels)}]" if labels else ""

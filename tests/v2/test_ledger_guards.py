@@ -595,12 +595,14 @@ def test_the_emoji_boundary_rule_copies_the_dividing_ranges() -> None:
 def test_cjk_corpus_matches_the_case_table() -> None:
     """corpus_cjk.jsonl is GENERATED, not curated (#295): every
     distinct case-table text bearing a codepoint the script table
-    classifies, sorted -- see build_cjk_corpus.py for why the other
-    two corpora cannot carry these names. The checked-in file must
-    equal what the generator would write, so a CJK case row added
-    without regenerating fails HERE instead of silently narrowing
-    the differential gate back toward the blind spot #295 closed.
-    Same promise as the toml pin above, aimed at a generated artifact
+    classifies -- minus the rows that declare `tolerated` (the
+    2026-09-01 demotion; they are the twin test below) -- sorted.
+    See build_cjk_corpus.py for why the other two corpora cannot
+    carry these names. The checked-in file must equal what the
+    generator would write, so a CJK case row added without
+    regenerating fails HERE instead of silently narrowing the
+    differential gate back toward the blind spot #295 closed. Same
+    promise as the toml pin above, aimed at a generated artifact
     instead of a hand copy.
     """
     module = load_tool("build_cjk_corpus")
@@ -612,10 +614,73 @@ def test_cjk_corpus_matches_the_case_table() -> None:
         "`uv run python tools/differential/build_cjk_corpus.py`")
 
 
+def test_tolerated_cjk_corpus_matches_the_case_table() -> None:
+    """The radar half of the same generated projection: the texts
+    whose case rows declare `tolerated`. Pinned for the same reason
+    as the contract half one function up -- one command writes both
+    files, so a row marked without regenerating leaves the demoted
+    name in NEITHER file and its diffs invisible at every baseline,
+    which is the failure the radar tier exists to prevent."""
+    module = load_tool("build_cjk_corpus")
+    checked_in = [json.loads(line) for line in
+                  (_TOOLS / "corpus_cjk_tolerated.jsonl")
+                  .read_text(encoding="utf-8").splitlines()]
+    assert checked_in == module.tolerated_names(), (
+        "corpus_cjk_tolerated.jsonl is stale: regenerate with "
+        "`uv run python tools/differential/build_cjk_corpus.py`")
+
+
+def test_a_text_tolerated_on_one_row_only_is_a_hard_error(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The two pins above compare files to a selection; neither can
+    see the one input that has no right answer. A corpus carries name
+    STRINGS, so a text on two rows -- a default row and a
+    policy/locale fork of it, which several CJK texts have -- is one
+    line in one file, and marking one of those rows and not the other
+    declares both tiers for it.
+
+    What makes the raise load-bearing rather than tidy is the
+    consequence with it removed, which the negative control below
+    measures instead of asserting in prose: the two halves select
+    `flags == {False}` and `flags == {True}`, so a split text matches
+    NEITHER and would be dropped from both files -- gone from the
+    harness, watched at no baseline, and invisible to every guard
+    here (the pins would agree with the degraded selection, and the
+    floors bound the loss to a few names). The message must name the
+    offending text for the same reason: an author who has to go
+    hunting for which row is split is an author who marks the other
+    one at random.
+    """
+    from tests.v2.cases import Case
+    module = load_tool("build_cjk_corpus")
+    split = [
+        Case(id="split_a", text="田中さん, PhD", expect={"family": "田中"},
+             tolerated=True),
+        Case(id="split_b", text="田中さん, PhD", expect={"family": "田中"}),
+        Case(id="pure", text="김민준", expect={"family": "김"}),
+    ]
+    monkeypatch.setattr(module, "CASES", split)
+    with pytest.raises(SystemExit, match=r"'田中さん, PhD' on \['split_a', "
+                                          r"'split_b'\]"):
+        module._partition()
+
+    # The negative control: the same selections the generator runs,
+    # with the raise conceptually deleted. The split text is in
+    # neither half -- which is the dropped-name failure the docstring
+    # above describes, reproduced rather than asserted from reading.
+    by_text: dict[str, set[bool]] = {}
+    for case in split:
+        by_text.setdefault(case.text, set()).add(case.tolerated)
+    contract = {t for t, f in by_text.items() if f == {False}}
+    tolerated = {t for t, f in by_text.items() if f == {True}}
+    assert "田中さん, PhD" not in contract | tolerated
+    assert contract | tolerated == {"김민준"}
+
+
 def test_shapes_corpus_matches_the_case_table() -> None:
     """corpus_shapes.jsonl is GENERATED from the shape-tagged case
     rows -- the same promise test_cjk_corpus_matches_the_case_table
-    makes one function up, for the tag predicate instead of the
+    makes above, for the tag predicate instead of the
     codepoint one: a row tagged without regenerating fails HERE
     instead of silently keeping the contract tier narrower than the
     table says it is."""

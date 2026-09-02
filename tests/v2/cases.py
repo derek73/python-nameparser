@@ -97,12 +97,19 @@ class Case:
     #: Tagging a row admits its text to the differential's CONTRACT
     #: corpus (see tools/differential/shapes.py, projected into
     #: corpus_shapes.jsonl by build_shapes_corpus.py beside it) under
-    #: the shape's name_order. Optional: a row
+    #: the shape's name_order. For shapes 6/7 that admission is
+    #: NOMINAL: a pure CJK text is already in corpus_cjk.jsonl, also
+    #: contract, and compare.py's (name, order) dedup collapses the
+    #: two -- the tag buys the coverage answer, not a comparison.
+    #: Optional: a row
     #: exercising a policy fork rather than an input shape stays
     #: untagged.
     shape: int | None = None
     #: Marks a row's text as TOLERATED input (2026-09-01 CJK demotion):
-    #: parsed best-effort and contract-exempt, the opposite of a shape
+    #: read best-effort, exempt from the DIFFERENTIAL's contract tier
+    #: -- not from this table, whose expectations are asserted by the
+    #: suite either way, and a behavior change on a tolerated row still
+    #: edits its classification. The opposite of a shape
     #: tag -- mutually exclusive with `shape`, since a shape ADMITS a
     #: text to the contract and tolerated deliberately does not. Every
     #: composed/wrapped CJK form (a comma listing, a Latin title or
@@ -110,11 +117,14 @@ class Case:
     #: not shapes 6/7's. Restricted to CJK-bearing text (`_has_cjk`):
     #: it exists to demote composed/wrapped CJK forms specifically, and
     #: a Latin row asking for it is a smell until some future arc
-    #: argues otherwise. Intent, not yet current behavior: the
-    #: generator split that actually routes a tolerated row to its own
-    #: radar-tier corpus file (rather than today's corpus_cjk.jsonl)
-    #: lands with a later task in the 2026-09-01 plan -- this flag is
-    #: the row-level declaration that split will read.
+    #: argues otherwise. build_cjk_corpus.py reads the flag: a
+    #: tolerated row's text goes to the radar-tier
+    #: corpus_cjk_tolerated.jsonl instead of the contract
+    #: corpus_cjk.jsonl, and clearing the flag promotes it back at the
+    #: next regeneration. Mark every row of a text, or none: the
+    #: generator reads the flag per TEXT (a corpus line is a name
+    #: string) and HARD-ERRORS on a split declaration, which
+    #: __post_init__ cannot catch from inside one row.
     tolerated: bool = False
 
     def __post_init__(self) -> None:
@@ -168,11 +178,16 @@ class Case:
                 f"{self.id}: a shape tag needs the row's own "
                 f"policy; a locale carries an order this table "
                 f"cannot see")
-        # corpus_cjk.jsonl already claims this ground: _has_cjk is
-        # the same predicate build_cjk_corpus.py selects with, so
-        # a shape tag would double-admit the text (shapes 1-5 are
-        # the Latin-order arrangements; shapes 6/7 are the CJK
-        # arrangements, #469's now-settled third-shape question).
+        # Shapes 1-5 are the LATIN-ORDER arrangements -- a title
+        # slot, a comma listing, a suffix run -- and CJK text does
+        # not instantiate one: the arrangement is what the shape id
+        # names, so tagging a CJK string shape 1 asserts a form the
+        # string does not have. The CJK arrangements are shapes 6/7
+        # (#469's now-settled third-shape question), where the same
+        # text is admitted under a purity test of its own. (That
+        # shapes 6/7 do double-admit into corpus_cjk.jsonl is fine
+        # and deliberate -- the dedup collapses it; double admission
+        # is not what this check is about.)
         # Order alone cannot stand in for this check --
         # DEFAULT_SCRIPT_ORDERS forces HAN/HANGUL/HIRAGANA to
         # FAMILY_FIRST but leaves KATAKANA unmapped, so a pure-
@@ -2961,7 +2976,10 @@ CASES: tuple[Case, ...] = (
     Case("mixed_script_untouched_by_script_orders", "John 王",
          {"given": "John", "family": "王"},
          notes="effective_script is None for a mixed name: script_orders "
-               "declines and the positional default governs"),
+               "declines and the positional default governs. Swept as a "
+               "2026-09-01 tolerated candidate and declined for the "
+               "reason the kana-stem rows were: the Latin is a name "
+               "PART here, not a wrapper around a CJK name"),
     Case("two_han_scripts_untouched_by_script_orders", "毛 김",
          {"given": "毛", "family": "김"},
          notes="two scripts also decline -- the rule is one script, or "
@@ -3011,9 +3029,11 @@ CASES: tuple[Case, ...] = (
          classification="fix(#272)",
          notes="hiragana identifies Japanese as certainly as hangul "
                "identifies Korean; kana-licensed names read "
-               "family-first by default. Shape 6's Family Given in "
-               "kana rather than hangul -- the arrangement is one "
-               "shape across the scripts that carry it",
+               "family-first by default. Shape 6's Family Given with "
+               "a kanji family and a hiragana given rather than the "
+               "hangul of the Korean rows -- the arrangement is one "
+               "shape across the scripts that carry it, and across a "
+               "mix of them within one name",
          shape=6),
     Case("ja_kanji_katakana_pieces", "山田 エミ",
          {"family": "山田", "given": "エミ"},
@@ -3153,7 +3173,10 @@ CASES: tuple[Case, ...] = (
          {"given": "王·Smith"},
          notes="one classified neighbor is not enough: the guard "
                "requires both, so the undivided dot remains part of "
-               "the word -- declining, not deciding"),
+               "the word -- declining, not deciding. Swept as a "
+               "2026-09-01 tolerated candidate and declined on the "
+               "same boundary as 'John 王': the Latin is a name part, "
+               "not a wrapper"),
     Case("zh_honorific_suffix_spaced", "王小明 先生",
          {"family": "王小明", "suffix": "先生"},
          classification="fix(#307) + fix(#271)",
@@ -3402,7 +3425,13 @@ CASES: tuple[Case, ...] = (
                "Single-issue on purpose where the block around it is "
                "compound: measured, disabling script_orders and "
                "segment_scripts leaves this row unchanged, because a "
-               "Latin remainder never reaches either"),
+               "Latin remainder never reaches either. Swept as a "
+               "2026-09-01 tolerated candidate (CJK text, ASCII "
+               "letters) and DECLINED, this row and its hangul twin "
+               "below: the demoted forms wrap Latin AROUND a CJK "
+               "name, while here the Latin is the name's own core "
+               "with a CJK honorific glued on -- a form the glued "
+               "peel is written for, and one #308 promises"),
     Case("latin_stem_glued_hangul_honorific", "Anderson선생님",
          {"given": "Anderson", "suffix": "선생님"},
          classification="fix(#308)",

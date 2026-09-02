@@ -194,7 +194,8 @@ that silently shrinks to nothing would otherwise report a green run.
 |---|---|---|---|
 | `corpus.jsonl` | v1's own test suite at a pinned ref | radar | anything 2.0 added — v1's authors had no reason to test a typographic nickname delimiter or a Cyrillic title |
 | `corpus_issues.jsonl` | name-like strings harvested from the GitHub issue tracker | radar | anything nobody ever reported |
-| `corpus_cjk.jsonl` | the CJK-bearing rows of `tests/v2/cases.py`, via `build_cjk_corpus.py` (#295) | contract | anything the case table itself missed — it re-witnesses reviewed expectations at the baseline boundary rather than discovering new shapes |
+| `corpus_cjk.jsonl` | the CJK-bearing rows of `tests/v2/cases.py` that do not declare `tolerated`, via `build_cjk_corpus.py` (#295) | contract | anything the case table itself missed — it re-witnesses reviewed expectations at the baseline boundary rather than discovering new shapes |
+| `corpus_cjk_tolerated.jsonl` | the `tolerated` CJK rows of `tests/v2/cases.py`, via the same `build_cjk_corpus.py` run (2026-09-01) | radar | any composed or wrapped CJK form nobody wrote a case row for — it holds demoted names, and demotion presupposes admission |
 | `corpus_rules.jsonl` | every example in `docs/design/rules.md`, via `build_rules_corpus.py` (#414) | contract | anything the rules doc has no example for — it re-witnesses the normative examples at the baseline boundary |
 | `corpus_shapes.jsonl` | shape-tagged rows of `tests/v2/cases.py`, via `build_shapes_corpus.py` (#468) | contract | anything no one has tagged a row for |
 
@@ -209,6 +210,19 @@ fail the run or demand a ledger rule. Nothing is deleted to keep the
 gate quiet -- a meaningless string in radar costs one parse and a
 report line. To promote a radar name, give it a tests/v2/cases.py row
 and a shape tag: it enters the contract by being chosen. A
+name can also travel the other way, and one file records it:
+`corpus_cjk_tolerated.jsonl` holds names that WERE chosen and were
+then demoted, one reviewed row at a time, by the `tolerated` flag on
+their case rows (the 2026-09-01 CJK demotion — composed and wrapped
+CJK forms, read best-effort). Radar is what "we still watch it, we no
+longer enforce it" costs: the diffs still classify and still group in
+the release notes, the case rows still assert every one of these
+parses in the suite, and clearing the flag promotes the name back.
+What the flag moves is the file, which is not quite the same as the
+tier: contract files load first and the dedup keeps the contract
+reading, so a text another contract corpus also holds stays contract
+until it leaves there too — five of these are `rules.md` examples in
+`corpus_rules.jsonl` today. A
 `[[never]]` exclusion outranks the tier either way: it was chosen too
 -- someone wrote its `why` and its `examples` -- so a name it refuses
 stays UNEXPLAINED and fails the run even when the name itself sits in
@@ -382,6 +396,22 @@ checked-in file is the snapshot under test; re-running only adds names
 as new issues arrive. Over-collection is fine in both builders: the
 comparator just parses more names, and junk like `Bridge (1.4)` costs
 one parse and produces no diff.
+
+`corpus_cjk.jsonl` and `corpus_cjk_tolerated.jsonl` are the two halves
+of ONE projection of the case table, written by one run:
+
+```
+uv run python tools/differential/build_cjk_corpus.py
+```
+
+Every distinct CJK-bearing `text` in `tests/v2/cases.py` goes to the
+first file, or to the second when its rows declare `tolerated`. The
+flag is read per TEXT, not per row, because a corpus line is a name
+string: a text carried by a default row and a policy/locale fork of it
+is one line in one file. A text marked on one of its rows and not
+another is a hard error rather than a silent choice — the generator
+refuses the run, since either answer puts a name on a tier half its
+rows deny.
 
 ## The ledgers (`expected_since_<VERSION>.toml`)
 
