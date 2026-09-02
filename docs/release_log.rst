@@ -2,6 +2,12 @@ Release Log
 ===========
 * 2.3.0 - Unreleased
 
+    nameparser 2.3 is under development.
+
+    **Behavior Changes**
+
+    - **Fix HumanName.initials() dropping a middle initial that is also a one-letter conjunction.** ``HumanName("Scott E. Werner").initials()`` gives ``S. E. W.`` again where 2.0.0 through 2.2.0 gave ``S. W.``; ``Juan Y. Garcia`` and a bare capital ``John E Smith`` likewise. v1 excluded initial-shaped words from its conjunction test and the 2.0 facade had not; ``parse(...).initials()`` was already right and is unchanged. A bare lowercase ``john e smith`` still reads the ``e`` as the connective. See the ``R3`` entry of ``docs/design/decisions.md`` (closes #462)
+
 * 2.2.0 - August 31, 2026
 
     nameparser 2.2 is a rename plus about thirty parsing fixes.

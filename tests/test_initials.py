@@ -231,3 +231,24 @@ class InitialsTestCase(HumanNameTestBase):
         # fixture restores).
         from nameparser.config import CONSTANTS
         self.assertEqual(CONSTANTS.initials_separator, " ")
+
+    def test_initials_keep_an_initial_shaped_conjunction_letter(self) -> None:
+        # #462: v1's is_conjunction was "in the set AND NOT
+        # is_an_initial", so a dotted or bare-capital E/Y is the
+        # initial it looks like, not the Italian/Spanish connective.
+        # The 2.0 facade lost that exclusion and gave 'S. W.';
+        # parse().initials() never had the bug. 1.4.0 parity, all four.
+        for name, want in (("Scott E. Werner", "S. E. W."),
+                           ("John E Smith", "J. E. S."),
+                           ("Juan Y. Garcia", "J. Y. G."),
+                           ("Хосе И. Мария Сантос", "Х. И. М. С.")):
+            hn = HumanName(name)
+            self.m(hn.initials(), want, hn)
+
+    def test_initials_still_drop_a_lowercase_conjunction(self) -> None:
+        # the boundary #462 leaves alone: a bare lowercase e/y IS the
+        # connective, and 1.4.0 and 2.x agree
+        hn = HumanName("john e smith")
+        self.m(hn.initials(), "j. s.", hn)
+        hn = HumanName("maria y lopez")
+        self.m(hn.initials(), "m. l.", hn)

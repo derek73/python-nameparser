@@ -520,8 +520,20 @@ class HumanName:
         parts = name_part.split()
         initials = []
         for part in parts:
-            if not (self._is_particle(part)
-                    or self._is_conjunction(part)) or firstname:
+            # v1 parser.py:771 (1.4.0): is_conjunction was "in the
+            # conjunctions set AND NOT is_an_initial", so a dotted or
+            # bare-capital E/Y is the initial it looks like rather
+            # than the connective. The 2.0 facade dropped that half
+            # and lost the middle initial of 'Scott E. Werner' (#462).
+            # _render._INITIAL is v1's `initial` shape, kept in step
+            # with the pipeline's copy by tests/v2/test_regex_sync.py;
+            # the facade may import _render but not _pipeline
+            # (tests/v2/test_layering.py). Scoped here rather than in
+            # _is_conjunction: this is the only caller, and a future
+            # one should not inherit a decision made for initials.
+            conjunction = (self._is_conjunction(part)
+                           and not _render._INITIAL.fullmatch(part))
+            if not (self._is_particle(part) or conjunction) or firstname:
                 initials.append(part[0])
         if len(initials) > 0:
             return self.initials_separator.join(initials)
