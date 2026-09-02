@@ -1244,12 +1244,24 @@ def order_contests(rules: list[dict[str, object]],
 def _declared_over(rule: dict[str, object]) -> frozenset[str]:
     """Issues this rule declares precedence over (#382).
 
-    Shape is validate_rules' business; this reads leniently so it stays
-    usable on hand-built rule lists, and a malformed entry simply
-    declares nothing -- which REPORTS the contest rather than hiding
-    it, the safe direction. A stricter reader here would turn a typo
-    inside an exemption block into a silently retired hazard, which is
-    the one outcome the whole check exists to prevent.
+    Shape is validate_rules' business and this reader TRUSTS that it
+    ran: main() validates every ledger before reaching any of this, and
+    test_validate_rules_accepts_the_shipped_ledgers covers the files on
+    disk. The leniency exists so the function stays usable on the
+    hand-built rule lists the tests pass it. It is tempting to write
+    it up as a safety property; it is not one. Of the shapes
+    validate_rules refuses, the three still visible here -- a non-list
+    value, an entry that is not a table, an entry whose `issue` is not
+    a string -- are refused toward REPORTING the contest, but an entry
+    naming a real rule with a missing or blank `why` reads here as a
+    perfectly good declaration and retires the pair. That is the
+    likeliest hand-edit slip in a ledger, and nothing in this function
+    catches it.
+
+    So the guarantee is borrowed, not intrinsic. Reading strictly here
+    would be no less safe -- a stricter reader declares LESS and so can
+    only report MORE -- and the reason not to is convenience for
+    callers, which is a much smaller claim than "the safe direction".
     """
     declared = rule.get("precedes_narrower")
     if not isinstance(declared, list):
@@ -1267,14 +1279,34 @@ def undeclared_contests(rules: list[dict[str, object]],
     the earlier one: an exemption is that rule saying it means to
     outrank its narrower neighbour, so it is the only rule whose word
     can retire the pair.
+
+    `by_issue` is last-wins, so two rules sharing an issue string would
+    let a declaration on the second copy retire a contest the first
+    copy owns. validate_rules refuses duplicate issues, which is the
+    only reason that is unreachable -- the same borrowed guarantee
+    main()'s `rules_by_issue` leans on, and the same one _declared_over
+    leans on for shape.
     """
-    by_issue = {str(r.get("issue")): r for r in rules}
+    by_issue = {str(r.get("issue", "")): r for r in rules}
     return [c for c in order_contests(rules, names)
             if c.later not in _declared_over(by_issue.get(c.earlier, {}))]
 
 
+class _Vacancy(NamedTuple):
+    """An exemption whose pair stopped being a contest (#382).
+
+    Named rather than a bare pair for _Dormancy's reason: the caller
+    formats these into a message, and `v.earlier`/`v.later` says which
+    end is which where `v[0]`/`v[1]` would not.
+    """
+    #: issue of the rule carrying the declaration
+    earlier: str
+    #: issue it declares precedence over
+    later: str
+
+
 def vacant_exemptions(rules: list[dict[str, object]],
-                      names: list[str]) -> list[tuple[str, str]]:
+                      names: list[str]) -> list[_Vacancy]:
     """Declared precedences over a pair that is NOT a contest (#382).
 
     A rule narrowed until it no longer overlaps its neighbour leaves
@@ -1285,7 +1317,7 @@ def vacant_exemptions(rules: list[dict[str, object]],
     standing after the condition stops holding.
     """
     live = {(c.earlier, c.later) for c in order_contests(rules, names)}
-    return [(str(rule.get("issue", "")), later)
+    return [_Vacancy(str(rule.get("issue", "")), later)
             for rule in rules
             for later in sorted(_declared_over(rule))
             if (str(rule.get("issue", "")), later) not in live]

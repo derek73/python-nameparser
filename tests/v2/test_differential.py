@@ -1439,11 +1439,17 @@ def test_a_wide_first_pair_is_reported_until_it_is_declared() -> None:
     says in writing that it means to. Reading it off the wrong rule
     would exempt pairs nobody declared.
 
-    The malformed entry at the end pins the lenient direction. This
-    reader is deliberately not a second copy of validate_rules' shape
-    checks: an entry it cannot make sense of declares nothing, so the
-    contest is REPORTED. Failing the other way would let a typo inside
-    an exemption block silently retire a live hazard.
+    The malformed shapes at the end pin CRASH-SAFETY, and that is all
+    they pin. `_declared_over` reads whatever validate_rules already
+    accepted plus whatever a test hands it, and a bare string, an entry
+    with no `issue` at all, and a list of strings must each leave it
+    returning a set rather than raising.
+
+    They deliberately do not pin the LENIENCE. A stricter reader --
+    one demanding a non-blank `why`, say -- passes all three of these,
+    and could not hide a contest if it wanted to, since declaring less
+    can only report more. Leniency here is a convenience for callers,
+    not the safe direction, so there is nothing about it worth pinning.
     """
     names = ["Smith, Jr."]
     assert [(c.earlier, c.later) for c
@@ -1472,19 +1478,24 @@ def test_a_pair_whose_regexes_share_no_name_is_no_contest() -> None:
     is a roster nobody writes and nobody reads -- so `fields`-subset is
     not a usable predicate on its own.
 
-    To recompute, run order_contests over `_rules(ledger)` and
-    `_CORPUS_NAMES` for every ledger in `_LEDGERS`, dropping one
-    condition at a time. Mind the basis: 657 is the count with the
+    To recompute, reimplement order_contests' loop over `_rules(ledger)`
+    and `_CORPUS_NAMES` for every ledger in `_LEDGERS`, dropping one
+    condition at a time -- the function itself has no knobs to turn
+    them off, and a script importing `tests.v2._differential_fixtures`
+    needs `PYTHONPATH=.`. Mind the basis: 657 is the count with the
     `orders` test still in place, and `fields`-subset ALONE -- both
     conditions gone, nesting counted in either direction -- reports
     1350, of which the `orders` test removes 2 and none of the 657.
-    Measured 2026-09-02.
-
-    The control for this one is the assertion above, which reports the
-    same fixture when the two regexes DO share a corpus name."""
+    Measured 2026-09-02."""
     apart = [dict(_CONTESTED[0], name_regex="Smith"),
              dict(_CONTESTED[1], name_regex="Jones")]
     assert compare.order_contests(apart, ["Smith, Jr.", "Jones, Jr."]) == []
+
+    # The control, inline rather than a pointer at a neighbouring test
+    # that a rename would silently break: the same fixture with both
+    # regexes reaching one name IS a contest, so the empty list above
+    # is condition 4 doing work and not the scan having gone quiet.
+    assert len(compare.order_contests(_CONTESTED, ["Smith, Jr."])) == 1
 
 
 def test_an_exemption_for_a_pair_that_is_no_contest_is_vacant() -> None:
