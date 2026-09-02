@@ -511,14 +511,33 @@ _CORPUS_FLOORS = {
                                 # below. Nothing left the harness --
                                 # the names are compared and classified
                                 # exactly as before, on the radar tier
-    "corpus_cjk_tolerated.jsonl": 22,  # 25 today, the tolerated half of
+    "corpus_cjk_tolerated.jsonl": 22,  # 26 today, the tolerated half of
                                 # the same generator: composed and
                                 # wrapped CJK forms (comma listings,
                                 # Latin titles and credentials) whose
                                 # handling the contract stopped
-                                # promising on 2026-09-01
+                                # promising on 2026-09-01. 25 on the
+                                # day it was created; the 26th is
+                                # '지훈, 남궁민수', which had no case
+                                # row until rules.md#W3 was demoted
+                                # and the rules corpus stopped
+                                # carrying it -- the row was written
+                                # so the text moved tiers instead of
+                                # leaving the harness
     "corpus_issues.jsonl": 370,  # 381 today, harvested and append-only
-    "corpus_rules.jsonl": 150,  # 252 today, generated from rules.md
+    "corpus_rules.jsonl": 150,  # 248 today, generated from rules.md.
+                                # 252 until 2026-09-01, when W3 took
+                                # rules.md's `tolerated:` marker and
+                                # build_rules_corpus.py stopped
+                                # harvesting a marked rule: six comma
+                                # texts left (W3's two, W2's two, C1's
+                                # two) and two pure ones arrived with
+                                # the W2 swap. Every one of the six is
+                                # still compared and classified, from
+                                # corpus_cjk_tolerated.jsonl above.
+                                # Floor left at 150: it guards against
+                                # the file emptying, and a demotion
+                                # this size is nowhere near it
     "corpus_shapes.jsonl": 35,  # 37 today, generated from shape-tagged
                                 # case rows. Ratcheted 27 -> 35 on
                                 # 2026-09-01 with the shape 6/7
@@ -566,9 +585,16 @@ _CORPUS_TIERS = {
     # This entry demotes the FILE, which is not the same as demoting
     # every text in it: the dedup above loads contract files first and
     # keeps the contract reading, so a text some contract corpus also
-    # holds reads contract no matter what this says. Five do today,
-    # as rules.md examples in corpus_rules.jsonl; the demotion of
-    # those texts is complete only when no contract corpus holds them.
+    # holds reads contract no matter what this says. Five did on the
+    # day this file was created -- rules.md examples, so
+    # corpus_rules.jsonl held them too and they went on reading
+    # contract. The rules.md edits later the same day took those five
+    # out of corpus_rules.jsonl -- W3 marked tolerated, W2's two comma
+    # examples swapped for pure ones, C1's two moved into W3 -- so
+    # NONE do today and every text in this file reads radar. The rule
+    # is stated as a rule, not as a caveat about the five: whatever
+    # lands here next is demoted only once no contract corpus holds
+    # it.
     "corpus_cjk_tolerated.jsonl": "radar",
     "corpus_issues.jsonl": "radar",
     "corpus_rules.jsonl": "contract",

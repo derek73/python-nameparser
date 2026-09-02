@@ -196,7 +196,7 @@ that silently shrinks to nothing would otherwise report a green run.
 | `corpus_issues.jsonl` | name-like strings harvested from the GitHub issue tracker | radar | anything nobody ever reported |
 | `corpus_cjk.jsonl` | the CJK-bearing rows of `tests/v2/cases.py` that do not declare `tolerated`, via `build_cjk_corpus.py` (#295) | contract | anything the case table itself missed — it re-witnesses reviewed expectations at the baseline boundary rather than discovering new shapes |
 | `corpus_cjk_tolerated.jsonl` | the `tolerated` CJK rows of `tests/v2/cases.py`, via the same `build_cjk_corpus.py` run (2026-09-01) | radar | any composed or wrapped CJK form nobody wrote a case row for — it holds demoted names, and demotion presupposes admission |
-| `corpus_rules.jsonl` | every example in `docs/design/rules.md`, via `build_rules_corpus.py` (#414) | contract | anything the rules doc has no example for — it re-witnesses the normative examples at the baseline boundary |
+| `corpus_rules.jsonl` | every example of every NORMATIVE rule in `docs/design/rules.md`, via `build_rules_corpus.py` (#414) — a rule carrying that doc's `tolerated:` marker is skipped whole, its examples illustrating rather than promising | contract | anything the rules doc has no example for, and anything a tolerated rule's examples are the only witness of |
 | `corpus_shapes.jsonl` | shape-tagged rows of `tests/v2/cases.py`, via `build_shapes_corpus.py` (#468) | contract | anything no one has tagged a row for |
 
 Since the v2.3 tier split (#468), a corpus is CONTRACT or RADAR --
@@ -221,8 +221,13 @@ parses in the suite, and clearing the flag promotes the name back.
 What the flag moves is the file, which is not quite the same as the
 tier: contract files load first and the dedup keeps the contract
 reading, so a text another contract corpus also holds stays contract
-until it leaves there too — five of these are `rules.md` examples in
-`corpus_rules.jsonl` today. A
+until it leaves there too. Five of these were `rules.md` examples in
+`corpus_rules.jsonl` when the file was created, and the same day's
+rules.md edits took all five out of it — W3 marked `tolerated:`,
+W2's two comma examples swapped for pure ones, C1's two moved into
+W3 — so every text in the file reads radar today, and the sentence
+above is the standing rule the next demotion has to satisfy rather
+than a note about those five. A
 `[[never]]` exclusion outranks the tier either way: it was chosen too
 -- someone wrote its `why` and its `examples` -- so a name it refuses
 stays UNEXPLAINED and fails the run even when the name itself sits in

@@ -13,6 +13,17 @@ A rule nothing implements yet carries ``tracked: #N, #M`` in place of
 two is required, so a normative rule always points either at the code
 that honors it or at the work that will.
 
+A rule may also carry ``tolerated: <reason>``, which takes it out of
+the document's normative reading: its statement DESCRIBES what the
+parser does with input the writing systems it speaks about do not
+produce. The line changes nothing here — the examples parse, and
+test_rules_doc.py still executes them — but
+tools/differential/build_rules_corpus.py skips a rule carrying it, so
+a tolerated rule's examples illustrate current behavior without
+entering the contract corpus that enforces it at released baselines.
+The reason is free text and unvalidated; what is machine-read is that
+the line is present.
+
 Inside a rule block, any line whose first non-space character is a
 double quote (or an opening bracket, the D-section subject form) is an
 example line and MUST parse — a silent skip would un-execute a claim,
@@ -39,6 +50,7 @@ _EXAMPLE_RE = re.compile(
     rf"(?P<tfield>[a-z_]+)=(?P<today>{_VALUE})\))?"
     r"\s*$")
 _NO_BOUNDARY_RE = re.compile(r"^\s*no-boundary:\s+(?P<reason>\S.*)$")
+_TOLERATED_RE = re.compile(r"^\s*tolerated:\s+(?P<reason>\S.*)$")
 _POINTER_RE = re.compile(r"^\s*(history|interacts|implemented|tracked):")
 _POINTER_PART_RE = re.compile(
     r"(history|interacts|implemented|tracked):\s*([^·]+)")
@@ -73,6 +85,11 @@ class Rule:
     #: exclusive with ``implemented:`` -- a rule points at code or at
     #: the issues that will produce it, never at neither.
     tracked: tuple[str, ...] = ()
+    #: The ``tolerated:`` line's reason, or None for a normative rule.
+    #: Read by build_rules_corpus.py, which harvests no example from a
+    #: rule carrying it -- a tolerated rule's examples illustrate what
+    #: the parser does today, they do not promise it.
+    tolerated: str | None = None
 
     def has_boundary_or_waiver(self) -> bool:
         return self.no_boundary is not None or any(
@@ -187,6 +204,10 @@ def parse_rules_doc(text: str) -> list[Rule]:
         nb = _NO_BOUNDARY_RE.match(line)
         if nb:
             current.no_boundary = nb.group("reason")
+            continue
+        tol = _TOLERATED_RE.match(line)
+        if tol:
+            current.tolerated = tol.group("reason")
             continue
         if _POINTER_RE.match(line):
             for key, val in _POINTER_PART_RE.findall(line):

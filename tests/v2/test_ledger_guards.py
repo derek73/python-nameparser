@@ -932,6 +932,50 @@ def test_rules_corpus_matches_the_rules_doc() -> None:
         f"that never had any")
 
 
+def test_a_tolerated_rule_puts_no_name_in_the_rules_corpus() -> None:
+    """A rule marked `tolerated:` in rules.md contributes no example
+    to the CONTRACT corpus (2026-09-01, the CJK comma demotion).
+
+    The equality above would pass with the skip deleted -- regenerate
+    and the file agrees with whatever the generator now selects. This
+    reads the doc's marker directly and asks the file. Scoped to the
+    marked rule's OWN texts: an example some normative rule also
+    carries is in the corpus on that rule's account, and demoting one
+    rule cannot take another's name away, so the check subtracts them
+    rather than failing on them.
+
+    What it does NOT check, deliberately: that the demoted names are
+    still watched somewhere. That is a different promise, and it is
+    the tolerated case rows plus corpus_cjk_tolerated.jsonl that keep
+    it -- pinned by test_tolerated_cjk_corpus_matches_the_case_table
+    above, and measured by the gate's own claims record.
+    """
+    from .rules_doc import parse_rules_doc
+    rules = parse_rules_doc(
+        (_TOOLS.parents[1] / "docs" / "design" / "rules.md")
+        .read_text(encoding="utf-8"))
+    tolerated = [r for r in rules if r.tolerated is not None]
+    assert tolerated, (
+        "no rule in rules.md carries a `tolerated:` marker; W3 has "
+        "carried one since 2026-09-01. If a demotion was reversed, "
+        "delete this guard in that commit rather than leaving it "
+        "asserting nothing")
+    normative_texts = {e.text for r in rules if r.tolerated is None
+                       for e in r.examples if e.text}
+    in_corpus = {json.loads(line) for line in
+                 (_TOOLS / "corpus_rules.jsonl")
+                 .read_text(encoding="utf-8").splitlines()}
+    leaked = sorted({e.text for r in tolerated for e in r.examples
+                     if e.text and e.text not in normative_texts}
+                    & in_corpus)
+    assert not leaked, (
+        f"corpus_rules.jsonl carries example texts belonging only to "
+        f"tolerated rules {[r.rule_id for r in tolerated]}: {leaked}. "
+        f"A tolerated rule's examples illustrate current behavior; "
+        f"enforcing them against released baselines is the promise "
+        f"the marker withdrew")
+
+
 #: Which vocabulary constant each ledger rule's alternation is a hand
 #: copy of. A roster rather than an inference: GLUED_HONORIFICS is a
 #: SUBSET of SUFFIX_WORDS (asserted at the bottom of

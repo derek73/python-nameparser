@@ -13,6 +13,10 @@ Every example line is EXECUTABLE. The grammar (its executable definition is `tes
 
 An `annotation` names a policy, locale (`[ru]`), or extras gate (`[ja+segmenter]`) in the registry beside the test. `· boundary` marks the non-firing example every rule must carry: an input shaped like the rule's subject where its effect does NOT occur. That is usually the rule's OWN stated exception — H1's given-name title, P3's single-letter carve-out — not an input the rule never reaches, so the exception is executable rather than merely asserted. Or the rule declares `no-boundary: <reason>` instead, so skipping the boundary is a recorded decision. `deviates:` states the INTENDED output on the example line while the marker records TODAY's output and the tracking issue; the runner asserts today's output strictly, so a parser change that closes the gap fails the suite until the marker is removed in the same PR. `grep deviates:` on this file is the deviation backlog (deviations from statable rules — coverage gaps are a separate, larger category no grep can see, and contested vocabulary memberships a third, tracked as Open blocks keyed to the vocabulary set in decisions.md).
 
+One class of rule stands outside the normative reading and declares it on a `tolerated: <reason>` line beside its pointer line. Such a rule is ABOUT an input the writing systems it speaks about do not produce — a shape no convention writes, read best-effort because parsing is total over strings — and it describes what the parser does with that input instead of promising it. Its statement is still precedence-bearing and its examples are still executable and still run, but they illustrate rather than promise, and the behavior is changeable without notice. W3 is the only such rule today (the 2026-09-01 comma demotion).
+
+The marker's unit is the whole rule, because that is the unit `tools/differential/build_rules_corpus.py` skips: it harvests no example from a marked rule, so none of them is enforced against released baselines. Two obligations follow, and neither is automatic. A clause that reaches past the tolerated shape does not belong in a marked rule — say it in a normative one. And the skip only STOPS enforcing a name; keeping it watched is a separate act, discharged here by giving each demoted example a `tolerated` row in `tests/v2/cases.py`, which projects it onto the differential's radar tier.
+
 ## Not in scope
 
 - **Language detection.** The parser never infers a language from Latin-script text: transliteration destroys the signal ("Ali",
@@ -866,18 +870,22 @@ C1. Rationale: a credential run after the comma means the name is in
     duals, and the slot is postnominal.
       "Smith, Ms."                →  suffix="Ms."
       "Smith, Ms. Jane"           →  title="Ms."
-    Accepted: a title-only part after a one-word family keeps the
-    family whole, and a glued honorific in it stays glued — the
-    honorific peel (W3) runs on the other structures, before the
-    comma is read; a credential after the comma still frees it.
-      "田中さん, Dr."              →  family="田中さん"
-      "田中さん, PhD"              →  suffix="さん, PhD"
+    Accepted: the vocabulary question above — is the part after the
+    comma nothing but suffix words — is asked a second time, without
+    the word-count condition, to decide whether a glued East Asian
+    honorific standing before a family comma comes off. That
+    composition is tolerated input rather than contract — a comma
+    between a family name and a given name is no part of CJK writing
+    — so the precedence is stated at W3, with its examples, and not
+    here. It is also the one consequence of this question Latin
+    script cannot witness, nothing there being glued to the end of a
+    name — which is why this clause carries no example of its own.
     Accepted: a delimiter core the policy names (T1) is a word here,
     not structure — v1 applied the delimiter to the suffix-comma
     form alone, and that limitation is kept as parity: "Smith, RN -
     CRNA" reads given "RN" under the policy as without it.
       "John Smith, LEED AP"       →  family="Smith"  deviates: #291 (today: family="John Smith")
-    history: decisions.md#C1 · interacts: H2, P6 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
+    history: decisions.md#C1 · interacts: H2, P6, W3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 
 C2. Rationale: text beyond the recognized comma parts should be
     taken in without silent guessing.
@@ -986,7 +994,7 @@ O5. Rationale: O4 reads a name by comparing where its words stand,
 
 ## Scripts & writing systems (W)
 
-Background: script-conditional behavior is permitted exactly where the writing system itself — not statistics about it — settles the convention; a language can never be inferred from Latin-script text, because transliteration destroys the signal. The facts this section builds on: Chinese and Japanese both write the family name first in native script, so the script settles the order without knowing the language. Hangul is written by exactly one language and Korean family names are a small closed census set. Han text does not identify its language — a Chinese surname list would divide Japanese 高橋一郎 as 高 + 橋一郎 — which is why Han division is opt-in and there is no Korean pack to opt into. Hiragana never transcribes a foreign name (transcriptions are katakana alone), so kanji-plus-kana is a Japanese name in Japanese order, while wholly-katakana is predominantly a transcribed foreign name already in given-first order. Real Chinese text is unspaced (毛泽东); the spaced 毛 泽东 is an artifact. A fuller narrative lives in docs/usage.rst's East Asian section.
+Background: script-conditional behavior is permitted exactly where the writing system itself — not statistics about it — settles the convention; a language can never be inferred from Latin-script text, because transliteration destroys the signal. The facts this section builds on: Chinese and Japanese both write the family name first in native script, so the script settles the order without knowing the language. Hangul is written by exactly one language and Korean family names are a small closed census set. Han text does not identify its language — a Chinese surname list would divide Japanese 高橋一郎 as 高 + 橋一郎 — which is why Han division is opt-in and there is no Korean pack to opt into. Hiragana never transcribes a foreign name (transcriptions are katakana alone), so kanji-plus-kana is a Japanese name in Japanese order, while wholly-katakana is predominantly a transcribed foreign name already in given-first order. Real Chinese text is unspaced (毛泽东); the spaced 毛 泽东 is an artifact. A fuller narrative lives in docs/usage.rst's East Asian section. One fact carries its own consequence: none of the three writing systems marks the family name with a comma — position in the written form is what identifies it, so a comma standing between the family name and the given name is a listing convention carried in from elsewhere rather than a form the script produces. That is why the rule reading one (W3) is tolerated rather than normative.
 
 W1. Rationale: hangul is monoglot Korean and its surnames are a
     closed census set, so an unspaced hangul name divides at a
@@ -997,7 +1005,11 @@ W1. Rationale: hangul is monoglot Korean and its surnames are a
     recognizes nothing, an optional segmenter may divide instead,
     and with neither the word stays whole rather than divide in a
     wrong place. Korean division is active by default; Han division
-    is opt-in.
+    is opt-in. A segmenter — unlike the vocabulary, which ignores
+    spacing but not the interpunct (the Accepted below) — is
+    consulted only for a name whose written form is wholly
+    undivided, a spaced honorific counting as a written division
+    (decisions.md#W3 records what that trade keeps and costs).
       "김민준"                    →  family="김"
       "남궁민수"                  →  family="남궁"
       "남궁민수 지훈"             →  family="남궁"
@@ -1008,7 +1020,7 @@ W1. Rationale: hangul is monoglot Korean and its surnames are a
     the sense that matters — division stands down entirely there,
     vocabulary and segmenter alike (#298; decisions.md#T3).
       "安东尼·陈志明"  [zh]        →  family="陈志明"
-    history: decisions.md#W1 · implemented: nameparser/_pipeline/_script_segment.py
+    history: decisions.md#W1 · interacts: W3 · implemented: nameparser/_pipeline/_script_segment.py
 
 W2. Rationale: some East Asian honorifics glue directly onto the end
     of the name (田中さん); a glued word peels off only if it could
@@ -1016,31 +1028,48 @@ W2. Rationale: some East Asian honorifics glue directly onto the end
     own license and needs no other gate.
     A listed honorific glued to the end of the name's last name
     word splits off once and reads as a suffix. The split-off
-    crosses a family comma and ignores surrounding punctuation, but
-    never treats a part that is not name text as the name's end.
+    ignores surrounding punctuation, but never treats a part that is
+    not name text as the name's end.
       "田中さん"                  →  suffix="さん"
-      "김, 민준씨"                →  suffix="씨"
-      "田中さん, V."              →  suffix="さん"
+      "김민준씨"                  →  suffix="씨"
+      "田中さん 様."              →  suffix="さん, 様."
       "马丁·路德·金씨"            →  suffix="씨"
       "김지양"                    →  suffix=""  · boundary
       "王君"                      →  family="王君"  · boundary
-    history: decisions.md#W2 · implemented: nameparser/_pipeline/_script_segment.py
+    history: decisions.md#W2 · interacts: W3 · implemented: nameparser/_pipeline/_script_segment.py
 
 W3. Rationale: a family name declared by a comma is the writer's
     own division, and re-dividing it would invent a boundary nobody
-    drew.
+    drew — but none of the East Asian writing systems declares a
+    family name that way (the Background above), so every input this
+    rule reads is a listing convention wrapped around a name whose
+    own script has already arranged it. What follows describes what
+    the parser does with such input; it does not promise it.
     Under a family comma the pre-comma text is the family by
     declaration and never divides, and the post-comma side is given
     text with no family to find; only the honorific split-off (W2)
     crosses the comma, an honorific being no part of the name on
-    either side. A segmenter — unlike the vocabulary, which ignores
-    spacing but not the interpunct (W1's Accepted) — is consulted
-    only for a name whose written form is wholly undivided, a
-    spaced honorific counting as a written division.
+    either side — the crossing is stated here rather than in W2
+    because it is a claim about the comma, and the comma is the part
+    nobody's writing system produces. Which side the split-off takes
+    it from is decided by the SHAPE of the part after the comma, not
+    by which of C1's two readings that part selects — a one-word
+    family reads the listing form either way. A part that is nothing
+    but suffix words is not the name's end: it is declined as the
+    site, and the split-off falls back to the part before the comma
+    and takes the honorific there, provided that part offers a site
+    of its own. Any other part — a title, a name word — IS the
+    name's end, and a glued honorific before the comma stays glued.
+    The vocabulary question is C1's own, asked without C1's
+    word-count condition: the two differ in what else they require,
+    not in what they ask of the words.
       "남궁민수"                  →  family="남궁"
       "지훈, 남궁민수"            →  given="남궁민수"
       "남궁민수, 지훈"            →  family="남궁민수"  · boundary
-    history: decisions.md#W3 · implemented: nameparser/_pipeline/_script_segment.py
+      "田中さん, Dr."             →  family="田中さん"
+      "田中さん, PhD"             →  suffix="さん, PhD"
+    tolerated: native CJK writing has no family-comma convention, so the four comma lines above illustrate current behavior — changeable without notice — rather than promise it; the comma-free line beside them is W1's claim, which is normative. All four comma names stay watched at every released baseline on the differential's radar tier (tools/differential/corpus_cjk_tolerated.jsonl, projected from the `tolerated` rows of tests/v2/cases.py) instead of its contract tier, and those rows pin them at HEAD.
+    history: decisions.md#W3 · interacts: W1, W2, C1 · implemented: nameparser/_pipeline/_script_segment.py
 
 W4. Rationale: Chinese, Japanese and Korean all write the family
     name first in native script — the script settles the order

@@ -83,6 +83,41 @@ def test_nested_pieces_value_parses() -> None:
     assert ex.value == [["de"], ["Mesnil"]]
 
 
+def test_tolerated_marker_is_read_off_a_rule() -> None:
+    """The 2026-09-01 comma demotion's vehicle, at the grammar layer.
+
+    A rule may declare its examples ILLUSTRATIVE with a
+    ``tolerated: <reason>`` line. The grammar's whole job is to make
+    the line visible: the examples still parse and are still executed
+    by test_rules_doc.py, and it is build_rules_corpus.py that acts
+    on the flag by harvesting nothing from a marked rule. The other
+    half of that promise -- that a tolerated rule really contributes
+    no name to corpus_rules.jsonl -- is
+    test_a_tolerated_rule_puts_no_name_in_the_rules_corpus in
+    tests/v2/test_ledger_guards.py, which can see the corpus file.
+
+    The fixture is synthetic, like DOC above, and stays local to this
+    test so the shared fixture keeps describing a normative doc.
+    """
+    doc = ('X1. Statement the parser only describes.\n'
+           '      "Smith, John"  →  family="Smith"\n'
+           '    tolerated: nobody writes this shape; current behavior only.\n'
+           '    no-boundary: illustrative, not normative.\n')
+    rule = parse_rules_doc(doc)[0]
+    assert rule.tolerated == (
+        "nobody writes this shape; current behavior only.")
+    assert len(rule.examples) == 1, (
+        "a tolerated rule keeps its examples -- the marker demotes the "
+        "claim, it does not un-write the lines")
+
+
+def test_a_normative_rule_carries_no_tolerated_marker() -> None:
+    """The negative control for the test above: without the line the
+    field is None, so `rule.tolerated is None` is a real question and
+    not a constant the builder's skip could never fail on."""
+    assert all(r.tolerated is None for r in parse_rules_doc(DOC))
+
+
 def test_registry_resolves_policies_and_gates() -> None:
     from tests.v2.rules_doc import resolve_annotation
     kind, obj = resolve_annotation("family-first")

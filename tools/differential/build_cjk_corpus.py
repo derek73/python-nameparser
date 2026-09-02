@@ -30,10 +30,17 @@ wrapped CJK form -- a comma listing, a Latin title or credential
 around a CJK name -- is still compared at every baseline and still
 classified against the ledger. What the flag moves is which of THESE
 TWO FILES a text is written to, and nothing else: a text that another
-CONTRACT corpus also holds (corpus_rules.jsonl carries five of them
-today, as rules.md examples) keeps the contract tier until it leaves
+CONTRACT corpus also holds keeps the contract tier until it leaves
 there too, because compare.py loads contract files first and its
-(name, order) dedup keeps the contract reading.
+(name, order) dedup keeps the contract reading. That was live when
+this split landed -- corpus_rules.jsonl carried five of these texts
+as rules.md examples -- and the rules.md edits later the same day
+removed all five: W3 marked tolerated, W2's two comma examples
+swapped for pure ones, C1's two moved into W3. No text written here
+is held contract anywhere today. The sentence stays because it is the
+mechanism, not a note about those five: a demotion is complete only
+when no contract corpus holds the text, and the next demotion has to
+check that for itself.
 
 The flag is read PER TEXT, not per row: the corpora carry name
 strings, so a text on two rows (a default row and a policy/locale

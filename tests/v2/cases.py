@@ -2946,6 +2946,23 @@ CASES: tuple[Case, ...] = (
                "the script_segment stage docstring, which uses this "
                "exact example)",
          tolerated=True),
+    Case("ko_family_comma_given_side_stays_whole", "지훈, 남궁민수",
+         {"family": "지훈", "given": "남궁민수"},
+         notes="the mirror of the row above, and one of "
+               "rules.md#W3's comma illustrations: with the "
+               "comma naming 지훈 the family, the post-comma side is "
+               "given text with no family to find, so 남궁민수 is "
+               "not segmented THERE either -- the same inertness "
+               "reached from the other side. Added 2026-09-01 with "
+               "the W3 demotion: the rules corpus stopped harvesting "
+               "W3's examples, and this text lived in no other "
+               "corpus, so without a row it would have left the "
+               "differential harness entirely rather than moving to "
+               "the radar tier. Classification measured for this row "
+               "rather than copied from the row above: 1.4.0 gives "
+               "first 남궁민수 / last 지훈, field for field what 2.3 "
+               "gives, so parity",
+         tolerated=True),
     Case("ko_suffix_comma_name_part_splits", "Dr 김민준, Jr.",
          {"title": "Dr", "family": "김", "given": "민준", "suffix": "Jr."},
          classification="fix(#271)",

@@ -40,6 +40,27 @@ STRINGS and the differential run parses them with the default facade,
 so a family-first-scoped example is simply one more name to diff --
 build_cjk_corpus.py makes the same call for its zh-scoped rows.
 
+A TOLERATED rule is skipped whole. A rule carrying rules.md's
+`tolerated: <reason>` line has stepped out of the document's
+normative reading: its statement describes what the parser does with
+input the writing systems it speaks about do not produce, and it says
+so on that line. A tolerated rule's examples ILLUSTRATE, they do not
+promise -- so they stay in the doc, stay executed by
+test_rules_doc.py, and stay pinned at HEAD, while this corpus (which
+is what enforces a name against RELEASED baselines, in a contract
+tier where an unclassified diff fails the run) stops carrying them.
+Skipping the rule rather than filtering its examples is the point:
+the unit the doc marks is a rule, so a tolerated rule gaining an
+example does not quietly re-enter the contract.
+
+That is the whole of the demotion's mechanism here, and it leaves the
+name watched: rules.md#W3's subjects are also tolerated rows in
+tests/v2/cases.py, so build_cjk_corpus.py writes them to the
+radar-tier corpus_cjk_tolerated.jsonl and every baseline still parses
+and classifies them. A tolerated rule whose examples land in NO
+corpus would be a name dropped from the harness, which is a different
+act and not one this skip performs on its own.
+
 The one example form that carries no name is skipped. A `[subject]`
 example names a policy or locale rather than a name string, so its
 `text` is empty -- rules.md has three, and without the filter all
@@ -81,10 +102,12 @@ RULES_DOC = ROOT / "docs" / "design" / "rules.md"
 
 def selected_names() -> list[str]:
     """Every distinct example text in the rules doc, sorted for a
-    deterministic file."""
+    deterministic file. Rules marked `tolerated:` contribute nothing:
+    their examples illustrate, they do not promise."""
     rules = parse_rules_doc(RULES_DOC.read_text(encoding="utf-8"))
     return sorted({example.text
                    for rule in rules
+                   if rule.tolerated is None
                    for example in rule.examples
                    if example.text})
 
