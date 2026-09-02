@@ -566,11 +566,14 @@ class HumanName:
             # -- nothing survived
             # the filter, so the whole group is particles. The
             # facade's twin of the core's
-            # UNJOINED_TAG. NOT pinned against it: both case runners
-            # compare the seven role fields only, and Case carries no
-            # initials column, so the one covering test is
-            # tests/test_initials.py::test_initials_middle_name_all_prefixes. _split_last already applies the same guard to
-            # the base, which is why last_base was never empty here.
+            # UNJOINED_TAG. NOT pinned against it by the case runners,
+            # which compare the seven role fields only (Case carries
+            # no initials column); the covering test is
+            # tests/test_initials.py::test_initials_middle_name_all_prefixes,
+            # and since #484 the differential compares initials() on
+            # both surfaces for names whose roles agree. _split_last
+            # already applies the same guard to the base, which is why
+            # last_base was never empty here.
             return [w[0] for w in words]
         return (group_initials(self.first_list, True),
                 group_initials(self.middle_list),

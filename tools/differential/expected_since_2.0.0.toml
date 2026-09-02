@@ -1384,8 +1384,10 @@ orders = ["FAMILY_FIRST_GIVEN_LAST"]
 # ---------------------------------------------------------------------
 # The `_initials` rules (#484) -- see the block of the same name at the
 # end of expected_since_1.4.0.toml for what the pseudo-field is. Only
-# the 2.2.0-era view changes are visible from this baseline: the
-# per-word grouping predates it (2.0.0), and fix(#462) below.
+# view changes AFTER this baseline are visible from it: the per-word
+# grouping predates it (2.0.0) and is classified at 1.4.0 alone.
+# fix(#462), below, is the 2.3 facade fix, visible from every 2.x
+# baseline.
 
 [[change]]
 issue = "fix(#385/#402) an all-particle name part initials its words (R2)"
