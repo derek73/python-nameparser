@@ -830,6 +830,15 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
             # the one thing the message exists to name. Nothing here
             # rejects a repeated field name, and this check is not the
             # place to start: it is about the MIX.
+            dups = sorted({f for f in fields if fields.count(f) > 1})
+            if dups:
+                raise SystemExit(
+                    f"{where} repeats {dups} in 'fields'. classify() "
+                    f"reads 'fields' as a set, so the repeat changes "
+                    f"nothing it matches -- it is a copy-paste slip that "
+                    f"would otherwise pass every check below silently, "
+                    f"and the '_initials' check in particular would read "
+                    f"['_initials', '_initials'] as '_initials' alone")
             others = sorted(set(fields) - {"_initials"})
             if "_initials" in fields and others:
                 raise SystemExit(
@@ -988,6 +997,15 @@ def validate_exclusions(entries: list[dict[str, object]],
             # `others` rather than len(fields) > 1, as in
             # validate_rules: a repeated '_initials' is longer than
             # one and mixes nothing, and printed an empty list.
+            dups = sorted({f for f in fields if fields.count(f) > 1})
+            if dups:
+                raise SystemExit(
+                    f"{where} repeats {dups} in 'fields'. classify() "
+                    f"reads 'fields' as a set, so the repeat changes "
+                    f"nothing it matches -- it is a copy-paste slip that "
+                    f"would otherwise pass every check below silently, "
+                    f"and the '_initials' check in particular would read "
+                    f"['_initials', '_initials'] as '_initials' alone")
             others = sorted(set(fields) - {"_initials"})
             if "_initials" in fields and others:
                 raise SystemExit(

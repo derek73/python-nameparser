@@ -1133,6 +1133,12 @@ def test_v2_fields_matches_the_Role_enum() -> None:
     # uncompilable: without this it raises mid-run, after the worker
     ({"issue": "x", "name_regex": "Smith("}, "invalid 'name_regex'"),
     ({"issue": "x", "name_regex": "Smith", "fields": []}, "empty 'fields'"),
+    # a repeated name is a copy-paste slip the set-based subset test
+    # would swallow; refused so it cannot masquerade as a narrowing
+    ({"issue": "x", "name_regex": "Smith", "fields": ["family", "family"]},
+     "repeats"),
+    ({"issue": "x", "name_regex": "Smith",
+      "fields": ["_initials", "_initials"]}, "repeats"),
     ({"issue": "x", "name_regex": "Smith", "fields": ["famly"]},
      "not roles"),
     # facade vocabulary is not role vocabulary; it would never match
@@ -2353,6 +2359,8 @@ def test_classify_refuses_an_excluded_shape() -> None:
      "not a list of strings"),
     ({"why": "x", "name_regex": "a", "examples": ["a"], "fields": []},
      "empty 'fields'"),
+    ({"why": "x", "name_regex": "a", "examples": ["a"],
+      "fields": ["_initials", "_initials"]}, "repeats"),
     ({"why": "x", "name_regex": "a", "examples": ["a"], "fields": ["nope"]},
      "not roles"),
     # the facade's vocabulary is not the role vocabulary
