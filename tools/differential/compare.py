@@ -1026,11 +1026,10 @@ def validate_exclusions(entries: list[dict[str, object]],
 
 
 class _Contest(NamedTuple):
-    """Two rules that file order alone separates.
+    """Two rules that file order alone separates (#382).
 
-    `earlier` outranks `later` purely by position: every diff fitting
-    the narrower `fields` is admitted by both, so `classify()` returns
-    the first one it reaches.
+    `earlier` outranks `later` purely by position: there are diffs
+    both rules admit, so `classify()` returns the first one it reaches.
     """
     #: issue of the earlier, WIDER rule -- the one that wins today
     earlier: str
@@ -1040,9 +1039,22 @@ class _Contest(NamedTuple):
     names: tuple[str, ...]
 
 
-def _prepared(rules: list[dict[str, object]], names: list[str]
-              ) -> list[tuple[str, frozenset, frozenset] | None]:
-    """Per rule: its issue, its `fields`, and the corpus names it reaches.
+class _Reach(NamedTuple):
+    """What one rule may claim, on each key _entry_matches narrows by."""
+    issue: str
+    fields: frozenset[str]
+    #: corpus names its `name_regex` reaches
+    names: frozenset[str]
+    #: the orders it admits, or None when it declares none and so
+    #: admits every order -- which _entry_matches reads off the
+    #: key's ABSENCE, not off a member list, so there is no set of
+    #: every order to put here
+    orders: frozenset[str] | None
+
+
+def _rule_reach(rules: list[dict[str, object]],
+                names: list[str]) -> list[_Reach | None]:
+    """Per rule: its issue, and what it may claim on each narrowing key.
 
     None for a rule this check cannot reason about -- a missing or
     mistyped `name_regex` or `fields`, or an empty `fields`. Every one
@@ -1052,32 +1064,55 @@ def _prepared(rules: list[dict[str, object]], names: list[str]
     is skipped for a second reason: the empty set is a strict subset of
     every other, so admitting it would report a contest against every
     rule in the file.
+
+    A mistyped `orders` is read as ABSENT rather than skipping the
+    rule, which is what _entry_matches does with one: it tests
+    `isinstance(orders, list)` and so returns a non-list rule to
+    claiming every order. validate_rules rejects that shape too, and
+    an empty `orders` besides -- so a frozenset here is never empty,
+    and "declares orders" always means a real restriction.
     """
-    out: list[tuple[str, frozenset, frozenset] | None] = []
+    out: list[_Reach | None] = []
     for rule in rules:
         pattern, fields = rule.get("name_regex"), rule.get("fields")
         if (not isinstance(pattern, str) or not isinstance(fields, list)
                 or not fields or not all(isinstance(f, str) for f in fields)):
             out.append(None)
             continue
+        orders = rule.get("orders")
         matcher = re.compile(pattern)
-        out.append((str(rule.get("issue", "")), frozenset(fields),
-                    frozenset(n for n in names if matcher.search(n))))
+        out.append(_Reach(
+            str(rule.get("issue", "")), frozenset(fields),
+            frozenset(n for n in names if matcher.search(n)),
+            frozenset(orders) if isinstance(orders, list) else None))
     return out
 
 
 def order_contests(rules: list[dict[str, object]],
                    names: list[str]) -> list[_Contest]:
-    """Every pair whose winner file order decides, exemptions IGNORED.
+    """Every pair whose winner file order decides, exemptions IGNORED (#382).
 
     The predicate needs no diff shapes and that is what makes it cheap.
-    Where the later rule's `fields` are a STRICT subset of the earlier
-    one's, every diff D fitting the narrower set is admitted by both
-    rules -- the subset relation supplies the contested shape's
-    EXISTENCE -- so all that is left to establish is that some name can
-    reach both, which the corpus supplies. Computing the real per-name
-    diffs would need the pinned-wheel worker pass, and would only ever
-    remove pairs from this list, never add one.
+    It asks the three questions _entry_matches asks, one per narrowing
+    key, and a pair is a contest only where all three overlap:
+
+    `fields` -- where the later rule's are a STRICT subset of the
+    earlier one's, every diff D fitting the narrower set passes both
+    rules' subset test. The nesting supplies the contested shape's
+    EXISTENCE, which is why no diff has to be computed: doing that
+    properly would need the pinned-wheel worker pass, and could only
+    ever remove pairs from this list, never add one.
+
+    `name_regex` -- some corpus name must reach both, which the corpus
+    supplies.
+
+    `orders` -- some order must reach both. Two rules scoped to
+    disjoint orders never see the same comparison, so file order
+    decides nothing between them however nested their `fields` are,
+    and calling that a contest would demand a justification for a
+    hazard that cannot occur. A rule declaring no `orders` is
+    order-blind and overlaps every other, which is every rule in every
+    shipped ledger today.
 
     Equal `fields` are deliberately not a contest: neither rule is
     narrower, so "narrow-first" says nothing about the pair and
@@ -1088,19 +1123,20 @@ def order_contests(rules: list[dict[str, object]],
     control that consulted the mechanism it controls for measures
     nothing.
     """
-    prepared = _prepared(rules, names)
+    reach = _rule_reach(rules, names)
     found: list[_Contest] = []
     for i, j in itertools.combinations(range(len(rules)), 2):
-        a, b = prepared[i], prepared[j]
+        a, b = reach[i], reach[j]
         if a is None or b is None:
             continue
-        issue_a, fields_a, reach_a = a
-        issue_b, fields_b, reach_b = b
-        if not fields_b < fields_a:
+        if not b.fields < a.fields:
             continue
-        shared = reach_a & reach_b
+        if a.orders is not None and b.orders is not None \
+                and not a.orders & b.orders:
+            continue
+        shared = a.names & b.names
         if shared:
-            found.append(_Contest(issue_a, issue_b, tuple(sorted(shared))))
+            found.append(_Contest(a.issue, b.issue, tuple(sorted(shared))))
     return found
 
 

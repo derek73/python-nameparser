@@ -3094,10 +3094,12 @@ def test_a_rule_reaching_no_corpus_name_says_why_it_is_kept() -> None:
 #: guard would keep passing if the predicate had quietly stopped
 #: finding anything.
 #:
-#: 11 pairs, all in the 1.4 ledger; 6 are contested over contract-tier
-#: names and 5 only over radar (#488's demotion) -- see #495. Measured
-#: 2026-09-02. A row that MOVES is a finding, not a number to update:
-#: re-measure before editing it.
+#: 11 pairs, all in the 1.4 ledger. They divide by the tier of the
+#: names they are contested over -- some reach contract-tier names,
+#: the rest only radar since #488's demotion -- and #495 argues from
+#: that division, which survives a name changing tier even though its
+#: two counts there do not. Measured 2026-09-02. A row that MOVES is a
+#: finding, not a number to update: re-measure before editing it.
 _ORDER_EXEMPTION_EFFECT: dict[str, list[tuple[str, str, int]]] = {
     "expected_since_1.4.0.toml": [
         ("fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example",
@@ -3132,15 +3134,25 @@ _ORDER_EXEMPTION_EFFECT: dict[str, list[tuple[str, str, int]]] = {
 def test_the_recorded_order_contests_are_what_the_ledgers_hold() -> None:
     """The negative control: every contest, exemptions ignored.
 
-    A contest is two same-tier rules where the LATER one's `fields` are
-    a strict subset of the earlier one's and both regexes reach a
-    common corpus name. Every diff fitting the narrower `fields` is
-    then admitted by both, and file order alone picks the winner.
+    A contest is two same-tier rules that overlap on all three of the
+    keys classify() narrows by: the LATER one's `fields` are a strict
+    subset of the earlier one's, both regexes reach a common corpus
+    name, and neither scopes itself to `orders` the other excludes.
+    There are then diffs both rules admit, and file order alone picks
+    the winner.
 
     This roster is deliberately blind to `precedes_narrower`: it
     records the hazard, not whether it has been declared away.
     """
     compare = load_tool("compare")
+    assert any(_ORDER_EXEMPTION_EFFECT.values()), (
+        "every ledger's contest list is empty, so this control measures "
+        "nothing: a predicate that had stopped finding anything at all "
+        "would read exactly the same. That is the inert-measurement "
+        "class mechanisms.md#RECORDED-ROSTERS is written against. If "
+        "the last contest genuinely went away, delete this guard and "
+        "its roster together -- do not leave four empty lists standing "
+        "in for a measurement.")
     assert set(_ORDER_EXEMPTION_EFFECT) == {led.name for led in _LEDGERS}, (
         f"_ORDER_EXEMPTION_EFFECT must name every ledger on disk, with "
         f"an explicit empty list for one that genuinely has no contest. "

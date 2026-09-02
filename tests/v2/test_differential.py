@@ -1058,6 +1058,54 @@ def test_validate_rules_rejects_a_bad_orders_narrowing(
             "test_ledger.toml")
 
 
+def test_order_contests_reads_the_orders_narrowing_classify_reads() -> None:
+    """`orders` is the third narrowing, so the contest predicate has to
+    read it too: two rules scoped to DISJOINT orders can never claim
+    the same comparison, whatever their `fields` and regexes say, so
+    file order decides nothing between them and there is no hazard to
+    justify.
+
+    The first pair below is the demonstration. fix(b)'s `fields` are a
+    strict subset of fix(a)'s and both regexes reach 'John Smith', so
+    the fields-and-reach half of the predicate holds -- and classify()
+    still routes each order to its own rule, because neither rule is
+    reachable under the order the other declares. Reporting it would
+    demand a written exemption for a contest that cannot occur, which
+    is the detector-disagrees-with-the-predicate failure
+    docs/design/AGENTS.md axis 2 is about.
+
+    An order-blind rule keeps contesting everything, which is the
+    second pair: omitting `orders` means claiming every order, so it
+    overlaps whatever the other rule declares. That is the direction
+    that must NOT be quietly narrowed away -- every rule in every
+    shipped ledger is order-blind today, and a skip that swallowed
+    those would empty the roster while looking like a fix.
+    """
+    names = ["John Smith"]
+    disjoint = [
+        {"issue": "fix(a) x", "name_regex": "Smith",
+         "fields": ["given", "family"], "orders": ["DEFAULT"]},
+        {"issue": "fix(b) y", "name_regex": "Smith",
+         "fields": ["family"], "orders": ["FAMILY_FIRST"]}]
+    assert compare.order_contests(disjoint, names) == []
+    assert compare.classify("John Smith", {"family"}, disjoint) == "fix(a) x"
+    assert compare.classify("John Smith", {"family"}, disjoint,
+                            order="FAMILY_FIRST") == "fix(b) y"
+
+    # ... and the same pair overlapping in one order IS a contest,
+    # which keeps the skip above from passing for the wrong reason
+    overlapping = [dict(disjoint[0]),
+                   {**disjoint[1], "orders": ["DEFAULT", "FAMILY_FIRST"]}]
+    assert [c.earlier for c in compare.order_contests(overlapping, names)] \
+        == ["fix(a) x"]
+
+    blind = [dict(disjoint[0]), {k: v for k, v in disjoint[1].items()
+                                 if k != "orders"}]
+    assert [(c.earlier, c.later, c.names)
+            for c in compare.order_contests(blind, names)] \
+        == [("fix(a) x", "fix(b) y", ("John Smith",))]
+
+
 def test_validate_rules_takes_the_order_names_from_the_shape_inventory(
         ) -> None:
     """The legal set is BORROWED, not hand-copied: every order any
