@@ -3172,3 +3172,40 @@ def test_the_recorded_order_contests_are_what_the_ledgers_hold() -> None:
             f"file order is deciding; one that vanished means a rule "
             f"was narrowed or a corpus name left. Re-measure and read "
             f"the pair before editing this roster.")
+
+
+def test_every_order_decided_contest_is_declared() -> None:
+    """Narrow-first is the declaration-free default; wide-first says why.
+
+    Where the later rule's `fields` are a strict subset of the earlier
+    one's and both regexes reach a common corpus name, file order alone
+    decides who classifies the diff. That is legal -- a wider rule can
+    genuinely be the better description, and `马丁·路德·金씨` is the
+    worked case: it divides on the nakaguro AND peels its honorific, so
+    `fix(#272/#308)` describes it and `fix(cjk-glued-honorific-peel)`
+    describes half of it. What is not legal is leaving it unsaid,
+    because nothing else in the suite can see it: _CORPUS_CLAIMS
+    measures each rule alone, the gate total is per-corpus, and
+    _CROSS_RULE_WINNERS pins only names somebody hand-added.
+
+    Do NOT satisfy this by reordering rules -- that moves which rule
+    classifies a name and breaks _CROSS_RULE_WINNERS. Declare it.
+    """
+    compare = load_tool("compare")
+    for ledger in _LEDGERS:
+        rules = _rules(ledger)
+        undeclared = compare.undeclared_contests(rules, _CORPUS_NAMES)
+        assert not undeclared, "\n".join(
+            [f"{ledger.name}: {len(undeclared)} order-decided contest(s) "
+             f"nobody declared. The EARLIER rule must carry a "
+             f"[[change.precedes_narrower]] block naming the later one "
+             f"and saying what it describes that the later one does not:"]
+            + [f"  {c.earlier!r}\n  outranks {c.later!r}\n"
+               f"  on {len(c.names)} name(s), e.g. {list(c.names[:3])}"
+               for c in undeclared])
+        vacant = compare.vacant_exemptions(rules, _CORPUS_NAMES)
+        assert not vacant, (
+            f"{ledger.name}: {vacant} declare precedence over a pair "
+            f"that is no longer contested. A rule was narrowed or a "
+            f"corpus name left; delete the exemption rather than "
+            f"leaving a justification for a hazard that is gone")

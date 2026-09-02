@@ -301,6 +301,24 @@ issue = "fix(comma-family) a comma followed only by titles keeps the given/famil
 name_regex = "(?i)^john\\s+smith,\\s*mr\\.?(\\s+jr\\.?)?$"
 fields = ["given", "family", "suffix"]
 
+[[change.precedes_narrower]]
+issue = "fix(comma-precomma-family) pre-comma run reads as family, not given"
+why = """
+the one live pair of the eleven where the narrower rule would be
+WRONG rather than merely partial. 'John Smith, Mr.' diffs
+{given, family}, which the precomma rule admits, so nothing but file
+order keeps it here -- and measured, its pre-comma run KEEPS its split
+(1.4 first 'John Smith'; 2.x given 'John', family 'Smith'), which is
+the negation of "pre-comma run reads as family". Every name that rule
+does explain has a one-word pre-comma piece with no split to keep.
+'John Smith, Mr. Jr.' sits beside it latently: {given, family,
+suffix} is outside the precomma rule's fields at any position.
+_CROSS_RULE_WINNERS has no row for either name. It pins the sibling
+decision instead -- ('Bob Jones, author', ('family','given')) to the
+unsuffixed C1 rule above, on the note that "the rule written for that
+shape is ahead of the precomma merge in the file" -- and this rule is
+that rule's suffixed twin."""
+
 [[change]]
 issue = "fix(#296) a dropped prenominal takes the name position it occupies"
 # 'Do Quang Minh': 'do' left TITLES -- a postnominal (D.O.) and a
@@ -342,6 +360,38 @@ issue = "fix(#296) a credential-only comma string reads a name and its postnomin
 # writes as a name, and the honest one for it.
 name_regex = "(?i)^[a-z]{2,3}\\.?,\\s*phd$"
 fields = ["title", "given", "family", "suffix"]
+
+[[change.precedes_narrower]]
+issue = "fix(comma-family) lone post-comma piece routes to suffix/title, not first"
+why = """
+LATENT. Both names move {title, given, family, suffix}, and the
+routing rule declares no `family`, so it is ineligible for them
+wherever it sits -- file order decides nothing here today. What the
+declaration records is the hazard that wakes if that rule's `fields`
+ever grow `family`, and its own comment disclaims precisely that
+growth ("family/`last` is unchanged either way -- pre-comma is
+definitionally family") while the family move is the whole of the
+credential reading here: 'MD' stops being a first name and becomes the
+one-word name. This rule is the routing rule PLUS the pre-comma merge
+on a single string, so a widened routing rule would take the union and
+report only half of it. _CROSS_RULE_WINNERS pins ('MD, PHD',
+('family','given','suffix','title')) here. Radar-only since #488 --
+these names cannot demand a rule any more, and whether the rules
+should survive their demotion is #495."""
+
+[[change.precedes_narrower]]
+issue = "fix(comma-precomma-family) pre-comma run reads as family, not given"
+why = """
+LATENT by the same arithmetic and for a different reason: a four-field
+diff cannot fit {given, family} at any position, so the precomma rule
+is ineligible for these two wherever it sits. The hazard here is a
+rule that is this one's PRE-COMMA HALF alone. 'MD' going given ->
+family really is its shape, so a reader widening it would have a
+plausible-looking case -- and it would then explain a credential-only
+string as a name with a listing comma, losing the postnominal reading
+that moves the title and the suffix in the same breath. A string that
+is nothing but credentials is not a name plus a comma. Radar-only
+since #488; #495 asks whether these rules outlive the demotion."""
 
 [[change]]
 issue = "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes"
@@ -475,6 +525,23 @@ issue = "fix(#296) a lone post-comma credential is a suffix"
 name_regex = "(?i)^[a-z]+,\\s*[a-z]{2,6}\\.?$"
 fields = ["title", "given", "family", "suffix"]
 
+[[change.precedes_narrower]]
+issue = "fix(suffix-routing) a two-token name ending in the suffix word jr keeps it in `suffix`"
+why = """
+a REGEX ACCIDENT, not two descriptions competing. The jr rule asks for
+a leading run of non-space characters, and that run swallows the
+trailing comma of 'Smith,' -- which is the only way a comma name ever
+reaches a rule whose prose scopes it to the comma-LESS two-token name.
+Nothing that rule says is true of 'Smith, Jr.' or 'Kim, Jr.'.
+
+LATENT as well: both move {title, given, family, suffix} against the
+jr rule's {family, suffix}, which is the argument the ledger already
+makes a few rules below -- "what keeps them there is `fields`, not
+file order". Declared anyway, because a fields widening would undo the
+fields argument and leave only the accident, and an accident is a
+worse reason to hold a name than a description is.
+_CROSS_RULE_WINNERS pins both names to this rule."""
+
 [[change]]
 issue = "fix(#400/#274) bound-given join and maiden consumption in one name"
 # 'abd Allah Smith nee Jones': two behaviours meeting in one name, so
@@ -491,6 +558,24 @@ issue = "fix(#400/#274) bound-given join and maiden consumption in one name"
 # this rule must not claim it.
 name_regex = "(?i)^abd(\\s+\\S+){2}\\s+n[eé]e\\s"
 fields = ["given", "middle", "family", "maiden"]
+
+[[change.precedes_narrower]]
+issue = "fix(#400) abd joins the word after it as one given name"
+why = """
+the canonical compound-versus-component shape. fix(#400) describes the
+join alone -- 'abd' plus the word after it, with a family name left
+behind -- and says nothing about a maiden marker, which is where the
+other two roles in this name come from.
+
+LATENT: the measured diff is {given, middle, family, maiden}, and
+`family` and `maiden` are outside fix(#400)'s {given, middle} at any
+position, so the join rule cannot take this name wherever it sits.
+The declaration is therefore about a future widening rather than
+about today: teach fix(#400) anything about markers and it would
+quietly absorb a four-role change and label it a bound-given join.
+No _CROSS_RULE_WINNERS row for this name; the reason rests on the two
+rules' own prose, which is unambiguous here -- one names two
+behaviours meeting, the other one behaviour."""
 
 [[change]]
 issue = "fix(#411/S2) a declining bound-given join leaves the suffix reading after a family comma"
@@ -510,6 +595,23 @@ issue = "fix(#411/S2) a declining bound-given join leaves the suffix reading aft
 # also suffix vocabulary, so no other word reaches this reading.
 name_regex = "(?i),\\s*abd\\s+n[eé]e\\b"
 fields = ["given", "middle", "suffix", "maiden"]
+
+[[change.precedes_narrower]]
+issue = "fix(#400) abd joins the word after it as one given name"
+why = """
+this rule describes the join DECLINING, which is the negation of what
+fix(#400) describes, and then describes what a declining join leaves
+in the given slot after a family comma: S2's suffix reading, with
+'abd' ending up in `suffix` and the name having no given name at all.
+Two rules cannot both be right about the same word, and the one
+asserting that it joins is not the one to explain a name where it did
+not.
+
+LATENT: {given, middle, suffix, maiden} is two roles wider than
+fix(#400)'s {given, middle}, so the subset test excludes it at any
+position -- this rule's comment already reads the same arithmetic as
+why neither fix(#411) nor fix(#274) claims the name. No
+_CROSS_RULE_WINNERS row; the prose carries it."""
 
 [[change]]
 issue = "fix(#411) the bound-given reserve stops counting words the maiden name takes"
@@ -580,6 +682,23 @@ issue = "fix(#272/#308) nakaguro division and a glued hangul honorific in one na
 name_regex = "^\\S*\u00b7\\S*\uc528$"
 fields = ["given", "middle", "family", "suffix"]
 
+[[change.precedes_narrower]]
+issue = "fix(cjk-glued-honorific-peel) glued honorific peels into suffix"
+why = """
+`middle` is the discriminator and the nakaguro is where it comes from.
+This name divides into given/middle/family AND peels its glued \uc528, and
+this rule is the one describing both; the peel rule describes the peel
+and scopes itself to a name with no comma anywhere and no space before
+the honorific, saying nothing about a division. Claiming the name
+there would be a rule claiming a diff it does not describe (#372).
+
+LATENT: {given, middle, family, suffix} is outside the peel rule's
+{family, given, suffix} at any position, so what is declared is the
+hazard of that rule acquiring `middle` -- which is exactly the role
+the CJK order flip hands it, so the widening is a plausible one.
+Contract tier (corpus_rules.jsonl), and not in _CROSS_RULE_WINNERS:
+the roster never had this name added."""
+
 [[change]]
 issue = "fix(emoji-boundary) an emoji inside a token divides it"
 # 'John😀Smith': 1.4 dropped the emoji and read one token
@@ -638,6 +757,24 @@ issue = "fix(nickname-typographic-pairs) two typographic quote spans read as one
 # does not diff at any baseline and no rule here claims it.
 name_regex = "\u201e[^\u201c]+\u201c\\s+\\S+\\s+\u201c[^\u201d]+\u201d"
 fields = ["given", "middle", "family", "nickname"]
+
+[[change.precedes_narrower]]
+issue = "feat(#273) typographic nickname delimiters recognized by default"
+why = """
+feat(#273) is single-span RECOGNITION: a smart-quoted nickname stops
+leaking into `middle` as literal text, which is the {middle, nickname}
+diff its own names carry ('Hans \u201eHansi\u201c M\u00fcller', 'John \u201cJack\u201d
+Kennedy'). This name has two spans of different pairs, and the reason
+it needs a rule of its own is the REMAINDER REJOINING as a name once
+both come out -- that is what moves `given` and `family`, and #273's
+prose has nothing to say about it.
+
+LATENT: {given, middle, family, nickname} is outside {middle,
+nickname} at any position. The hazard declared is #273 being widened
+toward the multi-span shape, which this rule's own comment already
+guards from the other side ("A single-span regression must not be
+absorbed here") -- this declaration is that guard read backwards. No
+_CROSS_RULE_WINNERS row."""
 
 [[change]]
 issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
@@ -1076,6 +1213,34 @@ issue = "fix(cjk-comma-compound) comma routing compounds with the CJK order flip
 name_regex = "(?s)(?=.*,)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
 fields = ["given", "family", "title", "suffix"]
 
+[[change.precedes_narrower]]
+issue = "fix(cjk-glued-honorific-peel) glued honorific peels into suffix"
+why = """
+LIVE, and the least comfortable of the declarations in this file.
+Seventeen names reach both rules; nine of them have a diff the peel
+rule's {family, given, suffix} admits, so position alone is what keeps
+those nine here. The order stays because the peel rule scopes itself
+to a name with NO COMMA ANYWHERE, and promoting it would put that
+label on '田中さん, 様.' and '김민준씨, J.씨', which do route a
+post-comma piece and are the comma compound this rule is named for.
+
+What must NOT be claimed is that all nine are compounds. Measured
+against the wheel, '王先生, V.', '田中さん, V.' and '김민준씨, V.' show
+no comma routing and no order flip at all: 'V.' is the given name on
+both sides, the pre-comma family is one unsegmented run, and the whole
+diff is the glued peel. They arrive here because this rule's criterion
+is "the diff includes `family`", and `family` moves only because the
+peel took the honorific off it -- so for those three the rule's own
+label is wider than the name is. The rule that would describe them,
+fix(cjk-comma-honorific-peel) above, covers this shape for a
+POST-comma given name and has no family-side twin. #496 is that gap;
+until it closes, holding them here is the least wrong of the readings
+available, and this is the entry that says so out loud rather than
+letting the rule name imply otherwise.
+
+Radar-only since #488, so no gate demands either rule; whether they
+survive the demotion is #495."""
+
 [[change]]
 issue = "fix(cjk-glued-honorific-peel) glued honorific peels into suffix"
 # '김민준씨' -> 김/민준/씨, '田中さん' -> 田中/さん, 'Andersonさん' ->
@@ -1109,6 +1274,40 @@ issue = "fix(cjk-glued-honorific-peel) glued honorific peels into suffix"
 # machinery than a correct label is worth.
 name_regex = "(?<=[^\\s,])(?:박사님|선생님|교수님|박사|씨|님|先生|女士|小姐|教授|様|さん|さま|くん|ちゃん)\\.?(?=$|[ ,])"
 fields = ["given", "family", "suffix"]
+
+[[change.precedes_narrower]]
+issue = "fix(suffix-routing) a two-token name ending in a roman numeral keeps it in `suffix`"
+why = """
+a regex accident, and a script-blind one: the numeral rule opens on a
+run of non-space characters, which matches kana as readily as Latin,
+while its prose is about a two-token LATIN name with a trailing
+numeral and no comma in it. This rule's own pattern already names
+'田中さん II' -- it closes on a token-boundary lookahead rather than an
+end anchor precisely because a Latin suffix can follow the honorific.
+
+LATENT: measured, the diff is {family, given, suffix} (1.4 read first
+'田中さん', last 'II'; 2.x reads last '田中', suffix 'さん, II'), and
+`given` is outside the numeral rule's {family, suffix} at any
+position. _CROSS_RULE_WINNERS pins the name here. Radar-only since
+#488, so nothing in the gate turns on it; #495 asks whether the rule
+outlives the demotion."""
+
+[[change.precedes_narrower]]
+issue = "fix(suffix-routing) a two-token name ending in the suffix word jr keeps it in `suffix`"
+why = """
+the same script-blindness one rule further down: the jr rule's leading
+non-space run matches hangul as readily as Latin, while the rule is
+written for 'Smith Jr.' -- one Latin name word, one suffix word, no
+comma. And the trailing 'Jr.' is not what moves anything in
+'김민준씨 Jr.': the glued 씨 peels off and drags the family
+segmentation with it, which is this rule's subject and none of the jr
+rule's.
+
+LATENT, the diff being {family, given, suffix} against the jr rule's
+{family, suffix}. _CROSS_RULE_WINNERS pins the name here, on a shape
+measured against the wheel -- the corroboration its structural twin
+'田中さん II' did not have until #382 re-measured it. Radar-only since
+#488 (#495)."""
 
 [[change]]
 issue = "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip"
