@@ -1466,7 +1466,8 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # fix(#385/#402)'s 24 spellings: the 27 corpus names whose
     # all-particle part moved, listed because "a part of nothing but
     # particles" is not a property a regex over the raw string can
-    # state. A list of names, the fix(#371) precedent.
+    # state. A list of names, the fix(#445) precedent -- that rule and
+    # fix(#410) and fix(#335) are the 1.4.0 ledger's literal lists.
     frozenset({"anh do", "smith van der", "yin le", "yin a le", "vai la",
                "jong van der", "jong, van der", "juan van der",
                "mesnil garcia de", "mesnil garcia van", "mesnil de",
@@ -2050,24 +2051,27 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # when the seven roles and the ambiguity kinds all agree, so a
         # name whose regex the rule matches contributes nothing unless
         # its parse is otherwise identical across the two surfaces.
-        # Reach against explained, measured at 1.4.0: 27/27, 1/1,
-        # 96/66, 41/19, 107/11, 18/2. The phd rule's 18 is the widest
+        # Reach against explained, measured 2026-09-02 at baseline
+        # 1.4.0 -- a snapshot of that run, not a standing count:
+        # 27/27, 1/1, 96/66, 41/19, 107/11, 18/2. The reach half is
+        # what this roster holds; the explained half moves with the
+        # corpus and is re-read from the gate. The phd rule's 18 is the widest
         # gap and the most literal regex -- `\bph\. d\.` matches every
         # spelling of the fragment the corpora carry, and the trailing
         # ones are protected by the [[never]] entry above, which is
         # what _EXCLUSION_EFFECT's grown `absorbed_by` records.
         "fix(#385/#402) an all-particle name part initials its words (R2)":
-            _Claim(27, ('_initials',), "6b242c287db8", None),
+            _Claim(27, ('_initials',), "6b242c287db8", ('DEFAULT',)),
         "fix(#360) los joined the particles, so it no longer initials":
-            _Claim(1, ('_initials',), "cd721215f463", None),
+            _Claim(1, ('_initials',), "cd721215f463", ('DEFAULT',)),
         "fix(initials-per-word) a connective run initials each word (facade, since 2.0.0)":
-            _Claim(96, ('_initials',), "fa69850d2cd4", None),
+            _Claim(96, ('_initials',), "fa69850d2cd4", ('DEFAULT',)),
         "fix(initials-per-word) a bound-given run initials each word (facade, since 2.0.0)":
-            _Claim(41, ('_initials',), "e99f56c955d5", None),
+            _Claim(41, ('_initials',), "e99f56c955d5", ('DEFAULT',)),
         "fix(initials-per-word) a particle chain inside a name part initials each word (facade, since 2.0.0)":
-            _Claim(107, ('_initials',), "bdc4da864f59", None),
+            _Claim(107, ('_initials',), "bdc4da864f59", ('DEFAULT',)),
         "fix(initials-per-word) the Ph. D. merge initials each word (facade, since 2.0.0)":
-            _Claim(18, ('_initials',), "f67d8ebddd56", None),
+            _Claim(18, ('_initials',), "f67d8ebddd56", ('DEFAULT',)),
     },
     "expected_since_2.0.0.toml": {
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
@@ -2201,25 +2205,29 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # digests match the 1.4.0 ledger's, which is the point of
         # copying the list verbatim rather than restating it.
         "fix(#385/#402) an all-particle name part initials its words (R2)":
-            _Claim(27, ('_initials',), "6b242c287db8", None),
+            _Claim(27, ('_initials',), "6b242c287db8", ('DEFAULT',)),
         "fix(#360) los joined the particles, so it no longer initials":
-            _Claim(1, ('_initials',), "cd721215f463", None),
+            _Claim(1, ('_initials',), "cd721215f463", ('DEFAULT',)),
         # fix(#462)'s reach is 18 where it explains 14. Its regex is a
         # letter SHAPE rather than a name list, and the four extra --
         # 'E Anne D', 'E Jones', 'E Maria', 'Y. L.' -- carry the E/Y in
-        # leading position, which the given group has always initialed
-        # whatever the vocabulary says, so the fix does not move them.
+        # the GIVEN group, which has always initialed every word it
+        # holds whatever the vocabulary says, so the fix does not move
+        # them. The discriminator is the GROUP and not the position:
+        # 'E Anne D,Leonardo' also leads with the E, but its comma
+        # re-roles the whole run into the FAMILY group, and it is one
+        # of the 14 that move.
         # The digest is the same in all three 2.x ledgers because the
         # regex is the same string in each.
         "fix(#462) the facade keeps an initial-shaped conjunction letter":
-            _Claim(18, ('_initials',), "3dd0e0276be6", None),
+            _Claim(18, ('_initials',), "3dd0e0276be6", ('DEFAULT',)),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
     # the 2.0.0 mapping above, the same regex classifying the same 14.
     "expected_since_2.2.0.toml": {
         "fix(#462) the facade keeps an initial-shaped conjunction letter":
-            _Claim(18, ('_initials',), "3dd0e0276be6", None),
+            _Claim(18, ('_initials',), "3dd0e0276be6", ('DEFAULT',)),
     },
     "expected_since_2.1.0.toml": {
         "fix(#371) a suffix never begins a name: the Ph./D. merge declines at the head":
@@ -2339,14 +2347,14 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # baseline, and the reaches and digests agree because the two
         # files carry the same literal list.
         "fix(#385/#402) an all-particle name part initials its words (R2)":
-            _Claim(27, ('_initials',), "6b242c287db8", None),
+            _Claim(27, ('_initials',), "6b242c287db8", ('DEFAULT',)),
         "fix(#360) los joined the particles, so it no longer initials":
-            _Claim(1, ('_initials',), "cd721215f463", None),
+            _Claim(1, ('_initials',), "cd721215f463", ('DEFAULT',)),
         # fix(#462), reach and digest as in the 2.0.0 mapping: the same
         # regex over the same corpora, and the facade bug it fixes is
         # in every 2.x wheel, so the baseline makes no difference.
         "fix(#462) the facade keeps an initial-shaped conjunction letter":
-            _Claim(18, ('_initials',), "3dd0e0276be6", None),
+            _Claim(18, ('_initials',), "3dd0e0276be6", ('DEFAULT',)),
     },
 }
 

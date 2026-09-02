@@ -2256,8 +2256,23 @@ fields = ["family", "suffix"]
 # beside a role). None of these classifies a role move; each
 # classifies a change in what HumanName.initials() -- and from 2.0
 # on parse().initials() -- renders for a parse whose fields did not
-# move. Written narrow-first within the group: A and D are literal
-# name lists, B2 is two words, B3 a shape, B1 the widest.
+# move.
+#
+# The order the file has them in: the two literal name LISTS first
+# (fix(#385/#402), fix(#360)), then the three VOCABULARY rules --
+# connective, bound-given, particle chain -- then the Ph. D. merge.
+# Only the bound-given/particle-chain pair is ordered by narrowness,
+# and by measured reach rather than by reading: 41 corpus names
+# against 107 (measured 2026-09-02 at this baseline, and recorded in
+# _CORPUS_CLAIMS). The connective rule's position ahead of both is NOT
+# a specificity claim -- its reach is 96, wider than the bound-given
+# rule it precedes -- it is just where it was written.
+#
+# Every rule below carries orders = ["DEFAULT"]. Each describes a
+# DEFAULT-order render, and an order-bearing entry never consults the
+# facade at all -- main() passes empty dicts for it -- so an
+# `_initials` diff under a declared order could only come from the
+# CORE, and must not be absorbed by a rule whose prose says "facade".
 
 [[change]]
 issue = "fix(#385/#402) an all-particle name part initials its words (R2)"
@@ -2272,11 +2287,13 @@ issue = "fix(#385/#402) an all-particle name part initials its words (R2)"
 # initials column. Reach exactly the 27 names that move (24 spellings,
 # three of them case variants), listed literally rather than shaped:
 # the shape is "a part of nothing but particles", which no regex over
-# the raw string can state, and the fix(#371) rule above set the
-# precedent for a name list. 'de los Santos' is NOT here: its
+# the raw string can state, and the fix(#445) rule above set the
+# precedent for a name list in THIS ledger (fix(#410) and fix(#335)
+# are two more). 'de los Santos' is NOT here: its
 # initials moved for a different reason (the rule below).
 name_regex = "(?i)^(?:anh do|smith van der|yin le|yin a le|vai la|jong van der|jong, van der|juan van der|mesnil garcia de|mesnil garcia van|mesnil de|sander van|van ma van|anh van do|beethoven ludwig van|berg jan de jr\\.|john van mc|jong anke de|juan de|ménil christophe de|ménil de|nguyen thi van|nguyen, van le|van berg jan de)$"
 fields = ["_initials"]
+orders = ["DEFAULT"]
 
 [[change]]
 issue = "fix(#360) los joined the particles, so it no longer initials"
@@ -2286,6 +2303,7 @@ issue = "fix(#360) los joined the particles, so it no longer initials"
 # ('l. S.' -> 'S.'). One name, literal.
 name_regex = "(?i)^de los santos$"
 fields = ["_initials"]
+orders = ["DEFAULT"]
 
 [[change]]
 issue = "fix(initials-per-word) a connective run initials each word (facade, since 2.0.0)"
@@ -2321,6 +2339,7 @@ issue = "fix(initials-per-word) a connective run initials each word (facade, sin
 # twin) are already reached through their own lowercase `of`/`the`.
 name_regex = "(?:^|\\s)(?:y|e|&|and|And|of|the)(?=\\s)"
 fields = ["_initials"]
+orders = ["DEFAULT"]
 
 [[change]]
 issue = "fix(initials-per-word) a bound-given run initials each word (facade, since 2.0.0)"
@@ -2335,25 +2354,32 @@ issue = "fix(initials-per-word) a bound-given run initials each word (facade, si
 # all, and 'van der Berg, abdul née Jones', whose diff is ROLES and so
 # never reaches the pseudo-field -- and the one name this rule shares
 # with the Ph. D. rule ('abdul Ph. D. Smith Berg') moves roles too.
-# _CROSS_RULE_WINNERS' comment lists the same three and says why none
-# of them is pinned there (its rows under this rule are other names). So the position decides
-# nothing today; it is the narrower reading, which is this file's
+# _CROSS_RULE_WINNERS' comment lists these three among the FIVE names
+# that two per-word rules both reach, and says why none of them is
+# pinned there (its rows under this rule are other names). So the
+# position decides nothing today; it is the narrower reading --
+# measured, 41 corpus names against the particle chain's 107 --
+# which is this file's
 # write-the-narrower-rule-first convention (the header above, and
 # #382's open question about separating such a pair by a predicate
 # instead), and it is what would decide a future contest.
 name_regex = "(?i)(?:^|[\\s,])(?:abdul|abu)\\s"
 fields = ["_initials"]
+orders = ["DEFAULT"]
 
 [[change]]
 issue = "fix(initials-per-word) a particle chain inside a name part initials each word (facade, since 2.0.0)"
 # 'John van der Berg Smith', 'pennie von bergen wessels', 'de la Cruz
-# Juan Carlos': a particle chain that lands INSIDE a part -- a middle
-# name of 'van der Berg', a family of 'von bergen wessels' -- is one
+# Juan Carlos': a particle chain that lands INSIDE a part -- a family
+# of 'van der Berg Smith' or of 'von bergen wessels' -- is one
 # list element, and 1.4.0 initialed it as one group ('J. B S.'); the
 # 2.0 facade gives 'J. B. S.'. The shape is a chain-opening particle
 # followed by at least two more words, so the particle cannot be the
 # family's own tussenvoegsel standing before a single family word
 # (those do not move: the particles contribute nothing either way).
+# The chain lands in a MIDDLE name only where something later bounds
+# the part: one of the eleven names this rule explains does, 'Jane van
+# der Berg née Jr Jones', whose maiden marker ends the middle at 'Jr'.
 #
 # The chain's SECOND word is not spelled out. It was, as an optional
 # `(?:\\s+(?:der|la))?` before the two-word tail, and that group was
@@ -2366,6 +2392,7 @@ issue = "fix(initials-per-word) a particle chain inside a name part initials eac
 # roster could pin `van|von|de` or `der|la`, never both.
 name_regex = "(?i)(?:^|\\s)(?:van|von|de)\\s+\\S+\\s+\\S+"
 fields = ["_initials"]
+orders = ["DEFAULT"]
 
 [[change]]
 issue = "fix(initials-per-word) the Ph. D. merge initials each word (facade, since 2.0.0)"
@@ -2374,7 +2401,11 @@ issue = "fix(initials-per-word) the Ph. D. merge initials each word (facade, sin
 # differently -- 1.4.0 'J. P. D.', the tree 'J. P D.'; and in the
 # titled name the element 'Van Johnson' went from 'V J.' to 'V. J.'.
 # Same per-word change, on the phd-merge shape (decisions.md#phd-merge).
-# Literal, no alternation. 'Ph. D., Jr.' also matches and does not
-# diff, which is the harmless direction.
+# Literal, no alternation. 'Ph. D., Jr.' also matches, and is harmless
+# in both directions: its initials do not move ('D.' at 1.4.0 and
+# 'D.' here), and its diff is ROLES anyway -- fix(comma-precomma-family)
+# claims it on `first`/`last` -- so `_initials` never enters it and
+# this rule can neither explain nor absorb it.
 name_regex = "(?i)\\bph\\. d\\."
 fields = ["_initials"]
+orders = ["DEFAULT"]

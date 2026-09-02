@@ -241,9 +241,24 @@ class InitialsTestCase(HumanNameTestBase):
         for name, want in (("Scott E. Werner", "S. E. W."),
                            ("John E Smith", "J. E. S."),
                            ("Juan Y. Garcia", "J. Y. G."),
+                           # the letter is the WHOLE middle group here,
+                           # so before the fix the group yielded nothing
+                           # and was dropped outright: 'S. V.', a name
+                           # short of its middle rather than a letter
+                           ("Vega, Santa de Y", "S. Y. V."),
                            ("Хосе И. Мария Сантос", "Х. И. М. С.")):
             hn = HumanName(name)
             self.m(hn.initials(), want, hn)
+
+    def test_initials_drop_a_bare_non_ascii_conjunction_letter(self) -> None:
+        # v1's bound, kept: _render._INITIAL is `^(\w\.|[A-Z])$`, so
+        # its DOTTED half is Unicode-aware (the 'И.' above survives)
+        # and its bare-capital half is ASCII-only. A bare Cyrillic 'И'
+        # is therefore not initial-shaped, stays the connective, and
+        # drops -- 'Х. М. С.' for a four-word name. #462 restored v1's
+        # exclusion; it did not widen the shape v1 excluded on.
+        hn = HumanName("Хосе Мария И Сантос")
+        self.m(hn.initials(), "Х. М. С.", hn)
 
     def test_initials_still_drop_a_lowercase_conjunction(self) -> None:
         # the boundary #462 leaves alone: a bare lowercase e/y IS the

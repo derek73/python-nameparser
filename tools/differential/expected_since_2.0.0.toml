@@ -1397,6 +1397,7 @@ issue = "fix(#385/#402) an all-particle name part initials its words (R2)"
 # 1.4.0 rule, for the same reason.
 name_regex = "(?i)^(?:anh do|smith van der|yin le|yin a le|vai la|jong van der|jong, van der|juan van der|mesnil garcia de|mesnil garcia van|mesnil de|sander van|van ma van|anh van do|beethoven ludwig van|berg jan de jr\\.|john van mc|jong anke de|juan de|ménil christophe de|ménil de|nguyen thi van|nguyen, van le|van berg jan de)$"
 fields = ["_initials"]
+orders = ["DEFAULT"]
 
 [[change]]
 issue = "fix(#360) los joined the particles, so it no longer initials"
@@ -1404,6 +1405,7 @@ issue = "fix(#360) los joined the particles, so it no longer initials"
 # particle. One name, literal.
 name_regex = "(?i)^de los santos$"
 fields = ["_initials"]
+orders = ["DEFAULT"]
 
 [[change]]
 issue = "fix(#462) the facade keeps an initial-shaped conjunction letter"
@@ -1416,8 +1418,13 @@ issue = "fix(#462) the facade keeps an initial-shaped conjunction letter"
 # read E as a conjunction, only the facade's render did -- so this is
 # `_initials` alone (#484). The shape: a bare capital E or Y, or a
 # dotted E./Y. of either case, standing as its own word. Lowercase
-# bare e/y is the connective and does not move; a leading E (given
-# group) always initialed and does not move either, which is why the
-# regex reaches 18 corpus names and 14 diff.
+# bare e/y is the connective and does not move. The regex reaches 18
+# corpus names, of which 14 diffed when the rule was written
+# (2026-09-02). The four it reaches and does not move are what the
+# gap IS, and the invariant behind it is a GROUP rather than a count:
+# they carry the E/Y in the GIVEN group, which has always initialed
+# every word it holds whatever the vocabulary says, so there was
+# nothing for the fix to restore.
 name_regex = "(?:^|[\\s,])(?:[EY]|[EeYy]\\.)(?=[\\s,]|$)"
 fields = ["_initials"]
+orders = ["DEFAULT"]

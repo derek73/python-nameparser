@@ -126,10 +126,12 @@ def test_worker_source_emits_initials_on_both_surfaces() -> None:
     A text check, and the two asserts do not buy the same thing.
     `_v2_row` is defined unconditionally in the template body, which
     is version-independent -- so its assert at want_v2=False pins
-    template TEXT, not behavior. The facade line is the one the
-    baseline actually gates, and
-    test_the_worker_reads_a_default_order_line_as_the_tree_does pins
-    what it emits by running it."""
+    template TEXT, not behavior. The facade line is the one whose
+    BEHAVIOR depends on the installed wheel -- 1.4.0's
+    `HumanName.initials()` has to exist and answer -- which no text
+    check can see, and is why the sibling below RUNS the template
+    instead of reading it:
+    test_the_worker_reads_a_default_order_line_as_the_tree_does."""
     for version, want_v2 in (("1.4.0", False), ("2.0.0", True)):
         src = compare._worker_source(version, want_v2=want_v2)
         assert 'row["facade"]["_initials"] = hn.initials() or ""' in src
@@ -474,6 +476,74 @@ def _order_bearing_run(
     return code, buf.getvalue()
 
 
+def _order_bearing_initials_run(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+        ledger_body: str) -> tuple[int, str]:
+    """_order_bearing_run's `_initials` twin: the same shape-4 entry,
+    with the CORE's initials moved and every role left alone.
+
+    A second helper rather than a parameter on the first, because the
+    two differ in what they are about: that one builds a role diff, and
+    this one builds the diff main() only ever forms when no role moved
+    at all."""
+    import contextlib
+    import io
+    import json as _json
+    import sys
+    name = "Ménil Christophe du"
+    corpus = tmp_path / "corpus_x.jsonl"
+    corpus.write_text(
+        _json.dumps({"name": name, "shape": 4}, ensure_ascii=False) + "\n",
+        encoding="utf-8")
+    (tmp_path / "expected_since_2.0.0.toml").write_text(
+        ledger_body, encoding="utf-8")
+    monkeypatch.setitem(compare._CORPUS_FLOORS, corpus.name, 1)
+    monkeypatch.setitem(compare._CORPUS_TIERS, corpus.name, "contract")
+    monkeypatch.setattr(compare, "HERE", tmp_path)
+    v2_row = _tree_v2_row(name, "FAMILY_FIRST")
+    v2_row["_initials"] = "M. X."  # the view moved; the roles did not
+
+    def _fake(v: str, w: bool,
+              entries: list[dict[str, object]]) -> tuple[dict, list[dict]]:
+        return ({"__version__": v,
+                 "__file__": "/wheel/nameparser/__init__.py"},
+                [{"v2": v2_row}])
+
+    monkeypatch.setattr(compare, "_run_worker", _fake)
+    monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", "2.0.0",
+                                      "--corpus", str(corpus)])
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = compare.main()
+    return code, buf.getvalue()
+
+
+def test_an_order_bearing_initials_only_diff_reports_without_a_surface_tag(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """An order-bearing entry never consults the facade -- main()
+    leaves `new` empty for it -- so the facade pair is ('', ''),
+    `facade_moved` is False, and the v2 `_initials` line falls to the
+    ORDER-AWARE branch, which suppresses the tag. A "[v2 surface only]"
+    here would be a lie: no facade reading was compared to be `only`
+    different from.
+
+    This is also the one path on which an `_initials` diff can reach
+    the report at all under a declared order, which is why every
+    `_initials` ledger rule carries orders = ["DEFAULT"]: such a diff
+    is the CORE's, and no rule whose prose says "facade" may absorb
+    it."""
+    code, out = _order_bearing_initials_run(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\n'
+        'fields = ["family"]\n')
+    assert code == 1
+    assert "UNEXPLAINED 'Ménil Christophe du'   [order: FAMILY_FIRST]" in out
+    # 'C. M.' and not 'M. C. d.': the tree side is read under
+    # FAMILY_FIRST, where 'Ménil' is the family and 'du' its particle
+    assert "_initials: 'M. X.' -> 'C. M.'" in out
+    assert "[v2 surface" not in out
+
+
 def test_an_order_blind_rule_absorbing_an_order_bearing_diff_is_reported(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The leak this notice makes visible runs the OTHER way from the
@@ -626,6 +696,15 @@ def test_the_worker_reads_a_default_order_line_as_the_tree_does() -> None:
     pins its TEXT, which cannot see a row that builds the right keys
     from the wrong parse -- and #484 added a key to exactly this row.
 
+    The name is chosen to tell the two SURFACES apart. `Ph. D., John`
+    is the one corpus name whose facade and core initials differ today
+    -- 'J. P D.' against 'J. P. D.', the phd-merge element grouped one
+    way by HumanName and another by parse() -- so the facade assertion
+    below can no longer pass by reading the core's value into the
+    facade row. Under a name the two surfaces agree on (this test used
+    `Ménil Christophe du`, 'M. C. d.' both ways) that swap is
+    invisible.
+
     exec'd in-process for the same reason as its order-bearing
     sibling: `import nameparser` then resolves to this checkout, so
     the row is the tree's own reading and can be compared against the
@@ -636,7 +715,7 @@ def test_the_worker_reads_a_default_order_line_as_the_tree_does() -> None:
     import sys
     import nameparser
     from nameparser import HumanName
-    name = "Ménil Christophe du"
+    name = "Ph. D., John"
     source = compare._worker_source(nameparser.__version__, want_v2=True)
     stdin = io.StringIO(_json.dumps(
         {"name": name, "order": None}, ensure_ascii=False) + "\n")
@@ -1221,6 +1300,30 @@ def _run_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ledger_body: str,
     # would read as an initials diff against the tree's own initials,
     # so an omitted key means "same as the tree"; a test that wants an
     # initials diff writes the key explicitly.
+    #
+    # Which makes a MISSPELLED key the dangerous one, and the reason
+    # for the refusal below: `{**_SAME_FACADE, "_initals": "J. X."}`
+    # is a row main() never reads the stray key from, so the real
+    # `_initials` defaults to the tree's own answer, the surfaces
+    # agree, and the test passes while pinning nothing. Refuse the row
+    # instead. Checked BEFORE the setdefault so the message can name
+    # the key the caller wrote rather than the one the helper added.
+    _facade_keys = set(compare.FIELDS) | {"_initials"}
+    _v2_keys = set(compare.V2_FIELDS) | {"_ambiguities", "_initials"}
+    for n, row in zip(names, rows):
+        for which, legal in (("facade", _facade_keys), ("v2", _v2_keys)):
+            if which not in row:
+                continue
+            stray = sorted(set(row[which]) - legal)
+            if stray:
+                raise AssertionError(
+                    f"fixture row for {n!r} ({which}) carries "
+                    f"{stray}, which main() never reads. The row would "
+                    f"silently agree with the tree on every field it "
+                    f"does read -- a misspelled '_initials' defaults to "
+                    f"the tree's own initials -- so the test would pass "
+                    f"having pinned nothing. Expected keys: "
+                    f"{sorted(legal)}")
     from nameparser import HumanName as _HN
     for n, row in zip(names, rows):
         row["facade"].setdefault("_initials", _HN(n).initials() or "")
@@ -1314,6 +1417,25 @@ def test_radar_diff_with_no_rule_exits_0_and_is_reported(
     assert "UNCLASSIFIED (radar) 'John Smith'" in out
     assert "family:" in out
     assert "UNEXPLAINED" not in out
+
+
+def test_radar_initials_only_diff_prints_its_pseudo_field_line(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The radar block forwards `initials_only` too. Every other
+    `_initials` print test goes through the UNEXPLAINED block, and the
+    two blocks call _print_field_diffs from separate call sites -- so
+    passing `initials_only=False` at the radar one leaves a
+    `UNCLASSIFIED (radar)` header with NO field lines under it, which
+    is a report nobody can act on and which no other test here sees.
+
+    An empty ledger for the same reason as the sibling above: a
+    ZZZ decoy rule would be dormant in a one-name corpus and exit 1
+    for a reason that has nothing to do with the pseudo-field."""
+    code, out = _run_main(
+        tmp_path, monkeypatch, "", _INITIALS_MOVED, tier="radar")
+    assert code == 0
+    assert "UNCLASSIFIED (radar) 'John Smith'" in out
+    assert "_initials: 'J. X.' -> 'J. S.'" in out
 
 
 def test_radar_diff_matching_a_rule_still_classifies(
@@ -1960,8 +2082,15 @@ def test_main_prints_one_initials_line_when_both_surfaces_moved_alike(
     """The print-once convention, kept for the case it was written
     for: two surfaces moving to the SAME pair are one movement and one
     rule, so the facade line stands for both and carries no surface
-    tag. Without the pair comparison beside `facade_moved` the v2 line
-    prints here too, and the sibling above passes either way."""
+    tag.
+
+    The mutant this kills is replacing the WHOLE
+    `(not facade_moved or v2_pair != facade_pair)` guard with a bare
+    `if v2_moved:` -- then the v2 line prints here too, while the
+    sibling above still sees its two lines and passes. Deleting only
+    the pair comparison is the SIBLING's mutant, not this one: it
+    leaves `v2_moved and not facade_moved`, which is False here, so
+    this case still prints once and this test cannot see it."""
     code, out = _run_main(
         tmp_path, monkeypatch,
         '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\n'
@@ -1972,6 +2101,63 @@ def test_main_prints_one_initials_line_when_both_surfaces_moved_alike(
     assert "_initials: 'J. X.' -> 'J. S.'" in out
     assert out.count("_initials:") == 1
     assert "[v2 surface" not in out
+
+
+def test_main_keeps_initials_out_of_a_diff_a_V2_role_moved(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The v2 half of the roles-identical guard. Its facade half is
+    pinned above (test_main_drops_initials_from_a_diff_where_a_role_
+    moved); this one moves the role on the CORE surface only, where the
+    guard reads a different dict. The rule declares `family` alone, so
+    an `_initials` that leaked into the diff beside it would fail the
+    subset test and exit 1."""
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "role-only"\nname_regex = "Smith"\n'
+        'fields = ["family"]\n',
+        _SAME_FACADE, baseline="2.0.0",
+        baseline_v2={**_SAME_V2, "family": "SMYTHE", "_initials": "J. X."})
+    assert code == 0
+    assert "## role-only (1)" in out
+    assert "_initials" not in out
+
+
+def test_main_prints_one_initials_line_when_only_the_facade_moved(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The facade moved and the core, compared, AGREED -- the reading
+    the docstring of _print_field_diffs warns a bare facade line does
+    NOT license, and the case that makes the warning necessary. Both
+    surfaces were consulted here; the v2 line is suppressed because
+    the core did not move, not because it was never asked.
+
+    Distinct from test_main_reports_an_initials_only_diff_under_the_
+    pseudo_field, which runs at 1.4.0 where there is no core surface
+    to agree."""
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\n'
+        'fields = ["family"]\n',
+        {**_SAME_FACADE, "_initials": "J. X."}, baseline="2.0.0",
+        baseline_v2=dict(_SAME_V2))
+    assert code == 1
+    assert "_initials: 'J. X.' -> 'J. S.'" in out
+    assert out.count("_initials:") == 1
+    assert "[v2 surface" not in out
+
+
+def test_run_main_refuses_a_fixture_row_with_an_unknown_key(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The fixture's own guard, and the reason it exists: main() reads
+    `_initials` off the row and the helper defaults a MISSING one to
+    the tree's own answer, so a misspelled key is not a loud failure
+    but a silent agreement -- the test passes having compared the tree
+    against itself. Refuse the row instead of letting it pass."""
+    with pytest.raises(AssertionError, match="_initals"):
+        _run_main(
+            tmp_path, monkeypatch,
+            '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\n'
+            'fields = ["family"]\n',
+            {**_SAME_FACADE, "_initals": "J. X."})
 
 
 def test_main_compares_the_v2_surface_from_baseline_2_0(

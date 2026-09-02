@@ -514,10 +514,13 @@ class HumanName:
     def _process_initial(self, name_part: str, firstname: bool = False) -> str:
         # after v1 parser.py:427, not verbatim: particles and
         # conjunctions are filtered from initials unless the part is a
-        # first name. split() rather than split(" "): *_list
-        # attributes assigned directly bypass whitespace normalization,
-        # and split(" ") yields empty strings for repeated spaces
-        # (#232).
+        # first name. split() rather than split(" ") because split(" ")
+        # yields '' between repeated spaces and `part[0]` below would
+        # raise IndexError on it (#232). v1 stated the reason as
+        # `*_list` attributes bypassing whitespace normalization, which
+        # no longer holds -- the `*_list` properties are read-only in
+        # 2.x, and assignment through `hn.middle = ...` normalizes --
+        # but a doubled space anywhere in a part still reaches here.
         parts = name_part.split()
         initials = []
         for part in parts:

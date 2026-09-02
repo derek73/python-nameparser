@@ -454,8 +454,9 @@ def _print_field_diffs(old_facade: dict[str, str], new: dict[str, str],
     never that the core agreed. The tag needs no order check to stay
     honest, because `facade_moved` can only be true where the facade
     was CONSULTED: main() passes empty dicts for an order-bearing
-    entry, so the facade pair is ('', '') there and the v2 line takes
-    the order-blind branch.
+    entry, so the facade pair is ('', '') there, `facade_moved` is
+    False, and the v2 line falls to the order-aware branch, which
+    suppresses the tag.
     """
     seen: set[str] = set()
     for f in FIELDS:
@@ -507,8 +508,8 @@ def _is_latin_only(name: str) -> bool:
 #: this is the one name that can classify it -- and cannot enter a diff
 #: below baseline 2.0. `_initials` (#484) carries the derived
 #: initials() view and CAN enter one at 1.4.0, through the facade; it
-#: enters only when every role agrees (main()), so a rule listing it
-#: lists nothing else (validate_rules).
+#: enters only when every role and the ambiguity kinds agree (main()),
+#: so a rule listing it lists nothing else (validate_rules).
 _RULE_FIELDS = frozenset((*V2_FIELDS, "_ambiguities", "_initials"))
 _RULE_KEYS = frozenset(("issue", "name_regex", "fields", "dormant", "orders"))
 
@@ -822,10 +823,18 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
                     f"roles; expected from {sorted(_RULE_FIELDS)}. A "
                     f"name outside that set never matches, so the rule "
                     f"is silently dead")
-            if "_initials" in fields and len(fields) > 1:
+            # `others` rather than len(fields) > 1: fields =
+            # ["_initials", "_initials"] is longer than one and yet
+            # mixes nothing, so the length test fired and printed an
+            # empty list -- a refusal naming no second field, which is
+            # the one thing the message exists to name. Nothing here
+            # rejects a repeated field name, and this check is not the
+            # place to start: it is about the MIX.
+            others = sorted(set(fields) - {"_initials"})
+            if "_initials" in fields and others:
                 raise SystemExit(
                     f"{where} lists '_initials' beside "
-                    f"{sorted(set(fields) - {'_initials'})} in 'fields'. "
+                    f"{others} in 'fields'. "
                     f"'_initials' enters a diff only when every role and "
                     f"the ambiguity kinds agree (#484), so no diff can "
                     f"carry it with another field: the '_initials' half "
@@ -976,10 +985,14 @@ def validate_exclusions(entries: list[dict[str, object]],
                 raise SystemExit(
                     f"{where} names {bad} in 'fields', which are not "
                     f"roles; expected from {sorted(_RULE_FIELDS)}")
-            if "_initials" in fields and len(fields) > 1:
+            # `others` rather than len(fields) > 1, as in
+            # validate_rules: a repeated '_initials' is longer than
+            # one and mixes nothing, and printed an empty list.
+            others = sorted(set(fields) - {"_initials"})
+            if "_initials" in fields and others:
                 raise SystemExit(
                     f"{where} lists '_initials' beside "
-                    f"{sorted(set(fields) - {'_initials'})} in 'fields'. "
+                    f"{others} in 'fields'. "
                     f"'_initials' enters a diff only when every role and "
                     f"the ambiguity kinds agree (#484), so no diff can "
                     f"carry it with another field: the '_initials' half "
