@@ -1664,6 +1664,78 @@ def test_main_exits_0_when_every_diff_is_claimed(
     assert "## claimed (1)" in out
 
 
+def test_main_checks_contests_against_the_names_it_loaded() -> None:
+    """The run must refuse the ledger BEFORE the worker pass.
+
+    The unit guard is what catches a new rule at pytest speed; this is
+    the belt for a run over a --corpus the guard never sees, and it has
+    to fire early -- after the multi-minute worker pass, the reader has
+    already paid for the answer.
+    """
+    src = (compare.HERE / "compare.py").read_text(encoding="utf-8")
+    body = src[src.index("def main("):]
+    assert "undeclared_contests(" in body and "vacant_exemptions(" in body, (
+        "main() does not consult the contest checks")
+    assert body.index("undeclared_contests(") < body.index("_run_worker("), (
+        "main() must refuse an undeclared contest before spawning the "
+        "worker, not after")
+
+
+#: A wide-first pair over the fixture corpus's own 'John Smith', for
+#: the two main() refusals below (#382). Written as ledger text rather
+#: than reusing _CONTESTED, because _run_main takes a TOML body.
+_CONTESTED_LEDGER = (
+    '[[change]]\nissue = "fix(wide) the compound behavior"\n'
+    'name_regex = "Smith"\nfields = ["given", "family"]\n'
+    '\n'
+    '[[change]]\nissue = "fix(narrow) one half of it"\n'
+    'name_regex = "Smith"\nfields = ["family"]\n')
+
+
+def test_main_refuses_an_undeclared_contest_without_running_the_worker(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The source-order assertion above says the call SITES are in the
+    right order; this says the refusal actually fires, and fires early.
+
+    `_WORKER_CALL` is the instrument for "early": _run_main clears it
+    and then monkeypatches _run_worker to record into it, so an empty
+    dict after the SystemExit means the worker was never asked -- which
+    a source-text index cannot establish, since a call site can sit
+    ahead of the worker and still be guarded into never running.
+    """
+    with pytest.raises(SystemExit) as exc:
+        _run_main(tmp_path, monkeypatch, _CONTESTED_LEDGER, _DIFFERS)
+    message = str(exc.value)
+    assert "fix(wide) the compound behavior" in message
+    assert "fix(narrow) one half of it" in message
+    # the message must send the reader to the declaration, not to the
+    # reorder that would move which rule classifies a name
+    assert "precedes_narrower" in message and "do NOT reorder" in message
+    assert not _WORKER_CALL, (
+        "main() spawned the worker before refusing the ledger")
+
+
+def test_main_refuses_a_vacant_exemption_without_running_the_worker(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The other half: a declaration left behind by a narrowing. The
+    fixture's two rules no longer share a name, so the exemption on the
+    earlier one has nothing left to permit."""
+    ledger = _CONTESTED_LEDGER.replace(
+        'fields = ["given", "family"]\n',
+        'fields = ["given", "family"]\n'
+        '[[change.precedes_narrower]]\n'
+        'issue = "fix(narrow) one half of it"\nwhy = "stale"\n'
+    ).replace('name_regex = "Smith"\nfields = ["family"]',
+              'name_regex = "Jones"\nfields = ["family"]')
+    with pytest.raises(SystemExit) as exc:
+        _run_main(tmp_path, monkeypatch, ledger, _DIFFERS)
+    message = str(exc.value)
+    assert "fix(narrow) one half of it" in message
+    assert "Delete the exemption" in message
+    assert not _WORKER_CALL, (
+        "main() spawned the worker before refusing the ledger")
+
+
 def test_radar_diff_with_no_rule_exits_0_and_is_reported(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The tier split's entire point (#468): a harvested name's diff

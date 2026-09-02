@@ -1794,6 +1794,48 @@ def main() -> int:
     for e in entries:
         by_key.setdefault((e["name"], e.get("order")), e)
     entries = list(by_key.values())
+    # Order checks here rather than beside validate_rules, which runs
+    # before any corpus is read: whether two rules CONTEST a diff is a
+    # question about NAMES -- both regexes have to reach one -- and the
+    # names arrive at this line. Before the worker pass, deliberately:
+    # a ledger refused after the multi-minute wait is a ledger refused
+    # too late (#382).
+    #
+    # The names are the LOADED entries, not the corpus*.jsonl glob the
+    # unit guard in tests/v2/test_ledger_guards.py reads. That
+    # divergence is deliberate -- `--corpus` narrows what this run
+    # actually compares, and a run must be judged on the names it
+    # compared, while the guard judges every corpus on disk.
+    #
+    # `rules` here is _sorted_rules' output, which is intentional and
+    # harmless: since #451 every rule carries a name_regex, so the sort
+    # is the identity on every ledger that loads and positions are
+    # unchanged. Verified against all four shipped ledgers -- element
+    # identity, not just equality -- at the time of writing.
+    corpus_names = [str(e["name"]) for e in entries]
+    undeclared = undeclared_contests(rules, corpus_names)
+    if undeclared:
+        raise SystemExit("\n".join(
+            [f"{ledger.name} has {len(undeclared)} order-decided "
+             f"contest(s) nobody declared. Where the later rule's "
+             f"'fields' are a strict subset of the earlier one's and "
+             f"both regexes reach one name, file order alone picks the "
+             f"winner. Declare it on the EARLIER rule with a "
+             f"[[change.precedes_narrower]] block naming the later one "
+             f"-- do NOT reorder, which moves which rule classifies a "
+             f"name and breaks _CROSS_RULE_WINNERS:"]
+            + [f"  {c.earlier!r}\n  outranks {c.later!r}\n"
+               f"  on {len(c.names)} name(s), e.g. {list(c.names[:3])}"
+               for c in undeclared]))
+    vacant = vacant_exemptions(rules, corpus_names)
+    if vacant:
+        raise SystemExit("\n".join(
+            [f"{ledger.name} carries {len(vacant)} exemption(s) over a "
+             f"pair that is not contested over this corpus. Delete the "
+             f"exemption -- a justification for a hazard that is gone "
+             f"reads exactly like one for a hazard that is live:"]
+            + [f"  {v.earlier!r}\n  declares precedence over {v.later!r}"
+               for v in vacant]))
     # an ORDER-BEARING entry must never reach a worker whose baseline
     # cannot honor it (no Policy below 2.0.0) -- skip it and say so,
     # rather than shrink the comparison silently. An order-NONE
