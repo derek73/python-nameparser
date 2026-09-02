@@ -1463,11 +1463,22 @@ def test_a_wide_first_pair_is_reported_until_it_is_declared() -> None:
 
 
 def test_a_pair_whose_regexes_share_no_name_is_no_contest() -> None:
-    """Condition 4 carries the whole check. Without it the same scan
-    reports 657 wide-first pairs across the shipped ledgers -- of 1350
-    nested one way or the other -- against the 11 the full predicate
-    finds, so fields-subset alone is not a usable predicate. Measured
-    2026-09-02.
+    """Condition 4 carries the whole check.
+
+    Drop the shared-name test and the same scan reports 657 wide-first
+    pairs across the shipped ledgers, against the 11 the full predicate
+    finds. That gap is the argument and it does not rest on the digits:
+    an exemption roster in the hundreds, where the real one is eleven,
+    is a roster nobody writes and nobody reads -- so `fields`-subset is
+    not a usable predicate on its own.
+
+    To recompute, run order_contests over `_rules(ledger)` and
+    `_CORPUS_NAMES` for every ledger in `_LEDGERS`, dropping one
+    condition at a time. Mind the basis: 657 is the count with the
+    `orders` test still in place, and `fields`-subset ALONE -- both
+    conditions gone, nesting counted in either direction -- reports
+    1350, of which the `orders` test removes 2 and none of the 657.
+    Measured 2026-09-02.
 
     The control for this one is the assertion above, which reports the
     same fixture when the two regexes DO share a corpus name."""
