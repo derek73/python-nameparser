@@ -273,9 +273,13 @@ def _peel_site(state: ParseState, flat: Sequence[int],
 
 # rules.md#W2: "a listed honorific glued to the end of the name's
 # last name word splits off once and reads as a suffix. The
-# split-off crosses a family comma and ignores surrounding
-# punctuation, but never treats a part that is not name text as the
-# name's end." (history: decisions.md#W2)
+# split-off ignores surrounding punctuation, but never treats a
+# part that is not name text as the name's end." (history:
+# decisions.md#W2)
+# That the peel also reaches ACROSS a family comma is stated at
+# rules.md#W3 instead, which is a tolerated rule since the
+# 2026-09-01 comma demotion -- the crossing is what the parser does
+# today, not something W2 promises.
 def _peel_honorific_tail(state: ParseState) -> ParseState:
     """#308: split a listed honorific off the END of the name's last
     NON-POST-NOMINAL token -- 田中さん -> 田中 + さん -- and let

@@ -37,15 +37,43 @@ from dataclasses import dataclass
 from nameparser import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
                          Policy)
 # Not in nameparser.__all__: _order_repr renders a name_order for an
-# error message, and _SCRIPT_RANGES/_script_matcher build the same
-# borrowed predicate build_cjk_corpus.py uses to find CJK text.
-from nameparser._policy import (PatronymicRule, _SCRIPT_RANGES, _order_repr,
-                               _script_matcher)
+# error message, Script/_SCRIPT_RANGES/_script_matcher build the same
+# borrowed predicates build_cjk_corpus.py uses to find CJK text.
+from nameparser._policy import (PatronymicRule, Script, _SCRIPT_RANGES,
+                               _order_repr, _script_matcher)
 
 #: mirrors tools/differential/shapes.py's SHAPES keys;
 #: test_case_shape_ids_exist_in_the_inventory (test_ledger_guards.py)
 #: holds the two equal, since this file cannot import tools/.
-_SHAPE_IDS = frozenset({1, 2, 3, 4, 5})
+_SHAPE_IDS = frozenset({1, 2, 3, 4, 5, 6, 7})
+
+
+def _has_ascii_letter(text: str) -> bool:
+    """True when text contains an ASCII a-z/A-Z letter. Shapes 6/7's
+    purity check calls this ALONGSIDE a separate comma test -- this
+    function tests neither a comma nor a non-ASCII Latin letter on its
+    own. The ASCII restriction is deliberate: a diacritic or a letter
+    outside a-z/A-Z is not what a Latin WRAPPER around CJK text looks
+    like in the corpus today (title/credential vocabulary is ASCII),
+    and widening this is a call for whichever future row needs it."""
+    return any(c.isascii() and c.isalpha() for c in text)
+
+
+#: Shape 7's other admission besides an explicit divider: a
+#: transcription written wholly in katakana with no dividing
+#: punctuation at all (e.g. "マイケルジャクソン" or the spaced
+#: "マイケル ジャクソン"). Built on the parser's own predicate --
+#: _script_matcher(Script.KATAKANA, whole=True) -- rather than a
+#: hand-copied codepoint range, so the KATAKANA span lives in exactly
+#: one place (nameparser._policy._SCRIPT_RANGES). That table's choice,
+#: not this file's: halfwidth katakana (a different Unicode block,
+#: U+FF65-U+FF9F, per _policy.py's own comment) is out of scope.
+#: Applied to the text with whitespace stripped, so a spaced
+#: transcription still counts as wholly katakana; a whitespace-only
+#: string never reaches this predicate in practice, since the purity
+#: check's _has_cjk gate (a real classified codepoint) has already
+#: run by the time shape 7 consults it.
+_wholly_katakana = _script_matcher(Script.KATAKANA, whole=True)
 
 #: Whether a text carries a codepoint the parser's script table
 #: classifies -- built once, same idiom as build_cjk_corpus.py's
@@ -69,10 +97,35 @@ class Case:
     #: Tagging a row admits its text to the differential's CONTRACT
     #: corpus (see tools/differential/shapes.py, projected into
     #: corpus_shapes.jsonl by build_shapes_corpus.py beside it) under
-    #: the shape's name_order. Optional: a row
+    #: the shape's name_order. For shapes 6/7 that admission is
+    #: NOMINAL: a pure CJK text is already in corpus_cjk.jsonl, also
+    #: contract, and compare.py's (name, order) dedup collapses the
+    #: two -- the tag buys the coverage answer, not a comparison.
+    #: Optional: a row
     #: exercising a policy fork rather than an input shape stays
     #: untagged.
     shape: int | None = None
+    #: Marks a row's text as TOLERATED input (2026-09-01 CJK demotion):
+    #: read best-effort, exempt from the DIFFERENTIAL's contract tier
+    #: -- not from this table, whose expectations are asserted by the
+    #: suite either way, and a behavior change on a tolerated row still
+    #: edits its classification. The opposite of a shape
+    #: tag -- mutually exclusive with `shape`, since a shape ADMITS a
+    #: text to the contract and tolerated deliberately does not. Every
+    #: composed/wrapped CJK form (a comma listing, a Latin title or
+    #: credential around a CJK name) is this table's ground for it,
+    #: not shapes 6/7's. Restricted to CJK-bearing text (`_has_cjk`):
+    #: it exists to demote composed/wrapped CJK forms specifically, and
+    #: a Latin row asking for it is a smell until some future arc
+    #: argues otherwise. build_cjk_corpus.py reads the flag: a
+    #: tolerated row's text goes to the radar-tier
+    #: corpus_cjk_tolerated.jsonl instead of the contract
+    #: corpus_cjk.jsonl, and clearing the flag promotes it back at the
+    #: next regeneration. Mark every row of a text, or none: the
+    #: generator reads the flag per TEXT (a corpus line is a name
+    #: string) and HARD-ERRORS on a split declaration, which
+    #: __post_init__ cannot catch from inside one row.
+    tolerated: bool = False
 
     def __post_init__(self) -> None:
         if self.policy is not None and self.locale is not None:
@@ -84,48 +137,151 @@ class Case:
         if self.shape is not None:
             if self.shape not in _SHAPE_IDS:
                 raise ValueError(f"{self.id}: unknown shape {self.shape}")
-            # A locale carries an order too (script_orders), but as a
-            # LOOKUP this table cannot see -- cases.py stays
-            # import-light and stores only the locale CODE. Faking
-            # "declared" as GIVEN_FIRST for a locale row would let a
-            # tag validate against an order nobody here can name.
-            if self.locale is not None:
+            if self.shape in (6, 7):
+                self._check_cjk_shape_purity()
+            else:
+                self._check_latin_shape_order()
+        # tolerated is the opposite of a shape tag: a reviewed act
+        # admitting a composed/wrapped CJK form to the radar corpus
+        # rather than the contract one. Checked regardless of which
+        # branch above ran (or whether shape was tagged at all), so a
+        # row cannot smuggle both declarations onto one text.
+        if self.tolerated:
+            if self.shape is not None:
                 raise ValueError(
-                    f"{self.id}: a shape tag needs the row's own "
-                    f"policy; a locale carries an order this table "
-                    f"cannot see")
-            # corpus_cjk.jsonl already claims this ground: _has_cjk is
-            # the same predicate build_cjk_corpus.py selects with, so
-            # a shape tag would double-admit the text (shapes 1-5 are
-            # the Latin-order arrangements; CJK is deliberately absent
-            # from shapes.py, #469's open question). Order alone
-            # cannot stand in for this check -- DEFAULT_SCRIPT_ORDERS
-            # forces HAN/HANGUL/HIRAGANA to FAMILY_FIRST but leaves
-            # KATAKANA unmapped, so a pure-katakana text can carry a
-            # GIVEN_FIRST name_order and still be CJK ground, not a
-            # shape.
-            if _has_cjk(self.text):
+                    f"{self.id}: tolerated is mutually exclusive with "
+                    f"shape; a tolerated row is the opposite of admitted")
+            if not _has_cjk(self.text):
                 raise ValueError(
-                    f"{self.id}: shape {self.shape} cannot tag CJK "
-                    f"text; that ground is corpus_cjk.jsonl's, and "
-                    f"whether a family-first CJK shape exists is "
-                    f"#469's open question")
-            declared = (self.policy.name_order if self.policy is not None
-                        else GIVEN_FIRST)
-            wanted = {4: FAMILY_FIRST, 5: FAMILY_FIRST_GIVEN_LAST}.get(
-                self.shape, GIVEN_FIRST)
-            if declared != wanted:
-                if self.policy is not None:
-                    declared_desc = (
-                        f"the row's policy declares {_order_repr(declared)}")
-                else:
-                    declared_desc = ("this row declares no policy, so it "
-                                      "is GIVEN_FIRST")
+                    f"{self.id}: tolerated requires CJK text (a "
+                    f"classified codepoint _has_cjk recognizes); it "
+                    f"exists for the CJK comma demotion, and a Latin "
+                    f"row asking for it is a smell until some future "
+                    f"arc argues otherwise")
+
+    def _check_latin_shape_order(self) -> None:
+        """Shapes 1-5: the Latin-order arrangements, each implying a
+        name_order the row's own policy (or its absence) must agree
+        with, and each refusing CJK text outright."""
+        # Contract: only called from the `if self.shape is not None`
+        # branch above -- restated here (not just implied by the call
+        # site) because it also narrows the type for mypy, which
+        # cannot see across the method boundary on its own.
+        assert self.shape is not None
+        # A locale carries an order too (script_orders), but as a
+        # LOOKUP this table cannot see -- cases.py stays
+        # import-light and stores only the locale CODE. Faking
+        # "declared" as GIVEN_FIRST for a locale row would let a
+        # tag validate against an order nobody here can name.
+        if self.locale is not None:
+            raise ValueError(
+                f"{self.id}: a shape tag needs the row's own "
+                f"policy; a locale carries an order this table "
+                f"cannot see")
+        # Shapes 1-5 are the LATIN-ORDER arrangements -- a title
+        # slot, a comma listing, a suffix run -- and CJK text does
+        # not instantiate one: the arrangement is what the shape id
+        # names, so tagging a CJK string shape 1 asserts a form the
+        # string does not have. The CJK arrangements are shapes 6/7
+        # (#469's now-settled third-shape question), where the same
+        # text is admitted under a purity test of its own. (That
+        # shapes 6/7 do double-admit into corpus_cjk.jsonl is fine
+        # and deliberate -- the dedup collapses it; double admission
+        # is not what this check is about.)
+        # Order alone cannot stand in for this check --
+        # DEFAULT_SCRIPT_ORDERS forces HAN/HANGUL/HIRAGANA to
+        # FAMILY_FIRST but leaves KATAKANA unmapped, so a pure-
+        # katakana text can carry a GIVEN_FIRST name_order and
+        # still be CJK ground, not a shape.
+        if _has_cjk(self.text):
+            raise ValueError(
+                f"{self.id}: shape {self.shape} cannot tag CJK "
+                f"text; that ground belongs to shapes 6/7 "
+                f"(corpus_cjk.jsonl), not this shape")
+        declared = (self.policy.name_order if self.policy is not None
+                    else GIVEN_FIRST)
+        wanted = {4: FAMILY_FIRST, 5: FAMILY_FIRST_GIVEN_LAST}.get(
+            self.shape, GIVEN_FIRST)
+        if declared != wanted:
+            if self.policy is not None:
+                declared_desc = (
+                    f"the row's policy declares {_order_repr(declared)}")
+            else:
+                declared_desc = ("this row declares no policy, so it "
+                                  "is GIVEN_FIRST")
+            raise ValueError(
+                f"{self.id}: shape {self.shape} implies name_order "
+                f"{_order_repr(wanted)}, but {declared_desc}; add "
+                f"policy=Policy(name_order={_order_repr(wanted)}) or "
+                f"drop the tag")
+
+    def _check_cjk_shape_purity(self) -> None:
+        """Shapes 6/7 (2026-09-01): the CJK arrangements, admitted
+        wholly classified-script text only -- no comma, no Latin
+        letter. Every composed/wrapped form is tolerated=True's
+        ground, not a shape tag's, so this REFUSES rather than
+        requires a particular arrangement beyond that purity test
+        (plus shape 7's divider/katakana requirement, and shape 6's
+        interpunct refusal, below)."""
+        # Contract: only called from the `if self.shape in (6, 7)`
+        # branch above -- restated here (not just implied by the call
+        # site) because it also narrows the type for mypy, which
+        # cannot see across the method boundary on its own.
+        assert self.shape in (6, 7)
+        # A zh-pack row exercises a locale FORK (the segmenter, an
+        # opt-in policy choice), not an input shape: the default-
+        # policy reading of the same string is what the shape admits,
+        # so shape 6/7 rows carry neither. (Nothing separately checks
+        # self.policy here because shapes 6/7's order is None --
+        # there is no order for a policy to agree or disagree with --
+        # so a stray policy would silently do nothing; refusing both
+        # together keeps the row's intent legible.)
+        if self.policy is not None or self.locale is not None:
+            raise ValueError(
+                f"{self.id}: shape {self.shape} rows carry neither "
+                f"policy nor locale; a zh-pack row exercises a locale "
+                f"fork, not an input shape")
+        if not _has_cjk(self.text):
+            raise ValueError(
+                f"{self.id}: shape {self.shape} requires a classified "
+                f"codepoint (CJK text); {self.text!r} carries none")
+        if "," in self.text:
+            raise ValueError(
+                f"{self.id}: shape {self.shape} refuses a comma; "
+                f"composed comma forms belong under tolerated=True, "
+                f"not a shape tag")
+        if _has_ascii_letter(self.text):
+            raise ValueError(
+                f"{self.id}: shape {self.shape} refuses a Latin "
+                f"letter; Latin-wrapped compositions belong under "
+                f"tolerated=True, not a shape tag")
+        # U+00B7 (间隔号) marks a name transcription in SOURCE order
+        # (W1 Accepted) -- shape 7's ground, not shape 6's family-
+        # first one. The fullwidth nakaguro U+30FB is NOT a source-
+        # order marker on its own: decisions.md#T3 scopes that reading
+        # to the codepoint, so U+30FB on non-katakana text is an
+        # ordinary Han/Hangul separator and the text reads family-
+        # first (cases.py's own ja_nakaguro_han_takes_the_han_order,
+        # '高橋・一郎', pins exactly this). A wholly-katakana text
+        # DOES read as a transcription regardless of whether it
+        # happens to contain U+30FB internally -- that admission comes
+        # from being wholly katakana, not from the nakaguro -- so
+        # _wholly_katakana already covers the katakana case and U+30FB
+        # is not tested as a divider here at all.
+        has_divider = "·" in self.text
+        stripped = "".join(self.text.split())
+        is_transcription = has_divider or _wholly_katakana(stripped)
+        if self.shape == 6:
+            if is_transcription:
                 raise ValueError(
-                    f"{self.id}: shape {self.shape} implies name_order "
-                    f"{_order_repr(wanted)}, but {declared_desc}; add "
-                    f"policy=Policy(name_order={_order_repr(wanted)}) or "
-                    f"drop the tag")
+                    f"{self.id}: shape 6 refuses U+00B7 and wholly-"
+                    f"katakana text; that reads source order and "
+                    f"belongs to shape 7")
+        else:
+            if not is_transcription:
+                raise ValueError(
+                    f"{self.id}: shape 7 requires U+00B7 or wholly-"
+                    f"katakana text; {self.text!r} has neither")
 
 
 _ES = Policy(patronymic_rules=frozenset({PatronymicRule.EAST_SLAVIC}))
@@ -2751,7 +2907,8 @@ CASES: tuple[Case, ...] = (
                "in script_segment on the other structures only, before "
                "group or assign can say this comma fixed nothing -- so "
                "the honorific stays glued, joining master's '田中さん, "
-               "Mr.'. Master peeled it through the suffix-comma route"),
+               "Mr.'. Master peeled it through the suffix-comma route",
+         tolerated=True),
     Case("title_word_trailing_is_not_a_title_mr", "John Smith Mr.",
          {"given": "John", "middle": "Smith", "family": "Mr."}),
 
@@ -2761,13 +2918,19 @@ CASES: tuple[Case, ...] = (
          classification="fix(#271)",
          notes="hangul is unambiguously Korean: census surnames ship "
                "as default vocabulary and HANGUL segmentation is "
-               "default-on"),
+               "default-on. Shape 6's bare Family Given arrangement, "
+               "written unspaced, the floor the other shape-6 rows "
+               "vary from",
+         shape=6),
     Case("ko_two_syllable_surname_default", "남궁민수",
          {"family": "남궁", "given": "민수"},
          classification="fix(#271)",
          ambiguities=("segmentation",),
          notes="남 is itself a shipped surname; longest-first takes "
-               "남궁 and records the decided fork"),
+               "남궁 and records the decided fork. Shape 6's Family "
+               "slot at two syllables, where the arrangement's own "
+               "boundary is what has to be found",
+         shape=6),
     Case("ko_bare_two_syllable_surname", "남궁",
          {"family": "남궁"},
          classification="fix(#271)",
@@ -2781,18 +2944,40 @@ CASES: tuple[Case, ...] = (
          notes="the comma already decided the family: segmentation "
                "is inert under FAMILY_COMMA (comma doctrine -- see "
                "the script_segment stage docstring, which uses this "
-               "exact example)"),
+               "exact example)",
+         tolerated=True),
+    Case("ko_family_comma_given_side_stays_whole", "지훈, 남궁민수",
+         {"family": "지훈", "given": "남궁민수"},
+         notes="the mirror of the row above, and one of "
+               "rules.md#W3's comma illustrations: with the "
+               "comma naming 지훈 the family, the post-comma side is "
+               "given text with no family to find, so 남궁민수 is "
+               "not segmented THERE either -- the same inertness "
+               "reached from the other side. Added 2026-09-01 with "
+               "the W3 demotion: the rules corpus stopped harvesting "
+               "W3's examples, and this text lived in no other "
+               "corpus, so without a row it would have left the "
+               "differential harness entirely rather than moving to "
+               "the radar tier. Classification measured for this row "
+               "rather than copied from the row above: 1.4.0 gives "
+               "first 남궁민수 / last 지훈, field for field what 2.3 "
+               "gives, so parity",
+         tolerated=True),
     Case("ko_suffix_comma_name_part_splits", "Dr 김민준, Jr.",
          {"title": "Dr", "family": "김", "given": "민준", "suffix": "Jr."},
          classification="fix(#271)",
          notes="the one comma structure where segmentation still "
                "fires: a second word before the comma makes it "
                "SUFFIX_COMMA, and the name part is a full positional "
-               "name"),
+               "name",
+         tolerated=True),
     Case("ko_spaced_family_first_default", "김 민준",
          {"family": "김", "given": "민준"},
          classification="fix(#271)",
-         notes="script_orders, no segmentation involved"),
+         notes="script_orders, no segmentation involved. Shape 6's "
+               "Family Given with the space written, the spelling "
+               "ko_unspaced_default reaches by segmenting instead",
+         shape=6),
     Case("han_spaced_family_first_default", "毛 泽东",
          {"family": "毛", "given": "泽东"},
          classification="fix(#271)",
@@ -2808,7 +2993,10 @@ CASES: tuple[Case, ...] = (
     Case("mixed_script_untouched_by_script_orders", "John 王",
          {"given": "John", "family": "王"},
          notes="effective_script is None for a mixed name: script_orders "
-               "declines and the positional default governs"),
+               "declines and the positional default governs. Swept as a "
+               "2026-09-01 tolerated candidate and declined for the "
+               "reason the kana-stem rows were: the Latin is a name "
+               "PART here, not a wrapper around a CJK name"),
     Case("two_han_scripts_untouched_by_script_orders", "毛 김",
          {"given": "毛", "family": "김"},
          notes="two scripts also decline -- the rule is one script, or "
@@ -2858,7 +3046,12 @@ CASES: tuple[Case, ...] = (
          classification="fix(#272)",
          notes="hiragana identifies Japanese as certainly as hangul "
                "identifies Korean; kana-licensed names read "
-               "family-first by default"),
+               "family-first by default. Shape 6's Family Given with "
+               "a kanji family and a hiragana given rather than the "
+               "hangul of the Korean rows -- the arrangement is one "
+               "shape across the scripts that carry it, and across a "
+               "mix of them within one name",
+         shape=6),
     Case("ja_kanji_katakana_pieces", "山田 エミ",
          {"family": "山田", "given": "エミ"},
          classification="fix(#272)",
@@ -2881,7 +3074,10 @@ CASES: tuple[Case, ...] = (
          notes="the katakana middle dot is the transcription's own "
                "part divider: it separates like whitespace, the "
                "license declines each katakana token, and the "
-               "positional default keeps the source-language order"),
+               "positional default keeps the source-language order. "
+               "Shape 7's katakana-transcription half, the arrangement "
+               "admitted by the script rather than by the 间隔号",
+         shape=7),
     Case("ja_nakaguro_han_takes_the_han_order", "高橋・一郎",
          {"family": "高橋", "given": "一郎"},
          classification="fix(#272)",
@@ -2943,7 +3139,9 @@ CASES: tuple[Case, ...] = (
                "keeps source order -- the B7 is the transcription "
                "marker, playing the role pure katakana plays in the "
                "kana license; it divides only between classified "
-               "characters"),
+               "characters. Shape 7's Given·Family with the 间隔号 "
+               "itself written, the divider half of the notation",
+         shape=7),
     Case("zh_interpunct_nakaguro_typed_stays_roster", "威廉・莎士比亚",
          {"given": "莎士比亚", "family": "威廉"},
          classification="fix(#272)",
@@ -2986,19 +3184,31 @@ CASES: tuple[Case, ...] = (
          {"given": "威廉", "family": "莎士比亚", "suffix": "PhD"},
          classification="fix(#298)",
          notes="the transcription reading composes with a suffix "
-               "comma: the marker is structure-independent"),
+               "comma: the marker is structure-independent",
+         tolerated=True),
     Case("zh_interpunct_half_flanked_stays", "王·Smith",
          {"given": "王·Smith"},
          notes="one classified neighbor is not enough: the guard "
                "requires both, so the undivided dot remains part of "
-               "the word -- declining, not deciding"),
+               "the word -- declining, not deciding. Swept as a "
+               "2026-09-01 tolerated candidate and declined on the "
+               "same boundary as 'John 王': the Latin is a name part, "
+               "not a wrapper"),
     Case("zh_honorific_suffix_spaced", "王小明 先生",
          {"family": "王小明", "suffix": "先生"},
          classification="fix(#307) + fix(#271)",
          notes="CJK honorifics FOLLOW the name; a spaced 先生 (Mr.) is "
                "a suffix, and recognizing it must come before the "
                "family-first order hands it a role -- unrecognized it "
-               "read as the GIVEN name under the 2.1 defaults"),
+               "read as the GIVEN name under the 2.1 defaults. NOT "
+               "tagged shape 6, though it looks like the Han spelling "
+               "of one: no DEFAULT segmenter divides 王小明, so the "
+               "fields here are an undivided name plus an honorific "
+               "and the arrangement's Given slot is never filled -- "
+               "the same reason han_unspaced_unsegmented_default "
+               "(毛泽东) carries no tag. The zh pack is what splits "
+               "the token (zh_honorific_glued_given), and a pack row "
+               "exercises a locale fork rather than an input shape"),
     Case("ko_honorific_ssi", "김민준 씨",
          {"family": "김", "given": "민준", "suffix": "씨"},
          classification="fix(#307) + fix(#271)",
@@ -3043,7 +3253,8 @@ CASES: tuple[Case, ...] = (
                "the token behind it. Half of the pair that pins "
                "_is_post_nominal's use of is_suffix_STRICT -- the "
                "other half is the row below, and swapping in "
-               "is_suffix_lenient changes that one and not this one"),
+               "is_suffix_lenient changes that one and not this one",
+         tolerated=True),
     Case("ja_honorific_glued_before_an_initial", "田中さん V.",
          {"given": "田中さん", "family": "V."},
          notes="the strict/lenient discriminator, and the reason "
@@ -3057,7 +3268,8 @@ CASES: tuple[Case, ...] = (
                "'V.', which is these fields under the 2.0 names. "
                "Classification agrees with what classify does with "
                "the same token downstream -- 'V.' is a middle "
-               "initial, not a post-nominal"),
+               "initial, not a post-nominal",
+         tolerated=True),
     Case("ja_honorific_with_a_period_no_comma", "田中さん 様.",
          {"family": "田中", "suffix": "さん, 様."},
          classification="fix(#320)",
@@ -3129,7 +3341,8 @@ CASES: tuple[Case, ...] = (
                "1.4.0 read "
                "this first '様.' / last 田中さん, which is exactly what "
                "2.0 produced before this change -- the row sat at "
-               "parity until #320 moved it"),
+               "parity until #320 moved it",
+         tolerated=True),
     Case("ja_sama_glued", "山田太郎様",
          {"family": "山田太郎", "suffix": "様"},
          classification="fix(#308) + fix(#271)",
@@ -3157,7 +3370,8 @@ CASES: tuple[Case, ...] = (
                "'씨.' carried both, so the suffix-shaped piece went to "
                "the given. 1.4.0 read this first '씨.' / last 김민준 -- "
                "the same fields 2.0 gave before this change, so the row "
-               "was at parity and #320 is what moves it"),
+               "was at parity and #320 is what moves it",
+         tolerated=True),
     Case("ko_honorific_period_under_strict_comma_suffixes", "김민준, 씨.",
          {"family": "김민준", "suffix": "씨."},
          policy=Policy(lenient_comma_suffixes=False),
@@ -3187,7 +3401,8 @@ CASES: tuple[Case, ...] = (
                "(the facade runner skips this row), so the "
                "classification compares against 1.4.0's single "
                "reading, first '씨.' / last 김민준 -- the same fields "
-               "2.0 gave under EITHER setting before this change"),
+               "2.0 gave under EITHER setting before this change",
+         tolerated=True),
     Case("ko_honorific_with_a_period_no_comma", "김민준 씨.",
          {"given": "민준", "family": "김", "suffix": "씨."},
          classification="fix(#320)",
@@ -3227,7 +3442,13 @@ CASES: tuple[Case, ...] = (
                "Single-issue on purpose where the block around it is "
                "compound: measured, disabling script_orders and "
                "segment_scripts leaves this row unchanged, because a "
-               "Latin remainder never reaches either"),
+               "Latin remainder never reaches either. Swept as a "
+               "2026-09-01 tolerated candidate (CJK text, ASCII "
+               "letters) and DECLINED, this row and its hangul twin "
+               "below: the demoted forms wrap Latin AROUND a CJK "
+               "name, while here the Latin is the name's own core "
+               "with a CJK honorific glued on -- a form the glued "
+               "peel is written for, and one #308 promises"),
     Case("latin_stem_glued_hangul_honorific", "Anderson선생님",
          {"given": "Anderson", "suffix": "선생님"},
          classification="fix(#308)",
@@ -3363,7 +3584,8 @@ CASES: tuple[Case, ...] = (
                "also why this row stays single-issue while the rest of "
                "the block is compound with fix(#271): measured, the "
                "order table and the segmenter both leave it alone, "
-               "because the comma already decided the family"),
+               "because the comma already decided the family",
+         tolerated=True),
     Case("ko_honorific_glued_given", "김민준씨",
          {"family": "김", "given": "민준", "suffix": "씨"},
          classification="fix(#308) + fix(#271)",
@@ -3371,7 +3593,10 @@ CASES: tuple[Case, ...] = (
                "replaces (ko_honorific_glued_given_stays) pinned the "
                "old boundary: 씨 peels off the last token first, and "
                "the remainder 김민준 then segments as usual -- peel "
-               "and split compose, in that order"),
+               "and split compose, in that order. Shape 6's optional "
+               "Honorific slot glued, the everyday spelling next to "
+               "zh_honorific_suffix_spaced's spaced one",
+         shape=6),
     Case("ko_honorific_glued_given_trailing_suffix", "김민준씨 Jr.",
          {"family": "김", "given": "민준", "suffix": "씨, Jr."},
          classification="fix(#308) + fix(#271)",
@@ -3379,7 +3604,8 @@ CASES: tuple[Case, ...] = (
                "post-nominal, so an unrelated trailing suffix cannot "
                "hide it -- this now agrees with the comma-written "
                "'Dr 김민준씨, Jr.', where the suffix comma had "
-               "already put 씨 within reach"),
+               "already put 씨 within reach",
+         tolerated=True),
     Case("ko_honorific_glued_given_suffix_comma", "Dr 김민준씨, Jr.",
          {"title": "Dr", "family": "김", "given": "민준",
           "suffix": "씨, Jr."},
@@ -3391,7 +3617,8 @@ CASES: tuple[Case, ...] = (
                "name across two runs, #312). Pairs with "
                "ko_honorific_glued_given_trailing_suffix, whose "
                "comma-less spelling of the same name reaches the same "
-               "answer by the scan-back instead"),
+               "answer by the scan-back instead",
+         tolerated=True),
     Case("ko_honorific_glued_given_nickname", "김민준씨 (Jimmy)",
          {"family": "김", "given": "민준", "suffix": "씨",
           "nickname": "Jimmy"},
@@ -3403,7 +3630,8 @@ CASES: tuple[Case, ...] = (
                "the site -- it is no post-nominal -- and lose the peel "
                "entirely, with 씨 back in the given name. Nothing else "
                "pins that choice: under NO_COMMA the two are otherwise "
-               "the same run"),
+               "the same run",
+         tolerated=True),
     Case("ko_honorific_glued_given_nickname_family_comma",
          "김, 민준씨 (Jimmy)",
          {"family": "김", "given": "민준", "suffix": "씨",
@@ -3415,7 +3643,8 @@ CASES: tuple[Case, ...] = (
                "agree. Here the peel has to cross the comma AND still "
                "not reach Jimmy, so declining to cross whenever "
                "extract_delimited claimed something passes the row "
-               "above and fails only here"),
+               "above and fails only here",
+         tolerated=True),
     Case("ja_honorific_glued_family_comma", "田中さん, PhD",
          {"family": "田中", "suffix": "さん, PhD"},
          classification="fix(#312)",
@@ -3427,7 +3656,8 @@ CASES: tuple[Case, ...] = (
                "since #296's audit took 'phd' out of TITLES -- this row "
                "carried title 'PhD' until then, which was the title "
                "peel claiming a credential because v1's lists put it "
-               "where v1's parser needed it"),
+               "where v1's parser needed it",
+         tolerated=True),
     Case("ja_honorific_glued_family_comma_suffixy_second_run",
          "田中さん, V.",
          {"given": "V.", "family": "田中", "suffix": "さん"},
@@ -3462,7 +3692,8 @@ CASES: tuple[Case, ...] = (
                "(first V., last 田中さん) until this change, which is "
                "what moves it; the 1.4.0 fields are still reachable "
                "through Policy(lenient_comma_suffixes=False), pinned "
-               "by ja_honorific_glued_family_comma_strict_knob below"),
+               "by ja_honorific_glued_family_comma_strict_knob below",
+         tolerated=True),
     Case("ja_honorific_glued_family_comma_credential_pair",
          "田中さん, Ph. D.",
          {"family": "田中", "suffix": "さん, Ph. D."},
@@ -3493,7 +3724,8 @@ CASES: tuple[Case, ...] = (
                "ja_honorific_glued_family_comma above the expectation "
                "carries TWO deviations -- the peel is #319's, first -> "
                "family is comma-family's, which 2.0 already had before "
-               "this change (family 田中さん / suffix 'Ph. D.')"),
+               "this change (family 田中さん / suffix 'Ph. D.')",
+         tolerated=True),
     Case("ja_honorific_glued_family_comma_strict_knob", "田中さん, V.",
          {"family": "田中さん", "given": "V."},
          policy=Policy(lenient_comma_suffixes=False),
@@ -3527,7 +3759,8 @@ CASES: tuple[Case, ...] = (
                "text, as the other exercise of the knob named above "
                "does: measured, 1.4.0 gave first 'V.' / last "
                "田中さん, which is field for field what the knob holds "
-               "here -- parity, and the point of the knob"),
+               "here -- parity, and the point of the knob",
+         tolerated=True),
     Case("ja_honorific_glued_family_comma_credential_pair_strict_knob",
          "田中さん, Ph. D.",
          {"family": "田中", "suffix": "さん, Ph. D."},
@@ -3552,7 +3785,8 @@ CASES: tuple[Case, ...] = (
                "'Ph. D.'), which is also why the knob cannot be judged "
                "against a v1 spelling here -- there is none, so the "
                "facade runner skips this row as it does the other two "
-               "knob rows"),
+               "knob rows",
+         tolerated=True),
     Case("ko_honorific_glued_family_comma_suffixy_second_run",
          "김민준씨, V.",
          {"given": "V.", "family": "김민준", "suffix": "씨"},
@@ -3567,7 +3801,8 @@ CASES: tuple[Case, ...] = (
                "stays 김민준 undivided -- the FAMILY comma gates the "
                "surname split off, so hangul segmentation never runs "
                "here and only the peel acts. 1.4.0 gave first 'V.' / "
-               "last 김민준씨, peeling nothing"),
+               "last 김민준씨, peeling nothing",
+         tolerated=True),
     Case("zh_honorific_glued_family_comma_suffixy_second_run",
          "王先生, V.",
          {"given": "V.", "family": "王", "suffix": "先生"},
@@ -3579,7 +3814,8 @@ CASES: tuple[Case, ...] = (
                "Policy.segment_scripts, and HAN is not activated here "
                "(the family is what the peel left behind, not a "
                "vocabulary split). 1.4.0 gave first 'V.' / last "
-               "王先生"),
+               "王先生",
+         tolerated=True),
     Case("ko_honorific_glued_family_comma_site_only_beyond_the_comma",
          "이, J.씨",
          {"given": "J.", "family": "이", "suffix": "씨"},
@@ -3606,7 +3842,8 @@ CASES: tuple[Case, ...] = (
                "settings call this run wholly suffix. 1.4.0 gave first "
                "'J.씨' / last 이 -- it peels nothing, so the deviation "
                "here is #312's crossing, which is what puts the site on "
-               "'J.씨' in the first place"),
+               "'J.씨' in the first place",
+         tolerated=True),
     Case("ko_honorific_glued_family_comma_site_in_both_runs",
          "김민준씨, J.씨",
          {"family": "김민준", "suffix": "씨, J.씨"},
@@ -3627,7 +3864,8 @@ CASES: tuple[Case, ...] = (
                "junk-tail reach "
                "ko_honorific_glued_given_suffix_comma_initial's note "
                "names under a suffix comma. 1.4.0 gave first 'J.씨' / "
-               "last 김민준씨, peeling neither"),
+               "last 김민준씨, peeling neither",
+         tolerated=True),
     Case("ko_honorific_glued_family_comma_lone_post_nominal_before_it",
          "선생님, J.씨",
          {"given": "J.", "family": "선생님", "suffix": "씨"},
@@ -3646,18 +3884,21 @@ CASES: tuple[Case, ...] = (
                "shape of that divergence is reachable from the gate, "
                "which is why this row is one token before the comma; "
                "_peel_site's docstring derives the bound. "
-               "1.4.0 gave first 'J.씨' / last 선생님"),
+               "1.4.0 gave first 'J.씨' / last 선생님",
+         tolerated=True),
     Case("ko_honorific_glued_given_after_family_comma", "김, 민준씨",
          {"family": "김", "given": "민준", "suffix": "씨"},
          classification="fix(#312)",
          notes="under a family comma the name spans both segments and "
                "the honorific is on the GIVEN side, where the peel "
                "never looked before #312. Agrees with the spaced "
-               "김 민준씨"),
+               "김 민준씨",
+         tolerated=True),
     Case("ja_honorific_glued_given_after_family_comma", "田中, 太郎さん",
          {"family": "田中", "given": "太郎", "suffix": "さん"},
          classification="fix(#312)",
-         notes="the Han twin of the row above"),
+         notes="the Han twin of the row above",
+         tolerated=True),
     Case("zh_interpunct_transcription_glued_honorific", "威廉·莎士比亚さん",
          {"given": "威廉", "family": "莎士比亚", "suffix": "さん"},
          classification="fix(#312)",
@@ -3672,7 +3913,8 @@ CASES: tuple[Case, ...] = (
                "the site is the last NON-POST-NOMINAL token, which is "
                "太郎, so nothing peels -- exactly as in the spaced "
                "田中さん 太郎. #312 was originally filed naming this "
-               "pair as a disagreement; it never was one"),
+               "pair as a disagreement; it never was one",
+         tolerated=True),
     Case("ko_honorific_glued_given_suffix_comma_initial", "Dr 김민준씨, V.",
          {"title": "Dr", "family": "김", "given": "민준",
           "suffix": "씨, V."},
@@ -3700,7 +3942,8 @@ CASES: tuple[Case, ...] = (
                "row is still the only SUFFIX comma among the three. "
                "Its comma-less twin ja_honorific_glued_before_an_initial "
                "shows the same veto from the other side, where 'V.' is "
-               "in the name's own run and so IS the site"),
+               "in the name's own run and so IS the site",
+         tolerated=True),
     Case("zh_honorific_glued_surname", "王先生",
          {"family": "王", "suffix": "先生"},
          locale="zh",

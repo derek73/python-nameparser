@@ -62,9 +62,25 @@ displaced from the family name it belongs to; form 5's trailing word
 is the given name by the caller's declaration, so there is nothing
 there to reinterpret.
 
-Names written in Han or Hangul, and Japanese names written in kanji
-and kana, are the exception that needs no setting at all: see `East
-Asian names`_ below.
+Two more arrangements are native East Asian forms and need no
+``name_order`` at all — the script itself carries the reading:
+
+6. ``Family Given [Honorific]``
+7. ``Given[·Given]·Family / katakana transcription (source order)``
+
+Form 6 is the native family-first arrangement written in Han or
+Hangul — spaced or unspaced, with the honorific spaced or glued and
+landing in ``suffix``. It has no title slot and no comma, because
+native CJK writing has neither convention. Form 7 is a transcription
+listing — Han divided by the 间隔号, or katakana joined by the
+nakaguro — kept in the order it was written and never segmented.
+
+A comma or a Latin wrapper around a CJK name — a listing comma, a
+Latin honorific or credential set beside it — is tolerated input:
+parsed best-effort, its handling changeable without notice.
+
+Forms 6 and 7, and how a Latin wrapper around either is handled, are
+covered in full under `East Asian names`_ below.
 
 Words that attach to their neighbors
 --------------------------------------
@@ -357,10 +373,6 @@ dot carries its own script's convention, the nakaguro's is Japanese
 roster formatting rather than transcription, so only the Chinese dot
 rescues the source order.
 
-A comma disables the script behaviors that decide where a name
-divides, on the reasoning ``name_order`` already follows: whoever
-wrote the comma has already said where the family name ends.
-
 Honorifics come off first
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -381,61 +393,23 @@ without it. That is why ``김민준씨`` still divides into family 김 and
 given 민준, and why a configured Japanese segmenter is handed 山田太郎
 rather than 山田太郎様.
 
-Commas and dots
-^^^^^^^^^^^^^^^
+Commas and Latin wrappers around a CJK name
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Neither a comma nor a 间隔号 switches the peel off. Both say where a
-name divides: the comma that the writer has already given the family
-name, the dot that the pieces are a transcription's syllable groups.
-An honorific is not part of the name in either reading.
-
-.. doctest::
-
-    >>> parse("김, 민준씨").given == parse("김 민준씨").given
-    True
-
-What a comma does instead is say which runs are the name: the two
-around a family comma, an honorific being as often glued to the given
-name as to the family. Nothing past those two is in reach.
-
-.. doctest::
-
-    >>> parse("김, 민준 지훈씨").suffix     # second run, still in reach
-    '씨'
-    >>> parse("김, 민준, 지훈씨").suffix    # a third run, left whole
-    '지훈씨'
-
-What those marks do stop is the *split*, which is a different question
-and still theirs to answer. ``田中さん, 太郎`` is unchanged, and not
-because of its comma: the honorific there is not at the end of the
-name, 太郎 is.
-
-Credentials after a comma
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The second of those two runs counts only where it is name text. A run
-that is nothing but credentials is not, whatever the comma looked
-like, and the same test that decides the comma structure decides this
-too: the run is left alone and the honorific is found in the name.
-
-Being credentials is necessary but not enough, because the test cannot
-help counting the honorific itself. A glued honorific is a suffix
-word, so it is part of what makes its own run read as credentials. The
-run is passed over only when the part *before* the comma has an
-honorific of its own to give up; otherwise passing it over would
-discard the only one there is.
-
-.. doctest::
-
-    >>> credential = parse("田中さん, V.")
-    >>> credential.family, credential.suffix
-    ('田中', 'さん')
-
-So ``田中さん, V.`` and ``田中さん, Ph. D.`` give さん up exactly as
-``田中さん, PhD`` does. Where the credential itself lands is the
-comma's business rather than the peel's, and still differs by
-spelling: ``given`` for ``V.``, while ``PhD`` and ``Ph. D.`` join さん
-in ``suffix``.
+A comma or a Latin credential set wrapped around a CJK name is
+tolerated input rather than contract: no native CJK writing uses
+either convention, so nameparser reads it best-effort and the
+handling can change without notice. Today a comma still names the
+family and stops the split — ``남궁민수, 지훈`` reads family
+``남궁민수`` whole, where the bare ``남궁민수`` alone would split into
+family ``남궁`` and given ``민수`` — and a glued honorific still peels
+off before the comma when what follows it is nothing but suffix
+words, as in ``田中さん, PhD`` (suffix ``さん, PhD``), but stays glued
+when the comma is followed by a title or another name word, as in
+``田中さん, Dr.`` (family ``田中さん``). Credentials after the comma are
+read the same best-effort way, landing in ``given`` or ``suffix`` by
+spelling: ``田中さん, V.`` and ``田中さん, Ph. D.`` give up さん exactly
+as ``田中さん, PhD`` does.
 
 Spacing, and where the name divides
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
