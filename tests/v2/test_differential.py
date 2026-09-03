@@ -3241,6 +3241,20 @@ def test_a_recorded_shape_matching_the_run_is_no_mismatch() -> None:
         {"Smith, Jr.": ("suffix", "family")}, diffing,
         {"Smith, Jr."}) == []
 
+    # ... and so is the measured side, which arrives as a SET: its
+    # iteration order is this interpreter's hash seed, so an unsorted
+    # reading would agree with the roster on some runs and report a
+    # mismatch on others. All seven roles rather than the two above
+    # because an unsorted reading cannot be refuted outright -- a set
+    # CAN iterate alphabetically, and the two-role set above does under
+    # 85 of PYTHONHASHSEED 0..199. The seven-role set did under none of
+    # them, so the size is what makes this row an instrument rather
+    # than a coin flip.
+    assert compare.recorded_diff_mismatches(
+        {"Smith, Jr.": tuple(sorted(compare.V2_FIELDS))},
+        [("Smith, Jr.", set(compare.V2_FIELDS), None)],
+        {"Smith, Jr."}) == []
+
 
 def test_a_recorded_shape_the_run_contradicts_is_reported() -> None:
     """The check the roster could not do for itself.
@@ -3277,15 +3291,28 @@ def test_only_the_order_none_comparison_is_read() -> None:
     is the default-order comparison's. An order-bearing comparison of the
     same string is a different question.
 
-    The order-bearing row is written SECOND on purpose. A check that
-    read every row and let the last one win would agree with the
-    recorded shape by accident if the order-None row came last --
-    mutation-tested, and the reason this row is written the way it is.
+    Two fixtures, pinning the two ways a reading of every row survives,
+    since either one alone leaves the other's mutant alive. Both are
+    reachable: `diffing` is appended in corpus file order, so a name's
+    two entries can arrive either way round. Neither is a measurement --
+    the shapes here are illustrative, chosen to separate the readings,
+    where _CROSS_RULE_WINNERS records 'Kim, Jr.' on four roles.
+
+    FIRST: the order-bearing row written LAST, which kills a reading
+    where the last row wins. SECOND: the order-bearing row ALONE, which
+    kills a reading where the first row wins -- there the shape is
+    recorded, the name is compared, and no order-None comparison of it
+    exists, so the honest answer is `measured` None.
     """
     diffing = [("Kim, Jr.", {"family", "suffix"}, None),
                ("Kim, Jr.", {"family"}, "FAMILY_FIRST")]
     assert compare.recorded_diff_mismatches(
         {"Kim, Jr.": ("family", "suffix")}, diffing, {"Kim, Jr."}) == []
+
+    got = compare.recorded_diff_mismatches(
+        {"Kim, Jr.": ("family",)},
+        [("Kim, Jr.", {"family"}, "FAMILY_FIRST")], {"Kim, Jr."})
+    assert [(m.name, m.measured) for m in got] == [("Kim, Jr.", None)]
 
 
 harvester = load_tool("build_issues_corpus")

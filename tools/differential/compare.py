@@ -1343,7 +1343,7 @@ class _ShapeMismatch(NamedTuple):
     which side is which where `m[1]`/`m[2]` would not.
     """
     name: str
-    #: the shape _RECORDED_DIFFS carries, sorted
+    #: the shape the roster records, sorted
     recorded: tuple[str, ...]
     #: what this run measured, sorted; None when the name did not diff
     measured: tuple[str, ...] | None
