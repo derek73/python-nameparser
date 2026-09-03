@@ -1644,8 +1644,12 @@ class _ShapeMismatch(NamedTuple):
 #: HERE rather than beside the roster because this is where the
 #: measurement happens. main() computes every name's real diff, so a
 #: run can check these; the unit suite cannot, and deliberately -- it
-#: spawns no uv and no network, and every test in
-#: tests/v2/test_differential.py monkeypatches _run_worker. Same
+#: spawns no uv and no network -- tests/v2/test_differential.py says
+#: so in its own header, and the ones that need a baseline fake
+#: _run_worker or fake Popen beneath it rather than installing a
+#: wheel. Not "every test monkeypatches _run_worker": most never
+#: mention it, and that loose paraphrase is #497's own subject
+#: arriving inside #497's evidence. Same
 #: direction as _CORPUS_FLOORS above, which lives here and is read from
 #: there.
 #:
@@ -1817,10 +1821,14 @@ def _load_entries(path: Path) -> list[dict[str, object]]:
     string (the original format) or an object with a "name" plus
     optional metadata -- "tests" labels from build_corpus.py, and a
     "shape" id from build_shapes_corpus.py (#469). Tolerating both
-    means compare.py itself never needs a flag day across its five
-    corpus files: corpus.jsonl and corpus_shapes.jsonl carry object
-    lines, the other three are still bare strings, and both shapes
-    stay legal everywhere a corpus line is read.
+    means compare.py itself never needs a flag day as corpora are
+    added or converted: corpus.jsonl and corpus_shapes.jsonl carry
+    object lines, the rest are still bare strings, and both shapes
+    stay legal everywhere a corpus line is read. Counting the files
+    here said five over six, and the object/string split three over
+    four, which is the "all five corpora" claim #497 swept out of
+    three other files -- it survived because that sweep never
+    reached compare.py. The glob is the count.
 
     A "tests" label is read only when the radar block prints, at the
     very end of the run and well past the worker pass, so a malformed
