@@ -16,6 +16,7 @@ exit code with tail's, so a failing run reads as a passing one.
 """
 import argparse
 import importlib.util
+import itertools
 import json
 import os
 import re
@@ -511,7 +512,9 @@ def _is_latin_only(name: str) -> bool:
 #: enters only when every role and the ambiguity kinds agree (main()),
 #: so a rule listing it lists nothing else (validate_rules).
 _RULE_FIELDS = frozenset((*V2_FIELDS, "_ambiguities", "_initials"))
-_RULE_KEYS = frozenset(("issue", "name_regex", "fields", "dormant", "orders"))
+_RULE_KEYS = frozenset((
+    "issue", "name_regex", "fields", "dormant", "orders",
+    "precedes_narrower"))
 
 
 #: The `orders` member naming the DEFAULT order -- the comparison whose
@@ -717,18 +720,23 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
     about a rule's matching semantics drifting, but about an opt-out
     carrying a justification someone can review.
     """
-    seen: set[str] = set()
-    for rule in rules:
+    # A dict rather than a set because `precedes_narrower` (#382) needs
+    # each rule's POSITION to check that an exemption points forward.
+    # The membership test is the same one the dedupe check was written
+    # with, and a rule's issue is unique by the time this loop ends, so
+    # the index it records is unambiguous.
+    positions: dict[str, int] = {}
+    for k, rule in enumerate(rules):
         issue = rule.get("issue")
         if not isinstance(issue, str):
             continue  # the per-rule loop below rejects it with a better message
-        if issue in seen:
+        if issue in positions:
             raise SystemExit(
                 f"{ledger} has two rules sharing the issue {issue!r}. The "
                 f"dormancy check identifies a rule by its issue, so the "
                 f"second would hide behind the first: it could explain "
                 f"nothing and never be reported")
-        seen.add(issue)
+        positions[issue] = k
     for i, rule in enumerate(rules):
         where = f"{ledger} rule #{i + 1}"
         issue = rule.get("issue")
@@ -778,6 +786,100 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
                     f"no shape asks for, so the rule would explain "
                     f"nothing and report as dormant instead of saying "
                     f"the name is wrong")
+        if "precedes_narrower" in rule:
+            # #382. Where this rule deliberately outranks a NARROWER one
+            # it would otherwise lose nothing by yielding to. Legal, and
+            # never silent: `fields` cannot say that a wider rule
+            # describes a compound behavior its component rule does
+            # not, so the reason is the only place that fact can live.
+            #
+            # "Sits later in the file" means "loses to this rule" only
+            # because #451 and #456 force every rule to carry BOTH
+            # narrowing keys, which leaves one tier and makes
+            # _sorted_rules the identity on any ledger that validates.
+            # Relaxing either ban breaks the forward-only check below
+            # rather than merely widening it: a fields-only rule at
+            # position 1 could declare precedence over a name_regex rule
+            # at position 5 and be accepted here, while _sorted_rules
+            # puts the name_regex rule first and it is the one that
+            # actually wins.
+            declared = rule["precedes_narrower"]
+            if not isinstance(declared, list) or not declared \
+                    or not all(isinstance(e, dict) for e in declared):
+                raise SystemExit(
+                    f"{where} has a 'precedes_narrower' that is not a "
+                    f"non-empty list of tables ({declared!r}). Write it "
+                    f"as [[change.precedes_narrower]] blocks under the "
+                    f"rule -- single-bracket [change.precedes_narrower] "
+                    f"makes ONE table rather than a list of them -- and "
+                    f"delete the key rather than leaving an empty one, "
+                    f"which declares nothing")
+            for entry in declared:
+                unknown = set(entry) - {"issue", "why"}
+                if unknown:
+                    raise SystemExit(
+                        f"{where} has {sorted(unknown)} inside a "
+                        f"'precedes_narrower' entry, where only 'issue' "
+                        f"and 'why' belong. If that key belongs to the "
+                        f"RULE, move it ABOVE the "
+                        f"[[change.precedes_narrower]] block: TOML binds "
+                        f"every bare key after that header to the "
+                        f"exemption, so a rule key written below it is "
+                        f"silently dropped from the rule -- an 'orders' "
+                        f"landing here deletes the rule's order "
+                        f"narrowing and nothing else would notice")
+                target, why = entry.get("issue"), entry.get("why")
+                if not isinstance(target, str) or not target:
+                    raise SystemExit(
+                        f"{where} has a 'precedes_narrower' entry with "
+                        f"no string 'issue': {entry!r}. An exemption "
+                        f"names the ONE rule it outranks -- a blanket "
+                        f"opt-out would be inherited by every narrower "
+                        f"rule added later, which is the widening this "
+                        f"check exists to refuse")
+                if not isinstance(why, str) or not why.strip():
+                    raise SystemExit(
+                        f"{where} declares precedence over {target!r} "
+                        f"with no 'why' ({why!r}). The reason is the "
+                        f"whole safeguard, as it is for 'dormant': an "
+                        f"exemption nobody had to justify is the one "
+                        f"nobody reviews")
+                if target not in positions:
+                    raise SystemExit(
+                        f"{where} declares precedence over {target!r}, "
+                        f"which names no rule in this ledger. A rule's "
+                        f"issue string is its identity here; a renamed "
+                        f"or deleted rule leaves an exemption that "
+                        f"protects nothing")
+                if positions[target] == i:
+                    raise SystemExit(
+                        f"{where} declares precedence over ITSELF. An "
+                        f"exemption names the OTHER rule this one "
+                        f"outranks; no rule contests itself, so this is "
+                        f"the declaring rule's own issue string copied "
+                        f"where the narrower rule's belongs")
+                if positions[target] < i:
+                    raise SystemExit(
+                        f"{where} declares precedence over {target!r}, "
+                        f"which sits EARLIER in the file (rule "
+                        f"#{positions[target] + 1}). An exemption names "
+                        f"the narrower rule this one outranks, and that "
+                        f"rule is by definition the later one -- so this "
+                        f"is a copy-paste of the wrong issue string, "
+                        f"sitting in the file reading as a justification")
+            # The same copy-paste slip the `fields` duplicate check
+            # refuses, and worse here: the second entry exempts a pair
+            # already exempted, so it changes nothing -- but two reasons
+            # for one pair means one of them is stale, and a reviewer
+            # reading the ledger cannot tell which.
+            targets = [e["issue"] for e in declared]
+            dups = sorted({t for t in targets if targets.count(t) > 1})
+            if dups:
+                raise SystemExit(
+                    f"{where} declares precedence over {dups} more than "
+                    f"once in 'precedes_narrower'. One pair takes one "
+                    f"exemption, so the repeat exempts nothing new; keep "
+                    f"the reason that is still true and delete the rest")
         has_regex, has_fields = "name_regex" in rule, "fields" in rule
         if not has_regex and not has_fields:
             raise SystemExit(
@@ -1022,6 +1124,214 @@ def validate_exclusions(entries: list[dict[str, object]],
                     f"{where} lists all seven roles in 'fields', which "
                     f"is what omitting the key already means. omit "
                     f"'fields' to exclude any diff on a matching name")
+
+
+class _Contest(NamedTuple):
+    """Two rules that file order alone separates (#382).
+
+    `earlier` outranks `later` purely by position: there are diffs
+    both rules admit, so `classify()` returns the first one it reaches.
+    """
+    #: issue of the earlier, WIDER rule -- the one that wins today
+    earlier: str
+    #: issue of the later, NARROWER rule
+    later: str
+    #: corpus names both `name_regex`es reach, sorted
+    names: tuple[str, ...]
+
+
+class _Reach(NamedTuple):
+    """What one rule may claim, on each key _entry_matches narrows by."""
+    issue: str
+    fields: frozenset[str]
+    #: corpus names its `name_regex` reaches
+    names: frozenset[str]
+    #: the orders it admits, or None when it declares none and so
+    #: admits every order. _legal_orders() IS the set of every order,
+    #: and substituting it here would still be wrong: _entry_matches
+    #: reads an absent `orders` off the key's ABSENCE rather than off a
+    #: member list, so on a rule list validate_rules never saw -- the
+    #: hand-built ones the tests pass in -- the two readings diverge. A
+    #: rule with `orders = ["MADE_UP"]` intersects _legal_orders() to
+    #: the empty set and would stop being a contest, where classify()
+    #: would happily run it against a real comparison and it IS one.
+    orders: frozenset[str] | None
+
+
+def _rule_reach(rules: list[dict[str, object]],
+                names: list[str]) -> list[_Reach | None]:
+    """Per rule: its issue, and what it may claim on each narrowing key.
+
+    None for a rule this check cannot reason about -- a missing or
+    mistyped `name_regex` or `fields`, or an empty `fields`. Every one
+    of those is already refused by validate_rules with a better
+    message; skipping rather than raising keeps this function usable on
+    the hand-built rule lists the tests pass it, and an empty `fields`
+    is skipped for a second reason: the empty set is a strict subset of
+    every other, so admitting it would report a contest against every
+    rule in the file.
+
+    A mistyped `orders` is read as ABSENT rather than skipping the
+    rule, which is what _entry_matches does with one: it tests
+    `isinstance(orders, list)` and so returns a non-list rule to
+    claiming every order. validate_rules rejects that shape too, and
+    an empty `orders` besides -- so a frozenset here is never empty,
+    and "declares orders" always means a real restriction.
+    """
+    out: list[_Reach | None] = []
+    for rule in rules:
+        pattern, fields = rule.get("name_regex"), rule.get("fields")
+        if (not isinstance(pattern, str) or not isinstance(fields, list)
+                or not fields or not all(isinstance(f, str) for f in fields)):
+            out.append(None)
+            continue
+        orders = rule.get("orders")
+        matcher = re.compile(pattern)
+        out.append(_Reach(
+            str(rule.get("issue", "")), frozenset(fields),
+            frozenset(n for n in names if matcher.search(n)),
+            frozenset(orders) if isinstance(orders, list) else None))
+    return out
+
+
+def order_contests(rules: list[dict[str, object]],
+                   names: list[str]) -> list[_Contest]:
+    """Every pair whose winner file order decides, exemptions IGNORED (#382).
+
+    The predicate needs no diff shapes and that is what makes it cheap.
+    It asks the three questions _entry_matches asks, one per narrowing
+    key, and a pair is a contest only where all three overlap:
+
+    `fields` -- where the later rule's are a STRICT subset of the
+    earlier one's, every diff D fitting the narrower set passes both
+    rules' subset test. The nesting supplies the contested shape's
+    EXISTENCE, which is why no diff has to be computed: doing that
+    properly would need the pinned-wheel worker pass, and could only
+    ever remove pairs from this list, never add one.
+
+    `name_regex` -- some corpus name must reach both, which the corpus
+    supplies.
+
+    `orders` -- some order must reach both. Two rules scoped to
+    disjoint orders never see the same comparison, so file order
+    decides nothing between them however nested their `fields` are,
+    and calling that a contest would demand a justification for a
+    hazard that cannot occur. A rule declaring no `orders` is
+    order-blind and overlaps every other, which is every rule in every
+    shipped ledger today.
+
+    Equal `fields` are deliberately not a contest: neither rule is
+    narrower, so "narrow-first" says nothing about the pair and
+    _CROSS_RULE_WINNERS stays the instrument there.
+
+    Read `precedes_narrower` through undeclared_contests, not here.
+    This function is what the recorded negative control measures, and a
+    control that consulted the mechanism it controls for measures
+    nothing.
+    """
+    reach = _rule_reach(rules, names)
+    found: list[_Contest] = []
+    for i, j in itertools.combinations(range(len(rules)), 2):
+        a, b = reach[i], reach[j]
+        if a is None or b is None:
+            continue
+        if not b.fields < a.fields:
+            continue
+        if a.orders is not None and b.orders is not None \
+                and not a.orders & b.orders:
+            continue
+        shared = a.names & b.names
+        if shared:
+            found.append(_Contest(a.issue, b.issue, tuple(sorted(shared))))
+    return found
+
+
+def _declared_over(rule: dict[str, object]) -> frozenset[str]:
+    """Issues this rule declares precedence over (#382).
+
+    Shape is validate_rules' business and this reader TRUSTS that it
+    ran: main() validates every ledger before reaching any of this, and
+    test_validate_rules_accepts_the_shipped_ledgers covers the files on
+    disk. The leniency exists so the function stays usable on the
+    hand-built rule lists the tests pass it. It is tempting to write
+    it up as a safety property; it is not one. Of the shapes
+    validate_rules refuses, four are refused toward REPORTING the
+    contest -- a non-list value, an EMPTY list, an entry that is not a
+    table, and an entry whose `issue` is not a string -- since each
+    leaves that entry out of the set and a smaller set declares less.
+    Two go the other way. An entry naming a real rule with a missing or
+    blank `why` reads here as a perfectly good declaration and retires
+    the pair; so does one whose `issue` is the EMPTY string, which
+    validate_rules refuses as a blanket opt-out but the
+    `isinstance(str)` test here admits -- and which retires the pair
+    against any rule whose own issue reads as "", the shape
+    `str(rule.get("issue", ""))` gives an issue-less hand-built rule.
+    The blank `why` is the likeliest hand-edit slip in a ledger, and
+    nothing in this function catches either of the two.
+
+    So the guarantee is borrowed, not intrinsic. Reading strictly here
+    would be no less safe -- a stricter reader declares LESS and so can
+    only report MORE -- and the reason not to is convenience for
+    callers, which is a much smaller claim than "the safe direction".
+    """
+    declared = rule.get("precedes_narrower")
+    if not isinstance(declared, list):
+        return frozenset()
+    return frozenset(
+        e["issue"] for e in declared
+        if isinstance(e, dict) and isinstance(e.get("issue"), str))
+
+
+def undeclared_contests(rules: list[dict[str, object]],
+                        names: list[str]) -> list[_Contest]:
+    """Contests whose earlier rule does not declare the later one (#382).
+
+    The declaration is read off the rule that WINS the pair, which is
+    the earlier one: an exemption is that rule saying it means to
+    outrank its narrower neighbour, so it is the only rule whose word
+    can retire the pair.
+
+    `by_issue` is last-wins, so two rules sharing an issue string would
+    let a declaration on the second copy retire a contest the first
+    copy owns. validate_rules refuses duplicate issues, which is the
+    only reason that is unreachable -- the same borrowed guarantee
+    main()'s `rules_by_issue` leans on, and the same one _declared_over
+    leans on for shape.
+    """
+    by_issue = {str(r.get("issue", "")): r for r in rules}
+    return [c for c in order_contests(rules, names)
+            if c.later not in _declared_over(by_issue.get(c.earlier, {}))]
+
+
+class _Vacancy(NamedTuple):
+    """An exemption whose pair stopped being a contest (#382).
+
+    Named rather than a bare pair for _Dormancy's reason: the caller
+    formats these into a message, and `v.earlier`/`v.later` says which
+    end is which where `v[0]`/`v[1]` would not.
+    """
+    #: issue of the rule carrying the declaration
+    earlier: str
+    #: issue it declares precedence over
+    later: str
+
+
+def vacant_exemptions(rules: list[dict[str, object]],
+                      names: list[str]) -> list[_Vacancy]:
+    """Declared precedences over a pair that is NOT a contest (#382).
+
+    A rule narrowed until it no longer overlaps its neighbour leaves
+    its exemption behind, and the file then carries a justification for
+    a hazard that is gone -- indistinguishable, to a reader, from one
+    that is live. Same shape as `dormant`'s awake check: the ledger
+    states a condition, and the harness refuses to let it go on
+    standing after the condition stops holding.
+    """
+    live = {(c.earlier, c.later) for c in order_contests(rules, names)}
+    return [_Vacancy(str(rule.get("issue", "")), later)
+            for rule in rules
+            for later in sorted(_declared_over(rule))
+            if (str(rule.get("issue", "")), later) not in live]
 
 
 def _entry_matches(rule: dict[str, object], name: str,
@@ -1417,8 +1727,15 @@ def main() -> int:
     # while printing a summary that reads exactly like a full one. The
     # floors already name every corpus that is supposed to exist, so
     # ask them. Skipped under --corpus, where narrowing is the point.
+    #
+    # The same question, asked of the names rather than of the flag,
+    # answers "is this run over the FULL corpus" for the vacancy check
+    # below -- which is what that check needs, and not the same as
+    # "was --corpus omitted": the flag is `action="append"`, so naming
+    # every corpus explicitly narrows nothing.
+    missing = sorted(set(_CORPUS_FLOORS) - {p.name for p in paths})
+    full_corpus = not missing
     if not args.corpus:
-        missing = sorted(set(_CORPUS_FLOORS) - {p.name for p in paths})
         if missing:
             raise SystemExit(
                 f"corpus files named in _CORPUS_FLOORS are not on disk: "
@@ -1495,6 +1812,103 @@ def main() -> int:
     for e in entries:
         by_key.setdefault((e["name"], e.get("order")), e)
     entries = list(by_key.values())
+    # Order checks here rather than beside validate_rules, which runs
+    # before any corpus is read: whether two rules CONTEST a diff is a
+    # question about NAMES -- both regexes have to reach one -- and the
+    # names arrive at this line. Before the worker pass, deliberately:
+    # a ledger refused after the multi-minute wait is a ledger refused
+    # too late (#382).
+    #
+    # The names are the LOADED entries, not the corpus*.jsonl glob the
+    # unit guard in tests/v2/test_ledger_guards.py reads: `--corpus`
+    # narrows what this run compares, and a run is judged on the names
+    # it read, while the guard judges every corpus on disk.
+    #
+    # LOADED, precisely -- this sits ahead of the baseline-minimum
+    # shape skip below, so `corpus_names` holds names an old baseline
+    # will not actually compare (1120 here against the 1113 the 1.4.0
+    # run reports; the 7 are order-bearing shape-4/5 names). Kept ahead
+    # of it on purpose: the check then asks the same question at every
+    # baseline, as the unit guard does, and moving it after `kept`
+    # would make a ledger's acceptability depend on which release it is
+    # being compared against.
+    #
+    # THE TWO CHECKS READ A SMALLER NAME SET IN OPPOSITE DIRECTIONS,
+    # which is the whole reason only one of them refuses below. Dropping
+    # names can only remove contests. For `undeclared` that can only
+    # UNDER-REPORT, never false-alarm: fewer contests is fewer pairs
+    # anyone owes a declaration, so a partial run is strictly more
+    # lenient and can never invent a refusal. (Not "fail-closed" --
+    # this file uses that term above for the _CORPUS_FLOORS and
+    # _CORPUS_TIERS rosters, which REFUSE on a missing entry, and a
+    # check that errs toward not refusing is the opposite of that.)
+    # For `vacant` it INVERTS -- a live declaration whose contested
+    # names are outside this run reads exactly like a stale one. Measured: every one of the six corpora,
+    # run alone against expected_since_1.4.0.toml, reports vacancies --
+    # 11 of the 11 exemptions for corpus.jsonl, corpus_cjk.jsonl and
+    # corpus_shapes.jsonl, and 8, 7 and 5 for the other three. So a
+    # partial run NOTES that count and does not act on it.
+    #
+    # THREE CHECKS READ THE NARROWING AT THREE DIFFERENT STRENGTHS, and
+    # the differences are the point rather than an inconsistency to
+    # tidy. The corpus-floor roster above is SKIPPED entirely, because
+    # narrowing is what the flag is for. over_declared_rules still
+    # FAILS the run -- `overwide` feeds the exit code on every run --
+    # and only appends a NOTE that the union it computed is over a
+    # subset, so its repair advice is not followed blindly. `vacant`
+    # alone does not fail, because it is the only one of the three
+    # whose VERDICT inverts under narrowing rather than merely its
+    # evidence. Do not fold the two branches below back into one
+    # shape, and do not level the three checks onto one strength: an
+    # earlier draft of `vacant` refused under `--corpus` and told the
+    # contributor to delete legitimate exemptions.
+    #
+    # `full_corpus`, not `args.corpus`: the question the inversion
+    # turns on is whether this run read every corpus, and `--corpus` is
+    # `action="append"`, so a run naming all six of them narrows
+    # nothing and must refuse a stale exemption exactly as a flagless
+    # run does. A genuine subset still only NOTEs, which is the whole
+    # of the argument above.
+    #
+    # `rules` here is _sorted_rules' output, which is intentional and
+    # harmless: since #451 every rule carries a name_regex, so the sort
+    # is the identity on every ledger that loads and positions are
+    # unchanged. Verified against all four shipped ledgers -- element
+    # identity, not just equality -- at the time of writing.
+    corpus_names = [str(e["name"]) for e in entries]
+    undeclared = undeclared_contests(rules, corpus_names)
+    if undeclared:
+        raise SystemExit("\n".join(
+            [f"{ledger.name} has {len(undeclared)} order-decided "
+             f"contest(s) nobody declared. Where the later rule's "
+             f"'fields' are a strict subset of the earlier one's and "
+             f"both regexes reach one name, file order alone picks the "
+             f"winner. Declare it on the EARLIER rule with a "
+             f"[[change.precedes_narrower]] block naming the later one "
+             f"and saying what it describes that the later one does "
+             f"not -- do NOT reorder, which moves which rule classifies "
+             f"a name and breaks _CROSS_RULE_WINNERS:"]
+            + [f"  {c.earlier!r}\n  outranks {c.later!r}\n"
+               f"  on {len(c.names)} name(s), e.g. {list(c.names[:3])}"
+               for c in undeclared]))
+    vacant = vacant_exemptions(rules, corpus_names)
+    if vacant and not full_corpus:
+        print(f"NOTE: this run used --corpus, and over that SUBSET "
+              f"{len(vacant)} exemption(s) in {ledger.name} declare "
+              f"precedence over a pair nothing here contests. That "
+              f"count is not evidence of a stale exemption -- narrowing "
+              f"removes contests, so a declaration the full gate needs "
+              f"reads the same way. Re-run without --corpus before "
+              f"touching any of them.\n")
+    elif vacant:
+        raise SystemExit("\n".join(
+            [f"{ledger.name} carries {len(vacant)} exemption(s) over a "
+             f"pair that is not contested over the full corpus. A rule "
+             f"was narrowed or a corpus name left. Delete the exemption "
+             f"-- a justification for a hazard that is gone reads "
+             f"exactly like one for a hazard that is live:"]
+            + [f"  {v.earlier!r}\n  declares precedence over {v.later!r}"
+               for v in vacant]))
     # an ORDER-BEARING entry must never reach a worker whose baseline
     # cannot honor it (no Policy below 2.0.0) -- skip it and say so,
     # rather than shrink the comparison silently. An order-NONE

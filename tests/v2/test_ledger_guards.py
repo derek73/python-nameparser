@@ -819,8 +819,9 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # 'Carod i' and '田中さん II' are deliberately NOT probes for the
     # numeral rule: its regex really does reach both, and rules above it
     # win them -- 'Carod i' on file order, '田中さん II' on the subset
-    # test, its diff moving {given, suffix} where the numeral rule
-    # declares {family, suffix}. _CROSS_RULE_WINNERS pins both instead;
+    # test, its diff moving {family, given, suffix} where the numeral
+    # rule declares {family, suffix} and so cannot admit the `given`
+    # move. _CROSS_RULE_WINNERS pins both instead;
     # this roster tests the regex, not classify().
     "fix(suffix-routing) a two-token name ending in a roman numeral keeps it in `suffix`":
         ("Mohamad X Surname", "Smith Jr.", "Donald mc", "Aishwarya Rai"),
@@ -2499,7 +2500,9 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         # first is decided by order: 'Carod i' diffs {family, suffix},
         # which both rules declare, so nothing but _sorted_rules'
         # stability inside the name_regex tier keeps it with fix(#397).
-        # '田中さん II' diffs {given, suffix}, which the numeral rule's
+        # '田中さん II' diffs {family, given, suffix} -- 1.4 read it
+        # 'first 田中さん / last II', 2.x reads 'last 田中 / suffix
+        # さん, II' -- and `given` is the field the numeral rule's
         # `fields` cannot admit at any position. Both are recorded
         # because a later edit that moves either rule, or widens the
         # numeral rule's `fields`, would take one silently -- exactly the
@@ -2507,7 +2510,7 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         ("Carod i", ("family", "suffix")):
             "fix(#397) NOT WANTED: a trailing Catalan/Polish linking "
             "'i' is read as a generation marker and the family is lost",
-        ("田中さん II", ("given", "suffix")):
+        ("田中さん II", ("family", "given", "suffix")):
             "fix(cjk-glued-honorific-peel) glued honorific peels into "
             "suffix",
         # #484's three `_initials` contests with a literal rule on one
@@ -3081,3 +3084,153 @@ def test_a_rule_reaching_no_corpus_name_says_why_it_is_kept() -> None:
         "no rule was examined, so this guard is passing vacuously -- "
         "every rule declares `dormant`, or (impossible since #451) "
         "narrows by `fields` alone")
+
+
+#: Every order-decided contest in every shipped ledger, measured with
+#: exemptions IGNORED: the earlier rule's issue, the later rule's, and
+#: how many corpus names their regexes both reach.
+#:
+#: The recorded negative control for the guard below (the
+#: _EXCLUSION_EFFECT shape AGENTS.md asks of every guard): it is the
+#: answer with the mechanism switched off, stored as data. Without it,
+#: `precedes_narrower` could be deleted from every rule and the live
+#: guard would keep passing if the predicate had quietly stopped
+#: finding anything.
+#:
+#: 11 pairs, all in the 1.4 ledger. They divide by the tier of the
+#: names they are contested over -- some reach contract-tier names,
+#: the rest only radar -- and #495 argues from that division, which
+#: survives a name changing tier even though its two counts there do
+#: not. Read a name's tier off `_CORPUS_TIERS` and not off any one
+#: demotion: the five radar-only pairs get there by two different
+#: warrants, #488's `corpus_cjk_tolerated.jsonl` demotion for most of
+#: the CJK names and #468's tier split for every `corpus_issues.jsonl`
+#: one -- which is both 'Jr., PhD'/'MD, PHD' pairs whole, and one name
+#: of the seventeen the compound/peel pair is contested over. Measured
+#: 2026-09-02. A row that MOVES is a finding, not a number to update:
+#: re-measure before editing it.
+_ORDER_EXEMPTION_EFFECT: dict[str, list[tuple[str, str, int]]] = {
+    "expected_since_1.4.0.toml": [
+        ("fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example",
+         "fix(comma-precomma-family) pre-comma run reads as family, not given", 2),
+        ("fix(#296) a credential-only comma string reads a name and its postnominal",
+         "fix(comma-family) lone post-comma piece routes to suffix/title, not first", 2),
+        ("fix(#296) a credential-only comma string reads a name and its postnominal",
+         "fix(comma-precomma-family) pre-comma run reads as family, not given", 2),
+        ("fix(#296) a lone post-comma credential is a suffix",
+         "fix(suffix-routing) a two-token name ending in the suffix word jr keeps it in `suffix`", 2),
+        ("fix(#400/#274) bound-given join and maiden consumption in one name",
+         "fix(#400) abd joins the word after it as one given name", 1),
+        ("fix(#411/S2) a declining bound-given join leaves the suffix reading after a family comma",
+         "fix(#400) abd joins the word after it as one given name", 1),
+        ("fix(#272/#308) nakaguro division and a glued hangul honorific in one name",
+         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix", 1),
+        ("fix(nickname-typographic-pairs) two typographic quote spans read as one nickname set",
+         "feat(#273) typographic nickname delimiters recognized by default", 1),
+        ("fix(cjk-comma-compound) comma routing compounds with the CJK order flip",
+         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix", 17),
+        ("fix(cjk-glued-honorific-peel) glued honorific peels into suffix",
+         "fix(suffix-routing) a two-token name ending in a roman numeral keeps it in `suffix`", 1),
+        ("fix(cjk-glued-honorific-peel) glued honorific peels into suffix",
+         "fix(suffix-routing) a two-token name ending in the suffix word jr keeps it in `suffix`", 1),
+    ],
+    "expected_since_2.0.0.toml": [],
+    "expected_since_2.1.0.toml": [],
+    "expected_since_2.2.0.toml": [],
+}
+
+
+def test_the_recorded_order_contests_are_what_the_ledgers_hold() -> None:
+    """The negative control: every contest, exemptions ignored.
+
+    A contest is two same-tier rules that overlap on all three of the
+    keys classify() narrows by: the LATER one's `fields` are a strict
+    subset of the earlier one's, both regexes reach a common corpus
+    name, and neither scopes itself to `orders` the other excludes.
+    There are then diffs both rules admit, and file order alone picks
+    the winner.
+
+    This roster is deliberately blind to `precedes_narrower`: it
+    records the hazard, not whether it has been declared away.
+    """
+    compare = load_tool("compare")
+    assert any(_ORDER_EXEMPTION_EFFECT.values()), (
+        "every ledger's contest list is empty, so this control measures "
+        "nothing: a predicate that had stopped finding anything at all "
+        "would read exactly the same. That is the inert-measurement "
+        "class mechanisms.md#RECORDED-ROSTERS is written against. If "
+        "the last contest genuinely went away, delete this guard and "
+        "its roster together -- do not leave four empty lists standing "
+        "in for a measurement.")
+    assert set(_ORDER_EXEMPTION_EFFECT) == {led.name for led in _LEDGERS}, (
+        f"_ORDER_EXEMPTION_EFFECT must name every ledger on disk, with "
+        f"an explicit empty list for one that genuinely has no contest. "
+        f"Missing: {sorted({L.name for L in _LEDGERS} - set(_ORDER_EXEMPTION_EFFECT))}; "
+        f"unknown: {sorted(set(_ORDER_EXEMPTION_EFFECT) - {L.name for L in _LEDGERS})}")
+    for ledger in _LEDGERS:
+        rules = _rules(ledger)
+        # order_contests' shape leniency (see _rule_reach) is a
+        # BORROWED guarantee: it trusts validate_rules to have run, and
+        # `_rules()` does not run it. Calling it here turns the borrowed
+        # guarantee into a local one, so this guard is not measuring a
+        # ledger nothing has validated. It costs nothing on the shipped
+        # files -- they already validate -- and fires first on a
+        # hand-edit that would otherwise be scanned as if well-formed.
+        compare.validate_rules(rules, ledger.name)
+        found = [(c.earlier, c.later, len(c.names))
+                 for c in compare.order_contests(rules, _CORPUS_NAMES)]
+        assert found == _ORDER_EXEMPTION_EFFECT[ledger.name], (
+            f"{ledger.name}: the order-decided contests are no longer "
+            f"what this roster records.\n  found:    {found}\n"
+            f"  recorded: {_ORDER_EXEMPTION_EFFECT[ledger.name]}\n"
+            f"A contest that appeared is a new rule pair whose winner "
+            f"file order is deciding; one that vanished means a rule "
+            f"was narrowed or a corpus name left. Re-measure and read "
+            f"the pair before editing this roster.")
+
+
+def test_every_order_decided_contest_is_declared() -> None:
+    """Narrow-first is the declaration-free default; wide-first says why.
+
+    Where the later rule's `fields` are a strict subset of the earlier
+    one's and both regexes reach a common corpus name, file order alone
+    decides who classifies the diff. That is legal -- a wider rule can
+    genuinely be the better description, and `马丁·路德·金씨` is the
+    worked case: it divides on the nakaguro AND peels its honorific, so
+    `fix(#272/#308)` describes it and `fix(cjk-glued-honorific-peel)`
+    describes half of it. What is not legal is leaving it unsaid,
+    because nothing else in the suite can see it: _CORPUS_CLAIMS
+    measures each rule alone, the gate total is per-corpus, and
+    _CROSS_RULE_WINNERS pins only names somebody hand-added.
+
+    Do NOT satisfy this by reordering rules -- that moves which rule
+    classifies a name and breaks _CROSS_RULE_WINNERS. Declare it.
+    """
+    compare = load_tool("compare")
+    for ledger in _LEDGERS:
+        rules = _rules(ledger)
+        # Both scanners below read `precedes_narrower` through
+        # _declared_over, whose docstring says outright that its shape
+        # guarantee is BORROWED from validate_rules -- and `_rules()`
+        # does not validate. Without this call a whitespace-only `why`
+        # on a real exemption passes here, because _declared_over reads
+        # the entry as a perfectly good declaration and retires the
+        # pair. One line converts the borrowed guarantee into a local
+        # one; the shipped ledgers already validate, so it costs
+        # nothing.
+        compare.validate_rules(rules, ledger.name)
+        undeclared = compare.undeclared_contests(rules, _CORPUS_NAMES)
+        assert not undeclared, "\n".join(
+            [f"{ledger.name}: {len(undeclared)} order-decided contest(s) "
+             f"nobody declared. The EARLIER rule must carry a "
+             f"[[change.precedes_narrower]] block naming the later one "
+             f"and saying what it describes that the later one does not:"]
+            + [f"  {c.earlier!r}\n  outranks {c.later!r}\n"
+               f"  on {len(c.names)} name(s), e.g. {list(c.names[:3])}"
+               for c in undeclared])
+        vacant = compare.vacant_exemptions(rules, _CORPUS_NAMES)
+        assert not vacant, (
+            f"{ledger.name}: {vacant} declare precedence over a pair "
+            f"that is no longer contested. A rule was narrowed or a "
+            f"corpus name left; delete the exemption rather than "
+            f"leaving a justification for a hazard that is gone")

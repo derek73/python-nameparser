@@ -551,7 +551,9 @@ argued for in #373.
 ledger carries a `name_regex`, so they all sit in one tier, the sort
 is stable, and the order they are written in settles every tie between
 them. Append a rule to the bottom of a file only after checking that
-nothing above it already claims the diff you meant it for.
+nothing above it already claims the diff you meant it for. Where the
+EARLIER rule of such a tie is the wider one, the pair must say so --
+see "Declaring a wide-first pair" below.
 
 `_sorted_rules` still sorts `name_regex` rules ahead of `fields`-only
 ones, and is now the identity on every ledger that loads. It is kept
@@ -591,6 +593,147 @@ The static tier still exempts a rule on the mere PRESENCE of `dormant`; it
 never asks whether the reason is still true. Only the dynamic check can
 catch a `dormant` that quietly stops being true, which is why every ledger
 with rules needs one.
+
+### Declaring a wide-first pair (`precedes_narrower`)
+
+File order deciding is safe while the earlier rule is the NARROWER
+one, and narrow-first is a default rather than a law (#382). A wider
+rule can be the better classifier where it describes a compound
+behavior its component rule does not: `马丁·路德·金씨` divides on the
+nakaguro AND peels its glued hangul honorific, so `fix(#272/#308)`
+describes what happens to the name and
+`fix(cjk-glued-honorific-peel)` describes half of it -- and the wider
+rule wins, correctly, by sitting first. `fields`-subset is a proxy
+for specificity and the wrong one there, which is why the ordering
+cannot simply be enforced.
+
+Such a pair is legal, and must be DECLARED on the rule that WINS it
+-- the earlier one, which is the only rule whose word can retire the
+contest:
+
+```toml
+[[change]]
+issue = "fix(#272/#308) nakaguro division and a glued hangul honorific in one name"
+name_regex = "..."
+fields = ["family", "given", "middle", "suffix"]
+[[change.precedes_narrower]]
+issue = "fix(cjk-glued-honorific-peel) glued honorific peels into suffix"
+why = """
+`middle` is the discriminator and the nakaguro is where it comes
+from. ...
+"""
+```
+
+DOUBLE brackets: a rule may outrank more than one neighbour, so the
+key is an array of tables. Single-bracket
+`[change.precedes_narrower]` makes ONE table rather than a list of
+them and is refused, as is an empty list -- deleting the key says the
+same thing in one place.
+
+Each block names ONE later rule, by its exact `issue` string, and
+gives a `why`. Both are required, and each ban has its reason. The
+named rule is the one and only rule this one outranks: a blanket
+"may outrank anything narrower" would be inherited by every narrower
+rule added afterwards, which is the widening this check exists to
+refuse. The `why` is the whole safeguard, as it is for `dormant` --
+`fields` cannot say that a wider rule describes a compound behavior
+its component does not, so the reason is the only place that fact can
+live, and an exemption nobody had to justify is the one nobody
+reviews. `validate_rules` also refuses a target naming no rule in
+this ledger, a rule naming ITSELF, a target sitting EARLIER in the
+file (the narrower rule of a declared pair is by definition the later
+one, so an earlier one is a copy-paste of the wrong issue string),
+and the same target twice (one pair takes one exemption, so a repeat
+exempts nothing new and means one of the two reasons is stale, with
+nothing to tell a reader which).
+
+**The trap: nothing may follow the block inside a rule.** TOML binds
+every later bare `key = value` to the table the last header opened,
+so a rule key written BELOW `[[change.precedes_narrower]]` leaves the
+rule and joins the exemption. Put the block LAST in the rule.
+`validate_rules` rejects any key inside an exemption other than
+`issue` and `why` for exactly this reason: an `orders` landing there
+deletes the rule's order narrowing, and nothing else would notice.
+
+**What counts as a contest.** `order_contests` asks the three
+questions `_entry_matches` asks, one per narrowing key, and a pair is
+a contest only where all three overlap. `fields`: the later rule's
+are a STRICT subset of the earlier one's, so every diff fitting the
+narrower set passes both rules' subset test. `name_regex`: some
+corpus name reaches both. `orders`: some order reaches both -- two
+rules scoped to disjoint orders never see the same comparison, so
+file order decides nothing between them however nested their `fields`
+are, and calling that a contest would demand a justification for a
+hazard that cannot occur. No diff is computed, which is what makes
+the check cheap enough to run before the worker spawns -- the nesting
+supplies the contested shape's EXISTENCE, and computing real diffs
+could only ever remove pairs from THIS list, never add one to it.
+
+**Nesting is SUFFICIENT for a contest and not necessary**, so read
+that last sentence as a statement about the nested pairs and not
+about contests in general. Two rules whose `fields` merely INTERSECT
+both admit any diff inside that intersection, so `classify()` hands
+such a name to whichever of them is written first, exactly as it does
+for a nested pair -- and this check cannot see it. That class is
+outside the check by REASONING and not by oversight, and the
+reasoning is the one `order_contests`' docstring gives for EQUAL
+`fields`: neither rule is narrower, so "narrow-first" says nothing
+about the pair, `precedes_narrower` has no narrower rule to name, and
+`_CROSS_RULE_WINNERS` stays the instrument there. That argument
+covers every pair where neither `fields` set contains the other, and
+equal `fields` is its special case. Measured 2026-09-02 over the four
+ledgers -- pairs sharing a corpus name whose `orders` are not disjoint
+-- 11 are strictly nested wide-first, which is what this check
+refuses; 40 nest in either direction, 11 have equal `fields`, and 111
+have any non-empty intersection, so 60 overlap without nesting or
+equality. Read the gap and not the digits, and recompute before
+quoting any of them: decisions.md#differential-ledger carries the same
+five figures with the recipe, and #498's body the loop.
+Widening the predicate to that general case would demand 111 written
+justifications where the real number is eleven -- the same argument
+decisions.md already makes about the 657 figure, that a predicate
+nobody can answer is not a usable one. The worked blind spot is real
+and filed as
+[#498](https://github.com/derek73/python-nameparser/issues/498):
+`fix(#271/#272/#298)` and `fix(cjk-delimited-nickname)` intersect in
+{`family`, `given`} without nesting, and swapping them reattributes
+three contract-tier names this check never mentions in either
+arrangement.
+
+Two questions, in both tiers, as for `dormant`. Is every contest
+DECLARED, and does every declaration still stand over a contest? The
+second matters as much: a rule narrowed until it no longer overlaps
+its neighbour leaves its exemption behind, and a justification for a
+hazard that is gone reads exactly like one for a hazard that is live.
+`tests/v2/test_ledger_guards.py` asks both over every corpus on disk
+with no baseline wheel, so a rule added by a later bundle is checked
+at pytest speed; `compare.py` asks both over the entries the run
+actually loaded, before it spawns the worker. Do NOT answer either
+failure by reordering: that moves which rule classifies a name and
+breaks `_CROSS_RULE_WINNERS`.
+
+**Under `--corpus` the two checks are NOT symmetric**, which is why
+only one of them refuses there. A smaller name set removes contests.
+For the undeclared check that can only UNDER-REPORT, never
+false-alarm -- fewer contests, fewer things to declare -- so
+`--corpus` is only ever more lenient. Not "fail-closed": this file
+uses that for the `_CORPUS_TIERS` and floor rosters, which REFUSE on
+a missing entry, and a check that errs toward not refusing is the
+opposite of one that errs toward refusing. For the vacancy check it
+INVERTS: a live declaration whose contested names
+all sit outside the subset reads as vacant, and following the advice
+would delete an exemption the full gate needs and then fail the full
+run for the undeclared contest that reappears. So a vacancy is a hard
+failure on a full run and a printed NOTE under `--corpus`.
+
+Three checks now read the flag differently, and the differences are
+deliberate rather than untidy -- read them together before making any
+of them uniform. The corpus-floor roster is SKIPPED entirely under
+`--corpus`, because narrowing is the point of the flag.
+`over_declared_rules` still FAILS the run and appends a NOTE saying
+the union it computed is over a subset, so its repair advice is not
+followed blindly. The vacancy check does not fail at all, because it
+is the only one of the three whose verdict INVERTS under narrowing.
 
 ### Shapes that must never be explained (`[[never]]`)
 
