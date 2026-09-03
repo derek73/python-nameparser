@@ -692,9 +692,16 @@ vacancy check it INVERTS: a live declaration whose contested names
 all sit outside the subset reads as vacant, and following the advice
 would delete an exemption the full gate needs and then fail the full
 run for the undeclared contest that reappears. So a vacancy is a hard
-failure on a full run and a printed NOTE under `--corpus`, the same
-call the corpus-floor roster and `over_declared_rules` already make
-for the identical subset hazard.
+failure on a full run and a printed NOTE under `--corpus`.
+
+Three checks now read the flag differently, and the differences are
+deliberate rather than untidy -- read them together before making any
+of them uniform. The corpus-floor roster is SKIPPED entirely under
+`--corpus`, because narrowing is the point of the flag.
+`over_declared_rules` still FAILS the run and appends a NOTE saying
+the union it computed is over a subset, so its repair advice is not
+followed blindly. The vacancy check does not fail at all, because it
+is the only one of the three whose verdict INVERTS under narrowing.
 
 ### Shapes that must never be explained (`[[never]]`)
 

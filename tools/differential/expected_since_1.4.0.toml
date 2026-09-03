@@ -12,8 +12,16 @@
 # each entry's `name_regex`/`fields` as tight as the diff allows.
 # FILE ORDER IS LOAD-BEARING: every rule carries a `name_regex`, so
 # they all sit in one tier, _sorted_rules is stable, and file order
-# decides every tie. Write the narrower rule first, and see the note
-# above the four fix(suffix-routing) rules at the end of this file.
+# decides every tie. Write the narrower rule first -- that is the
+# DEFAULT and not a law: a wider rule that describes a compound
+# behavior its component rule does not is the better classifier and
+# stays where it is, saying so in a [[change.precedes_narrower]] block
+# naming the rule it outranks (#382; eleven rules below carry one, and
+# tools/differential/README.md's "Declaring a wide-first pair" owns
+# the mechanics). Do NOT reorder to satisfy the check -- that moves
+# which rule classifies a name and breaks _CROSS_RULE_WINNERS. See
+# also the note above the four fix(suffix-routing) rules at the end of
+# this file.
 
 [[change]]
 issue = "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots"

@@ -5,7 +5,12 @@
 # `fields` and no regex, #456 banned the reverse -- so a rule here
 # narrows by name AND by role, never by just one. Every
 # rule therefore sits in one tier, _sorted_rules is stable, and FILE
-# ORDER decides every tie: write the narrower rule first.
+# ORDER decides every tie: write the narrower rule first. That is the
+# declaration-free DEFAULT rather than a law -- a wider rule that
+# describes a compound behavior its component rule does not may sit
+# first and declare it in a [[change.precedes_narrower]] block naming
+# the rule it outranks (#382). Never reorder to satisfy that check;
+# see tools/differential/README.md, "Declaring a wide-first pair".
 #
 # This file was opened empty the day 2.1.0 shipped (AGENTS.md release
 # step 8) and stayed that way through #354, #358 and #361, none of
