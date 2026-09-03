@@ -664,13 +664,41 @@ corpus name reaches both. `orders`: some order reaches both -- two
 rules scoped to disjoint orders never see the same comparison, so
 file order decides nothing between them however nested their `fields`
 are, and calling that a contest would demand a justification for a
-hazard that cannot occur. EQUAL `fields` are deliberately not a
-contest: neither rule is narrower, so "narrow first" says nothing
-about the pair and `_CROSS_RULE_WINNERS` stays the instrument there.
-No diff is computed, which is what makes the check cheap enough to
-run before the worker spawns -- the nesting supplies the contested
-shape's EXISTENCE, and computing real diffs could only ever remove
-pairs from the list, never add one.
+hazard that cannot occur. No diff is computed, which is what makes
+the check cheap enough to run before the worker spawns -- the nesting
+supplies the contested shape's EXISTENCE, and computing real diffs
+could only ever remove pairs from THIS list, never add one to it.
+
+**Nesting is SUFFICIENT for a contest and not necessary**, so read
+that last sentence as a statement about the nested pairs and not
+about contests in general. Two rules whose `fields` merely INTERSECT
+both admit any diff inside that intersection, so `classify()` hands
+such a name to whichever of them is written first, exactly as it does
+for a nested pair -- and this check cannot see it. That class is
+outside the check by REASONING and not by oversight, and the
+reasoning is the one `order_contests`' docstring gives for EQUAL
+`fields`: neither rule is narrower, so "narrow-first" says nothing
+about the pair, `precedes_narrower` has no narrower rule to name, and
+`_CROSS_RULE_WINNERS` stays the instrument there. That argument
+covers every pair where neither `fields` set contains the other, and
+equal `fields` is its special case. Measured 2026-09-02 over the four
+ledgers -- pairs sharing a corpus name whose `orders` are not disjoint
+-- 11 are strictly nested wide-first, which is what this check
+refuses; 40 nest in either direction, 11 have equal `fields`, and 111
+have any non-empty intersection, so 60 overlap without nesting or
+equality. Read the gap and not the digits, and recompute before
+quoting any of them: decisions.md#differential-ledger carries the same
+five figures with the recipe, and #498's body the loop.
+Widening the predicate to that general case would demand 111 written
+justifications where the real number is eleven -- the same argument
+decisions.md already makes about the 657 figure, that a predicate
+nobody can answer is not a usable one. The worked blind spot is real
+and filed as
+[#498](https://github.com/derek73/python-nameparser/issues/498):
+`fix(#271/#272/#298)` and `fix(cjk-delimited-nickname)` intersect in
+{`family`, `given`} without nesting, and swapping them reattributes
+three contract-tier names this check never mentions in either
+arrangement.
 
 Two questions, in both tiers, as for `dormant`. Is every contest
 DECLARED, and does every declaration still stand over a contest? The
