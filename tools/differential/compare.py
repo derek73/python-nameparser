@@ -1762,11 +1762,11 @@ def recorded_diff_mismatches(
     asymmetry (#382): under a FULL run that caller refuses a
     declaration whose pair is gone, and nothing here refuses a recorded
     name no corpus holds any more -- forgiving forever the very shape
-    #497 is about. That missing half belongs to the caller, the only
-    side that knows whether this run read every corpus, and it asks
-    `set(recorded) - set(corpus_names)`: the PRE-skip list, which is
-    the opposite of what `compared` takes in the paragraph above, and
-    deliberately so.
+    #497 is about. That half belongs to the caller, the only side that
+    knows whether this run read every corpus; main() does it, under a
+    full run alone, asking `set(recorded) - set(corpus_names)`: the
+    PRE-skip list, which is the opposite of what `compared` takes in
+    the paragraph above, and deliberately so.
     Two different questions. "Was this name compared?" is about the
     RUN, and an entry the baseline skipped was not; "does any corpus
     still hold this name?" is about the FILES, and the skip removes a
@@ -2342,6 +2342,79 @@ def main() -> int:
         for issue, name, tagged in order_blind:
             print(f"  {issue!r} explained {name!r}{_order_tag(tagged)}")
         print()
+    # Checked HERE because this is the only place both halves exist:
+    # the roster's recorded shape, and the diff this run actually
+    # measured. validate_rules runs before any corpus is read, and the
+    # unit suite spawns no worker -- deliberately -- so neither can ask
+    # this (#497).
+    #
+    # TWO NAME SETS, one line apart, and they are not interchangeable.
+    # `corpus` is POST-skip, and recorded_diff_mismatches takes it
+    # because its question is "was this name compared?" -- an
+    # order-bearing entry a baseline cannot honor was not, and a shape
+    # cannot be read off a comparison that never ran. `corpus_names` is
+    # PRE-skip, and the absent-name half below takes it because its
+    # question is "does any corpus still hold this name?" -- the skip
+    # takes a name out of the RUN and out of no file. Measured at
+    # --baseline 1.4.0 the two differ by three names -- 'de Mesnil
+    # Jean, Dr.', 'de la Cruz Juan Carlos, Dr.' and 'de la Cruz née
+    # Vega', each order-bearing with no order-None twin, each sitting
+    # in corpus_shapes.jsonl throughout. None of the three carries a
+    # roster row today, so reading the post-skip list here would refuse
+    # nothing YET: it would wait for the first row on a shape-tagged
+    # name and then tell a contributor to delete a row for a name the
+    # run just read past. That is the earlier-draft `vacant` bug
+    # recorded above, one check over. Recompute both lists with the
+    # recipe in recorded_diff_mismatches' docstring.
+    #
+    # The absent-name half is the CALLER's because only the caller
+    # knows whether this run read every corpus, and it splits on
+    # `full_corpus` for the vacancy check's reason: a roster row for a
+    # name outside a narrowed run reads exactly like one for a name
+    # that left. Under `--corpus` it is silent rather than a NOTE --
+    # unlike `vacant` there is no count anyone could misread into a
+    # repair, since recorded_diff_mismatches has already skipped those
+    # names without reporting them.
+    compared = {str(n) for n in corpus}
+    recorded = _RECORDED_DIFFS.get(ledger.name, {})
+    shape_bad = recorded_diff_mismatches(recorded, diffing, compared)
+    if shape_bad:
+        raise SystemExit("\n".join(
+            [f"{ledger.name}: {len(shape_bad)} recorded diff shape(s) in "
+             f"_RECORDED_DIFFS disagree with this run. A moved shape is "
+             f"a FINDING, not a number to update -- the parser changed "
+             f"what the name does, and the winner pinned beside it in "
+             f"_CROSS_RULE_WINNERS (tests/v2/test_ledger_guards.py) was "
+             f"recorded for the OLD shape, so read both before editing "
+             f"either:"]
+            + [f"  {m.name!r} recorded {list(m.recorded)}, "
+               + (f"measured {list(m.measured)}" if m.measured is not None
+                  else "and this run measured no default-order diff of it")
+               for m in shape_bad]
+            # Named for the vacancy refusal's reason: a message that
+            # offers repair advice for one of two reachable causes
+            # sends half its readers to the wrong file. The two are
+            # collapsed on purpose (recorded_diff_mismatches' docstring
+            # says why), so the message must not pick one.
+            + (["A row with no measured shape has TWO causes and this "
+                "check cannot tell them apart: the parser may have "
+                "stopped moving the name, or the name may be compared "
+                "under a declared order alone, leaving no default-order "
+                "comparison to have a shape. Read the corpus entry "
+                "before you read the parser."]
+               if any(m.measured is None for m in shape_bad) else [])))
+    gone = sorted(set(recorded) - set(corpus_names))
+    if gone and full_corpus:
+        raise SystemExit("\n".join(
+            [f"{ledger.name}: {len(gone)} recorded diff shape(s) name a "
+             f"string no corpus holds any more, over the FULL corpus. "
+             f"Nothing measures such a row, so it agrees with itself "
+             f"forever -- the shape of the defect #497 is about. Two "
+             f"repairs, and they are not interchangeable: restore the "
+             f"name to a corpus if the contest it pins is still worth "
+             f"pinning, or delete the row AND the _CROSS_RULE_WINNERS "
+             f"entry beside it if the name left on purpose:"]
+            + [f"  {n!r}" for n in gone]))
     dormancy = dormant_rules(rules, set(by_issue), diffing, exclusions)
     for dormant in dormancy.undeclared:
         print(f"EXPLAINED NOTHING {dormant.issue!r}\n    "

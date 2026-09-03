@@ -2025,6 +2025,183 @@ def test_a_corpus_narrowing_does_not_refuse_the_shipped_1_4_ledger(
     assert code == 1
 
 
+#: A ledger that explains the fixture's own family-role diff, so a run
+#: over _DIFFERS is quiet except for whatever the test under it puts
+#: into _RECORDED_DIFFS.
+_CLAIMS_FAMILY = ('[[change]]\nissue = "claimed"\nname_regex = "Smith"\n'
+                  'fields = ["family"]\n')
+
+
+def test_main_refuses_a_recorded_shape_the_run_contradicts(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The roster's shapes are checked where they are measured (#497).
+
+    _CROSS_RULE_WINNERS feeds a recorded shape into classify() as an
+    INPUT, so a guessed one agrees with itself forever; the shape is
+    only falsifiable against a run. recorded_diff_mismatches has its
+    own unit tests above -- this pins that main() calls it, which is
+    the half that can go silently permissive.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"John Smith": ("nickname",)})
+    with pytest.raises(SystemExit) as exc:
+        _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS)
+    message = str(exc.value)
+    assert "John Smith" in message
+    # both sides, because a message naming only one leaves the reader
+    # unable to see which way the shape moved
+    assert "nickname" in message and "family" in message
+    # a FINDING, not a number to update: the winner recorded beside the
+    # shape was recorded for the OLD shape
+    assert "FINDING" in message
+    assert "_CROSS_RULE_WINNERS" in message
+
+
+def test_the_shape_refusal_over_an_unmeasured_name_claims_no_cause(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`measured` None has two reachable causes and the message must
+    not assert one of them.
+
+    The parser may have stopped moving a name recorded as moving, or
+    the name may be compared under a declared order ALONE, so no
+    default-order comparison of it exists to have a shape. The two hand
+    recorded_diff_mismatches byte-identical arguments -- main() appends
+    to `diffing` only where a comparison DIFFED -- so this check cannot
+    tell them apart, and a message saying the name "stopped diffing"
+    would send half its readers to the parser over a corpus entry.
+    Written in the shape of test_the_vacancy_refusal_names_both_of_its_causes.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"John Smith": ("family",)})
+    with pytest.raises(SystemExit) as exc:
+        _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _SAME_FACADE)
+    message = str(exc.value)
+    assert "no default-order diff" in message
+    assert "declared order" in message
+    assert "stopped diffing" not in message
+
+
+def test_a_full_run_refuses_a_recorded_name_no_corpus_holds(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The caller's half of the skip (#497 addendum).
+
+    recorded_diff_mismatches SKIPS a recorded name it did not compare,
+    which is right under `--corpus` and forgiving forever under the
+    full gate: a roster row naming a name no corpus holds is a row that
+    agrees with itself because nothing measures it, which is the very
+    defect this arc is about. Same asymmetry as the vacancy check's
+    caller (#382), and `corpus_flag=False` is the only run whose name
+    set can tell a departed name from one this run did not reach.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"Nobody Here, Esq.": ("family",)})
+    with pytest.raises(SystemExit) as exc:
+        _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS,
+                  corpus_flag=False)
+    message = str(exc.value)
+    assert "Nobody Here, Esq." in message
+    # both repairs, because the row may be stale OR the corpus may be
+    # what regressed, and they are not interchangeable
+    assert "restore" in message and "delete" in message
+    assert "_CROSS_RULE_WINNERS" in message
+
+
+def test_a_corpus_run_is_silent_about_a_recorded_name_outside_it(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The inversion, and the reason the half above is not in the
+    function: `--corpus` narrows the name set on purpose, so absence is
+    a fact about the run. Refusing here would tell a contributor to
+    delete a roster row over a name the full gate compares -- the
+    earlier-draft `vacant` bug, one check over.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"Nobody Here, Esq.": ("family",)})
+    code, out = _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS)
+    assert "Nobody Here, Esq." not in out
+    assert code == 0, out
+
+
+def test_naming_every_corpus_refuses_a_recorded_name_no_corpus_holds(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`--corpus` is not the question; the NAME SET is.
+
+    The flag is `action="append"`, so a run listing every corpus
+    compares exactly what the flagless gate compares. Keying the
+    silence on `args.corpus` rather than on `full_corpus` would let a
+    genuinely departed roster name pass by naming the roster.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"Nobody Here, Esq.": ("family",)})
+    with pytest.raises(SystemExit) as exc:
+        _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS,
+                  names_every_corpus=True)
+    assert "Nobody Here, Esq." in str(exc.value)
+
+
+def test_a_name_this_baseline_skipped_is_not_a_name_the_corpus_lost(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The two name sets the check reads, one line apart, are opposite.
+
+    "Was this name compared?" is about the RUN, and an order-bearing
+    entry an old baseline cannot honor was not -- so the shape half
+    reads the POST-skip list and stays quiet about it. "Does any corpus
+    still hold this name?" is about the FILES, and the skip removes a
+    name from no file -- so the absent-name half reads the PRE-skip
+    `corpus_names`. Swap them and this full run refuses, telling a
+    contributor to delete a roster row for a name sitting in the corpus
+    it just read. Measured on the shipped tree at --baseline 1.4.0 the
+    two lists differ by three names, all in corpus_shapes.jsonl, so the
+    hazard is live and only unarmed because none of the three carries a
+    roster row yet.
+
+    Hand-rolled rather than via _run_main, which writes bare-string
+    corpus lines and so cannot produce a skipped entry at all; same
+    construction as
+    test_the_contest_check_reads_names_this_baseline_will_not_compare.
+    Its control is the sibling above: a name in NO corpus is refused by
+    this same run shape.
+    """
+    import json as _json
+    import sys
+    name = "Ménil Christophe du"
+    corpus = tmp_path / "corpus_x.jsonl"
+    corpus.write_text(
+        _json.dumps({"name": name, "shape": 4}, ensure_ascii=False) + "\n"
+        + _json.dumps("John Smith") + "\n", encoding="utf-8")
+    (tmp_path / "expected_since_1.4.0.toml").write_text(
+        _CLAIMS_FAMILY, encoding="utf-8")
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml", {name: ("family",)})
+    # wholesale, so the flagless glob below sees a full corpus roster
+    monkeypatch.setattr(compare, "_CORPUS_FLOORS", {corpus.name: 1})
+    monkeypatch.setitem(compare._CORPUS_TIERS, corpus.name, "contract")
+    monkeypatch.setattr(compare, "HERE", tmp_path)
+    _WORKER_CALL.clear()
+
+    def _fake(v: str, w: bool, n: list[dict]) -> tuple[dict, list[dict]]:
+        _WORKER_CALL.update(version=v, names=[e["name"] for e in n])
+        return ({"__version__": v,
+                 "__file__": "/wheel/nameparser/__init__.py"},
+                [{"facade": dict(_DIFFERS)}])
+
+    monkeypatch.setattr(compare, "_run_worker", _fake)
+    monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", "1.4.0"])
+    import contextlib
+    import io
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = compare.main()
+    out = buf.getvalue()
+    assert _WORKER_CALL["names"] == ["John Smith"], out
+    assert name not in out, out
+    assert code == 0, out
+
+
 def test_radar_diff_with_no_rule_exits_0_and_is_reported(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The tier split's entire point (#468): a harvested name's diff
@@ -3292,7 +3469,11 @@ def test_a_recorded_name_outside_this_run_is_skipped() -> None:
     corpus holds any more is the caller's half, and it asks
     `set(recorded) - set(corpus_names)` -- the PRE-skip list, since the
     baseline-minimum skip takes a name out of the RUN and out of no
-    file. Nothing here does either.
+    file. Nothing here does either;
+    test_a_full_run_refuses_a_recorded_name_no_corpus_holds pins the
+    caller's side of it, and
+    test_a_name_this_baseline_skipped_is_not_a_name_the_corpus_lost
+    pins that it reads the other list.
     """
     assert compare.recorded_diff_mismatches(
         {"Smith, Jr.": ("family", "suffix")}, [], set()) == []
