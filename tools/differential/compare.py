@@ -1626,6 +1626,96 @@ class _ShapeMismatch(NamedTuple):
     measured: tuple[str, ...] | None
 
 
+#: The recorded diff shape of every name _CROSS_RULE_WINNERS pins
+#: (tests/v2/test_ledger_guards.py), per ledger (#497).
+#:
+#: Baseline-relative by construction, which is why it is keyed per
+#: ledger rather than once by name even though the two names appearing
+#: in two ledgers carry the same shape in both: a string moves a
+#: different set of roles against different baselines, and decisions.md
+#: (2026-08-28 #452) records `fix(#296) a lone post-comma credential is
+#: a suffix` moving four roles at 1.4.0 and two at both 2.x baselines.
+#:
+#: A recorded shape that MOVES is a FINDING, not a number to update:
+#: the parser changed what that name does, and the winner pinned beside
+#: it in _CROSS_RULE_WINNERS was recorded for the OLD shape, so both
+#: want reading before either is edited.
+#:
+#: HERE rather than beside the roster because this is where the
+#: measurement happens. main() computes every name's real diff, so a
+#: run can check these; the unit suite cannot, and deliberately -- it
+#: spawns no uv and no network, and every test in
+#: tests/v2/test_differential.py monkeypatches _run_worker. Same
+#: direction as _CORPUS_FLOORS above, which lives here and is read from
+#: there.
+#:
+#: Default-order shapes only, because the roster classifies with no
+#: order. recorded_diff_mismatches below says what that leaves out.
+#:
+#: PROVENANCE, and it is not uniform. Re-measured 2026-09-03 by driving
+#: main() at all four baselines and feeding its `diffing` and its
+#: post-skip corpus to recorded_diff_mismatches: the 31 rows at 1.4.0
+#: are measured against the 1.4.0 wheel, as the roster always claimed,
+#: and all 31 still agree. The four 2.x rows, which #452 added under
+#: the same claim, do NOT:
+#:   'Nguyen, Van' produces no diff at ANY of the four baselines. It is
+#:   compared under the default order out of corpus_rules.jsonl every
+#:   time, and the tree agrees with all four wheels on it, so {family}
+#:   is a shape no run makes. That is the position 'Doe,, Jr.' is in,
+#:   which the roster gives no row precisely because it does not diff.
+#:   'Jane née and Jones Smith' diffs {family, given, maiden, middle}
+#:   at both 2.x baselines, not the {family, maiden, middle} recorded.
+#:   fix(#445) wins it under either shape, measured, so correcting it
+#:   moves no pin.
+#: Left as they stand by the commit that moved them, which changes no
+#: pin. Wiring this into main() is what forces the decision.
+_RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
+    # open cycle: one rule, so nothing for a second one to contest
+    "expected_since_2.2.0.toml": {},
+    "expected_since_1.4.0.toml": {
+        "Andrews, M.D.": ("given", "suffix"),
+        "田中, 太郎さん": ("given", "suffix"),
+        "김, 민준씨": ("given", "suffix"),
+        "김, 민준씨 (Jimmy)": ("given", "suffix"),
+        "김민준, 씨": ("given", "suffix"),
+        "김민준, 씨.": ("given", "suffix"),
+        "선생님, J.씨": ("given", "suffix"),
+        "이, J.씨": ("given", "suffix"),
+        "Dr 김민준씨, V.": ("family", "given", "suffix"),
+        "田中さん, PhD": ("family", "given", "suffix", "title"),
+        "田中さん, V.": ("family", "suffix"),
+        "Bob Jones, author": ("family", "given"),
+        "MD, PHD": ("family", "given", "suffix", "title"),
+        "Smith Jr.": ("family", "suffix"),
+        "Carod i": ("family", "suffix"),
+        "田中さん II": ("family", "given", "suffix"),
+        "de los Santos": ("_initials",),
+        "van Berg Jan de": ("_initials",),
+        "van ma van": ("_initials",),
+        "Andersonさん": ("given", "suffix"),
+        "김민준씨": ("family", "given", "suffix"),
+        "김민준 씨.": ("family", "given", "suffix"),
+        ".,": ("given",),
+        "田中さん, Ph. D.": ("family", "given", "suffix"),
+        "Kim, Jr.": ("family", "given", "suffix", "title"),
+        "Smith, Jr.": ("family", "given", "suffix", "title"),
+        "김민준씨 Jr.": ("family", "given", "suffix"),
+        "de la Vega y Santos Juan": ("_initials",),
+        "Abu Bakr Al Baghdadi, MD": ("_initials",),
+        "abu bakr al baghdadi": ("_initials",),
+        "Berg, abdul van": ("_initials",),
+    },
+    "expected_since_2.0.0.toml": {
+        "Nguyen, Van": ("family",),
+        "Jane née and Jones Smith": ("family", "maiden", "middle"),
+    },
+    "expected_since_2.1.0.toml": {
+        "Nguyen, Van": ("family",),
+        "Jane née and Jones Smith": ("family", "maiden", "middle"),
+    },
+}
+
+
 def recorded_diff_mismatches(
         recorded: dict[str, tuple[str, ...]],
         diffing: list[tuple[str, set[str], str | None]],
@@ -1633,11 +1723,11 @@ def recorded_diff_mismatches(
     """Recorded shapes this run contradicts (#497).
 
     The roster in tests/v2/test_ledger_guards.py pins WHICH RULE wins a
-    contested name, and to ask that question it must state the diff
-    shape -- which it then feeds to classify() as an input. Nothing
-    checked the shape itself, so a guessed one agreed with itself
-    forever. This is the half only a run can do: main() has already
-    measured every name's real diff by the time it calls this.
+    contested name, and to ask that question it needs the diff shape --
+    which it reads from _RECORDED_DIFFS above and feeds to classify() as
+    an input. Nothing checks the shape itself, so a guessed one agrees
+    with itself forever. This is the half only a run can do: main() has
+    already measured every name's real diff by the time it calls this.
 
     Only the order-None comparison is read. The roster calls classify()
     with no order, so the shape it records is the default-order one; a
