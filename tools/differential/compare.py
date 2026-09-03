@@ -1663,22 +1663,42 @@ def recorded_diff_mismatches(
     asymmetry (#382): under a FULL run that caller refuses a
     declaration whose pair is gone, and nothing here refuses a recorded
     name no corpus holds any more -- forgiving forever the very shape
-    #497 is about. `set(recorded) - compared` under `full_corpus` is
-    the missing half, and it belongs to the caller, which is the only
-    side that knows whether this run read every corpus.
+    #497 is about. That missing half belongs to the caller, the only
+    side that knows whether this run read every corpus, and it asks
+    `set(recorded) - set(corpus_names)`: the PRE-skip list, which is
+    the opposite of what `compared` takes in the paragraph above, and
+    deliberately so.
+    Two different questions. "Was this name compared?" is about the
+    RUN, and an entry the baseline skipped was not; "does any corpus
+    still hold this name?" is about the FILES, and the skip removes a
+    name from no file. Measured at --baseline 1.4.0, the two lists
+    differ by three names -- 'de Mesnil Jean, Dr.', 'de la Cruz Juan
+    Carlos, Dr.' and 'de la Cruz née Vega', each order-bearing with no
+    order-None twin to keep it in `compared`, and each sitting in
+    corpus_shapes.jsonl the whole time. Refusing off the post-skip list
+    would tell a contributor to delete a roster row for a name that is
+    right there, at the compat baseline. `full_corpus` does not screen
+    that: it is _CORPUS_FLOORS against the files on disk and knows
+    nothing about the skip. It is the earlier-draft `vacant` bug
+    recorded below, one baseline over.
 
     A name that IS compared and produces no default-order diff is
     reported with `measured` None, and two states reach that: the
     parser stopped diffing a name recorded as diffing, or the name is
     compared under a declared order ALONE, so no default-order
-    comparison of it exists to have a shape. They are collapsed on
-    purpose -- telling them apart means reading the order-bearing rows
-    this function otherwise ignores, and the result would stop being a
-    statement about the default-order comparison alone. So a message
-    over these rows may say the run measured no default-order diff, and
-    must NOT say the name stopped diffing. A caller needing the
-    distinction holds `diffing` and can take it from there; _Dormant's
-    `kind` is the shape to copy if it ever has to be carried here.
+    comparison of it exists to have a shape. They are collapsed because
+    nothing in these arguments separates them. main() appends to
+    `diffing` only where a comparison DIFFED, so a name compared under
+    the default order that produces no diff leaves no row at all, and
+    the two states hand this function byte-identical `diffing` and
+    `compared` -- constructed and run, not reasoned about. The
+    distinction lives in the ORDERS each name was compared under, which
+    is main()'s `entries` and would be a fourth argument here. So a
+    message over these rows may say the run measured no default-order
+    diff, and must NOT say the name stopped diffing; and a caller must
+    not try to label them off `diffing`, which cannot answer it.
+    _Dormant's `kind` is the shape to copy if that fourth argument is
+    ever added and the two are told apart.
     """
     measured = {name: tuple(sorted(diff))
                 for name, diff, order in diffing if order is None}

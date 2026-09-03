@@ -3289,8 +3289,10 @@ def test_a_recorded_name_outside_this_run_is_skipped() -> None:
     Only the SUBSET half of the asymmetry the vacancy check's caller
     reads (#382): that caller REFUSES under a full run, and this
     function is silent in both cases. Refusing a recorded name no
-    corpus holds any more is the caller's half -- `set(recorded) -
-    compared` under `full_corpus` -- and nothing here does it.
+    corpus holds any more is the caller's half, and it asks
+    `set(recorded) - set(corpus_names)` -- the PRE-skip list, since the
+    baseline-minimum skip takes a name out of the RUN and out of no
+    file. Nothing here does either.
     """
     assert compare.recorded_diff_mismatches(
         {"Smith, Jr.": ("family", "suffix")}, [], set()) == []
