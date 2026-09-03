@@ -243,13 +243,20 @@ stays UNEXPLAINED and fails the run even when the name itself sits in
 a radar file.
 
 A recorded diff shape (`MOVED SHAPE`, below) is the second thing that
-outranks the tier, and the larger of the two: it feeds the exit code
-without asking what tier the name sits in. Measured 2026-09-03, 21 of
-the 31 rows in `_RECORDED_DIFFS['expected_since_1.4.0.toml']` sit on
-radar-tier names, so radar PARSER DRIFT can fail the run wherever
-someone has pinned a shape (RECOMPUTE: for each row, take the tier of
-the first corpus file holding the name with contract files sorted
-first, as `main()` loads them). That is a pin doing what pins do --
+outranks the tier: it feeds the exit code without asking what tier the
+name sits in. Measured 2026-09-03, MOST of the rows in
+`_RECORDED_DIFFS['expected_since_1.4.0.toml']` sit on radar-tier names
+-- 21 of 31 -- so radar PARSER DRIFT can fail the run wherever someone
+has pinned a shape (RECOMPUTE: for each row, take the tier of the first
+corpus file holding the name with contract files sorted first, as
+`main()` loads them). Which of the two outranks the tier more WIDELY is
+deliberately not claimed here, because the answer inverts with the unit
+and neither unit is the point: the exclusions number two against 31
+rows, while the two `[[never]]` patterns reach 60 corpus names between
+them, 37 of those radar-tier -- more radar names than the roster pins
+(measured 2026-09-03 by matching each `name_regex` against every name
+in the `corpus*.jsonl` glob, tiers read the same way). That is a pin
+doing what pins do --
 someone wrote the row by hand and it says what the name does -- but it
 is not what "a radar diff can never fail the run" leads a reader to
 expect. Read the tier rule as being about UNMATCHED diffs, which is
@@ -758,7 +765,7 @@ So the shapes live in `_RECORDED_DIFFS` in `compare.py`, keyed per ledger (a str
 - **A row naming a name no corpus holds** -- refused, before the worker runs, on a FULL run only. Nothing measures such a row, so it agrees with itself forever, which is the defect above in a second form. The repair is not mechanical: ask first whether the name left deliberately (`git log -S'<name>' -- tools/differential/corpus*.jsonl`), then either delete the row and its `_CROSS_RULE_WINNERS` partner, or restore the name to the corpus that lost it. Under `--corpus` this prints nothing, since a narrowed run legitimately holds almost none of the roster.
 - **`NOT CHECKED`** -- a NOTE rather than a finding, printed after the comparison and deliberately outside the exit code (#497, `9360919`). It names recorded rows whose corpus entry THIS BASELINE SKIPPED: an order-bearing entry a baseline with no `Policy` cannot honor is dropped before the comparison runs, so there is no measured diff to check the row against. Such a row falls between the two checks above -- `MOVED SHAPE` skips a name it did not compare, and the departed-name refusal passes it because the skip takes a name out of the RUN and out of no file -- and without the note it is checked by neither and reported by neither. So the note says which rows the shape report is silent about and claims nothing else. Do NOT delete a row over it: the name is in a corpus this run read. Re-run at a baseline that can honor its order to check it. Measured at 1.4.0, which is both the only baseline where the skip fires and the only ledger with rows, the window is `de Mesnil Jean, Dr.`, `de la Cruz Juan Carlos, Dr.` and `de la Cruz née Vega` -- none carrying a roster row today, so the note prints on no run yet. "Do not refuse" and "say nothing" are two decisions, and only the first was ever argued.
 
-The two CHECKS read opposite name lists, and swapping them is the live hazard. "Was this name compared?" is about the RUN, so the shape check reads the list AFTER the baseline-minimum shape skip. "Does any corpus still hold this name?" is about the FILES, and the skip empties no file, so the departed-name check reads the list BEFORE it. The note reads both, being exactly the difference: the roster intersected with the pre-skip list, minus the post-skip one. It is also the one of the three that does not consult `full_corpus` -- that intersection already narrows itself under `--corpus`. `recorded_diff_mismatches`' docstring in `compare.py` carries the measurement and the recompute.
+The two CHECKS read opposite name lists, and swapping them is the live hazard. "Was this name compared?" is about the RUN, so the shape check reads the list AFTER the baseline-minimum shape skip. "Does any corpus still hold this name?" is about the FILES, and the skip empties no file, so the departed-name check reads the list BEFORE it. The note reads both, being exactly the difference: the roster intersected with the pre-skip list, minus the post-skip one. TWO of the three consult `full_corpus` not at all, and the departed-name refusal is the only one that reads it: the note's intersection already narrows itself under `--corpus`, and `MOVED SHAPE` never asks the flag either -- it is silent under `--corpus` only about rows whose name this run did not compare, so a narrowed run holding a pinned name still reports and still FAILS. Measured 2026-09-03: `--corpus corpus_issues.jsonl` at 1.4.0 with a corrupted shape on `Carod i` prints `MOVED SHAPE` and exits 1 (RECOMPUTE by corrupting that row in `compare._RECORDED_DIFFS` in memory around `main()`). Do not read the departed-name suppression across to it -- a `MOVED SHAPE` from a narrowed run is a real finding, and a `full_corpus` gate added here would be a behavior change and not a restoration. `compare.py`'s comment at the note says the note parts "from the two checks that do read that flag", counting `vacant` and `gone` -- its own frame, and a different pair from the three listed here. `recorded_diff_mismatches`' docstring in `compare.py` carries the measurement and the recompute for the two lists.
 
 ### Shapes that must never be explained (`[[never]]`)
 

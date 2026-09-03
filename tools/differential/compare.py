@@ -2492,13 +2492,18 @@ def main() -> int:
     # entry the baseline cannot honor. Such a row falls between both
     # checks: recorded_diff_mismatches skips a name outside `compared`,
     # and the `gone` refusal passes it because the skip takes a name out
-    # of the RUN and out of no file. Measured 2026-09-03: a deliberately
-    # wrong shape on 'de la Cruz née Vega' over the FULL corpus at 1.4.0
-    # left exit 0 and 375 stdout lines with no mention of the name --
-    # and the window is co-located with the only populated section,
-    # since 1.4.0 is both where the 31 rows live and the only baseline
-    # where the skip fires (every order-bearing shape's min_baseline is
-    # 2.0.0).
+    # of the RUN and out of no file. Measured 2026-09-03 by putting a
+    # deliberately wrong shape on 'de la Cruz née Vega' over the FULL
+    # corpus at 1.4.0, and BOTH sides of the note are stated because
+    # only the pair says what the note bought: before `9360919` that
+    # run exited 0 in 375 stdout lines naming the name in none of them,
+    # and it now exits 0 in 378, the three added lines being the NOT
+    # CHECKED note below naming it. Re-measure by corrupting the row in
+    # _RECORDED_DIFFS in memory around main(), which leaves the
+    # worktree alone. The window is co-located with the only populated
+    # section, since 1.4.0 is both where the roster's rows live and the
+    # only baseline where the skip fires (every order-bearing shape's
+    # min_baseline is 2.0.0).
     #
     # A NOTE. Not a refusal, not in the exit code, and the distinction
     # is the whole of it: recorded_diff_mismatches' docstring argues
