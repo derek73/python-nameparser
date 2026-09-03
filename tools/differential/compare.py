@@ -1652,23 +1652,38 @@ class _ShapeMismatch(NamedTuple):
 #: Default-order shapes only, because the roster classifies with no
 #: order. recorded_diff_mismatches below says what that leaves out.
 #:
-#: PROVENANCE, and it is not uniform. Re-measured 2026-09-03 by driving
-#: main() at all four baselines and feeding its `diffing` and its
-#: post-skip corpus to recorded_diff_mismatches: the 31 rows at 1.4.0
-#: are measured against the 1.4.0 wheel, as the roster always claimed,
-#: and all 31 still agree. The four 2.x rows, which #452 added under
-#: the same claim, do NOT:
+#: PROVENANCE. The 31 rows at 1.4.0 are measured against the 1.4.0
+#: wheel, as the roster always claimed, and all 31 still agree --
+#: re-measured 2026-09-03 by driving main() at all four baselines and
+#: feeding its `diffing` and its post-skip corpus to
+#: recorded_diff_mismatches, which is the recompute: wrap _run_worker to
+#: capture the post-skip entries and dormant_rules to capture `diffing`,
+#: since both receive exactly what main() built.
+#:
+#: Both 2.x sections are EMPTY, and that is a position rather than an
+#: omission -- _CROSS_RULE_WINNERS carries why no 2.x contest is pinned,
+#: including the measured fact that contests DO exist there. Each held
+#: two rows, added by #452, until #497 ran that recompute against them.
+#: All four recorded a shape no run makes:
 #:   'Nguyen, Van' produces no diff at ANY of the four baselines. It is
 #:   compared under the default order out of corpus_rules.jsonl every
 #:   time, and the tree agrees with all four wheels on it, so {family}
-#:   is a shape no run makes. That is the position 'Doe,, Jr.' is in,
-#:   which the roster gives no row precisely because it does not diff.
-#:   'Jane née and Jones Smith' diffs {family, given, maiden, middle}
-#:   at both 2.x baselines, not the {family, maiden, middle} recorded.
-#:   fix(#445) wins it under either shape, measured, so correcting it
-#:   moves no pin.
-#: Left as they stand by the commit that moved them, which changes no
-#: pin. Wiring this into main() is what forces the decision.
+#:   is a shape no run makes and no run ever asked classify() about the
+#:   name at all. That is the position 'Doe,, Jr.' is in, which the
+#:   roster gives no row precisely because it does not diff.
+#:   'Jane née and Jones Smith' diffs {family, given, maiden, middle} at
+#:   1.4.0, 2.0.0 and 2.1.0, and not at all at 2.2.0 -- never the
+#:   {family, maiden, middle} recorded. Its shape WAS correctable, and
+#:   the rows went anyway: the string is a malformed harvest from
+#:   corpus_issues.jsonl (radar), the tree reads it family 'Jane' /
+#:   maiden 'and Jones Smith', and nobody can state what it ought to
+#:   parse to, so a pin on it defends no boundary anyone would argue
+#:   for. In both 2.x ledgers fix(#445) is the only rule admitting it at
+#:   either shape, measured, so no pin moved either way.
+#: Deleting a row removes a PIN, not a name: corpus_issues.jsonl is
+#: append-only and both strings are still compared, and classified, on
+#: every run. 'Nguyen, Van' is classified by nothing only because it
+#: diffs from nothing.
 _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
     # open cycle: one rule, so nothing for a second one to contest
     "expected_since_2.2.0.toml": {},
@@ -1705,14 +1720,8 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "abu bakr al baghdadi": ("_initials",),
         "Berg, abdul van": ("_initials",),
     },
-    "expected_since_2.0.0.toml": {
-        "Nguyen, Van": ("family",),
-        "Jane née and Jones Smith": ("family", "maiden", "middle"),
-    },
-    "expected_since_2.1.0.toml": {
-        "Nguyen, Van": ("family",),
-        "Jane née and Jones Smith": ("family", "maiden", "middle"),
-    },
+    "expected_since_2.0.0.toml": {},
+    "expected_since_2.1.0.toml": {},
 }
 
 

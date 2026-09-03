@@ -2615,45 +2615,42 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
     },
     # The two 2.x ledgers had NO section here until #452, and the
     # coverage assertion below was `<=`, so their absence read as "no
-    # contest to pin" rather than "nobody looked". The #452 narrowings
-    # are what made that expensive: shrinking a rule's `fields` hands
-    # every shape it no longer admits to whatever claims it next, and
-    # measured across the fourteen, that moved shapes in both files.
-    # Neither _CORPUS_CLAIMS nor the gate's totals can see a handover --
-    # reach is regex-only and the total is per-corpus -- so these rows
-    # are the only thing that would.
-    # All four rows below are the ones #497 caught: their SHAPES are
-    # the four compare._RECORDED_DIFFS records a run contradicting, so
-    # read the argument each comment makes as an argument about
-    # classify() -- which rule takes which shape, still true -- and not
-    # as a claim about what these two names diff today. The provenance
-    # note beside _RECORDED_DIFFS has the measurements.
-    "expected_since_2.0.0.toml": {
-        # fix(#296) lost `family` and `given`; {family} on this name is
-        # one of the shapes it stopped admitting, and fix(#379) takes it.
-        # The right home -- a tussenvoegsel attaching to the family is
-        # exactly what that rule is about -- which is not the point: the
-        # point is that a later edit sends it somewhere else in silence.
-        "Nguyen, Van":
-            "fix(#379) a tussenvoegsel after a family comma attaches to the family",
-        # fix(#412) lost `middle`; this shape went to fix(#445), which
-        # sits BEHIND it in file order, so the handover was decided by
-        # the narrowing rather than by position.
-        "Jane née and Jones Smith":
-            "fix(#445) the lone name word beside a marker a connective join no longer absorbs",
-    },
-    "expected_since_2.1.0.toml": {
-        # The same two handovers, recorded against this baseline rather
-        # than copied from the 2.0.0 rows -- the ledgers differ, and
-        # #452's own lesson is that a claim true in one file is not
-        # thereby true in its siblings. This block said "measured
-        # against this baseline's own run" until #497 ran one: both
-        # shapes are among the four that disagree with it.
-        "Nguyen, Van":
-            "fix(#379) a tussenvoegsel after a family comma attaches to the family",
-        "Jane née and Jones Smith":
-            "fix(#445) the lone name word beside a marker a connective join no longer absorbs",
-    },
+    # contest to pin" rather than "nobody looked". They are back to
+    # empty, and it is now the other thing: a stated position, which is
+    # what the equality assertion below makes sayable. Do not restore a
+    # row to fill them.
+    #
+    # #452 gave each two rows -- 'Nguyen, Van' and 'Jane née and Jones
+    # Smith', the handovers its narrowings caused -- and #497 deleted
+    # all four rather than correct them. Each recorded a diff shape a
+    # run contradicts (compare._RECORDED_DIFFS' provenance note has the
+    # measurements and the recompute, in one copy, including why the one
+    # correctable shape was not corrected), and at the shape each name
+    # really produces, exactly one rule admits it. That is the defect
+    # under the wrong shapes rather than beside them: a row pinning a
+    # race with one runner is never exercised as a contest, so its shape
+    # only ever had to agree with itself.
+    #
+    # EMPTY IS NOT "these ledgers hold no contested name". Measured
+    # 2026-09-03 over the diffs each baseline's own run produces, 5 of
+    # the 247 at 2.0.0 and 1 of the 155 at 2.1.0 move a shape two or
+    # more rules admit, file order picking the winner ('MD, PHD' is the
+    # one both have). Recompute: drive compare.main() at the baseline,
+    # capture its `diffing` by wrapping dormant_rules, and count the
+    # names for which more than one rule satisfies
+    # compare._entry_matches at the measured shape. None of those
+    # boundaries is argued about in this file, and this roster pins the
+    # arguments this file makes -- so a row is owed when someone argues
+    # one, not before.
+    #
+    # Nor is "only one rule admits it" grounds on its own to delete a
+    # row: 13 of the 31 above are in that position too, and say so (the
+    # jr rule's surplus, the bound-given trio). They stay because the
+    # shapes they pin are shapes runs actually make, so widening a
+    # `fields` or moving a rule hands the name over and this test says
+    # so. The four deleted rows could not do that work at any edit.
+    "expected_since_2.0.0.toml": {},
+    "expected_since_2.1.0.toml": {},
 }
 
 
