@@ -714,9 +714,13 @@ breaks `_CROSS_RULE_WINNERS`.
 
 **Under `--corpus` the two checks are NOT symmetric**, which is why
 only one of them refuses there. A smaller name set removes contests.
-For the undeclared check that is fail-closed -- fewer contests, fewer
-things to declare -- so `--corpus` is only ever more lenient. For the
-vacancy check it INVERTS: a live declaration whose contested names
+For the undeclared check that can only UNDER-REPORT, never
+false-alarm -- fewer contests, fewer things to declare -- so
+`--corpus` is only ever more lenient. Not "fail-closed": this file
+uses that for the `_CORPUS_TIERS` and floor rosters, which REFUSE on
+a missing entry, and a check that errs toward not refusing is the
+opposite of one that errs toward refusing. For the vacancy check it
+INVERTS: a live declaration whose contested names
 all sit outside the subset reads as vacant, and following the advice
 would delete an exemption the full gate needs and then fail the full
 run for the undeclared contest that reappears. So a vacancy is a hard

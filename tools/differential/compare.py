@@ -1835,12 +1835,15 @@ def main() -> int:
     #
     # THE TWO CHECKS READ A SMALLER NAME SET IN OPPOSITE DIRECTIONS,
     # which is the whole reason only one of them refuses below. Dropping
-    # names can only remove contests. For `undeclared` that is
-    # fail-closed: fewer contests is fewer pairs anyone owes a
-    # declaration, so a partial run is strictly more lenient and can
-    # never invent a refusal. For `vacant` it INVERTS -- a live
-    # declaration whose contested names are outside this run reads
-    # exactly like a stale one. Measured: every one of the six corpora,
+    # names can only remove contests. For `undeclared` that can only
+    # UNDER-REPORT, never false-alarm: fewer contests is fewer pairs
+    # anyone owes a declaration, so a partial run is strictly more
+    # lenient and can never invent a refusal. (Not "fail-closed" --
+    # this file uses that term above for the _CORPUS_FLOORS and
+    # _CORPUS_TIERS rosters, which REFUSE on a missing entry, and a
+    # check that errs toward not refusing is the opposite of that.)
+    # For `vacant` it INVERTS -- a live declaration whose contested
+    # names are outside this run reads exactly like a stale one. Measured: every one of the six corpora,
     # run alone against expected_since_1.4.0.toml, reports vacancies --
     # 11 of the 11 exemptions for corpus.jsonl, corpus_cjk.jsonl and
     # corpus_shapes.jsonl, and 8, 7 and 5 for the other three. So a

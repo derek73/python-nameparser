@@ -22,6 +22,35 @@
 # which rule classifies a name and breaks _CROSS_RULE_WINNERS. See
 # also the note above the four fix(suffix-routing) rules at the end of
 # this file.
+#
+# RECOMPUTE, once for all eleven. Those `why` texts quote counts that
+# drift -- "explains N names", the contract/radar splits inside them,
+# the 17/15/9/6 breakdown on the compound/peel pair, and how many
+# contract names go UNEXPLAINED if a rule is deleted. NONE is pinned
+# by a test, so re-measure before editing any of them rather than
+# copying the neighbouring digits (docs/design/AGENTS.md: a count
+# that drifts carries its recompute; a stale one here has already
+# reached a filed issue once).
+#   1. `uv run python tools/differential/compare.py --baseline 1.4.0`
+#      prints `## <issue> (N)` per rule. N IS the explains-count; the
+#      roster under it truncates at ten names, the heading does not.
+#   2. For a tier split, take each explained name's corpus file from
+#      the tools/differential/corpus*.jsonl glob and its tier from
+#      compare.py's _CORPUS_TIERS -- read that map, never rebuild it
+#      from a file's name or size. corpus.jsonl is the LARGEST corpus
+#      and it is RADAR; a name in both tiers reads contract, the
+#      dedup loading contract files first.
+#   3. For "N names this pair is contested over", call
+#      order_contests(rules, names) with `names` the union of
+#      _load_entries over that same glob.
+#   4. For "deleting the rule sends N contract names to UNEXPLAINED",
+#      delete the rule and re-run step 1.
+# Do NOT substitute driving classify() over a rule's regex reach at
+# its declared `fields`: that answers what the rule COULD claim, not
+# what it explains. Measured 2026-09-02 over the rules named in the
+# eleven exemptions, reach runs from equal to the explained count up
+# to forty times it -- 288 against 8 for the lone post-comma routing
+# rule, which is the rule a wrong count reached a filed issue on.
 
 [[change]]
 issue = "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots"
@@ -397,11 +426,13 @@ credential reading here: 'MD' stops being a first name and becomes the
 one-word name. This rule is the routing rule PLUS the pre-comma merge
 on a single string, so a widened routing rule would take the union and
 report only half of it. _CROSS_RULE_WINNERS pins ('MD, PHD',
-('family','given','suffix','title')) here. Both names are radar tier
-since #488, so neither can demand a rule any more and nothing fatal
-turns on this pair. The demotion reaches the NAMES, not both rules:
+('family','given','suffix','title')) here. Both names sit in
+corpus_issues.jsonl alone -- radar since #468's tier split, and
+untouched by #488, which created corpus_cjk_tolerated.jsonl and holds
+neither name -- so neither can demand a rule any more and nothing
+fatal turns on this pair. The tier reaches the NAMES, not both rules:
 measured, this rule explains two names and both are radar, which makes
-it a candidate for #495; the routing rule explains ten of which eight
+it a candidate for #495; the routing rule explains eight of which six
 are contract, and is not one."""
 
 [[change.precedes_narrower]]
@@ -416,11 +447,12 @@ plausible-looking case -- and it would then explain a credential-only
 string as a name with a listing comma, losing the postnominal reading
 that moves the title and the suffix in the same breath. A string that
 is nothing but credentials is not a name plus a comma. Radar tier
-since #488 on both names, so this pair is watched rather than
-enforced -- and again only the wider rule is #495's business.
+since #468 on both names -- corpus_issues.jsonl, which #488 did not
+touch -- so this pair is watched rather than enforced, and again only
+the wider rule is #495's business.
 Measured, the precomma rule explains seven names of which three are
 contract ('Berg, abdul vd', 'Smith, Dr.', 'Smith, de Mesnil Jean'), so
-it outlives the demotion whatever #495 decides about this one."""
+it outlives the radar tier whatever #495 decides about this one."""
 
 [[change]]
 issue = "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes"
@@ -1161,12 +1193,22 @@ issue = "fix(cjk-comma-honorific-peel) glued honorific peels off a post-comma gi
 # move no family, so claiming them there would be the same field-shape
 # coincidence #372 was filed over, relocated rather than fixed.
 #
-# `fields` is what separates the two, not file order. The union rows
-# ('Dr 김민준씨, V.', '田中さん, PhD') diff with `family` in the mix,
-# which is outside this rule's [given, suffix], so they cannot match
-# here however early it sits and still fall through to the compound
-# rule. Written above it anyway, so the narrower rule is also the
-# earlier one and the tie never has to be reasoned about.
+# `fields` separates the two for the UNION rows ONLY, and file order
+# decides the rest -- do not read the first half as the whole. The
+# union rows ('Dr 김민준씨, V.', '田中さん, PhD') diff with `family` in
+# the mix, which is outside this rule's [given, suffix], so they
+# cannot match here however early it sits and still fall through to
+# the compound rule. But the seven names this rule EXPLAINS diff
+# exactly {given, suffix}, which both rules' `fields` admit, and the
+# two regexes are byte-identical -- so file order alone holds them
+# here, and swapping the two rules reattributes all seven (measured
+# 2026-09-02; docs/design/decisions.md#differential-ledger's Declined
+# entry on #382 option 1 carries the measurement and why narrowing
+# the regex cannot change it). This rule is narrow-first, the
+# declaration-free default, so the pair is no `order_contests`
+# contest and owes no [[change.precedes_narrower]] block -- which is
+# not the same as order deciding nothing. What pins the seven is
+# _CROSS_RULE_WINNERS, by name.
 #
 # The regex is the same comma-plus-classified-codepoint pair the
 # compound rule carries, hand-copied from _SCRIPT_RANGES and pinned by

@@ -3099,10 +3099,16 @@ def test_a_rule_reaching_no_corpus_name_says_why_it_is_kept() -> None:
 #:
 #: 11 pairs, all in the 1.4 ledger. They divide by the tier of the
 #: names they are contested over -- some reach contract-tier names,
-#: the rest only radar since #488's demotion -- and #495 argues from
-#: that division, which survives a name changing tier even though its
-#: two counts there do not. Measured 2026-09-02. A row that MOVES is a
-#: finding, not a number to update: re-measure before editing it.
+#: the rest only radar -- and #495 argues from that division, which
+#: survives a name changing tier even though its two counts there do
+#: not. Read a name's tier off `_CORPUS_TIERS` and not off any one
+#: demotion: the five radar-only pairs get there by two different
+#: warrants, #488's `corpus_cjk_tolerated.jsonl` demotion for most of
+#: the CJK names and #468's tier split for every `corpus_issues.jsonl`
+#: one -- which is both 'Jr., PhD'/'MD, PHD' pairs whole, and one name
+#: of the seventeen the compound/peel pair is contested over. Measured
+#: 2026-09-02. A row that MOVES is a finding, not a number to update:
+#: re-measure before editing it.
 _ORDER_EXEMPTION_EFFECT: dict[str, list[tuple[str, str, int]]] = {
     "expected_since_1.4.0.toml": [
         ("fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example",
