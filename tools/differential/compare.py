@@ -1823,13 +1823,24 @@ def main() -> int:
     # never invent a refusal. For `vacant` it INVERTS -- a live
     # declaration whose contested names are outside this run reads
     # exactly like a stale one. Measured: every one of the six corpora,
-    # run alone against expected_since_1.4.0.toml, reports vacancies
-    # (11 of the 11 exemptions for three of them). So a partial run
-    # NOTES that count and does not act on it, the way over_declared_rules
-    # handles its identical subset hazard, and for the reason the
-    # corpus-floor roster above is skipped under `--corpus`: narrowing
-    # is the point of the flag. Do not fold the two branches back into
-    # one shape.
+    # run alone against expected_since_1.4.0.toml, reports vacancies --
+    # 11 of the 11 exemptions for corpus.jsonl, corpus_cjk.jsonl and
+    # corpus_shapes.jsonl, and 8, 7 and 5 for the other three. So a
+    # partial run NOTES that count and does not act on it.
+    #
+    # THREE CHECKS READ `--corpus` AT THREE DIFFERENT STRENGTHS, and
+    # the differences are the point rather than an inconsistency to
+    # tidy. The corpus-floor roster above is SKIPPED entirely, because
+    # narrowing is what the flag is for. over_declared_rules still
+    # FAILS the run -- `overwide` feeds the exit code on every run --
+    # and only appends a NOTE that the union it computed is over a
+    # subset, so its repair advice is not followed blindly. `vacant`
+    # alone does not fail, because it is the only one of the three
+    # whose VERDICT inverts under narrowing rather than merely its
+    # evidence. Do not fold the two branches below back into one
+    # shape, and do not level the three checks onto one strength: an
+    # earlier draft of `vacant` refused under `--corpus` and told the
+    # contributor to delete legitimate exemptions.
     #
     # `rules` here is _sorted_rules' output, which is intentional and
     # harmless: since #451 every rule carries a name_regex, so the sort
