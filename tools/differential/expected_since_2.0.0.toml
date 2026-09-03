@@ -1253,9 +1253,10 @@ issue = "fix(#445) the lone name word beside a marker a connective join no longe
 # 'and Jones Smith'.
 #
 # Its own rule rather than a widening of the fix(#412) rule above,
-# which claims two names: the other one keeps a given name, and one
-# rule holding both would have to declare `given` for both and
-# pre-excuse its loss where losing it would be a regression. At 1.4.0
+# whose regex reaches this name too: the OTHER name it claims -- the
+# one it explains, 'Jane van der Berg née y Jones' -- keeps a given
+# name, and one rule holding both would have to declare `given` for
+# both and pre-excuse its loss where losing it would be a regression. At 1.4.0
 # the fix(#445) rule carries this name with the same four fields, v1
 # having read the marker as a middle word.
 name_regex = "(?i)^Jane n[ée]e and Jones Smith$"
@@ -1420,8 +1421,11 @@ issue = "fix(#462) the facade keeps an initial-shaped conjunction letter"
 # dotted E./Y. of either case, standing as its own word. Lowercase
 # bare e/y is the connective and does not move. The regex reaches 18
 # corpus names, of which 14 diffed when the rule was written
-# (2026-09-02). The four it reaches and does not move are what the
-# gap IS, and the invariant behind it is a GROUP rather than a count:
+# (2026-09-02); _CORPUS_CLAIMS in tests/v2/test_ledger_guards.py pins
+# that reach and fails if it moves, so the digit here is checked
+# rather than remembered. The names it reaches and does not move are
+# what the gap IS, and the invariant behind it is a GROUP rather than
+# a count:
 # they carry the E/Y in the GIVEN group, which has always initialed
 # every word it holds whatever the vocabulary says, so there was
 # nothing for the fix to restore.

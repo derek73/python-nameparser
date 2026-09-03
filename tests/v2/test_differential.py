@@ -2394,7 +2394,8 @@ def test_a_misspelled_corpus_key_is_a_hard_error(
     silently did not happen: the line compares under the default order
     while its author believes they declared a family-first one. The
     message names the FILE, like every other loader error here, because
-    five corpora are read in one run."""
+    one run reads every corpus in the directory and a message without a
+    filename says nothing about which one to open."""
     import json as _json
     corpus = tmp_path / "corpus_x.jsonl"
     corpus.write_text(_json.dumps(

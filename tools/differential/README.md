@@ -315,8 +315,8 @@ the moment a `<suffix> Ph. D.` name appeared.
 
 Backticks prompted a second look at prose, and the same change added
 two screens neither branch had: `:` joins the structural characters (it
-appears in no name across all five corpora, and accounts for three
-error messages and a PyPI trove classifier), and a short list of English function words
+appears in no name in any corpus, and accounted for three error
+messages and a PyPI trove classifier), and a short list of English function words
 rejects capitalized sentences the character screen cannot see —
 `What this gate does not cover` is well-formed as a phrase. That list
 is narrow on purpose: `and`, `the`, `of`, `will`, `can` and `do` all

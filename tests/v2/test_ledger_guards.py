@@ -445,9 +445,10 @@ def test_every_span_bearing_rule_matches_the_script_ranges(
         # written in none of them -- and unlike a depth test, this does
         # not care how the widening is spelled. "(?:CJK|[A-Za-z])"
         # hides the pipe at depth 1 where the check above stops
-        # looking, and claims 644 of the 654 unclassified corpus names;
-        # this sees
-        # it. Both are kept: the depth test gives the clearer message
+        # looking, and its Latin half claims all but a handful of
+        # _UNCLASSIFIED_NAMES -- the whole population this assertion is
+        # over, whatever that population's size that day; this sees it.
+        # Both are kept: the depth test gives the clearer message
         # for the naive spelling, and catches a widening toward a
         # script the corpora happen not to contain.
         unclassified = _UNCLASSIFIED_NAMES.intersection(_claimed(regex))
@@ -761,8 +762,11 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     "fix(#400/#274)": ("abd Berg née Jones", "abd Allah Smith",
                        "Jane Smith née Jones"),
     # The literal-anchored rules #413 added. Each claims exactly one
-    # corpus name, so _CORPUS_CLAIMS cannot see a widening that reaches
-    # only names the corpora lack -- these probes are the only wall.
+    # corpus name -- _CORPUS_CLAIMS carries that reach for both, so the
+    # number is pinned there rather than asserted here -- and a reach
+    # that small is one _CORPUS_CLAIMS cannot use: a widening reaching
+    # only names the corpora lack leaves it unmoved. These probes are
+    # the only wall.
     "fix(#399) a maiden marker bounds the particle chain: the geb. spelling":
         ("Berg, Ursula von der geb. Albrecht",),
     "fix(credential-pair-order) a split credential and a suffix render in written order":
@@ -1421,10 +1425,11 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # fields and share the first set; the eighth ('John née Jones
     # Smith Ma') moves those plus `suffix`, and the ninth ('Smith
     # (née Jones)') keeps the rule it already had. At 2.0.0/2.1.0 the
-    # second set holds six that move two fields: five of the 1.4
-    # seven, plus that acronym name, whose acronym is no part of the
-    # diff at those baselines. The two the second set drops are the
-    # compounds with #412 and #424, each with a rule of its own.
+    # second set holds the ones that move two fields: the first set
+    # less the two compounds it drops -- with #412 and with #424, each
+    # with a rule of its own -- plus that acronym name, whose acronym
+    # is no part of the diff at those baselines. Read the composition
+    # off the two literals below rather than off a count here.
     #
     # Spelled out rather than written as the shape -- one word, then a
     # marker -- because that shape also matches rules.md#M4's two
@@ -2209,15 +2214,15 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(27, ('_initials',), "6b242c287db8", ('DEFAULT',)),
         "fix(#360) los joined the particles, so it no longer initials":
             _Claim(1, ('_initials',), "cd721215f463", ('DEFAULT',)),
-        # fix(#462)'s reach is 18 where it explains 14. Its regex is a
-        # letter SHAPE rather than a name list, and the four extra --
+        # fix(#462) reaches more than it explains -- the reach is the
+        # _Claim below, and the gap is the names named here. Its regex
+        # is a letter SHAPE rather than a name list, and the extra --
         # 'E Anne D', 'E Jones', 'E Maria', 'Y. L.' -- carry the E/Y in
         # the GIVEN group, which has always initialed every word it
         # holds whatever the vocabulary says, so the fix does not move
         # them. The discriminator is the GROUP and not the position:
         # 'E Anne D,Leonardo' also leads with the E, but its comma
-        # re-roles the whole run into the FAMILY group, and it is one
-        # of the 14 that move.
+        # re-roles the whole run into the FAMILY group, and it moves.
         # The digest is the same in all three 2.x ledgers because the
         # regex is the same string in each.
         "fix(#462) the facade keeps an initial-shaped conjunction letter":
@@ -2225,7 +2230,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
-    # the 2.0.0 mapping above, the same regex classifying the same 14.
+    # the 2.0.0 mapping above, the same regex classifying the same
+    # names.
     "expected_since_2.2.0.toml": {
         "fix(#462) the facade keeps an initial-shaped conjunction letter":
             _Claim(18, ('_initials',), "3dd0e0276be6", ('DEFAULT',)),
