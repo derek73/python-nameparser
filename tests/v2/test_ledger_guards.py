@@ -3162,8 +3162,17 @@ def test_the_recorded_order_contests_are_what_the_ledgers_hold() -> None:
         f"Missing: {sorted({L.name for L in _LEDGERS} - set(_ORDER_EXEMPTION_EFFECT))}; "
         f"unknown: {sorted(set(_ORDER_EXEMPTION_EFFECT) - {L.name for L in _LEDGERS})}")
     for ledger in _LEDGERS:
+        rules = _rules(ledger)
+        # order_contests' shape leniency (see _rule_reach) is a
+        # BORROWED guarantee: it trusts validate_rules to have run, and
+        # `_rules()` does not run it. Calling it here turns the borrowed
+        # guarantee into a local one, so this guard is not measuring a
+        # ledger nothing has validated. It costs nothing on the shipped
+        # files -- they already validate -- and fires first on a
+        # hand-edit that would otherwise be scanned as if well-formed.
+        compare.validate_rules(rules, ledger.name)
         found = [(c.earlier, c.later, len(c.names))
-                 for c in compare.order_contests(_rules(ledger), _CORPUS_NAMES)]
+                 for c in compare.order_contests(rules, _CORPUS_NAMES)]
         assert found == _ORDER_EXEMPTION_EFFECT[ledger.name], (
             f"{ledger.name}: the order-decided contests are no longer "
             f"what this roster records.\n  found:    {found}\n"
@@ -3194,6 +3203,16 @@ def test_every_order_decided_contest_is_declared() -> None:
     compare = load_tool("compare")
     for ledger in _LEDGERS:
         rules = _rules(ledger)
+        # Both scanners below read `precedes_narrower` through
+        # _declared_over, whose docstring says outright that its shape
+        # guarantee is BORROWED from validate_rules -- and `_rules()`
+        # does not validate. Without this call a whitespace-only `why`
+        # on a real exemption passes here, because _declared_over reads
+        # the entry as a perfectly good declaration and retires the
+        # pair. One line converts the borrowed guarantee into a local
+        # one; the shipped ledgers already validate, so it costs
+        # nothing.
+        compare.validate_rules(rules, ledger.name)
         undeclared = compare.undeclared_contests(rules, _CORPUS_NAMES)
         assert not undeclared, "\n".join(
             [f"{ledger.name}: {len(undeclared)} order-decided contest(s) "
