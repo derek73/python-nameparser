@@ -1727,8 +1727,15 @@ def main() -> int:
     # while printing a summary that reads exactly like a full one. The
     # floors already name every corpus that is supposed to exist, so
     # ask them. Skipped under --corpus, where narrowing is the point.
+    #
+    # The same question, asked of the names rather than of the flag,
+    # answers "is this run over the FULL corpus" for the vacancy check
+    # below -- which is what that check needs, and not the same as
+    # "was --corpus omitted": the flag is `action="append"`, so naming
+    # every corpus explicitly narrows nothing.
+    missing = sorted(set(_CORPUS_FLOORS) - {p.name for p in paths})
+    full_corpus = not missing
     if not args.corpus:
-        missing = sorted(set(_CORPUS_FLOORS) - {p.name for p in paths})
         if missing:
             raise SystemExit(
                 f"corpus files named in _CORPUS_FLOORS are not on disk: "
@@ -1839,7 +1846,7 @@ def main() -> int:
     # corpus_shapes.jsonl, and 8, 7 and 5 for the other three. So a
     # partial run NOTES that count and does not act on it.
     #
-    # THREE CHECKS READ `--corpus` AT THREE DIFFERENT STRENGTHS, and
+    # THREE CHECKS READ THE NARROWING AT THREE DIFFERENT STRENGTHS, and
     # the differences are the point rather than an inconsistency to
     # tidy. The corpus-floor roster above is SKIPPED entirely, because
     # narrowing is what the flag is for. over_declared_rules still
@@ -1852,6 +1859,13 @@ def main() -> int:
     # shape, and do not level the three checks onto one strength: an
     # earlier draft of `vacant` refused under `--corpus` and told the
     # contributor to delete legitimate exemptions.
+    #
+    # `full_corpus`, not `args.corpus`: the question the inversion
+    # turns on is whether this run read every corpus, and `--corpus` is
+    # `action="append"`, so a run naming all six of them narrows
+    # nothing and must refuse a stale exemption exactly as a flagless
+    # run does. A genuine subset still only NOTEs, which is the whole
+    # of the argument above.
     #
     # `rules` here is _sorted_rules' output, which is intentional and
     # harmless: since #451 every rule carries a name_regex, so the sort
@@ -1868,13 +1882,14 @@ def main() -> int:
              f"both regexes reach one name, file order alone picks the "
              f"winner. Declare it on the EARLIER rule with a "
              f"[[change.precedes_narrower]] block naming the later one "
-             f"-- do NOT reorder, which moves which rule classifies a "
-             f"name and breaks _CROSS_RULE_WINNERS:"]
+             f"and saying what it describes that the later one does "
+             f"not -- do NOT reorder, which moves which rule classifies "
+             f"a name and breaks _CROSS_RULE_WINNERS:"]
             + [f"  {c.earlier!r}\n  outranks {c.later!r}\n"
                f"  on {len(c.names)} name(s), e.g. {list(c.names[:3])}"
                for c in undeclared]))
     vacant = vacant_exemptions(rules, corpus_names)
-    if vacant and args.corpus:
+    if vacant and not full_corpus:
         print(f"NOTE: this run used --corpus, and over that SUBSET "
               f"{len(vacant)} exemption(s) in {ledger.name} declare "
               f"precedence over a pair nothing here contests. That "
@@ -1885,9 +1900,10 @@ def main() -> int:
     elif vacant:
         raise SystemExit("\n".join(
             [f"{ledger.name} carries {len(vacant)} exemption(s) over a "
-             f"pair that is not contested over the full corpus. Delete "
-             f"the exemption -- a justification for a hazard that is "
-             f"gone reads exactly like one for a hazard that is live:"]
+             f"pair that is not contested over the full corpus. A rule "
+             f"was narrowed or a corpus name left. Delete the exemption "
+             f"-- a justification for a hazard that is gone reads "
+             f"exactly like one for a hazard that is live:"]
             + [f"  {v.earlier!r}\n  declares precedence over {v.later!r}"
                for v in vacant]))
     # an ORDER-BEARING entry must never reach a worker whose baseline
