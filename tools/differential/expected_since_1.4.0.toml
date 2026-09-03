@@ -1277,10 +1277,13 @@ is "the diff includes `family`", and `family` moves only because the
 peel took the honorific off it -- so for those three the rule's own
 label is wider than the name is. The rule that would describe them,
 fix(cjk-comma-honorific-peel) above, covers this shape for a
-POST-comma given name and has no family-side twin. #496 is that gap;
-until it closes, holding them here is the least wrong of the readings
-available, and this is the entry that says so out loud rather than
-letting the rule name imply otherwise.
+POST-comma given name and has no family-side twin. Writing one was
+weighed as #496 and DECLINED: the three are radar (the paragraph
+below), so no gate can demand the rule, and #495 asks whether the
+radar-only rules already here still earn their place -- fewer rules
+for this corner, not a second one. So holding them here is the least
+wrong of the readings available, and this is the entry that says so
+out loud rather than letting the rule name imply otherwise.
 
 All seventeen contested names are radar tier since #488, so nothing
 fatal turns on who wins this particular contest: an unmatched diff on
