@@ -106,6 +106,12 @@ uv run sphinx-build -b html docs dist/docs
 #    uv run python tools/differential/compare.py --baseline 1.4.0   # the v1 compat contract
 #    uv run python tools/differential/compare.py                    # the previous minor
 #    uv run python tools/differential/compare.py --baseline 2.0.0   # 2.0.0's ledger has rules too
+#    NOTE (2026-09-03): that is THREE commands against FOUR ledgers with
+#    rules -- `--baseline 2.1.0` is the one no line above reaches, so the
+#    "EVERY baseline" instruction is not what this list does. Since #497
+#    a third check is per-ledger as well: the recorded-shape one reads
+#    _RECORDED_DIFFS[ledger.name], so the ledger nobody runs gets no
+#    dormancy check, no over-declaration check, and no shape check.
 #    Redirect to a file rather than piping — under zsh a pipe replaces the exit
 #    code with the pipe's, so a failing run reads as a passing one. The
 #    classified summary it prints is the source for the release notes' behavior

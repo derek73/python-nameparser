@@ -1636,16 +1636,20 @@ class _ShapeMismatch(NamedTuple):
 #: (tests/v2/test_ledger_guards.py), per ledger (#497).
 #:
 #: Baseline-relative by construction, which is why it is keyed per
-#: ledger rather than once by name even though the two names appearing
-#: in two ledgers carry the same shape in both: a string moves a
-#: different set of roles against different baselines, and decisions.md
-#: (2026-08-28 #452) records `fix(#296) a lone post-comma credential is
-#: a suffix` moving four roles at 1.4.0 and two at both 2.x baselines.
+#: ledger rather than once by name: a string moves a different set of
+#: roles against different baselines, and decisions.md (2026-08-28
+#: #452) records `fix(#296) a lone post-comma credential is a suffix`
+#: moving four roles at 1.4.0 and two at both 2.x baselines. No name
+#: sits in two sections today -- the three non-1.4.0 ones are empty --
+#: so the keying is held by that argument alone.
 #:
-#: A recorded shape that MOVES is a FINDING, not a number to update:
-#: the parser changed what that name does, and the winner pinned beside
-#: it in _CROSS_RULE_WINNERS was recorded for the OLD shape, so both
-#: want reading before either is edited.
+#: A recorded shape that MOVES is a FINDING, not a number to update,
+#: and it names no cause because it cannot: the parser may have changed
+#: what that name does, or the row may have been wrong when it was
+#: recorded, which is what the provenance below found four times.
+#: Either way the winner pinned beside it in _CROSS_RULE_WINNERS was
+#: recorded for the OLD shape, so both want reading before either is
+#: edited.
 #:
 #: HERE rather than beside the roster because this is where the
 #: measurement happens. main() computes every name's real diff, so a
@@ -1759,8 +1763,17 @@ def recorded_diff_mismatches(
     skip runs. The two differ by exactly the entries an old baseline
     cannot honor -- 7 of them at 1.4.0, where 1120 load and 1113
     compare; re-measure by running this file with `--baseline 1.4.0`
-    and reading its `skipped` and `corpus:` lines. decisions.md, "the
-    rule-order arc", records the same trap for the contest checks,
+    and reading its `skipped` and `corpus:` lines. Those are ENTRY
+    counts. The paragraph further down counts NAMES, which is why the
+    same skip reads as 7 here and as 3 there: an entry is a (name,
+    order) pair, so the 1120 deduped entries carry 1116 distinct
+    strings -- three strings are compared under more than one order
+    ('de la Cruz Juan Carlos' under three, 'John Smith, Dr.' and 'de
+    la Cruz née Vega' under two) -- and four of the seven skipped
+    entries are the whole of the three names named below, while the
+    other three have a same-name twin that survives the skip.
+    decisions.md, "the rule-order arc", records the same trap for the
+    contest checks,
     which read the pre-skip list on purpose. Pass that list here and a
     roster row whose only entry was skipped reports as a name that
     stopped diffing, when it was never compared at all.
@@ -2162,8 +2175,15 @@ def main() -> int:
     # reads the ledger and the loaded names and nothing the worker
     # produces, and a refusal raised after the worker has installed the
     # pinned wheel and compared the whole corpus prints below the run's
-    # own `baseline:` header, disowning a comparison it just published
-    # (#382). The measured half of this check is the opposite case and
+    # own published `baseline:` header, for a comparison that will
+    # never be reported (#382). Not "disowning a comparison it just
+    # published": measured print order is `baseline:` at the tell,
+    # then the comparison loop, which prints nothing, then `corpus:
+    # ... intentional diffs:`, so at that later point the header
+    # would have printed and no line of the comparison would have. It
+    # is the ORDER of the two that earns the placement, as it does at
+    # the twin comment above. HERE, nothing has printed at all.
+    # The measured half of this check is the opposite case and
     # sits after the comparison, where the diff it reads exists.
     #
     # PRE-skip `corpus_names`, where the measured half takes the
@@ -2269,8 +2289,11 @@ def main() -> int:
     # The tree is checked BEFORE the worker runs. It depends on nothing
     # the worker produces, and validate_rules' own reasoning applies: a
     # misconfiguration that aborts after the whole install-and-compare
-    # pass is one the run reports below its own `baseline:` line,
-    # having already published a comparison it is about to disown. It
+    # pass is one the run reports below its own published `baseline:`
+    # line, having installed the wheel and compared the whole corpus
+    # for a report it will never make -- not "disowning a comparison it
+    # published", since nothing of the comparison prints until the
+    # `corpus: ... intentional diffs:` line further down. It
     # is the ORDER that earns the placement, not the clock. This
     # comment used to say that pass
     # "costs minutes" -- a magnitude nobody had measured, and wrong:
@@ -2516,8 +2539,16 @@ def main() -> int:
         # below uses for the two blocks that share it. A real parser
         # move lands on many of these rows at once, and per-row
         # repetition would bury the names under its own advice.
-        # (OVER-DECLARED repeats per row, but its shared text is one
-        # sentence.) No cause is named for a row with no measured
+        # (OVER-DECLARED repeats its shared text per row and is not
+        # the precedent for doing so here: measured 2026-09-03 its
+        # row-invariant text is three sentences and 47 words, against
+        # this lead's two and 39, so it is the LONGER of the two -- it
+        # gets away with the repetition because its rows come one per
+        # over-declared RULE, where these come one per name and a real
+        # parser move lands on many at once. An earlier draft of this
+        # parenthetical called that text one sentence and cited it as
+        # the model.) No cause is
+        # named for a row with no measured
         # shape: the check cannot tell the two apart --
         # recorded_diff_mismatches' docstring says why they are
         # collapsed -- and naming one would send half the readers to

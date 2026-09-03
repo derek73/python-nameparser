@@ -242,6 +242,19 @@ than a note about those five. A
 stays UNEXPLAINED and fails the run even when the name itself sits in
 a radar file.
 
+A recorded diff shape (`MOVED SHAPE`, below) is the second thing that
+outranks the tier, and the larger of the two: it feeds the exit code
+without asking what tier the name sits in. Measured 2026-09-03, 21 of
+the 31 rows in `_RECORDED_DIFFS['expected_since_1.4.0.toml']` sit on
+radar-tier names, so radar PARSER DRIFT can fail the run wherever
+someone has pinned a shape (RECOMPUTE: for each row, take the tier of
+the first corpus file holding the name with contract files sorted
+first, as `main()` loads them). That is a pin doing what pins do --
+someone wrote the row by hand and it says what the name does -- but it
+is not what "a radar diff can never fail the run" leads a reader to
+expect. Read the tier rule as being about UNMATCHED diffs, which is
+the only thing it was ever measured over.
+
 A corpus line is a bare JSON string or an object carrying `name` and,
 optionally, `tests` or `shape` -- the input-shape id from
 `tools/differential/shapes.py`, which is where each shape's notation,
@@ -588,6 +601,13 @@ dynamic check, so the release checklist runs `compare.py` at every baseline
 that has a ledger with rules -- a ledger left out of the checklist gets no
 dynamic dormancy check at all, and a `dormant` declaration in it goes
 unaudited. Adding a new ledger means adding its baseline to the checklist.
+Measured 2026-09-03, that has already slipped: the root `AGENTS.md` checklist
+lists THREE commands -- 1.4.0, the bare default, and 2.0.0 -- against four
+ledgers carrying rules, so `expected_since_2.1.0.toml` is the one no listed
+command reaches. The over-declaration check (#452) and the recorded-shape
+check (#497) are per-ledger for the same reason the dormancy one is -- the
+latter reads `_RECORDED_DIFFS[ledger.name]` -- so a ledger left out of the
+checklist gets none of the three.
 
 The static tier still exempts a rule on the mere PRESENCE of `dormant`; it
 never asks whether the reason is still true. Only the dynamic check can
@@ -732,12 +752,13 @@ Four checks now read the flag differently, and the differences are deliberate ra
 
 `tests/v2/test_ledger_guards.py` carries `_CROSS_RULE_WINNERS`, a roster pinning which rule should win a contested name. To ask that question it needs the name's diff SHAPE, which it feeds to `classify()` as an input -- so the shape is never itself checked, and a guessed one agrees with itself forever. That is how `田中さん II` sat recorded as `{given, suffix}` under a docstring promising the shapes were measured; the real diff is `{family, given, suffix}` (#497). The unit suite cannot catch it: it spawns no worker, deliberately, so it has no measured diff to compare against.
 
-So the shapes live in `_RECORDED_DIFFS` in `compare.py`, keyed per ledger (a string moves a different set of roles against different baselines), and every run checks them. Two findings come out of it, and they behave differently on purpose.
+So the shapes live in `_RECORDED_DIFFS` in `compare.py`, keyed per ledger (a string moves a different set of roles against different baselines), and every run checks them. THREE things come out of it -- two findings and a note -- and they behave differently on purpose.
 
 - **`MOVED SHAPE`** -- a recorded shape the run contradicts. Printed after the comparison, alongside `EXPLAINED NOTHING` and `OVER-DECLARED`, and it feeds the exit code the same way. It does not raise: a refusal there would land mid-report and take the `UNEXPLAINED` block down with it, and a stale roster row must never hide an unexplained diff. A moved shape is a FINDING, not a number to update, and it names no cause because it cannot: the parser may have changed what the name does, or the row may have been wrong when it was recorded -- which is what #497 found, four rows recording a shape no run makes under a roster promising the shapes were measured. Either way the winner pinned beside it in `_CROSS_RULE_WINNERS` was recorded against the OLD shape, so read both before editing either. Where the run measured no default-order diff at all, the report says so and names no cause: two states reach it (the parser stopped moving the name, or the name is compared only under a declared order) and the check cannot separate them.
 - **A row naming a name no corpus holds** -- refused, before the worker runs, on a FULL run only. Nothing measures such a row, so it agrees with itself forever, which is the defect above in a second form. The repair is not mechanical: ask first whether the name left deliberately (`git log -S'<name>' -- tools/differential/corpus*.jsonl`), then either delete the row and its `_CROSS_RULE_WINNERS` partner, or restore the name to the corpus that lost it. Under `--corpus` this prints nothing, since a narrowed run legitimately holds almost none of the roster.
+- **`NOT CHECKED`** -- a NOTE rather than a finding, printed after the comparison and deliberately outside the exit code (#497, `9360919`). It names recorded rows whose corpus entry THIS BASELINE SKIPPED: an order-bearing entry a baseline with no `Policy` cannot honor is dropped before the comparison runs, so there is no measured diff to check the row against. Such a row falls between the two checks above -- `MOVED SHAPE` skips a name it did not compare, and the departed-name refusal passes it because the skip takes a name out of the RUN and out of no file -- and without the note it is checked by neither and reported by neither. So the note says which rows the shape report is silent about and claims nothing else. Do NOT delete a row over it: the name is in a corpus this run read. Re-run at a baseline that can honor its order to check it. Measured at 1.4.0, which is both the only baseline where the skip fires and the only ledger with rows, the window is `de Mesnil Jean, Dr.`, `de la Cruz Juan Carlos, Dr.` and `de la Cruz née Vega` -- none carrying a roster row today, so the note prints on no run yet. "Do not refuse" and "say nothing" are two decisions, and only the first was ever argued.
 
-The two read opposite name lists, and swapping them is the live hazard. "Was this name compared?" is about the RUN, so the shape check reads the list AFTER the baseline-minimum shape skip. "Does any corpus still hold this name?" is about the FILES, and the skip empties no file, so the departed-name check reads the list BEFORE it. `recorded_diff_mismatches`' docstring in `compare.py` carries the measurement and the recompute.
+The two CHECKS read opposite name lists, and swapping them is the live hazard. "Was this name compared?" is about the RUN, so the shape check reads the list AFTER the baseline-minimum shape skip. "Does any corpus still hold this name?" is about the FILES, and the skip empties no file, so the departed-name check reads the list BEFORE it. The note reads both, being exactly the difference: the roster intersected with the pre-skip list, minus the post-skip one. It is also the one of the three that does not consult `full_corpus` -- that intersection already narrows itself under `--corpus`. `recorded_diff_mismatches`' docstring in `compare.py` carries the measurement and the recompute.
 
 ### Shapes that must never be explained (`[[never]]`)
 

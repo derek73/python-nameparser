@@ -2666,11 +2666,22 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
     # in this file presumes it.
     #
     # Nor is "only one rule admits it" grounds on its own to delete a
-    # row: 13 of the 31 above are in that position too, and say so (the
-    # jr rule's surplus, the bound-given trio). They stay because the
-    # shapes they pin are shapes runs actually make, so widening a
-    # `fields` or moving a rule hands the name over and this test says
-    # so. The four deleted rows could not do that work at any edit.
+    # row: 13 of the 31 above are in that position too. SIX of the 13
+    # say so where they sit -- the jr rule's surplus and the
+    # bound-given trio, three rows each -- and the other seven do not,
+    # so take the count from the recompute rather than from the
+    # comments. RECOMPUTE (measured 2026-09-03): count the rows of
+    # compare._RECORDED_DIFFS['expected_since_1.4.0.toml'] for which
+    # exactly one rule of compare._sorted_rules over this ledger
+    # satisfies compare._entry_matches at the recorded shape. They
+    # stay because the shapes they pin are shapes runs actually make,
+    # so widening a `fields` or moving a rule hands the name over and
+    # this test says so -- and 11 of the 13 route to a DIFFERENT rule
+    # under some other shape, so the assertion is doing work on them.
+    # mechanisms.md#RECORDED-ROSTERS carries that measurement and the
+    # reason counting admitters is the wrong instrument for the
+    # question. The four deleted rows could not do that work at any
+    # edit.
     "expected_since_2.0.0.toml": {},
     "expected_since_2.1.0.toml": {},
 }

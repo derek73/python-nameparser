@@ -2214,9 +2214,14 @@ def test_a_full_run_refuses_a_recorded_name_no_corpus_holds(
 
     Pre-worker, like both refusals it sits beside: it reads the ledger
     and the loaded names and nothing the comparison produces, and a
-    refusal raised afterwards prints below the run's own `baseline:`
-    header for a comparison it is about to disown. Its measured half
-    cannot do that, and prints instead.
+    refusal raised afterwards prints below the run's own published
+    `baseline:` header, for a comparison it will never report -- not
+    "a comparison it is about to disown", since nothing of the
+    comparison prints until the `corpus: ... intentional diffs:` line
+    below it. It is the ORDER that earns the placement, which is the
+    wording compare.py carries at all three of its own placement
+    comments. Its measured half cannot refuse at all, and prints
+    instead.
     """
     monkeypatch.setitem(compare._RECORDED_DIFFS,
                         "expected_since_1.4.0.toml",
@@ -3568,13 +3573,21 @@ def test_a_recorded_shape_matching_the_run_is_no_mismatch() -> None:
     # mismatch on others. All seven roles rather than the two above
     # because an unsorted reading cannot be refuted outright -- a set
     # CAN iterate alphabetically, and the two-role set above does under
-    # 85 of PYTHONHASHSEED 0..199. The seven-role set did under none of
-    # them, so the size is what makes this row an instrument rather
-    # than a coin flip. Recompute either count with
+    # 85 of PYTHONHASHSEED 0..199. The seven-role set THE ASSERTION
+    # BELOW BUILDS does under none of them, so the size is what makes
+    # this row an instrument rather than a coin flip. Measured
+    # 2026-09-03; recompute either count with
     #   for s in $(seq 0 199); do PYTHONHASHSEED=$s python3 -c \
-    #     'print(list({"family","suffix"})==sorted({"family","suffix"}))'
+    #     'S={"family","suffix"};print(list(S)==sorted(S))'
     #   done | grep -c True
-    # substituting compare.V2_FIELDS for the two-role set.
+    # substituting, for the seven-role count,
+    #   S=set(("title","given","middle","family","suffix",
+    #          "nickname","maiden"))
+    # -- compare.V2_FIELDS in ITS OWN order, which is the set the
+    # assertion passes. INSERTION ORDER is part of the measurement and
+    # not decoration: a bare set literal spelled alphabetically instead
+    # iterates sorted under seed 56, so a recipe retyped that way reads
+    # 1 of 200 where the assertion's own set reads 0.
     assert compare.recorded_diff_mismatches(
         {"Smith, Jr.": tuple(sorted(compare.V2_FIELDS))},
         [("Smith, Jr.", set(compare.V2_FIELDS), None)],

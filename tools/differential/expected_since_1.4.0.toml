@@ -429,8 +429,10 @@ definitionally family") while the family move is the whole of the
 credential reading here: 'MD' stops being a first name and becomes the
 one-word name. This rule is the routing rule PLUS the pre-comma merge
 on a single string, so a widened routing rule would take the union and
-report only half of it. _CROSS_RULE_WINNERS pins ('MD, PHD',
-('family','given','suffix','title')) here. Both names sit in
+report only half of it. _CROSS_RULE_WINNERS pins 'MD, PHD' here,
+keyed by the name alone since #497, and the shape it is adjudicated
+at -- ('family','given','suffix','title') -- is the one
+compare._RECORDED_DIFFS records for the name. Both names sit in
 corpus_issues.jsonl alone -- radar since #468's tier split, and
 untouched by #488, which created corpus_cjk_tolerated.jsonl and holds
 neither name -- so neither can demand a rule any more and nothing
