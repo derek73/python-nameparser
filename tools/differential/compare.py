@@ -1147,9 +1147,14 @@ class _Reach(NamedTuple):
     #: corpus names its `name_regex` reaches
     names: frozenset[str]
     #: the orders it admits, or None when it declares none and so
-    #: admits every order -- which _entry_matches reads off the
-    #: key's ABSENCE, not off a member list, so there is no set of
-    #: every order to put here
+    #: admits every order. _legal_orders() IS the set of every order,
+    #: and substituting it here would still be wrong: _entry_matches
+    #: reads an absent `orders` off the key's ABSENCE rather than off a
+    #: member list, so on a rule list validate_rules never saw -- the
+    #: hand-built ones the tests pass in -- the two readings diverge. A
+    #: rule with `orders = ["MADE_UP"]` intersects _legal_orders() to
+    #: the empty set and would stop being a contest, where classify()
+    #: would happily run it against a real comparison and it IS one.
     orders: frozenset[str] | None
 
 
@@ -1250,13 +1255,19 @@ def _declared_over(rule: dict[str, object]) -> frozenset[str]:
     disk. The leniency exists so the function stays usable on the
     hand-built rule lists the tests pass it. It is tempting to write
     it up as a safety property; it is not one. Of the shapes
-    validate_rules refuses, the three still visible here -- a non-list
-    value, an entry that is not a table, an entry whose `issue` is not
-    a string -- are refused toward REPORTING the contest, but an entry
-    naming a real rule with a missing or blank `why` reads here as a
-    perfectly good declaration and retires the pair. That is the
-    likeliest hand-edit slip in a ledger, and nothing in this function
-    catches it.
+    validate_rules refuses, four are refused toward REPORTING the
+    contest -- a non-list value, an EMPTY list, an entry that is not a
+    table, and an entry whose `issue` is not a string -- since each
+    leaves that entry out of the set and a smaller set declares less.
+    Two go the other way. An entry naming a real rule with a missing or
+    blank `why` reads here as a perfectly good declaration and retires
+    the pair; so does one whose `issue` is the EMPTY string, which
+    validate_rules refuses as a blanket opt-out but the
+    `isinstance(str)` test here admits -- and which retires the pair
+    against any rule whose own issue reads as "", the shape
+    `str(rule.get("issue", ""))` gives an issue-less hand-built rule.
+    The blank `why` is the likeliest hand-edit slip in a ledger, and
+    nothing in this function catches either of the two.
 
     So the guarantee is borrowed, not intrinsic. Reading strictly here
     would be no less safe -- a stricter reader declares LESS and so can
