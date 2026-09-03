@@ -2703,6 +2703,18 @@ def test_the_recorded_rule_still_wins_each_contested_name() -> None:
         never = _exclusions(ledger)
         shapes = compare._RECORDED_DIFFS[ledger_name]
         for name, expected in winners.items():
+            # explicit, because a bare KeyError here names a dict and a
+            # string and nothing else. The readable half-recorded-pin
+            # message lives in test_every_pinned_winner_has_a_recorded_shape,
+            # which a `-k` selection or a first failure may not have run.
+            assert name in shapes, (
+                f"{ledger_name}: {name!r} is pinned a winner in "
+                f"_CROSS_RULE_WINNERS with no shape in "
+                f"compare._RECORDED_DIFFS, so there is nothing to ask "
+                f"classify() about. Record the shape a run measures for "
+                f"it, or drop the pin -- "
+                f"test_every_pinned_winner_has_a_recorded_shape is the "
+                f"guard that states this as its own subject")
             fields = shapes[name]
             got = compare.classify(name, set(fields), rules, never)
             assert got is not None and got.startswith(expected), (
@@ -2730,7 +2742,34 @@ def test_every_pinned_winner_has_a_recorded_shape() -> None:
     """The roster names a contested name; _RECORDED_DIFFS says what it
     diffs. A name in one and not the other is a half-recorded pin --
     the winner cannot be checked without the shape, and a shape nothing
-    pins a winner for is unverified by the run for no purpose."""
+    pins a winner for is unverified by the run for no purpose.
+
+    The row VALUES are checked here too, against the three illegal
+    states compare.validate_rules already refuses for a rule's `fields`
+    (a name outside the role vocabulary, '_initials' beside a role, a
+    repeated role) plus the empty one. A recorded shape is fed to
+    classify() as the same kind of input a rule's `fields` is, so the
+    wording below mirrors those refusals deliberately -- the two should
+    read as one check written in two places.
+
+    WHY HERE. What each illegal row does WITHOUT these assertions,
+    measured 2026-09-03 by injecting one into the shipped 1.4.0 section
+    and running this file: a repeated role and an empty shape pass the
+    whole suite silently, and surface only as a MOVED SHAPE finding
+    from a gate run -- whose message says the winner beside the shape
+    "was recorded for the OLD shape", telling a contributor with a
+    copy-paste slip that the parser moved. A misspelled role and an
+    '_initials' beside a role happened to fail the sibling test above
+    as well, because on the rows they were injected into the corrupted
+    shape changed which rule classify() picks -- but that is a property
+    of those rows, not of the defect: a shape a second rule admits at
+    both spellings changes no winner and says nothing. Either way the
+    message names a rule handover rather than the typo, and the loop
+    that does catch these needs a baseline wheel and a full corpus
+    pass, so the row ships green through CI. At pytest speed the answer
+    is a sentence naming the typo. The `departed` assertion asks
+    compare.py's `gone` question the same way and for the same reason.
+    """
     compare = load_tool("compare")
     for ledger_name, winners in _CROSS_RULE_WINNERS.items():
         shapes = compare._RECORDED_DIFFS.get(ledger_name, {})
@@ -2738,6 +2777,52 @@ def test_every_pinned_winner_has_a_recorded_shape() -> None:
             f"{ledger_name}: winners without a recorded shape "
             f"{sorted(set(winners) - set(shapes))}; shapes with no "
             f"pinned winner {sorted(set(shapes) - set(winners))}")
+        # `gone`'s question, at pytest speed and against every ledger
+        # rather than only the one a run was pointed at. The gate asks
+        # it over the corpora a full run loaded; _CORPUS_NAMES is every
+        # name in every corpus*.jsonl, which is the same population.
+        departed = sorted(set(shapes) - set(_CORPUS_NAMES))
+        assert not departed, (
+            f"{ledger_name}: {departed} carry a recorded shape and sit "
+            f"in no corpus. Nothing measures such a row, so it agrees "
+            f"with itself forever. Settle whether the name left "
+            f"DELIBERATELY before editing either roster -- "
+            f"compare.py's own refusal over the full corpus carries the "
+            f"question and both repairs")
+        for name, shape in shapes.items():
+            where = f"{ledger_name}: the recorded shape for {name!r}"
+            bad = sorted(set(shape) - compare._RULE_FIELDS)
+            assert not bad, (
+                f"{where} names {bad}, which are not roles; expected "
+                f"from {sorted(compare._RULE_FIELDS)}. classify() is "
+                f"asked about the shape as a SET, so a misspelled role "
+                f"is simply a role the diff does not carry: it never "
+                f"reports as a typo, only as a rule handover or a "
+                f"MOVED SHAPE finding blaming the parser. Checked "
+                f"against _RULE_FIELDS -- the set validate_rules checks "
+                f"a rule's 'fields' against, since a shape is the same "
+                f"kind of input -- and not against V2_FIELDS, because "
+                f"'_ambiguities' is legal in a 2.x row (it cannot "
+                f"appear below 2.0) even though no row carries it today")
+            dups = sorted({f for f in shape if shape.count(f) > 1})
+            assert not dups, (
+                f"{where} repeats {dups}. It is read as a set, so the "
+                f"repeat changes nothing classify() matches -- it is a "
+                f"copy-paste slip that would otherwise pass every check "
+                f"here silently, and the '_initials' check below would "
+                f"read ('_initials', '_initials') as '_initials' alone")
+            others = sorted(set(shape) - {"_initials"})
+            assert not ("_initials" in shape and others), (
+                f"{where} lists '_initials' beside {others}. "
+                f"'_initials' enters a diff only when every role and "
+                f"the ambiguity kinds agree (#484), so no diff can "
+                f"carry it with another field: this shape is one no run "
+                f"can measure, and the row is unfalsifiable rather than "
+                f"merely wrong")
+            assert shape, (
+                f"{where} is empty. main() appends to `diffing` only "
+                f"where a comparison DIFFED, so no run produces an "
+                f"empty shape and the row can never be contradicted")
     # Per-ledger equality above iterates the ROSTER's keys, so a
     # _RECORDED_DIFFS section for a ledger the roster does not name is
     # invisible to it -- and to the run, which reads shapes per ledger

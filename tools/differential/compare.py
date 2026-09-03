@@ -1617,7 +1617,13 @@ class _ShapeMismatch(NamedTuple):
     which side is which where `m[1]`/`m[2]` would not.
     """
     name: str
-    #: the shape the roster records, sorted
+    #: the shape the roster records. Sorted HERE, at construction, like
+    #: `measured` beside it -- a property of the instance and NOT a
+    #: requirement on the literal row: a row spelled in any other order
+    #: sorts to the same tuple and compares equal, so a sortedness
+    #: guard over _RECORDED_DIFFS would refuse nothing and pin nothing.
+    #: test_a_recorded_shape_matching_the_run_is_no_mismatch pins both
+    #: sides of that.
     recorded: tuple[str, ...]
     #: what this run measured, sorted; None when the run produced no
     #: default-order diff of the name at all -- TWO states reach that,
@@ -1784,6 +1790,13 @@ def recorded_diff_mismatches(
     that: it is _CORPUS_FLOORS against the files on disk and knows
     nothing about the skip. It is the earlier-draft `vacant` bug
     recorded below, one baseline over.
+    Those three names are the WINDOW between the two halves, and not
+    refusing is not the same decision as saying nothing: a row on one
+    of them is checked by neither side, so main() prints a NOT CHECKED
+    note over `set(recorded) & set(corpus_names) - compared` -- naming
+    them, claiming nothing about them, and feeding no exit code. That
+    note is the caller's too, for the reason this whole paragraph is:
+    only the caller holds both lists.
 
     A name that IS compared and produces no default-order diff is
     reported with `measured` None, and two states reach that: the
@@ -2450,6 +2463,51 @@ def main() -> int:
     # there, and `recorded` is the per-ledger row dict both halves read,
     # bound up beside it.
     compared = {str(n) for n in corpus}
+    # THE WINDOW BETWEEN THE TWO HALVES, and it is not empty. A name can
+    # sit in a corpus file this run READ and still be outside `compared`,
+    # because the baseline-minimum skip above drops an order-bearing
+    # entry the baseline cannot honor. Such a row falls between both
+    # checks: recorded_diff_mismatches skips a name outside `compared`,
+    # and the `gone` refusal passes it because the skip takes a name out
+    # of the RUN and out of no file. Measured 2026-09-03: a deliberately
+    # wrong shape on 'de la Cruz née Vega' over the FULL corpus at 1.4.0
+    # left exit 0 and 375 stdout lines with no mention of the name --
+    # and the window is co-located with the only populated section,
+    # since 1.4.0 is both where the 31 rows live and the only baseline
+    # where the skip fires (every order-bearing shape's min_baseline is
+    # 2.0.0).
+    #
+    # A NOTE. Not a refusal, not in the exit code, and the distinction
+    # is the whole of it: recorded_diff_mismatches' docstring argues
+    # that refusing off the POST-skip list would tell a contributor to
+    # delete a row for a name sitting in corpus_shapes.jsonl at the
+    # compat baseline, and that argument stands. It is an argument
+    # against REFUSING, not against SAYING, and only the first of those
+    # was ever made.
+    #
+    # Intersected with `corpus_names` rather than gated on
+    # `full_corpus`, which is where this parts from the two checks that
+    # do read that flag. Under `--corpus` the pre-skip list is already
+    # narrowed to what this run loaded, so the intersection names only
+    # rows this run READ and then dropped -- a fact about the run in
+    # both modes, and never the departed-name question the `gone` half
+    # owns. Nothing else stands between the two lists: `entries` is
+    # rebuilt exactly once between them, by that skip.
+    unchecked = sorted((set(recorded) & set(corpus_names)) - compared)
+    if unchecked:
+        print(f"NOT CHECKED {ledger.name}: {len(unchecked)} recorded "
+              f"diff shape(s) name an entry this baseline skipped, so "
+              f"this run measured no diff to check them against. "
+              f"Informational, outside the exit code, and NOT a stale "
+              f"row: each name is in a corpus this run read -- the "
+              f"skip takes an order-bearing entry out of the RUN and "
+              f"out of no file -- so do not delete one over this. The "
+              f"shape report below speaks for every other row and for "
+              f"none of these; re-run at a baseline that can honor "
+              f"their order to check them:")
+        for n in unchecked:
+            print(f"  {n!r}")
+        print()
     shape_bad = recorded_diff_mismatches(recorded, diffing, compared)
     if shape_bad:
         # The instruction and the disclaimer are properties of the

@@ -2096,6 +2096,45 @@ def test_a_moved_shape_does_not_truncate_the_report(
     assert code == 1, out
 
 
+def test_the_shape_report_names_every_contradicted_row(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The multi-row case the block's own layout is argued from.
+
+    The header leads the block once, rather than the instruction riding
+    every line, BECAUSE a real parser move lands on many of these rows
+    at once -- and every other fixture here, unit and main(), carries
+    exactly one row, so that case was the one nothing exercised. Three
+    mutations lived in it: `out[:] = [...]` for the append in
+    recorded_diff_mismatches, a literal 1 for `len(shape_bad)` in the
+    header, and `shape_bad[:1]` for the row loop. Same harm as
+    test_a_moved_shape_does_not_truncate_the_report, one level in: a
+    truncated block hides a finding while reporting one.
+
+    Two names, one rule explaining both diffs, and both recorded at a
+    shape neither produces.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"John Smith": ("nickname",),
+                         "Alice Jones": ("nickname",)})
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "claimed"\nname_regex = "Smith|Jones"\n'
+        'fields = ["family"]\n', _DIFFERS,
+        extra=[("Alice Jones",
+                {"title": "", "first": "Alice", "middle": "",
+                 "last": "JONESY", "suffix": "", "nickname": "",
+                 "maiden": ""})])
+    # the COUNT, which a literal 1 would still print for two rows
+    assert "MOVED SHAPE expected_since_1.4.0.toml: 2 recorded" in out, out
+    # ... and both rows, which a truncated loop would not
+    assert "John Smith" in out and "Alice Jones" in out, out
+    assert out.count("_RECORDED_DIFFS records") == 2, out
+    # the header still leads ONCE, which is what the count is for
+    assert out.count("FINDING") == 1, out
+    assert code == 1, out
+
+
 def test_the_shape_report_over_an_unmeasured_name_claims_no_cause(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """`measured` None has two reachable causes and the report must
@@ -2126,6 +2165,39 @@ def test_the_shape_report_over_an_unmeasured_name_claims_no_cause(
     assert "stopped diffing" not in out
     assert "the parser changed" not in out
     assert code == 1, out
+
+
+def test_the_shape_check_reads_the_section_for_the_LEDGER_it_ran(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """_RECORDED_DIFFS is keyed per ledger, and nothing pinned the key.
+
+    Replacing the lookup with a hardcoded
+    `_RECORDED_DIFFS['expected_since_1.4.0.toml']` survived the whole
+    suite: every other main() test here runs at the default 1.4.0
+    baseline, so the right answer and the hardcoded one are the same
+    dict. Harmless only while the 2.x sections stay empty, which is
+    open (#501) -- and the shapes are baseline-relative by
+    construction, so reading the wrong section is reading measurements
+    of a different comparison.
+
+    A correct row in the 2.0.0 section and a DECOY in the 1.4.0 one:
+    dispatched right, the run is quiet; dispatched to 1.4.0, it reports
+    a moved shape on the same name. Set wholesale rather than per key,
+    so the shipped 31 rows cannot supply the answer either way.
+    """
+    monkeypatch.setattr(
+        compare, "_RECORDED_DIFFS",
+        {"expected_since_2.0.0.toml": {"John Smith": ("family",)},
+         "expected_since_1.4.0.toml": {"John Smith": ("nickname",)}})
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "claimed"\nname_regex = "Smith"\n'
+        'fields = ["family"]\n',
+        {**_SAME_FACADE, "last": "SMYTHE"}, baseline="2.0.0",
+        baseline_v2={**_SAME_V2, "family": "SMYTHE"})
+    assert "MOVED SHAPE" not in out, out
+    assert "nickname" not in out, out
+    assert code == 0, out
 
 
 def test_a_full_run_refuses_a_recorded_name_no_corpus_holds(
@@ -2209,6 +2281,19 @@ def test_a_name_this_baseline_skipped_is_not_a_name_the_corpus_lost(
     the shipped rosters cannot show the swap, because none of those
     three carries a row yet.
 
+    IT PINS "DOES NOT REFUSE", which is what it was written for, and it
+    used to pin "says nothing" as a side effect of asserting the name
+    was absent from stdout. Those are different decisions and only the
+    first was ever argued: a row on a skipped name is checked by
+    NEITHER half -- recorded_diff_mismatches drops it as uncompared and
+    the `gone` refusal passes it as still-in-a-file -- so silence made
+    a wrong shape on one of these three names a silent pass at the one
+    baseline whose section carries rows. Measured before the NOT
+    CHECKED note: a wrong shape on 'de la Cruz née Vega' over the full
+    corpus at 1.4.0 exited 0 in 375 lines naming it in none of them. So
+    the name is now REPORTED and the run still does not refuse, and
+    both halves are asserted below.
+
     Hand-rolled rather than via _run_main, which writes bare-string
     corpus lines and so cannot produce a skipped entry at all; same
     construction as
@@ -2248,8 +2333,16 @@ def test_a_name_this_baseline_skipped_is_not_a_name_the_corpus_lost(
         code = compare.main()
     out = buf.getvalue()
     assert _WORKER_CALL["names"] == ["John Smith"], out
-    assert name not in out, out
+    # does not REFUSE: the `gone` refusal's own sentence, which the
+    # sibling above asserts IS raised for a name no corpus holds
+    assert "no corpus holds any more" not in out, out
     assert code == 0, out
+    # ... and does not stay silent either. The note names the row, says
+    # it went unchecked, and says the row is not the thing at fault --
+    # the three things a reader needs to not delete it.
+    assert "NOT CHECKED" in out, out
+    assert name in out, out
+    assert "do not delete" in out, out
 
 
 def test_radar_diff_with_no_rule_exits_0_and_is_reported(
@@ -3501,6 +3594,26 @@ def test_a_recorded_shape_the_run_contradicts_is_reported() -> None:
         {"田中さん II": ("given", "suffix")}, diffing, {"田中さん II"})
     assert [(m.name, m.recorded, m.measured) for m in got] == [
         ("田中さん II", ("given", "suffix"), ("family", "given", "suffix"))]
+
+
+def test_every_contradicted_row_is_returned_not_just_one() -> None:
+    """`out.append`, not `out[:] = [...]`.
+
+    Every other fixture for this function carries one recorded row, and
+    over a one-row roster an assignment and an append are the same
+    function. The case that separates them is the one the report's
+    layout is argued from -- a parser move landing on many rows at once
+    -- so it is pinned at both levels;
+    test_the_shape_report_names_every_contradicted_row is main()'s.
+    """
+    diffing = [("Smith, Jr.", {"family"}, None),
+               ("Kim, Jr.", {"family"}, None)]
+    got = compare.recorded_diff_mismatches(
+        {"Smith, Jr.": ("family", "suffix"), "Kim, Jr.": ("given",)},
+        diffing, {"Smith, Jr.", "Kim, Jr."})
+    assert [(m.name, m.recorded, m.measured) for m in got] == [
+        ("Smith, Jr.", ("family", "suffix"), ("family",)),
+        ("Kim, Jr.", ("given",), ("family",))]
 
 
 def test_a_recorded_name_that_stops_diffing_is_reported() -> None:
