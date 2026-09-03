@@ -1759,8 +1759,11 @@ def test_main_checks_contests_against_the_names_it_loaded() -> None:
 
     The unit guard is what catches a new rule at pytest speed; this is
     the belt for a run over a --corpus the guard never sees, and it has
-    to fire early -- after the multi-minute worker pass, the reader has
-    already paid for the answer.
+    to fire early -- a refusal raised after the worker pass prints
+    below the run's own `baseline:` line, so the reader has been shown
+    work done under a ledger the run was about to reject. The ordering
+    is the argument; the "multi-minute" cost this docstring used to
+    give for it was withdrawn as unmeasured (#497).
     """
     src = (compare.HERE / "compare.py").read_text(encoding="utf-8")
     body = src[src.index("def main("):]
@@ -2144,10 +2147,10 @@ def test_object_corpus_lines_are_read_and_labels_printed(
 def test_a_malformed_tests_label_is_a_hard_error(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Caught at load time, not report time: a 'tests' label is read
-    only when printing the radar block, after the multi-minute worker
-    pass, so a bad one left unchecked would crash there instead --
-    the failure mode validate_rules' compile-at-startup paragraph
-    exists to avoid."""
+    only when printing the radar block, at the end of the run and well
+    past the worker pass, so a bad one left unchecked would crash there
+    instead -- the failure mode validate_rules' compile-at-startup
+    paragraph exists to avoid."""
     import json as _json
     corpus = tmp_path / "corpus_x.jsonl"
     corpus.write_text(_json.dumps(
@@ -2563,10 +2566,14 @@ def test_run_worker_sends_the_name_and_resolved_order_on_the_wire(
 
 @pytest.mark.parametrize("want_v2", [True, False])
 def test_worker_source_compiles(want_v2: bool) -> None:
-    """A syntax error in the rendered template currently surfaces only
-    as 'worker exited 1' after a multi-minute uv install; this catches
-    it at test time instead, for both renderings (WANT_V2 gates a
-    def-inside-if that is easy to misindent)."""
+    """A syntax error in the rendered template surfaces only as the
+    opaque 'worker exited 1', and by the time _run_worker raises it the
+    TemporaryDirectory holding the rendered source is already gone, so
+    there is nothing left to open; this catches it at test time
+    instead, for both renderings (WANT_V2 gates a def-inside-if that is
+    easy to misindent). The install this used to call "multi-minute" is
+    sub-second even on a cold uv cache -- withdrawn as unmeasured by
+    #497; the opacity is the reason, not the wait."""
     compile(compare._worker_source("2.2.0", want_v2=want_v2),
             "<worker>", "exec")
 
