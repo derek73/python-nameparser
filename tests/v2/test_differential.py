@@ -2055,6 +2055,13 @@ def test_main_reports_a_recorded_shape_the_run_contradicts(
     # shape was recorded for the OLD shape
     assert "FINDING" in out
     assert "_CROSS_RULE_WINNERS" in out
+    # The FINDING instruction leads the block once rather than riding
+    # every row, and the two-cause disclaimer beside it is conditional:
+    # every row here carries a measured shape, so advice for the
+    # unmeasured case would be advice for something that did not
+    # happen. Its sibling below pins the other branch.
+    assert out.count("FINDING") == 1
+    assert "TWO" not in out
     # The verdict, not just the print. A block that reports and exits 0
     # is read by CI as silence -- the same trap
     # test_main_exits_1_and_reports_an_unclassified_diff exists for.
@@ -2110,6 +2117,9 @@ def test_the_shape_report_over_an_unmeasured_name_claims_no_cause(
                           _SAME_FACADE)
     assert "no default-order diff" in out
     assert "declared order" in out
+    # ... and once, not once per row: the disclaimer is a property of
+    # the check, so it leads the block rather than riding every line.
+    assert out.count("TWO reach it") == 1
     # Every line of the block, not just the one carrying the shape: the
     # header sentence is the one that used to assert the parser had
     # changed, which is false for the second cause.
@@ -2189,19 +2199,15 @@ def test_naming_every_corpus_refuses_a_recorded_name_no_corpus_holds(
 
 def test_a_name_this_baseline_skipped_is_not_a_name_the_corpus_lost(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The two name sets the check reads, one line apart, are opposite.
+    """The two name sets the check reads are opposite, and this is the
+    only instrument that can tell which one it read.
 
-    "Was this name compared?" is about the RUN, and an order-bearing
-    entry an old baseline cannot honor was not -- so the shape half
-    reads the POST-skip list and stays quiet about it. "Does any corpus
-    still hold this name?" is about the FILES, and the skip removes a
-    name from no file -- so the absent-name half reads the PRE-skip
-    `corpus_names`. Swap them and this full run refuses, telling a
-    contributor to delete a roster row for a name sitting in the corpus
-    it just read. Measured on the shipped tree at --baseline 1.4.0 the
-    two lists differ by three names, all in corpus_shapes.jsonl, so the
-    hazard is live and only unarmed because none of the three carries a
-    roster row yet.
+    Swap them and this full run refuses, telling a contributor to
+    delete a roster row for a name sitting in the corpus it just read.
+    The two questions, and the three names the lists differ by at
+    1.4.0, are recorded once in recorded_diff_mismatches' docstring;
+    the shipped rosters cannot show the swap, because none of those
+    three carries a row yet.
 
     Hand-rolled rather than via _run_main, which writes bare-string
     corpus lines and so cannot produce a skipped entry at all; same

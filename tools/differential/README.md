@@ -726,14 +726,18 @@ would delete an exemption the full gate needs and then fail the full
 run for the undeclared contest that reappears. So a vacancy is a hard
 failure on a full run and a printed NOTE under `--corpus`.
 
-Three checks now read the flag differently, and the differences are
-deliberate rather than untidy -- read them together before making any
-of them uniform. The corpus-floor roster is SKIPPED entirely under
-`--corpus`, because narrowing is the point of the flag.
-`over_declared_rules` still FAILS the run and appends a NOTE saying
-the union it computed is over a subset, so its repair advice is not
-followed blindly. The vacancy check does not fail at all, because it
-is the only one of the three whose verdict INVERTS under narrowing.
+Four checks now read the flag differently, and the differences are deliberate rather than untidy -- read them together before making any of them uniform. The corpus-floor roster is SKIPPED entirely under `--corpus`, because narrowing is the point of the flag. `over_declared_rules` still FAILS the run and appends a NOTE saying the union it computed is over a subset, so its repair advice is not followed blindly. The vacancy check does not fail at all, because its verdict INVERTS under narrowing rather than merely its evidence. The departed-name half of the recorded-shape check (below) inverts the same way and goes one step further, printing nothing at all under `--corpus`: a NOTE there would name most of the roster and tell the reader nothing, where the vacancy NOTE names a handful.
+
+### `MOVED SHAPE`: the roster's recorded diffs, checked against a run
+
+`tests/v2/test_ledger_guards.py` carries `_CROSS_RULE_WINNERS`, a roster pinning which rule should win a contested name. To ask that question it needs the name's diff SHAPE, which it feeds to `classify()` as an input -- so the shape is never itself checked, and a guessed one agrees with itself forever. That is how `田中さん II` sat recorded as `{given, suffix}` under a docstring promising the shapes were measured; the real diff is `{family, given, suffix}` (#497). The unit suite cannot catch it: it spawns no worker, deliberately, so it has no measured diff to compare against.
+
+So the shapes live in `_RECORDED_DIFFS` in `compare.py`, keyed per ledger (a string moves a different set of roles against different baselines), and every run checks them. Two findings come out of it, and they behave differently on purpose.
+
+- **`MOVED SHAPE`** -- a recorded shape the run contradicts. Printed after the comparison, alongside `EXPLAINED NOTHING` and `OVER-DECLARED`, and it feeds the exit code the same way. It does not raise: a refusal there would land mid-report and take the `UNEXPLAINED` block down with it, and a stale roster row must never hide an unexplained diff. A moved shape is a FINDING, not a number to update -- the parser changed what the name does, and the winner pinned beside it in `_CROSS_RULE_WINNERS` was recorded for the OLD shape, so read both before editing either. Where the run measured no default-order diff at all, the report says so and names no cause: two states reach it (the parser stopped moving the name, or the name is compared only under a declared order) and the check cannot separate them.
+- **A row naming a name no corpus holds** -- refused, before the worker runs, on a FULL run only. Nothing measures such a row, so it agrees with itself forever, which is the defect above in a second form. The repair is not mechanical: ask first whether the name left deliberately (`git log -S'<name>' -- tools/differential/corpus*.jsonl`), then either delete the row and its `_CROSS_RULE_WINNERS` partner, or restore the name to the corpus that lost it. Under `--corpus` this prints nothing, since a narrowed run legitimately holds almost none of the roster.
+
+The two read opposite name lists, and swapping them is the live hazard. "Was this name compared?" is about the RUN, so the shape check reads the list AFTER the baseline-minimum shape skip. "Does any corpus still hold this name?" is about the FILES, and the skip empties no file, so the departed-name check reads the list BEFORE it. `recorded_diff_mismatches`' docstring in `compare.py` carries the measurement and the recompute.
 
 ### Shapes that must never be explained (`[[never]]`)
 
