@@ -727,12 +727,14 @@ def test_case_shape_ids_exist_in_the_inventory() -> None:
 #: catches a widening that changes corpus reach or roles -- but a rule
 #: whose regex is literal-anchored and claims exactly ONE corpus name
 #: can be widened with the count unmoved, because the names it newly
-#: reaches are not in the corpora. Six such widenings were demonstrated
-#: on this file's own rules with the whole suite green: `^mc\s+\S+$`
+#: reaches are not in the corpora. Such widenings were demonstrated on
+#: this file's own rules with the whole suite green: `^mc\s+\S+$`
 #: to `^mc` (every leading Mc*), the vd rule to a bare `\bvd\b`,
 #: `^sir\s+de\b` without its anchor, and the nakaguro rule to `·.*씨`.
 #: Each of those then stood ready to explain exactly what its own
-#: comment promises will arrive UNEXPLAINED.
+#: comment promises will arrive UNEXPLAINED. The list is the evidence;
+#: a count here said six over four items and was the only part anyone
+#: could get wrong, since the widenings themselves are named.
 #:
 #: The probes are taken from the names those comments already argue
 #: about, so this roster records an answer someone already wrote in
@@ -1522,15 +1524,23 @@ def _reaches_non_vocabulary(member: str, vocabulary: frozenset[str]) -> list[str
     fullmatch against the vocabulary bounds what a member matches
     WITHIN those entries and says nothing about what it matches in a
     NAME. That gap was first filled with a tuple of eight hand-picked
-    probe strings, and the tuple was defeated by a wider rule than the
-    one it was added to stop: every entry this rule needs is three
-    characters, so a member must accept some 3-character string and is
-    unconstrained everywhere else -- "[acdf-uw-z]{3,}" covers `roz`,
-    dodges all eight probes, and reaches 634 of the 751 corpus names
-    as a fourth alternative (the rule carrying it claims 542).
-    Measured with the IGNORECASE this function applies; the
-    case-sensitive figure, 592, is not what runs. Counts here and below are
-    against _CORPUS_NAMES, which deduplicates the 783 corpus lines.
+    probe strings, and the tuple WAS DEFEATED by a wider rule than the
+    one it was added to stop: every entry fix(#274) needs is three
+    characters (`geb`, `nee`, `née`), so a member must accept some
+    3-character string and is unconstrained everywhere else --
+    "[acdf-uw-z]{3,}" covers `roz`, dodged all eight probes, and as a
+    fourth alternative reached most of the corpus, far past what the
+    rule carrying it claimed. The figures that stood here were taken
+    against a corpus of 751 names and are not restated: the corpus has
+    since grown by half, the eight-string tuple this replaced is gone,
+    and the finding is the SHAPE -- a member unconstrained outside one
+    3-character window walks past every probe anyone hand-picks --
+    which is what the paragraph below acts on and which no count
+    strengthens. If a number is wanted, drive the member over
+    _CORPUS_NAMES with the IGNORECASE this function applies; the
+    case-sensitive figure is smaller and is not what runs. Counts here
+    and below are against _CORPUS_NAMES, which deduplicates the corpus
+    lines rather than counting them.
 
     Eight strings could never be more than a spot check. The corpus is
     the whole population the rule will ever be asked about, so ask it
@@ -1690,8 +1700,11 @@ def _carries(name: str, vocabulary: frozenset[str]) -> bool:
     marker like 旧姓 is written against the name it marks rather than
     spaced off it.
 
-    Note what the isascii() split actually covers: 12 of the 16
-    entries, not only the CJK one. `né` is two characters, so the
+    Note what the isascii() split actually covers: EVERY non-ASCII
+    entry, not only the CJK one -- the great majority of
+    MAIDEN_MARKERS, and the predicate below is the enumeration, so
+    read it there rather than from a count here, which said 12 of 16
+    while the vocabulary shipped 17. `né` is two characters, so the
     substring branch reads `René` as carrying a marker. Every
     over-match here SHRINKS the set of unexplained names and so
     weakens the guard -- the direction this module exists to close --

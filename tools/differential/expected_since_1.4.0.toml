@@ -194,19 +194,21 @@ issue = "fix(#274) maiden markers consumed"
 # `compare.py --baseline 1.4.0`; a number written here instead would
 # only be that heading's value on the day someone typed it.
 #
-# Five claimed names still do not move, recorded rather than
+# These claimed names still do not move, recorded rather than
 # excluded: 'Jane Smith, née Jones' (post-comma, M2's remaining
 # Accepted limit), 'Jane van der Berg née PhD' and 'Jane Smith née V'
 # (only a suffix follows, so the consumer declines), and
 # 'Jane née Jr y Jones' and 'Jane van der Berg née Jr Jones' (the
 # connective and bound-given joins, #412). Each would need the regex
 # to ask a vocabulary question -- suffix or connective membership --
-# a second alternation this rule cannot spend. The count said four
-# until the review round re-measured it: the corpus grew and the
-# sentence did not, which is this file's standing hazard and the
-# reason every count in it carries the date it was taken. Measured
-# 2026-08-27 against the 1.4.0 wheel, name by name over all 31 the
-# regex claims.
+# a second alternation this rule cannot spend. A count stood at the
+# head of that list and said four until a review round re-measured
+# it: the corpus grew and the sentence did not, which is this file's
+# standing hazard. The list is the count now, and it is self-checking
+# where a digit was not. Measured 2026-08-27 against the 1.4.0 wheel,
+# name by name over everything the regex claims rather than over a
+# sample of it -- a walk whose length is whatever `_claimed()` returns
+# that day.
 #
 # #445 landed 2026-08-27, and the prediction this note used to carry
 # was wrong in a way worth keeping on the record. It reasoned that a
