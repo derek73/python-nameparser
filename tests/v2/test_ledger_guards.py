@@ -2641,7 +2641,10 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
     # compare._entry_matches at the measured shape. None of those
     # boundaries is argued about in this file, and this roster pins the
     # arguments this file makes -- so a row is owed when someone argues
-    # one, not before.
+    # one, not before. Whether that position should change now that the
+    # six are measured rather than merely unexamined is #501; the answer
+    # there decides whether these two sections stay empty, and nothing
+    # in this file presumes it.
     #
     # Nor is "only one rule admits it" grounds on its own to delete a
     # row: 13 of the 31 above are in that position too, and say so (the
