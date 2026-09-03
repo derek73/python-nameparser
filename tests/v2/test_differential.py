@@ -3249,7 +3249,11 @@ def test_a_recorded_shape_matching_the_run_is_no_mismatch() -> None:
     # CAN iterate alphabetically, and the two-role set above does under
     # 85 of PYTHONHASHSEED 0..199. The seven-role set did under none of
     # them, so the size is what makes this row an instrument rather
-    # than a coin flip.
+    # than a coin flip. Recompute either count with
+    #   for s in $(seq 0 199); do PYTHONHASHSEED=$s python3 -c \
+    #     'print(list({"family","suffix"})==sorted({"family","suffix"}))'
+    #   done | grep -c True
+    # substituting compare.V2_FIELDS for the two-role set.
     assert compare.recorded_diff_mismatches(
         {"Smith, Jr.": tuple(sorted(compare.V2_FIELDS))},
         [("Smith, Jr.", set(compare.V2_FIELDS), None)],
@@ -3280,8 +3284,14 @@ def test_a_recorded_name_that_stops_diffing_is_reported() -> None:
 
 
 def test_a_recorded_name_outside_this_run_is_skipped() -> None:
-    """--corpus narrows the name set, and absence is not a finding --
-    the same asymmetry the vacancy check reads (#382)."""
+    """--corpus narrows the name set, so absence is a fact about the run.
+
+    Only the SUBSET half of the asymmetry the vacancy check's caller
+    reads (#382): that caller REFUSES under a full run, and this
+    function is silent in both cases. Refusing a recorded name no
+    corpus holds any more is the caller's half -- `set(recorded) -
+    compared` under `full_corpus` -- and nothing here does it.
+    """
     assert compare.recorded_diff_mismatches(
         {"Smith, Jr.": ("family", "suffix")}, [], set()) == []
 

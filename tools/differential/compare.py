@@ -1335,58 +1335,6 @@ def vacant_exemptions(rules: list[dict[str, object]],
             if (str(rule.get("issue", "")), later) not in live]
 
 
-class _ShapeMismatch(NamedTuple):
-    """A recorded diff shape the run disagrees with (#497).
-
-    Named rather than a bare triple for _Vacancy's reason: the caller
-    formats these into a message, and `m.recorded`/`m.measured` says
-    which side is which where `m[1]`/`m[2]` would not.
-    """
-    name: str
-    #: the shape the roster records, sorted
-    recorded: tuple[str, ...]
-    #: what this run measured, sorted; None when the name did not diff
-    measured: tuple[str, ...] | None
-
-
-def recorded_diff_mismatches(
-        recorded: dict[str, tuple[str, ...]],
-        diffing: list[tuple[str, set[str], str | None]],
-        compared: set[str]) -> list[_ShapeMismatch]:
-    """Recorded shapes this run contradicts (#497).
-
-    The roster in tests/v2/test_ledger_guards.py pins WHICH RULE wins a
-    contested name, and to ask that question it must state the diff
-    shape -- which it then feeds to classify() as an input. Nothing
-    checked the shape itself, so a guessed one agreed with itself
-    forever. This is the half only a run can do: main() has already
-    measured every name's real diff by the time it calls this.
-
-    Only the order-None comparison is read. The roster calls classify()
-    with no order, so the shape it records is the default-order one; a
-    string also compared under a declared order is a different question
-    and its own row would be needed to ask it.
-
-    A name absent from `compared` is SKIPPED rather than reported. Under
-    `--corpus` the name set is narrowed, and absence is then a fact
-    about the run rather than about the roster -- the same asymmetry the
-    vacancy check reads (#382). A name that is compared and does NOT
-    diff is reported, with `measured` None: recorded means it diffed
-    once, so its stopping is a finding about the parser.
-    """
-    measured = {name: tuple(sorted(diff))
-                for name, diff, order in diffing if order is None}
-    out: list[_ShapeMismatch] = []
-    for name, shape in recorded.items():
-        if name not in compared:
-            continue
-        got = measured.get(name)
-        want = tuple(sorted(shape))
-        if got != want:
-            out.append(_ShapeMismatch(name, want, got))
-    return out
-
-
 def _entry_matches(rule: dict[str, object], name: str,
                    diff_fields: set[str], order: str | None = None) -> bool:
     """Does this entry's narrowing admit this diff?
@@ -1659,6 +1607,90 @@ def over_declared_rules(
             found.append(_OverDeclared(
                 str(rule["issue"]), unused, tuple(sorted(moved))))
     return tuple(found)
+
+
+class _ShapeMismatch(NamedTuple):
+    """A recorded diff shape the run disagrees with (#497).
+
+    Named rather than a bare triple for _Vacancy's reason: the caller
+    formats these into a message, and `m.recorded`/`m.measured` says
+    which side is which where `m[1]`/`m[2]` would not.
+    """
+    name: str
+    #: the shape the roster records, sorted
+    recorded: tuple[str, ...]
+    #: what this run measured, sorted; None when the run produced no
+    #: default-order diff of the name at all -- TWO states reach that,
+    #: deliberately collapsed, and the docstring says what a message
+    #: over one may and may not claim
+    measured: tuple[str, ...] | None
+
+
+def recorded_diff_mismatches(
+        recorded: dict[str, tuple[str, ...]],
+        diffing: list[tuple[str, set[str], str | None]],
+        compared: set[str]) -> list[_ShapeMismatch]:
+    """Recorded shapes this run contradicts (#497).
+
+    The roster in tests/v2/test_ledger_guards.py pins WHICH RULE wins a
+    contested name, and to ask that question it must state the diff
+    shape -- which it then feeds to classify() as an input. Nothing
+    checked the shape itself, so a guessed one agreed with itself
+    forever. This is the half only a run can do: main() has already
+    measured every name's real diff by the time it calls this.
+
+    Only the order-None comparison is read. The roster calls classify()
+    with no order, so the shape it records is the default-order one; a
+    string also compared under a declared order is a different question
+    and its own row would be needed to ask it.
+
+    `compared` is the names this run actually compared: the entry list
+    AFTER the baseline-minimum skip -- main()'s `corpus`, NOT the
+    `corpus_names` the contest checks read, which is built before that
+    skip runs. The two differ by exactly the entries an old baseline
+    cannot honor -- 7 of them at 1.4.0, where 1120 load and 1113
+    compare; re-measure by running this file with `--baseline 1.4.0`
+    and reading its `skipped` and `corpus:` lines. decisions.md, "the
+    rule-order arc", records the same trap for the contest checks,
+    which read the pre-skip list on purpose. Pass that list here and a
+    roster row whose only entry was skipped reports as a name that
+    stopped diffing, when it was never compared at all.
+
+    A name absent from `compared` is SKIPPED rather than reported. Under
+    `--corpus` the name set is narrowed, and absence is then a fact
+    about the run rather than about the roster. That is only the SUBSET
+    half of what the vacancy check's caller does with the same
+    asymmetry (#382): under a FULL run that caller refuses a
+    declaration whose pair is gone, and nothing here refuses a recorded
+    name no corpus holds any more -- forgiving forever the very shape
+    #497 is about. `set(recorded) - compared` under `full_corpus` is
+    the missing half, and it belongs to the caller, which is the only
+    side that knows whether this run read every corpus.
+
+    A name that IS compared and produces no default-order diff is
+    reported with `measured` None, and two states reach that: the
+    parser stopped diffing a name recorded as diffing, or the name is
+    compared under a declared order ALONE, so no default-order
+    comparison of it exists to have a shape. They are collapsed on
+    purpose -- telling them apart means reading the order-bearing rows
+    this function otherwise ignores, and the result would stop being a
+    statement about the default-order comparison alone. So a message
+    over these rows may say the run measured no default-order diff, and
+    must NOT say the name stopped diffing. A caller needing the
+    distinction holds `diffing` and can take it from there; _Dormant's
+    `kind` is the shape to copy if it ever has to be carried here.
+    """
+    measured = {name: tuple(sorted(diff))
+                for name, diff, order in diffing if order is None}
+    out: list[_ShapeMismatch] = []
+    for name, shape in recorded.items():
+        if name not in compared:
+            continue
+        got = measured.get(name)
+        want = tuple(sorted(shape))
+        if got != want:
+            out.append(_ShapeMismatch(name, want, got))
+    return out
 
 
 def _load_entries(path: Path) -> list[dict[str, object]]:
