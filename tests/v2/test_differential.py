@@ -1420,14 +1420,29 @@ def test_a_well_formed_exemption_is_accepted() -> None:
         "test_ledger.toml")
 
 
-#: A wide-first pair: same regex, and the later rule's `fields` a
-#: strict subset of the earlier one's, so file order alone decides
-#: which of them classify() hands a {given, family} diff to (#382).
+#: A wide-first TRIO: one regex, and TWO later rules whose `fields`
+#: are each a strict subset of the first's, so file order alone decides
+#: which of them classify() hands a matching diff to (#382).
+#:
+#: Three rather than two on purpose, and the two narrow sets are
+#: deliberately disjoint from one another -- neither nests in the other,
+#: so they contest nothing between themselves and the fixture holds
+#: exactly two contests, both owned by `fix(wide)`. That is what makes
+#: it possible to declare ONE of them and see the other still reported.
+#: On a two-rule fixture, "this rule declares that rule" and "this rule
+#: declares something" are the same sentence, and every assertion below
+#: would pass against a reader that treated any declaration as a
+#: blanket opt-out over every narrower rule -- which is precisely the
+#: widening validate_rules' blank-'issue' refusal exists to refuse. The
+#: shipped 1.4 ledger already has the shape: two of its rules are the
+#: earlier side of two contests each.
 _CONTESTED: list[dict[str, object]] = [
     {"issue": "fix(wide) the compound behavior",
      "name_regex": "Smith", "fields": ["given", "family", "suffix"]},
     {"issue": "fix(narrow) one half of it",
      "name_regex": "Smith", "fields": ["given", "family"]},
+    {"issue": "fix(narrow-b) the other half of it",
+     "name_regex": "Smith", "fields": ["given", "suffix"]},
 ]
 
 
@@ -1438,6 +1453,15 @@ def test_a_wide_first_pair_is_reported_until_it_is_declared() -> None:
     one, so a pair stays on the roster until the rule that wins it
     says in writing that it means to. Reading it off the wrong rule
     would exempt pairs nobody declared.
+
+    A declaration retires the ONE pair it names and no other, which is
+    the middle assertion and the reason the fixture carries two
+    narrower rules: with `fix(narrow)` declared and `fix(narrow-b)` not,
+    exactly the second pair must still be reported. Read the rule's
+    declarations as a blanket opt-out -- `if not _declared_over(...)`
+    in place of the `c.later not in ...` membership test -- and the
+    reported list goes empty here while every other test in this file
+    keeps passing.
 
     The malformed shapes at the end pin CRASH-SAFETY, and that is all
     they pin. `_declared_over` reads whatever validate_rules already
@@ -1452,24 +1476,36 @@ def test_a_wide_first_pair_is_reported_until_it_is_declared() -> None:
     not the safe direction, so there is nothing about it worth pinning.
     """
     names = ["Smith, Jr."]
+    both = [("fix(wide) the compound behavior", "fix(narrow) one half of it"),
+            ("fix(wide) the compound behavior",
+             "fix(narrow-b) the other half of it")]
     assert [(c.earlier, c.later) for c
-            in compare.undeclared_contests(_CONTESTED, names)] == [
-        ("fix(wide) the compound behavior", "fix(narrow) one half of it")]
-    declared = [dict(_CONTESTED[0], precedes_narrower=[
+            in compare.undeclared_contests(_CONTESTED, names)] == both
+
+    # ONE of the two declared: the other must survive.
+    half = [dict(_CONTESTED[0], precedes_narrower=[
         {"issue": "fix(narrow) one half of it", "why": "wide describes both"}]),
-        _CONTESTED[1]]
+        _CONTESTED[1], _CONTESTED[2]]
+    assert [(c.earlier, c.later) for c
+            in compare.undeclared_contests(half, names)] == [both[1]]
+
+    declared = [dict(_CONTESTED[0], precedes_narrower=[
+        {"issue": "fix(narrow) one half of it", "why": "wide describes both"},
+        {"issue": "fix(narrow-b) the other half of it",
+         "why": "and the other half"}]),
+        _CONTESTED[1], _CONTESTED[2]]
     assert compare.undeclared_contests(declared, names) == []
 
     for malformed in ("fix(narrow) one half of it",
                       [{"why": "a reason, and no rule it is a reason for"}],
                       ["fix(narrow) one half of it"]):
         broken = [dict(_CONTESTED[0], precedes_narrower=malformed),
-                  _CONTESTED[1]]
-        assert len(compare.undeclared_contests(broken, names)) == 1
+                  _CONTESTED[1], _CONTESTED[2]]
+        assert len(compare.undeclared_contests(broken, names)) == 2
 
 
 def test_a_pair_whose_regexes_share_no_name_is_no_contest() -> None:
-    """Condition 4 carries the whole check.
+    """The shared-name test carries the whole check.
 
     Drop the shared-name test and the same scan reports 657 wide-first
     pairs across the shipped ledgers, against the 11 the full predicate
@@ -1492,26 +1528,55 @@ def test_a_pair_whose_regexes_share_no_name_is_no_contest() -> None:
     assert compare.order_contests(apart, ["Smith, Jr.", "Jones, Jr."]) == []
 
     # The control, inline rather than a pointer at a neighbouring test
-    # that a rename would silently break: the same fixture with both
-    # regexes reaching one name IS a contest, so the empty list above
-    # is condition 4 doing work and not the scan having gone quiet.
-    assert len(compare.order_contests(_CONTESTED, ["Smith, Jr."])) == 1
+    # that a rename would silently break: the same fixture with every
+    # regex reaching one name IS contested, so the empty list above is
+    # the shared-name test doing work and not the scan having gone
+    # quiet. Two, because _CONTESTED's wide rule strictly contains both
+    # of the narrower ones.
+    assert len(compare.order_contests(_CONTESTED, ["Smith, Jr."])) == 2
 
 
 def test_an_exemption_for_a_pair_that_is_no_contest_is_vacant() -> None:
     """The `dormant`-awake precedent: a narrowing that ends a contest
-    must not leave a permission nobody re-earned."""
+    must not leave a permission nobody re-earned.
+
+    The last block is the one that pins WHICH declaration went vacant.
+    One rule carrying two declarations, one live and one stale, is the
+    only arrangement that can tell the real reader from a rule-level
+    one -- ask `does this rule contest anything` instead of `is THIS
+    pair contested` and the stale declaration disappears from the
+    report, silently, on a ledger where two of the shipped rules
+    already carry two declarations each.
+    """
     apart = [dict(_CONTESTED[0], name_regex="Smith", precedes_narrower=[
         {"issue": "fix(narrow) one half of it", "why": "stale"}]),
         dict(_CONTESTED[1], name_regex="Jones")]
-    assert compare.vacant_exemptions(apart, ["Smith, Jr.", "Jones, Jr."]) == [
+    vacancies = compare.vacant_exemptions(apart, ["Smith, Jr.", "Jones, Jr."])
+    assert vacancies == [
         ("fix(wide) the compound behavior", "fix(narrow) one half of it")]
+    # NamedTuple equality is by value, so the assertion above passes
+    # against a bare 2-tuple and would keep passing if _Vacancy were
+    # deleted. The field names are what the caller's message reads.
+    assert vacancies[0].earlier == "fix(wide) the compound behavior"
+    assert vacancies[0].later == "fix(narrow) one half of it"
 
     # ... and the live pair, which is what makes the assertion above a
     # measurement: a function that simply listed every declaration
     # would read identically on the vacant pair alone.
     live = [dict(apart[0]), dict(apart[1], name_regex="Smith")]
     assert compare.vacant_exemptions(live, ["Smith, Jr.", "Jones, Jr."]) == []
+
+    # One rule, two declarations, one of each: only the stale one is
+    # reported. `fix(narrow)` still contests over 'Smith, Jr.', so the
+    # rule contests SOMETHING -- and `fix(narrow-b)`, pulled away onto
+    # 'Jones', no longer does.
+    mixed = [dict(_CONTESTED[0], precedes_narrower=[
+        {"issue": "fix(narrow) one half of it", "why": "live"},
+        {"issue": "fix(narrow-b) the other half of it", "why": "stale"}]),
+        _CONTESTED[1], dict(_CONTESTED[2], name_regex="Jones")]
+    assert compare.vacant_exemptions(mixed, ["Smith, Jr.", "Jones, Jr."]) == [
+        ("fix(wide) the compound behavior",
+         "fix(narrow-b) the other half of it")]
 
 
 #: What _run_worker was asked for, so a test can prove main forwarded
@@ -1526,7 +1591,8 @@ def _run_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ledger_body: str,
               baseline_v2: dict | None = None,
               floor: int | None = 1,
               tier: str | None = "contract",
-              corpus_flag: bool = True) -> tuple[int, str]:
+              corpus_flag: bool = True,
+              names_every_corpus: bool = False) -> tuple[int, str]:
     """Drive main() end to end with a faked baseline worker.
 
     No uv, no network. The helper exists because every unit test above
@@ -1550,6 +1616,15 @@ def _run_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ledger_body: str,
     fixture corpus is the only file in the patched HERE, so the floor
     roster is replaced wholesale rather than added to: left intact it
     would name every real corpus as missing.
+
+    `names_every_corpus=True` keeps `--corpus` on argv but replaces the
+    floor roster wholesale anyway, so the run NAMES every corpus the
+    roster knows about. That is the case `--corpus` cannot be read as
+    "a narrowing": the flag is `action="append"`, so a run listing all
+    six corpora is the full gate wearing a flag, and every check that
+    softens under narrowing must stay hard here. Meaningless without
+    `corpus_flag`, which is why the two are separate parameters rather
+    than one tri-state.
     """
     import json
     import sys
@@ -1614,7 +1689,7 @@ def _run_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ledger_body: str,
     # leaves it unregistered, for the test that pins what happens when
     # a corpus arrives without one.
     if floor is not None:
-        if corpus_flag:
+        if corpus_flag and not names_every_corpus:
             monkeypatch.setitem(compare._CORPUS_FLOORS, corpus.name, floor)
         else:
             monkeypatch.setattr(
@@ -1730,6 +1805,109 @@ def test_main_refuses_an_undeclared_contest_without_running_the_worker(
         "main() spawned the worker before refusing the ledger")
 
 
+def test_a_full_run_refuses_an_undeclared_contest_too(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The same refusal on the run that matters: `corpus_flag=False`.
+
+    `_run_main` defaults to `--corpus`, so every other undeclared-contest
+    test above reaches main() through the narrowed path -- and `vacant`
+    right below it genuinely behaves differently there. Making the
+    undeclared refusal conditional on `args.corpus` the same way, so
+    that a FULL gate run never refuses a contest nobody declared,
+    survives the whole suite without this test. It is the mode the CI
+    gate actually runs in, and it is the one that was untested.
+    """
+    with pytest.raises(SystemExit) as exc:
+        _run_main(tmp_path, monkeypatch, _CONTESTED_LEDGER, _DIFFERS,
+                  corpus_flag=False)
+    message = str(exc.value)
+    assert "fix(wide) the compound behavior" in message
+    assert "fix(narrow) one half of it" in message
+    assert not _WORKER_CALL, (
+        "main() spawned the worker before refusing the ledger")
+
+
+def test_the_contest_check_reads_names_this_baseline_will_not_compare(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """LOADED, not KEPT: the choice main()'s comment defends, measured.
+
+    main() runs the contest checks over every entry it read, ahead of
+    the baseline-minimum shape skip -- so an order-bearing name that a
+    1.4.0 run will not actually compare still counts toward whether a
+    ledger is acceptable. The point is that the ledger gets the same
+    verdict at every baseline; move the block after `kept`, or filter
+    shape-tagged entries out of `corpus_names`, and it stops.
+
+    Neither mutation is visible to
+    test_main_checks_contests_against_the_names_it_loaded, which reads
+    source-text indices and both mutations preserve. Here the ONLY name
+    the contested pair reaches is a shape-4 (FAMILY_FIRST, minimum
+    2.0.0) entry the 1.4.0 run drops, so either mutation leaves the
+    undeclared contest unreported and the run proceeds to the worker.
+    """
+    import json as _json
+    import sys
+    name = "Ménil Christophe du"
+    corpus = tmp_path / "corpus_x.jsonl"
+    corpus.write_text(
+        _json.dumps({"name": name, "shape": 4}, ensure_ascii=False) + "\n"
+        + _json.dumps("John Smith") + "\n", encoding="utf-8")
+    (tmp_path / "expected_since_1.4.0.toml").write_text(
+        '[[change]]\nissue = "fix(wide) the compound behavior"\n'
+        'name_regex = "Ménil"\nfields = ["given", "family", "suffix"]\n'
+        '\n'
+        '[[change]]\nissue = "fix(narrow) one half of it"\n'
+        'name_regex = "Ménil"\nfields = ["given", "family"]\n',
+        encoding="utf-8")
+    monkeypatch.setitem(compare._CORPUS_FLOORS, corpus.name, 1)
+    monkeypatch.setitem(compare._CORPUS_TIERS, corpus.name, "contract")
+    monkeypatch.setattr(compare, "HERE", tmp_path)
+    _WORKER_CALL.clear()
+
+    def _fake(v: str, w: bool, n: list[dict]) -> tuple[dict, list[dict]]:
+        _WORKER_CALL.update(version=v, want_v2=w)
+        raise AssertionError("the worker must not run")
+
+    monkeypatch.setattr(compare, "_run_worker", _fake)
+    monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", "1.4.0",
+                                      "--corpus", str(corpus)])
+    with pytest.raises(SystemExit) as exc:
+        compare.main()
+    message = str(exc.value)
+    assert "fix(wide) the compound behavior" in message
+    assert "fix(narrow) one half of it" in message
+    assert not _WORKER_CALL
+
+    # The control: the same run at a baseline that DOES compare the
+    # name refuses identically. Without it the assertion above could
+    # read as "the check fires", where what it pins is "the check fires
+    # at a baseline whose comparison never sees this name".
+    monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", "2.0.0",
+                                      "--corpus", str(corpus)])
+    (tmp_path / "expected_since_2.0.0.toml").write_text(
+        (tmp_path / "expected_since_1.4.0.toml").read_text(encoding="utf-8"),
+        encoding="utf-8")
+    with pytest.raises(SystemExit) as exc:
+        compare.main()
+    assert "fix(wide) the compound behavior" in str(exc.value)
+
+
+def test_the_refusal_asks_for_the_reason_the_ledger_guard_asks_for(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A contributor who follows this message verbatim must not hit a
+    second refusal. `precedes_narrower` needs an `issue` AND a
+    non-blank `why` -- validate_rules refuses the entry without one --
+    so a message that says only "name the later rule" sends the reader
+    into a ledger that will not load. The guard message in
+    tests/v2/test_ledger_guards.py already asks for both halves; the
+    two are read by the same contributor and must say the same thing.
+    """
+    with pytest.raises(SystemExit) as exc:
+        _run_main(tmp_path, monkeypatch, _CONTESTED_LEDGER, _DIFFERS)
+    message = str(exc.value)
+    assert "what it describes that the later one does not" in message
+
+
 #: The same pair with the exemption declared and the two regexes pulled
 #: apart, so the declaration has nothing left to permit (#382).
 _VACANT_LEDGER = _CONTESTED_LEDGER.replace(
@@ -1769,7 +1947,54 @@ def test_main_only_notes_a_vacant_exemption_under_corpus(
     code, out = _run_main(tmp_path, monkeypatch, _VACANT_LEDGER, _DIFFERS)
     assert "--corpus" in out and "not evidence" in out
     assert "Delete the exemption" not in out
-    assert code in (0, 1)
+    # A single value, not `in (0, 1)`: main() has exactly one return
+    # for the run outcome, so a two-member set is an assertion that
+    # cannot fail. 1 for reasons orthogonal to the NOTE -- _VACANT_LEDGER
+    # pulls 'fix(narrow)' onto a regex the fixture corpus has no name
+    # for (EXPLAINED NOTHING) and leaves 'fix(wide)' declaring a role no
+    # diff moves (OVER-DECLARED). What this pins is that the vacancy
+    # RETURNED a verdict rather than raising, and 0 would mean the
+    # ledger's own defects had gone quiet.
+    assert code == 1, out
+
+
+def test_naming_every_corpus_refuses_a_vacant_exemption(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`--corpus` is not the question; the NAME SET is.
+
+    The flag is `action="append"`, so a run that lists every corpus
+    explicitly compares exactly what the flagless gate compares -- and
+    a check keyed on `args.corpus` softens for it anyway. Written as
+    the inversion of the NOTE test right above: same ledger, same
+    flag, and the only difference is that here the named corpus is the
+    whole roster. Keying the downgrade on the flag rather than on the
+    name set leaves a genuinely stale exemption printing a NOTE and
+    exiting 0.
+    """
+    with pytest.raises(SystemExit) as exc:
+        _run_main(tmp_path, monkeypatch, _VACANT_LEDGER, _DIFFERS,
+                  names_every_corpus=True)
+    message = str(exc.value)
+    assert "Delete the exemption" in message
+    assert "fix(narrow) one half of it" in message
+    assert not _WORKER_CALL, (
+        "main() spawned the worker before refusing the ledger")
+
+
+def test_the_vacancy_refusal_names_both_of_its_causes(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A vacancy has two reachable causes and the message must not
+    offer repair advice for only one. The rule may have been narrowed
+    -- delete the exemption -- or a corpus NAME may have left while the
+    corpus stayed above its floor, in which case the exemption was
+    right and the corpus is what regressed. The ledger guard's message
+    in tests/v2/test_ledger_guards.py already says both; a contributor
+    reads whichever fires first.
+    """
+    with pytest.raises(SystemExit) as exc:
+        _run_main(tmp_path, monkeypatch, _VACANT_LEDGER, _DIFFERS,
+                  corpus_flag=False)
+    assert "or a corpus name left" in str(exc.value)
 
 
 def test_a_corpus_narrowing_does_not_refuse_the_shipped_1_4_ledger(
@@ -1788,7 +2013,12 @@ def test_a_corpus_narrowing_does_not_refuse_the_shipped_1_4_ledger(
     code, out = _run_main(tmp_path, monkeypatch, ledger, _DIFFERS)
     assert "Delete the exemption" not in out
     assert "not evidence" in out
-    assert code in (0, 1)
+    # See the neighbouring NOTE test on why this is one value and not
+    # two. 1 here because the shipped ledger is written for six real
+    # corpora and this run compares one fixture name, so nearly every
+    # rule in it reports EXPLAINED NOTHING -- orthogonal to the NOTE,
+    # and 0 would mean the run had stopped reporting that.
+    assert code == 1
 
 
 def test_radar_diff_with_no_rule_exits_0_and_is_reported(
