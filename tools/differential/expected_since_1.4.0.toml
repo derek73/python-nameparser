@@ -431,9 +431,24 @@ corpus_issues.jsonl alone -- radar since #468's tier split, and
 untouched by #488, which created corpus_cjk_tolerated.jsonl and holds
 neither name -- so neither can demand a rule any more and nothing
 fatal turns on this pair. The tier reaches the NAMES, not both rules:
-measured, this rule explains two names and both are radar, which makes
-it a candidate for #495; the routing rule explains eight of which six
-are contract, and is not one."""
+measured, this rule explains two names and both are radar, which made
+it a candidate for #495; the routing rule explains eight of which FIVE
+are contract, and was not one. (Six shipped here in #499 and is what
+tiering by FILE MEMBERSHIP gives, with a correct _CORPUS_TIERS: it
+counts 'John Smith, Dr.' contract because corpus_shapes.jsonl holds a
+copy. The dedup is on (name, order), and that copy carries shape 4,
+whose FAMILY_FIRST order makes it a SECOND entry rather than the
+dedup winner -- verified at baseline 2.0.0, where the run compares
+both -- and shape 4's min_baseline of 2.0.0 puts it among the seven
+this baseline skips. So the only entry a 1.4.0 run compares for that
+string is the radar one from corpus_issues.jsonl. Tier here is a
+property of the ENTRY the run compared, not of the files the string
+sits in.) #495 is now closed as not planned and
+the radar-only rules keep their place, so both halves of that
+measurement are facts about REACH and no longer a question about
+either rule's life -- docs/design/decisions.md#differential-ledger's
+Declined entry on #495 has the population and why deleting one
+mislabels rather than merely loses."""
 
 [[change.precedes_narrower]]
 issue = "fix(comma-precomma-family) pre-comma run reads as family, not given"
@@ -449,10 +464,12 @@ that moves the title and the suffix in the same breath. A string that
 is nothing but credentials is not a name plus a comma. Radar tier
 since #468 on both names -- corpus_issues.jsonl, which #488 did not
 touch -- so this pair is watched rather than enforced, and again only
-the wider rule is #495's business.
+the wider rule was ever #495's business.
 Measured, the precomma rule explains seven names of which three are
 contract ('Berg, abdul vd', 'Smith, Dr.', 'Smith, de Mesnil Jean'), so
-it outlives the radar tier whatever #495 decides about this one."""
+it outlives the radar tier by itself. #495 is closed as not planned,
+so the wider rule outlives it too: nothing radar-only is being
+deleted, and this declaration turns on neither answer."""
 
 [[change]]
 issue = "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes"
@@ -1320,12 +1337,15 @@ peel took the honorific off it -- so for those three the rule's own
 label is wider than the name is. The rule that would describe them,
 fix(cjk-comma-honorific-peel) above, covers this shape for a
 POST-comma given name and has no family-side twin. Writing one was
-weighed as #496 and DECLINED: the three are radar (the paragraph
-below), so no gate can demand the rule, and #495 asks whether the
-radar-only rules already here still earn their place -- fewer rules
-for this corner, not a second one. So holding them here is the least
-wrong of the readings available, and this is the entry that says so
-out loud rather than letting the rule name imply otherwise.
+weighed as #496 and DECLINED on one reason alone: the three are radar
+(the paragraph below), so no gate can demand the rule, and a rule
+nothing can demand is not one to add. #495 asked the converse --
+whether the radar-only rules ALREADY here still earn their place --
+and closed as not planned, so they stay. That answer leaves the #496
+decline exactly where it was: it turns on nothing being able to demand
+a NEW rule, which is not what #495 settled. So holding them here is
+the least wrong of the readings available, and this is the entry that
+says so out loud rather than letting the rule name imply otherwise.
 
 All seventeen contested names are radar tier, by two warrants and
 not one: sixteen sit in corpus_cjk_tolerated.jsonl, demoted there by
@@ -1338,12 +1358,17 @@ unconditionally, though -- a [[never]] exclusion outranks the tier
 (see _CORPUS_TIERS) and none refuses these. That is a fact about the
 NAMES and it does not carry to the rules. Measured by deleting each
 rule and re-classifying the corpus -- without fix(cjk-comma-compound)
-the run still reports 0 unexplained, so it really is radar-only and is
-the candidate #495 weighs; without the peel rule TWELVE contract-tier
-names go UNEXPLAINED ('Andersonさん', '王先生' and '김민준씨' among
-them) and the run fails. Fourteen of the seventeen names the peel rule
-explains are contract, which is why #495 already records it as a rule
-to keep rather than a deletion candidate."""
+the run still reports 0 unexplained, so it really is radar-only and it
+was the candidate #495 weighed; without the peel rule TWELVE
+contract-tier names go UNEXPLAINED ('Andersonさん', '王先生' and
+'김민준씨' among them) and the run fails. Fourteen of the seventeen
+names the peel rule explains are contract, which is why #495 recorded
+it as a rule to keep rather than a deletion candidate. #495 closed as
+not planned, so the compound rule keeps its place as well -- and the
+reason is this contest read from the other side: measured, deleting
+the compound rule does not leave its eleven diffs UNCLASSIFIED, it
+hands NINE of them to the peel rule, whose comment is about a
+different shape. Two are left unclassified."""
 
 [[change]]
 issue = "fix(cjk-glued-honorific-peel) glued honorific peels into suffix"
@@ -1394,9 +1419,11 @@ LATENT: measured, the diff is {family, given, suffix} (1.4 read first
 `given` is outside the numeral rule's {family, suffix} at any
 position. _CROSS_RULE_WINNERS pins the name here. '田中さん II' is
 radar tier since #488, so nothing in the gate turns on this contest.
-The demotion candidate #495 weighs is the NUMERAL rule -- measured,
+The demotion candidate #495 weighed was the NUMERAL rule -- measured,
 both names it explains ('John V', 'Mohamad X') are radar -- and not
-this one, which explains fourteen contract-tier names."""
+this one, which explains fourteen contract-tier names. #495 closed as
+not planned, so the numeral rule stays; the measurement stands as the
+statement about its reach that it always was."""
 
 [[change.precedes_narrower]]
 issue = "fix(suffix-routing) a two-token name ending in the suffix word jr keeps it in `suffix`"
@@ -1416,9 +1443,11 @@ LATENT, the diff being {family, given, suffix} against the jr rule's
 {family, suffix}. _CROSS_RULE_WINNERS pins the name here, on a shape
 measured against the wheel -- the corroboration its structural twin
 '田中さん II' did not have until #382 re-measured it. The NAME is radar
-tier since #488, so nothing fatal turns on it, but neither RULE is a
+tier since #488, so nothing fatal turns on it, but neither RULE was a
 #495 candidate: the jr rule explains the contract-tier 'Smith Jr.',
-and this one fourteen contract names."""
+and this one fourteen contract names. #495 closed as not planned, so
+nothing radar-only is being deleted either, and this pair outlives the
+question from both directions."""
 
 [[change]]
 issue = "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip"
