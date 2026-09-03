@@ -2032,7 +2032,7 @@ _CLAIMS_FAMILY = ('[[change]]\nissue = "claimed"\nname_regex = "Smith"\n'
                   'fields = ["family"]\n')
 
 
-def test_main_refuses_a_recorded_shape_the_run_contradicts(
+def test_main_reports_a_recorded_shape_the_run_contradicts(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The roster's shapes are checked where they are measured (#497).
 
@@ -2045,22 +2045,53 @@ def test_main_refuses_a_recorded_shape_the_run_contradicts(
     monkeypatch.setitem(compare._RECORDED_DIFFS,
                         "expected_since_1.4.0.toml",
                         {"John Smith": ("nickname",)})
-    with pytest.raises(SystemExit) as exc:
-        _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS)
-    message = str(exc.value)
-    assert "John Smith" in message
-    # both sides, because a message naming only one leaves the reader
+    code, out = _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS)
+    assert "MOVED SHAPE" in out
+    assert "John Smith" in out
+    # both sides, because a report naming only one leaves the reader
     # unable to see which way the shape moved
-    assert "nickname" in message and "family" in message
+    assert "nickname" in out and "family" in out
     # a FINDING, not a number to update: the winner recorded beside the
     # shape was recorded for the OLD shape
-    assert "FINDING" in message
-    assert "_CROSS_RULE_WINNERS" in message
+    assert "FINDING" in out
+    assert "_CROSS_RULE_WINNERS" in out
+    # The verdict, not just the print. A block that reports and exits 0
+    # is read by CI as silence -- the same trap
+    # test_main_exits_1_and_reports_an_unclassified_diff exists for.
+    # Ledger and fixture are otherwise clean, so 1 here is this check's
+    # alone.
+    assert code == 1, out
 
 
-def test_the_shape_refusal_over_an_unmeasured_name_claims_no_cause(
+def test_a_moved_shape_does_not_truncate_the_report(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """`measured` None has two reachable causes and the message must
+    """A stale roster row must not hide an unexplained diff.
+
+    This check runs after the worker, so unlike the two pre-worker
+    refusals it cannot raise: a SystemExit here lands MID-report and
+    takes dormancy, OVER-DECLARED, UNEXPLAINED and the radar block down
+    with it -- measured on the shipped tree, a `--corpus corpus.jsonl`
+    run at 1.4.0 prints 62 EXPLAINED NOTHING lines and 0 of them with
+    one _RECORDED_DIFFS row corrupted. So it prints and feeds the exit
+    code, like over_declared_rules. Pinned with all three in one run,
+    because a mismatch alone cannot show what a raise would have eaten.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"John Smith": ("nickname",)})
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\n'
+        'fields = ["family"]\n', _DIFFERS)
+    assert "MOVED SHAPE" in out
+    assert "EXPLAINED NOTHING 'unrelated'" in out
+    assert "UNEXPLAINED 'John Smith'" in out
+    assert code == 1, out
+
+
+def test_the_shape_report_over_an_unmeasured_name_claims_no_cause(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`measured` None has two reachable causes and the report must
     not assert one of them.
 
     The parser may have stopped moving a name recorded as moving, or
@@ -2068,19 +2099,23 @@ def test_the_shape_refusal_over_an_unmeasured_name_claims_no_cause(
     default-order comparison of it exists to have a shape. The two hand
     recorded_diff_mismatches byte-identical arguments -- main() appends
     to `diffing` only where a comparison DIFFED -- so this check cannot
-    tell them apart, and a message saying the name "stopped diffing"
+    tell them apart, and a line saying the name "stopped diffing"
     would send half its readers to the parser over a corpus entry.
     Written in the shape of test_the_vacancy_refusal_names_both_of_its_causes.
     """
     monkeypatch.setitem(compare._RECORDED_DIFFS,
                         "expected_since_1.4.0.toml",
                         {"John Smith": ("family",)})
-    with pytest.raises(SystemExit) as exc:
-        _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _SAME_FACADE)
-    message = str(exc.value)
-    assert "no default-order diff" in message
-    assert "declared order" in message
-    assert "stopped diffing" not in message
+    code, out = _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY,
+                          _SAME_FACADE)
+    assert "no default-order diff" in out
+    assert "declared order" in out
+    # Every line of the block, not just the one carrying the shape: the
+    # header sentence is the one that used to assert the parser had
+    # changed, which is false for the second cause.
+    assert "stopped diffing" not in out
+    assert "the parser changed" not in out
+    assert code == 1, out
 
 
 def test_a_full_run_refuses_a_recorded_name_no_corpus_holds(
@@ -2094,6 +2129,12 @@ def test_a_full_run_refuses_a_recorded_name_no_corpus_holds(
     defect this arc is about. Same asymmetry as the vacancy check's
     caller (#382), and `corpus_flag=False` is the only run whose name
     set can tell a departed name from one this run did not reach.
+
+    Pre-worker, like both refusals it sits beside: it reads the ledger
+    and the loaded names and nothing the comparison produces, and a
+    refusal raised afterwards prints below the run's own `baseline:`
+    header for a comparison it is about to disown. Its measured half
+    cannot do that, and prints instead.
     """
     monkeypatch.setitem(compare._RECORDED_DIFFS,
                         "expected_since_1.4.0.toml",
@@ -2107,6 +2148,8 @@ def test_a_full_run_refuses_a_recorded_name_no_corpus_holds(
     # what regressed, and they are not interchangeable
     assert "restore" in message and "delete" in message
     assert "_CROSS_RULE_WINNERS" in message
+    assert not _WORKER_CALL, (
+        "main() spawned the worker before refusing the roster row")
 
 
 def test_a_corpus_run_is_silent_about_a_recorded_name_outside_it(
@@ -2141,6 +2184,7 @@ def test_naming_every_corpus_refuses_a_recorded_name_no_corpus_holds(
         _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS,
                   names_every_corpus=True)
     assert "Nobody Here, Esq." in str(exc.value)
+    assert not _WORKER_CALL
 
 
 def test_a_name_this_baseline_skipped_is_not_a_name_the_corpus_lost(
