@@ -1971,9 +1971,10 @@ def main() -> int:
     # The tree is checked BEFORE the worker runs. It depends on nothing
     # the worker produces, and validate_rules' own reasoning applies: a
     # misconfiguration that aborts after the whole install-and-compare
-    # pass is one the run reports having already published a
-    # comparison it is about to disown. It is the ORDER that earns the
-    # placement, not the clock. This comment used to say that pass
+    # pass is one the run reports below its own `baseline:` line,
+    # having already published a comparison it is about to disown. It
+    # is the ORDER that earns the placement, not the clock. This
+    # comment used to say that pass
     # "costs minutes" -- a magnitude nobody had measured, and wrong:
     # every baseline runs in well under a second. Withdrawn by #497.
     # The figures, both recompute recipes, and the trap in timing
