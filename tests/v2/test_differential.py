@@ -3228,6 +3228,66 @@ def test_validate_rules_rejects_two_rules_sharing_an_issue() -> None:
             "expected_since_1.4.0.toml")
 
 
+def test_a_recorded_shape_matching_the_run_is_no_mismatch() -> None:
+    diffing = [("Smith, Jr.", {"family", "suffix"}, None)]
+    assert compare.recorded_diff_mismatches(
+        {"Smith, Jr.": ("family", "suffix")}, diffing,
+        {"Smith, Jr."}) == []
+
+    # ... and the recorded side is a hand-written tuple, so both sides
+    # are sorted before they are compared: a row spelled in any other
+    # order is the same shape, not a mismatch.
+    assert compare.recorded_diff_mismatches(
+        {"Smith, Jr.": ("suffix", "family")}, diffing,
+        {"Smith, Jr."}) == []
+
+
+def test_a_recorded_shape_the_run_contradicts_is_reported() -> None:
+    """The check the roster could not do for itself.
+
+    _CROSS_RULE_WINNERS feeds its recorded shape into classify() and
+    asserts the winner, so a guessed shape agrees with itself forever --
+    which is how '田中さん II' sat recorded as {given, suffix} when the
+    measured diff is {family, given, suffix}.
+    """
+    diffing = [("田中さん II", {"family", "given", "suffix"}, None)]
+    got = compare.recorded_diff_mismatches(
+        {"田中さん II": ("given", "suffix")}, diffing, {"田中さん II"})
+    assert [(m.name, m.recorded, m.measured) for m in got] == [
+        ("田中さん II", ("given", "suffix"), ("family", "given", "suffix"))]
+
+
+def test_a_recorded_name_that_stops_diffing_is_reported() -> None:
+    """Recorded means it diffed. If it no longer does, that is a finding
+    about the parser, not a row to delete."""
+    got = compare.recorded_diff_mismatches(
+        {"Smith, Jr.": ("family", "suffix")}, [], {"Smith, Jr."})
+    assert [(m.name, m.measured) for m in got] == [("Smith, Jr.", None)]
+
+
+def test_a_recorded_name_outside_this_run_is_skipped() -> None:
+    """--corpus narrows the name set, and absence is not a finding --
+    the same asymmetry the vacancy check reads (#382)."""
+    assert compare.recorded_diff_mismatches(
+        {"Smith, Jr.": ("family", "suffix")}, [], set()) == []
+
+
+def test_only_the_order_none_comparison_is_read() -> None:
+    """The roster calls classify() with no order, so the shape it records
+    is the default-order comparison's. An order-bearing comparison of the
+    same string is a different question.
+
+    The order-bearing row is written SECOND on purpose. A check that
+    read every row and let the last one win would agree with the
+    recorded shape by accident if the order-None row came last --
+    mutation-tested, and the reason this row is written the way it is.
+    """
+    diffing = [("Kim, Jr.", {"family", "suffix"}, None),
+               ("Kim, Jr.", {"family"}, "FAMILY_FIRST")]
+    assert compare.recorded_diff_mismatches(
+        {"Kim, Jr.": ("family", "suffix")}, diffing, {"Kim, Jr."}) == []
+
+
 harvester = load_tool("build_issues_corpus")
 
 

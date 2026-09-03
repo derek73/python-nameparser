@@ -1335,6 +1335,58 @@ def vacant_exemptions(rules: list[dict[str, object]],
             if (str(rule.get("issue", "")), later) not in live]
 
 
+class _ShapeMismatch(NamedTuple):
+    """A recorded diff shape the run disagrees with (#497).
+
+    Named rather than a bare triple for _Vacancy's reason: the caller
+    formats these into a message, and `m.recorded`/`m.measured` says
+    which side is which where `m[1]`/`m[2]` would not.
+    """
+    name: str
+    #: the shape _RECORDED_DIFFS carries, sorted
+    recorded: tuple[str, ...]
+    #: what this run measured, sorted; None when the name did not diff
+    measured: tuple[str, ...] | None
+
+
+def recorded_diff_mismatches(
+        recorded: dict[str, tuple[str, ...]],
+        diffing: list[tuple[str, set[str], str | None]],
+        compared: set[str]) -> list[_ShapeMismatch]:
+    """Recorded shapes this run contradicts (#497).
+
+    The roster in tests/v2/test_ledger_guards.py pins WHICH RULE wins a
+    contested name, and to ask that question it must state the diff
+    shape -- which it then feeds to classify() as an input. Nothing
+    checked the shape itself, so a guessed one agreed with itself
+    forever. This is the half only a run can do: main() has already
+    measured every name's real diff by the time it calls this.
+
+    Only the order-None comparison is read. The roster calls classify()
+    with no order, so the shape it records is the default-order one; a
+    string also compared under a declared order is a different question
+    and its own row would be needed to ask it.
+
+    A name absent from `compared` is SKIPPED rather than reported. Under
+    `--corpus` the name set is narrowed, and absence is then a fact
+    about the run rather than about the roster -- the same asymmetry the
+    vacancy check reads (#382). A name that is compared and does NOT
+    diff is reported, with `measured` None: recorded means it diffed
+    once, so its stopping is a finding about the parser.
+    """
+    measured = {name: tuple(sorted(diff))
+                for name, diff, order in diffing if order is None}
+    out: list[_ShapeMismatch] = []
+    for name, shape in recorded.items():
+        if name not in compared:
+            continue
+        got = measured.get(name)
+        want = tuple(sorted(shape))
+        if got != want:
+            out.append(_ShapeMismatch(name, want, got))
+    return out
+
+
 def _entry_matches(rule: dict[str, object], name: str,
                    diff_fields: set[str], order: str | None = None) -> bool:
     """Does this entry's narrowing admit this diff?
