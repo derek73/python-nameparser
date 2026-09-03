@@ -1759,11 +1759,12 @@ def test_main_checks_contests_against_the_names_it_loaded() -> None:
 
     The unit guard is what catches a new rule at pytest speed; this is
     the belt for a run over a --corpus the guard never sees, and it has
-    to fire early -- a refusal raised after the worker pass prints
-    below the run's own `baseline:` line, so the reader has been shown
-    work done under a ledger the run was about to reject. The ordering
-    is the argument; the "multi-minute" cost this docstring used to
-    give for it was withdrawn as unmeasured (#497).
+    to fire early -- a refusal raised after the worker pass has already
+    installed the pinned wheel and parsed the whole corpus for a
+    comparison that will never be made, and it prints below the run's
+    own published `baseline:` header. The ordering is the argument; the
+    "multi-minute" cost this docstring used to give for it was
+    withdrawn as unmeasured (#497).
     """
     src = (compare.HERE / "compare.py").read_text(encoding="utf-8")
     body = src[src.index("def main("):]

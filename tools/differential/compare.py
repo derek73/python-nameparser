@@ -1818,14 +1818,14 @@ def main() -> int:
     # before any corpus is read: whether two rules CONTEST a diff is a
     # question about NAMES -- both regexes have to reach one -- and the
     # names arrive at this line. Before the worker pass, deliberately:
-    # a ledger refused after the worker runs is a ledger refused below
-    # its own `baseline:` line, so the run has already reported work
-    # done under rules it was about to call inadmissible (#382). It is
-    # the ORDER of the two that earns this placement and not the wait
-    # -- the worker pass is a tenth of a second, and the "multi-minute"
-    # this comment used to argue from was withdrawn as unmeasured
-    # (#497; the figures and their recompute are at the tree check
-    # further down this file).
+    # a ledger refused after the worker runs has already installed the
+    # pinned wheel and parsed the whole corpus for a comparison that
+    # will never be made, and it refuses below its own published
+    # `baseline:` header (#382). It is the ORDER of the two that earns
+    # this placement and not the wait -- the worker pass is a fraction
+    # of a second, and the "multi-minute" this comment used to argue
+    # from was withdrawn as unmeasured (#497, and decisions.md, "the
+    # rule-order arc", which carries the dated figures).
     #
     # The names are the LOADED entries, not the corpus*.jsonl glob the
     # unit guard in tests/v2/test_ledger_guards.py reads: `--corpus`
@@ -1971,21 +1971,15 @@ def main() -> int:
     # The tree is checked BEFORE the worker runs. It depends on nothing
     # the worker produces, and validate_rules' own reasoning applies: a
     # misconfiguration that aborts after the whole install-and-compare
-    # pass is one the run reports below its own `baseline:` line,
-    # having already published a comparison it was about to disown. It
-    # is the ORDER that earns the placement, not the clock. This
-    # comment used to say that pass "costs minutes"; the claim was
-    # never measured, entered on 2026-08-05, and had been copied to
-    # seven other sites -- three more here, three in
-    # tests/v2/test_differential.py, and a Declined bullet in
-    # docs/design/decisions.md that rested a decline on it -- before
-    # #497 withdrew it. Measured 2026-09-03 over the whole corpus: a
-    # run is 0.33s wall at baseline 1.4.0 and 0.57s at 2.2.0, the
-    # default, of which the worker pass is 0.10s and 0.29s; all four
-    # baselines back to back total 1.97s; and a run with uv's cache
-    # emptied first, so the pinned wheel is downloaded rather than
-    # reused, is still under a second. RECOMPUTE: time (uv run python
-    # tools/differential/compare.py --baseline 1.4.0 >/dev/null)
+    # pass is one the run reports having already published a
+    # comparison it is about to disown. It is the ORDER that earns the
+    # placement, not the clock. This comment used to say that pass
+    # "costs minutes" -- a magnitude nobody had measured, and wrong:
+    # every baseline runs in well under a second. Withdrawn by #497.
+    # The figures, both recompute recipes, and the trap in timing
+    # _run_worker directly are in decisions.md, "the rule-order arc",
+    # kept in that one place because they carry a date there and a
+    # second copy is the copy that does not get updated.
     import nameparser  # the working tree -- verified, not assumed
     from nameparser import HumanName
     tree_at = _check_tree(nameparser.__file__)
