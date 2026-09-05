@@ -2041,6 +2041,11 @@ def test_main_reports_a_recorded_shape_the_run_contradicts(
     only falsifiable against a run. recorded_diff_mismatches has its
     own unit tests above -- this pins that main() calls it, which is
     the half that can go silently permissive.
+
+    CONTRACT tier, _run_main's default. A contest row is fatal on a
+    radar name too, and test_a_contest_shape_on_a_radar_name_still_fails
+    pins that half; the watched-roster tests beside it pin the tier
+    the other roster's rows DO follow.
     """
     monkeypatch.setitem(compare._RECORDED_DIFFS,
                         "expected_since_1.4.0.toml",
@@ -2305,18 +2310,28 @@ def test_a_name_this_baseline_skipped_is_not_a_name_the_corpus_lost(
     test_the_contest_check_reads_names_this_baseline_will_not_compare.
     Its control is the sibling above: a name in NO corpus is refused by
     this same run shape.
+
+    One skipped name per roster, because the note reads the UNION: a
+    watched row on a skipped entry falls between the two halves for
+    exactly the reason a contest row does, and a note reading one dict
+    would leave the other's row silent on the same run.
     """
     import json as _json
     import sys
     name = "Ménil Christophe du"
+    watched_name = "Vega Carlos de la"
     corpus = tmp_path / "corpus_x.jsonl"
     corpus.write_text(
         _json.dumps({"name": name, "shape": 4}, ensure_ascii=False) + "\n"
+        + _json.dumps({"name": watched_name, "shape": 4}) + "\n"
         + _json.dumps("John Smith") + "\n", encoding="utf-8")
     (tmp_path / "expected_since_1.4.0.toml").write_text(
         _CLAIMS_FAMILY, encoding="utf-8")
     monkeypatch.setitem(compare._RECORDED_DIFFS,
                         "expected_since_1.4.0.toml", {name: ("family",)})
+    monkeypatch.setitem(compare._WATCHED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {watched_name: ("family",)})
     # wholesale, so the flagless glob below sees a full corpus roster
     monkeypatch.setattr(compare, "_CORPUS_FLOORS", {corpus.name: 1})
     monkeypatch.setitem(compare._CORPUS_TIERS, corpus.name, "contract")
@@ -2348,6 +2363,172 @@ def test_a_name_this_baseline_skipped_is_not_a_name_the_corpus_lost(
     assert "NOT CHECKED" in out, out
     assert name in out, out
     assert "do not delete" in out, out
+    # ... and the watched row too, under the same note: the count is
+    # asserted so a note reading one roster cannot pass by naming the
+    # other's row in some later line
+    assert "NOT CHECKED expected_since_1.4.0.toml: 2 recorded" in out, out
+    assert watched_name in out, out
+
+
+def test_a_watched_shape_on_a_radar_name_prints_and_does_not_fail(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The severity rule's whole point: a row that is only a snapshot
+    follows its name's tier, and on a radar name that is "shown, never
+    blocking" (#468). The VERDICT is the pin -- a block that printed
+    and exited 1 would be the contest roster's behavior on a name that
+    carries no argument.
+
+    Radar tier, and the ledger claims the family diff, so the run is
+    clean apart from the row: 0 here is this check's alone, exactly as
+    the contest twin's 1 is its own.
+    """
+    monkeypatch.setitem(compare._WATCHED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"John Smith": ("nickname",)})
+    code, out = _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS,
+                          tier="radar")
+    assert "MOVED SHAPE (radar)" in out, out
+    # the dict the row lives in, so the reader edits the right one
+    assert "_WATCHED_DIFFS records" in out, out
+    # both shapes, for the reason the contest twin gives
+    assert "nickname" in out and "family" in out, out
+    # no row here has a partner pin, so the block must not send a
+    # reader to a roster that holds nothing for it
+    assert "_CROSS_RULE_WINNERS" not in out, out
+    # the ledger explained the diff, so the only radar block is this one
+    assert "UNCLASSIFIED" not in out, out
+    assert code == 0, out
+
+
+def test_a_watched_shape_on_a_contract_name_fails(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The same row, the other tier: a contract name's watched shape
+    fails the run as an unexplained diff on it would. The block is
+    MOVED SHAPE without the `(radar)` tag, and its count word is
+    `watched` so the two rosters' blocks read apart on one run."""
+    monkeypatch.setitem(compare._WATCHED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"John Smith": ("nickname",)})
+    code, out = _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS,
+                          tier="contract")
+    assert "MOVED SHAPE expected_since_1.4.0.toml: 1 watched" in out, out
+    assert "(radar)" not in out, out
+    assert "_WATCHED_DIFFS records" in out, out
+    assert "_CROSS_RULE_WINNERS" not in out, out
+    assert code == 1, out
+
+
+def test_a_contest_shape_on_a_radar_name_still_fails(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A contest row carries an argument, so the tier does not soften
+    it: the winner pinned beside the shape was recorded for the OLD
+    shape whichever file the name sits in. The contract-tier twin is
+    test_main_reports_a_recorded_shape_the_run_contradicts."""
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"John Smith": ("nickname",)})
+    code, out = _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS,
+                          tier="radar")
+    assert "MOVED SHAPE expected_since_1.4.0.toml: 1 recorded" in out, out
+    assert "(radar)" not in out, out
+    assert "_CROSS_RULE_WINNERS" in out, out
+    assert code == 1, out
+
+
+def test_a_contest_row_and_a_watched_radar_row_print_apart(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Both kinds moved on one run: two blocks, contest first, each
+    naming its own dict, and the exit code reading only the fatal one.
+    The radar-only sibling above exits 0, so 1 here is the contest
+    row's -- which is what "reads only the fatal list" means when both
+    are present."""
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"John Smith": ("nickname",)})
+    monkeypatch.setitem(compare._WATCHED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"Alice Jones": ("nickname",)})
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "claimed"\nname_regex = "Smith|Jones"\n'
+        'fields = ["family"]\n', _DIFFERS,
+        extra=[("Alice Jones",
+                {"title": "", "first": "Alice", "middle": "",
+                 "last": "JONESY", "suffix": "", "nickname": "",
+                 "maiden": ""})],
+        tier="radar")
+    contest = out.index("MOVED SHAPE expected_since_1.4.0.toml: 1 recorded")
+    radar = out.index("MOVED SHAPE (radar) expected_since_1.4.0.toml: 1 watched")
+    assert contest < radar, out
+    assert out.count("_RECORDED_DIFFS records") == 1, out
+    assert out.count("_WATCHED_DIFFS records") == 1, out
+    assert code == 1, out
+
+
+def test_a_corpus_run_is_silent_about_a_watched_name_outside_it(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The contest roster's inversion, for the watched one: under
+    `--corpus` absence is a fact about the run, and
+    recorded_diff_mismatches is called on this dict with the same
+    `compared` it skips by."""
+    monkeypatch.setitem(compare._WATCHED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"Nobody Here, Esq.": ("family",)})
+    code, out = _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS)
+    assert "Nobody Here, Esq." not in out, out
+    assert "MOVED SHAPE" not in out, out
+    assert code == 0, out
+
+
+def test_a_full_run_refuses_a_watched_name_no_corpus_holds(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The departed-name refusal reads the union, and its repair text
+    is per roster: a watched row has no partner in _CROSS_RULE_WINNERS,
+    so the message must not send a reader to delete one. The contest
+    sibling asserts the partner IS named for its row.
+
+    The contest section is EMPTIED first: a flagless run globs only
+    the fixture corpus, so every shipped 1.4.0 contest row is departed
+    on this run too, and the message would name the partner for those
+    -- correctly -- and the assertion below would be reading the wrong
+    rows."""
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml", {})
+    monkeypatch.setitem(compare._WATCHED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"Nobody Here, Esq.": ("family",)})
+    with pytest.raises(SystemExit) as exc:
+        _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS,
+                  corpus_flag=False)
+    message = str(exc.value)
+    assert "Nobody Here, Esq." in message
+    assert "restore" in message and "delete" in message
+    assert "_WATCHED_DIFFS" in message
+    assert "_CROSS_RULE_WINNERS" not in message, message
+    assert not _WORKER_CALL, (
+        "main() spawned the worker before refusing the roster row")
+
+
+def test_a_name_in_both_rosters_is_refused_pre_worker(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A row is one kind or the other, and the run cannot pick: the two
+    kinds carry different severities and different repairs. Refused
+    before the worker, like the other roster refusals, and under
+    `--corpus` too -- the overlap is a fact about the dicts, not about
+    which names this run read."""
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"John Smith": ("family",)})
+    monkeypatch.setitem(compare._WATCHED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"John Smith": ("family",)})
+    with pytest.raises(SystemExit) as exc:
+        _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS)
+    message = str(exc.value)
+    assert "John Smith" in message
+    assert "_RECORDED_DIFFS" in message and "_WATCHED_DIFFS" in message
+    assert not _WORKER_CALL, (
+        "main() spawned the worker before refusing the overlap")
 
 
 def test_radar_diff_with_no_rule_exits_0_and_is_reported(
