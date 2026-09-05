@@ -680,7 +680,15 @@ _CORPUS_TIERS = {
     # NONE do today and every text in this file reads radar. The rule
     # is stated as a rule, not as a caveat about the five: whatever
     # lands here next is demoted only once no contract corpus holds
-    # it.
+    # it. What landed next needed exactly that. '田中さん 様.' was one
+    # of the two pure texts the W2 swap brought IN, so the 2026-09-05
+    # period-class demotion had to move that example line into the
+    # tolerated W3 in the same breath as marking its case row --
+    # marking the row alone would have left the name enforced and
+    # documented as demoted. Still none today, and asked of every
+    # contract file on every run by
+    # test_the_tolerated_corpus_is_disjoint_from_the_contract_ones
+    # (tests/v2/test_ledger_guards.py) rather than left to a reader.
     "corpus_cjk_tolerated.jsonl": "radar",
     "corpus_issues.jsonl": "radar",
     "corpus_rules.jsonl": "contract",
@@ -1971,10 +1979,18 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         # picks the one that explains it, and nobody has argued which
         # should -- a shape with no winner, which is the row kind this
         # dict exists for. They move to _RECORDED_DIFFS the day #501
-        # argues a winner, and the pin goes beside them there. Three
-        # are contract tier (corpus_cjk.jsonl; the first also
-        # corpus_rules.jsonl), so a move on them fails the run; the
-        # last is corpus_cjk_tolerated.jsonl, radar, and prints.
+        # argues a winner, and the pin goes beside them there. TWO are
+        # contract tier (corpus_cjk.jsonl) -- '김민준 박사님' and
+        # '선생님' -- so a move on those fails the run; the other two
+        # sit in corpus_cjk_tolerated.jsonl, radar, and print.
+        # Re-measured 2026-09-05: '田中さん 様.' was the third contract
+        # one, in corpus_cjk.jsonl and corpus_rules.jsonl both, and the
+        # period-class demotion (decisions.md#cjk-comma-demotion) moved
+        # it to the radar half of the CJK projection and took W2's
+        # example line with it. A row's fatality follows the tier its
+        # NAME reads at, which no roster in this file records -- so a
+        # demotion changes what a row here costs without touching the
+        # row, and this comment is the only thing that goes stale.
         "田中さん 様.": ("family", "given", "suffix"),
         "김민준 박사님": ("family", "given", "suffix"),
         "선생님": ("family", "given"),
