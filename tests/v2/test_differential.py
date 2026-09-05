@@ -2522,13 +2522,204 @@ def test_a_name_in_both_rosters_is_refused_pre_worker(
     monkeypatch.setitem(compare._WATCHED_DIFFS,
                         "expected_since_1.4.0.toml",
                         {"John Smith": ("family",)})
-    with pytest.raises(SystemExit) as exc:
+    with pytest.raises(SystemExit, match="sit in both") as exc:
         _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS)
     message = str(exc.value)
     assert "John Smith" in message
     assert "_RECORDED_DIFFS" in message and "_WATCHED_DIFFS" in message
     assert not _WORKER_CALL, (
         "main() spawned the worker before refusing the overlap")
+
+
+@pytest.mark.parametrize("dict_name", ["_RECORDED_DIFFS", "_WATCHED_DIFFS"])
+def test_a_ledger_missing_from_a_shape_roster_is_refused_pre_worker(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+        dict_name: str) -> None:
+    """An empty section is a statement and a missing one is nobody
+    having looked, and a `.get(..., {})` read the two alike: with the
+    1.4.0 key deleted from _WATCHED_DIFFS, a full run at that baseline
+    checked 41 rows fewer, printed the same 375 lines and exited 0.
+    So the run refuses, pre-worker, naming the dict and the ledger --
+    the guards in test_ledger_guards.py hold the same key equality at
+    pytest speed, and the tool may not assume they ran."""
+    monkeypatch.delitem(getattr(compare, dict_name),
+                        "expected_since_1.4.0.toml")
+    with pytest.raises(SystemExit, match="carry no section") as exc:
+        _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS)
+    message = str(exc.value)
+    assert dict_name in message
+    assert "expected_since_1.4.0.toml" in message
+    assert "test_ledger_guards.py" in message
+    assert not _WORKER_CALL, (
+        "main() spawned the worker before refusing the missing section")
+
+
+def test_the_departed_name_refusal_names_the_partner_per_roster(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Both rosters departed on one run: one refusal, both names, and
+    the _CROSS_RULE_WINNERS sentence once -- under the contest name
+    and not under the watched one. The two single-roster siblings
+    above each see one list and cannot tell a per-list sentence from
+    one that rides the whole message."""
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"Nobody Contested, Esq.": ("family",)})
+    monkeypatch.setitem(compare._WATCHED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"Nobody Watched, Esq.": ("family",)})
+    with pytest.raises(SystemExit, match="no corpus holds any more") as exc:
+        _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS,
+                  corpus_flag=False)
+    message = str(exc.value)
+    assert "2 recorded diff shape(s)" in message, message
+    assert message.count("_CROSS_RULE_WINNERS") == 1, message
+    contest_at = message.index("Nobody Contested, Esq.")
+    watched_at = message.index("Nobody Watched, Esq.")
+    partner_at = message.index("_CROSS_RULE_WINNERS")
+    watched_lead = message.index("in _WATCHED_DIFFS, pinning no winner")
+    assert partner_at < contest_at < watched_lead < watched_at, message
+    assert not _WORKER_CALL
+
+
+def _run_main_over(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+        corpora: list[tuple[str, str, list[object]]],
+        rows: list[dict],
+        ledger_body: str,
+        baseline: str = "2.0.0") -> tuple[int, str]:
+    """_run_main's multi-corpus, order-bearing sibling.
+
+    _run_main writes ONE corpus of bare-string lines, so it cannot
+    build a name compared under a declared order, nor one string held
+    by two files of different tiers -- and the watched-row tier rule
+    is stated over exactly those two shapes. `corpora` is
+    (filename, tier, lines) per file, the lines in either corpus
+    format; `rows` are the worker's rows in the order main() will send
+    the entries, which is contract files first and then by filename,
+    each file in line order. A row that agrees with the tree on every
+    field is _tree_v2_row(name, order); the facade half is omitted for
+    an order-bearing entry, as the worker omits it.
+    """
+    import contextlib
+    import io
+    import json
+    import sys
+    argv = ["compare.py", "--baseline", baseline]
+    for filename, tier, lines in corpora:
+        path = tmp_path / filename
+        path.write_text("\n".join(json.dumps(x) for x in lines) + "\n",
+                        encoding="utf-8")
+        monkeypatch.setitem(compare._CORPUS_FLOORS, filename, 1)
+        monkeypatch.setitem(compare._CORPUS_TIERS, filename, tier)
+        argv += ["--corpus", str(path)]
+    (tmp_path / f"expected_since_{baseline}.toml").write_text(
+        ledger_body, encoding="utf-8")
+    monkeypatch.setattr(compare, "HERE", tmp_path)
+
+    def _fake(v: str, w: bool, n: list[dict]) -> tuple[dict, list[dict]]:
+        return ({"__version__": v,
+                 "__file__": "/wheel/nameparser/__init__.py"}, rows)
+
+    monkeypatch.setattr(compare, "_run_worker", _fake)
+    monkeypatch.setattr(sys, "argv", argv)
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = compare.main()
+    return code, buf.getvalue()
+
+
+def _default_order_diff(name: str, family: str) -> dict:
+    """A baseline row for `name` under the default order whose facade
+    disagrees with the tree on the family alone, and whose v2 half
+    agrees -- so the run's only diff on the name is {family}."""
+    from nameparser import HumanName
+    given = name.split()[0]
+    return {"facade": {"title": "", "first": given, "middle": "",
+                       "last": family, "suffix": "", "nickname": "",
+                       "maiden": "",
+                       "_initials": HumanName(name).initials() or ""},
+            "v2": _tree_v2_row(name, None)}
+
+
+def test_a_watched_row_reads_the_default_order_entrys_tier(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The 'John Smith, Dr.' shape: one string, contract in one file
+    only under a declared order and radar in another under the
+    default. The shape was measured on the default-order comparison,
+    so that entry's tier decides -- radar, printed, exit 0 -- although
+    the contract entry loaded FIRST. A rule reading the first-loaded
+    entry always would fail this run; one reading order-None entries
+    only would pass it, and the declared-order-only sibling below is
+    what refuses that one."""
+    monkeypatch.setitem(compare._WATCHED_DIFFS, "expected_since_2.0.0.toml",
+                        {"John Smith": ("nickname",)})
+    code, out = _run_main_over(
+        tmp_path, monkeypatch,
+        [("corpus.jsonl", "radar", ["John Smith"]),
+         ("corpus_rules.jsonl", "contract",
+          [{"name": "John Smith", "shape": 4}])],
+        # contract file first, so its FAMILY_FIRST entry is sent first
+        [{"v2": _tree_v2_row("John Smith", "FAMILY_FIRST")},
+         _default_order_diff("John Smith", "SMYTHE")],
+        _CLAIMS_FAMILY)
+    assert "MOVED SHAPE (radar) expected_since_2.0.0.toml: 1 watched" in out, out
+    assert "This fails the run" not in out, out
+    assert code == 0, out
+
+
+@pytest.mark.parametrize(("tier", "lead", "code"), [
+    ("contract", "MOVED SHAPE expected_since_2.0.0.toml: 1 watched", 1),
+    ("radar", "MOVED SHAPE (radar) expected_since_2.0.0.toml: 1 watched", 0),
+])
+def test_a_watched_row_on_a_declared_order_only_name_reads_its_first_entry(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+        tier: str, lead: str, code: int) -> None:
+    """A name compared under a declared order ALONE has no
+    default-order entry, so the first-loaded one decides -- and it
+    must decide something: the row reports with `measured` None
+    (nothing compared the name under the default order), which is a
+    mismatch owed a tier like any other. A tier map built over
+    order-None entries only has no key for the name and dies
+    mid-report on it.
+
+    'Jane Smith' keeps the ledger rule awake: with no default-order
+    diff at all the rule would be EXPLAINED NOTHING, exit 1 for a
+    reason that is not the row's, and the contract case could not
+    be told from it."""
+    monkeypatch.setitem(compare._WATCHED_DIFFS, "expected_since_2.0.0.toml",
+                        {"John Smith": ("family",)})
+    got, out = _run_main_over(
+        tmp_path, monkeypatch,
+        [("corpus_x.jsonl", tier,
+          [{"name": "John Smith", "shape": 4}, "Jane Smith"])],
+        [{"v2": _tree_v2_row("John Smith", "FAMILY_FIRST")},
+         _default_order_diff("Jane Smith", "SMYTHE")],
+        _CLAIMS_FAMILY)
+    assert lead in out, out
+    assert "measured no default-order diff" in out, out
+    # the two-cause disclaimer: the check cannot say whether the
+    # parser stopped moving the name or the name is compared only
+    # under a declared order, and here it is the second
+    assert "TWO reach it" in out, out
+    assert "EXPLAINED NOTHING" not in out, out
+    assert got == code, out
+
+
+def test_a_tier_outside_the_two_literals_is_refused_at_load(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """_CORPUS_TIERS' value is validated where its key's presence is,
+    naming the file and the value, before any worker runs. Not a
+    partition test: main()'s `!= "radar"` split would put a misspelled
+    tier on the fatal side, but that would be the side the `!=`
+    happens to fall on, and no such value reaches the split now."""
+    with pytest.raises(SystemExit, match="neither 'contract' nor 'radar'") as exc:
+        _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS,
+                  tier="bogus")
+    message = str(exc.value)
+    assert "corpus_x.jsonl" in message
+    assert "'bogus'" in message
+    assert not _WORKER_CALL, (
+        "main() spawned the worker before refusing the tier value")
 
 
 def test_radar_diff_with_no_rule_exits_0_and_is_reported(

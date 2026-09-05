@@ -2751,14 +2751,28 @@ def test_the_recorded_rule_still_wins_each_contested_name() -> None:
 
 def _check_shape_rows(compare: ModuleType, roster: str, ledger_name: str,
                       shapes: dict[str, tuple[str, ...]]) -> None:
-    """The per-row checks both shape rosters are held to. A row in
-    either dict is fed to classify() as the same kind of input a rule's
-    `fields` is, and a departed name agrees with itself forever in
-    either, so the checks are one function applied twice rather than
-    two copies that drift. `roster` is the dict's name, for the
-    messages. test_every_pinned_winner_has_a_recorded_shape's docstring
-    carries why each assertion is here rather than left to the gate.
+    """The per-row checks both shape rosters are held to. A contest
+    row is fed to classify() as the same kind of input a rule's
+    `fields` is; a watched row is fed to nothing -- the run compares
+    it against a diff classify() explained -- and the two are held to
+    one vocabulary for that reason, since a shape spelled outside it
+    is one no run can produce and so one no run can contradict. A
+    departed name agrees with itself forever in either, so the checks
+    are one function applied twice rather than two copies that drift.
+    `roster` is the dict's name, for the messages.
+    test_every_pinned_winner_has_a_recorded_shape's docstring carries
+    why each assertion is here rather than left to the gate;
+    test_the_shape_row_checks_refuse_each_illegal_row pins that each
+    one fires.
     """
+    # For the message below: which live rows carry '_ambiguities',
+    # read from the dicts rather than named, so the example cannot
+    # go stale as rows move.
+    ambiguity_rows = sorted(
+        (ledger, name)
+        for roster_dict in (compare._RECORDED_DIFFS, compare._WATCHED_DIFFS)
+        for ledger, section in roster_dict.items()
+        for name, row in section.items() if "_ambiguities" in row)
     # `gone`'s question, at pytest speed and against every ledger
     # rather than only the one a run was pointed at. The gate asks
     # it over the corpora a full run loaded; _CORPUS_NAMES is every
@@ -2785,9 +2799,10 @@ def _check_shape_rows(compare: ModuleType, roster: str, ledger_name: str,
             f"a rule's 'fields' against, since a shape is the same "
             f"kind of input -- and not against V2_FIELDS, because "
             f"'_ambiguities' is legal in a 2.x row (it cannot "
-            f"appear below 2.0), and live rows carry it: 'Do Quang "
-            f"Minh', 'Esq. van Gogh' and 'John, Smith, Dr.' in "
-            f"_WATCHED_DIFFS at 2.0.0 and 2.1.0")
+            f"appear below 2.0), and {len(ambiguity_rows)} live "
+            f"row(s) carry it today"
+            + (f", e.g. {ambiguity_rows[0][1]!r} at "
+               f"{ambiguity_rows[0][0]}" if ambiguity_rows else ""))
         dups = sorted({f for f in shape if shape.count(f) > 1})
         assert not dups, (
             f"{where} repeats {dups}. It is read as a set, so the "
@@ -2882,14 +2897,18 @@ def test_every_pinned_winner_has_a_recorded_shape() -> None:
 def test_the_watched_roster_is_disjoint_and_names_every_ledger() -> None:
     """compare._WATCHED_DIFFS holds the shape of a name no winner is
     pinned for -- most of them sole-watched, four of them #501's
-    contests. Three things that dict's
-    header promises are checked here, at pytest speed, because the
-    gate checks them only for the one ledger a run was pointed at.
+    contests. Three things are checked here, at pytest speed, because
+    the gate checks them only for the one ledger a run was pointed
+    at: the first is the sibling rosters' key convention, applied to
+    this dict; the second and third are what the dict's header
+    promises.
 
     Every ledger on disk is a key -- the same equality the other two
     rosters use, and for the same reason: an empty section is a
     statement (this ledger has no watched name) where a missing one is
-    nobody having looked. Per ledger, no name sits in both shape
+    nobody having looked; compare.py's main() refuses a ledger missing
+    from either shape roster pre-worker on the same ground, so the
+    guard and the run agree. Per ledger, no name sits in both shape
     rosters, since a row is one kind or the other and compare.py reads
     a row's severity and its repair text off the dict it is in. And,
     stated on its own rather than left to follow from the first two:
@@ -2942,6 +2961,29 @@ def test_the_watched_roster_is_disjoint_and_names_every_ledger() -> None:
         "empty section beside filled ones; an all-empty dict is the "
         "roster deleted, and its header's population says which rows "
         "belong")
+
+
+@pytest.mark.parametrize(("row", "sentence"), [
+    ({"John Smith": ("famly",)}, "are not roles"),
+    ({"John Smith": ("family", "family")}, "repeats"),
+    ({"John Smith": ("_initials", "family")}, "beside"),
+    ({"John Smith": ()}, "is empty"),
+    ({"Nobody Here, Esq.": ("family",)}, "sit in no corpus"),
+])
+def test_the_shape_row_checks_refuse_each_illegal_row(
+        row: dict[str, tuple[str, ...]], sentence: str) -> None:
+    """The negative control for _check_shape_rows, one case per
+    illegal row kind, under the _WATCHED_DIFFS label. Its sensitivity
+    was previously a hand measurement cited in
+    test_every_pinned_winner_has_a_recorded_shape's docstring -- an
+    injected row and a suite run -- which nothing re-ran; a helper
+    that stopped firing on one of these would have left both rosters'
+    guards green and said nothing."""
+    compare = load_tool("compare")
+    with pytest.raises(AssertionError, match=sentence) as exc:
+        _check_shape_rows(compare, "_WATCHED_DIFFS",
+                          "expected_since_1.4.0.toml", row)
+    assert "_WATCHED_DIFFS" in str(exc.value)
 
 
 def test_the_family_first_fold_is_not_explained_under_the_default_order(

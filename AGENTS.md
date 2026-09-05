@@ -133,11 +133,15 @@ uv run sphinx-build -b html docs dist/docs
 #    The classified summary each run prints is the source for the release
 #    notes' behavior claims, including the count of changed names that are
 #    Latin-only.
-#    Exit 0 no longer means every diff is classified: since the tier split
-#    (#468) a radar corpus's unmatched diffs print under UNCLASSIFIED (radar)
-#    and cannot fail the run. Read that block. A radar diff worth a release
-#    note gets promoted (a cases.py row plus a shape tag) or classified with a
-#    rule BEFORE the log is drafted, not after.
+#    Exit 0 no longer means every diff is classified, and two blocks print
+#    without failing the run. Since the tier split (#468) a radar corpus's
+#    unmatched diffs print under UNCLASSIFIED (radar); since the watched-shapes
+#    arc (#501) a watched shape on a radar name that MOVED prints under
+#    MOVED SHAPE (radar). Read both. A radar diff worth a release note gets
+#    promoted (a cases.py row plus a shape tag) or classified with a rule
+#    BEFORE the log is drafted, not after; a moved shape is a finding, and if
+#    the move is intended the row is re-recorded in _WATCHED_DIFFS in the
+#    commit that moved it, saying why there.
 # 2. Clear PRE_RELEASE in nameparser/_version.py — it carries 'dev' through the
 #    cycle (see step 9), so releasing is setting it to ''. VERSION should already
 #    be the version you are shipping; bump it here only if step 9 was skipped.
@@ -168,11 +172,14 @@ uv run sphinx-build -b html docs dist/docs
 #    covers those is _CORPUS_CLAIMS, which records what every rule claims
 #    -- its regex's corpus reach, its roles, and which names -- and so
 #    needs no notion of how a copy is spelled.
-#    THREE rosters are keyed by FILENAME and checked by EQUALITY, so a new
+#    FOUR rosters are keyed by FILENAME and checked by EQUALITY, so a new
 #    ledger must be enrolled in every one of them on the day it lands, even
-#    empty -- each fails loudly and names itself, but that is three separate
-#    red runs if you add them one at a time. Two more are keyed by rule
-#    CONTENT and apply only where such a rule exists.
+#    empty -- each fails loudly and names itself, but that is four separate
+#    red runs if you add them one at a time. Three sit in the test module
+#    and one in tools/differential/compare.py; a fifth, compare.py's
+#    _RECORDED_DIFFS, is enrolled transitively, since the guard holds
+#    set(_RECORDED_DIFFS) == set(_CROSS_RULE_WINNERS). Two more are keyed
+#    by rule CONTENT and apply only where such a rule exists.
 #    Required, by filename:
 #      - _SPAN_BEARING_RULES: add the filename, mapped to the set of issue
 #        tags whose rules carry a script-span class (empty set if none).
@@ -188,6 +195,12 @@ uv run sphinx-build -b html docs dist/docs
 #        that a ledger with no rows had been indistinguishable from one
 #        needing none -- the two 2.x ledgers whose shapes #452 moved
 #        between rules had no section at all.
+#      - _WATCHED_DIFFS, in tools/differential/compare.py rather than the
+#        test module: add the filename mapped to {} while the ledger has
+#        no watched name, and the same for _RECORDED_DIFFS beside it. The
+#        run itself refuses, pre-worker, a ledger missing from either
+#        shape roster -- an empty section is a statement, a missing one is
+#        nobody having looked -- so the guard and the run agree on it.
 #    Conditional, by rule content:
 #      - _HONORIFIC_SOURCES: if the ledger has a CJK honorific rule, add a
 #        substring of its issue (keyed that way, not by tag) mapped to the

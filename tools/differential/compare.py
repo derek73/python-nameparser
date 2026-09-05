@@ -1651,10 +1651,11 @@ class _ShapeMismatch(NamedTuple):
 #: recorded for the OLD shape, so both want reading before either is
 #: edited.
 #:
-#: Every row here HAS such a winner, and the two rosters are held to
-#: name the same strings. A shape measured for a name nothing pins a
-#: winner for does not go here: _WATCHED_DIFFS below is the roster for
-#: a shape with no argument behind it, and the two are kept disjoint.
+#: Every row here HAS such a winner, and this dict and
+#: _CROSS_RULE_WINNERS are held to name the same strings. A shape
+#: measured for a name nothing pins a winner for does not go here:
+#: _WATCHED_DIFFS below is the roster for a shape with no argument
+#: behind it, and this dict and that one are kept disjoint.
 #:
 #: HERE rather than beside the roster because this is where the
 #: measurement happens. main() computes every name's real diff, so a
@@ -1751,8 +1752,10 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: ADJUDICATES a contest -- _RECORDED_DIFFS records what a name diffs
 #: so that _CROSS_RULE_WINNERS can ask classify() which rule wins it
 #: -- where a shape alone WATCHES the name without adjudicating it.
-#: "No winner pinned" is the property every row here has and the two
-#: checks below enforce; it is not "nothing else watches". MOST rows
+#: "No winner pinned" is the property every row here has and two
+#: checks enforce -- the disjointness guard in
+#: tests/v2/test_ledger_guards.py and main()'s `both` refusal; it is
+#: not "nothing else watches". MOST rows
 #: are also sole-watched -- that is the population the sweep drew
 #: (POPULATION below): a radar name that no test names and no
 #: contract corpus holds is watched only by the classification rule
@@ -1782,21 +1785,25 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #:   _RECORDED_DIFFS and the pin goes beside it there; it does not gain
 #:   a partner here.
 #:   MEASURED, from a run, and re-measured by every run. Everything
-#:   that reads _RECORDED_DIFFS reads this dict too: the departed-name
-#:   refusal pre-worker and the NOT CHECKED note read the literal UNION
-#:   of the two, and the shape comparison calls
-#:   recorded_diff_mismatches once PER dict, because the two halves
-#:   carry different severities and the exit code reads only one of
-#:   them. A row in either dict that no run can contradict is the
-#:   defect #497 is about, whichever dict it sits in.
+#:   in main() that reads _RECORDED_DIFFS reads this dict too (the two
+#:   winner guards in tests/v2/test_ledger_guards.py read that dict
+#:   alone, correctly): the missing-section refusal pre-worker asks
+#:   each dict for a section, the departed-name refusal beside it and
+#:   the NOT CHECKED note read the literal UNION of the two, and the
+#:   shape comparison calls recorded_diff_mismatches once PER dict,
+#:   because the two halves carry different severities and the exit
+#:   code reads only one of them. A row in either dict that no run
+#:   can contradict is the defect #497 is about, whichever dict it
+#:   sits in.
 #:   SEVERITY follows the row's kind first and the name's tier second.
 #:   A contest row is fatal on either tier: it carries an argument, and
 #:   a moved shape has made that argument's premise false. A watched
 #:   row on a CONTRACT-tier name fails the run, as an unexplained diff
 #:   on that name would; on a RADAR-tier name it prints under MOVED
 #:   SHAPE (radar) and feeds no exit code. Fatal-on-radar is reserved
-#:   for the [[never]] shape (_CORPUS_TIERS): a per-name deliberate
-#:   choice carrying a `why`, and a measured snapshot is not one -- the
+#:   for a per-name deliberate choice -- a [[never]] entry with its
+#:   `why` (_CORPUS_TIERS), or a contest row with its pinned winner --
+#:   and a measured snapshot is neither: the
 #:   only repair a fired snapshot admits is to re-snapshot, and a gate
 #:   whose repair is "record whatever it does now" is a changelog entry
 #:   in a gate's clothing. The tier is the DEFAULT-ORDER entry's when
@@ -1827,7 +1834,8 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: at 1.4.0 that carry contest rows there: 'Bob Jones, author',
 #: 'Carod i', 'MD, PHD', 'van ma van'. Three of them return at a 2.x
 #: baseline where they have no contest row; 'Carod i' diffs under the
-#: default order at 1.4.0 only, so it has no row anywhere, which is
+#: default order at 1.4.0 only, so it has no row in this dict (its
+#: contest row at 1.4.0 stands), which is
 #: why the population is 51 names where the tests/-only scan says 52.
 #: The counts: 41 / 32 + 4 / 31 / 5 rows, 113 in all, over the 51
 #: names plus the four #501 contests that close the 2.0.0 section.
@@ -1841,7 +1849,11 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: baseline, recording (name, order, diff, rule) per call; keep the
 #: calls whose order is None and whose rule is not None; apply the
 #: four clauses above with the literal set from ast.walk over
-#: tests/**/*.py, the tier sets from _load_entries over corpus*.jsonl
+#: tests/**/*.py EXCLUDING test_ledger_guards.py, as the POPULATION
+#: clause says -- run over every file it yields 38 / 28 / 27 / 4 rows
+#: rather than 41 / 32 / 31 / 5, since _CROSS_RULE_WINNERS' keys and
+#: a few guard literals then score as watchers -- the tier sets from
+#: _load_entries over corpus*.jsonl
 #: through _CORPUS_TIERS, and that ledger's _RECORDED_DIFFS keys. Not
 #: by replaying the corpus load by hand: the (name, order) dedup, the
 #: baseline-minimum skip and the tier stamp all happen inside main(),
@@ -2287,6 +2299,20 @@ def main() -> int:
                 f"fails the run) or 'radar' (an unmatched diff is "
                 f"reported and cannot fail). A default here would let "
                 f"a new corpus pick one by accident")
+        # The VALUE too, not only the key's presence: every tier read
+        # downstream is a comparison against one of the two literals,
+        # and a misspelled value passes each of them on the side its
+        # `!=` happens to fall -- fatal in the comparison loop and in
+        # the watched-shape split, which is the safe direction there,
+        # but by accident rather than by choice, and nothing would
+        # ever name the misspelling.
+        if tier not in ("contract", "radar"):
+            raise SystemExit(
+                f"{path.name} has tier {tier!r} in _CORPUS_TIERS, which "
+                f"is neither 'contract' nor 'radar'. Every tier read "
+                f"below compares against those two literals, so a third "
+                f"value is not a third tier but whichever side of each "
+                f"comparison the misspelling falls on")
         file_entries = _load_entries(path)
         if not file_entries:
             raise SystemExit(f"{path.name} is empty; comparison aborted")
@@ -2514,8 +2540,37 @@ def main() -> int:
     # by nothing else either: the two differ in what a mismatch means,
     # not in whether a departed name can be measured, so the union is
     # the population every check here reads.
-    recorded = _RECORDED_DIFFS.get(ledger.name, {})
-    watched = _WATCHED_DIFFS.get(ledger.name, {})
+    #
+    # FAIL-CLOSED on a missing section, and indexed rather than
+    # `.get(ledger.name, {})` below for that reason. An empty section
+    # is a statement -- this ledger has no row of that kind -- where a
+    # missing one is nobody having looked, and a `.get` default reads
+    # the two alike: with the 1.4.0 key deleted from _WATCHED_DIFFS,
+    # a full run at that baseline checks 41 rows fewer, prints the
+    # same 375 lines (differing only in the worker environment's path
+    # on the `baseline:` line, as any two runs do) and exits 0. The
+    # pytest-speed guards hold
+    # each dict's keys equal to the ledgers on disk
+    # (test_the_watched_roster_is_disjoint_and_names_every_ledger, and
+    # test_every_pinned_winner_has_a_recorded_shape through
+    # _CROSS_RULE_WINNERS); this refuses again because the tool may
+    # not assume the suite ran -- _CORPUS_TIERS' stance, applied to
+    # the rosters.
+    unsectioned = [dict_name for dict_name, roster in (
+        ("_RECORDED_DIFFS", _RECORDED_DIFFS),
+        ("_WATCHED_DIFFS", _WATCHED_DIFFS)) if ledger.name not in roster]
+    if unsectioned:
+        raise SystemExit(
+            f"tools/differential/compare.py: {' and '.join(unsectioned)} "
+            f"carry no section for {ledger.name!r}. A ledger needs an "
+            f"explicit section in each shape roster, mapped to {{}} "
+            f"while it has no row of that kind: an empty section is a "
+            f"statement, a missing one is nobody having looked, and a "
+            f"default would read the two alike and check nothing for "
+            f"this ledger. tests/v2/test_ledger_guards.py holds every "
+            f"ledger on disk to the same key equality at pytest speed")
+    recorded = _RECORDED_DIFFS[ledger.name]
+    watched = _WATCHED_DIFFS[ledger.name]
     # A name in BOTH dicts has not chosen which kind of row it is, and
     # the two kinds carry different severities and different repairs,
     # so the run cannot pick one for it. The pytest-speed guard in
@@ -2887,8 +2942,9 @@ def main() -> int:
     # since the shape recorded is the default-order shape, and the
     # first-loaded entry decides otherwise, which is a contract one
     # whenever any is: the (name, order) dedup loaded contract files
-    # first, and exactly one order-None entry survives per name, so
-    # the tier is unambiguous in both cases.
+    # first, and at most one order-None entry survives per name (a
+    # declared-order-only name has none), so the tier is unambiguous
+    # in both cases.
     tier_of: dict[str, str] = {}
     for e in entries:
         if e["order"] is None or str(e["name"]) not in tier_of:
@@ -2897,7 +2953,11 @@ def main() -> int:
     watched_bad = recorded_diff_mismatches(watched, diffing, compared)
     # `== "radar"` and its complement rather than `== "contract"`, the
     # reading the comparison loop above uses: a tier that is neither
-    # fails, which is the fail-closed direction.
+    # fails, which is the fail-closed direction. Defense in depth
+    # only, since the corpus load refuses any value outside the two
+    # literals -- so every tier that reaches this line IS one of them,
+    # and the watched block's "because the name is contract tier" is
+    # true of every value that lands on its side.
     watched_contract = [m for m in watched_bad
                         if tier_of[m.name] != "radar"]
     watched_radar = [m for m in watched_bad if tier_of[m.name] == "radar"]
