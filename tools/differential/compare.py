@@ -1674,9 +1674,11 @@ class _ShapeMismatch(NamedTuple):
 #: ledger rather than once by name: a string moves a different set of
 #: roles against different baselines, and decisions.md (2026-08-28
 #: #452) records `fix(#296) a lone post-comma credential is a suffix`
-#: moving four roles at 1.4.0 and two at both 2.x baselines. No name
-#: sits in two sections today -- the three non-1.4.0 ones are empty --
-#: so the keying is held by that argument alone.
+#: moving four roles at 1.4.0 and two at both 2.x baselines. Since #501
+#: the keying carries its own witness rather than resting on that
+#: argument alone: 'MD, PHD' has a row in three sections, diffing
+#: {family, given, suffix, title} at 1.4.0 and {suffix, title} at both
+#: 2.x baselines, so one by-name keying could not hold what it does.
 #:
 #: A recorded shape that MOVES is a FINDING, not a number to update,
 #: and it names no cause because it cannot: the parser may have changed
@@ -1715,11 +1717,18 @@ class _ShapeMismatch(NamedTuple):
 #: capture the post-skip entries and dormant_rules to capture `diffing`,
 #: since both receive exactly what main() built.
 #:
-#: Both 2.x sections are EMPTY, and that is a position rather than an
-#: omission -- _CROSS_RULE_WINNERS carries why no 2.x contest is pinned,
-#: including the measured fact that contests DO exist there. Each held
-#: two rows, added by #452, until #497 ran that recompute against them.
-#: All four recorded a shape no run makes:
+#: The 2.x sections were EMPTY until #501, which is the question the
+#: position recorded there was waiting on: contests were measured to
+#: exist and nobody had argued a winner for one. Six are argued now
+#: (2026-09-05), five at 2.0.0 and one at 2.1.0, and their shapes moved
+#: in from _WATCHED_DIFFS unchanged -- a watched row is measured by a
+#: run in the first place, which is what makes the move a move rather
+#: than a fresh recording. _CROSS_RULE_WINNERS carries the argument per
+#: row.
+#:
+#: The four rows #452 put in these sections, two per 2.x ledger, are a
+#: different story and stay deleted. #497 ran that recompute against
+#: them and all four recorded a shape no run makes:
 #:   'Nguyen, Van' produces no diff at ANY of the four baselines. It is
 #:   compared under the default order out of corpus_rules.jsonl every
 #:   time, and the tree agrees with all four wheels on it, so {family}
@@ -1775,8 +1784,32 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "abu bakr al baghdadi": ("_initials",),
         "Berg, abdul van": ("_initials",),
     },
-    "expected_since_2.0.0.toml": {},
-    "expected_since_2.1.0.toml": {},
+    # #501's six, moved here from _WATCHED_DIFFS with their shapes
+    # unchanged. The four CJK rows sit at 2.0.0 alone: the honorific
+    # and order rules that contest them are 2.1 behavior, so those
+    # names diff at 1.4.0 and 2.0.0 and not against the 2.1.0 wheel at
+    # all. 'MD, PHD' diffs at all three and now carries a row at each.
+    #
+    # THREE of the six are RADAR-tier names -- '田中さん 様.' and
+    # '田中さん, 様.' in corpus_cjk_tolerated.jsonl, 'MD, PHD' in
+    # corpus_issues.jsonl -- so a moved shape on them is fatal where a
+    # watched row would only have printed. That is the SEVERITY rule
+    # below applied as written and accepted deliberately (#501): a
+    # contest row is fatal on either tier because it carries an
+    # argument, and a moved shape has made that argument's premise
+    # false. The precedent is the section above, where 22 of the 31
+    # rows are radar-tier names on exactly those terms (measured
+    # 2026-09-05).
+    "expected_since_2.0.0.toml": {
+        "田中さん 様.": ("family", "given", "suffix"),
+        "田中さん, 様.": ("family", "given", "suffix"),
+        "김민준 박사님": ("family", "given", "suffix"),
+        "선생님": ("family", "given"),
+        "MD, PHD": ("suffix", "title"),
+    },
+    "expected_since_2.1.0.toml": {
+        "MD, PHD": ("suffix", "title"),
+    },
 }
 
 
@@ -1790,19 +1823,21 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: "No winner pinned" is the property every row here has and two
 #: checks enforce -- the disjointness guard in
 #: tests/v2/test_ledger_guards.py and main()'s `both` refusal; it is
-#: not "nothing else watches". MOST rows
-#: are also sole-watched -- that is the population the sweep drew
-#: (POPULATION below): a radar name that no test names and no
+#: not "nothing else watches" -- though since #501 took the five
+#: contested rows to _RECORDED_DIFFS, every row here is in fact
+#: sole-watched, and the roster and the population the sweep drew
+#: (POPULATION below) are the same set. That is a fact about today's
+#: rows and NOT a second contract: a name whose parse a Case(...) row
+#: already pins is welcome here the day it is measured and no winner
+#: is argued for it, which is the position all five held from
+#: 2026-09-03 until #501 argued one. What sole-watched means: a radar
+#: name that no test names and no
 #: contract corpus holds is watched only by the classification rule
 #: that explains its diff, and a rule is a weak watcher, asserting
 #: that a diff here is intended and not what the diff IS, so a diff
 #: that changes shape while staying inside the rule's `fields` moves
 #: silently. A row here says what the diff is, and the move becomes
-#: a finding. A CONTESTED row (the #501 block at 2.0.0) is the other
-#: case: a Case(...) row in tests/v2/cases.py already adjudicates its
-#: PARSE, and three of the four sit in contract corpora; what no one
-#: has adjudicated is which RULE explains its diff. A reader of such
-#: a row consults the case row before this roster.
+#: a finding.
 #:
 #: Four things follow from the split, and each is checked rather than
 #: stated:
@@ -1866,15 +1901,18 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: keyed in _RECORDED_DIFFS for that
 #: ledger. The last clause is the one a scan of tests/ cannot supply,
 #: because that scan cannot see this file, and it excludes four names
-#: at 1.4.0 that carry contest rows there: 'Bob Jones, author',
-#: 'Carod i', 'MD, PHD', 'van ma van'. Three of them return at a 2.x
-#: baseline where they have no contest row; 'Carod i' diffs under the
-#: default order at 1.4.0 only, so it has no row in this dict (its
-#: contest row at 1.4.0 stands), which is
-#: why the population is 51 names where the tests/-only scan says 52.
-#: The counts: 41 / 32 + 4 / 31 / 5 rows, 113 in all, over the 51
-#: names plus the four #501 contests that close the 2.0.0 section.
-#: 49 of the 51 sit in corpus_issues.jsonl and 3 in corpus.jsonl, with
+#: that carry contest rows: 'Bob Jones, author', 'Carod i', 'MD, PHD',
+#: 'van ma van'. TWO of them return at a 2.x baseline where they have
+#: no contest row. The other two have no row in this dict at all:
+#: 'Carod i' diffs under the default order at 1.4.0 only, where its
+#: contest row stands, and 'MD, PHD' carries a contest row at every one
+#: of the three baselines it diffs at since #501 pinned its 2.x pair.
+#: That is why the population is 50 names where the tests/-only scan
+#: says 52.
+#: The counts: 41 / 31 / 30 / 5 rows, 107 in all, over those 50 names
+#: -- and the roster is now exactly the population, the five contest
+#: rows beyond it having gone to _RECORDED_DIFFS with #501.
+#: 48 of the 50 sit in corpus_issues.jsonl and 3 in corpus.jsonl, with
 #: 'dr Vincent van Gogh dr' in both, so the per-file counts overlap by
 #: one and are not a partition. Every row is a default-order shape,
 #: as the roster above's are, so no row here is a declared-order-only
@@ -1886,7 +1924,7 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: four clauses above with the literal set from ast.walk over
 #: tests/**/*.py EXCLUDING test_ledger_guards.py, as the POPULATION
 #: clause says -- run over every file it yields 38 / 28 / 27 / 4 rows
-#: rather than 41 / 32 / 31 / 5, since _CROSS_RULE_WINNERS' keys and
+#: rather than 41 / 31 / 30 / 5, since _CROSS_RULE_WINNERS' keys and
 #: a few guard literals then score as watchers -- the tier sets from
 #: _load_entries over corpus*.jsonl
 #: through _CORPUS_TIERS, and that ledger's _RECORDED_DIFFS keys. Not
@@ -1967,7 +2005,6 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Jong, van der": ("_initials",),
         "Jose E. Maria Santos": ("_initials",),
         "MD, DO, DDS": ("given", "title"),
-        "MD, PHD": ("suffix", "title"),
         "Mesnil Garcia van": ("_initials",),
         "Ph. D., Jr.": ("family", "suffix", "title"),
         "Sander van": ("_initials",),
@@ -1981,27 +2018,13 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "dr Vincent van Gogh dr": ("family", "suffix"),
         "dr Vincent van der Gogh dr": ("family", "suffix"),
         "van ma van": ("_initials",),
-        # The four #501 contests, measured and UNADJUDICATED: at 2.0.0
-        # more than one rule admits each diff and file order alone
-        # picks the one that explains it, and nobody has argued which
-        # should -- a shape with no winner, which is the row kind this
-        # dict exists for. They move to _RECORDED_DIFFS the day #501
-        # argues a winner, and the pin goes beside them there. TWO are
-        # contract tier (corpus_cjk.jsonl) -- '김민준 박사님' and
-        # '선생님' -- so a move on those fails the run; the other two
-        # sit in corpus_cjk_tolerated.jsonl, radar, and print.
-        # Re-measured 2026-09-05: '田中さん 様.' was the third contract
-        # one, in corpus_cjk.jsonl and corpus_rules.jsonl both, and the
-        # period-class demotion (decisions.md#cjk-comma-demotion) moved
-        # it to the radar half of the CJK projection and took W2's
-        # example line with it. A row's fatality follows the tier its
-        # NAME reads at, which no roster in this file records -- so a
-        # demotion changes what a row here costs without touching the
-        # row, and this comment is the only thing that goes stale.
-        "田中さん 様.": ("family", "given", "suffix"),
-        "김민준 박사님": ("family", "given", "suffix"),
-        "선생님": ("family", "given"),
-        "田中さん, 様.": ("family", "given", "suffix"),
+        # The four #501 contests that closed this section, and 'MD, PHD'
+        # beside them, are GONE from it: #501 argued a winner for each
+        # on 2026-09-05 and the five rows moved to _RECORDED_DIFFS with
+        # their shapes unchanged, which is what this dict's NO WINNER
+        # clause says happens the day one is argued. Nothing about them
+        # is left here to go stale, the tier note included -- what a
+        # contest row costs is _RECORDED_DIFFS' subject now.
     },
     "expected_since_2.1.0.toml": {
         "Anh do": ("_initials",),
@@ -2021,7 +2044,6 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Jong, van der": ("_initials",),
         "Jose E. Maria Santos": ("_initials",),
         "MD, DO, DDS": ("given", "title"),
-        "MD, PHD": ("suffix", "title"),
         "Mesnil Garcia van": ("_initials",),
         "Ph. D., Jr.": ("family", "suffix", "title"),
         "Sander van": ("_initials",),
