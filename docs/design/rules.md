@@ -1111,7 +1111,11 @@ W3. Rationale: a family name declared by a comma is the writer's
     田中さん 様 does). A period glued to the honorific's OWN word is
     read instead, and decides against the split-off: the listed tail
     no longer ends that word, so nothing peels and the text goes on
-    whole — 田中さん. and 김민준씨. each read as a title.
+    whole — 田中さん. and 김민준씨. each read as a title, measured
+    2026-09-05. Neither string is a case row or a corpus line, so no
+    row pins those two readings and they can move without the suite
+    or the differential saying so; the sentence reports them rather
+    than promising them, even by this rule's standard.
     decisions.md#cjk-comma-demotion carries the parses.
       "남궁민수"                  →  family="남궁"
       "지훈, 남궁민수"            →  given="남궁민수"

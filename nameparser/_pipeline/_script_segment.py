@@ -298,8 +298,11 @@ def _peel_site(state: ParseState, flat: Sequence[int],
 # '様'), while a period glued to the honorific's OWN token stands
 # between the honorific and that token's end, so no listed tail
 # matches, the peel declines, and the whole text reads as a title
-# downstream ('田中さん.', '김민준씨.'). Neither is a promise; the step past the post-nominal
-# word itself is W2's, above, and is.
+# downstream ('田中さん.', '김민준씨.') -- measured 2026-09-05 and
+# pinned by nothing, since neither string is a case row or a corpus
+# line, so that reading can move with nothing reporting it. Neither
+# is a promise; the step past the post-nominal word itself is W2's,
+# above, and is.
 def _peel_honorific_tail(state: ParseState) -> ParseState:
     """#308: split a listed honorific off the END of the name's last
     NON-POST-NOMINAL token -- 田中さん -> 田中 + さん -- and let
