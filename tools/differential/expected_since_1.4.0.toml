@@ -189,22 +189,26 @@ issue = "fix(#274) maiden markers consumed"
 # meant: a marker with a name word BEFORE it and one AFTER it. Reach
 # 16 -> 11 when they were added, and every name it explained then was
 # inside the eleven -- figures from that measurement rather than from
-# today's corpus, which has grown since. Today it explains 12
-# (measured 2026-08-27, after #445).
+# today's corpus, which has grown since and keeps growing. For today's,
+# read the `## fix(#274) maiden markers consumed (N)` heading off
+# `compare.py --baseline 1.4.0`; a number written here instead would
+# only be that heading's value on the day someone typed it.
 #
-# Five claimed names still do not move, recorded rather than
+# These claimed names still do not move, recorded rather than
 # excluded: 'Jane Smith, née Jones' (post-comma, M2's remaining
 # Accepted limit), 'Jane van der Berg née PhD' and 'Jane Smith née V'
 # (only a suffix follows, so the consumer declines), and
 # 'Jane née Jr y Jones' and 'Jane van der Berg née Jr Jones' (the
 # connective and bound-given joins, #412). Each would need the regex
 # to ask a vocabulary question -- suffix or connective membership --
-# a second alternation this rule cannot spend. The count said four
-# until the review round re-measured it: the corpus grew and the
-# sentence did not, which is this file's standing hazard and the
-# reason every count in it carries the date it was taken. Measured
-# 2026-08-27 against the 1.4.0 wheel, name by name over all 31 the
-# regex claims.
+# a second alternation this rule cannot spend. A count stood at the
+# head of that list and said four until a review round re-measured
+# it: the corpus grew and the sentence did not, which is this file's
+# standing hazard. The list is the count now, and it is self-checking
+# where a digit was not. Measured 2026-08-27 against the 1.4.0 wheel,
+# name by name over everything the regex claims rather than over a
+# sample of it -- a walk whose length is whatever `_claimed()` returns
+# that day.
 #
 # #445 landed 2026-08-27, and the prediction this note used to carry
 # was wrong in a way worth keeping on the record. It reasoned that a
@@ -425,8 +429,10 @@ definitionally family") while the family move is the whole of the
 credential reading here: 'MD' stops being a first name and becomes the
 one-word name. This rule is the routing rule PLUS the pre-comma merge
 on a single string, so a widened routing rule would take the union and
-report only half of it. _CROSS_RULE_WINNERS pins ('MD, PHD',
-('family','given','suffix','title')) here. Both names sit in
+report only half of it. _CROSS_RULE_WINNERS pins 'MD, PHD' here,
+keyed by the name alone since #497, and the shape it is adjudicated
+at -- ('family','given','suffix','title') -- is the one
+compare._RECORDED_DIFFS records for the name. Both names sit in
 corpus_issues.jsonl alone -- radar since #468's tier split, and
 untouched by #488, which created corpus_cjk_tolerated.jsonl and holds
 neither name -- so neither can demand a rule any more and nothing
@@ -512,12 +518,20 @@ issue = "fix(comma-family) lone post-comma piece routes to suffix/title, not fir
 # and file order broke the tie -- in favour of the one written first,
 # which was this one.
 #
-# Measured, narrowing it: corpus reach 236 -> 215, and this rule now
-# claims exactly one name, 'Andrews, M.D.', which is the shape named
-# above. All seven moved to fix(cjk-comma-compound), which grew 10 ->
-# 17 and is the rule named for that shape. The gate is unmoved at 108
+# Measured at the narrowing: corpus reach 236 -> 215, and all seven
+# CJK names moved to fix(cjk-comma-compound), which grew 10 -> 17 and
+# is the rule named for that shape. The gate was unmoved at 108
 # intentional / 0 unexplained -- nothing became unexplained, so no name
 # lost an explanation, it only changed which rule gave it.
+#
+# Those are that narrowing's figures and none of them is today's. What
+# the narrowing pinned is the SCRIPT bound, not a count: this rule goes
+# on claiming the Latin comma-names, and their number grows with the
+# corpus. The sentence that stood here said the rule "now claims
+# exactly one name, 'Andrews, M.D.'"; re-measured 2026-09-03 it
+# explained eight, 'Andrews, M.D.' among them. For today's, read the
+# `## fix(comma-family) lone post-comma piece routes to suffix/title,
+# not first (N)` heading off `compare.py --baseline 1.4.0`.
 #
 # The cut is at U+0250, the threshold _is_latin_only uses in
 # compare.py, matching the trailing-'Ph. D.' exclusion. Anchored at
@@ -790,11 +804,13 @@ issue = "fix(emoji-boundary) an emoji inside a token divides it"
 #
 # The emoji must stand BETWEEN two non-space characters, which is the
 # behavior: it divides a token. A bare character class was the first
-# draft and is rejected -- measured, it reaches four corpus names, and
-# the three it adds carry a spaced or trailing emoji, are byte-identical
-# on both sides today, and would be pre-excused by a rule that claims
-# them. Pre-claiming shapes it has never seen is the #372 failure mode
-# the fix(#379) comment names.
+# draft and is rejected -- measured, it reaches past 'John😀Smith' to
+# corpus names carrying a spaced or trailing emoji, which are
+# byte-identical on both sides today and would be pre-excused by a rule
+# that claims them. How many such names the corpus holds is not the
+# argument and grows with the corpus; that the draft admits the class
+# at all is. Pre-claiming shapes it has never seen is the #372 failure
+# mode the fix(#379) comment names.
 #
 # The class is the ASTRAL HALF of _tokenize.py's _EMOJI_RANGES, hand
 # copied and pinned by test_the_emoji_boundary_rule_copies_the_dividing_ranges.
@@ -2472,7 +2488,8 @@ issue = "fix(suffix-routing) a two-token name ending in a roman numeral keeps it
 # two rules claiming one token would leave file order to decide which
 # explains it.
 #
-# The regex also reaches two corpus names this rule does not explain.
+# The regex also reaches corpus names this rule does not explain, and
+# the list is the count:
 # 'Carod i' is fix(#397)'s NOT-WANTED rule above -- a real contest,
 # same fields and both regexes matching, decided by nothing but file
 # order -- and '田中さん II' is fix(cjk-glued-honorific-peel)'s, where
@@ -2504,21 +2521,22 @@ issue = "fix(suffix-routing) a two-token name ending in the suffix word jr keeps
 # become an alternation and be enrolled against SUFFIX_WORDS then, not
 # be smuggled in as another literal.
 #
-# The regex also reaches four corpus names this rule does not explain.
-# 'Kim, Jr.' and 'Smith, Jr.' are fix(#296)'s lone post-comma
+# The regex also reaches corpus names this rule does not explain, and
+# the list is the count. Three of them diff and belong to two other
+# rules: 'Kim, Jr.' and 'Smith, Jr.' are fix(#296)'s lone post-comma
 # credential and '김민준씨 Jr.' is fix(cjk-glued-honorific-peel)'s.
-# Three names, two rules, and what keeps them there is `fields`, not
-# file order: measured, they diff {family, given, suffix, title} and
+# What keeps them there is `fields`, not file order: measured, they
+# diff {family, given, suffix, title} and
 # {family, given, suffix}, and neither is a subset of the two roles
 # below, so this rule is INELIGIBLE for all three wherever it sits.
 # Order is the second line of defence, not the first -- a widening of
 # `fields` alone would still lose to the rules above, and it would
 # take a widening AND a move to hand any of them over.
-# _CROSS_RULE_WINNERS pins all three against that pair of edits. The
-# fourth, 'Doe,, Jr.', does not diff against this baseline at all, so
-# it has no winner to lose and no row. That reach is real either way, so none of the four is
-# a _MUST_NOT_MATCH probe here: that roster tests the regex, not
-# classify().
+# _CROSS_RULE_WINNERS pins all three against that pair of edits.
+# 'Doe,, Jr.' is reached too and does not diff against this baseline
+# at all, so it has no winner to lose and no row. That reach is real
+# either way, so none of the reached names is a _MUST_NOT_MATCH probe
+# here: that roster tests the regex, not classify().
 name_regex = "(?i)^\\S+\\s+jr\\.?$"
 fields = ["family", "suffix"]
 

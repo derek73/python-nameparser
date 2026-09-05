@@ -49,8 +49,13 @@ issue = "fix(#462) the facade keeps an initial-shaped conjunction letter"
 # dotted E./Y. of either case, standing as its own word. Lowercase
 # bare e/y is the connective and does not move. The regex reaches 18
 # corpus names, of which 14 diffed when the rule was written
-# (2026-09-02). The four it reaches and does not move are what the
-# gap IS, and the invariant behind it is a GROUP rather than a count:
+# (2026-09-02); _CORPUS_CLAIMS in tests/v2/test_ledger_guards.py pins
+# that reach as _Claim(18, ...) and fails if it moves, so the REACH
+# digit is checked rather than remembered. The 14 is not: it is a
+# dated snapshot of what diffed that day and nothing re-runs it.
+# The names it reaches and does not move are
+# what the gap IS, and the invariant behind it is a GROUP rather than
+# a count:
 # they carry the E/Y in the GIVEN group, which has always initialed
 # every word it holds whatever the vocabulary says, so there was
 # nothing for the fix to restore.

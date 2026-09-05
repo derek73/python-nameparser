@@ -445,9 +445,10 @@ def test_every_span_bearing_rule_matches_the_script_ranges(
         # written in none of them -- and unlike a depth test, this does
         # not care how the widening is spelled. "(?:CJK|[A-Za-z])"
         # hides the pipe at depth 1 where the check above stops
-        # looking, and claims 644 of the 654 unclassified corpus names;
-        # this sees
-        # it. Both are kept: the depth test gives the clearer message
+        # looking, and its Latin half claims all but a handful of
+        # _UNCLASSIFIED_NAMES -- the whole population this assertion is
+        # over, whatever that population's size that day; this sees it.
+        # Both are kept: the depth test gives the clearer message
         # for the naive spelling, and catches a widening toward a
         # script the corpora happen not to contain.
         unclassified = _UNCLASSIFIED_NAMES.intersection(_claimed(regex))
@@ -726,12 +727,14 @@ def test_case_shape_ids_exist_in_the_inventory() -> None:
 #: catches a widening that changes corpus reach or roles -- but a rule
 #: whose regex is literal-anchored and claims exactly ONE corpus name
 #: can be widened with the count unmoved, because the names it newly
-#: reaches are not in the corpora. Six such widenings were demonstrated
-#: on this file's own rules with the whole suite green: `^mc\s+\S+$`
+#: reaches are not in the corpora. Such widenings were demonstrated on
+#: this file's own rules with the whole suite green: `^mc\s+\S+$`
 #: to `^mc` (every leading Mc*), the vd rule to a bare `\bvd\b`,
 #: `^sir\s+de\b` without its anchor, and the nakaguro rule to `·.*씨`.
 #: Each of those then stood ready to explain exactly what its own
-#: comment promises will arrive UNEXPLAINED.
+#: comment promises will arrive UNEXPLAINED. The list is the evidence;
+#: a count here said six over four items and was the only part anyone
+#: could get wrong, since the widenings themselves are named.
 #:
 #: The probes are taken from the names those comments already argue
 #: about, so this roster records an answer someone already wrote in
@@ -761,8 +764,11 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     "fix(#400/#274)": ("abd Berg née Jones", "abd Allah Smith",
                        "Jane Smith née Jones"),
     # The literal-anchored rules #413 added. Each claims exactly one
-    # corpus name, so _CORPUS_CLAIMS cannot see a widening that reaches
-    # only names the corpora lack -- these probes are the only wall.
+    # corpus name -- _CORPUS_CLAIMS carries that reach for both, so the
+    # number is pinned there rather than asserted here -- and a reach
+    # that small is one _CORPUS_CLAIMS cannot use: a widening reaching
+    # only names the corpora lack leaves it unmoved. These probes are
+    # the only wall.
     "fix(#399) a maiden marker bounds the particle chain: the geb. spelling":
         ("Berg, Ursula von der geb. Albrecht",),
     "fix(credential-pair-order) a split credential and a suffix render in written order":
@@ -1421,10 +1427,11 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # fields and share the first set; the eighth ('John née Jones
     # Smith Ma') moves those plus `suffix`, and the ninth ('Smith
     # (née Jones)') keeps the rule it already had. At 2.0.0/2.1.0 the
-    # second set holds six that move two fields: five of the 1.4
-    # seven, plus that acronym name, whose acronym is no part of the
-    # diff at those baselines. The two the second set drops are the
-    # compounds with #412 and #424, each with a rule of its own.
+    # second set holds the ones that move two fields: the first set
+    # less the two compounds it drops -- with #412 and with #424, each
+    # with a rule of its own -- plus that acronym name, whose acronym
+    # is no part of the diff at those baselines. Read the composition
+    # off the two literals below rather than off a count here.
     #
     # Spelled out rather than written as the shape -- one word, then a
     # marker -- because that shape also matches rules.md#M4's two
@@ -1517,15 +1524,23 @@ def _reaches_non_vocabulary(member: str, vocabulary: frozenset[str]) -> list[str
     fullmatch against the vocabulary bounds what a member matches
     WITHIN those entries and says nothing about what it matches in a
     NAME. That gap was first filled with a tuple of eight hand-picked
-    probe strings, and the tuple was defeated by a wider rule than the
-    one it was added to stop: every entry this rule needs is three
-    characters, so a member must accept some 3-character string and is
-    unconstrained everywhere else -- "[acdf-uw-z]{3,}" covers `roz`,
-    dodges all eight probes, and reaches 634 of the 751 corpus names
-    as a fourth alternative (the rule carrying it claims 542).
-    Measured with the IGNORECASE this function applies; the
-    case-sensitive figure, 592, is not what runs. Counts here and below are
-    against _CORPUS_NAMES, which deduplicates the 783 corpus lines.
+    probe strings, and the tuple WAS DEFEATED by a wider rule than the
+    one it was added to stop: every entry fix(#274) needs is three
+    characters (`geb`, `nee`, `née`), so a member must accept some
+    3-character string and is unconstrained everywhere else --
+    "[acdf-uw-z]{3,}" covers `roz`, dodged all eight probes, and as a
+    fourth alternative reached most of the corpus, far past what the
+    rule carrying it claimed. The figures that stood here were taken
+    against a corpus of 751 names and are not restated: the corpus has
+    since grown by half, the eight-string tuple this replaced is gone,
+    and the finding is the SHAPE -- a member unconstrained outside one
+    3-character window walks past every probe anyone hand-picks --
+    which is what the paragraph below acts on and which no count
+    strengthens. If a number is wanted, drive the member over
+    _CORPUS_NAMES with the IGNORECASE this function applies; the
+    case-sensitive figure is smaller and is not what runs. Counts here
+    and below are against _CORPUS_NAMES, which deduplicates the corpus
+    lines rather than counting them.
 
     Eight strings could never be more than a spot check. The corpus is
     the whole population the rule will ever be asked about, so ask it
@@ -1685,8 +1700,11 @@ def _carries(name: str, vocabulary: frozenset[str]) -> bool:
     marker like 旧姓 is written against the name it marks rather than
     spaced off it.
 
-    Note what the isascii() split actually covers: 12 of the 16
-    entries, not only the CJK one. `né` is two characters, so the
+    Note what the isascii() split actually covers: EVERY non-ASCII
+    entry, not only the CJK one -- the great majority of
+    MAIDEN_MARKERS, and the predicate below is the enumeration, so
+    read it there rather than from a count here, which said 12 of 16
+    while the vocabulary shipped 17. `né` is two characters, so the
     substring branch reads `René` as carrying a marker. Every
     over-match here SHRINKS the set of unexplained names and so
     weakens the guard -- the direction this module exists to close --
@@ -2209,15 +2227,15 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(27, ('_initials',), "6b242c287db8", ('DEFAULT',)),
         "fix(#360) los joined the particles, so it no longer initials":
             _Claim(1, ('_initials',), "cd721215f463", ('DEFAULT',)),
-        # fix(#462)'s reach is 18 where it explains 14. Its regex is a
-        # letter SHAPE rather than a name list, and the four extra --
+        # fix(#462) reaches more than it explains -- the reach is the
+        # _Claim below, and the gap is the names named here. Its regex
+        # is a letter SHAPE rather than a name list, and the extra --
         # 'E Anne D', 'E Jones', 'E Maria', 'Y. L.' -- carry the E/Y in
         # the GIVEN group, which has always initialed every word it
         # holds whatever the vocabulary says, so the fix does not move
         # them. The discriminator is the GROUP and not the position:
         # 'E Anne D,Leonardo' also leads with the E, but its comma
-        # re-roles the whole run into the FAMILY group, and it is one
-        # of the 14 that move.
+        # re-roles the whole run into the FAMILY group, and it moves.
         # The digest is the same in all three 2.x ledgers because the
         # regex is the same string in each.
         "fix(#462) the facade keeps an initial-shaped conjunction letter":
@@ -2225,7 +2243,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
-    # the 2.0.0 mapping above, the same regex classifying the same 14.
+    # the 2.0.0 mapping above, the same regex classifying the same
+    # names.
     "expected_since_2.2.0.toml": {
         "fix(#462) the facade keeps an initial-shaped conjunction letter":
             _Claim(18, ('_initials',), "3dd0e0276be6", ('DEFAULT',)),
@@ -2423,7 +2442,8 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
 
 
 #: Which rule classify() actually picks, for names several rules could
-#: claim. Keyed by (name, the diff it produces against that baseline).
+#: claim. Keyed by name; the diff shape each one produces against that
+#: baseline is compare._RECORDED_DIFFS' half (#497).
 #:
 #: Every other guard here measures a rule ALONE: _CORPUS_CLAIMS records
 #: what a regex reaches, and the gate's total counts names. Neither can
@@ -2444,35 +2464,33 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
 #: peels -- only the CJK lookahead separates them, so it is the row
 #: that fails if that lookahead is ever dropped.
 #:
-#: The diff shapes are measured against the 1.4.0 wheel, not guessed.
-#: Re-measure rather than adjust them if a parser change moves one:
-#: a diff shape that shifted is a finding, not a number to update.
-#:
-#: Blind spot since `orders` (#468): every row is recomputed at
-#: comparison order None, so a contest that exists only under a
-#: declared order is not recorded here -- true today because no
-#: recorded winner is order-scoped, and it stops being true the day one
-#: is.
-_CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
+#: The shapes these rows are classified with used to sit in the keys
+#: here and moved to compare._RECORDED_DIFFS (#497), because a shape is
+#: something only a RUN can measure: fed to classify() as an input and
+#: checked by nothing, a guessed one agreed with itself forever. That
+#: comment carries what this one used to say about them -- how each was
+#: measured and where the claim did not hold, that a shifted shape is a
+#: finding rather than a number to update, and that they are
+#: default-order only, the blind spot `orders` (#468) opened. One copy
+#: of each fact, since two means one of them goes quietly stale.
+_CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
     # open cycle: one rule, so nothing for a second one to contest
     "expected_since_2.2.0.toml": {},
     "expected_since_1.4.0.toml": {
-        ("Andrews, M.D.", ("given", "suffix")): "fix(comma-family)",
-        ("田中, 太郎さん", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
-        ("김, 민준씨", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
-        ("김, 민준씨 (Jimmy)", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
-        ("김민준, 씨", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
-        ("김민준, 씨.", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
-        ("선생님, J.씨", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
-        ("이, J.씨", ("given", "suffix")): "fix(cjk-comma-honorific-peel)",
+        "Andrews, M.D.": "fix(comma-family)",
+        "田中, 太郎さん": "fix(cjk-comma-honorific-peel)",
+        "김, 민준씨": "fix(cjk-comma-honorific-peel)",
+        "김, 민준씨 (Jimmy)": "fix(cjk-comma-honorific-peel)",
+        "김민준, 씨": "fix(cjk-comma-honorific-peel)",
+        "김민준, 씨.": "fix(cjk-comma-honorific-peel)",
+        "선생님, J.씨": "fix(cjk-comma-honorific-peel)",
+        "이, J.씨": "fix(cjk-comma-honorific-peel)",
         # the union rows: they move `family`, so the peel rule's fields
         # exclude them and they must stay on the compound rule
-        ("Dr 김민준씨, V.", ("family", "given", "suffix")):
-            "fix(cjk-comma-compound)",
+        "Dr 김민준씨, V.": "fix(cjk-comma-compound)",
         # since #296's audit the title moves too (PhD is the postnominal)
-        ("田中さん, PhD", ("family", "given", "suffix", "title")):
-            "fix(cjk-comma-compound)",
-        ("田中さん, V.", ("family", "suffix")): "fix(cjk-comma-compound)",
+        "田中さん, PhD": "fix(cjk-comma-compound)",
+        "田中さん, V.": "fix(cjk-comma-compound)",
         # #372's suffix-routing split. 'Bob Jones, author' moves NO
         # suffix, which is what disqualifies it from the routing rule;
         # 'Smith Jr.' is the Latin shape that rule is named for; the two
@@ -2483,16 +2501,16 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         # keeps its split here, and the rule written for that shape is
         # ahead of the precomma merge in the file; 'MD, PHD' has one
         # pre-comma piece, no split to keep, and stays merged
-        ("Bob Jones, author", ("family", "given")):
+        "Bob Jones, author":
             "fix(comma-family) a comma followed only by titles keeps "
             "the given/family split",
         # since #296's audit 'PHD' is a postnominal here and the string
         # is credentials only; the rule written for that shape is ahead
         # of the precomma merge in the file
-        ("MD, PHD", ("family", "given", "suffix", "title")):
+        "MD, PHD":
             "fix(#296) a credential-only comma string reads a name and "
             "its postnominal",
-        ("Smith Jr.", ("family", "suffix")):
+        "Smith Jr.":
             "fix(suffix-routing) a two-token name ending in the suffix "
             "word jr keeps it in `suffix`",
         # #451's two contests with the numeral rule, whose regex reaches
@@ -2507,10 +2525,10 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         # because a later edit that moves either rule, or widens the
         # numeral rule's `fields`, would take one silently -- exactly the
         # absorption #451 exists to end.
-        ("Carod i", ("family", "suffix")):
+        "Carod i":
             "fix(#397) NOT WANTED: a trailing Catalan/Polish linking "
             "'i' is read as a generation marker and the family is lost",
-        ("田中さん II", ("family", "given", "suffix")):
+        "田中さん II":
             "fix(cjk-glued-honorific-peel) glued honorific peels into "
             "suffix",
         # #484's three `_initials` contests with a literal rule on one
@@ -2522,11 +2540,11 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         # diff on initials, so narrowing or deleting a literal rule
         # would hand its name to the per-word rule rather than surface
         # it: the handover this row exists to catch.
-        ("de los Santos", ("_initials",)):
+        "de los Santos":
             "fix(#360) los joined the particles, so it no longer initials",
-        ("van Berg Jan de", ("_initials",)):
+        "van Berg Jan de":
             "fix(#385/#402) an all-particle name part initials its words (R2)",
-        ("van ma van", ("_initials",)):
+        "van ma van":
             "fix(#385/#402) an all-particle name part initials its words (R2)",
         # the glued/spaced boundary. 'Andersonさん' and '김민준씨' left
         # suffix-routing for a rule that names them; '김민준 씨.' is
@@ -2544,19 +2562,16 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         # that catch-all, so there is no last-resort tier left in any
         # ledger and the residual cost went with it: all four rules that
         # replaced it carry a name_regex.
-        ("Andersonさん", ("given", "suffix")):
-            "fix(cjk-glued-honorific-peel)",
-        ("김민준씨", ("family", "given", "suffix")):
-            "fix(cjk-glued-honorific-peel)",
-        ("김민준 씨.", ("family", "given", "suffix")):
-            "fix(cjk-honorific-suffix)",
+        "Andersonさん": "fix(cjk-glued-honorific-peel)",
+        "김민준씨": "fix(cjk-glued-honorific-peel)",
+        "김민준 씨.": "fix(cjk-honorific-suffix)",
         # '.,' moved off `fix(comma-family) lone post-comma piece
         # routes to suffix/title, not first`, whose Latin-range comma
         # regex reaches it, onto the A2 rule that describes it (#451).
         # Recorded because only file order separates the two rules --
         # they are in the same tier and both reach the name -- and a
         # later edit that moves either one silently hands it back.
-        (".,", ("given",)): "fix(A2) content-free input names nobody, so every role empties",
+        ".,": "fix(A2) content-free input names nobody, so every role empties",
         # The one exception the cjk-comma-compound rule's `middle`
         # argument turns on, added by #452's review. That comment says
         # ten of the eleven names it explains have a single-token
@@ -2569,7 +2584,7 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         # saying so. Shape measured against the 1.4.0 tag: v1 reads
         # first '田中さん', suffix 'Ph. D.'; the tree reads family
         # '田中', suffix 'さん, Ph. D.'.
-        ("田中さん, Ph. D.", ("family", "given", "suffix")):
+        "田中さん, Ph. D.":
             "fix(cjk-comma-compound) comma routing compounds with the CJK order flip",
         # The jr rule's surplus, added by the #453 review. Its regex
         # reaches these three and does not explain them; `fields` is
@@ -2583,11 +2598,11 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         # 1.4.0 wheel, not guessed. 'Doe,, Jr.' is the fourth name the
         # regex reaches and has no row: it does not diff at this
         # baseline, so there is no winner to pin.
-        ("Kim, Jr.", ("family", "given", "suffix", "title")):
+        "Kim, Jr.":
             "fix(#296) a lone post-comma credential is a suffix",
-        ("Smith, Jr.", ("family", "given", "suffix", "title")):
+        "Smith, Jr.":
             "fix(#296) a lone post-comma credential is a suffix",
-        ("김민준씨 Jr.", ("family", "given", "suffix")):
+        "김민준씨 Jr.":
             "fix(cjk-glued-honorific-peel) glued honorific peels into suffix",
         # #484's per-word rules. Measured over the corpus, exactly ONE
         # name is reached by two of them AND diffs on `_initials`:
@@ -2601,7 +2616,7 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         # Jones') and none of them has an `_initials` diff to pin:
         # three move ROLES, so the pseudo-field never enters, and two
         # do not diff at all.
-        ("de la Vega y Santos Juan", ("_initials",)):
+        "de la Vega y Santos Juan":
             "fix(initials-per-word) a connective run",
         # Not contested today -- the bound-given rule is the only one
         # of the four whose regex reaches these three -- and recorded
@@ -2611,46 +2626,64 @@ _CROSS_RULE_WINNERS: dict[str, dict[tuple[str, tuple[str, ...]], str]] = {
         # or a particle rule grown to reach a trailing 'van' takes
         # these names silently: reach is per-rule and the gate's total
         # is per-corpus, so nothing else here would say so.
-        ("Abu Bakr Al Baghdadi, MD", ("_initials",)):
+        "Abu Bakr Al Baghdadi, MD":
             "fix(initials-per-word) a bound-given run",
-        ("abu bakr al baghdadi", ("_initials",)):
+        "abu bakr al baghdadi":
             "fix(initials-per-word) a bound-given run",
-        ("Berg, abdul van", ("_initials",)):
-            "fix(initials-per-word) a bound-given run",
+        "Berg, abdul van": "fix(initials-per-word) a bound-given run",
     },
     # The two 2.x ledgers had NO section here until #452, and the
     # coverage assertion below was `<=`, so their absence read as "no
-    # contest to pin" rather than "nobody looked". The #452 narrowings
-    # are what made that expensive: shrinking a rule's `fields` hands
-    # every shape it no longer admits to whatever claims it next, and
-    # measured across the fourteen, that moved shapes in both files.
-    # Neither _CORPUS_CLAIMS nor the gate's totals can see a handover --
-    # reach is regex-only and the total is per-corpus -- so these rows
-    # are the only thing that would.
-    "expected_since_2.0.0.toml": {
-        # fix(#296) lost `family` and `given`; {family} on this name is
-        # one of the shapes it stopped admitting, and fix(#379) takes it.
-        # The right home -- a tussenvoegsel attaching to the family is
-        # exactly what that rule is about -- which is not the point: the
-        # point is that a later edit sends it somewhere else in silence.
-        ("Nguyen, Van", ("family",)):
-            "fix(#379) a tussenvoegsel after a family comma attaches to the family",
-        # fix(#412) lost `middle`; this shape went to fix(#445), which
-        # sits BEHIND it in file order, so the handover was decided by
-        # the narrowing rather than by position.
-        ("Jane née and Jones Smith", ("family", "maiden", "middle")):
-            "fix(#445) the lone name word beside a marker a connective join no longer absorbs",
-    },
-    "expected_since_2.1.0.toml": {
-        # The same two handovers, measured against this baseline's own
-        # run rather than copied from the 2.0.0 rows -- the ledgers
-        # differ, and #452's own lesson is that a claim true in one file
-        # is not thereby true in its siblings.
-        ("Nguyen, Van", ("family",)):
-            "fix(#379) a tussenvoegsel after a family comma attaches to the family",
-        ("Jane née and Jones Smith", ("family", "maiden", "middle")):
-            "fix(#445) the lone name word beside a marker a connective join no longer absorbs",
-    },
+    # contest to pin" rather than "nobody looked". They are back to
+    # empty, and it is now the other thing: a stated position, which is
+    # what the equality assertion below makes sayable. Do not restore a
+    # row to fill them.
+    #
+    # #452 gave each two rows -- 'Nguyen, Van' and 'Jane née and Jones
+    # Smith', the handovers its narrowings caused -- and #497 deleted
+    # all four rather than correct them. Each recorded a diff shape a
+    # run contradicts (compare._RECORDED_DIFFS' provenance note has the
+    # measurements and the recompute, in one copy, including why the one
+    # correctable shape was not corrected), and at the shape each name
+    # really produces, exactly one rule admits it. That is the defect
+    # under the wrong shapes rather than beside them: a row pinning a
+    # race with one runner is never exercised as a contest, so its shape
+    # only ever had to agree with itself.
+    #
+    # EMPTY IS NOT "these ledgers hold no contested name". Measured
+    # 2026-09-03 over the diffs each baseline's own run produces, 5 of
+    # the 247 at 2.0.0 and 1 of the 155 at 2.1.0 move a shape two or
+    # more rules admit, file order picking the winner ('MD, PHD' is the
+    # one both have). Recompute: drive compare.main() at the baseline,
+    # capture its `diffing` by wrapping dormant_rules, and count the
+    # names for which more than one rule satisfies
+    # compare._entry_matches at the measured shape. None of those
+    # boundaries is argued about in this file, and this roster pins the
+    # arguments this file makes -- so a row is owed when someone argues
+    # one, not before. Whether that position should change now that the
+    # six are measured rather than merely unexamined is #501; the answer
+    # there decides whether these two sections stay empty, and nothing
+    # in this file presumes it.
+    #
+    # Nor is "only one rule admits it" grounds on its own to delete a
+    # row: 13 of the 31 above are in that position too. SIX of the 13
+    # say so where they sit -- the jr rule's surplus and the
+    # bound-given trio, three rows each -- and the other seven do not,
+    # so take the count from the recompute rather than from the
+    # comments. RECOMPUTE (measured 2026-09-03): count the rows of
+    # compare._RECORDED_DIFFS['expected_since_1.4.0.toml'] for which
+    # exactly one rule of compare._sorted_rules over this ledger
+    # satisfies compare._entry_matches at the recorded shape. They
+    # stay because the shapes they pin are shapes runs actually make,
+    # so widening a `fields` or moving a rule hands the name over and
+    # this test says so -- and 11 of the 13 route to a DIFFERENT rule
+    # under some other shape, so the assertion is doing work on them.
+    # mechanisms.md#RECORDED-ROSTERS carries that measurement and the
+    # reason counting admitters is the wrong instrument for the
+    # question. The four deleted rows could not do that work at any
+    # edit.
+    "expected_since_2.0.0.toml": {},
+    "expected_since_2.1.0.toml": {},
 }
 
 
@@ -2679,7 +2712,21 @@ def test_the_recorded_rule_still_wins_each_contested_name() -> None:
         ledger = by_name[ledger_name]
         rules = compare._sorted_rules(_rules(ledger))
         never = _exclusions(ledger)
-        for (name, fields), expected in winners.items():
+        shapes = compare._RECORDED_DIFFS[ledger_name]
+        for name, expected in winners.items():
+            # explicit, because a bare KeyError here names a dict and a
+            # string and nothing else. The readable half-recorded-pin
+            # message lives in test_every_pinned_winner_has_a_recorded_shape,
+            # which a `-k` selection or a first failure may not have run.
+            assert name in shapes, (
+                f"{ledger_name}: {name!r} is pinned a winner in "
+                f"_CROSS_RULE_WINNERS with no shape in "
+                f"compare._RECORDED_DIFFS, so there is nothing to ask "
+                f"classify() about. Record the shape a run measures for "
+                f"it, or drop the pin -- "
+                f"test_every_pinned_winner_has_a_recorded_shape is the "
+                f"guard that states this as its own subject")
+            fields = shapes[name]
             got = compare.classify(name, set(fields), rules, never)
             assert got is not None and got.startswith(expected), (
                 f"{ledger_name}: {name!r} diffing {list(fields)} is now "
@@ -2700,6 +2747,105 @@ def test_the_recorded_rule_still_wins_each_contested_name() -> None:
         f"that had no section at all. Both sibling rosters "
         f"(_CORPUS_CLAIMS, _SPAN_BEARING_RULES) use equality; this one "
         f"was the odd one out.")
+
+
+def test_every_pinned_winner_has_a_recorded_shape() -> None:
+    """The roster names a contested name; _RECORDED_DIFFS says what it
+    diffs. A name in one and not the other is a half-recorded pin --
+    the winner cannot be checked without the shape, and a shape nothing
+    pins a winner for is unverified by the run for no purpose.
+
+    The row VALUES are checked here too, against the three illegal
+    states compare.validate_rules already refuses for a rule's `fields`
+    (a name outside the role vocabulary, '_initials' beside a role, a
+    repeated role) plus the empty one. A recorded shape is fed to
+    classify() as the same kind of input a rule's `fields` is, so the
+    wording below mirrors those refusals deliberately -- the two should
+    read as one check written in two places.
+
+    WHY HERE. What each illegal row does WITHOUT these assertions,
+    measured 2026-09-03 by injecting one into the shipped 1.4.0 section
+    and running this file: a repeated role and an empty shape pass the
+    whole suite silently, and surface only as a MOVED SHAPE finding
+    from a gate run -- whose message says the winner beside the shape
+    "was recorded for the OLD shape", telling a contributor with a
+    copy-paste slip that the parser moved. A misspelled role and an
+    '_initials' beside a role happened to fail the sibling test above
+    as well, because on the rows they were injected into the corrupted
+    shape changed which rule classify() picks -- but that is a property
+    of those rows, not of the defect: a shape a second rule admits at
+    both spellings changes no winner and says nothing. Either way the
+    message names a rule handover rather than the typo, and the loop
+    that does catch these needs a baseline wheel and a full corpus
+    pass, so the row ships green through CI. At pytest speed the answer
+    is a sentence naming the typo. The `departed` assertion asks
+    compare.py's `gone` question the same way and for the same reason.
+    """
+    compare = load_tool("compare")
+    for ledger_name, winners in _CROSS_RULE_WINNERS.items():
+        shapes = compare._RECORDED_DIFFS.get(ledger_name, {})
+        assert set(winners) == set(shapes), (
+            f"{ledger_name}: winners without a recorded shape "
+            f"{sorted(set(winners) - set(shapes))}; shapes with no "
+            f"pinned winner {sorted(set(shapes) - set(winners))}")
+        # `gone`'s question, at pytest speed and against every ledger
+        # rather than only the one a run was pointed at. The gate asks
+        # it over the corpora a full run loaded; _CORPUS_NAMES is every
+        # name in every corpus*.jsonl, which is the same population.
+        departed = sorted(set(shapes) - set(_CORPUS_NAMES))
+        assert not departed, (
+            f"{ledger_name}: {departed} carry a recorded shape and sit "
+            f"in no corpus. Nothing measures such a row, so it agrees "
+            f"with itself forever. Settle whether the name left "
+            f"DELIBERATELY before editing either roster -- "
+            f"compare.py's own refusal over the full corpus carries the "
+            f"question and both repairs")
+        for name, shape in shapes.items():
+            where = f"{ledger_name}: the recorded shape for {name!r}"
+            bad = sorted(set(shape) - compare._RULE_FIELDS)
+            assert not bad, (
+                f"{where} names {bad}, which are not roles; expected "
+                f"from {sorted(compare._RULE_FIELDS)}. classify() is "
+                f"asked about the shape as a SET, so a misspelled role "
+                f"is simply a role the diff does not carry: it never "
+                f"reports as a typo, only as a rule handover or a "
+                f"MOVED SHAPE finding blaming the parser. Checked "
+                f"against _RULE_FIELDS -- the set validate_rules checks "
+                f"a rule's 'fields' against, since a shape is the same "
+                f"kind of input -- and not against V2_FIELDS, because "
+                f"'_ambiguities' is legal in a 2.x row (it cannot "
+                f"appear below 2.0) even though no row carries it today")
+            dups = sorted({f for f in shape if shape.count(f) > 1})
+            assert not dups, (
+                f"{where} repeats {dups}. It is read as a set, so the "
+                f"repeat changes nothing classify() matches -- it is a "
+                f"copy-paste slip that would otherwise pass every check "
+                f"here silently, and the '_initials' check below would "
+                f"read ('_initials', '_initials') as '_initials' alone")
+            others = sorted(set(shape) - {"_initials"})
+            assert not ("_initials" in shape and others), (
+                f"{where} lists '_initials' beside {others}. "
+                f"'_initials' enters a diff only when every role and "
+                f"the ambiguity kinds agree (#484), so no diff can "
+                f"carry it with another field: this shape is one no run "
+                f"can measure, and the row is unfalsifiable rather than "
+                f"merely wrong")
+            assert shape, (
+                f"{where} is empty. main() appends to `diffing` only "
+                f"where a comparison DIFFED, so no run produces an "
+                f"empty shape and the row can never be contradicted")
+    # Per-ledger equality above iterates the ROSTER's keys, so a
+    # _RECORDED_DIFFS section for a ledger the roster does not name is
+    # invisible to it -- and to the run, which reads shapes per ledger
+    # too. The sibling test asserts the ROSTER's keys are exactly the
+    # ledgers on disk; this carries that to _RECORDED_DIFFS, which has
+    # no such check of its own.
+    assert set(compare._RECORDED_DIFFS) == set(_CROSS_RULE_WINNERS), (
+        f"_RECORDED_DIFFS and _CROSS_RULE_WINNERS name different "
+        f"ledgers: only in _RECORDED_DIFFS "
+        f"{sorted(set(compare._RECORDED_DIFFS) - set(_CROSS_RULE_WINNERS))}; "
+        f"only in _CROSS_RULE_WINNERS "
+        f"{sorted(set(_CROSS_RULE_WINNERS) - set(compare._RECORDED_DIFFS))}")
 
 
 def test_the_family_first_fold_is_not_explained_under_the_default_order(

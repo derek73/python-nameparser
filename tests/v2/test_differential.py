@@ -1759,8 +1759,12 @@ def test_main_checks_contests_against_the_names_it_loaded() -> None:
 
     The unit guard is what catches a new rule at pytest speed; this is
     the belt for a run over a --corpus the guard never sees, and it has
-    to fire early -- after the multi-minute worker pass, the reader has
-    already paid for the answer.
+    to fire early -- a refusal raised after the worker pass has already
+    installed the pinned wheel and parsed the whole corpus for a
+    comparison that will never be made, and it prints below the run's
+    own published `baseline:` header. The ordering is the argument; the
+    "multi-minute" cost this docstring used to give for it was
+    withdrawn as unmeasured (#497).
     """
     src = (compare.HERE / "compare.py").read_text(encoding="utf-8")
     body = src[src.index("def main("):]
@@ -2021,6 +2025,331 @@ def test_a_corpus_narrowing_does_not_refuse_the_shipped_1_4_ledger(
     assert code == 1
 
 
+#: A ledger that explains the fixture's own family-role diff, so a run
+#: over _DIFFERS is quiet except for whatever the test under it puts
+#: into _RECORDED_DIFFS.
+_CLAIMS_FAMILY = ('[[change]]\nissue = "claimed"\nname_regex = "Smith"\n'
+                  'fields = ["family"]\n')
+
+
+def test_main_reports_a_recorded_shape_the_run_contradicts(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The roster's shapes are checked where they are measured (#497).
+
+    _CROSS_RULE_WINNERS feeds a recorded shape into classify() as an
+    INPUT, so a guessed one agrees with itself forever; the shape is
+    only falsifiable against a run. recorded_diff_mismatches has its
+    own unit tests above -- this pins that main() calls it, which is
+    the half that can go silently permissive.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"John Smith": ("nickname",)})
+    code, out = _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS)
+    assert "MOVED SHAPE" in out
+    assert "John Smith" in out
+    # both sides, because a report naming only one leaves the reader
+    # unable to see which way the shape moved
+    assert "nickname" in out and "family" in out
+    # a FINDING, not a number to update: the winner recorded beside the
+    # shape was recorded for the OLD shape
+    assert "FINDING" in out
+    assert "_CROSS_RULE_WINNERS" in out
+    # The FINDING instruction leads the block once rather than riding
+    # every row, and the two-cause disclaimer beside it is conditional:
+    # every row here carries a measured shape, so advice for the
+    # unmeasured case would be advice for something that did not
+    # happen. Its sibling below pins the other branch.
+    assert out.count("FINDING") == 1
+    assert "TWO" not in out
+    # The verdict, not just the print. A block that reports and exits 0
+    # is read by CI as silence -- the same trap
+    # test_main_exits_1_and_reports_an_unclassified_diff exists for.
+    # Ledger and fixture are otherwise clean, so 1 here is this check's
+    # alone.
+    assert code == 1, out
+
+
+def test_a_moved_shape_does_not_truncate_the_report(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A stale roster row must not hide an unexplained diff.
+
+    This check runs after the worker, so unlike the two pre-worker
+    refusals it cannot raise: a SystemExit here lands MID-report and
+    takes dormancy, OVER-DECLARED, UNEXPLAINED and the radar block down
+    with it -- measured on the shipped tree, a `--corpus corpus.jsonl`
+    run at 1.4.0 prints 62 EXPLAINED NOTHING lines and 0 of them with
+    one _RECORDED_DIFFS row corrupted. So it prints and feeds the exit
+    code, like over_declared_rules. Pinned with all three in one run,
+    because a mismatch alone cannot show what a raise would have eaten.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"John Smith": ("nickname",)})
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "unrelated"\nname_regex = "ZZZ"\n'
+        'fields = ["family"]\n', _DIFFERS)
+    assert "MOVED SHAPE" in out
+    assert "EXPLAINED NOTHING 'unrelated'" in out
+    assert "UNEXPLAINED 'John Smith'" in out
+    assert code == 1, out
+
+
+def test_the_shape_report_names_every_contradicted_row(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The multi-row case the block's own layout is argued from.
+
+    The header leads the block once, rather than the instruction riding
+    every line, BECAUSE a real parser move lands on many of these rows
+    at once -- and every other fixture here, unit and main(), carries
+    exactly one row, so that case was the one nothing exercised. Three
+    mutations lived in it: `out[:] = [...]` for the append in
+    recorded_diff_mismatches, a literal 1 for `len(shape_bad)` in the
+    header, and `shape_bad[:1]` for the row loop. Same harm as
+    test_a_moved_shape_does_not_truncate_the_report, one level in: a
+    truncated block hides a finding while reporting one.
+
+    Two names, one rule explaining both diffs, and both recorded at a
+    shape neither produces.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"John Smith": ("nickname",),
+                         "Alice Jones": ("nickname",)})
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "claimed"\nname_regex = "Smith|Jones"\n'
+        'fields = ["family"]\n', _DIFFERS,
+        extra=[("Alice Jones",
+                {"title": "", "first": "Alice", "middle": "",
+                 "last": "JONESY", "suffix": "", "nickname": "",
+                 "maiden": ""})])
+    # the COUNT, which a literal 1 would still print for two rows
+    assert "MOVED SHAPE expected_since_1.4.0.toml: 2 recorded" in out, out
+    # ... and both rows, which a truncated loop would not
+    assert "John Smith" in out and "Alice Jones" in out, out
+    assert out.count("_RECORDED_DIFFS records") == 2, out
+    # the header still leads ONCE, which is what the count is for
+    assert out.count("FINDING") == 1, out
+    assert code == 1, out
+
+
+def test_the_shape_report_over_an_unmeasured_name_claims_no_cause(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`measured` None has two reachable causes and the report must
+    not assert one of them.
+
+    The parser may have stopped moving a name recorded as moving, or
+    the name may be compared under a declared order ALONE, so no
+    default-order comparison of it exists to have a shape. The two hand
+    recorded_diff_mismatches byte-identical arguments -- main() appends
+    to `diffing` only where a comparison DIFFED -- so this check cannot
+    tell them apart, and a line saying the name "stopped diffing"
+    would send half its readers to the parser over a corpus entry.
+    Written in the shape of test_the_vacancy_refusal_names_both_of_its_causes.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"John Smith": ("family",)})
+    code, out = _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY,
+                          _SAME_FACADE)
+    assert "no default-order diff" in out
+    assert "declared order" in out
+    # ... and once, not once per row: the disclaimer is a property of
+    # the check, so it leads the block rather than riding every line.
+    assert out.count("TWO reach it") == 1
+    # Every line of the block, not just the one carrying the shape: the
+    # header sentence is the one that used to assert the parser had
+    # changed, which is false for the second cause.
+    assert "stopped diffing" not in out
+    assert "the parser changed" not in out
+    assert code == 1, out
+
+
+def test_the_shape_check_reads_the_section_for_the_LEDGER_it_ran(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """_RECORDED_DIFFS is keyed per ledger, and nothing pinned the key.
+
+    Replacing the lookup with a hardcoded
+    `_RECORDED_DIFFS['expected_since_1.4.0.toml']` survived the whole
+    suite: every other main() test here runs at the default 1.4.0
+    baseline, so the right answer and the hardcoded one are the same
+    dict. Harmless only while the 2.x sections stay empty, which is
+    open (#501) -- and the shapes are baseline-relative by
+    construction, so reading the wrong section is reading measurements
+    of a different comparison.
+
+    A correct row in the 2.0.0 section and a DECOY in the 1.4.0 one:
+    dispatched right, the run is quiet; dispatched to 1.4.0, it reports
+    a moved shape on the same name. Set wholesale rather than per key,
+    so the shipped 31 rows cannot supply the answer either way.
+    """
+    monkeypatch.setattr(
+        compare, "_RECORDED_DIFFS",
+        {"expected_since_2.0.0.toml": {"John Smith": ("family",)},
+         "expected_since_1.4.0.toml": {"John Smith": ("nickname",)}})
+    code, out = _run_main(
+        tmp_path, monkeypatch,
+        '[[change]]\nissue = "claimed"\nname_regex = "Smith"\n'
+        'fields = ["family"]\n',
+        {**_SAME_FACADE, "last": "SMYTHE"}, baseline="2.0.0",
+        baseline_v2={**_SAME_V2, "family": "SMYTHE"})
+    assert "MOVED SHAPE" not in out, out
+    assert "nickname" not in out, out
+    assert code == 0, out
+
+
+def test_a_full_run_refuses_a_recorded_name_no_corpus_holds(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The caller's half of the skip (#497 addendum).
+
+    recorded_diff_mismatches SKIPS a recorded name it did not compare,
+    which is right under `--corpus` and forgiving forever under the
+    full gate: a roster row naming a name no corpus holds is a row that
+    agrees with itself because nothing measures it, which is the very
+    defect this arc is about. Same asymmetry as the vacancy check's
+    caller (#382), and `corpus_flag=False` is the only run whose name
+    set can tell a departed name from one this run did not reach.
+
+    Pre-worker, like both refusals it sits beside: it reads the ledger
+    and the loaded names and nothing the comparison produces, and a
+    refusal raised afterwards prints below the run's own published
+    `baseline:` header, for a comparison it will never report -- not
+    "a comparison it is about to disown", since nothing of the
+    comparison prints until the `corpus: ... intentional diffs:` line
+    below it. It is the ORDER that earns the placement, which is the
+    wording compare.py carries at all three of its own placement
+    comments. Its measured half cannot refuse at all, and prints
+    instead.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"Nobody Here, Esq.": ("family",)})
+    with pytest.raises(SystemExit) as exc:
+        _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS,
+                  corpus_flag=False)
+    message = str(exc.value)
+    assert "Nobody Here, Esq." in message
+    # both repairs, because the row may be stale OR the corpus may be
+    # what regressed, and they are not interchangeable
+    assert "restore" in message and "delete" in message
+    assert "_CROSS_RULE_WINNERS" in message
+    assert not _WORKER_CALL, (
+        "main() spawned the worker before refusing the roster row")
+
+
+def test_a_corpus_run_is_silent_about_a_recorded_name_outside_it(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The inversion, and the reason the half above is not in the
+    function: `--corpus` narrows the name set on purpose, so absence is
+    a fact about the run. Refusing here would tell a contributor to
+    delete a roster row over a name the full gate compares -- the
+    earlier-draft `vacant` bug, one check over.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"Nobody Here, Esq.": ("family",)})
+    code, out = _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS)
+    assert "Nobody Here, Esq." not in out
+    assert code == 0, out
+
+
+def test_naming_every_corpus_refuses_a_recorded_name_no_corpus_holds(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`--corpus` is not the question; the NAME SET is.
+
+    The flag is `action="append"`, so a run listing every corpus
+    compares exactly what the flagless gate compares. Keying the
+    silence on `args.corpus` rather than on `full_corpus` would let a
+    genuinely departed roster name pass by naming the roster.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"Nobody Here, Esq.": ("family",)})
+    with pytest.raises(SystemExit) as exc:
+        _run_main(tmp_path, monkeypatch, _CLAIMS_FAMILY, _DIFFERS,
+                  names_every_corpus=True)
+    assert "Nobody Here, Esq." in str(exc.value)
+    assert not _WORKER_CALL
+
+
+def test_a_name_this_baseline_skipped_is_not_a_name_the_corpus_lost(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The two name sets the check reads are opposite, and this is the
+    only instrument that can tell which one it read.
+
+    Swap them and this full run refuses, telling a contributor to
+    delete a roster row for a name sitting in the corpus it just read.
+    The two questions, and the three names the lists differ by at
+    1.4.0, are recorded once in recorded_diff_mismatches' docstring;
+    the shipped rosters cannot show the swap, because none of those
+    three carries a row yet.
+
+    IT PINS "DOES NOT REFUSE", which is what it was written for, and it
+    used to pin "says nothing" as a side effect of asserting the name
+    was absent from stdout. Those are different decisions and only the
+    first was ever argued: a row on a skipped name is checked by
+    NEITHER half -- recorded_diff_mismatches drops it as uncompared and
+    the `gone` refusal passes it as still-in-a-file -- so silence made
+    a wrong shape on one of these three names a silent pass at the one
+    baseline whose section carries rows. Measured before the NOT
+    CHECKED note: a wrong shape on 'de la Cruz née Vega' over the full
+    corpus at 1.4.0 exited 0 in 375 lines naming it in none of them. So
+    the name is now REPORTED and the run still does not refuse, and
+    both halves are asserted below.
+
+    Hand-rolled rather than via _run_main, which writes bare-string
+    corpus lines and so cannot produce a skipped entry at all; same
+    construction as
+    test_the_contest_check_reads_names_this_baseline_will_not_compare.
+    Its control is the sibling above: a name in NO corpus is refused by
+    this same run shape.
+    """
+    import json as _json
+    import sys
+    name = "Ménil Christophe du"
+    corpus = tmp_path / "corpus_x.jsonl"
+    corpus.write_text(
+        _json.dumps({"name": name, "shape": 4}, ensure_ascii=False) + "\n"
+        + _json.dumps("John Smith") + "\n", encoding="utf-8")
+    (tmp_path / "expected_since_1.4.0.toml").write_text(
+        _CLAIMS_FAMILY, encoding="utf-8")
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml", {name: ("family",)})
+    # wholesale, so the flagless glob below sees a full corpus roster
+    monkeypatch.setattr(compare, "_CORPUS_FLOORS", {corpus.name: 1})
+    monkeypatch.setitem(compare._CORPUS_TIERS, corpus.name, "contract")
+    monkeypatch.setattr(compare, "HERE", tmp_path)
+    _WORKER_CALL.clear()
+
+    def _fake(v: str, w: bool, n: list[dict]) -> tuple[dict, list[dict]]:
+        _WORKER_CALL.update(version=v, names=[e["name"] for e in n])
+        return ({"__version__": v,
+                 "__file__": "/wheel/nameparser/__init__.py"},
+                [{"facade": dict(_DIFFERS)}])
+
+    monkeypatch.setattr(compare, "_run_worker", _fake)
+    monkeypatch.setattr(sys, "argv", ["compare.py", "--baseline", "1.4.0"])
+    import contextlib
+    import io
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = compare.main()
+    out = buf.getvalue()
+    assert _WORKER_CALL["names"] == ["John Smith"], out
+    # does not REFUSE: the `gone` refusal's own sentence, which the
+    # sibling above asserts IS raised for a name no corpus holds
+    assert "no corpus holds any more" not in out, out
+    assert code == 0, out
+    # ... and does not stay silent either. The note names the row, says
+    # it went unchecked, and says the row is not the thing at fault --
+    # the three things a reader needs to not delete it.
+    assert "NOT CHECKED" in out, out
+    assert name in out, out
+    assert "do not delete" in out, out
+
+
 def test_radar_diff_with_no_rule_exits_0_and_is_reported(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The tier split's entire point (#468): a harvested name's diff
@@ -2144,10 +2473,10 @@ def test_object_corpus_lines_are_read_and_labels_printed(
 def test_a_malformed_tests_label_is_a_hard_error(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Caught at load time, not report time: a 'tests' label is read
-    only when printing the radar block, after the multi-minute worker
-    pass, so a bad one left unchecked would crash there instead --
-    the failure mode validate_rules' compile-at-startup paragraph
-    exists to avoid."""
+    only when printing the radar block, at the end of the run and well
+    past the worker pass, so a bad one left unchecked would crash there
+    instead -- the failure mode validate_rules' compile-at-startup
+    paragraph exists to avoid."""
     import json as _json
     corpus = tmp_path / "corpus_x.jsonl"
     corpus.write_text(_json.dumps(
@@ -2163,7 +2492,8 @@ def test_a_misspelled_corpus_key_is_a_hard_error(
     silently did not happen: the line compares under the default order
     while its author believes they declared a family-first one. The
     message names the FILE, like every other loader error here, because
-    five corpora are read in one run."""
+    one run reads every corpus in the directory and a message without a
+    filename says nothing about which one to open."""
     import json as _json
     corpus = tmp_path / "corpus_x.jsonl"
     corpus.write_text(_json.dumps(
@@ -2563,10 +2893,14 @@ def test_run_worker_sends_the_name_and_resolved_order_on_the_wire(
 
 @pytest.mark.parametrize("want_v2", [True, False])
 def test_worker_source_compiles(want_v2: bool) -> None:
-    """A syntax error in the rendered template currently surfaces only
-    as 'worker exited 1' after a multi-minute uv install; this catches
-    it at test time instead, for both renderings (WANT_V2 gates a
-    def-inside-if that is easy to misindent)."""
+    """A syntax error in the rendered template surfaces only as the
+    opaque 'worker exited 1', and by the time _run_worker raises it the
+    TemporaryDirectory holding the rendered source is already gone, so
+    there is nothing left to open; this catches it at test time
+    instead, for both renderings (WANT_V2 gates a def-inside-if that is
+    easy to misindent). The install this used to call "multi-minute" is
+    sub-second even on a cold uv cache -- withdrawn as unmeasured by
+    #497; the opacity is the reason, not the wait."""
     compile(compare._worker_source("2.2.0", want_v2=want_v2),
             "<worker>", "exec")
 
@@ -3218,6 +3552,137 @@ def test_validate_rules_rejects_two_rules_sharing_an_issue() -> None:
             [{"issue": "dup", "name_regex": "Smith", "fields": ["given"]},
              {"issue": "dup", "name_regex": "Jones", "fields": ["given"]}],
             "expected_since_1.4.0.toml")
+
+
+def test_a_recorded_shape_matching_the_run_is_no_mismatch() -> None:
+    diffing = [("Smith, Jr.", {"family", "suffix"}, None)]
+    assert compare.recorded_diff_mismatches(
+        {"Smith, Jr.": ("family", "suffix")}, diffing,
+        {"Smith, Jr."}) == []
+
+    # ... and the recorded side is a hand-written tuple, so both sides
+    # are sorted before they are compared: a row spelled in any other
+    # order is the same shape, not a mismatch.
+    assert compare.recorded_diff_mismatches(
+        {"Smith, Jr.": ("suffix", "family")}, diffing,
+        {"Smith, Jr."}) == []
+
+    # ... and so is the measured side, which arrives as a SET: its
+    # iteration order is this interpreter's hash seed, so an unsorted
+    # reading would agree with the roster on some runs and report a
+    # mismatch on others. All seven roles rather than the two above
+    # because an unsorted reading cannot be refuted outright -- a set
+    # CAN iterate alphabetically, and the two-role set above does under
+    # 85 of PYTHONHASHSEED 0..199. The seven-role set THE ASSERTION
+    # BELOW BUILDS does under none of them, so the size is what makes
+    # this row an instrument rather than a coin flip. Measured
+    # 2026-09-03; recompute either count with
+    #   for s in $(seq 0 199); do PYTHONHASHSEED=$s python3 -c \
+    #     'S={"family","suffix"};print(list(S)==sorted(S))'
+    #   done | grep -c True
+    # substituting, for the seven-role count,
+    #   S=set(("title","given","middle","family","suffix",
+    #          "nickname","maiden"))
+    # -- compare.V2_FIELDS in ITS OWN order, which is the set the
+    # assertion passes. INSERTION ORDER is part of the measurement and
+    # not decoration: a bare set literal spelled alphabetically instead
+    # iterates sorted under seed 56, so a recipe retyped that way reads
+    # 1 of 200 where the assertion's own set reads 0.
+    assert compare.recorded_diff_mismatches(
+        {"Smith, Jr.": tuple(sorted(compare.V2_FIELDS))},
+        [("Smith, Jr.", set(compare.V2_FIELDS), None)],
+        {"Smith, Jr."}) == []
+
+
+def test_a_recorded_shape_the_run_contradicts_is_reported() -> None:
+    """The check the roster could not do for itself.
+
+    _CROSS_RULE_WINNERS feeds its recorded shape into classify() and
+    asserts the winner, so a guessed shape agrees with itself forever --
+    which is how '田中さん II' sat recorded as {given, suffix} when the
+    measured diff is {family, given, suffix}.
+    """
+    diffing = [("田中さん II", {"family", "given", "suffix"}, None)]
+    got = compare.recorded_diff_mismatches(
+        {"田中さん II": ("given", "suffix")}, diffing, {"田中さん II"})
+    assert [(m.name, m.recorded, m.measured) for m in got] == [
+        ("田中さん II", ("given", "suffix"), ("family", "given", "suffix"))]
+
+
+def test_every_contradicted_row_is_returned_not_just_one() -> None:
+    """`out.append`, not `out[:] = [...]`.
+
+    Every other fixture for this function carries one recorded row, and
+    over a one-row roster an assignment and an append are the same
+    function. The case that separates them is the one the report's
+    layout is argued from -- a parser move landing on many rows at once
+    -- so it is pinned at both levels;
+    test_the_shape_report_names_every_contradicted_row is main()'s.
+    """
+    diffing = [("Smith, Jr.", {"family"}, None),
+               ("Kim, Jr.", {"family"}, None)]
+    got = compare.recorded_diff_mismatches(
+        {"Smith, Jr.": ("family", "suffix"), "Kim, Jr.": ("given",)},
+        diffing, {"Smith, Jr.", "Kim, Jr."})
+    assert [(m.name, m.recorded, m.measured) for m in got] == [
+        ("Smith, Jr.", ("family", "suffix"), ("family",)),
+        ("Kim, Jr.", ("given",), ("family",))]
+
+
+def test_a_recorded_name_that_stops_diffing_is_reported() -> None:
+    """Recorded means it diffed. If it no longer does, that is a finding
+    about the parser, not a row to delete."""
+    got = compare.recorded_diff_mismatches(
+        {"Smith, Jr.": ("family", "suffix")}, [], {"Smith, Jr."})
+    assert [(m.name, m.measured) for m in got] == [("Smith, Jr.", None)]
+
+
+def test_a_recorded_name_outside_this_run_is_skipped() -> None:
+    """--corpus narrows the name set, so absence is a fact about the run.
+
+    Only the SUBSET half of the asymmetry the vacancy check's caller
+    reads (#382): that caller REFUSES under a full run, and this
+    function is silent in both cases. Refusing a recorded name no
+    corpus holds any more is the caller's half, and it asks
+    `set(recorded) - set(corpus_names)` -- the PRE-skip list, since the
+    baseline-minimum skip takes a name out of the RUN and out of no
+    file. Nothing here does either;
+    test_a_full_run_refuses_a_recorded_name_no_corpus_holds pins the
+    caller's side of it, and
+    test_a_name_this_baseline_skipped_is_not_a_name_the_corpus_lost
+    pins that it reads the other list.
+    """
+    assert compare.recorded_diff_mismatches(
+        {"Smith, Jr.": ("family", "suffix")}, [], set()) == []
+
+
+def test_only_the_order_none_comparison_is_read() -> None:
+    """The roster calls classify() with no order, so the shape it records
+    is the default-order comparison's. An order-bearing comparison of the
+    same string is a different question.
+
+    Two fixtures, pinning the two ways a reading of every row survives,
+    since either one alone leaves the other's mutant alive. Both are
+    reachable: `diffing` is appended in corpus file order, so a name's
+    two entries can arrive either way round. Neither is a measurement --
+    the shapes here are illustrative, chosen to separate the readings,
+    where _CROSS_RULE_WINNERS records 'Kim, Jr.' on four roles.
+
+    FIRST: the order-bearing row written LAST, which kills a reading
+    where the last row wins. SECOND: the order-bearing row ALONE, which
+    kills a reading where the first row wins -- there the shape is
+    recorded, the name is compared, and no order-None comparison of it
+    exists, so the honest answer is `measured` None.
+    """
+    diffing = [("Kim, Jr.", {"family", "suffix"}, None),
+               ("Kim, Jr.", {"family"}, "FAMILY_FIRST")]
+    assert compare.recorded_diff_mismatches(
+        {"Kim, Jr.": ("family", "suffix")}, diffing, {"Kim, Jr."}) == []
+
+    got = compare.recorded_diff_mismatches(
+        {"Kim, Jr.": ("family",)},
+        [("Kim, Jr.", {"family"}, "FAMILY_FIRST")], {"Kim, Jr."})
+    assert [(m.name, m.measured) for m in got] == [("Kim, Jr.", None)]
 
 
 harvester = load_tool("build_issues_corpus")

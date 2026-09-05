@@ -709,8 +709,9 @@ def validate_rules(rules: list[dict[str, object]], ledger: str) -> None:
     Rules are also compiled here, not at match time. `classify` returns
     on the first match, so an uncompilable pattern at position k only
     raises once a diff gets past rules 1..k-1: a ledger can run green
-    for months and then explode mid-run, after the multi-minute worker
-    pass, in a traceback naming neither the file nor the rule.
+    for months and then explode mid-run, past the worker pass and deep
+    into the comparison, in a traceback naming neither the file nor
+    the rule.
 
     `ledger` is named rather than hardcoded because there is one per
     baseline now: a message naming the wrong file sends the reader to
@@ -1608,20 +1609,258 @@ def over_declared_rules(
     return tuple(found)
 
 
+class _ShapeMismatch(NamedTuple):
+    """A recorded diff shape the run disagrees with (#497).
+
+    Named rather than a bare triple for _Vacancy's reason: the caller
+    formats these into a message, and `m.recorded`/`m.measured` says
+    which side is which where `m[1]`/`m[2]` would not.
+    """
+    name: str
+    #: the shape the roster records. Sorted HERE, at construction, like
+    #: `measured` beside it -- a property of the instance and NOT a
+    #: requirement on the literal row: a row spelled in any other order
+    #: sorts to the same tuple and compares equal, so a sortedness
+    #: guard over _RECORDED_DIFFS would refuse nothing and pin nothing.
+    #: test_a_recorded_shape_matching_the_run_is_no_mismatch pins both
+    #: sides of that.
+    recorded: tuple[str, ...]
+    #: what this run measured, sorted; None when the run produced no
+    #: default-order diff of the name at all -- TWO states reach that,
+    #: deliberately collapsed, and the docstring says what a message
+    #: over one may and may not claim
+    measured: tuple[str, ...] | None
+
+
+#: The recorded diff shape of every name _CROSS_RULE_WINNERS pins
+#: (tests/v2/test_ledger_guards.py), per ledger (#497).
+#:
+#: Baseline-relative by construction, which is why it is keyed per
+#: ledger rather than once by name: a string moves a different set of
+#: roles against different baselines, and decisions.md (2026-08-28
+#: #452) records `fix(#296) a lone post-comma credential is a suffix`
+#: moving four roles at 1.4.0 and two at both 2.x baselines. No name
+#: sits in two sections today -- the three non-1.4.0 ones are empty --
+#: so the keying is held by that argument alone.
+#:
+#: A recorded shape that MOVES is a FINDING, not a number to update,
+#: and it names no cause because it cannot: the parser may have changed
+#: what that name does, or the row may have been wrong when it was
+#: recorded, which is what the provenance below found four times.
+#: Either way the winner pinned beside it in _CROSS_RULE_WINNERS was
+#: recorded for the OLD shape, so both want reading before either is
+#: edited.
+#:
+#: HERE rather than beside the roster because this is where the
+#: measurement happens. main() computes every name's real diff, so a
+#: run can check these; the unit suite cannot, and deliberately -- it
+#: spawns no uv and no network -- tests/v2/test_differential.py says
+#: so in its own header, and the ones that need a baseline fake
+#: _run_worker or fake Popen beneath it rather than installing a
+#: wheel. Not "every test monkeypatches _run_worker": most never
+#: mention it, and that loose paraphrase is #497's own subject
+#: arriving inside #497's evidence. Same
+#: direction as _CORPUS_FLOORS above, which lives here and is read from
+#: there.
+#:
+#: Default-order shapes only, because the roster classifies with no
+#: order. recorded_diff_mismatches below says what that leaves out.
+#:
+#: PROVENANCE. The 31 rows at 1.4.0 are measured against the 1.4.0
+#: wheel, as the roster always claimed, and all 31 still agree --
+#: re-measured 2026-09-03 by driving main() at all four baselines and
+#: feeding its `diffing` and its post-skip corpus to
+#: recorded_diff_mismatches, which is the recompute: wrap _run_worker to
+#: capture the post-skip entries and dormant_rules to capture `diffing`,
+#: since both receive exactly what main() built.
+#:
+#: Both 2.x sections are EMPTY, and that is a position rather than an
+#: omission -- _CROSS_RULE_WINNERS carries why no 2.x contest is pinned,
+#: including the measured fact that contests DO exist there. Each held
+#: two rows, added by #452, until #497 ran that recompute against them.
+#: All four recorded a shape no run makes:
+#:   'Nguyen, Van' produces no diff at ANY of the four baselines. It is
+#:   compared under the default order out of corpus_rules.jsonl every
+#:   time, and the tree agrees with all four wheels on it, so {family}
+#:   is a shape no run makes and no run ever asked classify() about the
+#:   name at all. That is the position 'Doe,, Jr.' is in, which the
+#:   roster gives no row precisely because it does not diff.
+#:   'Jane née and Jones Smith' diffs {family, given, maiden, middle} at
+#:   1.4.0, 2.0.0 and 2.1.0, and not at all at 2.2.0 -- never the
+#:   {family, maiden, middle} recorded. Its shape WAS correctable, and
+#:   the rows went anyway: the string is a malformed harvest from
+#:   corpus_issues.jsonl (radar), the tree reads it family 'Jane' /
+#:   maiden 'and Jones Smith', and nobody can state what it ought to
+#:   parse to, so a pin on it defends no boundary anyone would argue
+#:   for. In both 2.x ledgers fix(#445) is the only rule admitting it at
+#:   either shape, measured, so no pin moved either way.
+#: Deleting a row removes a PIN, not a name: corpus_issues.jsonl is
+#: append-only and both strings are still compared, and classified, on
+#: every run. 'Nguyen, Van' is classified by nothing only because it
+#: diffs from nothing.
+_RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
+    # open cycle: one rule, so nothing for a second one to contest
+    "expected_since_2.2.0.toml": {},
+    "expected_since_1.4.0.toml": {
+        "Andrews, M.D.": ("given", "suffix"),
+        "田中, 太郎さん": ("given", "suffix"),
+        "김, 민준씨": ("given", "suffix"),
+        "김, 민준씨 (Jimmy)": ("given", "suffix"),
+        "김민준, 씨": ("given", "suffix"),
+        "김민준, 씨.": ("given", "suffix"),
+        "선생님, J.씨": ("given", "suffix"),
+        "이, J.씨": ("given", "suffix"),
+        "Dr 김민준씨, V.": ("family", "given", "suffix"),
+        "田中さん, PhD": ("family", "given", "suffix", "title"),
+        "田中さん, V.": ("family", "suffix"),
+        "Bob Jones, author": ("family", "given"),
+        "MD, PHD": ("family", "given", "suffix", "title"),
+        "Smith Jr.": ("family", "suffix"),
+        "Carod i": ("family", "suffix"),
+        "田中さん II": ("family", "given", "suffix"),
+        "de los Santos": ("_initials",),
+        "van Berg Jan de": ("_initials",),
+        "van ma van": ("_initials",),
+        "Andersonさん": ("given", "suffix"),
+        "김민준씨": ("family", "given", "suffix"),
+        "김민준 씨.": ("family", "given", "suffix"),
+        ".,": ("given",),
+        "田中さん, Ph. D.": ("family", "given", "suffix"),
+        "Kim, Jr.": ("family", "given", "suffix", "title"),
+        "Smith, Jr.": ("family", "given", "suffix", "title"),
+        "김민준씨 Jr.": ("family", "given", "suffix"),
+        "de la Vega y Santos Juan": ("_initials",),
+        "Abu Bakr Al Baghdadi, MD": ("_initials",),
+        "abu bakr al baghdadi": ("_initials",),
+        "Berg, abdul van": ("_initials",),
+    },
+    "expected_since_2.0.0.toml": {},
+    "expected_since_2.1.0.toml": {},
+}
+
+
+def recorded_diff_mismatches(
+        recorded: dict[str, tuple[str, ...]],
+        diffing: list[tuple[str, set[str], str | None]],
+        compared: set[str]) -> list[_ShapeMismatch]:
+    """Recorded shapes this run contradicts (#497).
+
+    The roster in tests/v2/test_ledger_guards.py pins WHICH RULE wins a
+    contested name, and to ask that question it needs the diff shape --
+    which it reads from _RECORDED_DIFFS above and feeds to classify() as
+    an input. Nothing checks the shape itself, so a guessed one agrees
+    with itself forever. This is the half only a run can do: main() has
+    already measured every name's real diff by the time it calls this.
+
+    Only the order-None comparison is read. The roster calls classify()
+    with no order, so the shape it records is the default-order one; a
+    string also compared under a declared order is a different question
+    and its own row would be needed to ask it.
+
+    `compared` is the names this run actually compared: the entry list
+    AFTER the baseline-minimum skip -- main()'s `corpus`, NOT the
+    `corpus_names` the contest checks read, which is built before that
+    skip runs. The two differ by exactly the entries an old baseline
+    cannot honor -- 7 of them at 1.4.0, where 1120 load and 1113
+    compare; re-measure by running this file with `--baseline 1.4.0`
+    and reading its `skipped` and `corpus:` lines. Those are ENTRY
+    counts. The paragraph further down counts NAMES, which is why the
+    same skip reads as 7 here and as 3 there: an entry is a (name,
+    order) pair, so the 1120 deduped entries carry 1116 distinct
+    strings -- three strings are compared under more than one order
+    ('de la Cruz Juan Carlos' under three, 'John Smith, Dr.' and 'de
+    la Cruz née Vega' under two) -- and four of the seven skipped
+    entries are the whole of the three names named below, while the
+    other three have a same-name twin that survives the skip.
+    decisions.md, "the rule-order arc", records the same trap for the
+    contest checks,
+    which read the pre-skip list on purpose. Pass that list here and a
+    roster row whose only entry was skipped reports as a name that
+    stopped diffing, when it was never compared at all.
+
+    A name absent from `compared` is SKIPPED rather than reported. Under
+    `--corpus` the name set is narrowed, and absence is then a fact
+    about the run rather than about the roster. That is only the SUBSET
+    half of what the vacancy check's caller does with the same
+    asymmetry (#382): under a FULL run that caller refuses a
+    declaration whose pair is gone, and nothing here refuses a recorded
+    name no corpus holds any more -- forgiving forever the very shape
+    #497 is about. That half belongs to the caller, the only side that
+    knows whether this run read every corpus; main() does it, under a
+    full run alone, asking `set(recorded) - set(corpus_names)`: the
+    PRE-skip list, which is the opposite of what `compared` takes in
+    the paragraph above, and deliberately so.
+    Two different questions. "Was this name compared?" is about the
+    RUN, and an entry the baseline skipped was not; "does any corpus
+    still hold this name?" is about the FILES, and the skip removes a
+    name from no file. Measured at --baseline 1.4.0, the two lists
+    differ by three names -- 'de Mesnil Jean, Dr.', 'de la Cruz Juan
+    Carlos, Dr.' and 'de la Cruz née Vega', each order-bearing with no
+    order-None twin to keep it in `compared`, and each sitting in
+    corpus_shapes.jsonl the whole time. Refusing off the post-skip list
+    would tell a contributor to delete a roster row for a name that is
+    right there, at the compat baseline. `full_corpus` does not screen
+    that: it is _CORPUS_FLOORS against the files on disk and knows
+    nothing about the skip. It is the earlier-draft `vacant` bug
+    recorded below, one baseline over.
+    Those three names are the WINDOW between the two halves, and not
+    refusing is not the same decision as saying nothing: a row on one
+    of them is checked by neither side, so main() prints a NOT CHECKED
+    note over `set(recorded) & set(corpus_names) - compared` -- naming
+    them, claiming nothing about them, and feeding no exit code. That
+    note is the caller's too, for the reason this whole paragraph is:
+    only the caller holds both lists.
+
+    A name that IS compared and produces no default-order diff is
+    reported with `measured` None, and two states reach that: the
+    parser stopped diffing a name recorded as diffing, or the name is
+    compared under a declared order ALONE, so no default-order
+    comparison of it exists to have a shape. They are collapsed because
+    nothing in these arguments separates them. main() appends to
+    `diffing` only where a comparison DIFFED, so a name compared under
+    the default order that produces no diff leaves no row at all, and
+    the two states hand this function byte-identical `diffing` and
+    `compared` -- constructed and run, not reasoned about. The
+    distinction lives in the ORDERS each name was compared under, which
+    is main()'s `entries` and would be a fourth argument here. So a
+    message over these rows may say the run measured no default-order
+    diff, and must NOT say the name stopped diffing; and a caller must
+    not try to label them off `diffing`, which cannot answer it.
+    _Dormant's `kind` is the shape to copy if that fourth argument is
+    ever added and the two are told apart.
+    """
+    measured = {name: tuple(sorted(diff))
+                for name, diff, order in diffing if order is None}
+    out: list[_ShapeMismatch] = []
+    for name, shape in recorded.items():
+        if name not in compared:
+            continue
+        got = measured.get(name)
+        want = tuple(sorted(shape))
+        if got != want:
+            out.append(_ShapeMismatch(name, want, got))
+    return out
+
+
 def _load_entries(path: Path) -> list[dict[str, object]]:
     """Corpus lines as entry dicts. A line is either a bare JSON
     string (the original format) or an object with a "name" plus
     optional metadata -- "tests" labels from build_corpus.py, and a
     "shape" id from build_shapes_corpus.py (#469). Tolerating both
-    means compare.py itself never needs a flag day across its five
-    corpus files: corpus.jsonl and corpus_shapes.jsonl carry object
-    lines, the other three are still bare strings, and both shapes
-    stay legal everywhere a corpus line is read.
+    means compare.py itself never needs a flag day as corpora are
+    added or converted: corpus.jsonl and corpus_shapes.jsonl carry
+    object lines, the rest are still bare strings, and both shapes
+    stay legal everywhere a corpus line is read. Counting the files
+    here said five over six, and the object/string split three over
+    four, which is the "all five corpora" claim #497 swept out of
+    three other files -- it survived because that sweep never
+    reached compare.py. The glob is the count.
 
-    A "tests" label is read only when the radar block prints, well
-    after the multi-minute worker pass, so a malformed one left
-    unchecked would crash there rather than here -- exactly what
-    validate_rules' compile-at-startup paragraph exists to prevent.
+    A "tests" label is read only when the radar block prints, at the
+    very end of the run and well past the worker pass, so a malformed
+    one left unchecked would crash there rather than here -- exactly
+    what validate_rules' compile-at-startup paragraph exists to
+    prevent.
 
     "shape" is checked for a different hazard. main() resolves it
     against shapes.py into the "order" the worker protocol sends, and
@@ -1729,10 +1968,12 @@ def main() -> int:
     # ask them. Skipped under --corpus, where narrowing is the point.
     #
     # The same question, asked of the names rather than of the flag,
-    # answers "is this run over the FULL corpus" for the vacancy check
-    # below -- which is what that check needs, and not the same as
-    # "was --corpus omitted": the flag is `action="append"`, so naming
-    # every corpus explicitly narrows nothing.
+    # answers "is this run over the FULL corpus" for the two checks
+    # below whose verdict inverts under narrowing -- the vacancy check
+    # and the departed-name half of the recorded-shape check (#497).
+    # That is what both need, and it is not the same as "was --corpus
+    # omitted": the flag is `action="append"`, so naming every corpus
+    # explicitly narrows nothing.
     missing = sorted(set(_CORPUS_FLOORS) - {p.name for p in paths})
     full_corpus = not missing
     if not args.corpus:
@@ -1816,8 +2057,14 @@ def main() -> int:
     # before any corpus is read: whether two rules CONTEST a diff is a
     # question about NAMES -- both regexes have to reach one -- and the
     # names arrive at this line. Before the worker pass, deliberately:
-    # a ledger refused after the multi-minute wait is a ledger refused
-    # too late (#382).
+    # a ledger refused after the worker runs has already installed the
+    # pinned wheel and parsed the whole corpus for a comparison that
+    # will never be made, and it refuses below its own published
+    # `baseline:` header (#382). It is the ORDER of the two that earns
+    # this placement and not the wait -- the worker pass is a fraction
+    # of a second, and the "multi-minute" this comment used to argue
+    # from was withdrawn as unmeasured (#497, and decisions.md, "the
+    # rule-order arc", which carries the dated figures).
     #
     # The names are the LOADED entries, not the corpus*.jsonl glob the
     # unit guard in tests/v2/test_ledger_guards.py reads: `--corpus`
@@ -1849,17 +2096,22 @@ def main() -> int:
     # corpus_shapes.jsonl, and 8, 7 and 5 for the other three. So a
     # partial run NOTES that count and does not act on it.
     #
-    # THREE CHECKS READ THE NARROWING AT THREE DIFFERENT STRENGTHS, and
+    # FOUR CHECKS READ THE NARROWING AT FOUR DIFFERENT STRENGTHS, and
     # the differences are the point rather than an inconsistency to
     # tidy. The corpus-floor roster above is SKIPPED entirely, because
     # narrowing is what the flag is for. over_declared_rules still
     # FAILS the run -- `overwide` feeds the exit code on every run --
     # and only appends a NOTE that the union it computed is over a
     # subset, so its repair advice is not followed blindly. `vacant`
-    # alone does not fail, because it is the only one of the three
-    # whose VERDICT inverts under narrowing rather than merely its
-    # evidence. Do not fold the two branches below back into one
-    # shape, and do not level the three checks onto one strength: an
+    # does not fail, because its VERDICT inverts under narrowing rather
+    # than merely its evidence. `gone` below -- the roster rows naming
+    # a departed name (#497) -- inverts the same way and goes one step
+    # further, staying SILENT: `vacant` prints a count a reader might
+    # act on, and there recorded_diff_mismatches has already dropped
+    # those names without reporting one, so a NOTE would carry noise
+    # and no information. Its own comment measures how much.
+    # Do not fold the two branches below back into one
+    # shape, and do not level the four checks onto one strength: an
     # earlier draft of `vacant` refused under `--corpus` and told the
     # contributor to delete legitimate exemptions.
     #
@@ -1909,6 +2161,80 @@ def main() -> int:
              f"exactly like one for a hazard that is live:"]
             + [f"  {v.earlier!r}\n  declares precedence over {v.later!r}"
                for v in vacant]))
+    # A recorded diff shape naming a string no corpus holds any more
+    # (#497). _RECORDED_DIFFS pins the shape _CROSS_RULE_WINNERS feeds
+    # to classify() as an input, and a row nothing measures agrees with
+    # itself forever -- the exact shape of the defect that roster's
+    # shapes were found in. recorded_diff_mismatches cannot ask it: it
+    # skips a name it did not compare, which is right under `--corpus`
+    # and forgiving forever under the full gate, so this half is the
+    # caller's -- the only side that knows whether this run read every
+    # corpus.
+    #
+    # HERE, beside `vacant`, for the reason the block above gives: it
+    # reads the ledger and the loaded names and nothing the worker
+    # produces, and a refusal raised after the worker has installed the
+    # pinned wheel and compared the whole corpus prints below the run's
+    # own published `baseline:` header, for a comparison that will
+    # never be reported (#382). Not "disowning a comparison it just
+    # published": measured print order is `baseline:` at the tell,
+    # then the comparison loop, which prints nothing, then `corpus:
+    # ... intentional diffs:`, so at that later point the header
+    # would have printed and no line of the comparison would have. It
+    # is the ORDER of the two that earns the placement, as it does at
+    # the twin comment above. HERE, nothing has printed at all.
+    # The measured half of this check is the opposite case and
+    # sits after the comparison, where the diff it reads exists.
+    #
+    # PRE-skip `corpus_names`, where the measured half takes the
+    # POST-skip `corpus`. The two questions, why they take opposite
+    # lists, the three names they differ by at 1.4.0 and the recompute
+    # are recorded ONCE, in recorded_diff_mismatches' docstring -- read
+    # it before touching either line. One thing is not there and lives
+    # here, because it is an argument about THIS placement and not
+    # about that function: none of those three names carries a roster
+    # row today, so the post-skip reading would refuse nothing YET. It
+    # would wait for the first row on a shape-tagged name and then tell
+    # a contributor to delete a row for a name the run had just read
+    # past, which is why the hazard is invisible to the gate and has to
+    # be argued rather than measured.
+    #
+    # `full_corpus`, not `args.corpus`, for the same reason `vacant`
+    # reads it. Under a narrowing this is SILENT rather than a NOTE,
+    # which is where the two checks part: `vacant` prints a count a
+    # reader might act on, and here recorded_diff_mismatches has
+    # already dropped those names without reporting one, so a NOTE
+    # would add noise and no information. Measured 2026-09-03, it would
+    # name 18 to 30 of the 31 rows depending on which corpus was asked
+    # for (30 for corpus_shapes.jsonl) against `vacant`'s 5 to 11 of
+    # 11. Recompute, from the worktree root:
+    #   uv run python -c "import sys;sys.path.insert(0,'tools/\
+    #   differential');import compare,pathlib;r=set(compare.\
+    #   _RECORDED_DIFFS['expected_since_1.4.0.toml']);[print(p.name,\
+    #   len(r-{str(e['name']) for e in compare._load_entries(p)}),\
+    #   'of',len(r)) for p in sorted(pathlib.Path('tools/differential')\
+    #   .glob('corpus*.jsonl'))]"
+    # `ledger` is a Path, so the key is `ledger.name` -- as the line
+    # below has it, and as an earlier draft of this recipe did not.
+    recorded = _RECORDED_DIFFS.get(ledger.name, {})
+    gone = sorted(set(recorded) - set(corpus_names))
+    if gone and full_corpus:
+        raise SystemExit("\n".join(
+            [f"tools/differential/compare.py: {len(gone)} row(s) in "
+             f"_RECORDED_DIFFS[{ledger.name!r}] name a string no corpus "
+             f"holds any more, over the FULL corpus. Nothing measures "
+             f"such a row, so it agrees with itself forever -- the shape "
+             f"of the defect #497 is about. Settle the question that "
+             f"picks the repair first: did the name leave DELIBERATELY? "
+             f"`git log -S'<name>' -- tools/differential/corpus*.jsonl` "
+             f"answers it. If it did, delete the row here AND its "
+             f"partner in _CROSS_RULE_WINNERS "
+             f"(tests/v2/test_ledger_guards.py), which pins a winner "
+             f"for a contest nothing raises now. If it did not, restore "
+             f"the name to a corpus -- the corpus is what regressed. "
+             f"Both can be true of one name, which is why the question "
+             f"comes before the edit:"]
+            + [f"  {n!r}" for n in gone]))
     # an ORDER-BEARING entry must never reach a worker whose baseline
     # cannot honor it (no Policy below 2.0.0) -- skip it and say so,
     # rather than shrink the comparison silently. An order-NONE
@@ -1962,8 +2288,20 @@ def main() -> int:
 
     # The tree is checked BEFORE the worker runs. It depends on nothing
     # the worker produces, and validate_rules' own reasoning applies: a
-    # misconfiguration that aborts after a full uv-install-plus-751-name
-    # pass costs minutes to learn what costs a second here.
+    # misconfiguration that aborts after the whole install-and-compare
+    # pass is one the run reports below its own published `baseline:`
+    # line, having installed the wheel and compared the whole corpus
+    # for a report it will never make -- not "disowning a comparison it
+    # published", since nothing of the comparison prints until the
+    # `corpus: ... intentional diffs:` line further down. It
+    # is the ORDER that earns the placement, not the clock. This
+    # comment used to say that pass
+    # "costs minutes" -- a magnitude nobody had measured, and wrong:
+    # every baseline runs in well under a second. Withdrawn by #497.
+    # The figures, both recompute recipes, and the trap in timing
+    # _run_worker directly are in decisions.md, "the rule-order arc",
+    # kept in that one place because they carry a date there and a
+    # second copy is the copy that does not get updated.
     import nameparser  # the working tree -- verified, not assumed
     from nameparser import HumanName
     tree_at = _check_tree(nameparser.__file__)
@@ -2122,6 +2460,132 @@ def main() -> int:
         for issue, name, tagged in order_blind:
             print(f"  {issue!r} explained {name!r}{_order_tag(tagged)}")
         print()
+    # The measured half of the recorded-shape check (#497): the shape
+    # _CROSS_RULE_WINNERS pins against the diff this run actually made.
+    # HERE because this is the only place both exist -- validate_rules
+    # runs before any corpus is read, and the unit suite spawns no
+    # worker, deliberately, so neither can ask it. Its absent-name half
+    # needs none of that and refuses up beside `vacant`, pre-worker.
+    #
+    # PRINTS and feeds the exit code rather than raising, like
+    # over_declared_rules below -- its structural sibling, the other
+    # post-worker check on recorded data. A raise lands MID-REPORT and
+    # takes the rest of the run's output with it: measured, a
+    # `--corpus corpus.jsonl` run at 1.4.0 prints 62 EXPLAINED NOTHING
+    # lines, and 0 of them with one _RECORDED_DIFFS row corrupted,
+    # because the raise preceded dormancy, OVER-DECLARED, UNEXPLAINED
+    # and the radar block. A stale roster row must not hide an
+    # unexplained diff, which is the gate's primary output. The two
+    # pre-worker refusals raise before anything has printed, which is
+    # why they may; this one cannot.
+    #
+    # `compared` is the POST-skip name set -- main()'s `corpus` --
+    # because the question is "was this name compared?", and a shape
+    # cannot be read off a comparison that never ran. The absent-name
+    # half reads the PRE-skip list, for the opposite reason spelled out
+    # there, and `recorded` is the per-ledger row dict both halves read,
+    # bound up beside it.
+    compared = {str(n) for n in corpus}
+    # THE WINDOW BETWEEN THE TWO HALVES, and it is not empty. A name can
+    # sit in a corpus file this run READ and still be outside `compared`,
+    # because the baseline-minimum skip above drops an order-bearing
+    # entry the baseline cannot honor. Such a row falls between both
+    # checks: recorded_diff_mismatches skips a name outside `compared`,
+    # and the `gone` refusal passes it because the skip takes a name out
+    # of the RUN and out of no file. Measured 2026-09-03 by putting a
+    # deliberately wrong shape on 'de la Cruz née Vega' over the FULL
+    # corpus at 1.4.0, and BOTH sides of the note are stated because
+    # only the pair says what the note bought: before `9360919` that
+    # run exited 0 in 375 stdout lines naming the name in none of them,
+    # and it now exits 0 in 378, the three added lines being the NOT
+    # CHECKED note below naming it. Re-measure by corrupting the row in
+    # _RECORDED_DIFFS in memory around main(), which leaves the
+    # worktree alone. The window is co-located with the only populated
+    # section, since 1.4.0 is both where the roster's rows live and the
+    # only baseline where the skip fires (every order-bearing shape's
+    # min_baseline is 2.0.0).
+    #
+    # A NOTE. Not a refusal, not in the exit code, and the distinction
+    # is the whole of it: recorded_diff_mismatches' docstring argues
+    # that refusing off the POST-skip list would tell a contributor to
+    # delete a row for a name sitting in corpus_shapes.jsonl at the
+    # compat baseline, and that argument stands. It is an argument
+    # against REFUSING, not against SAYING, and only the first of those
+    # was ever made.
+    #
+    # Intersected with `corpus_names` rather than gated on
+    # `full_corpus`, which is where this parts from the two checks that
+    # do read that flag. Under `--corpus` the pre-skip list is already
+    # narrowed to what this run loaded, so the intersection names only
+    # rows this run READ and then dropped -- a fact about the run in
+    # both modes, and never the departed-name question the `gone` half
+    # owns. Nothing else stands between the two lists: `entries` is
+    # rebuilt exactly once between them, by that skip.
+    unchecked = sorted((set(recorded) & set(corpus_names)) - compared)
+    if unchecked:
+        print(f"NOT CHECKED {ledger.name}: {len(unchecked)} recorded "
+              f"diff shape(s) name an entry this baseline skipped, so "
+              f"this run measured no diff to check them against. "
+              f"Informational, outside the exit code, and NOT a stale "
+              f"row: each name is in a corpus this run read -- the "
+              f"skip takes an order-bearing entry out of the RUN and "
+              f"out of no file -- so do not delete one over this. The "
+              f"shape report below speaks for every other row and for "
+              f"none of these; re-run at a baseline that can honor "
+              f"their order to check them:")
+        for n in unchecked:
+            print(f"  {n!r}")
+        print()
+    shape_bad = recorded_diff_mismatches(recorded, diffing, compared)
+    if shape_bad:
+        # The instruction and the disclaimer are properties of the
+        # CHECK, not of a row, so they lead the block once instead of
+        # riding every line -- the shape the Role-vocabulary legend
+        # below uses for the two blocks that share it. A real parser
+        # move lands on many of these rows at once, and per-row
+        # repetition would bury the names under its own advice.
+        # (OVER-DECLARED repeats its shared text per row and is not
+        # the precedent for doing so here: measured 2026-09-03 its
+        # row-invariant text is three sentences and 47 words, against
+        # this lead's two and 39, so it is the LONGER of the two -- it
+        # gets away with the repetition because its rows come one per
+        # over-declared RULE, where these come one per name and a real
+        # parser move lands on many at once. An earlier draft of this
+        # parenthetical called that text one sentence and cited it as
+        # the model.) No cause is
+        # named for a row with no measured
+        # shape: the check cannot tell the two apart --
+        # recorded_diff_mismatches' docstring says why they are
+        # collapsed -- and naming one would send half the readers to
+        # the wrong file.
+        print(f"MOVED SHAPE {ledger.name}: {len(shape_bad)} recorded "
+              f"diff shape(s) disagree with this run. Each is a "
+              f"FINDING, not a number to update: the winner pinned "
+              f"beside the shape in _CROSS_RULE_WINNERS "
+              f"(tests/v2/test_ledger_guards.py) was recorded for the "
+              f"OLD shape, so read both before editing either."
+              # The disclaimer is one-time like the sentence above it,
+              # but conditional as well: a block whose rows all carry a
+              # measured shape would otherwise print repair advice for
+              # a case that did not occur, which is what
+              # OVER-DECLARED's `--corpus` NOTE is conditional to
+              # avoid.
+              + ("\n  A row reading 'measured no default-order diff' "
+                 "names no cause because TWO reach it and this check "
+                 "cannot separate them: the parser may have stopped "
+                 "moving the name, or the name may be compared under a "
+                 "declared order alone, leaving no default-order "
+                 "comparison to have a shape. Read the corpus entry "
+                 "before you read the parser."
+                 if any(m.measured is None for m in shape_bad) else ""))
+    for m in shape_bad:
+        measured = (f"measured {list(m.measured)}"
+                    if m.measured is not None
+                    else "measured no default-order diff of it")
+        print(f"  {m.name!r}\n    _RECORDED_DIFFS records "
+              f"{list(m.recorded)}; this run {measured}")
+    if shape_bad:
+        print()
     dormancy = dormant_rules(rules, set(by_issue), diffing, exclusions)
     for dormant in dormancy.undeclared:
         print(f"EXPLAINED NOTHING {dormant.issue!r}\n    "
@@ -2180,14 +2644,18 @@ def main() -> int:
         _print_field_diffs(old_facade, new, old_v2, new_v2, order,
                            initials_only=initials_only)
     # A rule explaining nothing is as much a broken contract as an
-    # unexplained diff: both mean the ledger no longer describes what the
-    # code does. A rule explaining LESS than it declares is the third
-    # way that happens -- it still matches, so nothing here looks
-    # broken, but the `fields` it names are no longer what the code
-    # moves. Same exit code for all three, so none of them is the one
-    # nobody noticed.
+    # unexplained diff: both mean the ledger no longer describes what
+    # the code does. A rule that has STOPPED explaining nothing is the
+    # same statement inverted -- its `dormant` reason is now false. A
+    # rule explaining LESS than it declares is a fourth way, and the
+    # quietest: it still matches, so nothing looks broken, but the
+    # `fields` it names are no longer what the code moves. A recorded
+    # shape the run contradicts is the fifth, and it reaches furthest:
+    # _CROSS_RULE_WINNERS feeds that shape to classify() as an input, so
+    # a wrong one takes the roster's verdict with it. One exit code for
+    # all five terms below, so none of them is the one nobody noticed.
     return 1 if unexplained or dormancy.undeclared or dormancy.awake \
-        or overwide else 0
+        or overwide or shape_bad else 0
 
 
 if __name__ == "__main__":
