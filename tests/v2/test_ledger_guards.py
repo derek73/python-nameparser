@@ -1277,6 +1277,55 @@ def test_differential_honorific_rules_match_their_vocabulary() -> None:
         f"pin.")
 
 
+@pytest.mark.parametrize(("ledger_name", "issue"), [
+    ("expected_since_1.4.0.toml",
+     "fix(cjk-glued-honorific-peel) glued honorific peels into suffix"),
+    ("expected_since_2.0.0.toml",
+     "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name "
+     "into suffix"),
+])
+@pytest.mark.parametrize(("name", "glued"), [
+    ("김민준씨", True),
+    ("김민준 박사님", False),
+    ("선생님", False),
+])
+def test_the_glued_peel_rules_decline_an_interior_honorific(
+        ledger_name: str, issue: str, name: str, glued: bool) -> None:
+    """The 2026-09-05 narrowing, stated as the property rather than as
+    a regex both ledgers happen to spell the same way.
+
+    A rule titled "glued honorific peeled off the name" may claim a
+    name whose honorific is GLUED and no other. 박사님, 선생님 and 교수님
+    are the only listed entries containing another listed one, so a
+    match on the interior 님 was the one way a spaced form could reach
+    these rules -- and it reached two corpus names, '김민준 박사님' where
+    the honorific stands as its own whole word (rules.md#W2's second
+    sentence, witnessed there by suffix="박사님") and '선생님' where no
+    `suffix` moves at all. The three negative lookbehinds refuse the
+    interior position; '김민준씨' is the glued form they must leave
+    alone, and is here so a narrowing that went too far fails rather
+    than passing as a tightening.
+
+    Hermetic on purpose: the shipped ledgers are read off disk and
+    _entry_matches is asked directly, so this holds at pytest speed
+    with no baseline wheel. _CORPUS_CLAIMS records the reach the same
+    narrowing produced (37 -> 35 in both), and the gate is what checks
+    where the name that changed hands landed.
+    """
+    compare = load_tool("compare")
+    ledger = next(led for led in _LEDGERS if led.name == ledger_name)
+    rule = next(r for r in _rules(ledger) if r["issue"] == issue)
+    # the roles the rule declares, so `fields` cannot be what decides
+    # the answer: the question here is the name_regex alone
+    shape = set(rule["fields"])
+    assert compare._entry_matches(rule, name, shape, None) is glued, (
+        f"{ledger_name}: {issue!r} "
+        f"{'no longer claims' if glued else 'claims'} {name!r}. The "
+        f"rule's title says a GLUED honorific was peeled off the name; "
+        f"a spaced one reaching it is a false label, and a glued one "
+        f"escaping it is a narrowing that overshot")
+
+
 class _LatinCopy(NamedTuple):
     """A ledger alternation that hand-copies a Latin-script vocabulary.
 
@@ -1989,8 +2038,17 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(23, ('given', 'suffix'), "344de804e2c6", None),
         "fix(cjk-comma-compound) comma routing compounds with the CJK order flip":
             _Claim(23, ('family', 'given', 'suffix', 'title'), "344de804e2c6", None),
+        # 37 -> 35 with the 2026-09-05 narrowing, which is a rule
+        # NARROWING and not corpus movement: the three negative
+        # lookbehinds stop the regex matching a listed honorific
+        # interior to a longer one, so '김민준 박사님' and '선생님' left
+        # the reach and nothing else did. The 2.0 twin below carries
+        # the identical regex and moves by the same two names, to the
+        # same digest. Only '김민준 박사님' changed hands -- it goes to
+        # fix(cjk-honorific-suffix) here -- '선생님' having been the
+        # order rule's all along.
         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix":
-            _Claim(37, ('family', 'given', 'suffix'), "719c31233502", None),
+            _Claim(35, ('family', 'given', 'suffix'), "9a1b4c202a65", None),
         "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip":
             _Claim(19, ('family', 'given', 'middle', 'suffix'), "aa475ddd4745", None),
         "feat(#269) non-Latin titles/conjunctions recognized":
@@ -2117,8 +2175,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(13, ('_ambiguities', 'family', 'middle'), "973617235cda", None),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
             _Claim(108, ('_ambiguities', 'family', 'given', 'middle'), "9a814f70c2dc", None),
+        # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
+        # whose entry carries the reason. Here the one name that
+        # changed hands, '김민준 박사님', goes to the spaced rule
+        # fix(#307/#308/#320) -- the label its title states.
         "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into suffix":
-            _Claim(37, ('family', 'given', 'suffix'), "719c31233502", None),
+            _Claim(35, ('family', 'given', 'suffix'), "9a1b4c202a65", None),
         "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix":
             _Claim(16, ('family', 'given', 'middle', 'suffix'), "6d390e518bd2", None),
         "fix(#309) 旧姓 maiden marker consumed, compounding with the CJK order flip":
@@ -2459,9 +2521,11 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
 #: same tier -- 301 in the 1.4 tier as of the rules-doc corpus (#414),
 #: up from 42, which is why the count is described rather than pinned:
 #: it moves with every corpus addition and pinning it would only ever
-#: be re-recorded. The rows below are the ones whose boundaries this
-#: file argues about, and pinning the argument is cheaper than
-#: re-deriving it. Note
+#: be re-recorded. The rows below are the ones whose boundaries
+#: somebody has ARGUED -- in the comment beside the row, or in a
+#: ledger's own comment on the rule, which #501 established counts the
+#: same and why (the 2.x sections' comment) -- and pinning the argument
+#: is cheaper than re-deriving it. Note
 #: 'Andrews, M.D.' diffs on the SAME {given, suffix} shape as the seven
 #: peels -- only the CJK lookahead separates them, so it is the row
 #: that fails if that lookahead is ever dropped.
@@ -2636,39 +2700,67 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
     },
     # The two 2.x ledgers had NO section here until #452, and the
     # coverage assertion below was `<=`, so their absence read as "no
-    # contest to pin" rather than "nobody looked". They are back to
-    # empty, and it is now the other thing: a stated position, which is
-    # what the equality assertion below makes sayable. Do not restore a
-    # row to fill them.
-    #
-    # #452 gave each two rows -- 'Nguyen, Van' and 'Jane née and Jones
-    # Smith', the handovers its narrowings caused -- and #497 deleted
-    # all four rather than correct them. Each recorded a diff shape a
-    # run contradicts (compare._RECORDED_DIFFS' provenance note has the
+    # contest to pin" rather than "nobody looked". #452 gave each two
+    # rows -- 'Nguyen, Van' and 'Jane née and Jones Smith', the
+    # handovers its narrowings caused -- and #497 deleted all four
+    # rather than correct them. Each recorded a diff shape a run
+    # contradicts (compare._RECORDED_DIFFS' provenance note has the
     # measurements and the recompute, in one copy, including why the one
     # correctable shape was not corrected), and at the shape each name
     # really produces, exactly one rule admits it. That is the defect
     # under the wrong shapes rather than beside them: a row pinning a
     # race with one runner is never exercised as a contest, so its shape
-    # only ever had to agree with itself.
+    # only ever had to agree with itself. Those four are not coming
+    # back, and the six rows below are not them: every one is a shape a
+    # run measured, carried in from compare._WATCHED_DIFFS where a run
+    # had been re-measuring it since 2026-09-03.
     #
-    # EMPTY IS NOT "these ledgers hold no contested name". Measured
-    # 2026-09-03 over the diffs each baseline's own run produces, 5 of
-    # the 247 at 2.0.0 and 1 of the 155 at 2.1.0 move a shape two or
-    # more rules admit, file order picking the winner ('MD, PHD' is the
-    # one both have). Recompute: drive compare.main() at the baseline,
-    # capture its `diffing` by wrapping dormant_rules, and count the
-    # names for which more than one rule satisfies
-    # compare._entry_matches at the measured shape. None of those
-    # boundaries is argued about in this file, and this roster pins the
-    # arguments this file makes -- so a row is owed when someone argues
-    # one, not before. Whether that position should change now that the
-    # six are measured rather than merely unexamined is #501; the answer
-    # there decides whether these two sections stay empty, and nothing
-    # in this file presumes it.
+    # WHAT #501 DECIDED, 2026-09-05. The sections stood empty on a
+    # position, not an omission: 5 of the 247 diffs at 2.0.0 and 1 of
+    # the 155 at 2.1.0 were measured to move a shape two or more rules
+    # admit, file order picking the winner ('MD, PHD' is the one both
+    # baselines have), and the position was that a row is owed when
+    # somebody ARGUES a boundary, not when one is merely measured.
+    # That 5 is the PRE-NARROWING figure (measured 2026-09-03,
+    # re-measured 2026-09-05 before the narrowing landed). The same
+    # recipe over THIS tree gives 3 at 2.0.0 and the same 1 at 2.1.0
+    # (measured 2026-09-05). 2.1.0 does not move because the narrowing
+    # reaches no name it counts; 2.0.0 falls by two because the
+    # narrowing DISSOLVED two of the six contests -- '김민준 박사님' and
+    # '선생님' have one admitter each now, which the paragraph below
+    # says as well. Both figures are the same recipe on different
+    # trees, not two recipes. RECOMPUTE (either one): drive
+    # compare.main() at the baseline, capture its `diffing` by
+    # wrapping dormant_rules, and count the names for which more than
+    # one rule satisfies compare._entry_matches at the measured shape.
+    #
+    # What the position got wrong was WHERE an argument counts. Three
+    # of the six boundaries were already argued -- in the 2.0.0
+    # ledger's own comment on fix(#308/#312/#319/#320), which named
+    # '田中さん 様.', '田中さん, 様.' and '김민준 박사님' one by one and
+    # said for each why the glued rule should win it. "Argued in THIS
+    # file" is the wrong criterion, and the reason is not tidiness: a
+    # ledger comment's claim about which rule wins a name is checked by
+    # nothing at all, and this roster is the only thing in the tree
+    # that CAN check it. The proof is the third of those three. Its
+    # argument was FALSE -- '김민준 박사님' has no glued honorific,
+    # matching that rule on the 님 interior to a spaced 박사님 -- and it
+    # sat in the ledger for a month with every guard green, because no
+    # row here made classify() answer for it. The narrowing that closed
+    # it is the 2026-09-05 narrowing of the glued-peel `name_regex`
+    # (both ledgers); the winner pinned for that name below is the
+    # SPACED rule, which only wins after it.
+    #
+    # So the criterion is ARGUED SOMEWHERE. A boundary argued in a
+    # ledger comment earns a row here exactly as one argued in this
+    # file does, and the row is what turns the argument into something
+    # a run can contradict.
     #
     # Nor is "only one rule admits it" grounds on its own to delete a
-    # row: 13 of the 31 above are in that position too. SIX of the 13
+    # row: 13 of the 31 at 1.4.0 are in that position too, and two of
+    # the six below joined them with the narrowing -- '김민준 박사님'
+    # and '선생님' have one admitter each now, the glued rule's regex
+    # having stopped reaching them. SIX of the 13
     # say so where they sit -- the jr rule's surplus and the
     # bound-given trio, three rows each -- and the other seven do not,
     # so take the count from the recompute rather than from the
@@ -2684,8 +2776,131 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
     # reason counting admitters is the wrong instrument for the
     # question. The four deleted rows could not do that work at any
     # edit.
-    "expected_since_2.0.0.toml": {},
-    "expected_since_2.1.0.toml": {},
+    "expected_since_2.0.0.toml": {
+        # The '様.' pair, and the one boundary of the six that is a
+        # live two-runner contest decided by nothing but file order.
+        # Both names move {family, given, suffix} through TWO
+        # mechanisms at once: the glued さん peels off 田中さん (#308,
+        # and #320 is what stops the trailing ASCII period vetoing it)
+        # while the spaced 様 routes to `suffix`. One rule per half,
+        # and the two sit in the same name_regex tier with fields that
+        # DO nest: the glued rule's {given, family, suffix} is a
+        # STRICT SUBSET of the spaced rule's {given, middle, family,
+        # suffix}, so the glued rule is the narrower of the two -- and
+        # it is the one written first. The pair is therefore nested
+        # NARROW-FIRST, #382's declaration-free default, and no
+        # `precedes_narrower` block is owed for the plain reason that
+        # the narrower rule already wins: that block sits on the
+        # earlier rule only where the earlier rule is the wider one.
+        # Measured 2026-09-05 over the corpus*.jsonl union,
+        # order_contests reports nothing for this ledger as it stands
+        # and reports this pair -- both names -- only with the two
+        # rules swapped, where undeclared_contests refuses the ledger
+        # too. The check can see the arrangement that would be wrong
+        # and not the one shipped.
+        #
+        # The prose test lands on the glued rule and the file order
+        # already does: #312/#319/#320 are the glued rule's clauses,
+        # they name both strings outright, and no clause of the spaced
+        # rule mentions either. It is a PARTIAL label in #382's
+        # accepted sense -- the glued rule describes the peel and not
+        # the routing -- and what makes the pair unusual is that
+        # narrow-first's JUSTIFICATION does not apply to it. That
+        # justification is that the narrower rule describes the name
+        # more precisely; here both mechanisms fire at once and each
+        # rule describes one half, so neither describes the whole and
+        # the label is partial whichever rule wins. The default picks
+        # the right rule for a reason that is not available, and this
+        # row is where an unjustified-but-correct default is pinned.
+        #
+        # What the pin buys, measured 2026-09-05: swapping the two
+        # rules in memory hands BOTH names to the spaced rule and
+        # touches nothing else -- 2 of the 247 classifications move,
+        # `unexplained` stays 0, so the gate's summary line does not
+        # move, and neither rule's _CORPUS_CLAIMS reach can see a
+        # reorder at all.
+        "田中さん 様.":
+            "fix(#308/#312/#319/#320) glued CJK honorific peeled off "
+            "the name into suffix",
+        "田中さん, 様.":
+            "fix(#308/#312/#319/#320) glued CJK honorific peeled off "
+            "the name into suffix",
+        # The name the glued rule should never have had. '김민준 박사님'
+        # is SPACED: 박사님 stands as its own word and nothing is peeled
+        # off the name at all, which rules.md#W2's second sentence
+        # states and its witness line for this very string shows
+        # (suffix="박사님", the honorific whole). The glued rule reached
+        # it on the 님 interior to 박사님 and, sitting first, took it --
+        # a false label on a contract-tier name, green everywhere. The
+        # 2026-09-05 narrowing (`(?<!박사)(?<!선생)(?<!교수)`, in both
+        # ledgers that ship that regex) is what makes the spaced rule
+        # the winner here, so this row does not hold WITHOUT that
+        # commit; it is not a reordering.
+        #
+        # One admitter today, which is the 13-of-31 position above and
+        # not a reason to drop the row. Measured 2026-09-05: restoring
+        # the pre-narrowing regex alone -- one edit, no reorder, since
+        # the glued rule still sits ahead of the spaced one -- hands
+        # the name straight back, and this row is what says so.
+        # _CORPUS_CLAIMS would report the widened reach and not the
+        # handover; the gate's totals would report neither, the name
+        # being explained by whichever rule takes it.
+        "김민준 박사님":
+            "fix(#307/#308/#320) spaced CJK postnominal honorific "
+            "routed to suffix",
+        # '선생님' alone: the whole diff is {given, family}, the 2.1
+        # family-first order flip on a hangul string, and the CJK order
+        # rule describes exactly that. The glued rule's claim on it was
+        # the same regex accident -- the interior 님 -- and worse than
+        # a partial label, since it declares `suffix` and no `suffix`
+        # moves here at all. It never won, the order rule being written
+        # first, and the narrowing has since taken its admission away.
+        #
+        # Recorded because this pair is the #498 class and nothing else
+        # can see it: the two rules' `fields` INTERSECT on
+        # {given, family} and neither nests inside the other, so
+        # undeclared_contests looks past them and no
+        # `precedes_narrower` block is available to declare them.
+        # Measured 2026-09-05, it takes TWO edits to move this name --
+        # restore the wide regex AND put the glued rule ahead of the
+        # order rule -- where '김민준 박사님' above needs only the
+        # first. A reorder alone moves nothing here now (0 of the 247
+        # classifications), so this row's whole work is against a
+        # re-widening; with both edits applied 2 classifications move,
+        # `unexplained` stays 0, and this test is what names them.
+        "선생님":
+            "fix(#271/#272/#298) native-script CJK: family-first "
+            "order, hangul segmentation, the kana license and the dots",
+        # 'MD, PHD', the same pair and the same winner as the 1.4.0 row
+        # above, re-argued at this baseline rather than carried over --
+        # the shapes differ ({suffix, title} here against
+        # {family, given, suffix, title} at 1.4.0, the comma-family
+        # move having already landed by 2.0.0), so the 1.4.0 row's
+        # argument is about a different measurement.
+        #
+        # Both #296 rules reach the string and declare EQUAL `fields`,
+        # ["title", "suffix"], so `fields` cannot separate them at all
+        # and file order is the whole decision. The distinguishing
+        # clause is a property of the STRING: the credential-only rule
+        # is written for a string that is nothing but credentials, and
+        # the lone-post-comma rule for a one-word NAME, a comma and a
+        # credential run. 'MD, PHD' holds no name, so the first rule's
+        # prose is true of it and the second's is not.
+        "MD, PHD":
+            "fix(#296) a credential-only comma string reads a name and "
+            "its postnominal",
+    },
+    "expected_since_2.1.0.toml": {
+        # The same contest, the same equal-`fields` pair and the same
+        # winner as the 2.0.0 row, on the same {suffix, title} shape.
+        # A second row rather than a shared one because the roster is
+        # keyed per ledger and a shape is baseline-relative: the two
+        # 2.x measurements agree, which is a fact a run re-checks, not
+        # one to collapse into a single row.
+        "MD, PHD":
+            "fix(#296) a credential-only comma string reads a name and "
+            "its postnominal",
+    },
 }
 
 
@@ -2898,8 +3113,10 @@ def test_every_pinned_winner_has_a_recorded_shape() -> None:
 
 def test_the_watched_roster_is_disjoint_and_names_every_ledger() -> None:
     """compare._WATCHED_DIFFS holds the shape of a name no winner is
-    pinned for -- most of them sole-watched, four of them #501's
-    contests. Three things are checked here, at pytest speed, because
+    pinned for -- every row sole-watched again since #501 took the
+    five contested ones to _RECORDED_DIFFS, which is a fact about
+    today's rows and not a second contract the checks below enforce.
+    Three things are checked here, at pytest speed, because
     the gate checks them only for the one ledger a run was pointed
     at: the first is the sibling rosters' key convention, applied to
     this dict; the second and third are what the dict's header

@@ -2180,10 +2180,11 @@ def test_the_shape_check_reads_the_section_for_the_LEDGER_it_ran(
     `_RECORDED_DIFFS['expected_since_1.4.0.toml']` survived the whole
     suite: every other main() test here runs at the default 1.4.0
     baseline, so the right answer and the hardcoded one are the same
-    dict. Harmless only while the 2.x sections stay empty, which is
-    open (#501) -- and the shapes are baseline-relative by
-    construction, so reading the wrong section is reading measurements
-    of a different comparison.
+    dict. That was harmless only while the 2.x sections stayed empty,
+    and since #501 filled them it is not: 'MD, PHD' is keyed in three
+    sections at two different shapes, so the hardcoded lookup would now
+    read measurements of a different comparison and say the parser
+    moved.
 
     A correct row in the 2.0.0 section and a DECOY in the 1.4.0 one:
     dispatched right, the run is quiet; dispatched to 1.4.0, it reports
