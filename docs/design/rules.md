@@ -1063,9 +1063,7 @@ W2. Rationale: some East Asian honorifics glue directly onto the end
     never itself end a name, so the listed vocabulary carries its
     own license and needs no other gate.
     A listed honorific glued to the end of the name's last name
-    word splits off once and reads as a suffix. The split-off
-    ignores surrounding punctuation, but never treats a part that is
-    not name text as the name's end.
+    word splits off once and reads as a suffix.
       "田中さん"                  →  suffix="さん"
       "김민준씨"                  →  suffix="씨"
       "马丁·路德·金씨"            →  suffix="씨"
@@ -1078,8 +1076,10 @@ W3. Rationale: a family name declared by a comma is the writer's
     drew — but none of the East Asian writing systems declares a
     family name that way (the Background above), so every input this
     rule reads is a listing convention wrapped around a name whose
-    own script has already arranged it. What follows describes what
-    the parser does with such input; it does not promise it.
+    own script has already arranged it — the comma that declares the
+    family name, and the punctuation such a listing carries in with
+    it. What follows describes what the parser does with such input;
+    it does not promise it.
     Under a family comma the pre-comma text is the family by
     declaration and never divides, and the post-comma side is given
     text with no family to find; only the honorific split-off (W2)
@@ -1097,13 +1097,17 @@ W3. Rationale: a family name declared by a comma is the writer's
     name's end, and a glued honorific before the comma stays glued.
     The vocabulary question is C1's own, asked without C1's
     word-count condition: the two differ in what else they require,
-    not in what they ask of the words.
+    not in what they ask of the words. The split-off ignores the
+    punctuation a listing leaves around the name — a period trailing
+    an honorific is the same artifact as the comma, no writing system
+    putting one there — and reads across it to the word behind.
       "남궁민수"                  →  family="남궁"
       "지훈, 남궁민수"            →  given="남궁민수"
       "남궁민수, 지훈"            →  family="남궁민수"  · boundary
       "田中さん, Dr."             →  family="田中さん"
       "田中さん, PhD"             →  suffix="さん, PhD"
-    tolerated: native CJK writing has no family-comma convention, so the four comma lines above illustrate current behavior — changeable without notice — rather than promise it; the comma-free line beside them is W1's claim, which is normative. All four comma names stay watched at every released baseline on the differential's radar tier (tools/differential/corpus_cjk_tolerated.jsonl, projected from the `tolerated` rows of tests/v2/cases.py) instead of its contract tier, and those rows pin them at HEAD.
+      "田中さん 様."              →  suffix="さん, 様."
+    tolerated: native CJK writing has neither a family-comma convention nor a period standing after an honorific, so the four comma lines above and the period line under them illustrate current behavior — changeable without notice — rather than promise it; the line carrying neither, beside them, is W1's claim, which is normative. All five stay watched at every released baseline on the differential's radar tier (tools/differential/corpus_cjk_tolerated.jsonl, projected from the `tolerated` rows of tests/v2/cases.py) instead of its contract tier, and those rows pin them at HEAD.
     history: decisions.md#W3 · interacts: W1, W2, C1 · implemented: nameparser/_pipeline/_script_segment.py
 
 W4. Rationale: Chinese, Japanese and Korean all write the family

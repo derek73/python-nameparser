@@ -1043,8 +1043,10 @@ def test_a_tolerated_rules_examples_are_still_watched_somewhere() -> None:
     comparison, and which file carries it is the projection's business
     (a future tolerated rule outside the CJK sections would have no
     business in a CJK file at all). Today every one of them arrives
-    through corpus_cjk_tolerated.jsonl -- W3's four comma texts, its
-    fifth example being W1's normative one and subtracted here -- and
+    through corpus_cjk_tolerated.jsonl -- W3's four comma texts and,
+    since 2026-09-05, the trailing-period one W2 handed over, its
+    remaining example being W1's normative one and subtracted here --
+    and
     that file's equality with the case table is pinned separately by
     test_tolerated_cjk_corpus_matches_the_case_table.
     """
@@ -1058,7 +1060,7 @@ def test_a_tolerated_rules_examples_are_still_watched_somewhere() -> None:
     # assertion below is a truth about the empty set.
     assert demoted, (
         "no rule in rules.md carries a `tolerated:` marker with an "
-        "example text of its own; W3 has carried four since "
+        "example text of its own; W3 has carried at least four since "
         "2026-09-01. If a demotion was reversed, delete this guard in "
         "that commit rather than leaving it asserting nothing")
     unwatched = sorted(demoted - set(_CORPUS_NAMES))
