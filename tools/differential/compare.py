@@ -569,18 +569,25 @@ _SENTINELS = ("John Smith", "田中さん", "Хосе Сантос", "x")
 #: decision when a corpus is added, the way the Script tables do.
 _CORPUS_FLOORS = {
     "corpus.jsonl": 480,        # 486 today, from v1's banks at a pinned ref
-    "corpus_cjk.jsonl": 70,     # 73 today, generated from the case table.
+    "corpus_cjk.jsonl": 67,     # 70 today, generated from the case table.
                                 # LOWERED 95 -> 70 on 2026-09-01,
                                 # deliberately: the CJK comma demotion
                                 # moved 25 tolerated texts out of this
                                 # file into corpus_cjk_tolerated.jsonl
                                 # below. Nothing left the harness --
                                 # the names are compared and classified
-                                # exactly as before, on the radar tier
-    "corpus_cjk_tolerated.jsonl": 22,  # 26 today, the tolerated half of
+                                # exactly as before, on the radar tier.
+                                # LOWERED again 70 -> 67 on 2026-09-05,
+                                # the same way and for the same class:
+                                # the trailing-period honorifics
+                                # ('田中さん 様.' and its two twins) are
+                                # the listing artifact the first
+                                # sweep's criterion could not see
+    "corpus_cjk_tolerated.jsonl": 22,  # 29 today, the tolerated half of
                                 # the same generator: composed and
                                 # wrapped CJK forms (comma listings,
-                                # Latin titles and credentials) whose
+                                # Latin titles and credentials,
+                                # trailing ASCII periods) whose
                                 # handling the contract stopped
                                 # promising on 2026-09-01. 25 on the
                                 # day it was created; the 26th is
@@ -589,9 +596,22 @@ _CORPUS_FLOORS = {
                                 # and the rules corpus stopped
                                 # carrying it -- the row was written
                                 # so the text moved tiers instead of
-                                # leaving the harness
+                                # leaving the harness. 29 since
+                                # 2026-09-05, the three period rows.
+                                # Floor left at 22: it guards against
+                                # the file emptying, and this half only
+                                # grows as the contract narrows
     "corpus_issues.jsonl": 370,  # 381 today, harvested and append-only
-    "corpus_rules.jsonl": 150,  # 248 today, generated from rules.md.
+    "corpus_rules.jsonl": 150,  # 247 today, generated from rules.md.
+                                # 248 until 2026-09-05, when W2's
+                                # trailing-period example moved into
+                                # the tolerated W3 and the builder
+                                # stopped harvesting it -- the seventh
+                                # text a CJK demotion has taken out of
+                                # this file, and (measured 2026-09-05)
+                                # the last CJK example anywhere outside
+                                # W3 that carried a non-space ASCII
+                                # character.
                                 # 252 until 2026-09-01, when W3 took
                                 # rules.md's `tolerated:` marker and
                                 # build_rules_corpus.py stopped

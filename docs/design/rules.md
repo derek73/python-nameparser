@@ -1068,7 +1068,6 @@ W2. Rationale: some East Asian honorifics glue directly onto the end
     not name text as the name's end.
       "田中さん"                  →  suffix="さん"
       "김민준씨"                  →  suffix="씨"
-      "田中さん 様."              →  suffix="さん, 様."
       "马丁·路德·金씨"            →  suffix="씨"
       "김지양"                    →  suffix=""  · boundary
       "王君"                      →  family="王君"  · boundary
