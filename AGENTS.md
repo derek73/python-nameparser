@@ -113,18 +113,22 @@ uv run sphinx-build -b html docs dist/docs
 #      b=${f##*expected_since_}; b=${b%.toml}
 #      uv run python tools/differential/compare.py --baseline "$b" > "/tmp/gate-$b.txt"; echo "$b exit $?"
 #    done
-#    #503 (filed 2026-09-03, closed 2026-09-05): this step enumerated three
+#    #503 (filed 2026-09-03, fixed on the branch 2026-09-05, closed by its
+#    merge): this step enumerated three
 #    commands against four ledgers, so `--baseline 2.1.0` got no dormancy,
 #    over-declaration or recorded-shape check from any releaser, the shape
 #    gap "latent" only while that ledger's roster sections were empty; the
-#    bundle that closed it ARMED it first -- 31 watched rows now sit in
-#    expected_since_2.1.0.toml's _WATCHED_DIFFS section -- and the loop
-#    above is the fix it chose.
+#    bundle that closed it ARMED it first -- rows now sit in
+#    expected_since_2.1.0.toml's _WATCHED_DIFFS section (31 on the day;
+#    `len(compare._WATCHED_DIFFS['expected_since_2.1.0.toml'])` is the
+#    live figure) -- and the loop above is the fix it chose.
 #    Cost is not the obstacle and no fix may be argued from it: measured
 #    2026-09-03, a whole run is under a second at every baseline and all
 #    four back to back are about two seconds (0.43s at 1.4.0, 0.56s at
-#    2.2.0, 1.97s for the four; decisions.md's 2026-09-03 #497 timing
-#    finding carries the recompute and retires every cost argument in
+#    2.2.0, 1.97s for the four; the recompute lives ONCE, in decisions.md's
+#    rule-order arc under the Declined bullet on precise per-name contest
+#    detection, and the 2026-09-03 #497 timing finding points there and
+#    retires every cost argument in
 #    this repo's differential prose).
 #    The classified summary each run prints is the source for the release
 #    notes' behavior claims, including the count of changed names that are
