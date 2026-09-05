@@ -90,9 +90,18 @@ issue = "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into s
 # claim a suffix regression on '김지양' or '鵜殿' -- names that are in
 # this run for the order flip alone and must stay in the rule above.
 #
-# The lookbehind is the glued half: the honorific must sit against a
-# preceding non-space, non-comma character, so a SPACED honorific never
-# matches here and falls through to the rule below. The trailing
+# The positive lookbehind is the glued half: the honorific must sit
+# against a preceding non-space, non-comma character, so a SPACED
+# honorific never matches here and falls through to the rule below.
+# The three NEGATIVE lookbehinds beside it are the other half of that
+# same test. 박사님, 선생님 and 교수님 are the only entries of this
+# alternation containing another entry of it -- read the members: every
+# other one is a whole word no listed word sits inside -- so a match on
+# the interior 님 is the one way a spaced honorific could reach this
+# rule, and refusing that position is what shuts it. They refuse the
+# INTERIOR position only: a glued '김민준박사님' still matches on 박사님
+# itself, whose own lookbehind reads the name text in front of it.
+# The trailing
 # `\.?(?=$|[ ,])` is the whole-token half, judged on the name STRING:
 # without it any name merely CONTAINING one of these strings would
 # match, and the optional period is #320's shape. `middle` is
@@ -100,24 +109,40 @@ issue = "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into s
 # one, and admitting it would pre-excuse a middle regression that the
 # spaced rule below legitimately has.
 #
-# Sits AHEAD of the spaced rule on purpose. Three names match BOTH
-# rules -- '田中さん 様.', '田中さん, 様.' and '김민준 박사님' -- and
+# Sits AHEAD of the spaced rule on purpose. Two names match BOTH
+# rules -- '田中さん 様.' and '田中さん, 様.' -- and
 # both rules are in the name_regex tier, so file order is the only
-# thing deciding which label they report under (measured 2026-08-05).
-# The glued さん is the piece #308 moves, so this label is the true one.
+# thing deciding which label they report under (measured 2026-08-05,
+# re-measured 2026-09-05 after the narrowing below took the third).
+# The glued さん is the piece #308 moves, so this label is the true one,
+# and _CROSS_RULE_WINNERS pins both names here.
 # ('선생님, J.씨' is NOT one of them: it opens with a spaced honorific
 # at index 0, which this file's spaced rule deliberately no longer
-# matches, so only this rule claims it and no ordering is involved.)
+# matches, so only this rule claims it and no ordering is involved --
+# it reaches this rule on its trailing 씨, which the lookbehinds leave
+# alone.)
 #
-# One name lands here that is spaced, and it is left that way: the
-# SPACED '김민준 박사님' matches on its 님, which sits glued to 사
-# inside 박사님 and ends the string. The label is still true of it --
-# #308 is the change that added 박사님 to the vocabulary at all, so its
-# spaced form routes to `suffix` because of #308 -- and closing the
-# overlap would take a lookbehind asserting the match is not interior
-# to a longer listed honorific, which is more machinery than a correct
-# label is worth here.
-name_regex = "(?<=[^\\s,])(?:박사님|선생님|교수님|박사|씨|님|先生|女士|小姐|教授|様|さん|さま|くん|ちゃん)\\.?(?=$|[ ,])"
+# One spaced name used to land here, and the negative lookbehinds were
+# added 2026-09-05 to stop it: the SPACED '김민준 박사님' matched on its
+# 님, which sits glued to 사 inside 박사님 and ends the string. Nothing
+# is peeled off the NAME there -- rules.md#W2's second sentence says a
+# part that is not name text is never the name's end, and its witness
+# line for this very string is suffix="박사님", the honorific whole and
+# standing as its own word -- so this rule's title was false of a
+# contract-tier name while every guard stayed green. What happens to it
+# is the spaced rule's title, and that rule takes it now. '선생님' was
+# reached the same way, on the 님 inside it, and there `suffix` moves
+# nowhere at all: its diff is the order flip's {given, family}, which
+# the rule above claims either way.
+#
+# Measured consequence, 2026-09-05: exactly one name changes hands in
+# this ledger and it is '김민준 박사님'. The 1.4 ledger carries this
+# regex verbatim and was narrowed with it, where the same one name
+# moves to fix(cjk-honorific-suffix). Summary lines are byte-identical
+# at all four baselines, no 1.4 pin moves, order_contests is unchanged,
+# and this rule's recorded reach falls 37 -> 35, for the two names
+# above and nothing else.
+name_regex = "(?<=[^\\s,])(?<!박사)(?<!선생)(?<!교수)(?:박사님|선생님|교수님|박사|씨|님|先生|女士|小姐|教授|様|さん|さま|くん|ちゃん)\\.?(?=$|[ ,])"
 fields = ["given", "family", "suffix"]
 
 [[change]]
@@ -127,8 +152,10 @@ issue = "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix"
 # moves to `suffix` where the family-first default of 2.1 would
 # otherwise have made it the given name. #308 added さん, さま, くん,
 # ちゃん, 殿, 님 and 박사님 to that vocabulary, so their spaced forms
-# ('田中 さん') move here too -- though not '김민준 박사님', which the
-# glued rule above claims first on its 님; see the note there. #320
+# ('田中 さん') move here too -- '김민준 박사님' among them since
+# 2026-09-05, the glued rule above having claimed it on its interior 님
+# until the negative lookbehinds there refused that position; see the
+# note on them. #320
 # lets a trailing
 # ASCII period through ('김민준 씨.', '김민준 양.').
 #

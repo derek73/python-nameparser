@@ -1277,6 +1277,55 @@ def test_differential_honorific_rules_match_their_vocabulary() -> None:
         f"pin.")
 
 
+@pytest.mark.parametrize(("ledger_name", "issue"), [
+    ("expected_since_1.4.0.toml",
+     "fix(cjk-glued-honorific-peel) glued honorific peels into suffix"),
+    ("expected_since_2.0.0.toml",
+     "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name "
+     "into suffix"),
+])
+@pytest.mark.parametrize(("name", "glued"), [
+    ("김민준씨", True),
+    ("김민준 박사님", False),
+    ("선생님", False),
+])
+def test_the_glued_peel_rules_decline_an_interior_honorific(
+        ledger_name: str, issue: str, name: str, glued: bool) -> None:
+    """The 2026-09-05 narrowing, stated as the property rather than as
+    a regex both ledgers happen to spell the same way.
+
+    A rule titled "glued honorific peeled off the name" may claim a
+    name whose honorific is GLUED and no other. 박사님, 선생님 and 교수님
+    are the only listed entries containing another listed one, so a
+    match on the interior 님 was the one way a spaced form could reach
+    these rules -- and it reached two corpus names, '김민준 박사님' where
+    the honorific stands as its own whole word (rules.md#W2's second
+    sentence, witnessed there by suffix="박사님") and '선생님' where no
+    `suffix` moves at all. The three negative lookbehinds refuse the
+    interior position; '김민준씨' is the glued form they must leave
+    alone, and is here so a narrowing that went too far fails rather
+    than passing as a tightening.
+
+    Hermetic on purpose: the shipped ledgers are read off disk and
+    _entry_matches is asked directly, so this holds at pytest speed
+    with no baseline wheel. _CORPUS_CLAIMS records the reach the same
+    narrowing produced (37 -> 35 in both), and the gate is what checks
+    where the name that changed hands landed.
+    """
+    compare = load_tool("compare")
+    ledger = next(led for led in _LEDGERS if led.name == ledger_name)
+    rule = next(r for r in _rules(ledger) if r["issue"] == issue)
+    # the roles the rule declares, so `fields` cannot be what decides
+    # the answer: the question here is the name_regex alone
+    shape = set(rule["fields"])
+    assert compare._entry_matches(rule, name, shape, None) is glued, (
+        f"{ledger_name}: {issue!r} "
+        f"{'no longer claims' if glued else 'claims'} {name!r}. The "
+        f"rule's title says a GLUED honorific was peeled off the name; "
+        f"a spaced one reaching it is a false label, and a glued one "
+        f"escaping it is a narrowing that overshot")
+
+
 class _LatinCopy(NamedTuple):
     """A ledger alternation that hand-copies a Latin-script vocabulary.
 
@@ -1989,8 +2038,17 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(23, ('given', 'suffix'), "344de804e2c6", None),
         "fix(cjk-comma-compound) comma routing compounds with the CJK order flip":
             _Claim(23, ('family', 'given', 'suffix', 'title'), "344de804e2c6", None),
+        # 37 -> 35 with the 2026-09-05 narrowing, which is a rule
+        # NARROWING and not corpus movement: the three negative
+        # lookbehinds stop the regex matching a listed honorific
+        # interior to a longer one, so '김민준 박사님' and '선생님' left
+        # the reach and nothing else did. The 2.0 twin below carries
+        # the identical regex and moves by the same two names, to the
+        # same digest. Only '김민준 박사님' changed hands -- it goes to
+        # fix(cjk-honorific-suffix) here -- '선생님' having been the
+        # order rule's all along.
         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix":
-            _Claim(37, ('family', 'given', 'suffix'), "719c31233502", None),
+            _Claim(35, ('family', 'given', 'suffix'), "9a1b4c202a65", None),
         "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip":
             _Claim(19, ('family', 'given', 'middle', 'suffix'), "aa475ddd4745", None),
         "feat(#269) non-Latin titles/conjunctions recognized":
@@ -2117,8 +2175,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(13, ('_ambiguities', 'family', 'middle'), "973617235cda", None),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
             _Claim(108, ('_ambiguities', 'family', 'given', 'middle'), "9a814f70c2dc", None),
+        # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
+        # whose entry carries the reason. Here the one name that
+        # changed hands, '김민준 박사님', goes to the spaced rule
+        # fix(#307/#308/#320) -- the label its title states.
         "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into suffix":
-            _Claim(37, ('family', 'given', 'suffix'), "719c31233502", None),
+            _Claim(35, ('family', 'given', 'suffix'), "9a1b4c202a65", None),
         "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix":
             _Claim(16, ('family', 'given', 'middle', 'suffix'), "6d390e518bd2", None),
         "fix(#309) 旧姓 maiden marker consumed, compounding with the CJK order flip":

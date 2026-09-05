@@ -1377,9 +1377,15 @@ rule and re-classifying the corpus -- without fix(cjk-comma-compound)
 the run still reports 0 unexplained, so it really is radar-only and it
 was the candidate #495 weighed; without the peel rule TWELVE
 contract-tier names go UNEXPLAINED ('Andersonさん', '王先生' and
-'김민준씨' among them) and the run fails. Fourteen of the seventeen
-names the peel rule explains are contract, which is why #495 recorded
-it as a rule to keep rather than a deletion candidate. #495 closed as
+'김민준씨' among them) and the run fails. TWELVE remains the figure
+after the 2026-09-05 narrowing of the peel rule, re-measured: the one
+name that narrowing moved goes to fix(cjk-honorific-suffix) with the
+peel rule present and without it alike. Twelve of the SIXTEEN names the
+peel rule explains are contract (measured 2026-09-05; #495 read
+fourteen of seventeen, one of which the period-class demotion took to
+radar and one of which the narrowing took to another rule), which is
+why #495 recorded it as a rule to keep rather than a deletion
+candidate. #495 closed as
 not planned, so the compound rule keeps its place as well -- and the
 reason is this contest read from the other side: measured, deleting
 the compound rule does not leave its eleven diffs UNCLASSIFIED, it
@@ -1390,9 +1396,11 @@ different shape. Two are left unclassified."""
 issue = "fix(cjk-glued-honorific-peel) glued honorific peels into suffix"
 # '김민준씨' -> 김/민준/씨, '田中さん' -> 田中/さん, 'Andersonさん' ->
 # Anderson/さん: #312's peel, on a name with no space before the
-# honorific and no comma anywhere. 17 corpus names, which fell to the
+# honorific and no comma anywhere. 16 corpus names, which fell to the
 # fields-only fix(suffix-routing) catch-all (deleted in #451) until
-# #372 gave them a rule that names them.
+# #372 gave them a rule that names them. 17 until the 2026-09-05
+# narrowing below, which is not one of them leaving the corpus: the
+# name it lost was never glued.
 #
 # The regex is this file's first hand copy of GLUED_HONORIFICS rather
 # than SUFFIX_WORDS, and that narrower vocabulary is the whole reason
@@ -1411,13 +1419,23 @@ issue = "fix(cjk-glued-honorific-peel) glued honorific peels into suffix"
 # necessarily the string. '田中さん II' and '김민준씨 Jr.' carry a
 # Latin suffix after it, '김민준씨 (Jimmy)' a nickname.
 #
-# One spaced name lands here and is left that way, exactly as the 2.0
-# twin records: '김민준 박사님' matches on its 님, glued to 사 inside
-# 박사님. The label stays true of it -- the peel is what routes it to
-# `suffix` -- and closing the overlap needs a lookbehind asserting the
-# match is not interior to a longer listed honorific, which is more
-# machinery than a correct label is worth.
-name_regex = "(?<=[^\\s,])(?:박사님|선생님|교수님|박사|씨|님|先生|女士|小姐|教授|様|さん|さま|くん|ちゃん)\\.?(?=$|[ ,])"
+# The three negative lookbehinds are the 2026-09-05 narrowing, and the
+# 2.0 twin's comment carries the argument for them in full. 박사님,
+# 선생님 and 교수님 are the only entries of this alternation containing
+# another entry of it, so a match on the interior 님 was the one way a
+# SPACED honorific could reach a rule whose title says a glued one was
+# peeled off the name. It reached two: '김민준 박사님', where nothing is
+# peeled at all -- rules.md#W2's second sentence, whose witness line for
+# this string is suffix="박사님", the honorific whole and its own word --
+# and '선생님', where `suffix` moves nowhere and the order rule claims
+# the diff regardless. The lookbehinds refuse the interior position
+# only, so a glued '김민준박사님' still matches on 박사님 itself.
+#
+# Measured consequence here, 2026-09-05: exactly one name changes hands
+# and it is '김민준 박사님', which fix(cjk-honorific-suffix) below takes.
+# Summary lines byte-identical, no pin in this file moves,
+# order_contests unchanged, recorded reach 37 -> 35.
+name_regex = "(?<=[^\\s,])(?<!박사)(?<!선생)(?<!교수)(?:박사님|선생님|교수님|박사|씨|님|先生|女士|小姐|教授|様|さん|さま|くん|ちゃん)\\.?(?=$|[ ,])"
 fields = ["given", "family", "suffix"]
 
 [[change.precedes_narrower]]
@@ -1437,7 +1455,8 @@ position. _CROSS_RULE_WINNERS pins the name here. '田中さん II' is
 radar tier since #488, so nothing in the gate turns on this contest.
 The demotion candidate #495 weighed was the NUMERAL rule -- measured,
 both names it explains ('John V', 'Mohamad X') are radar -- and not
-this one, which explains fourteen contract-tier names. #495 closed as
+this one, which explains twelve contract-tier names (measured
+2026-09-05; fourteen when #495 read it). #495 closed as
 not planned, so the numeral rule stays; the measurement stands as the
 statement about its reach that it always was."""
 
@@ -1461,7 +1480,8 @@ measured against the wheel -- the corroboration its structural twin
 '田中さん II' did not have until #382 re-measured it. The NAME is radar
 tier since #488, so nothing fatal turns on it, but neither RULE was a
 #495 candidate: the jr rule explains the contract-tier 'Smith Jr.',
-and this one fourteen contract names. #495 closed as not planned, so
+and this one twelve contract names (measured 2026-09-05; fourteen when
+#495 read it). #495 closed as not planned, so
 nothing radar-only is being deleted either, and this pair outlives the
 question from both directions."""
 
