@@ -141,8 +141,11 @@ def _sorted_rules(rules: list[dict[str, object]]) -> list[dict[str, object]]:
     stable. That is not a footnote: every rule in
     expected_since_2.0.0.toml carries a name_regex, so they all sit in
     one tier and the order they are written in settles every tie among
-    them -- three names match both honorific rules and are labelled by
-    whichever comes first.
+    them -- two names match both honorific rules and are labelled by
+    whichever comes first (three until the 2026-09-05 narrowing of the
+    glued-peel name_regex took '김민준 박사님' off the glued rule;
+    measured 2026-09-05 over the corpus*.jsonl union, and the twin
+    sentence over that rule in the ledger itself says the same).
 
     SINCE #451 THAT IS EVERY LEDGER, and this function is the identity
     on all of them. validate_rules now rejects a rule carrying `fields`
@@ -1790,10 +1793,13 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
     # names diff at 1.4.0 and 2.0.0 and not against the 2.1.0 wheel at
     # all. 'MD, PHD' diffs at all three and now carries a row at each.
     #
-    # THREE of the six are RADAR-tier names -- '田中さん 様.' and
-    # '田中さん, 様.' in corpus_cjk_tolerated.jsonl, 'MD, PHD' in
-    # corpus_issues.jsonl -- so a moved shape on them is fatal where a
-    # watched row would only have printed. That is the SEVERITY rule
+    # FOUR of the six ROWS sit on RADAR-tier names, and they are THREE
+    # distinct names -- '田中さん 様.' and '田中さん, 様.' in
+    # corpus_cjk_tolerated.jsonl and 'MD, PHD' in corpus_issues.jsonl,
+    # the last carrying a row at each 2.x baseline and so counting
+    # twice among the rows and once among the names (measured
+    # 2026-09-05) -- so a moved shape on them is fatal where a watched
+    # row would only have printed. That is the SEVERITY rule
     # below applied as written and accepted deliberately (#501): a
     # contest row is fatal on either tier because it carries an
     # argument, and a moved shape has made that argument's premise

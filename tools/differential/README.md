@@ -252,7 +252,11 @@ the default-order entry it was measured on, fatal on a contract name
 and printed under `MOVED SHAPE (radar)` on a radar one. Measured
 2026-09-03, before the rule was written, MOST of the contest rows in
 `_RECORDED_DIFFS['expected_since_1.4.0.toml']` sat on radar-tier names
--- 21 of 31 -- so radar PARSER DRIFT could already fail the run
+-- 21 of 31, and 22 of the same 31 today, the 2026-09-05 period-class
+demotion having moved `'김민준 씨.'` from the contract CJK corpus to the
+tolerated one (measured 2026-09-05; decisions.md's #501 adjudication
+carries the reconciliation, and the recipe below is unchanged) -- so
+radar PARSER DRIFT could already fail the run
 wherever someone had pinned a winner (RECOMPUTE: for each row, take
 the tier of the first corpus file holding the name with contract files
 sorted first, as `main()` loads them -- a NAME's tier, which is the

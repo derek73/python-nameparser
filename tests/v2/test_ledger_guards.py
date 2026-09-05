@@ -2721,10 +2721,18 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
     # admit, file order picking the winner ('MD, PHD' is the one both
     # baselines have), and the position was that a row is owed when
     # somebody ARGUES a boundary, not when one is merely measured.
-    # Recompute the six: drive compare.main() at the baseline, capture
-    # its `diffing` by wrapping dormant_rules, and count the names for
-    # which more than one rule satisfies compare._entry_matches at the
-    # measured shape.
+    # That 5 is the PRE-NARROWING figure (measured 2026-09-03,
+    # re-measured 2026-09-05 before the narrowing landed). The same
+    # recipe over THIS tree gives 3 at 2.0.0 and the same 1 at 2.1.0
+    # (measured 2026-09-05). 2.1.0 does not move because the narrowing
+    # reaches no name it counts; 2.0.0 falls by two because the
+    # narrowing DISSOLVED two of the six contests -- '김민준 박사님' and
+    # '선생님' have one admitter each now, which the paragraph below
+    # says as well. Both figures are the same recipe on different
+    # trees, not two recipes. RECOMPUTE (either one): drive
+    # compare.main() at the baseline, capture its `diffing` by
+    # wrapping dormant_rules, and count the names for which more than
+    # one rule satisfies compare._entry_matches at the measured shape.
     #
     # What the position got wrong was WHERE an argument counts. Three
     # of the six boundaries were already argued -- in the 2.0.0
@@ -2739,8 +2747,9 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
     # matching that rule on the 님 interior to a spaced 박사님 -- and it
     # sat in the ledger for a month with every guard green, because no
     # row here made classify() answer for it. The narrowing that closed
-    # it is the commit before this one; the winner pinned for that name
-    # below is the SPACED rule, which only wins after it.
+    # it is the 2026-09-05 narrowing of the glued-peel `name_regex`
+    # (both ledgers); the winner pinned for that name below is the
+    # SPACED rule, which only wins after it.
     #
     # So the criterion is ARGUED SOMEWHERE. A boundary argued in a
     # ledger comment earns a row here exactly as one argued in this
@@ -2773,21 +2782,36 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
         # Both names move {family, given, suffix} through TWO
         # mechanisms at once: the glued さん peels off 田中さん (#308,
         # and #320 is what stops the trailing ASCII period vetoing it)
-        # while the spaced 様 routes to `suffix`. One rule per half, and
-        # the two sit in the same name_regex tier with fields that do
-        # not nest -- {given, family, suffix} against {given, middle,
-        # family, suffix} -- so neither is the narrower and no
-        # `precedes_narrower` block can name the pair.
+        # while the spaced 様 routes to `suffix`. One rule per half,
+        # and the two sit in the same name_regex tier with fields that
+        # DO nest: the glued rule's {given, family, suffix} is a
+        # STRICT SUBSET of the spaced rule's {given, middle, family,
+        # suffix}, so the glued rule is the narrower of the two -- and
+        # it is the one written first. The pair is therefore nested
+        # NARROW-FIRST, #382's declaration-free default, and no
+        # `precedes_narrower` block is owed for the plain reason that
+        # the narrower rule already wins: that block sits on the
+        # earlier rule only where the earlier rule is the wider one.
+        # Measured 2026-09-05 over the corpus*.jsonl union,
+        # order_contests reports nothing for this ledger as it stands
+        # and reports this pair -- both names -- only with the two
+        # rules swapped, where undeclared_contests refuses the ledger
+        # too. The check can see the arrangement that would be wrong
+        # and not the one shipped.
         #
         # The prose test lands on the glued rule and the file order
         # already does: #312/#319/#320 are the glued rule's clauses,
         # they name both strings outright, and no clause of the spaced
         # rule mentions either. It is a PARTIAL label in #382's
         # accepted sense -- the glued rule describes the peel and not
-        # the routing -- and the narrow-first justification that
-        # usually settles such a pair, that the narrower rule describes
-        # the whole diff, does not apply: neither rule describes both
-        # halves. Narrow-first picks, and this row is where that shows.
+        # the routing -- and what makes the pair unusual is that
+        # narrow-first's JUSTIFICATION does not apply to it. That
+        # justification is that the narrower rule describes the name
+        # more precisely; here both mechanisms fire at once and each
+        # rule describes one half, so neither describes the whole and
+        # the label is partial whichever rule wins. The default picks
+        # the right rule for a reason that is not available, and this
+        # row is where an unjustified-but-correct default is pinned.
         #
         # What the pin buys, measured 2026-09-05: swapping the two
         # rules in memory hands BOTH names to the spaced rule and
