@@ -1744,19 +1744,27 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 }
 
 
-#: The recorded diff shape of a name NOTHING ELSE WATCHES, per ledger.
-#: A second roster under a different contract from the one above, and
-#: the difference is the whole reason it is a second dict rather than
-#: more rows in the first: a shape beside a winner ADJUDICATES a
-#: contest -- _RECORDED_DIFFS records what a name diffs so that
-#: _CROSS_RULE_WINNERS can ask classify() which rule wins it -- where a
-#: shape alone WATCHES a name nothing else watches. A radar name that
-#: no test names and no contract corpus holds is watched only by the
-#: classification rule that explains its diff, and a rule is a weak
-#: watcher: it asserts that a diff here is intended, not what the diff
-#: IS, so a diff that changes shape while staying inside the rule's
-#: `fields` moves silently. A row here says what the diff is, and the
-#: move becomes a finding.
+#: The recorded diff shape of a name NO WINNER IS PINNED FOR, per
+#: ledger. A second roster under a different contract from the one
+#: above, and the difference is the whole reason it is a second dict
+#: rather than more rows in the first: a shape beside a winner
+#: ADJUDICATES a contest -- _RECORDED_DIFFS records what a name diffs
+#: so that _CROSS_RULE_WINNERS can ask classify() which rule wins it
+#: -- where a shape alone WATCHES the name without adjudicating it.
+#: "No winner pinned" is the property every row here has and the two
+#: checks below enforce; it is not "nothing else watches". MOST rows
+#: are also sole-watched -- that is the population the sweep drew
+#: (POPULATION below): a radar name that no test names and no
+#: contract corpus holds is watched only by the classification rule
+#: that explains its diff, and a rule is a weak watcher, asserting
+#: that a diff here is intended and not what the diff IS, so a diff
+#: that changes shape while staying inside the rule's `fields` moves
+#: silently. A row here says what the diff is, and the move becomes
+#: a finding. A CONTESTED row (the #501 block at 2.0.0) is the other
+#: case: a Case(...) row in tests/v2/cases.py already adjudicates its
+#: PARSE, and three of the four sit in contract corpora; what no one
+#: has adjudicated is which RULE explains its diff. A reader of such
+#: a row consults the case row before this roster.
 #:
 #: Four things follow from the split, and each is checked rather than
 #: stated:
@@ -1801,11 +1809,185 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #:   So a name that is contract only under a declared order and radar
 #:   under the default reads radar here, and the declared-order promise
 #:   is untouched.
+#:
+#: POPULATION, measured 2026-09-05. A name has a row here where it is
+#: SOLE-WATCHED at that baseline: held by a radar corpus and by no
+#: contract corpus; named by no string literal anywhere under tests/
+#: outside test_ledger_guards.py -- every string ast.Constant, by exact
+#: equality, since substring matching would score 'A. D.' a watcher of
+#: every longer name containing it; diffing under the DEFAULT order at
+#: that baseline AND explained by a ledger rule there -- a diff no
+#: rule explains is already printed by every run as unclassified, so
+#: a rule is the only weak watcher a row here is needed for (a
+#: definition clause, not a live count: `radar unclassified` is 0 at
+#: every baseline today, so the two sets coincide); and not already
+#: keyed in _RECORDED_DIFFS for that
+#: ledger. The last clause is the one a scan of tests/ cannot supply,
+#: because that scan cannot see this file, and it excludes four names
+#: at 1.4.0 that carry contest rows there: 'Bob Jones, author',
+#: 'Carod i', 'MD, PHD', 'van ma van'. Three of them return at a 2.x
+#: baseline where they have no contest row; 'Carod i' diffs under the
+#: default order at 1.4.0 only, so it has no row anywhere, which is
+#: why the population is 51 names where the tests/-only scan says 52.
+#: The counts: 41 / 32 + 4 / 31 / 5 rows, 113 in all, over the 51
+#: names plus the four #501 contests that close the 2.0.0 section.
+#: 49 of the 51 sit in corpus_issues.jsonl and 3 in corpus.jsonl, with
+#: 'dr Vincent van Gogh dr' in both, so the per-file counts overlap by
+#: one and are not a partition. Every row is a default-order shape,
+#: as the roster above's are, so no row here is a declared-order-only
+#: diff for NOT CHECKED to name.
+#:
+#: RECOMPUTE: wrap classify() and drive main() unchanged at each
+#: baseline, recording (name, order, diff, rule) per call; keep the
+#: calls whose order is None and whose rule is not None; apply the
+#: four clauses above with the literal set from ast.walk over
+#: tests/**/*.py, the tier sets from _load_entries over corpus*.jsonl
+#: through _CORPUS_TIERS, and that ledger's _RECORDED_DIFFS keys. Not
+#: by replaying the corpus load by hand: the (name, order) dedup, the
+#: baseline-minimum skip and the tier stamp all happen inside main(),
+#: and a name's membership is a property of the entry that run
+#: compared.
+#:
+#: Two limits. The population is a LOWER bound: a literal in a test
+#: that is not about parsing -- 'John Smith' in a TypeError test --
+#: scores as a watcher, so a name a test merely mentions has no row
+#: here although nothing checks its parse. And nothing notices a NEW
+#: sole-watched name arriving with no row. A completeness guard has
+#: to answer "what else watches this name" mechanically, and its
+#: other half, "diffs at some baseline", only a run with the wheel
+#: knows -- so that guard is a run-time NOTE in the NOT CHECKED family
+#: by necessity, not a pytest-speed roster check, and it is not here.
 _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
-    "expected_since_1.4.0.toml": {},
-    "expected_since_2.0.0.toml": {},
-    "expected_since_2.1.0.toml": {},
-    "expected_since_2.2.0.toml": {},
+    "expected_since_1.4.0.toml": {
+        "1 & 2, 3 4 5, Mr.": ("_initials",),
+        "Aishwarya Rai": ("family", "suffix"),
+        "Anh do": ("_initials",),
+        "Anna Müller (geb. Schmidt)": ("maiden", "nickname"),
+        "Anna Müller geb. Schmidt": ("family", "maiden", "middle"),
+        "Attorney General of Minnesota": ("_initials",),
+        "Bob Jones, compositeur": ("family", "given"),
+        "Dean of Chemistry": ("_initials",),
+        "Dean of Chemistry Robert Johns": ("_initials",),
+        "Deputy Secretary of State": ("_initials",),
+        "Do Quang Minh": ("given", "middle", "title"),
+        "Donald mc": ("family", "suffix"),
+        "Dr 田中さん, V.": ("family", "given", "suffix"),
+        "Dr. Do Van Johnson, MD": ("family", "given"),
+        "Duke of Edinburgh": ("_initials",),
+        "Esq. van Gogh": ("family", "given"),
+        "Jack M.A.": ("family", "suffix"),
+        "Jane van der Berg 旧姓 Jones": ("family", "maiden"),
+        "Janey née Jones": ("family", "given", "maiden", "middle"),
+        "John V": ("family", "suffix"),
+        "John of the Doe": ("_initials",),
+        "Jong van der": ("_initials",),
+        "Jong, van der": ("_initials",),
+        "Jose e Maria Santos": ("_initials",),
+        "Juan Garcia y Lopez": ("_initials",),
+        "MD, DO, DDS": ("given", "title"),
+        "Mesnil Garcia van": ("_initials",),
+        "Mohamad X": ("family", "suffix"),
+        "Ph. D., Jr.": ("family", "given"),
+        "QC MP": ("family", "suffix"),
+        "Sander van": ("_initials",),
+        "Smith Jones, Ph. D. Jr.": ("suffix",),
+        "Smith, Ph. D.": ("family", "given"),
+        "Smith, Ph. D. Jr. MD": ("given", "suffix", "title"),
+        "Smith, Ph. D. MD": ("suffix", "title"),
+        "Smith, Ph.D. Jr.": ("given", "suffix"),
+        "Smith, Prof.": ("family", "given"),
+        "Ursula von der Leyen (geb. Albrecht)": ("maiden", "nickname"),
+        "dr Vincent James van Gogh dr": ("family", "suffix"),
+        "dr Vincent van Gogh dr": ("family", "suffix"),
+        "dr Vincent van der Gogh dr": ("family", "suffix"),
+    },
+    "expected_since_2.0.0.toml": {
+        "Anh do": ("_initials",),
+        "Anna Müller (geb. Schmidt)": ("maiden", "nickname"),
+        "Bob Jones, author": ("family", "given"),
+        "Bob Jones, compositeur": ("family", "given"),
+        "Do Quang Minh": ("_ambiguities", "given", "middle", "title"),
+        "Dr 田中さん, V.": ("family", "given", "suffix"),
+        "Dr. Do Van Johnson, MD": ("family", "given"),
+        "E Anne D,Leonardo": ("_initials",),
+        "Esq. van Gogh": ("_ambiguities", "family", "given"),
+        "JOSE E MARIA SANTOS": ("_initials",),
+        "Jane van der Berg 旧姓 Jones": ("family", "maiden"),
+        "Janey née Jones": ("family", "given"),
+        "Joe E. Smith": ("_initials",),
+        "John, Smith, Dr.": ("_ambiguities",),
+        "Jong van der": ("_initials",),
+        "Jong, van der": ("_initials",),
+        "Jose E. Maria Santos": ("_initials",),
+        "MD, DO, DDS": ("given", "title"),
+        "MD, PHD": ("suffix", "title"),
+        "Mesnil Garcia van": ("_initials",),
+        "Ph. D., Jr.": ("family", "suffix", "title"),
+        "Sander van": ("_initials",),
+        "Smith Dr": ("family", "suffix"),
+        "Smith, John E, III, Jr": ("_initials",),
+        "Smith, Ph. D. Jr. MD": ("given", "suffix"),
+        "Smith, Ph. D. MD": ("given", "suffix"),
+        "Smith, Ph.D. Jr.": ("given", "suffix"),
+        "Ursula von der Leyen (geb. Albrecht)": ("maiden", "nickname"),
+        "dr Vincent James van Gogh dr": ("family", "suffix"),
+        "dr Vincent van Gogh dr": ("family", "suffix"),
+        "dr Vincent van der Gogh dr": ("family", "suffix"),
+        "van ma van": ("_initials",),
+        # The four #501 contests, measured and UNADJUDICATED: at 2.0.0
+        # more than one rule admits each diff and file order alone
+        # picks the one that explains it, and nobody has argued which
+        # should -- a shape with no winner, which is the row kind this
+        # dict exists for. They move to _RECORDED_DIFFS the day #501
+        # argues a winner, and the pin goes beside them there. Three
+        # are contract tier (corpus_cjk.jsonl; the first also
+        # corpus_rules.jsonl), so a move on them fails the run; the
+        # last is corpus_cjk_tolerated.jsonl, radar, and prints.
+        "田中さん 様.": ("family", "given", "suffix"),
+        "김민준 박사님": ("family", "given", "suffix"),
+        "선생님": ("family", "given"),
+        "田中さん, 様.": ("family", "given", "suffix"),
+    },
+    "expected_since_2.1.0.toml": {
+        "Anh do": ("_initials",),
+        "Anna Müller (geb. Schmidt)": ("maiden", "nickname"),
+        "Bob Jones, author": ("family", "given"),
+        "Bob Jones, compositeur": ("family", "given"),
+        "Do Quang Minh": ("_ambiguities", "given", "middle", "title"),
+        "Dr. Do Van Johnson, MD": ("family", "given"),
+        "E Anne D,Leonardo": ("_initials",),
+        "Esq. van Gogh": ("_ambiguities", "family", "given"),
+        "JOSE E MARIA SANTOS": ("_initials",),
+        "Jane van der Berg 旧姓 Jones": ("family", "maiden"),
+        "Janey née Jones": ("family", "given"),
+        "Joe E. Smith": ("_initials",),
+        "John, Smith, Dr.": ("_ambiguities",),
+        "Jong van der": ("_initials",),
+        "Jong, van der": ("_initials",),
+        "Jose E. Maria Santos": ("_initials",),
+        "MD, DO, DDS": ("given", "title"),
+        "MD, PHD": ("suffix", "title"),
+        "Mesnil Garcia van": ("_initials",),
+        "Ph. D., Jr.": ("family", "suffix", "title"),
+        "Sander van": ("_initials",),
+        "Smith Dr": ("family", "suffix"),
+        "Smith, John E, III, Jr": ("_initials",),
+        "Smith, Ph. D. Jr. MD": ("given", "suffix"),
+        "Smith, Ph. D. MD": ("given", "suffix"),
+        "Smith, Ph.D. Jr.": ("given", "suffix"),
+        "Ursula von der Leyen (geb. Albrecht)": ("maiden", "nickname"),
+        "dr Vincent James van Gogh dr": ("family", "suffix"),
+        "dr Vincent van Gogh dr": ("family", "suffix"),
+        "dr Vincent van der Gogh dr": ("family", "suffix"),
+        "van ma van": ("_initials",),
+    },
+    "expected_since_2.2.0.toml": {
+        "E Anne D,Leonardo": ("_initials",),
+        "JOSE E MARIA SANTOS": ("_initials",),
+        "Joe E. Smith": ("_initials",),
+        "Jose E. Maria Santos": ("_initials",),
+        "Smith, John E, III, Jr": ("_initials",),
+    },
 }
 
 
@@ -2347,8 +2529,8 @@ def main() -> int:
              f"both _RECORDED_DIFFS[{ledger.name!r}] and "
              f"_WATCHED_DIFFS[{ledger.name!r}]. A row is one kind or "
              f"the other: a shape beside a winner adjudicates a "
-             f"contest, a shape alone watches a name nothing else "
-             f"watches. A name with an argument behind it belongs in "
+             f"contest, a shape alone watches a name no winner is "
+             f"pinned for. A name with an argument behind it belongs in "
              f"_RECORDED_DIFFS alone -- delete its _WATCHED_DIFFS row:"]
             + [f"  {n!r}" for n in both]))
     gone = sorted((set(recorded) | set(watched)) - set(corpus_names))
@@ -2759,9 +2941,9 @@ def main() -> int:
     # reader sent to that roster would find nothing to read.
     if watched_contract:
         print(f"MOVED SHAPE {ledger.name}: {len(watched_contract)} watched "
-              f"diff shape(s) disagree with this run. Nothing else "
-              f"watches these names, so each is a FINDING, not a number "
-              f"to update: if the move is intended, re-record the shape "
+              f"diff shape(s) disagree with this run. No winner is "
+              f"pinned for these names, so each is a FINDING, not a "
+              f"number to update: if the move is intended, re-record the shape "
               f"in _WATCHED_DIFFS in the commit that moved it and say "
               f"why there. This fails the run because the name is "
               f"contract tier (_CORPUS_TIERS)."
@@ -2769,8 +2951,8 @@ def main() -> int:
         _print_moved_rows(watched_contract, "_WATCHED_DIFFS")
     if watched_radar:
         print(f"MOVED SHAPE (radar) {ledger.name}: {len(watched_radar)} "
-              f"watched diff shape(s) disagree with this run. Nothing "
-              f"else watches these names, so each is a FINDING, not a "
+              f"watched diff shape(s) disagree with this run. No winner "
+              f"is pinned for these names, so each is a FINDING, not a "
               f"number to update: if the move is intended, re-record "
               f"the shape in _WATCHED_DIFFS in the commit that moved it "
               f"and say why there. This does not fail the run because "

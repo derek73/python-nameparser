@@ -2785,7 +2785,9 @@ def _check_shape_rows(compare: ModuleType, roster: str, ledger_name: str,
             f"a rule's 'fields' against, since a shape is the same "
             f"kind of input -- and not against V2_FIELDS, because "
             f"'_ambiguities' is legal in a 2.x row (it cannot "
-            f"appear below 2.0) even though no row carries it today")
+            f"appear below 2.0), and live rows carry it: 'Do Quang "
+            f"Minh', 'Esq. van Gogh' and 'John, Smith, Dr.' in "
+            f"_WATCHED_DIFFS at 2.0.0 and 2.1.0")
         dups = sorted({f for f in shape if shape.count(f) > 1})
         assert not dups, (
             f"{where} repeats {dups}. It is read as a set, so the "
@@ -2818,8 +2820,8 @@ def test_every_pinned_winner_has_a_recorded_shape() -> None:
     compare._WATCHED_DIFFS, not here: a shape with no winner is not an
     orphan this roster tolerates but a row in the wrong dict, since
     the two dicts carry different contracts (a shape beside a winner
-    adjudicates a contest; a shape alone watches a name nothing else
-    watches) and compare.py reads the severity and the repair text off
+    adjudicates a contest; a shape alone watches a name no winner is
+    pinned for) and compare.py reads the severity and the repair text off
     which dict a row sits in. So a shape here with no winner is a
     deleted-winner slip -- the pin went and the shape was forgotten --
     and relaxing this to `<=` would make that slip indistinguishable
@@ -2878,8 +2880,9 @@ def test_every_pinned_winner_has_a_recorded_shape() -> None:
 
 
 def test_the_watched_roster_is_disjoint_and_names_every_ledger() -> None:
-    """compare._WATCHED_DIFFS holds the shape of a name nothing else
-    watches, with no winner pinned for it. Three things that dict's
+    """compare._WATCHED_DIFFS holds the shape of a name no winner is
+    pinned for -- most of them sole-watched, four of them #501's
+    contests. Three things that dict's
     header promises are checked here, at pytest speed, because the
     gate checks them only for the one ledger a run was pointed at.
 
@@ -2900,6 +2903,11 @@ def test_the_watched_roster_is_disjoint_and_names_every_ledger() -> None:
     roster's are: a watched shape is fed to classify() by nothing
     today, but the gate compares it against a run's diff, and a shape
     no run can produce is a row that can never be contradicted.
+
+    And the dict must hold SOME row, the sibling `assert checked`
+    idiom: every check above is per row, so an all-empty roster passes
+    all of them vacuously, and a ledger with no watched name is an
+    empty section beside filled ones, not an all-empty dict.
     """
     compare = load_tool("compare")
     on_disk = {led.name for led in _LEDGERS}
@@ -2928,6 +2936,12 @@ def test_the_watched_roster_is_disjoint_and_names_every_ledger() -> None:
             f"day one is argued the row moves to _RECORDED_DIFFS -- it "
             f"does not keep a _WATCHED_DIFFS row beside the pin")
         _check_shape_rows(compare, "_WATCHED_DIFFS", ledger_name, watched)
+    assert any(compare._WATCHED_DIFFS.values()), (
+        "every section of _WATCHED_DIFFS is empty, so every per-row "
+        "check above was vacuous. A ledger with no watched name is an "
+        "empty section beside filled ones; an all-empty dict is the "
+        "roster deleted, and its header's population says which rows "
+        "belong")
 
 
 def test_the_family_first_fold_is_not_explained_under_the_default_order(
