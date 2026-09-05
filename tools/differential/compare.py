@@ -569,18 +569,25 @@ _SENTINELS = ("John Smith", "田中さん", "Хосе Сантос", "x")
 #: decision when a corpus is added, the way the Script tables do.
 _CORPUS_FLOORS = {
     "corpus.jsonl": 480,        # 486 today, from v1's banks at a pinned ref
-    "corpus_cjk.jsonl": 70,     # 73 today, generated from the case table.
+    "corpus_cjk.jsonl": 67,     # 70 today, generated from the case table.
                                 # LOWERED 95 -> 70 on 2026-09-01,
                                 # deliberately: the CJK comma demotion
                                 # moved 25 tolerated texts out of this
                                 # file into corpus_cjk_tolerated.jsonl
                                 # below. Nothing left the harness --
                                 # the names are compared and classified
-                                # exactly as before, on the radar tier
-    "corpus_cjk_tolerated.jsonl": 22,  # 26 today, the tolerated half of
+                                # exactly as before, on the radar tier.
+                                # LOWERED again 70 -> 67 on 2026-09-05,
+                                # the same way and for the same class:
+                                # the trailing-period honorifics
+                                # ('田中さん 様.' and its two twins) are
+                                # the listing artifact the first
+                                # sweep's criterion could not see
+    "corpus_cjk_tolerated.jsonl": 22,  # 29 today, the tolerated half of
                                 # the same generator: composed and
                                 # wrapped CJK forms (comma listings,
-                                # Latin titles and credentials) whose
+                                # Latin titles and credentials,
+                                # trailing ASCII periods) whose
                                 # handling the contract stopped
                                 # promising on 2026-09-01. 25 on the
                                 # day it was created; the 26th is
@@ -589,9 +596,28 @@ _CORPUS_FLOORS = {
                                 # and the rules corpus stopped
                                 # carrying it -- the row was written
                                 # so the text moved tiers instead of
-                                # leaving the harness
+                                # leaving the harness. 29 since
+                                # 2026-09-05, the three period rows.
+                                # Floor left at 22: it guards against
+                                # the file emptying, and this half only
+                                # grows as the contract narrows
     "corpus_issues.jsonl": 370,  # 381 today, harvested and append-only
-    "corpus_rules.jsonl": 150,  # 248 today, generated from rules.md.
+    "corpus_rules.jsonl": 150,  # 249 today, generated from rules.md.
+                                # 248 until 2026-09-05, when W2's
+                                # trailing-period example moved into
+                                # the tolerated W3 and the builder
+                                # stopped harvesting it -- the seventh
+                                # text a CJK demotion has taken out of
+                                # this file, and (measured 2026-09-05)
+                                # the last CJK example anywhere outside
+                                # W3 that carried a non-space ASCII
+                                # character. 247 -> 249 later the same
+                                # day, when the review round restored
+                                # W2's second half and witnessed it
+                                # with '김민준 박사님' and '선생님' --
+                                # both already in corpus_cjk.jsonl, so
+                                # the file grew and the deduped pool
+                                # did not.
                                 # 252 until 2026-09-01, when W3 took
                                 # rules.md's `tolerated:` marker and
                                 # build_rules_corpus.py stopped
@@ -643,7 +669,8 @@ _CORPUS_TIERS = {
     # case rows, not by scraping. The tier still fits, and for the
     # reason the flag was written -- these are composed and wrapped
     # CJK forms (a comma listing, a Latin title or credential around a
-    # CJK name) that native CJK writing does not contain, so the
+    # CJK name, and since 2026-09-05 a trailing ASCII period on an
+    # honorific) that native CJK writing does not contain, so the
     # differential stops answering for them. Radar is what "we still
     # watch it, we no longer enforce it" costs; the case rows still
     # assert every one of these parses in the suite.
@@ -660,7 +687,15 @@ _CORPUS_TIERS = {
     # NONE do today and every text in this file reads radar. The rule
     # is stated as a rule, not as a caveat about the five: whatever
     # lands here next is demoted only once no contract corpus holds
-    # it.
+    # it. What landed next needed exactly that. '田中さん 様.' was one
+    # of the two pure texts the W2 swap brought IN, so the 2026-09-05
+    # period-class demotion had to move that example line into the
+    # tolerated W3 in the same breath as marking its case row --
+    # marking the row alone would have left the name enforced and
+    # documented as demoted. Still none today, and asked of every
+    # contract file on every run by
+    # test_the_tolerated_corpus_is_disjoint_from_the_contract_ones
+    # (tests/v2/test_ledger_guards.py) rather than left to a reader.
     "corpus_cjk_tolerated.jsonl": "radar",
     "corpus_issues.jsonl": "radar",
     "corpus_rules.jsonl": "contract",
@@ -1951,10 +1986,18 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         # picks the one that explains it, and nobody has argued which
         # should -- a shape with no winner, which is the row kind this
         # dict exists for. They move to _RECORDED_DIFFS the day #501
-        # argues a winner, and the pin goes beside them there. Three
-        # are contract tier (corpus_cjk.jsonl; the first also
-        # corpus_rules.jsonl), so a move on them fails the run; the
-        # last is corpus_cjk_tolerated.jsonl, radar, and prints.
+        # argues a winner, and the pin goes beside them there. TWO are
+        # contract tier (corpus_cjk.jsonl) -- '김민준 박사님' and
+        # '선생님' -- so a move on those fails the run; the other two
+        # sit in corpus_cjk_tolerated.jsonl, radar, and print.
+        # Re-measured 2026-09-05: '田中さん 様.' was the third contract
+        # one, in corpus_cjk.jsonl and corpus_rules.jsonl both, and the
+        # period-class demotion (decisions.md#cjk-comma-demotion) moved
+        # it to the radar half of the CJK projection and took W2's
+        # example line with it. A row's fatality follows the tier its
+        # NAME reads at, which no roster in this file records -- so a
+        # demotion changes what a row here costs without touching the
+        # row, and this comment is the only thing that goes stale.
         "田中さん 様.": ("family", "given", "suffix"),
         "김민준 박사님": ("family", "given", "suffix"),
         "선생님": ("family", "given"),

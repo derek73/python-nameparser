@@ -74,10 +74,14 @@ def test_the_family_partitions_into_particles_and_base(
         f"particles={pn.family_particles!r} + base={pn.family_base!r}")
 
 
-#: Case.__post_init__'s shape checks, each probed for the one message it
-#: alone raises. A row here is a Case that must fail to construct, not
+#: Case.__post_init__'s shape checks, each probed for the message that
+#: identifies it. A row here is a Case that must fail to construct, not
 #: one that ever joins CASES -- unlike test_case above, this exercises
-#: the dataclass's own validation rather than the parser.
+#: the dataclass's own validation rather than the parser. One message
+#: is shared by three rows and deliberately: the residue arm of the
+#: purity check (2026-09-05) refuses every non-space ASCII character
+#: the comma and Latin-letter arms do not, so its probes differ in the
+#: character that trips it rather than in what they are told.
 @pytest.mark.parametrize("kwargs, match", [
     pytest.param(
         dict(text="Beethoven, Ludwig van", shape=2, locale="nl_NL"),
@@ -113,6 +117,30 @@ def test_the_family_partitions_into_particles_and_base(
         dict(text="김민준 V", shape=6),
         "refuses a Latin letter",
         id="shape-6-refuses-a-latin-letter"),
+    pytest.param(
+        # The 2026-09-05 widening, and the text that motivated it: the
+        # comma and Latin-letter arms above both said no of every
+        # composed form anyone had written down, and this one carries
+        # neither. It is a tolerated row today
+        # (ja_honorific_with_a_period_no_comma); the tag it must not be
+        # able to take back is what this probe holds.
+        dict(text="田中さん 様.", shape=6),
+        "refuses the ASCII",
+        id="shape-6-refuses-a-trailing-period"),
+    pytest.param(
+        dict(text="김민준 2", shape=6),
+        "refuses the ASCII",
+        id="shape-6-refuses-a-digit"),
+    pytest.param(
+        # Refused for its parentheses, BEFORE the transcription test
+        # this text would also fail -- the residue arm runs first, so
+        # the message names the ASCII rather than the divider. The
+        # nickname row this text belongs to (fix(#272)) stays contract
+        # and untagged: the purity gate is a property of a SHAPE tag,
+        # not of the corpus.
+        dict(text="山田 太郎 (マイケル・ジャクソン)", shape=7),
+        "refuses the ASCII",
+        id="shape-7-refuses-ascii-parentheses"),
     pytest.param(
         dict(text="김민준·지훈", shape=6),
         "belongs to shape 7",
@@ -176,7 +204,10 @@ def test_case_construction_rejects_a_bad_shape_tag(
 #: ja_nakaguro_han_takes_the_han_order), an interpunct-divided shape-7
 #: row, a SPACED wholly-katakana shape-7 row (the subtler admission --
 #: a transcription with no U+00B7 at all is still a shape, not a
-#: demotion, as long as every non-space character is katakana), and a
+#: demotion, as long as every non-space character is katakana), a
+#: SPACED HONORIFIC written without the period the residue arm refuses
+#: (the boundary the 2026-09-05 widening had to leave standing: what
+#: the demoted text loses is its period, not its arrangement), and a
 #: tolerated row built from the SAME text a shape probe above refuses
 #: as a comma -- the boundary reading the pair as intended: what a
 #: shape tag refuses, tolerated=True admits. Each must construct
@@ -184,6 +215,8 @@ def test_case_construction_rejects_a_bad_shape_tag(
 #: that admits nothing.
 @pytest.mark.parametrize("kwargs", [
     pytest.param(dict(text="김민준", shape=6), id="pure-shape-6-constructs"),
+    pytest.param(dict(text="田中さん 様", shape=6),
+                 id="spaced-honorific-without-a-period-constructs"),
     pytest.param(dict(text="高橋・一郎", shape=6),
                  id="han-nakaguro-shape-6-constructs"),
     pytest.param(dict(text="威廉·莎士比亚", shape=7),

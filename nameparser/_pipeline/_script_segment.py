@@ -228,6 +228,19 @@ def _is_post_nominal(state: ParseState, i: int) -> bool:
     return is_suffix_strict(state.tokens[i].text, state.lexicon)
 
 
+# rules.md#W2: "A part that is not name text — a post-nominal word
+# standing on its own — is never the name's end: the split-off steps
+# past it to the name word behind, and never dissects it." (history:
+# decisions.md#W2)
+# The scan-back below is that clause, and it needs no punctuation to
+# fire. '김민준 박사님' steps past 박사님 to 김민준, finds no listed
+# tail there and returns None -- so 박사님 is left whole for suffix
+# classification rather than cut into 박사 + 님, which is what the
+# same input gives when the step is removed. '선생님' is post-nominal
+# entire with no name word behind it, so the scan yields no site at
+# all and the token stays whole. Both are contract-tier corpus names
+# and rules.md#W2 example lines; decisions.md#cjk-comma-demotion
+# carries the forced-predicate measurement behind them.
 def _peel_site(state: ParseState, flat: Sequence[int],
                tails: frozenset[str]) -> tuple[int, int] | None:
     """Where a peel would land in the token run `flat`: the index of the
@@ -272,14 +285,24 @@ def _peel_site(state: ParseState, flat: Sequence[int],
 
 
 # rules.md#W2: "a listed honorific glued to the end of the name's
-# last name word splits off once and reads as a suffix. The
-# split-off ignores surrounding punctuation, but never treats a
-# part that is not name text as the name's end." (history:
+# last name word splits off once and reads as a suffix." (history:
 # decisions.md#W2)
 # That the peel also reaches ACROSS a family comma is stated at
 # rules.md#W3 instead, which is a tolerated rule since the
 # 2026-09-01 comma demotion -- the crossing is what the parser does
-# today, not something W2 promises.
+# today, not something W2 promises. W3 also took, on 2026-09-05, the
+# reading of a period a listing leaves behind
+# (decisions.md#cjk-comma-demotion): a period on a SEPARATE
+# post-nominal word rides into the suffix and moves nothing ('様.'
+# is post-nominal-strict and the scan steps past it as it steps past
+# '様'), while a period glued to the honorific's OWN token stands
+# between the honorific and that token's end, so no listed tail
+# matches, the peel declines, and the whole text reads as a title
+# downstream ('田中さん.', '김민준씨.') -- measured 2026-09-05 and
+# pinned by nothing, since neither string is a case row or a corpus
+# line, so that reading can move with nothing reporting it. Neither
+# is a promise; the step past the post-nominal word itself is W2's,
+# above, and is.
 def _peel_honorific_tail(state: ParseState) -> ParseState:
     """#308: split a listed honorific off the END of the name's last
     NON-POST-NOMINAL token -- 田中さん -> 田中 + さん -- and let

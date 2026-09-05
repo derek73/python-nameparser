@@ -50,13 +50,26 @@ _SHAPE_IDS = frozenset({1, 2, 3, 4, 5, 6, 7})
 
 def _has_ascii_letter(text: str) -> bool:
     """True when text contains an ASCII a-z/A-Z letter. Shapes 6/7's
-    purity check calls this ALONGSIDE a separate comma test -- this
-    function tests neither a comma nor a non-ASCII Latin letter on its
-    own. The ASCII restriction is deliberate: a diacritic or a letter
+    purity check calls this ALONGSIDE a comma test and a residue test
+    that takes every OTHER non-space ASCII character -- this function
+    tests neither a comma nor a non-ASCII Latin letter on its own. The
+    ASCII restriction is deliberate: a diacritic or a letter
     outside a-z/A-Z is not what a Latin WRAPPER around CJK text looks
     like in the corpus today (title/credential vocabulary is ASCII),
     and widening this is a call for whichever future row needs it."""
     return any(c.isascii() and c.isalpha() for c in text)
+
+
+def _stray_ascii(text: str) -> str:
+    """The distinct ASCII characters in text other than a space,
+    sorted, as one string ("" when there are none). The residue arm of
+    shapes 6/7's purity test: the comma and the ASCII letter keep
+    messages of their own because each names a composed form with its
+    own doctrine, and this takes everything else -- a period, a digit,
+    a parenthesis. A space is the one ASCII character a pure CJK
+    arrangement writes (rules.md#W4's '山田 太郎'), so it is the one
+    exemption."""
+    return "".join(sorted({c for c in text if c.isascii() and c != " "}))
 
 
 #: Shape 7's other admission besides an explicit divider: a
@@ -113,7 +126,8 @@ class Case:
     #: tag -- mutually exclusive with `shape`, since a shape ADMITS a
     #: text to the contract and tolerated deliberately does not. Every
     #: composed/wrapped CJK form (a comma listing, a Latin title or
-    #: credential around a CJK name) is this table's ground for it,
+    #: credential around a CJK name, and since 2026-09-05 a trailing
+    #: ASCII period on an honorific) is this table's ground for it,
     #: not shapes 6/7's. Restricted to CJK-bearing text (`_has_cjk`):
     #: it exists to demote composed/wrapped CJK forms specifically, and
     #: a Latin row asking for it is a smell until some future arc
@@ -217,8 +231,13 @@ class Case:
 
     def _check_cjk_shape_purity(self) -> None:
         """Shapes 6/7 (2026-09-01): the CJK arrangements, admitted
-        wholly classified-script text only -- no comma, no Latin
-        letter. Every composed/wrapped form is tolerated=True's
+        wholly classified-script text only -- no ASCII character at
+        all except the space between two name words (WIDENED
+        2026-09-05: the check read 'no comma, no Latin letter', which
+        admitted the trailing-period honorifics '田中さん 様.' and
+        '김민준 씨.' -- a listing artifact no writing system produces,
+        and the same class as the forms it was already refusing).
+        Every composed/wrapped form is tolerated=True's
         ground, not a shape tag's, so this REFUSES rather than
         requires a particular arrangement beyond that purity test
         (plus shape 7's divider/katakana requirement, and shape 6's
@@ -255,6 +274,19 @@ class Case:
                 f"{self.id}: shape {self.shape} refuses a Latin "
                 f"letter; Latin-wrapped compositions belong under "
                 f"tolerated=True, not a shape tag")
+        # The residue, after the two forms with doctrine of their own:
+        # a space is the only ASCII character a pure CJK arrangement
+        # writes, so anything else ASCII came in with a convention
+        # from elsewhere -- a trailing period, a digit, a bracket --
+        # and is a composed form whatever it is called.
+        stray = _stray_ascii(self.text)
+        if stray:
+            raise ValueError(
+                f"{self.id}: shape {self.shape} refuses the ASCII "
+                f"{stray!r} ({self.text!r}); a space is the only "
+                f"ASCII character a pure arrangement carries, and "
+                f"composed forms belong under tolerated=True, not a "
+                f"shape tag")
         # U+00B7 (间隔号) marks a name transcription in SOURCE order
         # (W1 Accepted) -- shape 7's ground, not shape 6's family-
         # first one. The fullwidth nakaguro U+30FB is NOT a source-
@@ -3298,7 +3330,14 @@ CASES: tuple[Case, ...] = (
                "this has one -- which is no longer what separates "
                "them.) 1.4.0 read this first "
                "田中さん / last '様.', which is what 2.0 produced until "
-               "#320: parity before, a classified change after"),
+               "#320: parity before, a classified change after. "
+               "TOLERATED since 2026-09-05: a trailing ASCII period on "
+               "a CJK honorific is a listing artifact no writing "
+               "system produces -- the same class as a comma listing "
+               "or a Latin credential. The row still pins #320's "
+               "mechanism at HEAD; what moves is which corpus file "
+               "carries the text",
+         tolerated=True),
     Case("ja_honorific_period_does_not_stop_the_peel", "田中さん, 様.",
          {"family": "田中", "suffix": "さん, 様."},
          classification="fix(#320)",
@@ -3425,7 +3464,12 @@ CASES: tuple[Case, ...] = (
                "middle 민준 / family '씨.'; the fields above are #320's, "
                "not the segmenter's, so the row is classified to it -- "
                "as ko_honorific_ssi is classified to #307 without "
-               "naming the same segmentation it also depends on"),
+               "naming the same segmentation it also depends on. "
+               "TOLERATED since 2026-09-05 with its two period twins: "
+               "a trailing ASCII period on a CJK honorific is a "
+               "listing artifact no writing system produces. The row "
+               "still pins #320's mechanism at HEAD",
+         tolerated=True),
     Case("ko_honorific_glued_teacher", "김선생님",
          {"family": "김", "suffix": "선생님"},
          classification="fix(#307) + fix(#271)",
@@ -4019,7 +4063,13 @@ CASES: tuple[Case, ...] = (
                "pin nothing these two do not. Classified to #320 like "
                "its 씨 counterpart: 1.4.0 read this first 김민준 / last "
                "'양.', and the fields above are the ones this change "
-               "produced, not the segmenter's"),
+               "produced, not the segmenter's. TOLERATED since "
+               "2026-09-05 for the same reason as that counterpart -- "
+               "a trailing ASCII period on a CJK honorific is a "
+               "listing artifact no writing system produces -- and the "
+               "pair moves tiers together the way it moves fields "
+               "together. The row still pins #320's mechanism at HEAD",
+         tolerated=True),
     Case("ko_surname_yang_leads_a_segmentable_given", "양 지훈",
          {"family": "양", "given": "지훈"},
          classification="fix(#271)",
