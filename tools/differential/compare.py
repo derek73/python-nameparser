@@ -1651,6 +1651,12 @@ class _ShapeMismatch(NamedTuple):
 #: recorded for the OLD shape, so both want reading before either is
 #: edited.
 #:
+#: Every row here HAS such a winner, and this dict and
+#: _CROSS_RULE_WINNERS are held to name the same strings. A shape
+#: measured for a name nothing pins a winner for does not go here:
+#: _WATCHED_DIFFS below is the roster for a shape with no argument
+#: behind it, and this dict and that one are kept disjoint.
+#:
 #: HERE rather than beside the roster because this is where the
 #: measurement happens. main() computes every name's real diff, so a
 #: run can check these; the unit suite cannot, and deliberately -- it
@@ -1739,6 +1745,264 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 }
 
 
+#: The recorded diff shape of a name NO WINNER IS PINNED FOR, per
+#: ledger. A second roster under a different contract from the one
+#: above, and the difference is the whole reason it is a second dict
+#: rather than more rows in the first: a shape beside a winner
+#: ADJUDICATES a contest -- _RECORDED_DIFFS records what a name diffs
+#: so that _CROSS_RULE_WINNERS can ask classify() which rule wins it
+#: -- where a shape alone WATCHES the name without adjudicating it.
+#: "No winner pinned" is the property every row here has and two
+#: checks enforce -- the disjointness guard in
+#: tests/v2/test_ledger_guards.py and main()'s `both` refusal; it is
+#: not "nothing else watches". MOST rows
+#: are also sole-watched -- that is the population the sweep drew
+#: (POPULATION below): a radar name that no test names and no
+#: contract corpus holds is watched only by the classification rule
+#: that explains its diff, and a rule is a weak watcher, asserting
+#: that a diff here is intended and not what the diff IS, so a diff
+#: that changes shape while staying inside the rule's `fields` moves
+#: silently. A row here says what the diff is, and the move becomes
+#: a finding. A CONTESTED row (the #501 block at 2.0.0) is the other
+#: case: a Case(...) row in tests/v2/cases.py already adjudicates its
+#: PARSE, and three of the four sit in contract corpora; what no one
+#: has adjudicated is which RULE explains its diff. A reader of such
+#: a row consults the case row before this roster.
+#:
+#: Four things follow from the split, and each is checked rather than
+#: stated:
+#:   DISJOINT from _RECORDED_DIFFS, per ledger. A name is one kind of
+#:   row or the other. A name with BOTH an argument and no other
+#:   watcher belongs above, since the argument is the stronger claim.
+#:   test_the_watched_roster_is_disjoint_and_names_every_ledger
+#:   (tests/v2/test_ledger_guards.py) refuses an overlap at pytest
+#:   speed, and main() refuses it again pre-worker, because this tool
+#:   may not assume the suite ran.
+#:   NO WINNER, ever. A winner pin asserts an argument about which rule
+#:   should explain a name, and no row here carries one -- which is
+#:   what lets a row here be recorded from a measurement where a winner
+#:   cannot be. The day someone argues a winner, the row MOVES to
+#:   _RECORDED_DIFFS and the pin goes beside it there; it does not gain
+#:   a partner here.
+#:   MEASURED, from a run, and re-measured by every run. Everything
+#:   in main() that reads _RECORDED_DIFFS reads this dict too (the two
+#:   winner guards in tests/v2/test_ledger_guards.py read that dict
+#:   alone, correctly): the missing-section refusal pre-worker asks
+#:   each dict for a section, the departed-name refusal beside it and
+#:   the NOT CHECKED note read the literal UNION of the two, and the
+#:   shape comparison calls recorded_diff_mismatches once PER dict,
+#:   because the two halves carry different severities and the exit
+#:   code reads only one of them. A row in either dict that no run
+#:   can contradict is the defect #497 is about, whichever dict it
+#:   sits in.
+#:   SEVERITY follows the row's kind first and the name's tier second.
+#:   A contest row is fatal on either tier: it carries an argument, and
+#:   a moved shape has made that argument's premise false. A watched
+#:   row on a CONTRACT-tier name fails the run, as an unexplained diff
+#:   on that name would; on a RADAR-tier name it prints under MOVED
+#:   SHAPE (radar) and feeds no exit code. Fatal-on-radar is reserved
+#:   for a per-name deliberate choice -- a [[never]] entry with its
+#:   `why` (_CORPUS_TIERS), or a contest row with its pinned winner --
+#:   and a measured snapshot is neither: the
+#:   only repair a fired snapshot admits is to re-snapshot, and a gate
+#:   whose repair is "record whatever it does now" is a changelog entry
+#:   in a gate's clothing. The tier is the DEFAULT-ORDER entry's when
+#:   the name has one, and the first-loaded entry's (contract whenever
+#:   any is) only when it does not -- a shape here is measured on the
+#:   default-order comparison, so that comparison's entry is the one
+#:   whose tier says whether the shape was promised, and a
+#:   baseline-scoped tier is a property of the ENTRY compared, not of
+#:   the files the string sits in (decisions.md, the rule-order arc).
+#:   So a name that is contract only under a declared order and radar
+#:   under the default reads radar here, and the declared-order promise
+#:   is untouched.
+#:
+#: POPULATION, measured 2026-09-05. A name has a row here where it is
+#: SOLE-WATCHED at that baseline: held by a radar corpus and by no
+#: contract corpus; named by no string literal anywhere under tests/
+#: outside test_ledger_guards.py -- every string ast.Constant, by exact
+#: equality, since substring matching would score 'A. D.' a watcher of
+#: every longer name containing it; diffing under the DEFAULT order at
+#: that baseline AND explained by a ledger rule there -- a diff no
+#: rule explains is already printed by every run as unclassified, so
+#: a rule is the only weak watcher a row here is needed for (a
+#: definition clause, not a live count: `radar unclassified` is 0 at
+#: every baseline today, so the two sets coincide); and not already
+#: keyed in _RECORDED_DIFFS for that
+#: ledger. The last clause is the one a scan of tests/ cannot supply,
+#: because that scan cannot see this file, and it excludes four names
+#: at 1.4.0 that carry contest rows there: 'Bob Jones, author',
+#: 'Carod i', 'MD, PHD', 'van ma van'. Three of them return at a 2.x
+#: baseline where they have no contest row; 'Carod i' diffs under the
+#: default order at 1.4.0 only, so it has no row in this dict (its
+#: contest row at 1.4.0 stands), which is
+#: why the population is 51 names where the tests/-only scan says 52.
+#: The counts: 41 / 32 + 4 / 31 / 5 rows, 113 in all, over the 51
+#: names plus the four #501 contests that close the 2.0.0 section.
+#: 49 of the 51 sit in corpus_issues.jsonl and 3 in corpus.jsonl, with
+#: 'dr Vincent van Gogh dr' in both, so the per-file counts overlap by
+#: one and are not a partition. Every row is a default-order shape,
+#: as the roster above's are, so no row here is a declared-order-only
+#: diff for NOT CHECKED to name.
+#:
+#: RECOMPUTE: wrap classify() and drive main() unchanged at each
+#: baseline, recording (name, order, diff, rule) per call; keep the
+#: calls whose order is None and whose rule is not None; apply the
+#: four clauses above with the literal set from ast.walk over
+#: tests/**/*.py EXCLUDING test_ledger_guards.py, as the POPULATION
+#: clause says -- run over every file it yields 38 / 28 / 27 / 4 rows
+#: rather than 41 / 32 / 31 / 5, since _CROSS_RULE_WINNERS' keys and
+#: a few guard literals then score as watchers -- the tier sets from
+#: _load_entries over corpus*.jsonl
+#: through _CORPUS_TIERS, and that ledger's _RECORDED_DIFFS keys. Not
+#: by replaying the corpus load by hand: the (name, order) dedup, the
+#: baseline-minimum skip and the tier stamp all happen inside main(),
+#: and a name's membership is a property of the entry that run
+#: compared.
+#:
+#: Two limits. The population is a LOWER bound: a literal in a test
+#: that is not about parsing -- 'John Smith' in a TypeError test --
+#: scores as a watcher, so a name a test merely mentions has no row
+#: here although nothing checks its parse. And nothing notices a NEW
+#: sole-watched name arriving with no row. A completeness guard has
+#: to answer "what else watches this name" mechanically, and its
+#: other half, "diffs at some baseline", only a run with the wheel
+#: knows -- so that guard is a run-time NOTE in the NOT CHECKED family
+#: by necessity, not a pytest-speed roster check, and it is not here.
+_WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
+    "expected_since_1.4.0.toml": {
+        "1 & 2, 3 4 5, Mr.": ("_initials",),
+        "Aishwarya Rai": ("family", "suffix"),
+        "Anh do": ("_initials",),
+        "Anna Müller (geb. Schmidt)": ("maiden", "nickname"),
+        "Anna Müller geb. Schmidt": ("family", "maiden", "middle"),
+        "Attorney General of Minnesota": ("_initials",),
+        "Bob Jones, compositeur": ("family", "given"),
+        "Dean of Chemistry": ("_initials",),
+        "Dean of Chemistry Robert Johns": ("_initials",),
+        "Deputy Secretary of State": ("_initials",),
+        "Do Quang Minh": ("given", "middle", "title"),
+        "Donald mc": ("family", "suffix"),
+        "Dr 田中さん, V.": ("family", "given", "suffix"),
+        "Dr. Do Van Johnson, MD": ("family", "given"),
+        "Duke of Edinburgh": ("_initials",),
+        "Esq. van Gogh": ("family", "given"),
+        "Jack M.A.": ("family", "suffix"),
+        "Jane van der Berg 旧姓 Jones": ("family", "maiden"),
+        "Janey née Jones": ("family", "given", "maiden", "middle"),
+        "John V": ("family", "suffix"),
+        "John of the Doe": ("_initials",),
+        "Jong van der": ("_initials",),
+        "Jong, van der": ("_initials",),
+        "Jose e Maria Santos": ("_initials",),
+        "Juan Garcia y Lopez": ("_initials",),
+        "MD, DO, DDS": ("given", "title"),
+        "Mesnil Garcia van": ("_initials",),
+        "Mohamad X": ("family", "suffix"),
+        "Ph. D., Jr.": ("family", "given"),
+        "QC MP": ("family", "suffix"),
+        "Sander van": ("_initials",),
+        "Smith Jones, Ph. D. Jr.": ("suffix",),
+        "Smith, Ph. D.": ("family", "given"),
+        "Smith, Ph. D. Jr. MD": ("given", "suffix", "title"),
+        "Smith, Ph. D. MD": ("suffix", "title"),
+        "Smith, Ph.D. Jr.": ("given", "suffix"),
+        "Smith, Prof.": ("family", "given"),
+        "Ursula von der Leyen (geb. Albrecht)": ("maiden", "nickname"),
+        "dr Vincent James van Gogh dr": ("family", "suffix"),
+        "dr Vincent van Gogh dr": ("family", "suffix"),
+        "dr Vincent van der Gogh dr": ("family", "suffix"),
+    },
+    "expected_since_2.0.0.toml": {
+        "Anh do": ("_initials",),
+        "Anna Müller (geb. Schmidt)": ("maiden", "nickname"),
+        "Bob Jones, author": ("family", "given"),
+        "Bob Jones, compositeur": ("family", "given"),
+        "Do Quang Minh": ("_ambiguities", "given", "middle", "title"),
+        "Dr 田中さん, V.": ("family", "given", "suffix"),
+        "Dr. Do Van Johnson, MD": ("family", "given"),
+        "E Anne D,Leonardo": ("_initials",),
+        "Esq. van Gogh": ("_ambiguities", "family", "given"),
+        "JOSE E MARIA SANTOS": ("_initials",),
+        "Jane van der Berg 旧姓 Jones": ("family", "maiden"),
+        "Janey née Jones": ("family", "given"),
+        "Joe E. Smith": ("_initials",),
+        "John, Smith, Dr.": ("_ambiguities",),
+        "Jong van der": ("_initials",),
+        "Jong, van der": ("_initials",),
+        "Jose E. Maria Santos": ("_initials",),
+        "MD, DO, DDS": ("given", "title"),
+        "MD, PHD": ("suffix", "title"),
+        "Mesnil Garcia van": ("_initials",),
+        "Ph. D., Jr.": ("family", "suffix", "title"),
+        "Sander van": ("_initials",),
+        "Smith Dr": ("family", "suffix"),
+        "Smith, John E, III, Jr": ("_initials",),
+        "Smith, Ph. D. Jr. MD": ("given", "suffix"),
+        "Smith, Ph. D. MD": ("given", "suffix"),
+        "Smith, Ph.D. Jr.": ("given", "suffix"),
+        "Ursula von der Leyen (geb. Albrecht)": ("maiden", "nickname"),
+        "dr Vincent James van Gogh dr": ("family", "suffix"),
+        "dr Vincent van Gogh dr": ("family", "suffix"),
+        "dr Vincent van der Gogh dr": ("family", "suffix"),
+        "van ma van": ("_initials",),
+        # The four #501 contests, measured and UNADJUDICATED: at 2.0.0
+        # more than one rule admits each diff and file order alone
+        # picks the one that explains it, and nobody has argued which
+        # should -- a shape with no winner, which is the row kind this
+        # dict exists for. They move to _RECORDED_DIFFS the day #501
+        # argues a winner, and the pin goes beside them there. Three
+        # are contract tier (corpus_cjk.jsonl; the first also
+        # corpus_rules.jsonl), so a move on them fails the run; the
+        # last is corpus_cjk_tolerated.jsonl, radar, and prints.
+        "田中さん 様.": ("family", "given", "suffix"),
+        "김민준 박사님": ("family", "given", "suffix"),
+        "선생님": ("family", "given"),
+        "田中さん, 様.": ("family", "given", "suffix"),
+    },
+    "expected_since_2.1.0.toml": {
+        "Anh do": ("_initials",),
+        "Anna Müller (geb. Schmidt)": ("maiden", "nickname"),
+        "Bob Jones, author": ("family", "given"),
+        "Bob Jones, compositeur": ("family", "given"),
+        "Do Quang Minh": ("_ambiguities", "given", "middle", "title"),
+        "Dr. Do Van Johnson, MD": ("family", "given"),
+        "E Anne D,Leonardo": ("_initials",),
+        "Esq. van Gogh": ("_ambiguities", "family", "given"),
+        "JOSE E MARIA SANTOS": ("_initials",),
+        "Jane van der Berg 旧姓 Jones": ("family", "maiden"),
+        "Janey née Jones": ("family", "given"),
+        "Joe E. Smith": ("_initials",),
+        "John, Smith, Dr.": ("_ambiguities",),
+        "Jong van der": ("_initials",),
+        "Jong, van der": ("_initials",),
+        "Jose E. Maria Santos": ("_initials",),
+        "MD, DO, DDS": ("given", "title"),
+        "MD, PHD": ("suffix", "title"),
+        "Mesnil Garcia van": ("_initials",),
+        "Ph. D., Jr.": ("family", "suffix", "title"),
+        "Sander van": ("_initials",),
+        "Smith Dr": ("family", "suffix"),
+        "Smith, John E, III, Jr": ("_initials",),
+        "Smith, Ph. D. Jr. MD": ("given", "suffix"),
+        "Smith, Ph. D. MD": ("given", "suffix"),
+        "Smith, Ph.D. Jr.": ("given", "suffix"),
+        "Ursula von der Leyen (geb. Albrecht)": ("maiden", "nickname"),
+        "dr Vincent James van Gogh dr": ("family", "suffix"),
+        "dr Vincent van Gogh dr": ("family", "suffix"),
+        "dr Vincent van der Gogh dr": ("family", "suffix"),
+        "van ma van": ("_initials",),
+    },
+    "expected_since_2.2.0.toml": {
+        "E Anne D,Leonardo": ("_initials",),
+        "JOSE E MARIA SANTOS": ("_initials",),
+        "Joe E. Smith": ("_initials",),
+        "Jose E. Maria Santos": ("_initials",),
+        "Smith, John E, III, Jr": ("_initials",),
+    },
+}
+
+
 def recorded_diff_mismatches(
         recorded: dict[str, tuple[str, ...]],
         diffing: list[tuple[str, set[str], str | None]],
@@ -1751,6 +2015,11 @@ def recorded_diff_mismatches(
     an input. Nothing checks the shape itself, so a guessed one agrees
     with itself forever. This is the half only a run can do: main() has
     already measured every name's real diff by the time it calls this.
+    `recorded` is whichever roster the caller hands over -- nothing
+    here knows a contest row from a watched one, and main() calls this
+    once per dict and applies the severity to what comes back, since
+    the two kinds differ in what a mismatch means and not in how one is
+    found.
 
     Only the order-None comparison is read. The roster calls classify()
     with no order, so the shape it records is the default-order one; a
@@ -1840,6 +2109,38 @@ def recorded_diff_mismatches(
         if got != want:
             out.append(_ShapeMismatch(name, want, got))
     return out
+
+
+def _two_causes(rows: list[_ShapeMismatch]) -> str:
+    """The MOVED SHAPE blocks' disclaimer over a row with no measured
+    shape. One-time like the lead it follows, and conditional as well:
+    a block whose rows all carry a measured shape would otherwise print
+    repair advice for a case that did not occur, which is what
+    OVER-DECLARED's `--corpus` NOTE is conditional to avoid. Shared by
+    the three blocks because the two causes are a property of
+    recorded_diff_mismatches, not of the roster a row came from."""
+    return ("\n  A row reading 'measured no default-order diff' "
+            "names no cause because TWO reach it and this check "
+            "cannot separate them: the parser may have stopped "
+            "moving the name, or the name may be compared under a "
+            "declared order alone, leaving no default-order "
+            "comparison to have a shape. Read the corpus entry "
+            "before you read the parser."
+            if any(m.measured is None for m in rows) else "")
+
+
+def _print_moved_rows(rows: list[_ShapeMismatch], roster: str) -> None:
+    """The rows under a MOVED SHAPE lead, naming the dict each lives in
+    so the reader edits the right one. Trailing blank line included:
+    the caller prints a lead only when it has rows, so the two are one
+    unit."""
+    for m in rows:
+        measured = (f"measured {list(m.measured)}"
+                    if m.measured is not None
+                    else "measured no default-order diff of it")
+        print(f"  {m.name!r}\n    {roster} records "
+              f"{list(m.recorded)}; this run {measured}")
+    print()
 
 
 def _load_entries(path: Path) -> list[dict[str, object]]:
@@ -1998,6 +2299,20 @@ def main() -> int:
                 f"fails the run) or 'radar' (an unmatched diff is "
                 f"reported and cannot fail). A default here would let "
                 f"a new corpus pick one by accident")
+        # The VALUE too, not only the key's presence: every tier read
+        # downstream is a comparison against one of the two literals,
+        # and a misspelled value passes each of them on the side its
+        # `!=` happens to fall -- fatal in the comparison loop and in
+        # the watched-shape split, which is the safe direction there,
+        # but by accident rather than by choice, and nothing would
+        # ever name the misspelling.
+        if tier not in ("contract", "radar"):
+            raise SystemExit(
+                f"{path.name} has tier {tier!r} in _CORPUS_TIERS, which "
+                f"is neither 'contract' nor 'radar'. Every tier read "
+                f"below compares against those two literals, so a third "
+                f"value is not a third tier but whichever side of each "
+                f"comparison the misspelling falls on")
         file_entries = _load_entries(path)
         if not file_entries:
             raise SystemExit(f"{path.name} is empty; comparison aborted")
@@ -2113,7 +2428,11 @@ def main() -> int:
     # Do not fold the two branches below back into one
     # shape, and do not level the four checks onto one strength: an
     # earlier draft of `vacant` refused under `--corpus` and told the
-    # contributor to delete legitimate exemptions.
+    # contributor to delete legitimate exemptions. The shape comparison
+    # after the worker -- MOVED SHAPE at either severity, and MOVED
+    # SHAPE (radar) -- reads the flag not at all: recorded_diff_mismatches
+    # skips a name outside `compared`, and that skip is the whole of
+    # its narrowing, in both modes.
     #
     # `full_corpus`, not `args.corpus`: the question the inversion
     # turns on is whether this run read every corpus, and `--corpus` is
@@ -2216,25 +2535,90 @@ def main() -> int:
     #   .glob('corpus*.jsonl'))]"
     # `ledger` is a Path, so the key is `ledger.name` -- as the line
     # below has it, and as an earlier draft of this recipe did not.
-    recorded = _RECORDED_DIFFS.get(ledger.name, {})
-    gone = sorted(set(recorded) - set(corpus_names))
-    if gone and full_corpus:
+    #
+    # BOTH rosters, because a watched row (_WATCHED_DIFFS) is measured
+    # by nothing else either: the two differ in what a mismatch means,
+    # not in whether a departed name can be measured, so the union is
+    # the population every check here reads.
+    #
+    # FAIL-CLOSED on a missing section, and indexed rather than
+    # `.get(ledger.name, {})` below for that reason. An empty section
+    # is a statement -- this ledger has no row of that kind -- where a
+    # missing one is nobody having looked, and a `.get` default reads
+    # the two alike: with the 1.4.0 key deleted from _WATCHED_DIFFS,
+    # a full run at that baseline checks 41 rows fewer, prints the
+    # same 375 lines (differing only in the worker environment's path
+    # on the `baseline:` line, as any two runs do) and exits 0. The
+    # pytest-speed guards hold
+    # each dict's keys equal to the ledgers on disk
+    # (test_the_watched_roster_is_disjoint_and_names_every_ledger, and
+    # test_every_pinned_winner_has_a_recorded_shape through
+    # _CROSS_RULE_WINNERS); this refuses again because the tool may
+    # not assume the suite ran -- _CORPUS_TIERS' stance, applied to
+    # the rosters.
+    unsectioned = [dict_name for dict_name, roster in (
+        ("_RECORDED_DIFFS", _RECORDED_DIFFS),
+        ("_WATCHED_DIFFS", _WATCHED_DIFFS)) if ledger.name not in roster]
+    if unsectioned:
+        raise SystemExit(
+            f"tools/differential/compare.py: {' and '.join(unsectioned)} "
+            f"carry no section for {ledger.name!r}. A ledger needs an "
+            f"explicit section in each shape roster, mapped to {{}} "
+            f"while it has no row of that kind: an empty section is a "
+            f"statement, a missing one is nobody having looked, and a "
+            f"default would read the two alike and check nothing for "
+            f"this ledger. tests/v2/test_ledger_guards.py holds every "
+            f"ledger on disk to the same key equality at pytest speed")
+    recorded = _RECORDED_DIFFS[ledger.name]
+    watched = _WATCHED_DIFFS[ledger.name]
+    # A name in BOTH dicts has not chosen which kind of row it is, and
+    # the two kinds carry different severities and different repairs,
+    # so the run cannot pick one for it. The pytest-speed guard in
+    # tests/v2/test_ledger_guards.py refuses the same overlap; this
+    # refuses it again because the tool may not assume the suite ran
+    # -- _CORPUS_TIERS is fail-closed here for the same reason.
+    both = sorted(set(recorded) & set(watched))
+    if both:
         raise SystemExit("\n".join(
-            [f"tools/differential/compare.py: {len(gone)} row(s) in "
-             f"_RECORDED_DIFFS[{ledger.name!r}] name a string no corpus "
+            [f"tools/differential/compare.py: {len(both)} name(s) sit in "
+             f"both _RECORDED_DIFFS[{ledger.name!r}] and "
+             f"_WATCHED_DIFFS[{ledger.name!r}]. A row is one kind or "
+             f"the other: a shape beside a winner adjudicates a "
+             f"contest, a shape alone watches a name no winner is "
+             f"pinned for. A name with an argument behind it belongs in "
+             f"_RECORDED_DIFFS alone -- delete its _WATCHED_DIFFS row:"]
+            + [f"  {n!r}" for n in both]))
+    gone = sorted((set(recorded) | set(watched)) - set(corpus_names))
+    if gone and full_corpus:
+        # The repair differs by roster and the message says so per
+        # list rather than once: a contest row has a partner pin in
+        # _CROSS_RULE_WINNERS to delete with it, a watched row has no
+        # partner, and one sentence covering both would tell a
+        # watched-row reader to delete something that does not exist.
+        contest_gone = [n for n in gone if n in recorded]
+        watched_gone = [n for n in gone if n in watched]
+        raise SystemExit("\n".join(
+            [f"tools/differential/compare.py: {len(gone)} recorded diff "
+             f"shape(s) for {ledger.name!r} name a string no corpus "
              f"holds any more, over the FULL corpus. Nothing measures "
              f"such a row, so it agrees with itself forever -- the shape "
              f"of the defect #497 is about. Settle the question that "
              f"picks the repair first: did the name leave DELIBERATELY? "
              f"`git log -S'<name>' -- tools/differential/corpus*.jsonl` "
-             f"answers it. If it did, delete the row here AND its "
-             f"partner in _CROSS_RULE_WINNERS "
-             f"(tests/v2/test_ledger_guards.py), which pins a winner "
-             f"for a contest nothing raises now. If it did not, restore "
-             f"the name to a corpus -- the corpus is what regressed. "
-             f"Both can be true of one name, which is why the question "
-             f"comes before the edit:"]
-            + [f"  {n!r}" for n in gone]))
+             f"answers it. If it did, delete the row. If it did not, "
+             f"restore the name to a corpus -- the corpus is what "
+             f"regressed. Both can be true of one name, which is why "
+             f"the question comes before the edit:"]
+            + (["  in _RECORDED_DIFFS, each with a partner in "
+                "_CROSS_RULE_WINNERS (tests/v2/test_ledger_guards.py) "
+                "that pins a winner for a contest nothing raises now "
+                "-- a deletion takes both:"]
+               + [f"    {n!r}" for n in contest_gone]
+               if contest_gone else [])
+            + (["  in _WATCHED_DIFFS, pinning no winner, so the row is "
+                "the whole of the deletion:"]
+               + [f"    {n!r}" for n in watched_gone]
+               if watched_gone else [])))
     # an ORDER-BEARING entry must never reach a worker whose baseline
     # cannot honor it (no Policy below 2.0.0) -- skip it and say so,
     # rather than shrink the comparison silently. An order-NONE
@@ -2461,7 +2845,8 @@ def main() -> int:
             print(f"  {issue!r} explained {name!r}{_order_tag(tagged)}")
         print()
     # The measured half of the recorded-shape check (#497): the shape
-    # _CROSS_RULE_WINNERS pins against the diff this run actually made.
+    # _CROSS_RULE_WINNERS pins against the diff this run actually made,
+    # and the shape _WATCHED_DIFFS records against the same diff.
     # HERE because this is the only place both exist -- validate_rules
     # runs before any corpus is read, and the unit suite spawns no
     # worker, deliberately, so neither can ask it. Its absent-name half
@@ -2521,7 +2906,13 @@ def main() -> int:
     # both modes, and never the departed-name question the `gone` half
     # owns. Nothing else stands between the two lists: `entries` is
     # rebuilt exactly once between them, by that skip.
-    unchecked = sorted((set(recorded) & set(corpus_names)) - compared)
+    #
+    # The UNION of the two rosters, like `gone` above: a watched row on
+    # a skipped entry is checked by neither half for exactly the same
+    # reason a contest row is, and which dict it sits in changes what
+    # a mismatch would mean, not whether one could be measured.
+    unchecked = sorted(((set(recorded) | set(watched)) & set(corpus_names))
+                       - compared)
     if unchecked:
         print(f"NOT CHECKED {ledger.name}: {len(unchecked)} recorded "
               f"diff shape(s) name an entry this baseline skipped, so "
@@ -2536,8 +2927,46 @@ def main() -> int:
         for n in unchecked:
             print(f"  {n!r}")
         print()
-    shape_bad = recorded_diff_mismatches(recorded, diffing, compared)
-    if shape_bad:
+    # The severity split for a WATCHED row reads the compared entry's
+    # tier, and the entry is the post-skip one -- the same list
+    # `compared` was built from, so every name in `compared` has a key
+    # here and the lookups below index rather than `.get`: a miss would
+    # mean `compared` and `entries` had parted, which nothing between
+    # them can do. Not the order-None entries alone: a name compared
+    # under a declared order ALONE is in `compared` with no
+    # default-order entry, and a watched row on it reports with
+    # `measured` None (recorded_diff_mismatches' second cause), which
+    # is a mismatch owed a tier like any other -- read off only its
+    # order-None entry it would fall out of both lists below and
+    # print nowhere. So an order-None entry decides when there is one,
+    # since the shape recorded is the default-order shape, and the
+    # first-loaded entry decides otherwise, which is a contract one
+    # whenever any is: the (name, order) dedup loaded contract files
+    # first, and at most one order-None entry survives per name (a
+    # declared-order-only name has none), so the tier is unambiguous
+    # in both cases.
+    tier_of: dict[str, str] = {}
+    for e in entries:
+        if e["order"] is None or str(e["name"]) not in tier_of:
+            tier_of[str(e["name"])] = str(e["tier"])
+    contest_bad = recorded_diff_mismatches(recorded, diffing, compared)
+    watched_bad = recorded_diff_mismatches(watched, diffing, compared)
+    # `== "radar"` and its complement rather than `== "contract"`, the
+    # reading the comparison loop above uses: a tier that is neither
+    # fails, which is the fail-closed direction. Defense in depth
+    # only, since the corpus load refuses any value outside the two
+    # literals -- so every tier that reaches this line IS one of them,
+    # and the watched block's "because the name is contract tier" is
+    # true of every value that lands on its side.
+    watched_contract = [m for m in watched_bad
+                        if tier_of[m.name] != "radar"]
+    watched_radar = [m for m in watched_bad if tier_of[m.name] == "radar"]
+    # What the exit code reads. A contest row is fatal on either tier
+    # because it carries an argument; a watched row follows its name's
+    # tier, and _WATCHED_DIFFS' header carries why the radar half does
+    # not fail.
+    shape_bad = contest_bad + watched_contract
+    if contest_bad:
         # The instruction and the disclaimer are properties of the
         # CHECK, not of a row, so they lead the block once instead of
         # riding every line -- the shape the Role-vocabulary legend
@@ -2558,34 +2987,39 @@ def main() -> int:
         # recorded_diff_mismatches' docstring says why they are
         # collapsed -- and naming one would send half the readers to
         # the wrong file.
-        print(f"MOVED SHAPE {ledger.name}: {len(shape_bad)} recorded "
+        print(f"MOVED SHAPE {ledger.name}: {len(contest_bad)} recorded "
               f"diff shape(s) disagree with this run. Each is a "
               f"FINDING, not a number to update: the winner pinned "
               f"beside the shape in _CROSS_RULE_WINNERS "
               f"(tests/v2/test_ledger_guards.py) was recorded for the "
               f"OLD shape, so read both before editing either."
-              # The disclaimer is one-time like the sentence above it,
-              # but conditional as well: a block whose rows all carry a
-              # measured shape would otherwise print repair advice for
-              # a case that did not occur, which is what
-              # OVER-DECLARED's `--corpus` NOTE is conditional to
-              # avoid.
-              + ("\n  A row reading 'measured no default-order diff' "
-                 "names no cause because TWO reach it and this check "
-                 "cannot separate them: the parser may have stopped "
-                 "moving the name, or the name may be compared under a "
-                 "declared order alone, leaving no default-order "
-                 "comparison to have a shape. Read the corpus entry "
-                 "before you read the parser."
-                 if any(m.measured is None for m in shape_bad) else ""))
-    for m in shape_bad:
-        measured = (f"measured {list(m.measured)}"
-                    if m.measured is not None
-                    else "measured no default-order diff of it")
-        print(f"  {m.name!r}\n    _RECORDED_DIFFS records "
-              f"{list(m.recorded)}; this run {measured}")
-    if shape_bad:
-        print()
+              + _two_causes(contest_bad))
+        _print_moved_rows(contest_bad, "_RECORDED_DIFFS")
+    # The two watched blocks share a lead and differ in the last
+    # sentence, which is the severity and its reason. Neither names
+    # _CROSS_RULE_WINNERS: no row in them has a partner there, and a
+    # reader sent to that roster would find nothing to read.
+    if watched_contract:
+        print(f"MOVED SHAPE {ledger.name}: {len(watched_contract)} watched "
+              f"diff shape(s) disagree with this run. No winner is "
+              f"pinned for these names, so each is a FINDING, not a "
+              f"number to update: if the move is intended, re-record the shape "
+              f"in _WATCHED_DIFFS in the commit that moved it and say "
+              f"why there. This fails the run because the name is "
+              f"contract tier (_CORPUS_TIERS)."
+              + _two_causes(watched_contract))
+        _print_moved_rows(watched_contract, "_WATCHED_DIFFS")
+    if watched_radar:
+        print(f"MOVED SHAPE (radar) {ledger.name}: {len(watched_radar)} "
+              f"watched diff shape(s) disagree with this run. No winner "
+              f"is pinned for these names, so each is a FINDING, not a "
+              f"number to update: if the move is intended, re-record "
+              f"the shape in _WATCHED_DIFFS in the commit that moved it "
+              f"and say why there. This does not fail the run because "
+              f"the name is radar tier (_CORPUS_TIERS), which watches "
+              f"without promising."
+              + _two_causes(watched_radar))
+        _print_moved_rows(watched_radar, "_WATCHED_DIFFS")
     dormancy = dormant_rules(rules, set(by_issue), diffing, exclusions)
     for dormant in dormancy.undeclared:
         print(f"EXPLAINED NOTHING {dormant.issue!r}\n    "
@@ -2654,6 +3088,9 @@ def main() -> int:
     # _CROSS_RULE_WINNERS feeds that shape to classify() as an input, so
     # a wrong one takes the roster's verdict with it. One exit code for
     # all five terms below, so none of them is the one nobody noticed.
+    # `shape_bad` is the contest rows plus the watched rows on contract
+    # names; a watched row on a radar name printed above and is not in
+    # it, by the severity rule _WATCHED_DIFFS' header argues.
     return 1 if unexplained or dormancy.undeclared or dormancy.awake \
         or overwide or shape_bad else 0
 

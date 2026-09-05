@@ -102,45 +102,46 @@ uv run sphinx-build -b html docs dist/docs
 #    dynamic dormancy check AND no over-declaration check (#452) at all
 #    -- and neither is hypothetical: #452 found 3, 5 and 6 stale
 #    declarations sitting in the three files. See
-#    tools/differential/README.md:
-#    uv run python tools/differential/compare.py --baseline 1.4.0   # the v1 compat contract
-#    uv run python tools/differential/compare.py                    # the previous minor
-#    uv run python tools/differential/compare.py --baseline 2.0.0   # 2.0.0's ledger has rules too
-#    NOTE (2026-09-03, #503): that is THREE commands against FOUR ledgers
-#    with rules -- `--baseline 2.1.0` is the one no line above reaches, so
-#    the "EVERY baseline" instruction is not what this list does. Since
-#    #497 a third check is per-ledger as well: the recorded-shape one
-#    reads _RECORDED_DIFFS[ledger.name], so the ledger nobody runs gets no
-#    dormancy check, no over-declaration check, and no shape check.
-#    Two of those three are gaps TODAY; the shape check is latent only
-#    because expected_since_2.1.0.toml's _RECORDED_DIFFS section is empty
-#    -- and whether the 2.x sections stay empty is #501, which measured
-#    six contested diffs across the two 2.x ledgers with no pin, one of
-#    them at 2.1.0 (`MD, PHD`). The first 2.1.0 row to land would be
-#    checked by nothing a releaser runs.
+#    tools/differential/README.md. The baselines are DERIVED from the
+#    ledger glob rather than enumerated, so a ledger opened at step 8 is
+#    covered at the next release without anyone remembering to add a line
+#    (the same reason compare.py's `--corpus` default is a glob: one that
+#    has to be asked for by name is one that stops being run). Redirect
+#    each run to a file, never pipe it -- under zsh a pipe replaces the
+#    exit code with the pipe's, so a failing run reads as a passing one:
+#    for f in tools/differential/expected_since_*.toml; do
+#      b=${f##*expected_since_}; b=${b%.toml}
+#      uv run python tools/differential/compare.py --baseline "$b" > "/tmp/gate-$b.txt"; echo "$b exit $?"
+#    done
+#    #503 (filed 2026-09-03, fixed on the branch 2026-09-05, closed by its
+#    merge): this step enumerated three
+#    commands against four ledgers, so `--baseline 2.1.0` got no dormancy,
+#    over-declaration or recorded-shape check from any releaser, the shape
+#    gap "latent" only while that ledger's roster sections were empty; the
+#    bundle that closed it ARMED it first -- rows now sit in
+#    expected_since_2.1.0.toml's _WATCHED_DIFFS section (31 on the day;
+#    `len(compare._WATCHED_DIFFS['expected_since_2.1.0.toml'])` is the
+#    live figure) -- and the loop above is the fix it chose.
 #    Cost is not the obstacle and no fix may be argued from it: measured
 #    2026-09-03, a whole run is under a second at every baseline and all
 #    four back to back are about two seconds (0.43s at 1.4.0, 0.56s at
-#    2.2.0, 1.97s for the four; decisions.md's 2026-09-03 #497 timing
-#    finding carries the recompute and retires every cost argument in
+#    2.2.0, 1.97s for the four; the recompute lives ONCE, in decisions.md's
+#    rule-order arc under the Declined bullet on precise per-name contest
+#    detection, and the 2026-09-03 #497 timing finding points there and
+#    retires every cost argument in
 #    this repo's differential prose).
-#    #503 weighs three fixes and none of them is this note's to make:
-#    add the fourth command; have the checklist DERIVE the list from the
-#    expected_since_*.toml glob rather than enumerate it; or say that
-#    2.1.0 is deliberately outside the audit and fix the "EVERY baseline"
-#    line to match. The local precedent for the second is compare.py's
-#    own `--corpus` default, a glob and deliberately so -- "one that has
-#    to be asked for by name is one that stops being run" -- which is the
-#    same failure this note records, one argument up.
-#    Redirect to a file rather than piping — under zsh a pipe replaces the exit
-#    code with the pipe's, so a failing run reads as a passing one. The
-#    classified summary it prints is the source for the release notes' behavior
-#    claims, including the count of changed names that are Latin-only.
-#    Exit 0 no longer means every diff is classified: since the tier split
-#    (#468) a radar corpus's unmatched diffs print under UNCLASSIFIED (radar)
-#    and cannot fail the run. Read that block. A radar diff worth a release
-#    note gets promoted (a cases.py row plus a shape tag) or classified with a
-#    rule BEFORE the log is drafted, not after.
+#    The classified summary each run prints is the source for the release
+#    notes' behavior claims, including the count of changed names that are
+#    Latin-only.
+#    Exit 0 no longer means every diff is classified, and two blocks print
+#    without failing the run. Since the tier split (#468) a radar corpus's
+#    unmatched diffs print under UNCLASSIFIED (radar); since the watched-shapes
+#    arc (#501) a watched shape on a radar name that MOVED prints under
+#    MOVED SHAPE (radar). Read both. A radar diff worth a release note gets
+#    promoted (a cases.py row plus a shape tag) or classified with a rule
+#    BEFORE the log is drafted, not after; a moved shape is a finding, and if
+#    the move is intended the row is re-recorded in _WATCHED_DIFFS in the
+#    commit that moved it, saying why there.
 # 2. Clear PRE_RELEASE in nameparser/_version.py — it carries 'dev' through the
 #    cycle (see step 9), so releasing is setting it to ''. VERSION should already
 #    be the version you are shipping; bump it here only if step 9 was skipped.
@@ -171,11 +172,14 @@ uv run sphinx-build -b html docs dist/docs
 #    covers those is _CORPUS_CLAIMS, which records what every rule claims
 #    -- its regex's corpus reach, its roles, and which names -- and so
 #    needs no notion of how a copy is spelled.
-#    THREE rosters are keyed by FILENAME and checked by EQUALITY, so a new
+#    FOUR rosters are keyed by FILENAME and checked by EQUALITY, so a new
 #    ledger must be enrolled in every one of them on the day it lands, even
-#    empty -- each fails loudly and names itself, but that is three separate
-#    red runs if you add them one at a time. Two more are keyed by rule
-#    CONTENT and apply only where such a rule exists.
+#    empty -- each fails loudly and names itself, but that is four separate
+#    red runs if you add them one at a time. Three sit in the test module
+#    and one in tools/differential/compare.py; a fifth, compare.py's
+#    _RECORDED_DIFFS, is enrolled transitively, since the guard holds
+#    set(_RECORDED_DIFFS) == set(_CROSS_RULE_WINNERS). Two more are keyed
+#    by rule CONTENT and apply only where such a rule exists.
 #    Required, by filename:
 #      - _SPAN_BEARING_RULES: add the filename, mapped to the set of issue
 #        tags whose rules carry a script-span class (empty set if none).
@@ -191,6 +195,12 @@ uv run sphinx-build -b html docs dist/docs
 #        that a ledger with no rows had been indistinguishable from one
 #        needing none -- the two 2.x ledgers whose shapes #452 moved
 #        between rules had no section at all.
+#      - _WATCHED_DIFFS, in tools/differential/compare.py rather than the
+#        test module: add the filename mapped to {} while the ledger has
+#        no watched name, and the same for _RECORDED_DIFFS beside it. The
+#        run itself refuses, pre-worker, a ledger missing from either
+#        shape roster -- an empty section is a statement, a missing one is
+#        nobody having looked -- so the guard and the run agree on it.
 #    Conditional, by rule content:
 #      - _HONORIFIC_SOURCES: if the ledger has a CJK honorific rule, add a
 #        substring of its issue (keyed that way, not by tag) mapped to the
