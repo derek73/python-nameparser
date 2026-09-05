@@ -3334,10 +3334,9 @@ CASES: tuple[Case, ...] = (
                "TOLERATED since 2026-09-05: a trailing ASCII period on "
                "a CJK honorific is a listing artifact no writing "
                "system produces -- the same class as a comma listing "
-               "or a Latin credential, and the class the 2026-09-01 "
-               "sweep's 'comma or ASCII letter' criterion could not "
-               "see. The row still pins #320's mechanism at HEAD; "
-               "what moves is which corpus file carries the text",
+               "or a Latin credential. The row still pins #320's "
+               "mechanism at HEAD; what moves is which corpus file "
+               "carries the text",
          tolerated=True),
     Case("ja_honorific_period_does_not_stop_the_peel", "田中さん, 様.",
          {"family": "田中", "suffix": "さん, 様."},
@@ -3468,10 +3467,8 @@ CASES: tuple[Case, ...] = (
                "naming the same segmentation it also depends on. "
                "TOLERATED since 2026-09-05 with its two period twins: "
                "a trailing ASCII period on a CJK honorific is a "
-               "listing artifact no writing system produces, and the "
-               "2026-09-01 sweep's 'comma or ASCII letter' criterion "
-               "could not see the class. The row still pins #320's "
-               "mechanism at HEAD",
+               "listing artifact no writing system produces. The row "
+               "still pins #320's mechanism at HEAD",
          tolerated=True),
     Case("ko_honorific_glued_teacher", "김선생님",
          {"family": "김", "suffix": "선생님"},
@@ -4069,11 +4066,9 @@ CASES: tuple[Case, ...] = (
                "produced, not the segmenter's. TOLERATED since "
                "2026-09-05 for the same reason as that counterpart -- "
                "a trailing ASCII period on a CJK honorific is a "
-               "listing artifact no writing system produces, missed by "
-               "the 2026-09-01 sweep's 'comma or ASCII letter' "
-               "criterion -- and the pair moves tiers together the way "
-               "it moves fields together. The row still pins #320's "
-               "mechanism at HEAD",
+               "listing artifact no writing system produces -- and the "
+               "pair moves tiers together the way it moves fields "
+               "together. The row still pins #320's mechanism at HEAD",
          tolerated=True),
     Case("ko_surname_yang_leads_a_segmentable_given", "양 지훈",
          {"family": "양", "given": "지훈"},

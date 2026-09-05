@@ -602,7 +602,7 @@ _CORPUS_FLOORS = {
                                 # the file emptying, and this half only
                                 # grows as the contract narrows
     "corpus_issues.jsonl": 370,  # 381 today, harvested and append-only
-    "corpus_rules.jsonl": 150,  # 247 today, generated from rules.md.
+    "corpus_rules.jsonl": 150,  # 249 today, generated from rules.md.
                                 # 248 until 2026-09-05, when W2's
                                 # trailing-period example moved into
                                 # the tolerated W3 and the builder
@@ -611,7 +611,13 @@ _CORPUS_FLOORS = {
                                 # this file, and (measured 2026-09-05)
                                 # the last CJK example anywhere outside
                                 # W3 that carried a non-space ASCII
-                                # character.
+                                # character. 247 -> 249 later the same
+                                # day, when the review round restored
+                                # W2's second half and witnessed it
+                                # with '김민준 박사님' and '선생님' --
+                                # both already in corpus_cjk.jsonl, so
+                                # the file grew and the deduped pool
+                                # did not.
                                 # 252 until 2026-09-01, when W3 took
                                 # rules.md's `tolerated:` marker and
                                 # build_rules_corpus.py stopped
@@ -663,7 +669,8 @@ _CORPUS_TIERS = {
     # case rows, not by scraping. The tier still fits, and for the
     # reason the flag was written -- these are composed and wrapped
     # CJK forms (a comma listing, a Latin title or credential around a
-    # CJK name) that native CJK writing does not contain, so the
+    # CJK name, and since 2026-09-05 a trailing ASCII period on an
+    # honorific) that native CJK writing does not contain, so the
     # differential stops answering for them. Radar is what "we still
     # watch it, we no longer enforce it" costs; the case rows still
     # assert every one of these parses in the suite.

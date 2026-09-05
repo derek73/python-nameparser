@@ -1063,11 +1063,16 @@ W2. Rationale: some East Asian honorifics glue directly onto the end
     never itself end a name, so the listed vocabulary carries its
     own license and needs no other gate.
     A listed honorific glued to the end of the name's last name
-    word splits off once and reads as a suffix.
+    word splits off once and reads as a suffix. A part that is not
+    name text — a post-nominal word standing on its own — is never
+    the name's end: the split-off steps past it to the name word
+    behind, and never dissects it.
       "田中さん"                  →  suffix="さん"
       "김민준씨"                  →  suffix="씨"
+      "김민준 박사님"             →  suffix="박사님"
       "马丁·路德·金씨"            →  suffix="씨"
       "김지양"                    →  suffix=""  · boundary
+      "선생님"                    →  family="선생님"  · boundary
       "王君"                      →  family="王君"  · boundary
     history: decisions.md#W2 · interacts: W3 · implemented: nameparser/_pipeline/_script_segment.py
 
@@ -1097,10 +1102,17 @@ W3. Rationale: a family name declared by a comma is the writer's
     name's end, and a glued honorific before the comma stays glued.
     The vocabulary question is C1's own, asked without C1's
     word-count condition: the two differ in what else they require,
-    not in what they ask of the words. The split-off ignores the
-    punctuation a listing leaves around the name — a period trailing
-    an honorific is the same artifact as the comma, no writing system
-    putting one there — and reads across it to the word behind.
+    not in what they ask of the words. A period the listing leaves
+    behind is not what licenses the step past a post-nominal word,
+    and it is not ignored either. The step is W2's, taken on the
+    vocabulary alone and taken with no punctuation anywhere in the
+    input; a period on a SEPARATE post-nominal word rides along into
+    the suffix and moves no division (田中さん 様. divides where
+    田中さん 様 does). A period glued to the honorific's OWN word is
+    read instead, and decides against the split-off: the listed tail
+    no longer ends that word, so nothing peels and the text goes on
+    whole — 田中さん. and 김민준씨. each read as a title.
+    decisions.md#cjk-comma-demotion carries the parses.
       "남궁민수"                  →  family="남궁"
       "지훈, 남궁민수"            →  given="남궁민수"
       "남궁민수, 지훈"            →  family="남궁민수"  · boundary

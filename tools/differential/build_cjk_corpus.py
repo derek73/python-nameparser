@@ -27,7 +27,8 @@ tolerated on its rows goes to corpus_cjk_tolerated.jsonl, a RADAR one
 one sweep, so the two halves cannot drift apart or double-count a
 text. Nothing about the harvest predicate changed: a composed or
 wrapped CJK form -- a comma listing, a Latin title or credential
-around a CJK name -- is still compared at every baseline and still
+around a CJK name, and since 2026-09-05 a trailing ASCII period on an
+honorific -- is still compared at every baseline and still
 classified against the ledger. What the flag moves is which of THESE
 TWO FILES a text is written to, and nothing else: a text that another
 CONTRACT corpus also holds keeps the contract tier until it leaves
