@@ -51,9 +51,14 @@ Results
    actual family particles),
    ``conjunction`` (a joining word, "and"/"y"), ``initial`` (an
    initial-shaped word in a script that HAS initials — "J." or "А.",
-   never "씨."), and ``joined`` (a continuation of the
-   previous token within one merged piece, so the suffix view renders
-   "Ph. D." as one credential). Every other tag is namespaced
+   never "씨."), and ``joined`` (a continuation of the token before it
+   — within one merged piece the tag is role-blind and every view
+   joins the pair with a space, so it renders "Ph. D." as one
+   credential and ``Smith, Ph. D. Smith`` gives ``first_list``
+   ``['Ph. D.']``, and since #436 it also spans the pieces of one
+   SUFFIX entry, the run of post-nominals the writer wrote without a
+   comma — "MD PhD" — which is the half the suffix view alone reads
+   and joins with a space instead of ", "). Every other tag is namespaced
    (``vocab:...``) and unstable — never match against those.
 
 .. autoclass:: nameparser.Span

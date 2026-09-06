@@ -95,7 +95,13 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     def test_capitalize_multiple_suffixes_still_split_correctly(self) -> None:
         hn = HumanName('JOHN DOE PHD MD')
         hn.capitalize()
-        self.assertEqual(hn.suffix_list, ['Ph.D.', 'M.D.'])
+        # The split this guards is capitalize() giving each word its own
+        # exception form rather than title-casing the run, and that is
+        # untouched. The two words are ONE entry since #436 -- the writer
+        # spaced them, so they render with a space -- and one entry is one
+        # suffix_list element. A deliberate deviation from 1.4.0, which
+        # inserted a comma into a run the writer had spaced.
+        self.assertEqual(hn.suffix_list, ['Ph.D. M.D.'])
 
     def test_capitalize_suffix_acronym_with_dots(self) -> None:
         # Suffixes already written with dots (e.g. "M.D.") should capitalize

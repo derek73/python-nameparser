@@ -36,6 +36,74 @@
 # [[change]] table to a statically defined array, so that line would
 # block the first entry.
 
+# #436/#437: the suffix view's entry boundary became the comma the
+# writer typed. rules.md#R1: "a run of post-nominals written with
+# spaces renders with spaces, and one written with commas keeps
+# them" -- true of the comma paths since 1.4.0 and of the NO-COMMA
+# path only since 2.3, which is the whole of what these names move.
+# Every one goes from a comma-joined render to a space-joined one;
+# none goes the other way, and none has a comma in the original
+# between the two words. Roles do not move: this rule declares
+# `suffix` alone, so a name whose ROLES move here arrives
+# UNEXPLAINED, as it should.
+#
+# FIRST in the file, as in the other three ledgers, and here that is
+# uniformity rather than force: measured 2026-09-06, moving this
+# rule to the end of THIS file raises no undeclared contest and the
+# run still exits 0, because no rule above it declares a strict
+# superset of `fields = ["suffix"]` and reaches one of these names.
+# It sits first anyway so the four ledgers read the same way, and so
+# that a later rule widening into `suffix` finds the narrow one
+# already ahead of it rather than making this file the one exception
+# (#382, mechanisms.md#LEDGER-RULE-SEPARATION).
+#
+# An anchored alternation of the names rather than a shape, because
+# the shape is "two post-nominals with a space between them" and
+# that reaches every listing form in the corpora. The members are a
+# list of NAMES and copy no wordlist, which is what
+# _NOT_A_VOCABULARY_COPY in tests/v2/test_ledger_guards.py records;
+# _CORPUS_CLAIMS pins the reach at 10 with its digest, and
+# _MUST_NOT_MATCH pins the five comma and delimiter forms it must
+# never claim.
+[[change]]
+issue = "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas"
+name_regex = "^(?:JOHN DOE PHD MD|John Doe MD PhD|John Smith MD PhD|John Smith Mc V|Kenneth Clarke QC MP|Smith, John PhD I\\.|The Rt Hon Kenneth Clarke QC MP, HMG|Washington Jr\\. MD, Franklin|abdul Smith Jr Ma|abdul Smith Jr V)$"
+fields = ["suffix"]
+
+# The four CJK names of #436/#437's class, one rule each. Not one
+# alternation: an alternation holding a script-classified member is
+# claimed by the honorific pin in tests/v2/test_ledger_guards.py,
+# which requires its members to BE the config's CJK honorific
+# entries. These are names, so each stands alone, literal-anchored,
+# reaching exactly one corpus name (_CORPUS_CLAIMS carries the 1)
+# with _MUST_NOT_MATCH probes for the boundary each one has.
+# rules.md#R1: "a run of post-nominals written with spaces renders
+# with spaces, and one written with commas keeps them" -- the peel
+# puts the honorific in `suffix` (rules.md#W2) and the run it lands
+# in is spaced, so the render spaces it. At 1.4.0 and 2.0.0 these
+# names already diff on `suffix` under the honorific rules and are
+# claimed there; only at 2.1.0 and 2.2.0 is the render the whole of
+# what moved.
+[[change]]
+issue = "fix(#436/#437) the glued honorific and the roman numeral are one post-nominal run"
+name_regex = "^田中さん II$"
+fields = ["suffix"]
+
+[[change]]
+issue = "fix(#436/#437) the glued honorific and the polite address are one post-nominal run"
+name_regex = "^田中さん 様\\.$"
+fields = ["suffix"]
+
+[[change]]
+issue = "fix(#436/#437) the spaced doctorate and the honorific after it are one post-nominal run"
+name_regex = "^김민준 박사 씨$"
+fields = ["suffix"]
+
+[[change]]
+issue = "fix(#436/#437) the glued honorific and the generational suffix are one post-nominal run"
+name_regex = "^김민준씨 Jr\\.$"
+fields = ["suffix"]
+
 [[change]]
 issue = "fix(#462) the facade keeps an initial-shaped conjunction letter"
 # 'Scott E. Werner', 'Amy E Maid', 'Jose E. Maria Santos':
