@@ -3346,6 +3346,61 @@ def main() -> int:
               f"without promising."
               + _two_causes(watched_radar))
         _print_moved_rows(watched_radar, "_WATCHED_DIFFS")
+    # The completeness half of the contest checks (#498). The
+    # pre-worker `undeclared_contests` refusal covers the pairs where
+    # nesting supplies the contested shape's existence; this covers
+    # the pairs where only a measured diff can, which is why it is
+    # HERE and not up there -- it needs `diffing`, and `diffing` needs
+    # the worker. `recorded` is the same per-ledger dict the shape
+    # check reads, and its KEYS are what "a winner is pinned" means.
+    #
+    # FATAL on both tiers, in the exit expression beside `shape_bad`.
+    # A contest row is fatal on either tier because it carries an
+    # argument; an owed row is fatal because it carries none yet.
+    unowned = unowned_contests(diffing, rules, exclusions,
+                               set(recorded), tier_of)
+    if unowned:
+        # Grouped by (winner, loser), so a reader editing one rule
+        # sees its whole cost at once rather than meeting the same
+        # pair once per name. dict preserves insertion order, which
+        # is `diffing` order, which is corpus order.
+        by_pair: dict[tuple[str, str], list[_UnownedContest]] = {}
+        for row in unowned:
+            by_pair.setdefault((row.winner, row.loser), []).append(row)
+        # PAIR(S) and not diff(s): the rows are one per (name, losing
+        # rule), so one name contesting two losers is two of them --
+        # '田中さん, Dr.' is that shape at 1.4.0 -- and a reader
+        # counting names off this number would be short.
+        print(f"UNPINNED CONTEST {ledger.name}: {len(unowned)} contested "
+              f"pair(s), one per name and losing rule, that no rule "
+              f"outranks by nesting or declaration and "
+              f"no row pins. Pin each name below in _RECORDED_DIFFS "
+              f"(tools/differential/compare.py) and _CROSS_RULE_WINNERS "
+              f"(tests/v2/test_ledger_guards.py), with the argument for "
+              f"the winner beside the row -- or narrow the accident "
+              f"away until the pair stops admitting the same diff. A "
+              f"contest is not a defect: file order decides one "
+              f"legitimately, and narrow-first and a declared "
+              f"`precedes_narrower` pair are both justified above. An "
+              f"UNOWNED contest is: nothing in the tree says which rule "
+              f"should win it, so a reorder or a widened `fields` hands "
+              f"the name over silently. A _WATCHED_DIFFS row does NOT "
+              f"pin -- it records a shape and no winner. The population "
+              f"is the entries THIS run loaded, so a `--corpus` subset "
+              f"can only UNDER-report: silence is no verdict on the "
+              f"names it did not compare."
+              + (" NOTE: a row below carries a declared order, and a "
+                 "_RECORDED_DIFFS row is a DEFAULT-order shape, so no "
+                 "row can absorb it: narrow the pair, or scope one of "
+                 "the two rules with `orders`."
+                 if any(r.order is not None for r in unowned) else ""))
+        for (winner, loser), rows in by_pair.items():
+            print(f"  {winner!r}\n    outranks {loser!r} on:")
+            for row in rows:
+                print(f"      {row.name!r}{_order_tag(row.order)} "
+                      f"[{row.tier}] {list(row.diff)} "
+                      f"({_UNOWNED_WHY[row.kind]})")
+        print()
     dormancy = dormant_rules(rules, set(by_issue), diffing, exclusions)
     for dormant in dormancy.undeclared:
         print(f"EXPLAINED NOTHING {dormant.issue!r}\n    "
@@ -3412,13 +3467,19 @@ def main() -> int:
     # `fields` it names are no longer what the code moves. A recorded
     # shape the run contradicts is the fifth, and it reaches furthest:
     # _CROSS_RULE_WINNERS feeds that shape to classify() as an input, so
-    # a wrong one takes the roster's verdict with it. One exit code for
-    # all five terms below, so none of them is the one nobody noticed.
+    # a wrong one takes the roster's verdict with it. A measured contest
+    # nobody has pinned is the SIXTH, and among the ROSTER terms --
+    # `shape_bad`'s two rosters and this one -- it is the only one about
+    # a row that does not exist: those two read a row somebody wrote and
+    # ask whether the run still agrees, while this one asks for a row
+    # nobody has written yet. In that it joins `unexplained`, which is a
+    # diff no rule was written for. One exit code for all six terms
+    # below, so none of them is the one nobody noticed.
     # `shape_bad` is the contest rows plus the watched rows on contract
     # names; a watched row on a radar name printed above and is not in
     # it, by the severity rule _WATCHED_DIFFS' header argues.
     return 1 if unexplained or dormancy.undeclared or dormancy.awake \
-        or overwide or shape_bad else 0
+        or overwide or shape_bad or unowned else 0
 
 
 if __name__ == "__main__":
