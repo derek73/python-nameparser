@@ -527,14 +527,17 @@ CASES: tuple[Case, ...] = (
                "1.4.0 read first 'John', middle 'née Mary', last "
                "'Jones'"),
     Case("title_plus_one_word_two_suffixes", "Dr. Smith PhD Jr.",
-         {"title": "Dr.", "family": "Smith", "suffix": "PhD, Jr."},
+         {"title": "Dr.", "family": "Smith", "suffix": "PhD Jr."},
          classification="fix(#410)",
          notes="two suffix pieces, not one. The removed term asked "
                "whether ANY token carried a suffix role, so a guard "
                "rebuilt to decline on the SECOND one would look "
                "correct against every row that carries a single "
                "credential. 1.4.0 split them, reading first 'Smith', "
-               "last 'PhD', suffix 'Jr.'"),
+               "last 'PhD', suffix 'Jr.'. The comma between them was "
+               "the shape machinery's artifact and never a reading "
+               "anyone chose: the writer typed no comma, so #436 "
+               "renders none (rules.md#R1)"),
     Case("title_plus_one_word_nickname_and_suffix",
          "Dr. (Bud) Smith Jr.",
          {"title": "Dr.", "family": "Smith", "suffix": "Jr.",
@@ -991,7 +994,14 @@ CASES: tuple[Case, ...] = (
                "[Suffix] slot",
          shape=2),
     Case("family_segment_multiple_suffixes", "Smith Jr. MD, John",
-         {"given": "John", "family": "Smith", "suffix": "Jr., MD"}),
+         {"given": "John", "family": "Smith", "suffix": "Jr. MD"},
+         classification="fix(#436/#437)",
+         notes="the pre-comma segment's post-nominal run, written "
+               "with spaces and rendered with them since #436. It "
+               "read 'Jr., MD' at 1.4.0 and through 2.2.0, the "
+               "one-entry join being asked by segment index and this "
+               "run standing in segment 0. The corpus twin is "
+               "'Washington Jr. MD, Franklin'"),
     Case("family_segment_particle_chain_suffix", "de la Vega III, Juan",
          {"given": "Juan", "family": "de la Vega", "suffix": "III"}),
     Case("interior_periods_block_vocab", "Smith, J.R.",
@@ -1095,6 +1105,33 @@ CASES: tuple[Case, ...] = (
          policy=_SD,
          notes="a delimiter token in a NAME segment is kept (v1 parity, "
                "pinned live 2026-07-16)"),
+    Case("suffix_delimiter_core_between_entries_is_a_boundary",
+         "John Doe, MD - PhD - FACS",
+         {"given": "John", "family": "Doe", "suffix": "MD, PhD, FACS"},
+         policy=_SD,
+         classification="fix(#436/#437)",
+         notes="the DROPPED core half of #436's entry boundary: a "
+               "suffix-comma tail drops the delimiter cores (#206), "
+               "and the entry the writer drew ends at each of them. "
+               "The core is gone before the render sees it, so the "
+               "boundary is read off the dropped indices rather than "
+               "off a surviving token. Parity at every baseline"),
+    Case("suffix_delimiter_core_that_survives_is_a_boundary_too",
+         "Smith, MD - PhD - FACS",
+         {"title": "MD", "given": "-", "middle": "-", "family": "Smith",
+          "suffix": "PhD, FACS"},
+         policy=_SD,
+         classification="fix(#436/#437)",
+         notes="the other half, and the one a dropped-core test alone "
+               "would miss. After a FAMILY comma segment 1 is not a "
+               "tail, so nothing drops the cores and the dashes stand "
+               "as ordinary name words between the two post-nominals. "
+               "A run does not span a name word: the separator holds "
+               "whether the core was dropped or kept, which is why "
+               "#436's predicate asks what stands between the two "
+               "rather than only what was dropped. The bare-policy "
+               "spelling of this string is a corpus name and reads "
+               "the same, the dash being no delimiter there either"),
     Case("comma_extras_become_suffixes", "Smith, John, Extra, Jr.",
          {"given": "John", "family": "Smith", "suffix": "Extra, Jr."},
          ambiguities=("comma-structure",),
@@ -1201,7 +1238,12 @@ CASES: tuple[Case, ...] = (
     Case("nickname_only", "(Jack)", {"nickname": "Jack"}),
     Case("suffix_run", "John Jack Kennedy PhD MD",
          {"given": "John", "middle": "Jack", "family": "Kennedy",
-          "suffix": "PhD, MD"}),
+          "suffix": "PhD MD"},
+         classification="fix(#436/#437)",
+         notes="the NO-COMMA path, which is the one rules.md#R1 "
+               "described and the parser violated from 1.4.0 to "
+               "2.2.0: no comma stands between PhD and MD, so none "
+               "is rendered. The corpus twin is 'John Doe MD PhD'"),
     Case("maiden_marker", "Jane Smith née Jones",
          {"given": "Jane", "family": "Smith", "maiden": "Jones"},
          classification="fix(#274)",
@@ -2701,6 +2743,16 @@ CASES: tuple[Case, ...] = (
          notes="the entry is sticky across a piece that is not in it: "
                "an interleaved title must not split the run it sits "
                "in, or the render inserts the very comma #429 removes"),
+    Case("family_comma_nickname_between_credentials",
+         'Smith, MD "Doc" PhD',
+         {"family": "Smith", "nickname": "Doc", "suffix": "MD PhD"},
+         classification="fix(#436/#437)",
+         notes="the transparency above is not a TITLE rule: a nickname "
+               "renders into `nickname`, so it is no more standing in "
+               "the credential run than a title is, and the writer "
+               "typed no comma between MD and PhD. 'MD, PhD' at every "
+               "baseline, and still 'MD, PhD' on #436's first draft, "
+               "which read only a title as transparent"),
     Case("family_comma_title_led_run_keeps_the_written_comma",
          "Smith Jr., Mr. Jr.",
          {"title": "Mr.", "family": "Smith", "suffix": "Jr., Jr."},
@@ -2726,13 +2778,32 @@ CASES: tuple[Case, ...] = (
                "form into line with. Unchanged since 1.4.0, so this row "
                "fails if a future change fixes one form by breaking the "
                "other"),
+    Case("no_comma_suffix_run_renders_unjoined", "John Smith MD PhD",
+         {"given": "John", "family": "Smith", "suffix": "MD PhD"},
+         classification="fix(#436/#437)",
+         notes="the NO-COMMA path #429 recorded as left alone, and "
+               "the rules.md#R1 example line. 'MD, PhD' at 1.4.0, "
+               "2.0.0, 2.1.0 and 2.2.0 alike -- a comma the writer "
+               "never typed -- because the entry boundary was derived "
+               "from segment SHAPE and this string has no comma to "
+               "shape a segment with. It reads the same as the "
+               "comma-written 'John Smith, MD PhD' above, which is "
+               "what makes str() of that parse round-trip"),
     Case("family_comma_segment_zero_is_not_the_run", "MD PhD Jr., John",
-         {"given": "John", "family": "MD", "suffix": "PhD, Jr."},
+         {"given": "John", "family": "MD", "suffix": "PhD Jr."},
+         classification="fix(#436/#437)",
          notes="segment 0 is the family segment even when it is wholly "
-               "credential-shaped, so the one-entry join is asked of "
-               "segment 1 alone. Dropping that conjunct left the whole "
-               "suite green while this shape's suffix silently became "
-               "'PhD Jr.' (the mutation matrix found it)"),
+               "credential-shaped, so 'MD' is the FAMILY and not the "
+               "head of a credential run, and that is what this row "
+               "still guards. The SEPARATOR is no longer the row's "
+               "subject. Until #436 it was: the join was asked of "
+               "segment 1 alone, and dropping that conjunct left the "
+               "whole suite green while this shape's suffix silently "
+               "became 'PhD Jr.' (the mutation matrix found it). The "
+               "conjunct is gone with the block, and 'PhD Jr.' is now "
+               "the right answer for a different reason -- PhD and "
+               "Jr. share a comma bucket with nothing between them, "
+               "so they render as the writer spaced them"),
     Case("family_comma_run_ending_in_a_numeral", "Smith, PSM I",
          {"family": "Smith", "suffix": "PSM I"},
          classification="fix(#430)",
@@ -2803,18 +2874,24 @@ CASES: tuple[Case, ...] = (
                "piece -- the Ph./D. pair the #325 split-credential "
                "merge builds, which carries 'suffix' in its piece tags "
                "rather than on a single token. A structurally different "
-               "pin on the same three readers as the PSM rows, so an "
-               "edit to those cannot quietly unpin the render join"),
+               "pin on the same readers as the PSM rows, so an edit to "
+               "those cannot quietly unpin this. #430 counted three of "
+               "them; since #436 the render join is a rule over the "
+               "written commas in post_rules, and the two that still "
+               "share segment_suffix_reading are assign's gate and "
+               "assign's router"),
     Case("family_comma_numeral_behind_a_suffix_is_not_an_initial",
          "Smith, John PhD I.",
-         {"given": "John", "family": "Smith", "suffix": "PhD, I."},
-         notes="THE OTHER BOUNDARY, and parity at every baseline. The "
-               "period makes a numeral name material only behind a NAME "
+         {"given": "John", "family": "Smith", "suffix": "PhD I."},
+         notes="THE OTHER BOUNDARY. "
+               "The period makes a numeral name material only behind a NAME "
                "word; behind a suffix the run owns it, and the first "
                "draft of #432 read the piece alone and made this middle "
-               "'I.'. Rendered with the comma because the writer typed "
-               "no run here -- the segment holds a name, so it is the "
-               "walk, not the one-entry join"),
+               "'I.'. Rendered without a comma since #436: the "
+               "boundary is the comma the writer typed, and this "
+               "writer typed none between PhD and I. -- the walk "
+               "still decides the ROLES, which is what this row is "
+               "about, and no longer decides the separator"),
     Case("family_comma_strict_keeps_the_initial_veto",
          "Smith, PSM I.",
          {"given": "PSM", "family": "Smith", "suffix": "I."},
@@ -3281,14 +3358,19 @@ CASES: tuple[Case, ...] = (
                "as a Japanese name. The peel runs before the license "
                "is consulted, so it now sees 田中 alone"),
     Case("ja_honorific_glued_before_a_roman_suffix", "田中さん II",
-         {"family": "田中", "suffix": "さん, II"},
+         {"family": "田中", "suffix": "さん II"},
          classification="fix(#308) + fix(#271)",
          notes="an unrelated trailing suffix does not hide the peel "
                "site: the scan-back steps over II and peels さん off "
                "the token behind it. Half of the pair that pins "
                "_is_post_nominal's use of is_suffix_STRICT -- the "
                "other half is the row below, and swapping in "
-               "is_suffix_lenient changes that one and not this one",
+               "is_suffix_lenient changes that one and not this one. "
+               "The run renders with the space the writer typed "
+               "since #436; the comma form '田中さん, 様.' "
+               "(ja_honorific_period_does_not_stop_the_peel) keeps "
+               "its comma, which is the pair that shows the "
+               "separator is read from the text",
          tolerated=True),
     Case("ja_honorific_glued_before_an_initial", "田中さん V.",
          {"given": "田中さん", "family": "V."},
@@ -3306,7 +3388,7 @@ CASES: tuple[Case, ...] = (
                "initial, not a post-nominal",
          tolerated=True),
     Case("ja_honorific_with_a_period_no_comma", "田中さん 様.",
-         {"family": "田中", "suffix": "さん, 様."},
+         {"family": "田中", "suffix": "さん 様."},
          classification="fix(#320)",
          notes="the SPACED form, and the example _vocab.is_initial's "
                "own docstring cites as what #320 cost. Same fields as "
@@ -3336,7 +3418,10 @@ CASES: tuple[Case, ...] = (
                "system produces -- the same class as a comma listing "
                "or a Latin credential. The row still pins #320's "
                "mechanism at HEAD; what moves is which corpus file "
-               "carries the text",
+               "carries the text. The run renders with the space the "
+               "writer typed since #436; the comma form "
+               "'田中さん, 様.' below keeps its comma, which is the "
+               "pair that shows the separator is read from the text",
          tolerated=True),
     Case("ja_honorific_period_does_not_stop_the_peel", "田中さん, 様.",
          {"family": "田中", "suffix": "さん, 様."},
@@ -3645,13 +3730,17 @@ CASES: tuple[Case, ...] = (
                "zh_honorific_suffix_spaced's spaced one",
          shape=6),
     Case("ko_honorific_glued_given_trailing_suffix", "김민준씨 Jr.",
-         {"family": "김", "given": "민준", "suffix": "씨, Jr."},
+         {"family": "김", "given": "민준", "suffix": "씨 Jr."},
          classification="fix(#308) + fix(#271)",
          notes="the peel site is the last token that is not itself a "
                "post-nominal, so an unrelated trailing suffix cannot "
                "hide it -- this now agrees with the comma-written "
                "'Dr 김민준씨, Jr.', where the suffix comma had "
-               "already put 씨 within reach",
+               "already put 씨 within reach. The run renders with the "
+               "space the writer typed since #436; the comma form "
+               "'Dr 김민준씨, Jr.' below keeps its comma, which is "
+               "the pair that shows the separator is read from the "
+               "text",
          tolerated=True),
     Case("ko_honorific_glued_given_suffix_comma", "Dr 김민준씨, Jr.",
          {"title": "Dr", "family": "김", "given": "민준",
@@ -4083,9 +4172,13 @@ CASES: tuple[Case, ...] = (
                "last 지훈, and it is the CJK order flip that puts 양 "
                "in family -- nothing in #308 moves these fields"),
     Case("ko_honorific_stack", "김민준 박사 씨",
-         {"family": "김", "given": "민준", "suffix": "박사, 씨"},
+         {"family": "김", "given": "민준", "suffix": "박사 씨"},
          classification="fix(#307) + fix(#271)",
          notes="a trailing RUN of honorifics peels whole, like "
                "'Smith PhD MD' -- the multi-suffix loop the peel "
-               "shares with Latin suffixes"),
+               "shares with Latin suffixes. The run renders with the "
+               "space the writer typed since #436; the comma form "
+               "'Dr 김민준씨, Jr.' (ko_honorific_glued_given_suffix_"
+               "comma) keeps its comma, which is the pair that shows "
+               "the separator is read from the text"),
 )

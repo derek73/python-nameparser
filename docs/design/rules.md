@@ -212,7 +212,7 @@ P2. Rationale: a particle is written as part of the surname it
     trailing run the chain stops before it as before any suffix
     word, and the peel takes it; where it continues a prefix run,
     the run takes it as a particle, as P6 reads it after a comma.
-      "John Smith Mc V"           →  suffix="Mc, V"
+      "John Smith Mc V"           →  suffix="Mc V"
       "John van Mc"               →  family="van Mc"
     Accepted: a caller wanting the combined double-surname reading
     (#132's ask) has it as the surnames view rather than the
@@ -339,7 +339,7 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "abdul Smith V"             →  suffix="V"
       "abdul Smith Jr V"          →  family="Smith"
       "abdul Smith Jr Ma"         →  family="Smith"
-      "abdul Smith Jr Ma"         →  suffix="Jr, Ma"
+      "abdul Smith Jr Ma"         →  suffix="Jr Ma"
       "abdul Smith Ma"            →  suffix="Ma"
       "abdul Smith Berg Ma"       →  family="Berg"  · boundary
       "abdul Sir Smith Berg"      →  given="abdul Sir"
@@ -876,7 +876,7 @@ C1. Rationale: a credential run after the comma means the name is in
       "Smith, PSM I."             →  suffix="PSM I."
       "Smith, PSM I."  strict-comma-suffixes  →  suffix="I."
       "Smith, John V."            →  middle="V."
-      "Smith, John PhD I."        →  suffix="PhD, I."
+      "Smith, John PhD I."        →  suffix="PhD I."
       "Smith, John V"             →  suffix="V"  · boundary
       "Smith, Ph. D. Jr."         →  suffix="Ph. D. Jr."
       "Smith, MD PhD"             →  suffix="MD PhD"
@@ -1122,7 +1122,7 @@ W3. Rationale: a family name declared by a comma is the writer's
       "남궁민수, 지훈"            →  family="남궁민수"  · boundary
       "田中さん, Dr."             →  family="田中さん"
       "田中さん, PhD"             →  suffix="さん, PhD"
-      "田中さん 様."              →  suffix="さん, 様."
+      "田中さん 様."              →  suffix="さん 様."
     tolerated: native CJK writing has neither a family-comma convention nor a period standing after an honorific, so the four comma lines above and the period line under them illustrate current behavior — changeable without notice — rather than promise it; the line carrying neither, beside them, is W1's claim, which is normative. All five stay watched at every released baseline on the differential's radar tier (tools/differential/corpus_cjk_tolerated.jsonl, projected from the `tolerated` rows of tests/v2/cases.py) instead of its contract tier, and those rows pin them at HEAD.
     history: decisions.md#W3 · interacts: W1, W2, C1 · implemented: nameparser/_pipeline/_script_segment.py
 
@@ -1225,13 +1225,17 @@ R1. Rationale: a field is a way of reading the parse, not a stored
     is the one place this is visible, because it is the only field
     that can hold parts the writer comma-separated: a run of
     post-nominals written with spaces renders with spaces, and one
-    written with commas keeps them.
+    written with commas keeps them. The separator is the comma the
+    writer typed, read off the words' positions once their roles are
+    known; a delimiter the configuration names is a separator too,
+    and so is any name word standing between two post-nominals.
       "Dr. Juan Q. Xavier de la Vega III"  →  family="de la Vega"
       "Hassan, Mohamad Ahmad Ali"  middle_as_family  →  family="Ahmad Ali Hassan"
       "Hassan, Mohamad Ahmad Ali"          →  family="Hassan"  · boundary
       "Smith, MD PhD"                      →  suffix="MD PhD"
+      "John Smith MD PhD"                  →  suffix="MD PhD"
       "John Smith, MD, Bart"               →  suffix="MD, Bart"
-    history: decisions.md#C1 · interacts: O3, P6, R3 · implemented: nameparser/_types.py
+    history: decisions.md#C1 · interacts: O3, P6, R3 · implemented: nameparser/_pipeline/_post_rules.py, nameparser/_types.py
 
 R2. Rationale: callers need the surname with and without its
     particles — sorting wants "Vega", display wants "de la Vega".

@@ -3,7 +3,7 @@
 _pieces has had no unit-test module since #439 moved it out of _group;
 its predicates were reached only end to end through the case table.
 These pin the two contracts that shape cannot reach: a defensive branch
-no parse can produce, and the stability the three readers rest on.
+no parse can produce, and the stability its readers rest on.
 """
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._assign import assign
@@ -60,9 +60,10 @@ def test_the_numeral_veto_refuses_a_multi_token_piece() -> None:
 
 
 def test_the_reading_is_positional_and_total() -> None:
-    """One verdict per piece, in order -- the invariant all three
-    readers index by, and the only thing that makes reading[k] mean
-    pieces[k]."""
+    """One verdict per piece, in order -- the invariant its readers
+    index by, and the only thing that makes reading[k] mean pieces[k].
+    Three read it until #436 took the render join out of group;
+    assign's gate and its router are what remain."""
     state = _through_group("Smith, MD PSM I")
     reading = segment_suffix_reading(
         state.pieces[1], state.piece_tags[1], list(state.tokens), True)

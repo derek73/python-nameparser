@@ -7,11 +7,12 @@ Produces: pieces + piece_tags per segment (runs of token indices --
 tokens are NEVER joined into strings: the anti-#100 invariant); maiden
 tail tokens get role=MAIDEN; marker tokens land in dropped.
 Reads: token tags (from classify), Lexicon.given_name_titles (the
-P5 licence, #369), Policy.extra_suffix_delimiters, whose
-delimiter-core tokens tail segments drop (v1 suffix_delimiter parity),
-and Policy.lenient_comma_suffixes, which segment_suffix_reading takes
-to pick the strict or lenient token test (#430/#432) -- no other Policy
-field. The v1 "derived titles/prefixes"
+P5 licence, #369) and Policy.extra_suffix_delimiters, whose
+delimiter-core tokens tail segments drop (v1 suffix_delimiter parity)
+-- no other Policy field. Policy.lenient_comma_suffixes left this list
+with #436: it reached here only through segment_suffix_reading, whose
+render consumer was this stage's one-entry join and now lives in
+post_rules. The v1 "derived titles/prefixes"
 registration becomes piece_tags entries -- per-parse state that
 dissolves with the state (v1 kept per-parse sets for the same reason).
 
@@ -44,8 +45,7 @@ from enum import IntEnum
 from nameparser._lexicon import _title_key
 from nameparser._pipeline._pieces import (
     is_leading_title, is_suffix_piece, is_title_piece,
-    leading_titles, peel_trailing, peel_walk, segment_suffix_reading,
-    trailing_start,
+    leading_titles, peel_trailing, peel_walk, trailing_start,
 )
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
@@ -809,45 +809,33 @@ def group(state: ParseState) -> ParseState:
         # rules.md#C1: "a part that is nothing but suffix words is the
         # credential run and reads as suffixes, whole" -- WHOLE is this
         # block's half of the rule, the routing being assign's.
-        # One comma segment is one suffix entry. `tail` answers that by
-        # INDEX, which is right wherever assign reads the segment as
-        # suffixes for the same structural reason -- but not after a
-        # ONE-WORD family comma, where segment 1 is a name slot that
-        # assign re-reads by CONTENT: a segment of nothing but
-        # credentials is the credential run, whole (#296/#325). group
-        # asking the index while assign asked the content is what made
-        # 'Smith, MD PhD' render 'MD, PhD' with a comma the writer
-        # never typed, where the full-name 'John Smith, MD PhD' has
-        # rendered 'MD PhD' since 1.4.0 (#429). Ask assign's own
-        # predicate, over the pieces group just built.
-        # `family_comma` is redundant by invariant and kept for
-        # locality: segment() emits at most one segment for NO_COMMA, so
-        # seg_idx == 1 already implies a comma, and under SUFFIX_COMMA
-        # tail_start is 1, so `tail` short-circuits before this. Nothing
-        # can pin it -- dropping it is an equivalent mutant over the
-        # corpora and 65,725 generated inputs -- so it is documented
-        # rather than tested.
-        reading = (segment_suffix_reading(
-                       pieces, ptags, tokens,
-                       state.policy.lenient_comma_suffixes)
-                   if family_comma and seg_idx == 1 else None)
-        one_entry = tail or reading is not None
-        if one_entry:
-            # v1 renders each tail COMMA SEGMENT as one suffix entry
-            # ('Smith, V MD' -> suffix 'V MD'); a delimiter core inside
-            # a segment separates entries and is dropped, but a segment
-            # that IS only the core stays whole (v1 expand() splits
-            # within a part, never erases a lone part). Continuation
-            # tokens within an entry take the stable "joined" tag so
-            # the suffix view space-joins them (the fix_phd mechanism).
-            # Core dropping stays keyed on `tail` via seg_cores: the
-            # #206 parity is a TAIL rule, and the one-entry join is the
-            # only half that follows assign's content read.
-            entry_open = False
-            # non-Optional for the per-piece loop: inside `one_entry`,
-            # `reading is None` implies `tail`, so the tuple is only
-            # indexed where it exists
-            entry = reading or ()
+        #
+        # v1 expand_suffix_delimiter parity (#206): a delimiter core
+        # inside a segment separates suffix entries and is dropped, but
+        # a segment that IS only the core stays whole (v1 expand()
+        # splits within a part, never erases a lone part). Keyed on
+        # `tail` through `seg_cores`, which is empty off a tail
+        # segment, because the #206 parity is a TAIL rule.
+        #
+        # What this block decides is the #206 core DROP and nothing
+        # else: a delimiter core inside a tail segment leaves the
+        # pieces, and `dropped` is where that fact is recorded -- for
+        # the render, and for post_rules' entry pass, which reads it
+        # back as the one dropped token that separates two entries.
+        #
+        # It used to decide the ENTRY too, marking a continuation
+        # token "joined" between pieces off segment SHAPE -- `tail` by
+        # index, ORed since #429 with segment_suffix_reading's
+        # per-piece content verdict, gated per piece and sticky across
+        # an interleaved title. post_rules derives that from the
+        # commas the writer typed instead (#436/#437, rules.md#R1),
+        # which is what the input answers directly. The stickiness
+        # survives by construction rather than by code:
+        # 'Smith, MD Dr. PhD' has no comma between MD and PhD and a
+        # title between them renders elsewhere, so they join, while
+        # 'Smith Jr., Mr. Jr.' has the writer's own comma and they do
+        # not.
+        if seg_cores:
             kept: list[int] = []
             for k in range(len(pieces)):
                 is_core = (len(pieces[k]) == 1
@@ -855,46 +843,8 @@ def group(state: ParseState) -> ParseState:
                            and len(pieces) > 1)
                 if is_core:
                     dropped.extend(pieces[k])
-                    entry_open = False
                     continue
                 kept.append(k)
-                # Two different joins, and conflating them is what a
-                # widened condition gets wrong. WITHIN a piece (pos > 0)
-                # the tag renders a merged piece as one unit; the branch
-                # is written role-blind because the merge is (the ph-d
-                # pair reaches GIVEN as one element), though no
-                # multi-token TITLE piece witnesses it -- none turned up
-                # in 38,892 generated family-comma inputs.
-                #
-                # BETWEEN pieces the tag continues an ENTRY, and only
-                # pieces that render into the same run may do that. On a
-                # tail segment every kept piece does -- that is what
-                # `tail` means -- but off it assign routes piece by
-                # piece, so a title piece is not part of the suffix
-                # entry. Letting one continue the entry tags a token the
-                # SUFFIX view never joins and the TITLE view does:
-                # 'Smith, Rev. Dr.' collapsed title_list to ['Rev.
-                # Dr.'], and after a pre-comma suffix the tag glued
-                # across the writer's own comma ('Smith Jr., Mr. Jr.'
-                # rendered suffix 'Jr. Jr.') -- the inverse of the bug
-                # this block exists to fix.
-                #
-                # Which pieces those are is assign's reading, computed
-                # once per segment above rather than re-derived here:
-                # is_suffix_piece alone refuses a numeral continuing a
-                # credential run, and would render 'Smith, PSM I' as
-                # 'PSM, I' (#430).
-                in_entry = tail or entry[k]
-                for pos, i in enumerate(pieces[k]):
-                    if pos > 0 or (in_entry and entry_open):
-                        tokens[i] = dataclasses.replace(
-                            tokens[i], tags=tokens[i].tags | {"joined"})
-                # Sticky across a piece that is not in the entry, so an
-                # interleaved title does not split the run it sits in:
-                # 'Smith, MD Dr. PhD' renders suffix 'MD PhD', not
-                # 'MD, PhD'. A delimiter core still closes the entry
-                # (above) -- that is the one thing that separates two.
-                entry_open = entry_open or in_entry
             if len(kept) != len(pieces):
                 pieces = [pieces[k] for k in kept]
                 ptags = [ptags[k] for k in kept]

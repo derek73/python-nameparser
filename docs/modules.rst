@@ -51,9 +51,12 @@ Results
    actual family particles),
    ``conjunction`` (a joining word, "and"/"y"), ``initial`` (an
    initial-shaped word in a script that HAS initials — "J." or "А.",
-   never "씨."), and ``joined`` (a continuation of the
-   previous token within one merged piece, so the suffix view renders
-   "Ph. D." as one credential). Every other tag is namespaced
+   never "씨."), and ``joined`` (a continuation of the token before it,
+   which the suffix view joins with a space instead of ", ": within one
+   merged piece, so it renders "Ph. D." as one credential, and since
+   #436 also across the pieces of one suffix entry, the entry being the
+   run of post-nominals the writer wrote without a comma —
+   "MD PhD"). Every other tag is namespaced
    (``vocab:...``) and unstable — never match against those.
 
 .. autoclass:: nameparser.Span

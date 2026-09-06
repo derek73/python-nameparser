@@ -322,12 +322,11 @@ def test_extra_suffix_delimiter_splits_tail_entries() -> None:
     assert _piece_texts(out) == [["Smith"], ["John"], ["V", "MD", "PhD"]]
     slash_idx = next(i for i, t in enumerate(out.tokens) if t.text == "/")
     assert slash_idx in out.dropped
-    # "MD" continues the "V MD" entry (joined); "PhD" starts a fresh
-    # entry across the dropped delimiter, so it does NOT get "joined"
-    md_tok = next(t for t in out.tokens if t.text == "MD")
-    phd_tok = next(t for t in out.tokens if t.text == "PhD")
-    assert "joined" in md_tok.tags
-    assert "joined" not in phd_tok.tags
+    # The tagging half moved to post_rules with #436: the core is
+    # dropped HERE, and the entry it separates is decided there, over
+    # the spans. test_a_dropped_core_parts_two_entries in
+    # tests/v2/pipeline/test_post_rules.py is the assertion that used
+    # to sit on the two lines below this one.
 
 
 def test_suffix_comma_name_segment_gets_no_additional_count() -> None:

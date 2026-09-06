@@ -3,13 +3,16 @@
 Consumes: tokens (roles assigned), plus pieces and structure -- the
 particle fold reads the opening piece of segment 0, or of segment 1
 under a family comma (#359). structure was always read here, for the
-rotation gate.
-Produces: tokens with roles adjusted by the post rules, plus the
+rotation gate. Also comma_offsets and dropped, which R1's entry pass
+below reads to find the separators the writer typed (#436/#437).
+Produces: tokens with roles adjusted by the post rules, the stable
+"joined" tag on a post-nominal continuing the entry before it, and the
 ambiguity P6's attachment reports for the fork it decides (#405).
-Reads: Policy.patronymic_rules, Policy.middle_as_family;
-Lexicon.given_name_titles.
+Reads: Policy.patronymic_rules, Policy.middle_as_family,
+Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
+cores group drops); Lexicon.given_name_titles.
 
-Implements rules H1, M4, P1, O1, O2 and O3 of docs/design/rules.md;
+Implements rules H1, M4, P1, O1, O2, O3 and R1 of docs/design/rules.md;
 each is cited at its code below, and H1/P1/O1/O2's history lives in
 docs/design/decisions.md.
 """
@@ -21,8 +24,9 @@ import re
 from nameparser._lexicon import _title_key
 from nameparser._pipeline._assign import _name_positions
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, Structure, WorkToken,
+    ParseState, PendingAmbiguity, Structure, WorkToken, comma_bucket,
 )
+from nameparser._pipeline._vocab import delimiter_cores
 from nameparser._policy import PatronymicRule
 from nameparser._types import (
     FOLDED_TAG, UNJOINED_TAG, AmbiguityKind, Role,
@@ -49,6 +53,14 @@ _NAME_ROLES = (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
 #: given-name word is vocabulary claiming the word as a given name,
 #: and `initial` is the shape claim. Neither is a predicate M4 owns.
 _NEVER_FLIPPED = frozenset({"vocab:bound-given", "initial"})
+
+#: The roles that are transparent to a run of post-nominals (R1's
+#: entry pass below). `Role` has seven members; these three render
+#: into fields other than the name and the suffix, so a run of
+#: post-nominals is not parted by them -- 'Smith, MD Dr. PhD',
+#: 'Smith, MD "Doc" PhD' and 'Smith, MD nee Jones PhD' are each one
+#: entry. GIVEN/MIDDLE/FAMILY are name words and part it.
+_RENDERS_ELSEWHERE = frozenset({Role.TITLE, Role.NICKNAME, Role.MAIDEN})
 
 
 def _idx(tokens: list[WorkToken], role: Role) -> list[int]:
@@ -606,8 +618,8 @@ def post_rules(state: ParseState) -> ParseState:
     # work — nothing joins them to a name — so they read as ordinary
     # name words"
     #
-    # Last in the stage, because every rule above can still move a
-    # token between parts:
+    # Last of the rules that MOVE a token, because every rule above
+    # can still move one between parts:
     # P1's fold, P6's attachment and O3's fold all rewrite roles, and
     # this reads the roles they settle on.
     #
@@ -625,5 +637,79 @@ def post_rules(state: ParseState) -> ParseState:
             for i in part:
                 tokens[i] = dataclasses.replace(
                     tokens[i], tags=tokens[i].tags | {UNJOINED_TAG})
+    # rules.md#R1: "a run of post-nominals written with spaces renders
+    # with spaces, and one written with commas keeps them"
+    #
+    # The entry boundary, read off the text the writer typed rather
+    # than off the shape of the segments (#436/#437). Two consecutive
+    # SUFFIX tokens are one entry iff they sit in the same comma
+    # bucket AND nothing between them parts the run -- what parts it
+    # and what does not is spelled out below. The
+    # comma is the separator the rule names -- comma_bucket is the
+    # function segment BUILDS segments with and classify asks about
+    # boundaries, so "same part" here is an identity with segment's
+    # answer rather than a resemblance to it
+    # (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+    #
+    # What parts a run: a name word between the two post-nominals
+    # (GIVEN/MIDDLE/FAMILY), or a dropped delimiter core (#206). What
+    # does NOT part it: a token whose role is in _RENDERS_ELSEWHERE,
+    # because it renders into another field entirely and so is not
+    # standing in the run at all -- 'Smith, MD Dr. PhD',
+    # 'Smith, MD "Doc" PhD' and 'Smith, MD (nee Jones) PhD' are each
+    # one entry; and a dropped token that is not a core, which is the
+    # maiden MARKER of 'Smith, MD nee Jones PhD' (the marker is
+    # dropped with no role at all, so the role test cannot see it).
+    # That is why the dropped arm reads the core set instead of
+    # treating every dropped index as a boundary: a core is the one
+    # dropped token the writer typed AS a separator, and the set is
+    # `delimiter_cores` -- group's own derivation off
+    # Policy.extra_suffix_delimiters, imported rather than repeated so
+    # the drop site and this pass cannot disagree about what a core is
+    # (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+    #
+    # Four shapes were declined, recorded in decisions.md#C1 by the
+    # bundle that landed this pass: marking the boundary at the
+    # core-drop site (`dropped` already holds the fact with its
+    # span, so a second recording of it is the duplication
+    # MARK-DONT-STRIP exists to prevent); making the "joined" tag
+    # role-aware (within a piece it is role-blind and right for every
+    # role -- 'Smith, Ph. D. Smith' gives first_list ['Ph. D.']);
+    # scanning spans at render time instead of reading the tag; and
+    # adding a third shape-derived branch inside group's block.
+    #
+    # AFTER assign, and the placement is load-bearing: this keys on
+    # Role.SUFFIX, and the same span rule run role-blind would join
+    # the A and B of 'John A B Smith' into one middle_list element.
+    #
+    # RECORDED as a tag rather than recomputed by the render, because
+    # the render cannot see a span: _facade.__setstate__ and
+    # ParsedName.replace() build span-less tokens AFTER the pipeline,
+    # so an unpickled name has nothing to scan and the tag IS the
+    # entry structure the pickle carries
+    # (mechanisms.md#MARK-DONT-STRIP). Every token here has a span --
+    # tokenize is the sole producer of a WorkToken, and WorkToken.span
+    # is not Optional -- so `span.start` is read unguarded.
+    #
+    # The `i not in dropped` filter is belt-and-braces: a dropped token
+    # is out of pieces, so assign never gives it a role at all. It is
+    # here so that `suffixes` and the `parted` scan below cannot
+    # disagree about what a dropped index is.
+    dropped = set(state.dropped)
+    cores = delimiter_cores(state.policy.extra_suffix_delimiters)
+    suffixes = [i for i, tok in enumerate(tokens)
+                if tok.role is Role.SUFFIX and i not in dropped]
+    for previous, current in zip(suffixes, suffixes[1:]):
+        same_part = (comma_bucket(tokens[previous].span.start,
+                                  state.comma_offsets)
+                     == comma_bucket(tokens[current].span.start,
+                                     state.comma_offsets))
+        parted = any(
+            tokens[between].text in cores if between in dropped
+            else tokens[between].role not in _RENDERS_ELSEWHERE
+            for between in range(previous + 1, current))
+        if same_part and not parted:
+            tokens[current] = dataclasses.replace(
+                tokens[current], tags=tokens[current].tags | {"joined"})
     return dataclasses.replace(state, tokens=tuple(tokens),
                                ambiguities=tuple(ambiguities))

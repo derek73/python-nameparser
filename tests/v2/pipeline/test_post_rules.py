@@ -814,3 +814,113 @@ def test_the_suffix_arm_report_names_the_post_nominal_it_declined() -> None:
         "family the comma named rather than standing as a "
         "post-nominal")
     assert [out.tokens[i].text for i in amb.indices] == ["vd"]
+
+
+def _entry_tags(text: str, policy: Policy | None = None) -> list[tuple[str, bool]]:
+    """(text, is a continuation) per SUFFIX token, after the stage.
+
+    Read off the tokens rather than off the rendered string: the tag
+    is what post_rules produces and the ", " join is _types.py's, and
+    a test that read the string would pass on a stage that tagged
+    nothing if the render ever stopped honoring the tag.
+    """
+    state = run(ParseState(original=text, lexicon=Lexicon.default(),
+                           policy=policy or Policy()))
+    return [(tok.text, "joined" in tok.tags)
+            for i, tok in enumerate(state.tokens)
+            if tok.role is Role.SUFFIX and i not in set(state.dropped)]
+
+
+def test_a_space_separated_run_is_one_entry() -> None:
+    """rules.md#R1's no-comma path, which is the whole of #436."""
+    assert _entry_tags("John Smith MD PhD") == [("MD", False), ("PhD", True)]
+
+
+def test_the_writers_comma_parts_two_entries() -> None:
+    """The `same_part` conjunct. Drop it and 'Smith Jr., Mr. Jr.'
+    renders suffix 'Jr. Jr.' -- the tag gluing a run across the
+    writer's own comma, which is the inverse of the bug #429 fixed and
+    the reason the bucket comparison is not optional."""
+    assert _entry_tags("Smith, MD, PhD") == [("MD", False), ("PhD", False)]
+    assert _entry_tags("Smith Jr., Mr. Jr.") == [("Jr.", False), ("Jr.", False)]
+
+
+def test_an_interleaved_title_does_not_part_the_run() -> None:
+    """A title renders into another field, so it is transparent to the
+    entry: 'Smith, MD Dr. PhD' is one run, as it was when group kept
+    the entry open across a piece that was not in it."""
+    assert _entry_tags("Smith, MD Dr. PhD") == [("MD", False), ("PhD", True)]
+
+
+def test_an_interleaved_nickname_does_not_part_the_run() -> None:
+    """TITLE is not the only transparent role: a nickname renders into
+    `nickname`, so it is no more in the run than a title is. Narrow
+    _RENDERS_ELSEWHERE back to {TITLE} and this renders 'MD, PhD'."""
+    assert _entry_tags('Smith, MD "Doc" PhD') == [("MD", False), ("PhD", True)]
+
+
+def test_an_interleaved_nickname_does_not_part_a_no_comma_run() -> None:
+    """The same transparency on the no-comma path #436 is about: with
+    a name before it there is no family comma, and the run still has
+    to survive the nickname. Narrow _RENDERS_ELSEWHERE back to
+    {TITLE} and this renders 'MD, PhD'."""
+    assert _entry_tags('John Smith MD "Doc" PhD') == [
+        ("MD", False), ("PhD", True)]
+
+
+def test_a_bracketed_maiden_clause_does_not_part_the_run() -> None:
+    """MAIDEN renders into `maiden`, so the KEPT word of a maiden
+    clause is transparent too. Narrow _RENDERS_ELSEWHERE back to
+    {TITLE} and this renders 'MD, PhD'."""
+    assert _entry_tags("Smith, MD (nee Jones) PhD") == [
+        ("MD", False), ("PhD", True)]
+
+
+def test_a_bare_marker_maiden_clause_does_not_part_the_run() -> None:
+    """The dropped arm's other half: written without brackets the
+    marker word itself is DROPPED, with no role for the transparency
+    test to read. It is not a delimiter core, so it does not part the
+    run either -- make the dropped arm part on any dropped index and
+    this renders 'MD, PhD'. The bracketed twin above drops its marker
+    too, so that mutant fails both; what separates the two tests is
+    the role test, which sees 'Jones' in both and 'nee' in neither
+    (measured 2026-09-06)."""
+    assert _entry_tags("Smith, MD nee Jones PhD") == [
+        ("MD", False), ("PhD", True)]
+
+
+def test_a_dropped_core_parts_two_entries() -> None:
+    """The `parted` conjunct, dropped-core half (#206). Drop it and
+    'John Doe, MD - PhD - FACS' renders 'MD PhD FACS' under this
+    policy. Moved here from test_group.py's
+    test_extra_suffix_delimiter_splits_tail_entries with #436: the
+    core is dropped in group and the entry it separates is decided
+    here."""
+    dash = Policy(extra_suffix_delimiters=frozenset({" - "}))
+    assert _entry_tags("John Doe, MD - PhD - FACS", dash) == [
+        ("MD", False), ("PhD", False), ("FACS", False)]
+
+
+def test_a_surviving_name_word_parts_two_entries() -> None:
+    """The `parted` conjunct, kept-core half -- the one a dropped-core
+    test alone cannot reach. After a FAMILY comma segment 1 is no
+    tail, so nothing drops the dashes and they stand as name words
+    between the post-nominals. Drop the conjunct and this renders
+    'PhD FACS' under EVERY policy, the bare one included, where the
+    dash is no delimiter at all."""
+    for policy in (Policy(),
+                   Policy(extra_suffix_delimiters=frozenset({" - "}))):
+        assert _entry_tags("Smith, MD - PhD - FACS", policy) == [
+            ("PhD", False), ("FACS", False)]
+
+
+def test_the_pass_runs_after_roles_are_settled() -> None:
+    """Why the pass keys on Role.SUFFIX and runs after assign: the
+    same span rule asked role-blind would make 'John A B Smith' one
+    middle_list element. Asserted as the middle staying two tokens,
+    neither of them a continuation."""
+    state = run(ParseState(original="John A B Smith",
+                           lexicon=Lexicon.default(), policy=Policy()))
+    middles = [tok for tok in state.tokens if tok.role is Role.MIDDLE]
+    assert [tok.text for tok in middles] == ["A", "B"]
+    assert not any("joined" in tok.tags for tok in middles)

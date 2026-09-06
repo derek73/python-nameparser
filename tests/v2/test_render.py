@@ -99,6 +99,25 @@ def test_parsedname_render_and_str_delegate() -> None:
     assert str(_pn("", [])) == ""
 
 
+def test_a_suffix_run_survives_a_render_and_a_reparse() -> None:
+    """str() of a fixed parse re-parses to the same suffix (#436).
+
+    The instability #429 recorded and left open: its fix made
+    'Smith, MD PhD' render suffix 'MD PhD', and str() of that parse
+    is 'Smith MD PhD' -- a NO-COMMA string, which the no-comma path
+    then read back as 'MD, PhD'. One writing round-tripped, the other
+    did not, and which was which depended on a comma the render had
+    already dropped. Three spellings of one run, each its own path
+    into the entry rule: a lone family plus the run, the full name
+    plus a comma, and the full name with no comma at all.
+    """
+    for text in ("Smith, MD PhD", "John Smith, MD PhD",
+                 "John Smith MD PhD"):
+        once = parse(text)
+        assert once.suffix == "MD PhD", text
+        assert parse(str(once)).suffix == once.suffix, text
+
+
 def _bobdole() -> ParsedName:
     # "Sir Bob Andrew Dole"
     #  01234567890123456789

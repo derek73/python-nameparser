@@ -144,10 +144,13 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     a title. None when the segment holds a name word and so is not a
     credential run at all.
 
-    ONE answer for three readers -- assign's no-name gate, its
-    router, and group's one-entry join -- because they must agree piece
-    for piece. #429 shipped the inverse of its own fix by deriving that
-    agreement twice (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+    ONE answer for two readers, both in _assign.py -- the no-name gate
+    and the router -- because they must agree piece for piece. #429
+    shipped the inverse of its own fix by deriving that agreement twice
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION). It answered for a third
+    until #436: group's one-entry join asked it too, and the render's
+    entry boundary is a rule over the written commas in post_rules now
+    (rules.md#R1), which asks this nothing.
 
     rules.md#S2's initial veto keeps a roman numeral out of a suffix
     reading, which is right after a NAME word: 'Smith, John V.' is a

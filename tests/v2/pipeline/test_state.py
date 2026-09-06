@@ -87,13 +87,16 @@ def test_stage_field_ownership() -> None:
     # spans are fixed at tokenize (the anti-#100 invariant -- tokens
     # are never re-created), classify touches only tags, and the
     # role-assigning stages touch only roles (group also tags, for the
-    # ph-d "joined" marker).
+    # ph-d "joined" marker, and post_rules for the entry "joined"
+    # marker beside its folded-middle mark).
     token_ownership = {
         "classify": {"tags"},
         "group": {"tags", "role"},
         "assign": {"role"},
-        # post_rules also tags: the middle_as_family fold marks folded
-        # tokens vocab:folded-middle for the family view's prepend order
+        # post_rules also tags, twice: the middle_as_family fold marks
+        # folded tokens vocab:folded-middle for the family view's
+        # prepend order, and R1's entry pass marks a post-nominal
+        # "joined" when the writer wrote no comma before it (#436)
         "post_rules": {"role", "tags"},
     }
     for case in CASES:
