@@ -829,19 +829,26 @@ def test_revise_preserves_particle_tags() -> None:
     assert r.initials() == "J. V. S."   # particles contribute no initial
 
 
-def test_revise_takes_a_spaced_credential_literally() -> None:
-    # The Ph./D. merge is a HEAD-POSITION rule (#371) and a field value
-    # has no head: revise() runs a full sub-parse of the string it is
-    # given, so "Ph. D." there is two separate suffix pieces -- `Ph.`
-    # by vocabulary, `D.` as an initial -- which the suffix view
-    # renders comma-joined, rather than one healed credential.
-    # Deliberate -- the merge exists for a credential someone TYPED
-    # after a name, and a caller who writes the spaced form into the
-    # suffix field gets it read as two suffix items.
+def test_revise_derives_suffix_entries_from_the_values_commas() -> None:
+    # A suffix value's entry structure is the value's own commas, read
+    # by rules.md#R1's pass after the named role is forced (#511). The
+    # sub-parse of a bare "MD PhD" reads a title and a family name and
+    # so joins nothing on its own; revise() runs the pass again over
+    # the forced roles, where the two share a comma bucket.
     p = Parser()
-    n = p.parse("John Smith Ph.D.")
-    r = p.revise(n, suffix="Ph. D.")
-    assert r.suffix == "Ph., D."
+    n = p.parse("John Smith")
+    assert p.revise(n, suffix="MD PhD").suffix == "MD PhD"
+    assert p.revise(n, suffix="MD, PhD").suffix == "MD, PhD"
+    # The Ph. D. MERGE is a head-position rule (#371) with no head to
+    # consult in a field value, and it still does not fire here; the
+    # ENTRY pass joins the pair for the reason it joins MD and PhD.
+    # Supersedes the 2026-08-31 acceptance of 'Ph., D.' on this path
+    # (decisions.md#phd-merge).
+    assert p.revise(n, suffix="Ph. D.").suffix == "Ph. D."
+    # a dash is a token under the default policy, and a suffix word
+    # once the role is forced
+    assert (p.revise(n, suffix="MD PhD - FACS Fellow").suffix
+            == "MD PhD - FACS Fellow")
 
 
 def test_revise_views_match_a_fresh_parse() -> None:
@@ -958,6 +965,114 @@ def test_revise_forces_the_named_role_on_every_harvested_token() -> None:
     r = p.revise(p.parse("John Smith"), family="Dr. Vega Jr.")
     assert r.family == "Dr. Vega Jr."
     assert all(t.role is Role.FAMILY for t in r.tokens_for(Role.FAMILY))
+
+
+def test_revise_round_trips_a_rendered_suffix() -> None:
+    # the view renders entries comma-joined and a comma is what the
+    # pass reads, so a name's own suffix revises back to itself --
+    # the three shapes #511 reported, none of which round-tripped,
+    # and a fourth from the corpus -- the only value in the set whose
+    # own suffix CONTAINS A COMMA ('Jr., Col. Ret'), so it is the one
+    # pinning that the pass does not over-join two entries into one
+    p = Parser()
+    for text in ("John Smith MD PhD", "John Smith, Ph. D.",
+                 "Doe, John, MD PhD - FACS Fellow",
+                 "Andrew Perkins, Jr., Col. (Ret)"):
+        n = p.parse(text)
+        assert p.revise(n, suffix=n.suffix).suffix == n.suffix, text
+
+
+def test_revise_leaves_a_policy_delimiter_unparted_without_a_tail_segment() -> None:
+    # The pinned limit, and the rule behind it: a configured delimiter
+    # core is dropped -- and so parts entries -- only on a TAIL
+    # segment, which a value gets only where its own words read as a
+    # name. A run of post-nominals has none, with or without a comma
+    # of its own, so the dash stays a word; a value that reads as a
+    # name does part. The round-trip is unaffected because the
+    # whole-name view already rendered that boundary as a comma.
+    p = Parser(policy=Policy(extra_suffix_delimiters=frozenset({" - "})))
+    n = p.parse("Doe, John, MD PhD - FACS")
+    assert n.suffix == "MD PhD, FACS"
+    assert p.revise(n, suffix="MD PhD - FACS").suffix == "MD PhD - FACS"
+    assert p.revise(n, suffix="MD, PhD - FACS").suffix == "MD, PhD - FACS"
+    assert p.revise(n, suffix=n.suffix).suffix == "MD PhD, FACS"
+    assert (p.revise(n, suffix="John Doe, MD - FACS").suffix
+            == "John Doe, MD, FACS")
+
+
+def test_revise_reads_a_glued_honorific_on_its_own() -> None:
+    # The docstring's "classified ON ITS OWN" limit, on the one corpus
+    # name of 1117 whose suffix does not revise back to itself after
+    # #511 (measured 2026-09-06). The whole-name parse keeps 'J.씨' one
+    # glued suffix token; the sub-parse of the bare value peels the
+    # honorific off the initial, and the entry pass then joins the
+    # two it made. Right entries, the spurious comma of before gone
+    # ('씨, J., 씨'), one word read differently in the value than in
+    # the name. Honorific peeling is a W-rule question, not R1's.
+    p = Parser()
+    n = p.parse("김민준씨, J.씨")
+    assert n.suffix == "씨, J.씨"
+    assert p.revise(n, suffix=n.suffix).suffix == "씨, J. 씨"
+
+
+#: The one suffix-bearing corpus name whose suffix does not revise back
+#: to itself: the honorific peel pinned just above. Named here so the
+#: guard below fails on a NEW exception and not on the known one.
+_HONORIFIC_PEEL = frozenset({"김민준씨, J.씨"})
+
+
+def _suffix_bearing_corpus_names() -> list[str]:
+    from ._differential_fixtures import _CORPUS_NAMES
+    p = Parser()
+    return [n for n in _CORPUS_NAMES
+            if p.parse(n).suffix and n not in _HONORIFIC_PEEL]
+
+
+def test_the_suffix_bearing_corpus_is_not_empty() -> None:
+    # 367 on 2026-09-06; a floor, so a filter that empties the
+    # parametrization below fails here instead of skipping there
+    assert len(_suffix_bearing_corpus_names()) > 300
+
+
+@pytest.mark.parametrize("name", _suffix_bearing_corpus_names())
+def test_a_rendered_suffix_revises_back_to_itself(name: str) -> None:
+    # The #511 property over the corpus rather than by example, because
+    # revise() is off the differential gate's compare path and a change
+    # to group's marks, delimiter_cores or the entry predicate could
+    # reopen it with the gate green and the four pins above passing.
+    p = Parser()
+    n = p.parse(name)
+    assert p.revise(n, suffix=n.suffix).suffix == n.suffix
+
+
+def test_revise_keeps_the_sub_parses_within_piece_mark() -> None:
+    # The forcing keeps the sub-parse's tags: a "joined" made WITHIN a
+    # piece (the Ph. D. merge, mid-value where the head rule lets it
+    # fire) is role-blind and right for every role (decisions.md#C1's
+    # #436 DECLINED list), and a draft that cleared it with the role
+    # lost it on every non-suffix value. For a suffix value the pass
+    # writes the marks itself ('Ph. D. MD' sub-parses with none), so
+    # nothing there depends on the sub-parse's own. The between-piece
+    # mark a sub-parse leaves on a token forced to another role
+    # predates #511; on a ParsedName only the suffix string view reads
+    # the tag, and no path puts a revised name into a HumanName, whose
+    # list views would heal it.
+    p = Parser()
+    r = p.revise(p.parse("John Smith"), family="John Ph. D. Smith")
+    family = r.tokens_for(Role.FAMILY)
+    assert [t.text for t in family] == ["John", "Ph.", "D.", "Smith"]
+    assert "joined" in family[2].tags
+    assert r.family == "John Ph. D. Smith"
+    s = p.revise(p.parse("John Smith"), suffix="Ph. D. MD")
+    assert s.suffix == "Ph. D. MD"
+    assert [("joined" in t.tags) for t in s.tokens_for(Role.SUFFIX)] == [
+        False, True, True]
+    # the stale between-piece mark, and that no ParsedName view reads it
+    stale = p.revise(p.parse("John Smith"), family="Jones MD PhD")
+    fam = stale.tokens_for(Role.FAMILY)
+    assert "joined" in fam[2].tags
+    assert stale.family == "Jones MD PhD"
+    assert stale.family_base == stale.family
 
 
 def test_wholly_cjk_names_read_family_first_by_default() -> None:
