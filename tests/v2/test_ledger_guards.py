@@ -863,6 +863,26 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # is not conjunction vocabulary at all.
     "fix(#462)": ("john e smith", "maria y lopez", "E.T. Smith",
                   "Maier, Amy I, Jr."),
+    # #436/#437's rules are literal-anchored, so _CORPUS_CLAIMS'
+    # reach cannot move under a widening that only reaches names the
+    # corpora lack. These probes are the wall. Each rule's boundary
+    # is a WRITING of the same name: the comma forms and the
+    # delimiter forms render exactly as they did and must arrive
+    # UNEXPLAINED if they ever stop doing so.
+    "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
+        ("Smith, MD PhD", "John Smith, MD PhD", "Smith, MD, PhD",
+         "Smith, MD - PhD - FACS", "John Doe, MD - PhD - FACS"),
+    "fix(#436/#437) the glued honorific and the roman numeral are one post-nominal run":
+        ("田中さん V.", "田中さん 様.", "田中さん, Dr."),
+    "fix(#436/#437) the glued honorific and the polite address are one post-nominal run":
+        ("田中さん II", "田中さん, 様.", "田中さん 様"),
+    "fix(#436/#437) the spaced doctorate and the honorific after it are one post-nominal run":
+        ("김민준 박사", "김민준 박사님", "김민준 씨"),
+    "fix(#436/#437) the glued honorific and the generational suffix are one post-nominal run":
+        ("김민준씨", "Dr 김민준씨, Jr.", "김민준씨 (Jimmy)"),
+    "fix(#436/#437) the space-separated post-nominal run compounds with the bound-given reserve":
+        ("abdul Smith V", "abdul Smith Jr Ma", "abdul Smith Jr",
+         "Smith Jr V"),
 }
 
 
@@ -1471,6 +1491,23 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # _vocab.D are fixed regexes, so there is no wordlist here for the
     # alternation to drift from.
     frozenset({" John Smith", " Van Johnson", ", Jr\\."}),
+    # #436/#437's Latin movers, one corpus name per alternative -- a
+    # list of names, not a copy of any wordlist, so there is no
+    # vocabulary for it to drift from. The rule's subject is the
+    # SEPARATOR between two post-nominals rather than which words are
+    # post-nominals, so the vocabularies it would otherwise be
+    # suspected of copying (SUFFIX_WORDS, SUFFIX_ACRONYMS) are not
+    # what selects these names: 'John Smith Mc V' is here on a
+    # particle that is also suffix vocabulary and 'Kenneth Clarke QC
+    # MP' on two acronyms, and a member matching either set would
+    # reach names that do not move. One set, identical in all four
+    # ledgers.
+    frozenset({"JOHN DOE PHD MD", "John Doe MD PhD",
+               "John Smith MD PhD", "John Smith Mc V",
+               "Kenneth Clarke QC MP", "Smith, John PhD I\\.",
+               "The Rt Hon Kenneth Clarke QC MP, HMG",
+               "Washington Jr\\. MD, Franklin", "abdul Smith Jr Ma",
+               "abdul Smith Jr V"}),
     # fix(#445)'s movers, one corpus name per alternative -- a list of
     # names, not a copy of any wordlist, so there is no vocabulary for
     # it to drift from. Two sets because the ledgers group the nine
@@ -1951,6 +1988,12 @@ def _claim(rule: dict) -> _Claim:
 #: both is growth into names the rule genuinely describes.
 _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
+        # #436/#437's Latin alternation, first in every ledger.
+        # Ten corpus names, `suffix` alone: the rule moves the
+        # SEPARATOR and no role, so a widening that took a role would
+        # change the row here before it reached the gate.
+        "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
+            _Claim(10, ('suffix',), "30f5314a2662", None),
         "fix(A2) content-free input names nobody, so every role empties":
             _Claim(5, ('given',), "1af8d718688b", None),
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
@@ -2153,6 +2196,18 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(18, ('_initials',), "f67d8ebddd56", ('DEFAULT',)),
     },
     "expected_since_2.0.0.toml": {
+        # #436/#437's Latin alternation, first in every ledger.
+        # Ten corpus names, `suffix` alone: the rule moves the
+        # SEPARATOR and no role, so a widening that took a role would
+        # change the row here before it reached the gate.
+        "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
+            _Claim(10, ('suffix',), "30f5314a2662", None),
+        # The compound rule, at the two baselines where 'abdul Smith
+        # Jr V' already diffs {family, given} under fix(#401) and the
+        # widened diff leaves that rule's `fields`. Three roles here
+        # because the diff it explains carries all three.
+        "fix(#436/#437) the space-separated post-nominal run compounds with the bound-given reserve":
+            _Claim(1, ('family', 'given', 'suffix'), "8152bc33f8da", None),
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
             _Claim(1, ('maiden', 'nickname'), "c09cc7dba88b", None),
         "fix(#434) a multi-word maiden marker takes the maiden name":
@@ -2310,10 +2365,54 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     # the 2.0.0 mapping above, the same regex classifying the same
     # names.
     "expected_since_2.2.0.toml": {
+        # #436/#437's Latin alternation, first in every ledger.
+        # Ten corpus names, `suffix` alone: the rule moves the
+        # SEPARATOR and no role, so a widening that took a role would
+        # change the row here before it reached the gate.
+        "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
+            _Claim(10, ('suffix',), "30f5314a2662", None),
+        # The four one-name CJK rules, literal-anchored, at the two
+        # baselines where the render is the whole of what moved. A
+        # reach of 1 is one _CORPUS_CLAIMS cannot police on its own --
+        # a widening into names the corpora lack leaves it unmoved --
+        # so _MUST_NOT_MATCH carries the boundary probes beside it.
+        "fix(#436/#437) the glued honorific and the roman numeral are one post-nominal run":
+            _Claim(1, ('suffix',), "7afc1a7f6b7b", None),
+        "fix(#436/#437) the glued honorific and the polite address are one post-nominal run":
+            _Claim(1, ('suffix',), "4fc52f5a60f2", None),
+        "fix(#436/#437) the spaced doctorate and the honorific after it are one post-nominal run":
+            _Claim(1, ('suffix',), "6edfa4394c33", None),
+        "fix(#436/#437) the glued honorific and the generational suffix are one post-nominal run":
+            _Claim(1, ('suffix',), "1b67339cf744", None),
         "fix(#462) the facade keeps an initial-shaped conjunction letter":
             _Claim(18, ('_initials',), "3dd0e0276be6", ('DEFAULT',)),
     },
     "expected_since_2.1.0.toml": {
+        # #436/#437's Latin alternation, first in every ledger.
+        # Ten corpus names, `suffix` alone: the rule moves the
+        # SEPARATOR and no role, so a widening that took a role would
+        # change the row here before it reached the gate.
+        "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
+            _Claim(10, ('suffix',), "30f5314a2662", None),
+        # The four one-name CJK rules, literal-anchored, at the two
+        # baselines where the render is the whole of what moved. A
+        # reach of 1 is one _CORPUS_CLAIMS cannot police on its own --
+        # a widening into names the corpora lack leaves it unmoved --
+        # so _MUST_NOT_MATCH carries the boundary probes beside it.
+        "fix(#436/#437) the glued honorific and the roman numeral are one post-nominal run":
+            _Claim(1, ('suffix',), "7afc1a7f6b7b", None),
+        "fix(#436/#437) the glued honorific and the polite address are one post-nominal run":
+            _Claim(1, ('suffix',), "4fc52f5a60f2", None),
+        "fix(#436/#437) the spaced doctorate and the honorific after it are one post-nominal run":
+            _Claim(1, ('suffix',), "6edfa4394c33", None),
+        "fix(#436/#437) the glued honorific and the generational suffix are one post-nominal run":
+            _Claim(1, ('suffix',), "1b67339cf744", None),
+        # The compound rule, at the two baselines where 'abdul Smith
+        # Jr V' already diffs {family, given} under fix(#401) and the
+        # widened diff leaves that rule's `fields`. Three roles here
+        # because the diff it explains carries all three.
+        "fix(#436/#437) the space-separated post-nominal run compounds with the bound-given reserve":
+            _Claim(1, ('family', 'given', 'suffix'), "8152bc33f8da", None),
         "fix(#371) a suffix never begins a name: the Ph./D. merge declines at the head":
             _Claim(4, ('family', 'given', 'middle', 'suffix', 'title'), "1425d85a2d86", None),
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
@@ -2749,8 +2848,17 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
         # the new suffix 'PhD, Jr.', with a comma no run produces,
         # and it says "title 'PhD' at every baseline", where the 1.4.0
         # title MOVES, 'PhD' -> '', the whole run going to `suffix`.
-        # The ledger's prose is a separate concern and is not touched
-        # here; this row is where the discrepancy is on the record.
+        # The ledger's prose was a separate concern and was not
+        # touched by #498; this row is where the discrepancy went on
+        # the record. HALF of it is repaired since 2026-09-06: #436/
+        # #437 had to touch that comment anyway, and corrected the
+        # 'PhD, Jr.' half to 'PhD Jr.' in all three ledgers carrying
+        # it, the line naming the date and saying it had been stale
+        # since #429 made the run one entry. The "title 'PhD' at every
+        # baseline" half stands as written and is still live --
+        # re-measured 2026-09-06, the tree reads 'Smith, PhD Jr.' as
+        # family 'Smith', suffix 'PhD Jr.', title '' -- so this row
+        # goes on carrying that half.
         # 'Smith, Ph. D. Jr.' is contract tier; the other five are
         # radar and are pinned on the same terms, the argument
         # being the row's subject and not the tier. Moving the loser

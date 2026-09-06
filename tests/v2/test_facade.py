@@ -182,10 +182,13 @@ def test_the_joined_tag_never_reaches_a_title(  # #429 regression guard
     role, so a tag placed for the suffix view is read by the title view
     too.
 
-    #429 widened the one-entry join off the tail path, where assign
-    routes every piece to SUFFIX, onto the family-comma path, where it
-    does not. Its first draft let any piece open an entry; a title piece
-    doing so tagged the title behind it, and title_list collapsed.
+    So the pass that writes it (post_rules' R1 entry pass, #436) walks
+    the SUFFIX tokens alone and reads every other role as transparent
+    to the run rather than as part of it. #429's first draft, over the
+    piece-shaped join this replaced, let any piece open an entry: a
+    title piece doing so tagged the title behind it, and title_list
+    collapsed. The shape of that bug survives the rewrite, which is why
+    this guard does.
 
     Asserted on the LIST views because the string views cannot see it --
     titles render space-joined either way, which is why the case table
@@ -207,12 +210,16 @@ def test_the_joined_tag_never_reaches_a_title(  # #429 regression guard
     k = HumanName("Smith, MD PhD")
     assert k.suffix_list == ["MD PhD"]        # ONE element
 
-    # And the pin for the TAG CONDITION itself, which the three above
-    # miss: they all pin the sticky entry_open update, and the whole
-    # suite stays green with `in_entry and` dropped from the tag test.
-    # This needs a suffix piece FIRST -- opening the entry legitimately
-    # -- and then TWO titles, so the second title is a continuation of
-    # an entry it does not belong to.
+    # And the pin for the _RENDERS_ELSEWHERE transparency itself, which
+    # the three above miss: a role that renders elsewhere is stepped
+    # OVER by the pass -- it pairs each SUFFIX with the NEXT SUFFIX --
+    # and is never stepped onto. Pair a suffix with the tokens that
+    # follow it instead, and MD reaches both titles here in its own
+    # comma bucket with nothing parting them: both are tagged, and
+    # title_list collapses to ['Rev. Dr.']. It needs a suffix word
+    # FIRST, so a run is legitimately open, and then TWO titles --
+    # which is why 'Smith, Rev. Dr.' above (no suffix at all, so the
+    # pass never runs) cannot reach this mutant.
     j = HumanName("Smith, MD Rev. Dr.")
     assert j.suffix == "MD"
     assert j.title == "Rev. Dr."             # identical either way

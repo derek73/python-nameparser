@@ -87,10 +87,13 @@ class Span(NamedTuple):
 #: particles); "conjunction" a joining word ("and", "y"); "initial" an
 #: initial-shaped word in a script that HAS initials -- "J." or "А.",
 #: never "씨." (#320);
-#: "joined" a continuation of the previous token within one merged
-#: piece ("Ph." + "D."), which the suffix view joins with a space
-#: instead of ", ". Every other tag is namespaced ("vocab:...") and is
-#: unstable debugging provenance -- never match against those.
+#: "joined" a continuation of the token before it, which the suffix
+#: view joins with a space instead of ", ": within one merged piece
+#: ("Ph." + "D."), and since #436 also across the pieces of one suffix
+#: entry, the entry being the run of post-nominals the writer wrote
+#: without a comma ("MD PhD"). Every other tag is namespaced
+#: ("vocab:...") and is unstable debugging provenance -- never match
+#: against those.
 #: This prose is the hand-maintained twin of docs/modules.rst's
 #: STABLE_TAGS block; nothing pins the two against each other (the
 #: test only compares the frozenset), so edit both or neither.

@@ -179,7 +179,8 @@ def test_matches_accepts_explicit_parser() -> None:
 def test_phd_split_heals_in_the_suffix_view() -> None:
     # v1 parity via fix_phd: the split credential renders as one suffix
     assert parse("John Ph. D.").suffix == "Ph. D."
-    assert parse("John Smith PhD MD").suffix == "PhD, MD"  # unchanged
+    # #436: the writer typed no comma, so none is rendered
+    assert parse("John Smith PhD MD").suffix == "PhD MD"
 
 
 def test_phd_split_mid_name_is_a_suffix() -> None:
@@ -236,7 +237,8 @@ def test_every_ambiguous_acronym_in_a_name_is_reported() -> None:
     # one coin-flip per acronym: a single-slot record dropped all but
     # the last, which defeats the point of reporting at all
     n = parse("John Smith MA JD")
-    assert n.suffix == "MA, JD"
+    # the scenery the record is read off; only its separator moved (#436)
+    assert n.suffix == "MA JD"
     assert [a.kind for a in n.ambiguities] == \
         [AmbiguityKind.SUFFIX_OR_NAME] * 2
     assert sorted(t.text for a in n.ambiguities for t in a.tokens) == \
@@ -542,7 +544,10 @@ def test_the_reserve_declines_and_assign_reads_the_unjoined_pieces() -> None:
     # and behind a merged credential, which assign drops from its walk
     # so the V is last in it, the family survives
     n = parse("abdul Smith V Ph. D.")
-    assert (n.given, n.family, n.suffix) == ("abdul", "Smith", "V, Ph. D.")
+    # no comma between the numeral and the merged credential, so the two
+    # are one entry (#436); the V-is-last-in-the-walk point above is a
+    # claim about the ROLES and is untouched
+    assert (n.given, n.family, n.suffix) == ("abdul", "Smith", "V Ph. D.")
 
 
 def test_the_reserve_spares_the_family_the_acronym_fork_would_take() -> None:
@@ -557,7 +562,8 @@ def test_the_reserve_spares_the_family_the_acronym_fork_would_take() -> None:
         assert (n.family, n.suffix) == (m.family, m.suffix)
         assert n.family != ""
     n = parse("abu Bakar Jr Ed")
-    assert (n.family, n.suffix) == ("Bakar", "Jr, Ed")
+    # spaced run, spaced render (#436); the family claim is what moves here
+    assert (n.family, n.suffix) == ("Bakar", "Jr Ed")
     # and the join never turns a suffix into a name: unjoined, the
     # acronym is a credential with words to spare, so 'abdul Smith
     # Ma' reads as 'John Smith Ma' does (1.4.0 parity restored)
