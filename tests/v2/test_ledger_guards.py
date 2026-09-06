@@ -2848,8 +2848,17 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
         # the new suffix 'PhD, Jr.', with a comma no run produces,
         # and it says "title 'PhD' at every baseline", where the 1.4.0
         # title MOVES, 'PhD' -> '', the whole run going to `suffix`.
-        # The ledger's prose is a separate concern and is not touched
-        # here; this row is where the discrepancy is on the record.
+        # The ledger's prose was a separate concern and was not
+        # touched by #498; this row is where the discrepancy went on
+        # the record. HALF of it is repaired since 2026-09-06: #436/
+        # #437 had to touch that comment anyway, and corrected the
+        # 'PhD, Jr.' half to 'PhD Jr.' in all three ledgers carrying
+        # it, the line naming the date and saying it had been stale
+        # since #429 made the run one entry. The "title 'PhD' at every
+        # baseline" half stands as written and is still live --
+        # re-measured 2026-09-06, the tree reads 'Smith, PhD Jr.' as
+        # family 'Smith', suffix 'PhD Jr.', title '' -- so this row
+        # goes on carrying that half.
         # 'Smith, Ph. D. Jr.' is contract tier; the other five are
         # radar and are pinned on the same terms, the argument
         # being the row's subject and not the tier. Moving the loser
