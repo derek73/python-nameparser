@@ -1579,6 +1579,309 @@ def test_an_exemption_for_a_pair_that_is_no_contest_is_vacant() -> None:
          "fix(narrow-b) the other half of it")]
 
 
+#: A NON-NESTED pair over one name: `fix(a)`'s {family, given} and
+#: `fix(b)`'s {family, suffix} intersect in {family} and neither
+#: contains the other, so order_contests looks past the pair entirely
+#: and only file order decides which rule classify() hands a {family}
+#: diff to. The #498 class, in two rules' worth of TOML.
+_OVERLAPPING: list[dict[str, object]] = [
+    {"issue": "fix(a) the winner", "name_regex": "Smith",
+     "fields": ["family", "given"]},
+    {"issue": "fix(b) the loser", "name_regex": "Smith",
+     "fields": ["family", "suffix"]},
+]
+
+#: One row of main()'s `diffing`: (name, diff fields, order). Both
+#: rules above admit it, since {family} is a subset of each.
+_ONE_DIFF: list[tuple[str, set[str], str | None]] = [
+    ("John Smith", {"family"}, None)]
+
+#: main()'s `tier_of` for that one name.
+_ONE_TIER: dict[str, str] = {"John Smith": "contract"}
+
+
+def test_an_overlapping_pair_with_no_pin_is_an_unowned_contest() -> None:
+    """The #498 predicate's positive case, and every field of the row.
+
+    NamedTuple equality is by value, so asserting the tuple alone
+    would pass against a bare 7-tuple; the field reads below are what
+    main()'s message prints, so each is named.
+    """
+    found = compare.unowned_contests(
+        _ONE_DIFF, _OVERLAPPING, [], set(), _ONE_TIER)
+    assert len(found) == 1, found
+    row = found[0]
+    assert row.name == "John Smith"
+    assert row.order is None
+    assert row.diff == ("family",)
+    assert row.winner == "fix(a) the winner"
+    assert row.loser == "fix(b) the loser"
+    assert row.kind == "overlap"
+    assert row.tier == "contract"
+
+
+def test_an_equal_fields_pair_with_no_pin_is_an_unowned_contest() -> None:
+    """The class the docs name _CROSS_RULE_WINNERS the instrument for.
+
+    Equal `fields` is the special case of "neither contains the
+    other", and seven of #498's fourteen are in it (measured
+    2026-09-05) -- so a predicate that reported only the
+    strict-intersection case would miss half the class it exists for.
+    """
+    equal = [dict(_OVERLAPPING[0], fields=["family"]),
+             dict(_OVERLAPPING[1], fields=["family"])]
+    found = compare.unowned_contests(_ONE_DIFF, equal, [], set(), _ONE_TIER)
+    assert [(r.loser, r.kind) for r in found] == [
+        ("fix(b) the loser", "equal")]
+
+
+def test_a_narrow_first_pair_is_justified_without_a_pin() -> None:
+    """#382's declaration-free default, unchanged by this check.
+
+    The winner's `fields` are a STRICT subset of the loser's, which is
+    the arrangement narrow-first says needs no declaration -- and the
+    wider predicate that would demand a pin here anyway was declined
+    (decisions.md, the #498 completeness check).
+    """
+    narrow_first = [dict(_OVERLAPPING[0], fields=["family"]),
+                    dict(_OVERLAPPING[1], fields=["family", "given"])]
+    assert compare.unowned_contests(
+        _ONE_DIFF, narrow_first, [], set(), _ONE_TIER) == []
+    # ... and the same pair with the nesting SWAPPED reports, so the
+    # silence above is narrow-first and not the fixture gone quiet.
+    assert len(compare.unowned_contests(
+        _ONE_DIFF, narrow_first[::-1], [], set(), _ONE_TIER)) == 1
+
+
+def test_a_declared_wide_first_pair_is_justified_without_a_pin() -> None:
+    """A `precedes_narrower` block covers the pair it names.
+
+    The winner is the WIDER rule, which is the arrangement #382 says
+    needs a declaration, and the declaration names the loser.
+    """
+    declared = [dict(_OVERLAPPING[0], fields=["family", "given"],
+                     precedes_narrower=[{"issue": "fix(b) the loser",
+                                         "why": "a describes both halves"}]),
+                dict(_OVERLAPPING[1], fields=["family"])]
+    assert compare.unowned_contests(
+        _ONE_DIFF, declared, [], set(), _ONE_TIER) == []
+    # ... and the same pair with the declaration dropped reports, so
+    # the silence above is the `precedes_narrower` block.
+    assert len(compare.unowned_contests(
+        _ONE_DIFF, [dict(declared[0], precedes_narrower=[]), declared[1]],
+        [], set(), _ONE_TIER)) == 1
+
+
+def test_an_undeclared_wide_first_pair_is_classified_not_assumed_away(
+) -> None:
+    """The wide-first pair carrying NO declaration is REPORTED.
+
+    This shape cannot reach a ledger main() runs: undeclared_contests
+    refuses it pre-worker, so on any validated ledger the branch is
+    dead. It is classified anyway rather than assumed unreachable
+    because this function is handed rule lists nothing validated --
+    every fixture in this file is one -- and a check that presumes
+    another check's guarantee reports nothing when that guarantee is
+    what broke. `wide-undeclared` is a TOKEN; _UNOWNED_WHY carries the
+    wording the caller prints.
+    """
+    undeclared = [dict(_OVERLAPPING[0], fields=["family", "given"]),
+                  dict(_OVERLAPPING[1], fields=["family"])]
+    found = compare.unowned_contests(
+        _ONE_DIFF, undeclared, [], set(), _ONE_TIER)
+    assert [r.kind for r in found] == ["wide-undeclared"], found
+    assert set(compare._UNOWNED_WHY) == {"equal", "overlap",
+                                         "wide-undeclared"}
+
+
+def test_a_pinned_name_is_justified_whatever_the_kind() -> None:
+    """`pinned` is the set the caller passes and nothing else.
+
+    main() passes set(_RECORDED_DIFFS[ledger]) -- the keys of the
+    roster whose rows carry a winner. The function reads no dict of
+    its own, so this test says exactly what "pinned" means and the
+    main()-level tests say which dict supplies it.
+    """
+    assert compare.unowned_contests(
+        _ONE_DIFF, _OVERLAPPING, [], {"John Smith"}, _ONE_TIER) == []
+    # ... and the same call with an empty set reports, so the silence
+    # above is the pin and not the fixture having gone quiet.
+    assert len(compare.unowned_contests(
+        _ONE_DIFF, _OVERLAPPING, [], set(), _ONE_TIER)) == 1
+
+
+def test_an_excluded_name_is_not_in_the_population() -> None:
+    """Exclusions are honored the way classify() honors them.
+
+    A name a [[never]] entry refuses was classified to NOTHING, so it
+    has no winner and cannot have a contest -- demanding a pin for it
+    would demand an argument about a rule that did not win. Read
+    without `fields`, as classify() reads an exclusion.
+    """
+    never: list[dict[str, object]] = [
+        {"why": "nothing here may be explained",
+         "examples": ["John Smith"], "name_regex": "Smith"}]
+    assert compare.unowned_contests(
+        _ONE_DIFF, _OVERLAPPING, never, set(), _ONE_TIER) == []
+    # ... and the same call with the exclusion dropped reports, so the
+    # silence above is the [[never]] entry and not the fixture.
+    assert len(compare.unowned_contests(
+        _ONE_DIFF, _OVERLAPPING, [], set(), _ONE_TIER)) == 1
+
+
+def test_one_admitting_rule_is_no_contest() -> None:
+    """The control: with the second rule's regex pulled off the name,
+    the same fixture reports nothing -- so every assertion above is
+    the pair being seen, not the loop running twice."""
+    apart = [_OVERLAPPING[0], dict(_OVERLAPPING[1], name_regex="Jones")]
+    assert compare.unowned_contests(
+        _ONE_DIFF, apart, [], set(), _ONE_TIER) == []
+    # ... and putting a SECOND admitter back on the name reports, so
+    # the silence above is the count of admitters and nothing else.
+    assert len(compare.unowned_contests(
+        _ONE_DIFF, apart + [_OVERLAPPING[1]], [], set(), _ONE_TIER)) == 1
+
+
+def test_a_rule_scoped_to_another_order_does_not_admit_the_diff() -> None:
+    """`orders` narrows the admitting set here as it does in classify().
+
+    A rule scoped to FAMILY_FIRST is not in the running for a
+    default-order comparison at all, so the pair is not a contest --
+    the losing rule could not have taken the diff whatever the file
+    order. The winner stays order-blind, which is what a rule written
+    before shape-tagged entries existed is, so the only thing moving
+    between the two calls is the comparison's own order.
+    """
+    scoped = [_OVERLAPPING[0],
+              dict(_OVERLAPPING[1], orders=["FAMILY_FIRST"])]
+    assert compare.unowned_contests(
+        _ONE_DIFF, scoped, [], set(), _ONE_TIER) == []
+    family_first: list[tuple[str, set[str], str | None]] = [
+        ("John Smith", {"family"}, "FAMILY_FIRST")]
+    found = compare.unowned_contests(
+        family_first, scoped, [], set(), _ONE_TIER)
+    assert [(r.loser, r.order) for r in found] == [
+        ("fix(b) the loser", "FAMILY_FIRST")]
+
+
+def test_the_reported_diff_is_every_role_sorted() -> None:
+    """A two-role diff rides the row whole and in a stable order.
+
+    `diff` is what main() prints beside the name, and the reader
+    compares it against a _RECORDED_DIFFS shape, which is stored
+    sorted -- so a row carrying one role of three, or the set's
+    iteration order, would read as a shape mismatch that is really a
+    formatting bug. Three roles rather than two because a set of
+    strings iterates in an order PYTHONHASHSEED decides: dropping the
+    `sorted` leaves this assertion right one time in six rather than
+    one in two, and right always at the single-role diff every other
+    test here uses. Both rules admit all three roles, which is what
+    makes the pair a contest over the whole diff.
+    """
+    wide = [dict(_OVERLAPPING[0],
+                 fields=["family", "given", "middle", "nickname"]),
+            dict(_OVERLAPPING[1],
+                 fields=["family", "given", "middle", "suffix"])]
+    three_role: list[tuple[str, set[str], str | None]] = [
+        ("John Smith", {"middle", "given", "family"}, None)]
+    found = compare.unowned_contests(three_role, wide, [], set(), _ONE_TIER)
+    assert len(found) == 1, found
+    assert found[0].diff == ("family", "given", "middle")
+    assert found[0].kind == "overlap"
+
+
+def test_one_name_contesting_two_losers_reports_both() -> None:
+    """'田中さん, Dr.' is this shape on the shipped ledger: one name,
+    two admitting rules behind the winner, and each pair owed its own
+    row because each is a separate boundary somebody has to argue."""
+    trio = _OVERLAPPING + [
+        {"issue": "fix(c) the other loser", "name_regex": "Smith",
+         "fields": ["family", "nickname"]}]
+    found = compare.unowned_contests(_ONE_DIFF, trio, [], set(), _ONE_TIER)
+    assert [(r.winner, r.loser) for r in found] == [
+        ("fix(a) the winner", "fix(b) the loser"),
+        ("fix(a) the winner", "fix(c) the other loser")]
+
+
+def test_the_rule_list_is_sorted_here_the_way_classify_sorts_it() -> None:
+    """The winner is the rule that would actually TAKE the diff.
+
+    `_sorted_rules` puts a name_regex rule ahead of a fields-only one
+    whatever the file order, so a caller handing this function a list
+    in the raw order would be told the fields-only rule won a diff
+    classify() gives to the other. Sorted internally, as dormant_rules
+    sorts for the same reason: the shadower it names has to be the
+    rule that really won. The fixture is in the WRONG order on
+    purpose, and classify() over the same list is the control.
+    """
+    fields_only: dict[str, object] = {
+        "issue": "fix(fields-only) no regex, so it sorts second",
+        "fields": ["family", "suffix"]}
+    wrong_order = [fields_only, _OVERLAPPING[0]]
+    found = compare.unowned_contests(
+        _ONE_DIFF, wrong_order, [], set(), _ONE_TIER)
+    assert [(r.winner, r.loser) for r in found] == [
+        ("fix(a) the winner", "fix(fields-only) no regex, so it sorts "
+         "second")], found
+    # the control, in main()'s own arrangement: classify() sorts
+    # NOTHING -- main() hands it `_sorted_rules`' output -- so the
+    # winner above is that same tier ordering and not this function's
+    # own opinion, while the raw list would have answered the other way
+    assert compare.classify("John Smith", {"family"},
+                            compare._sorted_rules(wrong_order), [],
+                            None) == found[0].winner
+    assert compare.classify(
+        "John Smith", {"family"}, wrong_order, [], None) == found[0].loser
+
+
+def test_a_name_missing_from_the_tier_map_raises() -> None:
+    """`tier_of` is main()'s own map and a miss is a BUG, not a row.
+
+    Every compared name has a key there, so a KeyError here is the
+    fail-closed reading main()'s other tier lookups take: a row
+    printed with a guessed tier would say the wrong thing about
+    whether the run may fail on it.
+    """
+    with pytest.raises(KeyError):
+        compare.unowned_contests(_ONE_DIFF, _OVERLAPPING, [], set(), {})
+
+
+def test_the_row_carries_the_order_its_comparison_ran_under() -> None:
+    """The stated limit, made visible in the data.
+
+    A _RECORDED_DIFFS row is a DEFAULT-order shape, so a contest
+    measured under a declared order is reported here and could not be
+    absorbed by a row. None exists on any shipped ledger today -- all
+    fourteen of #498's are order-None -- and the row carries the order
+    so main() can say the limit only when it applies.
+    """
+    ordered: list[tuple[str, set[str], str | None]] = [
+        ("John Smith", {"family"}, "FAMILY_FIRST")]
+    found = compare.unowned_contests(
+        ordered, _OVERLAPPING, [], set(), _ONE_TIER)
+    assert [r.order for r in found] == ["FAMILY_FIRST"]
+
+
+def test_a_pin_cannot_absorb_a_declared_order_contest() -> None:
+    """The stated limit in the GATE and not only in the row.
+
+    `pinned` is a set of _RECORDED_DIFFS keys and a row there records
+    a DEFAULT-order shape, so it cannot say which rule wins a contest
+    measured under FAMILY_FIRST. A name-only gate would let the row
+    absorb it silently, which is the one thing the limit says cannot
+    happen; the same pin over the same name's DEFAULT-order comparison
+    does absorb it, which is what makes the difference the order and
+    not the pin.
+    """
+    ordered: list[tuple[str, set[str], str | None]] = [
+        ("John Smith", {"family"}, "FAMILY_FIRST")]
+    found = compare.unowned_contests(
+        ordered, _OVERLAPPING, [], {"John Smith"}, _ONE_TIER)
+    assert [r.order for r in found] == ["FAMILY_FIRST"], found
+    assert compare.unowned_contests(
+        _ONE_DIFF, _OVERLAPPING, [], {"John Smith"}, _ONE_TIER) == []
+
+
 #: What _run_worker was asked for, so a test can prove main forwarded
 #: the baseline and the corpus rather than defaults of its own.
 _WORKER_CALL: dict = {}
@@ -2189,7 +2492,7 @@ def test_the_shape_check_reads_the_section_for_the_LEDGER_it_ran(
     A correct row in the 2.0.0 section and a DECOY in the 1.4.0 one:
     dispatched right, the run is quiet; dispatched to 1.4.0, it reports
     a moved shape on the same name. Set wholesale rather than per key,
-    so the shipped 31 rows cannot supply the answer either way.
+    so the shipped 45 rows cannot supply the answer either way.
     """
     monkeypatch.setattr(
         compare, "_RECORDED_DIFFS",
@@ -2466,6 +2769,272 @@ def test_a_contest_row_and_a_watched_radar_row_print_apart(
     assert code == 1, out
 
 
+#: A NON-NESTED pair over the fixture corpus, as ledger text: neither
+#: rule's `fields` contains the other's, so the pre-worker contest
+#: refusal looks past the pair and the #498 check is the only thing
+#: that sees it. Two properties keep the fixture's verdict this
+#: check's alone. The WINNER reaches both corpus names, so its
+#: declared `fields` equal the union of the diffs it explains and
+#: OVER-DECLARED stays quiet. The LOSER declares `dormant`, because
+#: it explains nothing -- the winner is written first -- and
+#: EXPLAINED NOTHING would otherwise fail the run for a reason that
+#: is not this one.
+_UNOWNED_LEDGER = (
+    '[[change]]\nissue = "fix(a) the winner"\n'
+    'name_regex = "Smith|Jones"\nfields = ["family", "given"]\n'
+    '\n'
+    '[[change]]\nissue = "fix(b) the loser"\n'
+    'name_regex = "Smith"\nfields = ["family", "suffix"]\n'
+    'dormant = "shadowed by fix(a) on the only name it reaches"\n')
+
+#: 'Alice Jones' with the GIVEN name altered, so the winner rule
+#: explains a {given} diff too and its `fields` are exactly the union
+#: of what it explains.
+_JONES_GIVEN = {"title": "", "first": "ALICIA", "middle": "",
+                "last": "Jones", "suffix": "", "nickname": "",
+                "maiden": ""}
+
+#: The clause main() renders for an `overlap` row, from
+#: compare._UNOWNED_WHY. Written out rather than read off the mapping,
+#: as every other block's wording is asserted in this file: a test
+#: that quoted the dict would pass whatever the dict said.
+_OVERLAP_WHY = "`fields` overlap without nesting"
+
+
+def test_main_reports_an_unowned_contest_and_exits_1(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The gate's verdict on a contest nobody owns (#498).
+
+    unowned_contests has its own unit tests above; this pins that
+    main() calls it, names both rules and the kind, and FAILS the
+    run -- the half that can go silently permissive, as
+    test_main_exits_1_and_reports_an_unclassified_diff is for the
+    primary output.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml", {})
+    monkeypatch.setitem(compare._WATCHED_DIFFS,
+                        "expected_since_1.4.0.toml", {})
+    code, out = _run_main(tmp_path, monkeypatch, _UNOWNED_LEDGER, _DIFFERS,
+                          extra=[("Alice Jones", _JONES_GIVEN)])
+    # PAIR(S), not diff(s): the count is rows, one per (name, losing
+    # rule), and the noun has to say so or a reader counts names by it
+    assert ("UNPINNED CONTEST expected_since_1.4.0.toml: 1 contested "
+            "pair(s)" in out), out
+    # the LEAD as main() renders it, not the two issues asserted
+    # apart: `in out` on each passes with the (winner, loser) grouping
+    # key INVERTED, which is the half of this message that says which
+    # rule the tree hands the name to.
+    assert ("'fix(a) the winner'\n    outranks 'fix(b) the loser' on:"
+            in out), out
+    # the row, name and shape together: the shape prints in the
+    # `list(row.diff)` form every MOVED SHAPE row uses, so the bare
+    # tuple a dropped `list()` would render fails here too.
+    assert "'John Smith' [contract] ['family']" in out, out
+    assert _OVERLAP_WHY in out and out.count(_OVERLAP_WHY) == 1, out
+    # the repair names BOTH halves of a pin, since a shape without a
+    # winner is the other roster's row and would not close this
+    assert "_RECORDED_DIFFS" in out and "_CROSS_RULE_WINNERS" in out, out
+    # the disclaimer: a contest is not a defect, an unowned one is
+    assert "not a defect" in out, out
+    # no declared order in the fixture, so the order limit must not
+    # print -- it is named only when it applies, as NOT CHECKED is.
+    # Scoped to the BLOCK: the word appears in other parts of a
+    # report (the role legend, another check's note), so asserting
+    # over the whole of `out` would be a claim about the rest of
+    # main() rather than about this message. The block runs from its
+    # header to the blank line the printer ends it with.
+    block = out[out.index("UNPINNED CONTEST"):]
+    block = block[:block.index("\n\n")]
+    assert "`orders`" not in block, block
+    assert code == 1, out
+
+
+def test_a_recorded_row_owns_a_contest_and_the_run_goes_quiet(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The same ledger with the name pinned: silent, and exit 0.
+
+    The shape recorded is the shape the run measures, so no MOVED
+    SHAPE prints either -- 0 here is the pin having closed the
+    finding and not some other check having gone quiet.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"John Smith": ("family",)})
+    monkeypatch.setitem(compare._WATCHED_DIFFS,
+                        "expected_since_1.4.0.toml", {})
+    code, out = _run_main(tmp_path, monkeypatch, _UNOWNED_LEDGER, _DIFFERS,
+                          extra=[("Alice Jones", _JONES_GIVEN)])
+    assert "UNPINNED CONTEST" not in out, out
+    assert "MOVED SHAPE" not in out, out
+    assert code == 0, out
+
+
+def test_a_watched_row_does_not_own_a_contest(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A shape with no winner cannot answer "which rule wins".
+
+    _WATCHED_DIFFS records a shape and pins nobody, so a row there
+    leaves the contest unowned -- the sentence the check's docstring
+    rests on, asserted at the level where the two dicts are actually
+    read apart. The shape recorded AGREES with the run, so no MOVED
+    SHAPE prints and the 1 is this check's alone.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml", {})
+    monkeypatch.setitem(compare._WATCHED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"John Smith": ("family",)})
+    code, out = _run_main(tmp_path, monkeypatch, _UNOWNED_LEDGER, _DIFFERS,
+                          extra=[("Alice Jones", _JONES_GIVEN)])
+    assert "UNPINNED CONTEST" in out, out
+    assert "MOVED SHAPE" not in out, out
+    assert code == 1, out
+
+
+def test_an_unowned_contest_on_a_radar_name_still_fails(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Fatal on both tiers, exactly as a contest ROW is.
+
+    A contest row is fatal on either tier because it carries an
+    argument; an owed row is fatal because it carries none yet.
+    Scoping this to contract tier was declined for the roster it
+    completes (decisions.md, 2026-09-02), and the reason -- the
+    roster already pins radar names -- still holds: 32 of the 45
+    rows at 1.4.0 sit on radar-tier names.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml", {})
+    monkeypatch.setitem(compare._WATCHED_DIFFS,
+                        "expected_since_1.4.0.toml", {})
+    code, out = _run_main(tmp_path, monkeypatch, _UNOWNED_LEDGER, _DIFFERS,
+                          extra=[("Alice Jones", _JONES_GIVEN)],
+                          tier="radar")
+    assert "UNPINNED CONTEST" in out, out
+    assert "[radar]" in out, out
+    assert code == 1, out
+
+
+#: _UNOWNED_LEDGER plus a rule that is dormant IN FACT and does not
+#: say so, which is what makes an EXPLAINED NOTHING block print: its
+#: regex reaches no corpus name at all, so the diagnosis is
+#: "reverted". Its `fields` are the winner's, so nothing about it can
+#: reach the contest above.
+_UNOWNED_LEDGER_WITH_A_DEAD_RULE = _UNOWNED_LEDGER + (
+    '\n'
+    '[[change]]\nissue = "fix(c) the inert one"\n'
+    'name_regex = "Nobody Here"\nfields = ["family", "given"]\n')
+
+#: 'Zed Quux' with a nickname the tree does not produce, so its diff
+#: is {nickname} and NO rule in the ledger above reaches the name --
+#: an UNEXPLAINED row, which is the only thing that makes main() print
+#: the Role-vocabulary legend the ordering assertion needs.
+_QUUX_NICKNAME = {"title": "", "first": "Zed", "middle": "",
+                  "last": "Quux", "suffix": "", "nickname": "ZZ",
+                  "maiden": ""}
+
+
+def test_the_unowned_block_prints_after_the_moved_shape_blocks(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Print order, which the blocks' readers differ on.
+
+    MOVED SHAPE is about a row that already exists and has gone
+    false; UNPINNED CONTEST is about a row that does not exist yet.
+    A reader repairing the first should not have to scroll past the
+    second. Below it sit EXPLAINED NOTHING, which is about a RULE
+    rather than a name, and the Role-vocabulary legend that the
+    UNEXPLAINED and radar blocks share -- so the whole run of four is
+    asserted rather than the one boundary, since a block moving past
+    either neighbour is the same defect.
+
+    The moved row is on 'Alice Jones' rather than 'John Smith': a
+    _RECORDED_DIFFS row on the contested name would OWN the contest
+    and there would be nothing to order.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml",
+                        {"Alice Jones": ("nickname",)})
+    monkeypatch.setitem(compare._WATCHED_DIFFS,
+                        "expected_since_1.4.0.toml", {})
+    code, out = _run_main(tmp_path, monkeypatch,
+                          _UNOWNED_LEDGER_WITH_A_DEAD_RULE, _DIFFERS,
+                          extra=[("Alice Jones", _JONES_GIVEN),
+                                 ("Zed Quux", _QUUX_NICKNAME)])
+    moved = out.index("MOVED SHAPE expected_since_1.4.0.toml: 1 recorded")
+    unowned = out.index("UNPINNED CONTEST expected_since_1.4.0.toml")
+    nothing = out.index("EXPLAINED NOTHING 'fix(c) the inert one'")
+    legend = out.index("Field names below are Role's")
+    assert moved < unowned < nothing < legend, out
+    assert code == 1, out
+
+
+#: The two-name variant of _UNOWNED_LEDGER: the LOSER's regex reaches
+#: both contested names and both diff {family}, which is inside the
+#: pair's intersection, so ONE (winner, loser) heading carries two
+#: rows. 'Carol Brown' is the winner's alone and diffs {given}, which
+#: is what keeps the winner's `fields` equal to the union it explains
+#: and OVER-DECLARED quiet.
+_TWO_NAME_UNOWNED_LEDGER = (
+    '[[change]]\nissue = "fix(a) the winner"\n'
+    'name_regex = "Smith|Jones|Brown"\nfields = ["family", "given"]\n'
+    '\n'
+    '[[change]]\nissue = "fix(b) the loser"\n'
+    'name_regex = "Smith|Jones"\nfields = ["family", "suffix"]\n'
+    'dormant = "shadowed by fix(a) on both names it reaches"\n')
+
+#: 'Alice Jones' with the FAMILY altered, so her diff is {family} --
+#: the same shape as 'John Smith' under _DIFFERS, and inside the
+#: contested pair's intersection.
+_JONES_FAMILY = {"title": "", "first": "Alice", "middle": "",
+                 "last": "JONESY", "suffix": "", "nickname": "",
+                 "maiden": ""}
+
+#: 'Carol Brown' with the GIVEN altered: the winner's third name,
+#: uncontested, and the only reason its `given` is not over-declared.
+_BROWN_GIVEN = {"title": "", "first": "CAROLINE", "middle": "",
+                "last": "Brown", "suffix": "", "nickname": "",
+                "maiden": ""}
+
+
+def test_two_names_contesting_the_same_pair_print_under_one_heading(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The grouping, at the level where a reader sees it.
+
+    `by_pair` exists so somebody editing one rule meets its whole cost
+    at once rather than the same pair once per name -- the shape
+    `fix(#271/#272/#298)` has at 1.4.0, heading three pairs over five
+    names. An ungrouped printer passes every assertion the one-row
+    tests make, so this is where that goes wrong: the heading once,
+    both names under it, in corpus order.
+    """
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_1.4.0.toml", {})
+    monkeypatch.setitem(compare._WATCHED_DIFFS,
+                        "expected_since_1.4.0.toml", {})
+    code, out = _run_main(tmp_path, monkeypatch, _TWO_NAME_UNOWNED_LEDGER,
+                          _DIFFERS,
+                          extra=[("Alice Jones", _JONES_FAMILY),
+                                 ("Carol Brown", _BROWN_GIVEN)])
+    assert "2 contested pair(s)" in out, out
+    heading = "'fix(a) the winner'\n    outranks 'fix(b) the loser' on:"
+    assert out.count(heading) == 1, out
+    rows = out[out.index(heading) + len(heading):]
+    rows = rows[:rows.index("\n\n")]
+    assert rows.splitlines()[1:] == [
+        "      'John Smith' [contract] ['family'] "
+        f"({_OVERLAP_WHY}, so neither is the narrower)",
+        "      'Alice Jones' [contract] ['family'] "
+        f"({_OVERLAP_WHY}, so neither is the narrower)"], rows
+    # 'Carol Brown' is the winner's alone, so it is not a contest and
+    # must not appear -- the control on the block's population.
+    # Scoped to the BLOCK: the name is in the classified listing above
+    # like every other explained name, so asserting over the whole of
+    # `out` would be a claim about that listing instead.
+    block = out[out.index("UNPINNED CONTEST"):]
+    assert "Carol Brown" not in block[:block.index("\n\n")], block
+    assert code == 1, out
+
+
 def test_a_corpus_run_is_silent_about_a_watched_name_outside_it(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The contest roster's inversion, for the watched one: under
@@ -2539,7 +3108,9 @@ def test_a_ledger_missing_from_a_shape_roster_is_refused_pre_worker(
     """An empty section is a statement and a missing one is nobody
     having looked, and a `.get(..., {})` read the two alike: with the
     1.4.0 key deleted from _WATCHED_DIFFS, a full run at that baseline
-    checked 41 rows fewer, printed the same 375 lines and exited 0.
+    checked 36 rows fewer, printed the same 375 lines and exited 0
+    (re-measured 2026-09-05, #498 having moved five rows out of that
+    section; compare.py's FAIL-CLOSED paragraph carries the control).
     So the run refuses, pre-worker, naming the dict and the ledger --
     the guards in test_ledger_guards.py hold the same key equality at
     pytest speed, and the tool may not assume they ran."""
@@ -2704,6 +3275,105 @@ def test_a_watched_row_on_a_declared_order_only_name_reads_its_first_entry(
     assert "TWO reach it" in out, out
     assert "EXPLAINED NOTHING" not in out, out
     assert got == code, out
+
+
+def _order_bearing_unowned_ledger(loser_fields: str) -> str:
+    """A 2.0.0 ledger whose two rules both admit `'John Smith'`'s
+    FAMILY_FIRST `{family}` diff, the loser declaring `loser_fields`.
+
+    `'Alice Jones'` diffs `{given}` under the default order and the
+    winner alone explains it, which is what keeps the winner's
+    `fields` equal to the union it explains at both widths below and
+    OVER-DECLARED quiet. The loser declares `dormant` because it
+    explains nothing -- the winner is written first -- so EXPLAINED
+    NOTHING does not fail the run for a reason that is not the
+    block's.
+    """
+    return ('[[change]]\nissue = "fix(a) the winner"\n'
+            'name_regex = "Smith|Jones"\nfields = ["family", "given"]\n'
+            '\n'
+            '[[change]]\nissue = "fix(b) the loser"\n'
+            f'name_regex = "Smith"\nfields = {loser_fields}\n'
+            'dormant = "shadowed by fix(a) on the only name it reaches"\n')
+
+
+def _order_bearing_unowned_run(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+        loser_fields: str) -> tuple[int, str]:
+    """That ledger driven over one FAMILY_FIRST entry and one
+    default-order entry, with both shape rosters emptied for 2.0.0 --
+    emptied rather than left alone so nothing on disk can own the
+    contest, and keyed rather than deleted because `main()` refuses a
+    ledger either dict has no section for."""
+    from nameparser import HumanName
+    monkeypatch.setitem(compare._RECORDED_DIFFS,
+                        "expected_since_2.0.0.toml", {})
+    monkeypatch.setitem(compare._WATCHED_DIFFS,
+                        "expected_since_2.0.0.toml", {})
+    smith = _tree_v2_row("John Smith", "FAMILY_FIRST")
+    smith["family"] = "SMYTHE"
+    return _run_main_over(
+        tmp_path, monkeypatch,
+        [("corpus_x.jsonl", "contract",
+          [{"name": "John Smith", "shape": 4}, "Alice Jones"])],
+        [{"v2": smith},
+         {"facade": {"title": "", "first": "ALICIA", "middle": "",
+                     "last": "Jones", "suffix": "", "nickname": "",
+                     "maiden": "",
+                     "_initials": HumanName("Alice Jones").initials() or ""},
+          "v2": _tree_v2_row("Alice Jones", None)}],
+        _order_bearing_unowned_ledger(loser_fields))
+
+
+def test_an_unowned_contest_under_a_declared_order_names_the_limit(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The stated limit, printed only where it applies.
+
+    A _RECORDED_DIFFS row is a DEFAULT-order shape, so no row can
+    absorb a contest measured under FAMILY_FIRST -- the repair the
+    lead offers is unavailable and the block has to say so, the way
+    NOT CHECKED names its own window. The order rides the ROW as well
+    as the note, since a reader given the note alone cannot tell which
+    of several rows it is about.
+    """
+    code, out = _order_bearing_unowned_run(
+        tmp_path, monkeypatch, '["family", "suffix"]')
+    assert ("UNPINNED CONTEST expected_since_2.0.0.toml: 1 contested "
+            "pair(s)" in out), out
+    block = out[out.index("UNPINNED CONTEST"):]
+    block = block[:block.index("\n\n")]
+    assert ("NOTE: a row below carries a declared order, and a "
+            "_RECORDED_DIFFS row is a DEFAULT-order shape, so no row "
+            "can absorb it: narrow the pair, or scope one of the two "
+            "rules with `orders`." in block), block
+    assert ("'John Smith'   [order: FAMILY_FIRST] [contract] ['family']"
+            in block), block
+    assert code == 1, out
+
+
+#: The clause main() renders for an `equal` row, from
+#: compare._UNOWNED_WHY, truncated as _OVERLAP_WHY is: a test quoting
+#: the whole mapping entry would pass whatever the mapping said.
+_EQUAL_WHY = "equal `fields`, file order"
+
+
+def test_main_renders_the_equal_fields_clause(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The kind the docs call _CROSS_RULE_WINNERS the instrument for.
+
+    Seven of #498's fourteen sit in an EQUAL-`fields` pair, so a
+    printer that rendered only the `overlap` clause would be wrong
+    about half the class. Same fixture as the sibling above with the
+    loser's `fields` widened to equal the winner's, so the kind is the
+    only thing that moved.
+    """
+    code, out = _order_bearing_unowned_run(
+        tmp_path, monkeypatch, '["family", "given"]')
+    block = out[out.index("UNPINNED CONTEST"):]
+    block = block[:block.index("\n\n")]
+    assert _EQUAL_WHY in block, block
+    assert _OVERLAP_WHY not in block, block
+    assert code == 1, out
 
 
 def test_a_tier_outside_the_two_literals_is_refused_at_load(

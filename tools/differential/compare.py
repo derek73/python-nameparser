@@ -1712,11 +1712,13 @@ class _ShapeMismatch(NamedTuple):
 #: Default-order shapes only, because the roster classifies with no
 #: order. recorded_diff_mismatches below says what that leaves out.
 #:
-#: PROVENANCE. The 31 rows at 1.4.0 are measured against the 1.4.0
-#: wheel, as the roster always claimed, and all 31 still agree --
-#: re-measured 2026-09-03 by driving main() at all four baselines and
-#: feeding its `diffing` and its post-skip corpus to
-#: recorded_diff_mismatches, which is the recompute: wrap _run_worker to
+#: PROVENANCE. The 45 rows at 1.4.0 are measured against the 1.4.0
+#: wheel, as the roster always claimed, and all 45 still agree -- the
+#: original 31 re-measured 2026-09-03, the fourteen #498 added measured
+#: 2026-09-05 by the sweep that found them, and every one of the 45
+#: checked by the same recompute: drive main() at all four baselines and
+#: feed its `diffing` and its post-skip corpus to
+#: recorded_diff_mismatches, wrapping _run_worker to
 #: capture the post-skip entries and dormant_rules to capture `diffing`,
 #: since both receive exactly what main() built.
 #:
@@ -1786,6 +1788,28 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Abu Bakr Al Baghdadi, MD": ("_initials",),
         "abu bakr al baghdadi": ("_initials",),
         "Berg, abdul van": ("_initials",),
+        # #498's fourteen, adjudicated 2026-09-05: every 1.4.0 diff
+        # two or more rules admitted, where the winner beats a loser
+        # by neither narrow-first nesting nor a `precedes_narrower`
+        # declaration, and nothing pinned it. Shapes measured against
+        # the 1.4.0 wheel by the sweep that found them, not guessed;
+        # the five that were _WATCHED_DIFFS rows moved here with their
+        # shapes unchanged, which is what this dict's NO WINNER clause
+        # below says happens the day a winner is argued.
+        "マイケル・ジャクソン": ("family", "given"),
+        "威廉・莎士比亚": ("family", "given"),
+        "高橋・一郎": ("family", "given"),
+        "Dr 김민준, Jr.": ("family", "given"),
+        "田中さん, Dr.": ("family", "given"),
+        "田中さん, 様.": ("family", "given", "suffix"),
+        "Bob Jones, compositeur": ("family", "given"),
+        "MD, DO, DDS": ("given", "title"),
+        "Smith, Ph. D. III": ("given", "suffix"),
+        "Smith, Ph. D. Jr.": ("suffix", "title"),
+        "Smith, Ph. D. Jr. MD": ("given", "suffix", "title"),
+        "Smith, Ph. D. MD": ("suffix", "title"),
+        "Smith, Ph.D. Jr.": ("given", "suffix"),
+        "Smith, PhD Jr.": ("given", "suffix", "title"),
     },
     # #501's six, moved here from _WATCHED_DIFFS with their shapes
     # unchanged. The four CJK rows sit at 2.0.0 alone: the honorific
@@ -1803,7 +1827,7 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
     # below applied as written and accepted deliberately (#501): a
     # contest row is fatal on either tier because it carries an
     # argument, and a moved shape has made that argument's premise
-    # false. The precedent is the section above, where 22 of the 31
+    # false. The precedent is the section above, where 32 of the 45
     # rows are radar-tier names on exactly those terms (measured
     # 2026-09-05).
     "expected_since_2.0.0.toml": {
@@ -1906,18 +1930,24 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: every baseline today, so the two sets coincide); and not already
 #: keyed in _RECORDED_DIFFS for that
 #: ledger. The last clause is the one a scan of tests/ cannot supply,
-#: because that scan cannot see this file, and it excludes four names
-#: that carry contest rows: 'Bob Jones, author', 'Carod i', 'MD, PHD',
-#: 'van ma van'. TWO of them return at a 2.x baseline where they have
-#: no contest row. The other two have no row in this dict at all:
+#: because that scan cannot see this file, and it excludes nine names
+#: that carry contest rows: 'Bob Jones, author', 'Bob Jones,
+#: compositeur', 'Carod i', 'MD, DO, DDS', 'MD, PHD', 'Smith, Ph. D.
+#: Jr. MD', 'Smith, Ph. D. MD', 'Smith, Ph.D. Jr.', 'van ma van'.
+#: SEVEN of them return at a 2.x baseline where they have
+#: no contest row -- the five #498 pinned at 1.4.0 among them, each
+#: still sole-watched at 2.0.0 and 2.1.0. The other two have no row in
+#: this dict at all:
 #: 'Carod i' diffs under the default order at 1.4.0 only, where its
 #: contest row stands, and 'MD, PHD' carries a contest row at every one
 #: of the three baselines it diffs at since #501 pinned its 2.x pair.
 #: That is why the population is 50 names where the tests/-only scan
 #: says 52.
-#: The counts: 41 / 31 / 30 / 5 rows, 107 in all, over those 50 names
+#: The counts: 36 / 31 / 30 / 5 rows, 102 in all, over those 50 names
 #: -- and the roster is now exactly the population, the five contest
-#: rows beyond it having gone to _RECORDED_DIFFS with #501.
+#: rows beyond it having gone to _RECORDED_DIFFS with #501 and five
+#: more with #498, which left the population by gaining a
+#: _RECORDED_DIFFS key rather than by ceasing to be watched anywhere.
 #: 48 of the 50 sit in corpus_issues.jsonl and 3 in corpus.jsonl, with
 #: 'dr Vincent van Gogh dr' in both, so the per-file counts overlap by
 #: one and are not a partition. Every row is a default-order shape,
@@ -1929,9 +1959,14 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: calls whose order is None and whose rule is not None; apply the
 #: four clauses above with the literal set from ast.walk over
 #: tests/**/*.py EXCLUDING test_ledger_guards.py, as the POPULATION
-#: clause says -- run over every file it yields 38 / 28 / 27 / 4 rows
-#: rather than 41 / 31 / 30 / 5, since _CROSS_RULE_WINNERS' keys and
-#: a few guard literals then score as watchers -- the tier sets from
+#: clause says -- run over every file it yields 33 / 23 / 22 / 4 rows
+#: rather than 36 / 31 / 30 / 5, since _CROSS_RULE_WINNERS' keys and
+#: a few guard literals then score as watchers, and #498's fourteen
+#: keys are exactly that kind of literal: the two halves of this
+#: sentence moved for different reasons on 2026-09-05, the second
+#: because five rows left this dict and the first because those five
+#: are watched at 2.x too, where they now score as watched by the
+#: guard file -- the tier sets from
 #: _load_entries over corpus*.jsonl
 #: through _CORPUS_TIERS, and that ledger's _RECORDED_DIFFS keys. Not
 #: by replaying the corpus load by hand: the (name, order) dedup, the
@@ -1956,7 +1991,6 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Anna Müller (geb. Schmidt)": ("maiden", "nickname"),
         "Anna Müller geb. Schmidt": ("family", "maiden", "middle"),
         "Attorney General of Minnesota": ("_initials",),
-        "Bob Jones, compositeur": ("family", "given"),
         "Dean of Chemistry": ("_initials",),
         "Dean of Chemistry Robert Johns": ("_initials",),
         "Deputy Secretary of State": ("_initials",),
@@ -1975,7 +2009,6 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Jong, van der": ("_initials",),
         "Jose e Maria Santos": ("_initials",),
         "Juan Garcia y Lopez": ("_initials",),
-        "MD, DO, DDS": ("given", "title"),
         "Mesnil Garcia van": ("_initials",),
         "Mohamad X": ("family", "suffix"),
         "Ph. D., Jr.": ("family", "given"),
@@ -1983,14 +2016,19 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Sander van": ("_initials",),
         "Smith Jones, Ph. D. Jr.": ("suffix",),
         "Smith, Ph. D.": ("family", "given"),
-        "Smith, Ph. D. Jr. MD": ("given", "suffix", "title"),
-        "Smith, Ph. D. MD": ("suffix", "title"),
-        "Smith, Ph.D. Jr.": ("given", "suffix"),
         "Smith, Prof.": ("family", "given"),
         "Ursula von der Leyen (geb. Albrecht)": ("maiden", "nickname"),
         "dr Vincent James van Gogh dr": ("family", "suffix"),
         "dr Vincent van Gogh dr": ("family", "suffix"),
         "dr Vincent van der Gogh dr": ("family", "suffix"),
+        # 'Bob Jones, compositeur', 'MD, DO, DDS', 'Smith, Ph. D. Jr.
+        # MD', 'Smith, Ph. D. MD' and 'Smith, Ph.D. Jr.' are GONE from
+        # this section: #498 argued a winner for each on 2026-09-05
+        # and the five rows moved to _RECORDED_DIFFS with their shapes
+        # unchanged. Each is still watched at 2.0.0 and 2.1.0, where
+        # exactly one rule admits it and there is no contest to own,
+        # so the DISTINCT-NAME count in the header above does not
+        # move -- only the 1.4.0 row count does.
     },
     "expected_since_2.0.0.toml": {
         "Anh do": ("_initials",),
@@ -2179,6 +2217,221 @@ def recorded_diff_mismatches(
         want = tuple(sorted(shape))
         if got != want:
             out.append(_ShapeMismatch(name, want, got))
+    return out
+
+
+#: How a winner beat a loser, as a TOKEN rather than a sentence.
+#: Hoisted out of _UnownedContest so the row's field, the local in
+#: unowned_contests and _UNOWNED_WHY's key type are ONE declaration:
+#: three hand copies of the same three-way Literal drift the moment a
+#: fourth kind is added, and mypy would keep every one of them happy.
+_UnownedKind = Literal["equal", "overlap", "wide-undeclared"]
+
+
+class _UnownedContest(NamedTuple):
+    """A measured contest with no owner (#498).
+
+    Named rather than a bare tuple for _Vacancy's reason: the caller
+    formats these into a message, and `c.winner`/`c.loser` says which
+    end is which where `c[3]`/`c[4]` would not.
+    """
+    name: str
+    #: the name_order the comparison ran under; None = the default
+    order: str | None
+    #: the diff shape this run measured, sorted
+    diff: tuple[str, ...]
+    #: issue of the rule classify() gave the diff to
+    winner: str
+    #: issue of an admitting rule the winner beat
+    loser: str
+    #: how the winner beat it -- "equal" where the two declare the same
+    #: roles, "overlap" where neither `fields` set contains the other,
+    #: and "wide-undeclared" for a wide-first pair carrying no
+    #: `precedes_narrower`, which is REPORTED rather than assumed
+    #: unreachable. A TOKEN, like _Dormant.kind: the wording lives in
+    #: _UNOWNED_WHY below, which the caller renders.
+    kind: _UnownedKind
+    #: the name's tier, from main()'s `tier_of`; the caller passes the
+    #: run's own map and a miss RAISES, as main()'s other tier lookups
+    #: do -- every compared name has a key there
+    tier: str
+
+
+#: How each `_UnownedContest.kind` reads in the report, beside
+#: _DORMANT_WHY and for its reason: the computation never has to know
+#: the wording, and rephrasing one is a change to output alone.
+_UNOWNED_WHY: dict[_UnownedKind, str] = {
+    "equal": "equal `fields`, file order the whole decision",
+    "overlap": ("`fields` overlap without nesting, so neither is the "
+                "narrower"),
+    "wide-undeclared": ("the loser is NARROWER and undeclared -- "
+                        "undeclared_contests refuses this on any ledger "
+                        "main() loads, so seeing it here means a "
+                        "hand-built rule list"),
+}
+
+
+def unowned_contests(
+        diffing: list[tuple[str, set[str], str | None]],
+        rules: list[dict[str, object]],
+        exclusions: list[dict[str, object]],
+        pinned: set[str],
+        tier_of: dict[str, str]) -> list[_UnownedContest]:
+    """Contested diffs no rule outranks and no row pins (#498).
+
+    `undeclared_contests` above refuses a ledger where a WIDER rule
+    sits ahead of a NARROWER one it reaches a corpus name with, unless
+    the wider rule declares why. Nesting is SUFFICIENT for an
+    order-decided contest and not necessary: two rules whose `fields`
+    merely intersect -- or are EQUAL -- both admit any diff inside the
+    intersection, classify() returns the first, and that check cannot
+    see the pair. The docs say _CROSS_RULE_WINNERS "stays the
+    instrument" there. This is what checks that the instrument was
+    applied. Between the two, every measured contest has an owner.
+
+    It is handed ALL of `diffing` rather than only the names
+    classify() gave a rule to, and the two populations are the same
+    one: classify() returns a rule exactly when no exclusion matched
+    it and at least one rule admits the diff, which are the exclusion
+    check and the admitting-rule check below. This walk needs TWO
+    admitters where classify() needs one, so it can only narrow that
+    population further, never widen it. Passing the whole list keeps
+    the caller from having to keep a second one in step with it.
+
+    RUN-TIME by necessity, and that is not a cost this trades away.
+    A pin is a shape beside a winner, and the shape is what a run
+    measured; there is no static form of "every contested name is
+    pinned". Without a diff the population is the static reach of
+    every pair this check can report -- 71 of them, measured
+    2026-09-05 over the four ledgers with `_rule_reach`: pairs sharing
+    a corpus name whose `orders` are not disjoint and whose `fields`
+    intersect without either containing the other (60) or are equal
+    (11 more; the loop is in decisions.md, the 2026-09-02 "nesting is
+    sufficient ... not necessary" bullet, whose own 60 is the
+    overlap-only count) -- and demanding a pin for each is the roster
+    nobody writes, which is the answer decisions.md already gives
+    about the 657 and 111 figures. WITH a diff the population was 14
+    names over 15 rows at 1.4.0 (measured 2026-09-05; '田中さん, Dr.'
+    carries two losers) and 0 at all three 2.x baselines.
+    The static check covers the hazard that has a declaration site
+    from the moment a rule is written; this covers the hazard that
+    has none, from the moment a run measures it. The coverage limit
+    is real and accepted: one ledger per invocation, and only when
+    the gate runs.
+
+    A _WATCHED_DIFFS row does NOT justify a contest, which is why
+    `pinned` takes one roster and not the union. That roster records
+    a shape with NO WINNER, and a contest's whole question is which
+    rule should win. What makes "a key in _RECORDED_DIFFS" mean "a
+    winner is pinned" is the `set(winners) == set(shapes)` equality
+    in tests/v2/test_ledger_guards.py, held in both directions -- so
+    this function's justification is borrowed from that guard, the
+    way _declared_over's shape guarantee is borrowed from
+    validate_rules, and it is stated rather than assumed for the same
+    reason. A THIRD borrow, and the same shape: every row here reads
+    `winner != loser` because validate_rules refuses DUPLICATE issues,
+    the guarantee undeclared_contests leans on for its `by_issue` --
+    on a hand-built list carrying one issue twice, the loop below
+    compares a rule against its own issue string and can report a
+    contest a rule holds with itself.
+
+    NO VACANCY HALF, unlike `vacant_exemptions` beside the static
+    check, and the asymmetry is deliberate. A declaration whose pair
+    stopped being a contest is a justification for a hazard that is
+    gone and reads exactly like a live one. A PIN whose contest
+    dissolves is not: it keeps saying what the name diffs to and
+    which rule takes it, which is what 13 of the 45 rows at 1.4.0
+    already do with a single admitter apiece (measured 2026-09-05:
+    count the rows of _RECORDED_DIFFS['expected_since_1.4.0.toml']
+    for which exactly one rule of _sorted_rules over that ledger
+    satisfies _entry_matches at the recorded shape)
+    (mechanisms.md#RECORDED-ROSTERS -- the test to apply to a recorded
+    input is not "is it checked" but "would the consumer answer
+    DIFFERENTLY if it were wrong"). So nothing here inverts under a subset
+    either: under `--corpus` the population is the entries the run
+    loaded, so this check UNDER-reports and never false-alarms, and
+    `full_corpus` is not read.
+
+    STATED LIMIT. A _RECORDED_DIFFS row is a DEFAULT-order shape, so
+    a contest measured under a declared order would be reported here
+    and could not be absorbed by a row at all. The pin gate below is
+    ORDER-AWARE for exactly that reason: `pinned` skips a name only
+    on its default-order comparison, so a row cannot silently absorb
+    the declared-order contest it does not describe. None exists on
+    any shipped ledger today -- every one of the fourteen is
+    order-None -- and `order` rides each row so the caller can name
+    the limit only when it applies, the way the NOT CHECKED note does.
+    """
+    # classify() must be asked in the order main() asked it, or the
+    # winner named here is not the rule that actually took the diff.
+    # Sorting internally makes that true whatever the caller passes;
+    # the sort is stable and idempotent, so doing it twice costs
+    # nothing. dormant_rules carries the same line for the same reason.
+    rules = _sorted_rules(rules)
+
+    def fields_of(rule: dict[str, object]) -> frozenset[str]:
+        """A rule's declared roles. A missing or mistyped `fields`
+        reads as EMPTY, and that runs the OPPOSITE way from
+        _entry_matches' leniency over the same shape rather than being
+        it seen from the other side: that predicate IGNORES a non-list
+        `fields` and admits every diff, which is the WIDEST a rule can
+        be, while frozenset() here is the NARROWEST. So the two
+        readers disagree about the same rule, and _declared_over's
+        docstring is the model for saying which way each disagreement
+        falls ("a stricter reader declares LESS and so can only report
+        MORE" is its version). On the WINNER the effect is
+        UNDER-reporting: `won < lost` fires and the pair retires as
+        narrow-first, where a reader agreeing with _entry_matches
+        would have called the winner the wider one. On a LOSER it
+        falls the other way -- `lost < won` fires and the pair is
+        reported wide-undeclared where the wide reading would have
+        retired it as narrow-first. Neither is reachable on a ledger
+        main() loads: validate_rules refuses a `fields` that is not a
+        list of strings, and its #456 check refuses a rule carrying
+        `name_regex` without one. This exists for the hand-built rule
+        lists the tests pass in."""
+        declared = rule.get("fields")
+        return (frozenset(f for f in declared if isinstance(f, str))
+                if isinstance(declared, list) else frozenset())
+
+    out: list[_UnownedContest] = []
+    for name, diff, order in diffing:
+        # Exclusions FIRST and outright, as classify() consults them:
+        # a name a [[never]] entry refused was classified to nothing,
+        # so it has no winner and is not in the population.
+        if any(_entry_matches(x, name, diff) for x in exclusions):
+            continue
+        # A pin justifies every pair on the name whatever their kind:
+        # the row says which rule wins, which is the question a
+        # contest asks, and it says it once for the name rather than
+        # once per losing rule. ORDER-AWARE, per the stated limit
+        # above: a _RECORDED_DIFFS row is a DEFAULT-order shape, so it
+        # cannot own a contest measured under a declared order, and
+        # `order is None` is what keeps a row from absorbing one it
+        # does not describe.
+        if order is None and name in pinned:
+            continue
+        admit = [r for r in rules if _entry_matches(r, name, diff, order)]
+        if len(admit) < 2:
+            continue
+        winner = admit[0]
+        won = fields_of(winner)
+        declared_over = _declared_over(winner)
+        for rule in admit[1:]:
+            lost = fields_of(rule)
+            issue = str(rule.get("issue", ""))
+            if won < lost:
+                continue  # narrow-first: #382's declaration-free default
+            if lost < won and issue in declared_over:
+                continue  # wide-first, and the winner says why
+            kind: _UnownedKind = (
+                "equal" if won == lost
+                else "wide-undeclared" if lost < won
+                else "overlap")
+            out.append(_UnownedContest(
+                name=name, order=order, diff=tuple(sorted(diff)),
+                winner=str(winner.get("issue", "")), loser=issue,
+                kind=kind, tier=tier_of[name]))
     return out
 
 
@@ -2594,10 +2847,11 @@ def main() -> int:
     # which is where the two checks part: `vacant` prints a count a
     # reader might act on, and here recorded_diff_mismatches has
     # already dropped those names without reporting one, so a NOTE
-    # would add noise and no information. Measured 2026-09-03, it would
-    # name 18 to 30 of the 31 rows depending on which corpus was asked
-    # for (30 for corpus_shapes.jsonl) against `vacant`'s 5 to 11 of
-    # 11. Recompute, from the worktree root:
+    # would add noise and no information. Measured 2026-09-05, it would
+    # name 28 to 43 of the 45 rows depending on which corpus was asked
+    # for (43 for corpus_shapes.jsonl) against `vacant`'s 5 to 11 of
+    # 11 (measured 2026-09-03, and untouched by a roster row).
+    # Recompute, from the worktree root:
     #   uv run python -c "import sys;sys.path.insert(0,'tools/\
     #   differential');import compare,pathlib;r=set(compare.\
     #   _RECORDED_DIFFS['expected_since_1.4.0.toml']);[print(p.name,\
@@ -2617,9 +2871,10 @@ def main() -> int:
     # is a statement -- this ledger has no row of that kind -- where a
     # missing one is nobody having looked, and a `.get` default reads
     # the two alike: with the 1.4.0 key deleted from _WATCHED_DIFFS,
-    # a full run at that baseline checks 41 rows fewer, prints the
+    # a full run at that baseline checks 36 rows fewer, prints the
     # same 375 lines (differing only in the worker environment's path
-    # on the `baseline:` line, as any two runs do) and exits 0. The
+    # on the `baseline:` line, as any two runs do) and exits 0
+    # (measured 2026-09-05). The
     # pytest-speed guards hold
     # each dict's keys equal to the ledgers on disk
     # (test_the_watched_roster_is_disjoint_and_names_every_ledger, and
@@ -3091,6 +3346,61 @@ def main() -> int:
               f"without promising."
               + _two_causes(watched_radar))
         _print_moved_rows(watched_radar, "_WATCHED_DIFFS")
+    # The completeness half of the contest checks (#498). The
+    # pre-worker `undeclared_contests` refusal covers the pairs where
+    # nesting supplies the contested shape's existence; this covers
+    # the pairs where only a measured diff can, which is why it is
+    # HERE and not up there -- it needs `diffing`, and `diffing` needs
+    # the worker. `recorded` is the same per-ledger dict the shape
+    # check reads, and its KEYS are what "a winner is pinned" means.
+    #
+    # FATAL on both tiers, in the exit expression beside `shape_bad`.
+    # A contest row is fatal on either tier because it carries an
+    # argument; an owed row is fatal because it carries none yet.
+    unowned = unowned_contests(diffing, rules, exclusions,
+                               set(recorded), tier_of)
+    if unowned:
+        # Grouped by (winner, loser), so a reader editing one rule
+        # sees its whole cost at once rather than meeting the same
+        # pair once per name. dict preserves insertion order, which
+        # is `diffing` order, which is corpus order.
+        by_pair: dict[tuple[str, str], list[_UnownedContest]] = {}
+        for row in unowned:
+            by_pair.setdefault((row.winner, row.loser), []).append(row)
+        # PAIR(S) and not diff(s): the rows are one per (name, losing
+        # rule), so one name contesting two losers is two of them --
+        # '田中さん, Dr.' is that shape at 1.4.0 -- and a reader
+        # counting names off this number would be short.
+        print(f"UNPINNED CONTEST {ledger.name}: {len(unowned)} contested "
+              f"pair(s), one per name and losing rule, that no rule "
+              f"outranks by nesting or declaration and "
+              f"no row pins. Pin each name below in _RECORDED_DIFFS "
+              f"(tools/differential/compare.py) and _CROSS_RULE_WINNERS "
+              f"(tests/v2/test_ledger_guards.py), with the argument for "
+              f"the winner beside the row -- or narrow the accident "
+              f"away until the pair stops admitting the same diff. A "
+              f"contest is not a defect: file order decides one "
+              f"legitimately, and narrow-first and a declared "
+              f"`precedes_narrower` pair are both justified above. An "
+              f"UNOWNED contest is: nothing in the tree says which rule "
+              f"should win it, so a reorder or a widened `fields` hands "
+              f"the name over silently. A _WATCHED_DIFFS row does NOT "
+              f"pin -- it records a shape and no winner. The population "
+              f"is the entries THIS run loaded, so a `--corpus` subset "
+              f"can only UNDER-report: silence is no verdict on the "
+              f"names it did not compare."
+              + (" NOTE: a row below carries a declared order, and a "
+                 "_RECORDED_DIFFS row is a DEFAULT-order shape, so no "
+                 "row can absorb it: narrow the pair, or scope one of "
+                 "the two rules with `orders`."
+                 if any(r.order is not None for r in unowned) else ""))
+        for (winner, loser), rows in by_pair.items():
+            print(f"  {winner!r}\n    outranks {loser!r} on:")
+            for row in rows:
+                print(f"      {row.name!r}{_order_tag(row.order)} "
+                      f"[{row.tier}] {list(row.diff)} "
+                      f"({_UNOWNED_WHY[row.kind]})")
+        print()
     dormancy = dormant_rules(rules, set(by_issue), diffing, exclusions)
     for dormant in dormancy.undeclared:
         print(f"EXPLAINED NOTHING {dormant.issue!r}\n    "
@@ -3157,13 +3467,19 @@ def main() -> int:
     # `fields` it names are no longer what the code moves. A recorded
     # shape the run contradicts is the fifth, and it reaches furthest:
     # _CROSS_RULE_WINNERS feeds that shape to classify() as an input, so
-    # a wrong one takes the roster's verdict with it. One exit code for
-    # all five terms below, so none of them is the one nobody noticed.
+    # a wrong one takes the roster's verdict with it. A measured contest
+    # nobody has pinned is the SIXTH, and among the ROSTER terms --
+    # `shape_bad`'s two rosters and this one -- it is the only one about
+    # a row that does not exist: those two read a row somebody wrote and
+    # ask whether the run still agrees, while this one asks for a row
+    # nobody has written yet. In that it joins `unexplained`, which is a
+    # diff no rule was written for. One exit code for all six terms
+    # below, so none of them is the one nobody noticed.
     # `shape_bad` is the contest rows plus the watched rows on contract
     # names; a watched row on a radar name printed above and is not in
     # it, by the severity rule _WATCHED_DIFFS' header argues.
     return 1 if unexplained or dormancy.undeclared or dormancy.awake \
-        or overwide or shape_bad else 0
+        or overwide or shape_bad or unowned else 0
 
 
 if __name__ == "__main__":

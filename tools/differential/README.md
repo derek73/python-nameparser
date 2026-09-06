@@ -252,31 +252,32 @@ the default-order entry it was measured on, fatal on a contract name
 and printed under `MOVED SHAPE (radar)` on a radar one. Measured
 2026-09-03, before the rule was written, MOST of the contest rows in
 `_RECORDED_DIFFS['expected_since_1.4.0.toml']` sat on radar-tier names
--- 21 of 31, and 22 of the same 31 today, the 2026-09-05 period-class
-demotion having moved `'김민준 씨.'` from the contract CJK corpus to the
-tolerated one (measured 2026-09-05; decisions.md's #501 adjudication
-carries the reconciliation, and the recipe below is unchanged) -- so
-radar PARSER DRIFT could already fail the run
-wherever someone had pinned a winner (RECOMPUTE: for each row, take
-the tier of the first corpus file holding the name with contract files
-sorted first, as `main()` loads them -- a NAME's tier, which is the
-unit this count needs and not the one a watched row's severity reads:
-that reads the default-order ENTRY's tier, per the `MOVED SHAPE`
-section below, and the two recipes agree on every name that has no
-declared-order entry); the rule keeps that, on the
-ground that it is the argument and not the tier a contest row defends.
-Which of the two outranks the tier more WIDELY is
-deliberately not claimed here, because the answer inverts with the unit
-and neither unit is the point: the exclusions number two against 31
-rows, while the two `[[never]]` patterns reach 60 corpus names between
-them, 37 of those radar-tier -- more radar names than the roster pins
-(measured 2026-09-03 by matching each `name_regex` against every name
-in the `corpus*.jsonl` glob, tiers read the same way). That is a pin
-doing what pins do --
-someone wrote the row by hand and it says what the name does -- but it
-is not what "a radar diff can never fail the run" leads a reader to
-expect. Read the tier rule as being about UNMATCHED diffs, which is
-the only thing it was ever measured over.
+-- 21 of 31, and 32 of the 45 today, the fourteen #498 pinned on
+2026-09-05 adding ten radar rows and four contract ones on top of the
+2026-09-05 period-class demotion, which moved `'김민준 씨.'` from the
+contract CJK corpus to the tolerated one (measured 2026-09-05;
+decisions.md's #501 adjudication carries the reconciliation, and the
+recipe below is unchanged) -- so radar PARSER DRIFT could already fail
+the run wherever someone had pinned a winner (RECOMPUTE: for each row,
+take the tier of the first corpus file holding the name with contract
+files sorted first, as `main()` loads them -- a NAME's tier, which is
+the unit this count needs and not the one a watched row's severity
+reads: that reads the default-order ENTRY's tier, per the
+`MOVED SHAPE` section below, and the two recipes agree on every name
+that has no declared-order entry); the rule keeps that, on the ground
+that it is the argument and not the tier a contest row defends. Which
+of the two outranks the tier more WIDELY is deliberately not claimed
+here, because the answer inverts with the unit and neither unit is the
+point: the exclusions number two against 45 rows, while the two
+`[[never]]` patterns reach 60 corpus names between them, 37 of those
+radar-tier (measured 2026-09-03 by matching each `name_regex` against
+every name in the `corpus*.jsonl` glob, tiers read the same way) --
+more radar names than the roster pins, which is 32 as of 2026-09-05.
+That is a pin doing what pins do -- someone wrote the row by hand and
+it says what the name does -- but it is not what "a radar diff can
+never fail the run" leads a reader to expect. Read the tier rule as
+being about UNMATCHED diffs, which is the only thing it was ever
+measured over.
 
 A corpus line is a bare JSON string or an object carrying `name` and,
 optionally, `tests` or `shape` -- the input-shape id from
@@ -738,12 +739,35 @@ Widening the predicate to that general case would demand 111 written
 justifications where the real number is eleven -- the same argument
 decisions.md already makes about the 657 figure, that a predicate
 nobody can answer is not a usable one. The worked blind spot is real
-and filed as
+and was closed by
 [#498](https://github.com/derek73/python-nameparser/issues/498):
 `fix(#271/#272/#298)` and `fix(cjk-delimited-nickname)` intersect in
 {`family`, `given`} without nesting, and swapping them reattributes
 three contract-tier names this check never mentions in either
-arrangement.
+arrangement. All three are pinned now, along with eleven more names
+measured the same way, and the second predicate below refuses the
+next one (2026-09-05).
+
+**The second predicate is measured, not static.** `unowned_contests`
+(#498) walks a run's own diffs and reports every contested one the
+winner takes by neither narrow-first nesting nor a declaration and
+that no `_RECORDED_DIFFS` row pins. It has to be run-time and there
+is no static sibling: a pin is a shape beside a winner, and without a
+diff the population is the whole equal-or-overlap class the predicate
+names -- the 60 overlapping pairs above plus the 11 with equal
+`fields`, 71 in all -- rather than the 14 names a run finds. The 71 is
+those same 2026-09-02 figures re-measured 2026-09-05 by the recipe
+they carry; decisions.md#differential-ledger has it. Severity is
+FATAL on both tiers, in the exit
+code beside the shape check -- a contest ROW is fatal on either tier
+because it carries an argument, and an owed row because it carries
+none yet. Under `--corpus` the population is the entries the run
+loaded, so the check under-reports and never false-alarms, and no
+flag is read. Note the ASYMMETRY with `vacant_exemptions` above:
+there is no vacancy half here, because a pin whose contest dissolves
+keeps saying what the name diffs to and which rule takes it -- 13 of
+the 45 rows at 1.4.0 are already in that position (measured
+2026-09-05).
 
 Two questions, in both tiers, as for `dormant`. Is every contest
 DECLARED, and does every declaration still stand over a contest? The
