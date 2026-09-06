@@ -2697,6 +2697,220 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
         "abu bakr al baghdadi":
             "fix(initials-per-word) a bound-given run",
         "Berg, abdul van": "fix(initials-per-word) a bound-given run",
+        # #498's fourteen, adjudicated 2026-09-05. Every one is a
+        # contest the static predicates are silent on by construction:
+        # the two rules' `fields` are EQUAL or merely INTERSECT, so
+        # neither is narrower -- `order_contests` asks for nesting and
+        # finds none in either arrangement, and `precedes_narrower`
+        # has no narrower rule to name. What a row here adds is the
+        # ARGUMENT, which rule should explain the name and why.
+        # Grouped by (winner, loser) pair, so a reader editing one
+        # rule sees its whole cost.
+        #
+        # The "moves N of the 352" figures below were measured
+        # 2026-09-05, not reasoned. RECOMPUTE: drive compare.main() at
+        # --baseline 1.4.0 with classify() spied, move the loser above
+        # the winner in a COPY of the run's own sorted rule list, and
+        # re-classify the run's own 352 classified calls against that
+        # copy; N is how many change label. Nothing on disk moves. The
+        # `fields` readings below are the same recipe with one role
+        # dropped from the winner instead of a rule moved.
+        #
+        # PAIR A, six names, EQUAL `fields`. `fix(#325)` and
+        # `fix(comma-family) lone post-comma piece routes to
+        # suffix/title, not first` declare the same roles, so `fields`
+        # separates them not at all and file order is the whole
+        # decision. The distinguishing clause is a property of the
+        # STRING and the #325 rule names it: a credential run after a
+        # one-word family comma, followed by ANOTHER suffix, collapsing
+        # whole into `suffix` -- measured at the 1.4.0 wheel, whatever
+        # the wheel held in `title` or `given` empties into it
+        # ('Smith, Ph. D. Jr.': title 'Jr.' -> '', suffix 'Ph. D.' ->
+        # 'Ph. D. Jr.'). The lone-post-comma rule's prose describes a
+        # SINGLE post-comma piece, which none of the six is. Five hold
+        # the split credential the winner is named for ('Ph. D.',
+        # 'Ph.D.'); 'Smith, PhD Jr.' is a REACH rather than a fit --
+        # 'PhD' is not split -- and the winning rule's own comment
+        # names it separately as one "which the regex reaches too". A
+        # documented reach whose alternative describes nothing is not
+        # the regex accident #372 refuses. Measured 2026-09-05, that
+        # name reads title 'PhD' -> '', given 'Jr.' -> '', suffix '' ->
+        # 'PhD Jr.', and TWO halves of the clause that names it in the
+        # winning rule's own comment disagree with that: it renders
+        # the new suffix 'PhD, Jr.', with a comma no run produces,
+        # and it says "title 'PhD' at every baseline", where the 1.4.0
+        # title MOVES, 'PhD' -> '', the whole run going to `suffix`.
+        # The ledger's prose is a separate concern and is not touched
+        # here; this row is where the discrepancy is on the record.
+        # 'Smith, Ph. D. Jr.' is contract tier; the other five are
+        # radar and are pinned on the same terms, the argument
+        # being the row's subject and not the tier. Moving the loser
+        # ahead hands all six to it and moves 7 of the 352
+        # classifications -- the six, plus 'Smith, Jr., PhD' as
+        # collateral.
+        "Smith, Ph. D. III":
+            "fix(#325) a split credential followed by another suffix "
+            "after a one-word family comma reads as suffixes",
+        "Smith, Ph. D. Jr.":
+            "fix(#325) a split credential followed by another suffix "
+            "after a one-word family comma reads as suffixes",
+        "Smith, Ph. D. Jr. MD":
+            "fix(#325) a split credential followed by another suffix "
+            "after a one-word family comma reads as suffixes",
+        "Smith, Ph. D. MD":
+            "fix(#325) a split credential followed by another suffix "
+            "after a one-word family comma reads as suffixes",
+        "Smith, Ph.D. Jr.":
+            "fix(#325) a split credential followed by another suffix "
+            "after a one-word family comma reads as suffixes",
+        "Smith, PhD Jr.":
+            "fix(#325) a split credential followed by another suffix "
+            "after a one-word family comma reads as suffixes",
+        # PAIR B, three names, OVERLAPPING `fields`. This is the pair
+        # #498 was filed on: `fix(#271/#272/#298)` declares
+        # {family, given, middle} and `fix(cjk-delimited-nickname)`
+        # {family, given, nickname}, intersecting in {family, given}
+        # with neither containing the other. All three names diff
+        # exactly {family, given} -- the 2.1 family-first order flip on
+        # a nakaguro-delimited native-script string, given
+        # 'マイケル・ジャクソン' -> 'マイケル' with family '' ->
+        # 'ジャクソン' -- and `nickname` is EMPTY on both sides of all
+        # three, so the nickname rule's prose, whose subject is a name
+        # doing two things at once, describes none of this diff while
+        # the order rule describes the whole of it and names one of the
+        # three among its own examples. All three are contract tier.
+        # Swapping the two rules reattributes all three and nothing
+        # else (3 of the 352, no collateral), and the pair nests in
+        # neither arrangement, so `order_contests` has nothing to
+        # report about it and `precedes_narrower` has no narrower rule
+        # to name -- the blind spot this row's argument fills.
+        "マイケル・ジャクソン":
+            "fix(#271/#272/#298) native-script CJK: family-first "
+            "order, hangul segmentation, the kana license and the dots",
+        "威廉・莎士比亚":
+            "fix(#271/#272/#298) native-script CJK: family-first "
+            "order, hangul segmentation, the kana license and the dots",
+        "高橋・一郎":
+            "fix(#271/#272/#298) native-script CJK: family-first "
+            "order, hangul segmentation, the kana license and the dots",
+        # PAIR C and PAIR D, two names, OVERLAPPING `fields`. Both diff
+        # {family, given} alone, the order flip and nothing else:
+        # `title` and `suffix` are byte-identical on both sides of both
+        # names, so no comma routing moved a role, and '田中さん, Dr.'
+        # keeps its glued さん whole (family '' -> '田中さん' entire,
+        # `suffix` empty on both sides), so nothing was peeled. So
+        # `fix(cjk-comma-compound)` and `fix(cjk-glued-honorific-peel)`
+        # -- which reach the strings through the comma and the glued
+        # さん respectively -- each describe a mechanism that did not
+        # fire, and the order rule describes what did; the peel rule's
+        # stated scope, a name with "no comma anywhere", excludes the
+        # string outright. 'Dr 김민준, Jr.' contests the comma rule
+        # alone, and its whole diff is the hangul segmentation the
+        # order rule names: given '김민준' -> '민준', family '' -> '김'.
+        # '田中さん, Dr.' contests BOTH, and is one name carrying two
+        # unowned pairs. The comma rule's own disposition table -- the
+        # four `shape -> rule` rows in `fix(cjk-comma-compound)`'s
+        # comment -- does not concede this shape to the winner BY
+        # NAME: its one row naming '田中さん, Dr.' hands the name to
+        # `fix(#296)` under {middle, suffix}, a different shape
+        # from the {family, given} measured here, and the row that
+        # does concede to the winner names no name -- it is
+        # `{given, middle, family} all 23`, which carries `middle`.
+        # The measurement is what settles the pair: the winner
+        # describes the whole of a {family, given} diff, and the comma
+        # rule's own `title` and `suffix` are byte-identical on both
+        # sides, so its comma routing moved nothing. Moving the
+        # comma rule ahead moves 9 of the 352 and the peel rule ahead
+        # 15, the widest of the seven; and for the peel pair a `fields`
+        # narrowing does NOT hand the name over, since
+        # `fix(cjk-comma-compound)` takes it instead, so a reorder is
+        # the only single edit that does.
+        "Dr 김민준, Jr.":
+            "fix(#271/#272/#298) native-script CJK: family-first "
+            "order, hangul segmentation, the kana license and the dots",
+        "田中さん, Dr.":
+            "fix(#271/#272/#298) native-script CJK: family-first "
+            "order, hangul segmentation, the kana license and the dots",
+        # PAIR E, one name, OVERLAPPING `fields`. '田中さん, 様.' moves
+        # {family, given, suffix} through TWO mechanisms at once, both
+        # legible in the measured values: the glued さん peels off
+        # (family '田中さん' -> '田中') while the post-comma 様. leaves
+        # `given` for `suffix`, the two arriving there together as
+        # suffix '' -> 'さん, 様.'. The winner is named for the comma
+        # half. The peel half belongs to the name's OTHER admitter,
+        # `fix(cjk-glued-honorific-peel)`, which is nested and DECLARED
+        # over by a `precedes_narrower` block, so that half of the
+        # contest is justified where it stands and only the
+        # honorific-suffix pair is owed a row. That loser disclaims the
+        # glued diffs outright and is written for a SPACED honorific on
+        # a name that also takes an order flip -- and measured, no
+        # `middle` moves and no flip occurs, `given` going to empty
+        # rather than gaining a name. The honorific-suffix rule's
+        # `fields` and the comma rule's intersect without nesting, so
+        # nothing else can see it. Moving the loser ahead moves 2 of
+        # the 352; a `fields` narrowing does not buy this pair either,
+        # since dropping any of the three shared roles sends the name
+        # to the glued rule instead. (The 2.0.0 section below pins this
+        # same string to the GLUED rule: a different ledger, where that
+        # pair nests narrow-first.)
+        "田中さん, 様.":
+            "fix(cjk-comma-compound) comma routing compounds with the "
+            "CJK order flip",
+        # PAIR F, one name, EQUAL `fields`. The all-titles rule and
+        # fix(comma-precomma-family) both declare {given, family} and
+        # both reach the string; the
+        # all-titles rule is the one whose prose is true of it, to the
+        # value -- measured, given 'Bob Jones' -> 'Bob', family '' ->
+        # 'Jones', with `title` 'compositeur' unmoved on both sides,
+        # which is what that rule says happens -- where the
+        # precomma-merge rule's prose says the pre-comma RUN reads as
+        # family, and the run does not move whole. That rule's own
+        # comment already concedes the sibling 'Bob Jones, author' to
+        # the winner on this reasoning, and the winner's regex reaches
+        # 'compositeur' by the same literal. Moving the loser ahead
+        # moves 3 of the 352 -- this name, 'Bob Jones, author' and
+        # 'John Smith, Mr.'. The pin is spelled with the FULL issue
+        # string because THREE rules in this ledger begin
+        # `fix(comma-family)` (measured 2026-09-05 with tomllib over
+        # the ledger's `[[change]]` issues): under the `startswith`
+        # the winner guard compares with, a bare `fix(comma-family)`
+        # would be satisfied by any of the three, the lone-post-comma
+        # rule that loses PAIRs A and G included. The full string
+        # still does not separate the winner from the THIRD of them,
+        # though -- the winner's issue is a strict PREFIX of
+        # `... keeps the given/family split, the C1 example`, so no
+        # prefix comparison can tell those two apart. What holds the
+        # row against that rule is exact equality, which is what a run
+        # supplies: measured 2026-09-05, classify() returns the
+        # winner's issue EXACTLY, and the C1 rule cannot reach this
+        # string at all -- its name_regex is
+        # (?i)^john\s+smith,\s*mr\.?(\s+jr\.?)?$ whole, anchored at
+        # both ends on a literal this name shares no prefix with.
+        "Bob Jones, compositeur":
+            "fix(comma-family) a comma followed only by titles keeps "
+            "the given/family split",
+        # PAIR G, one name, OVERLAPPING `fields`. 'MD, DO, DDS' holds
+        # no name at all -- every piece is a credential -- and the
+        # dropped-prenominal rule names the string and states its diff
+        # verbatim, title 'DO' -> given 'DO', which is the whole of
+        # what moved: `family` 'MD' and `suffix` 'DDS' are identical on
+        # both sides. The lone-post-comma rule's prose is about a
+        # one-word NAME followed by a comma and a lone credential; this
+        # string has neither, and the rule routes a piece OUT of
+        # `given` where this name routes one IN, so it is true of no
+        # part of the diff. Neither single edit that would hand the
+        # name over is free. A reorder ahead of the winner necessarily
+        # passes `fix(#325)` as well and drags all six of PAIR A with
+        # it: 8 of the 352 in all, this name plus PAIR A's six plus
+        # PAIR A's own collateral 'Smith, Jr., PhD'. The `fields`
+        # narrowing is smaller and NOT surgical -- dropping `given` or
+        # `title` from the winner moves 2, handing this name over and
+        # sending 'Do Quang Minh', a radar-tier corpus_issues.jsonl
+        # name the winner is the sole explainer of, to no rule at all,
+        # so radar unclassified goes 0 -> 1. The pin costs neither.
+        "MD, DO, DDS":
+            "fix(#296) a dropped prenominal takes the name position it "
+            "occupies",
     },
     # The two 2.x ledgers had NO section here until #452, and the
     # coverage assertion below was `<=`, so their absence read as "no
@@ -2757,14 +2971,17 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
     # a run can contradict.
     #
     # Nor is "only one rule admits it" grounds on its own to delete a
-    # row: 13 of the 31 at 1.4.0 are in that position too, and two of
+    # row: 13 of the 45 at 1.4.0 are in that position too, and two of
     # the six below joined them with the narrowing -- '김민준 박사님'
     # and '선생님' have one admitter each now, the glued rule's regex
-    # having stopped reaching them. SIX of the 13
+    # having stopped reaching them. None of #498's fourteen joins the
+    # 13: every one has two or more admitters at its recorded shape by
+    # the definition of the sweep that found it, so the numerator held
+    # while the denominator grew (measured 2026-09-05). SIX of the 13
     # say so where they sit -- the jr rule's surplus and the
     # bound-given trio, three rows each -- and the other seven do not,
     # so take the count from the recompute rather than from the
-    # comments. RECOMPUTE (measured 2026-09-03): count the rows of
+    # comments. RECOMPUTE (measured 2026-09-05): count the rows of
     # compare._RECORDED_DIFFS['expected_since_1.4.0.toml'] for which
     # exactly one rule of compare._sorted_rules over this ledger
     # satisfies compare._entry_matches at the recorded shape. They
@@ -2837,7 +3054,7 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
         # the winner here, so this row does not hold WITHOUT that
         # commit; it is not a reordering.
         #
-        # One admitter today, which is the 13-of-31 position above and
+        # One admitter today, which is the 13-of-45 position above and
         # not a reason to drop the row. Measured 2026-09-05: restoring
         # the pre-narrowing regex alone -- one edit, no reorder, since
         # the glued rule still sits ahead of the spaced one -- hands

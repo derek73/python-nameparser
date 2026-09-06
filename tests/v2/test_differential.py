@@ -2189,7 +2189,7 @@ def test_the_shape_check_reads_the_section_for_the_LEDGER_it_ran(
     A correct row in the 2.0.0 section and a DECOY in the 1.4.0 one:
     dispatched right, the run is quiet; dispatched to 1.4.0, it reports
     a moved shape on the same name. Set wholesale rather than per key,
-    so the shipped 31 rows cannot supply the answer either way.
+    so the shipped 45 rows cannot supply the answer either way.
     """
     monkeypatch.setattr(
         compare, "_RECORDED_DIFFS",
@@ -2539,7 +2539,9 @@ def test_a_ledger_missing_from_a_shape_roster_is_refused_pre_worker(
     """An empty section is a statement and a missing one is nobody
     having looked, and a `.get(..., {})` read the two alike: with the
     1.4.0 key deleted from _WATCHED_DIFFS, a full run at that baseline
-    checked 41 rows fewer, printed the same 375 lines and exited 0.
+    checked 36 rows fewer, printed the same 375 lines and exited 0
+    (re-measured 2026-09-05, #498 having moved five rows out of that
+    section; compare.py's FAIL-CLOSED paragraph carries the control).
     So the run refuses, pre-worker, naming the dict and the ledger --
     the guards in test_ledger_guards.py hold the same key equality at
     pytest speed, and the tool may not assume they ran."""

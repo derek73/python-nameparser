@@ -1712,11 +1712,13 @@ class _ShapeMismatch(NamedTuple):
 #: Default-order shapes only, because the roster classifies with no
 #: order. recorded_diff_mismatches below says what that leaves out.
 #:
-#: PROVENANCE. The 31 rows at 1.4.0 are measured against the 1.4.0
-#: wheel, as the roster always claimed, and all 31 still agree --
-#: re-measured 2026-09-03 by driving main() at all four baselines and
-#: feeding its `diffing` and its post-skip corpus to
-#: recorded_diff_mismatches, which is the recompute: wrap _run_worker to
+#: PROVENANCE. The 45 rows at 1.4.0 are measured against the 1.4.0
+#: wheel, as the roster always claimed, and all 45 still agree -- the
+#: original 31 re-measured 2026-09-03, the fourteen #498 added measured
+#: 2026-09-05 by the sweep that found them, and every one of the 45
+#: checked by the same recompute: drive main() at all four baselines and
+#: feed its `diffing` and its post-skip corpus to
+#: recorded_diff_mismatches, wrapping _run_worker to
 #: capture the post-skip entries and dormant_rules to capture `diffing`,
 #: since both receive exactly what main() built.
 #:
@@ -1786,6 +1788,28 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Abu Bakr Al Baghdadi, MD": ("_initials",),
         "abu bakr al baghdadi": ("_initials",),
         "Berg, abdul van": ("_initials",),
+        # #498's fourteen, adjudicated 2026-09-05: every 1.4.0 diff
+        # two or more rules admitted, where the winner beats a loser
+        # by neither narrow-first nesting nor a `precedes_narrower`
+        # declaration, and nothing pinned it. Shapes measured against
+        # the 1.4.0 wheel by the sweep that found them, not guessed;
+        # the five that were _WATCHED_DIFFS rows moved here with their
+        # shapes unchanged, which is what this dict's NO WINNER clause
+        # below says happens the day a winner is argued.
+        "マイケル・ジャクソン": ("family", "given"),
+        "威廉・莎士比亚": ("family", "given"),
+        "高橋・一郎": ("family", "given"),
+        "Dr 김민준, Jr.": ("family", "given"),
+        "田中さん, Dr.": ("family", "given"),
+        "田中さん, 様.": ("family", "given", "suffix"),
+        "Bob Jones, compositeur": ("family", "given"),
+        "MD, DO, DDS": ("given", "title"),
+        "Smith, Ph. D. III": ("given", "suffix"),
+        "Smith, Ph. D. Jr.": ("suffix", "title"),
+        "Smith, Ph. D. Jr. MD": ("given", "suffix", "title"),
+        "Smith, Ph. D. MD": ("suffix", "title"),
+        "Smith, Ph.D. Jr.": ("given", "suffix"),
+        "Smith, PhD Jr.": ("given", "suffix", "title"),
     },
     # #501's six, moved here from _WATCHED_DIFFS with their shapes
     # unchanged. The four CJK rows sit at 2.0.0 alone: the honorific
@@ -1803,7 +1827,7 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
     # below applied as written and accepted deliberately (#501): a
     # contest row is fatal on either tier because it carries an
     # argument, and a moved shape has made that argument's premise
-    # false. The precedent is the section above, where 22 of the 31
+    # false. The precedent is the section above, where 32 of the 45
     # rows are radar-tier names on exactly those terms (measured
     # 2026-09-05).
     "expected_since_2.0.0.toml": {
@@ -1906,18 +1930,24 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: every baseline today, so the two sets coincide); and not already
 #: keyed in _RECORDED_DIFFS for that
 #: ledger. The last clause is the one a scan of tests/ cannot supply,
-#: because that scan cannot see this file, and it excludes four names
-#: that carry contest rows: 'Bob Jones, author', 'Carod i', 'MD, PHD',
-#: 'van ma van'. TWO of them return at a 2.x baseline where they have
-#: no contest row. The other two have no row in this dict at all:
+#: because that scan cannot see this file, and it excludes nine names
+#: that carry contest rows: 'Bob Jones, author', 'Bob Jones,
+#: compositeur', 'Carod i', 'MD, DO, DDS', 'MD, PHD', 'Smith, Ph. D.
+#: Jr. MD', 'Smith, Ph. D. MD', 'Smith, Ph.D. Jr.', 'van ma van'.
+#: SEVEN of them return at a 2.x baseline where they have
+#: no contest row -- the five #498 pinned at 1.4.0 among them, each
+#: still sole-watched at 2.0.0 and 2.1.0. The other two have no row in
+#: this dict at all:
 #: 'Carod i' diffs under the default order at 1.4.0 only, where its
 #: contest row stands, and 'MD, PHD' carries a contest row at every one
 #: of the three baselines it diffs at since #501 pinned its 2.x pair.
 #: That is why the population is 50 names where the tests/-only scan
 #: says 52.
-#: The counts: 41 / 31 / 30 / 5 rows, 107 in all, over those 50 names
+#: The counts: 36 / 31 / 30 / 5 rows, 102 in all, over those 50 names
 #: -- and the roster is now exactly the population, the five contest
-#: rows beyond it having gone to _RECORDED_DIFFS with #501.
+#: rows beyond it having gone to _RECORDED_DIFFS with #501 and five
+#: more with #498, which left the population by gaining a
+#: _RECORDED_DIFFS key rather than by ceasing to be watched anywhere.
 #: 48 of the 50 sit in corpus_issues.jsonl and 3 in corpus.jsonl, with
 #: 'dr Vincent van Gogh dr' in both, so the per-file counts overlap by
 #: one and are not a partition. Every row is a default-order shape,
@@ -1929,9 +1959,14 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: calls whose order is None and whose rule is not None; apply the
 #: four clauses above with the literal set from ast.walk over
 #: tests/**/*.py EXCLUDING test_ledger_guards.py, as the POPULATION
-#: clause says -- run over every file it yields 38 / 28 / 27 / 4 rows
-#: rather than 41 / 31 / 30 / 5, since _CROSS_RULE_WINNERS' keys and
-#: a few guard literals then score as watchers -- the tier sets from
+#: clause says -- run over every file it yields 33 / 23 / 22 / 4 rows
+#: rather than 36 / 31 / 30 / 5, since _CROSS_RULE_WINNERS' keys and
+#: a few guard literals then score as watchers, and #498's fourteen
+#: keys are exactly that kind of literal: the two halves of this
+#: sentence moved for different reasons on 2026-09-05, the second
+#: because five rows left this dict and the first because those five
+#: are watched at 2.x too, where they now score as watched by the
+#: guard file -- the tier sets from
 #: _load_entries over corpus*.jsonl
 #: through _CORPUS_TIERS, and that ledger's _RECORDED_DIFFS keys. Not
 #: by replaying the corpus load by hand: the (name, order) dedup, the
@@ -1956,7 +1991,6 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Anna Müller (geb. Schmidt)": ("maiden", "nickname"),
         "Anna Müller geb. Schmidt": ("family", "maiden", "middle"),
         "Attorney General of Minnesota": ("_initials",),
-        "Bob Jones, compositeur": ("family", "given"),
         "Dean of Chemistry": ("_initials",),
         "Dean of Chemistry Robert Johns": ("_initials",),
         "Deputy Secretary of State": ("_initials",),
@@ -1975,7 +2009,6 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Jong, van der": ("_initials",),
         "Jose e Maria Santos": ("_initials",),
         "Juan Garcia y Lopez": ("_initials",),
-        "MD, DO, DDS": ("given", "title"),
         "Mesnil Garcia van": ("_initials",),
         "Mohamad X": ("family", "suffix"),
         "Ph. D., Jr.": ("family", "given"),
@@ -1983,14 +2016,19 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Sander van": ("_initials",),
         "Smith Jones, Ph. D. Jr.": ("suffix",),
         "Smith, Ph. D.": ("family", "given"),
-        "Smith, Ph. D. Jr. MD": ("given", "suffix", "title"),
-        "Smith, Ph. D. MD": ("suffix", "title"),
-        "Smith, Ph.D. Jr.": ("given", "suffix"),
         "Smith, Prof.": ("family", "given"),
         "Ursula von der Leyen (geb. Albrecht)": ("maiden", "nickname"),
         "dr Vincent James van Gogh dr": ("family", "suffix"),
         "dr Vincent van Gogh dr": ("family", "suffix"),
         "dr Vincent van der Gogh dr": ("family", "suffix"),
+        # 'Bob Jones, compositeur', 'MD, DO, DDS', 'Smith, Ph. D. Jr.
+        # MD', 'Smith, Ph. D. MD' and 'Smith, Ph.D. Jr.' are GONE from
+        # this section: #498 argued a winner for each on 2026-09-05
+        # and the five rows moved to _RECORDED_DIFFS with their shapes
+        # unchanged. Each is still watched at 2.0.0 and 2.1.0, where
+        # exactly one rule admits it and there is no contest to own,
+        # so the DISTINCT-NAME count in the header above does not
+        # move -- only the 1.4.0 row count does.
     },
     "expected_since_2.0.0.toml": {
         "Anh do": ("_initials",),
@@ -2594,10 +2632,11 @@ def main() -> int:
     # which is where the two checks part: `vacant` prints a count a
     # reader might act on, and here recorded_diff_mismatches has
     # already dropped those names without reporting one, so a NOTE
-    # would add noise and no information. Measured 2026-09-03, it would
-    # name 18 to 30 of the 31 rows depending on which corpus was asked
-    # for (30 for corpus_shapes.jsonl) against `vacant`'s 5 to 11 of
-    # 11. Recompute, from the worktree root:
+    # would add noise and no information. Measured 2026-09-05, it would
+    # name 28 to 43 of the 45 rows depending on which corpus was asked
+    # for (43 for corpus_shapes.jsonl) against `vacant`'s 5 to 11 of
+    # 11 (measured 2026-09-03, and untouched by a roster row).
+    # Recompute, from the worktree root:
     #   uv run python -c "import sys;sys.path.insert(0,'tools/\
     #   differential');import compare,pathlib;r=set(compare.\
     #   _RECORDED_DIFFS['expected_since_1.4.0.toml']);[print(p.name,\
@@ -2617,9 +2656,10 @@ def main() -> int:
     # is a statement -- this ledger has no row of that kind -- where a
     # missing one is nobody having looked, and a `.get` default reads
     # the two alike: with the 1.4.0 key deleted from _WATCHED_DIFFS,
-    # a full run at that baseline checks 41 rows fewer, prints the
+    # a full run at that baseline checks 36 rows fewer, prints the
     # same 375 lines (differing only in the worker environment's path
-    # on the `baseline:` line, as any two runs do) and exits 0. The
+    # on the `baseline:` line, as any two runs do) and exits 0
+    # (measured 2026-09-05). The
     # pytest-speed guards hold
     # each dict's keys equal to the ledgers on disk
     # (test_the_watched_roster_is_disjoint_and_names_every_ledger, and
