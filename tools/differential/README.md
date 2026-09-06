@@ -739,12 +739,35 @@ Widening the predicate to that general case would demand 111 written
 justifications where the real number is eleven -- the same argument
 decisions.md already makes about the 657 figure, that a predicate
 nobody can answer is not a usable one. The worked blind spot is real
-and filed as
+and was closed by
 [#498](https://github.com/derek73/python-nameparser/issues/498):
 `fix(#271/#272/#298)` and `fix(cjk-delimited-nickname)` intersect in
 {`family`, `given`} without nesting, and swapping them reattributes
 three contract-tier names this check never mentions in either
-arrangement.
+arrangement. All three are pinned now, along with eleven more names
+measured the same way, and the second predicate below refuses the
+next one (2026-09-05).
+
+**The second predicate is measured, not static.** `unowned_contests`
+(#498) walks a run's own diffs and reports every contested one the
+winner takes by neither narrow-first nesting nor a declaration and
+that no `_RECORDED_DIFFS` row pins. It has to be run-time and there
+is no static sibling: a pin is a shape beside a winner, and without a
+diff the population is the whole equal-or-overlap class the predicate
+names -- the 60 overlapping pairs above plus the 11 with equal
+`fields`, 71 in all -- rather than the 14 names a run finds. The 71 is
+those same 2026-09-02 figures re-measured 2026-09-05 by the recipe
+they carry; decisions.md#differential-ledger has it. Severity is
+FATAL on both tiers, in the exit
+code beside the shape check -- a contest ROW is fatal on either tier
+because it carries an argument, and an owed row because it carries
+none yet. Under `--corpus` the population is the entries the run
+loaded, so the check under-reports and never false-alarms, and no
+flag is read. Note the ASYMMETRY with `vacant_exemptions` above:
+there is no vacancy half here, because a pin whose contest dissolves
+keeps saying what the name diffs to and which rule takes it -- 13 of
+the 45 rows at 1.4.0 are already in that position (measured
+2026-09-05).
 
 Two questions, in both tiers, as for `dormant`. Is every contest
 DECLARED, and does every declaration still stand over a contest? The
