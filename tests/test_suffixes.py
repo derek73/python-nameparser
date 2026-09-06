@@ -21,16 +21,21 @@ class SuffixesTestCase(HumanNameTestBase):
         hn = HumanName("Kenneth Clarke QC MP")
         self.m(hn.first, "Kenneth", hn)
         self.m(hn.last, "Clarke", hn)
-        # NOTE: this adds a comma when the original format did not have one.
-        # not ideal but at least its in the right bucket
-        self.m(hn.suffix, "QC, MP", hn)
+        # The writer spaced "QC MP", so #436 renders it as written
+        # (rules.md#R1). A deliberate deviation from 1.4.0, which added a
+        # comma the original format did not have.
+        self.m(hn.suffix, "QC MP", hn)
 
     def test_two_suffixes_lastname_comma_format(self) -> None:
         hn = HumanName("Washington Jr. MD, Franklin")
         self.m(hn.first, "Franklin", hn)
         self.m(hn.last, "Washington", hn)
-        # NOTE: this adds a comma when the original format did not have one.
-        self.m(hn.suffix, "Jr., MD", hn)
+        # The writer spaced "Jr. MD", so #436 renders it as written
+        # (rules.md#R1). This name HAS a writer's comma, but it stands
+        # between MD and Franklin -- it parts the family from the run, not
+        # the run from itself. A deliberate deviation from 1.4.0, which
+        # added a comma the original format did not have.
+        self.m(hn.suffix, "Jr. MD", hn)
 
     def test_roman_numeral_v_suffix_comma_format(self) -> None:
         # suffix-comma position is unambiguous: 'V' must be a suffix, not a single-letter initial
@@ -270,11 +275,14 @@ class SuffixesTestCase(HumanNameTestBase):
 
     def test_suffix_delimiter_no_effect_without_comma(self) -> None:
         # suffix_delimiter only applies after the comma split; space-separated
-        # suffixes already work via the no-comma parse path
+        # suffixes already work via the no-comma parse path. Since #436 the
+        # run renders with the space the writer typed, so the row shows the
+        # knob is inert rather than showing a comma nobody asked for -- a
+        # deliberate deviation from 1.4.0, which added that comma.
         hn = HumanName("John Doe MD PhD", suffix_delimiter=" - ")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
-        self.m(hn.suffix, "MD, PhD", hn)
+        self.m(hn.suffix, "MD PhD", hn)
 
     def test_suffix_delimiter_constants_level(self) -> None:
         # ran on the shared CONSTANTS in v1; 2.0 deprecates shared mutation,

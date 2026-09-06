@@ -25,6 +25,38 @@
 # GLUED honorific rule precedes the SPACED one, because a name can
 # carry both shapes at once.
 
+# #436/#437: the suffix view's entry boundary became the comma the
+# writer typed. rules.md#R1: "a run of post-nominals written with
+# spaces renders with spaces, and one written with commas keeps
+# them" -- true of the comma paths since 1.4.0 and of the NO-COMMA
+# path only since 2.3, which is the whole of what these names move.
+# Every one goes from a comma-joined render to a space-joined one;
+# none goes the other way, and none has a comma in the original
+# between the two words. Roles do not move: this rule declares
+# `suffix` alone, so a name whose ROLES move here arrives
+# UNEXPLAINED, as it should.
+#
+# FIRST in the file, and that is narrow-first rather than a
+# preference: `fields = ["suffix"]` is a strict subset of several
+# rules below, and any of them sitting earlier while both regexes
+# reach one corpus name is an undeclared order-decided contest the
+# run refuses (#382). Measured 2026-09-06 by moving this rule to
+# the end of a scratch copy of this file and re-running the gate,
+# which raises 3 such contests here.
+#
+# An anchored alternation of the names rather than a shape, because
+# the shape is "two post-nominals with a space between them" and
+# that reaches every listing form in the corpora. The members are a
+# list of NAMES and copy no wordlist, which is what
+# _NOT_A_VOCABULARY_COPY in tests/v2/test_ledger_guards.py records;
+# _CORPUS_CLAIMS pins the reach at 10 with its digest, and
+# _MUST_NOT_MATCH pins the five comma and delimiter forms it must
+# never claim.
+[[change]]
+issue = "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas"
+name_regex = "^(?:JOHN DOE PHD MD|John Doe MD PhD|John Smith MD PhD|John Smith Mc V|Kenneth Clarke QC MP|Smith, John PhD I\\.|The Rt Hon Kenneth Clarke QC MP, HMG|Washington Jr\\. MD, Franklin|abdul Smith Jr Ma|abdul Smith Jr V)$"
+fields = ["suffix"]
+
 [[change]]
 issue = "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots"
 # The 2.1 East Asian defaults, in the fields they move name pieces
@@ -422,6 +454,23 @@ issue = "fix(#401) the bound-given reserve counts the trailing numeral assign re
 name_regex = "(?i)^abdul\\s+smith\\s+(jr\\s+)?v$"
 fields = ["given", "family"]
 
+# #436/#437 compounding with the bound-given reserve, one name.
+# 'abdul Smith Jr V' already diffs {family, given} at this baseline
+# under fix(#401) above, whose `fields` are those two alone -- so
+# once the render moves as well, the diff is {family, given, suffix}
+# and no longer a subset of anything fix(#401) declares. Two
+# mechanisms, one name: the reserve decides the ROLES and #436
+# decides the SEPARATOR, and the ledger's idiom for that is a rule
+# naming both (the cjk-*-compound rules are the precedent). AFTER
+# fix(#401) in file order, because its `fields` are a strict subset
+# of these and the reverse arrangement is an undeclared contest
+# (#382). fix(#401) keeps 'abdul Smith V', which still diffs on the
+# two roles alone, so it neither goes dormant nor over-declares.
+[[change]]
+issue = "fix(#436/#437) the space-separated post-nominal run compounds with the bound-given reserve"
+name_regex = "(?i)^abdul\\s+smith\\s+jr\\s+v$"
+fields = ["given", "family", "suffix"]
+
 [[change]]
 issue = "fix(#421) the bound-given join never absorbs a suffix piece"
 # 'abdul Jr Smith Berg': rules.md#P5 -- "the join never absorbs a
@@ -662,7 +711,9 @@ issue = "fix(#325) a split credential followed by another suffix after a one-wor
 # 'Smith, Ph. D. Jr.' and the #325 rows it leads ('Smith, Ph. D. MD',
 # 'Smith, Ph. D. III', 'Smith, Ph. D. Jr. MD', 'Smith, Ph.D. Jr.', and
 # 'Smith, PhD Jr.', which the regex reaches too -- title 'PhD' at
-# every baseline, suffix 'PhD, Jr.' now):
+# every baseline, suffix 'PhD Jr.' now; this line read
+# 'PhD, Jr.' and had been stale since #429 made the run one
+# entry, corrected 2026-09-06):
 # with one word before the comma the name is the listing form, and
 # the space-split 'Ph. D.' followed by another suffix was no longer
 # the LONE post-comma piece, so it fell through to the given name --
@@ -1027,10 +1078,13 @@ issue = "fix(#429) a wholly-credential segment after a one-word family renders a
 # The roles moved in #325; what #429 adds is the RENDER. #325 shipped
 # them as 'MD, PhD' -- a comma the writer never typed -- because group
 # decided "one comma segment is one suffix entry" by segment INDEX
-# while assign decided the same segment by CONTENT. group now asks
-# assign's own predicate, so the run renders as written and this path
-# agrees with the full-name 'John Smith, MD PhD', which has rendered
-# 'MD PhD' since 1.4.0.
+# while assign decided the same segment by CONTENT. group asked
+# assign's own predicate from #429, so the run renders as written
+# and this path agrees with the full-name 'John Smith, MD PhD',
+# which has rendered 'MD PhD' since 1.4.0. (2026-09-06, #436: the
+# render is post_rules' now -- it reads the commas the writer typed
+# rather than any predicate about segment content -- and 'MD PhD'
+# here is unchanged by that move.)
 #
 # The name entered the corpus as the rules.md#C1 example that fix
 # added, so this entry arrives with it rather than explaining a
