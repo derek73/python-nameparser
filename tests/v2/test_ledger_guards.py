@@ -2543,7 +2543,16 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
     # open cycle: one rule, so nothing for a second one to contest
     "expected_since_2.2.0.toml": {},
     "expected_since_1.4.0.toml": {
-        "Andrews, M.D.": "fix(comma-family)",
+        # Spelled out since #508: the bare `fix(comma-family)` this row
+        # carried is a prefix of THREE rules in this ledger (measured
+        # 2026-09-05 with tomllib over the [[change]] issues), and the
+        # guard now refuses a pin that names anything other than
+        # exactly one. The
+        # lone-post-comma rule is the one that wins the name and the
+        # only one that admits its recorded {given, suffix} shape.
+        "Andrews, M.D.":
+            "fix(comma-family) lone post-comma piece routes to "
+            "suffix/title, not first",
         "田中, 太郎さん": "fix(cjk-comma-honorific-peel)",
         "김, 민준씨": "fix(cjk-comma-honorific-peel)",
         "김, 민준씨 (Jimmy)": "fix(cjk-comma-honorific-peel)",
@@ -2869,23 +2878,18 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
         # the winner on this reasoning, and the winner's regex reaches
         # 'compositeur' by the same literal. Moving the loser ahead
         # moves 3 of the 352 -- this name, 'Bob Jones, author' and
-        # 'John Smith, Mr.'. The pin is spelled with the FULL issue
-        # string because THREE rules in this ledger begin
-        # `fix(comma-family)` (measured 2026-09-05 with tomllib over
-        # the ledger's `[[change]]` issues): under the `startswith`
-        # the winner guard compares with, a bare `fix(comma-family)`
-        # would be satisfied by any of the three, the lone-post-comma
-        # rule that loses PAIRs A and G included. The full string
-        # still does not separate the winner from the THIRD of them,
-        # though -- the winner's issue is a strict PREFIX of
+        # 'John Smith, Mr.'. The pin is the winner's FULL issue string,
+        # and since #508 that is what the guard compares EXACTLY: three
+        # rules in this ledger begin `fix(comma-family)` (measured
+        # 2026-09-05 with tomllib over the ledger's `[[change]]`
+        # issues), and this winner's issue is itself a strict PREFIX of
         # `... keeps the given/family split, the C1 example`, so no
-        # prefix comparison can tell those two apart. What holds the
-        # row against that rule is exact equality, which is what a run
-        # supplies: measured 2026-09-05, classify() returns the
-        # winner's issue EXACTLY, and the C1 rule cannot reach this
-        # string at all -- its name_regex is
-        # (?i)^john\s+smith,\s*mr\.?(\s+jr\.?)?$ whole, anchored at
-        # both ends on a literal this name shares no prefix with.
+        # prefix comparison could tell those two apart -- _pinned_rule
+        # resolves a pin that IS an issue string to that rule and to no
+        # other. The C1 rule cannot reach this string in any case: its
+        # name_regex is (?i)^john\s+smith,\s*mr\.?(\s+jr\.?)?$ whole,
+        # anchored at both ends on a literal this name shares no prefix
+        # with (measured 2026-09-05).
         "Bob Jones, compositeur":
             "fix(comma-family) a comma followed only by titles keeps "
             "the given/family split",
@@ -3121,6 +3125,149 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
 }
 
 
+def _pinned_rule(pin: str, issues: list[str], where: str) -> str:
+    """The one rule a _CROSS_RULE_WINNERS pin names, or a refusal.
+
+    A pin is a rule's issue string, or a prefix of exactly one. Exact
+    wins where a rule's issue IS the pin, because a full issue string
+    can be a strict prefix of a sibling's -- measured 2026-09-05 in
+    expected_since_1.4.0.toml, `fix(comma-family) a comma followed only
+    by titles keeps the given/family split` is a prefix of
+    `... split, the C1 example` -- and a prefix comparison alone could
+    not tell those two apart. The exact branch cannot itself be
+    ambiguous: a ledger holding two rules with the same `issue` string
+    is already refused by
+    test_every_rule_claims_the_recorded_share_of_the_corpus, which is
+    where that uniqueness is stated. A prefix that reaches no rule, or
+    more than one, is refused here rather than left for classify() to
+    answer: a pin that names a FAMILY of rules pins nothing, since the
+    roster's whole job is to say which rule wins (mechanisms.md
+    #CROSS-RULE-OUTCOME-PINS), and the #498 completeness check reads a
+    _RECORDED_DIFFS key as "a winner is pinned" on the strength of it.
+
+    `issues` are the ledger's [[change]] issue strings -- file order
+    from `_rules`, classify()'s sorted order from the winner guard,
+    and the answer is the same either way, being exact-or-unique.
+    """
+    # An empty pin is a prefix of every rule, so on a one-rule ledger
+    # -- expected_since_2.2.0.toml today -- it would resolve uniquely
+    # and pin nothing. Refused before either branch sees it.
+    assert pin, f"{where}: an empty pin names every rule"
+    if pin in issues:
+        return pin
+    hits = [issue for issue in issues if issue.startswith(pin)]
+    assert hits, (
+        f"{where}: the pin {pin!r} names 0 rules. It reaches no rule in "
+        f"this ledger, so the rule it was written for has been reworded "
+        f"or removed. Re-pin the row to the current issue string of the "
+        f"rule that wins this name, or drop the row -- together with "
+        f"its shape in compare._RECORDED_DIFFS -- if the contest is "
+        f"gone with it.")
+    assert len(hits) == 1, (
+        f"{where}: the pin {pin!r} names {len(hits)} rules: {hits}. A "
+        f"pin must name exactly one rule -- spell it out to the issue "
+        f"string of the rule that wins the name. Three rules in "
+        f"expected_since_1.4.0.toml begin `fix(comma-family)` (measured "
+        f"2026-09-05), which is the shape this refuses.")
+    return hits[0]
+
+
+def test_every_pinned_winner_names_exactly_one_rule() -> None:
+    """A pin resolves to one rule before any shape is asked (#508).
+
+    test_the_recorded_rule_still_wins_each_contested_name resolves the
+    pin through the same _pinned_rule, before it asks classify()
+    anything, so it would refuse an ambiguous pin identically -- but
+    only after loading compare and walking as far as that row. This
+    guard refuses it from the roster and the ledger's issue strings
+    alone, with compare never loaded, at pytest speed.
+    """
+    by_name = {led.name: led for led in _LEDGERS}
+    resolved = 0
+    for ledger_name, winners in _CROSS_RULE_WINNERS.items():
+        issues = [r["issue"] for r in _rules(by_name[ledger_name])]
+        for name, pin in winners.items():
+            _pinned_rule(pin, issues, f"{ledger_name}: {name!r}")
+            resolved += 1
+    assert resolved, "no pin was resolved, so this guard is vacuous"
+
+
+def test_a_pin_resolves_exactly_or_by_unique_prefix_or_is_refused() -> None:
+    """The whole of _pinned_rule's table, on hand-built issues.
+
+    Both halves: the two that resolve -- an exact issue string wins
+    over the sibling it is a prefix of, and a family prefix reaching
+    exactly one rule resolves to that rule -- and the two that refuse,
+    a prefix reaching several and a prefix reaching none. Matching is
+    literal, so case is part of the pin and a miscased pin reaches
+    nothing rather than the rule it was aimed at.
+    """
+    issues = [
+        "fix(x) the first",
+        "fix(x) the first, extended",
+        "fix(x) the second",
+        "fix(y) alone",
+    ]
+    # a family prefix reaching one rule resolves to it
+    assert _pinned_rule("fix(y)", issues, "t") == "fix(y) alone"
+    # an exact issue that is also a prefix of a sibling resolves exactly
+    assert _pinned_rule("fix(x) the first", issues, "t") == "fix(x) the first"
+    # a prefix reaching several is refused, naming them
+    with pytest.raises(AssertionError) as several:
+        _pinned_rule("fix(x)", issues, "t")
+    assert "names 3 rules" in str(several.value)
+    assert "fix(x) the second" in str(several.value)
+    # a prefix reaching none is refused
+    with pytest.raises(AssertionError) as none:
+        _pinned_rule("fix(z)", issues, "t")
+    assert "names 0 rules" in str(none.value)
+    # a pin quotes the issue string literally, so case is not folded
+    with pytest.raises(AssertionError, match="names 0 rule"):
+        _pinned_rule("FIX(y)", issues, "t")
+
+
+def test_the_winner_guard_refuses_a_longer_sibling_of_the_pin(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The regression #508 was opened for, run rather than described.
+
+    'Bob Jones, compositeur' is pinned to the all-titles rule, whose
+    full issue string is a strict PREFIX of the C1 rule's. Under the
+    `startswith` comparison the winner guard used before #508, a run in
+    which the C1 rule answered for that name satisfied the pin, and the
+    handover passed unseen; here classify() is made to answer exactly
+    that, and the guard must refuse it. Measured 2026-09-05: with `==`
+    put back to `startswith`, this test does not raise and so fails.
+    """
+    compare = load_tool("compare")
+    ledger = {led.name: led for led in _LEDGERS}["expected_since_1.4.0.toml"]
+    sibling = ("fix(comma-family) a comma followed only by titles keeps "
+               "the given/family split, the C1 example")
+    assert sibling in [rule["issue"] for rule in _rules(ledger)], (
+        f"{sibling!r} is no longer a rule in expected_since_1.4.0.toml, "
+        f"so this test impersonates an answer no run could produce. "
+        f"Re-pick a rule whose issue string extends another rule's")
+
+    def _answer_the_longer_sibling(
+            name: str, diff_fields: set[str],
+            rules: list[dict[str, object]],
+            exclusions: list[dict[str, object]] | None = None,
+            order: str | None = None) -> str | None:
+        got: str | None = compare_classify(
+            name, diff_fields, rules, exclusions, order)
+        if name == "Bob Jones, compositeur" and got is not None:
+            return got + ", the C1 example"
+        return got
+
+    compare_classify = compare.classify
+    monkeypatch.setattr(compare, "classify", _answer_the_longer_sibling)
+    # load_tool builds a FRESH module every call, so the guard under
+    # test would otherwise load an unpatched compare; hand it this one.
+    # It loads no other tool, so answering every stem with it is safe.
+    monkeypatch.setitem(globals(), "load_tool", lambda stem: compare)
+    with pytest.raises(AssertionError, match="is now explained by"):
+        test_the_recorded_rule_still_wins_each_contested_name()
+
+
 def test_the_recorded_rule_still_wins_each_contested_name() -> None:
     """Who explains what, which nothing else here asks.
 
@@ -3138,6 +3285,12 @@ def test_the_recorded_rule_still_wins_each_contested_name() -> None:
     A failure here is not necessarily a regression: it can equally mean
     a rule was narrowed correctly and its names found a better home. It
     means someone has to look, which is the point.
+
+    Since #508 the pin is resolved to one rule and compared exactly,
+    not by prefix: `startswith` was satisfied by any rule whose issue
+    extended the pin, and for three rows at 1.4.0 (measured
+    2026-09-05) that was more than one rule, so the row pinned a family
+    where it claimed to pin a winner.
     """
     compare = load_tool("compare")
     by_name = {led.name: led for led in _LEDGERS}
@@ -3145,6 +3298,7 @@ def test_the_recorded_rule_still_wins_each_contested_name() -> None:
     for ledger_name, winners in _CROSS_RULE_WINNERS.items():
         ledger = by_name[ledger_name]
         rules = compare._sorted_rules(_rules(ledger))
+        issues = [r["issue"] for r in rules]
         never = _exclusions(ledger)
         shapes = compare._RECORDED_DIFFS[ledger_name]
         for name, expected in winners.items():
@@ -3160,14 +3314,26 @@ def test_the_recorded_rule_still_wins_each_contested_name() -> None:
                 f"it, or drop the pin -- "
                 f"test_every_pinned_winner_has_a_recorded_shape is the "
                 f"guard that states this as its own subject")
+            # Resolved before classify() is asked, so a pin naming a
+            # family of rules fails as a PIN defect with the family
+            # listed (test_every_pinned_winner_names_exactly_one_rule
+            # states that as its own subject); and compared EXACTLY,
+            # because a full issue string can be a strict prefix of a
+            # sibling's and `startswith` could not tell them apart
+            # (#508; the PAIR F rows above are the case).
+            pinned = _pinned_rule(expected, issues, f"{ledger_name}: {name!r}")
             fields = shapes[name]
             got = compare.classify(name, set(fields), rules, never)
-            assert got is not None and got.startswith(expected), (
+            assert got == pinned, (
                 f"{ledger_name}: {name!r} diffing {list(fields)} is now "
-                f"explained by {got!r}, not {expected!r}. Check the new "
-                f"rule's prose actually describes this name before "
-                f"recording it -- a rule claiming a diff it does not "
-                f"describe is #372, and it stays green everywhere else")
+                f"explained by {got!r}, not {pinned!r}"
+                # a prefix pin: the roster holds `expected`, not the
+                # resolved issue string, so name the text to edit.
+                + (f" (pinned as {expected!r})" if pinned != expected else "")
+                + ". Check the new "
+                "rule's prose actually describes this name before "
+                "recording it -- a rule claiming a diff it does not "
+                "describe is #372, and it stays green everywhere else")
             checked += 1
     assert checked, "no contested name was checked, so this pin is vacuous"
     assert set(_CROSS_RULE_WINNERS) == {led.name for led in _LEDGERS}, (
