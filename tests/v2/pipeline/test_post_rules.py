@@ -5,6 +5,7 @@ import pytest
 
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline import run
+from nameparser._pipeline._post_rules import suffix_entries
 from nameparser._pipeline._state import ParseState
 from nameparser._policy import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
                                 GIVEN_FIRST, PatronymicRule, Policy,
@@ -954,3 +955,65 @@ def test_the_pass_runs_after_roles_are_settled() -> None:
     middles = [tok for tok in state.tokens if tok.role is Role.MIDDLE]
     assert [tok.text for tok in middles] == ["A", "B"]
     assert not any("joined" in tok.tags for tok in middles)
+
+
+# -- suffix_entries as a function of its own (#511) -------------------
+#
+# Parser.revise forces the named role on a sub-parse's tokens and then
+# runs THIS pass over the forced state, so the pass is exercised here
+# on states whose roles were set by hand rather than by assign.
+
+
+def _forced(text: str, role: Role,
+            policy: Policy | None = None) -> ParseState:
+    """A full parse of `text` with every non-dropped token re-roled to
+    `role`, which is what revise() hands the pass. The forcing keeps
+    the sub-parse's tags, as revise() keeps them. Dropped tokens keep
+    their role, as revise() leaves them."""
+    state = run(ParseState(original=text, lexicon=Lexicon.default(),
+                           policy=policy or Policy()))
+    dropped = set(state.dropped)
+    return dataclasses.replace(state, tokens=tuple(
+        tok if i in dropped
+        else dataclasses.replace(tok, role=role)
+        for i, tok in enumerate(state.tokens)))
+
+
+def _forced_entry_tags(text: str, role: Role,
+                       policy: Policy | None = None) -> list[tuple[str, bool]]:
+    state = suffix_entries(_forced(text, role, policy))
+    return [(tok.text, "joined" in tok.tags)
+            for i, tok in enumerate(state.tokens)
+            if tok.role is role and i not in set(state.dropped)]
+
+
+def test_suffix_entries_joins_a_forced_role_run() -> None:
+    """A bare 'MD PhD' parses as a title and a family name, so the
+    pass inside that parse marks nothing; over the FORCED state it
+    reads two suffix tokens in one comma bucket and joins them."""
+    assert _forced_entry_tags("MD PhD", Role.SUFFIX) == [
+        ("MD", False), ("PhD", True)]
+
+
+def test_suffix_entries_reads_the_values_own_comma() -> None:
+    """The pass reads the comma offsets of the STATE it is handed --
+    for revise() that is the value's own string, not the outer name's
+    -- so a comma in the value parts the entries."""
+    assert _forced_entry_tags("MD, PhD", Role.SUFFIX) == [
+        ("MD", False), ("PhD", False)]
+
+
+def test_suffix_entries_heals_a_spaced_credential_by_the_comma_rule() -> None:
+    """The Ph. D. MERGE is a head-position rule (#371) and does not
+    fire in a bare value; the ENTRY pass joins the pair anyway, for the
+    reason it joins MD and PhD -- same bucket, nothing between."""
+    assert _forced_entry_tags("Ph. D.", Role.SUFFIX) == [
+        ("Ph.", False), ("D.", True)]
+
+
+def test_suffix_entries_keys_on_the_suffix_role() -> None:
+    """A forced MIDDLE value has no suffix token, so the pass writes
+    nothing there: revise(middle='A B') stays two middle tokens,
+    neither a continuation."""
+    assert _forced_entry_tags("A B", Role.MIDDLE) == [
+        ("A", False), ("B", False)]
