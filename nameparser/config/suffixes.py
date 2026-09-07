@@ -215,7 +215,7 @@ SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
     #
     # The other half of the criterion, added 2026-09-07 with #342.
     # Marking is for a SHORT credential in wide use that is also a
-    # name -- the four entries here are all two letters, which is not
+    # name -- the five entries here are all two letters, which is not
     # a coincidence: a two-letter acronym has too few letters to be
     # anything but common, so both readings are live and a flag is
     # the honest answer. A LONGER credential that is tenuous or
@@ -245,6 +245,7 @@ SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
     # and read as a credential anyway. Both words are genuine duals --
     # title and unambiguous suffix -- and position decides, as for
     # 'sr' and 'lt' (decisions.md#C1).
+    'ba',
     'do',
     'ed',
     'jd',

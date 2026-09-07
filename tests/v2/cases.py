@@ -405,7 +405,7 @@ CASES: tuple[Case, ...] = (
     # -- #342: rai and cha left SUFFIX_ACRONYMS. The criterion is in
     # decisions.md#suffix-acronym-collisions: a TWO-LETTER credential
     # in wide use that is also a name earns the ambiguous marking
-    # (ma, do, ed, jd), while a three-letter credential that is
+    # (ba, do, ed, jd, ma), while a three-letter credential that is
     # tenuous or specialized and collides with a common surname is
     # REMOVED, a caller adding it back with
     # Lexicon.default().add(suffix_acronyms={"cha"}). These rows pin
@@ -441,6 +441,30 @@ CASES: tuple[Case, ...] = (
                "comma (C1): the pre-comma run is the family and the "
                "post-comma word is the given name. 'John Smith, RAI' "
                "is the same shape and moves with it"),
+    # -- #342: 'ba' is the other half of the same decision. BA is a
+    # common credential and Ba a real surname (Vietnamese; Senegalese
+    # Fula), which is the ma/Ma shape exactly, so it takes the
+    # marking rather than the removal. Two rows, the two halves of
+    # S2's words-to-spare guard; the release note names both texts.
+    Case("bare_ba_is_a_surname", "Anna Ba",
+         {"given": "Anna", "family": "Ba"},
+         ambiguities=("suffix-or-name",),
+         classification="parity",
+         notes="the marking's point: with only two pieces, 'one of "
+               "them is a credential' is the less likely reading, so "
+               "S2's words-to-spare guard keeps the family name and "
+               "the parse reports which reading it took. 2.0.0 "
+               "through 2.2.0 read suffix 'Ba' with no family name; "
+               "1.4.0 read family 'Ba' unflagged, so this row "
+               "restores 1.4.0's roles and adds the flag"),
+    Case("ba_is_a_suffix_when_a_family_name_remains", "John Smith BA",
+         {"given": "John", "family": "Smith", "suffix": "BA"},
+         ambiguities=("suffix-or-name",),
+         notes="the words-to-spare half: a full name in front leaves "
+               "the credential reading available, so the role does "
+               "NOT move -- only the flag is new. The twin of "
+               "ambiguous_acronym_is_a_suffix_when_a_family_name_remains "
+               "above"),
     Case("ambiguous_acronym_suffix_with_middle", "John Q Smith MA",
          {"given": "John", "middle": "Q", "family": "Smith",
           "suffix": "MA"},
