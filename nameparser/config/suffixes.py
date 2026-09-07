@@ -93,6 +93,28 @@ SUFFIX_WORDS = frozenset({
     'さま',      # ja the kana spelling of 様
     'くん',      # ja the kana spelling of 君
     'ちゃん',    # ja familiar/diminutive
+    # #346/#344/#343: spaced trailing honorifics, South Asian and
+    # Tibetan. SPACED ONLY -- none of these is in GLUED_HONORIFICS
+    # below, and none may be added to it. जी is the reason and the
+    # reason generalizes: Banerjee, Mukherjee and Chatterjee are
+    # written बनर्जी, मुखर्जी, चटर्जी, so a glued peel would strand a
+    # fragment on a bare virama (बनर् + जी) -- the 殿 criterion in a
+    # non-CJK script. गांधीजी therefore stays unpeeled, which is the
+    # accepted trade (decisions.md#indic-honorifics).
+    # NOTE the leading/trailing split across the two scripts, which is
+    # real and must not be "harmonized": Devanagari बाबू is a LEADING
+    # honorific -- a TITLES entry (#344), not a suffix -- while Bengali
+    # বাবু is TRAILING (অমল বাবু). Different codepoints, so the two
+    # entries cannot interact.
+    'rinpoche',  # bo postpositional (Sogyal Rinpoche, Lama Zopa Rinpoche)
+    'जी',        # hi/mr the universal respect particle (मोदी जी)
+    'साहब',      # hi Sahib
+    'साहिब',     # hi/pa the Sahib spelling with the i-matra
+    'साहेब',     # mr the Marathi Saheb spelling
+    'महाराज',    # hi Maharaj, trailing; the leading महाराजा is a TITLES entry (#344)
+    'সাহেব',     # bn Saheb (রহমান সাহেব)
+    'বাবু',      # bn Babu -- TRAILING; see the note above
+    'মহারাজ',    # bn Maharaj
 })
 """
 
@@ -158,6 +180,11 @@ on -- these entries are recognized in the SPACED position only:
   (Madono) with four-figure populations, so peeling it would cut a real
   family name in two. Spaced 殿 is safe for the reason 양/군 are: a
   殿-surnamed person's name LEADS, and the suffix gate is trailing-only.
+* The Indic trailing set (जी, साहब, साहिब, साहेब, महाराज, সাহেব, বাবু,
+  মহারাজ) and Latin rinpoche are spaced-only for the same reason 殿 is:
+  जी ends Banerjee/Mukherjee/Chatterjee (बनर्जी, मुखर्जी, चटर्जी) and a
+  glued peel would strand बनर् on a bare virama. The criterion is not
+  CJK-specific, which is the point (decisions.md#indic-honorifics).
 
 Three more are in NEITHER set, so neither spelling is recognized. 君: 王君 is
 a complete Chinese name (君 is a common given-name final), so the honorific

@@ -1165,6 +1165,27 @@ def test_non_interference_all_packs_combined() -> None:
     ("גב' דוד לוי", "title", "גב'"),
     ("ד״ר דוד לוי", "title", "ד״ר"),
     ("גב׳ דוד לוי", "title", "גב׳"),
+    # Indic trailing honorifics (#344/#343) -- SUFFIX_WORDS, spaced
+    # only. These rows need none of the Devanagari/Bengali title
+    # vocabulary (#344/#343); the trailing path reads the suffix set
+    # alone.
+    ("नरेन्द्र मोदी जी", "suffix", "जी"),
+    ("नरेन्द्र मोदी जी", "family", "मोदी"),
+    # The glued prohibition, both shapes. जी is deliberately NOT a
+    # honorific_tails entry: Banerjee/Mukherjee/Chatterjee end in the
+    # substring and a glued peel strands a fragment on a bare virama
+    # (बनर् + जी). गांधीजी staying unpeeled is the accepted cost.
+    ("अमित बनर्जी", "family", "बनर्जी"),
+    ("अमित बनर्जी", "suffix", ""),
+    ("बनर्जी", "given", "बनर्जी"),
+    ("बनर्जी", "suffix", ""),
+    ("गांधीजी", "given", "गांधीजी"),
+    ("गांधीजी", "suffix", ""),
+    # Bengali trailing honorific. One name word plus a suffix reads
+    # GIVEN, not family -- H1 never fires, there being no title.
+    ("রহমান সাহেব", "suffix", "সাহেব"),
+    ("রহমান সাহেব", "given", "রহমান"),
+    ("রহমান সাহেব", "family", ""),
 ])
 def test_269_nonlatin_vocabulary_parses(
         name: str, field: str, expected: str) -> None:

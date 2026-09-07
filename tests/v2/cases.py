@@ -2577,6 +2577,20 @@ CASES: tuple[Case, ...] = (
                "so it stays out of GIVEN_NAME_TITLES and H1 families "
                "the one name word. The control that keeps 'addresses "
                "by the given name' and 'has no surname' separate"),
+    Case("renunciate_title_with_a_trailing_honorific",
+         "Lama Zopa Rinpoche",
+         {"title": "Lama", "given": "Zopa", "suffix": "Rinpoche"},
+         classification="feat(#346)",
+         notes="the renunciate fold and the spaced trailing honorific "
+               "together. 'rinpoche' is postpositional in Tibetan "
+               "usage ('Sogyal Rinpoche'), so it is SUFFIX_WORDS "
+               "vocabulary rather than a title; that takes the third "
+               "word out of the name and leaves H1 exactly one given "
+               "to fold, which is why the family is empty. Without "
+               "the suffix entry this reads family 'Rinpoche'"
+               "; classified feat, not fix -- the fold was already "
+               "pinned by the Swami row, and this row's delta is the "
+               "rinpoche entry"),
     Case("audit_do_leading_is_a_name", "Do Nguyen",
          {"given": "Do", "family": "Nguyen"},
          ambiguities=("particle-or-given",),
