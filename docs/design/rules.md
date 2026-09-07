@@ -1235,7 +1235,20 @@ R1. Rationale: a field is a way of reading the parse, not a stored
       "Smith, MD PhD"                      →  suffix="MD PhD"
       "John Smith MD PhD"                  →  suffix="MD PhD"
       "John Smith, MD, Bart"               →  suffix="MD, Bart"
-    history: decisions.md#C1 · interacts: O3, P6, R3 · implemented: nameparser/_pipeline/_post_rules.py, nameparser/_types.py
+    Accepted: a suffix value handed to revise() derives its entries the
+    same way, from the value's own commas, so a name's rendered suffix
+    revises back to itself wherever the value's words read as the
+    whole name read them — a glued CJK honorific peels off an initial
+    in a bare value where the whole name kept it glued, one corpus
+    name of the 368 with a suffix (decisions.md#C1, 2026-09-06). A
+    delimiter the configuration names parts a value only where the
+    value's own words, read as a name, give it a tail segment for the
+    core to be dropped on; a run of post-nominals has none, with or
+    without a comma of its own, so there the delimiter stays a word of
+    the run — write a comma at the boundary instead. Stated without an
+    example line because every line here names an input string, and
+    this shape needs a field revised after the parse.
+    history: decisions.md#C1 · interacts: O3, P6, R3 · implemented: nameparser/_parser.py, nameparser/_pipeline/_post_rules.py, nameparser/_types.py
 
 R2. Rationale: callers need the surname with and without its
     particles — sorting wants "Vega", display wants "de la Vega".
