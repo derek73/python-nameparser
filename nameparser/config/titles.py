@@ -3,10 +3,27 @@ from nameparser.config._invariants import assert_normalized
 GIVEN_NAME_TITLES = frozenset({
     'aunt',
     'auntie',
+    # #346: the renunciate class -- 'baba' here, and 'guru', 'lama',
+    # 'swami' in their own alphabetical places below. All four were in
+    # the TITLES-only block until 2026-09-06. Two separate criteria
+    # both say yes (rules.md#H Background): the title addresses by the
+    # GIVEN name, which is what membership here means, and the
+    # traditions renounce the surname, which is what makes the empty
+    # family the right output for "Swami Vivekananda". 'rabbi' and
+    # 'imam' address by TITLE rather than by given name ('Rabbi
+    # Cohen'), so they fail the first criterion and stay out, and the
+    # second agrees, those traditions keeping surnames;
+    # 'venerable' stays in TITLES only, because the traditions using it
+    # split on surname retention (Buddhist monastics drop the family
+    # name, Anglican archdeacons keep it) and this set has no way to
+    # say "sometimes".
+    'baba',
     'brother',
     'dame',
     'father',
+    'guru',
     'king',
+    'lama',
     'maid',
     'master',
     'mother',
@@ -14,6 +31,7 @@ GIVEN_NAME_TITLES = frozenset({
     'queen',
     'sir',
     'sister',
+    'swami',
     'uncle',
     'sheikh',
     'sheik',
@@ -48,6 +66,31 @@ GIVEN_NAME_TITLES = frozenset({
     'الحاجة',      # hajj honorific (f)
     'الشيخة',      # female counterpart of الشيخ
     'مهندس',       # engineer (a genuine title in Egyptian usage)
+
+    # #344: Devanagari renunciate titles, the native-script twins of
+    # baba/guru/swami above. NO Latin twins for संत on purpose. No NEW
+    # Latin transliterations here: Sri and Sant collide with real
+    # given names (and Pandit, in the civil block below, with a
+    # surname) where the native script cannot (the sri/shri
+    # precedent in the TITLES block below); baba/guru/swami/lama are
+    # the pre-existing Latin entries above. Being in this literal puts
+    # them in TITLES too, TITLES being GIVEN_NAME_TITLES | {...}, which
+    # is what makes them titles at all -- Lexicon does not validate one
+    # set against the other.
+    'स्वामी',      # Swami
+    'गुरु',        # Guru
+    'बाबा',        # Baba
+    'संत',         # Sant
+
+    # #343: Bengali renunciate titles. Same two criteria as the Latin
+    # and Devanagari sets (rules.md#H Background), and no NEW Latin
+    # transliterations -- srila has none; baba/guru/swami already ship
+    # above. শ্রীল is the Vaishnava honorific (শ্রীল প্রভুপাদ);
+    # unprefixed শ্রী is civil and sits in TITLES below.
+    'স্বামী',      # Swami
+    'শ্রীল',       # Srila
+    'গুরু',        # Guru
+    'বাবা',        # Baba
 })
 """
 When these titles appear with a single other name, that name is a given name, e.g.
@@ -142,7 +185,6 @@ TITLES = GIVEN_NAME_TITLES | {
     'author',
     'award-winning',
     'ayatollah',
-    'baba',
     'bailiff',
     'ballet',
     'bandleader',
@@ -355,7 +397,6 @@ TITLES = GIVEN_NAME_TITLES | {
     'großfürst',
     'group',
     'guitarist',
-    'guru',
     'gyani',
     'gysgt',
     'hajji',
@@ -400,7 +441,6 @@ TITLES = GIVEN_NAME_TITLES | {
     'kingdom',
     'knowledge',
     'lady',
-    'lama',
     'lamido',
     'law',
     'lawyer',
@@ -664,7 +704,6 @@ TITLES = GIVEN_NAME_TITLES | {
     'superior',
     'supreme',
     'surgeon',
-    'swami',
     'swordbearer',
     'sysselmann',
     'tax',
@@ -776,6 +815,81 @@ TITLES = GIVEN_NAME_TITLES | {
     'श्री',        # Shri (Mr.)
     'श्रीमती',     # Shrimati (Mrs.)
     'डॉ',         # Dr. abbreviation
+    # #344: the civil set, same no-NEW-Latin-transliterations rule as
+    # the three above.
+    # Excluded under the collision rule and recorded here so a sweep
+    # does not ship them -- ठाकुर (Tagore, the surname), कुमारी, बेगम,
+    # शेख, आचार्य, राजा/रानी are all borne as ordinary names. Full
+    # argument: decisions.md Excluded (TITLES).
+    'डॉक्टर',      # Doctor, full form
+    'डा',          # Dr. -- the डा. abbreviation (Nepali and older Hindi),
+                   # edge-period normalized
+    'प्रो',        # Prof. abbreviation
+    'प्रोफेसर',    # Professor, full form
+    'प्राध्यापक',  # Professor (the Sanskritic form)
+    'प्रा',        # Prof. abbreviation, Marathi
+    'पंडित',       # Pandit
+    'पं',          # Pandit abbreviation
+    'सरदार',       # Sardar
+    'सुश्री',      # Ms.
+    'श्रीयुत',     # Shriyut (Mr.)
+    'श्रीमान',     # Shriman (Mr.)
+    'सौ',          # Marathi Sau. (Mrs.)
+    'बाबू',        # Babu -- LEADING in Hindi; Bengali বাবু is trailing
+                   # and lives in suffixes.py. Different codepoints.
+    'महात्मा',     # Mahatma -- civil, not renunciate: it addresses by
+                   # surname ("महात्मा गांधी"), so TITLES only
+    'न्यायमूर्ति', # Justice
+    'मौलाना',      # Maulana
+    'जनाब',        # Janab (Mr.)
+    'महाराजा',     # Maharaja, LEADING (trailing महाराज is a suffix word)
+
+    # #343: Bengali (bn). NO Latin twins, for the reason the
+    # Devanagari block above gives -- transliterated Sri/Md/Mst
+    # collide with real given names where the native script cannot.
+    # No NEW Latin transliterations here (sri, mst); Latin md already
+    # ships, and for the medical degree
+    # (decisions.md#indic-honorifics). Doctor abbreviations
+    # split by profession: ড./ডঃ is the PhD's, ডাঃ/ডা. the Bangladeshi
+    # physician's. Abbreviation marks are spelled as written -- the
+    # visarga ঃ (U+0983) is a spacing combining mark, and the lookup
+    # fold strips only edge periods and whitespace, so it reaches the
+    # lexicon intact -- while period spellings (মো., ডা.) match the
+    # bare stem through the edge-period normalization, which is why
+    # each stem is listed once and the dotted form is not listed at
+    # all.
+    # Excluded under the collision rule and recorded here so a sweep
+    # does not ship them -- ঠাকুর (Tagore, the surname), কুমারী, বেগম
+    # and শেখ are all borne as ordinary names. Full argument:
+    # decisions.md Excluded (TITLES).
+    'ড',           # Dr. abbreviation (PhD)
+    'ডঃ',          # Dr. abbreviation, visarga spelling
+    'ডক্টর',       # Doctor, full form
+    'ডাঃ',         # Dr. abbreviation (physician), visarga spelling
+    'ডা',          # Dr. abbreviation (physician)
+    'ডাক্তার',     # Doctor, full form (physician)
+    'শ্রী',        # Shri (Mr.)
+    'শ্রীমতী',     # Shrimati (Mrs.)
+    'জনাব',        # Janab (Mr.)
+    'অধ্যাপক',     # Professor
+    'প্রফেসর',     # Professor, borrowed form
+    'বিচারপতি',    # Justice
+    'মাওলানা',     # Maulana
+    'মুফতি',       # Mufti (Latin mufti ships too)
+    'আলহাজ্ব',     # Alhaj
+    'আলহাজ',       # Alhaj, the spelling without the ব-phala
+    'মিঃ',         # Mr., borrowed
+    'মি',          # the same, period spelling মি.
+    'মিসেস',       # Mrs., borrowed
+    'মোঃ',         # Md. (Mohammad) -- a name PREFIX, not a title
+                   # semantically; TITLES is the functional home
+                   # because `given` must stay the name the person is
+                   # addressed by (decisions.md#indic-honorifics)
+    'মো',          # the same, period spelling মো.
+    'মোসাঃ',       # Mst. (Mosammat), the women's counterpart
+    'মোসা',        # the same, period spelling মোসা.
+    'মোছাঃ',       # the same, ছ spelling
+    'মোছা',        # the same, period spelling মোছা.
 }
 
 

@@ -74,8 +74,9 @@ H2. Rationale: before a name, an abbreviation is almost always a
     letters, so an abbreviation in a script whose letters carry
     combining vowel signs (Bengali, Devanagari) never reads as a
     title by shape — an unlisted abugida honorific stays a name
-    word, and only vocabulary (#343) can recognize it.
-      "প্রফেসর. Sen"              →  given="প্রফেসর."
+    word, and only vocabulary can recognize it — which is what #343
+    and #344 supply for Bengali and Devanagari.
+      "প্রকৌশলী. Sen"             →  given="প্রকৌশলী."
     Accepted: before a family comma the pre-comma text is wholly the
     family name (C1), so no shape or vocabulary reading makes a
     title there.

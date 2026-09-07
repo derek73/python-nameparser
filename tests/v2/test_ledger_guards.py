@@ -883,6 +883,17 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     "fix(#436/#437) the space-separated post-nominal run compounds with the bound-given reserve":
         ("abdul Smith V", "abdul Smith Jr Ma", "abdul Smith Jr",
          "Smith Jr V"),
+    # #346's rule is a literal alternation of four names, so a
+    # widening reaching only names the corpora lack would leave
+    # _CORPUS_CLAIMS unmoved. These probes are the wall, and each is a
+    # name that must not move: two name words after the title (H1 does
+    # not fold), a surname-retaining title, and the bare renunciate
+    # title standing alone -- and 'Mr Guru Nanak', which the anchored
+    # regex rejects but an alternation that lost its left anchor would
+    # claim (the guard uses re.search).
+    "fix(#346) a renunciate title and one name word leave the name a given name":
+        ("Swami Vivekananda Saraswati", "Guru Gobind Singh",
+         "Rabbi Cohen", "Swami", "Mr Guru Nanak"),
 }
 
 
@@ -1508,6 +1519,15 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                "The Rt Hon Kenneth Clarke QC MP, HMG",
                "Washington Jr\\. MD, Franklin", "abdul Smith Jr Ma",
                "abdul Smith Jr V"}),
+    # #346's movers, one corpus name per alternative -- a list of
+    # names, not a copy of any wordlist, so there is no vocabulary for
+    # it to drift from. The rule's subject is a SHAPE the vocabulary
+    # participates in (a renunciate title plus exactly one name word),
+    # and a member copying GIVEN_NAME_TITLES would reach 'Swami
+    # Vivekananda Saraswati' and 'Guru Gobind Singh', which do not
+    # move. One set, identical in all four ledgers.
+    frozenset({"Baba Ramdev", "Guru Nanak", "Lama Zopa",
+               "Swami Vivekananda"}),
     # fix(#445)'s movers, one corpus name per alternative -- a list of
     # names, not a copy of any wordlist, so there is no vocabulary for
     # it to drift from. Two sets because the ledgers group the nine
@@ -1994,6 +2014,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # change the row here before it reached the gate.
         "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
             _Claim(10, ('suffix',), "30f5314a2662", None),
+        # #346's alternation. Four corpus names, `family` and
+        # `given` together: the fold moves both roles at once, so a
+        # widening taking one alone would change the roles here
+        # before it reached the gate.
+        "fix(#346) a renunciate title and one name word leave the name a given name":
+            _Claim(4, ('family', 'given'), "a3399ee7b21e", None),
         "fix(A2) content-free input names nobody, so every role empties":
             _Claim(5, ('given',), "1af8d718688b", None),
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
@@ -2202,6 +2228,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # change the row here before it reached the gate.
         "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
             _Claim(10, ('suffix',), "30f5314a2662", None),
+        # #346's alternation. Four corpus names, `family` and
+        # `given` together: the fold moves both roles at once, so a
+        # widening taking one alone would change the roles here
+        # before it reached the gate.
+        "fix(#346) a renunciate title and one name word leave the name a given name":
+            _Claim(4, ('family', 'given'), "a3399ee7b21e", None),
         # The compound rule, at the two baselines where 'abdul Smith
         # Jr V' already diffs {family, given} under fix(#401) and the
         # widened diff leaves that rule's `fields`. Three roles here
@@ -2371,6 +2403,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # change the row here before it reached the gate.
         "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
             _Claim(10, ('suffix',), "30f5314a2662", None),
+        # #346's alternation. Four corpus names, `family` and
+        # `given` together: the fold moves both roles at once, so a
+        # widening taking one alone would change the roles here
+        # before it reached the gate.
+        "fix(#346) a renunciate title and one name word leave the name a given name":
+            _Claim(4, ('family', 'given'), "a3399ee7b21e", None),
         # The four one-name CJK rules, literal-anchored, at the two
         # baselines where the render is the whole of what moved. A
         # reach of 1 is one _CORPUS_CLAIMS cannot police on its own --
@@ -2394,6 +2432,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # change the row here before it reached the gate.
         "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
             _Claim(10, ('suffix',), "30f5314a2662", None),
+        # #346's alternation. Four corpus names, `family` and
+        # `given` together: the fold moves both roles at once, so a
+        # widening taking one alone would change the roles here
+        # before it reached the gate.
+        "fix(#346) a renunciate title and one name word leave the name a given name":
+            _Claim(4, ('family', 'given'), "a3399ee7b21e", None),
         # The four one-name CJK rules, literal-anchored, at the two
         # baselines where the render is the whole of what moved. A
         # reach of 1 is one _CORPUS_CLAIMS cannot police on its own --

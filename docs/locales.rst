@@ -14,9 +14,13 @@ What works without a pack
 --------------------------
 
 Most international names need no pack at all. The default vocabulary
-covers five scripts — Latin, Cyrillic, Greek, Arabic and Hebrew, plus
-Devanagari titles — so honorifics, conjunctions and name particles in
-those scripts are recognized out of the box:
+covers seven scripts — Latin, Cyrillic, Greek, Arabic, Hebrew,
+Devanagari and Bengali. Honorifics, conjunctions and name particles
+written in them are recognized out of the box, as far as each script's
+vocabulary reaches: all seven ship honorifics, while conjunctions and
+particles reach fewer — Cyrillic and Greek ship conjunctions and no
+particle, Hebrew particles and no conjunction, Devanagari and Bengali
+honorifics only.
 
 .. doctest::
 

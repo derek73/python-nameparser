@@ -1005,7 +1005,8 @@ def test_non_interference_all_packs_combined() -> None:
     assert declared >= len(all_rotators)
 
 
-# -- #269: non-Latin default vocabulary (Cyrillic, Greek, Arabic, Hebrew) --
+# -- #269: non-Latin default vocabulary (Cyrillic, Greek, Arabic,
+# Hebrew, Devanagari, Bengali) --
 #
 # This is DEFAULT vocabulary (nameparser/config/titles.py,
 # conjunctions.py, prefixes.py), not a locale pack -- it lives here
@@ -1014,6 +1015,10 @@ def test_non_interference_all_packs_combined() -> None:
 # before the data landed (2026-07-17), so these pin actual observed
 # behavior, not guesses -- see the per-script comments below for the
 # rows that came out differently than a first guess would suggest.
+# The Devanagari block grew and a Bengali one opened on 2026-09-06
+# with the Indic honorific bundle (#346/#344/#343); those rows were confirmed the
+# same way, live against a runtime-augmented Lexicon.default() before
+# the data landed. See decisions.md#indic-honorifics.
 @pytest.mark.parametrize("name, field, expected", [
     # Cyrillic (ru/uk) titles.
     ("г-н Иван Петров", "title", "г-н"),
@@ -1165,6 +1170,100 @@ def test_non_interference_all_packs_combined() -> None:
     ("גב' דוד לוי", "title", "גב'"),
     ("ד״ר דוד לוי", "title", "ד״ר"),
     ("גב׳ דוד לוי", "title", "גב׳"),
+    # Indic trailing honorifics (#344/#343) -- SUFFIX_WORDS, spaced
+    # only. These rows need none of the Devanagari/Bengali title
+    # vocabulary; the trailing path reads the suffix set alone.
+    ("नरेन्द्र मोदी जी", "suffix", "जी"),
+    ("नरेन्द्र मोदी जी", "family", "मोदी"),
+    # The glued prohibition, both shapes. जी is deliberately NOT a
+    # honorific_tails entry: Banerjee/Mukherjee/Chatterjee end in the
+    # substring and a glued peel strands a fragment on a bare virama
+    # (बनर् + जी). गांधीजी staying unpeeled is the accepted cost.
+    ("अमित बनर्जी", "family", "बनर्जी"),
+    ("अमित बनर्जी", "suffix", ""),
+    ("बनर्जी", "given", "बनर्जी"),
+    ("बनर्जी", "suffix", ""),
+    ("गांधीजी", "given", "गांधीजी"),
+    ("गांधीजी", "suffix", ""),
+    # Bengali trailing honorific. One name word plus a suffix reads
+    # GIVEN, not family -- H1 never fires, there being no title.
+    ("রহমান সাহেব", "suffix", "সাহেব"),
+    ("রহমান সাহেব", "given", "রহমান"),
+    ("রহমান সাহেব", "family", ""),
+    # বাবু is TRAILING in Bengali where Devanagari बाबू is LEADING.
+    # Different codepoints, so the two cannot interact -- and a sweep
+    # "harmonizing" them changes four parses and, without these rows,
+    # reddens nothing (decisions.md#indic-honorifics).
+    ("অমল বাবু", "suffix", "বাবু"),
+    ("অমল বাবু", "given", "অমল"),
+    ("बाबू अमल", "title", "बाबू"),
+    ("बाबू अमल", "family", "अमल"),
+    # Devanagari honorifics (#344). The renunciate set folds like the
+    # Latin one: स्वामी/गुरु/बाबा/संत are given-name titles, so one
+    # following name is a GIVEN name and the family is empty.
+    ("स्वामी विवेकानंद", "title", "स्वामी"),
+    ("स्वामी विवेकानंद", "given", "विवेकानंद"),
+    ("स्वामी विवेकानंद", "family", ""),
+    # Two name words: H1's fold needs exactly one, so the family
+    # survives. This is the boundary the ledger's probes also pin.
+    ("स्वामी शिवानंद सरस्वती", "given", "शिवानंद"),
+    ("स्वामी शिवानंद सरस्वती", "family", "सरस्वती"),
+    # संत ships and Latin Sant deliberately does not (Sant Singh is a
+    # Punjabi given name) -- the script asymmetry, executable.
+    ("संत कबीर", "title", "संत"),
+    ("संत कबीर", "given", "कबीर"),
+    ("Sant Kabir", "given", "Sant"),
+    ("Sant Kabir", "family", "Kabir"),
+    # The civil control: a TITLES-only Devanagari honorific families
+    # the one name word, exactly as श्री/डॉ have since 2.0.0.
+    ("डॉक्टर शर्मा", "title", "डॉक्टर"),
+    ("डॉक्टर शर्मा", "family", "शर्मा"),
+    # Bengali honorifics (#343) -- a new #269 script. The renunciate
+    # set folds as it does in Devanagari and Latin.
+    ("স্বামী বিবেকানন্দ", "title", "স্বামী"),
+    ("স্বামী বিবেকানন্দ", "given", "বিবেকানন্দ"),
+    ("স্বামী বিবেকানন্দ", "family", ""),
+    # শ্রীল is renunciate and folds the same way; unprefixed শ্রী is
+    # civil, so it families the one name word instead.
+    ("শ্রীল প্রভুপাদ", "given", "প্রভুপাদ"),
+    ("শ্রীল প্রভুপাদ", "family", ""),
+    ("শ্রী সেন", "title", "শ্রী"),
+    ("শ্রী সেন", "family", "সেন"),
+    # Vocabulary beats the initial reading: 'ড.' is is_initial-shaped
+    # and the title entry wins, which is the fork #343 asked about.
+    ("ড. মুহাম্মদ ইউনূস", "title", "ড."),
+    ("ড. মুহাম্মদ ইউনূস", "given", "মুহাম্মদ"),
+    ("ড. মুহাম্মদ ইউনূস", "family", "ইউনূস"),
+    # ... and real Bengali initials are untouched, because no entry
+    # matches them. The negative control for the row above.
+    ("র. কে. নারায়ণ", "given", "র."),
+    ("র. কে. নারায়ণ", "middle", "কে."),
+    ("র. কে. নারায়ণ", "family", "নারায়ণ"),
+    # The mirror of cases.py's audit_md_leading_stays_a_title. Both
+    # spellings of the abbreviation ship: the visarga form মোঃ (the visarga ঃ (U+0983) is a spacing
+    # combining mark, and the lookup fold strips only edge periods and
+    # whitespace, so it reaches the lexicon intact) and the period
+    # form মো., which matches the bare stem মো through the edge-period
+    # normalization.
+    ("মোঃ আবদুল করিম", "title", "মোঃ"),
+    ("মোঃ আবদুল করিম", "given", "আবদুল"),
+    ("মোঃ আবদুল করিম", "family", "করিম"),
+    ("মো. আবদুল করিম", "title", "মো."),
+    ("মো. আবদুল করিম", "given", "আবদুল"),
+    ("মো. আবদুল করিম", "family", "করিম"),
+    # the women's form, period spelling; the visarga form rides the same entry pattern
+    ("মোসা. ফাতেমা বেগম", "title", "মোসা."),
+    ("মোসা. ফাতেমা বেগম", "given", "ফাতেমা"),
+    ("মি. রহমান", "title", "মি."),
+    ("মি. রহমান", "family", "রহমান"),
+    # The exclusion holds: ঠাকুর is Tagore, a surname, and is
+    # deliberately not a title (decisions.md's Excluded (TITLES)).
+    # LEADING position is where the exclusion is load-bearing --
+    # TITLES is leading-only, so the trailing spelling reads the same
+    # whether or not the word ships and cannot guard anything.
+    ("রবীন্দ্রনাথ ঠাকুর", "family", "ঠাকুর"),
+    ("ঠাকুর রবীন্দ্রনাথ", "given", "ঠাকুর"),
+    ("ঠাকুর রবীন্দ্রনাথ", "title", ""),
 ])
 def test_269_nonlatin_vocabulary_parses(
         name: str, field: str, expected: str) -> None:
