@@ -1005,7 +1005,8 @@ def test_non_interference_all_packs_combined() -> None:
     assert declared >= len(all_rotators)
 
 
-# -- #269: non-Latin default vocabulary (Cyrillic, Greek, Arabic, Hebrew) --
+# -- #269: non-Latin default vocabulary (Cyrillic, Greek, Arabic,
+# Hebrew, Devanagari, Bengali) --
 #
 # This is DEFAULT vocabulary (nameparser/config/titles.py,
 # conjunctions.py, prefixes.py), not a locale pack -- it lives here
@@ -1014,6 +1015,10 @@ def test_non_interference_all_packs_combined() -> None:
 # before the data landed (2026-07-17), so these pin actual observed
 # behavior, not guesses -- see the per-script comments below for the
 # rows that came out differently than a first guess would suggest.
+# The Devanagari and Bengali blocks grew on 2026-09-06 with the Indic
+# honorific bundle (#346/#344/#343); those rows were confirmed the
+# same way, live against a runtime-augmented Lexicon.default() before
+# the data landed. See decisions.md#indic-honorifics.
 @pytest.mark.parametrize("name, field, expected", [
     # Cyrillic (ru/uk) titles.
     ("г-н Иван Петров", "title", "г-н"),
