@@ -2552,6 +2552,31 @@ CASES: tuple[Case, ...] = (
          {"family": "Smith", "suffix": "MD"},
          classification="fix(#296)",
          notes="the third leg of 'position decides' for 'md'"),
+    # -- #346: the renunciate class. A title of religious renunciation
+    # addresses the GIVEN name AND belongs to a tradition that
+    # abolishes the surname, so rules.md#H1's given-name-title fold is
+    # the right reading and family="" is the right output. The two
+    # criteria are separate (rules.md#H Background) and the control
+    # row below is what keeps them separate.
+    Case("renunciate_title_keeps_the_given_name", "Swami Vivekananda",
+         {"title": "Swami", "given": "Vivekananda"},
+         classification="fix(#346)",
+         notes="pins the #346 membership change the ledger "
+               "classifies: 'swami' moved from the TITLES-only block "
+               "into GIVEN_NAME_TITLES, so H1's fold fires and the "
+               "family is empty where 1.4.0 through 2.2.0 read family "
+               "'Vivekananda'. The fold itself is already pinned by "
+               "the Sir John rows; this is the name the release note "
+               "advertises"),
+    Case("surname_retaining_title_keeps_the_family",
+         "Rabbi Cohen",
+         {"title": "Rabbi", "family": "Cohen"},
+         notes="makes rules.md#H Background's 'Rabbi Cohen' sentence "
+               "executable -- no other row parses a Rabbi. 'rabbi' "
+               "addresses by title and the tradition keeps surnames, "
+               "so it stays out of GIVEN_NAME_TITLES and H1 families "
+               "the one name word. The control that keeps 'addresses "
+               "by the given name' and 'has no surname' separate"),
     Case("audit_do_leading_is_a_name", "Do Nguyen",
          {"given": "Do", "family": "Nguyen"},
          ambiguities=("particle-or-given",),

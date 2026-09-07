@@ -3,10 +3,25 @@ from nameparser.config._invariants import assert_normalized
 GIVEN_NAME_TITLES = frozenset({
     'aunt',
     'auntie',
+    # #346: the renunciate class -- 'baba' here, and 'guru', 'lama',
+    # 'swami' in their own alphabetical places below. All four were in
+    # the TITLES-only block until 2026-09-06. Two separate criteria
+    # both say yes (rules.md#H Background): the title addresses by the
+    # GIVEN name, which is what membership here means, and the
+    # traditions renounce the surname, which is what makes the empty
+    # family the right output for "Swami Vivekananda". 'rabbi' and
+    # 'imam' pass the first and fail the second, so they stay out;
+    # 'venerable' stays in TITLES only, because the traditions using it
+    # split on surname retention (Buddhist monastics drop the family
+    # name, Anglican archdeacons keep it) and this set has no way to
+    # say "sometimes".
+    'baba',
     'brother',
     'dame',
     'father',
+    'guru',
     'king',
+    'lama',
     'maid',
     'master',
     'mother',
@@ -14,6 +29,7 @@ GIVEN_NAME_TITLES = frozenset({
     'queen',
     'sir',
     'sister',
+    'swami',
     'uncle',
     'sheikh',
     'sheik',
@@ -142,7 +158,6 @@ TITLES = GIVEN_NAME_TITLES | {
     'author',
     'award-winning',
     'ayatollah',
-    'baba',
     'bailiff',
     'ballet',
     'bandleader',
@@ -355,7 +370,6 @@ TITLES = GIVEN_NAME_TITLES | {
     'großfürst',
     'group',
     'guitarist',
-    'guru',
     'gyani',
     'gysgt',
     'hajji',
@@ -400,7 +414,6 @@ TITLES = GIVEN_NAME_TITLES | {
     'kingdom',
     'knowledge',
     'lady',
-    'lama',
     'lamido',
     'law',
     'lawyer',
@@ -664,7 +677,6 @@ TITLES = GIVEN_NAME_TITLES | {
     'superior',
     'supreme',
     'surgeon',
-    'swami',
     'swordbearer',
     'sysselmann',
     'tax',

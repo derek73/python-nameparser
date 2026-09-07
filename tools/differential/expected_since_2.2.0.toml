@@ -104,6 +104,35 @@ issue = "fix(#436/#437) the glued honorific and the generational suffix are one 
 name_regex = "^김민준씨 Jr\\.$"
 fields = ["suffix"]
 
+# #346: swami, guru, baba and lama moved from the TITLES-only block
+# into GIVEN_NAME_TITLES on 2026-09-06. rules.md#H1's Accepted clause
+# -- "a given-name title plus one name word leaves the family empty"
+# -- now reaches them, so the one name word behind the title is the
+# GIVEN name and the family is empty, where every baseline read it as
+# the family. Both roles move together and `fields` declares both: a
+# name whose TITLE moved would arrive UNEXPLAINED, as it should.
+#
+# Four corpus names, all from the radar-tier corpus_issues.jsonl and
+# all moving the same way. The two- and three-word spellings are the
+# boundary and are _MUST_NOT_MATCH probes: 'Swami Vivekananda
+# Saraswati' and 'Guru Gobind Singh' keep their family names, because
+# H1's fold requires exactly one name word, and a rule reaching them
+# would stand ready to explain the very regression that boundary
+# exists to catch.
+#
+# An anchored alternation of the four NAMES rather than a shape,
+# under the ledger discipline expected_since_1.4.0.toml's header
+# states for all four files: keep each entry's `name_regex` as tight
+# as the diff allows. Four names moved, so a four-name list is the
+# tightest expression of that diff; anything shape-shaped is wider
+# than what was measured. It copies no wordlist either, which is what
+# _NOT_A_VOCABULARY_COPY in tests/v2/test_ledger_guards.py records;
+# _CORPUS_CLAIMS pins the reach at 4 with its digest.
+[[change]]
+issue = "fix(#346) a renunciate title and one name word leave the name a given name"
+name_regex = "^(?:Baba Ramdev|Guru Nanak|Lama Zopa|Swami Vivekananda)$"
+fields = ["family", "given"]
+
 [[change]]
 issue = "fix(#462) the facade keeps an initial-shaped conjunction letter"
 # 'Scott E. Werner', 'Amy E Maid', 'Jose E. Maria Santos':
