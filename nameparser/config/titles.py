@@ -78,6 +78,16 @@ GIVEN_NAME_TITLES = frozenset({
     'गुरु',        # Guru
     'बाबा',        # Baba
     'संत',         # Sant
+
+    # #343: Bengali renunciate titles. Same two criteria as the Latin
+    # and Devanagari sets (rules.md#H Background), and no NEW Latin
+    # transliterations -- srila has none; baba/guru/swami already ship
+    # above. শ্রীল is the Vaishnava honorific (শ্রীল প্রভুপাদ);
+    # unprefixed শ্রী is civil and sits in TITLES below.
+    'স্বামী',      # Swami
+    'শ্রীল',       # Srila
+    'গুরু',        # Guru
+    'বাবা',        # Baba
 })
 """
 When these titles appear with a single other name, that name is a given name, e.g.
@@ -825,6 +835,49 @@ TITLES = GIVEN_NAME_TITLES | {
     'मौलाना',      # Maulana
     'जनाब',        # Janab (Mr.)
     'महाराजा',     # Maharaja, LEADING (trailing महाराज is a suffix word)
+
+    # #343: Bengali (bn). NO Latin twins, for the reason the
+    # Devanagari block above gives -- transliterated Sri/Md/Mst
+    # collide with real given names where the native script cannot.
+    # No NEW Latin transliterations here (sri, mst); Latin md already
+    # ships, and for the medical degree
+    # (decisions.md#indic-honorifics). Doctor abbreviations
+    # split by profession: ড./ডঃ is the PhD's, ডাঃ/ডা. the Bangladeshi
+    # physician's. Abbreviation marks are spelled as written -- the
+    # visarga ঃ (U+0983) is a spacing combining mark, and the lookup
+    # fold strips only edge periods and whitespace, so it reaches the
+    # lexicon intact -- while period spellings (মো., ডা.) match the
+    # bare stem through the edge-period normalization, which is why
+    # each stem is listed once and the dotted form is not listed at
+    # all.
+    'ড',           # Dr. abbreviation (PhD)
+    'ডঃ',          # Dr. abbreviation, visarga spelling
+    'ডক্টর',       # Doctor, full form
+    'ডাঃ',         # Dr. abbreviation (physician), visarga spelling
+    'ডা',          # Dr. abbreviation (physician)
+    'ডাক্তার',     # Doctor, full form (physician)
+    'শ্রী',        # Shri (Mr.)
+    'শ্রীমতী',     # Shrimati (Mrs.)
+    'জনাব',        # Janab (Mr.)
+    'অধ্যাপক',     # Professor
+    'প্রফেসর',     # Professor, borrowed form
+    'বিচারপতি',    # Justice
+    'মাওলানা',     # Maulana
+    'মুফতি',       # Mufti (Latin mufti ships too)
+    'আলহাজ্ব',     # Alhaj
+    'আলহাজ',       # Alhaj, the spelling without the ব-phala
+    'মিঃ',         # Mr., borrowed
+    'মি',          # the same, period spelling মি.
+    'মিসেস',       # Mrs., borrowed
+    'মোঃ',         # Md. (Mohammad) -- a name PREFIX, not a title
+                   # semantically; TITLES is the functional home
+                   # because `given` must stay the name the person is
+                   # addressed by (decisions.md#indic-honorifics)
+    'মো',          # the same, period spelling মো.
+    'মোসাঃ',       # Mst. (Mosammat), the women's counterpart
+    'মোসা',        # the same, period spelling মোসা.
+    'মোছাঃ',       # the same, ছ spelling
+    'মোছা',        # the same, period spelling মোছা.
 }
 
 

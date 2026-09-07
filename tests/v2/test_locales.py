@@ -1200,6 +1200,48 @@ def test_non_interference_all_packs_combined() -> None:
     # the one name word, exactly as श्री/डॉ have since 2.0.0.
     ("डॉक्टर शर्मा", "title", "डॉक्टर"),
     ("डॉक्टर शर्मा", "family", "शर्मा"),
+    # Bengali honorifics (#343) -- a new #269 script. The renunciate
+    # set folds as it does in Devanagari and Latin.
+    ("স্বামী বিবেকানন্দ", "title", "স্বামী"),
+    ("স্বামী বিবেকানন্দ", "given", "বিবেকানন্দ"),
+    ("স্বামী বিবেকানন্দ", "family", ""),
+    # শ্রীল is renunciate and folds the same way; unprefixed শ্রী is
+    # civil, so it families the one name word instead.
+    ("শ্রীল প্রভুপাদ", "given", "প্রভুপাদ"),
+    ("শ্রীল প্রভুপাদ", "family", ""),
+    ("শ্রী সেন", "title", "শ্রী"),
+    ("শ্রী সেন", "family", "সেন"),
+    # Vocabulary beats the initial reading: 'ড.' is is_initial-shaped
+    # and the title entry wins, which is the fork #343 asked about.
+    ("ড. মুহাম্মদ ইউনূস", "title", "ড."),
+    ("ড. মুহাম্মদ ইউনূস", "given", "মুহাম্মদ"),
+    ("ড. মুহাম্মদ ইউনূস", "family", "ইউনূস"),
+    # ... and real Bengali initials are untouched, because no entry
+    # matches them. The negative control for the row above.
+    ("র. কে. নারায়ণ", "given", "র."),
+    ("র. কে. নারায়ণ", "middle", "কে."),
+    ("র. কে. নারায়ণ", "family", "নারায়ণ"),
+    # The Latin 'Md' row's mirror. Both spellings of the abbreviation
+    # ship: the visarga form মোঃ (the visarga ঃ (U+0983) is a spacing
+    # combining mark, and the lookup fold strips only edge periods and
+    # whitespace, so it reaches the lexicon intact) and the period
+    # form মো., which matches the bare stem মো through the edge-period
+    # normalization.
+    ("মোঃ আবদুল করিম", "title", "মোঃ"),
+    ("মোঃ আবদুল করিম", "given", "আবদুল"),
+    ("মোঃ আবদুল করিম", "family", "করিম"),
+    ("মো. আবদুল করিম", "title", "মো."),
+    ("মো. আবদুল করিম", "given", "আবদুল"),
+    ("মো. আবদুল করিম", "family", "করিম"),
+    # the women's form, period spelling; the visarga form rides the same entry pattern
+    ("মোসা. ফাতেমা বেগম", "title", "মোসা."),
+    ("মোসা. ফাতেমা বেগম", "given", "ফাতেমা"),
+    ("মি. রহমান", "title", "মি."),
+    ("মি. রহমান", "family", "রহমান"),
+    # The exclusion holds: ঠাকুর is Tagore, a surname, and is
+    # deliberately not a title (decisions.md's Excluded (TITLES)).
+    ("রবীন্দ্রনাথ ঠাকুর", "family", "ঠাকুর"),
+    ("রবীন্দ্রনাথ ঠাকুর", "title", ""),
 ])
 def test_269_nonlatin_vocabulary_parses(
         name: str, field: str, expected: str) -> None:
