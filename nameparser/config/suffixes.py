@@ -213,6 +213,30 @@ SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
     # suffix only when written with periods ('M.A.' yes, 'Ma' no), so
     # 'Jack Ma' keeps its family name.
     #
+    # The other half of the criterion, added 2026-09-07 with #342.
+    # Marking is for a SHORT credential in wide use that is also a
+    # name -- the four entries here are all two letters, which is not
+    # a coincidence: a two-letter acronym has too few letters to be
+    # anything but common, so both readings are live and a flag is
+    # the honest answer. A LONGER credential that is tenuous or
+    # specialized and collides with a common name is REMOVED from
+    # SUFFIX_ACRONYMS instead of marked, because its BARE spelling
+    # has no second reading worth carrying: 'rai' and 'cha' left the
+    # set that day (RAI is "RETA Authorized Instructor", CHA is
+    # Certified Hotel Administrator or Certified Healthcare Auditor;
+    # Rai is a common surname across Hindi- and Bengali-speaking
+    # regions and Cha the Korean 차). Removal need not take the
+    # DOTTED spelling with it: "John Smith R.A.I." still reads suffix
+    # 'R.A.I.', because rules.md#S3 splits an interior-period token
+    # on its periods and the chunk 'i' is a Roman numeral in
+    # SUFFIX_WORDS -- "John Smith C.H.A." has no such chunk and reads
+    # family 'C.H.A.'. A caller who needs one back adds it --
+    # Lexicon.default().add(suffix_acronyms={"cha"}) -- which is the
+    # answer this library gives for every locale-specific
+    # vocabulary. The cost is stated and accepted: with the entry
+    # gone, "John Smith RAI" reads family 'RAI'. See
+    # decisions.md#suffix-acronym-collisions.
+    #
     # NOT 'ms' or 'sa', though #296's audit table put them here for the
     # leading-title collision (bare "Ms" the honorific, "M.S." the
     # degree): the gate is position-blind and the collision is not.
@@ -387,8 +411,6 @@ SUFFIX_ACRONYMS = frozenset({
     'cgr',
     'cgsp',
     'ch',
-    'ch',
-    'cha',
     'chba',
     'chdm',
     'che',
@@ -807,7 +829,6 @@ SUFFIX_ACRONYMS = frozenset({
     'qsd',
     'qsp',
     'ra',
-    'rai',
     'rba',
     'rci',
     'rcp',

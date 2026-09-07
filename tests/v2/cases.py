@@ -402,6 +402,45 @@ CASES: tuple[Case, ...] = (
          notes="the other half of the same rule: three pieces means "
                "peeling 'MA' still leaves given+family, so the "
                "credential reading wins (v1 parity)"),
+    # -- #342: rai and cha left SUFFIX_ACRONYMS. The criterion is in
+    # decisions.md#suffix-acronym-collisions: a TWO-LETTER credential
+    # in wide use that is also a name earns the ambiguous marking
+    # (ma, do, ed, jd), while a three-letter credential that is
+    # tenuous or specialized and collides with a common surname is
+    # REMOVED, a caller adding it back with
+    # Lexicon.default().add(suffix_acronyms={"cha"}). These rows pin
+    # the FORK, not the entries (mechanisms.md#VOCABULARY-EXERCISES-FORKS).
+    Case("bare_surname_is_not_a_credential", "Aishwarya Rai",
+         {"given": "Aishwarya", "family": "Rai"},
+         classification="fix(#342)",
+         notes="#342's own subject: 'rai' arrived in the 2019 bulk "
+               "wikipedia post-nominal import and was never reviewed "
+               "against the surname, so 2.0.0 through 2.2.0 read "
+               "suffix 'Rai' with NO family name at all. 1.4.0 read "
+               "family 'Rai' and this restores that reading, which is "
+               "why the 1.4.0 ledger loses a rule here rather than "
+               "gaining one. Named in the release note"),
+    Case("removed_credential_loses_its_suffix_reading", "John Smith RAI",
+         {"given": "John", "middle": "Smith", "family": "RAI"},
+         classification="fix(#342)",
+         notes="the accepted cost, pinned so the reversal is visible. "
+               "RAI is a real if specialized credential and a full "
+               "name in front of it used to be enough to read it as "
+               "one; with the entry gone the all-caps shape carries "
+               "no signal the parser reads, so the word families and "
+               "'Smith' becomes a middle name. The shape-plus-position "
+               "heuristic that would recover it is a parking-lot "
+               "bullet of decisions.md#suffix-acronym-collisions"),
+    Case("removed_credential_after_a_comma_reads_as_the_given_name",
+         "Ahmad Jayadi, CHA",
+         {"given": "CHA", "family": "Ahmad Jayadi"},
+         classification="fix(#342)",
+         notes="the comma form moves the OTHER way and is why the "
+               "ledger rule declares four fields rather than two. "
+               "With 'cha' gone the comma is an ordinary family "
+               "comma (C1): the pre-comma run is the family and the "
+               "post-comma word is the given name. 'John Smith, RAI' "
+               "is the same shape and moves with it"),
     Case("ambiguous_acronym_suffix_with_middle", "John Q Smith MA",
          {"given": "John", "middle": "Q", "family": "Smith",
           "suffix": "MA"},

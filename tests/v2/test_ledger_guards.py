@@ -808,14 +808,36 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # has no third token for the regex to require.
     "fix(N3) a nickname-led name with a trailing suffix keeps the suffix in `suffix`":
         ("'Smitty' Jones", "Jones Jr.", "'Smitty' Dr. Jones"),
-    # #451's two NOT-WANTED rules, literal-anchored to one corpus name
-    # apiece: a three-token name with a rootname before or after is a
+    # #451's remaining NOT-WANTED rule, literal-anchored to one corpus
+    # name: a three-token name with a rootname before or after is a
     # different diff shape (or, for 'Carod i Rovira' and 'Lluis Carod
     # i', no diff at all -- #397's still-open enhancement, not a
-    # 1.4-to-2.x regression), and 'Rai'/'Jane Rai Smith' have no
-    # 'aishwarya' to anchor on.
-    "fix(#342)": ("Aishwarya Rai Bachchan", "Rai", "Jane Rai Smith"),
+    # 1.4-to-2.x regression).
     "fix(#397)": ("Carod i Rovira", "Josep Carod i Rovira", "Lluis Carod i"),
+    # #342's rule is a literal alternation of five names, so a
+    # widening reaching only names the corpora lack would leave
+    # _CORPUS_CLAIMS unmoved. These probes are the wall, and every one
+    # of them is a name MEASURED not to move under the removal (which
+    # is the roster's actual condition -- a name the rule has no
+    # business claiming, not merely one outside the corpus). Two test
+    # the right anchor, where a third word or a re-ordered comma
+    # leaves 'Rai' with a family name beside it and nothing to take;
+    # 'Ahmad Jayadi' and 'John Smith' test the ALTERNATIVES' trailing
+    # words, each being a mover with its last word dropped, so an
+    # alternative TRUNCATED to its leading tokens is caught. No probe
+    # tests the left anchor and none can: dropping the '^' widens the
+    # rule to names ENDING in an alternative, and every such name is
+    # itself a mover -- 'Mr Aishwarya Rai' moves -- so no name that
+    # widening reaches can satisfy the roster's condition.
+    # 'Sejal Chaturvedi, CSM' is the wall against a SHAPE widening
+    # instead: the trailing-acronym shape "^.+\s[A-Z]{2,}$" reaches
+    # three of the five above and would look like a faithful
+    # generalization, but it also reaches this corpus name
+    # (corpus_issues.jsonl), which parses identically with and without
+    # 'rai'/'cha' in SUFFIX_ACRONYMS -- so the widening is caught.
+    "fix(#342)": ("Aishwarya Rai Bachchan", "Rai, Aishwarya",
+                  "Jane Rai Smith", "Ahmad Jayadi", "John Smith",
+                  "Sejal Chaturvedi, CSM"),
     # #451's four replacements for the fields-only catch-all. Each is
     # anchored to a two-token name, so the probes are a third token and
     # each other's vocabulary: the four exist BECAUSE one rule could not
@@ -1528,6 +1550,17 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # move. One set, identical in all four ledgers.
     frozenset({"Baba Ramdev", "Guru Nanak", "Lama Zopa",
                "Swami Vivekananda"}),
+    # #342's movers, one corpus name per alternative -- a list of
+    # names, not a copy of any wordlist, so there is no vocabulary
+    # for it to drift from. The rule's subject is what two REMOVED
+    # entries stop doing, and the vocabulary it would be suspected of
+    # copying (SUFFIX_ACRONYMS) no longer holds either word, so a
+    # member drawn from it could not name these names at all. A
+    # member spelled as the shape -- a trailing all-caps token --
+    # would reach 'John Smith XYZ' and every future acronym
+    # regression. One set, identical in all four ledgers.
+    frozenset({"Ahmad Jayadi, CHA", "Aishwarya Rai", "John Smith RAI",
+               "John Smith, RAI", "Lala Lajpat Rai"}),
     # fix(#445)'s movers, one corpus name per alternative -- a list of
     # names, not a copy of any wordlist, so there is no vocabulary for
     # it to drift from. Two sets because the ledgers group the nine
@@ -2020,6 +2053,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # before it reached the gate.
         "fix(#346) a renunciate title and one name word leave the name a given name":
             _Claim(4, ('family', 'given'), "a3399ee7b21e", None),
+        # #342's alternation. Five corpus names and four roles: the
+        # comma forms move `given` where the bare forms move `middle`,
+        # so a widening taking one shape alone would change the roles
+        # here before it reached the gate.
+        "fix(#342) rai and cha left the credential acronyms, so a trailing Rai or CHA is a name word":
+            _Claim(5, ('family', 'given', 'middle', 'suffix'), "c3d76812da97", None),
         "fix(A2) content-free input names nobody, so every role empties":
             _Claim(5, ('given',), "1af8d718688b", None),
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
@@ -2087,8 +2126,6 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given'), "d8ee9cd5da5f", None),
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
             _Claim(288, ('family', 'given'), "10c78dd0f2d2", None),
-        "fix(#342) NOT WANTED: a bare trailing 'Rai' is read as a post-nominal suffix and the family is lost":
-            _Claim(1, ('family', 'suffix'), "694fd06a2e9a", None),
         "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":
             _Claim(1, ('family', 'suffix'), "498602f3cfd0", None),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
@@ -2234,6 +2271,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # before it reached the gate.
         "fix(#346) a renunciate title and one name word leave the name a given name":
             _Claim(4, ('family', 'given'), "a3399ee7b21e", None),
+        # #342's alternation. Five corpus names and four roles: the
+        # comma forms move `given` where the bare forms move `middle`,
+        # so a widening taking one shape alone would change the roles
+        # here before it reached the gate.
+        "fix(#342) rai and cha left the credential acronyms, so a trailing Rai or CHA is a name word":
+            _Claim(5, ('family', 'given', 'middle', 'suffix'), "c3d76812da97", None),
         # The compound rule, at the two baselines where 'abdul Smith
         # Jr V' already diffs {family, given} under fix(#401) and the
         # widened diff leaves that rule's `fields`. Three roles here
@@ -2409,6 +2452,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # before it reached the gate.
         "fix(#346) a renunciate title and one name word leave the name a given name":
             _Claim(4, ('family', 'given'), "a3399ee7b21e", None),
+        # #342's alternation. Five corpus names and four roles: the
+        # comma forms move `given` where the bare forms move `middle`,
+        # so a widening taking one shape alone would change the roles
+        # here before it reached the gate.
+        "fix(#342) rai and cha left the credential acronyms, so a trailing Rai or CHA is a name word":
+            _Claim(5, ('family', 'given', 'middle', 'suffix'), "c3d76812da97", None),
         # The four one-name CJK rules, literal-anchored, at the two
         # baselines where the render is the whole of what moved. A
         # reach of 1 is one _CORPUS_CLAIMS cannot police on its own --
@@ -2438,6 +2487,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # before it reached the gate.
         "fix(#346) a renunciate title and one name word leave the name a given name":
             _Claim(4, ('family', 'given'), "a3399ee7b21e", None),
+        # #342's alternation. Five corpus names and four roles: the
+        # comma forms move `given` where the bare forms move `middle`,
+        # so a widening taking one shape alone would change the roles
+        # here before it reached the gate.
+        "fix(#342) rai and cha left the credential acronyms, so a trailing Rai or CHA is a name word":
+            _Claim(5, ('family', 'given', 'middle', 'suffix'), "c3d76812da97", None),
         # The four one-name CJK rules, literal-anchored, at the two
         # baselines where the render is the whole of what moved. A
         # reach of 1 is one _CORPUS_CLAIMS cannot police on its own --

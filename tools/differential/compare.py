@@ -1986,7 +1986,6 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
     "expected_since_1.4.0.toml": {
         "1 & 2, 3 4 5, Mr.": ("_initials",),
-        "Aishwarya Rai": ("family", "suffix"),
         "Anh do": ("_initials",),
         "Anna Müller (geb. Schmidt)": ("maiden", "nickname"),
         "Anna Müller geb. Schmidt": ("family", "maiden", "middle"),
