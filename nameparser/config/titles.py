@@ -64,6 +64,20 @@ GIVEN_NAME_TITLES = frozenset({
     'الحاجة',      # hajj honorific (f)
     'الشيخة',      # female counterpart of الشيخ
     'مهندس',       # engineer (a genuine title in Egyptian usage)
+
+    # #344: Devanagari renunciate titles, the native-script twins of
+    # baba/guru/swami above. NO Latin twins for संत on purpose. No NEW
+    # Latin transliterations here: Sri, Sant and Pandit collide with
+    # real given names where the native script cannot (the sri/shri
+    # precedent in the TITLES block below); baba/guru/swami/lama are
+    # the pre-existing Latin entries above. Being in this literal puts
+    # them in TITLES too, TITLES being GIVEN_NAME_TITLES | {...}, which
+    # is what makes them titles at all -- Lexicon does not validate one
+    # set against the other.
+    'स्वामी',      # Swami
+    'गुरु',        # Guru
+    'बाबा',        # Baba
+    'संत',         # Sant
 })
 """
 When these titles appear with a single other name, that name is a given name, e.g.
@@ -788,6 +802,29 @@ TITLES = GIVEN_NAME_TITLES | {
     'श्री',        # Shri (Mr.)
     'श्रीमती',     # Shrimati (Mrs.)
     'डॉ',         # Dr. abbreviation
+    # #344: the civil set, same NO-Latin-twins rule as the three above.
+    'डॉक्टर',      # Doctor, full form
+    'डा',          # Dr. -- the डा. abbreviation (Nepali and older Hindi),
+                   # edge-period normalized
+    'प्रो',        # Prof. abbreviation
+    'प्रोफेसर',    # Professor, full form
+    'प्राध्यापक',  # Professor (the Sanskritic form)
+    'प्रा',        # Prof. abbreviation, Marathi
+    'पंडित',       # Pandit
+    'पं',          # Pandit abbreviation
+    'सरदार',       # Sardar
+    'सुश्री',      # Ms.
+    'श्रीयुत',     # Shriyut (Mr.)
+    'श्रीमान',     # Shriman (Mr.)
+    'सौ',          # Marathi Sau. (Mrs.)
+    'बाबू',        # Babu -- LEADING in Hindi; Bengali বাবু is trailing
+                   # and lives in suffixes.py. Different codepoints.
+    'महात्मा',     # Mahatma -- civil, not renunciate: it addresses by
+                   # surname ("महात्मा गांधी"), so TITLES only
+    'न्यायमूर्ति', # Justice
+    'मौलाना',      # Maulana
+    'जनाब',        # Janab (Mr.)
+    'महाराजा',     # Maharaja, LEADING (trailing महाराज is a suffix word)
 }
 
 

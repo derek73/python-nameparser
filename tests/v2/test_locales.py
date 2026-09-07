@@ -1186,6 +1186,20 @@ def test_non_interference_all_packs_combined() -> None:
     ("রহমান সাহেব", "suffix", "সাহেব"),
     ("রহমান সাহেব", "given", "রহমান"),
     ("রহমান সাহেব", "family", ""),
+    # Devanagari honorifics (#344). The renunciate set folds like the
+    # Latin one: स्वामी/गुरु/बाबा/संत are given-name titles, so one
+    # following name is a GIVEN name and the family is empty.
+    ("स्वामी विवेकानंद", "title", "स्वामी"),
+    ("स्वामी विवेकानंद", "given", "विवेकानंद"),
+    ("स्वामी विवेकानंद", "family", ""),
+    # Two name words: H1's fold needs exactly one, so the family
+    # survives. This is the boundary the ledger's probes also pin.
+    ("स्वामी शिवानंद सरस्वती", "given", "शिवानंद"),
+    ("स्वामी शिवानंद सरस्वती", "family", "सरस्वती"),
+    # The civil control: a TITLES-only Devanagari honorific families
+    # the one name word, exactly as श्री/डॉ have since 2.0.0.
+    ("डॉक्टर शर्मा", "title", "डॉक्टर"),
+    ("डॉक्टर शर्मा", "family", "शर्मा"),
 ])
 def test_269_nonlatin_vocabulary_parses(
         name: str, field: str, expected: str) -> None:
