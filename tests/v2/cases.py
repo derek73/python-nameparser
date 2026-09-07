@@ -2591,6 +2591,26 @@ CASES: tuple[Case, ...] = (
                "; classified feat, not fix -- the fold was already "
                "pinned by the Swami row, and this row's delta is the "
                "rinpoche entry"),
+    Case("renunciate_title_with_two_name_words_keeps_the_family",
+         "Swami Vivekananda Saraswati",
+         {"title": "Swami", "given": "Vivekananda",
+          "family": "Saraswati"},
+         notes="H1's fold requires exactly one name word. The ledger "
+               "carries this name as a _MUST_NOT_MATCH probe, which "
+               "pins the regex and not the parse -- and it is "
+               "radar-tier in corpus_issues.jsonl, so the gate cannot "
+               "fail on it either. The release note advertises it"),
+    Case("renunciate_title_swallows_a_real_given_name", "Guru Dutt",
+         {"title": "Guru", "given": "Dutt"},
+         classification="fix(#346)",
+         notes="the known Latin collision: Guru IS the filmmaker's "
+               "given name. 'guru' was already a title, so the "
+               "leading-position swallow predates #346; the promotion "
+               "into GIVEN_NAME_TITLES is what moved 'Dutt' from "
+               "family to given. Accepted as the pre-existing cost of "
+               "'guru' being a title at all "
+               "(decisions.md#indic-honorifics); TITLES has no "
+               "ambiguous subset to say otherwise"),
     Case("audit_do_leading_is_a_name", "Do Nguyen",
          {"given": "Do", "family": "Nguyen"},
          ambiguities=("particle-or-given",),

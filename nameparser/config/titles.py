@@ -10,7 +10,9 @@ GIVEN_NAME_TITLES = frozenset({
     # GIVEN name, which is what membership here means, and the
     # traditions renounce the surname, which is what makes the empty
     # family the right output for "Swami Vivekananda". 'rabbi' and
-    # 'imam' pass the first and fail the second, so they stay out;
+    # 'imam' address by TITLE rather than by given name ('Rabbi
+    # Cohen'), so they fail the first criterion and stay out, and the
+    # second agrees, those traditions keeping surnames;
     # 'venerable' stays in TITLES only, because the traditions using it
     # split on surname retention (Buddhist monastics drop the family
     # name, Anglican archdeacons keep it) and this set has no way to
@@ -67,8 +69,9 @@ GIVEN_NAME_TITLES = frozenset({
 
     # #344: Devanagari renunciate titles, the native-script twins of
     # baba/guru/swami above. NO Latin twins for संत on purpose. No NEW
-    # Latin transliterations here: Sri, Sant and Pandit collide with
-    # real given names where the native script cannot (the sri/shri
+    # Latin transliterations here: Sri and Sant collide with real
+    # given names (and Pandit, in the civil block below, with a
+    # surname) where the native script cannot (the sri/shri
     # precedent in the TITLES block below); baba/guru/swami/lama are
     # the pre-existing Latin entries above. Being in this literal puts
     # them in TITLES too, TITLES being GIVEN_NAME_TITLES | {...}, which
@@ -812,7 +815,12 @@ TITLES = GIVEN_NAME_TITLES | {
     'श्री',        # Shri (Mr.)
     'श्रीमती',     # Shrimati (Mrs.)
     'डॉ',         # Dr. abbreviation
-    # #344: the civil set, same NO-Latin-twins rule as the three above.
+    # #344: the civil set, same no-NEW-Latin-transliterations rule as
+    # the three above.
+    # Excluded under the collision rule and recorded here so a sweep
+    # does not ship them -- ठाकुर (Tagore, the surname), कुमारी, बेगम,
+    # शेख, आचार्य, राजा/रानी are all borne as ordinary names. Full
+    # argument: decisions.md Excluded (TITLES).
     'डॉक्टर',      # Doctor, full form
     'डा',          # Dr. -- the डा. abbreviation (Nepali and older Hindi),
                    # edge-period normalized
@@ -850,6 +858,10 @@ TITLES = GIVEN_NAME_TITLES | {
     # bare stem through the edge-period normalization, which is why
     # each stem is listed once and the dotted form is not listed at
     # all.
+    # Excluded under the collision rule and recorded here so a sweep
+    # does not ship them -- ঠাকুর (Tagore, the surname), কুমারী, বেগম
+    # and শেখ are all borne as ordinary names. Full argument:
+    # decisions.md Excluded (TITLES).
     'ড',           # Dr. abbreviation (PhD)
     'ডঃ',          # Dr. abbreviation, visarga spelling
     'ডক্টর',       # Doctor, full form

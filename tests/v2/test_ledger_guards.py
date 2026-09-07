@@ -888,10 +888,12 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # _CORPUS_CLAIMS unmoved. These probes are the wall, and each is a
     # name that must not move: two name words after the title (H1 does
     # not fold), a surname-retaining title, and the bare renunciate
-    # title standing alone.
+    # title standing alone -- and 'Mr Guru Nanak', which the anchored
+    # regex rejects but an alternation that lost its left anchor would
+    # claim (the guard uses re.search).
     "fix(#346) a renunciate title and one name word leave the name a given name":
         ("Swami Vivekananda Saraswati", "Guru Gobind Singh",
-         "Rabbi Cohen", "Swami"),
+         "Rabbi Cohen", "Swami", "Mr Guru Nanak"),
 }
 
 
