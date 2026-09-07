@@ -190,9 +190,16 @@ plausible as ordinary name words on their own (an acronym suffix that
 doubles as a nickname, a particle that doubles as a given name). They
 don't add new vocabulary by themselves; they narrow how an existing
 entry is read when it appears alone. If you're not sure whether a word
-you're adding is one of these ambiguous cases, leave it out — an
-unrecognized word usually still parses reasonably, while a wrongly
-disambiguated one silently picks the less likely reading. (That
+you're adding is one of these ambiguous cases, mark it ambiguous — a
+wrong ambiguous marking only adds a flag to a reading that was going
+to be taken anyway, while a wrong unambiguous claim silently picks the
+less likely reading and can lose a real person's surname. The other
+direction is to leave the word out of ``suffix_acronyms`` altogether,
+which is the right answer for a credential nobody is asking for: a
+long, specialized acronym that collides with a common surname earns
+removal rather than a marking, and a caller who needs it adds it back
+with ``Lexicon.default().add(suffix_acronyms={"cha"})``. That is what
+the default vocabulary did with ``rai`` and ``cha`` in 2.3. (The same
 conservatism is why ``dean`` above isn't in the default vocabulary in
 the first place: "Dean" is also a common given name, and a default
 that swallowed it as a title would misparse "Dean Martin" for

@@ -481,6 +481,18 @@ P6. Rationale: a particle ending the name has nothing to link
     listing, and a bare "Jong de" may be a given name beside a
     particle — so nothing there names the family, the positional
     reading stands, and the same input reports family "de" here.
+    That is the reading for a particle the UNAMBIGUOUS suffix
+    vocabulary does not also claim, which is all but two of them.
+    Where the word is both a particle and UNAMBIGUOUS suffix
+    vocabulary — vd and mc — nothing has named the family, so the
+    attachment above never fires and S2 takes the trailing word as
+    a post-nominal, even though that leaves no family name at all:
+    a bare "Donald mc" reports suffix "mc" with an empty family,
+    and so does "Smith vd". The comma is the contrast, and it is
+    where the precedence stated above acts, "Berg, Jan vd" reading
+    family "vd Berg". `do` follows `de` rather than `mc`, sitting
+    in the AMBIGUOUS acronym half, where S2's words-to-spare test
+    leaves a two-word name its family.
       "Jong Anke de"              →  family="de"
     Accepted: the precedence over S2 is stated for the shape, so it
     sweeps in every word that is both particle and suffix

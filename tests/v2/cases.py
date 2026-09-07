@@ -465,6 +465,25 @@ CASES: tuple[Case, ...] = (
                "NOT move -- only the flag is new. The twin of "
                "ambiguous_acronym_is_a_suffix_when_a_family_name_remains "
                "above"),
+    Case("by_design_trailing_mc_reads_as_a_credential", "Donald Mc",
+         {"given": "Donald", "suffix": "Mc"},
+         notes="#454, closed by design 2026-09-07. This is the one "
+               "row whose point is that it must NOT change. 'mc' is "
+               "SUFFIX_ACRONYMS and PARTICLES both, and it is not a "
+               "borne name: it has no vowel, and the Scottish prefix "
+               "never detaches from the name it belongs to, so "
+               "'Donald Mc' is not a name anyone writes and its "
+               "suffix reading costs nothing real. rules.md#P6's "
+               "attachment is scoped to shapes where something has "
+               "already named the family, which this has not, so S2 "
+               "takes the trailing word -- 'an unambiguous suffix is "
+               "consumed even when that leaves no family name at "
+               "all'. The neighbours that DO hold: 'Mc Donald' reads "
+               "family 'Mc Donald' and 'John van Mc' family 'van "
+               "Mc', both because 'mc' is a never-given particle "
+               "(#360), which is the membership that actually bears "
+               "on #454's example. See "
+               "decisions.md#suffix-acronym-collisions"),
     Case("ambiguous_acronym_suffix_with_middle", "John Q Smith MA",
          {"given": "John", "middle": "Q", "family": "Smith",
           "suffix": "MA"},

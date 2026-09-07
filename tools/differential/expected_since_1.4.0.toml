@@ -2666,9 +2666,12 @@ issue = "fix(suffix-routing) a two-token name ending in a credential acronym kee
 # for the words that are both particle and suffix vocabulary it does
 # not hold. Measured, 'Jong de' and 'Smith do' keep theirs (family
 # 'de', family 'do') while 'Donald mc' and 'Smith vd' lose the family
-# entirely to `suffix`. decisions.md#P6's own arc entry records that as
-# a rules.md defect rather than a ledger one; this rule classifies the
-# movement on S2's statement and settles nothing about P6.
+# entirely to `suffix`. decisions.md#P6's own arc entry recorded that
+# as a rules.md defect rather than a ledger one, and #454 fixed it on
+# 2026-09-07: P6's Accepted clause now names vd and mc as the two words
+# the positional reading does not hold for, which is what this rule has
+# been classifying all along. This rule is unchanged by that repair and
+# still rests on S2's statement.
 #
 # The two neighbouring shapes both already have rules above, and the
 # contrast is the point: 'Mc Donald' has the particle LEADING and folds
