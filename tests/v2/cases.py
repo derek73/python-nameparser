@@ -2340,8 +2340,20 @@ CASES: tuple[Case, ...] = (
          notes="rules.md#O5's exception: the one name unit is a join "
                "(P3) carrying title vocabulary, so the doubt is "
                "whether `Prince` is a title rather than which field "
-               "the unit takes -- the one input measured to reach "
+               "the unit takes -- one of the inputs measured to reach "
                "that branch, `prince` being in TITLES"),
+    Case("lone_joined_unit_carrying_collision_set_title_vocabulary",
+         "Smith and King", {"given": "Smith and King"},
+         ambiguities=("title-or-name",),
+         classification="feat(#491)",
+         notes="the clause reaches every join whose non-leading member "
+               "is TITLES vocabulary, not just `prince`: `John and "
+               "King`, `Smith and Bishop` and `John of Judge` report "
+               "it too. That is the king/judge/bishop collision set "
+               "(decisions.md#vocabulary-collisions) met inside a "
+               "join, and the report is deliberate -- a second surname "
+               "that is also title vocabulary is the doubt the kind "
+               "names"),
     Case("lone_joined_unit_led_by_a_title_is_a_title_run",
          "Prince of Wales", {"title": "Prince of Wales"},
          classification="parity",

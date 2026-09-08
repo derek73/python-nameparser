@@ -176,7 +176,14 @@ de Souza"`` it sits mid-name, where nothing has to choose between
 readings — so nothing is recorded. A comma can settle the question
 before it arises, too: ``"Ma, Jack"`` fixes the family name, so the
 credential reading never comes up, while ``"John Smith MA"`` has to
-call it and says so.
+call it and says so. Some decisions are conventions rather than
+readings — a name of one name word has nothing to compare, and an
+input the title peel eats down to one last title word reads that word
+as the name for want of anything else — and since 2.3 those are
+reported too, so a field the library merely had to pick is a field you
+can see it picked. A title standing entirely alone reports nothing:
+``"Dr."``, ``"Sir"`` and ``"Prince of Wales"`` are all title and no
+name, so there is no reading to have doubted.
 
 An empty ``ambiguities`` is therefore not a certificate of certainty.
 Reporting is deliberately partial: :class:`~nameparser.AmbiguityKind`

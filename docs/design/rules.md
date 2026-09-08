@@ -153,10 +153,20 @@ H4. Rationale: this is a name parser, not a title parser. Handed a
     Accepted: one name word that is a join (P3) carrying title
     vocabulary reports `title-or-name` as well, the fork there being
     whether the title word inside the unit is a title at all. The
-    measured inputs, `John of Prince` and `Smith and Prince`, are
-    pinned in the case table rather than here: a join led by a title
-    word is a title run (H3), so no corpus name reaches the branch.
-    interacts: H1, H2, H3, S2, O5 · implemented: nameparser/_pipeline/_assign.py
+    clause reaches EVERY join whose non-leading member is TITLES
+    vocabulary, not the one word that prompted it: `Smith and King`,
+    `John and King`, `Smith and Bishop` and `John of Judge` all
+    report it, as `John of Prince` and `Smith and Prince` do. That
+    reach is the king/judge/bishop collision set met inside a join,
+    and the report is the honest answer there rather than a
+    misfire — a second surname that is also title vocabulary is
+    exactly the doubt the kind names, and those words stay in the
+    vocabulary for the addressing forms, which is
+    decisions.md#vocabulary-collisions' call.
+    A join LED by a title word is a title run (H3)
+    instead, so no corpus name reaches the branch at all; the
+    measured inputs are pinned in the case table rather than here.
+    history: decisions.md#H4 · interacts: H1, H2, H3, S2, O5 · implemented: nameparser/_pipeline/_assign.py
 
 ## Particles & surname prefixes (P)
 
@@ -1127,10 +1137,12 @@ O5. Rationale: O4 reads a name by comparing where its words stand,
     word nothing else decided carries a `given-or-family` ambiguity
     naming the field the convention chose. The report is exactly as
     narrow as the convention, so every rule named above silences it
-    where it fires, a comma silences it, a script whose own
-    convention settles the order (W4) silences it, and so does the
-    word's own claim — a particle, a bound given name, an initial's
-    shape. A word with no letter or digit in it is no name word and
+    where it fires, a family comma — a comma with a name segment
+    after it — silences it, a script whose own convention settles
+    the order (W4) silences it, and so does the word's own claim — a
+    particle, a bound given name, an initial's shape. A comma with
+    nothing after it names no family and silences nothing, so
+    `سلمان،` and `Smith,` report where `Smith, Andrew` does not. A word with no letter or digit in it is no name word and
     reports nothing (A2). Where the one name word is a join (P3)
     carrying title vocabulary, or is itself title vocabulary left
     standing by the title peel, the doubt reported is `title-or-name`
@@ -1152,7 +1164,7 @@ O5. Rationale: O4 reads a name by comparing where its words stand,
       "Dr. Smith"                 →  ambiguities=()  · boundary
       "Smith née Jones"           →  ambiguities=()
       "abd née Jones"             →  ambiguities=()
-    interacts: O4, H1, N3, M4 · implemented: nameparser/_pipeline/_assign.py
+    history: decisions.md#O5 · interacts: O4, H1, N3, M4, H4, W4, P3, A2 · implemented: nameparser/_pipeline/_assign.py
 
 ## Scripts & writing systems (W)
 
