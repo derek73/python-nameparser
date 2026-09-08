@@ -190,14 +190,23 @@ plausible as ordinary name words on their own (an acronym suffix that
 doubles as a nickname, a particle that doubles as a given name). They
 don't add new vocabulary by themselves; they narrow how an existing
 entry is read when it appears alone. If you're not sure whether a word
-you're adding is one of these ambiguous cases, mark it ambiguous — a
-wrong ambiguous marking only adds a flag to a reading that was going
-to be taken anyway, while a wrong unambiguous claim silently picks the
-less likely reading and can lose a real person's surname. The other
+you're adding is one of these ambiguous cases, weigh how often it is a
+name against how often it is the credential. Marking it ambiguous is
+not free in either direction: an ambiguous acronym counts as a suffix
+only when written with its periods, so the bare spelling reads as a
+name and the parse reports the fork, and the comma form moves with it
+— ``Smith, BA`` reads first ``BA`` rather than suffix ``BA``, and a
+bracketed ``John Smith (BA)`` falls through to nickname parsing. A
+wrong unambiguous claim takes the credential reading silently and can
+lose a real person's surname. For ``particles_ambiguous`` the default
+runs the other way: a particle that is not borne as a given name
+belongs in the never-given half, which is where ``mc`` and ``ste``
+were moved (#360). The other
 direction is to leave the word out of ``suffix_acronyms`` altogether,
-which is the right answer for a credential nobody is asking for: a
-long, specialized acronym that collides with a common surname earns
-removal rather than a marking, and a caller who needs it adds it back
+which is the right answer when the name reading is the far more common
+one: an acronym whose credential is tenuous or specialized beside a
+common surname earns removal rather than a marking, and a caller who
+needs it adds it back
 with ``Lexicon.default().add(suffix_acronyms={"cha"})``. That is what
 the default vocabulary did with ``rai`` and ``cha`` in 2.3. (The same
 conservatism is why ``dean`` above isn't in the default vocabulary in

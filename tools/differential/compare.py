@@ -1941,9 +1941,14 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: 'Carod i' diffs under the default order at 1.4.0 only, where its
 #: contest row stands, and 'MD, PHD' carries a contest row at every one
 #: of the three baselines it diffs at since #501 pinned its 2.x pair.
-#: That is why the population is 50 names where the tests/-only scan
-#: says 52.
-#: The counts: 36 / 31 / 30 / 5 rows, 102 in all, over those 50 names
+#: That is why the population is 51 names where the tests/-only scan
+#: says 53.
+#: Recounted 2026-09-07 with #342, which moved three names across the
+#: literal clause at once: 'Aishwarya Rai' gained a case row and left
+#: the population, while 'Lala Lajpat Rai' and 'John Smith, RAI' are
+#: named nowhere under tests/ outside test_ledger_guards.py and
+#: entered it, so the scan went 52 -> 53 and the roster 50 -> 51.
+#: The counts: 37 / 33 / 32 / 7 rows, 109 in all, over those 51 names
 #: -- and the roster is now exactly the population, the five contest
 #: rows beyond it having gone to _RECORDED_DIFFS with #501 and five
 #: more with #498, which left the population by gaining a
@@ -1960,9 +1965,12 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: four clauses above with the literal set from ast.walk over
 #: tests/**/*.py EXCLUDING test_ledger_guards.py, as the POPULATION
 #: clause says -- run over every file it yields 33 / 23 / 22 / 4 rows
-#: rather than 36 / 31 / 30 / 5, since _CROSS_RULE_WINNERS' keys and
+#: rather than 37 / 33 / 32 / 7, since _CROSS_RULE_WINNERS' keys and
 #: a few guard literals then score as watchers, and #498's fourteen
-#: keys are exactly that kind of literal: the two halves of this
+#: keys are exactly that kind of literal -- as are #342's two
+#: 2026-09-07 arrivals, both named in _NOT_A_VOCABULARY_COPY, which is
+#: why the every-file figures stood still while eight rows landed and
+#: one left: the two halves of this
 #: sentence moved for different reasons on 2026-09-05, the second
 #: because five rows left this dict and the first because those five
 #: are watched at 2.x too, where they now score as watched by the
@@ -2002,12 +2010,14 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Jack M.A.": ("family", "suffix"),
         "Jane van der Berg 旧姓 Jones": ("family", "maiden"),
         "Janey née Jones": ("family", "given", "maiden", "middle"),
+        "John Smith, RAI": ("family", "given", "suffix"),
         "John V": ("family", "suffix"),
         "John of the Doe": ("_initials",),
         "Jong van der": ("_initials",),
         "Jong, van der": ("_initials",),
         "Jose e Maria Santos": ("_initials",),
         "Juan Garcia y Lopez": ("_initials",),
+        "Lala Lajpat Rai": ("family", "middle", "suffix"),
         "Mesnil Garcia van": ("_initials",),
         "Mohamad X": ("family", "suffix"),
         "Ph. D., Jr.": ("family", "given"),
@@ -2043,10 +2053,12 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Jane van der Berg 旧姓 Jones": ("family", "maiden"),
         "Janey née Jones": ("family", "given"),
         "Joe E. Smith": ("_initials",),
+        "John Smith, RAI": ("family", "given", "suffix"),
         "John, Smith, Dr.": ("_ambiguities",),
         "Jong van der": ("_initials",),
         "Jong, van der": ("_initials",),
         "Jose E. Maria Santos": ("_initials",),
+        "Lala Lajpat Rai": ("family", "middle", "suffix"),
         "MD, DO, DDS": ("given", "title"),
         "Mesnil Garcia van": ("_initials",),
         "Ph. D., Jr.": ("family", "suffix", "title"),
@@ -2082,10 +2094,12 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Jane van der Berg 旧姓 Jones": ("family", "maiden"),
         "Janey née Jones": ("family", "given"),
         "Joe E. Smith": ("_initials",),
+        "John Smith, RAI": ("family", "given", "suffix"),
         "John, Smith, Dr.": ("_ambiguities",),
         "Jong van der": ("_initials",),
         "Jong, van der": ("_initials",),
         "Jose E. Maria Santos": ("_initials",),
+        "Lala Lajpat Rai": ("family", "middle", "suffix"),
         "MD, DO, DDS": ("given", "title"),
         "Mesnil Garcia van": ("_initials",),
         "Ph. D., Jr.": ("family", "suffix", "title"),
@@ -2105,7 +2119,9 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "E Anne D,Leonardo": ("_initials",),
         "JOSE E MARIA SANTOS": ("_initials",),
         "Joe E. Smith": ("_initials",),
+        "John Smith, RAI": ("family", "given", "suffix"),
         "Jose E. Maria Santos": ("_initials",),
+        "Lala Lajpat Rai": ("family", "middle", "suffix"),
         "Smith, John E, III, Jr": ("_initials",),
     },
 }

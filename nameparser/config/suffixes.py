@@ -214,27 +214,37 @@ SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
     # 'Jack Ma' keeps its family name.
     #
     # The other half of the criterion, added 2026-09-07 with #342.
-    # Marking is for a SHORT credential in wide use that is also a
-    # name -- the five entries here are all two letters, which is not
-    # a coincidence: a two-letter acronym has too few letters to be
-    # anything but common, so both readings are live and a flag is
-    # the honest answer. A LONGER credential that is tenuous or
-    # specialized and collides with a common name is REMOVED from
-    # SUFFIX_ACRONYMS instead of marked, because its BARE spelling
-    # has no second reading worth carrying: 'rai' and 'cha' left the
-    # set that day (RAI is "RETA Authorized Instructor", CHA is
-    # Certified Hotel Administrator or Certified Healthcare Auditor;
-    # Rai is a common surname across Hindi- and Bengali-speaking
-    # regions and Cha the Korean 차). Removal need not take the
-    # DOTTED spelling with it: "John Smith R.A.I." still reads suffix
-    # 'R.A.I.', because rules.md#S3 splits an interior-period token
-    # on its periods and the chunk 'i' is a Roman numeral in
-    # SUFFIX_WORDS -- "John Smith C.H.A." has no such chunk and reads
-    # family 'C.H.A.'. A caller who needs one back adds it --
-    # Lexicon.default().add(suffix_acronyms={"cha"}) -- which is the
-    # answer this library gives for every locale-specific
-    # vocabulary. The cost is stated and accepted: with the entry
-    # gone, "John Smith RAI" reads family 'RAI'. See
+    # Being borne at all is only the entry ticket; what decides among
+    # the three answers is a comparison of FREQUENCIES -- how common
+    # the word is as a borne name in the TRAILING position against how
+    # common it is as a credential. Roughly balanced earns the marking
+    # here, and the parse reports the fork: 'ba' is the entry that
+    # earned it that day, BA being a common credential and Ba a real
+    # surname (Vietnamese; Senegalese Fula) about as common as the
+    # credential, which is the ma/Ma shape exactly. Where the NAME
+    # reading dominates, the entry is REMOVED from SUFFIX_ACRONYMS
+    # instead of marked: 'rai' and 'cha' left the set that day, both
+    # far more common as surnames than their credentials are as
+    # credentials (RAI is "RETA Authorized Instructor", CHA is
+    # Certified Hotel Administrator or Certified Healthcare Auditor,
+    # both tenuous or specialized; Rai is a common surname across
+    # Hindi- and Bengali-speaking regions and Cha the Korean 차).
+    # Where the CREDENTIAL dominates, the entry stays unambiguous.
+    # LENGTH is a correlate and not the test -- a short acronym is
+    # more often a common credential AND more often a name -- so do
+    # not read the letter counts here as a rule.
+    #
+    # Removal takes the DOTTED spelling with it too, except by
+    # accident: "John Smith R.A.I." still reads suffix 'R.A.I.' only
+    # because rules.md#S3 splits an interior-period token on its
+    # periods and the chunk 'i' happens to be a Roman numeral in
+    # SUFFIX_WORDS. "John Smith R.A.X." reads family, and so does
+    # "John Smith C.H.A." after the removal. Do not count on a dotted
+    # spelling surviving a removal. A caller who needs an entry back
+    # adds it -- Lexicon.default().add(suffix_acronyms={"cha"}) --
+    # which is the answer this library gives for every
+    # locale-specific vocabulary. The cost is stated and accepted:
+    # with the entry gone, "John Smith RAI" reads family 'RAI'. See
     # decisions.md#suffix-acronym-collisions.
     #
     # NOT 'ms' or 'sa', though #296's audit table put them here for the
@@ -245,6 +255,14 @@ SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
     # and read as a credential anyway. Both words are genuine duals --
     # title and unambiguous suffix -- and position decides, as for
     # 'sr' and 'lt' (decisions.md#C1).
+    #
+    # NOT 'se' or 'om' either, weighed 2026-09-07 with #342 and left
+    # alone: no surname evidence worth standing behind, and OM is the
+    # Order of Merit. And NOT 'mc' or 'vd', which are also PARTICLES:
+    # #454 closed by design -- neither is a borne name, so a bare
+    # trailing one is the decoration, and rules.md#P6's Accepted
+    # clause names them as the two words whose positional reading
+    # does not hold.
     'ba',
     'do',
     'ed',

@@ -497,8 +497,9 @@ P6. Rationale: a particle ending the name has nothing to link
     Accepted: the precedence over S2 is stated for the shape, so it
     sweeps in every word that is both particle and suffix
     vocabulary — today vd, do and mc. Only vd's reading was
-    weighed; mc inherits it, which is the shape's cost and is
-    tracked with the other contested memberships. `do` sits in the
+    weighed; mc inherits it, which is the shape's cost and was
+    decided rather than tracked — #454 closed by design 2026-09-07
+    (decisions.md#suffix-acronym-collisions). `do` sits in the
     AMBIGUOUS acronym half and was already read as a name word
     there, so the precedence decides nothing for it — and because
     the report names the reading OVERRIDDEN, `do` reports

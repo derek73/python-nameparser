@@ -819,12 +819,14 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # _CORPUS_CLAIMS unmoved. These probes are the wall, and every one
     # of them is a name MEASURED not to move under the removal (which
     # is the roster's actual condition -- a name the rule has no
-    # business claiming, not merely one outside the corpus). Two test
-    # the right anchor, where a third word or a re-ordered comma
+    # business claiming, not merely one outside the corpus). Three
+    # test the right anchor, where a third word or a re-ordered comma
     # leaves 'Rai' with a family name beside it and nothing to take;
-    # 'Ahmad Jayadi' and 'John Smith' test the ALTERNATIVES' trailing
-    # words, each being a mover with its last word dropped, so an
-    # alternative TRUNCATED to its leading tokens is caught. No probe
+    # 'Ahmad Jayadi', 'Ahmad Jayadi,', 'John Smith' and 'John Smith,'
+    # test the ALTERNATIVES' trailing words, each being a mover with
+    # its last word dropped -- with the comma and without it, so an
+    # alternative TRUNCATED to its leading tokens is caught wherever
+    # the truncation falls. No probe
     # tests the left anchor and none can: dropping the '^' widens the
     # rule to names ENDING in an alternative, and every such name is
     # itself a mover -- 'Mr Aishwarya Rai' moves -- so no name that
@@ -836,7 +838,8 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # (corpus_issues.jsonl), which parses identically with and without
     # 'rai'/'cha' in SUFFIX_ACRONYMS -- so the widening is caught.
     "fix(#342)": ("Aishwarya Rai Bachchan", "Rai, Aishwarya",
-                  "Jane Rai Smith", "Ahmad Jayadi", "John Smith",
+                  "Jane Rai Smith", "Ahmad Jayadi", "Ahmad Jayadi,",
+                  "John Smith", "John Smith,",
                   "Sejal Chaturvedi, CSM"),
     # #451's four replacements for the fields-only catch-all. Each is
     # anchored to a two-token name, so the probes are a third token and
@@ -2056,7 +2059,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # #342's alternation. Five corpus names and four roles: the
         # comma forms move `given` where the bare forms move `middle`,
         # so a widening taking one shape alone would change the roles
-        # here before it reached the gate.
+        # here before it reached the gate. Reach, not explanation --
+        # at this baseline 'Aishwarya Rai' reaches the rule and is
+        # explained by parity instead, so the gate heading reads 4.
         "fix(#342) rai and cha left the credential acronyms, so a trailing Rai or CHA is a name word":
             _Claim(5, ('family', 'given', 'middle', 'suffix'), "c3d76812da97", None),
         "fix(A2) content-free input names nobody, so every role empties":
