@@ -123,19 +123,25 @@ _FAMILY_FIRST = [pytest.param(_FF, id="FAMILY_FIRST"),
 #: word. This column is the negative control: it is the reading the
 #: two stand-down tests below exist to prevent, recorded as data and
 #: re-measurable (`pip install nameparser==2.2.0`) rather than left in
-#: a comment. Nothing asserts on it -- what the tests assert is the
-#: expected column -- but a failure quotes it, so a rotation that
-#: fires again says so in the message.
+#: a comment. The stand-down tests do not assert on it -- what they
+#: assert is the expected column -- but a failure quotes it, so a
+#: rotation that fires again says so in the message. The vacuity probe
+#: below DOES assert on it, which is what keeps this column honest.
+#: The key is (input, declared order): each input picks out its own
+#: pack, `Мицкевич` being East Slavic and `oglu` Turkic, so no pack
+#: identifier is needed to disambiguate a row.
 _PRE_GATE_FAMILY = {
     ("Мицкевич Адам Юзеф", FAMILY_FIRST): "Адам",
     ("Мицкевич Адам Юзеф", FAMILY_FIRST_GIVEN_LAST): "Юзеф",
+    ("Dr. Мицкевич Адам Юзеф", FAMILY_FIRST): "Адам",
+    ("Dr. Мицкевич Адам Юзеф", FAMILY_FIRST_GIVEN_LAST): "Юзеф",
     ("oglu Ahmad Vali Ali", FAMILY_FIRST): "Ahmad",
     ("oglu Ahmad Vali Ali", FAMILY_FIRST_GIVEN_LAST): "Ali",
 }
 
 
 def _assert_rotation_stood_down(pack: Policy, order: Policy, text: str,
-                                family: str) -> None:
+                                family: str, title: str = "") -> None:
     """The pack opted in under `order` reads `text` exactly as `order`
     alone reads it, family included."""
     out = _parsed(text, dataclasses.replace(pack,
@@ -149,6 +155,7 @@ def _assert_rotation_stood_down(pack: Policy, order: Policy, text: str,
         f"the pack changed the reading; before the gate the 2.2.0 "
         f"wheel read family {pre_gate!r} here")
     assert _by_role(out, Role.FAMILY) == family
+    assert _by_role(out, Role.TITLE) == title
 
 
 def test_east_slavic_rotation() -> None:
@@ -181,9 +188,18 @@ def test_east_slavic_skips_when_middle_is_also_patronymic() -> None:
     assert _by_role(out, Role.FAMILY) == "Abramovich"
 
 
+@pytest.mark.parametrize("text,title", [
+    ("Мицкевич Адам Юзеф", ""),
+    # a peeled title must not move the shape the gate is claimed of:
+    # rules.md#O1 counts name words "titles, suffixes and nicknames
+    # aside", so the rotation still reaches this input pre-gate
+    # (_PRE_GATE_FAMILY records the same family as the bare form) and
+    # the title has to survive the stand-down
+    ("Dr. Мицкевич Адам Юзеф", "Dr."),
+])
 @pytest.mark.parametrize("order", _FAMILY_FIRST)
 def test_east_slavic_stands_down_under_a_declared_family_first_order(
-        order: Policy) -> None:
+        order: Policy, text: str, title: str) -> None:
     # rules.md#O1's scope clause (decisions.md#O1, 2026-09-07, #384):
     # the rotation RESTORES the default reading a family-first listing
     # hides, so a declared family-first order supplies that reading and
@@ -196,8 +212,7 @@ def test_east_slavic_stands_down_under_a_declared_family_first_order(
     # order class and the two place the given name differently: the
     # rotation rewrote a different word under each (_PRE_GATE_FAMILY),
     # so one order alone would leave the other's reading unpinned.
-    _assert_rotation_stood_down(_ES, order, "Мицкевич Адам Юзеф",
-                                "Мицкевич")
+    _assert_rotation_stood_down(_ES, order, text, "Мицкевич", title)
 
 
 def test_east_slavic_off_by_default() -> None:
@@ -224,6 +239,30 @@ def test_turkic_stands_down_under_a_declared_family_first_order(
     # trailing-marker test see it.
     _assert_rotation_stood_down(_TK, order, "oglu Ahmad Vali Ali",
                                 "oglu")
+
+
+def test_the_order_gate_is_what_stands_the_rotations_down(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reachability probe: with the gate patched back to the ungated
+    condition, every stand-down input must rotate again, reading the
+    family _PRE_GATE_FAMILY records from the 2.2.0 wheel. If this
+    fails green-side, the stand-down rows above have gone vacuous --
+    the rotation no longer reaches their inputs."""
+    from nameparser._pipeline import _post_rules
+    monkeypatch.setattr(
+        _post_rules, "_rotations_apply",
+        lambda state: state.structure is _post_rules.Structure.NO_COMMA)
+    for pack, text in ((_ES, "Мицкевич Адам Юзеф"),
+                       (_ES, "Dr. Мицкевич Адам Юзеф"),
+                       (_TK, "oglu Ahmad Vali Ali")):
+        for order in (_FF, _FFGL):
+            policy = dataclasses.replace(pack,
+                                         name_order=order.name_order)
+            out = _parsed(text, policy)
+            assert _by_role(out, Role.FAMILY) == \
+                _PRE_GATE_FAMILY[text, policy.name_order], (
+                f"{text!r} no longer reaches the rotation under "
+                f"{policy.name_order}; the stand-down rows are vacuous")
 
 
 def test_leading_never_given_particle_folds_into_family() -> None:

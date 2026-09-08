@@ -14,7 +14,8 @@ import pytest
 from nameparser import Locale, Parser, locales, parse, parser_for
 from nameparser._lexicon import _VOCAB_FIELDS, Lexicon
 from nameparser._policy import (
-    FAMILY_FIRST, UNSET, PatronymicRule, Policy, Script, _SCRIPT_RANGES,
+    FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, UNSET, PatronymicRule, Policy,
+    Script, _SCRIPT_RANGES,
 )
 from nameparser._types import AmbiguityKind
 from nameparser.locales import ja as _ja
@@ -771,6 +772,30 @@ def test_the_rotation_stands_down_under_a_declared_family_first_order(
     natural = ff.parse("Иван Петрович Сидоров")
     assert (natural.family, natural.given, natural.middle) == (
         "Иван", "Петрович", "Сидоров")
+
+
+def test_the_turkic_marker_lands_in_a_name_field_under_both_orders(
+        ) -> None:
+    """Pins the prose decisions.md#O1's 2026-09-07 entry states for O2.
+
+    Gate-independent: `Ali Ahmad Vali oglu` is natural-order input,
+    so the rotation would not fire on it under the default order
+    either. What the two readings show is O2's own 2026-07-02
+    Accepted consequence reached by a second route -- a declared
+    family-first order leaves the marker standing in a name field.
+    Under FAMILY_FIRST that costs nothing visible, the family being
+    the word the rotation would have chosen anyway; under
+    FAMILY_FIRST_GIVEN_LAST the marker becomes the GIVEN name, which
+    is the reading rules.md#O2 carries as Accepted.
+    """
+    ff = parser_for(locales.TR_AZ, base=Parser(
+        policy=Policy(name_order=FAMILY_FIRST)))
+    n = ff.parse("Ali Ahmad Vali oglu")
+    assert (n.family, n.given, n.middle) == ("Ali", "Ahmad", "Vali oglu")
+    ffgl = parser_for(locales.TR_AZ, base=Parser(
+        policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST)))
+    n = ffgl.parse("Ali Ahmad Vali oglu")
+    assert (n.family, n.given, n.middle) == ("Ali", "oglu", "Ahmad Vali")
 
 
 def test_locales_import_is_lazy(monkeypatch: pytest.MonkeyPatch) -> None:

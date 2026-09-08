@@ -65,6 +65,23 @@ _NEVER_FLIPPED = frozenset({"vocab:bound-given", "initial"})
 _RENDERS_ELSEWHERE = frozenset({Role.TITLE, Role.NICKNAME, Role.MAIDEN})
 
 
+def _rotations_apply(state: ParseState) -> bool:
+    # Both patronymic rotations RESTORE the given-first reading a
+    # family-first listing hides, so rules.md#O1's scope clause holds
+    # them to the default order: a caller who declared family-first has
+    # already said what the rotation would infer, and position decides
+    # (decisions.md#O1, the 2026-09-07 entry on #384). `state.order`,
+    # not policy.name_order, for the reason the P1 fold gives -- a
+    # script_orders entry can override the policy, and the roles the
+    # rotations read are the ones assign actually made. None means
+    # assign positioned nothing: a family comma (which the NO_COMMA
+    # test already excludes) or an early return with no name piece to
+    # position, so there is no declaration to defer to and the
+    # rotation's own shape test decides.
+    return state.structure is Structure.NO_COMMA and (
+        state.order is None or state.order[0] is Role.GIVEN)
+
+
 def _mark_suffix_entries(tokens: list[WorkToken], state: ParseState) -> None:
     # In place over the caller's token list, the way every other rule
     # in post_rules writes: a state-in/state-out spelling here cost
@@ -462,18 +479,7 @@ def post_rules(state: ParseState) -> ParseState:
     # middle_as_family fold below runs comma or not (v1 order:
     # patronymics first, then handle_middle_name_as_last)
     rules = state.policy.patronymic_rules
-    # Both rotations RESTORE the given-first reading a family-first
-    # listing hides, so rules.md#O1's scope clause holds them to the
-    # default order: a caller who declared family-first has already
-    # said what the rotation would infer, and position decides
-    # (decisions.md#O1, the 2026-09-07 entry on #384). `state.order`,
-    # not policy.name_order, for the reason the P1 fold above gives --
-    # a script_orders entry can override the policy, and the roles the
-    # rotations read are the ones assign actually made. None means
-    # assign consulted no order at all, which is the default reading.
-    read_order = state.order
-    rotations_apply = state.structure is Structure.NO_COMMA and (
-        read_order is None or read_order[0] is Role.GIVEN)
+    rotations_apply = _rotations_apply(state)
     # rules.md#O1: "a name of exactly three name words — titles,
     # suffixes and nicknames aside — whose last name word carries a
     # patronymic ending and whose middle name word does not reads as
