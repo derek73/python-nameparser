@@ -402,6 +402,122 @@ CASES: tuple[Case, ...] = (
          notes="the other half of the same rule: three pieces means "
                "peeling 'MA' still leaves given+family, so the "
                "credential reading wins (v1 parity)"),
+    # -- #342: rai and cha left SUFFIX_ACRONYMS. The criterion is in
+    # decisions.md#suffix-acronym-collisions and it compares
+    # FREQUENCIES: how common the word is as a borne name in the
+    # trailing position against how common it is as a credential.
+    # Rough balance earns the ambiguous marking (ba, do, ed, jd, ma);
+    # the name reading dominating REMOVES the entry, a caller adding
+    # it back with Lexicon.default().add(suffix_acronyms={"cha"});
+    # the credential dominating leaves it unambiguous. Length is a
+    # correlate, not the test. These rows pin
+    # the FORK, not the entries (mechanisms.md#VOCABULARY-EXERCISES-FORKS).
+    Case("bare_surname_is_not_a_credential", "Aishwarya Rai",
+         {"given": "Aishwarya", "family": "Rai"},
+         classification="parity",
+         notes="#342's own subject: 'rai' arrived in the 2019 bulk "
+               "wikipedia post-nominal import and was never reviewed "
+               "against the surname, so 2.0.0 through 2.2.0 read "
+               "suffix 'Rai' with NO family name at all. 1.4.0 read "
+               "family 'Rai' and this restores that reading, which is "
+               "why it classifies parity rather than fix, and why "
+               "the 1.4.0 ledger replaces a NOT WANTED rule where the "
+               "three 2.x ledgers gain a new one, and its heading "
+               "explains four names where theirs explain five. Named "
+               "in the release note"),
+    Case("removed_credential_loses_its_suffix_reading", "John Smith RAI",
+         {"given": "John", "middle": "Smith", "family": "RAI"},
+         classification="fix(#342)",
+         notes="the accepted cost, pinned so the reversal is visible. "
+               "RAI is a real if specialized credential and a full "
+               "name in front of it used to be enough to read it as "
+               "one; with the entry gone the all-caps shape carries "
+               "no signal the parser reads, so the word families and "
+               "'Smith' becomes a middle name. The shape-plus-position "
+               "heuristic that would recover it is a parking-lot "
+               "bullet of decisions.md#suffix-acronym-collisions"),
+    Case("removed_credential_after_a_comma_reads_as_the_given_name",
+         "Ahmad Jayadi, CHA",
+         {"given": "CHA", "family": "Ahmad Jayadi"},
+         classification="fix(#342)",
+         notes="the comma form moves the OTHER way and is why the "
+               "ledger rule declares four fields rather than two. "
+               "With 'cha' gone the comma is an ordinary family "
+               "comma (C1): the pre-comma run is the family and the "
+               "post-comma word is the given name. 'John Smith, RAI' "
+               "is the same shape and moves with it"),
+    Case("removed_credential_loses_the_dotted_spelling_too",
+         "John Smith C.H.A.",
+         {"given": "John", "middle": "Smith", "family": "C.H.A."},
+         classification="fix(#342)",
+         notes="the removal reaches the DOTTED spelling through S3's "
+               "period fold, which strips the periods to reach the "
+               "entry -- so with 'cha' gone this reads family. The "
+               "contrast is 'John Smith R.A.I.', which still reads "
+               "suffix and is an accident of 'i' being a SUFFIX_WORDS "
+               "numeral rather than a survival of the vocabulary, "
+               "deliberately unpinned "
+               "(decisions.md#suffix-acronym-collisions)"),
+    # -- #342: 'ba' is the other half of the same decision. BA is a
+    # common credential and Ba a real surname (Vietnamese; Senegalese
+    # Fula), which is the ma/Ma shape exactly, so it takes the
+    # marking rather than the removal. Two rows, the two halves of
+    # S2's words-to-spare guard; the release note names both texts.
+    Case("bare_ba_is_a_surname", "Anna Ba",
+         {"given": "Anna", "family": "Ba"},
+         ambiguities=("suffix-or-name",),
+         classification="parity",
+         notes="the marking's point: with only two pieces, 'one of "
+               "them is a credential' is the less likely reading, so "
+               "S2's words-to-spare guard keeps the family name and "
+               "the parse reports which reading it took. 2.0.0 "
+               "through 2.2.0 read suffix 'Ba' with no family name; "
+               "1.4.0 read family 'Ba' unflagged, so this row "
+               "restores 1.4.0's roles and adds the flag"),
+    Case("comma_ambiguous_acronym_ba", "Smith, BA",
+         {"given": "BA", "family": "Smith"},
+         classification="parity",
+         notes="the marking's comma cost, and it is 'Smith, Ed' "
+               "arriving for a second word: with 'ba' ambiguous, S2 "
+               "declines the post-comma credential and C1 reads it as "
+               "the given name. 2.0.0 through 2.2.0 read family "
+               "'Smith', suffix 'BA'; 1.4.0 read given 'BA', which is "
+               "what this restores and why it classifies parity. The "
+               "row is here because the release note names the text -- "
+               "comma_ambiguous_acronym pins the fork and stays green "
+               "when 'ba' leaves the ambiguous subset"),
+    Case("ba_is_a_suffix_when_a_family_name_remains", "John Smith BA",
+         {"given": "John", "family": "Smith", "suffix": "BA"},
+         ambiguities=("suffix-or-name",),
+         notes="the words-to-spare half: a full name in front leaves "
+               "the credential reading available, so the role does "
+               "NOT move -- only the flag is new. The twin of "
+               "ambiguous_acronym_is_a_suffix_when_a_family_name_remains "
+               "above"),
+    Case("by_design_trailing_mc_reads_as_a_credential", "Donald Mc",
+         {"given": "Donald", "suffix": "Mc"},
+         classification="fix(suffix-routing)",
+         notes="#454, dispositioned by design with this bundle. "
+               "1.4.0 read last 'Mc'; the 1.4.0 ledger's "
+               "fix(suffix-routing) rule -- a two-token name ending "
+               "in a credential acronym keeps it in `suffix` -- is "
+               "what explains the divergence. This is the one "
+               "row whose point is that it must NOT change. 'mc' is "
+               "SUFFIX_ACRONYMS and PARTICLES both, and it is not a "
+               "borne name: it has no vowel, and the Scottish prefix "
+               "never detaches from the name it belongs to, so "
+               "'Donald Mc' is not a name anyone writes and its "
+               "suffix reading costs nothing real. rules.md#P6's "
+               "attachment is scoped to shapes where something has "
+               "already named the family, which this has not, so S2 "
+               "takes the trailing word -- 'an unambiguous suffix is "
+               "consumed even when that leaves no family name at "
+               "all'. The neighbours that DO hold: 'Mc Donald' reads "
+               "family 'Mc Donald' and 'John van Mc' family 'van "
+               "Mc', both because 'mc' is a never-given particle "
+               "(#360), which is the membership that actually bears "
+               "on #454's example. See "
+               "decisions.md#suffix-acronym-collisions"),
     Case("ambiguous_acronym_suffix_with_middle", "John Q Smith MA",
          {"given": "John", "middle": "Q", "family": "Smith",
           "suffix": "MA"},

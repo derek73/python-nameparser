@@ -1035,43 +1035,48 @@ name_regex = "(?i)^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*\\svd\\s*$"
 fields = ["family", "suffix"]
 
 [[change]]
-issue = "fix(#342) NOT WANTED: a bare trailing 'Rai' is read as a post-nominal suffix and the family is lost"
-# 'Aishwarya Rai': the tree reads given 'Aishwarya', family '', suffix
-# 'Rai'. 'rai' is a bare entry in SUFFIX_ACRONYMS
-# (nameparser/config/suffixes.py -- not SUFFIX_ACRONYMS_AMBIGUOUS,
-# not SUFFIX_WORDS), so the credential reading outranks the surname
-# reading with nothing to arbitrate them.
-# #342 (OPEN, milestone v2.2, bug) reports this: Rai, in the issue's
-# own words, is "a common surname across Hindi- and Bengali-speaking
-# regions," and the bulk 2019-12-11 wikipedia post-nominal import
-# (af5bdab) that added it was never reviewed against that collision.
+issue = "fix(#342) rai and cha left the credential acronyms, so a trailing Rai or CHA is a name word"
+# 'rai' and 'cha' left SUFFIX_ACRONYMS on 2026-09-07
+# (nameparser/config/suffixes.py). Both arrived in the 2019-12-11
+# bulk wikipedia post-nominal import (af5bdab), neither was reviewed
+# against a surname collision, and decisions.md#suffix-acronym-collisions
+# states the criterion that removed them rather than marking them
+# ambiguous: marking is for a short credential in wide use that is
+# also a name, removal for a longer one that is tenuous and collides.
 #
-# Whether 1.4 itself read the trailing word as `family` is outside
-# what this ledger's worker can check directly
-# (tools/differential/README.md's warning against reading a v1 release
-# from a cached environment); the diff this rule explains at this
-# baseline moves exactly {family, suffix}, which is consistent with
-# that reading and is what the fields below claim.
+# Five corpus names, all from the radar-tier corpus_issues.jsonl, in
+# THREE diff shapes with one cause -- the word stopped being
+# credential vocabulary, so the positional read takes it:
+#   'Aishwarya Rai'      {family, suffix}          suffix -> family
+#                                                  (2.x only -- parity at 1.4.0)
+#   'Lala Lajpat Rai'    {middle, family, suffix}  the family shifts right
+#   'John Smith RAI'     {middle, family, suffix}  same
+#   'John Smith, RAI'    {given, family, suffix}   an ordinary family comma (C1)
+#   'Ahmad Jayadi, CHA'  {given, family, suffix}   same
+# The comma pair is why `fields` declares four roles rather than the
+# two the pre-2.3 fix(#342) rule declared: with no credential after
+# the comma, C1 reads the pre-comma run as the family and the
+# post-comma word as the GIVEN name, so `given` moves where it did
+# not before. The declaration is the exact union of the five, which
+# is what the OVER-DECLARED check recomputes at the end of every run.
 #
-# Classified because the cause is known and recorded, NOT because the
-# reading is wanted -- decisions.md#P5's 2026-08-22 #369 entry
-# attributes that exact wording, quoted verbatim, to the previous
-# fix(#369) ledger rules (since rewritten, because #369 itself was
-# fixed). A [[never]] exclusion was considered and rejected: an
-# excluded name reports UNEXPLAINED and exits non-zero, which would
-# redden the 1.4.0 gate and block every release until #342 lands --
-# and #342 lists two candidate fixes that trade different corpus
-# names against each other, so which one lands is not yet decided.
+# 'Aishwarya Rai' is in this rule at 2.0.0/2.1.0/2.2.0 and NOT
+# explained by it at 1.4.0, where the name now reaches PARITY: 1.4.0
+# read family 'Rai' too, which is what the deleted
+# `fix(#342) NOT WANTED` rule existed to classify. The regex is the
+# same in all four files anyway -- reach is not explanation, and a
+# per-ledger regex would say a name left the corpus.
 #
-# DELETE THIS RULE when #342 lands. The gate then reports it as
-# 'EXPLAINED NOTHING', which is the reminder.
-#
-# Literal-anchored to the one corpus name that reaches this shape. A
-# rule keyed on the SUFFIX_ACRONYMS collision itself, rather than the
-# literal name, would claim every trailing acronym-shaped surname and
-# pre-excuse regressions on names nobody has looked at.
-name_regex = "(?i)^aishwarya\\s+rai$"
-fields = ["family", "suffix"]
+# An anchored alternation of the five NAMES rather than a shape. The
+# shape is "a trailing word that used to be an acronym entry", which
+# would be a copy of SUFFIX_ACRONYMS and would stand ready to explain
+# every future trailing-acronym regression. The members are a list of
+# names and copy no wordlist, which is what _NOT_A_VOCABULARY_COPY in
+# tests/v2/test_ledger_guards.py records; _CORPUS_CLAIMS pins the
+# reach at 5 with its digest, and _MUST_NOT_MATCH carries the
+# boundaries the paragraph above argues.
+name_regex = "^(?:Ahmad Jayadi, CHA|Aishwarya Rai|John Smith RAI|John Smith, RAI|Lala Lajpat Rai)$"
+fields = ["family", "given", "middle", "suffix"]
 
 [[change]]
 issue = "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost"
@@ -2661,9 +2666,12 @@ issue = "fix(suffix-routing) a two-token name ending in a credential acronym kee
 # for the words that are both particle and suffix vocabulary it does
 # not hold. Measured, 'Jong de' and 'Smith do' keep theirs (family
 # 'de', family 'do') while 'Donald mc' and 'Smith vd' lose the family
-# entirely to `suffix`. decisions.md#P6's own arc entry records that as
-# a rules.md defect rather than a ledger one; this rule classifies the
-# movement on S2's statement and settles nothing about P6.
+# entirely to `suffix`. decisions.md#P6's own arc entry recorded that
+# as a rules.md defect rather than a ledger one, and #454 fixed it on
+# 2026-09-07: P6's Accepted clause now names vd and mc as the two words
+# the positional reading does not hold for, which is what this rule has
+# been classifying all along. This rule is unchanged by that repair and
+# still rests on S2's statement.
 #
 # The two neighbouring shapes both already have rules above, and the
 # contrast is the point: 'Mc Donald' has the particle LEADING and folds

@@ -134,6 +134,50 @@ name_regex = "^(?:Baba Ramdev|Guru Nanak|Lama Zopa|Swami Vivekananda)$"
 fields = ["family", "given"]
 
 [[change]]
+issue = "fix(#342) rai and cha left the credential acronyms, so a trailing Rai or CHA is a name word"
+# 'rai' and 'cha' left SUFFIX_ACRONYMS on 2026-09-07
+# (nameparser/config/suffixes.py). Both arrived in the 2019-12-11
+# bulk wikipedia post-nominal import (af5bdab), neither was reviewed
+# against a surname collision, and decisions.md#suffix-acronym-collisions
+# states the criterion that removed them rather than marking them
+# ambiguous: marking is for a short credential in wide use that is
+# also a name, removal for a longer one that is tenuous and collides.
+#
+# Five corpus names, all from the radar-tier corpus_issues.jsonl, in
+# THREE diff shapes with one cause -- the word stopped being
+# credential vocabulary, so the positional read takes it:
+#   'Aishwarya Rai'      {family, suffix}          suffix -> family
+#                                                  (2.x only -- parity at 1.4.0)
+#   'Lala Lajpat Rai'    {middle, family, suffix}  the family shifts right
+#   'John Smith RAI'     {middle, family, suffix}  same
+#   'John Smith, RAI'    {given, family, suffix}   an ordinary family comma (C1)
+#   'Ahmad Jayadi, CHA'  {given, family, suffix}   same
+# The comma pair is why `fields` declares four roles rather than the
+# two the pre-2.3 fix(#342) rule declared: with no credential after
+# the comma, C1 reads the pre-comma run as the family and the
+# post-comma word as the GIVEN name, so `given` moves where it did
+# not before. The declaration is the exact union of the five, which
+# is what the OVER-DECLARED check recomputes at the end of every run.
+#
+# 'Aishwarya Rai' is in this rule at 2.0.0/2.1.0/2.2.0 and NOT
+# explained by it at 1.4.0, where the name now reaches PARITY: 1.4.0
+# read family 'Rai' too, which is what the deleted
+# `fix(#342) NOT WANTED` rule existed to classify. The regex is the
+# same in all four files anyway -- reach is not explanation, and a
+# per-ledger regex would say a name left the corpus.
+#
+# An anchored alternation of the five NAMES rather than a shape. The
+# shape is "a trailing word that used to be an acronym entry", which
+# would be a copy of SUFFIX_ACRONYMS and would stand ready to explain
+# every future trailing-acronym regression. The members are a list of
+# names and copy no wordlist, which is what _NOT_A_VOCABULARY_COPY in
+# tests/v2/test_ledger_guards.py records; _CORPUS_CLAIMS pins the
+# reach at 5 with its digest, and _MUST_NOT_MATCH carries the
+# boundaries the paragraph above argues.
+name_regex = "^(?:Ahmad Jayadi, CHA|Aishwarya Rai|John Smith RAI|John Smith, RAI|Lala Lajpat Rai)$"
+fields = ["family", "given", "middle", "suffix"]
+
+[[change]]
 issue = "fix(#462) the facade keeps an initial-shaped conjunction letter"
 # 'Scott E. Werner', 'Amy E Maid', 'Jose E. Maria Santos':
 # HumanName.initials() dropped a dotted or bare-capital E/Y in the

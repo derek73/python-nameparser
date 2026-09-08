@@ -481,12 +481,25 @@ P6. Rationale: a particle ending the name has nothing to link
     listing, and a bare "Jong de" may be a given name beside a
     particle — so nothing there names the family, the positional
     reading stands, and the same input reports family "de" here.
+    That is the reading for a particle the UNAMBIGUOUS suffix
+    vocabulary does not also claim, which is all but two of them.
+    Where the word is both a particle and UNAMBIGUOUS suffix
+    vocabulary — vd and mc — nothing has named the family, so the
+    attachment above never fires and S2 takes the trailing word as
+    a post-nominal, even though that leaves no family name at all:
+    a bare "Donald mc" reports suffix "mc" with an empty family,
+    and so does "Smith vd". The comma is the contrast, and it is
+    where the precedence stated above acts, "Berg, Jan vd" reading
+    family "vd Berg". `do` follows `de` rather than `mc`, sitting
+    in the AMBIGUOUS acronym half, where S2's words-to-spare test
+    leaves a two-word name its family.
       "Jong Anke de"              →  family="de"
     Accepted: the precedence over S2 is stated for the shape, so it
     sweeps in every word that is both particle and suffix
     vocabulary — today vd, do and mc. Only vd's reading was
-    weighed; mc inherits it, which is the shape's cost and is
-    tracked with the other contested memberships. `do` sits in the
+    weighed; mc inherits it, which is the shape's cost and was
+    decided rather than tracked — #454 closed by design 2026-09-07
+    (decisions.md#suffix-acronym-collisions). `do` sits in the
     AMBIGUOUS acronym half and was already read as a name word
     there, so the precedence decides nothing for it — and because
     the report names the reading OVERRIDDEN, `do` reports
