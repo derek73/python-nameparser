@@ -737,21 +737,34 @@ def test_the_rotation_stands_down_under_a_declared_family_first_order(
     It exists to RESTORE the given-first reading from a family-first
     listing, so a caller who has DECLARED FAMILY_FIRST has already
     supplied what it would have inferred and position decides
-    instead. Scoped by construction, not by an order test: the
-    rotation reads the word in the FAMILY position for a patronymic
-    ending, and only the default order puts a name's last word
-    there.
+    instead. That scoping is a GATE, not a property of the shape:
+    the rotation reads the word in the FAMILY position for a
+    patronymic ending, and under FAMILY_FIRST that slot holds the
+    name's FIRST word.
 
-    Both halves are one measurement. The family-first listing reads
-    the same either way, and the natural-order name reads as the
-    caller declared it -- family 'Иван' -- which is the divergence
-    #384 measured, Accepted in docs/design/decisions.md#O1 rather
-    than treated as a defect. rules.md#O1 states it in prose because
-    an example line there takes ONE annotation, a pack or an order,
-    never both.
+    'Мицкевич Адам Юзеф' is the input that makes the difference
+    visible -- a patronymic-DERIVED surname written first. Without
+    the gate the rotation fires on it and reports family 'Адам';
+    with the gate it reads exactly as plain FAMILY_FIRST does.
+
+    The other two are one measurement of the accepted divergence.
+    The family-first listing reads the same either way, and the
+    natural-order name reads as the caller declared it -- family
+    'Иван' -- which is what #384 measured, Accepted in
+    docs/design/decisions.md#O1 rather than treated as a defect.
+    rules.md#O1 states it in prose because an example line there
+    takes ONE annotation, a pack or an order, never both.
     """
     ff = parser_for(locales.RU,
                     base=Parser(policy=Policy(name_order=FAMILY_FIRST)))
+    # the firing control: without the gate this reads family 'Адам'
+    derived = ff.parse("Мицкевич Адам Юзеф")
+    assert (derived.family, derived.given, derived.middle) == (
+        "Мицкевич", "Адам", "Юзеф")
+    plain = Parser(policy=Policy(name_order=FAMILY_FIRST)).parse(
+        "Мицкевич Адам Юзеф")
+    assert (derived.family, derived.given, derived.middle) == (
+        plain.family, plain.given, plain.middle)
     listing = ff.parse("Сидоров Иван Петрович")
     assert (listing.family, listing.given, listing.middle) == (
         "Сидоров", "Иван", "Петрович")

@@ -462,7 +462,18 @@ def post_rules(state: ParseState) -> ParseState:
     # middle_as_family fold below runs comma or not (v1 order:
     # patronymics first, then handle_middle_name_as_last)
     rules = state.policy.patronymic_rules
-    rotations_apply = state.structure is Structure.NO_COMMA
+    # Both rotations RESTORE the given-first reading a family-first
+    # listing hides, so rules.md#O1's scope clause holds them to the
+    # default order: a caller who declared family-first has already
+    # said what the rotation would infer, and position decides
+    # (decisions.md#O1, the 2026-09-07 entry on #384). `state.order`,
+    # not policy.name_order, for the reason the P1 fold above gives --
+    # a script_orders entry can override the policy, and the roles the
+    # rotations read are the ones assign actually made. None means
+    # assign consulted no order at all, which is the default reading.
+    read_order = state.order
+    rotations_apply = state.structure is Structure.NO_COMMA and (
+        read_order is None or read_order[0] is Role.GIVEN)
     # rules.md#O1: "a name of exactly three name words — titles,
     # suffixes and nicknames aside — whose last name word carries a
     # patronymic ending and whose middle name word does not reads as
