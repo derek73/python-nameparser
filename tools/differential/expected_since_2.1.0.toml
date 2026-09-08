@@ -188,6 +188,22 @@ issue = "feat(#491) an all-suffix input reports suffix-or-name for the word it m
 name_regex = "(?i)^(?:QC MP|Rinpoche)$"
 fields = ["_ambiguities"]
 
+[[change]]
+issue = "feat(#491) a joined unit carrying title vocabulary reports title-or-name"
+# H4's join clause -- the one name unit is a join (P3) and one of the
+# words it joins is title vocabulary, so the doubt is whether that
+# word is a title rather than which field the unit takes. These two
+# arrive because the #518 review round moved the clause out from under
+# O5's field-deciding guards: both peel a title in front ('Attorney',
+# 'Deputy') and leave the join standing as the last piece, which a
+# title cannot be, so H3 never chains it. A list of two names, not a
+# copy of TITLES: a member copying the wordlist would reach 'Prince of
+# Wales' -- a join LED by a title word, which H3 does chain -- and
+# every title-plus-surname name besides. `_ambiguities` alone: the
+# reading is unchanged, only the silence about it.
+name_regex = "(?i)^(?:Attorney General of Minnesota|Deputy Secretary of State)$"
+fields = ["_ambiguities"]
+
 # The four CJK names of #436/#437's class, one rule each. Not one
 # alternation: an alternation holding a script-classified member is
 # claimed by the honorific pin in tests/v2/test_ledger_guards.py,

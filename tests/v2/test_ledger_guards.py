@@ -930,7 +930,7 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # against it.
     "feat(#449) a lone name word reports given-or-family":
         ("Dr. Andrew", "Andrew Smith", "Smith, Andrew", "abdul", "de",
-         "Dr. Smith Jr."),
+         "Dr. Smith Jr.", "J"),
     "feat(#449) a wholly-katakana name keeps the declared order, so the convention decides it":
         ("マイケル ジャクソン", "マイケル・ジャクソン", "Dr. マイケル"),
     "feat(#449) an interpunct transcription declines the script order, so the convention decides it":
@@ -946,9 +946,22 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # it, a credential with a name word beside it, and the lone title
     # word the peel takes whole, leaving nothing to read as a name.
     "feat(#491) an all-titles input reports title-or-name for the word the title peel left as the name":
-        ("Dr. Smith", "Rabbi Cohen", "Mrs. Garcia", "Dr.", "King, Dr Jr"),
+        ("Dr. Smith", "Rabbi Cohen", "Mrs. Garcia", "Dr.", "King, Dr Jr",
+         "Lord Chancellor Smith", "The Rt Hon Jane Smith"),
     "feat(#491) an all-suffix input reports suffix-or-name for the word it made the name":
-        ("John Smith QC MP", "Lama Zopa Rinpoche", "Smith Jr.", "Jr."),
+        ("John Smith QC MP", "Lama Zopa Rinpoche", "Smith Jr.", "Jr.",
+         "Rinpoche Tenzin"),
+    # The join clause's own rule, added by the #518 review round when
+    # hoisting it out from under O5's field-deciding clauses reached
+    # two corpus names. Literal-anchored on the two, so the probes are
+    # the wall: each member with a name word behind it (the join stops
+    # being the only unit), the join LED by a title word that H3
+    # chains into a title run instead, and a join whose members are no
+    # title vocabulary at all, which is O5's report and not this one.
+    "feat(#491) a joined unit carrying title vocabulary reports title-or-name":
+        ("Attorney General of Minnesota Smith",
+         "Deputy Secretary of State Jones", "Prince of Wales",
+         "Duke of Edinburgh"),
 }
 
 
@@ -1630,6 +1643,14 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # credential-bearing name in the corpus, and what selects these two
     # is that no name word stood beside the credential.
     frozenset({"QC MP", "Rinpoche"}),
+    # #491's join movers, reached by the #518 review round's hoist. A
+    # list of two names, not a copy of TITLES: a member copying the
+    # wordlist would reach 'Prince of Wales', which H3 chains into a
+    # title run, and every title-plus-surname name besides. What
+    # selects these two is a SHAPE -- a peeled title, then a joined
+    # unit standing last with title vocabulary inside it.
+    frozenset({"Attorney General of Minnesota",
+               "Deputy Secretary of State"}),
     # fix(#445)'s movers, one corpus name per alternative -- a list of
     # names, not a copy of any wordlist, so there is no vocabulary for
     # it to drift from. Two sets because the ledgers group the nine
@@ -2382,6 +2403,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(6, ('_ambiguities',), "9ee2a07d96c8", None),
         "feat(#491) an all-suffix input reports suffix-or-name for the word it made the name":
             _Claim(2, ('_ambiguities',), "e0756e2e1cd4", None),
+        # The join clause's own rule, added by the #518 review round:
+        # hoisting the clause out from under O5's field-deciding
+        # guards reached two corpus names, both a peeled title in
+        # front of a joined unit standing last. Literal-anchored on
+        # the two, so _MUST_NOT_MATCH carries the boundary probes.
+        "feat(#491) a joined unit carrying title vocabulary reports title-or-name":
+            _Claim(2, ('_ambiguities',), "7af3fec03ccc", None),
         # #346's alternation. Four corpus names, `family` and
         # `given` together: the fold moves both roles at once, so a
         # widening taking one alone would change the roles here
@@ -2602,6 +2630,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(6, ('_ambiguities',), "9ee2a07d96c8", None),
         "feat(#491) an all-suffix input reports suffix-or-name for the word it made the name":
             _Claim(2, ('_ambiguities',), "e0756e2e1cd4", None),
+        # The join clause's own rule, added by the #518 review round:
+        # hoisting the clause out from under O5's field-deciding
+        # guards reached two corpus names, both a peeled title in
+        # front of a joined unit standing last. Literal-anchored on
+        # the two, so _MUST_NOT_MATCH carries the boundary probes.
+        "feat(#491) a joined unit carrying title vocabulary reports title-or-name":
+            _Claim(2, ('_ambiguities',), "7af3fec03ccc", None),
         # #346's alternation. Four corpus names, `family` and
         # `given` together: the fold moves both roles at once, so a
         # widening taking one alone would change the roles here
@@ -2676,6 +2711,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(6, ('_ambiguities',), "9ee2a07d96c8", None),
         "feat(#491) an all-suffix input reports suffix-or-name for the word it made the name":
             _Claim(2, ('_ambiguities',), "e0756e2e1cd4", None),
+        # The join clause's own rule, added by the #518 review round:
+        # hoisting the clause out from under O5's field-deciding
+        # guards reached two corpus names, both a peeled title in
+        # front of a joined unit standing last. Literal-anchored on
+        # the two, so _MUST_NOT_MATCH carries the boundary probes.
+        "feat(#491) a joined unit carrying title vocabulary reports title-or-name":
+            _Claim(2, ('_ambiguities',), "7af3fec03ccc", None),
         # #346's alternation. Four corpus names, `family` and
         # `given` together: the fold moves both roles at once, so a
         # widening taking one alone would change the roles here

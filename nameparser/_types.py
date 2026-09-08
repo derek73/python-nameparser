@@ -378,7 +378,8 @@ class AmbiguityKind(StrEnum):
 
     #: Reserved: the name's field order itself is uncertain (e.g. a
     #: two-word name under a non-default name_order). Not yet emitted;
-    #: planned for 2.x.
+    #: planned for 2.x. A lone name word is GIVEN_OR_FAMILY's, not
+    #: this.
     ORDER = "order"
     #: Delimited content is an ambiguous suffix acronym, so it reads
     #: plausibly as either a post-nominal or a nickname -- "JEFFREY
@@ -408,9 +409,11 @@ class AmbiguityKind(StrEnum):
     #: "Chancellor". A convention, not evidence: this is a name parser
     #: rather than a title parser, and handed a string whose every
     #: remaining word is a title the alternative is a title with no
-    #: name at all. ``detail`` names that word. The report does not
-    #: depend on ``name_order``: it is made where the word is placed,
-    #: which is before the rule that moves it between fields.
+    #: name at all. ``detail`` names that word. The report is made
+    #: before the rule that moves the word between fields, so the peel
+    #: shape reports under either order and names no field; the join
+    #: shape's ``detail`` names the field it was placed in. The peel
+    #: shape points at one token, the join shape at the whole unit.
     #: A LONE title word reports nothing: "Dr." reads as a title
     #: standing by itself, the peel left no word to be read as a
     #: name, and no fork was taken.
@@ -454,11 +457,13 @@ class AmbiguityKind(StrEnum):
     #: family-first one, the same way every time, so ``detail`` names
     #: the field the convention chose rather than the kind naming it:
     #: the same reason PARTICLE_OR_GIVEN cannot. A name something DID
-    #: decide reports nothing -- a title, a nickname, a maiden name, a
-    #: comma, a script whose own convention settles the order, or the
-    #: vocabulary claiming the word (a particle, a bound given name, an
-    #: initial's shape) each settle the reading, and a settled reading
-    #: is not a fork.
+    #: decide reports nothing: a title, a maiden name, a family comma
+    #: that names a family, a script whose own convention settles the
+    #: order, or the vocabulary claiming the word (a particle, a bound
+    #: given name, an initial's shape) each settle the reading, and a
+    #: settled reading is not a fork. A nickname or a suffix standing
+    #: BESIDE the one name word does not settle it -- "'Smitty' Jones
+    #: Jr." and "Smith Jr." both report.
     GIVEN_OR_FAMILY = "given-or-family"
     #: A nickname/maiden delimiter opened without closing (or closed
     #: without opening); the text was kept as literal name content, so
