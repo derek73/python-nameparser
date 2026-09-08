@@ -919,6 +919,28 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     "fix(#346) a renunciate title and one name word leave the name a given name":
         ("Swami Vivekananda Saraswati", "Guru Gobind Singh",
          "Rabbi Cohen", "Swami", "Mr Guru Nanak"),
+    # #449's six rules. The five CJK ones are literal-anchored on one
+    # corpus name each, so _CORPUS_CLAIMS cannot move under a widening
+    # that reaches only names the corpora lack; these probes are the
+    # wall. Each rule's boundary is the same name with something
+    # DECIDING it -- a title, a second name word, a comma -- because
+    # that is the widening the rule invites. A SUFFIX beside the word
+    # is deliberately not such a probe: it decides nothing, and
+    # 'Smith Jr.' is a member of the alternation rather than a wall
+    # against it.
+    "feat(#449) a lone name word reports given-or-family":
+        ("Dr. Andrew", "Andrew Smith", "Smith, Andrew", "abdul", "de",
+         "Dr. Smith Jr."),
+    "feat(#449) a wholly-katakana name keeps the declared order, so the convention decides it":
+        ("マイケル ジャクソン", "マイケル・ジャクソン", "Dr. マイケル"),
+    "feat(#449) an interpunct transcription declines the script order, so the convention decides it":
+        ("王·Smith Jones", "王 Smith", "Dr. 王·Smith"),
+    "feat(#449) an ideographic comma leaves one name word, and the convention decides it":
+        ("田中、太郎、次郎", "田中 太郎", "Dr. 田中、太郎"),
+    "feat(#449) a glued Japanese honorific leaves a Latin name word the script cannot order":
+        ("Anderson Smithさん", "Dr. Andersonさん", "Anderson, さん"),
+    "feat(#449) a glued Korean honorific leaves a Latin name word the script cannot order":
+        ("Anderson Smith선생님", "Dr. Anderson선생님", "Anderson, 선생님"),
 }
 
 
@@ -1564,6 +1586,27 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # regression. One set, identical in all four ledgers.
     frozenset({"Ahmad Jayadi, CHA", "Aishwarya Rai", "John Smith RAI",
                "John Smith, RAI", "Lala Lajpat Rai"}),
+    # #449's movers, one corpus name per alternative -- a list of
+    # names, not a copy of any wordlist, so there is no vocabulary for
+    # it to drift from. What selects these names is a SHAPE the
+    # vocabulary only participates in negatively (a lone name word NO
+    # vocabulary claimed), and a member copying any wordlist would
+    # reach names that report nothing: 'abdul' is bound-given
+    # vocabulary and 'de' a particle, and neither moves. Seven members
+    # carry a trailing suffix -- 'Smith Jr.', "'Smitty' Jones Jr.",
+    # 'John V', 'Jack M.A.', 'Carod i', 'Donald mc', 'Mohamad X' --
+    # where the peel took the suffix and the convention placed the ONE
+    # name word left, so a suffix wordlist is not what this list copies
+    # either. One set, identical in all three 2.x ledgers.
+    frozenset({r"'Smitty' Jones Jr\.", "Andrew", "Carod i",
+               "Dean of Chemistry", "Donald mc", "Duke of Edinburgh",
+               "Duke of Wellington", "Garcia", r"Jack M\.A\.",
+               "John & Jane", "John V", "John of the Doe",
+               "Juan & Garcia", "Juan and Garcia", "Mohamad X",
+               "Smith", r"Smith Jr\.", "e and e",
+               "part1 of The part2 of the part3 and part4",
+               "part1 of and The part2 of the part3 And part4",
+               "test", "سلمان،"}),
     # fix(#445)'s movers, one corpus name per alternative -- a list of
     # names, not a copy of any wordlist, so there is no vocabulary for
     # it to drift from. Two sets because the ledgers group the nine
@@ -2272,6 +2315,36 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # change the row here before it reached the gate.
         "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
             _Claim(10, ('suffix',), "30f5314a2662", None),
+        # #449's six rules, second in every 2.x ledger. The
+        # alternation reaches twenty-two corpus names and
+        # `_ambiguities` alone: no role moves anywhere in this change,
+        # so a widening that took a role would change the row here
+        # before it reached the gate, and a member reaching a name
+        # something DECIDED ('abdul', 'de', 'Dr. Smith') would move
+        # the count. The five CJK rules are literal-anchored on one
+        # corpus name each, a reach _CORPUS_CLAIMS cannot police on
+        # its own -- a widening into names the corpora lack leaves it
+        # unmoved -- so _MUST_NOT_MATCH carries the boundary probes
+        # beside them. The digests are the same in all three 2.x
+        # ledgers because the regexes are the same strings and the
+        # corpora are one set; the ROLES are not, and the two glued
+        # honorific rules are why -- only at this baseline is #308's
+        # peel still in the diff beside the report, and the gate
+        # refuses a rule declaring a role no diff it explains moves.
+        "feat(#449) a lone name word reports given-or-family":
+            _Claim(22, ('_ambiguities',), "0ef8cf9a9272", None),
+        "feat(#449) a wholly-katakana name keeps the declared order, so the convention decides it":
+            _Claim(1, ('_ambiguities',), "80777383a11a", None),
+        "feat(#449) an interpunct transcription declines the script order, so the convention decides it":
+            _Claim(1, ('_ambiguities',), "ba9a4258c864", None),
+        "feat(#449) an ideographic comma leaves one name word, and the convention decides it":
+            _Claim(1, ('_ambiguities',), "4b2858642238", None),
+        "feat(#449) a glued Japanese honorific leaves a Latin name word the script cannot order":
+            _Claim(1, ('_ambiguities', 'given', 'suffix'), "528858346d14",
+                   None),
+        "feat(#449) a glued Korean honorific leaves a Latin name word the script cannot order":
+            _Claim(1, ('_ambiguities', 'given', 'suffix'), "30ec95e25f05",
+                   None),
         # #346's alternation. Four corpus names, `family` and
         # `given` together: the fold moves both roles at once, so a
         # widening taking one alone would change the roles here
@@ -2453,6 +2526,31 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # change the row here before it reached the gate.
         "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
             _Claim(10, ('suffix',), "30f5314a2662", None),
+        # #449's six rules, second in every 2.x ledger. The
+        # alternation reaches twenty-two corpus names and
+        # `_ambiguities` alone: no role moves anywhere in this change,
+        # so a widening that took a role would change the row here
+        # before it reached the gate, and a member reaching a name
+        # something DECIDED ('abdul', 'de', 'Dr. Smith') would move
+        # the count. The five CJK rules are literal-anchored on one
+        # corpus name each, a reach _CORPUS_CLAIMS cannot police on
+        # its own -- a widening into names the corpora lack leaves it
+        # unmoved -- so _MUST_NOT_MATCH carries the boundary probes
+        # beside them. The digests are the same in all three 2.x
+        # ledgers because the regexes are the same strings and the
+        # corpora are one set.
+        "feat(#449) a lone name word reports given-or-family":
+            _Claim(22, ('_ambiguities',), "0ef8cf9a9272", None),
+        "feat(#449) a wholly-katakana name keeps the declared order, so the convention decides it":
+            _Claim(1, ('_ambiguities',), "80777383a11a", None),
+        "feat(#449) an interpunct transcription declines the script order, so the convention decides it":
+            _Claim(1, ('_ambiguities',), "ba9a4258c864", None),
+        "feat(#449) an ideographic comma leaves one name word, and the convention decides it":
+            _Claim(1, ('_ambiguities',), "4b2858642238", None),
+        "feat(#449) a glued Japanese honorific leaves a Latin name word the script cannot order":
+            _Claim(1, ('_ambiguities',), "528858346d14", None),
+        "feat(#449) a glued Korean honorific leaves a Latin name word the script cannot order":
+            _Claim(1, ('_ambiguities',), "30ec95e25f05", None),
         # #346's alternation. Four corpus names, `family` and
         # `given` together: the fold moves both roles at once, so a
         # widening taking one alone would change the roles here
@@ -2488,6 +2586,31 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # change the row here before it reached the gate.
         "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
             _Claim(10, ('suffix',), "30f5314a2662", None),
+        # #449's six rules, second in every 2.x ledger. The
+        # alternation reaches twenty-two corpus names and
+        # `_ambiguities` alone: no role moves anywhere in this change,
+        # so a widening that took a role would change the row here
+        # before it reached the gate, and a member reaching a name
+        # something DECIDED ('abdul', 'de', 'Dr. Smith') would move
+        # the count. The five CJK rules are literal-anchored on one
+        # corpus name each, a reach _CORPUS_CLAIMS cannot police on
+        # its own -- a widening into names the corpora lack leaves it
+        # unmoved -- so _MUST_NOT_MATCH carries the boundary probes
+        # beside them. The digests are the same in all three 2.x
+        # ledgers because the regexes are the same strings and the
+        # corpora are one set.
+        "feat(#449) a lone name word reports given-or-family":
+            _Claim(22, ('_ambiguities',), "0ef8cf9a9272", None),
+        "feat(#449) a wholly-katakana name keeps the declared order, so the convention decides it":
+            _Claim(1, ('_ambiguities',), "80777383a11a", None),
+        "feat(#449) an interpunct transcription declines the script order, so the convention decides it":
+            _Claim(1, ('_ambiguities',), "ba9a4258c864", None),
+        "feat(#449) an ideographic comma leaves one name word, and the convention decides it":
+            _Claim(1, ('_ambiguities',), "4b2858642238", None),
+        "feat(#449) a glued Japanese honorific leaves a Latin name word the script cannot order":
+            _Claim(1, ('_ambiguities',), "528858346d14", None),
+        "feat(#449) a glued Korean honorific leaves a Latin name word the script cannot order":
+            _Claim(1, ('_ambiguities',), "30ec95e25f05", None),
         # #346's alternation. Four corpus names, `family` and
         # `given` together: the fold moves both roles at once, so a
         # widening taking one alone would change the roles here

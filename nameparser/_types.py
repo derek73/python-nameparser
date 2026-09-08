@@ -425,6 +425,19 @@ class AmbiguityKind(StrEnum):
     #: is the family and nothing about this, so the fork is real and
     #: ``detail`` names the word it turned on.
     PARTICLE_OR_GIVEN = "particle-or-given"
+    #: A name of one name word that nothing else decided had to be read
+    #: as one field or the other, and both readings fit it equally well
+    #: -- "Andrew", "Smith". The convention picks the given name under
+    #: the default order and the family name under a declared
+    #: family-first one, the same way every time, so ``detail`` names
+    #: the field the convention chose rather than the kind naming it:
+    #: the same reason PARTICLE_OR_GIVEN cannot. A name something DID
+    #: decide reports nothing -- a title, a nickname, a maiden name, a
+    #: comma, a script whose own convention settles the order, or the
+    #: vocabulary claiming the word (a particle, a bound given name, an
+    #: initial's shape) each settle the reading, and a settled reading
+    #: is not a fork.
+    GIVEN_OR_FAMILY = "given-or-family"
     #: A nickname/maiden delimiter opened without closing (or closed
     #: without opening); the text was kept as literal name content, so
     #: the tokens are the one the stray character ended up inside.

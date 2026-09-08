@@ -1068,10 +1068,15 @@ O5. Rationale: O4 reads a name by comparing where its words stand,
     suffix stands beside them too, which its count does not set
     aside; and a maiden name beside it does the same (M4), except
     where the vocabulary or the word's own shape has claimed the
-    word already. What the library should SAY about a reading it
-    merely fixed — whether the convention is worth reporting as an
-    ambiguity — is open, and #449 holds the measurement that makes
-    it a design question rather than an implementation one.
+    word already. The convention is reported: a name whose one name
+    word nothing else decided carries a `given-or-family` ambiguity
+    naming the field the convention chose. The report is exactly as
+    narrow as the convention, so every rule named above silences it
+    where it fires, a comma silences it, a script whose own
+    convention settles the order (W4) silences it, and so does the
+    word's own claim — a particle, a bound given name, an initial's
+    shape. A word with no letter or digit in it is no name word and
+    reports nothing (A2).
       "Smith"                     →  given="Smith"
       "Garcia"  family-first      →  family="Garcia"
       "Sir John"                  →  given="John"
@@ -1080,6 +1085,14 @@ O5. Rationale: O4 reads a name by comparing where its words stand,
       "Mr. Johnson"               →  family="Johnson"  · boundary
       "'Smitty' Jones"            →  family="Jones"  · boundary
       "Smith née Jones"           →  family="Smith"  · boundary
+      "Andrew"                    →  ambiguities=("given-or-family",)
+      "Garcia"  family-first      →  ambiguities=("given-or-family",)
+      "Juan & Garcia"             →  ambiguities=("given-or-family",)
+      "'Smitty' Jones Jr."        →  ambiguities=("given-or-family",)
+      "Smith Jr."                 →  ambiguities=("given-or-family",)
+      "Dr. Smith"                 →  ambiguities=()  · boundary
+      "Smith née Jones"           →  ambiguities=()
+      "abd née Jones"             →  ambiguities=()
     interacts: O4, H1, N3, M4 · implemented: nameparser/_pipeline/_assign.py
 
 ## Scripts & writing systems (W)

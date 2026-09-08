@@ -497,6 +497,7 @@ CASES: tuple[Case, ...] = (
     Case("by_design_trailing_mc_reads_as_a_credential", "Donald Mc",
          {"given": "Donald", "suffix": "Mc"},
          classification="fix(suffix-routing)",
+         ambiguities=("given-or-family",),
          notes="#454, dispositioned by design with this bundle. "
                "1.4.0 read last 'Mc'; the 1.4.0 ledger's "
                "fix(suffix-routing) rule -- a two-token name ending "
@@ -517,7 +518,10 @@ CASES: tuple[Case, ...] = (
                "Mc', both because 'mc' is a never-given particle "
                "(#360), which is the membership that actually bears "
                "on #454's example. See "
-               "decisions.md#suffix-acronym-collisions"),
+               "decisions.md#suffix-acronym-collisions. The peel "
+               "leaves 'Donald' the only name word, so O5's "
+               "convention places it and says so (#449): roles "
+               "parity, the flag is #449's"),
     Case("ambiguous_acronym_suffix_with_middle", "John Q Smith MA",
          {"given": "John", "middle": "Q", "family": "Smith",
           "suffix": "MA"},
@@ -1180,9 +1184,12 @@ CASES: tuple[Case, ...] = (
     Case("doubled_comma_given_kept", "Doe, John,, Jr.",
          {"given": "John", "family": "Doe", "suffix": "Jr."}),
     Case("single_trailing_comma_cosmetic", "John,",
-         {"given": "John"},
+         {"given": "John"}, ambiguities=("given-or-family",),
          notes="v1 collapse_whitespace strips exactly ONE trailing "
-               "comma before parsing"),
+               "comma before parsing -- and a comma stripped before "
+               "parsing decided nothing, so what is left is one name "
+               "word and O5's convention reports it (#449). Roles "
+               "parity; the flag is #449's"),
     Case("double_trailing_comma_structural", "Doe,,",
          {"family": "Doe"},
          notes="one trailing comma is cosmetic, the second is "
@@ -1339,7 +1346,11 @@ CASES: tuple[Case, ...] = (
          notes="shape 2's post-comma Middle slot, in the form it is "
                "usually written after a family comma -- an initial",
          shape=2),
-    Case("single", "John", {"given": "John"}),
+    Case("single", "John", {"given": "John"},
+         ambiguities=("given-or-family",),
+         notes="the plainest O5 shape there is: nothing decides one "
+               "name word, so the convention picks the field and says "
+               "so (#449). Roles parity; the flag is #449's"),
     Case("title_only", "Dr.", {"title": "Dr."}),
     Case("double_comma_suffix", "Smith, John, Jr.",
          {"given": "John", "family": "Smith", "suffix": "Jr."}),
@@ -2212,6 +2223,55 @@ CASES: tuple[Case, ...] = (
                "which is what makes this differ from 1.4.0 (first "
                "'J.' / middle 'née Jones' / last 'Smith' / suffix "
                "'V', measured 2026-08-27)"),
+    Case("lone_name_word_reports_the_convention", "Andrew",
+         {"given": "Andrew"}, ambiguities=("given-or-family",),
+         classification="feat(#449)",
+         notes="rules.md#O5 -- nothing decided this reading, so the "
+               "convention picked the field and says so"),
+    Case("lone_name_word_reports_the_convention_family_first", "Garcia",
+         {"family": "Garcia"}, policy=Policy(name_order=FAMILY_FIRST),
+         ambiguities=("given-or-family",), classification="feat(#449)",
+         notes="the kind cannot name the field -- the convention "
+               "follows the read order, the PARTICLE_OR_GIVEN precedent"),
+    Case("lone_name_word_joined_by_a_connective_is_one_word", "Juan & Garcia",
+         {"given": "Juan & Garcia"}, ambiguities=("given-or-family",),
+         classification="feat(#449)",
+         notes="rules.md#P3 -- a joined part is one name word wherever "
+               "another rule counts them, and O5 counts them"),
+    Case("lone_name_word_bound_given_vocabulary_decides", "abdul",
+         {"given": "abdul"}, classification="parity",
+         notes="negative control: the vocabulary claimed the word as a "
+               "given name, so the convention decided nothing"),
+    Case("lone_name_word_particle_reading_is_p4s", "de",
+         {"given": "de"}, classification="parity",
+         notes="negative control: a lone particle's reading is P4's, "
+               "not O5's convention"),
+    Case("lone_name_word_beside_a_suffix_still_reports", "Smith Jr.",
+         {"given": "Smith", "suffix": "Jr."},
+         ambiguities=("given-or-family",), classification="feat(#449)",
+         notes="rules.md#S2 peels the suffix and leaves ONE name word, "
+               "which O5's convention then places -- the peel decided "
+               "the suffix, not the field"),
+    Case("lone_name_word_beside_a_nickname_and_a_suffix_reports",
+         "'Smitty' Jones Jr.",
+         {"given": "Jones", "suffix": "Jr.", "nickname": "Smitty"},
+         ambiguities=("given-or-family",), classification="feat(#449)",
+         notes="rules.md#O5's own example: N3's count does not set "
+               "aside a suffix standing beside the nickname, so N3 "
+               "declines and the convention is what places 'Jones'"),
+    Case("lone_name_word_title_decides_it", "Dr. Smith",
+         {"title": "Dr.", "family": "Smith"}, classification="parity",
+         notes="negative control: H1 decided it"),
+    Case("lone_name_word_nickname_decides_it", "'Smitty' Smith",
+         {"family": "Smith", "nickname": "Smitty"}, classification="parity",
+         notes="boundary: N3 returns before the O5 site is reached, so "
+               "the convention never ran -- not a control of any guard "
+               "clause, which is why the emitter carries none"),
+    Case("lone_name_word_comma_decides_it", "Smith, Andrew",
+         {"given": "Andrew", "family": "Smith"}, classification="parity",
+         notes="boundary: the comma named the family before the "
+               "positional read, so one name word never stood alone "
+               "here -- not a control of any guard clause"),
     Case("marker_led_clause_in_a_quote_pair",
          'Jane Smith "née Jones"',
          {"given": "Jane", "family": "Smith", "maiden": "Jones"},
@@ -2563,7 +2623,11 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",)),
     Case("phd_split", "John Ph. D.",
          {"given": "John", "suffix": "Ph. D."},
-         notes="v1 fix_phd; healed via the stable 'joined' tag"),
+         ambiguities=("given-or-family",),
+         notes="v1 fix_phd; healed via the stable 'joined' tag. Roles "
+               "parity; the flag is #449's -- a split credential beside "
+               "the lone word decides the field no more than a whole "
+               "one does"),
     Case("phd_split_mid_name", "Dr. John Ph. D. Smith",
          {"title": "Dr.", "given": "John", "family": "Smith",
           "suffix": "Ph. D."}),
@@ -2604,9 +2668,12 @@ CASES: tuple[Case, ...] = (
     Case("suffix_stays_suffix", "Johnson PhD",
          {"given": "Johnson", "suffix": "PhD"},
          classification="fix(suffix-routing)",
+         ambiguities=("given-or-family",),
          notes="v1 routes a lone trailing suffix to family "
                "(first=Johnson last=PhD); v2 keeps recognized "
-               "suffixes in suffix"),
+               "suffixes in suffix -- which leaves 'Johnson' the one "
+               "name word O5's convention places, reported since "
+               "#449. Roles parity; the flag is #449's"),
     Case("suffix_stays_suffix_title", "Mr. Johnson PhD",
          {"title": "Mr.", "family": "Johnson", "suffix": "PhD"},
          classification="fix(#410)",
@@ -3295,6 +3362,14 @@ CASES: tuple[Case, ...] = (
          notes="no default Han segmentation: one token, and a lone "
                "wholly-Han token takes the script order's first "
                "role = family"),
+    Case("han_unspaced_family_first_declared_reports_nothing", "毛泽东",
+         {"family": "毛泽东"}, policy=Policy(name_order=FAMILY_FIRST),
+         notes="W4 AUTHORED this reading, and a declared family-first "
+               "order agreeing with the Han entry is agreement, not "
+               "authorship: the script rule resolved the order, so O5's "
+               "convention decided nothing and reports nothing (#449). "
+               "The one row that would fail if the emitter compared the "
+               "order used against the order declared"),
     Case("mixed_script_untouched_by_script_orders", "John 王",
          {"given": "John", "family": "王"},
          notes="effective_script is None for a mixed name: script_orders "
@@ -3395,10 +3470,13 @@ CASES: tuple[Case, ...] = (
          notes="hiragana earns a script_orders entry in its own right: "
                "a lone token takes the entry's first role"),
     Case("ja_lone_katakana_stays_given", "マイケル",
-         {"given": "マイケル"},
+         {"given": "マイケル"}, ambiguities=("given-or-family",),
          notes="parity: katakana deliberately has no entry, so the "
                "positional default holds -- transcribed foreign names "
-               "keep source order"),
+               "keep source order. W4 DECLINING is what leaves the "
+               "reading to O5's convention, which reports it (#449); "
+               "a name whose script order decides it stays silent. "
+               "Roles parity; the flag is #449's"),
     Case("ja_iteration_mark_is_han", "佐々木 太郎",
          {"family": "佐々木", "given": "太郎"},
          classification="fix(#272)",
@@ -3492,13 +3570,15 @@ CASES: tuple[Case, ...] = (
                "comma: the marker is structure-independent",
          tolerated=True),
     Case("zh_interpunct_half_flanked_stays", "王·Smith",
-         {"given": "王·Smith"},
+         {"given": "王·Smith"}, ambiguities=("given-or-family",),
          notes="one classified neighbor is not enough: the guard "
                "requires both, so the undivided dot remains part of "
                "the word -- declining, not deciding. Swept as a "
                "2026-09-01 tolerated candidate and declined on the "
                "same boundary as 'John 王': the Latin is a name part, "
-               "not a wrapper"),
+               "not a wrapper. T3 declining is what leaves the "
+               "reading to O5's convention, which reports it (#449). "
+               "Roles parity; the flag is #449's"),
     Case("zh_honorific_suffix_spaced", "王小明 先生",
          {"family": "王小明", "suffix": "先生"},
          classification="fix(#307) + fix(#271)",
@@ -3761,6 +3841,7 @@ CASES: tuple[Case, ...] = (
     Case("latin_stem_glued_kana_honorific", "Andersonさん",
          {"given": "Anderson", "suffix": "さん"},
          classification="fix(#308)",
+         ambiguities=("given-or-family",),
          notes="no script precondition on the remainder -- the tail "
                "is the license. Japanese text about a foreigner, and "
                "the Latin remainder keeps the positional default. "
@@ -3777,6 +3858,7 @@ CASES: tuple[Case, ...] = (
     Case("latin_stem_glued_hangul_honorific", "Anderson선생님",
          {"given": "Anderson", "suffix": "선생님"},
          classification="fix(#308)",
+         ambiguities=("given-or-family",),
          notes="the hangul twin of latin_stem_glued_kana_honorific, "
                "and the one that shows why a post-nominal is not a "
                "surname site: 선 is a listed census surname, so the "
@@ -3784,7 +3866,10 @@ CASES: tuple[Case, ...] = (
                "-- the stage dissecting the honorific it had just "
                "manufactured. Single-issue for the same reason as its "
                "kana twin: the remainder is Latin, so #271 never "
-               "applies"),
+               "applies -- and a remainder no script order can place "
+               "is a remainder O5's convention places, which is what "
+               "#449 reports here and on the kana twin. Roles "
+               "parity; the flag is #449's"),
     Case("ko_honorific_glued_doctor", "김민준박사님",
          {"family": "김", "given": "민준", "suffix": "박사님"},
          classification="fix(#308) + fix(#271)",

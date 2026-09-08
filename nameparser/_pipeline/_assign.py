@@ -38,6 +38,7 @@ from __future__ import annotations
 
 import dataclasses
 from collections.abc import Sequence, Set
+from typing import NamedTuple
 
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
@@ -59,6 +60,17 @@ def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
         tokens[i] = dataclasses.replace(tokens[i], role=role)
 
 
+#: Tags that say the word's own reading was claimed before position
+#: could speak, so O5's convention decided nothing. Two are M4's
+#: `_NEVER_FLIPPED` pair, for M4's reasons -- a bound given-name word is
+#: vocabulary claiming the word as a given name, `initial` is the shape
+#: claim -- and `particle` is here because a lone particle's reading is
+#: P4's. None is a predicate this emitter owns: they are read off the
+#: tags classify already recorded (mechanisms.md#TWO-LAYER-ASSIGN).
+_WORD_ALREADY_CLAIMED = frozenset({
+    "particle", "vocab:bound-given", "initial"})
+
+
 # rules.md#H2: "an abbreviation opening the part of the name that
 # carries the given name — the whole name, or the part after a
 # family comma — reads as a title even when unlisted" -- the count is
@@ -75,6 +87,20 @@ def _peel_leading_titles(pieces: tuple[tuple[int, ...], ...],
     return n
 
 
+class Order(NamedTuple):
+    """What _effective_order made of a name's scripts. `roles` is the
+    order the positional read uses; `by_script` says a script_orders
+    entry RESOLVED it, which is not the same as `roles` happening to
+    equal the declared name_order -- under a declared family-first
+    order a Han name's W4 entry and the declaration agree, and only
+    this flag distinguishes the script rule DECIDING the reading from
+    the caller's declaration standing unopposed. O5's convention
+    report reads it (#449)."""
+
+    roles: tuple[Role, Role, Role]
+    by_script: bool
+
+
 # rules.md#W4: "a name written wholly in one East Asian script, or in
 # the kana-licensed Japanese repertoire, reads family-first whatever
 # order the caller declared; a wholly-katakana name keeps the declared
@@ -82,7 +108,7 @@ def _peel_leading_titles(pieces: tuple[tuple[int, ...], ...],
 def _effective_order(policy: Policy,
                      pieces: list[tuple[int, ...]],
                      tokens: list[WorkToken],
-                     *, dot_divided: bool) -> tuple[Role, Role, Role]:
+                     *, dot_divided: bool) -> Order:
     """script_orders resolution (#271): when every name piece is
     written wholly in ONE script that has an entry, that script's
     order governs the positional read; anything else -- Latin, mixed
@@ -107,13 +133,18 @@ def _effective_order(policy: Policy,
     resolves the ORDER for a whole name; `_vocab.effective_script`
     resolves the SCRIPT for a single token. This function calls that
     one per token below.
+
+    Returns an Order: the roles triple, and `by_script` set only on
+    the one path where an entry answered. Every fallback below is a
+    script rule DECLINING, and reports it as such.
     """
+    declared = Order(policy.name_order, by_script=False)
     # #298 transcription marker -- see the docstring; codepoint-scoped
     # (only U+00B7 records; decisions.md#T3)
     if dot_divided:
-        return policy.name_order
+        return declared
     if not policy.script_orders:
-        return policy.name_order
+        return declared
     # Collect every token's script rather than comparing pairwise as
     # tokens are seen: the kana license needs the WHOLE set (a Han
     # piece and a Hiragana piece only license together, never one at a
@@ -124,15 +155,19 @@ def _effective_order(policy: Policy,
             script = effective_script(tokens[i].text)
             if script is None:
                 # Latin, mixed, or a script with no entry: never a key
-                return policy.name_order
+                return declared
             found.add(script)
     resolved = resolve_script_set(found)
     if resolved is None:
         # e.g. Han+Hangul: two scripts, neither the kana license's
         # Han/Hiragana/Katakana repertoire -- no single tradition
-        return policy.name_order
-    return next((order for s, order in policy.script_orders
-                 if s is resolved), policy.name_order)
+        return declared
+    for script, order in policy.script_orders:
+        if script is resolved:
+            return Order(order, by_script=True)
+    # the resolved script has no entry: the declaration stands, and
+    # nothing about the writing system decided the reading
+    return declared
 
 
 # rules.md#O4: "words no vocabulary has claimed read by position. In
@@ -224,14 +259,57 @@ def _assign_main(seg_idx: int, state: ParseState,
     # AFTER both peels, and load-bearing: the script test sees the NAME
     # pieces only, so a Latin title or suffix ('Dr. 毛 泽东', '毛 泽东,
     # PhD') cannot make a wholly-CJK name look mixed-script.
-    order = _effective_order(state.policy,
-                             [pieces[i] for i in name_pieces], tokens,
-                             dot_divided=bool(state.interpunct_offsets))
+    resolved = _effective_order(state.policy,
+                                [pieces[i] for i in name_pieces], tokens,
+                                dot_divided=bool(state.interpunct_offsets))
+    order = resolved.roles
     roles = _name_positions(order, len(name_pieces))
     for pos, piece_idx in enumerate(name_pieces):
         _set_roles(tokens, pieces[piece_idx], roles[pos])
     for piece_idx in suffix_pieces:
         _set_roles(tokens, pieces[piece_idx], Role.SUFFIX)
+    # rules.md#O5's convention, reported at the site that applies it
+    # (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE). The guard is
+    # O5's own carve-out list read as code -- a leading title, a
+    # maiden name, a group-flagged credential and the word's own claim
+    # each mean something else decided -- plus one the rule states
+    # without naming: a script whose order convention settles the
+    # reading (W4) decided it too, which is `resolved.by_script`
+    # rather than a comparison against name_order, a declared
+    # family-first order agreeing with a Han name's entry being
+    # agreement and not authorship. The two shapes O5 also names never
+    # reach this line: a nickname beside a lone name word is N3's and
+    # returns above, and a family comma names the family before
+    # segment 0 is read positionally, so neither needs a clause here.
+    # A suffix beside the word is NOT such a shape -- 'Smith Jr.' and
+    # "'Smitty' Jones Jr." are the convention placing a lone name word,
+    # which is why S2's peel does not silence it. The count comes off
+    # the PEEL rather than off name_pieces, which is what leaves the
+    # bare-suffix carve-out above (peeled.names == 0, the first
+    # post-nominal read as the name for want of anything else) out:
+    # that reading is a different convention, and reporting it is
+    # H4's. The role comes off the token for the reason stated at the
+    # particle emitter below.
+    if (peeled.names == 1 and n == 0
+            and not resolved.by_script
+            and not any(t.role is Role.MAIDEN for t in tokens)):
+        head = pieces[name_pieces[0]]
+        text = " ".join(tokens[i].text for i in head)
+        if (not any(_WORD_ALREADY_CLAIMED & tokens[i].tags for i in head)
+                # A2's content test: a piece with no alphanumeric
+                # character is no name word, and the name it sits in
+                # assembles empty -- so a convention report there would
+                # describe a reading nobody got. parse("(") keeps its
+                # unbalanced-delimiter report and gains nothing here.
+                and any(c.isalnum() for c in text)):
+            token = tokens[head[0]]
+            assert token.role is not None
+            ambiguities.append(PendingAmbiguity(
+                AmbiguityKind.GIVEN_OR_FAMILY,
+                f"{text!r} is the only name word and nothing else "
+                f"decides it; read as a {token.role.value} name by "
+                f"convention, which follows the read order",
+                tuple(head)))
     for piece in peeled.picks:
         # every pick is in rest, so the loops above just gave it a role
         token = tokens[piece[0]]

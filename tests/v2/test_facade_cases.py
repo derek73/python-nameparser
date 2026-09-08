@@ -88,6 +88,13 @@ _CORE_ONLY_IDS = frozenset({
     # initial veto surviving #430 is core-only
     "family_comma_strict_keeps_the_initial_veto",
     "ja_honorific_glued_family_comma_credential_pair_strict_knob",
+    # #449: O5's convention under a DECLARED family-first order, which
+    # is the half of the rule v1 has no way to say -- the given-first
+    # half ("Andrew") is an ordinary row and runs here. The Han row
+    # beside it declares the same order to pin W4 AUTHORING the
+    # reading, and is core-only for the same reason.
+    "lone_name_word_reports_the_convention_family_first",
+    "han_unspaced_family_first_declared_reports_nothing",
 })
 
 
