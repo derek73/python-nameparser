@@ -134,20 +134,23 @@ P1. Rationale: a particle OPENING a name has the whole rest of the
     How MANY name words it attaches to depends on the order. Under a
     family-first order it takes exactly ONE — declaring that order
     asserts that what follows the family is not more surname. Under
-    the default order it takes the rest of the name: nothing there
-    marks where the surname ends. Whether the default order should
-    narrow the same way is #471 — today `de Mesnil Jean` reports the
-    whole string as the family, and that reach is 1.4.0's. One name
-    word means one UNIT — a particle chain (P2), a conjunction join
-    (P3) or a bound given-name pair (P5) is taken whole or not at
-    all. A title does not move the opening position (P4), but a
-    family comma does end the question: the comma has already fixed
-    the surname, so there is no positional read left for an order to
-    narrow, and a particle opening the part AFTER it takes the rest
-    of that part whatever order is declared. What is left over is not read by O4's rule for a whole name,
-    which would make the first leftover a second family name; it is
-    laid out as the positions AFTER the family in the declared order,
-    the family slot being already filled.
+    the default order it takes the rest of the name, and that is a
+    reading rather than a gap in one: a never-given particle marks
+    where a surname BEGINS, surnames are routinely several words,
+    and no declaration has said this one ends before the string
+    does. So `de Mesnil Jean` reports the whole string as the
+    family, which is 1.4.0's reach as well (#471, declined by
+    design). One name word means one UNIT — a particle chain (P2),
+    a conjunction join (P3) or a bound given-name pair (P5) is
+    taken whole or not at all. A title does not move the opening
+    position (P4), but a family comma does end the question: the
+    comma has already fixed the surname, so there is no positional
+    read left for an order to narrow, and a particle opening the
+    part AFTER it takes the rest of that part whatever order is
+    declared. What is left over is not read by O4's rule for a
+    whole name, which would make the first leftover a second family
+    name; it is laid out as the positions AFTER the family in the
+    declared order, the family slot being already filled.
       "de la Vega"                →  family="de la Vega"
       "Sir de Mesnil"             →  family="de Mesnil"
       "Mesnil de"  family-first   →  given="de"
@@ -161,6 +164,18 @@ P1. Rationale: a particle OPENING a name has the whole rest of the
       "Mc Donald"                 →  family="Mc Donald"
       "de los Santos"             →  family="de los Santos"
       "van Gogh"                  →  given="van"  · boundary
+    Accepted: the default-order reach has two faces, and the second
+    is a real cost. A surname-only string is read right, which is
+    what the reach is for; a family-first listing read under the
+    default order is read wrong, all of it landing in the family.
+    The remedy is the declaration or the comma — declare a
+    family-first order, which gives family `de la Cruz`, given
+    `Juan`, middle `Carlos`, or write the family comma. What
+    NEITHER order settles is the comma's alone: `de la Family
+    Family Given` and `de la Family Given Given` are the same
+    string shape, and no reading of the words tells them apart.
+      "de la Torre Vega"          →  family="de la Torre Vega"
+      "de la Cruz Juan Carlos"    →  family="de la Cruz Juan Carlos"
     Accepted: a bare "de" stays the given name — there is nothing to
     fold into, and inventing a surname would be worse.
       "de"                        →  given="de"
@@ -951,6 +966,7 @@ C2. Rationale: text beyond the recognized comma parts should be
 ## Name order (O)
 
 Background: written name order varies by convention: given-first (the library's default reading), family-first, and family-first with the given name last (Vietnamese, where the person is called by the last element, given names are frequently two syllables — the given_names view stays correct wherever the internal boundary falls — and quốc ngữ is Latin script, so no native-script signal exists at all). The order is declared by the caller or a locale pack, never detected — but a few conventions leave a recognizable trace in the name itself. Patronymics are one: East Slavic names carry a father's-name derivative with distinctive endings between given and family, and Turkic names use a standalone marker word ("oglu" son-of, "qizi" daughter-of) after the father's name. Where such a trace is present and unambiguous, an opted-in parser can restore the intended reading from a family-first listing.
+A declared order is a property of the DATA SOURCE rather than of any one string: the caller sets it to match how their records are written, and it governs what no vocabulary and no script license has already claimed (O4). A declared FAMILY-FIRST order outranks what the parser could infer from the shape of a particular name; the given-first reading is the parser's DEFAULT rather than a declaration it can tell apart from one, and the traces above are what refine it (O1, O2). And the declaration yields where a name's own script settles the order instead (W4, where a name written wholly in an East Asian script reads family-first whatever order the caller declared). Two consequences run through this document. Under the default given-first order a string opening with a never-given particle is a surname whose given name is simply absent, so the fold takes the rest of it (P1). Under a declared family-first order the caller has already said that what follows the family is not more surname — so the fold stops there, and the rotations below, whose whole job is to RESTORE the default reading from a family-first listing, have nothing left to restore. A shape neither order settles is the family comma's job, and the parser does not guess at it.
 
 O1. Rationale: an East Slavic name written family-first still shows
     its patronymic — the distinctive ending identifies which word is
@@ -962,9 +978,26 @@ O1. Rationale: an East Slavic name written family-first still shows
     the words are restored to given, patronymic, family. A middle
     word that also carries the ending blocks the reading, because
     the surname itself may be patronymic-derived.
+    The restoration is the default order's work: it recovers the
+    given-first reading a family-first listing hides, so where the
+    caller has DECLARED a family-first order there is nothing left
+    to restore and position decides.
       "Сидоров Иван Петрович"  [ru]  →  family="Сидоров"
       "Sidorov Ivan Petrovich Jr."  [ru]  →  family="Sidorov"
       "Иван Петрович Абрамович"  [ru]  →  family="Абрамович"  · boundary
+    Accepted: under a declared family-first order the readings part
+    on natural-order input, and the declaration wins. A family-first
+    listing reads the same either way under FAMILY_FIRST — the first
+    example above is that same parse with FAMILY_FIRST declared,
+    and under FAMILY_FIRST_GIVEN_LAST the listing's given and middle
+    swap, so only the family is invariant — while with East Slavic
+    handling active and FAMILY_FIRST declared the natural-order
+    Иван Петрович Сидоров reads family Иван, given Петрович, middle
+    Сидоров. That is the caller's declaration being honored on input
+    they said was written family-first, not a defect (#384). No
+    registered example annotation combines a pack with an order, so
+    the parse is pinned in tests/v2/test_locales.py instead, and
+    decisions.md#O1 records why options 2 and 3 were declined.
     history: decisions.md#O1 · implemented: nameparser/_pipeline/_post_rules.py
 
 O2. Rationale: a Turkic patronymic marker is a separate word that
@@ -975,12 +1008,19 @@ O2. Rationale: a Turkic patronymic marker is a separate word that
     nicknames aside — ending in a standalone patronymic marker reads
     family-first: the first name word is the family name, and the
     marker stays beside the father's name in the middle.
+    The scope is O1's: the restoration recovers the default reading,
+    so a declared family-first order stands in its place.
       "Ali Ahmad Vali oglu"  [tr_az]  →  family="Ali"
       "Ali Ahmad Vali oglu Jr."  [tr_az]  →  family="Ali"
     Accepted: any other count of name words keeps its positional
     reading, even when that leaves the marker itself in a name
     field.
       "Ali Ahmad oglu"  [tr_az]  →  family="oglu"  · boundary
+    Accepted: the order scope above has this rule's own consequence
+    reached by a second route — with Turkic handling active and
+    FAMILY_FIRST_GIVEN_LAST declared, Ali Ahmad Vali oglu reads
+    given oglu, the marker standing in a name field because the
+    declaration put the name's last word there (#384).
     history: decisions.md#O2 · implemented: nameparser/_pipeline/_post_rules.py
 
 O3. Rationale: several traditions write compound family names

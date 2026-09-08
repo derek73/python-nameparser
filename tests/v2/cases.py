@@ -691,7 +691,11 @@ CASES: tuple[Case, ...] = (
                "ambiguous, so this fold cannot fire on it. See "
                "decisions.md#P1, 2026-08-17.) 1.4.0 gives last 'de la "
                "Cruz Juan Carlos' too, so this row must not move when "
-               "#395 lands"),
+               "#395 lands. #471 DECLINED 2026-09-07: the reach is "
+               "the reading and not a gap in one -- a declared order "
+               "is a property of the data source, so under the "
+               "default order nothing has said this surname ends "
+               "before the string does. See decisions.md#P1"),
     Case("leading_never_given_particle_two_leftovers_family_first",
          "de la Cruz Juan Carlos",
          {"family": "de la Cruz", "given": "Juan", "middle": "Carlos"},
