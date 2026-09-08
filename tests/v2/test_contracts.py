@@ -13,6 +13,8 @@ _AMBIGUITY_TRIGGERS: dict[AmbiguityKind, str | None] = {
     AmbiguityKind.COMMA_STRUCTURE: "Smith, John, Extra, Jr.",
     AmbiguityKind.SUFFIX_OR_NICKNAME: "JEFFREY (JD) BRICKEN",
     AmbiguityKind.SUFFIX_OR_NAME: "John Smith MA",
+    AmbiguityKind.GIVEN_OR_FAMILY: "Andrew",
+    AmbiguityKind.TITLE_OR_NAME: "Lord Chancellor",
     # no emitter yet -- arrives with locale-pack order detection (2.x)
     AmbiguityKind.ORDER: None,
     # 남 and 남궁 are both shipped surnames, so longest-first picks

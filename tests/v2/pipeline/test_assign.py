@@ -14,6 +14,16 @@ from nameparser._policy import (
 )
 from nameparser._types import AmbiguityKind, Role
 
+#: The three read orders and the role a lone name word takes under
+#: each, shared by every parametrized case below that asks the same
+#: question of all three: the default (None, given-first), and the two
+#: declared family-first orders.
+_ORDERS = [
+    (None, "given"),
+    (Policy(name_order=FAMILY_FIRST), "family"),
+    (Policy(name_order=FAMILY_FIRST_GIVEN_LAST), "family"),
+]
+
 _LEX = Lexicon(
     titles=frozenset({"dr", "mr", "mrs", "sir", "sr"}),
     given_name_titles=frozenset({"sir"}),
@@ -83,11 +93,7 @@ def test_leading_ambiguous_particle_reads_as_given_with_ambiguity() -> None:
     assert not _assigned("John Smith").ambiguities
 
 
-@pytest.mark.parametrize("policy,role", [
-    (None, "given"),
-    (Policy(name_order=FAMILY_FIRST), "family"),
-    (Policy(name_order=FAMILY_FIRST_GIVEN_LAST), "family"),
-])
+@pytest.mark.parametrize("policy,role", _ORDERS)
 def test_leading_particle_detail_names_the_role_it_took(
         policy: Policy | None, role: str) -> None:
     # The fork is the same under every order -- particle or name --
@@ -102,6 +108,37 @@ def test_leading_particle_detail_names_the_role_it_took(
     assert amb.detail == (
         f"leading 'Van' may be a family-name particle; "
         f"read as a {role} name")
+
+
+@pytest.mark.parametrize("policy,role", _ORDERS)
+@pytest.mark.parametrize("text,kind,detail", [
+    ("Andrew", AmbiguityKind.GIVEN_OR_FAMILY,
+     "'Andrew' is the only name word and nothing else decides it; "
+     "read as a {role} name by convention, which follows the read order"),
+    ("Rinpoche", AmbiguityKind.SUFFIX_OR_NAME,
+     "'Rinpoche' is post-nominal vocabulary with no name word beside "
+     "it; read as a {role} name rather than a post-nominal, nothing "
+     "else being left to be the name"),
+    ("John of Prince", AmbiguityKind.TITLE_OR_NAME,
+     "'John of Prince' is the only name unit and joins title "
+     "vocabulary to a name word; read as a {role} name by convention"),
+])
+def test_convention_details_name_the_role_the_assignment_took(
+        text: str, kind: AmbiguityKind, detail: str,
+        policy: Policy | None, role: str) -> None:
+    # The three conventions this site reports all place a lone name
+    # word, and all three details have to READ the field back off the
+    # token rather than hardcode "given": the field follows the read
+    # order, which is why none of the three kinds names it. The
+    # PARTICLE_OR_GIVEN test above is the precedent, and these are the
+    # only other details at this site that name a field -- H4's PEEL
+    # shape ("Lord Chancellor") deliberately names none, because H1
+    # retags that word after assign under the default order.
+    lex = _LEX.add(suffix_words={"rinpoche"}, conjunctions={"of"},
+                   titles={"prince"})
+    (amb,) = _assigned(text, policy, lexicon=lex).ambiguities
+    assert amb.kind is kind
+    assert amb.detail == detail.format(role=role)
 
 
 def test_leading_particle_detail_follows_the_effective_order() -> None:

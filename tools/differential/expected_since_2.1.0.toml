@@ -81,6 +81,129 @@ issue = "fix(#436/#437) a space-separated post-nominal run renders with spaces, 
 name_regex = "^(?:JOHN DOE PHD MD|John Doe MD PhD|John Smith MD PhD|John Smith Mc V|Kenneth Clarke QC MP|Smith, John PhD I\\.|The Rt Hon Kenneth Clarke QC MP, HMG|Washington Jr\\. MD, Franklin|abdul Smith Jr Ma|abdul Smith Jr V)$"
 fields = ["suffix"]
 
+# The six #449 rules go SECOND, not first: the rule above
+# declares its own first-in-file position with a measurement,
+# and `fields = ["suffix"]` and `fields = ["_ambiguities"]`
+# are disjoint, so nothing orders the two against each other.
+# They DO sit ahead of every rule below whose `fields` is a
+# strict superset of `_ambiguities`, which is the narrow-first
+# default (#382).
+[[change]]
+issue = "feat(#449) a lone name word reports given-or-family"
+# rules.md#O5's convention, now reported. Twenty-two corpus names, and
+# the alternation is a list of NAMES rather than a copy of any
+# wordlist -- what selects them is the SHAPE (one name word, and no
+# title, maiden name, comma, script order or vocabulary claim deciding
+# it), so it is declared in _NOT_A_VOCABULARY_COPY. A suffix beside
+# the word does NOT decide it: 'Smith Jr.' and "'Smitty' Jones Jr."
+# are the peel taking the suffix and the convention placing what is
+# left. `_ambiguities` alone: no role moves anywhere in this change.
+# The five CJK-bearing names in the same population ride five rules of
+# their own below, because a CJK member in an alternation is claimed
+# by the honorific pin, which would demand this be a copy of
+# GLUED_HONORIFICS.
+name_regex = "(?i)^(?:'Smitty' Jones Jr\\.|Andrew|Carod i|Dean of Chemistry|Donald mc|Duke of Edinburgh|Duke of Wellington|Garcia|Jack M\\.A\\.|John & Jane|John V|John of the Doe|Juan & Garcia|Juan and Garcia|Mohamad X|Smith|Smith Jr\\.|e and e|part1 of The part2 of the part3 and part4|part1 of and The part2 of the part3 And part4|test|سلمان،)$"
+fields = ["_ambiguities"]
+
+[[change]]
+issue = "feat(#449) a wholly-katakana name keeps the declared order, so the convention decides it"
+# 'マイケル'. rules.md#W4 gives katakana no order of its own -- a
+# wholly-katakana name is usually a transcription and keeps whatever
+# the caller declared -- so the script rule DECLINES and O5's
+# convention is what is left. Literal-anchored on one corpus name, so
+# _CORPUS_CLAIMS cannot see a widening and _MUST_NOT_MATCH carries the
+# wall.
+name_regex = "^マイケル$"
+fields = ["_ambiguities"]
+
+[[change]]
+issue = "feat(#449) an interpunct transcription declines the script order, so the convention decides it"
+# '王·Smith'. rules.md#T3: the 間隔号 marks a transcription and
+# suppresses the script_orders lookup whole, so name_order governs and
+# the one remaining name word is O5's. Literal-anchored, one corpus
+# name.
+name_regex = "^王·Smith$"
+fields = ["_ambiguities"]
+
+[[change]]
+issue = "feat(#449) an ideographic comma leaves one name word, and the convention decides it"
+# '田中、太郎'. The comma is inside the token, so the text resolves to
+# no single script and the order lookup declines; what is left is one
+# name word and O5. A rules.md#W3 shape -- tolerated, read
+# best-effort -- and the report says only what the parse actually
+# called. Literal-anchored, one corpus name.
+name_regex = "^田中、太郎$"
+fields = ["_ambiguities"]
+
+[[change]]
+issue = "feat(#449) a glued Japanese honorific leaves a Latin name word the script cannot order"
+# 'Andersonさん'. rules.md#W2 peels the glued honorific to SUFFIX and
+# leaves 'Anderson' -- Latin, so effective_script answers None and no
+# script order is resolved at all. One name word, and O5's convention
+# places it. Literal-anchored, one corpus name.
+#
+# `_ambiguities` alone here, where the 2.0.0 ledger's twin also carries
+# `given` and `suffix`: #308's peel is already in THIS baseline, so
+# the report is the whole diff. The gate's OVER-DECLARED check is what
+# forces the two spellings apart -- a rule may not declare a role no
+# diff it explains moves.
+name_regex = "^Andersonさん$"
+fields = ["_ambiguities"]
+
+[[change]]
+issue = "feat(#449) a glued Korean honorific leaves a Latin name word the script cannot order"
+# 'Anderson선생님'. The Japanese rule's argument, in Hangul: the
+# honorific is peeled, the Latin stem resolves to no script, and the
+# convention places the one name word left. Literal-anchored, one
+# corpus name, and `_ambiguities` alone for the reason given above.
+name_regex = "^Anderson선생님$"
+fields = ["_ambiguities"]
+
+# The two #491 rules sit beside #449's, same position rule: both
+# declare `fields = ["_ambiguities"]`, so they are disjoint from the
+# `suffix` rule that owns first place and ahead of every rule below
+# whose fields are a strict superset of theirs (#382's narrow-first
+# default).
+[[change]]
+issue = "feat(#491) an all-titles input reports title-or-name for the word the title peel left as the name"
+# rules.md#H4. Six corpus names, one alternative each -- a list of
+# NAMES, not a copy of TITLES: what selects them is the SHAPE (the
+# title peel leaves exactly one name word, and that word is itself
+# title vocabulary), and a member copying the wordlist would reach
+# 'Dr. Smith', 'Rabbi Cohen' and every other title-plus-surname name,
+# none of which moves. Declared in _NOT_A_VOCABULARY_COPY for that
+# reason. `_ambiguities` alone: the reading each of these gets is
+# unchanged, only the silence about it.
+name_regex = "(?i)^(?:Dr\\. King|His Holiness|His Holiness the Dalai Lama|Lord Chancellor|The Right Hon\\. the President of the Queen's Bench Division|The Rt Hon)$"
+fields = ["_ambiguities"]
+
+[[change]]
+issue = "feat(#491) an all-suffix input reports suffix-or-name for the word it made the name"
+# rules.md#H4's suffix half, emitted at assign's bare-suffix
+# carve-out. Two corpus names. A list of names, not a copy of
+# SUFFIX_WORDS or SUFFIX_ACRONYMS: a member copying either would reach
+# 'John Smith MD', 'Smith Jr.' and the rest of the corpus's credential
+# names, none of which moves -- what selects these two is that nothing
+# was left to be the name.
+name_regex = "(?i)^(?:QC MP|Rinpoche)$"
+fields = ["_ambiguities"]
+
+[[change]]
+issue = "feat(#491) a joined unit carrying title vocabulary reports title-or-name"
+# H4's join clause -- the one name unit is a join (P3) and one of the
+# words it joins is title vocabulary, so the doubt is whether that
+# word is a title rather than which field the unit takes. These two
+# arrive because the #518 review round moved the clause out from under
+# O5's field-deciding guards: both peel a title in front ('Attorney',
+# 'Deputy') and leave the join standing as the last piece, which a
+# title cannot be, so H3 never chains it. A list of two names, not a
+# copy of TITLES: a member copying the wordlist would reach 'Prince of
+# Wales' -- a join LED by a title word, which H3 does chain -- and
+# every title-plus-surname name besides. `_ambiguities` alone: the
+# reading is unchanged, only the silence about it.
+name_regex = "(?i)^(?:Attorney General of Minnesota|Deputy Secretary of State)$"
+fields = ["_ambiguities"]
+
 # The four CJK names of #436/#437's class, one rule each. Not one
 # alternation: an alternation holding a script-classified member is
 # claimed by the honorific pin in tests/v2/test_ledger_guards.py,

@@ -9,8 +9,8 @@ in the Han/Hiragana/Katakana repertoire the #272 kana license shares
 across pieces); token/piece tags; Lexicon only through tags already
 applied by classify (plus the leading-title period rule).
 
-Implements rules H2, N3, O4 and W4 of docs/design/rules.md, each
-cited at its code below. Ports v1's assignment loops.
+Implements rules H2, H4, N3, O4, O5 and W4 of docs/design/rules.md,
+each cited at its code below. Ports v1's assignment loops.
 NO_COMMA (per name_order):
 leading title pieces chain while no given-position name has been seen
 (a title needs a following piece, unless the whole name is one title);
@@ -33,11 +33,21 @@ Emits PARTICLE_OR_GIVEN when the leading name piece is a lone
 particles_ambiguous token with more pieces following ("Van Johnson",
 and since #367 "Dr. Van Johnson" too, a title no longer displacing the
 particle out of that position) -- whatever role name_order assigns.
+Emits SUFFIX_OR_NAME at three sites: the trailing roman numeral, each
+ambiguous acronym the trailing peel had to resolve, and the bare-suffix
+carve-out where an input that is nothing but post-nominal vocabulary
+gets its first word made into the name (H4's suffix half, #491). And
+at the one site that places a LONE name word, GIVEN_OR_FAMILY for the
+field the convention picked (O5, #449) and TITLE_OR_NAME for the two
+shapes where the doubt is whether a word is a title instead (H4,
+#491): the peel leaving one title-vocabulary word standing, and a
+joined unit carrying title vocabulary.
 """
 from __future__ import annotations
 
 import dataclasses
 from collections.abc import Sequence, Set
+from typing import NamedTuple
 
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
@@ -48,7 +58,7 @@ from nameparser._pipeline._pieces import (
     segment_suffix_reading,
 )
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, Structure, WorkToken,
+    ParseState, PendingAmbiguity, Structure, WorkToken, _NEVER_FLIPPED,
 )
 from nameparser._policy import Policy, Script
 from nameparser._types import AmbiguityKind, Role
@@ -57,6 +67,18 @@ def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
                role: Role) -> None:
     for i in piece:
         tokens[i] = dataclasses.replace(tokens[i], role=role)
+
+
+#: Tags that say the word's own reading was claimed before position
+#: could speak, so O5's convention decided nothing. Built from M4's
+#: `_NEVER_FLIPPED` pair rather than respelling it: the two sets answer
+#: different questions -- may M4 retag the word, and did anything
+#: decide the field -- and share the pair because a word vocabulary
+#: claimed as a given name, or wrote as an initial, answers both. The
+#: third, `particle`, is here alone because a lone particle's reading
+#: is P4's. None is a predicate this emitter owns: they are read off
+#: the tags classify already recorded (mechanisms.md#TWO-LAYER-ASSIGN).
+_WORD_ALREADY_CLAIMED = _NEVER_FLIPPED | frozenset({"particle"})
 
 
 # rules.md#H2: "an abbreviation opening the part of the name that
@@ -75,6 +97,20 @@ def _peel_leading_titles(pieces: tuple[tuple[int, ...], ...],
     return n
 
 
+class EffectiveOrder(NamedTuple):
+    """What _effective_order made of a name's scripts. `order` is the
+    order the positional read uses; `by_script` says a script_orders
+    entry RESOLVED it, which is not the same as `order` happening to
+    equal the declared name_order -- under a declared family-first
+    order a Han name's W4 entry and the declaration agree, and only
+    this flag distinguishes the script rule DECIDING the reading from
+    the caller's declaration standing unopposed. O5's convention
+    report reads it (#449)."""
+
+    order: tuple[Role, Role, Role]
+    by_script: bool
+
+
 # rules.md#W4: "a name written wholly in one East Asian script, or in
 # the kana-licensed Japanese repertoire, reads family-first whatever
 # order the caller declared; a wholly-katakana name keeps the declared
@@ -82,7 +118,7 @@ def _peel_leading_titles(pieces: tuple[tuple[int, ...], ...],
 def _effective_order(policy: Policy,
                      pieces: list[tuple[int, ...]],
                      tokens: list[WorkToken],
-                     *, dot_divided: bool) -> tuple[Role, Role, Role]:
+                     *, dot_divided: bool) -> EffectiveOrder:
     """script_orders resolution (#271): when every name piece is
     written wholly in ONE script that has an entry, that script's
     order governs the positional read; anything else -- Latin, mixed
@@ -107,13 +143,18 @@ def _effective_order(policy: Policy,
     resolves the ORDER for a whole name; `_vocab.effective_script`
     resolves the SCRIPT for a single token. This function calls that
     one per token below.
+
+    Returns an EffectiveOrder: the order triple, and `by_script` set only on
+    the one path where an entry answered. Every fallback below is a
+    script rule DECLINING, and reports it as such.
     """
+    declared = EffectiveOrder(policy.name_order, by_script=False)
     # #298 transcription marker -- see the docstring; codepoint-scoped
     # (only U+00B7 records; decisions.md#T3)
     if dot_divided:
-        return policy.name_order
+        return declared
     if not policy.script_orders:
-        return policy.name_order
+        return declared
     # Collect every token's script rather than comparing pairwise as
     # tokens are seen: the kana license needs the WHOLE set (a Han
     # piece and a Hiragana piece only license together, never one at a
@@ -124,15 +165,19 @@ def _effective_order(policy: Policy,
             script = effective_script(tokens[i].text)
             if script is None:
                 # Latin, mixed, or a script with no entry: never a key
-                return policy.name_order
+                return declared
             found.add(script)
     resolved = resolve_script_set(found)
     if resolved is None:
         # e.g. Han+Hangul: two scripts, neither the kana license's
         # Han/Hiragana/Katakana repertoire -- no single tradition
-        return policy.name_order
-    return next((order for s, order in policy.script_orders
-                 if s is resolved), policy.name_order)
+        return declared
+    for script, order in policy.script_orders:
+        if script is resolved:
+            return EffectiveOrder(order, by_script=True)
+    # the resolved script has no entry: the declaration stands, and
+    # nothing about the writing system decided the reading
+    return declared
 
 
 # rules.md#O4: "words no vocabulary has claimed read by position. In
@@ -218,20 +263,112 @@ def _assign_main(seg_idx: int, state: ParseState,
             f"letter there would be a middle initial",
             peeled.numeral))
     name_pieces, suffix_pieces = rest[:peeled.names], rest[peeled.names:]
-    if not name_pieces and suffix_pieces:
+    if peeled.names == 0:
         # everything suffix-shaped after titles: first one is the name
         name_pieces, suffix_pieces = suffix_pieces[:1], suffix_pieces[1:]
     # AFTER both peels, and load-bearing: the script test sees the NAME
     # pieces only, so a Latin title or suffix ('Dr. 毛 泽东', '毛 泽东,
     # PhD') cannot make a wholly-CJK name look mixed-script.
-    order = _effective_order(state.policy,
-                             [pieces[i] for i in name_pieces], tokens,
-                             dot_divided=bool(state.interpunct_offsets))
+    resolved = _effective_order(state.policy,
+                                [pieces[i] for i in name_pieces], tokens,
+                                dot_divided=bool(state.interpunct_offsets))
+    order = resolved.order
     roles = _name_positions(order, len(name_pieces))
     for pos, piece_idx in enumerate(name_pieces):
         _set_roles(tokens, pieces[piece_idx], roles[pos])
     for piece_idx in suffix_pieces:
         _set_roles(tokens, pieces[piece_idx], Role.SUFFIX)
+    # Both emitters below turn on the PEEL's count, so neither can
+    # reach a name that kept two name pieces, and the two scans are
+    # nested under the count rather than run beside it: they cost the
+    # call budget on every parse otherwise (decisions.md#parse-cost).
+    if peeled.names <= 1:
+        head = pieces[name_pieces[0]]
+        token = tokens[head[0]]
+        assert token.role is not None
+        # Both conventions here turn on a lone name word, so both
+        # report at the site that places one
+        # (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE), and one
+        # predicate carries what says nothing else decided the FIELD:
+        # a title (segment 0's own peel, or one a family comma left in
+        # the next segment -- either is a Role.TITLE by now, and
+        # either makes the reading H1's), a maiden name (M4's), or a
+        # script order convention. `resolved.by_script` rather than a
+        # comparison against name_order: a declared family-first order
+        # agreeing with a Han name's entry is agreement, not
+        # authorship, and for a lone CJK honorific ('さん', '씨') it
+        # scopes W2's reading out rather than excusing it (#271/#308).
+        titled = any(t.role is Role.TITLE for t in tokens)
+        field_undecided = (
+            not resolved.by_script and not titled
+            and not any(t.role is Role.MAIDEN for t in tokens))
+        # rules.md#H4: "an input whose every word is post-nominal
+        # vocabulary reads its first word as a name and reports
+        # `suffix-or-name`" (history: decisions.md#H4) -- only the
+        # word made into a name reports, and no name piece survived
+        # the peel, so the carve-out above made the first post-nominal
+        # the name. The role comes off the token for the reason stated
+        # at the particle emitter below.
+        if peeled.names == 0 and field_undecided:
+            text = " ".join(tokens[i].text for i in head)
+            ambiguities.append(PendingAmbiguity(
+                AmbiguityKind.SUFFIX_OR_NAME,
+                f"{text!r} is post-nominal vocabulary with no name word "
+                f"beside it; read as a {token.role.value} name rather than "
+                f"a post-nominal, nothing else being left to be the name",
+                tuple(head)))
+        # One name piece off the peel: the convention placed a lone
+        # name word. A suffix beside it is not a decision -- 'Smith
+        # Jr.' and "'Smitty' Jones Jr." ARE this convention -- and the
+        # count comes off the peel rather than off name_pieces, which
+        # is what keeps the carve-out above out of these branches.
+        # Title vocabulary in the unit makes the doubt H4's (is the
+        # WORD a title), anything else O5's (which FIELD it took), so
+        # only the second reads `field_undecided`.
+        if peeled.names == 1 and not resolved.by_script:
+            # rules.md#H4: "an input whose only remaining name word
+            # after the title peel is itself title vocabulary reads
+            # that word as the name by convention and reports
+            # `title-or-name`" (history: decisions.md#H4), and H4's
+            # join clause, stated at rules.md#O5 as its exception --
+            # one branch, its detail naming a field only in the join
+            # shape ('John of Prince', 'Attorney General of
+            # Minnesota'), where the unit is more than the title word.
+            # A LONE title word never reaches here ('Dr.', 'Prince of
+            # Wales'): the leading-title peel took the whole name.
+            if any("vocab:title" in tokens[i].tags for i in head):
+                text = " ".join(tokens[i].text for i in head)
+                ambiguities.append(PendingAmbiguity(
+                    AmbiguityKind.TITLE_OR_NAME,
+                    f"{text!r} is title vocabulary and the only name word "
+                    f"the title peel left standing; read as the name by "
+                    f"convention rather than as more title"
+                    if len(head) == 1 else
+                    f"{text!r} is the only name unit and joins title "
+                    f"vocabulary to a name word; read as a "
+                    f"{token.role.value} name by convention",
+                    tuple(head)))
+            # rules.md#O5: "a name of one name word that nothing else has
+            # decided reads that word as the given name under the default
+            # given-first order, and as the family name under a declared
+            # family-first one" (history: decisions.md#O5). Past
+            # `field_undecided`, two clauses of O5's own: the word's
+            # own reading may have claimed it, and A2's content test
+            # -- a piece with no alphanumeric character is no name
+            # word, so parse("(") keeps its unbalanced-delimiter
+            # report and gains nothing here.
+            elif (field_undecided
+                    and all(tokens[i].tags.isdisjoint(_WORD_ALREADY_CLAIMED)
+                            for i in head)
+                    and any(c.isalnum() for i in head
+                            for c in tokens[i].text)):
+                text = " ".join(tokens[i].text for i in head)
+                ambiguities.append(PendingAmbiguity(
+                    AmbiguityKind.GIVEN_OR_FAMILY,
+                    f"{text!r} is the only name word and nothing else "
+                    f"decides it; read as a {token.role.value} name by "
+                    f"convention, which follows the read order",
+                    tuple(head)))
     for piece in peeled.picks:
         # every pick is in rest, so the loops above just gave it a role
         token = tokens[piece[0]]
@@ -351,16 +488,13 @@ def assign(state: ParseState) -> ParseState:
         reading = segment_suffix_reading(
             state.pieces[1], state.piece_tags[1], tokens,
             state.policy.lenient_comma_suffixes)
-        if reading is not None and sum(
-                1 for k, piece in enumerate(fam_pieces)
-                if not is_suffix_piece(piece, fam_tags[k], tokens)) > 1:
-            order = _assign_main(0, state, tokens, ambiguities)
-        else:
-            for k, piece in enumerate(fam_pieces):
-                if k > 0 and is_suffix_piece(piece, fam_tags[k], tokens):
-                    _set_roles(tokens, piece, Role.SUFFIX)
-                else:
-                    _set_roles(tokens, piece, Role.FAMILY)
+        # Segment 1 is read FIRST, ahead of either branch below. It
+        # consumes `reading`, piece tags and text only -- nothing
+        # segment 0's read writes -- and running it first is what puts
+        # a TITLE role on the title standing after the comma ('John V,
+        # Dr.') before _assign_main scans for one, so the positional
+        # read below sees that title the way it sees its own peeled
+        # ones (#449 review round; it replaced a `titled` keyword).
         if len(state.segments) > 1:
             pieces = state.pieces[1]
             ptags = state.piece_tags[1]
@@ -419,6 +553,16 @@ def assign(state: ParseState) -> ParseState:
                     _set_roles(tokens, pieces[m], Role.SUFFIX)
                 else:
                     _set_roles(tokens, pieces[m], Role.MIDDLE)
+        if reading is not None and sum(
+                1 for k, piece in enumerate(fam_pieces)
+                if not is_suffix_piece(piece, fam_tags[k], tokens)) > 1:
+            order = _assign_main(0, state, tokens, ambiguities)
+        else:
+            for k, piece in enumerate(fam_pieces):
+                if k > 0 and is_suffix_piece(piece, fam_tags[k], tokens):
+                    _set_roles(tokens, piece, Role.SUFFIX)
+                else:
+                    _set_roles(tokens, piece, Role.FAMILY)
         tail = 2
     # segments past the structure's name segments are wholly suffixes
     for seg_idx in range(tail, len(state.segments)):

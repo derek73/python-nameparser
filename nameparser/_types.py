@@ -378,7 +378,8 @@ class AmbiguityKind(StrEnum):
 
     #: Reserved: the name's field order itself is uncertain (e.g. a
     #: two-word name under a non-default name_order). Not yet emitted;
-    #: planned for 2.x.
+    #: planned for 2.x. A lone name word is GIVEN_OR_FAMILY's, not
+    #: this.
     ORDER = "order"
     #: Delimited content is an ambiguous suffix acronym, so it reads
     #: plausibly as either a post-nominal or a nickname -- "JEFFREY
@@ -397,7 +398,31 @@ class AmbiguityKind(StrEnum):
     #: vd" takes ``vd`` for *van der* and declines the decoration.
     #: Which name part was declined depends on position and
     #: ``name_order``, so ``detail`` names it rather than the kind.
+    #: The same doubt covers an input that is nothing BUT post-nominal
+    #: vocabulary ("Rinpoche", "QC MP"): with no name word beside it
+    #: the first post-nominal is read as the name, because something
+    #: has to be one, and only that word reports.
     SUFFIX_OR_NAME = "suffix-or-name"
+    #: An input the title peel eats down to one last word which is
+    #: itself title vocabulary still has to name somebody, so that
+    #: word is read as the name -- "Lord Chancellor" gives family
+    #: "Chancellor". A convention, not evidence: this is a name parser
+    #: rather than a title parser, and handed a string whose every
+    #: remaining word is a title the alternative is a title with no
+    #: name at all. ``detail`` names that word. The report is made
+    #: before the rule that moves the word between fields, so the peel
+    #: shape reports under either order and names no field; the join
+    #: shape's ``detail`` names the field it was placed in. The peel
+    #: shape points at one token, the join shape at the whole unit.
+    #: A LONE title word reports nothing: "Dr." reads as a title
+    #: standing by itself, the peel left no word to be read as a
+    #: name, and no fork was taken.
+    #: One name word that is a JOIN carrying title vocabulary reports
+    #: this kind too ("John of Prince"): the unit is read as a name,
+    #: and whether the title word inside it is a title is the fork.
+    #: Not the title-vs-given-name collision on a word like "Baron",
+    #: which is a question about the VOCABULARY and is not this kind.
+    TITLE_OR_NAME = "title-or-name"
     #: An ambiguous particle is either a particle or a name in its own
     #: right -- "Van Johnson" is the actor's given name, a bare
     #: "Van Buren" the presidential surname, and the two-word shape
@@ -425,6 +450,21 @@ class AmbiguityKind(StrEnum):
     #: is the family and nothing about this, so the fork is real and
     #: ``detail`` names the word it turned on.
     PARTICLE_OR_GIVEN = "particle-or-given"
+    #: A name of one name word that nothing else decided had to be read
+    #: as one field or the other, and both readings fit it equally well
+    #: -- "Andrew", "Smith". The convention picks the given name under
+    #: the default order and the family name under a declared
+    #: family-first one, the same way every time, so ``detail`` names
+    #: the field the convention chose rather than the kind naming it:
+    #: the same reason PARTICLE_OR_GIVEN cannot. A name something DID
+    #: decide reports nothing: a title, a maiden name, a family comma
+    #: that names a family, a script whose own convention settles the
+    #: order, or the vocabulary claiming the word (a particle, a bound
+    #: given name, an initial's shape) each settle the reading, and a
+    #: settled reading is not a fork. A nickname or a suffix standing
+    #: BESIDE the one name word does not settle it -- "'Smitty' Jones
+    #: Jr." and "Smith Jr." both report.
+    GIVEN_OR_FAMILY = "given-or-family"
     #: A nickname/maiden delimiter opened without closing (or closed
     #: without opening); the text was kept as literal name content, so
     #: the tokens are the one the stray character ended up inside.
