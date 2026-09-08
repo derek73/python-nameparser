@@ -95,6 +95,11 @@ _CORE_ONLY_IDS = frozenset({
     # reading, and is core-only for the same reason.
     "lone_name_word_reports_the_convention_family_first",
     "han_unspaced_family_first_declared_reports_nothing",
+    # #491: H4's report under a DECLARED family-first order, the half
+    # that proves the report is order-independent -- the order has no
+    # v1 spelling, so the row is core-only. The default-order twin
+    # ("Lord Chancellor") is an ordinary row and runs here.
+    "all_titles_input_family_first",
 })
 
 

@@ -614,7 +614,7 @@ CASES: tuple[Case, ...] = (
                "'John', middle 'née', last 'Jones')"),
     Case("title_plus_one_word_comma_suffix", "Dr. King, Jr.",
          {"title": "Dr.", "family": "King", "suffix": "Jr."},
-         classification="fix(#410)",
+         ambiguities=("title-or-name",), classification="fix(#410)",
          notes="the most ordinary shape H1's widening touches, and "
                "the one the suite could least afford to leave "
                "unpinned: mutating H1 to decline on any name carrying "
@@ -625,7 +625,10 @@ CASES: tuple[Case, ...] = (
                "'Smith, Dr.' takes its family from the comma rule "
                "(C1), not from H1. 1.4.0 had the same empty family "
                "here (title 'Dr.', first 'King', last ''), so this "
-               "row records a v1 bug fixed, not a v2 divergence"),
+               "row records a v1 bug fixed, not a v2 divergence. The "
+               "`title-or-name` flag is H4's and not #410's: `king` is "
+               "title vocabulary and a suffix beside the word is not a "
+               "shape that silences the convention"),
     Case("title_plus_one_word_multi_word_maiden",
          "Dr. Smith née Mary Jones",
          {"title": "Dr.", "family": "Smith", "maiden": "Mary Jones"},
@@ -1351,7 +1354,11 @@ CASES: tuple[Case, ...] = (
          notes="the plainest O5 shape there is: nothing decides one "
                "name word, so the convention picks the field and says "
                "so (#449). Roles parity; the flag is #449's"),
-    Case("title_only", "Dr.", {"title": "Dr."}),
+    Case("title_only", "Dr.", {"title": "Dr."},
+         notes="rules.md#H4's boundary as well as a shape row: a LONE "
+               "title word demotes nothing, so no reading was chosen "
+               "and nothing is reported. The title-vs-given-name "
+               "collision on a word like `Baron` is #348's"),
     Case("double_comma_suffix", "Smith, John, Jr.",
          {"given": "John", "family": "Smith", "suffix": "Jr."}),
     Case("bound_given_two", "abdul rahman",
@@ -2261,7 +2268,9 @@ CASES: tuple[Case, ...] = (
                "declines and the convention is what places 'Jones'"),
     Case("lone_name_word_title_decides_it", "Dr. Smith",
          {"title": "Dr.", "family": "Smith"}, classification="parity",
-         notes="negative control: H1 decided it"),
+         notes="negative control for both conventions: H1 decided it, "
+               "and `smith` is not title vocabulary, so H4 does not "
+               "claim the input either"),
     Case("lone_name_word_nickname_decides_it", "'Smitty' Smith",
          {"family": "Smith", "nickname": "Smitty"}, classification="parity",
          notes="boundary: N3 returns before the O5 site is reached, so "
@@ -2272,6 +2281,74 @@ CASES: tuple[Case, ...] = (
          notes="boundary: the comma named the family before the "
                "positional read, so one name word never stood alone "
                "here -- not a control of any guard clause"),
+    Case("all_titles_input_reports_the_demoted_word", "Lord Chancellor",
+         {"title": "Lord", "family": "Chancellor"},
+         ambiguities=("title-or-name",), classification="feat(#491)",
+         notes="rules.md#H4 -- nothing but title vocabulary, so the "
+               "last title word is the name by convention and says so"),
+    Case("all_titles_input_the_queens_bench_string",
+         "The Right Hon. the President of the Queen's Bench Division",
+         {"title": "The Right Hon. the President of the Queen's Bench",
+          "family": "Division"},
+         ambiguities=("title-or-name",), classification="feat(#491)",
+         notes="decisions.md#v1-xfail-triage's fourth NOT FIXED entry: "
+               "the reading stands, and the guess stops being silent"),
+    Case("all_titles_input_a_title_vocabulary_surname", "Dr. King",
+         {"title": "Dr.", "family": "King"},
+         ambiguities=("title-or-name",), classification="feat(#491)",
+         notes="`king` is title vocabulary for the addressing forms, so "
+               "the peel leaves one title-vocabulary word and the rule "
+               "claims it"),
+    Case("all_titles_input_family_first", "Lord Chancellor",
+         {"title": "Lord", "family": "Chancellor"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         ambiguities=("title-or-name",), classification="feat(#491)",
+         notes="the report is made where the word is PLACED, so a "
+               "declared family-first order -- which puts 'Chancellor' "
+               "in the family directly and leaves H1's retag no work -- "
+               "gives the same reading and the same kind. The site was "
+               "H1's retag until the family-first orders were measured "
+               "silent there"),
+    Case("title_run_then_a_credential_reports_nothing", "Dr. King MD",
+         {"title": "Dr. King", "family": "MD"}, classification="parity",
+         notes="rules.md#H4's boundary, both halves -- the title peel "
+               "took `Dr. King` and left no name word at all, so the "
+               "credential is the name by the bare-suffix carve-out -- "
+               "which is scoped to a run no title preceded, and the "
+               "title half needs a name word left standing. Neither "
+               "claims it"),
+    Case("title_run_then_a_bare_generational_reports_nothing",
+         "Dr King Jr", {"title": "Dr King", "family": "Jr"},
+         classification="parity",
+         notes="the same boundary in the shape the assign comment "
+               "names: `Dr King` peels whole, `Jr` is read as the name "
+               "for want of another, and after a title that reading is "
+               "H1's rather than either of H4's conventions"),
+    Case("all_suffix_input_reports_suffix_or_name", "Rinpoche",
+         {"given": "Rinpoche"}, ambiguities=("suffix-or-name",),
+         classification="feat(#491)",
+         notes="rules.md#H4's suffix half: post-nominal vocabulary with "
+               "no name word beside it, read as the name"),
+    Case("all_suffix_input_two_words", "QC MP",
+         {"given": "QC", "suffix": "MP"}, ambiguities=("suffix-or-name",),
+         classification="feat(#491)",
+         notes="the first word is the name and the rest the run; only "
+               "the word made into a name reports"),
+    Case("lone_joined_unit_carrying_title_vocabulary", "John of Prince",
+         {"given": "John of Prince"}, ambiguities=("title-or-name",),
+         classification="feat(#491)",
+         notes="rules.md#O5's exception: the one name unit is a join "
+               "(P3) carrying title vocabulary, so the doubt is "
+               "whether `Prince` is a title rather than which field "
+               "the unit takes -- the one input measured to reach "
+               "that branch, `prince` being in TITLES"),
+    Case("lone_joined_unit_led_by_a_title_is_a_title_run",
+         "Prince of Wales", {"title": "Prince of Wales"},
+         classification="parity",
+         notes="boundary: a join whose FIRST word is title vocabulary "
+               "chains into a title run (H3) and never reaches the "
+               "assignment site at all, so it reports nothing -- the "
+               "same silence as a lone `Dr.`"),
     Case("marker_led_clause_in_a_quote_pair",
          'Jane Smith "née Jones"',
          {"given": "Jane", "family": "Smith", "maiden": "Jones"},

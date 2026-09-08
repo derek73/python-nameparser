@@ -941,6 +941,14 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
         ("Anderson Smithさん", "Dr. Andersonさん", "Anderson, さん"),
     "feat(#449) a glued Korean honorific leaves a Latin name word the script cannot order":
         ("Anderson Smith선생님", "Dr. Anderson선생님", "Anderson, 선생님"),
+    # #491's two rules. Each boundary is a name the vocabulary reaches
+    # and the SHAPE does not: a title with an ordinary surname behind
+    # it, a credential with a name word beside it, and the lone title
+    # word the peel takes whole, leaving nothing to read as a name.
+    "feat(#491) an all-titles input reports title-or-name for the word the title peel left as the name":
+        ("Dr. Smith", "Rabbi Cohen", "Mrs. Garcia", "Dr.", "King, Dr Jr"),
+    "feat(#491) an all-suffix input reports suffix-or-name for the word it made the name":
+        ("John Smith QC MP", "Lama Zopa Rinpoche", "Smith Jr.", "Jr."),
 }
 
 
@@ -1607,6 +1615,21 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                "part1 of The part2 of the part3 and part4",
                "part1 of and The part2 of the part3 And part4",
                "test", "سلمان،"}),
+    # #491's title movers, one corpus name per alternative. A list of
+    # names, not a copy of TITLES: the rule's subject is a SHAPE the
+    # vocabulary participates in (the title peel leaves one name word
+    # and that word is in it), and a member copying the wordlist
+    # would reach 'Dr. Smith', 'Rabbi Cohen' and 'Mrs. Garcia', which
+    # do not move. One set, identical in all three 2.x ledgers.
+    frozenset({"Dr\\. King", "His Holiness", "His Holiness the Dalai Lama",
+               "Lord Chancellor",
+               "The Right Hon\\. the President of the Queen's Bench Division",
+               "The Rt Hon"}),
+    # #491's suffix movers. A list of names, not a copy of SUFFIX_WORDS
+    # or SUFFIX_ACRONYMS: a member copying either would reach every
+    # credential-bearing name in the corpus, and what selects these two
+    # is that no name word stood beside the credential.
+    frozenset({"QC MP", "Rinpoche"}),
     # fix(#445)'s movers, one corpus name per alternative -- a list of
     # names, not a copy of any wordlist, so there is no vocabulary for
     # it to drift from. Two sets because the ledgers group the nine
@@ -2345,6 +2368,20 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "feat(#449) a glued Korean honorific leaves a Latin name word the script cannot order":
             _Claim(1, ('_ambiguities', 'given', 'suffix'), "30ec95e25f05",
                    None),
+        # #491's two rules, beside #449's for the same reason: both
+        # classify on `_ambiguities` alone, and no role moves anywhere
+        # in this change, so a widening that took a role would change
+        # the row here before it reached the gate. Six title names and
+        # two suffix names, one alternative each; a member reaching a
+        # name the SHAPE does not select ('Dr. Smith', 'Rabbi Cohen',
+        # 'Smith Jr.', the lone 'Dr.' the peel takes whole) would move
+        # the count, and _MUST_NOT_MATCH carries those probes. Same
+        # digests in all three 2.x ledgers: the regexes are the same
+        # strings and the corpora are one set.
+        "feat(#491) an all-titles input reports title-or-name for the word the title peel left as the name":
+            _Claim(6, ('_ambiguities',), "9ee2a07d96c8", None),
+        "feat(#491) an all-suffix input reports suffix-or-name for the word it made the name":
+            _Claim(2, ('_ambiguities',), "e0756e2e1cd4", None),
         # #346's alternation. Four corpus names, `family` and
         # `given` together: the fold moves both roles at once, so a
         # widening taking one alone would change the roles here
@@ -2551,6 +2588,20 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities',), "528858346d14", None),
         "feat(#449) a glued Korean honorific leaves a Latin name word the script cannot order":
             _Claim(1, ('_ambiguities',), "30ec95e25f05", None),
+        # #491's two rules, beside #449's for the same reason: both
+        # classify on `_ambiguities` alone, and no role moves anywhere
+        # in this change, so a widening that took a role would change
+        # the row here before it reached the gate. Six title names and
+        # two suffix names, one alternative each; a member reaching a
+        # name the SHAPE does not select ('Dr. Smith', 'Rabbi Cohen',
+        # 'Smith Jr.', the lone 'Dr.' the peel takes whole) would move
+        # the count, and _MUST_NOT_MATCH carries those probes. Same
+        # digests in all three 2.x ledgers: the regexes are the same
+        # strings and the corpora are one set.
+        "feat(#491) an all-titles input reports title-or-name for the word the title peel left as the name":
+            _Claim(6, ('_ambiguities',), "9ee2a07d96c8", None),
+        "feat(#491) an all-suffix input reports suffix-or-name for the word it made the name":
+            _Claim(2, ('_ambiguities',), "e0756e2e1cd4", None),
         # #346's alternation. Four corpus names, `family` and
         # `given` together: the fold moves both roles at once, so a
         # widening taking one alone would change the roles here
@@ -2611,6 +2662,20 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities',), "528858346d14", None),
         "feat(#449) a glued Korean honorific leaves a Latin name word the script cannot order":
             _Claim(1, ('_ambiguities',), "30ec95e25f05", None),
+        # #491's two rules, beside #449's for the same reason: both
+        # classify on `_ambiguities` alone, and no role moves anywhere
+        # in this change, so a widening that took a role would change
+        # the row here before it reached the gate. Six title names and
+        # two suffix names, one alternative each; a member reaching a
+        # name the SHAPE does not select ('Dr. Smith', 'Rabbi Cohen',
+        # 'Smith Jr.', the lone 'Dr.' the peel takes whole) would move
+        # the count, and _MUST_NOT_MATCH carries those probes. Same
+        # digests in all three 2.x ledgers: the regexes are the same
+        # strings and the corpora are one set.
+        "feat(#491) an all-titles input reports title-or-name for the word the title peel left as the name":
+            _Claim(6, ('_ambiguities',), "9ee2a07d96c8", None),
+        "feat(#491) an all-suffix input reports suffix-or-name for the word it made the name":
+            _Claim(2, ('_ambiguities',), "e0756e2e1cd4", None),
         # #346's alternation. Four corpus names, `family` and
         # `given` together: the fold moves both roles at once, so a
         # widening taking one alone would change the roles here

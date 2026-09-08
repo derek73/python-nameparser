@@ -29,7 +29,7 @@ The marker's unit is the whole rule, because that is the unit `tools/differentia
 
 ## Titles & honorifics (H)
 
-Background: an honorific title precedes a name and is not itself part of it; it addresses or ranks the person. Most titles address by surname ("Mr. Johnson"), but a few — knighthoods, some clerical and courtesy titles — address by given name ("Sir John"). The library keeps a vocabulary of titles and, separately, of these given-name titles. What a TRAILING title-vocabulary word should do is unresolved (#316): today "John Smith Prof." keeps Prof. a name word while "Smith, Prof." reads it as a title — the two comma paths disagree, and TITLES holding ordinary surnames (king, judge, bishop) is what bars the blanket vocabulary-wins answer. Two criteria govern two different questions here. Membership in the given-name-title list follows HOW THE TITLE ADDRESSES: a title that precedes and addresses by the given name belongs (Sir, Sheikh, the Arabic honorifics الدكتور/الشيخ — which qualify even though those traditions fully retain family names). Whether an EMPTY FAMILY is correct output is the separate question, governed by surname retention: renunciation abolishes the surname, so for Swami, Guru, Baba or Lama family="" is right (#346), while rabbi and imam traditions keep surnames — "Rabbi Cohen" addresses by title and keeps family "Cohen". Conflating the two criteria either ejects the Arabic entries or sweeps in titles that break
+Background: an honorific title precedes a name and is not itself part of it; it addresses or ranks the person. Most titles address by surname ("Mr. Johnson"), but a few — knighthoods, some clerical and courtesy titles — address by given name ("Sir John"). The library keeps a vocabulary of titles and, separately, of these given-name titles. What a TRAILING title-vocabulary word should do is unresolved (#316): today "John Smith Prof." keeps Prof. a name word while "Smith, Prof." reads it as a title — the two comma paths disagree, and TITLES holding ordinary surnames (king, judge, bishop) is what bars the blanket vocabulary-wins answer. An input the title peel eats down to one last title-vocabulary word is H4's, and what it does with that word is a convention rather than a reading of the vocabulary. Two criteria govern two different questions here. Membership in the given-name-title list follows HOW THE TITLE ADDRESSES: a title that precedes and addresses by the given name belongs (Sir, Sheikh, the Arabic honorifics الدكتور/الشيخ — which qualify even though those traditions fully retain family names). Whether an EMPTY FAMILY is correct output is the separate question, governed by surname retention: renunciation abolishes the surname, so for Swami, Guru, Baba or Lama family="" is right (#346), while rabbi and imam traditions keep surnames — "Rabbi Cohen" addresses by title and keeps family "Cohen". Conflating the two criteria either ejects the Arabic entries or sweeps in titles that break
 "Rabbi Cohen".
 
 H1. Rationale: a title normally addresses by surname, so a title
@@ -102,6 +102,61 @@ H3. Rationale: compound titles are written as a run of title words,
     family name (C1), title words included.
       "Dr. Smith, John"           →  family="Dr. Smith"
     interacts: C1 · implemented: nameparser/_pipeline/_pieces.py
+
+H4. Rationale: this is a name parser, not a title parser. Handed a
+    string the title peel eats down to one last word which is itself
+    title vocabulary, it still has to name somebody, and that word is
+    the only candidate there is — a guess fixed in advance, so the
+    same input reads the same way every time, not a claim that the
+    word is a surname. The same reasoning covers a string that is
+    nothing but post-nominal vocabulary: something has to be the name.
+    An input whose only remaining name word after the title peel is
+    itself title vocabulary reads that word as the name by convention
+    and reports `title-or-name`; an input whose every word is
+    post-nominal vocabulary reads its first word as a name and
+    reports `suffix-or-name`. A single title word reads as a title
+    with no name beside it and reports nothing: the peel took the
+    whole string, so no word was left standing to be read as a name
+    and no reading was chosen.
+      "Lord Chancellor"           →  family="Chancellor"
+      "Lord Chancellor"           →  ambiguities=("title-or-name",)
+      "The Right Hon. the President of the Queen's Bench Division"  →  family="Division"
+      "The Right Hon. the President of the Queen's Bench Division"  →  ambiguities=("title-or-name",)
+      "Dr. King"                  →  ambiguities=("title-or-name",)
+      "Dr."                       →  title="Dr."  · boundary
+      "Dr."                       →  ambiguities=()
+      "Dr. Smith"                 →  ambiguities=()
+    Accepted: ONE site takes both halves — the assignment that places
+    the lone name word — so neither report depends on the declared
+    order. Under the default order H1 retags the title-vocabulary
+    word from given to family afterwards; under a declared
+    family-first order the assignment places it in the family
+    directly and H1 never runs. Same reading either way, so the same
+    kind is reported either way.
+    Accepted: the suffix half is reached only where no title was
+    peeled first, so a title in front of the run takes the input out
+    of this rule and leaves it H1's — "Dr. King MD" reports nothing,
+    the credential having been read as the name after a title peel
+    rather than for want of one.
+      "Rinpoche"                  →  ambiguities=("suffix-or-name",)
+      "QC MP"                     →  given="QC"
+      "Jr."                       →  title="Jr."
+    Accepted: `Jr.` is post-nominal vocabulary and still reads as a
+    title, H2's opening-abbreviation shape outranking the vocabulary
+    where it fires — so the suffix half never sees a dotted lone
+    credential.
+    Accepted: the suffix half is scoped to names no script order
+    placed, so a lone CJK honorific written by itself — さん, 씨,
+    선생님 — reports nothing. The same shape, read through the
+    glued-honorific rules (W2) and the script's own order, and left
+    to the arc that revisits those readings.
+    Accepted: one name word that is a join (P3) carrying title
+    vocabulary reports `title-or-name` as well, the fork there being
+    whether the title word inside the unit is a title at all. The
+    measured inputs, `John of Prince` and `Smith and Prince`, are
+    pinned in the case table rather than here: a join led by a title
+    word is a title run (H3), so no corpus name reaches the branch.
+    interacts: H1, H2, H3, S2, O5 · implemented: nameparser/_pipeline/_assign.py
 
 ## Particles & surname prefixes (P)
 
@@ -1076,7 +1131,11 @@ O5. Rationale: O4 reads a name by comparing where its words stand,
     convention settles the order (W4) silences it, and so does the
     word's own claim — a particle, a bound given name, an initial's
     shape. A word with no letter or digit in it is no name word and
-    reports nothing (A2).
+    reports nothing (A2). Where the one name word is a join (P3)
+    carrying title vocabulary, or is itself title vocabulary left
+    standing by the title peel, the doubt reported is `title-or-name`
+    instead, which H4 states — so a title silences THIS kind, not
+    every report at the site.
       "Smith"                     →  given="Smith"
       "Garcia"  family-first      →  family="Garcia"
       "Sir John"                  →  given="John"

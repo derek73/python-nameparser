@@ -139,6 +139,35 @@ issue = "feat(#449) a glued Korean honorific leaves a Latin name word the script
 name_regex = "^Anderson선생님$"
 fields = ["_ambiguities", "given", "suffix"]
 
+# The two #491 rules sit beside #449's, same position rule: both
+# declare `fields = ["_ambiguities"]`, so they are disjoint from the
+# `suffix` rule that owns first place and ahead of every rule below
+# whose fields are a strict superset of theirs (#382's narrow-first
+# default).
+[[change]]
+issue = "feat(#491) an all-titles input reports title-or-name for the word the title peel left as the name"
+# rules.md#H4. Six corpus names, one alternative each -- a list of
+# NAMES, not a copy of TITLES: what selects them is the SHAPE (the
+# title peel leaves exactly one name word, and that word is itself
+# title vocabulary), and a member copying the wordlist would reach
+# 'Dr. Smith', 'Rabbi Cohen' and every other title-plus-surname name,
+# none of which moves. Declared in _NOT_A_VOCABULARY_COPY for that
+# reason. `_ambiguities` alone: the reading each of these gets is
+# unchanged, only the silence about it.
+name_regex = "(?i)^(?:Dr\\. King|His Holiness|His Holiness the Dalai Lama|Lord Chancellor|The Right Hon\\. the President of the Queen's Bench Division|The Rt Hon)$"
+fields = ["_ambiguities"]
+
+[[change]]
+issue = "feat(#491) an all-suffix input reports suffix-or-name for the word it made the name"
+# rules.md#H4's suffix half, emitted at assign's bare-suffix
+# carve-out. Two corpus names. A list of names, not a copy of
+# SUFFIX_WORDS or SUFFIX_ACRONYMS: a member copying either would reach
+# 'John Smith MD', 'Smith Jr.' and the rest of the corpus's credential
+# names, none of which moves -- what selects these two is that nothing
+# was left to be the name.
+name_regex = "(?i)^(?:QC MP|Rinpoche)$"
+fields = ["_ambiguities"]
+
 # #346: swami, guru, baba and lama moved from the TITLES-only block
 # into GIVEN_NAME_TITLES on 2026-09-06. rules.md#H1's Accepted clause
 # -- "a given-name title plus one name word leaves the family empty"

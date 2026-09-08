@@ -397,7 +397,29 @@ class AmbiguityKind(StrEnum):
     #: vd" takes ``vd`` for *van der* and declines the decoration.
     #: Which name part was declined depends on position and
     #: ``name_order``, so ``detail`` names it rather than the kind.
+    #: The same doubt covers an input that is nothing BUT post-nominal
+    #: vocabulary ("Rinpoche", "QC MP"): with no name word beside it
+    #: the first post-nominal is read as the name, because something
+    #: has to be one, and only that word reports.
     SUFFIX_OR_NAME = "suffix-or-name"
+    #: An input the title peel eats down to one last word which is
+    #: itself title vocabulary still has to name somebody, so that
+    #: word is read as the name -- "Lord Chancellor" gives family
+    #: "Chancellor". A convention, not evidence: this is a name parser
+    #: rather than a title parser, and handed a string whose every
+    #: remaining word is a title the alternative is a title with no
+    #: name at all. ``detail`` names that word. The report does not
+    #: depend on ``name_order``: it is made where the word is placed,
+    #: which is before the rule that moves it between fields.
+    #: A LONE title word reports nothing: "Dr." reads as a title
+    #: standing by itself, the peel left no word to be read as a
+    #: name, and no fork was taken.
+    #: One name word that is a JOIN carrying title vocabulary reports
+    #: this kind too ("John of Prince"): the unit is read as a name,
+    #: and whether the title word inside it is a title is the fork.
+    #: Not the title-vs-given-name collision on a word like "Baron",
+    #: which is a question about the VOCABULARY and is not this kind.
+    TITLE_OR_NAME = "title-or-name"
     #: An ambiguous particle is either a particle or a name in its own
     #: right -- "Van Johnson" is the actor's given name, a bare
     #: "Van Buren" the presidential surname, and the two-word shape
