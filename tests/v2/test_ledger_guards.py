@@ -2243,7 +2243,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # its parse is otherwise identical across the two surfaces.
         # Reach against explained, measured 2026-09-02 at baseline
         # 1.4.0 -- a snapshot of that run, not a standing count:
-        # 27/27, 1/1, 96/66, 41/19, 107/11, 18/2. The reach half is
+        # 27/27, 1/1, 96/66, 41/19, 107/11, 18/2 -- the particle chain's
+        # reach is 108 since 2026-09-07, when rules.md#P1's `de la Torre
+        # Vega` example joined the contract corpus (#471). The reach half is
         # what this roster holds; the explained half moves with the
         # corpus and is re-read from the gate. The phd rule's 18 is the widest
         # gap and the most literal regex -- `\bph\. d\.` matches every
@@ -2259,7 +2261,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(initials-per-word) a bound-given run initials each word (facade, since 2.0.0)":
             _Claim(41, ('_initials',), "e99f56c955d5", ('DEFAULT',)),
         "fix(initials-per-word) a particle chain inside a name part initials each word (facade, since 2.0.0)":
-            _Claim(107, ('_initials',), "bdc4da864f59", ('DEFAULT',)),
+            _Claim(108, ('_initials',), "45f0b2c1a7d4", ('DEFAULT',)),
         "fix(initials-per-word) the Ph. D. merge initials each word (facade, since 2.0.0)":
             _Claim(18, ('_initials',), "f67d8ebddd56", ('DEFAULT',)),
     },

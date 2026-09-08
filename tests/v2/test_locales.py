@@ -14,7 +14,7 @@ import pytest
 from nameparser import Locale, Parser, locales, parse, parser_for
 from nameparser._lexicon import _VOCAB_FIELDS, Lexicon
 from nameparser._policy import (
-    UNSET, PatronymicRule, Policy, Script, _SCRIPT_RANGES,
+    FAMILY_FIRST, UNSET, PatronymicRule, Policy, Script, _SCRIPT_RANGES,
 )
 from nameparser._types import AmbiguityKind
 from nameparser.locales import ja as _ja
@@ -728,6 +728,36 @@ def test_parser_for_results_chain_as_bases() -> None:
         {PatronymicRule.EAST_SLAVIC, PatronymicRule.TURKIC})
     assert chained.parse("Сидоров Иван Петрович").given == "Иван"
     assert chained.parse("Mammadova Aygun Ali kizi").family == "Mammadova"
+
+
+def test_the_rotation_stands_down_under_a_declared_family_first_order(
+        ) -> None:
+    """#384 option 1: O1's rotation is the DEFAULT order's work.
+
+    It exists to RESTORE the given-first reading from a family-first
+    listing, so a caller who has DECLARED FAMILY_FIRST has already
+    supplied what it would have inferred and position decides
+    instead. Scoped by construction, not by an order test: the
+    rotation reads the word in the FAMILY position for a patronymic
+    ending, and only the default order puts a name's last word
+    there.
+
+    Both halves are one measurement. The family-first listing reads
+    the same either way, and the natural-order name reads as the
+    caller declared it -- family 'Иван' -- which is the divergence
+    #384 measured, Accepted in docs/design/decisions.md#O1 rather
+    than treated as a defect. rules.md#O1 states it in prose because
+    an example line there takes ONE annotation, a pack or an order,
+    never both.
+    """
+    ff = parser_for(locales.RU,
+                    base=Parser(policy=Policy(name_order=FAMILY_FIRST)))
+    listing = ff.parse("Сидоров Иван Петрович")
+    assert (listing.family, listing.given, listing.middle) == (
+        "Сидоров", "Иван", "Петрович")
+    natural = ff.parse("Иван Петрович Сидоров")
+    assert (natural.family, natural.given, natural.middle) == (
+        "Иван", "Петрович", "Сидоров")
 
 
 def test_locales_import_is_lazy(monkeypatch: pytest.MonkeyPatch) -> None:
