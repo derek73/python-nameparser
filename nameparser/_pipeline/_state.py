@@ -55,6 +55,16 @@ class WorkToken:
     role: Role | None = None
 
 
+#: M4's two carve-outs, as the tags classify recorded them: a bound
+#: given-name word is vocabulary claiming the word as a given name,
+#: and `initial` is the shape claim. Neither is a predicate M4 owns.
+#: Shared here beside WorkToken.tags for the reason COMMA_CHARS is:
+#: assign's `_WORD_ALREADY_CLAIMED` is built from this pair, and the
+#: two stages must not drift (post_rules imports _assign, so _assign
+#: cannot reach the other way).
+_NEVER_FLIPPED = frozenset({"vocab:bound-given", "initial"})
+
+
 class Structure(Enum):
     """segment's comma-structure decision."""
 

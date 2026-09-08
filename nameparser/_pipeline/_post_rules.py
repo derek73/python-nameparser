@@ -26,7 +26,8 @@ import re
 from nameparser._lexicon import _title_key
 from nameparser._pipeline._assign import _name_positions
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, Structure, WorkToken, comma_bucket,
+    ParseState, PendingAmbiguity, Structure, WorkToken, _NEVER_FLIPPED,
+    comma_bucket,
 )
 from nameparser._pipeline._vocab import delimiter_cores
 from nameparser._policy import PatronymicRule
@@ -50,11 +51,6 @@ _TURKIC_CYR = re.compile(
 
 
 _NAME_ROLES = (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
-
-#: M4's two carve-outs, as the tags classify recorded them: a bound
-#: given-name word is vocabulary claiming the word as a given name,
-#: and `initial` is the shape claim. Neither is a predicate M4 owns.
-_NEVER_FLIPPED = frozenset({"vocab:bound-given", "initial"})
 
 #: The roles that are transparent to a run of post-nominals (R1's
 #: entry pass below). These three roles render into fields other than

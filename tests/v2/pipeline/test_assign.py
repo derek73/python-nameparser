@@ -14,6 +14,16 @@ from nameparser._policy import (
 )
 from nameparser._types import AmbiguityKind, Role
 
+#: The three read orders and the role a lone name word takes under
+#: each, shared by every parametrized case below that asks the same
+#: question of all three: the default (None, given-first), and the two
+#: declared family-first orders.
+_ORDERS = [
+    (None, "given"),
+    (Policy(name_order=FAMILY_FIRST), "family"),
+    (Policy(name_order=FAMILY_FIRST_GIVEN_LAST), "family"),
+]
+
 _LEX = Lexicon(
     titles=frozenset({"dr", "mr", "mrs", "sir", "sr"}),
     given_name_titles=frozenset({"sir"}),
@@ -83,11 +93,7 @@ def test_leading_ambiguous_particle_reads_as_given_with_ambiguity() -> None:
     assert not _assigned("John Smith").ambiguities
 
 
-@pytest.mark.parametrize("policy,role", [
-    (None, "given"),
-    (Policy(name_order=FAMILY_FIRST), "family"),
-    (Policy(name_order=FAMILY_FIRST_GIVEN_LAST), "family"),
-])
+@pytest.mark.parametrize("policy,role", _ORDERS)
 def test_leading_particle_detail_names_the_role_it_took(
         policy: Policy | None, role: str) -> None:
     # The fork is the same under every order -- particle or name --
@@ -104,11 +110,7 @@ def test_leading_particle_detail_names_the_role_it_took(
         f"read as a {role} name")
 
 
-@pytest.mark.parametrize("policy,role", [
-    (None, "given"),
-    (Policy(name_order=FAMILY_FIRST), "family"),
-    (Policy(name_order=FAMILY_FIRST_GIVEN_LAST), "family"),
-])
+@pytest.mark.parametrize("policy,role", _ORDERS)
 @pytest.mark.parametrize("text,kind,detail", [
     ("Andrew", AmbiguityKind.GIVEN_OR_FAMILY,
      "'Andrew' is the only name word and nothing else decides it; "
