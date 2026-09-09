@@ -355,13 +355,14 @@ def post_rules(state: ParseState) -> ParseState:
     # rules.md#H1: "a title followed by exactly one name word makes
     # that word the family name, whatever suffix, nickname or maiden
     # name stands beside it, unless the title is a given-name title,
-    # which keeps it the given name" -- counting those three as
-    # further name words is what emptied the family (#410)
+    # which keeps it the given name; a run of several titles addresses
+    # as its last title does" -- counting suffix, nickname and maiden
+    # as further name words is what emptied the family (#410)
     # (known gap: the guard tests which roles are unoccupied, it does
     # not count units -- decisions.md#H1) (v1 handle_firstnames)
     #
-    # rules.md#H1 -- a RUN of several titles addresses as its last
-    # title does (#489), so 'Her Majesty Queen Elizabeth' reads given
+    # rules.md#H1: "a run of several titles addresses as its last
+    # title does" -- #489, so 'Her Majesty Queen Elizabeth' reads given
     # 'Elizabeth': the run is not a given-name title but 'queen' is.
     # The predicate lives beside _title_key because the P5 licence in
     # group asks the same question of the same run, and a run read two

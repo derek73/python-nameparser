@@ -9,7 +9,7 @@ in the Han/Hiragana/Katakana repertoire the #272 kana license shares
 across pieces); token/piece tags; Lexicon only through tags already
 applied by classify (plus the leading-title period rule).
 
-Implements rules H2, H4, N3, O4, O5 and W4 of docs/design/rules.md,
+Implements rules H2, H4, H5, N3, O4, O5 and W4 of docs/design/rules.md,
 each cited at its code below. Ports v1's assignment loops.
 NO_COMMA (per name_order):
 leading title pieces chain while no given-position name has been seen
@@ -269,7 +269,10 @@ def _assign_main(seg_idx: int, state: ParseState,
     # they then stand, and that second answer is the only one that
     # places a piece or reports a fork.
     peeled = peel_trailing(rest, pieces, ptags, tokens)
-    # rules.md#H5 -- the trailing title run, read over what the suffix
+    # rules.md#H5: "successive single words that wear the abbreviation
+    # shape and are title vocabulary chain into the title from the end,
+    # leaving one name word standing"
+    # -- read over what the suffix
     # peel left and set BEFORE _name_positions, so the shortened list is
     # what the positional read and the script test both see (a trailing
     # Latin title must not make a wholly-CJK name look mixed-script, the
@@ -603,7 +606,11 @@ def assign(state: ParseState) -> ParseState:
                 n = len(pieces)
             else:
                 n = _peel_leading_titles(pieces, ptags, tokens)
-                # rules.md#H5 -- the trailing title run, on this walk
+                # rules.md#H5: "the title is TRANSPARENT to the suffix
+                # reading: where two or more name words stand, what
+                # stands once the chain is taken reads exactly as it
+                # would read written without the title, plus the title"
+                # -- the trailing title run, on this walk
                 # too. A name word in segment 1 is what keeps the gate
                 # above from reading the segment as a credential run,
                 # so 'Smith, John Prof.' had no route to title at all

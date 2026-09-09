@@ -105,10 +105,9 @@ def leading_titles(pieces: Sequence[Sequence[int]],
             n += 1
             continue
         break
-    # rules.md#H3 -- the run gives back its last piece when that piece
-    # is a name candidate: where everything behind the run is a suffix
-    # piece, the run hands its last piece back, provided that piece is
-    # one word and is not itself suffix vocabulary.
+    # rules.md#H3: "where everything behind the run is post-nominal,
+    # the run gives its last word back to the name, provided that word
+    # stands alone and is not itself suffix vocabulary"
     #
     # ONE WORD, because a joined unit led by a title is a title run and
     # handing it back would lose the title: 'Prince of Wales Jr' reads
@@ -118,8 +117,11 @@ def leading_titles(pieces: Sequence[Sequence[int]],
     # Two residuals. A run whose last word IS suffix vocabulary is not
     # given back, so 'Dr King MD PhD' still reads title 'Dr King MD',
     # family 'PhD'. And the floor asks is_suffix_piece, which vetoes a
-    # bare initial-shaped numeral, so 'Dr King V' still reads family
-    # 'V' -- that numeral fork is outside this floor.
+    # bare initial-shaped numeral, so 'Dr King V' keeps the whole run
+    # as the title and reads the numeral as the name -- given 'V',
+    # 'king' being a given-name title and the run's last word, where
+    # 'Dr Smith V' reads suffix 'V'. That numeral fork is outside this
+    # floor (decisions.md#H3).
     #
     # The two inline tag reads are the cheapest NECESSARY condition for
     # the piece behind the run to be a suffix piece at all --
@@ -363,8 +365,9 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     return Peel(k, numeral, tuple(picks))
 
 
-# rules.md#H5 -- the trailing run's own predicate, and a forward note
-# rather than a citation until H5 is written. NOT is_leading_title:
+# rules.md#H5: "only a word the vocabulary knows as a title is one,
+# and a bare title word is a name word"
+# -- the trailing run's own predicate. NOT is_leading_title:
 # that predicate carries H2's unlisted-abbreviation inference, which is
 # the LEADING slot's shape rule and has no trailing counterpart, so
 # with it 'John Smith Xyz.' would lose its family name to a title

@@ -739,10 +739,24 @@ word after the given name is a middle name:
 Because this is structural rather than vocabulary-driven, emptying
 ``titles`` does not switch it off; see :doc:`customize`.
 
-Only the title direction is inferred this way. A *trailing*
-abbreviation is matched against the suffix vocabulary and nothing more,
-so an abbreviated post-nominal is recognized only if it is a word the
-parser already knows.
+Only the leading slot INFERS. At the back of a name a period-marked
+word is read by vocabulary alone: a word the parser already knows as a
+post-nominal or as a title reads as one, and an unfamiliar abbreviation
+stays a name word.
+
+.. doctest::
+
+    >>> parse("John Smith Prof.").title
+    'Prof.'
+    >>> parse("John Smith Xyz.").family
+    'Xyz.'
+
+That asymmetry is deliberate. The title vocabulary holds hundreds of
+words that are ordinary surnames — ``king``, ``judge``, ``bishop`` —
+so inferring a trailing title from the shape alone would cost real
+names their family field. The period is what separates the two: a
+trailing title word written *without* one is a name word, so
+``parse("Mary Jane King").family`` is ``'King'``.
 
 Comparing names
 ----------------
