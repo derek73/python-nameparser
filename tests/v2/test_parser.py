@@ -675,26 +675,39 @@ def test_the_p5_licence_and_h1_read_a_title_run_the_same_way(
         title: str) -> None:
     # The licence's one invariant, as a contract: P5 lifts the reserve
     # behind a title run exactly when H1 keeps the one word after that
-    # run a given name. Both ask _run_addresses_by_given -- the whole
-    # run's key, or the run's last word's (#489); if either side's read
-    # drifted, a run P5 licensed that H1 then read as title-plus-family
-    # would hand the joined pair to the family. So "no family" must
-    # agree, run by run.
+    # run a given name. Both ask _run_addresses_by_given, of the
+    # LEADING run, for the whole run's key or the run's last word's
+    # (#489); if either side's read drifted, a run P5 licensed that H1
+    # then read as title-plus-family would hand the joined pair to the
+    # family. So "no family" must agree, run by run.
     assert (parse(f"{title} John").family == "") == \
         (parse(f"{title} abdul rahman").family == "")
-    # The same invariant with a trailing title behind the pair. P5's
-    # reserve counts the name words assign's peel AND the H5 walk
-    # leave, so a period-marked title word at the back is not one of
-    # them; H1 reads the TITLE role, which by then holds both ends of
-    # the name. Both sides must still agree about "no family" -- and
-    # they do run by run, though the two halves reach it differently:
-    # behind a given-name title the join fires and H1 then hands the
-    # pair to the family (the run keys 'sir prof'), while behind an
-    # ordinary one the reserve declines the join and the two words
-    # split. Either way a family stands, as it does for the one-word
-    # spelling.
-    assert (parse(f"{title} John Prof.").family == "") == \
-        (parse(f"{title} abdul rahman Prof.").family == "")
+    # The same invariant with a trailing title behind the pair, and
+    # stated the way rules.md#H5's transparency clause states it
+    # rather than as agreement between the two halves: `X Prof.` is
+    # `X` plus a title, so adding the title moves NEITHER field. That
+    # is what discriminates. Comparing the two spellings' "no family"
+    # to each other passes under the composite keying this replaced,
+    # where H1 read the TITLE role -- both ends of the name by then --
+    # as one run: `sir prof` addresses by neither word, so both
+    # spellings handed their name words to the family together and
+    # agreed while both were wrong. Pinned by mutation: restore the
+    # whole-`titles` key and every given-name-title row below fails
+    # here (2026-09-09).
+    #
+    # The NICKNAME spellings are here because the first fix for this
+    # split the run at the first token of another role, which a
+    # nickname written in front of the titles satisfies -- so
+    # "'Smitty' Sir Jones Prof." found no leading run and read family
+    # 'Jones' where "'Smitty' Sir Jones" reads given. What decides is
+    # the name WORD, H1's rationale saying in as many words that a
+    # nickname beside it does not decide the reading, and only these
+    # rows can tell the two splits apart.
+    for suffixless in (f"{title} John", f"{title} abdul rahman",
+                       f"'Smitty' {title} John",
+                       f"'Smitty' {title} abdul rahman"):
+        plain, titled = parse(suffixless), parse(f"{suffixless} Prof.")
+        assert (titled.given, titled.family) == (plain.given, plain.family)
 
 
 # The first three reach the chain loop and decline inside it: the piece

@@ -1771,12 +1771,15 @@ orders = ["DEFAULT"]
 # THE 2.3 TITLE-RUN BUNDLE: #489 (a title run addresses by its last
 # title), #316 (a trailing period-marked title word reads as a
 # title), the leading peel's name-word floor, and the `esq` acronym
-# drop that shipped beside them. Four rules, one per ARGUMENT rather
-# than one per name, over twenty-one corpus names.
+# drop that shipped beside them. Five rules, four of them one per
+# ARGUMENT rather
+# than one per name, plus a fifth that is #316's argument again on
+# the one name a script-classified alternation cannot hold. Over
+# twenty-four corpus names.
 #
 # LAST in the file, and that is narrow-first rather than a
 # preference: every rule already here that REACHES one of the
-# twenty-one declares `fields` that are a strict subset of the bundle
+# twenty-four declares `fields` that are a strict subset of the bundle
 # rule claiming that name, and a wide rule sitting AHEAD of a
 # narrower one it shares a corpus name with is an order-decided
 # contest the run refuses (#382). Measured 2026-09-08, all four
@@ -1790,10 +1793,10 @@ orders = ["DEFAULT"]
 # and no [[change.precedes_narrower]] block is needed anywhere.
 #
 # `_initials` appears in none of the four field lists although the
-# initials of several of the twenty-one do move. The derived view
+# initials of several of the twenty-four do move. The derived view
 # enters a diff only where every ROLE and every ambiguity kind
 # agrees (compare.py's _RULE_FIELDS, main()'s roles-identical
-# guard), and all twenty-one move roles -- so no run can produce a
+# guard), and all twenty-four move roles -- so no run can produce a
 # shape here carrying it, and validate_rules refuses it beside
 # another field in any case.
 # ---------------------------------------------------------------
@@ -1910,7 +1913,7 @@ issue = "fix(#316) a trailing period-marked title word reads as a title"
 # generational suffix to the family name, and 'John Prof. MA' reads
 # family 'MA' by rules.md#S2's reserve.
 #
-# Five roles, the union of what the fourteen move; no name moves all
+# Five roles, the union of what the sixteen move; no name moves all
 # five (four is the most, 'John Smith Jr. Prof.'), and two move only
 # two at every baseline -- 'Smith, John Prof.' {title, middle} and
 # 'Smith Sir.' {title, family} -- with 'Mary Jane King.' moving three.
@@ -1921,12 +1924,12 @@ issue = "fix(#316) a trailing period-marked title word reads as a title"
 # wheels). `_ambiguities` is not among the five, and it is not
 # because no name reports one: 'John Prof. MA' reports
 # `suffix-or-name`, which is S2's bare-acronym reserve and not this
-# rule. None of the fourteen reports `title-or-name` -- the walk
+# rule. None of the sixteen reports `title-or-name` -- the walk
 # leaves a title standing, so H4's title half never fires -- and the
 # derived view cannot enter a diff here in any case, every one of the
-# fourteen moving roles (compare.py's _RULE_FIELDS).
+# sixteen moving roles (compare.py's _RULE_FIELDS).
 #
-# TWO of the fourteen end in ' Dr.' and are also reached by
+# TWO of the sixteen end in ' Dr.' and are also reached by
 # fix(#296)'s trailing-`dr` rule above -- 'John Smith Dr.', which
 # that rule used to explain, and 'John Smith Prof. Dr.'. That rule
 # declares {middle, family, suffix} and neither diff fits it now, so
@@ -1949,7 +1952,7 @@ issue = "fix(#316) a trailing period-marked title word reads as a title"
 # reach a title role at all, so it could not claim the diff even
 # placed ahead of this one.
 #
-# An anchored alternation of the fourteen NAMES rather than a shape.
+# An anchored alternation of the sixteen NAMES rather than a shape.
 # What selects them is a SHAPE -- period-marked, listed, trailing --
 # and a member copying TITLES would reach the BARE 'Mary Jane King'
 # and 'John Smith Sir', which do not move; the period-marked
@@ -1968,9 +1971,53 @@ issue = "fix(#316) a trailing period-marked title word reads as a title"
 # the \\( and \\) the paren-bearing rules above use. Escaped or not, a
 # literal parenthesis inside an alternation body hides the WHOLE
 # group from test_ledger_guards._alternations -- its member pattern
-# excludes '(' and ')' -- and a fourteen-member alternation should not
+# excludes '(' and ')' -- and a sixteen-member alternation should not
 # be invisible to the discovery pass that demands every alternation
 # declare what it copies. The two spellings match the same string.
 # One set, identical in all four ledgers.
-name_regex = "^(?:Andrew Perkins \\x28Mgr\\.\\x29|Dr\\. John Smith Prof\\.|John Prof\\. MA|John Smith Dr\\.|John Smith Jr\\. Prof\\.|John Smith Mr\\.|John Smith Prof\\.|John Smith Prof\\. Dr\\.|John Smith Prof\\. Jr\\.|John Smith Rev\\.|Mary Jane King\\.|Smith Prof\\.|Smith Sir\\.|Smith, John Prof\\.)$"
+name_regex = "^(?:Andrew Perkins \\x28Mgr\\.\\x29|Dr\\. John Smith Prof\\.|Dr\\. Smith Sir\\.|John Prof\\. MA|John Smith Dr\\.|John Smith Jr\\. Prof\\.|John Smith Mr\\.|John Smith Prof\\.|John Smith Prof\\. Dr\\.|John Smith Prof\\. Jr\\.|John Smith Rev\\.|Mary Jane King\\.|Sir John Prof\\.|Smith Prof\\.|Smith Sir\\.|Smith, John Prof\\.)$"
 fields = ["family", "given", "middle", "suffix", "title"]
+
+[[change]]
+issue = "fix(#316) a trailing Latin title on a native-script name is a title"
+# '毛 泽东 Dr.': the rule above's walk, on the one corpus name it
+# reaches that is not Latin-only. The walk runs BEFORE the positional
+# read, so the pieces the script test sees are all Han and the
+# family-first order stands -- this is '毛 泽东' plus a title, and
+# it reads title 'Dr.', given '泽东', family '毛'. A Latin title at
+# the back of a wholly-Han name is the one piece that would make the
+# piece set look mixed-script, which is what the ordering of the two
+# buys.
+#
+# ITS OWN rule rather than a seventeenth alternative above, and not by
+# preference: an alternation holding a script-classified member is
+# claimed by the honorific pin in tests/v2/test_ledger_guards.py,
+# which requires such an alternation's members to BE the config's CJK
+# honorific entries. So this stands alone, literal-anchored, reaching
+# exactly one corpus name (_CORPUS_CLAIMS carries the 1) with
+# _MUST_NOT_MATCH probes for the boundary -- the same shape the four
+# #436/#437 CJK rules above take, and for the same reason.
+#
+# Classified 2026-09-09, in the review round that fixed which title
+# run H1 addresses by; the reading itself is untouched by that fix.
+# The name is RADAR tier (corpus_cjk_tolerated.jsonl, tolerated since
+# the 2026-09-01 CJK demotion) and it had been printing UNCLASSIFIED
+# at all four gates since the trailing walk landed. Radar never
+# blocks, so nothing failed -- and this bundle's convention is that
+# every gate line reads `radar unclassified: 0`, which is the whole
+# reason the row is here rather than left to print.
+#
+# FOUR roles here, and NOT the same four at every baseline, which is
+# why this is the one bundle rule whose `fields` differ per ledger.
+# This baseline reads as 1.4.0 does -- first '毛', last '泽东',
+# suffix 'Dr.' -- so `title`, `given`, `family` and `suffix` all move.
+#
+# Literal and anchored, so the reach cannot widen into the other
+# twenty-nine tolerated CJK names. _MUST_NOT_MATCH carries three of
+# them as probes: '王先生, V.' (a Latin post-nominal behind a
+# comma, which the trailing walk never sees), '田中さん, Dr.' (the
+# comma spelling of this very shape, routed by the segment gate) and
+# '田中さん II' (a spaced Latin post-nominal that is not title
+# vocabulary).
+name_regex = "^毛 泽东 Dr\\.$"
+fields = ["family", "given", "suffix", "title"]

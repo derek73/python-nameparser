@@ -344,6 +344,36 @@ def _is_lone_never_given_particle(site: tuple[int, ...],
             and "vocab:particle-ambiguous" not in tokens[site[0]].tags)
 
 
+def _addressing_run(titles: list[int], name_word: int) -> list[int]:
+    """The title run H1 asks about: the LEADING one where one stands,
+    else the whole (trailing) run -- rules.md#H1 -- the run standing
+    BEFORE the one name word being the run that addresses, and a run
+    standing behind it deciding that word's field only when none
+    stands before.
+
+    Keeping the two ends apart is what makes a trailing title
+    TRANSPARENT (rules.md#H5): `Sir John Prof.` is `Sir John` plus a
+    title, and reading both ends as one run keyed 'sir prof' made
+    adding the title flip the name word's field (#489, #316).
+
+    The split is at the NAME WORD, not at the first token of another
+    role, and the difference is a nickname or a maiden name written
+    among the titles. H1's own rationale says what stands beside the
+    name word "does not make the name any longer, so it does not
+    decide this reading", and that has to hold for WHICH run
+    addresses as well as for how many words the name has: `Dr.
+    'Smitty' Sir John` is one run written around a nickname and reads
+    given 'John' as `Dr. Sir John` does, while `'Smitty' Dr. Jones
+    Sir.` keeps family 'Jones' as `Dr. Jones Sir.` does. Splitting on
+    the first non-title token got both wrong (measured 2026-09-09).
+
+    Called only from inside H1's guard, after the role counts have
+    short-circuited, so a name with a family never builds this list;
+    `name_word` is the first GIVEN, which that guard has already
+    proved is the only name word there is."""
+    return [i for i in titles if i < name_word] or titles
+
+
 def post_rules(state: ParseState) -> ParseState:
     tokens = list(state.tokens)
     ambiguities = list(state.ambiguities)
@@ -362,14 +392,21 @@ def post_rules(state: ParseState) -> ParseState:
     # not count units -- decisions.md#H1) (v1 handle_firstnames)
     #
     # rules.md#H1: "a run of several titles addresses as its last
-    # title does" -- #489, so 'Her Majesty Queen Elizabeth' reads given
-    # 'Elizabeth': the run is not a given-name title but 'queen' is.
+    # title does, and where a run stands BEFORE the one name word it
+    # is the run that addresses, a run standing behind it deciding
+    # that word's field only when none stands before" -- #489, so 'Her
+    # Majesty Queen Elizabeth' reads given 'Elizabeth': the run is not
+    # a given-name title but 'queen' is. WHICH run is _addressing_run's
+    # question; every title token is in the TITLE role by now, both
+    # ends of 'Sir John Prof.' among them, and keying the two ends as
+    # one run made the trailing title change the leading one's reading.
     # The predicate lives beside _title_key because the P5 licence in
     # group asks the same question of the same run, and a run read two
     # ways is a rule contradicting itself (decisions.md#P5, #369).
     if (titles and givens and not middles and not families
             and not _run_addresses_by_given(
-                (tokens[i].text for i in titles),
+                (tokens[i].text
+                 for i in _addressing_run(titles, givens[0])),
                 state.lexicon.given_name_titles)):
         for i in givens:
             _retag(tokens, i, Role.FAMILY)

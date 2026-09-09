@@ -3820,20 +3820,80 @@ CASES: tuple[Case, ...] = (
                "last 'Prof.'"),
     Case("title_word_trailing_behind_a_licensed_bound_pair",
          "Sir abdul rahman Prof.",
-         {"title": "Sir Prof.", "family": "abdul rahman"},
+         {"title": "Sir Prof.", "given": "abdul rahman"},
          classification="fix(#316)",
-         notes="the licensed half of the row above, and where the "
-               "trailing title is NOT transparent: the join fires "
-               "('sir' asserts a given name follows), and H1 then "
-               "reads the TITLE ROLE -- both ends of the name -- as "
-               "one run keyed 'sir prof', which does not address by "
-               "given name, so the pair becomes the family. 'Sir "
-               "abdul rahman' alone reads given 'abdul rahman'. The "
-               "same movement 'Sir John Prof.' shows against 'Sir "
-               "John', so it is H1's run composition and not P5's "
-               "reserve; recorded here rather than changed "
-               "(measured 2026-09-09). 1.4.0 read title 'Sir' / "
-               "first 'abdul rahman' / last 'Prof.'"),
+         notes="the licensed half of the row above, and transparent "
+               "at both ends: the join fires ('sir' asserts a given "
+               "name follows) and the joined pair stays the GIVEN "
+               "name, which is what 'Sir abdul rahman' reads without "
+               "the trailing title. Two fixes were needed and this "
+               "row took both. P5's reserve had counted the trailing "
+               "title word as a name word to spare, which made the "
+               "join fire for the wrong reason; with that corrected "
+               "the join is right and the field was still wrong, H1 "
+               "reading the TITLE ROLE -- both ends of the name by "
+               "then -- as one run keyed 'sir prof', which addresses "
+               "by neither word, so the pair became the family. H1 "
+               "now asks the LEADING run, and 'Sir John Prof.' "
+               "against 'Sir John' is the same movement in one word "
+               "(rules.md#H1, both are examples there). 1.4.0 read "
+               "title 'Sir' / first 'abdul rahman' / last 'Prof.' "
+               "(measured 2026-09-09)"),
+    Case("title_word_trailing_behind_a_bound_pair_after_a_comma",
+         "Berg, abdul Prof.",
+         {"given": "abdul Prof.", "family": "Berg"},
+         notes="the recorded GAP in rules.md#H5's P5 clause, pinned "
+               "here rather than by an example there so that "
+               "recording it does not make it normative. After a "
+               "family comma the reserve reads no peel (rules.md#P5), "
+               "so the bound join fires over the trailing title word "
+               "and takes it into the given name; the trailing walk "
+               "never sees it. The comma-less spelling is "
+               "transparent -- 'Sir abdul rahman Prof.' above -- and "
+               "so is this segment with an ordinary given name, "
+               "'Smith, John Prof.' reading title 'Prof.'. PARITY, "
+               "which is why it is not a fix row: 1.4.0 read first "
+               "'abdul Prof.', last 'Berg' too (measured 2026-09-09). "
+               "Tracked as part of #316"),
+    Case("title_run_leading_addresses_over_a_trailing_title",
+         "Sir John Prof.",
+         {"title": "Sir Prof.", "given": "John"},
+         classification="fix(#316)",
+         notes="rules.md#H1's clause in one word: the run BEFORE the "
+               "one name word addresses, so this is 'Sir John' plus a "
+               "title and the given name survives the title being "
+               "added. Keying every TITLE token as one run gave 'sir "
+               "prof', which addresses by neither, and read family "
+               "'John'. 1.4.0 read title 'Sir' / first 'John' / last "
+               "'Prof.' (measured 2026-09-09)"),
+    Case("title_run_leading_given_name_title_over_a_trailing_title",
+         "Queen Elizabeth Prof.",
+         {"title": "Queen Prof.", "given": "Elizabeth"},
+         classification="fix(#316)",
+         notes="the same clause where the leading run is a ONE-word "
+               "given-name title that is also an ordinary surname. "
+               "'Queen Elizabeth' reads given 'Elizabeth' and adding "
+               "the trailing title does not move it; the composite "
+               "key 'queen prof' read family 'Elizabeth'. Not a "
+               "rules.md example -- 'Sir John Prof.' carries the "
+               "clause there -- and kept because `queen` is the "
+               "vocabulary entry #489's run arm turns on. 1.4.0 read "
+               "title 'Queen' / first 'Elizabeth' / last 'Prof.' "
+               "(measured 2026-09-09)"),
+    Case("title_run_leading_addresses_over_a_trailing_given_name_title",
+         "Dr. Smith Sir.",
+         {"title": "Dr. Sir.", "family": "Smith"},
+         classification="fix(#316)",
+         notes="the mirror, and the reading the clause's ordering "
+               "decides: a trailing given-name title does NOT lift "
+               "the leading run's reading, so this is 'Dr. Smith' "
+               "plus a title and the family stands. The composite key "
+               "'dr sir' matched on 'sir' and read given 'Smith'. "
+               "Where NO run stands in front the trailing one does "
+               "decide -- 'Smith Sir.' reads given 'Smith', a "
+               "rules.md#H1 example unchanged by this. 1.4.0 read "
+               "title 'Dr.' / first 'Smith' / last 'Sir.' (measured "
+               "2026-09-09)"),
     Case("title_word_trailing_after_a_maiden_take",
          "Mary Smith née Jones Prof.",
          {"given": "Mary", "family": "Smith", "maiden": "Jones Prof."},

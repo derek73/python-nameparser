@@ -41,19 +41,29 @@ H1. Rationale: a title normally addresses by surname, so a title
     a suffix, a nickname, a maiden name — does not make the name any
     longer, so it does not decide this reading. And a run written
     BEHIND the one name word is the same form of address written on
-    the other side of it, so it decides the same reading.
+    the other side of it, so where no title run stands in front of
+    that word it decides the same reading. Where one does stand in
+    front, that run addresses: a title written behind the name is
+    the name plus that title (H5), and adding it cannot change how
+    the words in front of the name are read. Which side a title is
+    on is decided by the NAME WORD and by nothing else standing
+    beside it, so a run written around a nickname is one run: the
+    name Dr. 'Smitty' Sir John reads as Dr. Sir John does.
     A title followed by exactly one name word makes that word the
     family name, whatever suffix, nickname or maiden name stands
     beside it, unless the title is a given-name title, which keeps
     it the given name; a run of several titles addresses as its last
-    title does, and a title run standing BEHIND the one name word
-    decides that word's field the same way.
+    title does, and where a run stands BEFORE the one name word it
+    is the run that addresses, a run standing behind it deciding
+    that word's field only when none stands before.
       "Mr. Johnson"               →  family="Johnson"
       "Mrs. Garcia"               →  family="Garcia"
       "Dr. Smith née Jones"       →  family="Smith"
       "Her Majesty Queen Elizabeth"  →  given="Elizabeth"
       "Dr. Sir John"              →  given="John"
       "Smith Sir."                →  given="Smith"
+      "Sir John Prof."            →  given="John"
+      "Dr. Smith Sir."            →  family="Smith"
       "His Excellency Lord Duncan"  →  family="Duncan"
       "Sir John"                  →  given="John"  · boundary
     Accepted: a given-name title plus one name word leaves the
@@ -246,9 +256,12 @@ H5. Rationale: a word abbreviated with a period at the END of a name
     TRANSPARENT to the suffix reading: where two or more name words
     stand, what stands once the chain is taken reads exactly as it
     would read written without the title, plus the title. Where the
-    chain leaves ONE name word, there is no second reading for it to
-    be transparent to, and the title behind that word decides its
-    field as a title in front of it would (H1).
+    chain leaves ONE name word and no title run stands in front of
+    it, there is no second reading for it to be transparent to, and
+    the title behind that word decides its field as a title in front
+    of it would (H1). Where a run DOES stand in front, that run
+    addresses and the chained title only joins the title field, so
+    the transparency holds for the one-word name too.
       "John Smith Prof."          →  title="Prof."
       "John Smith Prof."          →  family="Smith"
       "John Smith Prof. Dr."      →  title="Prof. Dr."
@@ -298,7 +311,16 @@ H5. Rationale: a word abbreviated with a period at the END of a name
     Accepted: what the chain leaves is also what counts as a name
     word to spare (P5). A trailing title word is not one, so a bound
     given-name word behind one joins exactly as it joins with the
-    title absent.
+    title absent — and lands in the same field, the run in FRONT of
+    the joined pair being the run H1 asks about. Said of the
+    comma-less writing, which is where the chain runs before the
+    reserve is read. After a family comma the reserve reads no peel
+    at all (P5), so the join there takes the trailing title word into
+    the given name and the chain never sees it, where the same
+    segment writing with an ordinary given name reads the title. A
+    gap in the segment path rather than a boundary of this rule, and
+    tracked as part of #316. Pinned by a case row rather than by an
+    example here, so recording the gap does not make it normative.
     history: decisions.md#H5 · interacts: H1, H2, H3, H4, M2, P2, P5, S2, C1 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py
 
 ## Particles & surname prefixes (P)

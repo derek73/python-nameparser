@@ -1950,8 +1950,13 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: entered it, so the scan went 52 -> 53 and the roster 50 -> 51.
 #: Recounted 2026-09-08 with the title-run bundle: one name entered the
 #: population, 'John Smith Rev.', the only one of that bundle's
-#: twenty-one movers no test literal names, and it took a row at each
-#: of the four baselines. It is named NOWHERE under tests/, so it
+#: movers no test literal names, and it took a row at each
+#: of the four baselines. Re-checked 2026-09-09 in that bundle's second
+#: review round, when its mover list went from twenty-one to
+#: twenty-four: none of the three arrivals joins the population, all
+#: three being named as case-row literals in tests/v2/cases.py
+#: ('Sir John Prof.', 'Dr. Smith Sir.', '毛 泽东 Dr.'), so the row
+#: counts below are unmoved. It is named NOWHERE under tests/, so it
 #: counts in both scans -- the every-file figures in the RECOMPUTE
 #: paragraph below count it too. That commit moved the ROW counts and nothing
 #: else: it did not re-derive the population clause above, so the

@@ -762,7 +762,18 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # title run through the ONE predicate post_rules asks
                 # for H1, so the two rules cannot disagree about what
                 # one run asserts; what it reads is the whole run's key
-                # or that key's LAST word (#489). H2's unlisted
+                # or that key's LAST word (#489). And it is the same
+                # RUN on both sides: `range(fk)` is the pieces AHEAD of
+                # the bound word, and H1 asks its own question of the
+                # leading run too (_post_rules._addressing_run). They
+                # did disagree for one commit -- H1 keyed every TITLE
+                # token, so the trailing title in 'Sir abdul rahman
+                # Prof.' joined this run and flipped the join's own
+                # premise, handing the licensed pair to the family.
+                # Reading the leading run at both sites is what makes
+                # that unreachable rather than merely unlikely: a
+                # trailing title is behind the word, and neither site
+                # can see it. H2's unlisted
                 # abbreviations ride in the run either way. One is in
                 # no vocabulary by definition, so it never matches as
                 # the last-word key -- written as inputs, 'Xyz. Sir
