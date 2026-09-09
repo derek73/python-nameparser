@@ -358,13 +358,37 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith", "suffix": "Esq"},
          notes="the suffix_words branch of the delimited-content "
                "escape (v1 parity, pinned live 2026-07-17)"),
-    Case("suffix_acronym_multidot_spelling", "John Smith E.S.Q.",
-         {"given": "John", "family": "Smith", "suffix": "E.S.Q."},
-         notes="'esq' is in BOTH suffix_acronyms and suffix_words on "
-               "purpose, and the two are not redundant: the word test "
-               "strips only EDGE periods, the acronym test strips all "
-               "of them, so only the acronym membership matches the "
-               "multi-dot spelling (v1 parity, pinned live 2026-07-19)"),
+    Case("suffix_acronym_multidot_spelling_is_a_name_word",
+         "John Smith E.S.Q.",
+         {"given": "John", "middle": "Smith", "family": "E.S.Q."},
+         classification="fix(suffix-acronym-collisions)",
+         notes="a BEHAVIOR CHANGE rather than a fix -- a deliberate "
+               "2.x parity break, every release from 1.4.0 read "
+               "suffix 'E.S.Q.' here. 'esq' left SUFFIX_ACRONYMS "
+               "2026-09-08: Esquire is a contraction, not an "
+               "initialism, the entry arrived in the 2019 bulk "
+               "post-nominal import (af5bdab, #93), and the multi-dot "
+               "spelling was its only unique coverage. Same criterion "
+               "as the rai/cha rows above -- "
+               "decisions.md#suffix-acronym-collisions -- asked of the "
+               "machinery instead of a surname: does the entry "
+               "describe the WORD or the set's normalization. The "
+               "classification is a slug and not an issue number "
+               "because no issue asked for it; the bundle that "
+               "carried it is #489/#316"),
+    Case("suffix_word_esq_still_reads_as_a_suffix", "John Smith Esq",
+         {"given": "John", "family": "Smith", "suffix": "Esq"},
+         notes="the other half of the row above, and what the removal "
+               "rests on: the SUFFIX_WORDS membership carries every "
+               "single-token spelling on its own, so it stops being "
+               "inert rather than becoming dead. Deleting 'esq' there "
+               "too is what this row refuses. 'Esquire' rides the "
+               "same membership and is deliberately unpinned, being "
+               "one more word in a set rather than a fork "
+               "(mechanisms.md#VOCABULARY-EXERCISES-FORKS); the "
+               "dotted 'John Smith Esq.', the comma form 'Smith, "
+               "Esq.' and the leading 'Esq. Smith' each have a row of "
+               "their own below"),
     Case("bound_given_whole_segment", "salem, abdul salam",
          {"given": "abdul salam", "family": "salem"},
          notes="v1 joins bound given names freely in the post-comma "

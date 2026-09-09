@@ -129,12 +129,14 @@ suffix if ANY chunk is suffix vocabulary -- and the chunk "i" is the Roman
 numeral listed above.
 So membership here is not the last word on a dotted token; the sentence is
 about this set's lookup alone. :data:`SUFFIX_ACRONYMS` is the set matched
-with every period removed, so it alone covers the multi-dot spelling
-"E.S.Q." -- and, having no interior period to lose, "Esq" as well. 'esq'
-is listed here too (v1 data): inert against the shipped acronym set, since
-dropping it changes no parse, but what keeps "Esq" matching for a caller
-who removes it from :data:`SUFFIX_ACRONYMS`. That is why the two sets are
-deliberately not asserted disjoint -- see the guard block at the bottom.
+with every period removed, so it alone covers a multi-dot spelling: both
+"P.H.D." and the bare "PhD" reach its `phd` entry, the two normalizing to
+the same string once the periods come off. The two sets are asserted
+DISJOINT (see the guard block at the bottom): a post-nominal belongs to
+one of them or the other, and which one holds it is what decides whether
+its multi-dot spelling reaches a whole-token lookup at all --
+``period_joined_vocab`` may still claim the token chunk by chunk, as the
+"J.u.n.i.o.r." example above shows.
 
 """
 GLUED_HONORIFICS = frozenset({
@@ -603,14 +605,6 @@ SUFFIX_ACRONYMS = frozenset({
     'emt-p',
     'enp',
     'erd',
-    # The load-bearing membership: the acronym test strips every
-    # period, so this entry is the only thing matching the multi-dot
-    # spelling, and removing it costs the family name ("John Smith
-    # E.S.Q." -> family='E.S.Q.'). 'esq' is in SUFFIX_WORDS as well,
-    # which against this set is inert -- "Esq" has no interior period,
-    # so it matches here too -- but that is not a duplicate to clean
-    # up: it is what still matches "Esq" if this entry ever goes.
-    'esq',
     'evp',
     'faafp',
     'faan',
@@ -929,21 +923,24 @@ when matching against these pieces.
 # construction, which is what protects a caller's own vocabulary.
 assert SUFFIX_ACRONYMS_AMBIGUOUS <= SUFFIX_ACRONYMS, \
     "SUFFIX_ACRONYMS_AMBIGUOUS must stay a subset of SUFFIX_ACRONYMS"
-# NOT asserted: disjointness of SUFFIX_ACRONYMS and SUFFIX_WORDS.
-# The two are matched with different normalization -- the word test strips
-# only edge periods, the acronym test strips all of them -- and no
-# SUFFIX_WORDS entry carries an interior period, so for a word in both
-# sets the acronym branch fires wherever the word branch does (the assert
-# just below keeps such a word out of the period-gated ambiguous subset).
-# The single overlap, 'esq', is therefore inert as shipped rather than a
-# second spelling: SUFFIX_ACRONYMS covers "E.S.Q." AND "Esq", and dropping
-# 'esq' from SUFFIX_WORDS changes no parse. It stays because these sets
-# are caller-editable -- it is what still matches "Esq" once 'esq' leaves
-# SUFFIX_ACRONYMS -- and an inert overlap is not worth an assert that
-# would reject a working config.
-# DO assert that an ambiguous acronym is not also a plain suffix word:
-# suffix_as_written ORs the two branches, so the word membership would
-# bypass the period gate the ambiguous set exists to impose.
+# The two sets normalize differently -- the word test strips only edge
+# periods, the acronym test strips all of them -- so a word in both is
+# matched twice by two rules, and which one fired is unreadable from the
+# outside. The single overlap was 'esq', dropped 2026-09-08
+# (decisions.md#suffix-acronym-collisions), and the assert is what keeps
+# a bulk import from quietly re-creating one. It guards the SHIPPED sets
+# only: Lexicon has no matching invariant, so a caller who wants the
+# overlap in their own vocabulary may still have it.
+assert not (SUFFIX_ACRONYMS & SUFFIX_WORDS), \
+    "a post-nominal belongs to one set or the other, never both (the " \
+    "two normalize differently): " \
+    f"{sorted(SUFFIX_ACRONYMS & SUFFIX_WORDS)}"
+# The narrower claim, kept for the message it prints: an ambiguous
+# acronym must not also be a plain suffix word, because suffix_as_written
+# ORs the two branches, so the word membership would bypass the period
+# gate the ambiguous set exists to impose. Implied by the disjointness
+# above for as long as the ambiguous set stays a subset of the acronyms,
+# which is what the first assert holds.
 assert not (SUFFIX_ACRONYMS_AMBIGUOUS & SUFFIX_WORDS), \
     "an ambiguous acronym must not also be a suffix word (the word " \
     "branch bypasses its period gate): " \

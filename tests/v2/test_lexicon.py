@@ -11,6 +11,7 @@ from nameparser._lexicon import (
     _title_key,
 )
 from nameparser._policy import Script, _SCRIPT_RANGES
+from nameparser.config.suffixes import SUFFIX_ACRONYMS, SUFFIX_WORDS
 
 
 def test_entries_are_normalized_at_construction() -> None:
@@ -235,6 +236,22 @@ def test_suffix_ambiguous_must_be_subset_of_acronyms() -> None:
     # depends on the membership tests agreeing about it
     with pytest.raises(ValueError, match="subset"):
         Lexicon(suffix_acronyms_ambiguous=frozenset({"ma"}))
+
+
+def test_the_shipped_suffix_sets_are_disjoint() -> None:
+    # suffixes.py asserts this at import; the assert is stripped under
+    # `python -O`, so the invariant gets a named test as well. The two
+    # sets normalize differently -- the word test strips only edge
+    # periods, the acronym test strips all of them -- so a word in both
+    # is matched by two rules and which one fired is unreadable from
+    # outside. The last overlap, 'esq', left the acronyms 2026-09-08
+    # (decisions.md#suffix-acronym-collisions).
+    #
+    # The SHIPPED sets only: Lexicon has no such invariant, and a
+    # caller who wants the overlap in their own vocabulary keeps it.
+    assert SUFFIX_ACRONYMS & SUFFIX_WORDS == frozenset()
+    default = Lexicon.default()
+    assert default.suffix_acronyms & default.suffix_words == frozenset()
 
 
 def test_given_name_titles_may_hold_a_multi_word_phrase() -> None:
