@@ -42,7 +42,7 @@ import dataclasses
 from collections.abc import Iterable, Sequence, Set
 from enum import IntEnum
 
-from nameparser._lexicon import _title_key
+from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._pieces import (
     is_leading_title, is_suffix_piece, is_title_piece,
     leading_titles, peel_trailing, peel_walk, trailing_start,
@@ -738,21 +738,26 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # A given-name title ahead of the bound word asserts
                 # that a given name follows -- the assertion H1 reads
                 # when it keeps "Sir John" a given name -- so behind
-                # one there is no family to spare (#369). Keyed on the
-                # WHOLE title run exactly as post_rules keys H1, so the
-                # two rules cannot disagree about what one run asserts
-                # (post_rules' run also takes H2's unlisted
-                # abbreviations, which no given-name title key can
-                # contain, so the runs match whenever the key does).
-                # The licence lifts the reserve for two name WORDS: the
-                # piece the join would take must be one word -- a
-                # particle chain is the family name P2 built ('Sir
+                # one there is no family to spare (#369). Asked of the
+                # title run through the ONE predicate post_rules asks
+                # for H1, so the two rules cannot disagree about what
+                # one run asserts; what it reads is the whole run's key
+                # or that key's LAST word (#489). H2's unlisted
+                # abbreviations ride in the run either way. One is in
+                # no vocabulary by definition, so it never matches as
+                # the last-word key -- 'Xyz. Sir' keys 'sir' and 'Sir
+                # Xyz.' keys 'xyz' -- but a caller's phrase entry may
+                # contain one, and the whole-run arm is what matches
+                # that. The licence lifts the reserve for two name
+                # WORDS: the piece the join would take must be one word
+                # -- a particle chain is the family name P2 built ('Sir
                 # abdul van der Berg' keeps family 'van der Berg').
                 licensed = (fk > 0 and len(pieces[fk + 1]) == 1
-                            and _title_key(tokens[i].text
-                                           for k in range(fk)
-                                           for i in pieces[k])
-                            in given_name_titles)
+                            and _run_addresses_by_given(
+                                (tokens[i].text
+                                 for k in range(fk)
+                                 for i in pieces[k]),
+                                given_name_titles))
                 reserve = BoundJoin.LENIENT if licensed else BoundJoin.STRICT
                 if same_suffixes and after.names >= reserve:
                     # the pair is a given name whatever tag the word

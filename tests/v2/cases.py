@@ -2391,6 +2391,67 @@ CASES: tuple[Case, ...] = (
                "being the word left standing -- because once the floor "
                "empties the run no branch reads `vocab:given-title` "
                "at all"),
+    Case("title_run_addresses_by_its_last_title",
+         "Her Majesty Queen Elizabeth",
+         {"title": "Her Majesty Queen", "given": "Elizabeth"},
+         classification="fix(#489)",
+         notes="rules.md#H1 -- `queen` is a given-name title and it is "
+               "the last word of the run, so the run addresses as it "
+               "does; the empty family is H1's Accepted outcome"),
+    Case("title_run_addresses_by_its_last_title_with_a_suffix",
+         "Her Majesty Queen Elizabeth II",
+         {"title": "Her Majesty Queen", "given": "Elizabeth",
+          "suffix": "II"}, classification="fix(#489)",
+         notes="the suffix peel runs first and does not decide H1"),
+    Case("title_run_addresses_by_its_last_title_clerical",
+         "Reverend Mother Teresa",
+         {"title": "Reverend Mother", "given": "Teresa"},
+         classification="fix(#489)",
+         notes="`mother` is a given-name title, `reverend` is not"),
+    Case("title_run_addresses_by_its_last_title_dotted",
+         "Dr. Sir John", {"title": "Dr. Sir", "given": "John"},
+         classification="fix(#489)",
+         notes="the whole run keyed 'dr sir', which the shipped "
+               "vocabulary has no entry for; the last word is `sir`"),
+    Case("title_run_addresses_by_its_last_title_bare", "Mr Sir John",
+         {"title": "Mr Sir", "given": "John"},
+         classification="fix(#489)",
+         notes="the 2026-08-22 #369 entry's own example -- 'mr sir' is "
+               "not a given-name title to either site, and now the "
+               "LAST word is what both sites read"),
+    Case("title_run_addresses_by_its_last_title_unlisted_first",
+         "Xyz. Sir John", {"title": "Xyz. Sir", "given": "John"},
+         classification="fix(#489)",
+         notes="H2's unlisted abbreviation joins the run: it sits "
+               "inside the whole-run key, which the shipped "
+               "vocabulary has no entry for, and an unlisted word can "
+               "never match as a last-word key either -- `sir` is "
+               "what this run is read by"),
+    Case("title_run_licences_the_bound_join_by_its_last_title",
+         "Sir Sheikh abdul rahman",
+         {"title": "Sir Sheikh", "given": "abdul rahman"},
+         classification="fix(#489)",
+         notes="rules.md#P5's licence keys the same way H1 does, the "
+               "invariant the #369 entry set: behind a given-name "
+               "title there is no family to spare"),
+    Case("title_run_does_not_address_by_a_non_given_name_title",
+         "His Excellency Lord Duncan",
+         {"title": "His Excellency Lord", "family": "Duncan"},
+         classification="parity",
+         notes="negative control: `lord` is not a given-name title, so "
+               "the run's last word does not address by given name"),
+    Case("title_run_princess_is_vocabulary_scope",
+         "Her Royal Highness Princess Anne",
+         {"title": "Her Royal Highness Princess", "family": "Anne"},
+         classification="parity",
+         notes="negative control: `princess` is not a given-name title "
+               "either -- a vocabulary question with its own frequency "
+               "argument (Prince Harry, Lady Gaga), deliberately out"),
+    Case("title_and_two_name_words_is_not_h1s", "Sir John Smith",
+         {"title": "Sir", "given": "John", "family": "Smith"},
+         classification="parity",
+         notes="negative control: H1 never fires with two name words, "
+               "whatever the run keys to"),
     Case("all_suffix_input_reports_suffix_or_name", "Rinpoche",
          {"given": "Rinpoche"}, ambiguities=("suffix-or-name",),
          classification="feat(#491)",

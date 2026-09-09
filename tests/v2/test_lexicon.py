@@ -256,13 +256,37 @@ def test_given_name_titles_folds_per_word_so_abbreviations_match(
     # 'lt. col' verbatim kept the interior period and matched nothing --
     # a silent no-op on the config surface, the failure this field is
     # most prone to (it has no validation by design).
+    #
+    # It is the whole-run arm that matches here, and only that arm:
+    # `col` alone is not a given-name title, so #489's last-word arm
+    # must not have replaced the phrase lookup.
     base = Lexicon.default()
     lex = dataclasses.replace(
         base,
         titles=base.titles | {"lt", "col"},
         given_name_titles=base.given_name_titles | {spelling})
     assert "lt col" in lex.given_name_titles
+    assert "col" not in lex.given_name_titles
     assert Parser(lexicon=lex).parse("Lt. Col. Smith").given == "Smith"
+
+
+def test_the_shipped_given_name_titles_are_every_one_a_single_word() -> None:
+    # The invariant that makes the whole-run arm dead for the shipped
+    # vocabulary: it can only ever match a one-word run, which the
+    # last-word arm reads the same way (#489). A phrase entry here
+    # would give that arm reach the docstring says it has not.
+    assert not any(" " in t for t in Lexicon.default().given_name_titles)
+
+
+def test_a_run_matches_by_its_last_word_when_the_whole_run_does_not() -> None:
+    # The other arm, on the shipped vocabulary: 'dr sir' is no entry
+    # and never could be, and `sir` is the run's last word (#489).
+    lex = Lexicon.default()
+    assert "dr sir" not in lex.given_name_titles
+    assert "sir" in lex.given_name_titles
+    parsed = Parser(lexicon=lex).parse("Dr. Sir John")
+    assert (parsed.title, parsed.given, parsed.family) == \
+        ("Dr. Sir", "John", "")
 
 
 @pytest.mark.parametrize("entry", ["lt .", "lt . col", ". col", ". ."])

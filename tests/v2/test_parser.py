@@ -675,10 +675,11 @@ def test_the_p5_licence_and_h1_read_a_title_run_the_same_way(
         title: str) -> None:
     # The licence's one invariant, as a contract: P5 lifts the reserve
     # behind a title run exactly when H1 keeps the one word after that
-    # run a given name. Both key the run through _title_key; if either
-    # side's key construction drifted, a run P5 licensed that H1 then
-    # read as title-plus-family would hand the joined pair to the
-    # family. So "no family" must agree, run by run.
+    # run a given name. Both ask _run_addresses_by_given -- the whole
+    # run's key, or the run's last word's (#489); if either side's read
+    # drifted, a run P5 licensed that H1 then read as title-plus-family
+    # would hand the joined pair to the family. So "no family" must
+    # agree, run by run.
     assert (parse(f"{title} John").family == "") == \
         (parse(f"{title} abdul rahman").family == "")
 

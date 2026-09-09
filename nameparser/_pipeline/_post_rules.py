@@ -23,7 +23,7 @@ from __future__ import annotations
 import dataclasses
 import re
 
-from nameparser._lexicon import _title_key
+from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._assign import _name_positions
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken, _NEVER_FLIPPED,
@@ -359,17 +359,25 @@ def post_rules(state: ParseState) -> ParseState:
     # further name words is what emptied the family (#410)
     # (known gap: the guard tests which roles are unoccupied, it does
     # not count units -- decisions.md#H1) (v1 handle_firstnames)
-    if titles and givens and not middles and not families:
-        joined = _title_key(tokens[i].text for i in titles)
-        if joined not in state.lexicon.given_name_titles:
-            for i in givens:
-                _retag(tokens, i, Role.FAMILY)
-            # every rule below reads these lists; recompute after any
-            # retag so no guard can inspect a name that has already
-            # moved -- a stale index list is the bug shape #359 fixed
-            givens = _idx(tokens, Role.GIVEN)
-            middles = _idx(tokens, Role.MIDDLE)
-            families = _idx(tokens, Role.FAMILY)
+    #
+    # rules.md#H1 -- a RUN of several titles addresses as its last
+    # title does (#489), so 'Her Majesty Queen Elizabeth' reads given
+    # 'Elizabeth': the run is not a given-name title but 'queen' is.
+    # The predicate lives beside _title_key because the P5 licence in
+    # group asks the same question of the same run, and a run read two
+    # ways is a rule contradicting itself (decisions.md#P5, #369).
+    if (titles and givens and not middles and not families
+            and not _run_addresses_by_given(
+                (tokens[i].text for i in titles),
+                state.lexicon.given_name_titles)):
+        for i in givens:
+            _retag(tokens, i, Role.FAMILY)
+        # every rule below reads these lists; recompute after any
+        # retag so no guard can inspect a name that has already
+        # moved -- a stale index list is the bug shape #359 fixed
+        givens = _idx(tokens, Role.GIVEN)
+        middles = _idx(tokens, Role.MIDDLE)
+        families = _idx(tokens, Role.FAMILY)
 
     # rules.md#M4: "a maiden name standing beside exactly one name
     # word makes that word the family name, whatever suffix or
