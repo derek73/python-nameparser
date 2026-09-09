@@ -16,17 +16,24 @@ leading title pieces chain while no given-position name has been seen
 (a title needs a following piece, unless the whole name is one title);
 then positional assignment per name_order with the trailing-suffix
 rule: the piece from which everything after is a strict suffix is the
-last name-position piece, the rest are suffixes. The v1 single-name+
-nickname rule lives here (decisions.md#N3): a nonempty nickname
-beside exactly one piece in total puts that piece in FAMILY.
+last name-position piece, the rest are suffixes. That peel is only
+provisional: behind it a trailing run of period-marked title words
+chains into the title from the end, leaving one name piece standing,
+and the peel then runs ONCE over the pieces with the titled ones
+spliced out, so a trailing title is transparent to it.
+The v1 single-name+nickname rule lives here (decisions.md#N3): a
+nonempty nickname beside exactly one piece in total puts that piece
+in FAMILY.
 FAMILY_COMMA: segment 0 wholly FAMILY (v1 parity) UNLESS segment 1
 holds no name word (titles and suffixes only), which fixed no family
 boundary -- there segment 0 takes the NO_COMMA positional read instead,
 order and all ('John Smith, Dr.', 'John Smith, Mr. Jr.'); segment
 1 is wholly SUFFIX when it is nothing but suffix pieces ('Smith, Jr.',
 'Smith, Ph. D. Jr.' -- the credential run C1 describes, in the listing
-form), else gets leading titles, then given, then middles with
-strict-suffix pieces to suffix; segments 2+ are suffixes (lenient --
+form), else gets leading titles, then the same trailing title run
+over the pieces this segment does not read as suffixes ('Smith, John
+Prof.'), then given, then middles with those suffix-reading pieces to
+suffix -- one predicate for both; segments 2+ are suffixes (lenient --
 segment already flagged non-suffixy ones COMMA_STRUCTURE).
 SUFFIX_COMMA: segment 0 as NO_COMMA; segments 1+ wholly SUFFIX.
 Emits PARTICLE_OR_GIVEN when the leading name piece is a lone
@@ -55,7 +62,7 @@ from nameparser._pipeline._vocab import (
 )
 from nameparser._pipeline._pieces import (
     is_suffix_piece, leading_titles, peel_trailing, peel_walk,
-    segment_suffix_reading,
+    segment_suffix_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken, _NEVER_FLIPPED,
@@ -221,15 +228,18 @@ def _assign_main(seg_idx: int, state: ParseState,
     ptags = state.piece_tags[seg_idx]
     has_nickname = any(t.role is Role.NICKNAME for t in tokens)
     n = _peel_leading_titles(pieces, ptags, tokens)
-    rest = list(range(n, len(pieces)))
-    if not rest:
+    if n == len(pieces):
         return None
     # group-flagged suffix pieces (the ph-d merge) are suffixes at ANY
     # position -- v1's fix_phd extracted the credential from the string
-    # before parsing, so position never mattered (PR review I3)
-    flagged = [k for k in rest if "suffix" in ptags[k]]
-    for k in flagged:
-        _set_roles(tokens, pieces[k], Role.SUFFIX)
+    # before parsing, so position never mattered (PR review I3).
+    # Walked rather than collected first: a comprehension is a frame of
+    # its own on 3.11 and the list was never read again, which is one
+    # frame back against the one the H5 walk below costs
+    # (decisions.md#parse-cost).
+    for k in range(n, len(pieces)):
+        if "suffix" in ptags[k]:
+            _set_roles(tokens, pieces[k], Role.SUFFIX)
     rest = peel_walk(n, ptags)
     if not rest:
         return None
@@ -251,7 +261,38 @@ def _assign_main(seg_idx: int, state: ParseState,
     # because the wording reads the role back, and which role "not
     # peeled" means depends on name_order. (The roman-numeral fork
     # needs no such deferral and is reported here.)
+    #
+    # This first peel is PROVISIONAL: all it settles is where the H5
+    # walk below starts. Its roles and its reports are never used --
+    # the walk can remove the very word that stopped it, so when the
+    # walk takes anything the peel is asked again over the pieces as
+    # they then stand, and that second answer is the only one that
+    # places a piece or reports a fork.
     peeled = peel_trailing(rest, pieces, ptags, tokens)
+    # rules.md#H5 -- the trailing title run, read over what the suffix
+    # peel left and set BEFORE _name_positions, so the shortened list is
+    # what the positional read and the script test both see (a trailing
+    # Latin title must not make a wholly-CJK name look mixed-script, the
+    # same reason the leading peel runs first). Placed ahead of the
+    # bare-suffix carve-out because with no name piece left there is
+    # nothing for the walk to read: its floor returns 0 on an empty
+    # list, so the branch below is reached exactly as before.
+    titled_tail = trailing_titles(rest[:peeled.names], pieces, ptags,
+                                  tokens)
+    if titled_tail:
+        cut = peeled.names - titled_tail
+        for piece_idx in rest[cut:peeled.names]:
+            _set_roles(tokens, pieces[piece_idx], Role.TITLE)
+        # The title is TRANSPARENT to the suffix peel: the pieces the
+        # walk took are spliced out and the peel runs once over what
+        # is left -- the name pieces the walk kept, then the pieces
+        # the provisional peel had taken, in original order -- so
+        # 'X Prof. Y' reads exactly as 'X Y' reads, plus the title.
+        # 'John Smith Jr. Prof.' reads suffix 'Jr.' where a single
+        # pass promoted a generational suffix to the family name, and
+        # 'John Prof. MA' reads the family 'MA' that 'John MA' reads.
+        rest = rest[:cut] + rest[peeled.names:]
+        peeled = peel_trailing(rest, pieces, ptags, tokens)
     if peeled.numeral is not None:
         # a trailing single letter is a name part unless it happens
         # to be a roman numeral -- and V/X/I are ordinary middle
@@ -498,6 +539,42 @@ def assign(state: ParseState) -> ParseState:
         if len(state.segments) > 1:
             pieces = state.pieces[1]
             ptags = state.piece_tags[1]
+            titled_idx: tuple[int, ...] = ()
+
+            def reads_as_a_suffix(m: int, last: int) -> bool:
+                """Does this segment's walk read piece `m` as a suffix?
+
+                Asked twice, and by one predicate rather than by two
+                conditions written to match
+                (mechanisms.md#ONE-PREDICATE-PER-QUESTION): once to
+                find the pieces the H5 title walk must not reach past,
+                and once by the walk order below, which is the site
+                that places them. `last` is where this segment's name
+                ends -- provisionally the segment's last piece, and
+                after the title walk the last piece the walk left,
+                since a title it took is not where a name ends.
+
+                `titled_idx` is read at CALL time and is empty on the
+                first pass, which is what makes the second reading the
+                one 'as if the titled pieces were absent': the lenient
+                test's preceding piece skips them too.
+                """
+                if is_suffix_piece(pieces[m], ptags[m], tokens):
+                    return True
+                prev = m - 1
+                while prev in titled_idx:
+                    prev -= 1
+                # trailing piece of a two-part name is unambiguously
+                # positioned: v1 accepts the lenient test there
+                # ('Smith, John V' -> suffix='V', #144); with a third
+                # comma part the trailing token is more likely a middle
+                # initial, so strict only
+                return (m == last and len(state.segments) == 2
+                        and len(pieces[m]) == 1
+                        and _reads_as_a_trailing_suffix(
+                            pieces[m], pieces[prev], ptags[prev],
+                            tokens, state.lexicon))
+
             # rules.md#C1: "a credential run after the comma means the
             # name is in natural order with suffixes appended" -- and
             # with one word before the comma the listing form holds,
@@ -526,6 +603,32 @@ def assign(state: ParseState) -> ParseState:
                 n = len(pieces)
             else:
                 n = _peel_leading_titles(pieces, ptags, tokens)
+                # rules.md#H5 -- the trailing title run, on this walk
+                # too. A name word in segment 1 is what keeps the gate
+                # above from reading the segment as a credential run,
+                # so 'Smith, John Prof.' had no route to title at all
+                # and read middle 'Prof.' at every baseline; the
+                # 'Smith, Dr.' family of rows that already route are
+                # the gate's doing, a different mechanism.
+                #
+                # The candidates are the pieces this walk would NOT
+                # read as a suffix, which is this path's answer to the
+                # peel the no-comma path runs first -- 'Smith, John
+                # Prof. Jr.' must reach `Prof.` past the postnominal
+                # behind it, and 'Smith, John Prof. V' past the
+                # numeral the lenient tail test claims (#144), which
+                # is why the filter is the walk's own predicate and
+                # not the strict suffix test alone. Piece `n` is
+                # always the given below, whatever that predicate
+                # would say of it, so it is always a candidate.
+                walkable = [k for k in range(n, len(pieces))
+                            if k == n or not reads_as_a_suffix(
+                                k, len(pieces) - 1)]
+                taken = trailing_titles(walkable, pieces, ptags, tokens)
+                if taken:
+                    titled_idx = tuple(walkable[len(walkable) - taken:])
+                    for k in titled_idx:
+                        _set_roles(tokens, pieces[k], Role.TITLE)
             # v1 walk order: the first non-title piece is ALWAYS the
             # given, before any suffix check -- 'Hardman, RN - CRNA'
             # keeps first='RN'. The one deliberate 2.0 deviation,
@@ -537,19 +640,17 @@ def assign(state: ParseState) -> ParseState:
             # so the walk here never meets the case.
             if n < len(pieces):
                 _set_roles(tokens, pieces[n], Role.GIVEN)
+            # the walk's floor leaves a name piece standing, so the
+            # given above is never one of the pieces it took; what the
+            # walk DOES move is where this segment's name ends, and the
+            # lenient tail test below turns on that (#144)
+            last_kept = len(pieces) - 1
+            while last_kept in titled_idx:
+                last_kept -= 1
             for m in range(n + 1, len(pieces)):
-                # trailing piece of a two-part name is unambiguously
-                # positioned: v1 accepts the lenient test there
-                # ('Smith, John V' -> suffix='V', #144); with a third
-                # comma part the trailing token is more likely a middle
-                # initial, so strict only
-                last_of_two = (m == len(pieces) - 1
-                               and len(state.segments) == 2)
-                if is_suffix_piece(pieces[m], ptags[m], tokens) or (
-                        last_of_two and len(pieces[m]) == 1
-                        and _reads_as_a_trailing_suffix(
-                            pieces[m], pieces[m - 1], ptags[m - 1],
-                            tokens, state.lexicon)):
+                if m in titled_idx:
+                    continue
+                if reads_as_a_suffix(m, last_kept):
                     _set_roles(tokens, pieces[m], Role.SUFFIX)
                 else:
                     _set_roles(tokens, pieces[m], Role.MIDDLE)

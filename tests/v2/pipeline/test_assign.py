@@ -212,6 +212,111 @@ def test_trailing_suffix_run_no_comma() -> None:
     assert _by_role(out, Role.SUFFIX) == "PhD MD"
 
 
+def test_trailing_title_run_is_set_before_the_positional_read() -> None:
+    """The walk shortens the name-piece list, and does it early.
+
+    Two TITLE tokens from opposite ends of the input, and the piece
+    between them read as the family name -- which is only true if the
+    walk ran before _name_positions did. `order` is the default
+    because the positional read still happened: the walk removes
+    pieces from it, it does not replace it.
+    """
+    out = _assigned("Dr. John Smith Mr.")
+    assert _by_role(out, Role.TITLE) == "Dr. Mr."
+    assert _by_role(out, Role.GIVEN) == "John"
+    assert _by_role(out, Role.FAMILY) == "Smith"
+    assert out.order == Policy().name_order
+
+
+def test_the_suffix_peel_runs_over_the_pieces_the_walk_left() -> None:
+    """The trailing title can stand BEHIND a suffix word.
+
+    'Mr.' stopped the first peel, so a single pass would have left
+    'Jr.' as the last name piece and made a generational suffix the
+    family name. The first peel is provisional: the walk's piece is
+    spliced out and the peel runs over what stands, reading 'Jr.' as
+    the suffix it is.
+    """
+    out = _assigned("John Smith Jr. Mr.")
+    assert _by_role(out, Role.TITLE) == "Mr."
+    assert _by_role(out, Role.GIVEN) == "John"
+    assert _by_role(out, Role.FAMILY) == "Smith"
+    assert _by_role(out, Role.SUFFIX) == "Jr."
+
+
+def test_the_trailing_title_is_transparent_to_the_suffix_peel() -> None:
+    """The principle the provisional peel serves.
+
+    'X Mr. Y' reads exactly as 'X Y' reads, plus the title -- so the
+    peel decides over the pieces with the title spliced OUT, in
+    original order, rather than over the two halves separately. Both
+    readings below are what the same input without 'Mr.' gives: the
+    reserve keeps a bare ambiguous acronym the family of a two-word
+    name, and takes it as a credential when a full name remains.
+    """
+    lex = _LEX.add(suffix_acronyms={"ma"},
+                   suffix_acronyms_ambiguous={"ma"})
+    out = _assigned("John Mr. MA", lexicon=lex)
+    assert _by_role(out, Role.TITLE) == "Mr."
+    assert _by_role(out, Role.GIVEN) == "John"
+    assert _by_role(out, Role.FAMILY) == "MA"
+    assert not _by_role(out, Role.SUFFIX)
+    out = _assigned("John Smith Mr. MA", lexicon=lex)
+    assert _by_role(out, Role.FAMILY) == "Smith"
+    assert _by_role(out, Role.SUFFIX) == "MA"
+
+
+def test_the_walk_reports_only_the_peel_that_decided() -> None:
+    """One peel decides, so one peel reports.
+
+    The numeral fork reads the piece before the numeral. Over the
+    input as written that piece is 'Mr.' and 'VI' is taken; over the
+    spliced pieces it is 'V', an initial shape, and the fork declines
+    -- which is the answer 'John Smith V VI' gets, with no report.
+    Reporting from the provisional peel as well said suffix 'V VI'
+    and reported the fork twice.
+    """
+    out = _assigned("John Smith V Mr. VI")
+    assert _by_role(out, Role.TITLE) == "Mr."
+    assert _by_role(out, Role.MIDDLE) == "Smith V"
+    assert _by_role(out, Role.FAMILY) == "VI"
+    assert not _by_role(out, Role.SUFFIX)
+    assert not out.ambiguities
+
+
+def test_the_family_comma_walk_reads_past_its_own_suffix_tail() -> None:
+    """Segment 1's candidates are what its walk does not read as a
+    suffix -- the strict test AND the lenient one (#144).
+
+    'V' after the comma is this segment's suffix, so the title behind
+    it is still the trailing piece; and with the two words swapped
+    'V' is where the name ends once the walk has taken the title, so
+    the lenient test still reaches it. Both are 'Smith, John V' plus
+    a title.
+    """
+    for text in ("Smith, John Mr. V", "Smith, John V Mr."):
+        out = _assigned(text)
+        assert _by_role(out, Role.TITLE) == "Mr.", text
+        assert _by_role(out, Role.GIVEN) == "John", text
+        assert _by_role(out, Role.FAMILY) == "Smith", text
+        assert _by_role(out, Role.SUFFIX) == "V", text
+        assert not _by_role(out, Role.MIDDLE), text
+
+
+def test_trailing_title_run_after_a_family_comma() -> None:
+    """The same rule on segment 1's own walk.
+
+    A name word after the comma keeps the no-name gate from reading
+    the segment as a credential run, so this shape had no route to
+    TITLE at all and read the word as a middle name.
+    """
+    out = _assigned("Smith, John Mr.")
+    assert _by_role(out, Role.TITLE) == "Mr."
+    assert _by_role(out, Role.GIVEN) == "John"
+    assert _by_role(out, Role.FAMILY) == "Smith"
+    assert not _by_role(out, Role.MIDDLE)
+
+
 def test_initial_veto_keeps_v_in_middle() -> None:
     out = _assigned("John V. Smith")
     assert _by_role(out, Role.MIDDLE) == "V."

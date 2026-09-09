@@ -27,7 +27,9 @@ piece predicate may not depend on a stage, in either direction.
 
 The S2 trailing peel travels as the unit decisions.md describes --
 peel_walk, peel_trailing and trailing_start together -- though only
-the first two cross a stage boundary.
+the first two cross a stage boundary. trailing_titles joins them
+because it reads what that peel left: the two answer one question
+between them, where the tail of a name stops being the name.
 
 Layering: imports _state and _vocab only; _group and _assign import
 it, and neither of the two it imports imports it back.
@@ -359,3 +361,47 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                 continue
         break
     return Peel(k, numeral, tuple(picks))
+
+
+# rules.md#H5 -- the trailing run's own predicate, and a forward note
+# rather than a citation until H5 is written. NOT is_leading_title:
+# that predicate carries H2's unlisted-abbreviation inference, which is
+# the LEADING slot's shape rule and has no trailing counterpart, so
+# with it 'John Smith Xyz.' would lose its family name to a title
+# (decisions.md#H5). The vocabulary read is is_title_piece's, shared
+# with the leading run so the two cannot disagree about what a title
+# WORD is while disagreeing, deliberately, about what a title SHAPE is.
+def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
+                     ptags: Sequence[Set[str]],
+                     tokens: Sequence[WorkToken]) -> int:
+    """How many pieces at the END of `rest` are period-marked title
+    words. `rest` is the NAME pieces the S2 peel left, in piece order.
+    Floor: one name piece stands, so a name is never all title -- and
+    an empty `rest` returns 0, which is what leaves assign's
+    bare-suffix carve-out reached exactly as before.
+
+    ONE WORD per piece, the same gate the leading peel's give-back
+    uses: a joined unit is not the shape this reads, and the tokens of
+    one are not each a title word.
+
+    Every parse enters this frame -- assign asks the question here
+    rather than answering a cheaper version of it inline
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION) -- so what it costs an
+    ordinary name is one frame and one regex match. The shape test
+    runs BEFORE the vocabulary one to keep it at that: _PERIOD_ABBREV
+    is a compiled regex (a C call, no Python frame) where
+    is_title_piece is a call, and almost no name ends in a
+    period-marked word, so the ordinary parse pays the one match and
+    stops (decisions.md#parse-cost).
+    """
+    n = 0
+    while len(rest) - n > 1:
+        idx = rest[len(rest) - n - 1]
+        piece = pieces[idx]
+        if (len(piece) == 1
+                and _PERIOD_ABBREV.match(tokens[piece[0]].text)
+                and is_title_piece(piece, ptags[idx], tokens)):
+            n += 1
+            continue
+        break
+    return n

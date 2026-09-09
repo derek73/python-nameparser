@@ -10,8 +10,8 @@ from nameparser._pipeline._assign import assign
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._group import group
 from nameparser._pipeline._pieces import (
-    _numeral_behind_the_initial_veto, leading_titles,
-    segment_suffix_reading,
+    _numeral_behind_the_initial_veto, leading_titles, peel_trailing,
+    peel_walk, segment_suffix_reading, trailing_titles,
 )
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import ParseState
@@ -153,3 +153,66 @@ def test_the_leading_run_keeps_a_joined_unit_it_cannot_give_back() -> None:
     """
     assert _leading("Prince of Wales Jr") == 1
     assert _leading("Prince of Wales") == 1
+
+
+def _trailing(text: str) -> int:
+    """trailing_titles over the rest assign hands it: the name pieces
+    the S2 peel left, after the leading run is counted off."""
+    state = _through_group(text)
+    pieces, ptags = state.pieces[0], state.piece_tags[0]
+    tokens = list(state.tokens)
+    rest = peel_walk(leading_titles(pieces, ptags, tokens), ptags)
+    peeled = peel_trailing(rest, pieces, ptags, tokens)
+    return trailing_titles(rest[:peeled.names], pieces, ptags, tokens)
+
+
+def test_the_trailing_run_chains_period_marked_title_words() -> None:
+    """A RUN, mirroring the leading one.
+
+    One word only would leave 'Prof.' a name word in the first
+    reading below, which is the reason the walk chains rather than
+    taking the last piece and stopping.
+    """
+    assert _trailing("John Smith Prof. Dr.") == 2
+    assert _trailing("John Smith Prof.") == 1
+    assert _trailing("Dr. John Smith Prof.") == 1   # leading run too
+
+
+def test_the_trailing_run_leaves_one_name_piece_standing() -> None:
+    """The floor, and the empty rest assign's carve-out needs.
+
+    A name is never all title: the walk stops with one name piece
+    left. An input that IS all title never reaches the walk at all --
+    the leading peel took the whole segment and the rest is empty,
+    where the same floor returns 0 and leaves assign's bare-suffix
+    carve-out reached exactly as before.
+    """
+    assert _trailing("Smith Prof.") == 1
+    assert _trailing("Dr. Prof.") == 0      # the floor, on a rest the
+                                            # walk would otherwise take
+    assert _trailing("Smith") == 0          # one-piece rest
+    assert _trailing("Prof.") == 0          # empty rest
+
+
+def test_the_trailing_run_reads_vocabulary_and_not_shape() -> None:
+    """The whole difference from is_leading_title.
+
+    That predicate carries H2's unlisted-abbreviation inference, so
+    with it the first reading below would lose its family name to a
+    title. The trailing slot has no shape rule: a period-marked word
+    is claimed there only when the vocabulary claims it, and a bare
+    title word is claimed not at all.
+    """
+    assert _trailing("John Smith Xyz.") == 0    # unlisted abbreviation
+    assert _trailing("John Smith Sir") == 0     # no period
+    assert _trailing("John Smith Esq.") == 0    # the peel took it first
+
+
+def test_the_trailing_run_refuses_a_joined_piece() -> None:
+    """ONE WORD per piece, the gate the leading give-back shares.
+
+    'de la Prof.' is one piece of three tokens, and the tokens of a
+    joined unit are not each a title word -- the particle chain made
+    that unit a name.
+    """
+    assert _trailing("John de la Prof.") == 0
