@@ -288,7 +288,18 @@ H5. Rationale: a word abbreviated with a period at the END of a name
     not a reading a reader would hesitate over — where the doubt is
     real it is the word left STANDING that carries it, which is H4's
     report and not this rule's.
-    history: decisions.md#H5 · interacts: H1, H2, H3, H4, S2, C1 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py
+    Accepted: the chain reads PIECES, so a join that ran earlier
+    puts the word out of reach. A particle chain (P2) has already
+    taken the trailing word into the family name, and a maiden
+    marker (M2) has already taken it into the maiden name; in
+    neither is a title word standing in the trailing slot at all.
+      "John van der Berg Prof."   →  family="van der Berg Prof."
+      "Mary Smith née Jones Prof." →  maiden="Jones Prof."
+    Accepted: what the chain leaves is also what counts as a name
+    word to spare (P5). A trailing title word is not one, so a bound
+    given-name word behind one joins exactly as it joins with the
+    title absent.
+    history: decisions.md#H5 · interacts: H1, H2, H3, H4, M2, P2, P5, S2, C1 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py
 
 ## Particles & surname prefixes (P)
 
@@ -421,7 +432,7 @@ P2. Rationale: a particle is written as part of the surname it
     (#132's ask) has it as the surnames view rather than the
     family field.
       "Vincent van Gogh van Beethoven"  →  surnames="van Gogh van Beethoven"
-    history: decisions.md#P2 · interacts: P1, P4, M2, S2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P2 · interacts: P1, P4, H5, M2, S2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P3. Rationale: connective words ("y", "of the") bind name words into
     one name part; but a single letter in a short name is more
@@ -516,9 +527,11 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     particle's attachment (P6) sees the name. What
     there is to spare is what
     assign will leave: the join is tried on the pieces as it would
-    leave them, assign's trailing peel (S2) is read over that, and
-    the name words it leaves are the words to spare — a trailing
-    roman numeral, or a bare acronym the peel takes, is no
+    leave them, assign's trailing peel (S2) is read over that and its
+    trailing title run (H5) over what that peel leaves, and the name
+    words the two of them leave are the words to spare — a trailing
+    roman numeral, or a bare acronym the peel takes, or a trailing
+    title word the run takes, is no
     word to spare. The join joins two name words into one and
     changes no suffix reading: a word the peel reads as a suffix
     unjoined must read so joined, or the join declines. After a
@@ -572,7 +585,7 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "Sheik abdul salam"  family-first  →  family="abdul salam"
       "Sheik abdul salam"  family-first  →  given=""
       "Sheik abdul salam"  family-first-given-last  →  family="abdul salam"
-    history: decisions.md#P5 · interacts: S2, M2, H1, P2, P4, P6 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P5 · interacts: S2, M2, H1, H5, P2, P4, P6 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P6. Rationale: a particle ending the name has nothing to link
     forward to, so it is not doing a particle's work there. What it
@@ -968,7 +981,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
     is maiden text all the same — the count it needs includes the
     very words the marker removes, so the reading is left to assign.
       "John née Jones Smith Ma"        →  maiden="Jones Smith Ma"
-    history: decisions.md#M2 · interacts: P2, P3, P5, R2, M1, S2, H1 · implemented: nameparser/_pipeline/_group.py
+    history: decisions.md#M2 · interacts: P2, P3, P5, R2, M1, S2, H1, H5 · implemented: nameparser/_pipeline/_group.py
 
 M3. Rationale: an enclosure says nothing about whether it means
     maiden, but a recognized marker word inside it does — the clause

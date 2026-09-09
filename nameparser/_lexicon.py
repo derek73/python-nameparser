@@ -168,6 +168,22 @@ def _run_addresses_by_given(words: Iterable[str],
     word of the FOLDED key, not of the raw run, so a run token that
     folds away cannot empty that arm: the conjunction merge can put a
     lone '.' in the run ('Sir and . John'), and the fold drops it.
+    What the drop leaves as the last word can then be the CONJUNCTION
+    -- 'Sir and . John' keys 'sir and' and reads family 'John', where
+    'Sir and Dame John' keys 'sir and dame' and reads given. Harmless
+    on the shipped vocabulary, which holds no entry ending in a
+    connective, and a caller who stored one would be asking for it
+    (measured 2026-09-09).
+
+    Reading the FOLDED key's last word rather than the raw run's is a
+    defensive branch and a measured-inert one: over 191,146 generated
+    inputs it is reached 42,413 times and the two never differ, and
+    swapping it for the raw word changes no parse (2026-09-09) -- not
+    even on the lone '.' above, whose raw form folds to the empty
+    string and misses the vocabulary just as 'and' does. Kept as the
+    honest shape: the key is what the vocabulary is stored as, so the
+    key is what the lookup reads, and a caller's entry is the thing
+    that could make the two differ.
 
     The whole-run arm is what keeps a caller's multi-word phrase entry
     working: 'lt col' is stored as one key and matched as one run. Over
@@ -176,11 +192,13 @@ def _run_addresses_by_given(words: Iterable[str],
     one-word run, which is a run the last-word arm reads the same way.
 
     H2's unlisted abbreviations ride in the run. One can never match as
-    the last-word key, being in no vocabulary by definition: 'Xyz. Sir'
-    keys 'sir' and matches, 'Sir Xyz.' keys 'xyz' and does not. It CAN
-    sit inside a whole-run key that matches, because given_name_titles
-    is deliberately not validated against titles: a caller may store
-    'sir xyz', and 'Sir Xyz. John' then reads given.
+    the last-word key, being in no vocabulary by definition -- written
+    as the inputs that produce those runs, 'Xyz. Sir John' keys 'xyz
+    sir', matches on 'sir' and reads given 'John', while 'Sir Xyz.
+    John' keys 'sir xyz', matches on neither arm and reads family
+    'John'. It CAN sit inside a whole-run key that matches, because
+    given_name_titles is deliberately not validated against titles: a
+    caller who stores 'sir xyz' makes 'Sir Xyz. John' read given.
 
     The vocabulary is passed in rather than read off a default: a
     caller's own Lexicon is the one that has to be consulted, and this

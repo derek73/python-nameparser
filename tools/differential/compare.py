@@ -1949,11 +1949,11 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: named nowhere under tests/ outside test_ledger_guards.py and
 #: entered it, so the scan went 52 -> 53 and the roster 50 -> 51.
 #: Recounted 2026-09-08 with the title-run bundle: one name entered the
-#: population, 'John Smith Rev.', the only one of that bundle's nineteen
-#: movers no test literal names, and it took a row at each of the four
-#: baselines. It is named NOWHERE under tests/, so it counts in both
-#: scans -- the every-file figures in the RECOMPUTE paragraph below
-#: rise by one each too. That commit moved the ROW counts and nothing
+#: population, 'John Smith Rev.', the only one of that bundle's
+#: twenty-one movers no test literal names, and it took a row at each
+#: of the four baselines. It is named NOWHERE under tests/, so it
+#: counts in both scans -- the every-file figures in the RECOMPUTE
+#: paragraph below count it too. That commit moved the ROW counts and nothing
 #: else: it did not re-derive the population clause above, so the
 #: equality sentence that follows is dated 2026-09-07 and is not
 #: restated for today.
@@ -1962,7 +1962,7 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: five contest rows beyond it having gone to _RECORDED_DIFFS with #501
 #: and five more with #498, which left the population by gaining a
 #: _RECORDED_DIFFS key rather than by ceasing to be watched anywhere.
-#: 48 of the 50 sit in corpus_issues.jsonl and 3 in corpus.jsonl, with
+#: 50 of the 52 sit in corpus_issues.jsonl and 3 in corpus.jsonl, with
 #: 'dr Vincent van Gogh dr' in both, so the per-file counts overlap by
 #: one and are not a partition. Every row is a default-order shape,
 #: as the roster above's are, so no row here is a declared-order-only
@@ -1973,17 +1973,27 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: calls whose order is None and whose rule is not None; apply the
 #: four clauses above with the literal set from ast.walk over
 #: tests/**/*.py EXCLUDING test_ledger_guards.py, as the POPULATION
-#: clause says -- run over every file it yields 33 / 23 / 22 / 4 rows
-#: rather than 37 / 33 / 32 / 7, since _CROSS_RULE_WINNERS' keys and
+#: clause says -- run over every file it yields 25 / 23 / 22 / 5 rows
+#: rather than 38 / 34 / 33 / 8, since _CROSS_RULE_WINNERS' keys and
 #: a few guard literals then score as watchers, and #498's fourteen
 #: keys are exactly that kind of literal -- as are #342's two
-#: 2026-09-07 arrivals, both named in _NOT_A_VOCABULARY_COPY, which is
-#: why the every-file figures stood still while eight rows landed and
-#: one left: the two halves of this
-#: sentence moved for different reasons on 2026-09-05, the second
-#: because five rows left this dict and the first because those five
-#: are watched at 2.x too, where they now score as watched by the
-#: guard file -- the tier sets from
+#: 2026-09-07 arrivals, both named in _NOT_A_VOCABULARY_COPY. The
+#: every-file figures are the strict ones MINUS the roster names that
+#: are named as an exact string literal in test_ledger_guards.py and
+#: nowhere else under tests/ (13 / 11 / 11 / 3 today), which is a
+#: derivation a reader can run in one pass over this dict and that
+#: file -- no baseline wheel needed -- and it is how the pair was
+#: recomputed on 2026-09-09. That recount RETRACTS the pair recorded
+#: on 2026-09-05 (33 / 23 / 22 / 4): the every-file count can never
+#: EXCEED the strict one, dropping a name from the population removes
+#: rows and never adds them, and 33 stood against a strict 37. The
+#: paragraph that carried it argued the every-file figures "stood
+#: still" while eight guard-literal rows landed -- which is right
+#: about the mechanism and is exactly why the gap between the two
+#: pairs widens as #498's and #342's keys arrive, so the two cannot
+#: both have stood at 33 and 37. The strict pair is unchanged in
+#: method and re-measured here: it is len() over this dict, ledger by
+#: ledger -- the tier sets from
 #: _load_entries over corpus*.jsonl
 #: through _CORPUS_TIERS, and that ledger's _RECORDED_DIFFS keys. Not
 #: by replaying the corpus load by hand: the (name, order) dedup, the

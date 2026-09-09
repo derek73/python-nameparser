@@ -46,6 +46,7 @@ from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._pieces import (
     is_leading_title, is_suffix_piece, is_title_piece,
     leading_titles, peel_trailing, peel_walk, trailing_start,
+    trailing_titles,
 )
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
@@ -712,11 +713,18 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             else:
                 # rules.md#P5: "the join is tried on the pieces as it
                 # would leave them, assign's trailing peel (S2) is read
-                # over that, and the name words it leaves are the words
-                # to spare" (history: decisions.md#P5). The view is what
+                # over that and its trailing title run (H5) over what
+                # that peel leaves, and the name words the two of them
+                # leave are the words to spare"
+                # (history: decisions.md#P5). The view is what
                 # merge() builds -- the same slice assignment, the same
-                # joined_tags -- and the peel is assign's own, so the
-                # reserve and the assignment cannot drift. And the join
+                # joined_tags -- and the peel is assign's own, and so is
+                # the H5 walk read over what that peel leaves, so the
+                # reserve and the assignment cannot drift. Both halves
+                # are needed: the peel alone counted a trailing
+                # period-marked title word as a name word to spare, and
+                # 'Prof. abdul rahman Prof.' joined where
+                # 'Prof. abdul rahman' does not. And the join
                 # changes no suffix reading -- rules.md#P5: "a word the
                 # peel reads as a suffix unjoined must read so joined,
                 # or the join declines" -- compared as the peeled
@@ -732,9 +740,21 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                                                     drop={"title"})]
                 view_rest = peel_walk(fk, view_tags)
                 after = peel_trailing(view_rest, view, view_tags, tokens)
+                # rules.md#H5 -- assign's second peel runs over the
+                # pieces the trailing title walk LEFT, so a
+                # period-marked title word at the back is not one of the
+                # name words this counts. Read over the same list assign
+                # reads it over -- the name pieces the peel left -- on
+                # both sides, so the two views compare like with like:
+                # counting the title word made 'Sir abdul Prof.' join it
+                # into the given name.
+                before_names = before.names - trailing_titles(
+                    rest[:before.names], pieces, ptags, tokens)
+                after_names = after.names - trailing_titles(
+                    view_rest[:after.names], view, view_tags, tokens)
                 same_suffixes = (
-                    [tuple(view[j]) for j in view_rest[after.names:]]
-                    == [tuple(pieces[j]) for j in rest[before.names:]])
+                    [tuple(view[j]) for j in view_rest[after_names:]]
+                    == [tuple(pieces[j]) for j in rest[before_names:]])
                 # A given-name title ahead of the bound word asserts
                 # that a given name follows -- the assertion H1 reads
                 # when it keeps "Sir John" a given name -- so behind
@@ -745,10 +765,12 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # or that key's LAST word (#489). H2's unlisted
                 # abbreviations ride in the run either way. One is in
                 # no vocabulary by definition, so it never matches as
-                # the last-word key -- 'Xyz. Sir' keys 'sir' and 'Sir
-                # Xyz.' keys 'xyz' -- but a caller's phrase entry may
-                # contain one, and the whole-run arm is what matches
-                # that. The licence lifts the reserve for two name
+                # the last-word key -- written as inputs, 'Xyz. Sir
+                # John' keys 'xyz sir' and matches on 'sir', while
+                # 'Sir Xyz. John' keys 'sir xyz' and matches on
+                # neither -- but a caller's phrase entry may contain
+                # one, and the whole-run arm is what matches that.
+                # The licence lifts the reserve for two name
                 # WORDS: the piece the join would take must be one word
                 # -- a particle chain is the family name P2 built ('Sir
                 # abdul van der Berg' keeps family 'van der Berg').
@@ -759,7 +781,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                                  for i in pieces[k]),
                                 given_name_titles))
                 reserve = BoundJoin.LENIENT if licensed else BoundJoin.STRICT
-                if same_suffixes and after.names >= reserve:
+                if same_suffixes and after_names >= reserve:
                     # the pair is a given name whatever tag the word
                     # carried (rules.md#P5); joined_tags says why the
                     # title tag is dropped. Pinned in test_group.py.

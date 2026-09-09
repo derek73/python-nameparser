@@ -2243,9 +2243,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#432) a dotted numeral behind a name is a middle initial, not the generation":
             _Claim(1, ('middle', 'suffix'), "e9f282da0d0f", None),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(108, ('family', 'given', 'middle'), "9a814f70c2dc", None),
+            _Claim(109, ('family', 'given', 'middle'), "864f9cffa977", None),
         "fix(#274) maiden markers consumed":
-            _Claim(32, ('family', 'maiden', 'middle'), "06d199ceb249", None),
+            _Claim(33, ('family', 'maiden', 'middle'), "6f8bf7136b09", None),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
             _Claim(5, ('family', 'given', 'maiden', 'middle'), "bc0e10dd7ec8", None),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
@@ -2296,7 +2296,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # rule at the end of the ledger, and the comment there
         # records the handover.
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
-            _Claim(12, ('family', 'suffix'), "c3446b32e8bd", None),
+            _Claim(13, ('family', 'suffix'), "fb9c68f36d0b", None),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
             _Claim(2, ('family', 'given', 'suffix', 'title'), "3f983ff71dee", None),
         "fix(#296) a lone post-comma credential is a suffix":
@@ -2452,15 +2452,15 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(initials-per-word) a bound-given run initials each word (facade, since 2.0.0)":
             _Claim(41, ('_initials',), "e99f56c955d5", ('DEFAULT',)),
         "fix(initials-per-word) a particle chain inside a name part initials each word (facade, since 2.0.0)":
-            _Claim(108, ('_initials',), "45f0b2c1a7d4", ('DEFAULT',)),
+            _Claim(109, ('_initials',), "ae9c8f674e0c", ('DEFAULT',)),
         "fix(initials-per-word) the Ph. D. merge initials each word (facade, since 2.0.0)":
             _Claim(18, ('_initials',), "f67d8ebddd56", ('DEFAULT',)),
         # The 2.3 title-run bundle's four rules, last in every
         # ledger. All four are anchored alternations of NAMES, so the
         # reach IS the mover list and the four numbers are the four
         # release-log bullets one for one: 2 names for the run keying,
-        # 1 for the esq drop, 4 for the peel floor, 12 for the
-        # trailing title. Nineteen in all, and every one of them is
+        # 1 for the esq drop, 4 for the peel floor, 14 for the
+        # trailing title. Twenty-one in all, and every one of them is
         # explained by the rule that names it -- these are the rare
         # rows where reach and explanation coincide, which is what an
         # anchored name list buys. A widening past those names moves
@@ -2577,7 +2577,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
             _Claim(13, ('_ambiguities', 'family', 'middle'), "973617235cda", None),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(108, ('_ambiguities', 'family', 'given', 'middle'), "9a814f70c2dc", None),
+            _Claim(109, ('_ambiguities', 'family', 'given', 'middle'), "864f9cffa977", None),
         # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
         # whose entry carries the reason. Here the one name that
         # changed hands, '김민준 박사님', goes to the spaced rule
@@ -2649,7 +2649,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # rule at the end of the ledger, and the comment there
         # records the handover.
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
-            _Claim(12, ('family', 'suffix'), "c3446b32e8bd", None),
+            _Claim(13, ('family', 'suffix'), "fb9c68f36d0b", None),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
             _Claim(2, ('suffix', 'title'), "3f983ff71dee", None),
         "fix(#296) a lone post-comma credential is a suffix":
@@ -2721,8 +2721,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # ledger. All four are anchored alternations of NAMES, so the
         # reach IS the mover list and the four numbers are the four
         # release-log bullets one for one: 2 names for the run keying,
-        # 1 for the esq drop, 4 for the peel floor, 12 for the
-        # trailing title. Nineteen in all, and every one of them is
+        # 1 for the esq drop, 4 for the peel floor, 14 for the
+        # trailing title. Twenty-one in all, and every one of them is
         # explained by the rule that names it -- these are the rare
         # rows where reach and explanation coincide, which is what an
         # anchored name list buys. A widening past those names moves
@@ -2830,8 +2830,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # ledger. All four are anchored alternations of NAMES, so the
         # reach IS the mover list and the four numbers are the four
         # release-log bullets one for one: 2 names for the run keying,
-        # 1 for the esq drop, 4 for the peel floor, 12 for the
-        # trailing title. Nineteen in all, and every one of them is
+        # 1 for the esq drop, 4 for the peel floor, 14 for the
+        # trailing title. Twenty-one in all, and every one of them is
         # explained by the rule that names it -- these are the rare
         # rows where reach and explanation coincide, which is what an
         # anchored name list buys. A widening past those names moves
@@ -3010,7 +3010,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # rule at the end of the ledger, and the comment there
         # records the handover.
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
-            _Claim(12, ('family', 'suffix'), "c3446b32e8bd", None),
+            _Claim(13, ('family', 'suffix'), "fb9c68f36d0b", None),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
             _Claim(2, ('suffix', 'title'), "3f983ff71dee", None),
         "fix(#296) a lone post-comma credential is a suffix":
@@ -3074,8 +3074,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # ledger. All four are anchored alternations of NAMES, so the
         # reach IS the mover list and the four numbers are the four
         # release-log bullets one for one: 2 names for the run keying,
-        # 1 for the esq drop, 4 for the peel floor, 12 for the
-        # trailing title. Nineteen in all, and every one of them is
+        # 1 for the esq drop, 4 for the peel floor, 14 for the
+        # trailing title. Twenty-one in all, and every one of them is
         # explained by the rule that names it -- these are the rare
         # rows where reach and explanation coincide, which is what an
         # anchored name list buys. A widening past those names moves

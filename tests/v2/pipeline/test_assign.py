@@ -317,6 +317,26 @@ def test_trailing_title_run_after_a_family_comma() -> None:
     assert not _by_role(out, Role.MIDDLE)
 
 
+def test_the_trailing_title_is_taken_before_the_script_order_resolves(
+) -> None:
+    """The other half of "set BEFORE _name_positions".
+
+    The sibling above pins that the walk shortens the piece list in
+    time for the POSITIONAL read. This pins it for the SCRIPT read,
+    which is the reason the placement was chosen: a Latin title at
+    the back of a wholly-Han name is the one piece that would make
+    the piece set look mixed-script, and a mixed set declines the
+    script order. Taken first, the pieces the script test sees are
+    all Han and the Han order stands -- family '毛', given '泽东',
+    which is not what the default order would have given.
+    """
+    out = _assigned("毛 泽东 Dr.")
+    assert _by_role(out, Role.TITLE) == "Dr."
+    assert _by_role(out, Role.FAMILY) == "毛"
+    assert _by_role(out, Role.GIVEN) == "泽东"
+    assert out.order != Policy().name_order
+
+
 def test_initial_veto_keeps_v_in_middle() -> None:
     out = _assigned("John V. Smith")
     assert _by_role(out, Role.MIDDLE) == "V."

@@ -1772,11 +1772,11 @@ orders = ["DEFAULT"]
 # title), #316 (a trailing period-marked title word reads as a
 # title), the leading peel's name-word floor, and the `esq` acronym
 # drop that shipped beside them. Four rules, one per ARGUMENT rather
-# than one per name, over nineteen corpus names.
+# than one per name, over twenty-one corpus names.
 #
 # LAST in the file, and that is narrow-first rather than a
 # preference: every rule already here that REACHES one of the
-# nineteen declares `fields` that are a strict subset of the bundle
+# twenty-one declares `fields` that are a strict subset of the bundle
 # rule claiming that name, and a wide rule sitting AHEAD of a
 # narrower one it shares a corpus name with is an order-decided
 # contest the run refuses (#382). Measured 2026-09-08, all four
@@ -1790,10 +1790,10 @@ orders = ["DEFAULT"]
 # and no [[change.precedes_narrower]] block is needed anywhere.
 #
 # `_initials` appears in none of the four field lists although the
-# initials of several of the nineteen do move. The derived view
+# initials of several of the twenty-one do move. The derived view
 # enters a diff only where every ROLE and every ambiguity kind
 # agrees (compare.py's _RULE_FIELDS, main()'s roles-identical
-# guard), and all nineteen move roles -- so no run can produce a
+# guard), and all twenty-one move roles -- so no run can produce a
 # shape here carrying it, and validate_rules refuses it beside
 # another field in any case.
 # ---------------------------------------------------------------
@@ -1911,11 +1911,20 @@ issue = "fix(#316) a trailing period-marked title word reads as a title"
 # family 'MA' by rules.md#S2's reserve.
 #
 # Five roles, the union of what the fourteen move; no name moves all
-# five, and three move only two -- 'Smith, John Prof.' {title,
-# middle}, 'Smith Sir.' {title, family}, with 'Mary Jane King.'
-# moving three. `_ambiguities` is not among the five and none of the
-# fourteen reports one: the walk leaves a title standing, so H4's
-# title half never fires.
+# five (four is the most, 'John Smith Jr. Prof.'), and two move only
+# two at every baseline -- 'Smith, John Prof.' {title, middle} and
+# 'Smith Sir.' {title, family} -- with 'Mary Jane King.' moving three.
+# A third joins them at 1.4.0, 2.0.0 and 2.1.0, 'John Smith Dr.'
+# {title, suffix}, which moves {title, middle, family} at 2.2.0
+# instead: 'dr' was suffix vocabulary until 2.2, so the role it
+# vacates differs by baseline (measured 2026-09-09 against all four
+# wheels). `_ambiguities` is not among the five, and it is not
+# because no name reports one: 'John Prof. MA' reports
+# `suffix-or-name`, which is S2's bare-acronym reserve and not this
+# rule. None of the fourteen reports `title-or-name` -- the walk
+# leaves a title standing, so H4's title half never fires -- and the
+# derived view cannot enter a diff here in any case, every one of the
+# fourteen moving roles (compare.py's _RULE_FIELDS).
 #
 # TWO of the fourteen end in ' Dr.' and are also reached by
 # fix(#296)'s trailing-`dr` rule above -- 'John Smith Dr.', which
@@ -1959,7 +1968,7 @@ issue = "fix(#316) a trailing period-marked title word reads as a title"
 # the \\( and \\) the paren-bearing rules above use. Escaped or not, a
 # literal parenthesis inside an alternation body hides the WHOLE
 # group from test_ledger_guards._alternations -- its member pattern
-# excludes '(' and ')' -- and a twelve-member alternation should not
+# excludes '(' and ')' -- and a fourteen-member alternation should not
 # be invisible to the discovery pass that demands every alternation
 # declare what it copies. The two spellings match the same string.
 # One set, identical in all four ledgers.

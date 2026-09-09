@@ -16,11 +16,13 @@ leading title pieces chain while no given-position name has been seen
 (a title needs a following piece, unless the whole name is one title);
 then positional assignment per name_order with the trailing-suffix
 rule: the piece from which everything after is a strict suffix is the
-last name-position piece, the rest are suffixes. That peel is only
-provisional: behind it a trailing run of period-marked title words
-chains into the title from the end, leaving one name piece standing,
-and the peel then runs ONCE over the pieces with the titled ones
-spliced out, so a trailing title is transparent to it.
+last name-position piece, the rest are suffixes. Behind that peel a
+trailing run of period-marked title words chains into the title from
+the end, leaving one name piece standing; where the run TAKES
+something the first peel was only provisional and runs again, once,
+over the pieces with the titled ones spliced out, so a trailing
+title is transparent to it. Where the run takes nothing -- almost
+every name -- the first peel is the only one and its answer stands.
 The v1 single-name+nickname rule lives here (decisions.md#N3): a
 nonempty nickname beside exactly one piece in total puts that piece
 in FAMILY.
@@ -262,12 +264,14 @@ def _assign_main(seg_idx: int, state: ParseState,
     # peeled" means depends on name_order. (The roman-numeral fork
     # needs no such deferral and is reported here.)
     #
-    # This first peel is PROVISIONAL: all it settles is where the H5
-    # walk below starts. Its roles and its reports are never used --
-    # the walk can remove the very word that stopped it, so when the
-    # walk takes anything the peel is asked again over the pieces as
-    # they then stand, and that second answer is the only one that
-    # places a piece or reports a fork.
+    # This peel is provisional only where the H5 walk below TAKES
+    # something: the walk can remove the very word that stopped the
+    # peel, so it is asked again over the pieces as they then stand,
+    # and that second answer is the only one that places a piece or
+    # reports a fork. Where the walk takes nothing -- almost every
+    # name, the walk's own first test being a period match that
+    # fails -- this peel is the only one, and its roles and its
+    # reports are the ones the name gets.
     peeled = peel_trailing(rest, pieces, ptags, tokens)
     # rules.md#H5: "successive single words that wear the abbreviation
     # shape and are title vocabulary chain into the title from the end,
@@ -564,6 +568,14 @@ def assign(state: ParseState) -> ParseState:
                 """
                 if is_suffix_piece(pieces[m], ptags[m], tokens):
                     return True
+                # DEFENSIVE, and measured inert: the skip fires on 153
+                # of 140,227 calls over 191,146 generated inputs, and
+                # deleting it changes no parse among them (2026-09-09).
+                # Kept because "as if the titled pieces were absent" is
+                # the rule this predicate implements, and a caller's
+                # vocabulary reaches shapes the sweep's word list does
+                # not -- an inert branch is cheaper than a rule with a
+                # hole in it.
                 prev = m - 1
                 while prev in titled_idx:
                     prev -= 1
@@ -627,7 +639,13 @@ def assign(state: ParseState) -> ParseState:
                 # is why the filter is the walk's own predicate and
                 # not the strict suffix test alone. Piece `n` is
                 # always the given below, whatever that predicate
-                # would say of it, so it is always a candidate.
+                # would say of it, so it is always a candidate. That
+                # `k == n` is LOAD-BEARING, not defensive: it is what
+                # the walk's floor stands on when the given piece
+                # itself reads as a suffix, and dropping it leaves
+                # 'Smith, II Mr. V' a middle 'Mr.' where the title is
+                # (24 inputs of that shape move, of 191,146 generated,
+                # measured 2026-09-09).
                 walkable = [k for k in range(n, len(pieces))
                             if k == n or not reads_as_a_suffix(
                                 k, len(pieces) - 1)]

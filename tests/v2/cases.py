@@ -376,6 +376,22 @@ CASES: tuple[Case, ...] = (
                "classification is a slug and not an issue number "
                "because no issue asked for it; the bundle that "
                "carried it is #489/#316"),
+    Case("suffix_acronym_multidot_after_a_family_comma",
+         "Smith, E.S.Q.",
+         {"given": "E.S.Q.", "family": "Smith"},
+         classification="parity",
+         notes="the other path the same removal moves, and the one "
+               "that RESTORES v1: with 'esq' in SUFFIX_ACRONYMS the "
+               "multi-dot spelling was a suffix piece, so the "
+               "post-comma segment held no name word and read suffix "
+               "'E.S.Q.' (2.0.0 through 2.2.0). Out of the set, it is "
+               "an ordinary name word and the walk's first non-title "
+               "piece is ALWAYS the given -- which is what 1.4.0 read "
+               "here, first 'E.S.Q.' / last 'Smith' (measured "
+               "2026-09-09), so this row is parity where its no-comma "
+               "sibling above is a parity BREAK. Same entry, opposite "
+               "directions, because v1 read the two paths "
+               "differently"),
     Case("suffix_word_esq_still_reads_as_a_suffix", "John Smith Esq",
          {"given": "John", "family": "Smith", "suffix": "Esq"},
          notes="the other half of the row above, and what the removal "
@@ -3414,9 +3430,15 @@ CASES: tuple[Case, ...] = (
                "inert-measurement shape. Since #316 the word it "
                "resets ON is a title here rather than a middle name: "
                "'I' is what this segment reads as its suffix, so "
-               "'Dr.' is the trailing piece and the walk takes it, "
-               "and 'Smith, PSM Dr. I' is 'Smith, PSM I' plus a "
-               "title. 1.4.0 read suffix 'Dr., I' -- 'dr' was still "
+               "'Dr.' is the trailing piece and the walk takes it. "
+               "Transparency does NOT reach this row, and that is the "
+               "reset itself: 'Smith, PSM I' reads suffix 'PSM I' "
+               "with no given name at all (measured 2026-09-09), "
+               "because with no title between them the numeral "
+               "CONTINUES the credential run. Removing the title "
+               "removes the reset, so the shorter spelling is a "
+               "different reading and not this one minus a word. "
+               "1.4.0 read suffix 'Dr., I' -- 'dr' was still "
                "postnominal vocabulary before #296's audit, so the "
                "row's old parity claim had outlived it"),
     Case("family_comma_run_numeral_after_a_split_credential",
@@ -3769,6 +3791,98 @@ CASES: tuple[Case, ...] = (
                "John MA'), so in 'Smith, John Prof. MA' a name word "
                "stands behind 'Prof.' and no title is in trailing "
                "position at all"),
+    Case("cjk_trailing_latin_title_keeps_the_script_order",
+         "毛 泽东 Dr.",
+         {"title": "Dr.", "given": "泽东", "family": "毛"},
+         classification="fix(#316)",
+         notes="why the walk runs BEFORE the positional read: a Latin "
+               "title at the back of a wholly-Han name is the one "
+               "piece that would make the piece set look "
+               "mixed-script, and a mixed set declines the script "
+               "order. Taken first, the pieces the script test sees "
+               "are all Han and the Han order stands -- this is "
+               "'毛 泽东' plus a title. 1.4.0 read first '毛' / last "
+               "'泽东' / suffix 'Dr.' and master family 'Dr.' "
+               "(measured 2026-09-09)",
+         tolerated=True),
+    Case("title_word_trailing_behind_a_bound_given_pair",
+         "Prof. abdul rahman Prof.",
+         {"title": "Prof. Prof.", "given": "abdul", "family": "rahman"},
+         classification="fix(#316)",
+         notes="P5's reserve counts the name words assign will leave, "
+               "and a trailing title word is not one of them: this is "
+               "'Prof. abdul rahman' plus a title, which reads given "
+               "'abdul' / family 'rahman' because two name words "
+               "alone do not join. Counting the title word as a word "
+               "to spare joined the pair and read family 'abdul "
+               "rahman' (measured on the bundle's third commit). "
+               "1.4.0 read title 'Prof.' / first 'abdul rahman' / "
+               "last 'Prof.'"),
+    Case("title_word_trailing_behind_a_licensed_bound_pair",
+         "Sir abdul rahman Prof.",
+         {"title": "Sir Prof.", "family": "abdul rahman"},
+         classification="fix(#316)",
+         notes="the licensed half of the row above, and where the "
+               "trailing title is NOT transparent: the join fires "
+               "('sir' asserts a given name follows), and H1 then "
+               "reads the TITLE ROLE -- both ends of the name -- as "
+               "one run keyed 'sir prof', which does not address by "
+               "given name, so the pair becomes the family. 'Sir "
+               "abdul rahman' alone reads given 'abdul rahman'. The "
+               "same movement 'Sir John Prof.' shows against 'Sir "
+               "John', so it is H1's run composition and not P5's "
+               "reserve; recorded here rather than changed "
+               "(measured 2026-09-09). 1.4.0 read title 'Sir' / "
+               "first 'abdul rahman' / last 'Prof.'"),
+    Case("title_word_trailing_after_a_maiden_take",
+         "Mary Smith née Jones Prof.",
+         {"given": "Mary", "family": "Smith", "maiden": "Jones Prof."},
+         classification="fix(#274)",
+         notes="negative control for the trailing walk, and rules.md#"
+               "H5's M2 boundary: M2's take runs to the name's end "
+               "and the title is inside what it takes, so no title "
+               "word is in trailing position at all. Unchanged by "
+               "#316/#489 -- master reads the same (measured "
+               "2026-09-09). 1.4.0 had no maiden support and read "
+               "first 'Mary' / middle 'Smith née Jones' / last "
+               "'Prof.'"),
+    Case("title_word_trailing_ahead_of_a_maiden_marker",
+         "Mary Jones Prof. née Smith",
+         {"title": "Prof.", "given": "Mary", "family": "Jones",
+          "maiden": "Smith"},
+         classification="fix(#316)",
+         notes="the mirror: with the marker BEHIND it the title is "
+               "the last piece the walk sees, so it is taken and "
+               "'Mary Jones née Smith' is what is left. Master read "
+               "middle 'Jones' / family 'Prof.'; 1.4.0 read first "
+               "'Mary' / middle 'Jones Prof. née' / last 'Smith' "
+               "(measured 2026-09-09)"),
+    Case("title_word_trailing_in_a_conjunction_unit",
+         "John Smith Prof. and Dr.",
+         {"given": "John", "middle": "Smith",
+          "family": "Prof. and Dr."},
+         classification="parity",
+         notes="negative control for the ONE-WORD-per-piece gate: the "
+               "conjunction merge made 'Prof. and Dr.' one piece, and "
+               "the tokens of a joined unit are not each a title "
+               "word. The row that PINS that gate -- with it deleted "
+               "the walk takes the unit, because the shape test then "
+               "runs on the piece's first token and 'Prof.' wears the "
+               "period ('John de la Prof.' reads 0 either way; both "
+               "measured 2026-09-09 in test_pieces.py)"),
+    Case("family_comma_then_a_lone_suffix_word_segment",
+         "Smith, John, Prof.",
+         {"given": "John", "family": "Smith", "suffix": "Prof."},
+         ambiguities=("comma-structure",),
+         classification="parity",
+         notes="the trailing slot is a segment away: a second comma "
+               "makes the last part its own segment, which the tail "
+               "consumes as a suffix before any trailing walk reads a "
+               "piece -- so 'prof' leaving the suffix vocabulary "
+               "(#296) does not reach this shape and 'Smith, John, "
+               "Prof.' still reads suffix 'Prof.' where 'Smith, John "
+               "Prof.' reads title. Unmoved by this bundle and by "
+               "1.4.0 alike (measured 2026-09-09)"),
 
     # -- #271: script-scoped order + segmentation (amendment 2026-07-27)
     Case("ko_unspaced_default", "김민준",

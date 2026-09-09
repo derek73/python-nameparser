@@ -682,6 +682,19 @@ def test_the_p5_licence_and_h1_read_a_title_run_the_same_way(
     # agree, run by run.
     assert (parse(f"{title} John").family == "") == \
         (parse(f"{title} abdul rahman").family == "")
+    # The same invariant with a trailing title behind the pair. P5's
+    # reserve counts the name words assign's peel AND the H5 walk
+    # leave, so a period-marked title word at the back is not one of
+    # them; H1 reads the TITLE role, which by then holds both ends of
+    # the name. Both sides must still agree about "no family" -- and
+    # they do run by run, though the two halves reach it differently:
+    # behind a given-name title the join fires and H1 then hands the
+    # pair to the family (the run keys 'sir prof'), while behind an
+    # ordinary one the reserve declines the join and the two words
+    # split. Either way a family stands, as it does for the one-word
+    # spelling.
+    assert (parse(f"{title} John Prof.").family == "") == \
+        (parse(f"{title} abdul rahman Prof.").family == "")
 
 
 # The first three reach the chain loop and decline inside it: the piece
@@ -695,21 +708,30 @@ def test_the_p5_licence_and_h1_read_a_title_run_the_same_way(
 # different reasons, one output, and neither may start reporting a fork.
 @pytest.mark.parametrize("text", [
     "Do Van Jr.", "Do Van MD", "St Van Jr.",
-    "Dr. Van Jr.", "Dr. Van MD", "Dr. Do Jr.",
+    "Dr. Van Jr.", "Dr. Van MD",
 ])
 def test_no_op_prefix_chain_is_not_a_fork(text: str) -> None:
-    # Five rows stay fully silent. The sixth is pinned to its exact
-    # report instead, because since #489 it reports from somewhere else
-    # entirely: the leading peel's floor gives 'Do' back as the name
-    # word (the run stood in front of nothing but 'Jr.'), so
-    # 'Dr. Do Jr.' reads family 'Do', suffix 'Jr.' and H4's title half
-    # claims the lone name word, which happens to be title vocabulary
-    # here. That report is about the word left standing, not about a
-    # chain that never chained -- PARTICLE_OR_GIVEN is still absent.
-    expected = ((AmbiguityKind.TITLE_OR_NAME,)
-                if text == "Dr. Do Jr." else ())
-    assert tuple(a.kind for a in
-                 _overlap_parser().parse(text).ambiguities) == expected
+    assert not _overlap_parser().parse(text).ambiguities
+
+
+def test_dr_do_jr_reports_the_word_left_standing() -> None:
+    """Since #489 this one reports from somewhere else entirely.
+
+    It was the sixth row of the parametrization above until the
+    2026-09-09 review, where carrying it made that test assert "no
+    fork EXCEPT this one" and so stopped saying the thing it exists
+    to say. The leading peel's floor gives 'Do' back as the name word
+    (the run stood in front of nothing but 'Jr.'), so 'Dr. Do Jr.'
+    reads family 'Do', suffix 'Jr.' and H4's title half claims the
+    lone name word, which happens to be title vocabulary here. That
+    report is about the word left standing, not about a chain that
+    never chained -- PARTICLE_OR_GIVEN is still absent, which is what
+    the kind tuple below pins.
+    """
+    n = _overlap_parser().parse("Dr. Do Jr.")
+    assert (n.family, n.suffix) == ("Do", "Jr.")
+    assert tuple(a.kind for a in n.ambiguities) == (
+        AmbiguityKind.TITLE_OR_NAME,)
 
 
 def test_a_fork_is_reported_by_exactly_one_stage() -> None:

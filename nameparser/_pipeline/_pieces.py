@@ -378,7 +378,11 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                      ptags: Sequence[Set[str]],
                      tokens: Sequence[WorkToken]) -> int:
     """How many pieces at the END of `rest` are period-marked title
-    words. `rest` is the NAME pieces the S2 peel left, in piece order.
+    words. `rest` is the caller's NAME pieces, in piece order: on the
+    no-comma path what the S2 peel left, after a family comma the
+    segment's pieces that the segment's own suffix reading does not
+    claim, and in group's bound-given reserve the peel's leftovers
+    over the view the join would build.
     Floor: one name piece stands, so a name is never all title -- and
     an empty `rest` returns 0, which is what leaves assign's
     bare-suffix carve-out reached exactly as before.
@@ -387,10 +391,15 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     uses: a joined unit is not the shape this reads, and the tokens of
     one are not each a title word.
 
-    Every parse enters this frame -- assign asks the question here
-    rather than answering a cheaper version of it inline
-    (mechanisms.md#ONE-PREDICATE-PER-QUESTION) -- so what it costs an
-    ordinary name is one frame and one regex match. The shape test
+    Every parse with a name word to place enters this frame -- assign
+    asks the question here rather than answering a cheaper version of
+    it inline (mechanisms.md#ONE-PREDICATE-PER-QUESTION) -- so what it
+    costs an ordinary name is one frame and one regex match. The
+    exceptions return before it: a segment that is all title, and a
+    comma part read wholly as a credential run, have no name piece to
+    hand this (52 of the 1289 corpus parses, measured 2026-09-09 --
+    'Coach', 'Lord of the Universe', 'Smith, Jr.', 'MD, PHD').
+    The shape test
     runs BEFORE the vocabulary one to keep it at that: _PERIOD_ABBREV
     is a compiled regex (a C call, no Python frame) where
     is_title_piece is a call, and almost no name ends in a

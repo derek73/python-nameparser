@@ -214,5 +214,14 @@ def test_the_trailing_run_refuses_a_joined_piece() -> None:
     'de la Prof.' is one piece of three tokens, and the tokens of a
     joined unit are not each a title word -- the particle chain made
     that unit a name.
+
+    That first row does not PIN the gate, though: with the one-word
+    test deleted it still reads 0, because the shape test then runs
+    on the piece's first token and 'de' wears no period (measured
+    2026-09-09). The conjunction-merged unit is the row that pins it
+    -- 'Prof. and Dr.' is one piece whose first token is a
+    period-marked title word, so without the gate the walk takes it
+    and the name loses its family (measured 1 under that mutation).
     """
     assert _trailing("John de la Prof.") == 0
+    assert _trailing("John Smith Prof. and Dr.") == 0
