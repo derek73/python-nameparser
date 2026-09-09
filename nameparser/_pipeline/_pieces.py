@@ -85,10 +85,17 @@ def leading_titles(pieces: Sequence[Sequence[int]],
                     tokens: Sequence[WorkToken]) -> int:
     """How many leading pieces assign peels as titles: the first
     non-title index. A title needs a following piece, unless the whole
-    segment is one title (v1 parity). One definition, read by assign
-    (which sets the roles) and by the chain's trailing-run walk; the
-    leading-particle scan shares the predicate, is_leading_title,
-    but stops at a title-and-particle word (P4, #367, #424)."""
+    segment is one title (v1 parity). And the run gives back its last
+    piece when that piece is a name candidate: where everything behind
+    the run is suffix pieces, the run gives back its last piece, when
+    that piece is one word and is not itself suffix vocabulary -- the
+    one-word half is what leaves 'Prince of Wales Jr' alone and the
+    vocabulary half what leaves 'MD DDS' and 'Jr. Ph. D.' alone
+    (rules.md#H3, decisions.md#H3).
+    One definition, read by assign (which sets the roles) and by the
+    chain's trailing-run walk; the leading-particle scan shares the
+    predicate, is_leading_title, but stops at a title-and-particle
+    word (P4, #367, #424)."""
     n = 0
     while n < len(pieces):
         if ((n + 1 < len(pieces) or len(pieces) == 1)
@@ -96,6 +103,44 @@ def leading_titles(pieces: Sequence[Sequence[int]],
             n += 1
             continue
         break
+    # rules.md#H3 -- the run gives back its last piece when that piece
+    # is a name candidate: where everything behind the run is a suffix
+    # piece, the run hands its last piece back, provided that piece is
+    # one word and is not itself suffix vocabulary.
+    #
+    # ONE WORD, because a joined unit led by a title is a title run and
+    # handing it back would lose the title: 'Prince of Wales Jr' reads
+    # title 'Prince of Wales', family 'Jr', not given 'Prince of Wales'
+    # with no title at all.
+    #
+    # Two residuals. A run whose last word IS suffix vocabulary is not
+    # given back, so 'Dr King MD PhD' still reads title 'Dr King MD',
+    # family 'PhD'. And the floor asks is_suffix_piece, which vetoes a
+    # bare initial-shaped numeral, so 'Dr King V' still reads family
+    # 'V' -- that numeral fork is outside this floor.
+    #
+    # The two inline tag reads are the cheapest NECESSARY condition for
+    # the piece behind the run to be a suffix piece at all --
+    # is_suffix_piece cannot answer yes without one of them -- so the
+    # ordinary titled name, whose next piece is no kind of suffix,
+    # leaves this branch without entering a frame. Measured on the
+    # plan's ordering rather than the shape below: asking the
+    # authoritative predicate first cost 8 calls per parse of the
+    # reference name (leading_titles runs four times), against a band
+    # with room for two (decisions.md#parse-cost). is_suffix_piece
+    # stays the predicate that ANSWERS, here and in the walk.
+    if (n and n < len(pieces)
+            and ("suffix" in ptags[n]
+                 or "vocab:suffix" in tokens[pieces[n][0]].tags)
+            and len(pieces[n - 1]) == 1
+            and not is_suffix_piece(pieces[n - 1], ptags[n - 1],
+                                    tokens)):
+        k = n
+        while k < len(pieces) and is_suffix_piece(pieces[k], ptags[k],
+                                                  tokens):
+            k += 1
+        if k == len(pieces):
+            n -= 1
     return n
 
 

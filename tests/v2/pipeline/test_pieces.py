@@ -10,7 +10,8 @@ from nameparser._pipeline._assign import assign
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._group import group
 from nameparser._pipeline._pieces import (
-    _numeral_behind_the_initial_veto, segment_suffix_reading,
+    _numeral_behind_the_initial_veto, leading_titles,
+    segment_suffix_reading,
 )
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import ParseState
@@ -102,3 +103,53 @@ def test_strict_ends_the_run_at_the_initial_shaped_numeral() -> None:
     args = (state.pieces[1], state.piece_tags[1], list(state.tokens))
     assert segment_suffix_reading(*args, True) == (True, True)
     assert segment_suffix_reading(*args, False) is None
+
+
+def _leading(text: str) -> int:
+    state = _through_group(text)
+    return leading_titles(state.pieces[0], state.piece_tags[0],
+                          list(state.tokens))
+
+
+def test_the_leading_run_gives_back_the_name_word_a_suffix_cannot_be() -> None:
+    """The peel's second floor, at the predicate.
+
+    The run is counted before the trailing suffix peel runs, so its
+    only floor was "leave one piece" and a run in front of nothing but
+    suffix pieces took the last name word with it. The floor gives one
+    word back -- and only where the rest really is all suffix pieces,
+    which is what separates the first two readings below.
+    """
+    assert _leading("Dr King Jr") == 1     # the floor fired: 2 -> 1
+    assert _leading("Dr King") == 1        # no all-suffix rest to see
+    assert _leading("Lord Chancellor Jr") == 1
+    assert _leading("Lord Chancellor") == 1
+
+
+def test_the_leading_run_declines_to_give_back_a_suffix_word() -> None:
+    """The three shapes the floor must not touch.
+
+    The word given back has to be a name CANDIDATE, so a run whose
+    last word is itself suffix vocabulary keeps it; and a run with
+    nothing behind it has no all-suffix rest to read at all, which is
+    what leaves the whole-segment carve-out and the all-title inputs
+    exactly as they were.
+    """
+    assert _leading("MD DDS") == 1         # 'MD' is suffix vocabulary
+    assert _leading("Jr. Ph. D.") == 1     # so is 'Jr.'
+    assert _leading("Marquess of Bath") == 1   # nothing behind the run
+    assert _leading("Dr.") == 1            # the whole-segment carve-out
+
+
+def test_the_leading_run_keeps_a_joined_unit_it_cannot_give_back() -> None:
+    """The piece given back has to be ONE WORD.
+
+    A joined unit led by a title is a title run in its own right, so
+    handing it back would turn the title into a given name and leave
+    the name with no title at all -- 'Prince of Wales Jr' reads title
+    'Prince of Wales', family 'Jr'. The run behind it is all suffix
+    pieces and its last piece is no kind of suffix, so every other
+    condition of the floor is met and only the length gate declines.
+    """
+    assert _leading("Prince of Wales Jr") == 1
+    assert _leading("Prince of Wales") == 1

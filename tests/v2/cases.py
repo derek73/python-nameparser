@@ -2322,21 +2322,75 @@ CASES: tuple[Case, ...] = (
                "gives the same reading and the same kind. The site was "
                "H1's retag until the family-first orders were measured "
                "silent there"),
-    Case("title_run_then_a_credential_reports_nothing", "Dr. King MD",
-         {"title": "Dr. King", "family": "MD"}, classification="parity",
-         notes="rules.md#H4's boundary, both halves -- the title peel "
-               "took `Dr. King` and left no name word at all, so the "
-               "credential is the name by the bare-suffix carve-out -- "
-               "which is scoped to a run no title preceded, and the "
-               "title half needs a name word left standing. Neither "
-               "claims it"),
-    Case("title_run_then_a_bare_generational_reports_nothing",
-         "Dr King Jr", {"title": "Dr King", "family": "Jr"},
+    Case("title_run_then_a_credential_reports_the_name_word",
+         "Dr. King MD",
+         {"title": "Dr.", "family": "King", "suffix": "MD"},
+         ambiguities=("title-or-name",), classification="fix(#489)",
+         notes="rules.md#H3's floor: everything behind the run is a "
+               "suffix piece and `King` is not one, so the run gives "
+               "it back and the credential is a credential. `king` "
+               "being title vocabulary, the word left standing is "
+               "H4's title half -- the same reading `Dr. King, Jr.` "
+               "has always had"),
+    Case("title_run_then_a_bare_generational_reports_the_name_word",
+         "Dr King Jr", {"title": "Dr", "family": "King", "suffix": "Jr"},
+         ambiguities=("title-or-name",), classification="fix(#489)",
+         notes="v1 wanted exactly this reading and the 2026-09-01 "
+               "triage pinned the old one as NOT FIXED; rules.md#S2's "
+               "descriptive note said a change toward S2's prediction "
+               "would be an improvement, and this is it"),
+    Case("title_run_floor_gives_back_a_given_name_title",
+         "Dr Jr", {"given": "Dr", "suffix": "Jr"},
+         ambiguities=("title-or-name",), classification="fix(#489)",
+         notes="the accepted edge: with `Dr` given back and `Jr` "
+               "peeled as the suffix, no title is left to make the "
+               "reading H1's, so the lone name word is H4's -- "
+               "`dr` is title vocabulary and the word standing is it"),
+    Case("title_run_floor_gives_back_the_last_of_a_run",
+         "Lord Chancellor Jr",
+         {"title": "Lord", "family": "Chancellor", "suffix": "Jr"},
+         ambiguities=("title-or-name",), classification="fix(#489)",
+         notes="the floor takes back ONE word, the run's last, and "
+               "`Lord Chancellor` is the input decisions.md#H4 already "
+               "uses for the all-titles convention"),
+    Case("title_run_floor_keeps_a_joined_title_unit",
+         "Prince of Wales Jr",
+         {"title": "Prince of Wales", "family": "Jr"},
          classification="parity",
-         notes="the same boundary in the shape the assign comment "
-               "names: `Dr King` peels whole, `Jr` is read as the name "
-               "for want of another, and after a title that reading is "
-               "H1's rather than either of H4's conventions"),
+         notes="the floor gives back its last piece only when that "
+               "piece is ONE WORD: a joined unit led by a title is a "
+               "title run, and handing it back would turn a title into "
+               "a given name and leave the name with no title at all"),
+    Case("title_run_floor_declines_an_all_suffix_input", "MD DDS",
+         {"title": "MD", "family": "DDS"}, classification="parity",
+         notes="negative control: the word the run would give back is "
+               "`MD`, which IS suffix vocabulary, so the floor "
+               "declines. `md` is title vocabulary too, so the run is "
+               "`MD` and H1's fold claims `DDS` -- not the bare-suffix "
+               "carve-out, which reads the FIRST word as the name and "
+               "reports `suffix-or-name` (`DDS MD`). Nothing reports "
+               "here"),
+    Case("title_run_floor_declines_a_split_credential", "Jr. Ph. D.",
+         {"title": "Jr.", "suffix": "Ph. D."}, classification="parity",
+         notes="negative control: `Jr.` is suffix vocabulary wearing "
+               "H2's opening-abbreviation shape, so the floor declines "
+               "there too"),
+    Case("title_run_floor_declines_an_all_title_input",
+         "Marquess of Bath", {"title": "Marquess of Bath"},
+         classification="parity",
+         notes="negative control: nothing stands behind the run, so "
+               "there is no all-suffix rest for the floor to see"),
+    Case("title_run_floor_gives_back_a_given_name_title_run", "Sir Jr",
+         {"given": "Sir", "suffix": "Jr"},
+         ambiguities=("title-or-name",), classification="fix(#489)",
+         notes="`Sir Jr` is the input rules.md#S2's descriptive note "
+               "names -- it read given `Jr` and now reads given `Sir`, "
+               "suffix `Jr`. The row is here for that provenance and "
+               "not for a second mechanism: the reading is `Dr Jr`'s "
+               "in every part -- same roles, same kind, the detail "
+               "being the word left standing -- because once the floor "
+               "empties the run no branch reads `vocab:given-title` "
+               "at all"),
     Case("all_suffix_input_reports_suffix_or_name", "Rinpoche",
          {"given": "Rinpoche"}, ambiguities=("suffix-or-name",),
          classification="feat(#491)",

@@ -697,7 +697,18 @@ def test_the_p5_licence_and_h1_read_a_title_run_the_same_way(
     "Dr. Van Jr.", "Dr. Van MD", "Dr. Do Jr.",
 ])
 def test_no_op_prefix_chain_is_not_a_fork(text: str) -> None:
-    assert _overlap_parser().parse(text).ambiguities == ()
+    # Five rows stay fully silent. The sixth is pinned to its exact
+    # report instead, because since #489 it reports from somewhere else
+    # entirely: the leading peel's floor gives 'Do' back as the name
+    # word (the run stood in front of nothing but 'Jr.'), so
+    # 'Dr. Do Jr.' reads family 'Do', suffix 'Jr.' and H4's title half
+    # claims the lone name word, which happens to be title vocabulary
+    # here. That report is about the word left standing, not about a
+    # chain that never chained -- PARTICLE_OR_GIVEN is still absent.
+    expected = ((AmbiguityKind.TITLE_OR_NAME,)
+                if text == "Dr. Do Jr." else ())
+    assert tuple(a.kind for a in
+                 _overlap_parser().parse(text).ambiguities) == expected
 
 
 def test_a_fork_is_reported_by_exactly_one_stage() -> None:
