@@ -19,10 +19,12 @@ rule: the piece from which everything after is a strict suffix is the
 last name-position piece, the rest are suffixes. Behind that peel a
 trailing run of period-marked title words chains into the title from
 the end, leaving one name piece standing; where the run TAKES
-something the first peel was only provisional and runs again, once,
-over the pieces with the titled ones spliced out, so a trailing
-title is transparent to it. Where the run takes nothing -- almost
-every name -- the first peel is the only one and its answer stands.
+something the peel was only provisional and runs again over the pieces
+with the titled ones spliced out, the two alternating until the run
+takes nothing, so a trailing title is transparent to the suffix
+reading however many titles are written (_pieces.tail_reading). Where
+the run takes nothing -- almost every name -- the first peel is the
+only one and its answer stands.
 The v1 single-name+nickname rule lives here (decisions.md#N3): a
 nonempty nickname beside exactly one piece in total puts that piece
 in FAMILY.
@@ -63,8 +65,8 @@ from nameparser._pipeline._vocab import (
     effective_script, is_suffix_lenient, resolve_script_set,
 )
 from nameparser._pipeline._pieces import (
-    is_suffix_piece, leading_titles, peel_trailing, peel_walk,
-    segment_suffix_reading, trailing_titles,
+    is_suffix_piece, leading_titles, peel_walk, segment_suffix_reading,
+    tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken, _NEVER_FLIPPED,
@@ -125,7 +127,8 @@ class EffectiveOrder(NamedTuple):
 # order the caller declared; a wholly-katakana name keeps the declared
 # order" (history: decisions.md#W4)
 def _effective_order(policy: Policy,
-                     pieces: list[tuple[int, ...]],
+                     pieces: Sequence[tuple[int, ...]],
+                     name_pieces: Sequence[int],
                      tokens: list[WorkToken],
                      *, dot_divided: bool) -> EffectiveOrder:
     """script_orders resolution (#271): when every name piece is
@@ -153,6 +156,12 @@ def _effective_order(policy: Policy,
     resolves the SCRIPT for a single token. This function calls that
     one per token below.
 
+    Takes the segment's pieces and WHICH of them the name kept, the
+    shape every piece-layer predicate takes: a caller holding those
+    indices had to build a second list of the same pieces to hand
+    over otherwise, which on 3.11 is a comprehension frame on every
+    parse (decisions.md#parse-cost).
+
     Returns an EffectiveOrder: the order triple, and `by_script` set only on
     the one path where an entry answered. Every fallback below is a
     script rule DECLINING, and reports it as such.
@@ -169,8 +178,8 @@ def _effective_order(policy: Policy,
     # piece and a Hiragana piece only license together, never one at a
     # time), so resolution is deferred to resolve_script_set below.
     found: set[Script] = set()
-    for piece in pieces:
-        for i in piece:
+    for piece_idx in name_pieces:
+        for i in pieces[piece_idx]:
             script = effective_script(tokens[i].text)
             if script is None:
                 # Latin, mixed, or a script with no entry: never a key
@@ -235,10 +244,14 @@ def _assign_main(seg_idx: int, state: ParseState,
     # group-flagged suffix pieces (the ph-d merge) are suffixes at ANY
     # position -- v1's fix_phd extracted the credential from the string
     # before parsing, so position never mattered (PR review I3).
-    # Walked rather than collected first: a comprehension is a frame of
-    # its own on 3.11 and the list was never read again, which is one
-    # frame back against the one the H5 walk below costs
-    # (decisions.md#parse-cost).
+    # Walked rather than collected first: the list was never read
+    # again, and on 3.11 a comprehension is a frame of its own, which
+    # is one frame back against the one the H5 reading below costs. A
+    # 3.11 FACT and not a portable one: PEP 709 inlines comprehensions
+    # from 3.12, where this tree's reference parse costs 395 written
+    # either way (measured 2026-09-09, against 416 and 417 on 3.11).
+    # 3.11 is the interpreter the band is quoted for, so 3.11 is what
+    # the shape is chosen on (decisions.md#parse-cost).
     for k in range(n, len(pieces)):
         if "suffix" in ptags[k]:
             _set_roles(tokens, pieces[k], Role.SUFFIX)
@@ -254,52 +267,31 @@ def _assign_main(seg_idx: int, state: ParseState,
     if len(pieces) == 1 and len(rest) == 1 and has_nickname:
         _set_roles(tokens, pieces[rest[0]], Role.FAMILY)
         return None
-    # peel the trailing suffix run: k = first index in rest from which
-    # every piece is a suffix. The walk is _pieces.peel_trailing since
-    # #425 -- one walk, shared with the bound-given reserve, and
-    # documented there. Every bare ambiguous acronym it had to resolve
-    # is one coin-flip each, in either direction, so the report
-    # collects rather than overwrites. Deferred to after assignment
-    # because the wording reads the role back, and which role "not
-    # peeled" means depends on name_order. (The roman-numeral fork
-    # needs no such deferral and is reported here.)
+    # rules.md#S2's trailing peel and rules.md#H5's title chain, read
+    # together to their fixed point by _pieces.tail_reading -- one
+    # function since the /simplify round, shared with the bound-given
+    # reserve (P5), which must count the name words this leaves.
     #
-    # This peel is provisional only where the H5 walk below TAKES
-    # something: the walk can remove the very word that stopped the
-    # peel, so it is asked again over the pieces as they then stand,
-    # and that second answer is the only one that places a piece or
-    # reports a fork. Where the walk takes nothing -- almost every
-    # name, the walk's own first test being a period match that
-    # fails -- this peel is the only one, and its roles and its
-    # reports are the ones the name gets.
-    peeled = peel_trailing(rest, pieces, ptags, tokens)
     # rules.md#H5: "successive single words that wear the abbreviation
     # shape and are title vocabulary chain into the title from the end,
-    # leaving one name word standing"
-    # -- read over what the suffix
-    # peel left and set BEFORE _name_positions, so the shortened list is
-    # what the positional read and the script test both see (a trailing
-    # Latin title must not make a wholly-CJK name look mixed-script, the
-    # same reason the leading peel runs first). Placed ahead of the
-    # bare-suffix carve-out because with no name piece left there is
-    # nothing for the walk to read: its floor returns 0 on an empty
-    # list, so the branch below is reached exactly as before.
-    titled_tail = trailing_titles(rest[:peeled.names], pieces, ptags,
-                                  tokens)
-    if titled_tail:
-        cut = peeled.names - titled_tail
-        for piece_idx in rest[cut:peeled.names]:
-            _set_roles(tokens, pieces[piece_idx], Role.TITLE)
-        # The title is TRANSPARENT to the suffix peel: the pieces the
-        # walk took are spliced out and the peel runs once over what
-        # is left -- the name pieces the walk kept, then the pieces
-        # the provisional peel had taken, in original order -- so
-        # 'X Prof. Y' reads exactly as 'X Y' reads, plus the title.
-        # 'John Smith Jr. Prof.' reads suffix 'Jr.' where a single
-        # pass promoted a generational suffix to the family name, and
-        # 'John Prof. MA' reads the family 'MA' that 'John MA' reads.
-        rest = rest[:cut] + rest[peeled.names:]
-        peeled = peel_trailing(rest, pieces, ptags, tokens)
+    # leaving one name word standing" -- the titles are set BEFORE
+    # _name_positions, so the shortened list is what the positional
+    # read and the script test both see (a trailing Latin title must
+    # not make a wholly-CJK name look mixed-script, the same reason the
+    # leading peel runs first). Read ahead of the bare-suffix carve-out
+    # because with no name piece left there is nothing for the chain to
+    # read: its floor keeps 0 pieces of an empty list, so the branch
+    # below is reached exactly as before.
+    #
+    # Every bare ambiguous acronym the FINAL peel had to resolve is one
+    # coin-flip each, in either direction, so the report collects
+    # rather than overwrites. Deferred to after assignment because the
+    # wording reads the role back, and which role "not peeled" means
+    # depends on name_order. (The roman-numeral fork needs no such
+    # deferral and is reported here.)
+    rest, titled_tail, peeled = tail_reading(rest, pieces, ptags, tokens)
+    for piece_idx in titled_tail:
+        _set_roles(tokens, pieces[piece_idx], Role.TITLE)
     if peeled.numeral is not None:
         # a trailing single letter is a name part unless it happens
         # to be a roman numeral -- and V/X/I are ordinary middle
@@ -314,11 +306,11 @@ def _assign_main(seg_idx: int, state: ParseState,
     if peeled.names == 0:
         # everything suffix-shaped after titles: first one is the name
         name_pieces, suffix_pieces = suffix_pieces[:1], suffix_pieces[1:]
-    # AFTER both peels, and load-bearing: the script test sees the NAME
-    # pieces only, so a Latin title or suffix ('Dr. 毛 泽东', '毛 泽东,
-    # PhD') cannot make a wholly-CJK name look mixed-script.
-    resolved = _effective_order(state.policy,
-                                [pieces[i] for i in name_pieces], tokens,
+    # AFTER the whole tail reading, and load-bearing: the script test
+    # sees the NAME pieces only, so a Latin title or suffix ('Dr. 毛
+    # 泽东', '毛 泽东, PhD') cannot make a wholly-CJK name look
+    # mixed-script.
+    resolved = _effective_order(state.policy, pieces, name_pieces, tokens,
                                 dot_divided=bool(state.interpunct_offsets))
     order = resolved.order
     roles = _name_positions(order, len(name_pieces))
@@ -546,45 +538,66 @@ def assign(state: ParseState) -> ParseState:
         if len(state.segments) > 1:
             pieces = state.pieces[1]
             ptags = state.piece_tags[1]
+            # Both are the walk's, and both are empty on the gate's
+            # path below, which reads the whole segment as a
+            # credential run and leaves no piece for the walk to
+            # place.
             titled_idx: tuple[int, ...] = ()
+            walkable: list[int] = []
 
-            def reads_as_a_suffix(m: int, last: int) -> bool:
+            def previous_kept(m: int, titled: tuple[int, ...]) -> int:
+                """The piece before `m` that the H5 chain did NOT
+                take. Both readings this segment needs are that one:
+                the piece the lenient tail test measures against, and
+                -- asked of one past the end -- where the segment's
+                name ENDS, since a title the chain took is not where a
+                name ends (#144). One walk for both, so 'as if the
+                titled pieces were absent' cannot come to mean two
+                things.
+
+                DEFENSIVE, and measured inert: over 191,146 generated
+                inputs the skip fired on 153 of the 140,227 walks the
+                lenient test's `prev` asked for, and deleting it
+                changed no parse among them (2026-09-09, on the shape
+                this replaced, where the name's END walked past the
+                same pieces in a copy of this loop). Kept because "as
+                if the titled pieces were absent" is the rule the
+                predicate below implements, and a caller's vocabulary
+                reaches shapes the sweep's word list does not -- an
+                inert branch is cheaper than a rule with a hole in it.
+                """
+                m -= 1
+                while m in titled:
+                    m -= 1
+                return m
+
+            def reads_as_a_suffix(m: int, titled: tuple[int, ...]) -> bool:
                 """Does this segment's walk read piece `m` as a suffix?
 
                 Asked twice, and by one predicate rather than by two
                 conditions written to match
                 (mechanisms.md#ONE-PREDICATE-PER-QUESTION): once to
-                find the pieces the H5 title walk must not reach past,
-                and once by the walk order below, which is the site
-                that places them. `last` is where this segment's name
-                ends -- provisionally the segment's last piece, and
-                after the title walk the last piece the walk left,
-                since a title it took is not where a name ends.
+                find the pieces the H5 title chain must not reach
+                past, and once by the walk order below, which is the
+                site that places them.
 
-                `titled_idx` is read at CALL time and is empty on the
-                first pass, which is what makes the second reading the
-                one 'as if the titled pieces were absent': the lenient
-                test's preceding piece skips them too.
+                `titled` is a PARAMETER because the two passes hand it
+                different values -- () on the first, the chain's own
+                pieces on the second, which is what makes that second
+                reading the one 'as if the titled pieces were absent'.
+                A closure over the caller's local said the same thing,
+                but only by WHEN it was rebound.
                 """
                 if is_suffix_piece(pieces[m], ptags[m], tokens):
                     return True
-                # DEFENSIVE, and measured inert: the skip fires on 153
-                # of 140,227 calls over 191,146 generated inputs, and
-                # deleting it changes no parse among them (2026-09-09).
-                # Kept because "as if the titled pieces were absent" is
-                # the rule this predicate implements, and a caller's
-                # vocabulary reaches shapes the sweep's word list does
-                # not -- an inert branch is cheaper than a rule with a
-                # hole in it.
-                prev = m - 1
-                while prev in titled_idx:
-                    prev -= 1
+                prev = previous_kept(m, titled)
                 # trailing piece of a two-part name is unambiguously
                 # positioned: v1 accepts the lenient test there
                 # ('Smith, John V' -> suffix='V', #144); with a third
                 # comma part the trailing token is more likely a middle
                 # initial, so strict only
-                return (m == last and len(state.segments) == 2
+                return (m == previous_kept(len(pieces), titled)
+                        and len(state.segments) == 2
                         and len(pieces[m]) == 1
                         and _reads_as_a_trailing_suffix(
                             pieces[m], pieces[prev], ptags[prev],
@@ -647,13 +660,11 @@ def assign(state: ParseState) -> ParseState:
                 # (24 inputs of that shape move, of 191,146 generated,
                 # measured 2026-09-09).
                 walkable = [k for k in range(n, len(pieces))
-                            if k == n or not reads_as_a_suffix(
-                                k, len(pieces) - 1)]
-                taken = trailing_titles(walkable, pieces, ptags, tokens)
-                if taken:
-                    titled_idx = tuple(walkable[len(walkable) - taken:])
-                    for k in titled_idx:
-                        _set_roles(tokens, pieces[k], Role.TITLE)
+                            if k == n or not reads_as_a_suffix(k, ())]
+                kept = trailing_titles(walkable, pieces, ptags, tokens)
+                titled_idx = tuple(walkable[kept:])
+                for k in titled_idx:
+                    _set_roles(tokens, pieces[k], Role.TITLE)
             # v1 walk order: the first non-title piece is ALWAYS the
             # given, before any suffix check -- 'Hardman, RN - CRNA'
             # keeps first='RN'. The one deliberate 2.0 deviation,
@@ -665,20 +676,23 @@ def assign(state: ParseState) -> ParseState:
             # so the walk here never meets the case.
             if n < len(pieces):
                 _set_roles(tokens, pieces[n], Role.GIVEN)
-            # the walk's floor leaves a name piece standing, so the
-            # given above is never one of the pieces it took; what the
-            # walk DOES move is where this segment's name ends, and the
-            # lenient tail test below turns on that (#144)
-            last_kept = len(pieces) - 1
-            while last_kept in titled_idx:
-                last_kept -= 1
+            # The chain's floor leaves a name piece standing, so the
+            # given above is never one of the pieces it took. What the
+            # chain DOES move is where this segment's name ends, which
+            # the lenient tail test turns on (#144) -- so where it took
+            # something the question is re-asked with the pieces it
+            # left. Where it took nothing, `walkable` already IS this
+            # predicate's answer for every piece: the first pass's own
+            # memo, not a second spelling of the question, and it
+            # cannot have gone stale because nothing the chain does
+            # moved the end of the name.
             for m in range(n + 1, len(pieces)):
                 if m in titled_idx:
                     continue
-                if reads_as_a_suffix(m, last_kept):
-                    _set_roles(tokens, pieces[m], Role.SUFFIX)
-                else:
-                    _set_roles(tokens, pieces[m], Role.MIDDLE)
+                suffix_here = (reads_as_a_suffix(m, titled_idx)
+                               if titled_idx else m not in walkable)
+                _set_roles(tokens, pieces[m],
+                           Role.SUFFIX if suffix_here else Role.MIDDLE)
         if reading is not None and sum(
                 1 for k, piece in enumerate(fam_pieces)
                 if not is_suffix_piece(piece, fam_tags[k], tokens)) > 1:

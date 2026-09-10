@@ -157,7 +157,11 @@ def test_the_leading_run_keeps_a_joined_unit_it_cannot_give_back() -> None:
 
 def _trailing(text: str) -> int:
     """trailing_titles over the rest assign hands it: the name pieces
-    the S2 peel left, after the leading run is counted off."""
+    the S2 peel left, after the leading run is counted off.
+
+    The count is what the chain LEAVES STANDING, the way peel_trailing
+    counts -- so a walk that takes nothing returns the length of the
+    rest it was handed, and each title taken is one off that."""
     state = _through_group(text)
     pieces, ptags = state.pieces[0], state.piece_tags[0]
     tokens = list(state.tokens)
@@ -173,9 +177,9 @@ def test_the_trailing_run_chains_period_marked_title_words() -> None:
     reading below, which is the reason the walk chains rather than
     taking the last piece and stopping.
     """
-    assert _trailing("John Smith Prof. Dr.") == 2
-    assert _trailing("John Smith Prof.") == 1
-    assert _trailing("Dr. John Smith Prof.") == 1   # leading run too
+    assert _trailing("John Smith Prof. Dr.") == 2   # of four: both taken
+    assert _trailing("John Smith Prof.") == 2       # of three
+    assert _trailing("Dr. John Smith Prof.") == 2   # leading run too
 
 
 def test_the_trailing_run_leaves_one_name_piece_standing() -> None:
@@ -187,10 +191,10 @@ def test_the_trailing_run_leaves_one_name_piece_standing() -> None:
     where the same floor returns 0 and leaves assign's bare-suffix
     carve-out reached exactly as before.
     """
-    assert _trailing("Smith Prof.") == 1
-    assert _trailing("Dr. Prof.") == 0      # the floor, on a rest the
+    assert _trailing("Smith Prof.") == 1     # of two: the title taken
+    assert _trailing("Dr. Prof.") == 1      # the floor, on a rest the
                                             # walk would otherwise take
-    assert _trailing("Smith") == 0          # one-piece rest
+    assert _trailing("Smith") == 1          # one-piece rest
     assert _trailing("Prof.") == 0          # empty rest
 
 
@@ -203,9 +207,10 @@ def test_the_trailing_run_reads_vocabulary_and_not_shape() -> None:
     is claimed there only when the vocabulary claims it, and a bare
     title word is claimed not at all.
     """
-    assert _trailing("John Smith Xyz.") == 0    # unlisted abbreviation
-    assert _trailing("John Smith Sir") == 0     # no period
-    assert _trailing("John Smith Esq.") == 0    # the peel took it first
+    # nothing claimed: the walk leaves every piece it was handed
+    assert _trailing("John Smith Xyz.") == 3    # unlisted abbreviation
+    assert _trailing("John Smith Sir") == 3     # no period
+    assert _trailing("John Smith Esq.") == 2    # the peel took it first
 
 
 def test_the_trailing_run_refuses_a_joined_piece() -> None:
@@ -216,12 +221,13 @@ def test_the_trailing_run_refuses_a_joined_piece() -> None:
     that unit a name.
 
     That first row does not PIN the gate, though: with the one-word
-    test deleted it still reads 0, because the shape test then runs
+    test deleted it stands unchanged, because the shape test then runs
     on the piece's first token and 'de' wears no period (measured
     2026-09-09). The conjunction-merged unit is the row that pins it
     -- 'Prof. and Dr.' is one piece whose first token is a
     period-marked title word, so without the gate the walk takes it
-    and the name loses its family (measured 1 under that mutation).
+    and the name loses its family (measured one piece fewer standing
+    under that mutation).
     """
-    assert _trailing("John de la Prof.") == 0
-    assert _trailing("John Smith Prof. and Dr.") == 0
+    assert _trailing("John de la Prof.") == 2
+    assert _trailing("John Smith Prof. and Dr.") == 3

@@ -351,7 +351,9 @@ def _addressing_run(titles: list[int], name_word: int) -> list[int]:
     standing behind it deciding that word's field only when none
     stands before.
 
-    Keeping the two ends apart is what makes a trailing title
+    Every title token is in the TITLE role by the time this runs, both
+    ends of `Sir John Prof.` among them, so `titles` is not a run --
+    keeping the two ends apart is what makes a trailing title
     TRANSPARENT (rules.md#H5): `Sir John Prof.` is `Sir John` plus a
     title, and reading both ends as one run keyed 'sir prof' made
     adding the title flip the name word's field (#489, #316).
@@ -394,15 +396,9 @@ def post_rules(state: ParseState) -> ParseState:
     # rules.md#H1: "a run of several titles addresses as its last
     # title does, and where a run stands BEFORE the one name word it
     # is the run that addresses, a run standing behind it deciding
-    # that word's field only when none stands before" -- #489, so 'Her
-    # Majesty Queen Elizabeth' reads given 'Elizabeth': the run is not
-    # a given-name title but 'queen' is. WHICH run is _addressing_run's
-    # question; every title token is in the TITLE role by now, both
-    # ends of 'Sir John Prof.' among them, and keying the two ends as
-    # one run made the trailing title change the leading one's reading.
-    # The predicate lives beside _title_key because the P5 licence in
-    # group asks the same question of the same run, and a run read two
-    # ways is a rule contradicting itself (decisions.md#P5, #369).
+    # that word's field only when none stands before" -- #489. WHICH
+    # run that is, and why the two ends of a name are not one, are
+    # _addressing_run's; its docstring carries the history.
     if (titles and givens and not middles and not families
             and not _run_addresses_by_given(
                 (tokens[i].text

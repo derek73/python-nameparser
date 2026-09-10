@@ -931,20 +931,20 @@ assert SUFFIX_ACRONYMS_AMBIGUOUS <= SUFFIX_ACRONYMS, \
 # a bulk import from quietly re-creating one. It guards the SHIPPED sets
 # only: Lexicon has no matching invariant, so a caller who wants the
 # overlap in their own vocabulary may still have it.
+#
+# It carries the AMBIGUOUS set's stake too, which is the sharper one:
+# suffix_as_written ORs the word branch and the acronym branch, so an
+# ambiguous acronym that were also a suffix word would be claimed
+# through the word membership and bypass the period gate the ambiguous
+# set exists to impose. The ambiguous set is a subset of the acronyms
+# (the assert above), so this one covers it -- a separate assert of
+# `SUFFIX_ACRONYMS_AMBIGUOUS & SUFFIX_WORDS` cannot fail while both of
+# these hold.
 assert not (SUFFIX_ACRONYMS & SUFFIX_WORDS), \
     "a post-nominal belongs to one set or the other, never both (the " \
-    "two normalize differently): " \
+    "two normalize differently, and the word branch would bypass an " \
+    "ambiguous acronym's period gate): " \
     f"{sorted(SUFFIX_ACRONYMS & SUFFIX_WORDS)}"
-# The narrower claim, kept for the message it prints: an ambiguous
-# acronym must not also be a plain suffix word, because suffix_as_written
-# ORs the two branches, so the word membership would bypass the period
-# gate the ambiguous set exists to impose. Implied by the disjointness
-# above for as long as the ambiguous set stays a subset of the acronyms,
-# which is what the first assert holds.
-assert not (SUFFIX_ACRONYMS_AMBIGUOUS & SUFFIX_WORDS), \
-    "an ambiguous acronym must not also be a suffix word (the word " \
-    "branch bypasses its period gate): " \
-    f"{sorted(SUFFIX_ACRONYMS_AMBIGUOUS & SUFFIX_WORDS)}"
 # The peel splits its tail off as a TOKEN and suffix classification is
 # what claims it downstream, so a tail that is not also a suffix word
 # would split the name and then leave the piece sitting in it. The

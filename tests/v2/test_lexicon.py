@@ -296,14 +296,13 @@ def test_the_shipped_given_name_titles_are_every_one_a_single_word() -> None:
 
 
 def test_a_run_matches_by_its_last_word_when_the_whole_run_does_not() -> None:
-    # The other arm, on the shipped vocabulary: 'dr sir' is no entry
-    # and never could be, and `sir` is the run's last word (#489).
+    # The other arm's premise, on the shipped vocabulary: 'dr sir' is
+    # no entry and never could be, and `sir` is the run's last word
+    # (#489). What the parse then reads is the `Dr. Sir John` case
+    # row's, and is not asserted twice.
     lex = Lexicon.default()
     assert "dr sir" not in lex.given_name_titles
     assert "sir" in lex.given_name_titles
-    parsed = Parser(lexicon=lex).parse("Dr. Sir John")
-    assert (parsed.title, parsed.given, parsed.family) == \
-        ("Dr. Sir", "John", "")
 
 
 @pytest.mark.parametrize("entry", ["lt .", "lt . col", ". col", ". ."])

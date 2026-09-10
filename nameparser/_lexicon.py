@@ -127,27 +127,45 @@ def _normalize(word: str) -> str:
         word = stripped
 
 
-def _title_key(words: Iterable[str]) -> str:
-    """The given_name_titles lookup key for a run of title words.
+def _fold_words(words: Iterable[str]) -> list[str]:
+    """The words of a title run, folded for storage and lookup.
 
     A multi-word title is matched as one key ('lt col'), so the fold has
-    to run per word and rejoin -- _normalize on the whole phrase would
-    leave interior periods. Defined once because it is built at match
-    time (_run_addresses_by_given, which is how post_rules' H1 and
-    group's P5 licence both reach it) and at translation time
-    (_config_shim's first_name_titles), and a divergence between them
-    fails silently: the entry simply stops matching.
+    to run per word -- _normalize on the whole phrase would leave
+    interior periods.
 
-    Words that fold away are DROPPED, not joined as empty. Keeping the
-    gap makes the fold non-idempotent -- 'lt .' would store 'lt ', which
+    Words that fold away are DROPPED, not kept as empty. Keeping the
+    gap makes the key non-idempotent -- 'lt .' would store 'lt ', which
     match time can never build: a run CAN carry a lone '.' (the
     conjunction merge puts one there), but the fold drops the empty
     word, so the key is 'lt' and the stored entry is inert. Storage
     re-runs this fold on unpickle and on every dataclasses.replace, so a
     value that changes under a second pass is one Lexicon later rejects as
     "not written by this version". _normalize converges for the same
-    reason; so must anything built on top of it."""
-    return " ".join(filter(None, (_normalize(w) for w in words)))
+    reason; so must anything built on top of it.
+
+    A LIST, so that _run_addresses_by_given's last-word arm can be the
+    last word of this fold rather than a re-split of the joined key --
+    "the last word of the FOLDED key" is then structural, and the two
+    arms read one fold between them.
+
+    map/filter rather than a comprehension: both are C calls where a
+    comprehension is a Python frame on 3.11, and this runs on the parse
+    path for every name carrying a title run (decisions.md#parse-cost).
+    """
+    return list(filter(None, map(_normalize, words)))
+
+
+def _title_key(words: Iterable[str]) -> str:
+    """The given_name_titles lookup key for a run of title words: the
+    folded words, space-joined.
+
+    Defined once because it is built at match time
+    (_run_addresses_by_given, which is how post_rules' H1 and group's
+    P5 licence both reach it) and at translation time (_config_shim's
+    first_name_titles), and a divergence between them fails silently:
+    the entry simply stops matching."""
+    return " ".join(_fold_words(words))
 
 
 def _run_addresses_by_given(words: Iterable[str],
@@ -164,8 +182,9 @@ def _run_addresses_by_given(words: Iterable[str],
     so 'Her Majesty Queen' addresses by given name because 'queen'
     does. The two arms are asked of one key and neither is the other's
     fallback -- the `or` short-circuits but decides nothing, since for
-    a one-word run the key IS its last word. The last word is the last
-    word of the FOLDED key, not of the raw run, so a run token that
+    a one-word run the key IS its last word. Both arms read one
+    _fold_words list, so the last word is the last word of the FOLDED
+    key by construction rather than by agreement, and a run token that
     folds away cannot empty that arm: the conjunction merge can put a
     lone '.' in the run ('Sir and . John'), and the fold drops it.
     What the drop leaves as the last word can then be the CONJUNCTION
@@ -174,16 +193,6 @@ def _run_addresses_by_given(words: Iterable[str],
     on the shipped vocabulary, which holds no entry ending in a
     connective, and a caller who stored one would be asking for it
     (measured 2026-09-09).
-
-    Reading the FOLDED key's last word rather than the raw run's is a
-    defensive branch and a measured-inert one: over 191,146 generated
-    inputs it is reached 42,413 times and the two never differ, and
-    swapping it for the raw word changes no parse (2026-09-09) -- not
-    even on the lone '.' above, whose raw form folds to the empty
-    string and misses the vocabulary just as 'and' does. Kept as the
-    honest shape: the key is what the vocabulary is stored as, so the
-    key is what the lookup reads, and a caller's entry is the thing
-    that could make the two differ.
 
     The whole-run arm is what keeps a caller's multi-word phrase entry
     working: 'lt col' is stored as one key and matched as one run. Over
@@ -203,8 +212,12 @@ def _run_addresses_by_given(words: Iterable[str],
     The vocabulary is passed in rather than read off a default: a
     caller's own Lexicon is the one that has to be consulted, and this
     module is where Lexicon is defined."""
-    key = _title_key(words)
-    return key in vocabulary or key.rpartition(" ")[2] in vocabulary
+    folded = _fold_words(words)
+    if not folded:
+        # every word folded away, so there is no key and no last word:
+        # the joined spelling built "" here, which matched nothing
+        return False
+    return " ".join(folded) in vocabulary or folded[-1] in vocabulary
 
 
 def _reject_buffer(value: object, label: str, plural: str) -> None:

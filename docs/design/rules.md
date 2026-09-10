@@ -549,9 +549,11 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     particle's attachment (P6) sees the name. What
     there is to spare is what
     assign will leave: the join is tried on the pieces as it would
-    leave them, assign's trailing peel (S2) is read over that and its
-    trailing title run (H5) over what that peel leaves, and the name
-    words the two of them leave are the words to spare — a trailing
+    leave them, and the same reading assign runs over them — its
+    trailing peel (S2) and its trailing title run (H5), each read
+    over what the other leaves until neither takes anything more —
+    is read over that view, the name words it leaves being the words
+    to spare. A trailing
     roman numeral, or a bare acronym the peel takes, or a trailing
     title word the run takes, is no
     word to spare. The join joins two name words into one and
@@ -836,12 +838,14 @@ S2. Rationale: generational suffixes and credentials are recognized
     and is small: where the run's whole content is the word given
     back, no title is left to name anybody, so the word stands as
     the name rather than as the family — `Dr Jr` reads given `Dr`,
-    suffix `Jr` and `Sir Jr` given `Sir`, suffix `Jr`, both
-    reporting `title-or-name` (H4). The vocabulary half is decided
+    suffix `Jr`, reporting `title-or-name` (H4), and `Sir Jr`, the
+    spelling this note first named, reads by the same branches —
+    given `Sir`, suffix `Jr`, the same kind reported — the run
+    being empty by then and no branch reading `vocab:given-title`.
+    The vocabulary half is decided
     and unchanged (decisions.md#v1-xfail-triage: `king` stays a
     title, for the addressing forms).
       "Dr Jr"                     →  suffix="Jr"
-      "Sir Jr"                    →  suffix="Jr"
     interacts: H1, H2, H3, H5, C1 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with

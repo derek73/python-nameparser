@@ -1950,13 +1950,20 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: entered it, so the scan went 52 -> 53 and the roster 50 -> 51.
 #: Recounted 2026-09-08 with the title-run bundle: one name entered the
 #: population, 'John Smith Rev.', the only one of that bundle's
-#: movers no test literal names, and it took a row at each
-#: of the four baselines. Re-checked 2026-09-09 in that bundle's second
+#: movers no test literal names -- the others on radar carry a
+#: cases.py row or a v1 test -- and it took a row at each of the four
+#: baselines, its shape measured by the run and the same at all four.
+#: Re-checked 2026-09-09 in that bundle's second
 #: review round, when its mover list went from twenty-one to
 #: twenty-four: none of the three arrivals joins the population, all
 #: three being named as case-row literals in tests/v2/cases.py
 #: ('Sir John Prof.', 'Dr. Smith Sir.', '毛 泽东 Dr.'), so the row
-#: counts below are unmoved. It is named NOWHERE under tests/, so it
+#: counts below are unmoved. The /simplify round the same day took
+#: that list to twenty-three, 'Sir Jr' leaving rules.md and so the
+#: rules corpus; it was a cases.py literal and never in this
+#: population, so the row counts are unmoved by that too.
+#: 'John Smith Rev.' is named NOWHERE under
+#: tests/, so it
 #: counts in both scans -- the every-file figures in the RECOMPUTE
 #: paragraph below count it too. That commit moved the ROW counts and nothing
 #: else: it did not re-derive the population clause above, so the
@@ -2034,14 +2041,6 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Jack M.A.": ("family", "suffix"),
         "Jane van der Berg 旧姓 Jones": ("family", "maiden"),
         "Janey née Jones": ("family", "given", "maiden", "middle"),
-        # The one name of the 2.3 title-run bundle's nineteen
-        # movers that no test literal watches: the other four on
-        # radar carry a cases.py row or a v1 test. Shape measured
-        # by the run, 2026-09-08, and the same at all four
-        # baselines. The POPULATION paragraph above was last
-        # re-derived 2026-09-07 and this addition did not re-derive
-        # it -- the row counts below are updated by the four rows
-        # added, nothing else.
         "John Smith Rev.": ("family", "middle", "title"),
         "John Smith, RAI": ("family", "given", "suffix"),
         "John V": ("family", "suffix"),
@@ -2086,14 +2085,6 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Jane van der Berg 旧姓 Jones": ("family", "maiden"),
         "Janey née Jones": ("family", "given"),
         "Joe E. Smith": ("_initials",),
-        # The one name of the 2.3 title-run bundle's nineteen
-        # movers that no test literal watches: the other four on
-        # radar carry a cases.py row or a v1 test. Shape measured
-        # by the run, 2026-09-08, and the same at all four
-        # baselines. The POPULATION paragraph above was last
-        # re-derived 2026-09-07 and this addition did not re-derive
-        # it -- the row counts below are updated by the four rows
-        # added, nothing else.
         "John Smith Rev.": ("family", "middle", "title"),
         "John Smith, RAI": ("family", "given", "suffix"),
         "John, Smith, Dr.": ("_ambiguities",),
@@ -2136,14 +2127,6 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Jane van der Berg 旧姓 Jones": ("family", "maiden"),
         "Janey née Jones": ("family", "given"),
         "Joe E. Smith": ("_initials",),
-        # The one name of the 2.3 title-run bundle's nineteen
-        # movers that no test literal watches: the other four on
-        # radar carry a cases.py row or a v1 test. Shape measured
-        # by the run, 2026-09-08, and the same at all four
-        # baselines. The POPULATION paragraph above was last
-        # re-derived 2026-09-07 and this addition did not re-derive
-        # it -- the row counts below are updated by the four rows
-        # added, nothing else.
         "John Smith Rev.": ("family", "middle", "title"),
         "John Smith, RAI": ("family", "given", "suffix"),
         "John, Smith, Dr.": ("_ambiguities",),
@@ -2170,14 +2153,6 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "E Anne D,Leonardo": ("_initials",),
         "JOSE E MARIA SANTOS": ("_initials",),
         "Joe E. Smith": ("_initials",),
-        # The one name of the 2.3 title-run bundle's nineteen
-        # movers that no test literal watches: the other four on
-        # radar carry a cases.py row or a v1 test. Shape measured
-        # by the run, 2026-09-08, and the same at all four
-        # baselines. The POPULATION paragraph above was last
-        # re-derived 2026-09-07 and this addition did not re-derive
-        # it -- the row counts below are updated by the four rows
-        # added, nothing else.
         "John Smith Rev.": ("family", "middle", "title"),
         "John Smith, RAI": ("family", "given", "suffix"),
         "Jose E. Maria Santos": ("_initials",),

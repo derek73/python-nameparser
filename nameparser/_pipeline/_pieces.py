@@ -29,7 +29,10 @@ The S2 trailing peel travels as the unit decisions.md describes --
 peel_walk, peel_trailing and trailing_start together -- though only
 the first two cross a stage boundary. trailing_titles joins them
 because it reads what that peel left: the two answer one question
-between them, where the tail of a name stops being the name.
+between them, where the tail of a name stops being the name -- and
+tail_reading is that one question, running them against each other to
+their fixed point for the two stages that must not disagree about the
+answer.
 
 Layering: imports _state and _vocab only; _group and _assign import
 it, and neither of the two it imports imports it back.
@@ -90,10 +93,10 @@ def leading_titles(pieces: Sequence[Sequence[int]],
     segment is one title (v1 parity). And the run gives back its last
     piece when that piece is a name candidate: where everything behind
     the run is suffix pieces, the run gives back its last piece, when
-    that piece is one word and is not itself suffix vocabulary -- the
-    one-word half is what leaves 'Prince of Wales Jr' alone and the
-    vocabulary half what leaves 'MD DDS' and 'Jr. Ph. D.' alone
-    (rules.md#H3, decisions.md#H3).
+    that piece is one word and is not itself suffix vocabulary
+    (rules.md#H3, decisions.md#H3 -- the block at the floor below
+    carries the examples of each half, and the ordering its two inline
+    tag reads were measured on).
     One definition, read by assign (which sets the roles) and by the
     chain's trailing-run walk; the leading-particle scan shares the
     predicate, is_leading_title, but stops at a title-and-particle
@@ -139,11 +142,11 @@ def leading_titles(pieces: Sequence[Sequence[int]],
             and len(pieces[n - 1]) == 1
             and not is_suffix_piece(pieces[n - 1], ptags[n - 1],
                                     tokens)):
-        k = n
-        while k < len(pieces) and is_suffix_piece(pieces[k], ptags[k],
-                                                  tokens):
-            k += 1
-        if k == len(pieces):
+        for k in range(n, len(pieces)):
+            if not is_suffix_piece(pieces[k], ptags[k], tokens):
+                break
+        else:
+            # nothing behind the run but suffix pieces
             n -= 1
     return n
 
@@ -377,12 +380,15 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
 def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                      ptags: Sequence[Set[str]],
                      tokens: Sequence[WorkToken]) -> int:
-    """How many pieces at the END of `rest` are period-marked title
-    words. `rest` is the caller's NAME pieces, in piece order: on the
-    no-comma path what the S2 peel left, after a family comma the
-    segment's pieces that the segment's own suffix reading does not
-    claim, and in group's bound-given reserve the peel's leftovers
-    over the view the join would build.
+    """How many pieces of `rest` the trailing title chain LEAVES
+    standing: `rest[:kept]` are the name pieces and `rest[kept:]` the
+    period-marked title words the chain took, in piece order. Counted
+    the way `peel_trailing` counts, so the two answers compose without
+    arithmetic at the call site. `rest` is the caller's NAME pieces:
+    on the no-comma path what the S2 peel left, after a family comma
+    the segment's pieces that the segment's own suffix reading does
+    not claim, and in `tail_reading` the leftovers of whichever peel
+    is current.
     Floor: one name piece stands, so a name is never all title -- and
     an empty `rest` returns 0, which is what leaves assign's
     bare-suffix carve-out reached exactly as before.
@@ -406,14 +412,72 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     period-marked word, so the ordinary parse pays the one match and
     stops (decisions.md#parse-cost).
     """
-    n = 0
-    while len(rest) - n > 1:
-        idx = rest[len(rest) - n - 1]
+    k = len(rest)
+    while k > 1:
+        idx = rest[k - 1]
         piece = pieces[idx]
         if (len(piece) == 1
                 and _PERIOD_ABBREV.match(tokens[piece[0]].text)
                 and is_title_piece(piece, ptags[idx], tokens)):
-            n += 1
+            k -= 1
             continue
         break
-    return n
+    return k
+
+
+# rules.md#H5: "the title is TRANSPARENT to the suffix reading: where
+# two or more name words stand, what stands once the chain is taken
+# reads exactly as it would read written without the title, plus the
+# title"
+def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
+                  ptags: Sequence[Set[str]],
+                  tokens: Sequence[WorkToken],
+                  ) -> tuple[list[int], tuple[int, ...], Peel]:
+    """The S2 peel and the H5 chain read together to a FIXED POINT:
+    peel, chain, splice the chained pieces out, peel again over what
+    is left -- the name pieces the chain kept, then the pieces the
+    peel had taken, in original order -- until the chain takes
+    nothing. Where it takes nothing on the first pass, which is almost
+    every name, that first peel is the answer and the loop costs one
+    comparison.
+
+    Returns the walk with the chained pieces spliced out, the pieces
+    the chain took, and the FINAL peel -- whose numeral fork and
+    ambiguous picks are the ones assign reports. The walk is
+    partitioned by that peel exactly as a caller partitions its own:
+    `rest[:peel.names]` the name pieces, `rest[peel.names:]` the
+    suffixes. A bare tuple rather than a named one because a
+    NamedTuple's __new__ is a frame of its own on every parse
+    (decisions.md#parse-cost), and `_group_segment` returns its three
+    the same way.
+
+    Transparency is what the fixed point buys: 'X Prof. Y' reads
+    exactly as 'X Y' reads plus the title, however many titles are
+    written and wherever the peel then stops. Iterating ONCE reads a
+    second title only half way -- 'John Prof. MA Prof.' un-peeled the
+    acronym and re-exposed the first title, reading family 'Prof.'
+    with suffix 'MA' where 'John Prof. MA' reads family 'MA'.
+
+    One function for two readers -- assign's placement and group's
+    bound-given reserve (P5), which must count the name words assign
+    will leave. Deriving that agreement twice is what left the two
+    disagreeing at S2's bare-ambiguous reserve: 'abdul rahman MA'
+    declined the join and 'abdul rahman MA Prof.' took it
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+
+    `rest` is a peel_walk list and is not mutated -- the splice
+    rebinds this local -- so a caller's own reference still names the
+    walk it built. Both callers read the one returned here instead,
+    which is the one the final peel partitions.
+    """
+    titled: list[int] = []
+    while True:
+        peeled = peel_trailing(rest, pieces, ptags, tokens)
+        kept = trailing_titles(rest[:peeled.names], pieces, ptags,
+                               tokens)
+        if kept == peeled.names:
+            return rest, tuple(titled), peeled
+        # the chain's pieces reach this list back to front, so each
+        # run goes in FRONT of what the pass before it took
+        titled[:0] = rest[kept:peeled.names]
+        rest = rest[:kept] + rest[peeled.names:]

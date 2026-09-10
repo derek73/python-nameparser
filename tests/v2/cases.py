@@ -2385,7 +2385,14 @@ CASES: tuple[Case, ...] = (
          notes="the accepted edge: with `Dr` given back and `Jr` "
                "peeled as the suffix, no title is left to make the "
                "reading H1's, so the lone name word is H4's -- "
-               "`dr` is title vocabulary and the word standing is it"),
+               "`dr` is title vocabulary and the word standing is it. "
+               "This shape is what rules.md#S2's descriptive note "
+               "named, in its `Sir Jr` spelling, as the reading it "
+               "predicted and did not get; once the floor empties the "
+               "run no branch reads `vocab:given-title` at all, so "
+               "`Sir Jr` is this row in every part -- same roles, same "
+               "kind, the detail naming a different word -- and it is "
+               "not pinned twice"),
     Case("title_run_floor_gives_back_the_last_of_a_run",
          "Lord Chancellor Jr",
          {"title": "Lord", "family": "Chancellor", "suffix": "Jr"},
@@ -2420,17 +2427,6 @@ CASES: tuple[Case, ...] = (
          classification="parity",
          notes="negative control: nothing stands behind the run, so "
                "there is no all-suffix rest for the floor to see"),
-    Case("title_run_floor_gives_back_a_given_name_title_run", "Sir Jr",
-         {"given": "Sir", "suffix": "Jr"},
-         ambiguities=("title-or-name",), classification="fix(#489)",
-         notes="`Sir Jr` is the input rules.md#S2's descriptive note "
-               "names -- it read given `Jr` and now reads given `Sir`, "
-               "suffix `Jr`. The row is here for that provenance and "
-               "not for a second mechanism: the reading is `Dr Jr`'s "
-               "in every part -- same roles, same kind, the detail "
-               "being the word left standing -- because once the floor "
-               "empties the run no branch reads `vocab:given-title` "
-               "at all"),
     Case("title_run_addresses_by_its_last_title",
          "Her Majesty Queen Elizabeth",
          {"title": "Her Majesty Queen", "given": "Elizabeth"},
@@ -3652,6 +3648,23 @@ CASES: tuple[Case, ...] = (
                "the reports come from the single peel over the "
                "spliced pieces. Collecting both peels' picks instead "
                "reported the same coin flip twice"),
+    Case("title_word_trailing_run_is_read_to_a_fixed_point",
+         "John Prof. MA Prof.",
+         {"title": "Prof. Prof.", "given": "John", "family": "MA"},
+         ambiguities=("suffix-or-name",), classification="fix(#316)",
+         notes="transparency for a SECOND title, which peel and chain "
+               "reading to a FIXED POINT buys and one re-peel did "
+               "not: the chain takes the last 'Prof.', the peel over "
+               "what is left un-peels 'MA' and re-exposes the first "
+               "'Prof.', and only asking the chain again takes it. "
+               "Iterating once read title 'Prof.', given 'John', "
+               "family 'Prof.', suffix 'MA' -- which is 'John Prof. "
+               "MA' plus a title in no reading at all. Found by the "
+               "/simplify round on the bundle, 2026-09-09; 1.4.0 read "
+               "first 'John' / middle 'Prof. MA' / last 'Prof.' "
+               "(measured 2026-09-09), so the row is #316's parity "
+               "break either way and the round decided only which "
+               "reading it is"),
     Case("title_word_trailing_keeps_the_bare_acronym_reserve",
          "John Prof. MA",
          {"title": "Prof.", "given": "John", "family": "MA"},
@@ -3818,6 +3831,27 @@ CASES: tuple[Case, ...] = (
                "rahman' (measured on the bundle's third commit). "
                "1.4.0 read title 'Prof.' / first 'abdul rahman' / "
                "last 'Prof.'"),
+    Case("title_word_trailing_behind_a_bound_pair_at_the_peel_reserve",
+         "abdul rahman MA Prof.",
+         {"title": "Prof.", "given": "abdul", "family": "rahman",
+          "suffix": "MA"}, ambiguities=("suffix-or-name",),
+         classification="fix(#316)",
+         notes="the row above's shape at S2's bare-ambiguous reserve, "
+               "which is the one place the reserve's own model of "
+               "assign's reading and assign's reading disagreed. This "
+               "is 'abdul rahman MA' plus a title, and that reads "
+               "given 'abdul' / family 'rahman' / suffix 'MA': the "
+               "join declines because peeling the acronym unjoined "
+               "and not joined is a suffix reading the join would "
+               "change. Modelling the peel and the chain as a "
+               "subtraction, the reserve counted 'MA' a name word to "
+               "spare here and not without the title, so the join "
+               "fired and read given 'abdul rahman', family 'MA'. One "
+               "shared reading of the tail is what makes the two "
+               "agree -- found by the /simplify round on the bundle, "
+               "2026-09-09 (decisions.md#H5). 1.4.0 read first 'abdul "
+               "rahman' / middle 'MA' / last 'Prof.' (measured "
+               "2026-09-09)"),
     Case("title_word_trailing_behind_a_licensed_bound_pair",
          "Sir abdul rahman Prof.",
          {"title": "Sir Prof.", "given": "abdul rahman"},
@@ -3866,20 +3900,6 @@ CASES: tuple[Case, ...] = (
                "prof', which addresses by neither, and read family "
                "'John'. 1.4.0 read title 'Sir' / first 'John' / last "
                "'Prof.' (measured 2026-09-09)"),
-    Case("title_run_leading_given_name_title_over_a_trailing_title",
-         "Queen Elizabeth Prof.",
-         {"title": "Queen Prof.", "given": "Elizabeth"},
-         classification="fix(#316)",
-         notes="the same clause where the leading run is a ONE-word "
-               "given-name title that is also an ordinary surname. "
-               "'Queen Elizabeth' reads given 'Elizabeth' and adding "
-               "the trailing title does not move it; the composite "
-               "key 'queen prof' read family 'Elizabeth'. Not a "
-               "rules.md example -- 'Sir John Prof.' carries the "
-               "clause there -- and kept because `queen` is the "
-               "vocabulary entry #489's run arm turns on. 1.4.0 read "
-               "title 'Queen' / first 'Elizabeth' / last 'Prof.' "
-               "(measured 2026-09-09)"),
     Case("title_run_leading_addresses_over_a_trailing_given_name_title",
          "Dr. Smith Sir.",
          {"title": "Dr. Sir.", "family": "Smith"},

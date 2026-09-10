@@ -2431,8 +2431,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # `title` and `given` too -- so both fall through to the
         # peel-floor rule at the end of the ledger, and the surplus
         # is the one the paragraph above says these four carry.
+        # 7 -> 6 on 2026-09-09, in the /simplify round: `Sir Jr` left
+        # rules.md and so left the corpus; `Dr Jr` reads the same way
+        # and pins the shape alone.
         "fix(suffix-routing) a two-token name ending in the suffix word jr keeps it in `suffix`":
-            _Claim(7, ('family', 'suffix'), "4cd8e7fbd20d", None),
+            _Claim(6, ('family', 'suffix'), "dd3fc23d90a1", None),
         "fix(suffix-routing) a two-token name ending in a credential acronym keeps it in `suffix`":
             _Claim(2, ('family', 'suffix'), "ed72c9672214", None),
         "fix(suffix-routing) the dotted M.A. spelling reads as a credential (ma-do)":
@@ -2473,14 +2476,17 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # The 2.3 title-run bundle's five rules, last in every
         # ledger. All five are anchored on NAMES, so the reach IS the
         # mover list: 2 names for the run keying, 1 for the esq drop,
-        # 4 for the peel floor, 16 for the trailing title and 1 for
+        # 3 for the peel floor, 16 for the trailing title and 1 for
         # the trailing title on a native-script name, which is the
         # same argument on the one name a script-classified
-        # alternation may not hold. Twenty-four in all, and every one
+        # alternation may not hold. Twenty-three in all, and every one
         # of them is explained by the rule that names it -- these are
         # the rare rows where reach and explanation coincide, which is
         # what an anchored name list buys. A widening past those names
         # moves the digest here before it can reach the gate.
+        # 24 -> 23 on 2026-09-09, in the /simplify round: `Sir Jr`
+        # left rules.md, where it pinned nothing `Dr Jr` does not,
+        # and so left the rules corpus and the peel floor's reach.
         "fix(#489) a title run addresses by its last title":
             _Claim(2, ('family', 'given'), "e14159a4d48f", None),
         "change(suffix-acronym-collisions) esq leaves the acronym set":
@@ -2491,7 +2497,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # digest are identical in all four ledgers and only the roles
         # move.
         "fix(#489) the title peel leaves a name word a suffix cannot be":
-            _Claim(4, ('family', 'given', 'suffix', 'title'), "ac7318881b28", None),
+            _Claim(3, ('family', 'given', 'suffix', 'title'), "07b02286cd81", None),
         "fix(#316) a trailing period-marked title word reads as a title":
             _Claim(16, ('family', 'given', 'middle', 'suffix', 'title'),
                    "562e0e82a22b", None),
@@ -2663,16 +2669,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('family', 'given'), "a3cfff4e78f4", None),
         "fix(#296) a dropped prenominal takes the name position it occupies":
             _Claim(3, ('_ambiguities', 'given', 'middle', 'title'), "263d5957cfc1", None),
-        # `middle` left the ROLES in the same edit, at the gate's
-        # own OVER-DECLARED insistence: with 'John Smith Dr.' gone,
-        # no name the rule still explains moves a middle name.
-        # 11 -> 12 on 2026-09-08: the 2.3 title-run bundle put
-        # 'John Smith Prof. Dr.' in the rules corpus, and the
-        # trailing-`dr` regex reaches any name ending in " Dr.".
-        # Reach, not explanation -- the rule explains NEITHER of
-        # the two 'Dr.' names now, both having moved to the #316
-        # rule at the end of the ledger, and the comment there
-        # records the handover.
+        # `middle` left the ROLES in the same edit, and the reach
+        # grew with the rules corpus; the 1.4.0 roster above carries
+        # both, and says the same at the other two baselines.
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
             _Claim(13, ('family', 'suffix'), "fb9c68f36d0b", None),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
@@ -2743,16 +2742,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#462) the facade keeps an initial-shaped conjunction letter":
             _Claim(18, ('_initials',), "3dd0e0276be6", ('DEFAULT',)),
         # The 2.3 title-run bundle's five rules, last in every
-        # ledger. All five are anchored on NAMES, so the reach IS the
-        # mover list: 2 names for the run keying, 1 for the esq drop,
-        # 4 for the peel floor, 16 for the trailing title and 1 for
-        # the trailing title on a native-script name, which is the
-        # same argument on the one name a script-classified
-        # alternation may not hold. Twenty-four in all, and every one
-        # of them is explained by the rule that names it -- these are
-        # the rare rows where reach and explanation coincide, which is
-        # what an anchored name list buys. A widening past those names
-        # moves the digest here before it can reach the gate.
+        # ledger, and the same reach at all four: the 1.4.0 roster
+        # above carries the argument.
         "fix(#489) a title run addresses by its last title":
             _Claim(2, ('family', 'given'), "e14159a4d48f", None),
         "change(suffix-acronym-collisions) esq leaves the acronym set":
@@ -2763,7 +2754,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # digest are identical in all four ledgers and only the roles
         # move.
         "fix(#489) the title peel leaves a name word a suffix cannot be":
-            _Claim(4, ('_ambiguities', 'family', 'given', 'suffix', 'title'), "ac7318881b28", None),
+            _Claim(3, ('_ambiguities', 'family', 'given', 'suffix', 'title'), "07b02286cd81", None),
         "fix(#316) a trailing period-marked title word reads as a title":
             _Claim(16, ('family', 'given', 'middle', 'suffix', 'title'),
                    "562e0e82a22b", None),
@@ -2860,16 +2851,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#462) the facade keeps an initial-shaped conjunction letter":
             _Claim(18, ('_initials',), "3dd0e0276be6", ('DEFAULT',)),
         # The 2.3 title-run bundle's five rules, last in every
-        # ledger. All five are anchored on NAMES, so the reach IS the
-        # mover list: 2 names for the run keying, 1 for the esq drop,
-        # 4 for the peel floor, 16 for the trailing title and 1 for
-        # the trailing title on a native-script name, which is the
-        # same argument on the one name a script-classified
-        # alternation may not hold. Twenty-four in all, and every one
-        # of them is explained by the rule that names it -- these are
-        # the rare rows where reach and explanation coincide, which is
-        # what an anchored name list buys. A widening past those names
-        # moves the digest here before it can reach the gate.
+        # ledger, and the same reach at all four: the 1.4.0 roster
+        # above carries the argument.
         "fix(#489) a title run addresses by its last title":
             _Claim(2, ('family', 'given'), "e14159a4d48f", None),
         "change(suffix-acronym-collisions) esq leaves the acronym set":
@@ -2880,7 +2863,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # digest are identical in all four ledgers and only the roles
         # move.
         "fix(#489) the title peel leaves a name word a suffix cannot be":
-            _Claim(4, ('_ambiguities', 'family', 'given', 'suffix', 'title'), "ac7318881b28", None),
+            _Claim(3, ('_ambiguities', 'family', 'given', 'suffix', 'title'), "07b02286cd81", None),
         "fix(#316) a trailing period-marked title word reads as a title":
             _Claim(16, ('family', 'given', 'middle', 'suffix', 'title'),
                    "562e0e82a22b", None),
@@ -3042,16 +3025,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('family', 'given'), "a3cfff4e78f4", None),
         "fix(#296) a dropped prenominal takes the name position it occupies":
             _Claim(3, ('_ambiguities', 'given', 'middle', 'title'), "263d5957cfc1", None),
-        # `middle` left the ROLES in the same edit, at the gate's
-        # own OVER-DECLARED insistence: with 'John Smith Dr.' gone,
-        # no name the rule still explains moves a middle name.
-        # 11 -> 12 on 2026-09-08: the 2.3 title-run bundle put
-        # 'John Smith Prof. Dr.' in the rules corpus, and the
-        # trailing-`dr` regex reaches any name ending in " Dr.".
-        # Reach, not explanation -- the rule explains NEITHER of
-        # the two 'Dr.' names now, both having moved to the #316
-        # rule at the end of the ledger, and the comment there
-        # records the handover.
+        # `middle` left the ROLES in the same edit, and the reach
+        # grew with the rules corpus; the 1.4.0 roster above carries
+        # both, and says the same at the other two baselines.
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
             _Claim(13, ('family', 'suffix'), "fb9c68f36d0b", None),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
@@ -3114,16 +3090,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#462) the facade keeps an initial-shaped conjunction letter":
             _Claim(18, ('_initials',), "3dd0e0276be6", ('DEFAULT',)),
         # The 2.3 title-run bundle's five rules, last in every
-        # ledger. All five are anchored on NAMES, so the reach IS the
-        # mover list: 2 names for the run keying, 1 for the esq drop,
-        # 4 for the peel floor, 16 for the trailing title and 1 for
-        # the trailing title on a native-script name, which is the
-        # same argument on the one name a script-classified
-        # alternation may not hold. Twenty-four in all, and every one
-        # of them is explained by the rule that names it -- these are
-        # the rare rows where reach and explanation coincide, which is
-        # what an anchored name list buys. A widening past those names
-        # moves the digest here before it can reach the gate.
+        # ledger, and the same reach at all four: the 1.4.0 roster
+        # above carries the argument.
         "fix(#489) a title run addresses by its last title":
             _Claim(2, ('family', 'given'), "e14159a4d48f", None),
         "change(suffix-acronym-collisions) esq leaves the acronym set":
@@ -3134,7 +3102,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # digest are identical in all four ledgers and only the roles
         # move.
         "fix(#489) the title peel leaves a name word a suffix cannot be":
-            _Claim(4, ('_ambiguities', 'family', 'given', 'suffix', 'title'), "ac7318881b28", None),
+            _Claim(3, ('_ambiguities', 'family', 'given', 'suffix', 'title'), "07b02286cd81", None),
         "fix(#316) a trailing period-marked title word reads as a title":
             _Claim(16, ('family', 'given', 'middle', 'suffix', 'title'),
                    "562e0e82a22b", None),
