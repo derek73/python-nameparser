@@ -572,7 +572,8 @@ _SENTINELS = ("John Smith", "田中さん", "Хосе Сантос", "x")
 #: decision when a corpus is added, the way the Script tables do.
 _CORPUS_FLOORS = {
     "corpus.jsonl": 480,        # 486 today, from v1's banks at a pinned ref
-    "corpus_cjk.jsonl": 67,     # 70 today, generated from the case table.
+    "corpus_cjk.jsonl": 67,     # 70 today (2026-09-10, `wc -l`),
+                                # generated from the case table.
                                 # LOWERED 95 -> 70 on 2026-09-01,
                                 # deliberately: the CJK comma demotion
                                 # moved 25 tolerated texts out of this
@@ -585,8 +586,12 @@ _CORPUS_FLOORS = {
                                 # the trailing-period honorifics
                                 # ('田中さん 様.' and its two twins) are
                                 # the listing artifact the first
-                                # sweep's criterion could not see
-    "corpus_cjk_tolerated.jsonl": 22,  # 42 today (2026-09-10), the tolerated half of
+                                # sweep's criterion could not see.
+                                # UNMOVED by the #322/#323 full-stop
+                                # bundle (2026-09-10): every row it
+                                # added is tolerated, so all thirteen
+                                # of its names landed in the file below
+    "corpus_cjk_tolerated.jsonl": 22,  # 43 today (2026-09-10, `wc -l`), the tolerated half of
                                 # the same generator: composed and
                                 # wrapped CJK forms (comma listings,
                                 # Latin titles and credentials,
@@ -599,13 +604,35 @@ _CORPUS_FLOORS = {
                                 # and the rules corpus stopped
                                 # carrying it -- the row was written
                                 # so the text moved tiers instead of
-                                # leaving the harness. 29 since
-                                # 2026-09-05, the three period rows.
+                                # leaving the harness. 30 since
+                                # 2026-09-05, the three period rows --
+                                # corrected from the 29 this line used
+                                # to read; the 29 -> 30 step itself
+                                # went unrecorded. 43 since 2026-09-10,
+                                # the #322/#323 full-stop bundle's
+                                # thirteen names (twelve landing with
+                                # the bundle, the katakana 'マイケル.'
+                                # joining the same day in the
+                                # whole-branch review that follows it)
+                                # joining the 30 the file held that
+                                # day -- every one of the thirteen
+                                # tolerated, and so every one of them
+                                # on the radar tier.
                                 # Floor left at 22: it guards against
                                 # the file emptying, and this half only
                                 # grows as the contract narrows
     "corpus_issues.jsonl": 370,  # 381 today, harvested and append-only
-    "corpus_rules.jsonl": 150,  # 249 today, generated from rules.md.
+    "corpus_rules.jsonl": 150,  # 287 today (2026-09-10, `wc -l`),
+                                # generated from rules.md -- the "249"
+                                # this line read was measured on
+                                # 2026-09-05 and never re-measured as
+                                # the document grew (286 the day
+                                # before). The one row this bundle
+                                # adds is 'Smith. John', H2's Latin
+                                # witness for the #323 veto's fork;
+                                # the CJK witness is W3's, and a
+                                # tolerated rule's examples are not
+                                # harvested here.
                                 # 248 until 2026-09-05, when W2's
                                 # trailing-period example moved into
                                 # the tolerated W3 and the builder

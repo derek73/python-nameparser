@@ -722,10 +722,13 @@ rule applies there in exactly the same way:
     >>> parse("Morse, Det. Insp. Jane").title
     'Det. Insp.'
 
-The rule is bounded in three ways, so it doesn't swallow ordinary
+The rule is bounded in four ways, so it doesn't swallow ordinary
 names. Single initials are left alone, so are abbreviations with
-interior periods, and it applies only to that leading run — the same
-word after the given name is a middle name:
+interior periods, it applies only to that leading run (the same
+word after the given name is a middle name), and a period-marked
+opening word carrying a Han, kana or hangul character is a name word
+rather than a title, since those scripts write no abbreviation with a
+period (``田中.`` is the family name):
 
 .. doctest::
 

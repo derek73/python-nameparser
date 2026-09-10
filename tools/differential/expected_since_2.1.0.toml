@@ -101,7 +101,9 @@ issue = "feat(#449) a lone name word reports given-or-family"
 # The five CJK-bearing names in the same population ride five rules of
 # their own below, because a CJK member in an alternation is claimed
 # by the honorific pin, which would demand this be a copy of
-# GLUED_HONORIFICS.
+# GLUED_HONORIFICS. #322/#323 opened the one escape from that pin --
+# a member set declared in _NOT_A_VOCABULARY_COPY -- and nothing here
+# declares one, so the five rules stand.
 name_regex = "(?i)^(?:'Smitty' Jones Jr\\.|Andrew|Carod i|Dean of Chemistry|Donald mc|Duke of Edinburgh|Duke of Wellington|Garcia|Jack M\\.A\\.|John & Jane|John V|John of the Doe|Juan & Garcia|Juan and Garcia|Mohamad X|Smith|Smith Jr\\.|e and e|part1 of The part2 of the part3 and part4|part1 of and The part2 of the part3 And part4|test|سلمان،)$"
 fields = ["_ambiguities"]
 
@@ -205,10 +207,12 @@ name_regex = "(?i)^(?:Attorney General of Minnesota|Deputy Secretary of State)$"
 fields = ["_ambiguities"]
 
 # The four CJK names of #436/#437's class, one rule each. Not one
-# alternation: an alternation holding a script-classified member is
-# claimed by the honorific pin in tests/v2/test_ledger_guards.py,
-# which requires its members to BE the config's CJK honorific
-# entries. These are names, so each stands alone, literal-anchored,
+# alternation: an UNDECLARED alternation holding a script-classified
+# member is claimed by the honorific pin in
+# tests/v2/test_ledger_guards.py, which requires its members to BE
+# the config's CJK honorific entries -- and until #322/#323 opened
+# the _NOT_A_VOCABULARY_COPY escape that was every such alternation.
+# These are names, so each stands alone, literal-anchored,
 # reaching exactly one corpus name (_CORPUS_CLAIMS carries the 1)
 # with _MUST_NOT_MATCH probes for the boundary each one has.
 # rules.md#R1: "a run of post-nominals written with spaces renders
@@ -1914,13 +1918,15 @@ issue = "fix(#316) a trailing Latin title on a native-script name is a title"
 # buys.
 #
 # ITS OWN rule rather than a seventeenth alternative above, and not by
-# preference: an alternation holding a script-classified member is
-# claimed by the honorific pin in tests/v2/test_ledger_guards.py,
-# which requires such an alternation's members to BE the config's CJK
-# honorific entries. So this stands alone, literal-anchored, reaching
-# exactly one corpus name (_CORPUS_CLAIMS carries the 1) with
-# _MUST_NOT_MATCH probes for the boundary -- the same shape the four
-# #436/#437 CJK rules above take, and for the same reason.
+# preference: an UNDECLARED alternation holding a script-classified
+# member is claimed by the honorific pin in
+# tests/v2/test_ledger_guards.py, which requires such an
+# alternation's members to BE the config's CJK honorific entries --
+# and until #322/#323 opened the _NOT_A_VOCABULARY_COPY escape that
+# was every such alternation. So this stands alone, literal-anchored,
+# reaching exactly one corpus name (_CORPUS_CLAIMS carries the 1)
+# with _MUST_NOT_MATCH probes for the boundary -- the same shape the
+# four #436/#437 CJK rules above take, and for the same reason.
 #
 # Classified 2026-09-09, in the review round that fixed which title
 # run H1 addresses by; the reading itself is untouched by that fix.
@@ -1938,7 +1944,8 @@ issue = "fix(#316) a trailing Latin title on a native-script name is a title"
 # `suffix` and into `title`.
 #
 # Literal and anchored, so the reach cannot widen into the other
-# twenty-nine tolerated CJK names. _MUST_NOT_MATCH carries three of
+# forty-two tolerated CJK names (twenty-nine until this bundle's
+# thirteen rows joined the file). _MUST_NOT_MATCH carries three of
 # them as probes: '王先生, V.' (a Latin post-nominal behind a
 # comma, which the trailing walk never sees), '田中さん, Dr.' (the
 # comma spelling of this very shape, routed by the segment gate) and
@@ -1946,3 +1953,54 @@ issue = "fix(#316) a trailing Latin title on a native-script name is a title"
 # vocabulary).
 name_regex = "^毛 泽东 Dr\\.$"
 fields = ["suffix", "title"]
+
+# #322/#323, LAST in the file. The parser knew ONE full stop --
+# the ASCII period -- and knew it at ONE site, the lexicon's edge
+# strip. It now reads four: the ASCII period, the fullwidth '．',
+# the ideographic '。' and its halfwidth '｡'. A full stop glued
+# AFTER a script-written word is punctuation and not part of the
+# word -- invisible to the script reading and to the vocabulary,
+# and left in the text on the word it arrived with -- because no
+# East Asian script writes an initial or an abbreviation with a
+# period. A leading stop folds away for the vocabulary lookup and
+# the script reading alike; only the two division sites read it
+# raw, indexing the word's own spelling from its start: '.김민준'
+# takes the hangul order rule and still divides nowhere
+# (rules.md's W Background, decisions.md#cjk-full-stops).
+#
+# THIRTEEN members here where the 1.4.0 and 2.0.0 ledgers carry ten
+# -- twelve CJK plus the katakana 'マイケル.', a #323 mover added
+# 2026-09-10 in the whole-branch review. 2.1.0 is the release that
+# shipped the hangul segmentation and the script order rule, so from
+# here '김. 민준', '양 지훈.' and '양. 지훈' are diffs of this bundle
+# rather than of that one: the older ledgers hand them to their
+# native-script CJK rule, which does not exist at this baseline.
+#
+# No earlier rule in this file reaches any of the thirteen, so LAST
+# is uniformity with the other three ledgers rather than a
+# narrow-first ordering (#382) against anything: order_contests
+# reports no pair here in either arrangement.
+#
+# An anchored alternation of the NAMES rather than a shape, and the
+# two criteria a shape could be written on both reach names this
+# rule must not claim. "An edge full stop on a word carrying a
+# classified character" reaches 18 corpus names, measured
+# 2026-09-10: the bundle's thirteen movers and FIVE that do not move
+# ('田中さん 様.', '田中さん, 様.', '김민준 씨.', '김민준 양.',
+# '김민준, 씨.'). A character class of the four stops would be a hand
+# copy of nameparser._lexicon.FULL_STOPS besides, and would reach
+# the looser population of "an ASCII period anywhere in a CJK-
+# bearing name" -- 20 distinct names on 21 corpus rows before this
+# bundle ('Dr 김민준씨, Jr.' being the name on two of them), wider
+# because it sweeps in periods sitting on LATIN tokens inside a CJK
+# name ('毛 泽东 Dr.', '田中さん, V.'). Neither the five nor the
+# twenty moves, which is why a shape spelling would claim diffs that
+# do not exist; decisions.md#cjk-full-stops carries both counts and
+# the recompute. The members copy no wordlist,
+# which _NOT_A_VOCABULARY_COPY in tests/v2/test_ledger_guards.py
+# records; _CORPUS_CLAIMS pins the reach at 13 with its digest, and
+# _MUST_NOT_MATCH pins the four readings the bundle left alone.
+[[change]]
+issue = "fix(#322/#323) a full stop on a CJK token is read as punctuation and stays on its token"
+name_regex = "^(?:マイケル\\.|田中\\.|田中\\. 太郎|田中さん\\.|김\\. 민준|김민준 씨。|김민준 씨．|김민준 씨｡|김민준\\.|김민준\\. 지훈|김민준씨\\.|양 지훈\\.|양\\. 지훈)$"
+fields = ["_ambiguities", "family", "given", "middle", "suffix", "title"]

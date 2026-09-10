@@ -110,11 +110,15 @@ _PHRASE_FIELDS = ("given_name_titles", "maiden_markers")
 #: (_policy._NO_INITIALS) that licenses every reader here. NFKC is
 #: NOT a substitute for listing them: it folds U+FF0E to '.' and
 #: U+FF61 to U+3002, and leaves U+3002 as it is.
-#: EDGE stops only, and only the four: the interior-period shapes --
-#: the dotted acronym 'M.A.', the split 'Ph. D.', the initial 'J.' --
-#: are ASCII-period tests in _vocab and _extract and stay so; a
-#: fullwidth-dotted acronym ('Ｍ．Ｂ．Ａ．') is a fullwidth-Latin
-#: question this set does not raise.
+#: Not every period test reads this set, and the ones that do not are
+#: named so the claim is checkable: the interior-period shapes -- the
+#: dotted acronym 'M.A.' and the split 'Ph. D.' (_vocab) -- and three
+#: ASCII-only edge tests on Latin shapes -- the initial 'J.' (_vocab),
+#: the bracketed credential '(Mgr.)' and the word-internal apostrophe
+#: rule (_extract), and the trailing middle-initial carve-out 'V.'
+#: (_assign) -- stay ASCII: a fullwidth stop on a Latin credential
+#: ('Ｍ．Ｂ．Ａ．', 'V。') is a fullwidth-Latin question this set does
+#: not raise.
 FULL_STOPS = ".．。｡"
 
 
@@ -432,14 +436,14 @@ class Lexicon:
     :meth:`empty`, derive variants with :meth:`add` / :meth:`remove` /
     ``|`` (union), and pass the result to ``Parser(lexicon=...)``.
     Entries are normalized at construction -- lowercased, NFC-composed,
-    edge full stops stripped -- so matching is case-insensitive. Vocabulary entries are
-    single words -- a multi-word entry warns at construction and can
-    never match. Two fields are exempt, and they differ in HOW they
-    match: ``given_name_titles`` is looked up against the run of words
-    the parse has ALREADY read as titles -- the whole run space-joined,
-    or that run's last word -- while ``maiden_markers`` is matched by
-    lookahead, longest first, over words that need not be markers on
-    their own (``"z domu"``).
+    edge full stops stripped -- so matching is case-insensitive.
+    Vocabulary entries are single words -- a multi-word entry warns at
+    construction and can never match. Two fields are exempt, and they
+    differ in HOW they match: ``given_name_titles`` is looked up
+    against the run of words the parse has ALREADY read as titles --
+    the whole run space-joined, or that run's last word -- while
+    ``maiden_markers`` is matched by lookahead, longest first, over
+    words that need not be markers on their own (``"z domu"``).
     Field docs below show examples, not full
     contents; inspect any field's shipped vocabulary directly, e.g.
     ``Lexicon.default().conjunctions``."""

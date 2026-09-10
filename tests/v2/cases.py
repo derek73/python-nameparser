@@ -4698,7 +4698,22 @@ CASES: tuple[Case, ...] = (
                "'田中 太郎' does, family-first by script (rules.md#W4), "
                "with the stop kept. The stop stays on 田中, the word "
                "that carried it: family 田中., given 太郎. 2.2.0 read "
-               "title 田中., family 太郎.",
+               "title 田中., family 太郎. Stays tolerated like its "
+               "three #323 siblings, H2's Accepted clause being "
+               "illustrated in W3's tolerated example block rather "
+               "than by promoting this row, per the 2026-09-05 "
+               "precedent recorded in tools/differential/compare.py: "
+               "marking the row alone would leave the name enforced "
+               "and documented as demoted.",
+         tolerated=True),
+    Case("ja_katakana_lone_name_with_a_period_is_not_a_title", "マイケル.",
+         {"given": "マイケル."}, ambiguities=("given-or-family",),
+         classification="fix(#323)",
+         notes="the katakana arm of the H2 veto, and the one where it "
+               "cuts across rules.md#W4 -- a wholly-katakana name keeps "
+               "the declared order, so the lone word is the GIVEN name "
+               "-- the veto decides title-or-name, the order rule "
+               "decides which name. 2.2.0 read title マイケル.",
          tolerated=True),
     Case("latin_period_marked_opening_word_is_still_a_title",
          "Smith. John",

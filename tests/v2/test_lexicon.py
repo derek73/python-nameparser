@@ -483,12 +483,22 @@ def test_every_shipped_entry_is_already_nfc() -> None:
     # assertion: NFC at storage changes no shipped entry, so the
     # vocabulary a caller reads back is the vocabulary that was
     # authored. A data module written in NFD would fail here.
+    #
+    # The field list is DERIVED from dataclasses.fields(Lexicon) --
+    # every field whose value is a frozenset of str -- rather than
+    # hand-copied, so a thirteenth such field fails loudly here
+    # instead of escaping unchecked (#322/#323 review).
     lex = Lexicon.default()
-    for field in ("bound_given_names", "conjunctions", "given_name_titles",
-                  "honorific_tails", "maiden_markers", "particles",
-                  "particles_ambiguous", "suffix_acronyms",
-                  "suffix_acronyms_ambiguous", "suffix_words", "surnames",
-                  "titles"):
+    frozenset_str_fields = {
+        f.name for f in dataclasses.fields(Lexicon)
+        if isinstance(getattr(lex, f.name), frozenset)
+        and all(isinstance(word, str) for word in getattr(lex, f.name))}
+    assert frozenset_str_fields == {
+        "bound_given_names", "conjunctions", "given_name_titles",
+        "honorific_tails", "maiden_markers", "particles",
+        "particles_ambiguous", "suffix_acronyms",
+        "suffix_acronyms_ambiguous", "suffix_words", "surnames", "titles"}
+    for field in frozenset_str_fields:
         for word in getattr(lex, field):
             assert unicodedata.normalize("NFC", word) == word, (field, word)
     for pair in lex.capitalization_exceptions:
