@@ -54,6 +54,7 @@ import dataclasses
 import functools
 from collections.abc import Sequence
 
+from nameparser._lexicon import FULL_STOPS
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
 )
@@ -525,11 +526,20 @@ def _split_surname_site(state: ParseState) -> ParseState:
     token = state.tokens[i]
     text = token.text
     surnames = state.lexicon.surnames
+    # The vocabulary match reads the token's CORE, its trailing full
+    # stops removed (#323): a head is a prefix, so the offset that cuts
+    # the core cuts the text, and the stop rides with the remainder
+    # ('김민준.' divides as 김 + 민준.). Without this the stop WAS the
+    # remainder: '김.' matched its own head and became 김 + '.'. The
+    # segmenter below still receives `text` whole, stop included.
+    # rstrip, not strip: a LEADING stop would break the prefix
+    # argument, and '.김민준' stays unsplit by design.
+    core = text.rstrip(FULL_STOPS)
     # A token that IS a surname never splits: a bare "남궁" must not
     # become 남 + 궁 just because the single-syllable surname also
     # matches -- there is nothing to split off, and a lone token's
-    # role is the order resolution's call.
-    if text in surnames:
+    # role is the order resolution's call, stop or no stop.
+    if core in surnames:
         return state
     # Longest-first (compound-before-single falls out of it), capped
     # so the remainder is never empty. Direct membership, no
@@ -546,9 +556,9 @@ def _split_surname_site(state: ParseState) -> ParseState:
     # Lexicon.empty() -- the JA pack's own shape.
     matches: list[int] = []
     if surnames:
-        cap = min(_longest_entry(surnames), len(text) - 1)
+        cap = min(_longest_entry(surnames), len(core) - 1)
         matches = [length for length in range(cap, 0, -1)
-                   if text[:length] in surnames]
+                   if core[:length] in surnames]
     if matches:
         take = matches[0]
         detail = None

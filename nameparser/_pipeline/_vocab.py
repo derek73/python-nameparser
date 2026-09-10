@@ -30,7 +30,7 @@ import re
 import unicodedata
 from collections.abc import Callable, Iterable, Sequence
 
-from nameparser._lexicon import Lexicon, _normalize
+from nameparser._lexicon import FULL_STOPS, Lexicon, _normalize
 from nameparser._policy import (Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
                                 _SCRIPT_RANGES, _script_matcher)
 
@@ -398,12 +398,31 @@ def maiden_marker_run(words: Sequence[str], markers: frozenset[str]) -> int:
 
 
 def _normalized_for_script(text: str) -> str | None:
-    """The guard AND the NFC normalization single_script and
+    """The guard AND the two normalizations single_script and
     effective_script's license path both need, single-sourced so they
-    cannot drift: None for the two shapes neither ever classifies
-    (empty, and the common all-ASCII Latin token -- skipped before
-    normalizing, since ASCII is already NFC and every _SCRIPT_RANGES
-    entry is non-ASCII regardless), else an NFC-normalized copy.
+    cannot drift: edge full stops are dropped (FULL_STOPS, #323), then
+    None for the two shapes neither ever classifies (nothing left, and
+    the common all-ASCII Latin token -- skipped before normalizing,
+    since ASCII is already NFC and every _SCRIPT_RANGES entry is
+    non-ASCII regardless), else an NFC-normalized copy.
+
+    Edge stops, not raw: a period glued to a script-written token
+    ('양.', '太郎.') is not a character of any script, so classifying
+    raw text handed the token no script at all, and three readers
+    spent that None -- the surname site stepped past the family name
+    onto the given name ('양. 지훈' cut 지훈 in half), the order rule
+    fell back to positional ('양 지훈.' lost family-first), and the
+    segmenter's neighbour precondition missed a writer-drawn boundary
+    ('山田太郎 田中.' consulted the segmenter on 山田太郎 as if it stood
+    alone). The scripts this classifies -- every _SCRIPT_RANGES entry,
+    which today coincide with _policy._NO_INITIALS (#320), a
+    coincidence _policy says a new member must not inherit -- have no
+    initials and no period abbreviations, so a stop on such a token
+    carries no information about the word; ASCII text is stripped too,
+    but the guard below returns None for it regardless, so 'Smith.'
+    never classifies. Both edges, for symmetry with
+    _lexicon._normalize: a leading stop is not a shape
+    anyone writes and costs nothing to tolerate.
 
     NFC, not raw: NFD input decomposes precomposed katakana onto a
     base character plus a COMBINING mark (U+3099/U+309A, which sit in
@@ -412,9 +431,9 @@ def _normalized_for_script(text: str) -> str | None:
     also decomposes Hangul syllables onto bare jamo (U+1100-U+11FF),
     entirely outside the HANGUL range, so raw NFD Korean input misses
     the shipped family-first order rule rather than merely misfiring.
-    Normalizing first fixes both. This is classification-only and
-    read-only: the returned copy is never what gets tokenized, so
-    token text and spans stay exactly what the caller wrote.
+    Normalizing first fixes both. Classification-only and read-only:
+    the returned copy is never what gets tokenized, so token text and
+    spans stay exactly what the caller wrote.
 
     Vocabulary MATCHING composes NFC too, since #322
     (_lexicon._normalize folds every lookup and every stored entry the
@@ -424,6 +443,7 @@ def _normalized_for_script(text: str) -> str | None:
     degrades to no-split, never to a wrong split (decisions.md#W1,
     the 2026-07-29 ja amendment).
     """
+    text = text.strip(FULL_STOPS)
     if not text or text.isascii():
         return None
     return unicodedata.normalize("NFC", text)

@@ -127,8 +127,9 @@ class Case:
     #: tag -- mutually exclusive with `shape`, since a shape ADMITS a
     #: text to the contract and tolerated deliberately does not. Every
     #: composed/wrapped CJK form (a comma listing, a Latin title or
-    #: credential around a CJK name, and since 2026-09-05 a trailing
-    #: ASCII period on an honorific) is this table's ground for it,
+    #: credential around a CJK name, since 2026-09-05 a trailing ASCII
+    #: period on an honorific, and since #323 an edge full stop of any
+    #: width on any CJK name word) is this table's ground for it,
     #: not shapes 6/7's. Restricted to CJK-bearing text (`_has_cjk`):
     #: it exists to demote composed/wrapped CJK forms specifically, and
     #: a Latin row asking for it is a smell until some future arc
@@ -4590,6 +4591,47 @@ CASES: tuple[Case, ...] = (
                "(señor, née, attaché) reaches it. 2.2.0 read given "
                "Señor, middle Juan, family Garcia. The token keeps its "
                "NFD text; only the lookup composes."),
+    Case("ko_leading_honorific_surname_with_a_period_keeps_the_given_name",
+         "양. 지훈",
+         {"family": "양.", "given": "지훈"},
+         classification="fix(#323)",
+         notes="the issue's own input. effective_script('양.') is "
+               "HANGUL once the classification fold drops the edge "
+               "stop, so the surname site lands on 양. -- which is "
+               "post-nominal vocabulary in the LEADING position, "
+               "which _is_post_nominal's docstring says the surname "
+               "site reads as an ANSWER rather than a token to step "
+               "past -- and declines, leaving 지훈 whole. The stop "
+               "stays on the token: nothing rewrites text (rules.md T "
+               "Background). 2.2.0 read given 양., middle 지, family "
+               "훈.",
+         tolerated=True),
+    Case("ko_leading_family_name_with_a_period_keeps_the_given_name",
+         "김. 민준",
+         {"family": "김.", "given": "민준"},
+         classification="fix(#323)",
+         notes="the non-honorific twin of the row above, and the row "
+               "that decides between #323's two candidate fixes: "
+               "consulting is_suffix_strict at the surname site would "
+               "have rescued 양. and left this one cut (김 is no "
+               "suffix), so the fix is the classification fold. The "
+               "site lands on 김. and matches on its CORE: 김 is itself "
+               "a listed surname, so nothing splits and the stop stays "
+               "on the family name (matched on the raw text, 김 was a "
+               "listed HEAD and the stop was the remainder, cutting "
+               "김 + '.'). 2.2.0 read given 김., middle 민, "
+               "family 준.",
+         tolerated=True),
+    Case("ko_trailing_period_keeps_the_family_first_order", "양 지훈.",
+         {"family": "양", "given": "지훈."},
+         classification="fix(#323)",
+         notes="the ORDER reader of the same None: assign's script "
+               "walk returns the declared order the moment one piece "
+               "has no script, so a stop on the LAST token flipped "
+               "the name to given-first. rules.md#W4's family-first "
+               "reading survives the stop now. 2.2.0 read given 양, "
+               "family 지훈..",
+         tolerated=True),
     Case("ko_honorific_glued_teacher", "김선생님",
          {"family": "김", "suffix": "선생님"},
          classification="fix(#307) + fix(#271)",

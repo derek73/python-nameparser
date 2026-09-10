@@ -2258,7 +2258,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#432) a dotted numeral behind a name is a middle initial, not the generation":
             _Claim(1, ('middle', 'suffix'), "e9f282da0d0f", None),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(112, ('family', 'given', 'middle'), "d812cd977299", None),
+            _Claim(115, ('family', 'given', 'middle'), "0f6b1d5e1b42", None),
         "fix(#274) maiden markers consumed":
             _Claim(33, ('family', 'maiden', 'middle'), "6f8bf7136b09", None),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
@@ -2608,7 +2608,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
             _Claim(13, ('_ambiguities', 'family', 'middle'), "973617235cda", None),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(112, ('_ambiguities', 'family', 'given', 'middle'), "d812cd977299", None),
+            _Claim(115, ('_ambiguities', 'family', 'given', 'middle'), "0f6b1d5e1b42", None),
         # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
         # whose entry carries the reason. Here the one name that
         # changed hands, '김민준 박사님', goes to the spaced rule

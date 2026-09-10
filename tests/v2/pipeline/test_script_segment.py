@@ -408,6 +408,35 @@ def test_a_neighbour_in_an_UNACTIVATED_script_still_blocks_the_consult() -> None
         assert out.ambiguities == (), name
 
 
+def test_a_period_marked_neighbour_still_blocks_the_consult() -> None:
+    # #323: the neighbour precondition reads effective_script, which
+    # now sees through an edge stop, so '田中.' beside 山田太郎 counts
+    # as the writer's own boundary and the segmenter is not consulted
+    # (before, the stop hid the neighbour and 山田太郎 was divided as
+    # if it stood alone)
+    asked: list[str] = []
+    def seg(text: str) -> Segmentation | None:
+        asked.append(text)
+        return Segmentation((2,))
+    out = _run("山田太郎 田中.", policy=_JA, lexicon=Lexicon.empty(),
+               segmenter=seg)
+    assert asked == []
+    assert _texts(out) == ["山田太郎", "田中."]
+
+
+def test_a_consulted_segmenter_receives_the_stop_with_the_token() -> None:
+    # the recorded limit, not a promise: a pluggable segmenter gets the
+    # raw token, stop included -- the surname site strips the stop for
+    # ITS match only. The shipped ja pack declines such a token on its
+    # own repertoire test; a caller's segmenter has to cope.
+    asked: list[str] = []
+    def seg(text: str) -> Segmentation | None:
+        asked.append(text)
+        return None
+    _run("山田太郎.", policy=_JA, lexicon=Lexicon.empty(), segmenter=seg)
+    assert asked == ["山田太郎."]
+
+
 def test_only_a_manufactured_tail_does_not_block_the_consult() -> None:
     # The exemption is PROVENANCE, not vocabulary. A tail the peel
     # manufactured is a boundary nobody drew -- glued 山田太郎様 was
@@ -465,6 +494,20 @@ def test_peel_then_segmentation_compose() -> None:
     # the peel runs first, so the segmentation half sees the REMAINDER
     assert _texts(_run("김민준씨", policy=_HANGUL,
                        lexicon=_LEX_TAILS)) == ["김", "민준", "씨"]
+
+
+def test_surname_site_matches_through_a_trailing_full_stop() -> None:
+    # #323: the head is matched on the token's core, so the stop rides
+    # with the remainder rather than BEING the remainder
+    assert _texts(_run("김민준.", policy=_HANGUL,
+                       lexicon=_LEX)) == ["김", "민준."]
+    # a token whose core IS a surname never splits, stop or no stop
+    assert _texts(_run("김.", policy=_HANGUL, lexicon=_LEX)) == ["김."]
+    assert _texts(_run("김", policy=_HANGUL, lexicon=_LEX)) == ["김"]
+    # a LEADING stop is not re-sliced: the site rstrips, so the token
+    # is its own core's prefix only when the stop trails; the accepted
+    # degradation is no split
+    assert _texts(_run(".김민준", policy=_HANGUL, lexicon=_LEX)) == [".김민준"]
 
 
 def test_a_token_that_is_a_tail_never_peels() -> None:

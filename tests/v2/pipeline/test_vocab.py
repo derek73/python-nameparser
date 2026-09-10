@@ -393,6 +393,30 @@ def test_effective_script_kana_license() -> None:
     assert effective_script("") is None
 
 
+def test_script_classification_ignores_edge_full_stops() -> None:
+    # #323: a period glued to a script-written token is not part of
+    # its script and must not remove the token from classification --
+    # the surname site, the order rule and the segmenter's neighbour
+    # precondition all read this answer. Each of the four stops
+    # trailing and each leading; the remainder still has to be
+    # classifiable on its own.
+    assert effective_script("양.") is Script.HANGUL
+    assert effective_script("양．") is Script.HANGUL
+    assert effective_script("양。") is Script.HANGUL
+    assert effective_script("양｡") is Script.HANGUL
+    assert effective_script(".양") is Script.HANGUL
+    assert effective_script("．양") is Script.HANGUL
+    assert effective_script("。양") is Script.HANGUL
+    assert effective_script("｡양") is Script.HANGUL
+    assert single_script("太郎.") is Script.HAN
+    assert effective_script("高橋みなみ。") is Script.HIRAGANA  # license survives
+    # nothing left, or ASCII left: no script, as before
+    assert effective_script(".") is None
+    assert effective_script("。") is None
+    assert effective_script("abc。") is None
+    assert single_script("Smith.") is None
+
+
 def test_resolve_script_set_generalizes_the_license_across_pieces() -> None:
     # a single script passes through as-is, including a script with no
     # order-default entry (KATAKANA): the caller decides what to do
