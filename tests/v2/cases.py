@@ -32,6 +32,7 @@ this paragraph, if the two ever disagree).
 """
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import dataclass
 
 from nameparser import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
@@ -4528,6 +4529,67 @@ CASES: tuple[Case, ...] = (
                "listing artifact no writing system produces. The row "
                "still pins #320's mechanism at HEAD",
          tolerated=True),
+    Case("ko_honorific_with_a_fullwidth_full_stop", "김민준 씨．",
+         {"family": "김", "given": "민준", "suffix": "씨．"},
+         classification="fix(#322)",
+         notes="U+FF0E, the stop a Japanese or Chinese IME produces by "
+               "default. The lookup fold reads it as an edge period "
+               "(_lexicon.FULL_STOPS), so 씨． reaches the suffix entry "
+               "the ASCII spelling already reached; the token text "
+               "keeps its stop. Pins the fold on the one stop NFKC "
+               "would ALSO have folded -- the row beside it pins the "
+               "one it would not -- and earns its place as a member "
+               "of a set the library SHIPS, which "
+               "mechanisms.md#VOCABULARY-EXERCISES-FORKS says is "
+               "caller-visible behavior wanting a row per member, "
+               "unlike caller-configured vocabulary. 2.2.0 read given "
+               "김, middle 민준, family 씨．.",
+         tolerated=True),
+    Case("ko_honorific_with_an_ideographic_full_stop", "김민준 씨。",
+         {"family": "김", "given": "민준", "suffix": "씨。"},
+         classification="fix(#322)",
+         notes="U+3002, which NFKC leaves alone -- the row that shows "
+               "the stop SET is what fixes #322, not a Unicode "
+               "normalization. 2.2.0 read given 김, middle 민준, "
+               "family 씨。.",
+         tolerated=True),
+    Case("ko_honorific_with_a_halfwidth_ideographic_full_stop",
+         "김민준 씨｡",
+         {"family": "김", "given": "민준", "suffix": "씨｡"},
+         classification="fix(#322)",
+         notes="U+FF61, which NFKC folds to U+3002 and no further -- "
+               "so even under NFKC this spelling needs the set. 2.2.0 "
+               "read given 김, middle 민준, family 씨｡.",
+         tolerated=True),
+    Case("ko_honorific_written_nfd_after_a_family_comma",
+         unicodedata.normalize("NFD", "김민준, 씨."),
+         {"family": unicodedata.normalize("NFD", "김민준"),
+          "suffix": unicodedata.normalize("NFD", "씨.")},
+         classification="fix(#322)",
+         notes="the lookup fold composes NFC, so decomposed 씨. reaches "
+               "the suffix entry (2.2.0 read title 씨.). The family "
+               "stays WHOLE and stays NFD: segmentation matches raw "
+               "text on purpose (decisions.md#W1, 2026-07-29 ja "
+               "amendment), so NFD degrades to no-split, never to a "
+               "wrong split, and no "
+               "token text is rewritten. Contrast 'NFD(田中さん, 様.)', "
+               "which matched before: Han does not decompose. NEITHER "
+               "tolerated NOR shape-tagged, deliberately: this table's "
+               "_has_cjk reads raw codepoints (jamo sit outside "
+               "_SCRIPT_RANGES), so a decomposed text is not CJK to the "
+               "purity gate and reaches no corpus; the row is a HEAD "
+               "pin only."),
+    Case("latin_title_written_nfd_is_still_a_title",
+         unicodedata.normalize("NFD", "Señor Juan Garcia"),
+         {"title": unicodedata.normalize("NFD", "Señor"),
+          "given": "Juan", "family": "Garcia"},
+         classification="fix(#322)",
+         notes="the Latin side of the NFC fork: the lookup fold "
+               "composes every non-ASCII word, not hangul alone, so a "
+               "decomposed spelling of a shipped diacritic entry "
+               "(señor, née, attaché) reaches it. 2.2.0 read given "
+               "Señor, middle Juan, family Garcia. The token keeps its "
+               "NFD text; only the lookup composes."),
     Case("ko_honorific_glued_teacher", "김선생님",
          {"family": "김", "suffix": "선생님"},
          classification="fix(#307) + fix(#271)",

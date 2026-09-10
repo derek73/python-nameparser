@@ -50,6 +50,19 @@ def test_is_initial_script_repertoire() -> None:
     assert not is_initial("राम.")
 
 
+@pytest.mark.parametrize("word", ["씨.", "씨．", "씨。", "씨｡",
+                                  unicodedata.normalize("NFD", "씨.")])
+def test_suffix_lookup_reads_every_full_stop(word: str) -> None:
+    # #322: the four stops and NFD all reach the one stored entry.
+    # is_initial stays False on every spelling: the initial veto is a
+    # repertoire test on the raw text (#320) and the stop set does not
+    # touch it.
+    lex = Lexicon(suffix_words=frozenset({"씨"}))
+    assert is_suffix_strict(word, lex)
+    assert is_suffix_lenient(word, lex)
+    assert not is_initial(word)
+
+
 def test_is_initial_shaped_keeps_the_shape_half_reachable() -> None:
     """The two halves are separately askable (#320): assign's
     roman-numeral fork asks the SHAPE question about the piece before a

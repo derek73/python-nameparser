@@ -533,13 +533,17 @@ def _split_surname_site(state: ParseState) -> ParseState:
         return state
     # Longest-first (compound-before-single falls out of it), capped
     # so the remainder is never empty. Direct membership, no
-    # _normalize: the script gate admits only CJK text, which the
-    # storage fold stores unchanged. An empty vocabulary skips the
-    # match rather than bailing the stage (_longest_entry's max() has
-    # nothing to take): a surname-less lexicon declines every token,
-    # which is exactly the condition the segmenter is consulted on, so
-    # an early bail would make a configured segmenter silently inert
-    # under Lexicon.empty() -- the JA pack's own shape.
+    # _normalize: the script gate admits only CJK text, and a CJK
+    # entry's stored form is its NFC composition with no case or
+    # edge-stop change (#322) -- so an entry AUTHORED in NFD is
+    # composed on the way in, raw NFD input matches nothing here, and
+    # the name goes unsplit, which is the no-split rules.md#W1 already
+    # accepts for NFD text. An empty vocabulary skips the match rather
+    # than bailing the stage (_longest_entry's max() has nothing to
+    # take): a surname-less lexicon declines every token, which is
+    # exactly the condition the segmenter is consulted on, so an early
+    # bail would make a configured segmenter silently inert under
+    # Lexicon.empty() -- the JA pack's own shape.
     matches: list[int] = []
     if surnames:
         cap = min(_longest_entry(surnames), len(text) - 1)

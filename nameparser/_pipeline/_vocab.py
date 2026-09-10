@@ -416,11 +416,13 @@ def _normalized_for_script(text: str) -> str | None:
     read-only: the returned copy is never what gets tokenized, so
     token text and spans stay exactly what the caller wrote.
 
-    MATCHING (is_initial, suffix lookups, etc.) deliberately stays on
-    raw text elsewhere in this module -- unlike script classification,
-    NFD only ever costs a match there (a suffix word written NFD fails
-    to match its NFC vocabulary entry), never wrong-matches, so the
-    asymmetry is safe: one direction needs a fix, the other doesn't.
+    Vocabulary MATCHING composes NFC too, since #322
+    (_lexicon._normalize folds every lookup and every stored entry the
+    same way), so an NFD suffix word reaches its NFC entry. What stays
+    raw is SEGMENTATION -- the surname site's direct membership test
+    and the peel's tail slice index the token's own text -- where NFD
+    degrades to no-split, never to a wrong split (decisions.md#W1,
+    the 2026-07-29 ja amendment).
     """
     if not text or text.isascii():
         return None

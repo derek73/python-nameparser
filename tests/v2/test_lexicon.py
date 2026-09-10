@@ -1,5 +1,6 @@
 import dataclasses
 import pickle
+import unicodedata
 import warnings
 from collections.abc import Callable
 
@@ -422,6 +423,15 @@ def test_removing_a_title_leaves_its_given_name_marker_alone() -> None:
 
 @pytest.mark.parametrize("word", [
     "dr.", " Dr. ", ". a .", ".  .", "..x..", "  .b.  ",
+    # the three non-ASCII full stops (#322), alone and mixed with
+    # the ASCII one, and around whitespace like the rows above
+    "씨．", "씨。", "씨｡", "．씨。", " 。씨 ", "。 씨 .",
+    # NFD input: the fold composes, and composing twice is a no-op
+    unicodedata.normalize("NFD", "씨."),
+    unicodedata.normalize("NFD", "Müller."),
+    # a case-mapping that produces a combining mark: lower() then NFC
+    # has to land somewhere a second pass leaves alone
+    "İ.",
 ])
 def test_normalize_reaches_a_fixed_point(word: str) -> None:
     # strip() then strip(".") leaves periods-around-whitespace half
@@ -430,6 +440,60 @@ def test_normalize_reaches_a_fixed_point(word: str) -> None:
     # sees the value change under it, so the fold has to converge.
     once = _normalize(word)
     assert _normalize(once) == once
+
+
+def test_normalize_folds_every_full_stop_and_composes_nfd() -> None:
+    # #322: the vocabulary is stored NFC with edge stops removed, so a
+    # lookup written with a fullwidth or ideographic stop, or in NFD,
+    # has to fold to the same key. Edge stops only: 'J.R.' keeps its
+    # interior period exactly as before.
+    assert _normalize("씨．") == "씨"
+    assert _normalize("씨。") == "씨"
+    assert _normalize("씨｡") == "씨"
+    assert _normalize(unicodedata.normalize("NFD", "씨.")) == "씨"
+    assert _normalize("J.R.") == "j.r"
+    assert _normalize("김.민준") == "김.민준"
+    # an INTERIOR ideographic stop survives too -- what an NFKC fold
+    # would not keep
+    assert _normalize("김。민준") == "김。민준"
+
+
+def test_an_entry_that_is_only_full_stops_is_rejected() -> None:
+    # the "normalizes to empty" guard reads the same stop set as the
+    # fold, so an ideographic stop on its own is the data bug an ASCII
+    # one already is
+    with pytest.raises(ValueError, match="normalizes to empty"):
+        Lexicon(titles=frozenset({"。"}))
+
+
+def test_an_nfd_authored_entry_is_stored_composed() -> None:
+    # the storage fold composes NFC (#322), so a caller who authors a
+    # surname in NFD gets the NFC entry -- and raw NFD input, which
+    # segmentation matches without folding, then finds no entry and
+    # goes unsplit (rules.md#W1's accepted degradation). Pinned
+    # because the surname site's comment relies on it.
+    nfd = unicodedata.normalize("NFD", "김")
+    lex = Lexicon(surnames=frozenset({nfd}))
+    assert lex.surnames == frozenset({"김"})
+    assert nfd not in lex.surnames
+
+
+def test_every_shipped_entry_is_already_nfc() -> None:
+    # the measurement behind _normalize's docstring, as a standing
+    # assertion: NFC at storage changes no shipped entry, so the
+    # vocabulary a caller reads back is the vocabulary that was
+    # authored. A data module written in NFD would fail here.
+    lex = Lexicon.default()
+    for field in ("bound_given_names", "conjunctions", "given_name_titles",
+                  "honorific_tails", "maiden_markers", "particles",
+                  "particles_ambiguous", "suffix_acronyms",
+                  "suffix_acronyms_ambiguous", "suffix_words", "surnames",
+                  "titles"):
+        for word in getattr(lex, field):
+            assert unicodedata.normalize("NFC", word) == word, (field, word)
+    for pair in lex.capitalization_exceptions:
+        for word in pair:
+            assert unicodedata.normalize("NFC", word) == word, pair
 
 
 def test_unpickling_revalidates_invariants() -> None:
