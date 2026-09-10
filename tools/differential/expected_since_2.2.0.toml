@@ -452,9 +452,14 @@ issue = "fix(#489) the title peel leaves a name word a suffix cannot be"
 # declines and every one of which is a _MUST_NOT_MATCH probe, with
 # 'Dr Smith Jr' beside them for the ordinary titled name the floor
 # never sees. The members are a list of names and copy no wordlist,
-# which is what _NOT_A_VOCABULARY_COPY records; _CORPUS_CLAIMS pins
-# the reach at 4 with its digest. One set, identical in all four
-# ledgers; only the `fields` differ, as the paragraph above says.
+# which is what _NOT_A_VOCABULARY_COPY records. THREE of the four are
+# corpus names, not four: 'Sir Jr' left corpus_rules.jsonl on
+# 2026-09-09, when the rules.md example pinning it was dropped as a
+# duplicate of 'Dr Jr' (decisions.md#H5), and it stays in the
+# alternation because a name_regex names INPUTS rather than corpus
+# rows. _CORPUS_CLAIMS pins the reach at 3 with its digest. One set,
+# identical in all four ledgers; only the `fields` differ, as the
+# paragraph above says.
 name_regex = "^(?:Dr Jr|Dr King Jr|Dr\\. King MD|Sir Jr)$"
 fields = ["_ambiguities", "family", "given", "suffix", "title"]
 
