@@ -102,13 +102,14 @@ _PHRASE_FIELDS = ("given_name_titles", "maiden_markers")
 #: Every character the parser reads as a full stop at a WORD'S EDGE
 #: (#322/#323): the ASCII period, the fullwidth FULL STOP U+FF0E, the
 #: IDEOGRAPHIC FULL STOP U+3002 and its halfwidth form U+FF61. One
-#: string, read today by the lookup fold below, _vocab's script
-#: classification fold and _script_segment's surname site; the rest of
-#: the #322/#323 bundle adds the honorific tail match and _pieces'
-#: opening-abbreviation shape, so that "which characters are a
-#: period" is answered once. NFKC is NOT a substitute for
-#: listing them: it folds U+FF0E to '.' and U+FF61 to U+3002, and
-#: leaves U+3002 as it is.
+#: string, four readers -- the lookup fold below, _vocab's script
+#: classification fold, _script_segment's surname site and honorific
+#: tail match -- so that "which characters are a period" is answered
+#: once; the bundle's fifth site, _pieces' opening-abbreviation shape,
+#: reads no stop set at all but the no-initials repertoire
+#: (_policy._NO_INITIALS) that licenses every reader here. NFKC is
+#: NOT a substitute for listing them: it folds U+FF0E to '.' and
+#: U+FF61 to U+3002, and leaves U+3002 as it is.
 #: EDGE stops only, and only the four: the interior-period shapes --
 #: the dotted acronym 'M.A.', the split 'Ph. D.', the initial 'J.' --
 #: are ASCII-period tests in _vocab and _extract and stay so; a

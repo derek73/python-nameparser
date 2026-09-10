@@ -39,7 +39,7 @@ from nameparser._policy import (Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
 # sync by hand; layering forbids importing the config package here.
 # "Verbatim" is a promise about the PATTERN, not about the predicate:
 # since #320 is_initial is this SHAPE test ANDed with a repertoire test
-# (_in_initialless_script, below), so _INITIAL.fullmatch(text) and
+# (in_initialless_script, below), so _INITIAL.fullmatch(text) and
 # is_initial(text) are no longer the same question -- '씨.' answers yes
 # to the first and no to the second. Call is_initial; the bare pattern
 # is not the thing to ask. The narrowing lives in the predicate
@@ -86,7 +86,12 @@ _wholly_ja = _script_matcher(*_JA_SCRIPTS, whole=True)
 # contains-any, not whole=True: the shape half has already admitted the
 # trailing period, so the text reaching here is '씨.' rather than '씨'
 # and a wholly-of match would be False for every case this exists for.
-_in_initialless_script = _script_matcher(*_NO_INITIALS, whole=False)
+# The second caller, _pieces.is_leading_title, admits two or more
+# characters, so contains-any there means one CJK character anywhere
+# vetoes the whole word -- 'Kim김.' is refused as a title along with
+# '田中.' -- and that is deliberate: a word carrying a script with no
+# abbreviations is not wearing an abbreviation's period.
+in_initialless_script = _script_matcher(*_NO_INITIALS, whole=False)
 
 
 def is_initial_shaped(text: str) -> bool:
@@ -136,7 +141,7 @@ def is_initial(text: str) -> bool:
     'vocab:suffix' either way, and is_suffix_lenient took it either way
     too. Downstream of that one strict-test No, the glued honorific in
     a name carrying such a token went unpeeled ('田中さん 様.')."""
-    return is_initial_shaped(text) and not _in_initialless_script(text)
+    return is_initial_shaped(text) and not in_initialless_script(text)
 
 
 _DOTTED = re.compile(r"(?:[^\W\d_]\.)+")

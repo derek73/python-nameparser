@@ -4651,6 +4651,74 @@ CASES: tuple[Case, ...] = (
                "whole, as it does for '田中さん'. 2.2.0 read title "
                "田中さん.",
          tolerated=True),
+    Case("ko_lone_name_with_a_period_is_not_a_title", "김민준.",
+         {"family": "김", "given": "민준."},
+         classification="fix(#323)",
+         notes="reads this way since the surname site learned the "
+               "core match, NOT through H2's veto: HANGUL segmentation "
+               "is on by default and script_segment runs before "
+               "assign, so 김민준. is divided into 김 + 민준. before "
+               "any period-marked opening word exists for H2 to see. "
+               "Kept as the hangul reading of the shape; the veto's "
+               "own witness is the Han row below, where no default "
+               "segmentation stands in front. The stop rides with the "
+               "given name -- nothing rewrites text. 2.2.0 read title "
+               "김민준.",
+         tolerated=True),
+    Case("ko_period_marked_first_word_then_a_name_word", "김민준. 지훈",
+         {"family": "김", "given": "민준.", "middle": "지훈"},
+         classification="fix(#323)",
+         notes="the two-word hangul shape, divided by the surname "
+               "site before assign as the row above is: family 김, "
+               "given 민준., middle 지훈 -- the reading of '김민준 "
+               "지훈' with the stop kept. H2's veto is not what "
+               "decides it (see the row above); the Han two-word row "
+               "below is where the veto is the whole difference. "
+               "2.2.0 read title 김민준., family 지, given 훈 -- "
+               "hangul segmentation ran on the trailing word.",
+         tolerated=True),
+    Case("ja_lone_name_with_a_period_is_not_a_title", "田中.",
+         {"family": "田中."},
+         classification="fix(#323)",
+         notes="the H2 veto's witness: Han has no default segmentation, "
+               "so the period-marked word reaches assign whole, and "
+               "rules.md#H2's shape -- a Latin convention, an "
+               "abbreviation's period -- declines it because Han has "
+               "no period abbreviations (the #320 veto, extended from "
+               "is_initial to H2). A lone name word is the family "
+               "name. Remove the veto and this reads title 田中. "
+               "again, which is what 2.2.0 read.",
+         tolerated=True),
+    Case("ja_period_marked_first_word_then_a_name_word", "田中. 太郎",
+         {"family": "田中.", "given": "太郎"},
+         classification="fix(#323)",
+         notes="the two-word Han shape, where the veto is the whole "
+               "difference: without it H2 fires on 田中. and 太郎 "
+               "becomes the entire name. With it the pair reads as "
+               "'田中 太郎' does, family-first by script (rules.md#W4), "
+               "with the stop kept. The stop stays on 田中, the word "
+               "that carried it: family 田中., given 太郎. 2.2.0 read "
+               "title 田中., family 太郎.",
+         tolerated=True),
+    Case("latin_period_marked_opening_word_is_still_a_title",
+         "Smith. John",
+         {"title": "Smith.", "family": "John"},
+         classification="parity",
+         notes="the Latin side of the #323 veto's fork, pinned so the "
+               "veto can never widen onto Latin: Latin has "
+               "period abbreviations, H2's shape fires, and an "
+               "unlisted period-marked opening word is a title even "
+               "when it is a surname."),
+    Case("cyrillic_period_marked_opening_word_is_still_a_title",
+         "Проф. Иванов",
+         {"title": "Проф.", "family": "Иванов"},
+         classification="parity",
+         notes="the alphabet _policy._NO_INITIALS's own comment names "
+               "as the one it would be wrong to add: Cyrillic has "
+               "initials and abbreviations, so H2's shape fires and "
+               "the #323 veto stays out of its way. Pins the veto's "
+               "repertoire at the four CJK scripts from the other "
+               "side."),
     Case("ko_honorific_glued_teacher", "김선생님",
          {"family": "김", "suffix": "선생님"},
          classification="fix(#307) + fix(#271)",

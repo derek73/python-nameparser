@@ -51,7 +51,9 @@ from collections.abc import Sequence, Set
 from typing import NamedTuple
 
 from nameparser._pipeline._state import WorkToken
-from nameparser._pipeline._vocab import is_trailing_numeral_suffix
+from nameparser._pipeline._vocab import (
+    in_initialless_script, is_trailing_numeral_suffix,
+)
 
 
 # rules.md#H3: "successive title words at the start of the part
@@ -81,8 +83,18 @@ def is_leading_title(piece: Sequence[int], ptags: Set[str],
                       tokens: Sequence[WorkToken]) -> bool:
     if is_title_piece(piece, ptags, tokens):
         return True
-    return (len(piece) == 1
-            and bool(_PERIOD_ABBREV.match(tokens[piece[0]].text)))
+    if len(piece) != 1:
+        return False
+    text = tokens[piece[0]].text
+    # The shape reads a Latin convention: a period marks an
+    # abbreviation. Scripts with no initials have no period
+    # abbreviations either (_policy._NO_INITIALS, the #320 veto
+    # is_initial carries), so a CJK word wearing a period is a name
+    # word, not a title -- a lone '田中.' is the family name (#323).
+    # _PERIOD_ABBREV stays ASCII-period only: a word wearing '。' never
+    # matched it, and the veto is what makes the ASCII spelling agree.
+    return (bool(_PERIOD_ABBREV.match(text))
+            and not in_initialless_script(text))
 
 
 def leading_titles(pieces: Sequence[Sequence[int]],

@@ -586,7 +586,7 @@ _CORPUS_FLOORS = {
                                 # ('田中さん 様.' and its two twins) are
                                 # the listing artifact the first
                                 # sweep's criterion could not see
-    "corpus_cjk_tolerated.jsonl": 22,  # 29 today, the tolerated half of
+    "corpus_cjk_tolerated.jsonl": 22,  # 42 today (2026-09-10), the tolerated half of
                                 # the same generator: composed and
                                 # wrapped CJK forms (comma listings,
                                 # Latin titles and credentials,
