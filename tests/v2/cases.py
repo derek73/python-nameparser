@@ -4632,6 +4632,25 @@ CASES: tuple[Case, ...] = (
                "reading survives the stop now. 2.2.0 read given 양, "
                "family 지훈..",
          tolerated=True),
+    Case("ko_glued_honorific_with_a_period_peels", "김민준씨.",
+         {"family": "김", "given": "민준", "suffix": "씨."},
+         classification="fix(#323)",
+         notes="the W3 reading that was pinned by nothing (measured "
+               "2026-09-05 as title 김민준씨.): the peel now matches "
+               "its tail through the trailing stop and cuts before it, "
+               "so this divides exactly as '김민준 씨.' does and the "
+               "stop stays on the honorific. Peel first, then the "
+               "surname site divides 김민준. 2.2.0 read title 김민준씨.",
+         tolerated=True),
+    Case("ja_glued_honorific_with_a_period_peels", "田中さん.",
+         {"family": "田中", "suffix": "さん."},
+         classification="fix(#323)",
+         notes="the Japanese twin, and the one where nothing follows "
+               "the peel: 田中 is a lone Han token under the default "
+               "policy, so no division runs and the family stands "
+               "whole, as it does for '田中さん'. 2.2.0 read title "
+               "田中さん.",
+         tolerated=True),
     Case("ko_honorific_glued_teacher", "김선생님",
          {"family": "김", "suffix": "선생님"},
          classification="fix(#307) + fix(#271)",

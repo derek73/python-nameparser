@@ -2258,7 +2258,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#432) a dotted numeral behind a name is a middle initial, not the generation":
             _Claim(1, ('middle', 'suffix'), "e9f282da0d0f", None),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(115, ('family', 'given', 'middle'), "0f6b1d5e1b42", None),
+            _Claim(117, ('family', 'given', 'middle'), "084e646dcf59", None),
         "fix(#274) maiden markers consumed":
             _Claim(33, ('family', 'maiden', 'middle'), "6f8bf7136b09", None),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
@@ -2353,8 +2353,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # same digest. Only '김민준 박사님' changed hands -- it goes to
         # fix(cjk-honorific-suffix) here -- '선생님' having been the
         # order rule's all along.
+        # 37 since #323 because '김민준씨.' and '田中さん.' entered the
+        # corpus -- the regex already carried the optional stop, so
+        # the count moves on membership, not on the fix. Both diffs
+        # stay UNCLASSIFIED (radar) at this baseline: they carry a
+        # title role this rule's fields do not.
         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix":
-            _Claim(35, ('family', 'given', 'suffix'), "9a1b4c202a65", None),
+            _Claim(37, ('family', 'given', 'suffix'), "e867f3c46bb2", None),
         "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip":
             _Claim(19, ('family', 'given', 'middle', 'suffix'), "aa475ddd4745", None),
         "feat(#269) non-Latin titles/conjunctions recognized":
@@ -2608,13 +2613,18 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
             _Claim(13, ('_ambiguities', 'family', 'middle'), "973617235cda", None),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(115, ('_ambiguities', 'family', 'given', 'middle'), "0f6b1d5e1b42", None),
+            _Claim(117, ('_ambiguities', 'family', 'given', 'middle'), "084e646dcf59", None),
         # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
         # whose entry carries the reason. Here the one name that
         # changed hands, '김민준 박사님', goes to the spaced rule
         # fix(#307/#308/#320) -- the label its title states.
+        # 37 since #323 because '김민준씨.' and '田中さん.' entered the
+        # corpus -- the regex already carried the optional stop, so
+        # the count moves on membership, not on the fix. Both diffs
+        # stay UNCLASSIFIED (radar) at this baseline: they carry a
+        # title role this rule's fields do not.
         "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into suffix":
-            _Claim(35, ('family', 'given', 'suffix'), "9a1b4c202a65", None),
+            _Claim(37, ('family', 'given', 'suffix'), "e867f3c46bb2", None),
         "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix":
             _Claim(16, ('family', 'given', 'middle', 'suffix'), "6d390e518bd2", None),
         "fix(#309) 旧姓 maiden marker consumed, compounding with the CJK order flip":

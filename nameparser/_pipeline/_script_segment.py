@@ -275,13 +275,25 @@ def _peel_site(state: ParseState, flat: Sequence[int],
         # nothing but post-nominals, or no tokens at all
         return None
     text = state.tokens[i].text
+    # The tail is matched on the token with its trailing full stops
+    # removed (#323): a stop glued after the honorific ('김민준씨.',
+    # '田中さん。') stands between the listed tail and the token's end
+    # and used to defeat the match, sending the whole text to a title
+    # reading downstream. The cut lands BEFORE the tail, so the stops
+    # ride with the honorific piece and the token text is never
+    # rewritten. TRAILING only: a leading stop is not between the name
+    # and its honorific, and rstrip keeps the split arithmetic below
+    # one subtraction.
+    core = text.rstrip(FULL_STOPS)
+    stops = len(text) - len(core)
     # range/cap construction identical to the surname match below, and
     # for the same two reasons: longest-first, and a len-1 cap that
-    # makes the offset interior by construction (_split's contract).
-    cap = min(_longest_entry(tails), len(text) - 1)
+    # makes the offset interior by construction (_split's contract). An
+    # empty or one-character core caps below 1 and the loop is empty.
+    cap = min(_longest_entry(tails), len(core) - 1)
     for length in range(cap, 0, -1):
-        if text[-length:] in tails:
-            return i, length
+        if core[-length:] in tails:
+            return i, length + stops
     return None
 
 
@@ -291,19 +303,20 @@ def _peel_site(state: ParseState, flat: Sequence[int],
 # That the peel also reaches ACROSS a family comma is stated at
 # rules.md#W3 instead, which is a tolerated rule since the
 # 2026-09-01 comma demotion -- the crossing is what the parser does
-# today, not something W2 promises. W3 also took, on 2026-09-05, the
-# reading of a period a listing leaves behind
-# (decisions.md#cjk-comma-demotion): a period on a SEPARATE
+# today, not something W2 promises. W3 also carries the reading of a
+# period a listing leaves behind (decisions.md#cjk-comma-demotion,
+# amended by decisions.md#cjk-full-stops): a period on a SEPARATE
 # post-nominal word rides into the suffix and moves nothing ('様.'
 # is post-nominal-strict and the scan steps past it as it steps past
-# '様'), while a period glued to the honorific's OWN token stands
-# between the honorific and that token's end, so no listed tail
-# matches, the peel declines, and the whole text reads as a title
-# downstream ('田中さん.', '김민준씨.') -- measured 2026-09-05 and
-# pinned by nothing, since neither string is a case row or a corpus
-# line, so that reading can move with nothing reporting it. Neither
-# is a promise; the step past the post-nominal word itself is W2's,
-# above, and is.
+# '様'), and since #323 a period glued to the honorific's OWN token
+# rides with the honorific too -- _peel_site matches the tail through
+# the trailing stop and cuts before it, so '田中さん.' divides where
+# '田中さん' does, and '김민준씨.' where '김민준씨' does (both are
+# case rows now; before 2026-09-10 they read as a title, measured
+# 2026-09-05 and pinned by nothing, and for one commit of the #323
+# branch the surname site read '김민준씨.' as 김 + 민준씨.). Neither
+# reading is a promise; the step past the post-nominal word itself
+# is W2's, above, and is.
 def _peel_honorific_tail(state: ParseState) -> ParseState:
     """#308: split a listed honorific off the END of the name's last
     NON-POST-NOMINAL token -- 田中さん -> 田中 + さん -- and let

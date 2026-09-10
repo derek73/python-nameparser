@@ -496,6 +496,33 @@ def test_peel_then_segmentation_compose() -> None:
                        lexicon=_LEX_TAILS)) == ["김", "민준", "씨"]
 
 
+@pytest.mark.parametrize("stop", [".", "．", "。", "｡", "。。"])
+def test_peels_a_listed_tail_through_a_trailing_full_stop(stop: str) -> None:
+    # #323 (the W3 reading that was pinned by nothing): the tail is
+    # matched on the token with its trailing stops removed, and the
+    # cut lands BEFORE the tail, so the stop rides with the honorific.
+    # Spans stay sub-slices of the original (anti-#100).
+    # a run of stops rides whole: the offset is len(core) - tail, and
+    # stops only lengthen the remainder.
+    out = _run("김민준씨" + stop, lexicon=_LEX_TAILS)
+    assert _texts(out) == ["김민준", "씨" + stop]
+    assert [(t.span.start, t.span.end) for t in out.tokens] == [
+        (0, 3), (3, 4 + len(stop))]
+    assert all(out.original[t.span.start:t.span.end] == t.text
+               for t in out.tokens)
+
+
+def test_a_token_that_is_only_full_stops_offers_no_peel_site() -> None:
+    # pins the len(core) - 1 arithmetic staying inert, not a reading:
+    # the scan-back stops at the first non-post-nominal token, which is
+    # the lone stop; its core is empty, the cap goes negative and the
+    # match loop never runs. Passes on the pre-#323 tree too (cap 0
+    # there); it is here so a cap that ever went positive on an empty
+    # core would be caught.
+    out = _run("김민준 。", lexicon=_LEX_TAILS)
+    assert _texts(out) == ["김민준", "。"]
+
+
 def test_surname_site_matches_through_a_trailing_full_stop() -> None:
     # #323: the head is matched on the token's core, so the stop rides
     # with the remainder rather than BEING the remainder
@@ -519,6 +546,14 @@ def test_a_token_that_is_a_tail_never_peels() -> None:
                        lexicon=_LEX_TAILS)) == ["さん"]
     assert _texts(_run("선생님", policy=_HANGUL,
                        lexicon=_LEX_TAILS)) == ["선생님"]
+    # #323: since the tail is matched on the CORE, a trailing stop no
+    # longer stands between 님 and the end -- what keeps 선생님. whole
+    # is is_suffix_strict normalizing the edge stop, so the scan-back
+    # steps past it as a post-nominal. Without that the cap reaches
+    # 님 and dissects it (measured by removing the normalization).
+    assert _texts(_run("선생님.", policy=_HANGUL,
+                       lexicon=_LEX_TAILS)) == ["선생님."]
+    assert _texts(_run("씨.", policy=_HANGUL, lexicon=_LEX_TAILS)) == ["씨."]
 
 
 def test_longest_tail_wins() -> None:
