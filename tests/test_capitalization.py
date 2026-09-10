@@ -110,6 +110,39 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.assertEqual(hn.suffix, 'M.D.')
 
+    # A credential acronym the exceptions map doesn't carry is an
+    # initialism, so a one-case suffix repairs to all-caps instead of
+    # title-case (issue #459).
+    def test_capitalize_suffix_acronym_is_all_caps(self) -> None:
+        for src, expect in [
+            ('JOHN SMITH MBA', 'John Smith MBA'),
+            ('john smith jd', 'John Smith JD'),
+            ('JOSE LUIS CPA', 'Jose Luis CPA'),
+            ('john smith pmp', 'John Smith PMP'),
+        ]:
+            hn = HumanName(src)
+            hn.capitalize()
+            self.m(str(hn), expect, hn)
+
+    # The exceptions map's five keep their special casing; the new
+    # all-caps path must not shadow them (#459).
+    def test_capitalize_exceptions_still_win_over_acronyms(self) -> None:
+        for src, expect in [
+            ('john smith md', 'John Smith M.D.'),
+            ('john smith phd', 'John Smith Ph.D.'),
+        ]:
+            hn = HumanName(src)
+            hn.capitalize()
+            self.m(str(hn), expect, hn)
+
+    # A word in the acronym vocabulary that parses as a family name
+    # still repairs as an ordinary name word, not an acronym (#459).
+    def test_capitalize_family_name_in_acronym_vocab_stays_title_case(self) -> None:
+        hn = HumanName('anh van do')
+        hn.capitalize()
+        self.m(str(hn), 'Anh Van Do', hn)
+
+
     # Leaving already-capitalized names alone
     def test_no_change_to_mixed_chase(self) -> None:
         hn = HumanName('Shirley Maclaine')

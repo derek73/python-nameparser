@@ -247,6 +247,16 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
         exception = lex.capitalization_exceptions_map.get(key)
         if exception is not None:
             return exception
+    # A credential acronym the exceptions map doesn't carry (mba, jd,
+    # qc, mp, ...) is an initialism, not a word to title-case. The map
+    # only special-cases the five that need non-all-caps spelling
+    # (md, phd, ii, iii, iv); every other suffix_acronyms entry is
+    # all-caps by definition, so a one-case name repairs to the
+    # acronym's caps instead of 'Mba' (#459). Gated on the SUFFIX role
+    # so a word that is a family name only happens to be in the
+    # vocabulary (anh van DO) still repairs as an ordinary name word.
+    if role is Role.SUFFIX and normalized.replace(".", "") in lex.suffix_acronyms:
+        return word.upper()
     if _MAC.match(word):
         return _MAC.sub(
             lambda m: m.group(1).capitalize() + m.group(2).capitalize(),
