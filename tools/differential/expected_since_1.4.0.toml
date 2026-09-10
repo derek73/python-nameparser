@@ -2920,7 +2920,8 @@ orders = ["DEFAULT"]
 # ledgers: at 1.4.0 fix(#296)'s trailing `dr` reaches 'John Smith
 # Dr.' and 'John Smith Prof. Dr.', the two comma routings reach
 # 'Smith, John Prof.', and the two-token `jr` rule reaches 'Dr Jr'
-# and 'Sir Jr'; at 2.0.0 and 2.1.0 only fix(#296) reaches any of
+# (and reached 'Sir Jr' until that row left corpus_rules.jsonl on
+# 2026-09-09); at 2.0.0 and 2.1.0 only fix(#296) reaches any of
 # them; at 2.2.0 none does. Not one of those rules ADMITS the diff
 # it reaches -- every shape is outside its field list, measured --
 # so nothing below takes a name off a rule that was explaining it,
